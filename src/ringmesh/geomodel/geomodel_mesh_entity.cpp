@@ -80,7 +80,7 @@ namespace {
     index_t compute_nb_surface_connected_components( const Surface& M )
     {
         const index_t NO_COMPONENT = index_t( -1 );
-        GEO::Attribute< index_t > component( M.facet_attribute_manager(),
+        GEO::Attribute< index_t > component( M.polygon_attribute_manager(),
             "component" );
         component.fill( NO_COMPONENT );
         index_t nb_components = 0;
@@ -94,7 +94,7 @@ namespace {
                     S.pop();
                     for( index_t edge = 0;
                         edge < M.nb_mesh_element_vertices( cur_facet ); edge++ ) {
-                        index_t adj_facet = M.facet_adjacent_index( cur_facet,
+                        index_t adj_facet = M.polygon_adjacent_index( cur_facet,
                             edge );
                         if( adj_facet != NO_ID
                             && component[adj_facet] == NO_COMPONENT ) {
@@ -652,7 +652,7 @@ namespace RINGMesh {
             Logger::warn( "GeoModelEntity", gmme(), " has less than 3 vertices " );
             valid = false;
         }
-        if( mesh2d_->nb_facets() == 0 ) {
+        if( mesh2d_->nb_polygons() == 0 ) {
             Logger::warn( "GeoModelEntity", gmme(), " has no facets " );
             valid = false;
         }
@@ -668,7 +668,7 @@ namespace RINGMesh {
         // No zero area facet
         // No facet incident to the same vertex check local and global indices
         index_t nb_degenerate = 0;
-        for( index_t f = 0; f < mesh2d_->nb_facets(); f++ ) {
+        for( index_t f = 0; f < mesh2d_->nb_polygons(); f++ ) {
             if( facet_is_degenerate( *this, f ) ) {
                 nb_degenerate++;
             }

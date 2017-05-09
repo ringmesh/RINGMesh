@@ -216,7 +216,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the number constitutive elements of the mesh
          * @details Constitutive elements are those of the dimension of the object.
-         * segments for lines, facets for surfaces and cells for volumetric meshes.
+         * segments for lines, polygons for surfaces and cells for volumetric meshes.
          */
         virtual index_t nb_mesh_elements() const = 0;
         /*!
@@ -596,7 +596,7 @@ namespace RINGMesh {
         /*!
          * @brief Check that the mesh of the Line is valid
          * @details Check that
-         *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - no facets - no cells.
+         *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - no polygon - no cells.
          *  - global indices of vertices in the geomodel are in a valid range
          *  - each vertex is in 2 edges except extremities that are in 1 edge
          *
@@ -624,7 +624,7 @@ namespace RINGMesh {
      * @brief A GeoModelEntity of type SURFACE
      *
      * @details One connected component (part) of a 2-manifold surface
-     * (all edges of the facets are in at most 2 facets)
+     * (all edges of the polygons are in at most 2 polygons)
      */
     class RINGMESH_API Surface: public GeoModelMeshEntity {
     public:
@@ -653,255 +653,256 @@ namespace RINGMesh {
 
         bool is_simplicial() const
         {
-            return mesh2d_->facets_are_simplicies();
+            return mesh2d_->polygons_are_simplicies();
         }
 
-        const AABBTree2D& facets_aabb() const
+        const AABBTree2D& polygons_aabb() const
         {
-            return mesh2d_->facets_aabb();
+            return mesh2d_->polygons_aabb();
         }
 
         /*!
-         * @brief Return the NNSearch for the facets of the surface
-         * @details The barycenter of the facets is used.
+         * @brief Return the NNSearch for the polygons of the surface
+         * @details The barycenter of the polygons is used.
          */
-        const NNSearch& facet_nn_search() const
+        const NNSearch& polygon_nn_search() const
         {
-            return mesh2d_->facets_nn_search();
+            return mesh2d_->polygons_nn_search();
         }
 
-        GEO::AttributesManager& facet_attribute_manager() const
+        GEO::AttributesManager& polygon_attribute_manager() const
         {
-            return mesh2d_->facet_attribute_manager();
+            return mesh2d_->polygon_attribute_manager();
         }
 
         /*!
-         * \name Accessors to Surface facets, edges and vertices
+         * \name Accessors to Surface polygons, edges and vertices
          * @{
          */
         /*!
-         * Number of facets of the Surface.
+         * Number of polygons of the Surface.
          */
         virtual index_t nb_mesh_elements() const final
         {
-            return mesh2d_->nb_facets();
+            return mesh2d_->nb_polygons();
         }
 
         /*!
-         * Number of vertices of a facet
+         * Number of vertices of a polygon
          */
-        virtual index_t nb_mesh_element_vertices( index_t facet_index ) const final
+        virtual index_t nb_mesh_element_vertices( index_t polygon_index ) const final
         {
-            ringmesh_assert( facet_index < nb_mesh_elements() );
-            return mesh2d_->nb_facet_vertices( facet_index );
+            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            return mesh2d_->nb_polygon_vertices( polygon_index );
         }
 
         /*!
          * @brief Index of the vertex in the Surface
-         * from its index in a facet of the mesh.
+         * from its index in a polygon of the mesh.
          */
         virtual index_t mesh_element_vertex_index(
-            index_t facet_index,
+            index_t polygon_index,
             index_t vertex_index ) const final
         {
-            ringmesh_assert( facet_index < nb_mesh_elements() );
-            ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) );
-            return mesh2d_->facet_vertex( facet_index, vertex_index );
+            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            ringmesh_assert( vertex_index < nb_mesh_element_vertices( polygon_index ) );
+            return mesh2d_->polygon_vertex( polygon_index, vertex_index );
         }
 
         /*!
-         * @brief Gets the next vertex index in a facet.
+         * @brief Gets the next vertex index in a polygon.
          */
-        index_t next_facet_vertex_index(
-            index_t facet_index,
+        index_t next_polygon_vertex_index(
+            index_t polygon_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( facet_index < nb_mesh_elements() );
-            ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) );
-            return mesh2d_->next_facet_vertex( facet_index, vertex_index );
+            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            ringmesh_assert( vertex_index < nb_mesh_element_vertices( polygon_index ) );
+            return mesh2d_->next_polygon_vertex( polygon_index, vertex_index );
         }
 
         /*!
-         * @brief Gets the previous vertex index in a facet.
+         * @brief Gets the previous vertex index in a polygon.
          */
-        index_t prev_facet_vertex_index(
-            index_t facet_index,
+        index_t prev_polygon_vertex_index(
+            index_t polygon_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( facet_index < nb_mesh_elements() );
-            ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) );
-            return mesh2d_->prev_facet_vertex( facet_index, vertex_index );
+            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            ringmesh_assert( vertex_index < nb_mesh_element_vertices( polygon_index ) );
+            return mesh2d_->prev_polygon_vertex( polygon_index, vertex_index );
         }
 
         /*!
-         * @brief Gets the facet adjacent along an edge of a facet.
-         * @param edge_index in the facet
+         * @brief Gets the polygon adjacent along an edge of a polygon.
+         * @param polygon_index in the polygon
+         * @param edge_index in the edge
          * @note The edge index is assumed to be the index of the vertex
          * at which it is starting.
          */
-        index_t facet_adjacent_index( index_t facet_index, index_t edge_index ) const
+        index_t polygon_adjacent_index( index_t polygon_index, index_t edge_index ) const
         {
-            ringmesh_assert( facet_index < nb_mesh_elements() );
-            ringmesh_assert( edge_index < nb_mesh_element_vertices( facet_index ) );
-            return mesh2d_->facet_adjacent( facet_index, edge_index );
+            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            ringmesh_assert( edge_index < nb_mesh_element_vertices( polygon_index ) );
+            return mesh2d_->polygon_adjacent( polygon_index, edge_index );
         }
 
         /*!
          * @brief Get the previous edge on the border
-         * @details The returned border edge is the previous in the way of facet edges
+         * @details The returned border edge is the previous in the way of polygon edges
          * orientation.
-         * @param[in] f Input facet index
-         * @param[in] e Edge index in the facet
-         * @param[out] prev_f Previous facet index
-         * @param[out] prev_e Previous edge index in the facet
+         * @param[in] p Input polygon index
+         * @param[in] e Edge index in the polygon
+         * @param[out] prev_p Previous polygon index
+         * @param[out] prev_e Previous edge index in the polygon
          *
          * @pre the surface must be correctly oriented and
-         * the given facet edge must be on border
+         * the given polygon edge must be on border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
         void prev_on_border(
-            index_t f,
+            index_t p,
             index_t e,
-            index_t& prev_f,
+            index_t& prev_p,
             index_t& prev_e ) const
         {
-            return mesh2d_->prev_on_border( f, e, prev_f, prev_e );
+            return mesh2d_->prev_on_border( p, e, prev_p, prev_e );
         }
 
         /*!
          * @brief Get the next edge on the border
-         * @details The returned border edge is the next in the way of facet edges
+         * @details The returned border edge is the next in the way of polygon edges
          * orientation.
-         * @param[in] f Input facet index
-         * @param[in] e Edge index in the facet
-         * @param[out] next_f Next facet index
-         * @param[out] next_e Next edge index in the facet
+         * @param[in] p Input polygon index
+         * @param[in] e Edge index in the polygon
+         * @param[out] next_p Next polygon index
+         * @param[out] next_e Next edge index in the polygon
          *
-         * @pre the given facet edge must be on border
+         * @pre the given polygon edge must be on border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
         void next_on_border(
-            index_t f,
+            index_t p,
             index_t e,
-            index_t& next_f,
+            index_t& next_p,
             index_t& next_e ) const
         {
-            return mesh2d_->next_on_border( f, e, next_f, next_e );
+            return mesh2d_->next_on_border( p, e, next_p, next_e );
         }
 
         /*!
-         * @brief Get the vertex index in a facet @param facet_index from its
+         * @brief Get the vertex index in a polygon @param polygon_index from its
          * index in the Surface @param surface_vertex_index
-         * @return NO_ID or index of the vertex in the facet
+         * @return NO_ID or index of the vertex in the polygon
          */
-        index_t vertex_index_in_facet(
-            index_t facet_index,
+        index_t vertex_index_in_polygon(
+            index_t polygon_index,
             index_t surface_vertex_index ) const
         {
-            return mesh2d_->vertex_index_in_facet( facet_index,
+            return mesh2d_->vertex_index_in_polygon( polygon_index,
                 surface_vertex_index );
         }
 
         /*!
-         * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
+         * @brief Get the first polygon of the surface that has an edge linking the two vertices (ids in the surface)
          *
          * @param[in] in0 Index of the first vertex in the surface
          * @param[in] in1 Index of the second vertex in the surface
-         * @return NO_ID or the index of the facet
+         * @return NO_ID or the index of the polygon
          */
-        index_t facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const
+        index_t polygon_from_surface_vertex_ids( index_t in0, index_t in1 ) const
         {
-            return mesh2d_->facet_from_vertex_ids( in0, in1 );
+            return mesh2d_->polygon_from_vertex_ids( in0, in1 );
         }
 
         /*!
-         * @brief Determines the facets around a vertex
+         * @brief Determines the polygons around a vertex
          * @param[in] surf_vertex_id Index of the vertex in the surface
-         * @param[in] border_only If true only facets on the border are considered
-         * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
-         * @return Indices of the facets containing @param P
-         * @note If a facet containing the vertex is given, facets around this
-         * vertex is search by propagation. Else, a first facet is found by brute
+         * @param[in] border_only If true only polygons on the border are considered
+         * @param[in] first_polygon (Optional) Index of one polygon containing the vertex @param P
+         * @return Indices of the polygons containing @param P
+         * @note If a polygon containing the vertex is given, polygons around this
+         * vertex is search by propagation. Else, a first polygon is found by brute
          * force algorithm, and then the other by propagation
          */
-        std::vector< index_t > facets_around_vertex(
+        std::vector< index_t > polygons_around_vertex(
             index_t surf_vertex_id,
             bool border_only,
-            index_t first_facet = NO_ID ) const
+            index_t first_polygon = NO_ID ) const
         {
-            return mesh2d_->facets_around_vertex( surf_vertex_id, border_only,
-                first_facet );
+            return mesh2d_->polygons_around_vertex( surf_vertex_id, border_only,
+                first_polygon );
         }
 
         /*! @}
-         * \name Geometrical request on facets
+         * \name Geometrical request on polygons
          * @{
          */
         /*!
-         * @return Normal to the facet
+         * @return Normal to the polygon
          */
-        vec3 facet_normal( index_t facet_index ) const
+        vec3 polygon_normal( index_t polygon_index ) const
         {
-            ringmesh_assert( facet_index < nb_mesh_elements() );
-            return mesh2d_->facet_normal( facet_index );
+            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            return mesh2d_->polygon_normal( polygon_index );
         }
         /*!
          * @brief Computes the normal of the surface at the vertex location
-         * it computes the average value of facet normal neighbors
+         * it computes the average value of polygon normal neighbors
          * @param[in] vertex_id the vertex index
-         * @param[in] f0 index of a facet that contain the vertex \param vertex_id
+         * @param[in] p0 index of a polygon that contain the vertex \param vertex_id
          * @return the normal of the surface at the given vertex
          */
-        vec3 normal_at_vertex( index_t vertex_id, index_t f0 = NO_ID ) const
+        vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
         {
             ringmesh_assert( vertex_id < nb_vertices() );
-            return mesh2d_->normal_at_vertex( vertex_id, f0 );
+            return mesh2d_->normal_at_vertex( vertex_id, p0 );
         }
         /*!
-         * @return Facet barycenter.
+         * @return Polygon barycenter.
          */
-        virtual vec3 mesh_element_barycenter( index_t facet_index ) const final
+        virtual vec3 mesh_element_barycenter( index_t polygon_index ) const final
         {
-            ringmesh_assert( facet_index < nb_mesh_elements() );
-            return mesh2d_->facet_barycenter( facet_index );
+            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            return mesh2d_->polygon_barycenter( polygon_index );
         }
 
         /*!
-         * @return Area of a facet.
+         * @return Area of a polygon.
          */
-        virtual double mesh_element_size( index_t facet_index ) const final
+        virtual double mesh_element_size( index_t polygon_index ) const final
         {
-            ringmesh_assert( facet_index < nb_mesh_elements() );
-            return mesh2d_->facet_area( facet_index );
+            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            return mesh2d_->polygon_area( polygon_index );
         }
 
         /*!
-         * @brief Compute closest vertex in a facet of a Surface to a point
-         * @param[in] facet_index Facet index
+         * @brief Compute closest vertex in a polygon of a Surface to a point
+         * @param[in] polygon_index Polygon index
          * @param[in] query_point Coordinates of the point to which distance is measured
-         * @return Index of the vertex of @param facet_index closest to @param query_point
+         * @return Index of the vertex of @param polygon_index closest to @param query_point
          */
-        index_t closest_vertex_in_facet(
-            index_t facet_index,
+        index_t closest_vertex_in_polygon(
+            index_t polygon_index,
             const vec3& query_point ) const
         {
-            return mesh2d_->closest_vertex_in_facet( facet_index, query_point );
+            return mesh2d_->closest_vertex_in_polygon( polygon_index, query_point );
         }
 
         /*!
-         * Is the edge starting with the given vertex of the facet on a border of the Surface?
+         * Is the edge starting with the given vertex of the polygon on a border of the Surface?
          */
-        bool is_on_border( index_t facet_index, index_t vertex_index ) const
+        bool is_on_border( index_t polygon_index, index_t vertex_index ) const
         {
-            return mesh2d_->is_edge_on_border( facet_index, vertex_index );
+            return mesh2d_->is_edge_on_border( polygon_index, vertex_index );
         }
 
         /*!
-         * Is one of the edges of the facet on the border of the surface?
+         * Is one of the edges of the polygon on the border of the surface?
          */
-        bool is_on_border( index_t facet_index ) const
+        bool is_on_border( index_t polygon_index ) const
         {
-            return mesh2d_->is_facet_on_border( facet_index );
+            return mesh2d_->is_polygon_on_border( polygon_index );
         }
         /*! @}
          */
@@ -925,13 +926,13 @@ namespace RINGMesh {
         /*!
          * @brief Check that the mesh of the Surface is valid
          * @details Check that
-         *  - the GEO::Mesh has more than 2 vertices, at least 1 facet, no cells.
+         *  - the GEO::Mesh has more than 2 vertices, at least 1 polygon, no cells.
          *  - global indices of vertices in the geomodel are in a valid range
-         *  - no degenerate facet
+         *  - no degenerate polygon
          *  - one connected component
          *
          *  Some tests are not performed here but globally on the GeoModel
-         *  - intersection of facets
+         *  - intersection of polygons
          *  - non-manifold edges
          *  - duplicated vertices are on a boundary Line ending in the Surface
          *
@@ -939,9 +940,9 @@ namespace RINGMesh {
          *  Some tests are not performed
          *  - non-manifold points
          *  - surface orientability
-         *  - planarity of polygonal facets
+         *  - planarity of polygonal polygons
          *
-         * @todo Check that there is no duplicated facet
+         * @todo Check that there is no duplicated polygon
          */
         virtual bool is_mesh_valid() const final;
 

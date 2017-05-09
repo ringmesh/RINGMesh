@@ -669,10 +669,10 @@ namespace RINGMesh {
                                 S.gmme(), f, v );
                             index_t next_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S.gmme(), f,
-                                    S.next_facet_vertex_index( f, v ) );
+                                    S.next_polygon_vertex_index( f, v ) );
                             index_t previous_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S.gmme(), f,
-                                    S.prev_facet_vertex_index( f, v ) );
+                                    S.prev_polygon_vertex_index( f, v ) );
                             border_triangles_.push_back(
                                 BorderTriangle( s, f, vertex, next_vertex,
                                     previous_vertex ) );
@@ -701,12 +701,12 @@ namespace RINGMesh {
             ringmesh_assert( !possible_v0_id.empty() );
             index_t v0_id = NO_ID;
             for( index_t id : possible_v0_id ) {
-                if( S.vertex_index_in_facet( f, id ) != NO_ID ) {
+                if( S.vertex_index_in_polygon( f, id ) != NO_ID ) {
                     v0_id = id;
                 }
             }
             ringmesh_assert( v0_id != NO_ID );
-            index_t v0_id_in_facet = S.vertex_index_in_facet( f, v0_id );
+            index_t v0_id_in_facet = S.vertex_index_in_polygon( f, v0_id );
             ringmesh_assert( v0_id_in_facet != NO_ID );
 
             index_t next_f = NO_ID;
@@ -716,11 +716,11 @@ namespace RINGMesh {
             if( !backward ) {
                 S.next_on_border( f, v0_id_in_facet, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 );
+                next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
             } else {
                 S.prev_on_border( f, v0_id_in_facet, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 );
+                next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
             }
 
             // Finds the BorderTriangle that is corresponding to this

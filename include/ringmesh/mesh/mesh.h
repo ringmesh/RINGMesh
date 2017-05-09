@@ -254,28 +254,28 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index.
          * @param[in] vertex_id the local edge index in \param facet_id.
          */
-        virtual index_t facet_vertex(
+        virtual index_t polygon_vertex(
             index_t facet_id,
             index_t vertex_id ) const = 0;
 
         /*!
          * @brief Gets the number of all facets in the whole Mesh.
          */
-        virtual index_t nb_facets() const = 0;
+        virtual index_t nb_polygons() const = 0;
         /*!
          * @brief Gets the number of vertices in the facet \param facet_id.
          * @param[in] facet_id facet index
          */
-        virtual index_t nb_facet_vertices( index_t facet_id ) const = 0;
+        virtual index_t nb_polygon_vertices( index_t facet_id ) const = 0;
         /*!
          * @brief Gets the next vertex index in the facet \param facet_id.
          * @param[in] facet_id facet index
          * @param[in] vertex_id current index
          */
-        index_t next_facet_vertex( index_t facet_id, index_t vertex_id ) const
+        index_t next_polygon_vertex( index_t facet_id, index_t vertex_id ) const
         {
-            ringmesh_assert( vertex_id < nb_facet_vertices( facet_id ) );
-            if( vertex_id != nb_facet_vertices( facet_id ) - 1 ) {
+            ringmesh_assert( vertex_id < nb_polygon_vertices( facet_id ) );
+            if( vertex_id != nb_polygon_vertices( facet_id ) - 1 ) {
                 return vertex_id + 1;
             } else {
                 return 0;
@@ -304,13 +304,13 @@ namespace RINGMesh {
          * @param[in] facet_id facet index
          * @param[in] vertex_id current index
          */
-        index_t prev_facet_vertex( index_t facet_id, index_t vertex_id ) const
+        index_t prev_polygon_vertex( index_t facet_id, index_t vertex_id ) const
         {
-            ringmesh_assert( vertex_id < nb_facet_vertices( facet_id ) );
+            ringmesh_assert( vertex_id < nb_polygon_vertices( facet_id ) );
             if( vertex_id > 0 ) {
                 return vertex_id - 1;
             } else {
-                return nb_facet_vertices( facet_id ) - 1;
+                return nb_polygon_vertices( facet_id ) - 1;
             }
         }
 
@@ -338,7 +338,7 @@ namespace RINGMesh {
          * global index in the Mesh2D @param vertex_id
          * @return NO_ID or index of the vertex in the facet
          */
-        index_t vertex_index_in_facet(
+        index_t vertex_index_in_polygon(
             index_t facet_index,
             index_t vertex_id ) const;
 
@@ -348,7 +348,7 @@ namespace RINGMesh {
          * @param[in] query_point Coordinates of the point to which distance is measured
          * @return Index of the vertex of @param facet_index closest to @param query_point
          */
-        index_t closest_vertex_in_facet(
+        index_t closest_vertex_in_polygon(
             index_t facet_index,
             const vec3& query_point ) const;
 
@@ -359,7 +359,7 @@ namespace RINGMesh {
          * @param[in] in1 Index of the second vertex in the surface
          * @return NO_ID or the index of the facet
          */
-        index_t facet_from_vertex_ids( index_t in0, index_t in1 ) const;
+        index_t polygon_from_vertex_ids( index_t in0, index_t in1 ) const;
 
         /*!
          * @brief Determines the facets around a vertex
@@ -372,7 +372,7 @@ namespace RINGMesh {
          * force algorithm, and then the other by propagation
          * @todo Try to use a AABB tree to remove @param first_facet. [PA]
          */
-        std::vector< index_t > facets_around_vertex(
+        std::vector< index_t > polygons_around_vertex(
             index_t vertex_id,
             bool border_only,
             index_t f0 ) const;
@@ -384,22 +384,22 @@ namespace RINGMesh {
          * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
          * @precondition  \param edge_id < number of edge of the facet \param facet_id .
          */
-        virtual index_t facet_adjacent(
+        virtual index_t polygon_adjacent(
             index_t facet_id,
             index_t edge_id ) const = 0;
 
-        virtual GEO::AttributesManager& facet_attribute_manager() const = 0;
+        virtual GEO::AttributesManager& polygon_attribute_manager() const = 0;
         /*!
          * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
          * @return True if all facets are triangles and False otherwise.
          */
-        virtual bool facets_are_simplicies() const = 0;
+        virtual bool polygons_are_simplicies() const = 0;
         /*!
          * return true if the facet \param facet_id is a triangle
          */
         bool is_triangle( index_t facet_id ) const
         {
-            return nb_facet_vertices( facet_id ) == 3;
+            return nb_polygon_vertices( facet_id ) == 3;
         }
 
         /*!
@@ -407,15 +407,15 @@ namespace RINGMesh {
          */
         bool is_edge_on_border( index_t facet_index, index_t vertex_index ) const
         {
-            return facet_adjacent( facet_index, vertex_index ) == NO_ID;
+            return polygon_adjacent( facet_index, vertex_index ) == NO_ID;
         }
 
         /*!
          * Is one of the edges of the facet on the border of the surface?
          */
-        bool is_facet_on_border( index_t facet_index ) const
+        bool is_polygon_on_border( index_t facet_index ) const
         {
-            for( index_t v = 0; v < nb_facet_vertices( facet_index ); v++ ) {
+            for( index_t v = 0; v < nb_polygon_vertices( facet_index ); v++ ) {
                 if( is_edge_on_border( facet_index, v ) ) {
                     return true;
                 }
@@ -459,10 +459,10 @@ namespace RINGMesh {
         {
             ringmesh_assert( vertex_id < 2 );
             if( vertex_id == 0 ) {
-                return facet_vertex( facet_id, edge_id );
+                return polygon_vertex( facet_id, edge_id );
             } else {
-                return facet_vertex( facet_id,
-                    ( edge_id + vertex_id ) % nb_facet_vertices( facet_id ) );
+                return polygon_vertex( facet_id,
+                    ( edge_id + vertex_id ) % nb_polygon_vertices( facet_id ) );
             }
         }
 
@@ -471,11 +471,11 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index
          * @return the facet normal
          */
-        vec3 facet_normal( index_t facet_id ) const
+        vec3 polygon_normal( index_t facet_id ) const
         {
-            const vec3& p1 = vertex( facet_vertex( facet_id, 0 ) );
-            const vec3& p2 = vertex( facet_vertex( facet_id, 1 ) );
-            const vec3& p3 = vertex( facet_vertex( facet_id, 2 ) );
+            const vec3& p1 = vertex( polygon_vertex( facet_id, 0 ) );
+            const vec3& p2 = vertex( polygon_vertex( facet_id, 1 ) );
+            const vec3& p3 = vertex( polygon_vertex( facet_id, 2 ) );
             vec3 norm = cross( p2 - p1, p3 - p1 );
             return normalize( norm );
         }
@@ -491,9 +491,9 @@ namespace RINGMesh {
         {
             ringmesh_assert( vertex_id < nb_vertices() );
             index_t f = 0;
-            while( f0 == NO_ID && f < nb_facets() ) {
-                for( index_t lv = 0; lv < nb_facet_vertices( f ); lv++ ) {
-                    if( facet_vertex( f, lv ) == vertex_id ) {
+            while( f0 == NO_ID && f < nb_polygons() ) {
+                for( index_t lv = 0; lv < nb_polygon_vertices( f ); lv++ ) {
+                    if( polygon_vertex( f, lv ) == vertex_id ) {
                         f0 = f;
                         break;
                     }
@@ -501,11 +501,11 @@ namespace RINGMesh {
                 f++;
             }
 
-            std::vector< index_t > facet_ids = facets_around_vertex( vertex_id,
+            std::vector< index_t > facet_ids = polygons_around_vertex( vertex_id,
                 false, f0 );
             vec3 norm;
             for( index_t facet_id : facet_ids ) {
-                norm += facet_normal( facet_id );
+                norm += polygon_normal( facet_id );
             }
             return normalize( norm );
         }
@@ -515,12 +515,12 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index
          * @return the facet center
          */
-        vec3 facet_barycenter( index_t facet_id ) const
+        vec3 polygon_barycenter( index_t facet_id ) const
         {
             vec3 result( 0.0, 0.0, 0.0 );
             double count = 0.0;
-            for( index_t v = 0; v < nb_facet_vertices( facet_id ); ++v ) {
-                result += vertex( facet_vertex( facet_id, v ) );
+            for( index_t v = 0; v < nb_polygon_vertices( facet_id ); ++v ) {
+                result += vertex( polygon_vertex( facet_id, v ) );
                 count += 1.0;
             }
             return ( 1.0 / count ) * result;
@@ -530,16 +530,16 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index
          * @return the facet area
          */
-        double facet_area( index_t facet_id ) const
+        double polygon_area( index_t facet_id ) const
         {
             double result = 0.0;
-            if( nb_facet_vertices( facet_id ) == 0 ) {
+            if( nb_polygon_vertices( facet_id ) == 0 ) {
                 return result;
             }
-            const vec3& p1 = vertex( facet_vertex( facet_id, 0 ) );
-            for( index_t i = 1; i + 1 < nb_facet_vertices( facet_id ); i++ ) {
-                const vec3& p2 = vertex( facet_vertex( facet_id, i ) );
-                const vec3& p3 = vertex( facet_vertex( facet_id, i + 1 ) );
+            const vec3& p1 = vertex( polygon_vertex( facet_id, 0 ) );
+            for( index_t i = 1; i + 1 < nb_polygon_vertices( facet_id ); i++ ) {
+                const vec3& p2 = vertex( polygon_vertex( facet_id, i ) );
+                const vec3& p3 = vertex( polygon_vertex( facet_id, i + 1 ) );
                 result += 0.5 * length( cross( p2 - p1, p3 - p1 ) );
             }
             return result;
@@ -548,12 +548,12 @@ namespace RINGMesh {
         /*!
          * @brief return the NNSearch at facets
          */
-        const NNSearch& facets_nn_search() const
+        const NNSearch& polygons_nn_search() const
         {
             if( !nn_search_ ) {
-                std::vector< vec3 > facet_centers( nb_facets() );
-                for( index_t f = 0; f < nb_facets(); ++f ) {
-                    facet_centers[f] = facet_barycenter( f );
+                std::vector< vec3 > facet_centers( nb_polygons() );
+                for( index_t f = 0; f < nb_polygons(); ++f ) {
+                    facet_centers[f] = polygon_barycenter( f );
                 }
                 nn_search_.reset( new NNSearch( facet_centers, true ) );
             }
@@ -562,7 +562,7 @@ namespace RINGMesh {
         /*!
          * @brief Creates an AABB tree for a Mesh facets
          */
-        const AABBTree2D& facets_aabb() const
+        const AABBTree2D& polygons_aabb() const
         {
             if( !facets_aabb_ ) {
                 facets_aabb_.reset( new AABBTree2D( *this ) );

@@ -133,31 +133,31 @@ namespace RINGMesh {
     class RINGMESH_API GeogramMesh2D: public Mesh2D {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramMesh2D );
     public:
-        virtual index_t facet_vertex( index_t facet_id, index_t vertex_id ) const override
+        virtual index_t polygon_vertex( index_t facet_id, index_t vertex_id ) const override
         {
             return mesh_->facets.vertex( facet_id, vertex_id );
         }
 
-        virtual index_t nb_facets() const override
+        virtual index_t nb_polygons() const override
         {
             return mesh_->facets.nb();
         }
 
-        virtual index_t nb_facet_vertices( index_t facet_id ) const override
+        virtual index_t nb_polygon_vertices( index_t facet_id ) const override
         {
             return mesh_->facets.nb_vertices( facet_id );
         }
 
-        virtual index_t facet_adjacent( index_t facet_id, index_t edge_id ) const override
+        virtual index_t polygon_adjacent( index_t facet_id, index_t edge_id ) const override
         {
             return mesh_->facets.adjacent( facet_id, edge_id );
         }
-        virtual GEO::AttributesManager& facet_attribute_manager() const override
+        virtual GEO::AttributesManager& polygon_attribute_manager() const override
         {
             return mesh_->facets.attributes();
         }
 
-        virtual bool facets_are_simplicies() const override
+        virtual bool polygons_are_simplicies() const override
         {
             return mesh_->facets.are_simplices();
         }

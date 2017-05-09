@@ -363,9 +363,9 @@ namespace RINGMesh {
         {
             std::vector< bool > to_delete( mesh_->nb_vertices(), true );
 
-            for( index_t f = 0; f < mesh_->nb_facets(); f++ ) {
-                for( index_t v = 0; v < mesh_->nb_facet_vertices( f ); v++ ) {
-                    index_t vertex_id = mesh_->facet_vertex( f, v );
+            for( index_t f = 0; f < mesh_->nb_polygons(); f++ ) {
+                for( index_t v = 0; v < mesh_->nb_polygon_vertices( f ); v++ ) {
+                    index_t vertex_id = mesh_->polygon_vertex( f, v );
                     to_delete[vertex_id] = false;
                 }
             }

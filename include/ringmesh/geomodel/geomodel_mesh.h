@@ -487,7 +487,7 @@ namespace RINGMesh {
 
         GEO::AttributesManager& attribute_manager() const
         {
-            return mesh_->facet_attribute_manager();
+            return mesh_->polygon_attribute_manager();
         }
 
         /*!
@@ -552,7 +552,7 @@ namespace RINGMesh {
          * @param[in] type the corresponding type
          * @return the number of facets
          */
-        index_t nb_facets( FacetType type = ALL ) const;
+        index_t nb_polygons( FacetType type = ALL ) const;
         /*!
          * Get the number of facets of the corresponding type
          * in the given surface of the GeoModel
@@ -626,7 +626,7 @@ namespace RINGMesh {
          * Get the number of polygons in the GeoModelMesh
          * @return the number of polygons
          */
-        index_t nb_polygon() const;
+        index_t nb_unclassified_polygon() const;
         /*!
          * Get the number of polygons in the given surface
          * @param[in] s the surface index
@@ -666,7 +666,7 @@ namespace RINGMesh {
         const NNSearch& nn_search() const
         {
             test_and_initialize();
-            return mesh_->facets_nn_search();
+            return mesh_->polygons_nn_search();
         }
 
         /*!

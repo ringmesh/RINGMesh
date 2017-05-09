@@ -187,7 +187,7 @@ namespace {
             for( index_t j = 0; j < S.nb_mesh_element_vertices( i ); ++j ) {
                 index_t v0 = S.mesh_element_vertex_index( i, j );
                 index_t v1 = S.mesh_element_vertex_index( i,
-                    S.next_facet_vertex_index( i, j ) );
+                    S.next_polygon_vertex_index( i, j ) );
                 if( ( v0 == v0_in && v1 == v1_in )
                     || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true;
