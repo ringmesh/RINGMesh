@@ -594,7 +594,7 @@ namespace RINGMesh {
                 switch( GM_gfx_.attribute.location() ) {
                     case AttributeGfxManager::facets:
                         set_attribute_names(
-                            GM_.surface( 0 ).facet_attribute_manager() );
+                            GM_.surface( 0 ).polygon_attribute_manager() );
                         break;
                     case AttributeGfxManager::facet_vertices:
                         set_attribute_names(

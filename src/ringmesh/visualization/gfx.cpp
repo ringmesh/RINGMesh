@@ -771,7 +771,7 @@ namespace RINGMesh {
         {
             const GeoModel* geomodel = manager_.gfx().geomodel();
             GEO::AttributeStore* store =
-                geomodel->surface( 0 ).facet_attribute_manager().find_attribute_store(
+                geomodel->surface( 0 ).polygon_attribute_manager().find_attribute_store(
                     manager_.name() );
 
             if( store == nullptr ) return 0;
@@ -785,7 +785,7 @@ namespace RINGMesh {
             const GeoModel* geomodel = manager_.gfx().geomodel();
             for( index_t s = 0; s < geomodel->nb_surfaces(); s++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->surface( s ).facet_attribute_manager(),
+                    geomodel->surface( s ).polygon_attribute_manager(),
                     attribute_name );
                 compute_attribute_range( attribute, attribute_min, attribute_max );
             }

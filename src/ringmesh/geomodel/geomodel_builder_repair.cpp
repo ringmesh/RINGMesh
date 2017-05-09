@@ -65,7 +65,7 @@ namespace RINGMesh {
                 remove_colocated_entity_vertices_and_update_gm();
                 break;
             case DEGENERATE_FACETS_EDGES:
-                remove_degenerate_facets_and_edges_and_update_gm();
+                remove_degenerate_polygons_and_edges_and_update_gm();
                 break;
             case LINE_BOUNDARY_ORDER:
                 repair_line_boundary_vertex_order();
@@ -81,7 +81,7 @@ namespace RINGMesh {
         remove_colocated_entity_vertices_and_update_gm();
 
         // Basic mesh repair for surfaces and lines
-        remove_degenerate_facets_and_edges_and_update_gm();
+        remove_degenerate_polygons_and_edges_and_update_gm();
 
         // Proper reordering of line boundaries
         repair_line_boundary_vertex_order();
@@ -106,10 +106,10 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRepair::remove_degenerate_facets_and_edges_and_update_gm()
+    void GeoModelBuilderRepair::remove_degenerate_polygons_and_edges_and_update_gm()
     {
         std::set< gmme_id > empty_mesh_entities;
-        remove_degenerate_facets_and_edges( empty_mesh_entities );
+        remove_degenerate_polygons_and_edges( empty_mesh_entities );
         /// TODO when it will works,
         /// use GeoModelBuilderRemoval::remove_entities_and_dependencies
         if( !empty_mesh_entities.empty() ) {
@@ -137,7 +137,7 @@ namespace RINGMesh {
         }
     }
 
-    bool GeoModelBuilderRepair::facet_is_degenerate(
+    bool GeoModelBuilderRepair::polygon_is_degenerate(
         const Surface& S,
         index_t f,
         std::vector< index_t >& colocated_vertices )
@@ -159,25 +159,25 @@ namespace RINGMesh {
         return v1 == v2 || v2 == v3 || v3 == v1;
     }
 
-    void GeoModelBuilderRepair::surface_detect_degenerate_facets(
+    void GeoModelBuilderRepair::surface_detect_degenerate_polygons(
         const Surface& S,
         std::vector< index_t >& f_is_degenerate,
         std::vector< index_t >& colocated_vertices )
     {
         f_is_degenerate.resize( S.nb_mesh_elements() );
         for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
-            f_is_degenerate[f] = facet_is_degenerate( S, f, colocated_vertices );
+            f_is_degenerate[f] = polygon_is_degenerate( S, f, colocated_vertices );
         }
     }
 
-    index_t GeoModelBuilderRepair::detect_degenerate_facets( const Surface& S )
+    index_t GeoModelBuilderRepair::detect_degenerate_polygons( const Surface& S )
     {
         std::vector< index_t > colocated;
         const NNSearch& nn_search = S.vertex_nn_search();
         nn_search.get_colocated_index_mapping( geomodel_.epsilon(), colocated );
 
         std::vector< index_t > degenerate;
-        surface_detect_degenerate_facets( S, degenerate, colocated );
+        surface_detect_degenerate_polygons( S, degenerate, colocated );
         return static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) );
     }
@@ -209,7 +209,7 @@ namespace RINGMesh {
         return nb;
     }
 
-    void GeoModelBuilderRepair::remove_degenerate_facets_and_edges(
+    void GeoModelBuilderRepair::remove_degenerate_polygons_and_edges(
         std::set< gmme_id >& to_remove )
     {
         to_remove.clear();
@@ -230,7 +230,7 @@ namespace RINGMesh {
         double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon();
         for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
             const Surface& surface = geomodel_.surface( i );
-            index_t nb = detect_degenerate_facets( surface );
+            index_t nb = detect_degenerate_polygons( surface );
             /// @todo Check if that cannot be simplified
             if( nb > 0 ) {
                 // If there are some degenerated facets

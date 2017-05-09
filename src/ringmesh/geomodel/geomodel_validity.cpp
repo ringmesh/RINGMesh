@@ -645,17 +645,17 @@ namespace {
         std::vector< index_t > invalid_corners;
         for( index_t f = 0; f < surface.nb_mesh_elements(); ++f ) {
             for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); ++v ) {
-                if( surface.facet_adjacent_index( f, v ) == NO_ID
+                if( surface.polygon_adjacent_index( f, v ) == NO_ID
                     && !is_edge_on_line( surface.geomodel(),
                         geomodel_vertices.geomodel_vertex_id( surface.gmme(), f, v ),
                         geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
-                            surface.next_facet_vertex_index( f, v ) ) ) ) {
+                            surface.next_polygon_vertex_index( f, v ) ) ) ) {
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
                             v ) );
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
-                            surface.next_facet_vertex_index( f, v ) ) );
+                            surface.next_polygon_vertex_index( f, v ) ) );
                 }
             }
         }

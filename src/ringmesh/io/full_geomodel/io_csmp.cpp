@@ -207,7 +207,7 @@ namespace {
             reset_line( count, data );
 
             index_t nb_total_entities = mesh.cells.nb_cells()
-                + mesh.facets.nb_facets() + mesh.edges.nb_edges();
+                + mesh.facets.nb_polygons() + mesh.edges.nb_edges();
             data << nb_total_entities << " # PELEMENT" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 index_t entity_type[4] = { 4, 6, 12, 18 };

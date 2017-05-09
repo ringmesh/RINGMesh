@@ -100,15 +100,15 @@ namespace RINGMesh {
         index_t& next_f,
         index_t& next_e ) const
     {
-        ringmesh_assert( e < nb_facet_vertices( f ) );
+        ringmesh_assert( e < nb_polygon_vertices( f ) );
         ringmesh_assert( is_edge_on_border( f, e ) );
 
         // Global indices in the surfaces
-        index_t next_v_id = facet_vertex( f, next_facet_vertex( f, e ) );
+        index_t next_v_id = polygon_vertex( f, next_polygon_vertex( f, e ) );
 
         // Get the facets around the shared vertex (next_v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > facets_around_next_v_id = facets_around_vertex(
+        std::vector< index_t > facets_around_next_v_id = polygons_around_vertex(
             next_v_id, true, f );
         index_t nb_around = static_cast< index_t >( facets_around_next_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
@@ -120,14 +120,14 @@ namespace RINGMesh {
                 next_f = facets_around_next_v_id[1];
             }
             ringmesh_assert( next_f != NO_ID );
-            ringmesh_assert( is_facet_on_border( next_f ) );
+            ringmesh_assert( is_polygon_on_border( next_f ) );
 
             // Local index of next vertex in the next facet
-            next_e = vertex_index_in_facet( next_f, next_v_id );
+            next_e = vertex_index_in_polygon( next_f, next_v_id );
             ringmesh_assert( is_edge_on_border( next_f, next_e ) );
         } else if( nb_around == 1 ) {
             // next_v_id must be in two border edges of facet f
-            next_e = vertex_index_in_facet( next_f, next_v_id );
+            next_e = vertex_index_in_polygon( next_f, next_v_id );
             ringmesh_assert( is_edge_on_border( next_f, next_e ) );
         }
     }
@@ -138,15 +138,15 @@ namespace RINGMesh {
         index_t& prev_f,
         index_t& prev_e ) const
     {
-        ringmesh_assert( e < nb_facet_vertices( f ) );
+        ringmesh_assert( e < nb_polygon_vertices( f ) );
         ringmesh_assert( is_edge_on_border( f, e ) );
 
         // Global indices in the surfaces
-        index_t v_id = facet_vertex( f, e );
+        index_t v_id = polygon_vertex( f, e );
 
         // Get the facets around the shared vertex (v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > facets_around_v_id = facets_around_vertex( v_id, true,
+        std::vector< index_t > facets_around_v_id = polygons_around_vertex( v_id, true,
             f );
         index_t nb_around = static_cast< index_t >( facets_around_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
@@ -158,22 +158,22 @@ namespace RINGMesh {
                 prev_f = facets_around_v_id[1];
             }
             ringmesh_assert( prev_f != NO_ID );
-            ringmesh_assert( is_facet_on_border( prev_f ) );
+            ringmesh_assert( is_polygon_on_border( prev_f ) );
 
             // Local index of given vertex in the prev facet
-            index_t v_in_prev_f = vertex_index_in_facet( prev_f, v_id );
+            index_t v_in_prev_f = vertex_index_in_polygon( prev_f, v_id );
             // Local index of previous vertex in the prev facet
-            prev_e = prev_facet_vertex( prev_f, v_in_prev_f );
+            prev_e = prev_polygon_vertex( prev_f, v_in_prev_f );
             ringmesh_assert( is_edge_on_border( prev_f, prev_e ) );
         } else if( nb_around == 1 ) {
             // v_id must be in two border edges of facet f
-            index_t v_in_next_facet = vertex_index_in_facet( prev_f, v_id );
-            prev_e = prev_facet_vertex( prev_f, v_in_next_facet );
+            index_t v_in_next_facet = vertex_index_in_polygon( prev_f, v_id );
+            prev_e = prev_polygon_vertex( prev_f, v_in_next_facet );
             ringmesh_assert( is_edge_on_border( prev_f, prev_e ) );
         }
     }
 
-    index_t Mesh2D::facet_from_vertex_ids( index_t in0, index_t in1 ) const
+    index_t Mesh2D::polygon_from_vertex_ids( index_t in0, index_t in1 ) const
     {
         ringmesh_assert( in0 < nb_vertices() && in1 < nb_vertices() );
 
@@ -181,11 +181,11 @@ namespace RINGMesh {
         // are neighbors in facets_ and check that they are in the same facet
 
         // Check if the edge is in one of the facet
-        for( index_t f = 0; f < nb_facets(); ++f ) {
+        for( index_t f = 0; f < nb_polygons(); ++f ) {
             bool found = false;
-            index_t prev = facet_vertex( f, nb_facet_vertices( f ) - 1 );
-            for( index_t v = 0; v < nb_facet_vertices( f ); ++v ) {
-                index_t p = facet_vertex( f, v );
+            index_t prev = polygon_vertex( f, nb_polygon_vertices( f ) - 1 );
+            for( index_t v = 0; v < nb_polygon_vertices( f ); ++v ) {
+                index_t p = polygon_vertex( f, v );
                 if( ( prev == in0 && p == in1 ) || ( prev == in1 && p == in0 ) ) {
                     found = true;
                     break;
@@ -199,25 +199,25 @@ namespace RINGMesh {
         return NO_ID;
     }
 
-    index_t Mesh2D::vertex_index_in_facet(
+    index_t Mesh2D::vertex_index_in_polygon(
         index_t facet_index,
         index_t vertex_id ) const
     {
-        ringmesh_assert( facet_index < nb_facets() );
-        for( index_t v = 0; v < nb_facet_vertices( facet_index ); v++ ) {
-            if( facet_vertex( facet_index, v ) == vertex_id ) {
+        ringmesh_assert( facet_index < nb_polygons() );
+        for( index_t v = 0; v < nb_polygon_vertices( facet_index ); v++ ) {
+            if( polygon_vertex( facet_index, v ) == vertex_id ) {
                 return v;
             }
         }
         return NO_ID;
     }
 
-    index_t Mesh2D::closest_vertex_in_facet( index_t f, const vec3& v ) const
+    index_t Mesh2D::closest_vertex_in_polygon( index_t f, const vec3& v ) const
     {
         index_t result = 0;
         double dist = DBL_MAX;
-        for( index_t p = 0; p < nb_facet_vertices( f ); p++ ) {
-            double distance = length2( v - vertex( facet_vertex( f, p ) ) );
+        for( index_t p = 0; p < nb_polygon_vertices( f ); p++ ) {
+            double distance = length2( v - vertex( polygon_vertex( f, p ) ) );
             if( dist > distance ) {
                 dist = distance;
                 result = p;
@@ -226,7 +226,7 @@ namespace RINGMesh {
         return result;
     }
 
-    std::vector< index_t > Mesh2D::facets_around_vertex(
+    std::vector< index_t > Mesh2D::polygons_around_vertex(
         index_t surf_vertex_id,
         bool border_only,
         index_t f0 ) const
@@ -234,9 +234,9 @@ namespace RINGMesh {
         std::vector< index_t > result;
 
         index_t f = 0;
-        while( f0 == NO_ID && f < nb_facets() ) {
-            for( index_t lv = 0; lv < nb_facet_vertices( f ); lv++ ) {
-                if( facet_vertex( f, lv ) == surf_vertex_id ) {
+        while( f0 == NO_ID && f < nb_polygons() ) {
+            for( index_t lv = 0; lv < nb_polygon_vertices( f ); lv++ ) {
+                if( polygon_vertex( f, lv ) == surf_vertex_id ) {
                     f0 = f;
                     break;
                 }
@@ -259,11 +259,11 @@ namespace RINGMesh {
             index_t f = S.top();
             S.pop();
 
-            for( index_t v = 0; v < nb_facet_vertices( f ); ++v ) {
-                if( facet_vertex( f, v ) == surf_vertex_id ) {
-                    index_t adj_P = facet_adjacent( f, v );
-                    index_t prev = prev_facet_vertex( f, v );
-                    index_t adj_prev = facet_adjacent( f, prev );
+            for( index_t v = 0; v < nb_polygon_vertices( f ); ++v ) {
+                if( polygon_vertex( f, v ) == surf_vertex_id ) {
+                    index_t adj_P = polygon_adjacent( f, v );
+                    index_t prev = prev_polygon_vertex( f, v );
+                    index_t adj_prev = polygon_adjacent( f, prev );
 
                     if( adj_P != NO_ID ) {
                         // The edge starting at P is not on the boundary

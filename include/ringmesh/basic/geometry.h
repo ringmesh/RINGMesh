@@ -534,7 +534,7 @@ namespace RINGMesh {
     private:
         void build_nn_search_vertices( const GEO::Mesh& mesh, bool copy );
         void build_nn_search_edges( const GEO::Mesh& mesh );
-        void build_nn_search_facets( const GEO::Mesh& mesh );
+        void build_nn_search_polygons( const GEO::Mesh& mesh );
         void build_nn_search_cells( const GEO::Mesh& mesh );
         void build_nn_search_cell_facets( const GEO::Mesh& mesh );
         void fill_nn_search_points( index_t index_in_nn, const vec3& center );

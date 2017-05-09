@@ -201,9 +201,9 @@ namespace {
     {
         std::vector< index_t > gocad_vertices2cur_surf_points;
         for( index_t co = 0;
-            co < load_storage.cur_surf_facet_corners_gocad_id_.size(); ++co ) {
+            co < load_storage.cur_surf_polygon_corners_gocad_id_.size(); ++co ) {
             const index_t corner_gocad_id =
-                load_storage.cur_surf_facet_corners_gocad_id_[co];
+                load_storage.cur_surf_polygon_corners_gocad_id_[co];
             get_surface_point_and_facet_from_gocad_index( corner_gocad_id, geomodel,
                 load_storage, gocad_vertices2cur_surf_points, cur_surf_points,
                 cur_surf_facets );
@@ -225,10 +225,10 @@ namespace {
         get_surface_points_and_facets_from_gocad_indices( geomodel, load_storage,
             cur_surf_points, cur_surf_facets );
         builder.geometry.set_surface_geometry( load_storage.cur_surface_,
-            cur_surf_points, cur_surf_facets, load_storage.cur_surf_facet_ptr_ );
-        load_storage.cur_surf_facet_corners_gocad_id_.clear();
-        load_storage.cur_surf_facet_ptr_.clear();
-        load_storage.cur_surf_facet_ptr_.push_back( 0 );
+            cur_surf_points, cur_surf_facets, load_storage.cur_surf_polygon_ptr_ );
+        load_storage.cur_surf_polygon_corners_gocad_id_.clear();
+        load_storage.cur_surf_polygon_ptr_.clear();
+        load_storage.cur_surf_polygon_ptr_.push_back( 0 );
     }
 
     /*! @}
@@ -318,7 +318,7 @@ namespace {
         index_t cell_id = ( cell_facet_center_id - local_facet_id ) / 4;
         vec3 cell_facet_normal = geomodel.region( region_id ).cell_facet_normal(
             cell_id, local_facet_id );
-        vec3 first_facet_normal = geomodel.surface( surface_id ).facet_normal( 0 );
+        vec3 first_facet_normal = geomodel.surface( surface_id ).polygon_normal( 0 );
         return dot( first_facet_normal, cell_facet_normal ) > 0;
     }
 
@@ -610,15 +610,15 @@ namespace {
         std::vector< vec3 > vertices(
             load_storage.vertices_.begin() + load_storage.tface_vertex_ptr_,
             load_storage.vertices_.end() );
-        for( index_t& id : load_storage.cur_surf_facet_corners_gocad_id_ ) {
+        for( index_t& id : load_storage.cur_surf_polygon_corners_gocad_id_ ) {
             id -= load_storage.tface_vertex_ptr_;
         }
         builder.geometry.set_surface_geometry( load_storage.cur_surface_, vertices,
-            load_storage.cur_surf_facet_corners_gocad_id_,
-            load_storage.cur_surf_facet_ptr_ );
-        load_storage.cur_surf_facet_corners_gocad_id_.clear();
-        load_storage.cur_surf_facet_ptr_.clear();
-        load_storage.cur_surf_facet_ptr_.push_back( 0 );
+            load_storage.cur_surf_polygon_corners_gocad_id_,
+            load_storage.cur_surf_polygon_ptr_ );
+        load_storage.cur_surf_polygon_corners_gocad_id_.clear();
+        load_storage.cur_surf_polygon_ptr_.clear();
+        load_storage.cur_surf_polygon_ptr_.push_back( 0 );
         load_storage.cur_surface_++;
     }
 
@@ -1015,7 +1015,7 @@ namespace {
         {
             ringmesh_unused( line );
             // Compute the surface
-            if( !load_storage.cur_surf_facet_corners_gocad_id_.empty() ) {
+            if( !load_storage.cur_surf_polygon_corners_gocad_id_.empty() ) {
                 build_surface( builder(), geomodel(), load_storage );
             }
             // Create a new surface
@@ -1038,7 +1038,7 @@ namespace {
         {
             ringmesh_unused( line );
             // Compute the last surface
-            if( !load_storage.cur_surf_facet_corners_gocad_id_.empty() ) {
+            if( !load_storage.cur_surf_polygon_corners_gocad_id_.empty() ) {
                 build_surface( builder(), geomodel(), load_storage );
             }
         }
@@ -1050,8 +1050,8 @@ namespace {
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) final
         {
-            read_triangle( line, load_storage.cur_surf_facet_corners_gocad_id_ );
-            load_storage.end_facet();
+            read_triangle( line, load_storage.cur_surf_polygon_corners_gocad_id_ );
+            load_storage.end_polygon();
         }
 
         /*!
@@ -1153,7 +1153,7 @@ namespace RINGMesh {
     GocadLoadingStorage::GocadLoadingStorage()
         : z_sign_( 1 ), cur_interface_( NO_ID ), cur_surface_( NO_ID )
     {
-        cur_surf_facet_ptr_.push_back( 0 );
+        cur_surf_polygon_ptr_.push_back( 0 );
     }
 
     std::unique_ptr< GocadLineParser > GocadLineParser::create(
@@ -1219,7 +1219,7 @@ namespace RINGMesh {
         for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
             std::vector< index_t > adjacent_facets_id( 3 );
             for( index_t e = 0; e < 3; ++e ) {
-                adjacent_facets_id[e] = S.facet_adjacent_index( f, e );
+                adjacent_facets_id[e] = S.polygon_adjacent_index( f, e );
                 if( !S.is_on_border( f, e ) ) {
                     bool internal_border = is_edge_in_several_surfaces( geomodel_,
                         surface_id, f, e, surface_nns, surface_boxes );
@@ -1233,7 +1233,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderTSolid::compute_facet_edge_centers_nn_and_surface_boxes(
+    void GeoModelBuilderTSolid::compute_polygon_edge_centers_nn_and_surface_boxes(
         std::vector< std::unique_ptr< NNSearch > >& surface_nns,
         std::vector< Box3d >& surface_boxes )
     {
@@ -1254,7 +1254,7 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< NNSearch > > nn_searchs(
             geomodel_.nb_surfaces() );
         std::vector< Box3d > boxes( geomodel_.nb_surfaces() );
-        compute_facet_edge_centers_nn_and_surface_boxes( nn_searchs, boxes );
+        compute_polygon_edge_centers_nn_and_surface_boxes( nn_searchs, boxes );
         for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
             compute_surface_internal_borders( s, nn_searchs, boxes );
         }

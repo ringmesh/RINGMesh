@@ -83,7 +83,7 @@ namespace {
             cur_neighbor += nb_neighbors;
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() );
             std::vector< index_t > neighbors =
-                surface.facet_nn_search().get_neighbors( v_bary, cur_neighbor );
+                surface.polygon_nn_search().get_neighbors( v_bary, cur_neighbor );
             nb_neighbors = static_cast< index_t >( neighbors.size() );
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 f = neighbors[i];
@@ -91,7 +91,7 @@ namespace {
                     j++ ) {
                     if( inexact_equal( surface.mesh_element_vertex( f, j ), v0,
                         surface.geomodel().epsilon() ) ) {
-                        index_t j_next = surface.next_facet_vertex_index( f, j );
+                        index_t j_next = surface.next_polygon_vertex_index( f, j );
                         if( inexact_equal( surface.mesh_element_vertex( f, j_next ),
                             v1, surface.geomodel().epsilon() ) ) {
                             e = j;
@@ -176,7 +176,7 @@ namespace {
             cur_neighbor += nb_neighbors;
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() );
             std::vector< index_t > neighbors =
-                surface.facet_nn_search().get_neighbors( v, cur_neighbor );
+                surface.polygon_nn_search().get_neighbors( v, cur_neighbor );
             nb_neighbors = static_cast< index_t >( neighbors.size() );
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i];
@@ -241,8 +241,8 @@ namespace {
         for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); v++ ) {
             if( !inexact_equal( surface.mesh_element_vertex( f, v ), v0,
                 surface.geomodel().epsilon() ) ) continue;
-            index_t prev_v = surface.prev_facet_vertex_index( f, v );
-            index_t next_v = surface.next_facet_vertex_index( f, v );
+            index_t prev_v = surface.prev_polygon_vertex_index( f, v );
+            index_t next_v = surface.next_polygon_vertex_index( f, v );
             if( inexact_equal( surface.mesh_element_vertex( f, prev_v ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return prev_v;
@@ -509,7 +509,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelBuilderGeometry::create_surface_facet(
+    index_t GeoModelBuilderGeometry::create_surface_polygon(
         index_t surface_id,
         const std::vector< index_t >& vertex_indices )
     {
@@ -601,7 +601,7 @@ namespace RINGMesh {
         std::unique_ptr< Mesh1DBuilder > builder = create_line_builder( line_id );
         builder->delete_edges( to_delete, remove_isolated_vertices );
     }
-    void GeoModelBuilderGeometry::delete_surface_facets(
+    void GeoModelBuilderGeometry::delete_surface_polygons(
         index_t surface_id,
         const std::vector< bool >& to_delete,
         bool remove_isolated_vertices )
@@ -713,7 +713,7 @@ namespace RINGMesh {
         index_t surface_id,
         index_t line_id )
     {
-        index_t nb_disconnected_edges = disconnect_surface_facets_along_line_edges(
+        index_t nb_disconnected_edges = disconnect_surface_polygons_along_line_edges(
             surface_id, line_id );
         if( nb_disconnected_edges > 0 ) {
             duplicate_surface_vertices_along_line( surface_id, line_id );
@@ -725,7 +725,7 @@ namespace RINGMesh {
         index_t surface_id )
     {
         index_t nb_disconnected_facets =
-            disconnect_region_cells_along_surface_facets( region_id, surface_id );
+            disconnect_region_cells_along_surface_polygons( region_id, surface_id );
         if( nb_disconnected_facets > 0 ) {
             duplicate_region_vertices_along_surface( region_id, surface_id );
         }
@@ -767,9 +767,9 @@ namespace RINGMesh {
             const index_t& facet_vertex = facet_vertices[v].vertex_;
             const index_t& facet = facet_vertices[v].element_;
 
-            std::vector< index_t > facets = surface.facets_around_vertex(
+            std::vector< index_t > facets = surface.polygons_around_vertex(
                 facet_vertex, false, facet );
-            update_facet_vertex( surface_id, facets, facet_vertex, vertex_id );
+            update_polygon_vertex( surface_id, facets, facet_vertex, vertex_id );
             surface_mesh_builder->set_vertex( vertex_id, p );
             vertex_id++;
         }
@@ -815,7 +815,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelBuilderGeometry::disconnect_surface_facets_along_line_edges(
+    index_t GeoModelBuilderGeometry::disconnect_surface_polygons_along_line_edges(
         index_t surface_id,
         index_t line_id )
     {
@@ -837,7 +837,7 @@ namespace RINGMesh {
             ringmesh_unused( found );
             ringmesh_assert( found && f != NO_ID && e != NO_ID );
 
-            index_t adj_f = surface.facet_adjacent_index( f, e );
+            index_t adj_f = surface.polygon_adjacent_index( f, e );
             if( adj_f != NO_ID ) {
                 index_t adj_e = edge_index_from_facet_and_edge_vertex_indices(
                     surface, adj_f, p0, p1 );
@@ -849,7 +849,7 @@ namespace RINGMesh {
         }
         return nb_disconnected_edges;
     }
-    index_t GeoModelBuilderGeometry::disconnect_region_cells_along_surface_facets(
+    index_t GeoModelBuilderGeometry::disconnect_region_cells_along_surface_polygons(
         index_t region_id,
         index_t surface_id )
     {
@@ -882,7 +882,7 @@ namespace RINGMesh {
         return nb_disconnected_facets;
     }
 
-    void GeoModelBuilderGeometry::update_facet_vertex(
+    void GeoModelBuilderGeometry::update_polygon_vertex(
         index_t surface_id,
         const std::vector< index_t >& facets,
         index_t old_vertex,
