@@ -70,6 +70,9 @@ namespace RINGMesh {
             case LINE_BOUNDARY_ORDER:
                 repair_line_boundary_vertex_order();
                 break;
+            case CONTACTS:
+                build_contacts();
+                break;
             default:
                 ringmesh_assert_not_reached;
         }
@@ -89,6 +92,9 @@ namespace RINGMesh {
         // This is basic requirement ! no_colocated geomodel vertices !
         // So remove them if there are any
         geomodel_.mesh.remove_colocated_vertices();
+
+        // Builds the contacts
+        build_contacts();
 
         builder_.end_geomodel();
     }
@@ -397,4 +403,8 @@ namespace RINGMesh {
         return v1 == v2;
     }
 
+    void GeoModelBuilderRepair::build_contacts()
+    {
+        builder_.geology.build_contacts();
+    }
 }

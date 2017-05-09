@@ -71,7 +71,8 @@ namespace RINGMesh {
             BASIC,
             COLOCATED_VERTICES,
             DEGENERATE_FACETS_EDGES,
-            LINE_BOUNDARY_ORDER
+            LINE_BOUNDARY_ORDER,
+            CONTACTS
         };
 
         /*!
@@ -183,6 +184,8 @@ namespace RINGMesh {
             const Line& L,
             index_t e,
             const std::vector< index_t >& colocated_vertices );
+
+        void build_contacts();
 
     private:
         GeoModelBuilder& builder_;
