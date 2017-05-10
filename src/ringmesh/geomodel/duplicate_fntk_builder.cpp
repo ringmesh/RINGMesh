@@ -99,7 +99,7 @@ namespace {
                     j++ ) {
                     if( gmmv.geomodel_vertex_id( surface.gmme(), f, j )
                         == geomodel_v0 ) {
-                        index_t j_next = surface.next_facet_vertex_index( f, j );
+                        index_t j_next = surface.next_polygon_vertex_index( f, j );
                         if( gmmv.geomodel_vertex_id( surface.gmme(), f, j_next )
                             == geomodel_v1 ) {
                             e = j;
@@ -1565,7 +1565,7 @@ namespace RINGMesh {
             // Force the recomputing of the geomodel vertices
             // before performing the cut.
             //                    geomodel_.mesh.vertices.clear() ;
-            geometry.disconnect_surface_facets_along_line_edges( cur_surface.index(),
+            geometry.disconnect_surface_polygons_along_line_edges( cur_surface.index(),
                 *it );
         }
 
@@ -1723,7 +1723,7 @@ namespace RINGMesh {
 
                 index_t facet_index = NO_ID;
                 index_t edge_index = NO_ID;
-                if( !find_facet_and_edge( new_new_surf.facet_nn_search(),
+                if( !find_facet_and_edge( new_new_surf.polygon_nn_search(),
                     new_new_surf,
                     gmmv.geomodel_vertex_id( cur_cutting_line.gmme(), 0 ),
                     gmmv.geomodel_vertex_id( cur_cutting_line.gmme(), 1 ),
@@ -1731,7 +1731,7 @@ namespace RINGMesh {
                     continue;
                 }
 
-                if( new_new_surf.facet_adjacent_index( facet_index, edge_index )
+                if( new_new_surf.polygon_adjacent_index( facet_index, edge_index )
                     == NO_ID ) {
                     continue;
                 }
@@ -1840,7 +1840,7 @@ namespace RINGMesh {
         normal_att_z.fill( 0. );
         // begin copy paste from GEO::compute_normals
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-            vec3 N = surface.facet_normal( f );
+            vec3 N = surface.polygon_normal( f );
             for( index_t corner = 0; corner < surface.nb_mesh_element_vertices( f );
                 corner++ ) {
                 index_t v = surface.mesh_element_vertex_index( f, corner );
@@ -2194,14 +2194,14 @@ namespace RINGMesh {
             surface_to_check.nb_in_boundary() == 1
                 || surface_to_check.nb_in_boundary() == 2 );
 
-        std::vector< index_t > facets_around = surface_to_check.facets_around_vertex(
+        std::vector< index_t > polygons_around = surface_to_check.polygons_around_vertex(
             vertex_id_in_surface, false );
-        ringmesh_assert( !facets_around.empty() );
+        ringmesh_assert( !polygons_around.empty() );
 
         vec3 surf_to_check_mean_normal_on_vertex( 0., 0., 0. );
-        for( index_t facets_around_itr = 0; facets_around_itr < facets_around.size();
+        for( index_t facets_around_itr = 0; facets_around_itr < polygons_around.size();
             ++facets_around_itr ) {
-            index_t cur_facet_id_in_surf = facets_around[facets_around_itr];
+            index_t cur_facet_id_in_surf = polygons_around[facets_around_itr];
             vec3 cur_facet_barycenter = surface_to_check.mesh_element_barycenter(
                 cur_facet_id_in_surf );
             vec3 p = cur_facet_barycenter - vertex_pos;

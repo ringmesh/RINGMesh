@@ -250,10 +250,10 @@ namespace RINGMesh {
 
         virtual void remove_small_connected_components(
             double min_area,
-            index_t min_facets ) override
+            index_t min_polygons ) override
         {
             GEO::remove_small_connected_components( *mesh_->mesh_, min_area,
-                min_facets );
+                min_polygons );
         }
         virtual void invert_normals()
         {
@@ -273,103 +273,103 @@ namespace RINGMesh {
             Logger::instance()->set_minimal( false );
         }
 
-        virtual void create_facet_polygons(
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr ) override
+        virtual void create_polygons(
+            const std::vector< index_t >& polygons,
+            const std::vector< index_t >& polygon_ptr ) override
         {
-            for( index_t f = 0; f + 1 < facet_ptr.size(); f++ ) {
-                index_t start = facet_ptr[f];
-                index_t end = facet_ptr[f + 1];
-                GEO::vector< index_t > facet_vertices =
-                    copy_std_vector_to_geo_vector( facets, start, end );
-                mesh_->mesh_->facets.create_polygon( facet_vertices );
+            for( index_t p = 0; p + 1 < polygon_ptr.size(); p++ ) {
+                index_t start = polygon_ptr[p];
+                index_t end = polygon_ptr[p + 1];
+                GEO::vector< index_t > polygon_vertices =
+                    copy_std_vector_to_geo_vector( polygons, start, end );
+                mesh_->mesh_->facets.create_polygon( polygon_vertices );
             }
-            clear_facet_linked_objects();
+            clear_polygon_linked_objects();
         }
 
-        virtual index_t create_facet_polygon(
+        virtual index_t create_polygon(
             const std::vector< index_t >& vertices ) override
         {
-            GEO::vector< index_t > facet_vertices = copy_std_vector_to_geo_vector(
+            GEO::vector< index_t > polygon_vertices = copy_std_vector_to_geo_vector(
                 vertices );
-            index_t index = mesh_->mesh_->facets.create_polygon( facet_vertices );
-            clear_facet_linked_objects();
+            index_t index = mesh_->mesh_->facets.create_polygon( polygon_vertices );
+            clear_polygon_linked_objects();
             return index;
         }
 
-        virtual index_t create_facet_triangles( index_t nb_triangles ) override
+        virtual index_t create_triangles( index_t nb_triangles ) override
         {
             return mesh_->mesh_->facets.create_triangles( nb_triangles );
 
         }
 
-        virtual index_t create_facet_quads( index_t nb_quads ) override
+        virtual index_t create_quads( index_t nb_quads ) override
         {
             return mesh_->mesh_->facets.create_quads( nb_quads );
         }
 
-        virtual void set_facet_vertex(
-            index_t facet_id,
+        virtual void set_polygon_vertex(
+            index_t polygon_id,
             index_t local_vertex_id,
             index_t vertex_id ) override
         {
-            mesh_->mesh_->facets.set_vertex( facet_id, local_vertex_id, vertex_id );
-            clear_facet_linked_objects();
+            mesh_->mesh_->facets.set_vertex( polygon_id, local_vertex_id, vertex_id );
+            clear_polygon_linked_objects();
         }
 
-        virtual void set_facet_adjacent(
-            index_t facet_id,
+        virtual void set_polygon_adjacent(
+            index_t polygon_id,
             index_t edge_id,
             index_t specifies ) override
         {
-            mesh_->mesh_->facets.set_adjacent( facet_id, edge_id, specifies );
+            mesh_->mesh_->facets.set_adjacent( polygon_id, edge_id, specifies );
         }
 
-        virtual void assign_facet_triangle_mesh(
+        virtual void assign_triangle_mesh(
             const std::vector< index_t >& triangles ) override
         {
             GEO::vector< index_t > geo_triangles = copy_std_vector_to_geo_vector(
                 triangles );
             mesh_->mesh_->facets.assign_triangle_mesh( geo_triangles, false );
-            clear_facet_linked_objects();
+            clear_polygon_linked_objects();
         }
 
-        virtual void clear_facets( bool keep_attributes, bool keep_memory ) override
+        virtual void clear_polygons( bool keep_attributes, bool keep_memory ) override
         {
             mesh_->mesh_->facets.clear( keep_attributes, keep_memory );
         }
 
-        virtual void connect_facets() override
+        virtual void connect_polygons() override
         {
             mesh_->mesh_->facets.connect();
         }
-        virtual void permute_facets( const std::vector< index_t >& permutation ) override
+        virtual void permute_polygons( const std::vector< index_t >& permutation ) override
         {
             GEO::vector< index_t > geo_vector_permutation =
                 copy_std_vector_to_geo_vector( permutation );
             mesh_->mesh_->facets.permute_elements( geo_vector_permutation );
         }
 
-        virtual void delete_facets(
+        virtual void delete_polygons(
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) override
         {
-            GEO::vector< index_t > facets_to_delete = copy_std_vector_to_geo_vector<
+            GEO::vector< index_t > polygons_to_delete = copy_std_vector_to_geo_vector<
                 bool, index_t >( to_delete );
-            mesh_->mesh_->facets.delete_elements( facets_to_delete, false );
+            mesh_->mesh_->facets.delete_elements( polygons_to_delete, false );
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices();
             }
-            clear_facet_linked_objects();
+            clear_polygon_linked_objects();
         }
 
         virtual void remove_isolated_vertices() override
         {
             std::vector< bool > to_delete( mesh_->nb_vertices(), true );
 
-            for( index_t f = 0; f < mesh_->nb_facets(); f++ ) {
-                for( index_t v = 0; v < mesh_->nb_facet_vertices( f ); v++ ) {
-                    index_t vertex_id = mesh_->facet_vertex( f, v );
+            for( index_t p = 0; p < mesh_->nb_polygons(); p++ ) {
+                for( index_t v = 0; v < mesh_->nb_polygon_vertices( p ); v++ ) {
+                    index_t vertex_id = mesh_->polygon_vertex( p, v );
                     to_delete[vertex_id] = false;
                 }
             }
@@ -379,27 +379,27 @@ namespace RINGMesh {
         virtual void clear_vertex_linked_objects() override
         {
             delete_vertex_nn_search();
-            clear_facet_linked_objects();
+            clear_polygon_linked_objects();
         }
-        virtual void clear_facet_linked_objects() override
+        virtual void clear_polygon_linked_objects() override
         {
-            delete_facet_aabb();
-            delete_facet_nn_search();
+            delete_polygon_aabb();
+            delete_polygon_nn_search();
         }
     protected:
         /*!
-         * @brief Deletes the NNSearch on facets
+         * @brief Deletes the NNSearch on polygons
          */
-        void delete_facet_nn_search()
+        void delete_polygon_nn_search()
         {
             mesh_->nn_search_.reset();
         }
         /*!
-         * @brief Deletes the AABB on facets
+         * @brief Deletes the AABB on polygons
          */
-        void delete_facet_aabb()
+        void delete_polygon_aabb()
         {
-            mesh_->facets_aabb_.reset();
+            mesh_->polygons_aabb_.reset();
         }
     };
 

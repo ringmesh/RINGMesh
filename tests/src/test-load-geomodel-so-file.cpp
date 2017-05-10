@@ -76,7 +76,7 @@ int main()
             || model.nb_surfaces() != 55 || model.nb_regions() != 8
             || model.nb_geological_entities( Interface::type_name_static() ) != 11
             || model.nb_geological_entities( Contact::type_name_static() ) != 38
-            || model.mesh.vertices.nb() != 6691 || model.mesh.facets.nb() != 10049
+            || model.mesh.vertices.nb() != 6691 || model.mesh.polygons.nb() != 10049
             || model.mesh.cells.nb() != 34540 ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when loading model " + model.name()

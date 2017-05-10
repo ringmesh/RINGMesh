@@ -241,15 +241,16 @@ namespace RINGMesh {
             GeoModelGeologicalEntityAccess gmge_access( geol_entity );
             gmge_access.modifiable_children()[id] = child;
         }
-        /*!
-         * @brief Build the Contacts
-         * @details One contact is a group of lines shared by the same Interfaces
-         */
-        void build_contacts() ;
 
         void delete_geological_entity(
             const GeologicalEntityType& type,
             index_t index );
+
+        /*!
+         * @brief Build the Contacts
+         * @details One contact is a group of lines shared by the same Interfaces
+         */
+        void build_contacts();
 
     protected:
         GeoModelBuilderGeology( GeoModelBuilder& builder, GeoModel& geomodel );
