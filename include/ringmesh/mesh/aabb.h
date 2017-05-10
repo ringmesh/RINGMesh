@@ -92,7 +92,7 @@ namespace RINGMesh {
          *      vec3& nearest_point,
          *      double& distance ) const ;
          * where query is the same than \p query, cur_box is the element box index
-         * (e.g. in the case of AABBTree2D, this index is a facet index) and nearest_point
+         * (e.g. in the case of AABBTree2D, this index is a polygon index) and nearest_point
          * and distance are the value computed using the element in the \p cur_box.
          */
         template< typename EvalDistance >
@@ -119,7 +119,7 @@ namespace RINGMesh {
          * @tparam EvalIntersection this functor should have an operator() defined like this:
          *  void operator()( index_t cur_box ) ;
          * where cur_box is the element box index
-         * (e.g. in the case of AABBTree2D, this index is a facet index)
+         * (e.g. in the case of AABBTree2D, this index is a polygon index)
          */
         template< class EvalIntersection >
         void compute_bbox_element_bbox_intersections(
@@ -136,7 +136,7 @@ namespace RINGMesh {
          * @tparam EvalIntersection this functor should have an operator() defined like this:
          *  void operator()( index_t box1, index_t box2 ) ;
          * where box1 and box2 are the element box indices
-         * (e.g. in the case of AABBTree2D, this index is a facet index)
+         * (e.g. in the case of AABBTree2D, this index is a polygon index)
          */
         template< class EvalIntersection >
         void compute_self_element_bbox_intersections(
@@ -507,8 +507,8 @@ namespace RINGMesh {
 
         // Since we are intersecting the AABBTree with *itself*,
         // we can prune half of the cases by skipping the test
-        // whenever node2's facet index interval is greated than
-        // node1's facet index interval.
+        // whenever node2's polygon index interval is greated than
+        // node1's polygon index interval.
         if( element_end2 <= element_begin1 ) {
             return;
         }
@@ -526,7 +526,7 @@ namespace RINGMesh {
             return;
         }
 
-        // If node2 has more facets than node1, then
+        // If node2 has more polygons than node1, then
         //   intersect node2's two children with node1
         // else
         //   intersect node1's two children with node2

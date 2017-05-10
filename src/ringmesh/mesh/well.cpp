@@ -139,7 +139,7 @@ namespace {
         index_t triangle )
     {
         vec3 direction = vertex - on_surface;
-        return dot( direction, surface.facet_normal( triangle ) ) > 0;
+        return dot( direction, surface.polygon_normal( triangle ) ) > 0;
     }
 
     index_t find_region_from_corners(
@@ -165,7 +165,7 @@ namespace {
                 const Surface& surface = geomodel.surface( s );
                 vec3 nearest;
                 double distance;
-                index_t triangle = surface.facets_aabb().closest_triangle(
+                index_t triangle = surface.polygons_aabb().closest_triangle(
                     start.intersection_, nearest, distance );
                 if( distance < best_distance ) {
                     best_distance = distance;
@@ -588,7 +588,7 @@ namespace RINGMesh {
                 const Surface& surface = geomodel()->surface( s );
                 EdgeConformerAction action( surface, from_vertex, to_vertex,
                     intersections );
-                surface.facets_aabb().compute_bbox_element_bbox_intersections( box,
+                surface.polygons_aabb().compute_bbox_element_bbox_intersections( box,
                     action );
             }
 

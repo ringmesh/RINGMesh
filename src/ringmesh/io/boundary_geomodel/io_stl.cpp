@@ -50,7 +50,7 @@ namespace {
         index_t triangle_id,
         std::ostream& out )
     {
-        out << "facet normal " << geomodel.mesh.facets.normal( triangle_id )
+        out << "facet normal " << geomodel.mesh.polygons.normal( triangle_id )
             << std::endl;
     }
 
@@ -72,7 +72,7 @@ namespace {
     {
         out << "vertex "
             << geomodel.mesh.vertices.vertex(
-                geomodel.mesh.facets.vertex( triangle_id, local_vertex_id ) )
+                geomodel.mesh.polygons.vertex( triangle_id, local_vertex_id ) )
             << std::endl;
     }
 
@@ -91,7 +91,7 @@ namespace {
 
     void save_triangles( const GeoModel& geomodel, std::ostream& out )
     {
-        for( index_t triangle = 0; triangle < geomodel.mesh.facets.nb_triangle();
+        for( index_t triangle = 0; triangle < geomodel.mesh.polygons.nb_triangle();
             triangle++ ) {
             save_triangle( geomodel, triangle, out );
         }
@@ -99,7 +99,7 @@ namespace {
 
     void check_stl_validity( const GeoModel& geomodel )
     {
-        if( geomodel.mesh.facets.nb() != geomodel.mesh.facets.nb_triangle() ) {
+        if( geomodel.mesh.polygons.nb() != geomodel.mesh.polygons.nb_triangle() ) {
             throw RINGMeshException( "I/O",
                 "Geological model save in STL format support only triangles" );
         }

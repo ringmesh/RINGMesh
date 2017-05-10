@@ -451,12 +451,12 @@ namespace RINGMesh {
         unique_surfaces.reserve( nb_surfaces );
         std::vector< index_t > surface_id;
         surface_id.reserve( nb_surfaces );
-        index_t nb_surface_vertices = 0, nb_facets = 0;
+        index_t nb_surface_vertices = 0, nb_polygons = 0;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
             const Surface& surface = region_->boundary( s );
             if( contains( surface_id, surface.index() ) ) continue;
             nb_surface_vertices += surface.nb_vertices();
-            nb_facets += surface.nb_mesh_elements();
+            nb_polygons += surface.nb_mesh_elements();
             surface_id.push_back( surface.index() );
             unique_surfaces.push_back( &surface );
         }
@@ -535,8 +535,8 @@ namespace RINGMesh {
         }
 
         index_t offset_vertices = 0;
-        index_t offset_facets = 0;
-        tetmesh_constraint_.facets.create_triangles( nb_facets );
+        index_t offset_polygons = 0;
+        tetmesh_constraint_.facets.create_triangles( nb_polygons );
         GEO::Attribute< index_t > surface_region(
             tetmesh_constraint_.facets.attributes(), surface_att_name );
         for( const GeoModelMeshEntity*& surface : unique_surfaces ) {
@@ -544,16 +544,16 @@ namespace RINGMesh {
             for( index_t t = 0; t < surface->nb_mesh_elements(); t++ ) {
                 ringmesh_assert( surface->nb_mesh_element_vertices( t ) == 3 );
                 for( index_t v = 0; v < 3; v++ ) {
-                    tetmesh_constraint_.facets.set_vertex( offset_facets + t, v,
+                    tetmesh_constraint_.facets.set_vertex( offset_polygons + t, v,
                         starting_index
                             + unique_indices[offset_vertices
                                 + surface->mesh_element_vertex_index( t, v )] );
                 }
-                surface_region[offset_facets + t] = surface->index();
+                surface_region[offset_polygons + t] = surface->index();
 
             }
             offset_vertices += surface->nb_vertices();
-            offset_facets += surface->nb_mesh_elements();
+            offset_polygons += surface->nb_mesh_elements();
         }
         tetmesh_constraint_.facets.connect();
     }
