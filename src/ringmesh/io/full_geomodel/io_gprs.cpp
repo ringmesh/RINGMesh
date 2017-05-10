@@ -113,23 +113,23 @@ namespace {
             }
             NNSearch nn_search( edge_vertices, false );
 
-            const GeoModelMeshFacets& polygons = geomodel.mesh.polygons;
-            for( index_t f = 0; f < polygons.nb(); f++ ) {
-                for( index_t e = 0; e < polygons.nb_vertices( f ); e++ ) {
-                    index_t adj = polygons.adjacent( f, e );
-                    if( adj != GEO::NO_CELL && adj < f ) {
-                        pipes.emplace_back( f + cell_offset, adj + cell_offset );
+            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
+            for( index_t p = 0; p < polygons.nb(); p++ ) {
+                for( index_t e = 0; e < polygons.nb_vertices( p ); e++ ) {
+                    index_t adj = polygons.adjacent( p, e );
+                    if( adj != GEO::NO_CELL && adj < p ) {
+                        pipes.emplace_back( p + cell_offset, adj + cell_offset );
                     } else {
                         const vec3& e0 = mesh.vertices.vertex(
-                            polygons.vertex( f, e ) );
+                            polygons.vertex( p, e ) );
                         const vec3& e1 = mesh.vertices.vertex(
-                            polygons.vertex( f,
-                                ( e + 1 ) % polygons.nb_vertices( f ) ) );
+                            polygons.vertex( p,
+                                ( e + 1 ) % polygons.nb_vertices( p ) ) );
                         vec3 query = 0.5 * ( e0 + e1 );
                         std::vector< index_t > results = nn_search.get_neighbors(
                             query, geomodel.epsilon() );
                         if( !results.empty() ) {
-                            edges[results[0]].push_back( cell_offset + f );
+                            edges[results[0]].push_back( cell_offset + p );
                         } else {
                             ringmesh_assert_not_reached;
                         }

@@ -265,7 +265,7 @@ namespace RINGMesh {
         static std::unique_ptr< Mesh2DBuilder > create_builder( Mesh2D& mesh );
 
         /*!@}
-         * \name Facet related methods
+         * \name Polygon related methods
          * @{
          */
         /*!
@@ -323,8 +323,8 @@ namespace RINGMesh {
             index_t specifies ) = 0;
         /*
          * \brief Copies a triangle mesh into this Mesh.
-         * \details Facet adjacence are not computed.
-         *   Facet and corner attributes are zeroed.
+         * \details Polygon adjacence are not computed.
+         *   Polygon and corner attributes are zeroed.
          * \param[in] triangles polygon to vertex links
          * (using vector::swap).
          */

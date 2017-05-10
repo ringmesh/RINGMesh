@@ -234,19 +234,19 @@ namespace {
 
     index_t edge_index_from_polygon_and_edge_vertex_indices(
         const Surface& surface,
-        index_t f,
+        index_t p,
         const vec3& v0,
         const vec3& v1 )
     {
-        for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); v++ ) {
-            if( !inexact_equal( surface.mesh_element_vertex( f, v ), v0,
+        for( index_t v = 0; v < surface.nb_mesh_element_vertices( p ); v++ ) {
+            if( !inexact_equal( surface.mesh_element_vertex( p, v ), v0,
                 surface.geomodel().epsilon() ) ) continue;
-            index_t prev_v = surface.prev_polygon_vertex_index( f, v );
-            index_t next_v = surface.next_polygon_vertex_index( f, v );
-            if( inexact_equal( surface.mesh_element_vertex( f, prev_v ), v1,
+            index_t prev_v = surface.prev_polygon_vertex_index( p, v );
+            index_t next_v = surface.next_polygon_vertex_index( p, v );
+            if( inexact_equal( surface.mesh_element_vertex( p, prev_v ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return prev_v;
-            } else if( inexact_equal( surface.mesh_element_vertex( f, next_v ), v1,
+            } else if( inexact_equal( surface.mesh_element_vertex( p, next_v ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return v;
             }
@@ -643,10 +643,10 @@ namespace RINGMesh {
             surface_id );
 
         if( recompute_adjacency ) {
-            for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-                for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
+            for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
+                for( index_t v = 0; v < surface.nb_mesh_element_vertices( p );
                     v++ ) {
-                    builder->set_polygon_adjacent( f, v, NO_ID );
+                    builder->set_polygon_adjacent( p, v, NO_ID );
                 }
             }
         }
@@ -833,18 +833,18 @@ namespace RINGMesh {
             const vec3& p0 = line.vertex( i );
             const vec3& p1 = line.vertex( i + 1 );
 
-            index_t f = NO_ID;
+            index_t p = NO_ID;
             index_t e = NO_ID;
-            bool found = find_polygon_from_edge_vertices( surface, p0, p1, f, e );
+            bool found = find_polygon_from_edge_vertices( surface, p0, p1, p, e );
             ringmesh_unused( found );
-            ringmesh_assert( found && f != NO_ID && e != NO_ID );
+            ringmesh_assert( found && p != NO_ID && e != NO_ID );
 
-            index_t adj_f = surface.polygon_adjacent_index( f, e );
+            index_t adj_f = surface.polygon_adjacent_index( p, e );
             if( adj_f != NO_ID ) {
                 index_t adj_e = edge_index_from_polygon_and_edge_vertex_indices(
                     surface, adj_f, p0, p1 );
                 ringmesh_assert( adj_e != NO_ID );
-                builder->set_polygon_adjacent( f, e, NO_ID );
+                builder->set_polygon_adjacent( p, e, NO_ID );
                 builder->set_polygon_adjacent( adj_f, adj_e, NO_ID );
                 nb_disconnected_edges++;
             }

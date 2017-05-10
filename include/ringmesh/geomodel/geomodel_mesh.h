@@ -545,7 +545,7 @@ namespace RINGMesh {
          * of the corresponding type of \p p in the owing surface
          * @return the type of the polygon \p p
          */
-        PolygonType type( index_t f, index_t& index ) const;
+        PolygonType type( index_t p, index_t& index ) const;
 
         /*!
          * Get the number of polygons of the corresponding type
@@ -569,14 +569,14 @@ namespace RINGMesh {
          * @warning \p p is NOT a polygon id
          * of the surface \p s.
          * It is fth polygon of type \p type in the internal storage of the
-         * GeoModelMeshFacets (see GeoModelMeshFacets::surface_polygon_ptr_).
-         * @note to find the polygon id of the GeoModelMeshFacets from a surface
+         * GeoModelMeshPolygons (see GeoModelMeshPolygons::surface_polygon_ptr_).
+         * @note to find the polygon id of the GeoModelMeshPolygons from a surface
          * and a polygon id of this surface, you need to perform a search using
          * NNSearch and the barycenter of the polygon for instance.
          * @param[in] type it can specify the polygon type used. For example, if type = QUAD
          * then \p p represents the fth quad in the surface \p s and \p p can vary from 0
          * to nb_quads( s ).
-         * If \p type is FacetType::ALL, all the polygon types are
+         * If \p type is PolygonType::ALL, all the polygon types are
          * taken into account.
          * @return the polygon index
          */
@@ -1242,11 +1242,11 @@ namespace RINGMesh {
         std::vector< index_t > duplicated_vertex_indices_;
 
         /*!
-         * @brief Attribute storing the colocalised facet index per cell facet
+         * @brief Attribute storing the colocalised polygon index per cell facet
          * @detail If a cell facet is on a surface, the attribute is equal to
-         * the index of the corresponding facet.
+         * the index of the corresponding polygon.
          */
-        GEO::Attribute< index_t > facet_id_;
+        GEO::Attribute< index_t > polygon_id_;
     };
 
     class RINGMESH_API GeoModelMesh {

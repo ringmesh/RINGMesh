@@ -78,7 +78,7 @@ namespace {
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
 
             const GeoModelMesh& mesh = geomodel.mesh;
-            const GeoModelMeshFacets& polygons = geomodel.mesh.polygons;
+            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false );
