@@ -460,7 +460,7 @@ namespace RINGMesh {
         struct BorderTriangle {
             BorderTriangle(
                 index_t surface,
-                index_t facet,
+                index_t polygon,
                 index_t v0,
                 index_t v1,
                 index_t v2 )
@@ -469,7 +469,7 @@ namespace RINGMesh {
                     v1_( v1 ),
                     v2_( v2 ),
                     surface_( surface ),
-                    facet_( facet )
+                    polygon_( polygon )
             {
             }
 
@@ -487,8 +487,8 @@ namespace RINGMesh {
                 if( surface_ != rhs.surface_ ) {
                     return surface_ < rhs.surface_;
                 }
-                if( facet_ != rhs.facet_ ) {
-                    return facet_ < rhs.facet_;
+                if( polygon_ != rhs.polygon_ ) {
+                    return polygon_ < rhs.polygon_;
                 }
                 return rhs.v2_ == NO_ID ? false : v2_ < rhs.v2_;
             }
@@ -506,8 +506,8 @@ namespace RINGMesh {
             index_t v2_;
             // Index of the surface containing the triangle
             index_t surface_;
-            // Index of the facet in the surface
-            index_t facet_;
+            // Index of the polygon in the surface
+            index_t polygon_;
         };
 
         void compute_line_geometry()
@@ -694,7 +694,7 @@ namespace RINGMesh {
             const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
 
             // Gets the next edge on border in the Surface
-            index_t f = border_triangle.facet_;
+            index_t f = border_triangle.polygon_;
             std::vector< index_t > possible_v0_id =
                 geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
                     border_triangle.v0_ );
@@ -706,19 +706,19 @@ namespace RINGMesh {
                 }
             }
             ringmesh_assert( v0_id != NO_ID );
-            index_t v0_id_in_facet = S.vertex_index_in_polygon( f, v0_id );
-            ringmesh_assert( v0_id_in_facet != NO_ID );
+            index_t v0_id_in_polygon = S.vertex_index_in_polygon( f, v0_id );
+            ringmesh_assert( v0_id_in_polygon != NO_ID );
 
             index_t next_f = NO_ID;
             index_t next_f_v0 = NO_ID;
             index_t next_f_v1 = NO_ID;
 
             if( !backward ) {
-                S.next_on_border( f, v0_id_in_facet, next_f, next_f_v0 );
+                S.next_on_border( f, v0_id_in_polygon, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
                 next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
             } else {
-                S.prev_on_border( f, v0_id_in_facet, next_f, next_f_v0 );
+                S.prev_on_border( f, v0_id_in_polygon, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
                 next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
             }

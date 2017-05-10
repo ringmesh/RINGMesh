@@ -233,7 +233,7 @@ namespace RINGMesh {
             index_t nb = detect_degenerate_polygons( surface );
             /// @todo Check if that cannot be simplified
             if( nb > 0 ) {
-                // If there are some degenerated facets
+                // If there are some degenerated polygons
                 // Using repair function of geogram
                 // Warning - This triangulates the mesh
                 if( surface.nb_vertices() > 0 ) {

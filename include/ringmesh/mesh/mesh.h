@@ -102,7 +102,7 @@ namespace RINGMesh {
 
         /*!
          * @brief return the NNSearch at vertices
-         * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
          */
         const NNSearch& vertices_nn_search() const
         {
@@ -201,7 +201,7 @@ namespace RINGMesh {
 
         /*!
          * @brief return the NNSearch at edges
-         * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
          */
         const NNSearch& edges_nn_search() const
         {
@@ -250,32 +250,32 @@ namespace RINGMesh {
         static std::unique_ptr< Mesh2D > create_mesh( const MeshType type );
 
         /*!
-         * @brief Gets the vertex index by facet index and local vertex index.
-         * @param[in] facet_id the facet index.
-         * @param[in] vertex_id the local edge index in \param facet_id.
+         * @brief Gets the vertex index by polygon index and local vertex index.
+         * @param[in] polygon_id the polygon index.
+         * @param[in] vertex_id the local edge index in \param polygon_id.
          */
         virtual index_t polygon_vertex(
-            index_t facet_id,
+            index_t polygon_id,
             index_t vertex_id ) const = 0;
 
         /*!
-         * @brief Gets the number of all facets in the whole Mesh.
+         * @brief Gets the number of all polygons in the whole Mesh.
          */
         virtual index_t nb_polygons() const = 0;
         /*!
-         * @brief Gets the number of vertices in the facet \param facet_id.
-         * @param[in] facet_id facet index
+         * @brief Gets the number of vertices in the polygon \param polygon_id.
+         * @param[in] polygon_id polygon index
          */
-        virtual index_t nb_polygon_vertices( index_t facet_id ) const = 0;
+        virtual index_t nb_polygon_vertices( index_t polygon_id ) const = 0;
         /*!
-         * @brief Gets the next vertex index in the facet \param facet_id.
-         * @param[in] facet_id facet index
+         * @brief Gets the next vertex index in the polygon \param polygon_id.
+         * @param[in] polygon_id polygon index
          * @param[in] vertex_id current index
          */
-        index_t next_polygon_vertex( index_t facet_id, index_t vertex_id ) const
+        index_t next_polygon_vertex( index_t polygon_id, index_t vertex_id ) const
         {
-            ringmesh_assert( vertex_id < nb_polygon_vertices( facet_id ) );
-            if( vertex_id != nb_polygon_vertices( facet_id ) - 1 ) {
+            ringmesh_assert( vertex_id < nb_polygon_vertices( polygon_id ) );
+            if( vertex_id != nb_polygon_vertices( polygon_id ) - 1 ) {
                 return vertex_id + 1;
             } else {
                 return 0;
@@ -284,139 +284,139 @@ namespace RINGMesh {
         /*!
          * @brief Get the next edge on the border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
-         * @details The returned border edge is the next in the way of facet edges
+         * @details The returned border edge is the next in the way of polygon edges
          * orientation.
-         * @param[in] f Input facet index
-         * @param[in] e Edge index in the facet
-         * @param[out] next_f Next facet index
-         * @param[out] next_e Next edge index in the facet
+         * @param[in] p Input polygon index
+         * @param[in] e Edge index in the polygon
+         * @param[out] next_p Next polygon index
+         * @param[out] next_e Next edge index in the polygon
          *
-         * @pre the given facet edge must be on border
+         * @pre the given polygon edge must be on border
          */
         void next_on_border(
-            index_t f,
+            index_t p,
             index_t e,
-            index_t& next_f,
+            index_t& next_p,
             index_t& next_e ) const;
 
         /*!
-         * @brief Gets the previous vertex index in the facet \param facet_id.
-         * @param[in] facet_id facet index
+         * @brief Gets the previous vertex index in the polygon \param polygon_id.
+         * @param[in] polygon_id polygon index
          * @param[in] vertex_id current index
          */
-        index_t prev_polygon_vertex( index_t facet_id, index_t vertex_id ) const
+        index_t prev_polygon_vertex( index_t polygon_id, index_t vertex_id ) const
         {
-            ringmesh_assert( vertex_id < nb_polygon_vertices( facet_id ) );
+            ringmesh_assert( vertex_id < nb_polygon_vertices( polygon_id ) );
             if( vertex_id > 0 ) {
                 return vertex_id - 1;
             } else {
-                return nb_polygon_vertices( facet_id ) - 1;
+                return nb_polygon_vertices( polygon_id ) - 1;
             }
         }
 
         /*!
          * @brief Get the previous edge on the border
-         * @details The returned border edge is the previous in the way of facet edges
+         * @details The returned border edge is the previous in the way of polygon edges
          * orientation.
-         * @param[in] f Input facet index
-         * @param[in] e Edge index in the facet
-         * @param[out] prev_f Previous facet index
-         * @param[out] prev_e Previous edge index in the facet
+         * @param[in] p Input polygon index
+         * @param[in] e Edge index in the polygon
+         * @param[out] prev_p Previous polygon index
+         * @param[out] prev_e Previous edge index in the polygon
          *
          * @pre the surface must be correctly oriented and
-         * the given facet edge must be on border
+         * the given polygon edge must be on border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
         void prev_on_border(
-            index_t f,
+            index_t p,
             index_t e,
-            index_t& prev_f,
+            index_t& prev_p,
             index_t& prev_e ) const;
 
         /*!
-         * @brief Get the vertex index in a facet @param facet_index from its
+         * @brief Get the vertex index in a polygon @param polygon_index from its
          * global index in the Mesh2D @param vertex_id
-         * @return NO_ID or index of the vertex in the facet
+         * @return NO_ID or index of the vertex in the polygon
          */
         index_t vertex_index_in_polygon(
-            index_t facet_index,
+            index_t polygon_index,
             index_t vertex_id ) const;
 
         /*!
-         * @brief Compute closest vertex in a facet to a point
-         * @param[in] facet_index Facet index
+         * @brief Compute closest vertex in a polygon to a point
+         * @param[in] polygon_index Facet index
          * @param[in] query_point Coordinates of the point to which distance is measured
-         * @return Index of the vertex of @param facet_index closest to @param query_point
+         * @return Index of the vertex of @param polygon_index closest to @param query_point
          */
         index_t closest_vertex_in_polygon(
-            index_t facet_index,
+            index_t polygon_index,
             const vec3& query_point ) const;
 
         /*!
-         * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
+         * @brief Get the first polygon of the surface that has an edge linking the two vertices (ids in the surface)
          *
          * @param[in] in0 Index of the first vertex in the surface
          * @param[in] in1 Index of the second vertex in the surface
-         * @return NO_ID or the index of the facet
+         * @return NO_ID or the index of the polygon
          */
         index_t polygon_from_vertex_ids( index_t in0, index_t in1 ) const;
 
         /*!
-         * @brief Determines the facets around a vertex
+         * @brief Determines the polygons around a vertex
          * @param[in] vertex_id Index of the vertex in the surface
-         * @param[in] border_only If true only facets on the border are considered
-         * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
-         * @return Indices of the facets containing @param P
-         * @note If a facet containing the vertex is given, facets around this
-         * vertex is search by propagation. Else, a first facet is found by brute
+         * @param[in] border_only If true only polygons on the border are considered
+         * @param[in] first_polygon (Optional) Index of one polygon containing the vertex @param P
+         * @return Indices of the polygons containing @param P
+         * @note If a polygon containing the vertex is given, polygons around this
+         * vertex is search by propagation. Else, a first polygon is found by brute
          * force algorithm, and then the other by propagation
-         * @todo Try to use a AABB tree to remove @param first_facet. [PA]
+         * @todo Try to use a AABB tree to remove @param first_polygon. [PA]
          */
         std::vector< index_t > polygons_around_vertex(
             index_t vertex_id,
             bool border_only,
-            index_t f0 ) const;
+            index_t first_polygon ) const;
 
         /*!
-         * @brief Gets an adjacent facet index by facet index and local edge index.
-         * @param[in] facet_id the facet index.
-         * @param[in] edge_id the local edge index in \param facet_id.
-         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
-         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
+         * @brief Gets an adjacent polygon index by polygon index and local edge index.
+         * @param[in] polygon_id the polygon index.
+         * @param[in] edge_id the local edge index in \param polygon_id.
+         * @return the global polygon index adjacent to the \param edge_id of the polygon \param polygon_id.
+         * @precondition  \param edge_id < number of edge of the polygon \param polygon_id .
          */
         virtual index_t polygon_adjacent(
-            index_t facet_id,
+            index_t polygon_id,
             index_t edge_id ) const = 0;
 
         virtual GEO::AttributesManager& polygon_attribute_manager() const = 0;
         /*!
-         * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
-         * @return True if all facets are triangles and False otherwise.
+         * @brief Tests whether all the polygons are triangles. when all the polygons are triangles, storage and access is optimized.
+         * @return True if all polygons are triangles and False otherwise.
          */
         virtual bool polygons_are_simplicies() const = 0;
         /*!
-         * return true if the facet \param facet_id is a triangle
+         * return true if the polygon \param polygon_id is a triangle
          */
-        bool is_triangle( index_t facet_id ) const
+        bool is_triangle( index_t polygon_id ) const
         {
-            return nb_polygon_vertices( facet_id ) == 3;
+            return nb_polygon_vertices( polygon_id ) == 3;
         }
 
         /*!
-         * Is the edge starting with the given vertex of the facet on a border of the Surface?
+         * Is the edge starting with the given vertex of the polygon on a border of the Surface?
          */
-        bool is_edge_on_border( index_t facet_index, index_t vertex_index ) const
+        bool is_edge_on_border( index_t polygon_index, index_t vertex_index ) const
         {
-            return polygon_adjacent( facet_index, vertex_index ) == NO_ID;
+            return polygon_adjacent( polygon_index, vertex_index ) == NO_ID;
         }
 
         /*!
-         * Is one of the edges of the facet on the border of the surface?
+         * Is one of the edges of the polygon on the border of the surface?
          */
-        bool is_polygon_on_border( index_t facet_index ) const
+        bool is_polygon_on_border( index_t polygon_index ) const
         {
-            for( index_t v = 0; v < nb_polygon_vertices( facet_index ); v++ ) {
-                if( is_edge_on_border( facet_index, v ) ) {
+            for( index_t v = 0; v < nb_polygon_vertices( polygon_index ); v++ ) {
+                if( is_edge_on_border( polygon_index, v ) ) {
                     return true;
                 }
             }
@@ -425,66 +425,66 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets the length of the edge starting at a given vertex
-         * @param[in] facet_id index of the facet
+         * @param[in] polygon_id index of the polygon
          * @param[in] vertex_id the edge starting vertex index
          */
-        double facet_edge_length( index_t facet_id, index_t vertex_id ) const
+        double polygon_edge_length( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( facet_edge_vertex( facet_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex( facet_edge_vertex( facet_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 - e0 ).length();
         }
         /*!
          * @brief Gets the barycenter of the edge starting at a given vertex
-         * @param[in] facet_id index of the facet
+         * @param[in] polygon_id index of the polygon
          * @param[in] vertex_id the edge starting vertex index
          */
-        vec3 facet_edge_barycenter( index_t facet_id, index_t vertex_id ) const
+        vec3 polygon_edge_barycenter( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( facet_edge_vertex( facet_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex( facet_edge_vertex( facet_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
         /*!
-         * @brief Gets the vertex index on the facet edge
-         * @param[in] facet_id index of the facet
-         * @param[in] edge_id index of the edge in the facet \param facet_id
+         * @brief Gets the vertex index on the polygon edge
+         * @param[in] polygon_id index of the polygon
+         * @param[in] edge_id index of the edge in the polygon \param polygon_id
          * @param[in] vertex_id index of the local vertex in the edge \param edge_id (0 or 1)
          * @return the vertex index
          */
-        index_t facet_edge_vertex(
-            index_t facet_id,
+        index_t polygon_edge_vertex(
+            index_t polygon_id,
             index_t edge_id,
             index_t vertex_id ) const
         {
             ringmesh_assert( vertex_id < 2 );
             if( vertex_id == 0 ) {
-                return polygon_vertex( facet_id, edge_id );
+                return polygon_vertex( polygon_id, edge_id );
             } else {
-                return polygon_vertex( facet_id,
-                    ( edge_id + vertex_id ) % nb_polygon_vertices( facet_id ) );
+                return polygon_vertex( polygon_id,
+                    ( edge_id + vertex_id ) % nb_polygon_vertices( polygon_id ) );
             }
         }
 
         /*!
-         * Computes the Mesh facet normal
-         * @param[in] facet_id the facet index
-         * @return the facet normal
+         * Computes the Mesh polygon normal
+         * @param[in] polygon_id the polygon index
+         * @return the polygon normal
          */
-        vec3 polygon_normal( index_t facet_id ) const
+        vec3 polygon_normal( index_t polygon_id ) const
         {
-            const vec3& p1 = vertex( polygon_vertex( facet_id, 0 ) );
-            const vec3& p2 = vertex( polygon_vertex( facet_id, 1 ) );
-            const vec3& p3 = vertex( polygon_vertex( facet_id, 2 ) );
+            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+            const vec3& p2 = vertex( polygon_vertex( polygon_id, 1 ) );
+            const vec3& p3 = vertex( polygon_vertex( polygon_id, 2 ) );
             vec3 norm = cross( p2 - p1, p3 - p1 );
             return normalize( norm );
         }
 
         /*!
          * @brief Computes the normal of the Mesh2D at the vertex location
-         * it computes the average value of facet normal neighbors
+         * it computes the average value of polygon normal neighbors
          * @param[in] vertex_id the vertex index
-         * @param[in] f0 index of a facet that contain the vertex \param vertex_id
+         * @param[in] f0 index of a polygon that contain the vertex \param vertex_id
          * @return the normal at the given vertex
          */
         vec3 normal_at_vertex( index_t vertex_id, index_t f0 = NO_ID ) const
@@ -501,66 +501,66 @@ namespace RINGMesh {
                 f++;
             }
 
-            std::vector< index_t > facet_ids = polygons_around_vertex( vertex_id,
+            std::vector< index_t > polygon_ids = polygons_around_vertex( vertex_id,
                 false, f0 );
             vec3 norm;
-            for( index_t facet_id : facet_ids ) {
-                norm += polygon_normal( facet_id );
+            for( index_t polygon_id : polygon_ids ) {
+                norm += polygon_normal( polygon_id );
             }
             return normalize( norm );
         }
 
         /*!
-         * Computes the Mesh facet barycenter
-         * @param[in] facet_id the facet index
-         * @return the facet center
+         * Computes the Mesh polygon barycenter
+         * @param[in] polygon_id the polygon index
+         * @return the polygon center
          */
-        vec3 polygon_barycenter( index_t facet_id ) const
+        vec3 polygon_barycenter( index_t polygon_id ) const
         {
             vec3 result( 0.0, 0.0, 0.0 );
             double count = 0.0;
-            for( index_t v = 0; v < nb_polygon_vertices( facet_id ); ++v ) {
-                result += vertex( polygon_vertex( facet_id, v ) );
+            for( index_t v = 0; v < nb_polygon_vertices( polygon_id ); ++v ) {
+                result += vertex( polygon_vertex( polygon_id, v ) );
                 count += 1.0;
             }
             return ( 1.0 / count ) * result;
         }
         /*!
-         * Computes the Mesh facet area
-         * @param[in] facet_id the facet index
-         * @return the facet area
+         * Computes the Mesh polygon area
+         * @param[in] polygon_id the polygon index
+         * @return the polygon area
          */
-        double polygon_area( index_t facet_id ) const
+        double polygon_area( index_t polygon_id ) const
         {
             double result = 0.0;
-            if( nb_polygon_vertices( facet_id ) == 0 ) {
+            if( nb_polygon_vertices( polygon_id ) == 0 ) {
                 return result;
             }
-            const vec3& p1 = vertex( polygon_vertex( facet_id, 0 ) );
-            for( index_t i = 1; i + 1 < nb_polygon_vertices( facet_id ); i++ ) {
-                const vec3& p2 = vertex( polygon_vertex( facet_id, i ) );
-                const vec3& p3 = vertex( polygon_vertex( facet_id, i + 1 ) );
+            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+            for( index_t i = 1; i + 1 < nb_polygon_vertices( polygon_id ); i++ ) {
+                const vec3& p2 = vertex( polygon_vertex( polygon_id, i ) );
+                const vec3& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
                 result += 0.5 * length( cross( p2 - p1, p3 - p1 ) );
             }
             return result;
         }
 
         /*!
-         * @brief return the NNSearch at facets
+         * @brief return the NNSearch at polygons
          */
         const NNSearch& polygons_nn_search() const
         {
             if( !nn_search_ ) {
-                std::vector< vec3 > facet_centers( nb_polygons() );
+                std::vector< vec3 > polygon_centers( nb_polygons() );
                 for( index_t f = 0; f < nb_polygons(); ++f ) {
-                    facet_centers[f] = polygon_barycenter( f );
+                    polygon_centers[f] = polygon_barycenter( f );
                 }
-                nn_search_.reset( new NNSearch( facet_centers, true ) );
+                nn_search_.reset( new NNSearch( polygon_centers, true ) );
             }
             return *nn_search_.get();
         }
         /*!
-         * @brief Creates an AABB tree for a Mesh facets
+         * @brief Creates an AABB tree for a Mesh polygons
          */
         const AABBTree2D& polygons_aabb() const
         {

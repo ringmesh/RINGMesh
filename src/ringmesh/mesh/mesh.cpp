@@ -95,81 +95,81 @@ namespace RINGMesh {
     }
 
     void Mesh2D::next_on_border(
-        index_t f,
+        index_t p,
         index_t e,
-        index_t& next_f,
+        index_t& next_p,
         index_t& next_e ) const
     {
-        ringmesh_assert( e < nb_polygon_vertices( f ) );
-        ringmesh_assert( is_edge_on_border( f, e ) );
+        ringmesh_assert( e < nb_polygon_vertices( p ) );
+        ringmesh_assert( is_edge_on_border( p, e ) );
 
         // Global indices in the surfaces
-        index_t next_v_id = polygon_vertex( f, next_polygon_vertex( f, e ) );
+        index_t next_v_id = polygon_vertex( p, next_polygon_vertex( p, e ) );
 
-        // Get the facets around the shared vertex (next_v_id) that are on the boundary
+        // Get the polygons around the shared vertex (next_v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > facets_around_next_v_id = polygons_around_vertex(
-            next_v_id, true, f );
-        index_t nb_around = static_cast< index_t >( facets_around_next_v_id.size() );
+        std::vector< index_t > polygons_around_next_v_id = polygons_around_vertex(
+            next_v_id, true, p );
+        index_t nb_around = static_cast< index_t >( polygons_around_next_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
-        next_f = facets_around_next_v_id[0];
+        next_p = polygons_around_next_v_id[0];
 
         if( nb_around == 2 ) {
-            if( next_f == f ) {
-                next_f = facets_around_next_v_id[1];
+            if( next_p == p ) {
+                next_p = polygons_around_next_v_id[1];
             }
-            ringmesh_assert( next_f != NO_ID );
-            ringmesh_assert( is_polygon_on_border( next_f ) );
+            ringmesh_assert( next_p != NO_ID );
+            ringmesh_assert( is_polygon_on_border( next_p ) );
 
-            // Local index of next vertex in the next facet
-            next_e = vertex_index_in_polygon( next_f, next_v_id );
-            ringmesh_assert( is_edge_on_border( next_f, next_e ) );
+            // Local index of next vertex in the next polygon
+            next_e = vertex_index_in_polygon( next_p, next_v_id );
+            ringmesh_assert( is_edge_on_border( next_p, next_e ) );
         } else if( nb_around == 1 ) {
-            // next_v_id must be in two border edges of facet f
-            next_e = vertex_index_in_polygon( next_f, next_v_id );
-            ringmesh_assert( is_edge_on_border( next_f, next_e ) );
+            // next_v_id must be in two border edges of polygon p
+            next_e = vertex_index_in_polygon( next_p, next_v_id );
+            ringmesh_assert( is_edge_on_border( next_p, next_e ) );
         }
     }
 
     void Mesh2D::prev_on_border(
-        index_t f,
+        index_t p,
         index_t e,
-        index_t& prev_f,
+        index_t& prev_p,
         index_t& prev_e ) const
     {
-        ringmesh_assert( e < nb_polygon_vertices( f ) );
-        ringmesh_assert( is_edge_on_border( f, e ) );
+        ringmesh_assert( e < nb_polygon_vertices( p ) );
+        ringmesh_assert( is_edge_on_border( p, e ) );
 
         // Global indices in the surfaces
-        index_t v_id = polygon_vertex( f, e );
+        index_t v_id = polygon_vertex( p, e );
 
-        // Get the facets around the shared vertex (v_id) that are on the boundary
+        // Get the polygons around the shared vertex (v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > facets_around_v_id = polygons_around_vertex( v_id, true,
-            f );
-        index_t nb_around = static_cast< index_t >( facets_around_v_id.size() );
+        std::vector< index_t > polygons_around_v_id = polygons_around_vertex( v_id, true,
+            p );
+        index_t nb_around = static_cast< index_t >( polygons_around_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
-        prev_f = facets_around_v_id[0];
+        prev_p = polygons_around_v_id[0];
 
         if( nb_around == 2 ) {
-            if( prev_f == f ) {
-                prev_f = facets_around_v_id[1];
+            if( prev_p == p ) {
+                prev_p = polygons_around_v_id[1];
             }
-            ringmesh_assert( prev_f != NO_ID );
-            ringmesh_assert( is_polygon_on_border( prev_f ) );
+            ringmesh_assert( prev_p != NO_ID );
+            ringmesh_assert( is_polygon_on_border( prev_p ) );
 
-            // Local index of given vertex in the prev facet
-            index_t v_in_prev_f = vertex_index_in_polygon( prev_f, v_id );
-            // Local index of previous vertex in the prev facet
-            prev_e = prev_polygon_vertex( prev_f, v_in_prev_f );
-            ringmesh_assert( is_edge_on_border( prev_f, prev_e ) );
+            // Local index of given vertex in the prev polygon
+            index_t v_in_prev_f = vertex_index_in_polygon( prev_p, v_id );
+            // Local index of previous vertex in the prev polygon
+            prev_e = prev_polygon_vertex( prev_p, v_in_prev_f );
+            ringmesh_assert( is_edge_on_border( prev_p, prev_e ) );
         } else if( nb_around == 1 ) {
-            // v_id must be in two border edges of facet f
-            index_t v_in_next_facet = vertex_index_in_polygon( prev_f, v_id );
-            prev_e = prev_polygon_vertex( prev_f, v_in_next_facet );
-            ringmesh_assert( is_edge_on_border( prev_f, prev_e ) );
+            // v_id must be in two border edges of polygon p
+            index_t v_in_next_polygon = vertex_index_in_polygon( prev_p, v_id );
+            prev_e = prev_polygon_vertex( prev_p, v_in_next_polygon );
+            ringmesh_assert( is_edge_on_border( prev_p, prev_e ) );
         }
     }
 
@@ -178,9 +178,9 @@ namespace RINGMesh {
         ringmesh_assert( in0 < nb_vertices() && in1 < nb_vertices() );
 
         // Another possible, probably faster, algorithm is to check if the 2 indices
-        // are neighbors in facets_ and check that they are in the same facet
+        // are neighbors in polygons_ and check that they are in the same polygon
 
-        // Check if the edge is in one of the facet
+        // Check if the edge is in one of the polygon
         for( index_t f = 0; f < nb_polygons(); ++f ) {
             bool found = false;
             index_t prev = polygon_vertex( f, nb_polygon_vertices( f ) - 1 );
@@ -200,12 +200,12 @@ namespace RINGMesh {
     }
 
     index_t Mesh2D::vertex_index_in_polygon(
-        index_t facet_index,
+        index_t polygon_index,
         index_t vertex_id ) const
     {
-        ringmesh_assert( facet_index < nb_polygons() );
-        for( index_t v = 0; v < nb_polygon_vertices( facet_index ); v++ ) {
-            if( polygon_vertex( facet_index, v ) == vertex_id ) {
+        ringmesh_assert( polygon_index < nb_polygons() );
+        for( index_t v = 0; v < nb_polygon_vertices( polygon_index ); v++ ) {
+            if( polygon_vertex( polygon_index, v ) == vertex_id ) {
                 return v;
             }
         }
@@ -246,11 +246,11 @@ namespace RINGMesh {
 
         ringmesh_assert( f0 != NO_ID );
 
-        // Flag the visited facets
+        // Flag the visited polygons
         std::vector< index_t > visited;
         visited.reserve( 10 );
 
-        // Stack of the adjacent facets
+        // Stack of the adjacent polygons
         std::stack< index_t > S;
         S.push( f0 );
         visited.push_back( f0 );
@@ -288,7 +288,7 @@ namespace RINGMesh {
                         result.push_back( f );
                     }
 
-                    // We are done with this facet
+                    // We are done with this polygon
                     break;
                 }
             }

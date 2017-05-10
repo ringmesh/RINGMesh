@@ -72,7 +72,7 @@ namespace {
             /// 2. Write the triangles
             out << "# Part 2 - facet list" << std::endl;
             out << "# facet count, no boundary marker" << std::endl;
-            out << nb_facets( geomodel ) << "  0 " << std::endl;
+            out << nb_polygons( geomodel ) << "  0 " << std::endl;
 
             for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
                 const Surface& S = geomodel.surface( i );

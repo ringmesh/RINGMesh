@@ -753,7 +753,7 @@ namespace RINGMesh {
 
         virtual std::string location_name() const override
         {
-            return "facet";
+            return "polygon";
         }
         virtual void bind_attribute() override
         {
@@ -801,7 +801,7 @@ namespace RINGMesh {
 
         virtual std::string location_name() const override
         {
-            return "facet_vertices";
+            return "polygon_vertices";
         }
         virtual void bind_attribute() override
         {
@@ -849,8 +849,8 @@ namespace RINGMesh {
             minimum_( 0.0 ),
             maximum_( 0.0 )
     {
-        attributes_[facets].reset( new FacetAttributeGfx( *this ) );
-        attributes_[facet_vertices].reset( new FacetVertexAttributeGfx( *this ) );
+        attributes_[polygons].reset( new FacetAttributeGfx( *this ) );
+        attributes_[polygon_vertices].reset( new FacetVertexAttributeGfx( *this ) );
         attributes_[cells].reset( new CellAttributeGfx( *this ) );
         attributes_[cell_vertices].reset( new CellVertexAttributeGfx( *this ) );
     }

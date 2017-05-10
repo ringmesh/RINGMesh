@@ -57,7 +57,7 @@ namespace {
     using namespace RINGMesh;
 
     /*!
-     * @brief Total number of facets in the geomodel Surfaces
+     * @brief Total number of polygons in the geomodel Surfaces
      */
     index_t count_geomodel_polygons( const GeoModel& geomodel )
     {
