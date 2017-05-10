@@ -78,6 +78,7 @@ namespace {
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
 
             const GeoModelMesh& mesh = geomodel.mesh;
+            const GeoModelMeshFacets& polygons = geomodel.mesh.polygons;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false );
@@ -157,7 +158,7 @@ namespace {
                         bool side;
                         if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
                             side ) ) {
-                            index_t surface_id = mesh.facets.surface( facet );
+                            index_t surface_id = polygons.surface( facet );
                             side ? out << "+" : out << "-";
                             out << geomodel.surface( surface_id ).parent( 0 ).name();
                         } else {
@@ -180,22 +181,22 @@ namespace {
                     out << "TFACE " << tface_count++ << std::endl;
                     index_t surface_id = interf.child_gmme( s ).index();
                     out << "KEYVERTICES";
-                    index_t key_facet_id = mesh.facets.facet( surface_id, 0 );
-                    for( index_t v = 0; v < mesh.facets.nb_vertices( key_facet_id );
+                    index_t key_facet_id = polygons.polygon( surface_id, 0 );
+                    for( index_t v = 0; v < polygons.nb_vertices( key_facet_id );
                         v++ ) {
                         out << " "
-                            << vertex_exported_id[mesh.facets.vertex( key_facet_id,
+                            << vertex_exported_id[polygons.vertex( key_facet_id,
                                 v )];
                     }
                     out << std::endl;
-                    for( index_t f = 0; f < mesh.facets.nb_facets( surface_id );
+                    for( index_t f = 0; f < polygons.nb_polygons( surface_id );
                         f++ ) {
-                        index_t facet_id = mesh.facets.facet( surface_id, f );
+                        index_t facet_id = polygons.polygon( surface_id, f );
                         out << "TRGL";
-                        for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id );
+                        for( index_t v = 0; v < polygons.nb_vertices( facet_id );
                             v++ ) {
                             out << " "
-                                << vertex_exported_id[mesh.facets.vertex( facet_id,
+                                << vertex_exported_id[polygons.vertex( facet_id,
                                     v )];
                         }
                         out << std::endl;

@@ -564,17 +564,17 @@ namespace RINGMesh {
          */
         const AABBTree2D& polygons_aabb() const
         {
-            if( !facets_aabb_ ) {
-                facets_aabb_.reset( new AABBTree2D( *this ) );
+            if( !polygons_aabb_ ) {
+                polygons_aabb_.reset( new AABBTree2D( *this ) );
             }
-            return *facets_aabb_;
+            return *polygons_aabb_;
         }
     protected:
         Mesh2D() = default;
 
     protected:
         mutable std::unique_ptr< NNSearch > nn_search_;
-        mutable std::unique_ptr< AABBTree2D > facets_aabb_;
+        mutable std::unique_ptr< AABBTree2D > polygons_aabb_;
     };
     using Mesh2DFactory = GEO::Factory0< Mesh2D >;
 #define ringmesh_register_mesh_2d(type) \

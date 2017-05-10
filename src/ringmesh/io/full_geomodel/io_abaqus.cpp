@@ -103,7 +103,7 @@ namespace {
             index_t interface_id,
             std::ofstream& out ) const
         {
-            const GeoModelMeshFacets& facets = geomodel.mesh.facets;
+            const GeoModelMeshFacets& facets = geomodel.mesh.polygons;
             const GeoModelGeologicalEntity& entity = geomodel.geological_entity(
                 Interface::type_name_static(), interface_id );
             std::string sep;
@@ -113,8 +113,8 @@ namespace {
             out << "*NSET, nset=" << entity.name() << std::endl;
             for( index_t s = 0; s < entity.nb_children(); s++ ) {
                 index_t surface_id = entity.child_gmme( s ).index();
-                for( index_t f = 0; f < facets.nb_facets( surface_id ); f++ ) {
-                    index_t facet_id = facets.facet( surface_id, f );
+                for( index_t f = 0; f < facets.nb_polygons( surface_id ); f++ ) {
+                    index_t facet_id = facets.polygon( surface_id, f );
                     for( index_t v = 0; v < facets.nb_vertices( facet_id ); v++ ) {
                         index_t vertex_id = facets.vertex( facet_id, v );
                         if( vertex_exported[vertex_id] ) continue;

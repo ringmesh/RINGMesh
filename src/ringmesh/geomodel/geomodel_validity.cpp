@@ -263,7 +263,7 @@ namespace {
             std::vector< bool >& has_isect )
             :
                 geomodel_( geomodel ),
-                facets_( geomodel.mesh.facets ),
+                facets_( geomodel.mesh.polygons ),
                 has_intersection_( has_isect )
         {
             has_intersection_.assign( facets_.nb(), 0 );
@@ -742,16 +742,16 @@ namespace {
         const GeoModel& geomodel,
         std::vector< index_t >& edge_indices )
     {
-        const GeoModelMeshFacets& facets = geomodel.mesh.facets;
+        const GeoModelMeshFacets& polygons = geomodel.mesh.polygons;
         for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
-            for( index_t f = 0; f < facets.nb_facets( s ); f++ ) {
-                index_t facet_id = facets.facet( s, f );
-                for( index_t v = 0; v < facets.nb_vertices( facet_id ); v++ ) {
-                    index_t adj = facets.adjacent( facet_id, v );
+            for( index_t p = 0; p < polygons.nb_polygons( s ); p++ ) {
+                index_t polygon_id = polygons.polygon( s, p );
+                for( index_t v = 0; v < polygons.nb_vertices( polygon_id ); v++ ) {
+                    index_t adj = polygons.adjacent( polygon_id, v );
                     if( adj == NO_ID ) {
-                        edge_indices.push_back( facets.vertex( facet_id, v ) );
-                        index_t next_v = ( v + 1 ) % facets.nb_vertices( facet_id );
-                        edge_indices.push_back( facets.vertex( facet_id, next_v ) );
+                        edge_indices.push_back( polygons.vertex( polygon_id, v ) );
+                        index_t next_v = ( v + 1 ) % polygons.nb_vertices( polygon_id );
+                        edge_indices.push_back( polygons.vertex( polygon_id, next_v ) );
                     }
                 }
             }
@@ -821,7 +821,7 @@ namespace {
             // Ensure that the geomodel vertices are computed and up-to-date
             // Without that we cannot do anything        
             geomodel_.mesh.vertices.test_and_initialize();
-            geomodel_.mesh.facets.test_and_initialize();
+            geomodel_.mesh.polygons.test_and_initialize();
         }
 
         /*!
@@ -1057,13 +1057,13 @@ namespace {
             }
             virtual void run() final
             {
-                if( validity_.geomodel_.mesh.facets.nb()
-                    == validity_.geomodel_.mesh.facets.nb_triangle()
-                        + validity_.geomodel_.mesh.facets.nb_quad() ) {
+                if( validity_.geomodel_.mesh.polygons.nb()
+                    == validity_.geomodel_.mesh.polygons.nb_triangle()
+                        + validity_.geomodel_.mesh.polygons.nb_quad() ) {
                     std::vector< bool > has_intersection;
                     StoreIntersections action( validity_.geomodel_,
                         has_intersection );
-                    const AABBTree2D& AABB = validity_.geomodel_.mesh.facets.aabb();
+                    const AABBTree2D& AABB = validity_.geomodel_.mesh.polygons.aabb();
                     AABB.compute_self_element_bbox_intersections( action );
 
                     index_t nb_intersections = static_cast< index_t >( std::count(
@@ -1075,13 +1075,13 @@ namespace {
                             if( !has_intersection[f] ) continue;
                             GEO::vector< index_t > vertices;
                             vertices.reserve(
-                                validity_.geomodel_.mesh.facets.nb_vertices( f ) );
+                                validity_.geomodel_.mesh.polygons.nb_vertices( f ) );
                             for( index_t v = 0;
-                                v < validity_.geomodel_.mesh.facets.nb_vertices( f );
+                                v < validity_.geomodel_.mesh.polygons.nb_vertices( f );
                                 v++ ) {
                                 index_t id = mesh.vertices.create_vertex(
                                     validity_.geomodel_.mesh.vertices.vertex(
-                                        validity_.geomodel_.mesh.facets.vertex( f,
+                                        validity_.geomodel_.mesh.polygons.vertex( f,
                                             v ) ).data() );
                                 vertices.push_back( id );
                             }
