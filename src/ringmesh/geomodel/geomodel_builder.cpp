@@ -1298,6 +1298,13 @@ namespace RINGMesh {
 
     void GeoModelBuilderGeology::build_contacts()
     {
+        if( geomodel_.entity_type_manager().geological_entity_manager.is_valid_type(
+            Contact::type_name_static() )
+            && geomodel_.nb_geological_entities( Contact::type_name_static() )
+                > 0 ) {
+            return;
+        }
+
         std::vector< std::set< gmge_id > > interfaces;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
             const Line& L = geomodel_.line( i );
