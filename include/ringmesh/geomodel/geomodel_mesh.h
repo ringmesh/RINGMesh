@@ -1086,7 +1086,7 @@ namespace RINGMesh {
          */
         void clear();
         /*!
-         * Remove the duplication of the mesh cell polygons
+         * Remove the duplication of the mesh cell facets
          */
         void clear_duplication();
 
