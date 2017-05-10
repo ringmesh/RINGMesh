@@ -596,7 +596,7 @@ namespace RINGMesh {
         /*!
          * @brief Check that the mesh of the Line is valid
          * @details Check that
-         *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - no polygon - no cells.
+         *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - no polygon - no cell.
          *  - global indices of vertices in the geomodel are in a valid range
          *  - each vertex is in 2 edges except extremities that are in 1 edge
          *
