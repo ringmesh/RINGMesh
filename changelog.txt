@@ -24,6 +24,7 @@ Improvements:
  * Improve some designs by using the NRVO/RVO (Named Return Value Optimization)
  * Use C++11 smartpointers for all the pointers allocated on the heap
  * Remove complex inheritance design of the GeogramMesh and GeogramMeshBuilder classes 
+ * Add naming distinction between a facet (a boundary polygon of a cell) and a polygon (a surface mesh element)
 
 Deprecated:
  * Remove support of .ogm
