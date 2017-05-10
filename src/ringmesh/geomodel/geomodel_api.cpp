@@ -57,9 +57,9 @@ namespace {
     using namespace RINGMesh;
 
     /*!
-     * @brief Total number of facets in the geomodel Surfaces
+     * @brief Total number of polygons in the geomodel Surfaces
      */
-    index_t count_geomodel_facets( const GeoModel& geomodel )
+    index_t count_geomodel_polygons( const GeoModel& geomodel )
     {
         index_t result = 0;
         for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
@@ -165,8 +165,8 @@ namespace RINGMesh {
     {
         Logger::out( "GeoModel", "Model ", geomodel.name(), " has\n",
             std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
-            std::setw( 10 ), std::left, count_geomodel_facets( geomodel ),
-            " facets" );
+            std::setw( 10 ), std::left, count_geomodel_polygons( geomodel ),
+            " polygons" );
         index_t nb_cells = count_geomodel_cells( geomodel );
         if( nb_cells != 0 ) {
             Logger::out( "GeoModel", std::setw( 10 ), std::left, nb_cells,
@@ -193,19 +193,22 @@ namespace RINGMesh {
             std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
             std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
 
-        index_t nb_triangles = geomodel.mesh.facets.nb_triangle();
-        index_t nb_quads = geomodel.mesh.facets.nb_quad();
-        index_t nb_polygons = geomodel.mesh.facets.nb_polygon();
-        index_t nb_facets = geomodel.mesh.facets.nb_facets();
-        Logger::out( "GeoModel", std::setw( 10 ), std::left, nb_facets, " facets" );
+        index_t nb_triangles = geomodel.mesh.polygons.nb_triangle();
+        index_t nb_quads = geomodel.mesh.polygons.nb_quad();
+        index_t nb_unclassified_polygons =
+            geomodel.mesh.polygons.nb_unclassified_polygon();
+        index_t nb_polygons = geomodel.mesh.polygons.nb_polygons();
+        Logger::out( "GeoModel", std::setw( 10 ), std::left, nb_polygons,
+            " polygons" );
         if( nb_triangles > 0 ) {
-            print_one_cell_stat( nb_triangles, nb_facets, "triangles" );
+            print_one_cell_stat( nb_triangles, nb_polygons, "triangles" );
         }
         if( nb_quads > 0 ) {
-            print_one_cell_stat( nb_quads, nb_facets, "quads" );
+            print_one_cell_stat( nb_quads, nb_polygons, "quads" );
         }
-        if( nb_polygons > 0 ) {
-            print_one_cell_stat( nb_polygons, nb_facets, "polygons" );
+        if( nb_unclassified_polygons > 0 ) {
+            print_one_cell_stat( nb_unclassified_polygons, nb_polygons,
+                "unclassified polygons" );
         }
 
         index_t nb_tet = geomodel.mesh.cells.nb_tet();
