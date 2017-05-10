@@ -54,13 +54,13 @@ namespace RINGMesh {
 
     /*!
      * @brief Print in the console the geomodel statistics
-     * @details Output number of facets, vertices, and of the different entity types
+     * @details Output number of polygons, vertices, and of the different entity types
      * @todo Implement a test are_geomodels_equals to be able to check that tests went well
      */
     void RINGMESH_API print_geomodel( const GeoModel& geomodel );
 
     /*!
-     * Output the number of vertices, edges, facets and cells.
+     * Output the number of vertices, edges, polygons and cells.
      * Also output the number of triangles, quads and polygons if any.
      * Also output the number of tetra, prisms, pyramids, hex and polyhedra if any.
      * @param[in] geomodel the geomodel to compute the statistics on

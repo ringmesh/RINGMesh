@@ -592,11 +592,11 @@ namespace RINGMesh {
             }
             if( ImGui::BeginPopup( "##Attributes" ) ) {
                 switch( GM_gfx_.attribute.location() ) {
-                    case AttributeGfxManager::facets:
+                    case AttributeGfxManager::polygons:
                         set_attribute_names(
-                            GM_.surface( 0 ).facet_attribute_manager() );
+                            GM_.surface( 0 ).polygon_attribute_manager() );
                         break;
-                    case AttributeGfxManager::facet_vertices:
+                    case AttributeGfxManager::polygon_vertices:
                         set_attribute_names(
                             GM_.surface( 0 ).vertex_attribute_manager() );
                         break;
