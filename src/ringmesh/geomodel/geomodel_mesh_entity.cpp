@@ -76,32 +76,32 @@ namespace {
     /*!
      * @brief Computes and returns the surface connected components
      * @details In Debug mode, the connected components are saved into 
-     * an Attribute on surface facets.
+     * an Attribute on surface polygons.
      */
     index_t compute_nb_surface_connected_components( const Surface& surface )
     {
         const index_t NO_COMPONENT = index_t( -1 );
-        GEO::Attribute< index_t > component( surface.facet_attribute_manager(),
+        GEO::Attribute< index_t > component( surface.polygon_attribute_manager(),
             "component" );
         component.fill( NO_COMPONENT );
         index_t nb_components = 0;
-        for( index_t facet = 0; facet < surface.nb_mesh_elements(); facet++ ) {
-            if( component[facet] == NO_COMPONENT ) {
+        for( index_t polygon = 0; polygon < surface.nb_mesh_elements(); polygon++ ) {
+            if( component[polygon] == NO_COMPONENT ) {
                 std::stack< index_t > S;
-                S.push( facet );
-                component[facet] = nb_components;
+                S.push( polygon );
+                component[polygon] = nb_components;
                 do {
-                    index_t cur_facet = S.top();
+                    index_t cur_polygon = S.top();
                     S.pop();
                     for( index_t edge = 0;
-                        edge < surface.nb_mesh_element_vertices( cur_facet );
+                        edge < surface.nb_mesh_element_vertices( cur_polygon );
                         edge++ ) {
-                        index_t adj_facet = surface.facet_adjacent_index( cur_facet,
+                        index_t adj_polygon = surface.polygon_adjacent_index( cur_polygon,
                             edge );
-                        if( adj_facet != NO_ID
-                            && component[adj_facet] == NO_COMPONENT ) {
-                            S.push( adj_facet );
-                            component[adj_facet] = nb_components;
+                        if( adj_polygon != NO_ID
+                            && component[adj_polygon] == NO_COMPONENT ) {
+                            S.push( adj_polygon );
+                            component[adj_polygon] = nb_components;
                         }
                     }
                 } while( !S.empty() );
@@ -154,12 +154,12 @@ namespace {
     }
 
     /*!
-     * @brief Count the number of times each vertex is in an edge or facet
+     * @brief Count the number of times each vertex is in an edge or polygon
      *
      * @param[in] gmme The GeoModelMeshEntity
      * @param[out] nb Resized to the number of vertices of the mesh.
      *      Number of times one vertex appear in an mesh_element collection of 
-     *      the GeoModelMeshEntity edge or facet of the mesh.
+     *      the GeoModelMeshEntity edge or polygon of the mesh.
      */
     void count_vertex_occurences(
         const GeoModelMeshEntity& E,
@@ -193,7 +193,7 @@ namespace {
             std::count( vertices_global.begin(), vertices_global.end(), NO_ID )
                 == 0 );
         // 0 is the default value of the geomodel_vertex_id
-        // If we have only 0 either this is a degenerate facets, but most certainly
+        // If we have only 0 either this is a degenerate polygons, but most certainly
         // geomodel vertex ids are not good
         ringmesh_assert(
             static_cast< index_t >( std::count( vertices_global.begin(),
@@ -207,22 +207,22 @@ namespace {
     }
 
     /*!
-     * @brief Returns true if the surface facet is incident twice to the same vertex
+     * @brief Returns true if the surface polygon is incident twice to the same vertex
      */
-    bool facet_is_degenerate( const Surface& S, const gmme_id& id, index_t f )
+    bool polygon_is_degenerate( const Surface& S, const gmme_id& id, index_t p )
     {
-        index_t nb_facet_vertices = S.nb_mesh_element_vertices( f );
-        std::vector< index_t > corners( nb_facet_vertices, NO_ID );
-        std::vector< index_t > corners_global( nb_facet_vertices, NO_ID );
+        index_t nb_polygon_vertices = S.nb_mesh_element_vertices( p );
+        std::vector< index_t > corners( nb_polygon_vertices, NO_ID );
+        std::vector< index_t > corners_global( nb_polygon_vertices, NO_ID );
         index_t v = 0;
         const GeoModelMeshVertices& geomodel_vertices = S.geomodel().mesh.vertices;
-        for( index_t c = 0; c < S.nb_mesh_element_vertices( f ); ++c ) {
-            index_t facet_vertex_index = S.mesh_element_vertex_index( f, c );
-            corners[v] = facet_vertex_index;
-            corners_global[v] = geomodel_vertices.geomodel_vertex_id( id, f, v );
+        for( index_t c = 0; c < S.nb_mesh_element_vertices( p ); ++c ) {
+            index_t polygon_vertex_index = S.mesh_element_vertex_index( p, c );
+            corners[v] = polygon_vertex_index;
+            corners_global[v] = geomodel_vertices.geomodel_vertex_id( id, p, v );
             v++;
         }
-        double area = S.mesh_element_size( f );
+        double area = S.mesh_element_size( p );
         return check_mesh_entity_vertices_are_different( corners, corners_global )
             || area < S.geomodel().epsilon2();
     }
@@ -655,13 +655,13 @@ namespace RINGMesh {
         bool valid = true;
         gmme_id id = gmme();
         // Check that the GEO::Mesh has the expected entities
-        // at least 3 vertices and one facet.
+        // at least 3 vertices and one polygon.
         if( nb_vertices() < 3 ) {
             Logger::warn( "GeoModelEntity", id, " has less than 3 vertices " );
             valid = false;
         }
-        if( mesh2d_->nb_facets() == 0 ) {
-            Logger::warn( "GeoModelEntity", id, " has no facets " );
+        if( mesh2d_->nb_polygons() == 0 ) {
+            Logger::warn( "GeoModelEntity", id, " has no polygons " );
             valid = false;
         }
 
@@ -673,32 +673,32 @@ namespace RINGMesh {
             valid = false;
         }
 
-        // No zero area facet
-        // No facet incident to the same vertex check local and global indices
+        // No zero area polygon
+        // No polygon incident to the same vertex check local and global indices
         index_t nb_degenerate = 0;
-        for( index_t f = 0; f < mesh2d_->nb_facets(); f++ ) {
-            if( facet_is_degenerate( *this, id, f ) ) {
+        for( index_t p = 0; p < mesh2d_->nb_polygons(); p++ ) {
+            if( polygon_is_degenerate( *this, id, p ) ) {
                 nb_degenerate++;
             }
         }
         if( nb_degenerate != 0 ) {
             Logger::warn( "GeoModelEntity", id, " mesh has ", nb_degenerate,
-                " degenerate facets " );
+                " degenerate polygons " );
             valid = false;
         }
 
-        // No duplicated facet
+        // No duplicated polygon
         GEO::vector< index_t > colocated;
         // GEO::mesh_detect_duplicated_facets( mesh_, colocated ) ; // not implemented yet 
-        index_t nb_duplicated_f = 0;
-        for( index_t f = 0; f < colocated.size(); ++f ) {
-            if( colocated[f] != f ) {
-                nb_duplicated_f++;
+        index_t nb_duplicated_p = 0;
+        for( index_t p = 0; p < colocated.size(); ++p ) {
+            if( colocated[p] != p ) {
+                nb_duplicated_p++;
             }
         }
-        if( nb_duplicated_f > 0 ) {
-            Logger::warn( "GeoModelEntity", id, " mesh has ", nb_duplicated_f,
-                " duplicated facets " );
+        if( nb_duplicated_p > 0 ) {
+            Logger::warn( "GeoModelEntity", id, " mesh has ", nb_duplicated_p,
+                " duplicated polygons " );
             valid = false;
         }
 

@@ -65,7 +65,7 @@ namespace RINGMesh {
         /*!
          * @details Adds separately each connected component of the mesh
          *          as a Surface of the geomodel under construction.
-         *          All the facets of the input mesh are visited and added to a
+         *          All the polygons of the input mesh are visited and added to a
          *          Surface of the GeoModel.
          *          Connected components of the mesh are determined with a
          *          propagation (or "coloriage" algorithm) using the adjacent_facet
