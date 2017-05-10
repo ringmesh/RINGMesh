@@ -69,12 +69,6 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Build the Contacts
-         * @details One contact is a group of lines shared by the same Interfaces
-         */
-        void build_contacts();
-
-        /*!
          * @brief Parses the file and loads the GeoModel
          * @details The GeoModel loaded by this function is not valid because
          * some computation are still not done (i.e., surface internal borders,
@@ -130,14 +124,14 @@ namespace RINGMesh {
         GocadLoadingStorage();
 
         /*!
-         * @brief Ends a facet (by adding the size of list of facet corners at the
+         * @brief Ends a polygon (by adding the size of list of polygon corners at the
          * end of the vector)
          */
-        void end_facet()
+        void end_polygon()
         {
-            index_t nb_facet_corners =
-                static_cast< index_t >( cur_surf_facet_corners_gocad_id_.size() );
-            cur_surf_facet_ptr_.push_back( nb_facet_corners );
+            index_t nb_polygon_corners =
+                static_cast< index_t >( cur_surf_polygon_corners_gocad_id_.size() );
+            cur_surf_polygon_ptr_.push_back( nb_polygon_corners );
         }
 
         // The orientation of positive Z
@@ -151,12 +145,12 @@ namespace RINGMesh {
         // Current surface index
         index_t cur_surface_;
 
-        // List of facet corners for the current surface (gocad indices)
-        std::vector< index_t > cur_surf_facet_corners_gocad_id_;
+        // List of polygon corners for the current surface (gocad indices)
+        std::vector< index_t > cur_surf_polygon_corners_gocad_id_;
 
-        // Starting indices (in cur_surf_facets_corner_gocad_id_) of each
-        // facet of the current surface
-        std::vector< index_t > cur_surf_facet_ptr_;
+        // Starting indices (in cur_surf_polygons_corner_gocad_id_) of each
+        // polygon of the current surface
+        std::vector< index_t > cur_surf_polygon_ptr_;
     };
 
     class GocadLineParser: public GocadBaseParser {
@@ -283,8 +277,8 @@ namespace RINGMesh {
 
         /*!
          * @brief Computes internal borders of a given surface
-         * @details A surface facet edge is an internal border if it is shared
-         * by at least two surfaces. Adjacency of such a facet edge is set to
+         * @details A surface polygon edge is an internal border if it is shared
+         * by at least two surfaces. Adjacency of such a polygon edge is set to
          * GEO::NO_FACET.
          * @param[in] geomodel GeoModel to consider
          * @param[in] surface_id Index of the surface
@@ -296,20 +290,20 @@ namespace RINGMesh {
             const std::vector< Box3d >& surface_boxes );
 
         /*!
-         * @brief Computes the NNSearchs of the centers of facet edges for
+         * @brief Computes the NNSearchs of the centers of polygon edges for
          * each surface and their Box3d
          * @param[in] geomodel GeoModel to consider
          * @param[out] surface_nns Unique pointers to the NNSearchs of surfaces
          * @param[out] surface_boxes Bounding Box of surfaces
          */
-        void compute_facet_edge_centers_nn_and_surface_boxes(
+        void compute_polygon_edge_centers_nn_and_surface_boxes(
             std::vector< std::unique_ptr< NNSearch > >& surface_nns,
             std::vector< Box3d >& surface_boxes );
 
         /*!
          * @brief Computes internal borders of the geomodel surfaces
-         * @details An surface facet edge is an internal border if it is shared
-         * by at least two surfaces. Adjacency of such a facet edge is set to
+         * @details An surface polygon edge is an internal border if it is shared
+         * by at least two surfaces. Adjacency of such a polygon edge is set to
          * GEO::NO_FACET.
          * @param[in] geomodel GeoModel to consider
          */

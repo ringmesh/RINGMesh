@@ -1128,7 +1128,7 @@ namespace RINGMesh {
                 break;
             }
             case FACETS: {
-                build_nn_search_facets( mesh );
+                build_nn_search_polygons( mesh );
                 break;
             }
             case CELLS: {
@@ -1294,19 +1294,19 @@ namespace RINGMesh {
         nn_tree_->set_points( nb_edges, nn_points_ );
     }
 
-    void NNSearch::build_nn_search_facets( const GEO::Mesh& mesh )
+    void NNSearch::build_nn_search_polygons( const GEO::Mesh& mesh )
     {
-        index_t nb_facets = mesh.facets.nb();
-        if( nb_facets == 0 ) {
+        index_t nb_polygons = mesh.facets.nb();
+        if( nb_polygons == 0 ) {
             return;
         }
-        nn_points_ = new double[nb_facets * 3];
-        for( index_t i = 0; i < nb_facets; i++ ) {
+        nn_points_ = new double[nb_polygons * 3];
+        for( index_t i = 0; i < nb_polygons; i++ ) {
             vec3 center = GEO::Geom::mesh_facet_center( mesh, i );
             index_t index_in_nn_search = 3 * i;
             fill_nn_search_points( index_in_nn_search, center );
         }
-        nn_tree_->set_points( nb_facets, nn_points_ );
+        nn_tree_->set_points( nb_polygons, nn_points_ );
     }
 
     void NNSearch::build_nn_search_cell_facets( const GEO::Mesh& mesh )
