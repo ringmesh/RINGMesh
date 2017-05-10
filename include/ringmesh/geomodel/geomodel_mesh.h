@@ -479,7 +479,7 @@ namespace RINGMesh {
         friend class GeoModelMesh;
 
         enum FacetType {
-            TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
+            TRIANGLE, QUAD, UNCLASSIFIED_POLYGON, ALL, NO_POLYGON
         };
 
         GeoModelMeshFacets( GeoModelMesh& gmm, GeoModel& gm );

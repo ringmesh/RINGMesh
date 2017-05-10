@@ -38,36 +38,36 @@ namespace {
         index_t entity_type;
         index_t nb_vertices;
         index_t vertices[8];
-        index_t nb_facets;
-        index_t facet[6];
+        index_t nb_polygons;
+        index_t polygon[6];
     };
 
     static RINGMesh2CSMP tet_descriptor = { 4,                  // type
         4,                  // nb vertices
         { 0, 1, 2, 3 },     // vertices
-        4,                  // nb facets
-        { 0, 1, 2, 3 }      // facets
+        4,                  // nb polygons
+        { 0, 1, 2, 3 }      // polygons
     };
 
     static RINGMesh2CSMP hex_descriptor = { 6,                         // type
         8,                              // nb vertices
         { 0, 4, 5, 1, 2, 6, 7, 3 },     // vertices
-        6,                              // nb facets
-        { 2, 0, 5, 1, 4, 3 }            // facets
+        6,                              // nb polygons
+        { 2, 0, 5, 1, 4, 3 }            // polygons
     };
 
     static RINGMesh2CSMP prism_descriptor = { 12,                     // type
         6,                      // nb vertices
         { 0, 1, 2, 3, 4, 5 },   // vertices
-        5,                      // nb facets
-        { 0, 2, 4, 3, 1 }       // facets
+        5,                      // nb polygons
+        { 0, 2, 4, 3, 1 }       // polygons
     };
 
     static RINGMesh2CSMP pyramid_descriptor = { 18,                 // type
         5,                  // nb vertices
         { 0, 1, 2, 3, 4 },  // vertices
-        5,                  // nb facets
-        { 1, 4, 3, 2, 0 }   // facets
+        5,                  // nb polygons
+        { 1, 4, 3, 2, 0 }   // polygons
     };
 
     static RINGMesh2CSMP* cell_type_to_cell_descriptor[4] = { &tet_descriptor,
@@ -356,11 +356,11 @@ namespace {
             }
             reset_line( count, data );
 
-            index_t nb_facets = 3 * polygons.nb_triangle()
+            index_t nb_polygons = 3 * polygons.nb_triangle()
                 + 4 * polygons.nb_quad() + 4 * mesh.cells.nb_tet()
                 + 5 * mesh.cells.nb_pyramid() + 5 * mesh.cells.nb_prism()
                 + 6 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges();
-            data << nb_facets << " # PFVERTS" << std::endl;
+            data << nb_polygons << " # PFVERTS" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
@@ -368,8 +368,8 @@ namespace {
                     RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T];
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
                         index_t cell = mesh.cells.cell( r, el );
-                        for( index_t f = 0; f < descriptor.nb_facets; f++ ) {
-                            index_t csmp_f = descriptor.facet[f];
+                        for( index_t f = 0; f < descriptor.nb_polygons; f++ ) {
+                            index_t csmp_f = descriptor.polygon[f];
                             index_t adj = mesh.cells.adjacent( cell, csmp_f );
                             if( adj == GEO::NO_CELL ) {
                                 data << " " << std::setw( 7 ) << -28;

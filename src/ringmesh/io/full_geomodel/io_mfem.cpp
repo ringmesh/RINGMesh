@@ -38,9 +38,9 @@ namespace {
     /// NO_ID for pyramids and prims because there are not supported by MFEM
     static const index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID };
 
-    /// Convert the facet type of RINGMesh to the MFEM one
+    /// Convert the polygon type of RINGMesh to the MFEM one
     /// NO_ID for polygons there are not supported by MFEM
-    static const index_t facet_type_mfem[3] = { 2, 3, NO_ID };
+    static const index_t polygon_type_mfem[3] = { 2, 3, NO_ID };
 
     /// Convert the numerotation from RINGMesh to MFEM
     /// It works for Hexaedron and also for Tetrahedron (in this
@@ -79,7 +79,7 @@ namespace {
 
             write_header( geomodel_mesh, out );
             write_cells( geomodel_mesh, out );
-            write_facets( geomodel_mesh, out );
+            write_polygons( geomodel_mesh, out );
             write_vertices( geomodel_mesh, out );
         }
 
@@ -128,16 +128,16 @@ namespace {
         }
 
         /*!
-         * @brief Write the facets for the MFEM mesh file (work only with
+         * @brief Write the polygons for the MFEM mesh file (work only with
          * triangles and quads)
-         * @details The structure of the MFEM file for facets is
-         * [group_id] [facet_type] [id_vertex_0] [id_vertex_1] .....
-         * facet_type is 2 for triangles and 3 for the quads
+         * @details The structure of the MFEM file for polygons is
+         * [group_id] [polygon_type] [id_vertex_0] [id_vertex_1] .....
+         * polygon_type is 2 for triangles and 3 for the quads
          * group_id is continuous with the groupd indexes of the cells
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        void write_polygons( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
             const GeoModelMeshFacets& polygons = geomodel_mesh.polygons;
             out << "boundary" << std::endl;
@@ -145,7 +145,7 @@ namespace {
             for( index_t f = 0; f < polygons.nb(); f++ ) {
                 index_t not_used = 0;
                 out << polygons.surface( f ) + mfem_offset << " ";
-                out << facet_type_mfem[polygons.type( f, not_used )] << " ";
+                out << polygon_type_mfem[polygons.type( f, not_used )] << " ";
                 for( index_t v = 0; v < polygons.nb_vertices( f ); v++ ) {
                     out << polygons.vertex( f, v ) << " ";
                 }

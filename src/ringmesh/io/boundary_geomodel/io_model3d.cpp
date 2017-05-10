@@ -36,9 +36,9 @@
 namespace {
 
     /*!
-     * @brief Total number of facets in the Surfaces of a GM
+     * @brief Total number of polygons in the Surfaces of a GM
      */
-    inline index_t nb_facets( const GeoModel& GM )
+    inline index_t nb_polygons( const GeoModel& GM )
     {
         index_t result = 0;
         for( index_t i = 0; i < GM.nb_surfaces(); ++i ) {
@@ -235,8 +235,8 @@ namespace {
             out << " " << s.parent( Interface::type_name_static() ).name()
                 << std::endl;
 
-            // Print the key facet which is the first three
-            // vertices of the first facet
+            // Print the key polygon which is the first three
+            // vertices of the first polygon
             out << "  " << s.mesh_element_vertex( 0, 0 ) << std::endl;
             out << "  " << s.mesh_element_vertex( 0, 1 ) << std::endl;
             out << "  " << s.mesh_element_vertex( 0, 2 ) << std::endl;
