@@ -54,9 +54,9 @@
 namespace {
     using namespace RINGMesh;
 
-    class GeoModelMeshFacetsSort {
+    class GeoModelMeshPolygonsSort {
     public:
-        GeoModelMeshFacetsSort(
+        GeoModelMeshPolygonsSort(
             const Mesh2D& mesh,
             const GEO::Attribute< index_t >& surface_id )
             : mesh_( mesh ), surface_id_( surface_id )
@@ -1459,7 +1459,7 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm, GeoModel& gm )
+    GeoModelMeshPolygons::GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
             mesh_( new GeogramMesh2D ),
@@ -1470,12 +1470,12 @@ namespace RINGMesh {
         set_mesh( mesh_.get() );
     }
 
-    GeoModelMeshFacets::~GeoModelMeshFacets()
+    GeoModelMeshPolygons::~GeoModelMeshPolygons()
     {
         unbind_attribute();
     }
 
-    void GeoModelMeshFacets::bind_attribute()
+    void GeoModelMeshPolygons::bind_attribute()
     {
         if( !surface_id_.is_bound() ) {
             surface_id_.bind( attribute_manager(), surface_att_name );
@@ -1486,7 +1486,7 @@ namespace RINGMesh {
 
     }
 
-    void GeoModelMeshFacets::unbind_attribute()
+    void GeoModelMeshPolygons::unbind_attribute()
     {
         if( surface_id_.is_bound() ) {
             surface_id_.unbind();
@@ -1497,25 +1497,25 @@ namespace RINGMesh {
 
     }
 
-    bool GeoModelMeshFacets::is_initialized() const
+    bool GeoModelMeshPolygons::is_initialized() const
     {
         return mesh_->nb_polygons() > 0;
     }
 
-    index_t GeoModelMeshFacets::nb() const
+    index_t GeoModelMeshPolygons::nb() const
     {
         test_and_initialize();
         return mesh_->nb_polygons();
     }
 
-    index_t GeoModelMeshFacets::nb_vertices( index_t f ) const
+    index_t GeoModelMeshPolygons::nb_vertices( index_t f ) const
     {
         test_and_initialize();
         ringmesh_assert( f < mesh_->nb_polygons() );
         return mesh_->nb_polygon_vertices( f );
     }
 
-    index_t GeoModelMeshFacets::vertex( index_t f, index_t v ) const
+    index_t GeoModelMeshPolygons::vertex( index_t f, index_t v ) const
     {
         test_and_initialize();
         ringmesh_assert( f < mesh_->nb_polygons() );
@@ -1523,7 +1523,7 @@ namespace RINGMesh {
         return mesh_->polygon_vertex( f, v );
     }
 
-    index_t GeoModelMeshFacets::adjacent( index_t f, index_t e ) const
+    index_t GeoModelMeshPolygons::adjacent( index_t f, index_t e ) const
     {
         test_and_initialize();
         ringmesh_assert( f < mesh_->nb_polygons() );
@@ -1531,21 +1531,21 @@ namespace RINGMesh {
         return mesh_->polygon_adjacent( f, e );
     }
 
-    index_t GeoModelMeshFacets::surface( index_t f ) const
+    index_t GeoModelMeshPolygons::surface( index_t f ) const
     {
         test_and_initialize();
         ringmesh_assert( f < mesh_->nb_polygons() );
         return surface_id_[f];
     }
 
-    index_t GeoModelMeshFacets::index_in_surface( index_t f ) const
+    index_t GeoModelMeshPolygons::index_in_surface( index_t f ) const
     {
         test_and_initialize();
         ringmesh_assert( f < mesh_->nb_polygons() );
         return polygon_id_[f];
     }
 
-    GeoModelMeshFacets::FacetType GeoModelMeshFacets::type(
+    GeoModelMeshPolygons::PolygonType GeoModelMeshPolygons::type(
         index_t p,
         index_t& index ) const
     {
@@ -1554,7 +1554,7 @@ namespace RINGMesh {
         index_t polygon = index_in_surface( p );
         index_t s = surface( p );
         for( index_t t = TRIANGLE; t < ALL; t++ ) {
-            FacetType T = static_cast< FacetType >( t );
+            PolygonType T = static_cast< PolygonType >( t );
             if( polygon < nb_polygons( s, T ) ) {
                 index = polygon;
                 return T;
@@ -1566,7 +1566,7 @@ namespace RINGMesh {
         return NO_POLYGON;
     }
 
-    index_t GeoModelMeshFacets::nb_polygons( FacetType type ) const
+    index_t GeoModelMeshPolygons::nb_polygons( PolygonType type ) const
     {
         test_and_initialize();
         switch( type ) {
@@ -1584,7 +1584,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelMeshFacets::nb_polygons( index_t s, FacetType type ) const
+    index_t GeoModelMeshPolygons::nb_polygons( index_t s, PolygonType type ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
@@ -1604,7 +1604,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelMeshFacets::polygon( index_t s, index_t f, FacetType type ) const
+    index_t GeoModelMeshPolygons::polygon( index_t s, index_t f, PolygonType type ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
@@ -1623,13 +1623,13 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelMeshFacets::nb_triangle() const
+    index_t GeoModelMeshPolygons::nb_triangle() const
     {
         test_and_initialize();
         return nb_triangle_;
     }
 
-    index_t GeoModelMeshFacets::nb_triangle( index_t s ) const
+    index_t GeoModelMeshPolygons::nb_triangle( index_t s ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
@@ -1637,20 +1637,20 @@ namespace RINGMesh {
             - surface_polygon_ptr_[ALL * s + TRIANGLE];
     }
 
-    index_t GeoModelMeshFacets::triangle( index_t s, index_t t ) const
+    index_t GeoModelMeshPolygons::triangle( index_t s, index_t t ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
         return surface_polygon_ptr_[ALL * s + TRIANGLE] + t;
     }
 
-    index_t GeoModelMeshFacets::nb_quad() const
+    index_t GeoModelMeshPolygons::nb_quad() const
     {
         test_and_initialize();
         return nb_quad_;
     }
 
-    index_t GeoModelMeshFacets::nb_quad( index_t s ) const
+    index_t GeoModelMeshPolygons::nb_quad( index_t s ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
@@ -1658,20 +1658,20 @@ namespace RINGMesh {
             - surface_polygon_ptr_[ALL * s + QUAD];
     }
 
-    index_t GeoModelMeshFacets::quad( index_t s, index_t q ) const
+    index_t GeoModelMeshPolygons::quad( index_t s, index_t q ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
         return surface_polygon_ptr_[ALL * s + QUAD] + q;
     }
 
-    index_t GeoModelMeshFacets::nb_unclassified_polygon() const
+    index_t GeoModelMeshPolygons::nb_unclassified_polygon() const
     {
         test_and_initialize();
         return nb_unclassified_polygon_;
     }
 
-    index_t GeoModelMeshFacets::nb_unclassified_polygon( index_t s ) const
+    index_t GeoModelMeshPolygons::nb_unclassified_polygon( index_t s ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
@@ -1679,14 +1679,14 @@ namespace RINGMesh {
             - surface_polygon_ptr_[ALL * s + UNCLASSIFIED_POLYGON];
     }
 
-    index_t GeoModelMeshFacets::unclassified_polygon( index_t s, index_t p ) const
+    index_t GeoModelMeshPolygons::unclassified_polygon( index_t s, index_t p ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
         return surface_polygon_ptr_[ALL * s + UNCLASSIFIED_POLYGON] + p;
     }
 
-    void GeoModelMeshFacets::clear()
+    void GeoModelMeshPolygons::clear()
     {
         surface_polygon_ptr_.clear();
         nb_triangle_ = 0;
@@ -1696,14 +1696,14 @@ namespace RINGMesh {
         mesh_builder->clear_polygons( true, false );
     }
 
-    void GeoModelMeshFacets::test_and_initialize() const
+    void GeoModelMeshPolygons::test_and_initialize() const
     {
         if( !is_initialized() ) {
-            const_cast< GeoModelMeshFacets* >( this )->initialize();
+            const_cast< GeoModelMeshPolygons* >( this )->initialize();
         }
     }
 
-    void GeoModelMeshFacets::initialize()
+    void GeoModelMeshPolygons::initialize()
     {
         gmm_.vertices.test_and_initialize();
         clear();
@@ -1778,7 +1778,7 @@ namespace RINGMesh {
                 index_t nb_vertices = surface.nb_mesh_element_vertices( f );
                 index_t cur_polygon = NO_ID;
                 if( nb_vertices < 5 ) {
-                    FacetType T = static_cast< FacetType >( nb_vertices - 3 );
+                    PolygonType T = static_cast< PolygonType >( nb_vertices - 3 );
                     cur_polygon = polygon_offset_per_type[T] + cur_polygon_per_type[T]++;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         index_t v_id = geomodel_vertices.geomodel_vertex_id(
@@ -1807,7 +1807,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < mesh_->nb_polygons(); i++ ) {
             sorted_indices[i] = i;
         }
-        GeoModelMeshFacetsSort action( *mesh_, surface_id_ );
+        GeoModelMeshPolygonsSort action( *mesh_, surface_id_ );
         std::sort( sorted_indices.begin(), sorted_indices.end(), action );
         mesh_builder->permute_polygons( sorted_indices );
 
@@ -1821,7 +1821,7 @@ namespace RINGMesh {
         nb_unclassified_polygon_ = nb_polygon_per_type[UNCLASSIFIED_POLYGON];
     }
 
-    void GeoModelMeshFacets::disconnect_along_lines()
+    void GeoModelMeshPolygons::disconnect_along_lines()
     {
         std::unique_ptr< Mesh2DBuilder > mesh_builder =
             Mesh2DBuilder::create_builder( *mesh_ );
@@ -1841,25 +1841,25 @@ namespace RINGMesh {
         }
     }
 
-    vec3 GeoModelMeshFacets::center( index_t f ) const
+    vec3 GeoModelMeshPolygons::center( index_t f ) const
     {
         test_and_initialize();
         return mesh_->polygon_barycenter( f );
     }
 
-    vec3 GeoModelMeshFacets::normal( index_t f ) const
+    vec3 GeoModelMeshPolygons::normal( index_t f ) const
     {
         test_and_initialize();
         return mesh_->polygon_normal( f );
     }
 
-    double GeoModelMeshFacets::area( index_t f ) const
+    double GeoModelMeshPolygons::area( index_t f ) const
     {
         test_and_initialize();
         return mesh_->polygon_area( f );
     }
 
-    const AABBTree2D& GeoModelMeshFacets::aabb() const
+    const AABBTree2D& GeoModelMeshPolygons::aabb() const
     {
         test_and_initialize();
         return mesh_->polygons_aabb();

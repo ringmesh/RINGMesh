@@ -99,7 +99,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelMeshVertices );
     public:
         friend class GeoModelMeshEdges;
-        friend class GeoModelMeshFacets;
+        friend class GeoModelMeshPolygons;
         friend class GeoModelMeshCells;
 
         GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm );
@@ -473,17 +473,17 @@ namespace RINGMesh {
         GeoModelVertexMapper vertex_mapper_;
     };
 
-    class RINGMESH_API GeoModelMeshFacets: public GeoModelMeshBase {
-    ringmesh_disable_copy( GeoModelMeshFacets );
+    class RINGMESH_API GeoModelMeshPolygons: public GeoModelMeshBase {
+    ringmesh_disable_copy( GeoModelMeshPolygons );
     public:
         friend class GeoModelMesh;
 
-        enum FacetType {
+        enum PolygonType {
             TRIANGLE, QUAD, UNCLASSIFIED_POLYGON, ALL, NO_POLYGON
         };
 
-        GeoModelMeshFacets( GeoModelMesh& gmm, GeoModel& gm );
-        ~GeoModelMeshFacets();
+        GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel& gm );
+        ~GeoModelMeshPolygons();
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -545,14 +545,14 @@ namespace RINGMesh {
          * of the corresponding type of \p p in the owing surface
          * @return the type of the polygon \p p
          */
-        FacetType type( index_t f, index_t& index ) const;
+        PolygonType type( index_t f, index_t& index ) const;
 
         /*!
          * Get the number of polygons of the corresponding type
          * @param[in] type the corresponding type
          * @return the number of polygons
          */
-        index_t nb_polygons( FacetType type = ALL ) const;
+        index_t nb_polygons( PolygonType type = ALL ) const;
         /*!
          * Get the number of polygons of the corresponding type
          * in the given surface of the GeoModel
@@ -560,7 +560,7 @@ namespace RINGMesh {
          * @param[in] type the corresponding type
          * @return the number of polygons
          */
-        index_t nb_polygons( index_t s, FacetType type = ALL ) const;
+        index_t nb_polygons( index_t s, PolygonType type = ALL ) const;
         /*!
          * Get the polygon index in the GeoModelMesh
          * @param[in] s the surface index owing the polygon
@@ -580,7 +580,7 @@ namespace RINGMesh {
          * taken into account.
          * @return the polygon index
          */
-        index_t polygon( index_t s, index_t p, FacetType type = ALL ) const;
+        index_t polygon( index_t s, index_t p, PolygonType type = ALL ) const;
 
         /*!
          * Get the number of triangles in the GeoModelMesh
@@ -1330,7 +1330,7 @@ namespace RINGMesh {
     public:
         GeoModelMeshVertices vertices;
         GeoModelMeshEdges edges;
-        GeoModelMeshFacets polygons;
+        GeoModelMeshPolygons polygons;
         GeoModelMeshCells cells;
     };
 

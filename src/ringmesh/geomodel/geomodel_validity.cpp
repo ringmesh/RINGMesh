@@ -56,7 +56,7 @@ namespace {
 
     bool triangles_intersect(
         const GeoModel& geomodel,
-        const GeoModelMeshFacets& polygons,
+        const GeoModelMeshPolygons& polygons,
         index_t triangle1,
         index_t triangle2 )
     {
@@ -76,7 +76,7 @@ namespace {
 
     bool triangle_quad_intersect(
         const GeoModel& geomodel,
-        const GeoModelMeshFacets& polygons,
+        const GeoModelMeshPolygons& polygons,
         index_t triangle,
         index_t quad )
     {
@@ -103,7 +103,7 @@ namespace {
 
     bool quad_quad_intersect(
         const GeoModel& geomodel,
-        const GeoModelMeshFacets& polygons,
+        const GeoModelMeshPolygons& polygons,
         index_t quad1,
         index_t quad2 )
     {
@@ -200,7 +200,7 @@ namespace {
      */
     bool polygons_share_line_edge(
         const GeoModel& geomodel,
-        const GeoModelMeshFacets& polygons,
+        const GeoModelMeshPolygons& polygons,
         index_t p1,
         index_t p2 )
     {
@@ -231,7 +231,7 @@ namespace {
     }
 
     bool polygons_are_adjacent(
-        const GeoModelMeshFacets& polygons,
+        const GeoModelMeshPolygons& polygons,
         index_t p1,
         index_t p2 )
     {
@@ -318,17 +318,17 @@ namespace {
         bool is_triangle( index_t f ) const
         {
             index_t index;
-            return polygons_.type( f, index ) == GeoModelMeshFacets::TRIANGLE;
+            return polygons_.type( f, index ) == GeoModelMeshPolygons::TRIANGLE;
         }
         bool is_quad( index_t f ) const
         {
             index_t index;
-            return polygons_.type( f, index ) == GeoModelMeshFacets::QUAD;
+            return polygons_.type( f, index ) == GeoModelMeshPolygons::QUAD;
         }
 
     private:
         const GeoModel& geomodel_;
-        const GeoModelMeshFacets& polygons_;
+        const GeoModelMeshPolygons& polygons_;
         std::vector< bool >& has_intersection_;
     };
 
@@ -742,7 +742,7 @@ namespace {
         const GeoModel& geomodel,
         std::vector< index_t >& edge_indices )
     {
-        const GeoModelMeshFacets& polygons = geomodel.mesh.polygons;
+        const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
         for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
             for( index_t p = 0; p < polygons.nb_polygons( s ); p++ ) {
                 index_t polygon_id = polygons.polygon( s, p );
@@ -839,7 +839,7 @@ namespace {
             GEO::ThreadGroup threads;
             if( mode == ValidityCheckMode::GEOMETRY
                 || mode == ValidityCheckMode::ALL ) {
-                threads.push_back( new TestFacetIntersections( *this ) );
+                threads.push_back( new TestPolygonIntersections( *this ) );
             }
             if( mode != ValidityCheckMode::TOPOLOGY ) {
                 // Add geometrical validity check
@@ -1049,9 +1049,9 @@ namespace {
          * @details Operates on the global mesh
          * @note This is a very expensive test.
          */
-        class TestFacetIntersections final : public GEO::Thread {
+        class TestPolygonIntersections final : public GEO::Thread {
         public:
-            TestFacetIntersections( GeoModelValidityCheck& validity )
+            TestPolygonIntersections( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }

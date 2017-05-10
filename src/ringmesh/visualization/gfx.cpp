@@ -744,9 +744,9 @@ namespace RINGMesh {
         }
     };
 
-    class FacetAttributeGfx: public AttributeGfx {
+    class PolygonAttributeGfx: public AttributeGfx {
     public:
-        FacetAttributeGfx( AttributeGfxManager& manager )
+        PolygonAttributeGfx( AttributeGfxManager& manager )
             : AttributeGfx( manager )
         {
         }
@@ -792,9 +792,9 @@ namespace RINGMesh {
         }
     };
 
-    class FacetVertexAttributeGfx: public AttributeGfx {
+    class PolygonVertexAttributeGfx: public AttributeGfx {
     public:
-        FacetVertexAttributeGfx( AttributeGfxManager& manager )
+        PolygonVertexAttributeGfx( AttributeGfxManager& manager )
             : AttributeGfx( manager )
         {
         }
@@ -849,8 +849,8 @@ namespace RINGMesh {
             minimum_( 0.0 ),
             maximum_( 0.0 )
     {
-        attributes_[polygons].reset( new FacetAttributeGfx( *this ) );
-        attributes_[polygon_vertices].reset( new FacetVertexAttributeGfx( *this ) );
+        attributes_[polygons].reset( new PolygonAttributeGfx( *this ) );
+        attributes_[polygon_vertices].reset( new PolygonVertexAttributeGfx( *this ) );
         attributes_[cells].reset( new CellAttributeGfx( *this ) );
         attributes_[cell_vertices].reset( new CellVertexAttributeGfx( *this ) );
     }
