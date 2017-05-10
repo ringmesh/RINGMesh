@@ -315,15 +315,15 @@ namespace {
             }
         }
 
-        bool is_triangle( index_t f ) const
+        bool is_triangle( index_t p ) const
         {
             index_t index;
-            return polygons_.type( f, index ) == GeoModelMeshPolygons::TRIANGLE;
+            return polygons_.type( p, index ) == GeoModelMeshPolygons::TRIANGLE;
         }
-        bool is_quad( index_t f ) const
+        bool is_quad( index_t p ) const
         {
             index_t index;
-            return polygons_.type( f, index ) == GeoModelMeshPolygons::QUAD;
+            return polygons_.type( p, index ) == GeoModelMeshPolygons::QUAD;
         }
 
     private:
@@ -643,19 +643,19 @@ namespace {
         const GeoModelMeshVertices& geomodel_vertices =
             surface.geomodel().mesh.vertices;
         std::vector< index_t > invalid_corners;
-        for( index_t f = 0; f < surface.nb_mesh_elements(); ++f ) {
-            for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); ++v ) {
-                if( surface.polygon_adjacent_index( f, v ) == NO_ID
+        for( index_t p = 0; p < surface.nb_mesh_elements(); ++p ) {
+            for( index_t v = 0; v < surface.nb_mesh_element_vertices( p ); ++v ) {
+                if( surface.polygon_adjacent_index( p, v ) == NO_ID
                     && !is_edge_on_line( surface.geomodel(),
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f, v ),
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
-                            surface.next_polygon_vertex_index( f, v ) ) ) ) {
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), p, v ),
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), p,
+                            surface.next_polygon_vertex_index( p, v ) ) ) ) {
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), p,
                             v ) );
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
-                            surface.next_polygon_vertex_index( f, v ) ) );
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), p,
+                            surface.next_polygon_vertex_index( p, v ) ) );
                 }
             }
         }
@@ -1071,17 +1071,17 @@ namespace {
 
                     if( nb_intersections > 0 ) {
                         GEO::Mesh mesh;
-                        for( index_t f = 0; f < has_intersection.size(); f++ ) {
-                            if( !has_intersection[f] ) continue;
+                        for( index_t p = 0; p < has_intersection.size(); p++ ) {
+                            if( !has_intersection[p] ) continue;
                             GEO::vector< index_t > vertices;
                             vertices.reserve(
-                                validity_.geomodel_.mesh.polygons.nb_vertices( f ) );
+                                validity_.geomodel_.mesh.polygons.nb_vertices( p ) );
                             for( index_t v = 0;
-                                v < validity_.geomodel_.mesh.polygons.nb_vertices( f );
+                                v < validity_.geomodel_.mesh.polygons.nb_vertices( p );
                                 v++ ) {
                                 index_t id = mesh.vertices.create_vertex(
                                     validity_.geomodel_.mesh.vertices.vertex(
-                                        validity_.geomodel_.mesh.polygons.vertex( f,
+                                        validity_.geomodel_.mesh.polygons.vertex( p,
                                             v ) ).data() );
                                 vertices.push_back( id );
                             }

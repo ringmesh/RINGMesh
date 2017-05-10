@@ -837,8 +837,8 @@ namespace RINGMesh {
         if( cell_id_.is_bound() ) {
             cell_id_.unbind();
         }
-        if( facet_id_.is_bound() ) {
-            facet_id_.unbind();
+        if( polygon_id_.is_bound() ) {
+            polygon_id_.unbind();
         }
     }
 
@@ -1267,17 +1267,17 @@ namespace RINGMesh {
     bool GeoModelMeshCells::is_cell_facet_on_surface(
         index_t c,
         index_t f,
-        index_t& facet,
+        index_t& polygon,
         bool& side ) const
     {
         test_and_initialize_cell_facet();
-        facet = facet_id_[mesh_->cell_facet( c, f )];
-        if( facet != NO_ID ) {
-            vec3 facet_normal = gmm_.polygons.normal( facet );
+        polygon = polygon_id_[mesh_->cell_facet( c, f )];
+        if( polygon != NO_ID ) {
+            vec3 facet_normal = gmm_.polygons.normal( polygon );
             vec3 cell_facet_normal = mesh_->cell_facet_normal( c, f );
             side = dot( facet_normal, cell_facet_normal ) > 0;
         }
-        return facet != NO_ID;
+        return polygon != NO_ID;
     }
 
     bool GeoModelMeshCells::are_corners_to_duplicate(
@@ -1413,7 +1413,7 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::test_and_initialize_cell_facet() const
     {
-        if( !facet_id_.is_bound() ) {
+        if( !polygon_id_.is_bound() ) {
             const_cast< GeoModelMeshCells* >( this )->initialize_cell_facet();
         }
     }
@@ -1422,15 +1422,15 @@ namespace RINGMesh {
     {
         gmm_.polygons.test_and_initialize();
 
-        facet_id_.bind( mesh_->cell_facet_attribute_manager(), "facet_id" );
-        facet_id_.fill( NO_ID );
+        polygon_id_.bind( mesh_->cell_facet_attribute_manager(), "polygon_id" );
+        polygon_id_.fill( NO_ID );
         const NNSearch& nn_search = gmm_.polygons.nn_search();
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh_->nb_cell_facets( c ); f++ ) {
                 std::vector< index_t > result = nn_search.get_neighbors(
                     mesh_->cell_facet_barycenter( c, f ), gm_.epsilon() );
                 if( !result.empty() ) {
-                    facet_id_[mesh_->cell_facet( c, f )] = result[0];
+                    polygon_id_[mesh_->cell_facet( c, f )] = result[0];
                     // If there are more than 1 matching facet, this is WRONG
                     // and the vertex indices should be checked too [Jeanne]
                     ringmesh_assert( result.size() == 1 );
@@ -1508,41 +1508,41 @@ namespace RINGMesh {
         return mesh_->nb_polygons();
     }
 
-    index_t GeoModelMeshPolygons::nb_vertices( index_t f ) const
+    index_t GeoModelMeshPolygons::nb_vertices( index_t p ) const
     {
         test_and_initialize();
-        ringmesh_assert( f < mesh_->nb_polygons() );
-        return mesh_->nb_polygon_vertices( f );
+        ringmesh_assert( p < mesh_->nb_polygons() );
+        return mesh_->nb_polygon_vertices( p );
     }
 
-    index_t GeoModelMeshPolygons::vertex( index_t f, index_t v ) const
+    index_t GeoModelMeshPolygons::vertex( index_t p, index_t v ) const
     {
         test_and_initialize();
-        ringmesh_assert( f < mesh_->nb_polygons() );
-        ringmesh_assert( v < mesh_->nb_polygon_vertices( f ) );
-        return mesh_->polygon_vertex( f, v );
+        ringmesh_assert( p < mesh_->nb_polygons() );
+        ringmesh_assert( v < mesh_->nb_polygon_vertices( p ) );
+        return mesh_->polygon_vertex( p, v );
     }
 
-    index_t GeoModelMeshPolygons::adjacent( index_t f, index_t e ) const
+    index_t GeoModelMeshPolygons::adjacent( index_t p, index_t e ) const
     {
         test_and_initialize();
-        ringmesh_assert( f < mesh_->nb_polygons() );
-        ringmesh_assert( e < mesh_->nb_polygon_vertices( f ) );
-        return mesh_->polygon_adjacent( f, e );
+        ringmesh_assert( p < mesh_->nb_polygons() );
+        ringmesh_assert( e < mesh_->nb_polygon_vertices( p ) );
+        return mesh_->polygon_adjacent( p, e );
     }
 
-    index_t GeoModelMeshPolygons::surface( index_t f ) const
+    index_t GeoModelMeshPolygons::surface( index_t p ) const
     {
         test_and_initialize();
-        ringmesh_assert( f < mesh_->nb_polygons() );
-        return surface_id_[f];
+        ringmesh_assert( p < mesh_->nb_polygons() );
+        return surface_id_[p];
     }
 
-    index_t GeoModelMeshPolygons::index_in_surface( index_t f ) const
+    index_t GeoModelMeshPolygons::index_in_surface( index_t p ) const
     {
         test_and_initialize();
-        ringmesh_assert( f < mesh_->nb_polygons() );
-        return polygon_id_[f];
+        ringmesh_assert( p < mesh_->nb_polygons() );
+        return polygon_id_[p];
     }
 
     GeoModelMeshPolygons::PolygonType GeoModelMeshPolygons::type(
@@ -1604,19 +1604,19 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelMeshPolygons::polygon( index_t s, index_t f, PolygonType type ) const
+    index_t GeoModelMeshPolygons::polygon( index_t s, index_t p, PolygonType type ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
         switch( type ) {
             case TRIANGLE:
-                return triangle( s, f );
+                return triangle( s, p );
             case QUAD:
-                return quad( s, f );
+                return quad( s, p );
             case UNCLASSIFIED_POLYGON:
-                return unclassified_polygon( s, f );
+                return unclassified_polygon( s, p );
             case ALL:
-                return surface_polygon_ptr_[ALL * s] + f;
+                return surface_polygon_ptr_[ALL * s] + p;
             default:
                 ringmesh_assert_not_reached;
                 return 0;
@@ -1721,8 +1721,8 @@ namespace RINGMesh {
                 surface_polygon_ptr_[ALL * s + TRIANGLE + 1] +=
                     surface.nb_mesh_elements();
             } else {
-                for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-                    switch( surface.nb_mesh_element_vertices( f ) ) {
+                for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
+                    switch( surface.nb_mesh_element_vertices( p ) ) {
                         case 3:
                             nb_polygon_per_type[TRIANGLE]++;
                             surface_polygon_ptr_[ALL * s + TRIANGLE + 1]++;
@@ -1774,15 +1774,15 @@ namespace RINGMesh {
         std::vector< index_t > cur_polygon_per_type( ALL, 0 );
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s );
-            for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-                index_t nb_vertices = surface.nb_mesh_element_vertices( f );
+            for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
+                index_t nb_vertices = surface.nb_mesh_element_vertices( p );
                 index_t cur_polygon = NO_ID;
                 if( nb_vertices < 5 ) {
                     PolygonType T = static_cast< PolygonType >( nb_vertices - 3 );
                     cur_polygon = polygon_offset_per_type[T] + cur_polygon_per_type[T]++;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         index_t v_id = geomodel_vertices.geomodel_vertex_id(
-                            surface.gmme(), f, v );
+                            surface.gmme(), p, v );
                         ringmesh_assert( v_id != NO_ID );
                         mesh_builder->set_polygon_vertex( cur_polygon, v, v_id );
                     }
@@ -1790,12 +1790,12 @@ namespace RINGMesh {
                     std::vector< index_t > vertices( nb_vertices );
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         vertices[v] = geomodel_vertices.geomodel_vertex_id(
-                            surface.gmme(), f, v );
+                            surface.gmme(), p, v );
                     }
                     cur_polygon = mesh_builder->create_polygon( vertices );
                 }
                 surface_id_[cur_polygon] = s;
-                polygon_id_[cur_polygon] = f;
+                polygon_id_[cur_polygon] = p;
             }
         }
 
@@ -1841,22 +1841,22 @@ namespace RINGMesh {
         }
     }
 
-    vec3 GeoModelMeshPolygons::center( index_t f ) const
+    vec3 GeoModelMeshPolygons::center( index_t p ) const
     {
         test_and_initialize();
-        return mesh_->polygon_barycenter( f );
+        return mesh_->polygon_barycenter( p );
     }
 
-    vec3 GeoModelMeshPolygons::normal( index_t f ) const
+    vec3 GeoModelMeshPolygons::normal( index_t p ) const
     {
         test_and_initialize();
-        return mesh_->polygon_normal( f );
+        return mesh_->polygon_normal( p );
     }
 
-    double GeoModelMeshPolygons::area( index_t f ) const
+    double GeoModelMeshPolygons::area( index_t p ) const
     {
         test_and_initialize();
-        return mesh_->polygon_area( f );
+        return mesh_->polygon_area( p );
     }
 
     const AABBTree2D& GeoModelMeshPolygons::aabb() const

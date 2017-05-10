@@ -139,15 +139,15 @@ namespace {
          */
         void write_polygons( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
-            const GeoModelMeshFacets& polygons = geomodel_mesh.polygons;
+            const GeoModelMeshPolygons& polygons = geomodel_mesh.polygons;
             out << "boundary" << std::endl;
             out << polygons.nb() << std::endl;
-            for( index_t f = 0; f < polygons.nb(); f++ ) {
+            for( index_t p = 0; p < polygons.nb(); p++ ) {
                 index_t not_used = 0;
-                out << polygons.surface( f ) + mfem_offset << " ";
-                out << polygon_type_mfem[polygons.type( f, not_used )] << " ";
-                for( index_t v = 0; v < polygons.nb_vertices( f ); v++ ) {
-                    out << polygons.vertex( f, v ) << " ";
+                out << polygons.surface( p ) + mfem_offset << " ";
+                out << polygon_type_mfem[polygons.type( p, not_used )] << " ";
+                for( index_t v = 0; v < polygons.nb_vertices( p ); v++ ) {
+                    out << polygons.vertex( p, v ) << " ";
                 }
                 out << std::endl;
             }

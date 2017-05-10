@@ -134,7 +134,7 @@ namespace RINGMesh {
          */
         bool polygon_is_degenerate(
             const Surface& S,
-            index_t f,
+            index_t p,
             std::vector< index_t >& colocated_vertices );
 
         /*!

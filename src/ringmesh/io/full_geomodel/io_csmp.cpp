@@ -115,7 +115,7 @@ namespace {
             regions << "no properties" << std::endl;
 
             const GeoModelMesh& mesh = gm.mesh;
-            const GeoModelMeshFacets& polygons = mesh.polygons;
+            const GeoModelMeshPolygons& polygons = mesh.polygons;
             index_t count = 0;
             // Conversion from (X,Y,Z) to (X,Z,-Y)
             signed_index_t conversion_sign[3] = { 1, 1, -1 };
@@ -368,8 +368,8 @@ namespace {
                     RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T];
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
                         index_t cell = mesh.cells.cell( r, el );
-                        for( index_t f = 0; f < descriptor.nb_polygons; f++ ) {
-                            index_t csmp_f = descriptor.polygon[f];
+                        for( index_t p = 0; p < descriptor.nb_polygons; p++ ) {
+                            index_t csmp_f = descriptor.polygon[p];
                             index_t adj = mesh.cells.adjacent( cell, csmp_f );
                             if( adj == GEO::NO_CELL ) {
                                 data << " " << std::setw( 7 ) << -28;

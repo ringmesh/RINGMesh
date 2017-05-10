@@ -252,7 +252,7 @@ namespace {
         const index_t nb_cells = region.nb_mesh_elements();
         cell_facet_centers.reserve( 4 * nb_cells );
         for( index_t c = 0; c < nb_cells; ++c ) {
-            for( index_t f = 0; f <= 3; ++f ) {
+            for( index_t f = 0; f < 4; ++f ) {
                 cell_facet_centers.push_back( region.cell_facet_barycenter( c, f ) );
             }
         }
@@ -592,12 +592,12 @@ namespace {
         std::vector< vec3 >& border_edge_barycenters )
     {
         const Surface& S = geomodel.surface( surface_id );
-        for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
+        for( index_t p = 0; p < S.nb_mesh_elements(); ++p ) {
             for( index_t e = 0; e < 3; ++e ) {
-                if( S.is_on_border( f, e ) ) {
+                if( S.is_on_border( p, e ) ) {
                     const vec3 barycenter = GEO::Geom::barycenter(
-                        S.mesh_element_vertex( f, e ),
-                        S.mesh_element_vertex( f, ( e + 1 ) % 3 ) );
+                        S.mesh_element_vertex( p, e ),
+                        S.mesh_element_vertex( p, ( e + 1 ) % 3 ) );
                     border_edge_barycenters.push_back( barycenter );
                 }
             }

@@ -103,7 +103,7 @@ namespace {
             index_t interface_id,
             std::ofstream& out ) const
         {
-            const GeoModelMeshFacets& polygons = geomodel.mesh.polygons;
+            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
             const GeoModelGeologicalEntity& entity = geomodel.geological_entity(
                 Interface::type_name_static(), interface_id );
             std::string sep;

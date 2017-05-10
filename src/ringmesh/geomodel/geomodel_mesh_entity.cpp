@@ -670,8 +670,8 @@ namespace RINGMesh {
         // No zero area polygon
         // No polygon incident to the same vertex check local and global indices
         index_t nb_degenerate = 0;
-        for( index_t f = 0; f < mesh2d_->nb_polygons(); f++ ) {
-            if( polygon_is_degenerate( *this, f ) ) {
+        for( index_t p = 0; p < mesh2d_->nb_polygons(); p++ ) {
+            if( polygon_is_degenerate( *this, p ) ) {
                 nb_degenerate++;
             }
         }
@@ -684,14 +684,14 @@ namespace RINGMesh {
         // No duplicated polygon
         GEO::vector< index_t > colocated;
         // GEO::mesh_detect_duplicated_facets( mesh_, colocated ) ; // not implemented yet 
-        index_t nb_duplicated_f = 0;
-        for( index_t f = 0; f < colocated.size(); ++f ) {
-            if( colocated[f] != f ) {
-                nb_duplicated_f++;
+        index_t nb_duplicated_p = 0;
+        for( index_t p = 0; p < colocated.size(); ++p ) {
+            if( colocated[p] != p ) {
+                nb_duplicated_p++;
             }
         }
-        if( nb_duplicated_f > 0 ) {
-            Logger::warn( "GeoModelEntity", gmme(), " mesh has ", nb_duplicated_f,
+        if( nb_duplicated_p > 0 ) {
+            Logger::warn( "GeoModelEntity", gmme(), " mesh has ", nb_duplicated_p,
                 " duplicated polygons " );
             valid = false;
         }

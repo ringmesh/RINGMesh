@@ -139,23 +139,23 @@ namespace RINGMesh {
 
     bool GeoModelBuilderRepair::polygon_is_degenerate(
         const Surface& S,
-        index_t f,
+        index_t p,
         std::vector< index_t >& colocated_vertices )
     {
-        index_t nb_vertices = S.nb_mesh_element_vertices( f );
+        index_t nb_vertices = S.nb_mesh_element_vertices( p );
         if( nb_vertices != 3 ) {
             index_t* vertices = (index_t*) alloca( nb_vertices * sizeof(index_t) );
             for( index_t lv = 0; lv < nb_vertices; ++lv ) {
-                vertices[lv] = colocated_vertices[S.mesh_element_vertex_index( f,
+                vertices[lv] = colocated_vertices[S.mesh_element_vertex_index( p,
                     lv )];
             }
             std::sort( vertices, vertices + nb_vertices );
             return std::unique( vertices, vertices + nb_vertices )
                 != vertices + nb_vertices;
         }
-        index_t v1 = colocated_vertices[S.mesh_element_vertex_index( f, 0 )];
-        index_t v2 = colocated_vertices[S.mesh_element_vertex_index( f, 1 )];
-        index_t v3 = colocated_vertices[S.mesh_element_vertex_index( f, 2 )];
+        index_t v1 = colocated_vertices[S.mesh_element_vertex_index( p, 0 )];
+        index_t v2 = colocated_vertices[S.mesh_element_vertex_index( p, 1 )];
+        index_t v3 = colocated_vertices[S.mesh_element_vertex_index( p, 2 )];
         return v1 == v2 || v2 == v3 || v3 == v1;
     }
 
@@ -165,8 +165,8 @@ namespace RINGMesh {
         std::vector< index_t >& colocated_vertices )
     {
         f_is_degenerate.resize( S.nb_mesh_elements() );
-        for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
-            f_is_degenerate[f] = polygon_is_degenerate( S, f, colocated_vertices );
+        for( index_t p = 0; p < S.nb_mesh_elements(); ++p ) {
+            f_is_degenerate[p] = polygon_is_degenerate( S, p, colocated_vertices );
         }
     }
 
@@ -352,14 +352,14 @@ namespace RINGMesh {
                     if( t == 1 ) {
                         std::unique_ptr< Mesh2DBuilder > builder =
                             builder_.geometry.create_surface_builder( e );
-                        for( index_t f_itr = 0; f_itr < E.nb_mesh_elements();
-                            f_itr++ ) {
-                            for( index_t fv_itr = 0;
-                                fv_itr < E.nb_mesh_element_vertices( f_itr );
-                                fv_itr++ ) {
-                                builder->set_polygon_vertex( f_itr, fv_itr,
-                                    colocated[E.mesh_element_vertex_index( f_itr,
-                                        fv_itr )] );
+                        for( index_t p_itr = 0; p_itr < E.nb_mesh_elements();
+                            p_itr++ ) {
+                            for( index_t fpv_itr = 0;
+                                fpv_itr < E.nb_mesh_element_vertices( p_itr );
+                                fpv_itr++ ) {
+                                builder->set_polygon_vertex( p_itr, fpv_itr,
+                                    colocated[E.mesh_element_vertex_index( p_itr,
+                                        fpv_itr )] );
                             }
                         }
                         builder->delete_vertices( to_delete );

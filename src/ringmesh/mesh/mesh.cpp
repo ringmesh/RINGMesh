@@ -181,11 +181,11 @@ namespace RINGMesh {
         // are neighbors in polygons_ and check that they are in the same polygon
 
         // Check if the edge is in one of the polygon
-        for( index_t f = 0; f < nb_polygons(); ++f ) {
+        for( index_t poly = 0; poly < nb_polygons(); ++poly ) {
             bool found = false;
-            index_t prev = polygon_vertex( f, nb_polygon_vertices( f ) - 1 );
-            for( index_t v = 0; v < nb_polygon_vertices( f ); ++v ) {
-                index_t p = polygon_vertex( f, v );
+            index_t prev = polygon_vertex( poly, nb_polygon_vertices( poly ) - 1 );
+            for( index_t v = 0; v < nb_polygon_vertices( poly ); ++v ) {
+                index_t p = polygon_vertex( poly, v );
                 if( ( prev == in0 && p == in1 ) || ( prev == in1 && p == in0 ) ) {
                     found = true;
                     break;
@@ -193,7 +193,7 @@ namespace RINGMesh {
                 prev = p;
             }
             if( found ) {
-                return f;
+                return poly;
             }
         }
         return NO_ID;
@@ -212,15 +212,15 @@ namespace RINGMesh {
         return NO_ID;
     }
 
-    index_t Mesh2D::closest_vertex_in_polygon( index_t f, const vec3& v ) const
+    index_t Mesh2D::closest_vertex_in_polygon( index_t p, const vec3& v ) const
     {
         index_t result = 0;
         double dist = DBL_MAX;
-        for( index_t p = 0; p < nb_polygon_vertices( f ); p++ ) {
-            double distance = length2( v - vertex( polygon_vertex( f, p ) ) );
+        for( index_t v_id = 0; v_id < nb_polygon_vertices( p ); v_id++ ) {
+            double distance = length2( v - vertex( polygon_vertex( p, v_id ) ) );
             if( dist > distance ) {
                 dist = distance;
-                result = p;
+                result = v_id;
             }
         }
         return result;
@@ -229,22 +229,22 @@ namespace RINGMesh {
     std::vector< index_t > Mesh2D::polygons_around_vertex(
         index_t surf_vertex_id,
         bool border_only,
-        index_t f0 ) const
+        index_t p0 ) const
     {
         std::vector< index_t > result;
 
-        index_t f = 0;
-        while( f0 == NO_ID && f < nb_polygons() ) {
-            for( index_t lv = 0; lv < nb_polygon_vertices( f ); lv++ ) {
-                if( polygon_vertex( f, lv ) == surf_vertex_id ) {
-                    f0 = f;
+        index_t p = 0;
+        while( p0 == NO_ID && p < nb_polygons() ) {
+            for( index_t lv = 0; lv < nb_polygon_vertices( p ); lv++ ) {
+                if( polygon_vertex( p, lv ) == surf_vertex_id ) {
+                    p0 = p;
                     break;
                 }
             }
-            f++;
+            p++;
         }
 
-        ringmesh_assert( f0 != NO_ID );
+        ringmesh_assert( p0 != NO_ID );
 
         // Flag the visited polygons
         std::vector< index_t > visited;
@@ -252,18 +252,18 @@ namespace RINGMesh {
 
         // Stack of the adjacent polygons
         std::stack< index_t > S;
-        S.push( f0 );
-        visited.push_back( f0 );
+        S.push( p0 );
+        visited.push_back( p0 );
 
         do {
-            index_t f = S.top();
+            index_t p = S.top();
             S.pop();
 
-            for( index_t v = 0; v < nb_polygon_vertices( f ); ++v ) {
-                if( polygon_vertex( f, v ) == surf_vertex_id ) {
-                    index_t adj_P = polygon_adjacent( f, v );
-                    index_t prev = prev_polygon_vertex( f, v );
-                    index_t adj_prev = polygon_adjacent( f, prev );
+            for( index_t v = 0; v < nb_polygon_vertices( p ); ++v ) {
+                if( polygon_vertex( p, v ) == surf_vertex_id ) {
+                    index_t adj_P = polygon_adjacent( p, v );
+                    index_t prev = prev_polygon_vertex( p, v );
+                    index_t adj_prev = polygon_adjacent( p, prev );
 
                     if( adj_P != NO_ID ) {
                         // The edge starting at P is not on the boundary
@@ -282,10 +282,10 @@ namespace RINGMesh {
 
                     if( border_only ) {
                         if( adj_P == NO_ID || adj_prev == NO_ID ) {
-                            result.push_back( f );
+                            result.push_back( p );
                         }
                     } else {
-                        result.push_back( f );
+                        result.push_back( p );
                     }
 
                     // We are done with this polygon

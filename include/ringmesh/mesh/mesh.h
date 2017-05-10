@@ -344,7 +344,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Compute closest vertex in a polygon to a point
-         * @param[in] polygon_index Facet index
+         * @param[in] polygon_index Polygon index
          * @param[in] query_point Coordinates of the point to which distance is measured
          * @return Index of the vertex of @param polygon_index closest to @param query_point
          */
@@ -484,25 +484,25 @@ namespace RINGMesh {
          * @brief Computes the normal of the Mesh2D at the vertex location
          * it computes the average value of polygon normal neighbors
          * @param[in] vertex_id the vertex index
-         * @param[in] f0 index of a polygon that contain the vertex \param vertex_id
+         * @param[in] p0 index of a polygon that contain the vertex \param vertex_id
          * @return the normal at the given vertex
          */
-        vec3 normal_at_vertex( index_t vertex_id, index_t f0 = NO_ID ) const
+        vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
         {
             ringmesh_assert( vertex_id < nb_vertices() );
-            index_t f = 0;
-            while( f0 == NO_ID && f < nb_polygons() ) {
-                for( index_t lv = 0; lv < nb_polygon_vertices( f ); lv++ ) {
-                    if( polygon_vertex( f, lv ) == vertex_id ) {
-                        f0 = f;
+            index_t p = 0;
+            while( p0 == NO_ID && p < nb_polygons() ) {
+                for( index_t lv = 0; lv < nb_polygon_vertices( p ); lv++ ) {
+                    if( polygon_vertex( p, lv ) == vertex_id ) {
+                        p0 = p;
                         break;
                     }
                 }
-                f++;
+                p++;
             }
 
             std::vector< index_t > polygon_ids = polygons_around_vertex( vertex_id,
-                false, f0 );
+                false, p0 );
             vec3 norm;
             for( index_t polygon_id : polygon_ids ) {
                 norm += polygon_normal( polygon_id );
@@ -552,8 +552,8 @@ namespace RINGMesh {
         {
             if( !nn_search_ ) {
                 std::vector< vec3 > polygon_centers( nb_polygons() );
-                for( index_t f = 0; f < nb_polygons(); ++f ) {
-                    polygon_centers[f] = polygon_barycenter( f );
+                for( index_t p = 0; p < nb_polygons(); ++p ) {
+                    polygon_centers[p] = polygon_barycenter( p );
                 }
                 nn_search_.reset( new NNSearch( polygon_centers, true ) );
             }
