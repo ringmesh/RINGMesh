@@ -113,17 +113,18 @@ namespace {
             }
             NNSearch nn_search( edge_vertices, false );
 
-            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-                for( index_t e = 0; e < mesh.facets.nb_vertices( f ); e++ ) {
-                    index_t adj = mesh.facets.adjacent( f, e );
+            const GeoModelMeshFacets& polygons = geomodel.mesh.polygons;
+            for( index_t f = 0; f < polygons.nb(); f++ ) {
+                for( index_t e = 0; e < polygons.nb_vertices( f ); e++ ) {
+                    index_t adj = polygons.adjacent( f, e );
                     if( adj != GEO::NO_CELL && adj < f ) {
                         pipes.emplace_back( f + cell_offset, adj + cell_offset );
                     } else {
                         const vec3& e0 = mesh.vertices.vertex(
-                            mesh.facets.vertex( f, e ) );
+                            polygons.vertex( f, e ) );
                         const vec3& e1 = mesh.vertices.vertex(
-                            mesh.facets.vertex( f,
-                                ( e + 1 ) % mesh.facets.nb_vertices( f ) ) );
+                            polygons.vertex( f,
+                                ( e + 1 ) % polygons.nb_vertices( f ) ) );
                         vec3 query = 0.5 * ( e0 + e1 );
                         std::vector< index_t > results = nn_search.get_neighbors(
                             query, geomodel.epsilon() );
@@ -162,9 +163,9 @@ namespace {
                 out_xyz << mesh.cells.barycenter( c ) << std::endl;
                 out_vol << mesh.cells.volume( c ) << std::endl;
             }
-            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-                out_xyz << mesh.facets.center( f ) << std::endl;
-                out_vol << mesh.facets.area( f ) << std::endl;
+            for( index_t p = 0; p < polygons.nb(); p++ ) {
+                out_xyz << polygons.center( p ) << std::endl;
+                out_vol << polygons.area( p ) << std::endl;
             }
         }
         index_t binomial_coef( index_t n ) const

@@ -430,7 +430,7 @@ namespace RINGMesh {
     {
         std::unique_ptr< Mesh2DBuilder > builder = create_surface_builder(
             surface_id );
-        builder->create_facet_polygons( facets, facet_ptr );
+        builder->create_polygons( facets, facet_ptr );
         compute_surface_adjacencies( surface_id );
     }
 
@@ -440,7 +440,7 @@ namespace RINGMesh {
     {
         std::unique_ptr< Mesh2DBuilder > builder = create_surface_builder(
             surface_id );
-        builder->assign_facet_triangle_mesh( triangle_vertices );
+        builder->assign_triangle_mesh( triangle_vertices );
         compute_surface_adjacencies( surface_id );
     }
 
@@ -492,7 +492,7 @@ namespace RINGMesh {
             surface_id );
         for( index_t facet_vertex = 0; facet_vertex < corners.size();
             facet_vertex++ ) {
-            builder->set_facet_vertex( facet_id, facet_vertex,
+            builder->set_polygon_vertex( facet_id, facet_vertex,
                 corners[facet_vertex] );
         }
     }
@@ -515,7 +515,7 @@ namespace RINGMesh {
     {
         std::unique_ptr< Mesh2DBuilder > builder = create_surface_builder(
             surface_id );
-        return builder->create_facet_polygon( vertex_indices );
+        return builder->create_polygon( vertex_indices );
     }
 
     index_t GeoModelBuilderGeometry::create_region_cells(
@@ -608,7 +608,7 @@ namespace RINGMesh {
     {
         std::unique_ptr< Mesh2DBuilder > builder = create_surface_builder(
             surface_id );
-        builder->delete_facets( to_delete, remove_isolated_vertices );
+        builder->delete_polygons( to_delete, remove_isolated_vertices );
     }
     void GeoModelBuilderGeometry::delete_region_cells(
         index_t region_id,
@@ -628,7 +628,7 @@ namespace RINGMesh {
         std::unique_ptr< Mesh2DBuilder > builder = create_surface_builder(
             surface_id );
         for( index_t facet_edge = 0; facet_edge < adjacents.size(); facet_edge++ ) {
-            builder->set_facet_adjacent( facet_id, facet_edge,
+            builder->set_polygon_adjacent( facet_id, facet_edge,
                 adjacents[facet_edge] );
         }
     }
@@ -645,11 +645,11 @@ namespace RINGMesh {
             for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
                 for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
                     v++ ) {
-                    builder->set_facet_adjacent( f, v, NO_ID );
+                    builder->set_polygon_adjacent( f, v, NO_ID );
                 }
             }
         }
-        builder->connect_facets();
+        builder->connect_polygons();
     }
 
     void GeoModelBuilderGeometry::compute_region_adjacencies(
@@ -842,8 +842,8 @@ namespace RINGMesh {
                 index_t adj_e = edge_index_from_facet_and_edge_vertex_indices(
                     surface, adj_f, p0, p1 );
                 ringmesh_assert( adj_e != NO_ID );
-                builder->set_facet_adjacent( f, e, NO_ID );
-                builder->set_facet_adjacent( adj_f, adj_e, NO_ID );
+                builder->set_polygon_adjacent( f, e, NO_ID );
+                builder->set_polygon_adjacent( adj_f, adj_e, NO_ID );
                 nb_disconnected_edges++;
             }
         }
@@ -896,7 +896,7 @@ namespace RINGMesh {
                 cur_v < surface.nb_mesh_element_vertices( cur_f ); cur_v++ ) {
                 if( surface.mesh_element_vertex_index( cur_f, cur_v )
                     == old_vertex ) {
-                    builder->set_facet_vertex( cur_f, cur_v, new_vertex );
+                    builder->set_polygon_vertex( cur_f, cur_v, new_vertex );
                 }
             }
         }

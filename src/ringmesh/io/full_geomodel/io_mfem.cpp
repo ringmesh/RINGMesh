@@ -139,16 +139,15 @@ namespace {
          */
         void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
+            const GeoModelMeshFacets& polygons = geomodel_mesh.polygons;
             out << "boundary" << std::endl;
-            out << geomodel_mesh.facets.nb() << std::endl;
-            for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
+            out << polygons.nb() << std::endl;
+            for( index_t f = 0; f < polygons.nb(); f++ ) {
                 index_t not_used = 0;
-                out << geomodel_mesh.facets.surface( f ) + mfem_offset << " ";
-                out << facet_type_mfem[geomodel_mesh.facets.type( f, not_used )]
-                    << " ";
-                for( index_t v = 0; v < geomodel_mesh.facets.nb_vertices( f );
-                    v++ ) {
-                    out << geomodel_mesh.facets.vertex( f, v ) << " ";
+                out << polygons.surface( f ) + mfem_offset << " ";
+                out << facet_type_mfem[polygons.type( f, not_used )] << " ";
+                for( index_t v = 0; v < polygons.nb_vertices( f ); v++ ) {
+                    out << polygons.vertex( f, v ) << " ";
                 }
                 out << std::endl;
             }

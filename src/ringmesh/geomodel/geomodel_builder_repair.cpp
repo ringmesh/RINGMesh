@@ -357,7 +357,7 @@ namespace RINGMesh {
                             for( index_t fv_itr = 0;
                                 fv_itr < E.nb_mesh_element_vertices( f_itr );
                                 fv_itr++ ) {
-                                builder->set_facet_vertex( f_itr, fv_itr,
+                                builder->set_polygon_vertex( f_itr, fv_itr,
                                     colocated[E.mesh_element_vertex_index( f_itr,
                                         fv_itr )] );
                             }

@@ -193,11 +193,11 @@ namespace RINGMesh {
             std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
             std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
 
-        index_t nb_triangles = geomodel.mesh.facets.nb_triangle();
-        index_t nb_quads = geomodel.mesh.facets.nb_quad();
+        index_t nb_triangles = geomodel.mesh.polygons.nb_triangle();
+        index_t nb_quads = geomodel.mesh.polygons.nb_quad();
         index_t nb_unclassified_polygons =
-            geomodel.mesh.facets.nb_unclassified_polygon();
-        index_t nb_polygons = geomodel.mesh.facets.nb_polygons();
+            geomodel.mesh.polygons.nb_unclassified_polygon();
+        index_t nb_polygons = geomodel.mesh.polygons.nb_polygons();
         Logger::out( "GeoModel", std::setw( 10 ), std::left, nb_polygons,
             " polygons" );
         if( nb_triangles > 0 ) {
