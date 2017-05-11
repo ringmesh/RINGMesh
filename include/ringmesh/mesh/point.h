@@ -37,18 +37,25 @@
 
 #include <ringmesh/basic/common.h>
 
+/*!
+ * @file ringmesh/geomodel.h
+ * @author Antoine Mazuyer and Pierre Anquez
+ */
 namespace RINGMesh {
-    index_t MAX_DIM = 3;
 
     class RINGMESH_API Point {
+        static const index_t MAX_DIM = 3;
+
     public:
-        double operator()( index_t i ) const
+        Point() = delete ;
+
+        double operator[]( index_t i ) const
         {
             ringmesh_assert( i < dim_ );
             return data_[i];
         }
 
-        double& operator()( index_t i )
+        double& operator[]( index_t i )
         {
             ringmesh_assert( i < dim_ );
             return data_[i];
@@ -58,15 +65,13 @@ namespace RINGMesh {
         {
             return data_;
         }
-    private:
-        Point()
+    protected:
+        Point( index_t dim )
+            : dim_( dim )
         {
-            ringmesh_assert_not_reached;
-            dim_ = NO_ID;
         }
-
     private:
-        double data_[MAX_DIM];
+        const double data_[MAX_DIM];
         index_t dim_;
     };
 
@@ -74,7 +79,7 @@ namespace RINGMesh {
 
     public:
         Point1D()
-            : dim_( 1 )
+            : Point( 1 )
         {
             data_[0] = 0.;
         }
@@ -97,7 +102,7 @@ namespace RINGMesh {
     class RINGMESH_API Point2D: public Point {
     public:
         Point2D()
-            : dim_( 2 )
+            : Point( 2 )
         {
             data_[0] = 0.;
             data_[1] = 0.;
@@ -129,7 +134,7 @@ namespace RINGMesh {
     class RINGMESH_API Point3D: public Point {
     public:
         Point3D()
-            : dim_( 3 )
+            : Point( 3 )
         {
             data_[0] = 0.;
             data_[1] = 0.;
