@@ -442,7 +442,7 @@ namespace RINGMesh {
              */
             void clear_all_mesh_entity_vertex_map();
 
-            void resize_all_mesh_entity_vertex_maps();
+            void resize_all_mesh_entity_vertex_maps( const MeshEntityType& type );
 
             /*!
              * @brief Returns the vertex attribute of a GeoModelMeshEntity
