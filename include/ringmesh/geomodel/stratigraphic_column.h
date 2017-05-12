@@ -44,9 +44,12 @@
  * @file ringmesh/geomodel/stratigraphic_column.h
  * @brief Declarations of a stratigraphic column, stratigraphic unit, rock features
  * and so on.
+ * @author Marie Sirvent, Pierre Anquez and Francois Bonneau
  */
+
 namespace RINGMesh {
-    class GeoModelGeologicalEntity;
+    class Interface;
+    class Layer;
 
     // @todo To develop
     enum struct ROCKTYPE {
@@ -158,19 +161,12 @@ namespace RINGMesh {
         }
 
         virtual bool is_conformable_base() const = 0;
-
         virtual bool is_conformable_top() const = 0;
-
         virtual RELATION get_relation_base() const = 0;
-
         virtual RELATION get_relation_top() const = 0;
-
-        virtual const GeoModelGeologicalEntity& get_interface_base() const = 0;
-
-        virtual const GeoModelGeologicalEntity& get_interface_top() const = 0;
-
+        virtual const Interface& get_interface_base() const = 0;
+        virtual const Interface& get_interface_top() const = 0;
         virtual double get_min_thick() const = 0;
-
         virtual double get_max_thick() const = 0;
 
     protected:
@@ -190,9 +186,9 @@ namespace RINGMesh {
 
         UnsubdividedStratigraphicUnit(
             const std::string& name,
-            const GeoModelGeologicalEntity& interface_base, // TODO interface
-            const GeoModelGeologicalEntity& interface_top,
-            const GeoModelGeologicalEntity& layer,
+            const Interface& interface_base,
+            const Interface& interface_top,
+            const Layer& layer,
             RELATION relation_top,
             RELATION relation_base,
             const RockFeature& rock,
@@ -221,12 +217,12 @@ namespace RINGMesh {
             return relation_top_;
         }
 
-        virtual const GeoModelGeologicalEntity& get_interface_base() const final
+        virtual const Interface& get_interface_base() const final
         {
             return *interface_base_;
         }
 
-        virtual const GeoModelGeologicalEntity& get_interface_top() const final
+        virtual const Interface& get_interface_top() const final
         {
             return *interface_top_;
         }
@@ -242,9 +238,9 @@ namespace RINGMesh {
         }
 
     private:
-        const GeoModelGeologicalEntity* interface_top_;
-        const GeoModelGeologicalEntity* interface_base_;
-        const GeoModelGeologicalEntity* layer_;
+        const Interface* interface_top_;
+        const Interface* interface_base_;
+        const Layer* layer_;
         RELATION relation_top_;
         RELATION relation_base_;
         double min_thick_;
@@ -255,9 +251,9 @@ namespace RINGMesh {
     public:
 
         SubdividedStratigraphicUnit(
-            const std::string name,
+            const std::string& name,
             const RockFeature& rock,
-            const std::vector< const StratigraphicUnit* > sub_units )
+            const std::vector< const StratigraphicUnit* >& sub_units )
             : StratigraphicUnit( name, rock ), units_( sub_units )
         {
         }
@@ -284,19 +280,19 @@ namespace RINGMesh {
             return units_.front()->get_relation_top();
         }
 
-        virtual const GeoModelGeologicalEntity& get_interface_base() const final
+        virtual const Interface& get_interface_base() const final
         {
             return units_.back()->get_interface_base();
         }
 
-        virtual const GeoModelGeologicalEntity& get_interface_top() const final
+        virtual const Interface& get_interface_top() const final
         {
             return units_.front()->get_interface_top();
         }
 
         virtual double get_min_thick() const final
         {
-            double sum_min_thick = 0;
+            double sum_min_thick = 0.;
             for( auto unit : units_ ) {
                 sum_min_thick += unit->get_min_thick();
             }
@@ -305,7 +301,7 @@ namespace RINGMesh {
 
         virtual double get_max_thick() const final
         {
-            double sum_max_thick = 0;
+            double sum_max_thick = 0.;
             for( auto unit : units_ ) {
                 sum_max_thick += unit->get_max_thick();
             }
@@ -475,7 +471,7 @@ namespace RINGMesh {
          * @brief get_interface_base for the Stratigraphic Column
          * @return the base interface of the last unit in the Stratigraphic Column
          */
-        const GeoModelGeologicalEntity& get_interface_base() const
+        const Interface& get_interface_base() const
         {
             return ( units_.back()->get_interface_base() );
         }
@@ -483,7 +479,7 @@ namespace RINGMesh {
          * @brief get_interface_top for the Stratigraphic Column
          * @return the top interface of the first unit in the Stratigraphic Column
          */
-        const GeoModelGeologicalEntity& get_interface_top() const
+        const Interface& get_interface_top() const
         {
             return ( units_.front()->get_interface_top() );
         }

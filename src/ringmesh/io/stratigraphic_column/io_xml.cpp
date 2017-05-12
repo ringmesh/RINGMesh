@@ -39,7 +39,7 @@ namespace {
         virtual void load(
             const std::string& filename,
             StratigraphicColumn& column,
-            GeoModel& geomodel )
+            GeoModel& geomodel ) final
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(
@@ -54,7 +54,7 @@ namespace {
 
         virtual void save(
             const StratigraphicColumn& column,
-            const std::string& filename )
+            const std::string& filename ) final
         {
             throw RINGMeshException( "I/O",
                 "Saving of a StratigraphicColumn not implemented yet" );

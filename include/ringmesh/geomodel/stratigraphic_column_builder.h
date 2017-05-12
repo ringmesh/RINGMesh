@@ -33,6 +33,11 @@
  *     FRANCE
  */
 
+/*!
+ * @file ringmesh/geomodel/stratigraphic_column_builder.h
+ * @author Marie Sirvent, Pierre Anquez and Francois Bonneau
+ */
+
 #pragma once
 
 #include <ringmesh/basic/common.h>
