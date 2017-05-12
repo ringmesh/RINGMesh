@@ -47,7 +47,7 @@ namespace RINGMesh {
         static const index_t MAX_DIM = 3;
 
     public:
-        Point() = delete ;
+        Point() = delete;
 
         double operator[]( index_t i ) const
         {
@@ -61,7 +61,7 @@ namespace RINGMesh {
             return data_[i];
         }
 
-        double * data() const
+        double* data() const
         {
             return data_;
         }
@@ -93,7 +93,7 @@ namespace RINGMesh {
         {
             return data_[0];
         }
-        double &x()
+        double& x()
         {
             return data_[0];
         }
@@ -162,15 +162,15 @@ namespace RINGMesh {
             return data_[2];
         }
 
-        double &x()
+        double& x()
         {
             return data_[0];
         }
-        double &y()
+        double& y()
         {
             return data_[1];
         }
-        double &z()
+        double& z()
         {
             return data_[2];
         }
