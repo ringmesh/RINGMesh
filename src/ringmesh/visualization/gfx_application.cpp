@@ -202,10 +202,11 @@ namespace RINGMesh {
             for( index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
                 compute_mesh_entity_bbox( GM_.surface( s ), bbox_ );
             }
-        } else {
+        } else if ( GM_.nb_lines() > 0 ) {
             for( index_t l = 0; l < GM_.nb_lines(); l++ ) {
                 compute_mesh_entity_bbox( GM_.line( l ), bbox_ );
             }
+        } else {
             for( index_t c = 0; c < GM_.nb_corners(); c++ ) {
                 compute_mesh_entity_bbox( GM_.corner( c ), bbox_ );
             }
