@@ -51,9 +51,9 @@ namespace RINGMesh {
 
     UnsubdividedStratigraphicUnit::UnsubdividedStratigraphicUnit(
         const std::string& name,
-        const GeoModelGeologicalEntity& interface_base,
-        const GeoModelGeologicalEntity& interface_top,
-        const GeoModelGeologicalEntity& layer,
+        const Interface& interface_base,
+        const Interface& interface_top,
+        const Layer& layer,
         RELATION relation_top,
         RELATION relation_base,
         const RockFeature& rock,
