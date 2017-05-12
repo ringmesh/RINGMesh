@@ -231,7 +231,6 @@ namespace RINGMesh {
         bool border_only,
         index_t p0 ) const
     {
-        std::vector< index_t > result;
 
         index_t p = 0;
         while( p0 == NO_ID && p < nb_polygons() ) {
@@ -255,6 +254,8 @@ namespace RINGMesh {
         S.push( p0 );
         visited.push_back( p0 );
 
+        std::vector< index_t > result;
+        result.reserve( 10 );
         do {
             index_t p = S.top();
             S.pop();
