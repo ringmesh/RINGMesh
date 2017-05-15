@@ -1417,12 +1417,13 @@ namespace RINGMesh {
     {
         GEO::Application::draw_viewer_properties();
 
+        int id = 0;
         if( !geomodels_.empty() ) {
             ImGui::Separator();
             ImGui::Text( "GeoModel" );
             for( index_t i = 0; i < geomodels_.size(); i++ ) {
                 GeoModelViewer& viewer = *geomodels_[i];
-                ImGui::PushID( static_cast< int >( i ) );
+                ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.GM_.name().c_str(),
                     &viewer.is_visible_ ) ) {
                     current_viewer_ = i;
@@ -1448,7 +1449,7 @@ namespace RINGMesh {
             ImGui::Text( "Mesh" );
             for( index_t i = 0; i < meshes_.size(); i++ ) {
                 MeshViewer& viewer = *meshes_[i];
-                ImGui::PushID( static_cast< int >( i ) );
+                ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.name_.c_str(), &viewer.is_visible_ ) ) {
                     current_viewer_ = i;
                     current_viewer_type_ = MESH;
