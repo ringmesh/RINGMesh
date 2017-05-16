@@ -164,13 +164,14 @@ namespace {
      */
     bool is_edge_on_line( const GeoModel& geomodel, index_t v0, index_t v1 )
     {
+        MeshEntityType line_type = Line::type_name_static();
         std::vector< GMEVertex > v0_line_bme =
-            geomodel.mesh.vertices.gme_type_vertices( Line::type_name_static(), v0 );
+            geomodel.mesh.vertices.gme_type_vertices( line_type, v0 );
         if( v0_line_bme.empty() ) {
             return false;
         }
         std::vector< GMEVertex > v1_line_bme =
-            geomodel.mesh.vertices.gme_type_vertices( Line::type_name_static(), v1 );
+            geomodel.mesh.vertices.gme_type_vertices( line_type, v1 );
         if( v1_line_bme.empty() ) {
             return false;
         }
@@ -643,18 +644,18 @@ namespace {
         const GeoModelMeshVertices& geomodel_vertices =
             surface.geomodel().mesh.vertices;
         std::vector< index_t > invalid_corners;
+        gmme_id S_id = surface.gmme();
         for( index_t p = 0; p < surface.nb_mesh_elements(); ++p ) {
             for( index_t v = 0; v < surface.nb_mesh_element_vertices( p ); ++v ) {
                 if( surface.polygon_adjacent_index( p, v ) == NO_ID
                     && !is_edge_on_line( surface.geomodel(),
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), p, v ),
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), p,
+                        geomodel_vertices.geomodel_vertex_id( S_id, p, v ),
+                        geomodel_vertices.geomodel_vertex_id( S_id, p,
                             surface.next_polygon_vertex_index( p, v ) ) ) ) {
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), p,
-                            v ) );
+                        geomodel_vertices.geomodel_vertex_id( S_id, p, v ) );
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), p,
+                        geomodel_vertices.geomodel_vertex_id( S_id, p,
                             surface.next_polygon_vertex_index( p, v ) ) );
                 }
             }
@@ -667,11 +668,10 @@ namespace {
 
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
                 Logger::warn( "GeoModel", " Invalid surface boundary: ",
-                    invalid_corners.size() / 2, " boundary edges of ",
-                    surface.gmme(), "  are in no line of the geomodel " );
+                    invalid_corners.size() / 2, " boundary edges of ", S_id,
+                    "  are in no line of the geomodel " );
                 Logger::warn( "GeoModel", " Saved in file: ", file.str() );
             }
-
             return false;
         } else {
             return true;

@@ -164,8 +164,9 @@ namespace RINGMesh {
         const gmme_id& mesh_entity_id,
         index_t mesh_entity_vertex_index ) const
     {
-        ringmesh_assert( mesh_entity_vertex_index <
-            geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() );
+        ringmesh_assert(
+            mesh_entity_vertex_index
+                < geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() );
 
         return vertex_map( mesh_entity_id )[mesh_entity_vertex_index];
     }
@@ -181,8 +182,9 @@ namespace RINGMesh {
         index_t v,
         const MeshEntityType& mesh_entity_type ) const
     {
-        std::vector< GMEVertex > result;
         const std::vector< GMEVertex >& all_gmes = mesh_entity_vertex_indices( v );
+        std::vector< GMEVertex > result;
+        result.reserve( all_gmes.size() );
         for( const GMEVertex& vertex : all_gmes ) {
             if( vertex.gmme.type() == mesh_entity_type ) {
                 result.push_back( vertex );
@@ -277,17 +279,17 @@ namespace RINGMesh {
                 e++ ) {
                 const GeoModelMeshEntity& E = geomodel_.mesh_entity( cur_entity_type,
                     e );
+                gmme_id id = E.gmme();
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                    index_t old_m_id = geomodel_vertex_index( E.gmme(), v );
+                    index_t old_m_id = geomodel_vertex_index( id, v );
                     index_t new_m_id = old2new[old_m_id];
-                    set_vertex_map_value( E.gmme(), v, new_m_id );
+                    set_vertex_map_value( id, v, new_m_id );
 
                     // Merge gme_vertices information
                     if( std::find( gme_vertices_[new_m_id].begin(),
-                        gme_vertices_[new_m_id].end(), GMEVertex( E.gmme(), v ) )
+                        gme_vertices_[new_m_id].end(), GMEVertex( id, v ) )
                         == gme_vertices_[new_m_id].end() ) {
-                        gme_vertices_[new_m_id].push_back(
-                            GMEVertex( E.gmme(), v ) );
+                        gme_vertices_[new_m_id].push_back( GMEVertex( id, v ) );
                     }
                 }
             }
@@ -297,7 +299,7 @@ namespace RINGMesh {
     void GeoModelMeshVertices::GeoModelVertexMapper::unbind_vertex_map(
         const gmme_id& mesh_entity_id )
     {
-        resize_all_mesh_entity_vertex_maps();
+        resize_all_mesh_entity_vertex_maps( mesh_entity_id.type() );
         if( vertex_maps_.at( mesh_entity_id.type() )->is_attribute_bound(
             mesh_entity_id.index() ) ) {
             vertex_maps_.at( mesh_entity_id.type() )->unbind(
@@ -322,7 +324,7 @@ namespace RINGMesh {
     bool GeoModelMeshVertices::GeoModelVertexMapper::test_and_initialize_mesh_entity_vertex_map(
         const gmme_id& mesh_entity_id )
     {
-        resize_all_mesh_entity_vertex_maps();
+        resize_all_mesh_entity_vertex_maps( mesh_entity_id.type() );
         if( !is_mesh_entity_vertex_map_initialized( mesh_entity_id ) ) {
             initialize_mesh_entity_vertex_map( mesh_entity_id );
             return false;
@@ -350,15 +352,11 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMeshVertices::GeoModelVertexMapper::resize_all_mesh_entity_vertex_maps()
+    void GeoModelMeshVertices::GeoModelVertexMapper::resize_all_mesh_entity_vertex_maps(
+        const MeshEntityType& type )
     {
-        for( index_t t = 0; t < MeshEntityTypeManager::nb_mesh_entity_types();
-            t++ ) {
-            const MeshEntityType& cur_type =
-                MeshEntityTypeManager::mesh_entity_types()[t];
-            vertex_maps_.at( cur_type )->resize(
-                geomodel_.nb_mesh_entities( cur_type ), nullptr );
-        }
+        vertex_maps_.at( type )->resize( geomodel_.nb_mesh_entities( type ),
+            nullptr );
     }
 
     GEO::AttributesManager& GeoModelMeshVertices::GeoModelVertexMapper::mesh_entity_vertex_attribute_manager(
@@ -420,15 +418,17 @@ namespace RINGMesh {
             }
 
             // Map and vertex
+            gmme_id id = E.gmme();
             for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                mesh_builder->set_vertex( count, E.vertex( v ) );
+                index_t local_count = count + v;
+                mesh_builder->set_vertex( local_count, E.vertex( v ) );
                 // Map from vertices of MeshEntities to GeoModelMeshVertices
-                vertex_mapper_.set_vertex_map_value( E.gmme(), v, count );
-                vertex_mapper_.add_to_gme_vertices( GMEVertex( E.gmme(), v ),
-                    count );
-                // Global vertex index increment
-                count++;
+                vertex_mapper_.set_vertex_map_value( id, v, local_count );
+                vertex_mapper_.add_to_gme_vertices( GMEVertex( id, v ),
+                    local_count );
             }
+            // Global vertex index increment
+            count += E.nb_vertices();
         }
     }
 
@@ -531,7 +531,6 @@ namespace RINGMesh {
         index_t entity_mesh_element_index,
         index_t vertex_local_index ) const
     {
-
         index_t entity_vertex_index =
             gm_.mesh_entity( mesh_entity ).mesh_element_vertex_index(
                 entity_mesh_element_index, vertex_local_index );
@@ -627,8 +626,7 @@ namespace RINGMesh {
             mesh_->vertices_nn_search().get_colocated_index_mapping( gm_.epsilon(),
                 old2new );
         if( nb_colocalised_vertices > 0 ) {
-            std::vector< index_t > vector_copy( old2new.begin(), old2new.end() );
-            erase_vertices( vector_copy );
+            erase_vertices( old2new );
         }
     }
 
@@ -976,9 +974,10 @@ namespace RINGMesh {
             case GEO::MESH_CONNECTOR:
                 return nb_connector( r );
             case GEO::MESH_NB_CELL_TYPES:
-                ringmesh_assert( region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
-                    - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r]
-                    == gm_.region( r ).nb_mesh_elements() );
+                ringmesh_assert(
+                    region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
+                        - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r]
+                        == gm_.region( r ).nb_mesh_elements() );
                 return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
                     - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r];
             default:
@@ -1380,7 +1379,8 @@ namespace RINGMesh {
         index_t duplicate_vertex_index ) const
     {
         test_and_initialize_duplication();
-        ringmesh_assert( duplicate_vertex_index < duplicated_vertex_indices_.size() );
+        ringmesh_assert(
+            duplicate_vertex_index < duplicated_vertex_indices_.size() );
         return duplicated_vertex_indices_[duplicate_vertex_index];
     }
 
@@ -1781,6 +1781,7 @@ namespace RINGMesh {
         std::vector< index_t > cur_polygon_per_type( ALL, 0 );
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s );
+            gmme_id surface_id = surface.gmme();
             for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
                 index_t nb_vertices = surface.nb_mesh_element_vertices( p );
                 index_t cur_polygon = NO_ID;
@@ -1789,7 +1790,7 @@ namespace RINGMesh {
                     cur_polygon = polygon_offset_per_type[T] + cur_polygon_per_type[T]++;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         index_t v_id = geomodel_vertices.geomodel_vertex_id(
-                            surface.gmme(), p, v );
+                            surface_id, p, v );
                         ringmesh_assert( v_id != NO_ID );
                         mesh_builder->set_polygon_vertex( cur_polygon, v, v_id );
                     }
@@ -1797,7 +1798,7 @@ namespace RINGMesh {
                     std::vector< index_t > vertices( nb_vertices );
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         vertices[v] = geomodel_vertices.geomodel_vertex_id(
-                            surface.gmme(), p, v );
+                            surface_id, p, v );
                     }
                     cur_polygon = mesh_builder->create_polygon( vertices );
                 }
