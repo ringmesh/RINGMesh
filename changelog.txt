@@ -6,9 +6,11 @@ New Features:
       The Logger uses variadic templates, you can use as many parameters as you want in the function.
  * Add possibility to run specific validity check on GeoModels (topology, geometry, all, ...)
  * ASCII surface STL export
+ * First implementation of a stratigraphic column
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
+ * Cannot delete Mesh in RINGMeshView
 
 Improvements:
  * Refactoring of the io to have smaller files
