@@ -337,11 +337,9 @@ namespace {
         bool surf_side,
         GeoModelBuilderTSolid& geomodel_builder )
     {
-        geomodel_builder.topology.add_mesh_entity_boundary(
-            gmme_id( Region::type_name_static(), region_id ), surface_id,
-            surf_side );
-        geomodel_builder.topology.add_mesh_entity_in_boundary(
-            gmme_id( Surface::type_name_static(), surface_id ), region_id );
+        geomodel_builder.topology.add_mesh_entity_boundary_relation(
+            gmme_id( Region::type_name_static(), region_id ),
+            gmme_id( Surface::type_name_static(), surface_id ), surf_side );
     }
 
     /*!
@@ -686,7 +684,9 @@ namespace {
             }
 
             gmme_id id = builder().topology.create_mesh_entity< Surface >();
+            DEBUG( id );
             builder().geology.add_mesh_entity_parent( id, parent );
+
             builder().geology.set_geological_entity_geol_feature( parent,
                 GeoModelEntity::determine_geological_type( type ) );
         }
@@ -773,8 +773,9 @@ namespace {
                     builder().topology.create_mesh_entity< Region >();
                 builder().info.set_mesh_entity_name( region_id, name );
                 for( const std::pair< index_t, bool >& info : region_boundaries ) {
-                    builder().topology.add_mesh_entity_boundary( region_id,
-                        info.first, info.second );
+                    gmme_id surface_id( Surface::type_name_static(), info.first );
+                    builder().topology.add_mesh_entity_boundary_relation( region_id,
+                        surface_id, info.second );
                 }
             } else {
                 for( const std::pair< index_t, bool >& info : region_boundaries ) {
