@@ -182,8 +182,10 @@ namespace RINGMesh {
                 store.end() );
 
             // QC
-            ringmesh_assert( geomodel_.nb_mesh_entities( type_name )
-                == nb_initial_mesh_entities_[type] - nb_removed_mesh_entities_[type] );
+            ringmesh_assert(
+                geomodel_.nb_mesh_entities( type_name )
+                    == nb_initial_mesh_entities_[type]
+                        - nb_removed_mesh_entities_[type] );
         }
 
         void clear_null_geological_entities( index_t type )
@@ -198,8 +200,10 @@ namespace RINGMesh {
                 store.end() );
 
             // QC
-            ringmesh_assert( geomodel_.nb_geological_entities( type_name )
-                == nb_initial_geological_entities_[type] - nb_removed_geological_entities_[type] );
+            ringmesh_assert(
+                geomodel_.nb_geological_entities( type_name )
+                    == nb_initial_geological_entities_[type]
+                        - nb_removed_geological_entities_[type] );
         }
         void update_mesh_entity_connectivity()
         {
@@ -459,6 +463,19 @@ namespace RINGMesh {
         void update_universe_sided_boundaries( Universe& U );
 
         // --- Deletion of some values the GeoModel storage
+        template< typename TEST >
+        void remove_invalid_values(
+            std::vector< index_t >& vector,
+            const TEST& test )
+        {
+            auto new_end = std::remove_if( vector.begin(), vector.end(), test );
+            if( new_end == vector.begin() ) {
+                // Clear instead of erase, because the behavior would be undefined.
+                vector.clear();
+            } else if( new_end < vector.end() ) {
+                vector.erase( new_end, vector.end() );
+            }
+        }
         void remove_invalid_values(
             std::vector< gmme_id >& vector,
             const gmme_id& invalid_value )
@@ -482,7 +499,7 @@ namespace RINGMesh {
             } else {
                 GeoModelMeshEntityAccess gmme_access( E );
                 remove_invalid_values( gmme_access.modifiable_boundaries(),
-                    invalid );
+                    [&invalid, &E](index_t i) {return E.boundary_gmme( i ) == invalid;} );
             }
         }
         void delete_invalid_in_boundary( GeoModelMeshEntity& E )
@@ -495,7 +512,7 @@ namespace RINGMesh {
             } else {
                 GeoModelMeshEntityAccess gmme_access( E );
                 remove_invalid_values( gmme_access.modifiable_in_boundaries(),
-                    invalid );
+                    [&invalid, &E](index_t i) {return E.in_boundary_gmme( i ) == invalid;} );
             }
         }
         void delete_invalid_parents( GeoModelMeshEntity& E );

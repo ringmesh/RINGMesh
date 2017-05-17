@@ -90,8 +90,9 @@ int main()
             GeoModel invalid_model;
             make_geomodel_copy( in, "broken model 1", invalid_model );
             GeoModelBuilder geomodel_breaker( invalid_model );
-            geomodel_breaker.topology.add_mesh_entity_boundary(
-                invalid_model.surface( 0 ).gmme(), 4 );
+            geomodel_breaker.topology.add_mesh_entity_boundary_relation(
+                invalid_model.surface( 0 ).gmme(),
+                gmme_id( Line::type_name_static(), 4 ) );
             verdict( invalid_model, "detect artificial added surface boundary" );
         }
 
