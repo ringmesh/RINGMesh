@@ -83,7 +83,7 @@ namespace RINGMesh {
 
         // Create and launch the threads for launching the app window
         // and the one for closing the window
-        std::thread start( [&app]() {app.start();} );
+        std::thread start( &RINGMeshApplication::start, &app );
         std::thread quit( [&app]() {
             // Wait some seconds to be sure that the windows is really opened
             wait( 4000 );
