@@ -185,13 +185,21 @@ namespace RINGMesh {
         }
 
         index_t add_boundary_relationship(
-            const gmme_id& boundary,
-            const gmme_id& in_boundary )
+            const gmme_id& in_boundary,
+            const gmme_id& boundary )
         {
             index_t relationship_id =
                 static_cast< index_t >( boundary_relationships_.size() );
-            boundary_relationships_.emplace_back( boundary, in_boundary );
+            boundary_relationships_.emplace_back( in_boundary, boundary );
             return relationship_id;
+        }
+
+        index_t find_boundary_relationship(
+            const gmme_id& in_boundary,
+            const gmme_id& boundary )
+        {
+            return find( boundary_relationships_,
+                BoundaryRelationship( in_boundary, boundary ) );
         }
 
         void set_boundary_to_boundary_relationship(
@@ -214,6 +222,11 @@ namespace RINGMesh {
                 const gmme_id& boundary )
                 : in_boundary_id_( in_boundary ), boundary_id_( boundary )
             {
+            }
+            bool operator==( const BoundaryRelationship& rhs ) const
+            {
+                return in_boundary_id_ == rhs.in_boundary_id_
+                    && boundary_id_ == rhs.boundary_id_;
             }
             gmme_id in_boundary_id_;
             gmme_id boundary_id_;
