@@ -175,14 +175,6 @@ namespace RINGMesh {
             return boundary_relationships_[id].in_boundary_id_;
         }
 
-        void print() const
-        {
-            for( const BoundaryRelationship& i : boundary_relationships_ ) {
-                DEBUG( i.in_boundary_id_ );
-                DEBUG( i.boundary_id_ );
-            }
-        }
-
     private:
         void register_geology_relationship(
             const GeologicalEntityType& parent_type_name,

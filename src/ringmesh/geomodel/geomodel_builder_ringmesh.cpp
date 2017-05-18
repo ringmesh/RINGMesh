@@ -111,7 +111,6 @@ namespace RINGMesh {
         {
             file_line.get_line();
             file_line.get_fields();
-            DEBUG( entity );
             if( MeshEntityTypeManager::is_region( entity.type() ) ) {
                 // Second line : signed indices of boundaries
                 for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
@@ -131,7 +130,6 @@ namespace RINGMesh {
                 // Second line : indices of boundaries
                 for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
                     gmme_id boundary( type, file_line.field_as_uint( c ) );
-                    DEBUG( boundary );
                     builder_.topology.add_mesh_entity_boundary_relation( entity,
                         boundary );
                 }

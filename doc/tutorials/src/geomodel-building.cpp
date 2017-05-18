@@ -406,11 +406,6 @@ int main()
         // Surfaces are bounded by Lines
         // Region are bounded by Surfaces
 
-        const Corner& c0 = geomodel.corner(0);
-        const Line& l0 = geomodel.line(0);
-        const Line& l3 = geomodel.line(3);
-        const Line& l13 = geomodel.line(13);
-
         // For corner 0
         gmme_id corner0( Corner::type_name_static(), 0 );
         builder.topology.add_mesh_entity_boundary_relation(
@@ -420,18 +415,6 @@ int main()
         builder.topology.add_mesh_entity_boundary_relation(
             gmme_id( Line::type_name_static(), 3 ), corner0 );
 
-
-
-        for( index_t i = 0; i < c0.nb_in_boundary(); i++ ) {
-            DEBUG( c0.in_boundary_gmme( i ) );
-        }
-
-
-        for( index_t i = 0; i < l3.nb_boundaries(); i++ ) {
-            DEBUG( l3.boundary_gmme( i ) );
-        }
-
-
         // For corner 1
         gmme_id corner1( Corner::type_name_static(), 1 );
         builder.topology.add_mesh_entity_boundary_relation(
@@ -440,22 +423,6 @@ int main()
             gmme_id( Line::type_name_static(), 3 ), corner1 );
         builder.topology.add_mesh_entity_boundary_relation(
             gmme_id( Line::type_name_static(), 17 ), corner1 );
-
-
-
-        for( index_t i = 0; i < c0.nb_in_boundary(); i++ ) {
-            DEBUG( c0.in_boundary_gmme( i ) );
-        }
-
-
-        for( index_t i = 0; i < l3.nb_boundaries(); i++ ) {
-            DEBUG( l3.boundary_gmme( i ) );
-        }
-
-
-        geomodel.entity_type_manager().relationship_manager.print();
-
-//        exit(0);
 
         // For corner 2
         gmme_id corner2( Corner::type_name_static(), 2 );
