@@ -114,6 +114,10 @@ namespace RINGMesh {
          */
         void complete_entity_connectivity();
 
+        void remove_mesh_entity_boundary_relation(
+            const gmme_id& in_boundary,
+            const gmme_id& boundary );
+
         void add_mesh_entity_boundary_relation(
             const gmme_id& boundary,
             const gmme_id& in_boundary,

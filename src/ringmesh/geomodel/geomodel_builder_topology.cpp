@@ -311,12 +311,33 @@ namespace RINGMesh {
         }
     }
 
-//    void GeoModelBuilderTopology::remove_mesh_entity_boundary_relation(
-//        const gmme_id& in_boundary,
-//        const gmme_id& boundary )
-//    {
-//
-//    }
+    void GeoModelBuilderTopology::remove_mesh_entity_boundary_relation(
+        const gmme_id& in_boundary,
+        const gmme_id& boundary )
+    {
+        RelationshipManager& manager =
+            geomodel_access_.modifiable_entity_type_manager().relationship_manager;
+        index_t relation_id = manager.find_boundary_relationship( in_boundary,
+            boundary );
+        if( relation_id == NO_ID ) {
+            std::ostringstream message;
+            message << "No boundary relation found between " << boundary << " and "
+                << in_boundary;
+            throw RINGMeshException( "Entity", message.str() );
+        }
+        GeoModelMeshEntityAccess boundary_access(
+            geomodel_access_.modifiable_mesh_entity( boundary ) );
+        std::vector< index_t >& in_boundaries =
+            boundary_access.modifiable_in_boundaries();
+        std::remove_if( in_boundaries.begin(), in_boundaries.end(),
+            [relation_id](index_t relation) {return relation == relation_id;} );
+        GeoModelMeshEntityAccess in_boundary_access(
+            geomodel_access_.modifiable_mesh_entity( in_boundary ) );
+        std::vector< index_t >& boundaries =
+            in_boundary_access.modifiable_boundaries();
+        std::remove_if( boundaries.begin(), boundaries.end(),
+            [relation_id](index_t relation) {return relation == relation_id;} );
+    }
 
     void GeoModelBuilderTopology::add_mesh_entity_boundary_relation(
         const gmme_id& in_boundary,
