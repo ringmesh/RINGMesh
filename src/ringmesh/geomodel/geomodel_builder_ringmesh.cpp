@@ -111,6 +111,7 @@ namespace RINGMesh {
         {
             file_line.get_line();
             file_line.get_fields();
+            DEBUG( entity );
             if( MeshEntityTypeManager::is_region( entity.type() ) ) {
                 // Second line : signed indices of boundaries
                 for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
@@ -124,14 +125,15 @@ namespace RINGMesh {
                     builder_.topology.add_mesh_entity_boundary_relation( entity,
                         gmme_id( Surface::type_name_static(), s ), side );
                 }
-            } else if( !MeshEntityTypeManager::is_surface( entity.type() ) ) {
-                MeshEntityType type = MeshEntityTypeManager::in_boundary_type(
+            } else {
+                MeshEntityType type = MeshEntityTypeManager::boundary_type(
                     entity.type() );
-                // Second line : indices of its in boundaries
+                // Second line : indices of boundaries
                 for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
-                    gmme_id in_boundary( type, file_line.field_as_uint( c ) );
-                    builder_.topology.add_mesh_entity_boundary_relation( in_boundary,
-                        entity );
+                    gmme_id boundary( type, file_line.field_as_uint( c ) );
+                    DEBUG( boundary );
+                    builder_.topology.add_mesh_entity_boundary_relation( entity,
+                        boundary );
                 }
             }
         }

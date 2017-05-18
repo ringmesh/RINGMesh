@@ -132,7 +132,8 @@ namespace RINGMesh {
         UniverseAccess universe_access( geomodel_access_.modifiable_universe() );
         universe_access.copy( from.universe() );
         geomodel_access_.modifiable_epsilon() = from.epsilon();
-
+        geomodel_access_.modifiable_entity_type_manager().relationship_manager =
+            from.entity_type_manager().relationship_manager;
     }
 
     bool GeoModelBuilderTopology::get_dependent_entities(
@@ -310,6 +311,13 @@ namespace RINGMesh {
         }
     }
 
+//    void GeoModelBuilderTopology::remove_mesh_entity_boundary_relation(
+//        const gmme_id& in_boundary,
+//        const gmme_id& boundary )
+//    {
+//
+//    }
+
     void GeoModelBuilderTopology::add_mesh_entity_boundary_relation(
         const gmme_id& in_boundary,
         const gmme_id& boundary,
@@ -339,8 +347,8 @@ namespace RINGMesh {
         }
         RelationshipManager& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-        index_t relation_id = manager.add_boundary_relationship( boundary,
-            in_boundary );
+        index_t relation_id = manager.add_boundary_relationship( in_boundary,
+            boundary );
         GeoModelMeshEntityAccess boundary_access( boundary_entity );
         boundary_access.modifiable_in_boundaries().push_back( relation_id );
         GeoModelMeshEntityAccess in_boundary_access( in_boundary_entity );

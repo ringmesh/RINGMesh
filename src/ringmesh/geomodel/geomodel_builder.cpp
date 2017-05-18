@@ -863,6 +863,10 @@ namespace RINGMesh {
                     gmme_id surface_index( Surface::type_name_static(), j );
                     builder_.topology.add_mesh_entity_boundary_relation(
                         surface_index, line_index );
+                    DEBUG( surface_index );
+                    DEBUG( line_index );
+                    const Line& LL = geomodel_.line( line_index.index() );
+                    DEBUG( LL.in_boundary_gmme( LL.nb_in_boundary() - 1 ) );
                 }
                 builder_.topology.add_mesh_entity_boundary_relation( line_index,
                     first_corner );
@@ -1004,7 +1008,24 @@ namespace RINGMesh {
             }
             std::set< gmme_id > to_erase;
             to_erase.insert( cur_region.gmme() );
+            DEBUG( cur_region.gmme() );
+            DEBUG( geomodel_.nb_regions() );
+            for( index_t s = 0; s < geomodel_.nb_surfaces(); s++ ) {
+                DEBUG( s );
+                const Surface& ss = geomodel_.surface( s );
+                for( index_t i = 0; i < ss.nb_in_boundary(); i++ ) {
+                    DEBUG( ss.in_boundary_gmme( i ) );
+                }
+            }
             builder_.removal.remove_mesh_entities( to_erase );
+            DEBUG( geomodel_.nb_regions() );
+            for( index_t s = 0; s < geomodel_.nb_surfaces(); s++ ) {
+                DEBUG( s );
+                const Surface& ss = geomodel_.surface( s );
+                for( index_t i = 0; i < ss.nb_in_boundary(); i++ ) {
+                    DEBUG( ss.in_boundary_gmme( i ) );
+                }
+            }
         }
         return true;
     }
@@ -1311,12 +1332,12 @@ namespace RINGMesh {
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
             const Line& L = geomodel_.line( i );
             std::set< gmge_id > cur_interfaces;
-            DEBUG( L.nb_in_boundary() );
+            DEBUG( L.gmme() );
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 const GeoModelMeshEntity& S = L.in_boundary( j );
                 gmge_id parent_interface = S.parent_gmge(
                     Interface::type_name_static() );
-                DEBUG( parent_interface );
+                DEBUG( S.gmme() );
                 cur_interfaces.insert( parent_interface );
             }
             gmge_id contact_id;

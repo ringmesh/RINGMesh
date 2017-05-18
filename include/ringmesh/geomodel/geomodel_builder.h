@@ -191,6 +191,8 @@ namespace RINGMesh {
             const gmme_id& child_gmme,
             const gmge_id& parent_gmge )
         {
+            DEBUG( child_gmme );
+            DEBUG( parent_gmge );
             GeoModelMeshEntity& mesh_entity =
                 geomodel_access_.modifiable_mesh_entity( child_gmme );
             GeoModelMeshEntityAccess gmme_access( mesh_entity );

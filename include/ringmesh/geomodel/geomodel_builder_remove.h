@@ -498,8 +498,10 @@ namespace RINGMesh {
                 return;
             } else {
                 GeoModelMeshEntityAccess gmme_access( E );
+                const RelationshipManager& manager =
+                    E.geomodel().entity_type_manager().relationship_manager;
                 remove_invalid_values( gmme_access.modifiable_boundaries(),
-                    [&invalid, &E](index_t i) {return E.boundary_gmme( i ) == invalid;} );
+                    [&invalid, &manager](index_t i) {return manager.boundary_gmme( i ) == invalid;} );
             }
         }
         void delete_invalid_in_boundary( GeoModelMeshEntity& E )
@@ -511,8 +513,10 @@ namespace RINGMesh {
                 return;
             } else {
                 GeoModelMeshEntityAccess gmme_access( E );
+                const RelationshipManager& manager =
+                    E.geomodel().entity_type_manager().relationship_manager;
                 remove_invalid_values( gmme_access.modifiable_in_boundaries(),
-                    [&invalid, &E](index_t i) {return E.in_boundary_gmme( i ) == invalid;} );
+                    [&invalid, &manager](index_t i) {return manager.in_boundary_gmme( i ) == invalid;} );
             }
         }
         void delete_invalid_parents( GeoModelMeshEntity& E );
