@@ -13,6 +13,7 @@ New Features:
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
  * Cannot delete Mesh in RINGMeshView
+ * Fix crash on RINGMeshView exit (Logger was still register)
 
 Improvements:
  * Refactoring of the io to have smaller files
