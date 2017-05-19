@@ -1117,6 +1117,7 @@ namespace RINGMesh {
     void RINGMeshApplication::quit()
     {
         glup_viewer_exit_main_loop();
+        Logger::instance()->unregister_client( console_ );
     }
 
     RINGMeshApplication* RINGMeshApplication::instance()

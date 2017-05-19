@@ -1375,11 +1375,10 @@ namespace RINGMesh {
              add_entity_child( sided_interface_gme_t, new_surface_gme_t ) ;
              */
             // Boundary information is necessary for get_local_translation_normal
-            topology.add_mesh_entity_in_boundary( new_surface_gme_t, region_index );
             bool side = ( side_name == "_plus" );
-            topology.add_mesh_entity_boundary(
+            topology.add_mesh_entity_boundary_relation(
                 gmme_id( Region::type_name_static(), region_index ),
-                new_surface_gme_t.index(), side );
+                new_surface_gme_t, side );
             /*
              // Add to universe (other side of the surface)
              add_entity_boundary( geomodel_.universe().gme_id(), new_surface_gme_t,
@@ -1519,14 +1518,13 @@ namespace RINGMesh {
                     continue;
                 }
 
-                topology.add_mesh_entity_boundary(
-                    gmme_id( Surface::type_name_static(), new_surface_id ),
-                    cur_line.gmme().index() );
                 // Adds twice in boundary for internal border.
-                topology.add_mesh_entity_in_boundary( cur_line.gmme(),
-                    new_surface_id );
-                topology.add_mesh_entity_in_boundary( cur_line.gmme(),
-                    new_surface_id );
+                topology.add_mesh_entity_boundary_relation(
+                    gmme_id( Surface::type_name_static(), new_surface_id ),
+                    cur_line.gmme() );
+                topology.add_mesh_entity_boundary_relation(
+                    gmme_id( Surface::type_name_static(), new_surface_id ),
+                    cur_line.gmme() );
 
                 good_line = true;
                 break;
@@ -1565,8 +1563,8 @@ namespace RINGMesh {
             // Force the recomputing of the geomodel vertices
             // before performing the cut.
             //                    geomodel_.mesh.vertices.clear() ;
-            geometry.disconnect_surface_polygons_along_line_edges( cur_surface.index(),
-                *it );
+            geometry.disconnect_surface_polygons_along_line_edges(
+                cur_surface.index(), *it );
         }
 
         // cutting_lines std::set contains only the lines to get the different
@@ -1692,12 +1690,10 @@ namespace RINGMesh {
 
             geology.add_geological_entity_child( sided_interface_gme_t,
                 new_new_surface_gme_t.index() );
-            topology.add_mesh_entity_in_boundary( new_new_surface_gme_t,
-                region_index );
             bool side = ( side_name == "_plus" );
-            topology.add_mesh_entity_boundary(
+            topology.add_mesh_entity_boundary_relation(
                 gmme_id( Region::type_name_static(), region_index ),
-                new_new_surface_gme_t.index(), side );
+                new_new_surface_gme_t, side );
 
             // Add to universe (other side of the surface)
             topology.add_universe_boundary( new_new_surface_gme_t.index(), !side );
@@ -2194,13 +2190,13 @@ namespace RINGMesh {
             surface_to_check.nb_in_boundary() == 1
                 || surface_to_check.nb_in_boundary() == 2 );
 
-        std::vector< index_t > polygons_around = surface_to_check.polygons_around_vertex(
-            vertex_id_in_surface, false );
+        std::vector< index_t > polygons_around =
+            surface_to_check.polygons_around_vertex( vertex_id_in_surface, false );
         ringmesh_assert( !polygons_around.empty() );
 
         vec3 surf_to_check_mean_normal_on_vertex( 0., 0., 0. );
-        for( index_t facets_around_itr = 0; facets_around_itr < polygons_around.size();
-            ++facets_around_itr ) {
+        for( index_t facets_around_itr = 0;
+            facets_around_itr < polygons_around.size(); ++facets_around_itr ) {
             index_t cur_facet_id_in_surf = polygons_around[facets_around_itr];
             vec3 cur_facet_barycenter = surface_to_check.mesh_element_barycenter(
                 cur_facet_id_in_surf );
