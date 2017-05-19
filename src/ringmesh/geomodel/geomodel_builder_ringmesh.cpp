@@ -281,8 +281,10 @@ namespace RINGMesh {
                     file_line.get_line();
                     file_line.get_fields();
                     for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {
-                        geology.add_geological_entity_child( entity,
-                            file_line.field_as_uint( in_b ) );
+                        geology.add_parent_children_relation( entity,
+                            gmme_id(
+                                geomodel_.entity_type_manager().relationship_manager.child_type(
+                                    type ), file_line.field_as_uint( in_b ) ) );
                     }
                 }
             }

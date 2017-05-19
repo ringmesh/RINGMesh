@@ -62,25 +62,25 @@ namespace RINGMesh {
 
         virtual ~GeoModelGeologicalEntity() = default;
 
-        const gmge_id gmge() const
+        gmge_id gmge() const
         {
             return gmge_id( type_name(), id_ );
         }
 
-        const GeologicalEntityType entity_type() const
+        GeologicalEntityType entity_type() const
         {
             return gmge().type();
         }
 
-        virtual const MeshEntityType child_type_name() const = 0;
+        virtual MeshEntityType child_type_name() const = 0;
         virtual bool is_on_voi() const;
         virtual bool is_connectivity_valid() const;
         virtual bool is_valid() const;
-        static const GeologicalEntityType type_name_static()
+        static GeologicalEntityType type_name_static()
         {
             return ForbiddenGeologicalEntityType::type_name_static();
         }
-        virtual const GeologicalEntityType type_name() const
+        virtual GeologicalEntityType type_name() const
         {
             return type_name_static();
         }
@@ -88,11 +88,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( children_.size() );
         }
-        const gmme_id& child_gmme( index_t x ) const
-        {
-            ringmesh_assert( x < nb_children() );
-            return children_[x];
-        }
+        const gmme_id& child_gmme( index_t x ) const ;
         const GeoModelMeshEntity& child( index_t x ) const;
 
         virtual bool is_identification_valid() const;
@@ -117,8 +113,8 @@ namespace RINGMesh {
         }
 
     protected:
-        /// Entities constituting this one - see child_type( TYPE )
-        std::vector< gmme_id > children_;
+        /// Children relations of this entity
+        std::vector< index_t > children_;
     };
 
     /// @todo Review: I am still not convinced that we always have to 
@@ -131,15 +127,15 @@ namespace RINGMesh {
         }
         virtual ~Contact() = default;
 
-        static const GeologicalEntityType type_name_static()
+        static GeologicalEntityType type_name_static()
         {
             return GeologicalEntityType( "Contact" );
         }
-        virtual const GeologicalEntityType type_name() const override
+        virtual GeologicalEntityType type_name() const override
         {
             return type_name_static();
         }
-        virtual const MeshEntityType child_type_name() const override;
+        virtual MeshEntityType child_type_name() const override;
     };
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
@@ -150,15 +146,15 @@ namespace RINGMesh {
         }
         virtual ~Interface() = default;
 
-        static const GeologicalEntityType type_name_static()
+        static GeologicalEntityType type_name_static()
         {
             return GeologicalEntityType( "Interface" );
         }
-        virtual const GeologicalEntityType type_name() const override
+        virtual GeologicalEntityType type_name() const override
         {
             return type_name_static();
         }
-        virtual const MeshEntityType child_type_name() const override;
+        virtual MeshEntityType child_type_name() const override;
     };
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
@@ -169,15 +165,15 @@ namespace RINGMesh {
         }
         virtual ~Layer() = default;
 
-        static const GeologicalEntityType type_name_static()
+        static GeologicalEntityType type_name_static()
         {
             return GeologicalEntityType( "Layer" );
         }
-        virtual const GeologicalEntityType type_name() const override
+        virtual GeologicalEntityType type_name() const override
         {
             return type_name_static();
         }
-        virtual const MeshEntityType child_type_name() const override;
+        virtual MeshEntityType child_type_name() const override;
     };
 
     class GeoModelGeologicalEntityAccess {
@@ -208,7 +204,7 @@ namespace RINGMesh {
             return gmge_.geol_feature_;
         }
 
-        std::vector< gmme_id >& modifiable_children()
+        std::vector< index_t >& modifiable_children()
         {
             return gmge_.children_;
         }

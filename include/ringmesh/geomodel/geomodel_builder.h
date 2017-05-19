@@ -150,19 +150,6 @@ namespace RINGMesh {
             const GeologicalEntityType& type,
             index_t nb );
 
-        /*!
-         * @brief Fill the parent of all entities of the given type
-         * @details If the parents do not have any child nothing is done.
-         */
-        void fill_mesh_entities_parent( const MeshEntityType& type );
-
-        /*!
-         * @brief Fill the children of all entities of the given type
-         * @details If the children entities do not have any parent information
-         * nothing is done.
-         */
-        void fill_geological_entities_children( const GeologicalEntityType& type );
-
         void complete_mesh_entities_geol_feature_from_first_parent(
             const MeshEntityType& type );
         void complete_geological_entities_geol_feature_from_first_child(
@@ -187,16 +174,6 @@ namespace RINGMesh {
             gmge_access.modifiable_geol_feature() = geol_feature;
         }
 
-        void add_mesh_entity_parent(
-            const gmme_id& child_gmme,
-            const gmge_id& parent_gmge )
-        {
-            GeoModelMeshEntity& mesh_entity =
-                geomodel_access_.modifiable_mesh_entity( child_gmme );
-            GeoModelMeshEntityAccess gmme_access( mesh_entity );
-            gmme_access.modifiable_parents().push_back( parent_gmge );
-        }
-
         void set_mesh_entity_parent(
             const gmme_id& child_gmme,
             index_t id,
@@ -208,23 +185,20 @@ namespace RINGMesh {
                 geomodel_access_.modifiable_mesh_entity( child_gmme );
             ringmesh_assert( id < mesh_entity.nb_parents() );
             GeoModelMeshEntityAccess gmme_access( mesh_entity );
-            gmme_access.modifiable_parents()[id] = parent_gmge;
+            index_t relationship_id = gmme_access.modifiable_parents()[id];
+            RelationshipManager& manager =
+                geomodel_access_.modifiable_entity_type_manager().relationship_manager;
+            manager.set_parent_to_parent_child_relationship( relationship_id,
+                parent_gmge );
         }
 
-        void add_geological_entity_child(
-            const gmge_id& parent_gmge,
-            index_t child_id )
-        {
-            GeoModelGeologicalEntity& geol_entity =
-                geomodel_access_.modifiable_geological_entity( parent_gmge );
-            const MeshEntityType& child_type =
-                geomodel_.entity_type_manager().relationship_manager.child_type(
-                    parent_gmge.type() );
-            gmme_id child( child_type, child_id );
-            GeoModelGeologicalEntityAccess gmge_access( geol_entity );
-            gmge_access.modifiable_children().push_back( child );
-        }
+        void add_parent_children_relation(
+            const gmge_id& parent,
+            const gmme_id& children );
 
+        void remove_parent_children_relation(
+            const gmge_id& parent,
+            const gmme_id& children );
         void set_geological_entity_child(
             const gmge_id& parent_gmge,
             index_t id,
@@ -239,7 +213,10 @@ namespace RINGMesh {
                     parent_gmge.type() );
             gmme_id child( child_type, child_id );
             GeoModelGeologicalEntityAccess gmge_access( geol_entity );
-            gmge_access.modifiable_children()[id] = child;
+            index_t relationship_id = gmge_access.modifiable_children()[id];
+            RelationshipManager& manager =
+                geomodel_access_.modifiable_entity_type_manager().relationship_manager;
+            manager.set_child_to_parent_child_relationship(relationship_id,child) ;
         }
 
         void delete_geological_entity(

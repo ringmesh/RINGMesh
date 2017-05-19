@@ -58,7 +58,12 @@ namespace {
 }
 
 namespace RINGMesh {
-
+    const gmme_id& GeoModelGeologicalEntity::child_gmme( index_t x ) const
+    {
+        ringmesh_assert( x < nb_children() );
+        return geomodel().entity_type_manager().relationship_manager.child_of_gmge(
+            children_[x] );
+    }
     const GeoModelMeshEntity& GeoModelGeologicalEntity::child( index_t x ) const
     {
         return geomodel().mesh_entity( child_gmme( x ) );
@@ -132,17 +137,17 @@ namespace RINGMesh {
         ringmesh_register_GeoModelGeologicalEntity_creator( Layer );
     }
 
-    const MeshEntityType Contact::child_type_name() const
+    MeshEntityType Contact::child_type_name() const
     {
         return Line::type_name_static();
     }
 
-    const MeshEntityType Interface::child_type_name() const
+    MeshEntityType Interface::child_type_name() const
     {
         return Surface::type_name_static();
     }
 
-    const MeshEntityType Layer::child_type_name() const
+    MeshEntityType Layer::child_type_name() const
     {
         return Region::type_name_static();
     }
