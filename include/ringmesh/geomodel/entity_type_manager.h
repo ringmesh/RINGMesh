@@ -39,6 +39,7 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/geomodel/entity_type.h>
 
+#include <deque>
 #include <vector>
 
 namespace RINGMesh {
@@ -152,6 +153,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API RelationshipManager {
         friend class GeoModelBuilderGeology;
+        friend class GeoModelBuilderTopology;
     public:
         using GeologicalEntityToChild = std::map< GeologicalEntityType, MeshEntityType >;
         using MeshEntityToParents = std::map< MeshEntityType, std::set< GeologicalEntityType > >;
@@ -161,11 +163,20 @@ namespace RINGMesh {
         index_t nb_parent_types( const MeshEntityType& child_type ) const;
         const MeshEntityType child_type(
             const GeologicalEntityType& parent_type ) const;
+
+        const gmme_id& boundary_gmme( index_t id ) const
+        {
+            ringmesh_assert( id < boundary_relationships_.size() );
+            return boundary_relationships_[id].boundary_id_;
+        }
+        const gmme_id& in_boundary_gmme( index_t id ) const
+        {
+            ringmesh_assert( id < boundary_relationships_.size() );
+            return boundary_relationships_[id].in_boundary_id_;
+        }
+
     private:
-        MeshEntityToParents child_to_parents_;
-        GeologicalEntityToChild parent_to_child_;
-    private:
-        void register_relationship(
+        void register_geology_relationship(
             const GeologicalEntityType& parent_type_name,
             const MeshEntityType& child_type_name )
         {
@@ -173,6 +184,57 @@ namespace RINGMesh {
             child_to_parents_[child_type_name].insert( parent_type_name );
         }
 
+        index_t add_boundary_relationship(
+            const gmme_id& in_boundary,
+            const gmme_id& boundary )
+        {
+            index_t relationship_id =
+                static_cast< index_t >( boundary_relationships_.size() );
+            boundary_relationships_.emplace_back( in_boundary, boundary );
+            return relationship_id;
+        }
+
+        index_t find_boundary_relationship(
+            const gmme_id& in_boundary,
+            const gmme_id& boundary )
+        {
+            return find( boundary_relationships_,
+                BoundaryRelationship( in_boundary, boundary ) );
+        }
+
+        void set_boundary_to_boundary_relationship(
+            index_t relationship_id,
+            const gmme_id& boundary )
+        {
+            boundary_relationships_[relationship_id].boundary_id_ = boundary;
+        }
+
+        void set_in_boundary_to_boundary_relationship(
+            index_t relationship_id,
+            const gmme_id& in_boundary )
+        {
+            boundary_relationships_[relationship_id].in_boundary_id_ = in_boundary;
+        }
+
+        struct BoundaryRelationship {
+            BoundaryRelationship(
+                const gmme_id& in_boundary,
+                const gmme_id& boundary )
+                : in_boundary_id_( in_boundary ), boundary_id_( boundary )
+            {
+            }
+            bool operator==( const BoundaryRelationship& rhs ) const
+            {
+                return in_boundary_id_ == rhs.in_boundary_id_
+                    && boundary_id_ == rhs.boundary_id_;
+            }
+            gmme_id in_boundary_id_;
+            gmme_id boundary_id_;
+        };
+    private:
+        MeshEntityToParents child_to_parents_;
+        GeologicalEntityToChild parent_to_child_;
+        std::deque< BoundaryRelationship > boundary_relationships_;
     };
 
     /*!

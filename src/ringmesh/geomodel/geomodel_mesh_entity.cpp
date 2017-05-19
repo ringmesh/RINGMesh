@@ -96,8 +96,8 @@ namespace {
                     for( index_t edge = 0;
                         edge < surface.nb_mesh_element_vertices( cur_polygon );
                         edge++ ) {
-                        index_t adj_polygon = surface.polygon_adjacent_index( cur_polygon,
-                            edge );
+                        index_t adj_polygon = surface.polygon_adjacent_index(
+                            cur_polygon, edge );
                         if( adj_polygon != NO_ID
                             && component[adj_polygon] == NO_COMPONENT ) {
                             S.push( adj_polygon );
@@ -254,7 +254,12 @@ namespace RINGMesh {
     bool GeoModelMeshEntity::is_inside_border( const GeoModelMeshEntity& rhs ) const
     {
         // Find out if this surface is twice in the in_boundary vector
-        return std::count( in_boundary_.begin(), in_boundary_.end(), rhs.gmme() ) > 1;
+        gmme_id rhs_id = rhs.gmme();
+        const RelationshipManager& manager =
+            geomodel().entity_type_manager().relationship_manager;
+        return std::count_if( in_boundary_.begin(), in_boundary_.end(),
+            [&rhs_id, &manager](index_t i) {return manager.in_boundary_gmme( i ) == rhs_id;} )
+            > 1;
     }
 
     bool GeoModelMeshEntity::has_inside_border() const
@@ -478,7 +483,12 @@ namespace RINGMesh {
         ringmesh_assert_not_reached;
         return gmge_id( ForbiddenGeologicalEntityType::type_name_static(), NO_ID );
     }
-
+    const gmme_id& GeoModelMeshEntity::boundary_gmme( index_t x ) const
+    {
+        ringmesh_assert( x < nb_boundaries() );
+        return geomodel().entity_type_manager().relationship_manager.boundary_gmme(
+            boundaries_[x] );
+    }
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
     {
         return geomodel().mesh_entity( boundary_gmme( x ) );
@@ -488,7 +498,12 @@ namespace RINGMesh {
     {
         return geomodel().mesh_entity( in_boundary_gmme( x ) );
     }
-
+    const gmme_id& GeoModelMeshEntity::in_boundary_gmme( index_t x ) const
+    {
+        ringmesh_assert( x < nb_in_boundary() );
+        return geomodel().entity_type_manager().relationship_manager.in_boundary_gmme(
+            in_boundary_[x] );
+    }
     /**************************************************************/
 
     bool Corner::is_on_voi() const
