@@ -104,16 +104,6 @@ namespace RINGMesh {
             }
         }
 
-        /*!
-         * @brief Complete missing information in GeoModelEntities
-         * boundaries - in_boundary - parent - children
-         * @details For all 7 types of entities, check what information is available
-         * for the first one and fill the entities of the same type accordingly
-         * THIS MEANS that the all the entities of the same type have been initialized with
-         * the same information
-         */
-        void complete_entity_connectivity();
-
         void remove_mesh_entity_boundary_relation(
             const gmme_id& in_boundary,
             const gmme_id& boundary );
@@ -186,8 +176,6 @@ namespace RINGMesh {
             }
             return true;
         }
-
-        void complete_mesh_entity_connectivity( const MeshEntityType& type );
 
         template< typename ENTITY >
         void copy_mesh_entity_topology( const GeoModel& from )

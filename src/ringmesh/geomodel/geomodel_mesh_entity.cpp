@@ -465,30 +465,35 @@ namespace RINGMesh {
         ringmesh_assert( parent.is_defined() );
         return geomodel().geological_entity( parent );
     }
+
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
         const GeologicalEntityType& parent_type_name ) const
     {
         gmge_id id = parent_gmge( parent_type_name );
         ringmesh_assert( id.is_defined() );
+
         return geomodel().geological_entity( id );
     }
+
     const gmge_id GeoModelMeshEntity::parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
-            if( parents_[i].type() == parent_type_name ) {
+            if( parent_gmge(i).type() == parent_type_name ) {
                 return parent_gmge( i );
             }
         }
         ringmesh_assert_not_reached;
         return gmge_id( ForbiddenGeologicalEntityType::type_name_static(), NO_ID );
     }
+
     const gmme_id& GeoModelMeshEntity::boundary_gmme( index_t x ) const
     {
         ringmesh_assert( x < nb_boundaries() );
         return geomodel().entity_type_manager().relationship_manager.boundary_gmme(
             boundaries_[x] );
     }
+
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
     {
         return geomodel().mesh_entity( boundary_gmme( x ) );
@@ -498,12 +503,19 @@ namespace RINGMesh {
     {
         return geomodel().mesh_entity( in_boundary_gmme( x ) );
     }
+
     const gmme_id& GeoModelMeshEntity::in_boundary_gmme( index_t x ) const
     {
         ringmesh_assert( x < nb_in_boundary() );
         return geomodel().entity_type_manager().relationship_manager.in_boundary_gmme(
             in_boundary_[x] );
     }
+    const gmge_id& GeoModelMeshEntity::parent_gmge( index_t id ) const
+    {
+        ringmesh_assert( id < nb_parents() );
+        return geomodel().entity_type_manager().relationship_manager.parent_of_gmme(parents_[id]) ;
+    }
+
     /**************************************************************/
 
     bool Corner::is_on_voi() const

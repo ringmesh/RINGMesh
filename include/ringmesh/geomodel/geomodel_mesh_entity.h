@@ -136,6 +136,7 @@ namespace RINGMesh {
         {
             return nb_parents() != 0;
         }
+
         /*!
          * @brief Check if the entity has a parent of the given type
          */
@@ -143,15 +144,13 @@ namespace RINGMesh {
         {
             return parent_gmge( parent_type ).is_defined();
         }
+
         index_t nb_parents() const
         {
             return static_cast< index_t >( parents_.size() );
         }
-        const gmge_id& parent_gmge( index_t id ) const
-        {
-            ringmesh_assert( id < nb_parents() );
-            return parents_[id];
-        }
+
+        const gmge_id& parent_gmge( index_t id ) const ;
 
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
@@ -328,15 +327,14 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
     protected:
 
-        /// Boundary relation of this entity
+        /// Boundary relations of this entity
         std::vector< index_t > boundaries_;
 
-        /// In-boundary relation of this entity
+        /// In-boundary relations of this entity
         std::vector< index_t > in_boundary_;
 
-        /// The optional GeoModelGeologicalEntities 
-        /// (groups of GeoModelMeshEntity this entity belongs to)
-        std::vector< gmge_id > parents_;
+        /// Parents relations of this entity
+        std::vector< index_t > parents_;
 
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
@@ -1367,7 +1365,7 @@ namespace RINGMesh {
             return dynamic_cast< Region& >( gmme_ ).sides_;
         }
 
-        std::vector< gmge_id >& modifiable_parents()
+        std::vector< index_t >& modifiable_parents()
         {
             return gmme_.parents_;
         }
