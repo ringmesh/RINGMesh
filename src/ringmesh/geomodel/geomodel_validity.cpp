@@ -854,7 +854,7 @@ namespace {
                     &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
                     this );
                 threads.emplace_back(
-                    &GeoModelValidityCheck::test_geometry_connectivity_consistency3D,
+                    &GeoModelValidityCheck::test_region_surface_mesh_conformity,
                     this );
                 threads.emplace_back(
                     &GeoModelValidityCheck::test_non_manifold_edges, this );
@@ -868,7 +868,7 @@ namespace {
                 threads.emplace_back( &GeoModelValidityCheck::test_finite_extension,
                     this );
                 threads.emplace_back(
-                    &GeoModelValidityCheck::test_geometry_connectivity_consistency,
+                    &GeoModelValidityCheck::test_surface_line_mesh_conformity,
                     this );
             }
 
@@ -931,7 +931,7 @@ namespace {
          * @todo Check that all Line segments correspond to a Surface
          *  edge that is on the boundary.
          */
-        void test_geometry_connectivity_consistency()
+        void test_surface_line_mesh_conformity()
         {
             // Check relationships between GeoModelEntities
             // sharing the same point of the geomodel
@@ -946,7 +946,7 @@ namespace {
             }
         }
 
-        void test_geometry_connectivity_consistency3D()
+        void test_region_surface_mesh_conformity()
         {
             if( geomodel_.mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface polygons and Region cell facets

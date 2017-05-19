@@ -85,7 +85,7 @@ namespace RINGMesh {
         // and the one for closing the window
         std::thread start( &RINGMeshApplication::start, &app );
         std::thread quit( [&app]() {
-            // Wait some seconds to be sure that the windows is really opened
+            // Wait some milliseconds to be sure that the window is really opened
             wait( 4000 );
             app.quit();
         } );
