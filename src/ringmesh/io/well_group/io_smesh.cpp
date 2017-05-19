@@ -39,7 +39,6 @@ namespace {
         std::vector< index_t > old2new;
         index_t nb_colocated = mesh.vertices_nn_search().get_colocated_index_mapping(
             epsilon, old2new );
-        DEBUG( nb_colocated );
         if( nb_colocated > 0 ) {
             std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
                 mesh );

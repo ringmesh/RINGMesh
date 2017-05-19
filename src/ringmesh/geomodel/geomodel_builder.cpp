@@ -860,12 +860,14 @@ namespace RINGMesh {
                 builder_.geometry.set_line( line_index.index(), vertices );
 
                 for( index_t j : adjacent_surfaces ) {
-                    builder_.topology.add_mesh_entity_in_boundary( line_index, j );
+                    gmme_id surface_index( Surface::type_name_static(), j );
+                    builder_.topology.add_mesh_entity_boundary_relation(
+                        surface_index, line_index );
                 }
-                builder_.topology.add_mesh_entity_boundary( line_index,
-                    first_corner.index() );
-                builder_.topology.add_mesh_entity_boundary( line_index,
-                    second_corner.index() );
+                builder_.topology.add_mesh_entity_boundary_relation( line_index,
+                    first_corner );
+                builder_.topology.add_mesh_entity_boundary_relation( line_index,
+                    second_corner );
 
                 // If the plan is to then build_regions, get the information
                 if( options_.compute_regions_brep ) {
@@ -888,11 +890,6 @@ namespace RINGMesh {
     {
         ringmesh_assert( geomodel_.nb_lines() == regions_info_.size() );
 
-        // Complete boundary information for surfaces
-        // to compute volumetric regions
-        builder_.topology.fill_mesh_entities_boundaries(
-            Surface::type_name_static() );
-
         // Sort surfaces around the contacts
         for( GeoModelRegionFromSurfaces*& info : regions_info_ ) {
             info->sort();
@@ -909,7 +906,9 @@ namespace RINGMesh {
                 bool inside = true;
                 // Create the region - set the surface on its boundaries
                 gmme_id region_id = builder_.topology.create_mesh_entity< Region >();
-                builder_.topology.add_mesh_entity_boundary( region_id, 0, inside );
+                gmme_id surface_id( Surface::type_name_static(), 0 );
+                builder_.topology.add_mesh_entity_boundary_relation( region_id,
+                    surface_id, inside );
 
                 // Set universe boundary
                 builder_.topology.add_universe_boundary( 0, !inside );
@@ -947,8 +946,9 @@ namespace RINGMesh {
                         continue;
                     }
                     // Add the surface to the current region
-                    builder_.topology.add_mesh_entity_boundary( cur_region_id,
-                        s.first, s.second );
+                    builder_.topology.add_mesh_entity_boundary_relation(
+                        cur_region_id,
+                        gmme_id( Surface::type_name_static(), s.first ), s.second );
                     surf_2_region[s_id] = cur_region_id.index();
 
                     // Check the other side of the surface and push it in S
@@ -1276,7 +1276,7 @@ namespace RINGMesh {
         const MeshEntityType child_type = E->child_type_name();
         RelationshipManager& parentage =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-        parentage.register_relationship( type, child_type );
+        parentage.register_geology_relationship( type, child_type );
 
         return geomodel_.entity_type_manager().geological_entity_manager.nb_geological_entity_types()
             - 1;
@@ -1326,8 +1326,7 @@ namespace RINGMesh {
                 }
             }
             if( !contact_id.is_defined() ) {
-                contact_id = create_geological_entity(
-                    Contact::type_name_static() );
+                contact_id = create_geological_entity( Contact::type_name_static() );
                 ringmesh_assert( contact_id.index() == interfaces.size() );
                 interfaces.push_back( cur_interfaces );
                 // Create a name for this contact
