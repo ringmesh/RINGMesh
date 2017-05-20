@@ -101,7 +101,6 @@ namespace {
             std::vector< index_t > vertex_exported_id( mesh.vertices.nb(), NO_ID );
             std::vector< index_t > atom_exported_id(
                 mesh.cells.nb_duplicated_vertices(), NO_ID );
-//            const NNSearch& nn_search = mesh.cells.cell_nn_search();
             index_t nb_vertices_exported = 1;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 const RINGMesh::Region& region = geomodel.region( r );
@@ -233,8 +232,6 @@ namespace {
                         sides[region.boundary_gmme( s ).index()] = region.side( s );
                 }
 
-                /*GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
-                 surface_att_name ) ;*/
                 GEO::AttributesManager& reg_cell_attr_mgr =
                     region.cell_attribute_manager();
                 for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
