@@ -86,6 +86,11 @@ namespace {
             const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
+            // att_v_double_names and att_c_double_names contain all the
+            // attribute names found the regions. Only vertex and cell attributes.
+            // If an attribute is defined in a region and not in another, in
+            // the region where the attribute is not defined no data values
+            // are stored.
             std::vector< std::string > att_v_double_names;
             std::vector< index_t > vertex_attr_dims;
             fill_vertex_attribute_header( geomodel, out, att_v_double_names,
