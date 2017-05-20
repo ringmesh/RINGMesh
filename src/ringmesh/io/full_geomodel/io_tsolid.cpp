@@ -169,10 +169,19 @@ namespace {
                             for( index_t attr_dbl_itr = 0;
                                 attr_dbl_itr < att_v_double_names.size();
                                 ++attr_dbl_itr ) {
-                                if( GEO::Attribute< double >::is_defined(
-                                    reg_vertex_attr_mgr,
+                                if( reg_vertex_attr_mgr.is_defined(
                                     att_v_double_names[attr_dbl_itr] ) ) {
-                                    GEO::Attribute< double > cur_attr(
+                                    const GEO::AttributeStore* attr_store =
+                                        reg_vertex_attr_mgr.find_attribute_store(
+                                            att_v_double_names[attr_dbl_itr] );
+                                    ringmesh_assert( attr_store != nullptr );
+                                    ringmesh_assert(
+                                        attr_store->dimension()
+                                            == vertex_attr_dims[attr_dbl_itr] );
+                                    ringmesh_assert(
+                                        GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
+                                            attr_store ) );
+                                    GEO::ReadOnlyScalarAttributeAdapter cur_attr(
                                         reg_vertex_attr_mgr,
                                         att_v_double_names[attr_dbl_itr] );
                                     for( index_t dim_itr = 0;
@@ -249,16 +258,26 @@ namespace {
                     ringmesh_assert( c_in_reg.size() == 1 );
                     for( index_t attr_dbl_itr = 0;
                         attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
-                        if( GEO::Attribute< double >::is_defined( reg_cell_attr_mgr,
+                        if( reg_cell_attr_mgr.is_defined(
                             att_c_double_names[attr_dbl_itr] ) ) {
-                            GEO::Attribute< double > cur_attr(
+                            const GEO::AttributeStore* attr_store =
+                                reg_cell_attr_mgr.find_attribute_store(
+                                    att_c_double_names[attr_dbl_itr] );
+                            ringmesh_assert( attr_store != nullptr );
+                            ringmesh_assert(
+                                attr_store->dimension()
+                                    == cell_attr_dims[attr_dbl_itr] );
+                            ringmesh_assert(
+                                GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
+                                    attr_store ) );
+                            GEO::ReadOnlyScalarAttributeAdapter cur_attr(
                                 reg_cell_attr_mgr,
                                 att_c_double_names[attr_dbl_itr] );
                             for( index_t dim_itr = 0;
                                 dim_itr < cell_attr_dims[attr_dbl_itr]; ++dim_itr ) {
                                 out << " "
-                                    << cur_attr[c_in_reg[0] * cell_attr_dims[attr_dbl_itr]
-                                        + dim_itr];
+                                    << cur_attr[c_in_reg[0]
+                                        * cell_attr_dims[attr_dbl_itr] + dim_itr];
                             }
                         } else {
                             for( index_t dim_itr = 0;
@@ -341,8 +360,6 @@ namespace {
         {
             for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
                 const Region& cur_reg = geomodel.region( reg_i );
-                /// TODO should be const, see with BL why
-                /// GEO::Attribute< double >::is_defined is not const???
                 GEO::AttributesManager& reg_vertex_attr_mgr =
                     cur_reg.vertex_attribute_manager();
                 GEO::vector< std::string > att_v_names;
@@ -354,20 +371,24 @@ namespace {
                         continue;
                     }
 
-                    if( !GEO::Attribute< double >::is_defined( reg_vertex_attr_mgr,
-                        att_v_names[att_v] ) ) {
-                        continue;
-                    }
-
                     if( std::find( att_v_double_names.begin(),
                         att_v_double_names.end(), att_v_names[att_v] )
                         != att_v_double_names.end() ) {
                         continue;
                     }
 
+                    const GEO::AttributeStore* attr_store =
+                        reg_vertex_attr_mgr.find_attribute_store(
+                            att_v_names[att_v] );
+                    ringmesh_assert( attr_store != nullptr );
+
+                    if( !GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
+                        attr_store ) ) {
+                        continue;
+                    }
+
                     att_v_double_names.push_back( att_v_names[att_v] );
-                    index_t cur_dim = reg_vertex_attr_mgr.find_attribute_store(
-                        att_v_names[att_v] )->dimension();
+                    index_t cur_dim = attr_store->dimension();
                     vertex_attr_dims.push_back( cur_dim );
                 }
             }
@@ -447,8 +468,6 @@ namespace {
         {
             for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
                 const Region& cur_reg = geomodel.region( reg_i );
-                /// TODO should be const, see with BL why
-                /// GEO::Attribute< double >::is_defined is not const???
                 GEO::AttributesManager& reg_cell_attr_mgr =
                     cur_reg.cell_attribute_manager();
                 GEO::vector< std::string > att_c_names;
@@ -456,20 +475,23 @@ namespace {
                 ringmesh_assert( att_c_names.size() == reg_cell_attr_mgr.nb() );
                 for( index_t att_c = 0; att_c < att_c_names.size(); att_c++ ) {
 
-                    if( !GEO::Attribute< double >::is_defined( reg_cell_attr_mgr,
-                        att_c_names[att_c] ) ) {
-                        continue;
-                    }
-
                     if( std::find( att_c_double_names.begin(),
                         att_c_double_names.end(), att_c_names[att_c] )
                         != att_c_double_names.end() ) {
                         continue;
                     }
 
+                    const GEO::AttributeStore* attr_store =
+                        reg_cell_attr_mgr.find_attribute_store( att_c_names[att_c] );
+                    ringmesh_assert( attr_store != nullptr );
+
+                    if( !GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
+                        attr_store ) ) {
+                        continue;
+                    }
+
                     att_c_double_names.push_back( att_c_names[att_c] );
-                    index_t cur_dim = reg_cell_attr_mgr.find_attribute_store(
-                        att_c_names[att_c] )->dimension();
+                    index_t cur_dim = attr_store->dimension();
                     cell_attr_dims.push_back( cur_dim );
                 }
             }
@@ -542,7 +564,7 @@ namespace {
         }
 
     private:
-        double gocad_no_data_value_;
+        const double gocad_no_data_value_;
     };
 
 }
