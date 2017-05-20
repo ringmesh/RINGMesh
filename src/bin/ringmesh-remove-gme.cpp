@@ -41,6 +41,7 @@
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_builder_remove.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -89,7 +90,27 @@ namespace {
         index_t gme_index = GEO::CmdLine::get_arg_uint( "remove:index" );
 
         GeoModelBuilder builder( geomodel );
-        //builder.remove.remove_entities_and_dependencies();
+        MeshEntityType mesh_entity_type( gme_type );
+        GeologicalEntityType geological_entity_type( gme_type );
+        if( MeshEntityTypeManager::is_valid_type( mesh_entity_type ) ) {
+            if( gme_index >= geomodel.nb_mesh_entities( mesh_entity_type ) ) {
+                throw RINGMeshException( "I/O",
+                    "Gme index higher than number of entities of the given type" );
+            }
+            builder.removal.remove_mesh_entity_and_dependencies(
+                gmme_id( mesh_entity_type, gme_index ) );
+        } else if( geomodel.entity_type_manager().geological_entity_manager.is_valid_type(
+            geological_entity_type ) ) {
+            if( gme_index
+                >= geomodel.nb_geological_entities( geological_entity_type ) ) {
+                throw RINGMeshException( "I/O",
+                    "Gme index higher than number of entities of the given type" );
+            }
+            builder.removal.remove_geological_entity_and_dependencies(
+                gmge_id( geological_entity_type, gme_index ) );
+        } else {
+            throw RINGMeshException( "I/O", "invalid mesh type" );
+        }
 
         std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( out_model_file_name.empty() ) {
