@@ -85,11 +85,11 @@ namespace {
         GeoModel geomodel;
         geomodel_load( geomodel, in_model_file_name );
 
-        const std::string gme_type = GEO::CmdLine::get_arg_string( "remove:type" );
+        const std::string gme_type = GEO::CmdLine::get_arg( "remove:type" );
         index_t gme_index = GEO::CmdLine::get_arg_uint( "remove:index" );
 
         GeoModelBuilder builder( geomodel );
-        builder.remove.remove_entities_and_dependencies();
+        //builder.remove.remove_entities_and_dependencies();
 
         std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( out_model_file_name.empty() ) {
