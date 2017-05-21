@@ -99,7 +99,7 @@ in the build directory created at the configuration step:
 * cmake --build . --config Debug
 * cmake --build . --config RelWithDebInfo
 
-The available compillation modes are:
+The available compilation modes are:
 * Release
 * Debug
 * RelWithDebInfo (mandatory to debug a Gocad plugin in Debug mode with a Gocad
