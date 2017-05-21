@@ -102,8 +102,8 @@ in the build directory created at the configuration step:
 The available compillation modes are:
 * Release
 * Debug
-* RelWithDebInfo (mandatory to debug a Gocad plugin in Debug mode with a Gocad,
-in Release there are issues between libraries in Debug linked to a Gocad plugin)
+* RelWithDebInfo (mandatory to debug a Gocad plugin in Debug mode with a Gocad
+  in Release, there are issues between libraries in Debug linked to a Gocad plugin)
 
 Compiling the documentation
 ---------------------------
