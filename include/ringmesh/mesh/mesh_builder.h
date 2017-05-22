@@ -157,7 +157,7 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API PointMeshBuilder: public virtual MeshBaseBuilder {
+    class RINGMESH_API PointMeshBuilder: public MeshBaseBuilder {
     ringmesh_disable_copy( PointMeshBuilder );
     public:
         virtual ~PointMeshBuilder()
@@ -183,7 +183,7 @@ namespace RINGMesh {
 #define ringmesh_register_point_mesh_builder(type) \
     geo_register_creator(RINGMesh::PointMeshBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API LineMeshBuilder: public virtual MeshBaseBuilder {
+    class RINGMESH_API LineMeshBuilder: public MeshBaseBuilder {
     ringmesh_disable_copy( LineMeshBuilder );
     public:
         virtual ~LineMeshBuilder()
@@ -253,7 +253,7 @@ namespace RINGMesh {
 #define ringmesh_register_line_mesh_builder(type) \
     geo_register_creator(RINGMesh::LineMeshBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API SurfaceMeshBuilder: public virtual MeshBaseBuilder {
+    class RINGMESH_API SurfaceMeshBuilder: public MeshBaseBuilder {
     ringmesh_disable_copy( SurfaceMeshBuilder );
     public:
         virtual ~SurfaceMeshBuilder()
@@ -388,7 +388,7 @@ namespace RINGMesh {
 #define ringmesh_register_surface_mesh_builder(type) \
     geo_register_creator(RINGMesh::SurfaceMeshBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API VolumeMeshBuilder: public virtual MeshBaseBuilder {
+    class RINGMESH_API VolumeMeshBuilder: public MeshBaseBuilder {
     ringmesh_disable_copy( VolumeMeshBuilder );
     public:
         virtual ~VolumeMeshBuilder()

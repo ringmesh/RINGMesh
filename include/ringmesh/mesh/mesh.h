@@ -139,7 +139,7 @@ namespace RINGMesh {
     /*!
      * class for encapsulating isolated vertices structure
      */
-    class RINGMESH_API PointMesh: public virtual MeshBase {
+    class RINGMESH_API PointMesh: public MeshBase {
     ringmesh_disable_copy( PointMesh );
         friend class PointMeshBuilder;
 
@@ -160,7 +160,7 @@ namespace RINGMesh {
     /*!
      * class for encapsulating line mesh component
      */
-    class RINGMESH_API LineMesh: public virtual MeshBase {
+    class RINGMESH_API LineMesh: public MeshBase {
     ringmesh_disable_copy( LineMesh );
         friend class LineMeshBuilder;
 
@@ -240,7 +240,7 @@ namespace RINGMesh {
     /*!
      * class for encapsulating surface mesh component
      */
-    class RINGMESH_API SurfaceMesh: public virtual MeshBase {
+    class RINGMESH_API SurfaceMesh: public MeshBase {
     ringmesh_disable_copy( SurfaceMesh );
         friend class SurfaceMeshBuilder;
 
@@ -583,7 +583,7 @@ namespace RINGMesh {
     /*!
      * class for encapsulating volume mesh component
      */
-    class RINGMESH_API VolumeMesh: public virtual MeshBase {
+    class RINGMESH_API VolumeMesh: public MeshBase {
     ringmesh_disable_copy( VolumeMesh );
         friend class VolumeMeshBuilder;
 
