@@ -48,7 +48,7 @@
 
 namespace RINGMesh {
     class GeogramMesh0DBuilder;
-    class GeogramMeshLineBuilder;
+    class GeogramLineMeshBuilder;
     class GeogramMesh2DBuilder;
     class GeogramMesh3DBuilder;
 }
@@ -107,12 +107,12 @@ namespace RINGMesh {
     protected:                                                                      \
         std::unique_ptr< GEO::Mesh > mesh_
 
-    class RINGMESH_API GeogramMesh0D: public MeshPoint {
+    class RINGMESH_API GeogramMesh0D: public PointMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramMesh0D );
     };
 
-    class RINGMESH_API GeogramMeshLine: public MeshLine {
-        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramMeshLine );
+    class RINGMESH_API GeogramLineMesh: public LineMesh {
+        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
     public:
         virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const override
         {
@@ -130,7 +130,7 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramMesh2D: public MeshSurface {
+    class RINGMESH_API GeogramMesh2D: public SurfaceMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramMesh2D );
     public:
         virtual index_t polygon_vertex( index_t polygon_id, index_t vertex_id ) const override
@@ -163,7 +163,7 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramMesh3D: public MeshVolume {
+    class RINGMESH_API GeogramMesh3D: public VolumeMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramMesh3D );
     public:
         virtual index_t cell_vertex( index_t cell_id, index_t vertex_id ) const override
