@@ -275,7 +275,7 @@ void test_AABB3D()
     test_locate_cell_on_3D_mesh( geogram_mesh_tet );
 }
 
-void test_locate_edge_on_1D_mesh( const GeogramMesh1D& mesh )
+void test_locate_edge_on_1D_mesh( const GeogramMeshLine& mesh )
 {
     double distance;
     vec3 nearest_point;
@@ -293,7 +293,7 @@ void test_locate_edge_on_1D_mesh( const GeogramMesh1D& mesh )
 void test_AABB1D()
 {
     Logger::out( "TEST", "Test AABB 1D" );
-    GeogramMesh1D geogram_mesh;
+    GeogramMeshLine geogram_mesh;
     std::unique_ptr< MeshLineBuilder > builder = MeshLineBuilder::create_builder(
         geogram_mesh );
 
