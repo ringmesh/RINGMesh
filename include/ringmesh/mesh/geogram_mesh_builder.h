@@ -137,10 +137,10 @@ namespace RINGMesh {
     private:                                                                                    \
         Class* mesh_
 
-    class RINGMESH_API GeogramMesh0DBuilder: public Mesh0DBuilder {
+    class RINGMESH_API GeogramMesh0DBuilder: public MeshPointBuilder {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramMesh0D );
     public:
-        virtual void set_mesh( Mesh0D& mesh ) override
+        virtual void set_mesh( MeshPoint& mesh ) override
         {
             set_geogram_mesh( dynamic_cast< GeogramMesh0D& >( mesh ) );
         }
@@ -150,11 +150,11 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramMesh1DBuilder: public Mesh1DBuilder {
+    class RINGMESH_API GeogramMesh1DBuilder: public MeshLineBuilder {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramMesh1D );
     public:
 
-        virtual void set_mesh( Mesh1D& mesh ) override
+        virtual void set_mesh( MeshLine& mesh ) override
         {
             set_geogram_mesh( dynamic_cast< GeogramMesh1D& >( mesh ) );
         }
@@ -239,11 +239,11 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramMesh2DBuilder: public Mesh2DBuilder {
+    class RINGMESH_API GeogramMesh2DBuilder: public MeshSurfaceBuilder {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramMesh2D );
     public:
 
-        virtual void set_mesh( Mesh2D& mesh ) override
+        virtual void set_mesh( MeshSurface& mesh ) override
         {
             set_geogram_mesh( dynamic_cast< GeogramMesh2D& >( mesh ) );
         }
@@ -256,7 +256,7 @@ namespace RINGMesh {
                 min_polygons );
         }
 
-        virtual void triangulate( const Mesh2D& surface_in ) override
+        virtual void triangulate( const MeshSurface& surface_in ) override
         {
             Logger::instance()->set_minimal( true );
             const GeogramMesh2D& geogram_surf_in =
@@ -399,11 +399,11 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramMesh3DBuilder: public Mesh3DBuilder {
+    class RINGMESH_API GeogramMesh3DBuilder: public MeshVolumeBuilder {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramMesh3D );
     public:
 
-        virtual void set_mesh( Mesh3D& mesh ) override
+        virtual void set_mesh( MeshVolume& mesh ) override
         {
             set_geogram_mesh( dynamic_cast< GeogramMesh3D& >( mesh ) );
         }

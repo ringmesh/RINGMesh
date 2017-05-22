@@ -80,7 +80,7 @@ namespace RINGMesh {
 
     void TetgenMesher::tetrahedralize(
         const GEO::Mesh& input_mesh,
-        Mesh3DBuilder& output_mesh_builder )
+        MeshVolumeBuilder& output_mesh_builder )
     {
         initialize();
         copy_mesh_to_tetgen_input( input_mesh );
@@ -220,7 +220,7 @@ namespace RINGMesh {
     }
 
     void TetgenMesher::assign_result_tetmesh_to_mesh(
-        Mesh3DBuilder& output_mesh_builder ) const
+        MeshVolumeBuilder& output_mesh_builder ) const
     {
         output_mesh_builder.assign_vertices( get_result_tetmesh_points() );
         output_mesh_builder.assign_cell_tet_mesh( get_result_tetmesh_tets() );
@@ -295,7 +295,7 @@ namespace RINGMesh {
     }
 
     void tetrahedralize_mesh_tetgen(
-        Mesh3DBuilder& out_tet_mesh,
+        MeshVolumeBuilder& out_tet_mesh,
         const GEO::Mesh& in_mesh,
         bool refine,
         double quality )

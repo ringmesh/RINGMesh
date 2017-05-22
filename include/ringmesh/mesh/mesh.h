@@ -50,8 +50,8 @@
 namespace RINGMesh {
     class GeoModel;
     class MeshBaseBuilder;
-    class Mesh0DBuilder;
-    class Mesh1DBuilder;
+    class MeshPointBuilder;
+    class MeshLineBuilder;
     class Mesh2DBuilder;
     class Mesh3DBuilder;
 }
@@ -139,35 +139,35 @@ namespace RINGMesh {
     /*!
      * class for encapsulating isolated vertices structure
      */
-    class RINGMESH_API Mesh0D: public virtual MeshBase {
-    ringmesh_disable_copy( Mesh0D );
-        friend class Mesh0DBuilder;
+    class RINGMESH_API MeshPoint: public virtual MeshBase {
+    ringmesh_disable_copy( MeshPoint );
+        friend class MeshPointBuilder;
 
     public:
-        virtual ~Mesh0D() = default;
+        virtual ~MeshPoint() = default;
 
-        static std::unique_ptr< Mesh0D > create_mesh( const MeshType type );
+        static std::unique_ptr< MeshPoint > create_mesh( const MeshType type );
     protected:
         /*!
          * @brief Mesh0D constructor.
          */
-        Mesh0D() = default;
+        MeshPoint() = default;
     };
-    using Mesh0DFactory = GEO::Factory0< Mesh0D >;
+    using Mesh0DFactory = GEO::Factory0< MeshPoint >;
 #define ringmesh_register_mesh_0d(type) \
     geo_register_creator(RINGMesh::Mesh0DFactory, type, type::type_name_static())
 
     /*!
-     * class for encapsulating 1D mesh component
+     * class for encapsulating line mesh component
      */
-    class RINGMESH_API Mesh1D: public virtual MeshBase {
-    ringmesh_disable_copy( Mesh1D );
-        friend class Mesh1DBuilder;
+    class RINGMESH_API MeshLine: public virtual MeshBase {
+    ringmesh_disable_copy( MeshLine );
+        friend class MeshLineBuilder;
 
     public:
-        virtual ~Mesh1D() = default;
+        virtual ~MeshLine() = default;
 
-        static std::unique_ptr< Mesh1D > create_mesh( const MeshType type );
+        static std::unique_ptr< MeshLine > create_mesh( const MeshType type );
 
         /*
          * @brief Gets the index of an edge vertex.
@@ -227,13 +227,13 @@ namespace RINGMesh {
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
     protected:
-        Mesh1D() = default;
+        MeshLine() = default;
 
     protected:
         mutable std::unique_ptr< NNSearch > edges_nn_search_;
         mutable std::unique_ptr< AABBTree1D > edges_aabb_;
     };
-    using Mesh1DFactory = GEO::Factory0< Mesh1D >;
+    using Mesh1DFactory = GEO::Factory0< MeshLine >;
 #define ringmesh_register_mesh_1d(type) \
     geo_register_creator(RINGMesh::Mesh1DFactory, type, type::type_name_static())
 

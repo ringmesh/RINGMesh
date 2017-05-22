@@ -241,7 +241,7 @@ namespace {
     };
 
     struct OrientedEdge {
-        OrientedEdge( const Mesh1D& mesh, index_t edge, index_t vertex_from )
+        OrientedEdge( const MeshLine& mesh, index_t edge, index_t vertex_from )
             : edge_( edge ), vertex_from_( vertex_from )
         {
             if( mesh.edge_vertex( edge, 0 ) == vertex_from ) {
@@ -276,9 +276,9 @@ namespace RINGMesh {
             WellEntity( well ),
             is_on_surface_( is_on_surface ),
             id_( id ),
-            mesh_( Mesh0D::create_mesh( GeogramMesh0D::type_name_static() ) )
+            mesh_( MeshPoint::create_mesh( GeogramMesh0D::type_name_static() ) )
     {
-        Mesh0DBuilder::create_builder( *mesh_ )->create_vertex( point );
+        MeshPointBuilder::create_builder( *mesh_ )->create_vertex( point );
     }
 
     const vec3& WellCorner::point() const
@@ -297,7 +297,7 @@ namespace RINGMesh {
         :
             WellEntity( well ),
             id_( id ),
-            mesh_( Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) )
+            mesh_( MeshLine::create_mesh( GeogramMesh1D::type_name_static() ) )
     {
         corners_[0] = NO_ID;
         corners_[1] = NO_ID;
@@ -306,7 +306,7 @@ namespace RINGMesh {
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
         index_t nb_points = static_cast< index_t >( points.size() );
-        std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+        std::unique_ptr< MeshLineBuilder > builder = MeshLineBuilder::create_builder(
             *mesh_ );
         builder->create_vertices( nb_points );
         for( index_t p = 0; p < nb_points; p++ ) {
@@ -478,7 +478,7 @@ namespace RINGMesh {
         }
     }
 
-    void WellGroup::add_well( const Mesh1D& mesh, const std::string& name )
+    void WellGroup::add_well( const MeshLine& mesh, const std::string& name )
     {
         ringmesh_assert( geomodel() );
         if( find_well( name ) != NO_ID ) return;
@@ -558,10 +558,10 @@ namespace RINGMesh {
         } while( !S.empty() );
     }
 
-    void WellGroup::compute_conformal_mesh( const Mesh1D& in, Mesh1D& out )
+    void WellGroup::compute_conformal_mesh( const MeshLine& in, MeshLine& out )
     {
         double epsilon = geomodel_->epsilon();
-        std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+        std::unique_ptr< MeshLineBuilder > builder = MeshLineBuilder::create_builder(
             out );
         builder->clear( false, false );
 
