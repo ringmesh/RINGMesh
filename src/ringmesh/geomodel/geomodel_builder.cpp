@@ -1076,25 +1076,6 @@ namespace RINGMesh {
             throw RINGMeshException( "GeoModel", "The GeoModel has no surface" );
         }
 
-        topology.complete_entity_connectivity();
-
-        // Fill geological feature if they are missing
-        geology.complete_mesh_entities_geol_feature_from_first_parent(
-            Corner::type_name_static() );
-        geology.complete_mesh_entities_geol_feature_from_first_parent(
-            Line::type_name_static() );
-        geology.complete_mesh_entities_geol_feature_from_first_parent(
-            Surface::type_name_static() );
-        geology.complete_mesh_entities_geol_feature_from_first_parent(
-            Region::type_name_static() );
-
-        for( index_t i = 0; i < geomodel_.nb_geological_entity_types(); i++ ) {
-            const GeologicalEntityType type = GeologicalEntityType(
-                geomodel_.geological_entity_type( i ) );
-            geology.complete_geological_entities_geol_feature_from_first_child(
-                type );
-        }
-
         geometry.cut_surfaces_by_internal_lines();
         geometry.cut_regions_by_internal_surfaces();
         topology.compute_universe();
@@ -1136,105 +1117,77 @@ namespace RINGMesh {
         return true;
     }
 
+    void GeoModelBuilderGeology::add_parent_children_relation(
+        const gmge_id& parent,
+        const gmme_id& children )
+    {
+        GeoModelGeologicalEntity& parent_entity =
+            geomodel_access_.modifiable_geological_entity( parent );
+        const std::vector< GeologicalEntityType>& parent_entity_types =
+            geomodel_.entity_type_manager().relationship_manager.parent_types(
+                children.type() );
+        if( !contains( parent_entity_types, parent.type() ) ) {
+            std::ostringstream message;
+            message << "Wrong Parent type in the parent children relation between "
+                << parent << " and " << children;
+            throw RINGMeshException( "Entity", message.str() );
+        }
+
+        GeoModelMeshEntity& children_entity =
+            geomodel_access_.modifiable_mesh_entity( children );
+        const MeshEntityType& children_type =
+            geomodel_.entity_type_manager().relationship_manager.child_type(
+                parent.type() );
+
+        if( children_type != children.type() ) {
+            std::ostringstream message;
+            message << "Wrong children type in the parent children relation between "
+                << parent << " and " << children;
+            throw RINGMeshException( "Entity", message.str() );
+        }
+
+        RelationshipManager& manager =
+            geomodel_access_.modifiable_entity_type_manager().relationship_manager;
+        index_t relation_id = manager.add_parent_child_relationship( parent,
+            children );
+        GeoModelGeologicalEntityAccess parent_access( parent_entity );
+        parent_access.modifiable_children().push_back( relation_id );
+        GeoModelMeshEntityAccess children_access( children_entity );
+        children_access.modifiable_parents().push_back( relation_id );
+    }
+
+    void GeoModelBuilderGeology::remove_parent_children_relation(
+        const gmge_id& parent,
+        const gmme_id& children )
+    {
+        RelationshipManager& manager =
+            geomodel_access_.modifiable_entity_type_manager().relationship_manager;
+        index_t relation_id = manager.find_parent_child_relationship( parent,
+            children );
+        if( relation_id == NO_ID ) {
+            std::ostringstream message;
+            message << "No parent children relation found between " << parent << " and "
+                << children;
+            throw RINGMeshException( "Entity", message.str() );
+        }
+        GeoModelGeologicalEntityAccess parent_access(
+            geomodel_access_.modifiable_geological_entity( parent ) );
+        std::vector< index_t >& childs =
+            parent_access.modifiable_children();
+        std::remove_if( childs.begin(), childs.end(),
+            [relation_id](index_t relation) {return relation == relation_id;} );
+        GeoModelMeshEntityAccess children_access(
+            geomodel_access_.modifiable_mesh_entity( children ) );
+        std::vector< index_t >& parents =
+            children_access.modifiable_parents();
+        std::remove_if( parents.begin(), parents.end(),
+            [relation_id](index_t relation) {return relation == relation_id;} );
+    }
     void GeoModelBuilderGeology::delete_geological_entity(
         const GeologicalEntityType& type,
         index_t index )
     {
         geomodel_access_.modifiable_geological_entities( type )[index].reset();
-    }
-
-    void GeoModelBuilderGeology::fill_mesh_entities_parent(
-        const MeshEntityType& type )
-    {
-        if( geomodel_.nb_mesh_entities( type ) == 0 ) {
-            return;
-        }
-        const std::vector< GeologicalEntityType > parent_types(
-            geomodel_.entity_type_manager().relationship_manager.parent_types(
-                type ) );
-        for( const GeologicalEntityType& parent_type : parent_types ) {
-            if( parent_type != ForbiddenGeologicalEntityType::type_name_static() ) {
-                for( index_t j = 0;
-                    j < geomodel_.nb_geological_entities( parent_type ); ++j ) {
-                    const GeoModelGeologicalEntity& parent =
-                        geomodel_.geological_entity( parent_type, j );
-                    for( index_t k = 0; k < parent.nb_children(); ++k ) {
-                        add_mesh_entity_parent( parent.child_gmme( k ),
-                            parent.gmge() );
-                    }
-                }
-            }
-        }
-    }
-
-    void GeoModelBuilderGeology::fill_geological_entities_children(
-        const GeologicalEntityType& type )
-    {
-        if( geomodel_.nb_geological_entities( type ) == 0 ) {
-            return;
-        }
-        const MeshEntityType& c_type =
-            geomodel_.geological_entity( type, 0 ).child_type_name();
-        if( c_type != ForbiddenMeshEntityType::type_name_static() ) {
-            for( index_t i = 0; i < geomodel_.nb_mesh_entities( c_type ); ++i ) {
-                const GeoModelMeshEntity& p = geomodel_.mesh_entity( c_type, i );
-                for( index_t j = 0; j < p.nb_parents(); j++ ) {
-                    add_geological_entity_child( p.parent_gmge( j ), i );
-                }
-            }
-        }
-    }
-
-    void GeoModelBuilderGeology::complete_mesh_entities_geol_feature_from_first_parent(
-        const MeshEntityType& type )
-    {
-        if( geomodel_.nb_mesh_entities( type ) == 0 ) {
-            return;
-        }
-        const std::vector< GeologicalEntityType > parents =
-            geomodel_.entity_type_manager().relationship_manager.parent_types(
-                type );
-        if( parents.size() == 0 ) {
-            return;
-        } else {
-            for( index_t i = 0; i < geomodel_.nb_mesh_entities( type ); ++i ) {
-                GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
-                    gmme_id( type, i ) );
-                if( !E.has_geological_feature() ) {
-                    if( E.nb_parents() > 0
-                        && E.parent( 0 ).has_geological_feature() ) {
-                        GeoModelMeshEntityAccess gmme_access( E );
-                        gmme_access.modifiable_geol_feature() =
-                            E.parent( 0 ).geological_feature();
-                    }
-                }
-            }
-        }
-    }
-
-    void GeoModelBuilderGeology::complete_geological_entities_geol_feature_from_first_child(
-        const GeologicalEntityType& type )
-    {
-        if( geomodel_.nb_geological_entities( type ) == 0 ) {
-            return;
-        }
-        const MeshEntityType& child_type =
-            geomodel_.entity_type_manager().relationship_manager.child_type( type );
-        if( MeshEntityTypeManager::is_valid_type( child_type ) ) {
-            for( index_t i = 0; i < geomodel_.nb_geological_entities( type ); ++i ) {
-                GeoModelGeologicalEntity& parent =
-                    geomodel_access_.modifiable_geological_entity(
-                        gmge_id( type, i ) );
-                if( !parent.has_geological_feature() ) {
-                    if( parent.nb_children() > 0
-                        && parent.child( 0 ).has_geological_feature() ) {
-                        GeoModelGeologicalEntityAccess gmge_access( parent );
-                        gmge_access.modifiable_geol_feature() =
-                            parent.child( 0 ).geological_feature();
-                    }
-                }
-            }
-        }
     }
 
     gmge_id GeoModelBuilderGeology::create_geological_entity(
@@ -1337,7 +1290,7 @@ namespace RINGMesh {
                 }
                 builder_.info.set_geological_entity_name( contact_id, name );
             }
-            add_geological_entity_child( contact_id, i );
+            add_parent_children_relation(contact_id,L.gmme()) ;
         }
     }
 

@@ -396,7 +396,7 @@ namespace {
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
          */
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             std::ifstream input( filename.c_str() );
             if( !input ) {
@@ -414,7 +414,7 @@ namespace {
             return is_valid;
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
 
             std::ofstream out( filename.c_str() );
