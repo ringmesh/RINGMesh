@@ -16,7 +16,7 @@ Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
  * Cannot delete Mesh in RINGMeshView
  * Fix crash on RINGMeshView exit (Logger was still register)
- 
+
 Improvements:
  * Refactoring of the io to have smaller files
  * Explicit distinction between the denomination of GeoModelMeshEntity and GeoModelGeologicalEntity:
@@ -32,7 +32,6 @@ Improvements:
  * Use C++11 smartpointers for all the pointers allocated on the heap
  * Remove complex inheritance design of the GeogramMesh and GeogramMeshBuilder classes 
  * Add naming distinction between a facet (a boundary polygon of a cell) and a polygon (a surface mesh element)
- 
 Deprecated:
  * Remove support of .ogm
  * Remove support of .mesh and .meshb
