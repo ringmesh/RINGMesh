@@ -157,16 +157,16 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API Mesh0DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy( Mesh0DBuilder );
+    class RINGMESH_API MeshPointBuilder: public virtual MeshBaseBuilder {
+    ringmesh_disable_copy( MeshPointBuilder );
     public:
-        virtual ~Mesh0DBuilder()
+        virtual ~MeshPointBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh0D& mesh ) = 0;
+        virtual void set_mesh( MeshPoint& mesh ) = 0;
 
-        static std::unique_ptr< Mesh0DBuilder > create_builder( Mesh0D& mesh );
+        static std::unique_ptr< MeshPointBuilder > create_builder( MeshPoint& mesh );
 
         virtual void remove_isolated_vertices()
         {
@@ -174,25 +174,25 @@ namespace RINGMesh {
         }
 
     protected:
-        Mesh0DBuilder()
+        MeshPointBuilder()
             : MeshBaseBuilder()
         {
         }
     };
-    using Mesh0DBuilderFactory = GEO::Factory0< Mesh0DBuilder >;
+    using Mesh0DBuilderFactory = GEO::Factory0< MeshPointBuilder >;
 #define ringmesh_register_mesh_0d_builder(type) \
     geo_register_creator(RINGMesh::Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API Mesh1DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy( Mesh1DBuilder );
+    class RINGMESH_API MeshLineBuilder: public virtual MeshBaseBuilder {
+    ringmesh_disable_copy( MeshLineBuilder );
     public:
-        virtual ~Mesh1DBuilder()
+        virtual ~MeshLineBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh1D& mesh ) = 0;
+        virtual void set_mesh( MeshLine& mesh ) = 0;
 
-        static std::unique_ptr< Mesh1DBuilder > create_builder( Mesh1D& mesh );
+        static std::unique_ptr< MeshLineBuilder > create_builder( MeshLine& mesh );
 
         /*!
          * @brief Create a new edge.
@@ -244,25 +244,25 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices() = 0;
     protected:
-        Mesh1DBuilder()
+        MeshLineBuilder()
             : MeshBaseBuilder()
         {
         }
     };
-    using Mesh1DBuilderFactory = GEO::Factory0< Mesh1DBuilder >;
+    using Mesh1DBuilderFactory = GEO::Factory0< MeshLineBuilder >;
 #define ringmesh_register_mesh_1d_builder(type) \
     geo_register_creator(RINGMesh::Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API Mesh2DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy( Mesh2DBuilder );
+    class RINGMESH_API MeshSurfaceBuilder: public virtual MeshBaseBuilder {
+    ringmesh_disable_copy( MeshSurfaceBuilder );
     public:
-        virtual ~Mesh2DBuilder()
+        virtual ~MeshSurfaceBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh2D& mesh ) = 0;
+        virtual void set_mesh( MeshSurface& mesh ) = 0;
 
-        static std::unique_ptr< Mesh2DBuilder > create_builder( Mesh2D& mesh );
+        static std::unique_ptr< MeshSurfaceBuilder > create_builder( MeshSurface& mesh );
 
         /*!@}
          * \name Polygon related methods
@@ -370,7 +370,7 @@ namespace RINGMesh {
         virtual void remove_small_connected_components(
             double min_area,
             index_t min_polygons ) = 0;
-        virtual void triangulate( const Mesh2D& surface_in ) = 0;
+        virtual void triangulate( const MeshSurface& surface_in ) = 0;
         /*!@}
          */
         /*!
@@ -378,25 +378,25 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices() = 0;
     protected:
-        Mesh2DBuilder()
+        MeshSurfaceBuilder()
             : MeshBaseBuilder()
         {
         }
     };
-    using Mesh2DBuilderFactory = GEO::Factory0< Mesh2DBuilder >;
+    using Mesh2DBuilderFactory = GEO::Factory0< MeshSurfaceBuilder >;
 #define ringmesh_register_mesh_2d_builder(type) \
     geo_register_creator(RINGMesh::Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API Mesh3DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy( Mesh3DBuilder );
+    class RINGMESH_API MeshVolumeBuilder: public virtual MeshBaseBuilder {
+    ringmesh_disable_copy( MeshVolumeBuilder );
     public:
-        virtual ~Mesh3DBuilder()
+        virtual ~MeshVolumeBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh3D& mesh ) = 0;
+        virtual void set_mesh( MeshVolume& mesh ) = 0;
 
-        static std::unique_ptr< Mesh3DBuilder > create_builder( Mesh3D& mesh );
+        static std::unique_ptr< MeshVolumeBuilder > create_builder( MeshVolume& mesh );
 
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
@@ -489,12 +489,12 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices() = 0;
     protected:
-        Mesh3DBuilder()
+        MeshVolumeBuilder()
             : MeshBaseBuilder()
         {
         }
     };
-    using Mesh3DBuilderFactory = GEO::Factory0< Mesh3DBuilder >;
+    using Mesh3DBuilderFactory = GEO::Factory0< MeshVolumeBuilder >;
 #define ringmesh_register_mesh_3d_builder(type) \
     geo_register_creator(RINGMesh::Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
 

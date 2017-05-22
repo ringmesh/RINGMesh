@@ -468,7 +468,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< Mesh0D > mesh_;
+        std::unique_ptr< MeshPoint > mesh_;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_;
     };
@@ -699,7 +699,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< Mesh2D > mesh_;
+        std::unique_ptr< MeshSurface > mesh_;
 
         /// Attribute storing the surface index per polygon
         GEO::Attribute< index_t > surface_id_;
@@ -784,7 +784,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< Mesh1D > mesh_;
+        std::unique_ptr< MeshLine > mesh_;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -1205,7 +1205,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< Mesh3D > mesh_;
+        std::unique_ptr< MeshVolume > mesh_;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_;
