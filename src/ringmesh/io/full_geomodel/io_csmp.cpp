@@ -82,13 +82,13 @@ namespace {
             clear();
         }
 
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename ) override
+        virtual void save( const GeoModel& gm, const std::string& filename ) final
         {
             initialize( gm );
 
@@ -657,7 +657,7 @@ namespace {
                 }
             }
         }
-        std::string interface_csmp_name( index_t i, const GeoModel& geomodel )
+        std::string interface_csmp_name( index_t i, const GeoModel& geomodel ) const
         {
             if( box_model_ ) {
                 if( i == back_ ) {
@@ -676,7 +676,7 @@ namespace {
             }
             return geomodel.geological_entity( Interface::type_name_static(), i ).name();
         }
-        signed_index_t point_boundary( index_t p )
+        signed_index_t point_boundary( index_t p ) const
         {
             ringmesh_assert( p < point_boundaries_.size() );
             const std::set< unsigned int >& boundaries = point_boundaries_[p];
