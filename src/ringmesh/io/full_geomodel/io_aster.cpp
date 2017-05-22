@@ -66,13 +66,13 @@ namespace {
      */
     class AsterIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Code_Aster mesh not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -97,7 +97,7 @@ namespace {
 
     private:
 
-        void write_title( std::ofstream& out, const RINGMesh::GeoModel& geomodel )
+        void write_title( std::ofstream& out, const RINGMesh::GeoModel& geomodel ) const
         {
             out << "TITRE" << std::endl;
             out << geomodel.name() << std::endl;
@@ -105,7 +105,7 @@ namespace {
         }
         void write_vertices(
             std::ofstream& out,
-            const RINGMesh::GeoModelMesh& geomodel_mesh )
+            const RINGMesh::GeoModelMesh& geomodel_mesh ) const
         {
             out << "COOR_3D" << std::endl;
             for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
@@ -115,7 +115,7 @@ namespace {
             out << "FINSF" << std::endl;
         }
 
-        void write_cells( const RINGMesh::GeoModel& geomodel, std::ofstream& out )
+        void write_cells( const RINGMesh::GeoModel& geomodel, std::ofstream& out ) const
         {
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
@@ -130,7 +130,7 @@ namespace {
             }
         }
 
-        void write_polygons( const RINGMesh::GeoModel& geomodel, std::ofstream& out )
+        void write_polygons( const RINGMesh::GeoModel& geomodel, std::ofstream& out ) const
         {
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
@@ -149,7 +149,7 @@ namespace {
             const GEO::MeshCellType& cell_type,
             index_t region,
             const RINGMesh::GeoModelMesh& geomodel_mesh,
-            std::ofstream& out )
+            std::ofstream& out ) const
         {
             out << *cell_name_in_aster_mail_file[cell_type] << std::endl;
             for( index_t c = 0;
@@ -168,7 +168,7 @@ namespace {
             const GeoModelMeshPolygons::PolygonType& polygon_type,
             index_t surface,
             const RINGMesh::GeoModelMesh& mesh,
-            std::ofstream& out )
+            std::ofstream& out ) const
         {
             out << *polygon_name_in_aster_mail_file[polygon_type] << std::endl;
             for( index_t p = 0; p < mesh.polygons.nb_polygons( surface, polygon_type );
@@ -183,7 +183,7 @@ namespace {
             out << "FINSF" << std::endl;
         }
 
-        void write_regions( const GeoModel& geomodel, std::ofstream& out )
+        void write_regions( const GeoModel& geomodel, std::ofstream& out ) const
         {
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 if( geomodel.region( r ).is_meshed() ) {
@@ -198,7 +198,7 @@ namespace {
             }
         }
 
-        void write_interfaces( const GeoModel& geomodel, std::ofstream& out )
+        void write_interfaces( const GeoModel& geomodel, std::ofstream& out ) const
         {
             for( index_t inter = 0;
                 inter
