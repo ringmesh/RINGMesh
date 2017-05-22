@@ -686,7 +686,7 @@ namespace {
             gmme_id children = builder().topology.create_mesh_entity< Surface >();
             builder().geology.add_parent_children_relation( parent, children );
             builder().geology.set_geological_entity_geol_feature( parent,
-                GeoModelEntity::determine_geological_type( type ) );
+                GeoModelGeologicalEntity::determine_geological_type( type ) );
         }
     };
 

@@ -97,14 +97,16 @@ namespace RINGMesh {
         }
 
     protected:
-        gmme_id read_first_line( GEO::LineInput& file_line )
+        virtual gmme_id read_first_line( GEO::LineInput& file_line )
         {
 
             gmme_id cur_gmme( MeshEntityType( file_line.field( 0 ) ),
                 file_line.field_as_uint( 1 ) );
             builder_.info.set_mesh_entity_name( cur_gmme, file_line.field( 2 ) );
-            builder_.geology.set_mesh_entity_geol_feature( cur_gmme,
-                GeoModelEntity::determine_geological_type( file_line.field( 3 ) ) );
+            GeoModelGeologicalEntity::GEOL_FEATURE not_used =
+                GeoModelGeologicalEntity::determine_geological_type(
+                    file_line.field( 3 ) );
+            ringmesh_unused( not_used );
             return cur_gmme;
         }
         void read_second_line( GEO::LineInput& file_line, const gmme_id& entity )
@@ -162,6 +164,34 @@ namespace RINGMesh {
             builder_.geometry.change_mesh_data_structure( entity, mesh_type );
 
             read_second_line( file_line, entity );
+
+        }
+    };
+    class GeoModelBuilderGMImpl_2: public GeoModelBuilderGMImpl_1 {
+    public:
+        GeoModelBuilderGMImpl_2( GeoModelBuilderGM& builder )
+            : GeoModelBuilderGMImpl_1( builder )
+        {
+        }
+        virtual ~GeoModelBuilderGMImpl_2() = default;
+
+        virtual void read_mesh_entity_line( GEO::LineInput& file_line ) override
+        {
+            // Read this entity
+            // First line : type - id - name - geol_feature - mesh type
+            if( file_line.nb_fields() < 4 ) {
+                throw RINGMeshException( "I/O",
+                    "Invalid line: "
+                        + GEO::String::to_string( file_line.line_number() )
+                        + ", 4 fields are expected, the type, id, name, "
+                        + "geological feature, and mesh type" );
+            }
+            gmme_id entity = read_first_line( file_line );
+
+            const std::string mesh_type = file_line.field( 3 );
+            builder_.geometry.change_mesh_data_structure( entity, mesh_type );
+
+            read_second_line( file_line, entity );
         }
     };
 
@@ -172,6 +202,7 @@ namespace RINGMesh {
     {
         version_impl_[0].reset( new GeoModelBuilderGMImpl_0( *this ) );
         version_impl_[1].reset( new GeoModelBuilderGMImpl_1( *this ) );
+        version_impl_[2].reset( new GeoModelBuilderGMImpl_2( *this ) );
     }
 
     GeoModelBuilderGM::~GeoModelBuilderGM()
@@ -276,7 +307,7 @@ namespace RINGMesh {
                     gmge_id entity( type, id );
                     info.set_geological_entity_name( entity, file_line.field( 2 ) );
                     geology.set_geological_entity_geol_feature( entity,
-                        GeoModelEntity::determine_geological_type(
+                        GeoModelGeologicalEntity::determine_geological_type(
                             file_line.field( 3 ) ) );
                     file_line.get_line();
                     file_line.get_fields();

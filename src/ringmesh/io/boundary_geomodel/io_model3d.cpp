@@ -228,18 +228,29 @@ namespace {
         index_t count = 1;
 
         // Gocad::TFace = RINGMesh::Surface
-        for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
-            const Surface& s = M.surface( i );
+        for( index_t s = 0; s < M.nb_surfaces(); ++s ) {
+            const Surface& cur_surface = M.surface( s );
+            const gmge_id& parent_interface = cur_surface.parent_gmge(
+                Interface::type_name_static() );
+            if( !parent_interface.is_defined() ) {
+                throw RINGMeshException( "I/O",
+                    "Failed to save GeoModel" " in .ml Gocad format "
+                        "because Surface " + GEO::String::to_string( s )
+                        + " has no Interface parent)" );
+            }
+            const GeoModelGeologicalEntity::GEOL_FEATURE& cur_geol_feature =
+                M.geological_entity( parent_interface ).geological_feature();
+
             out << "TFACE " << count << "  ";
-            out << GeoModelEntity::geol_name( s.geological_feature() );
-            out << " " << s.parent( Interface::type_name_static() ).name()
+            out << GeoModelGeologicalEntity::geol_name( cur_geol_feature );
+            out << " " << cur_surface.parent( Interface::type_name_static() ).name()
                 << std::endl;
 
             // Print the key polygon which is the first three
             // vertices of the first polygon
-            out << "  " << s.mesh_element_vertex( 0, 0 ) << std::endl;
-            out << "  " << s.mesh_element_vertex( 0, 1 ) << std::endl;
-            out << "  " << s.mesh_element_vertex( 0, 2 ) << std::endl;
+            out << "  " << cur_surface.mesh_element_vertex( 0, 0 ) << std::endl;
+            out << "  " << cur_surface.mesh_element_vertex( 0, 1 ) << std::endl;
+            out << "  " << cur_surface.mesh_element_vertex( 0, 2 ) << std::endl;
 
             ++count;
         }
@@ -278,7 +289,7 @@ namespace {
 
             out << "GEOLOGICAL_FEATURE " << tsurf.name() << std::endl
                 << "GEOLOGICAL_TYPE ";
-            out << GeoModelEntity::geol_name( tsurf.geological_feature() );
+            out << GeoModelGeologicalEntity::geol_name( tsurf.geological_feature() );
             out << std::endl;
             out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" << std::endl
                 << "}" << std::endl;

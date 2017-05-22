@@ -68,7 +68,8 @@ namespace {
             if( surface_id_[i] != surface_id_[j] ) {
                 return surface_id_[i] < surface_id_[j];
             } else {
-                return mesh_.nb_polygon_vertices( i ) < mesh_.nb_polygon_vertices( j );
+                return mesh_.nb_polygon_vertices( i )
+                    < mesh_.nb_polygon_vertices( j );
             }
         }
     private:
@@ -1213,7 +1214,8 @@ namespace RINGMesh {
                         // Find if the facet is on a surface or inside the domain
                         index_t polygon = NO_ID;
                         bool side;
-                        if( is_cell_facet_on_surface( cur_c, cur_f, polygon, side ) ) {
+                        if( is_cell_facet_on_surface( cur_c, cur_f, polygon,
+                            side ) ) {
                             index_t surface_id = gmm_.polygons.surface( polygon );
                             surfaces.push_back(
                                 action_on_surface( surface_id,
@@ -1325,14 +1327,19 @@ namespace RINGMesh {
 
     bool GeoModelMeshCells::is_surface_to_duplicate( index_t surface_id ) const
     {
-        if( gm_.surface( surface_id ).is_on_voi() ) return false;
+        const Surface& cur_surface = gm_.surface( surface_id );
+        if( cur_surface.is_on_voi() ) return false;
         switch( gmm_.duplicate_mode() ) {
             case ALL:
                 return true;
             case FAULT: {
-                GeoModelEntity::GEOL_FEATURE feature =
-                    gm_.surface( surface_id ).geological_feature();
-                return GeoModelEntity::is_fault( feature );
+                gmge_id parent_interface = cur_surface.parent_gmge(Interface::type_name_static());
+                if( parent_interface.is_defined() ) {
+                    GeoModelGeologicalEntity::GEOL_FEATURE feature =
+                        gm_.geological_entity( parent_interface ).geological_feature();
+                    return GeoModelGeologicalEntity::is_fault( feature );
+                }
+                return false;
             }
             default:
                 return false;
@@ -1604,7 +1611,10 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelMeshPolygons::polygon( index_t s, index_t p, PolygonType type ) const
+    index_t GeoModelMeshPolygons::polygon(
+        index_t s,
+        index_t p,
+        PolygonType type ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
@@ -1780,7 +1790,8 @@ namespace RINGMesh {
                 index_t cur_polygon = NO_ID;
                 if( nb_vertices < 5 ) {
                     PolygonType T = static_cast< PolygonType >( nb_vertices - 3 );
-                    cur_polygon = polygon_offset_per_type[T] + cur_polygon_per_type[T]++;
+                    cur_polygon = polygon_offset_per_type[T]
+                        + cur_polygon_per_type[T]++;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         index_t v_id = geomodel_vertices.geomodel_vertex_id(
                             surface_id, p, v );

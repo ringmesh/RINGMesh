@@ -479,7 +479,7 @@ namespace RINGMesh {
         const GeologicalEntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
-            if( parent_gmge(i).type() == parent_type_name ) {
+            if( parent_gmge( i ).type() == parent_type_name ) {
                 return parent_gmge( i );
             }
         }
@@ -513,7 +513,8 @@ namespace RINGMesh {
     const gmge_id& GeoModelMeshEntity::parent_gmge( index_t id ) const
     {
         ringmesh_assert( id < nb_parents() );
-        return geomodel().entity_type_manager().relationship_manager.parent_of_gmme(parents_[id]) ;
+        return geomodel().entity_type_manager().relationship_manager.parent_of_gmme(
+            parents_[id] );
     }
 
     /**************************************************************/

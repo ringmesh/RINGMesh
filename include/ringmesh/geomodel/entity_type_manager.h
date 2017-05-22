@@ -171,12 +171,12 @@ namespace RINGMesh {
 
         const gmme_id& boundary_gmme( index_t relation_id ) const
         {
-            ringmesh_assert( id < boundary_relationships_.size() );
+            ringmesh_assert( relation_id < boundary_relationships_.size() );
             return boundary_relationships_[relation_id].boundary_id_;
         }
         const gmme_id& in_boundary_gmme( index_t relation_id ) const
         {
-            ringmesh_assert( id < boundary_relationships_.size() );
+            ringmesh_assert( relation_id < boundary_relationships_.size() );
             return boundary_relationships_[relation_id].in_boundary_id_;
         }
 
@@ -187,12 +187,12 @@ namespace RINGMesh {
 
         const gmge_id& parent_of_gmme( index_t relation_id ) const
         {
-            ringmesh_assert( id < parent_child_relationships_.size() );
+            ringmesh_assert( relation_id < parent_child_relationships_.size() );
             return parent_child_relationships_[relation_id].parent_id_;
         }
         const gmme_id& child_of_gmge( index_t relation_id ) const
         {
-            ringmesh_assert( id < parent_child_relationships_.size() );
+            ringmesh_assert( relation_id < parent_child_relationships_.size() );
             return parent_child_relationships_[relation_id].child_id_;
         }
 
