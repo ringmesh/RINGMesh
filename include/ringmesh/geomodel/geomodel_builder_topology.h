@@ -114,23 +114,13 @@ namespace RINGMesh {
          */
         void complete_entity_connectivity();
 
-        /*!
-         * @brief Fill the boundaries of all entities of the given type
-         * @details If the boundary entities do not have any in_boundary
-         * information, nothing is done.
-         */
-        void fill_mesh_entities_boundaries( const MeshEntityType& type );
+        void remove_mesh_entity_boundary_relation(
+            const gmme_id& in_boundary,
+            const gmme_id& boundary );
 
-        /*!
-         * @brief Fill the in_boundary vector of all entities of the given type
-         * @details If the in_boundary entities do not have any boundary
-         * information, nothing is done, and geomodel construction will eventually fail.
-         */
-        void fill_mesh_entities_in_boundaries( const MeshEntityType& type );
-
-        void add_mesh_entity_boundary(
-            const gmme_id& gme_id,
-            index_t boundary_id,
+        void add_mesh_entity_boundary_relation(
+            const gmme_id& boundary,
+            const gmme_id& in_boundary,
             bool side = false );
 
         void set_mesh_entity_boundary(
@@ -142,8 +132,6 @@ namespace RINGMesh {
         void add_universe_boundary( index_t boundary_id, bool side );
 
         void set_universe_boundary( index_t id, index_t boundary_id, bool side );
-
-        void add_mesh_entity_in_boundary( const gmme_id& t, index_t in_boundary_id );
 
         void set_mesh_entity_in_boundary(
             const gmme_id& gme_id,
