@@ -50,7 +50,7 @@
 
 using namespace RINGMesh;
 
-void add_vertices( MeshLineBuilder* builder, index_t size )
+void add_vertices( LineMeshBuilder* builder, index_t size )
 {
     builder->create_vertices( size );
     for( index_t i = 0; i < size; i++ ) {
@@ -58,7 +58,7 @@ void add_vertices( MeshLineBuilder* builder, index_t size )
     }
 }
 
-void add_vertices( MeshSurfaceBuilder* builder, index_t size )
+void add_vertices( SurfaceMeshBuilder* builder, index_t size )
 {
     builder->create_vertices( size * size );
     index_t id = 0;
@@ -69,7 +69,7 @@ void add_vertices( MeshSurfaceBuilder* builder, index_t size )
     }
 }
 
-void add_vertices( MeshVolumeBuilder* builder, index_t size )
+void add_vertices( VolumeMeshBuilder* builder, index_t size )
 {
     builder->create_vertices( size * size * size );
     index_t id = 0;
@@ -82,7 +82,7 @@ void add_vertices( MeshVolumeBuilder* builder, index_t size )
     }
 }
 
-void add_edges( MeshLineBuilder* builder, index_t size )
+void add_edges( LineMeshBuilder* builder, index_t size )
 {
     builder->create_edges( size - 1 );
     for( index_t i = 0; i < size - 1; i++ ) {
@@ -91,7 +91,7 @@ void add_edges( MeshLineBuilder* builder, index_t size )
     }
 }
 
-void add_triangles( MeshSurfaceBuilder* builder, index_t size )
+void add_triangles( SurfaceMeshBuilder* builder, index_t size )
 {
     builder->create_triangles( ( size - 1 ) * ( size - 1 ) * 2 );
     index_t id = 0;
@@ -109,7 +109,7 @@ void add_triangles( MeshSurfaceBuilder* builder, index_t size )
     }
 }
 
-void add_hexs( MeshVolumeBuilder* builder, index_t size )
+void add_hexs( VolumeMeshBuilder* builder, index_t size )
 {
     builder->create_cells( ( size - 1 ) * ( size - 1 ) * ( size - 1 ),
         GEO::MESH_HEX );
@@ -181,7 +181,7 @@ void check_tree( const AABBTree2D& tree, index_t size )
 }
 
 void create_5_tets_from_hex(
-    MeshVolumeBuilder& builder,
+    VolumeMeshBuilder& builder,
     const GeogramMesh3D& mesh_hex,
     index_t hex )
 {
@@ -220,7 +220,7 @@ void decompose_in_tet(
     GeogramMesh3D& tet_mesh,
     index_t size )
 {
-    std::unique_ptr< MeshVolumeBuilder > builder = MeshVolumeBuilder::create_builder(
+    std::unique_ptr< VolumeMeshBuilder > builder = VolumeMeshBuilder::create_builder(
         tet_mesh );
     builder->create_cells( hex_mesh.nb_cells() * 5, GEO::MESH_TET );
     add_vertices( builder.get(), size );
@@ -234,7 +234,7 @@ void test_AABB2D()
 {
     Logger::out( "TEST", "Test AABB 2D" );
     GeogramMesh2D geogram_mesh;
-    std::unique_ptr< MeshSurfaceBuilder > builder = MeshSurfaceBuilder::create_builder(
+    std::unique_ptr< SurfaceMeshBuilder > builder = SurfaceMeshBuilder::create_builder(
         geogram_mesh );
 
     index_t size = 10;
@@ -263,7 +263,7 @@ void test_AABB3D()
 {
     Logger::out( "TEST", "Test AABB 3D" );
     GeogramMesh3D geogram_mesh_hex;
-    std::unique_ptr< MeshVolumeBuilder > builder = MeshVolumeBuilder::create_builder(
+    std::unique_ptr< VolumeMeshBuilder > builder = VolumeMeshBuilder::create_builder(
         geogram_mesh_hex );
 
     index_t size = 10;
@@ -275,7 +275,7 @@ void test_AABB3D()
     test_locate_cell_on_3D_mesh( geogram_mesh_tet );
 }
 
-void test_locate_edge_on_1D_mesh( const GeogramMeshLine& mesh )
+void test_locate_edge_on_1D_mesh( const GeogramLineMesh& mesh )
 {
     double distance;
     vec3 nearest_point;
@@ -293,8 +293,8 @@ void test_locate_edge_on_1D_mesh( const GeogramMeshLine& mesh )
 void test_AABB1D()
 {
     Logger::out( "TEST", "Test AABB 1D" );
-    GeogramMeshLine geogram_mesh;
-    std::unique_ptr< MeshLineBuilder > builder = MeshLineBuilder::create_builder(
+    GeogramLineMesh geogram_mesh;
+    std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
         geogram_mesh );
 
     index_t size = 10;

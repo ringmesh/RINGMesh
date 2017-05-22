@@ -50,10 +50,10 @@
 namespace RINGMesh {
     class GeoModel;
     class MeshBaseBuilder;
-    class MeshPointBuilder;
-    class MeshLineBuilder;
-    class MeshSurfaceBuilder;
-    class MeshVolumeBuilder;
+    class PointMeshBuilder;
+    class LineMeshBuilder;
+    class SurfaceMeshBuilder;
+    class VolumeMeshBuilder;
 }
 
 namespace RINGMesh {
@@ -103,7 +103,7 @@ namespace RINGMesh {
 
         /*!
          * @brief return the NNSearch at vertices
-         * @warning the NNSearch is destroyed when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
+         * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
          */
         const NNSearch& vertices_nn_search() const
         {
@@ -141,21 +141,21 @@ namespace RINGMesh {
      * class for encapsulating isolated vertices structure
      */
     template< typename DIMENSION >
-    class RINGMESH_API MeshPoint: public virtual MeshBase< DIMENSION > {
-    ringmesh_disable_copy( MeshPoint );
-        friend class MeshPointBuilder;
+    class RINGMESH_API PointMesh: public virtual MeshBase {
+    ringmesh_disable_copy( PointMesh );
+        friend class PointMeshBuilder;
 
     public:
-        virtual ~MeshPoint() = default;
+        virtual ~PointMesh() = default;
 
-        static std::unique_ptr< MeshPoint > create_mesh( const MeshType type );
+        static std::unique_ptr< PointMesh > create_mesh( const MeshType type );
     protected:
         /*!
          * @brief Mesh0D constructor.
          */
-        MeshPoint() = default;
+        PointMesh() = default;
     };
-    using Mesh0DFactory = GEO::Factory0< MeshPoint >;
+    using Mesh0DFactory = GEO::Factory0< PointMesh >;
 #define ringmesh_register_mesh_0d(type) \
     geo_register_creator(RINGMesh::Mesh0DFactory, type, type::type_name_static())
 
@@ -163,14 +163,14 @@ namespace RINGMesh {
      * class for encapsulating line mesh component
      */
     template< typename DIMENSION >
-    class RINGMESH_API MeshLine: public virtual MeshBase< DIMENSION > {
-    ringmesh_disable_copy( MeshLine );
-        friend class MeshLineBuilder;
+    class RINGMESH_API LineMesh: public virtual MeshBase {
+    ringmesh_disable_copy( LineMesh );
+        friend class LineMeshBuilder;
 
     public:
-        virtual ~MeshLine() = default;
+        virtual ~LineMesh() = default;
 
-        static std::unique_ptr< MeshLine > create_mesh( const MeshType type );
+        static std::unique_ptr< LineMesh > create_mesh( const MeshType type );
 
         /*
          * @brief Gets the index of an edge vertex.
@@ -230,28 +230,28 @@ namespace RINGMesh {
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
     protected:
-        MeshLine() = default;
+        LineMesh() = default;
 
     protected:
         mutable std::unique_ptr< NNSearch > edges_nn_search_;
         mutable std::unique_ptr< AABBTree1D > edges_aabb_;
     };
-    using MeshLineFactory = GEO::Factory0< MeshLine >;
+    using LineMeshFactory = GEO::Factory0< LineMesh >;
 #define ringmesh_register_mesh_1d(type) \
-    geo_register_creator(RINGMesh::MeshLineFactory, type, type::type_name_static())
+    geo_register_creator(RINGMesh::LineMeshFactory, type, type::type_name_static())
 
     /*!
      * class for encapsulating surface mesh component
      */
     template< typename DIMENSION >
-    class RINGMESH_API MeshSurface: public virtual MeshBase< DIMENSION > {
-    ringmesh_disable_copy( MeshSurface );
-        friend class MeshSurfaceBuilder;
+    class RINGMESH_API SurfaceMesh: public virtual MeshBase {
+    ringmesh_disable_copy( SurfaceMesh );
+        friend class SurfaceMeshBuilder;
 
     public:
-        virtual ~MeshSurface() = default;
+        virtual ~SurfaceMesh() = default;
 
-        static std::unique_ptr< MeshSurface > create_mesh( const MeshType type );
+        static std::unique_ptr< SurfaceMesh > create_mesh( const MeshType type );
 
         /*!
          * @brief Gets the vertex index by polygon index and local vertex index.
@@ -434,10 +434,8 @@ namespace RINGMesh {
          */
         double polygon_edge_length( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex(
-                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex(
-                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 - e0 ).length();
         }
         /*!
@@ -447,10 +445,8 @@ namespace RINGMesh {
          */
         vec3 polygon_edge_barycenter( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex(
-                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex(
-                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
         /*!
@@ -578,13 +574,13 @@ namespace RINGMesh {
             return *polygons_aabb_;
         }
     protected:
-        MeshSurface() = default;
+        SurfaceMesh() = default;
 
     protected:
         mutable std::unique_ptr< NNSearch > nn_search_;
         mutable std::unique_ptr< AABBTree2D > polygons_aabb_;
     };
-    using Mesh2DFactory = GEO::Factory0< MeshSurface >;
+    using Mesh2DFactory = GEO::Factory0< SurfaceMesh >;
 #define ringmesh_register_mesh_2d(type) \
     geo_register_creator(RINGMesh::Mesh2DFactory, type, type::type_name_static())
 
@@ -592,14 +588,14 @@ namespace RINGMesh {
      * class for encapsulating volume mesh component
      */
     template< typename DIMENSION >
-    class RINGMESH_API MeshVolume: public virtual MeshBase< DIMENSION > {
-    ringmesh_disable_copy( MeshVolume );
-        friend class MeshVolumeBuilder;
+    class RINGMESH_API VolumeMesh: public virtual MeshBase {
+    ringmesh_disable_copy( VolumeMesh );
+        friend class VolumeMeshBuilder;
 
     public:
-        virtual ~MeshVolume() = default;
+        virtual ~VolumeMesh() = default;
 
-        static std::unique_ptr< MeshVolume > create_mesh( const MeshType type );
+        static std::unique_ptr< VolumeMesh > create_mesh( const MeshType type );
 
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
@@ -844,14 +840,14 @@ namespace RINGMesh {
             return *cell_aabb_.get();
         }
     protected:
-        MeshVolume() = default;
+        VolumeMesh() = default;
 
     protected:
         mutable std::unique_ptr< NNSearch > cell_facets_nn_search_;
         mutable std::unique_ptr< NNSearch > cell_nn_search_;
         mutable std::unique_ptr< AABBTree3D > cell_aabb_;
     };
-    using Mesh3DFactory = GEO::Factory0< MeshVolume >;
+    using Mesh3DFactory = GEO::Factory0< VolumeMesh >;
 #define ringmesh_register_mesh_3d(type) \
     geo_register_creator(RINGMesh::Mesh3DFactory, type, type::type_name_static())
 
