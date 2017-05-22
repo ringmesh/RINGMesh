@@ -80,13 +80,13 @@ namespace {
 //                   { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
     class MSHIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GMSH not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             /// @todo after implementing GMMOrder
             throw RINGMeshException( "I/O",
