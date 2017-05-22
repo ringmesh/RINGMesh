@@ -57,7 +57,7 @@ namespace {
     class GeoModelMeshPolygonsSort {
     public:
         GeoModelMeshPolygonsSort(
-            const Mesh2D& mesh,
+            const SurfaceMesh& mesh,
             const GEO::Attribute< index_t >& surface_id )
             : mesh_( mesh ), surface_id_( surface_id )
         {
@@ -72,14 +72,14 @@ namespace {
             }
         }
     private:
-        const Mesh2D& mesh_;
+        const SurfaceMesh& mesh_;
         const GEO::Attribute< index_t >& surface_id_;
     };
 
     class GeoModelMeshCellsSort {
     public:
         GeoModelMeshCellsSort(
-            const Mesh3D& mesh,
+            const VolumeMesh& mesh,
             const GEO::Attribute< index_t >& region_id )
             : mesh_( mesh ), region_id_( region_id )
         {
@@ -94,7 +94,7 @@ namespace {
             }
         }
     private:
-        const Mesh3D& mesh_;
+        const VolumeMesh& mesh_;
         const GEO::Attribute< index_t >& region_id_;
     };
 
@@ -104,7 +104,7 @@ namespace {
     }
 
     void cell_facets_around_vertex(
-        const Mesh3D& mesh,
+        const VolumeMesh& mesh,
         index_t cell,
         index_t vertex_id,
         std::vector< index_t >& facets )
@@ -370,7 +370,7 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramMesh0D ),
+            mesh_( new GeogramPointMesh ),
             vertex_mapper_( *this, gmm.geomodel() )
     {
         set_mesh( mesh_.get() );
@@ -408,8 +408,8 @@ namespace RINGMesh {
         const MeshEntityType& entity_type,
         index_t& count )
     {
-        std::unique_ptr< Mesh0DBuilder > mesh_builder =
-            Mesh0DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< PointMeshBuilder > mesh_builder =
+            PointMeshBuilder::create_builder( *mesh_ );
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
             GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
                 entity_type, i ) );
@@ -434,7 +434,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize()
     {
-        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
             *mesh_ );
         builder->clear( true, false );
 
@@ -473,7 +473,7 @@ namespace RINGMesh {
         gmm_.edges.clear();
         vertex_mapper_.clear();
 
-        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
             *mesh_ );
         builder->clear_vertices( true, false );
     }
@@ -564,7 +564,7 @@ namespace RINGMesh {
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
-        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
             *mesh_ );
         const index_t index = builder->create_vertex( point );
         vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
@@ -574,7 +574,7 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertices( const std::vector< vec3 >& points )
     {
         ringmesh_assert( !points.empty() );
-        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
             *mesh_ );
         const index_t start_index = builder->create_vertex( points[0] );
         for( size_t i = 1; i < points.size(); ++i ) {
@@ -589,8 +589,8 @@ namespace RINGMesh {
         test_and_initialize();
         ringmesh_assert( v < nb() );
         // Change the position of the unique_vertex
-        std::unique_ptr< Mesh0DBuilder > mesh_builder =
-            Mesh0DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< PointMeshBuilder > mesh_builder =
+            PointMeshBuilder::create_builder( *mesh_ );
         mesh_builder->set_vertex( v, point );
 
         GeoModelBuilder builder( gm_ );
@@ -672,7 +672,7 @@ namespace RINGMesh {
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
-        Mesh0DBuilder::create_builder( *mesh_ )->delete_vertices( to_delete_bool );
+        PointMeshBuilder::create_builder( *mesh_ )->delete_vertices( to_delete_bool );
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete );
     }
@@ -682,7 +682,7 @@ namespace RINGMesh {
     GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramMesh3D ),
+            mesh_( new GeogramVolumeMesh ),
             nb_tet_( 0 ),
             nb_hex_( 0 ),
             nb_prism_( 0 ),
@@ -708,8 +708,8 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize()
     {
         gmm_.vertices.test_and_initialize();
-        std::unique_ptr< Mesh3DBuilder > mesh_builder =
-            Mesh3DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< VolumeMeshBuilder > mesh_builder =
+            VolumeMeshBuilder::create_builder( *mesh_ );
         copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
 
         region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1, 0 );
@@ -1258,8 +1258,8 @@ namespace RINGMesh {
 
                     // Update all the cell corners on this side of the surface
                     // to the new duplicated vertex index
-                    std::unique_ptr< Mesh3DBuilder > mesh_builder =
-                        Mesh3DBuilder::create_builder( *mesh_ );
+                    std::unique_ptr< VolumeMeshBuilder > mesh_builder =
+                        VolumeMeshBuilder::create_builder( *mesh_ );
                     for( index_t cur_co : corner_used ) {
                         mesh_builder->set_cell_corner_vertex_index( cur_co,
                             duplicated_vertex_id );
@@ -1386,8 +1386,8 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::clear()
     {
-        std::unique_ptr< Mesh3DBuilder > mesh_builder =
-            Mesh3DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< VolumeMeshBuilder > mesh_builder =
+            VolumeMeshBuilder::create_builder( *mesh_ );
         mesh_builder->clear_cells( true, false );
         region_cell_ptr_.clear();
         nb_tet_ = 0;
@@ -1402,8 +1402,8 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::clear_duplication()
     {
-        std::unique_ptr< Mesh3DBuilder > mesh_builder =
-            Mesh3DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< VolumeMeshBuilder > mesh_builder =
+            VolumeMeshBuilder::create_builder( *mesh_ );
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
                 index_t index = NO_ID;
@@ -1469,7 +1469,7 @@ namespace RINGMesh {
     GeoModelMeshPolygons::GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramMesh2D ),
+            mesh_( new GeogramSurfaceMesh ),
             nb_triangle_( 0 ),
             nb_quad_( 0 ),
             nb_unclassified_polygon_( 0 )
@@ -1698,8 +1698,8 @@ namespace RINGMesh {
         surface_polygon_ptr_.clear();
         nb_triangle_ = 0;
         nb_quad_ = 0;
-        std::unique_ptr< Mesh2DBuilder > mesh_builder =
-            Mesh2DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< SurfaceMeshBuilder > mesh_builder =
+            SurfaceMeshBuilder::create_builder( *mesh_ );
         mesh_builder->clear_polygons( true, false );
     }
 
@@ -1715,8 +1715,8 @@ namespace RINGMesh {
         gmm_.vertices.test_and_initialize();
         clear();
         surface_polygon_ptr_.resize( gm_.nb_surfaces() * ALL + 1, 0 );
-        std::unique_ptr< Mesh2DBuilder > mesh_builder =
-            Mesh2DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< SurfaceMeshBuilder > mesh_builder =
+            SurfaceMeshBuilder::create_builder( *mesh_ );
         copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
 
         // Compute the total number of polygons per type and per surface
@@ -1831,8 +1831,8 @@ namespace RINGMesh {
 
     void GeoModelMeshPolygons::disconnect_along_lines()
     {
-        std::unique_ptr< Mesh2DBuilder > mesh_builder =
-            Mesh2DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< SurfaceMeshBuilder > mesh_builder =
+            SurfaceMeshBuilder::create_builder( *mesh_ );
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s );
             for( index_t p = 0; p < nb_polygons( s ); p++ ) {
@@ -1875,7 +1875,7 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm )
-        : GeoModelMeshBase( gmm, gm ), mesh_( new GeogramMesh1D )
+        : GeoModelMeshBase( gmm, gm ), mesh_( new GeogramLineMesh )
     {
         set_mesh( mesh_.get() );
     }
@@ -1910,8 +1910,8 @@ namespace RINGMesh {
 
     void GeoModelMeshEdges::clear()
     {
-        std::unique_ptr< Mesh1DBuilder > mesh_builder =
-            Mesh1DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< LineMeshBuilder > mesh_builder =
+            LineMeshBuilder::create_builder( *mesh_ );
         mesh_builder->clear_edges( true, false );
         well_ptr_.clear();
     }
@@ -1933,8 +1933,8 @@ namespace RINGMesh {
         if( !gm_.wells() ) return;
         gmm_.vertices.test_and_initialize();
         clear();
-        std::unique_ptr< Mesh1DBuilder > mesh_builder =
-            Mesh1DBuilder::create_builder( *mesh_ );
+        std::unique_ptr< LineMeshBuilder > mesh_builder =
+            LineMeshBuilder::create_builder( *mesh_ );
         copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
 
         // Compute the total number of edge per well
