@@ -47,15 +47,15 @@ namespace RINGMesh {
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramMesh0D::type_name_static();
+            new_type = GeogramPointMesh::type_name_static();
         }
-        PointMesh* mesh = Mesh0DFactory::create_object( new_type );
+        PointMesh* mesh = PointMeshFactory::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh0D", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "Mesh0D", "Falling back to GeogramMesh0D data structure" );
 
-            mesh = new GeogramMesh0D;
+            mesh = new GeogramPointMesh;
         }
         return std::unique_ptr< PointMesh >( mesh );
     }
@@ -81,15 +81,15 @@ namespace RINGMesh {
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramMesh2D::type_name_static();
+            new_type = GeogramSurfaceMesh::type_name_static();
         }
-        SurfaceMesh* mesh = Mesh2DFactory::create_object( new_type );
+        SurfaceMesh* mesh = SurfaceMeshFactory::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh2D", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "Mesh2D", "Falling back to GeogramMesh2D data structure" );
 
-            mesh = new GeogramMesh2D;
+            mesh = new GeogramSurfaceMesh;
         }
         return std::unique_ptr< SurfaceMesh >( mesh );
     }
@@ -302,15 +302,15 @@ namespace RINGMesh {
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramMesh3D::type_name_static();
+            new_type = GeogramVolumeMesh::type_name_static();
         }
-        VolumeMesh* mesh = Mesh3DFactory::create_object( new_type );
+        VolumeMesh* mesh = VolumeMeshFactory::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh3D", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "Mesh3D", "Falling back to GeogramMesh3D data structure" );
 
-            mesh = new GeogramMesh3D;
+            mesh = new GeogramVolumeMesh;
         }
         return std::unique_ptr< VolumeMesh >( mesh );
     }

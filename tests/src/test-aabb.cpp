@@ -182,7 +182,7 @@ void check_tree( const AABBTree2D& tree, index_t size )
 
 void create_5_tets_from_hex(
     VolumeMeshBuilder& builder,
-    const GeogramMesh3D& mesh_hex,
+    const GeogramVolumeMesh& mesh_hex,
     index_t hex )
 {
     std::vector< index_t > vertices_in_hex( 8 );
@@ -216,8 +216,8 @@ void create_5_tets_from_hex(
 }
 
 void decompose_in_tet(
-    const GeogramMesh3D& hex_mesh,
-    GeogramMesh3D& tet_mesh,
+    const GeogramVolumeMesh& hex_mesh,
+    GeogramVolumeMesh& tet_mesh,
     index_t size )
 {
     std::unique_ptr< VolumeMeshBuilder > builder = VolumeMeshBuilder::create_builder(
@@ -233,7 +233,7 @@ void decompose_in_tet(
 void test_AABB2D()
 {
     Logger::out( "TEST", "Test AABB 2D" );
-    GeogramMesh2D geogram_mesh;
+    GeogramSurfaceMesh geogram_mesh;
     std::unique_ptr< SurfaceMeshBuilder > builder = SurfaceMeshBuilder::create_builder(
         geogram_mesh );
 
@@ -247,7 +247,7 @@ void test_AABB2D()
 
 }
 
-void test_locate_cell_on_3D_mesh( const GeogramMesh3D& mesh )
+void test_locate_cell_on_3D_mesh( const GeogramVolumeMesh& mesh )
 {
     for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
         vec3 barycenter = mesh.cell_barycenter( c );
@@ -262,7 +262,7 @@ void test_locate_cell_on_3D_mesh( const GeogramMesh3D& mesh )
 void test_AABB3D()
 {
     Logger::out( "TEST", "Test AABB 3D" );
-    GeogramMesh3D geogram_mesh_hex;
+    GeogramVolumeMesh geogram_mesh_hex;
     std::unique_ptr< VolumeMeshBuilder > builder = VolumeMeshBuilder::create_builder(
         geogram_mesh_hex );
 
@@ -270,7 +270,7 @@ void test_AABB3D()
     add_vertices( builder.get(), size );
     add_hexs( builder.get(), size );
 
-    GeogramMesh3D geogram_mesh_tet;
+    GeogramVolumeMesh geogram_mesh_tet;
     decompose_in_tet( geogram_mesh_hex, geogram_mesh_tet, size );
     test_locate_cell_on_3D_mesh( geogram_mesh_tet );
 }
