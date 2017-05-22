@@ -41,9 +41,9 @@
 
 namespace RINGMesh {
     class MeshBase;
-    class Mesh1D;
-    class Mesh2D;
-    class Mesh3D;
+    class LineMesh;
+    class SurfaceMesh;
+    class VolumeMesh;
 }
 
 namespace RINGMesh {
@@ -264,7 +264,7 @@ namespace RINGMesh {
 
     class RINGMESH_API AABBTree1D: public AABBTree {
     public:
-        AABBTree1D( const Mesh1D& mesh );
+        AABBTree1D( const LineMesh& mesh );
         virtual ~AABBTree1D() = default;
 
         /*!
@@ -292,7 +292,7 @@ namespace RINGMesh {
          */
         class DistanceToEdge {
         public:
-            DistanceToEdge( const Mesh1D& mesh )
+            DistanceToEdge( const LineMesh& mesh )
                 : mesh_( mesh )
             {
             }
@@ -304,16 +304,16 @@ namespace RINGMesh {
                 double& distance ) const;
 
         private:
-            const Mesh1D& mesh_;
+            const LineMesh& mesh_;
         };
 
     private:
-        const Mesh1D& mesh_;
+        const LineMesh& mesh_;
     };
 
     class RINGMESH_API AABBTree2D: public AABBTree {
     public:
-        AABBTree2D( const Mesh2D& mesh );
+        AABBTree2D( const SurfaceMesh& mesh );
         virtual ~AABBTree2D() = default;
 
         /*!
@@ -342,7 +342,7 @@ namespace RINGMesh {
          */
         class DistanceToTriangle {
         public:
-            DistanceToTriangle( const Mesh2D& mesh )
+            DistanceToTriangle( const SurfaceMesh& mesh )
                 : mesh_( mesh )
             {
             }
@@ -354,16 +354,16 @@ namespace RINGMesh {
                 double& distance ) const;
 
         private:
-            const Mesh2D& mesh_;
+            const SurfaceMesh& mesh_;
         };
 
     private:
-        const Mesh2D& mesh_;
+        const SurfaceMesh& mesh_;
     };
 
     class RINGMESH_API AABBTree3D: public AABBTree {
     public:
-        AABBTree3D( const Mesh3D& mesh );
+        AABBTree3D( const VolumeMesh& mesh );
         virtual ~AABBTree3D() = default;
 
         /*!
@@ -389,7 +389,7 @@ namespace RINGMesh {
             index_t box_end ) const;
 
     private:
-        const Mesh3D& mesh_;
+        const VolumeMesh& mesh_;
     };
 
     double inner_point_box_distance( const vec3& p, const Box3d& B );
