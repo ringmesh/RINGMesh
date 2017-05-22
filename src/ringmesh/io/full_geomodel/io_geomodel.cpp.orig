@@ -240,7 +240,7 @@ namespace {
 
     class GeoModelHandlerGM final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(
@@ -256,7 +256,7 @@ namespace {
             return is_valid;
 
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             const std::string pwd = GEO::FileSystem::get_current_working_directory();
             bool valid_new_working_directory =

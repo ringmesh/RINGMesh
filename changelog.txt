@@ -10,11 +10,10 @@ New Features:
  * Add Feflow export using .fem file. Support wells as discrete fractures and mixed element mesh. 
  * Add symmetric entity relationships management, an entity is be boundary of another entity 
       and the reverse is automatically set.
+ * Export to gmsh file format (V2).
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
- * Cannot delete Mesh in RINGMeshView
- * Fix crash on RINGMeshView exit (Logger was still register)
 
 Improvements:
  * Refactoring of the io to have smaller files
@@ -30,7 +29,6 @@ Improvements:
  * Improve some designs by using the NRVO/RVO (Named Return Value Optimization)
  * Use C++11 smartpointers for all the pointers allocated on the heap
  * Remove complex inheritance design of the GeogramMesh and GeogramMeshBuilder classes 
- * Add naming distinction between a facet (a boundary polygon of a cell) and a polygon (a surface mesh element)
 
 Deprecated:
  * Remove support of .ogm
