@@ -42,9 +42,9 @@
 namespace {
     using namespace RINGMesh;
 
-    PointMeshBuilder* create_builder_0d( MeshBase& mesh )
+    PointMeshBuilder* create_point_mesh_builder( MeshBase& mesh )
     {
-        PointMeshBuilder* builder = Mesh0DBuilderFactory::create_object(
+        PointMeshBuilder* builder = PointMeshBuilderFactory::create_object(
             mesh.type_name() );
         if( builder ) {
             builder->set_mesh( dynamic_cast< PointMesh& >( mesh ) );
@@ -52,7 +52,7 @@ namespace {
         return builder;
     }
 
-    LineMeshBuilder* create_builder_1d( MeshBase& mesh )
+    LineMeshBuilder* create_line_mesh_builder( MeshBase& mesh )
     {
         LineMeshBuilder* builder = LineMeshBuilderFactory::create_object(
             mesh.type_name() );
@@ -62,9 +62,9 @@ namespace {
         return builder;
     }
 
-    SurfaceMeshBuilder* create_builder_2d( MeshBase& mesh )
+    SurfaceMeshBuilder* create_surface_mesh_builder( MeshBase& mesh )
     {
-        SurfaceMeshBuilder* builder = Mesh2DBuilderFactory::create_object(
+        SurfaceMeshBuilder* builder = SurfaceMeshBuilderFactory::create_object(
             mesh.type_name() );
         if( builder ) {
             builder->set_mesh( dynamic_cast< SurfaceMesh& >( mesh ) );
@@ -72,9 +72,9 @@ namespace {
         return builder;
     }
 
-    VolumeMeshBuilder* create_builder_3d( MeshBase& mesh )
+    VolumeMeshBuilder* create_volume_mesh_builder( MeshBase& mesh )
     {
-        VolumeMeshBuilder* builder = Mesh3DBuilderFactory::create_object(
+        VolumeMeshBuilder* builder = VolumeMeshBuilderFactory::create_object(
             mesh.type_name() );
         if( builder ) {
             builder->set_mesh( dynamic_cast< VolumeMesh& >( mesh ) );
@@ -89,22 +89,22 @@ namespace RINGMesh {
         MeshBase& mesh )
     {
         MeshBaseBuilder* builder = nullptr;
-        PointMeshBuilder* builder0d = create_builder_0d( mesh );
+        PointMeshBuilder* builder0d = create_point_mesh_builder( mesh );
         if( builder0d ) {
             builder0d->set_mesh( dynamic_cast< PointMesh& >( mesh ) );
             builder = builder0d;
         } else {
-            LineMeshBuilder* builder1d = create_builder_1d( mesh );
+            LineMeshBuilder* builder1d = create_line_mesh_builder( mesh );
             if( builder1d ) {
                 builder1d->set_mesh( dynamic_cast< LineMesh& >( mesh ) );
                 builder = builder1d;
             } else {
-                SurfaceMeshBuilder* builder2d = create_builder_2d( mesh );
+                SurfaceMeshBuilder* builder2d = create_surface_mesh_builder( mesh );
                 if( builder2d ) {
                     builder2d->set_mesh( dynamic_cast< SurfaceMesh& >( mesh ) );
                     builder = builder2d;
                 } else {
-                    VolumeMeshBuilder* builder3d = create_builder_3d( mesh );
+                    VolumeMeshBuilder* builder3d = create_volume_mesh_builder( mesh );
                     if( builder3d ) {
                         builder3d->set_mesh( dynamic_cast< VolumeMesh& >( mesh ) );
                         builder = builder3d;
@@ -121,10 +121,10 @@ namespace RINGMesh {
 
     std::unique_ptr< PointMeshBuilder > PointMeshBuilder::create_builder( PointMesh& mesh )
     {
-        PointMeshBuilder* builder = Mesh0DBuilderFactory::create_object(
+        PointMeshBuilder* builder = PointMeshBuilderFactory::create_object(
             mesh.type_name() );
         if( !builder ) {
-            builder = create_builder_0d( mesh );
+            builder = create_point_mesh_builder( mesh );
         }
         if( !builder ) {
             Logger::warn( "Mesh0DBuilder", "Could not create mesh data structure: ",
@@ -132,7 +132,7 @@ namespace RINGMesh {
             Logger::warn( "Mesh0DBuilder",
                 "Falling back to GeogramMesh0DBuilder data structure" );
 
-            builder = new GeogramMesh0DBuilder;
+            builder = new GeogramPointMeshBuilder;
         }
         builder->set_mesh( mesh );
         return std::unique_ptr< PointMeshBuilder >( builder );
@@ -143,7 +143,7 @@ namespace RINGMesh {
         LineMeshBuilder* builder = LineMeshBuilderFactory::create_object(
             mesh.type_name() );
         if( !builder ) {
-            builder = create_builder_1d( mesh );
+            builder = create_line_mesh_builder( mesh );
         }
         if( !builder ) {
             Logger::warn( "LineMeshBuilder", "Could not create mesh data structure: ",
@@ -159,10 +159,10 @@ namespace RINGMesh {
 
     std::unique_ptr< SurfaceMeshBuilder > SurfaceMeshBuilder::create_builder( SurfaceMesh& mesh )
     {
-        SurfaceMeshBuilder* builder = Mesh2DBuilderFactory::create_object(
+        SurfaceMeshBuilder* builder = SurfaceMeshBuilderFactory::create_object(
             mesh.type_name() );
         if( !builder ) {
-            builder = create_builder_2d( mesh );
+            builder = create_surface_mesh_builder( mesh );
         }
         if( !builder ) {
             Logger::warn( "Mesh2DBuilder", "Could not create mesh data structure: ",
@@ -170,7 +170,7 @@ namespace RINGMesh {
             Logger::warn( "Mesh2DBuilder",
                 "Falling back to GeogramMesh2DBuilder data structure" );
 
-            builder = new GeogramMesh2DBuilder;
+            builder = new GeogramSurfaceMeshBuilder;
         }
         builder->set_mesh( mesh );
         return std::unique_ptr< SurfaceMeshBuilder >( builder );
@@ -178,10 +178,10 @@ namespace RINGMesh {
 
     std::unique_ptr< VolumeMeshBuilder > VolumeMeshBuilder::create_builder( VolumeMesh& mesh )
     {
-        VolumeMeshBuilder* builder = Mesh3DBuilderFactory::create_object(
+        VolumeMeshBuilder* builder = VolumeMeshBuilderFactory::create_object(
             mesh.type_name() );
         if( !builder ) {
-            builder = create_builder_3d( mesh );
+            builder = create_volume_mesh_builder( mesh );
         }
         if( !builder ) {
             Logger::warn( "Mesh3DBuilder", "Could not create mesh data structure: ",
@@ -189,7 +189,7 @@ namespace RINGMesh {
             Logger::warn( "Mesh3DBuilder",
                 "Falling back to GeogramMesh3DBuilder data structure" );
 
-            builder = new GeogramMesh3DBuilder;
+            builder = new GeogramVolumeMeshBuilder;
         }
         builder->set_mesh( mesh );
         return std::unique_ptr< VolumeMeshBuilder >( builder );
