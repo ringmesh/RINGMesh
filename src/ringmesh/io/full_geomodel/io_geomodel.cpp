@@ -164,7 +164,6 @@ namespace {
             out << M.universe().boundary_gmme( j ).index() << " ";
         }
         out << std::endl;
-
     }
 
     bool save_mesh(
