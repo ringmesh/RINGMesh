@@ -43,13 +43,13 @@
 
 namespace RINGMesh {
 
-    std::unique_ptr< Mesh0D > Mesh0D::create_mesh( const MeshType type )
+    std::unique_ptr< MeshPoint > MeshPoint::create_mesh( const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
             new_type = GeogramMesh0D::type_name_static();
         }
-        Mesh0D* mesh = Mesh0DFactory::create_object( new_type );
+        MeshPoint* mesh = Mesh0DFactory::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh0D", "Could not create mesh data structure: ",
                 new_type );
@@ -57,33 +57,33 @@ namespace RINGMesh {
 
             mesh = new GeogramMesh0D;
         }
-        return std::unique_ptr< Mesh0D >( mesh );
+        return std::unique_ptr< MeshPoint >( mesh );
     }
 
-    std::unique_ptr< Mesh1D > Mesh1D::create_mesh( const MeshType type )
+    std::unique_ptr< MeshLine > MeshLine::create_mesh( const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramMesh1D::type_name_static();
+            new_type = GeogramMeshLine::type_name_static();
         }
-        Mesh1D* mesh = Mesh1DFactory::create_object( new_type );
+        MeshLine* mesh = MeshLineFactory::create_object( new_type );
         if( !mesh ) {
-            Logger::warn( "Mesh1D", "Could not create mesh data structure: ",
+            Logger::warn( "MeshLine", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "Mesh1D", "Falling back to GeogramMesh1D data structure" );
+            Logger::warn( "MeshLine", "Falling back to GeogramMeshLine data structure" );
 
-            mesh = new GeogramMesh1D;
+            mesh = new GeogramMeshLine;
         }
-        return std::unique_ptr< Mesh1D >( mesh );
+        return std::unique_ptr< MeshLine >( mesh );
     }
 
-    std::unique_ptr< Mesh2D > Mesh2D::create_mesh( const MeshType type )
+    std::unique_ptr< MeshSurface > MeshSurface::create_mesh( const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
             new_type = GeogramMesh2D::type_name_static();
         }
-        Mesh2D* mesh = Mesh2DFactory::create_object( new_type );
+        MeshSurface* mesh = Mesh2DFactory::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh2D", "Could not create mesh data structure: ",
                 new_type );
@@ -91,10 +91,10 @@ namespace RINGMesh {
 
             mesh = new GeogramMesh2D;
         }
-        return std::unique_ptr< Mesh2D >( mesh );
+        return std::unique_ptr< MeshSurface >( mesh );
     }
 
-    void Mesh2D::next_on_border(
+    void MeshSurface::next_on_border(
         index_t p,
         index_t e,
         index_t& next_p,
@@ -132,7 +132,7 @@ namespace RINGMesh {
         }
     }
 
-    void Mesh2D::prev_on_border(
+    void MeshSurface::prev_on_border(
         index_t p,
         index_t e,
         index_t& prev_p,
@@ -173,7 +173,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t Mesh2D::polygon_from_vertex_ids( index_t in0, index_t in1 ) const
+    index_t MeshSurface::polygon_from_vertex_ids( index_t in0, index_t in1 ) const
     {
         ringmesh_assert( in0 < nb_vertices() && in1 < nb_vertices() );
 
@@ -199,7 +199,7 @@ namespace RINGMesh {
         return NO_ID;
     }
 
-    index_t Mesh2D::vertex_index_in_polygon(
+    index_t MeshSurface::vertex_index_in_polygon(
         index_t polygon_index,
         index_t vertex_id ) const
     {
@@ -212,7 +212,7 @@ namespace RINGMesh {
         return NO_ID;
     }
 
-    index_t Mesh2D::closest_vertex_in_polygon( index_t p, const vec3& v ) const
+    index_t MeshSurface::closest_vertex_in_polygon( index_t p, const vec3& v ) const
     {
         index_t result = 0;
         double dist = DBL_MAX;
@@ -226,7 +226,7 @@ namespace RINGMesh {
         return result;
     }
 
-    std::vector< index_t > Mesh2D::polygons_around_vertex(
+    std::vector< index_t > MeshSurface::polygons_around_vertex(
         index_t surf_vertex_id,
         bool border_only,
         index_t p0 ) const
@@ -298,13 +298,13 @@ namespace RINGMesh {
         return result;
     }
 
-    std::unique_ptr< Mesh3D > Mesh3D::create_mesh( const MeshType type )
+    std::unique_ptr< MeshVolume > MeshVolume::create_mesh( const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
             new_type = GeogramMesh3D::type_name_static();
         }
-        Mesh3D* mesh = Mesh3DFactory::create_object( new_type );
+        MeshVolume* mesh = Mesh3DFactory::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh3D", "Could not create mesh data structure: ",
                 new_type );
@@ -312,7 +312,7 @@ namespace RINGMesh {
 
             mesh = new GeogramMesh3D;
         }
-        return std::unique_ptr< Mesh3D >( mesh );
+        return std::unique_ptr< MeshVolume >( mesh );
     }
 
 } // namespace
