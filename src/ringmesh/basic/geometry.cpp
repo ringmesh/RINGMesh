@@ -527,6 +527,7 @@ namespace RINGMesh {
             return false;
         }
 
+        ringmesh_assert( 1.0 - norm_d * norm_d );
         double invDet = 1.0 / ( 1.0 - norm_d * norm_d );
         double const_P0 = dot( norm_N_P0, O_P0 );
         double const_P1 = dot( norm_N_P1, O_P1 );
