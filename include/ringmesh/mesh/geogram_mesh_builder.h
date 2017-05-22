@@ -150,13 +150,13 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramMesh1DBuilder: public MeshLineBuilder {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramMesh1D );
+    class RINGMESH_API GeogramMeshLineBuilder: public MeshLineBuilder {
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramMeshLine );
     public:
 
         virtual void set_mesh( MeshLine& mesh ) override
         {
-            set_geogram_mesh( dynamic_cast< GeogramMesh1D& >( mesh ) );
+            set_geogram_mesh( dynamic_cast< GeogramMeshLine& >( mesh ) );
         }
 
         virtual void create_edge( index_t v1_id, index_t v2_id ) override

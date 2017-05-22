@@ -233,9 +233,9 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch > edges_nn_search_;
         mutable std::unique_ptr< AABBTree1D > edges_aabb_;
     };
-    using Mesh1DFactory = GEO::Factory0< MeshLine >;
+    using MeshLineFactory = GEO::Factory0< MeshLine >;
 #define ringmesh_register_mesh_1d(type) \
-    geo_register_creator(RINGMesh::Mesh1DFactory, type, type::type_name_static())
+    geo_register_creator(RINGMesh::MeshLineFactory, type, type::type_name_static())
 
     /*!
      * class for encapsulating surface mesh component

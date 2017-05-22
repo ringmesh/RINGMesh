@@ -48,7 +48,7 @@
 
 namespace RINGMesh {
     class GeogramMesh0DBuilder;
-    class GeogramMesh1DBuilder;
+    class GeogramMeshLineBuilder;
     class GeogramMesh2DBuilder;
     class GeogramMesh3DBuilder;
 }
@@ -111,8 +111,8 @@ namespace RINGMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramMesh0D );
     };
 
-    class RINGMESH_API GeogramMesh1D: public MeshLine {
-        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramMesh1D );
+    class RINGMESH_API GeogramMeshLine: public MeshLine {
+        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramMeshLine );
     public:
         virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const override
         {

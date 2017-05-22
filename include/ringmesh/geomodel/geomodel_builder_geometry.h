@@ -90,11 +90,11 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Create a Mesh1DBuilder for a given line
+         * @brief Create a MeshLineBuilder for a given line
          * @param[in] line_id the line index
-         * @return The created Mesh1DBuilder
+         * @return The created MeshLineBuilder
          * @warn The client code is responsible for the memory unallocation.
-         * You can use the smartpointer Mesh1DBuilder_var.
+         * You can use the smartpointer MeshLineBuilder_var.
          */
         std::unique_ptr< MeshLineBuilder > create_line_builder( index_t line_id )
         {

@@ -1868,7 +1868,7 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm )
-        : GeoModelMeshBase( gmm, gm ), mesh_( new GeogramMesh1D )
+        : GeoModelMeshBase( gmm, gm ), mesh_( new GeogramMeshLine )
     {
         set_mesh( mesh_.get() );
     }
