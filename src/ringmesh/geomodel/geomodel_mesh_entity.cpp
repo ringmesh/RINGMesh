@@ -918,8 +918,8 @@ namespace RINGMesh {
 
     void Corner::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< MeshPoint > new_mesh = MeshPoint::create_mesh( type );
-        std::unique_ptr< MeshPointBuilder > builder = MeshPointBuilder::create_builder(
+        std::unique_ptr< PointMesh > new_mesh = PointMesh::create_mesh( type );
+        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
             *new_mesh );
         builder->copy( *mesh0d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
@@ -927,8 +927,8 @@ namespace RINGMesh {
 
     void Line::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< MeshLine > new_mesh = MeshLine::create_mesh( type );
-        std::unique_ptr< MeshLineBuilder > builder = MeshLineBuilder::create_builder(
+        std::unique_ptr< LineMesh > new_mesh = LineMesh::create_mesh( type );
+        std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
             *new_mesh );
         builder->copy( *mesh1d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
@@ -936,8 +936,8 @@ namespace RINGMesh {
 
     void Surface::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< MeshSurface > new_mesh = MeshSurface::create_mesh( type );
-        std::unique_ptr< MeshSurfaceBuilder > builder = MeshSurfaceBuilder::create_builder(
+        std::unique_ptr< SurfaceMesh > new_mesh = SurfaceMesh::create_mesh( type );
+        std::unique_ptr< SurfaceMeshBuilder > builder = SurfaceMeshBuilder::create_builder(
             *new_mesh );
         builder->copy( *mesh2d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
@@ -945,8 +945,8 @@ namespace RINGMesh {
 
     void Region::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< MeshVolume > new_mesh = MeshVolume::create_mesh( type );
-        std::unique_ptr< MeshVolumeBuilder > builder = MeshVolumeBuilder::create_builder(
+        std::unique_ptr< VolumeMesh > new_mesh = VolumeMesh::create_mesh( type );
+        std::unique_ptr< VolumeMeshBuilder > builder = VolumeMeshBuilder::create_builder(
             *new_mesh );
         builder->copy( *mesh3d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
