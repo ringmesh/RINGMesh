@@ -364,7 +364,7 @@ namespace RINGMesh {
                     } else {
                         ringmesh_assert(
                             sorted_triangles_[i - 1].first
-                            == sorted_triangles_[i].first );
+                                == sorted_triangles_[i].first );
                         if( sorted_triangles_[i - 1].second
                             != sorted_triangles_[i].second ) {
                             return sorted_triangles_[i + 1];
@@ -460,7 +460,7 @@ namespace RINGMesh {
         struct BorderTriangle {
             BorderTriangle(
                 index_t surface,
-                index_t facet,
+                index_t polygon,
                 index_t v0,
                 index_t v1,
                 index_t v2 )
@@ -469,7 +469,7 @@ namespace RINGMesh {
                     v1_( v1 ),
                     v2_( v2 ),
                     surface_( surface ),
-                    facet_( facet )
+                    polygon_( polygon )
             {
             }
 
@@ -487,8 +487,8 @@ namespace RINGMesh {
                 if( surface_ != rhs.surface_ ) {
                     return surface_ < rhs.surface_;
                 }
-                if( facet_ != rhs.facet_ ) {
-                    return facet_ < rhs.facet_;
+                if( polygon_ != rhs.polygon_ ) {
+                    return polygon_ < rhs.polygon_;
                 }
                 return rhs.v2_ == NO_ID ? false : v2_ < rhs.v2_;
             }
@@ -506,8 +506,8 @@ namespace RINGMesh {
             index_t v2_;
             // Index of the surface containing the triangle
             index_t surface_;
-            // Index of the facet in the surface
-            index_t facet_;
+            // Index of the polygon in the surface
+            index_t polygon_;
         };
 
         void compute_line_geometry()
@@ -662,19 +662,20 @@ namespace RINGMesh {
             const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
             for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
                 const Surface& S = geomodel_.surface( s );
-                for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
-                    for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
-                        if( S.is_on_border( f, v ) ) {
+                gmme_id S_id = S.gmme();
+                for( index_t p = 0; p < S.nb_mesh_elements(); ++p ) {
+                    for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); ++v ) {
+                        if( S.is_on_border( p, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
-                                S.gmme(), f, v );
+                                S_id, p, v );
                             index_t next_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gmme(), f,
-                                    S.next_facet_vertex_index( f, v ) );
+                                geomodel_vertices.geomodel_vertex_id( S_id, p,
+                                    S.next_polygon_vertex_index( p, v ) );
                             index_t previous_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gmme(), f,
-                                    S.prev_facet_vertex_index( f, v ) );
+                                geomodel_vertices.geomodel_vertex_id( S_id, p,
+                                    S.prev_polygon_vertex_index( p, v ) );
                             border_triangles_.push_back(
-                                BorderTriangle( s, f, vertex, next_vertex,
+                                BorderTriangle( s, p, vertex, next_vertex,
                                     previous_vertex ) );
                         }
                     }
@@ -694,33 +695,33 @@ namespace RINGMesh {
             const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
 
             // Gets the next edge on border in the Surface
-            index_t f = border_triangle.facet_;
+            index_t p = border_triangle.polygon_;
             std::vector< index_t > possible_v0_id =
                 geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
                     border_triangle.v0_ );
             ringmesh_assert( !possible_v0_id.empty() );
             index_t v0_id = NO_ID;
             for( index_t id : possible_v0_id ) {
-                if( S.vertex_index_in_facet( f, id ) != NO_ID ) {
+                if( S.vertex_index_in_polygon( p, id ) != NO_ID ) {
                     v0_id = id;
                 }
             }
             ringmesh_assert( v0_id != NO_ID );
-            index_t v0_id_in_facet = S.vertex_index_in_facet( f, v0_id );
-            ringmesh_assert( v0_id_in_facet != NO_ID );
+            index_t v0_id_in_polygon = S.vertex_index_in_polygon( p, v0_id );
+            ringmesh_assert( v0_id_in_polygon != NO_ID );
 
             index_t next_f = NO_ID;
             index_t next_f_v0 = NO_ID;
             index_t next_f_v1 = NO_ID;
 
             if( !backward ) {
-                S.next_on_border( f, v0_id_in_facet, next_f, next_f_v0 );
+                S.next_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 );
+                next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
             } else {
-                S.prev_on_border( f, v0_id_in_facet, next_f, next_f_v0 );
+                S.prev_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 );
+                next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
             }
 
             // Finds the BorderTriangle that is corresponding to this
@@ -1263,7 +1264,7 @@ namespace RINGMesh {
     index_t GeoModelBuilderGeology::create_geological_entity_type(
         const GeologicalEntityType& type )
     {
-        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator(type ) );
+        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) );
 
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type );
@@ -1293,6 +1294,51 @@ namespace RINGMesh {
             GeoModelGeologicalEntityAccess gmge_access(
                 geomodel_access_.modifiable_geological_entity( id ) );
             gmge_access.copy( from.geological_entity( id ) );
+        }
+    }
+
+    void GeoModelBuilderGeology::build_contacts()
+    {
+        if( geomodel_.entity_type_manager().geological_entity_manager.is_valid_type(
+            Contact::type_name_static() )
+            && geomodel_.nb_geological_entities( Contact::type_name_static() )
+                > 0 ) {
+            return;
+        }
+
+        std::vector< std::set< gmge_id > > interfaces;
+        for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
+            const Line& L = geomodel_.line( i );
+            std::set< gmge_id > cur_interfaces;
+            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
+                const GeoModelMeshEntity& S = L.in_boundary( j );
+                gmge_id parent_interface = S.parent_gmge(
+                    Interface::type_name_static() );
+                cur_interfaces.insert( parent_interface );
+            }
+            gmge_id contact_id;
+            for( index_t j = 0; j < interfaces.size(); ++j ) {
+                if( cur_interfaces.size() == interfaces[j].size()
+                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
+                        interfaces[j].begin() ) ) {
+                    contact_id = gmge_id( Contact::type_name_static(), j );
+                    break;
+                }
+            }
+            if( !contact_id.is_defined() ) {
+                contact_id = create_geological_entity(
+                    Contact::type_name_static() );
+                ringmesh_assert( contact_id.index() == interfaces.size() );
+                interfaces.push_back( cur_interfaces );
+                // Create a name for this contact
+                std::string name = "contact";
+                for( const gmge_id& it : cur_interfaces ) {
+                    name += "_";
+                    name += geomodel_.geological_entity( it ).name();
+                }
+                builder_.info.set_geological_entity_name( contact_id, name );
+            }
+            add_geological_entity_child( contact_id, i );
         }
     }
 

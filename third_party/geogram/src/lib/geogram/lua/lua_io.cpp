@@ -47,6 +47,7 @@
 #include <geogram/lua/lua_wrap.h>
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/logger.h>
+#include <geogram/bibliography/bibliography.h>
 #include <map>
 #include <sstream>
 
@@ -86,10 +87,12 @@ namespace {
 		L, "'require()' invalid number of arguments"
 	    );
 	}
-	std::string k =
-	    std::string("lib/") + std::string(lua_tostring(L,1)) + ".lua";
-	std::map<std::string, const char*>::iterator it =
-	    embedded_files.find(k);
+	std::map<std::string, const char*>::iterator it;
+	{
+	    std::string k =
+		std::string("lib/") + std::string(lua_tostring(L,1)) + ".lua";
+	    it = embedded_files.find(k);
+	}
 	if(it == embedded_files.end()) {
 	    return call_lua_require(L);
 	}
@@ -220,7 +223,9 @@ namespace {
 	    return result;
 	}
 
-	static std::vector<std::string> get_subdirectories(const std::string& path) {
+	static std::vector<std::string> get_subdirectories(
+	    const std::string& path
+	) {
 	    std::vector<std::string> result;
 	    FileSystem::get_subdirectories(path,result);
 	    return result;
@@ -256,6 +261,13 @@ void get_embedded_lua_file(
 }
     
 void init_lua_io(lua_State* L) {
+    
+    geo_cite_with_info(
+	"WEB:lua",
+	"GEOGRAM has an embedded LUA interpreter "
+	"(LUA is worth one thousand times the few kilobytes it uses !)."
+    );
+    
     lua_newtable(L);
 
     lua_bindwrapper(L, FileSystem::is_file);

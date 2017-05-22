@@ -592,11 +592,11 @@ namespace RINGMesh {
             }
             if( ImGui::BeginPopup( "##Attributes" ) ) {
                 switch( GM_gfx_.attribute.location() ) {
-                    case AttributeGfxManager::facets:
+                    case AttributeGfxManager::polygons:
                         set_attribute_names(
-                            GM_.surface( 0 ).facet_attribute_manager() );
+                            GM_.surface( 0 ).polygon_attribute_manager() );
                         break;
-                    case AttributeGfxManager::facet_vertices:
+                    case AttributeGfxManager::polygon_vertices:
                         set_attribute_names(
                             GM_.surface( 0 ).vertex_attribute_manager() );
                         break;
@@ -680,7 +680,7 @@ namespace RINGMesh {
         ImGui::Separator();
         ImGui::Checkbox( "Line [e]", &show_lines_ );
         draw_entity_style_editor( "##LineColor", line_style_ );
-        ImGui::Checkbox( "Vertices", &line_style_.visible_vertices_ );
+        ImGui::Checkbox( "Vertices##Line", &line_style_.visible_vertices_ );
         if( line_style_.visible_vertices_ ) {
             draw_entity_vertex_style_editor( "##LineVertexColor", line_style_ );
         }
@@ -688,7 +688,7 @@ namespace RINGMesh {
         ImGui::Separator();
         ImGui::Checkbox( "Surface [s]", &show_surface_ );
         draw_entity_style_editor( "##SurfaceColor", surface_style_ );
-        ImGui::Checkbox( "Vertices", &surface_style_.visible_vertices_ );
+        ImGui::Checkbox( "Vertices##Surface", &surface_style_.visible_vertices_ );
         if( surface_style_.visible_vertices_ ) {
             draw_entity_vertex_style_editor( "##SurfaceVertexColor",
                 surface_style_ );
@@ -698,7 +698,7 @@ namespace RINGMesh {
             ImGui::Separator();
             ImGui::Checkbox( "Region [v]", &show_volume_ );
             draw_entity_style_editor( "##VolumeColor", volume_style_ );
-            ImGui::Checkbox( "Vertices", &volume_style_.visible_vertices_ );
+            ImGui::Checkbox( "Vertices##Region", &volume_style_.visible_vertices_ );
             if( volume_style_.visible_vertices_ ) {
                 draw_entity_vertex_style_editor( "##VolumeVertexColor",
                     volume_style_ );
@@ -1117,6 +1117,7 @@ namespace RINGMesh {
     void RINGMeshApplication::quit()
     {
         glup_viewer_exit_main_loop();
+        Logger::instance()->unregister_client( console_ );
     }
 
     RINGMeshApplication* RINGMeshApplication::instance()
@@ -1417,12 +1418,13 @@ namespace RINGMesh {
     {
         GEO::Application::draw_viewer_properties();
 
+        int id = 0;
         if( !geomodels_.empty() ) {
             ImGui::Separator();
             ImGui::Text( "GeoModel" );
             for( index_t i = 0; i < geomodels_.size(); i++ ) {
                 GeoModelViewer& viewer = *geomodels_[i];
-                ImGui::PushID( static_cast< int >( i ) );
+                ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.GM_.name().c_str(),
                     &viewer.is_visible_ ) ) {
                     current_viewer_ = i;
@@ -1448,7 +1450,7 @@ namespace RINGMesh {
             ImGui::Text( "Mesh" );
             for( index_t i = 0; i < meshes_.size(); i++ ) {
                 MeshViewer& viewer = *meshes_[i];
-                ImGui::PushID( static_cast< int >( i ) );
+                ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.name_.c_str(), &viewer.is_visible_ ) ) {
                     current_viewer_ = i;
                     current_viewer_type_ = MESH;

@@ -103,14 +103,14 @@ namespace RINGMesh {
      * This function configures geogram by setting some geogram options.
      * \pre This function should be call after GEO::initialize().
      */
-    void RINGMESH_API configure_geogram() ;
+    void RINGMESH_API configure_geogram();
     /*!
      * This function configures RINGMesh by initializing its factories.
      */
-    void RINGMESH_API configure_ringmesh() ;
-    void RINGMESH_API default_configure() ;
+    void RINGMESH_API configure_ringmesh();
+    void RINGMESH_API default_configure();
 
-    void RINGMESH_API print_header_information() ;
+    void RINGMESH_API print_header_information();
 
     /*!
      * RINGMesh exception class.
@@ -140,9 +140,9 @@ namespace RINGMesh {
 
         const std::string& category() const
         {
-            return category_ ;
+            return category_;
         }
     protected:
-        std::string category_ ;
-    } ;
+        std::string category_;
+    };
 }
