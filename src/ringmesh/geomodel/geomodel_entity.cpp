@@ -44,65 +44,69 @@
 
 namespace RINGMesh {
 
-    Universe::Universe( const GeoModel& geomodel )
-        : GeoModelEntity( geomodel,NO_ID )
+    GeoModelEntity::~GeoModelEntity()
     {
-        name_ = universe_type_name() ;
+    }
+
+    Universe::Universe( const GeoModel& geomodel )
+        : GeoModelEntity( geomodel, NO_ID )
+    {
+        name_ = universe_type_name();
     }
 
     GeoModelEntity::GEOL_FEATURE GeoModelEntity::determine_geological_type(
         const std::string& in )
     {
         if( in == "reverse_fault" ) {
-            return REVERSE_FAULT ;
+            return REVERSE_FAULT;
         } else if( in == "normal_fault" ) {
-            return NORMAL_FAULT ;
+            return NORMAL_FAULT;
         } else if( in == "fault" ) {
-            return FAULT ;
+            return FAULT;
         } else if( in == "top" ) {
-            return STRATI ;
+            return STRATI;
         } else if( in == "none" ) {
             // This might seem strange - but it seems that what's
             // Gocad is doing
-            return STRATI ;
+            return STRATI;
         } else if( in == "topographic" ) {
-            return STRATI ;
+            return STRATI;
         } else if( in == "unconformity" ) {
-            return UNCONFORMITY ;
+            return UNCONFORMITY;
         } else if( in == "boundary" ) {
-            return VOI ;
+            return VOI;
         } else {
             // Default case - no information
-            return NO_GEOL ;
+            return NO_GEOL;
         }
     }
 
-    std::string GeoModelEntity::geol_name( GME::GEOL_FEATURE t )
+    std::string GeoModelEntity::geol_name( GeoModelEntity::GEOL_FEATURE t )
     {
         switch( t ) {
             case STRATI:
-                return "top" ;
+                return "top";
             case FAULT:
-                return "fault" ;
+                return "fault";
             case REVERSE_FAULT:
-                return "reverse_fault" ;
+                return "reverse_fault";
             case NORMAL_FAULT:
-                return "normal_fault" ;
+                return "normal_fault";
             case UNCONFORMITY:
-                return "unconformity" ;
+                return "unconformity";
             case VOI:
-                return "boundary" ;
+                return "boundary";
             case NO_GEOL:
-                return "no_geological_feature" ;
+                return "no_geological_feature";
             default:
-                return "no_geological_feature" ;
-                break ;
+                return "no_geological_feature";
+                break;
         }
     }
 
     bool Universe::is_valid() const
     {
-        return true ;
+        return true;
     }
 
 }

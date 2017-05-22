@@ -447,135 +447,7 @@ namespace RINGMesh {
             }
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 ) ;
-    }
-
-    bool point_inside_pyramid(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        bool exact_predicates )
-    {
-        vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
-        Sign signs[5] ;
-        if( !exact_predicates ) {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
-                double volume =
-                    GEO::Geom::tetra_signed_volume( p,
-                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
-                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]] ) ;
-                if( is_almost_zero( volume ) ) {
-                    return point_inside_pyramid( p, p0, p1, p2, p3, p4, true ) ;
-                }
-                signs[f] = sign( volume ) ;
-            }
-        } else {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
-                signs[f] =
-                    sign(
-                        GEO::PCK::orient_3d( p.data(),
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]].data(),
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]].data(),
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]].data() ) ) ;
-            }
-        }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 ) ;
-    }
-
-    bool point_inside_prism(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        const vec3& p5,
-        bool exact_predicates )
-    {
-        vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
-        Sign signs[5] ;
-        if( !exact_predicates ) {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
-                double volume =
-                    GEO::Geom::tetra_signed_volume( p,
-                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
-                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]] ) ;
-                if( is_almost_zero( volume ) ) {
-                    return point_inside_prism( p, p0, p1, p2, p3, p4, p5, true ) ;
-                }
-                signs[f] = sign( volume ) ;
-            }
-        } else {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
-                signs[f] =
-                    sign(
-                        GEO::PCK::orient_3d( p.data(),
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]].data(),
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]].data(),
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]].data() ) ) ;
-            }
-        }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 ) ;
-    }
-
-    bool point_inside_hexa(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        const vec3& p5,
-        const vec3& p6,
-        const vec3& p7,
-        bool exact_predicates )
-    {
-        vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
-        Sign signs[6] ;
-        if( !exact_predicates ) {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
-                double volume =
-                    GEO::Geom::tetra_signed_volume( p,
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]] ) ;
-                if( is_almost_zero( volume ) ) {
-                    return point_inside_hexa( p, p0, p1, p2, p3, p4, p5, p6, p7,
-                        true ) ;
-                }
-                signs[f] = sign( volume ) ;
-            }
-        } else {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
-                signs[f] =
-                    sign(
-                        GEO::PCK::orient_3d( p.data(),
-                            vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]].data(),
-                            vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]].data(),
-                            vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]].data() ) ) ;
-            }
-        }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 && signs[5] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 && signs[5] <= 0 ) ;
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
     }
 
     bool circle_plane_intersection(
@@ -614,11 +486,11 @@ namespace RINGMesh {
         }
         double inv = 1.0 / a2 ;
         if( discr < global_epsilon ) {
-            result.push_back( vec3( O_inter - ( a1 * inv ) * D_inter ) ) ;
+            result.emplace_back( O_inter - ( a1 * inv ) * D_inter );
         } else {
-            double root = sqrt( discr ) ;
-            result.push_back( vec3( O_inter - ( ( a1 + root ) * inv ) * D_inter ) ) ;
-            result.push_back( vec3( O_inter - ( ( a1 - root ) * inv ) * D_inter ) ) ;
+            double root = sqrt( discr );
+            result.emplace_back( O_inter - ( ( a1 + root ) * inv ) * D_inter );
+            result.emplace_back( O_inter - ( ( a1 - root ) * inv ) * D_inter );
         }
         return true ;
     }
@@ -752,7 +624,7 @@ namespace RINGMesh {
         if( line_plane_intersection( segment_barycenter, segment_direction, O_plane,
             N_plane, line_plane_result ) ) {
             if( ( line_plane_result - segment_barycenter ).length2()
-                > ( seg0 - segment_barycenter ).length2() ) {
+                > ( seg0 - segment_barycenter ).length2() + global_epsilon ) {
                 // result outside the segment
                 return false ;
             } else {
@@ -1242,61 +1114,7 @@ namespace RINGMesh {
             }
         }
 
-        return s1 == s2 && s2 == s3 ;
-    }
-
-    bool point_inside_quad(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        bool exact_predicates )
-    {
-        vec3 n = cross( p2 - p0, p1 - p0 ) ;
-        vec3 q = p + n ;
-        Sign s1, s2, s3, s4 ;
-        if( !exact_predicates ) {
-            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
-            if( is_almost_zero( vol1 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s1 = sign( vol1 ) ;
-            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
-            if( is_almost_zero( vol2 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s2 = sign( vol2 ) ;
-            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p3 ) ;
-            if( is_almost_zero( vol3 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s3 = sign( vol3 ) ;
-            double vol4 = GEO::Geom::tetra_signed_volume( p, q, p3, p0 ) ;
-            if( is_almost_zero( vol4 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s4 = sign( vol4 ) ;
-        } else {
-            s1 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
-            s2 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
-            s3 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p3.data() ) ) ;
-            s4 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p3.data(), p0.data() ) ) ;
-            if( s1 == ZERO ) {
-                return s2 == s3 && s3 == s4 ;
-            } else if( s2 == ZERO ) {
-                return s1 == s3 && s3 == s4 ;
-            } else if( s3 == ZERO ) {
-                return s1 == s2 && s2 == s4 ;
-            } else if( s4 == ZERO ) {
-                return s1 == s2 && s2 == s3 ;
-            }
-        }
-        return s1 == s2 && s2 == s3 && s3 == s4 ;
+        return s1 == s2 && s2 == s3;
     }
 
     NNSearch::NNSearch(
@@ -1316,8 +1134,8 @@ namespace RINGMesh {
                 break ;
             }
             case FACETS: {
-                build_nn_search_facets( mesh ) ;
-                break ;
+                build_nn_search_polygons( mesh );
+                break;
             }
             case CELLS: {
                 build_nn_search_cells( mesh ) ;
@@ -1359,7 +1177,6 @@ namespace RINGMesh {
         }
         index_t nb_threads = static_cast< index_t >( omp_get_max_threads() ) ;
         std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 ) ;
-        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
             std::vector< index_t > results = get_neighbors( point( i ), epsilon ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
@@ -1411,10 +1228,11 @@ namespace RINGMesh {
             index_t cur_neighbor = 0 ;
             index_t prev_neighbor = 0 ;
             do {
-                prev_neighbor = cur_neighbor ;
-                cur_neighbor += nb_neighbors ;
-                std::vector< index_t > neighbors = get_neighbors( v, cur_neighbor ) ;
-                nb_neighbors = static_cast< index_t >( neighbors.size() ) ;
+                prev_neighbor = cur_neighbor;
+                cur_neighbor += nb_neighbors;
+                result.reserve( cur_neighbor );
+                std::vector< index_t > neighbors = get_neighbors( v, cur_neighbor );
+                nb_neighbors = static_cast< index_t >( neighbors.size() );
                 for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                     if( length2( v - point( neighbors[i] ) )
                         > threshold_distance_sq ) {
@@ -1482,19 +1300,19 @@ namespace RINGMesh {
         nn_tree_->set_points( nb_edges, nn_points_ ) ;
     }
 
-    void NNSearch::build_nn_search_facets( const GEO::Mesh& mesh )
+    void NNSearch::build_nn_search_polygons( const GEO::Mesh& mesh )
     {
-        index_t nb_facets = mesh.facets.nb() ;
-        if( nb_facets == 0 ) {
-            return ;
+        index_t nb_polygons = mesh.facets.nb();
+        if( nb_polygons == 0 ) {
+            return;
         }
-        nn_points_ = new double[nb_facets * 3] ;
-        for( index_t i = 0; i < nb_facets; i++ ) {
-            vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
-            index_t index_in_nn_search = 3 * i ;
-            fill_nn_search_points( index_in_nn_search, center ) ;
+        nn_points_ = new double[nb_polygons * 3];
+        for( index_t i = 0; i < nb_polygons; i++ ) {
+            vec3 center = GEO::Geom::mesh_facet_center( mesh, i );
+            index_t index_in_nn_search = 3 * i;
+            fill_nn_search_points( index_in_nn_search, center );
         }
-        nn_tree_->set_points( nb_facets, nn_points_ ) ;
+        nn_tree_->set_points( nb_polygons, nn_points_ );
     }
 
     void NNSearch::build_nn_search_cell_facets( const GEO::Mesh& mesh )

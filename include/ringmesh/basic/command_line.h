@@ -32,7 +32,7 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
- 
+
 #pragma once
 
 #include <ringmesh/basic/common.h>
@@ -41,7 +41,7 @@ namespace RINGMesh {
 
     namespace CmdLine {
 
-        bool RINGMESH_API import_arg_group( const std::string& name ) ;
+        bool RINGMESH_API import_arg_group( const std::string& name );
 
     }
 }

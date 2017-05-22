@@ -42,24 +42,24 @@ namespace {
         virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
-                "Geological model loading of a from HTML mesh not yet implemented" ) ;
-            return false ;
+                "Geological model loading of a from HTML mesh not yet implemented" );
+            return false;
         }
 
         virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
-            GEOLOGYJS::JSWriter js( filename ) ;
-            js.build_js_gui_ = true ;
+            GEOLOGYJS::JSWriter js( filename );
+            js.build_js_gui_ = true;
 
-            save_all_lines( geomodel, js ) ;
-            save_interfaces( geomodel, js ) ;
+            save_all_lines( geomodel, js );
+            save_interfaces( geomodel, js );
 
             // Check validity and write
-            std::string error_message ;
+            std::string error_message;
             if( js.check_validity( error_message ) ) {
-                js.write() ;
+                js.write();
             } else {
-                throw RINGMeshException( "I/O", error_message ) ;
+                throw RINGMeshException( "I/O", error_message );
             }
         }
 
@@ -68,18 +68,18 @@ namespace {
             const GeoModel& geomodel,
             GEOLOGYJS::JSWriter& js ) const
         {
-            std::vector< std::vector< double > > xyz ;
-            xyz.resize( geomodel.nb_lines() ) ;
+            std::vector< std::vector< double > > xyz;
+            xyz.resize( geomodel.nb_lines() );
             for( index_t line_itr = 0; line_itr < geomodel.nb_lines(); ++line_itr ) {
-                const Line& cur_line = geomodel.line( line_itr ) ;
-                xyz[line_itr].reserve( 3 * cur_line.nb_vertices() ) ;
+                const Line& cur_line = geomodel.line( line_itr );
+                xyz[line_itr].reserve( 3 * cur_line.nb_vertices() );
                 for( index_t v_itr = 0; v_itr < cur_line.nb_vertices(); ++v_itr ) {
-                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).x ) ;
-                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).y ) ;
-                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).z ) ;
+                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).x );
+                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).y );
+                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).z );
                 }
             }
-            js.add_lines( "all_lines", xyz ) ;
+            js.add_lines( "all_lines", xyz );
 
         }
 
@@ -93,57 +93,57 @@ namespace {
                         Interface::type_name_static() ); ++interface_itr ) {
                 const GeoModelGeologicalEntity& cur_interface =
                     geomodel.geological_entity( Interface::type_name_static(),
-                        interface_itr ) ;
+                        interface_itr );
                 if( !GeoModelGeologicalEntity::is_stratigraphic_limit(
                     cur_interface.geological_feature() )
                     && !GeoModelGeologicalEntity::is_fault(
                         cur_interface.geological_feature() ) ) {
-                    continue ;
+                    continue;
                 }
 
-                index_t nb_vertices = 0 ;
-                index_t nb_triangles = 0 ;
+                index_t nb_vertices = 0;
+                index_t nb_triangles = 0;
                 for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
                     ++surf_itr ) {
                     const Surface& cur_surface = geomodel.surface(
-                        cur_interface.child( surf_itr ).index() ) ;
-                    nb_vertices += cur_surface.nb_vertices() ;
-                    nb_triangles += cur_surface.nb_mesh_elements() ;
+                        cur_interface.child( surf_itr ).index() );
+                    nb_vertices += cur_surface.nb_vertices();
+                    nb_triangles += cur_surface.nb_mesh_elements();
                 }
 
-                std::vector< double > xyz ;
-                xyz.reserve( 3 * nb_vertices ) ;
-                std::vector< index_t > indices ;
-                indices.reserve( 3 * nb_triangles ) ;
+                std::vector< double > xyz;
+                xyz.reserve( 3 * nb_vertices );
+                std::vector< index_t > indices;
+                indices.reserve( 3 * nb_triangles );
 
-                index_t vertex_count = 0 ;
+                index_t vertex_count = 0;
                 for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
                     ++surf_itr ) {
                     const Surface& cur_surface = geomodel.surface(
-                        cur_interface.child( surf_itr ).index() ) ;
+                        cur_interface.child( surf_itr ).index() );
 
                     for( index_t v_itr = 0; v_itr < cur_surface.nb_vertices();
                         ++v_itr ) {
-                        xyz.push_back( cur_surface.vertex( v_itr ).x ) ;
-                        xyz.push_back( cur_surface.vertex( v_itr ).y ) ;
-                        xyz.push_back( cur_surface.vertex( v_itr ).z ) ;
+                        xyz.push_back( cur_surface.vertex( v_itr ).x );
+                        xyz.push_back( cur_surface.vertex( v_itr ).y );
+                        xyz.push_back( cur_surface.vertex( v_itr ).z );
                     }
 
-                    for( index_t f_itr = 0; f_itr < cur_surface.nb_mesh_elements();
-                        ++f_itr ) {
+                    for( index_t p_itr = 0; p_itr < cur_surface.nb_mesh_elements();
+                        ++p_itr ) {
                         for( index_t v_itr = 0; v_itr < 3; ++v_itr ) {
                             indices.push_back(
                                 vertex_count
-                                    + cur_surface.mesh_element_vertex_index( f_itr,
-                                        v_itr ) ) ;
+                                    + cur_surface.mesh_element_vertex_index( p_itr,
+                                        v_itr ) );
                         }
                     }
 
-                    vertex_count += cur_surface.nb_vertices() ;
+                    vertex_count += cur_surface.nb_vertices();
                 }
-                js.add_surface( cur_interface.name(), xyz, indices ) ;
+                js.add_surface( cur_interface.name(), xyz, indices );
             }
         }
-    } ;
+    };
 
 }

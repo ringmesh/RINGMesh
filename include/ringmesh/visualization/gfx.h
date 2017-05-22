@@ -39,6 +39,8 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
+#include <memory>
+
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 /*!
@@ -47,34 +49,34 @@
  */
 
 namespace RINGMesh {
-    class GeoModel ;
-    class GeoModelGfx ;
-    class AttributeGfx ;
-    class CornerGfx ;
-    class LineGfx ;
-    class SurfaceGfx ;
-    class RegionGfx ;
-    class MeshEntityGfx ;
+    class GeoModel;
+    class GeoModelGfx;
+    class AttributeGfx;
+    class CornerGfx;
+    class LineGfx;
+    class SurfaceGfx;
+    class RegionGfx;
+    class MeshEntityGfx;
 }
 
 namespace RINGMesh {
 
     class RINGMESH_API GeoModelGfxManager {
-    ringmesh_disable_copy( GeoModelGfxManager ) ;
+    ringmesh_disable_copy( GeoModelGfxManager );
     public:
-        GeoModelGfxManager( GeoModelGfx& gfx ) ;
-        virtual ~GeoModelGfxManager() ;
+        GeoModelGfxManager( GeoModelGfx& gfx );
+        virtual ~GeoModelGfxManager() = default;
 
-        virtual void draw() = 0 ;
-        virtual void initialize() = 0 ;
-        void need_to_update() ;
+        virtual void draw() = 0;
+        virtual void initialize() = 0;
+        void need_to_update();
         void set_scalar_attribute(
             GEO::MeshElementsFlags subelements,
             const std::string& name,
             double attr_min,
             double attr_max,
-            GLuint colormap_texture ) ;
-        void unset_scalar_attribute() ;
+            GLuint colormap_texture );
+        void unset_scalar_attribute();
 
         /*!
          * Sets the entity color to all the entities
@@ -82,36 +84,36 @@ namespace RINGMesh {
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_vertex_color( float r, float g, float b ) ; /*!
+        void set_vertex_color( float r, float g, float b ); /*!
          * Sets the vertex color
          * @param[in] e the entity index
          * @param[in] r the red component of the color in [0.0, 1.0]
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_vertex_color( index_t e, float r, float g, float b ) ;
+        void set_vertex_color( index_t e, float r, float g, float b );
         /*!
          * Sets the vertex entity visibility to all the entities
          * @param[in] b the visibility
          */
-        void set_vertex_visibility( bool b ) ;
+        void set_vertex_visibility( bool b );
         /*!
          * Sets the vertex entity visibility
          * @param[in] e the entity index
          * @param[in] b the visibility
          */
-        void set_vertex_visibility( index_t e, bool b ) ;
+        void set_vertex_visibility( index_t e, bool b );
         /*!
          * Sets the vertex size to all the elements
          * @param[in] s the size
          */
-        void set_vertex_size( index_t s ) ;
+        void set_vertex_size( index_t s );
         /*!
          * Sets the vertex size to all the elements
          * @param[in] e the entity index
          * @param[in] s the size
          */
-        void set_vertex_size( index_t e, index_t s ) ;
+        void set_vertex_size( index_t e, index_t s );
 
         /*!
          * Sets the entity color to all the elements
@@ -119,53 +121,97 @@ namespace RINGMesh {
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_element_color( float r, float g, float b ) ;
+        void set_mesh_element_color( float r, float g, float b );
         /*!
          * Sets the entity visibility to all the elements
          * @param[in] b the visibility
          */
-        void set_mesh_element_visibility( bool b ) ;
+        void set_mesh_element_visibility( bool b );
         /*!
          * Sets the mesh_element entity size to all the elements
          * @param[in] s the size
          */
-        void set_mesh_element_size( index_t s ) ;
-        virtual void set_mesh_element_color( index_t e, float r, float g, float b ) ;
-        virtual void set_mesh_element_visibility( index_t e, bool b ) ;
-        virtual void set_mesh_element_size( index_t e, index_t s ) ;
+        void set_mesh_element_size( index_t s );
+        virtual void set_mesh_element_color( index_t e, float r, float g, float b );
+        virtual void set_mesh_element_visibility( index_t e, bool b );
+        virtual void set_mesh_element_size( index_t e, index_t s );
 
     protected:
-        GeoModelGfx& gfx_ ;
-        std::vector< MeshEntityGfx* > entities_ ;
+        GeoModelGfx& gfx_;
+        std::vector< std::unique_ptr< MeshEntityGfx > > entities_;
 
-    } ;
+    };
+
+    class MeshEntityGfx: public GEO::MeshGfx {
+    ringmesh_disable_copy( MeshEntityGfx );
+    public:
+        MeshEntityGfx(
+            const GeoModelGfx& gfx,
+            const GEO::Mesh& mesh,
+            bool vertice_visible )
+            : vertices_visible_( vertice_visible ), gfx_( gfx )
+        {
+            set_mesh( &mesh );
+        }
+        virtual ~MeshEntityGfx() = default;
+
+        void need_to_update()
+        {
+            buffer_objects_dirty_ = true;
+            attributes_buffer_objects_dirty_ = true;
+        }
+
+        void draw_vertices()
+        {
+            GEO::MeshGfx::draw_vertices();
+        }
+        void draw_edges()
+        {
+            GEO::MeshGfx::draw_edges();
+        }
+
+        void set_vertices_visible( bool b )
+        {
+            vertices_visible_ = b;
+        }
+        bool get_vertices_visible() const
+        {
+            return vertices_visible_;
+        }
+
+    protected:
+        bool vertices_visible_;
+
+        const GeoModelGfx& gfx_;
+
+    };
 
     class RINGMESH_API CornerGfxManager: public GeoModelGfxManager {
     public:
-        CornerGfxManager( GeoModelGfx& gfx ) ;
+        CornerGfxManager( GeoModelGfx& gfx );
 
         /*!
          * Draws the corners
          */
-        virtual void draw() override ;
-        virtual void initialize() override ;
+        virtual void draw() override;
+        virtual void initialize() override;
 
         virtual void set_mesh_element_color( index_t c, float r, float g, float b )
-            override ;
-        virtual void set_mesh_element_visibility( index_t c, bool b ) override ;
-        virtual void set_mesh_element_size( index_t c, index_t s ) override ;
+            override;
+        virtual void set_mesh_element_visibility( index_t c, bool b ) override;
+        virtual void set_mesh_element_size( index_t c, index_t s ) override;
 
-    } ;
+    };
 
     class RINGMESH_API LineGfxManager: public GeoModelGfxManager {
     public:
-        LineGfxManager( GeoModelGfx& gfx ) ;
+        LineGfxManager( GeoModelGfx& gfx );
 
         /*!
          * Draws the lines
          */
-        virtual void draw() override ;
-        virtual void initialize() override ;
+        virtual void draw() override;
+        virtual void initialize() override;
         /*!
          * Sets the line color
          * @param[in] l the line index
@@ -174,31 +220,31 @@ namespace RINGMesh {
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
         virtual void set_mesh_element_color( index_t l, float r, float g, float b )
-            override ;
+            override;
         /*!
          * Sets the line visibility
          * @param[in] l the line index
          * @param[in] b the visibility
          */
-        virtual void set_mesh_element_visibility( index_t l, bool b ) override ;
+        virtual void set_mesh_element_visibility( index_t l, bool b ) override;
         /*!
          * Sets the mesh_element line size
          * @param[in] l the line index
          * @param[in] s the size
          */
-        virtual void set_mesh_element_size( index_t l, index_t s ) override ;
+        virtual void set_mesh_element_size( index_t l, index_t s ) override;
 
-    } ;
+    };
 
     class RINGMESH_API SurfaceGfxManager: public GeoModelGfxManager {
     public:
-        SurfaceGfxManager( GeoModelGfx& gfx ) ;
+        SurfaceGfxManager( GeoModelGfx& gfx );
 
         /*!
          * Draws the surfaces
          */
-        virtual void draw() override ;
-        virtual void initialize() override ;
+        virtual void draw() override;
+        virtual void initialize() override;
         /*!
          * Sets the surface color
          * @param[in] s the surface index
@@ -207,20 +253,20 @@ namespace RINGMesh {
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
         virtual void set_mesh_element_color( index_t s, float r, float g, float b )
-            override ;
+            override;
         /*!
          * Sets the surface visibility
          * @param[in] s the surface index
          * @param[in] b the visibility
          */
-        virtual void set_mesh_element_visibility( index_t s, bool b ) override ;
+        virtual void set_mesh_element_visibility( index_t s, bool b ) override;
         /*!
          * Sets the backface surface color to all the elements
          * @param[in] r the red component of the color in [0.0, 1.0]
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_backface_surfaces_color( float r, float g, float b ) ;
+        void set_backface_surfaces_color( float r, float g, float b );
         /*!
          * Sets the backsurface surface color
          * @param[in] s the surface index
@@ -228,14 +274,14 @@ namespace RINGMesh {
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_backface_surface_color( index_t s, float r, float g, float b ) ;
+        void set_backface_surface_color( index_t s, float r, float g, float b );
         /*!
          * Sets the mesh surface color to all the elements
          * @param[in] r the red component of the color in [0.0, 1.0]
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( float r, float g, float b ) ;
+        void set_mesh_color( float r, float g, float b );
         /*!
          * Sets the mesh surface color
          * @param[in] s the surface index
@@ -243,40 +289,40 @@ namespace RINGMesh {
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( index_t s, float r, float g, float b ) ;
+        void set_mesh_color( index_t s, float r, float g, float b );
         /*!
          * Sets the mesh surface visibility to all the elements
          * @param[in] b the visibility
          */
-        void set_mesh_visibility( bool b ) ;
+        void set_mesh_visibility( bool b );
         /*!
          * Sets the mesh surface visibility
          * @param[in] s the surface index
          * @param[in] b the visibility
          */
-        void set_mesh_visibility( index_t s, bool b ) ;
+        void set_mesh_visibility( index_t s, bool b );
         /*!
          * Sets the mesh surface size to all the elements
          * @param[in] s the size
          */
-        void set_mesh_size( index_t s ) ;
+        void set_mesh_size( index_t s );
         /*!
          * Sets the mesh surface size
          * @param[in] s the surface index
          * @param[in] size the size
          */
-        void set_mesh_size( index_t s, index_t size ) ;
-    } ;
+        void set_mesh_size( index_t s, index_t size );
+    };
 
     class RINGMESH_API RegionGfxManager: public GeoModelGfxManager {
     public:
-        RegionGfxManager( GeoModelGfx& gfx ) ;
+        RegionGfxManager( GeoModelGfx& gfx );
 
         /*!
          * Draws the Regions
          */
-        virtual void draw() override ;
-        virtual void initialize() override ;
+        virtual void draw() override;
+        virtual void initialize() override;
 
         /*!
          * Sets the cell region color
@@ -286,13 +332,13 @@ namespace RINGMesh {
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
         virtual void set_mesh_element_color( index_t e, float r, float g, float b )
-            override ;
+            override;
         /*!
          * Sets the cell region visibility to all the regions
          * @param[in] m the region index
          * @param[in] b the visibility
          */
-        virtual void set_mesh_element_visibility( index_t e, bool b ) override ;
+        virtual void set_mesh_element_visibility( index_t e, bool b ) override;
 
         /*!
          * Sets the edge color to all the meshes
@@ -300,7 +346,7 @@ namespace RINGMesh {
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_edge_color( float r, float g, float b ) ;
+        void set_edge_color( float r, float g, float b );
         /*!
          * Sets the edge color
          * @param[in] m the mesh index
@@ -308,29 +354,29 @@ namespace RINGMesh {
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_edge_color( index_t m, float r, float g, float b ) ;
+        void set_edge_color( index_t m, float r, float g, float b );
         /*!
          * Sets the edge visibility to all the meshes
          * @param[in] b the visibility
          */
-        void set_edge_visibility( bool b ) ;
+        void set_edge_visibility( bool b );
         /*!
          * Sets the edge visibility
          * @param[in] m the mesh index
          * @param[in] b the visibility
          */
-        void set_edge_visibility( index_t m, bool b ) ;
+        void set_edge_visibility( index_t m, bool b );
         /*!
          * Sets the edge line size to all the lines
          * @param[in] s the size
          */
-        void set_edge_size( index_t s ) ;
+        void set_edge_size( index_t s );
         /*!
          * Sets the edge line size
          * @param[in] l the line index
          * @param[in] s the size
          */
-        void set_edge_size( index_t l, index_t s ) ;
+        void set_edge_size( index_t l, index_t s );
 
         /*!
          * Sets the mesh region color to all the regions
@@ -338,7 +384,7 @@ namespace RINGMesh {
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( float r, float g, float b ) ;
+        void set_mesh_color( float r, float g, float b );
         /*!
          * Sets the mesh region color
          * @param[in] m the region index
@@ -346,182 +392,211 @@ namespace RINGMesh {
          * @param[in] g the green component of the color in [0.0, 1.0]
          * @param[in] b the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( index_t m, float r, float g, float b ) ;
+        void set_mesh_color( index_t m, float r, float g, float b );
         /*!
          * Sets the mesh region visibility to all the regions
          * @param[in] b the visibility
          */
-        void set_mesh_visibility( bool b ) ;
+        void set_mesh_visibility( bool b );
         /*!
          * Sets the mesh region visibility
          * @param[in] m the region index
          * @param[in] b the visibility
          */
-        void set_mesh_visibility( index_t m, bool b ) ;
+        void set_mesh_visibility( index_t m, bool b );
         /*!
          * Sets the mesh region size to all the regions
          * @param[in] s the size
          */
-        void set_mesh_size( index_t s ) ;
+        void set_mesh_size( index_t s );
         /*!
          * Sets the mesh region size
          * @param[in] m the region index
          * @param[in] s the size
          */
-        void set_mesh_size( index_t m, index_t s ) ;
+        void set_mesh_size( index_t m, index_t s );
 
         /*!
          * Toggles the cell type to all the regions
          */
-        void set_draw_cells( GEO::MeshCellType type, bool x ) ;
+        void set_draw_cells( GEO::MeshCellType type, bool x );
         /*!
          * Toggles the cell type display
          */
-        void set_draw_cells( index_t m, GEO::MeshCellType type, bool x ) ;
+        void set_draw_cells( index_t m, GEO::MeshCellType type, bool x );
         /*!
          * Toggles the cell region color per cell type to all the regions
          */
-        void set_color_cell_type() ;
+        void set_color_cell_type();
         /*!
          * Toggles the cell region color per cell type
          * @param[in] m the region index
          */
-        void set_color_cell_type( index_t m ) ;
-        void set_cell_type_visibility( GEO::MeshCellType t, bool b ) ;
-        void set_cell_type_visibility( index_t m, GEO::MeshCellType t, bool b ) ;
+        void set_color_cell_type( index_t m );
+        void set_cell_type_visibility( GEO::MeshCellType t, bool b );
+        void set_cell_type_visibility( index_t m, GEO::MeshCellType t, bool b );
         /*!
          * Sets the cell region shrink to all the regions
          * @param[in] s the shrink
          */
-        void set_shrink( double s ) ;
+        void set_shrink( double s );
         /*!
          * Sets the cell region shrink
          * @param[in] m the region index
          * @param[in] s the shrink
          */
-        void set_shrink( index_t m, double s ) ;
+        void set_shrink( index_t m, double s );
 
-    } ;
+    };
 
     class RINGMESH_API AttributeGfxManager {
-    ringmesh_disable_copy( AttributeGfxManager ) ;
+    ringmesh_disable_copy( AttributeGfxManager );
     public:
         enum Attribute_location {
-            facets, facet_vertices, cells, cell_vertices, nb_locations
-        } ;
-        AttributeGfxManager( GeoModelGfx& gfx ) ;
-        ~AttributeGfxManager() ;
+            polygons, polygon_vertices, cells, cell_vertices, nb_locations
+        };
+        AttributeGfxManager( GeoModelGfx& gfx );
 
         GeoModelGfx& gfx()
         {
-            return gfx_ ;
+            return gfx_;
         }
 
-        void compute_range() ;
+        void compute_range();
 
-        void unbind_attribute() ;
-        void bind_attribute() ;
+        void unbind_attribute();
+        void bind_attribute();
 
-        std::string location_name( Attribute_location location ) ;
+        std::string location_name( Attribute_location location );
 
         void set_maximum( double max )
         {
-            maximum_ = max ;
+            maximum_ = max;
         }
         double maximum() const
         {
-            return maximum_ ;
+            return maximum_;
         }
         void set_minimum( double min )
         {
-            minimum_ = min ;
+            minimum_ = min;
         }
         double minimum() const
         {
-            return minimum_ ;
+            return minimum_;
         }
         void set_location( Attribute_location location )
         {
-            location_ = location ;
+            location_ = location;
         }
         Attribute_location location() const
         {
-            return location_ ;
+            return location_;
         }
-        index_t nb_coordinates() const ;
+        index_t nb_coordinates() const;
         void set_coordinate( const index_t& coordinate )
         {
-            coordinate_ = coordinate ;
+            coordinate_ = coordinate;
         }
         const index_t& coordinate() const
         {
-            return coordinate_ ;
+            return coordinate_;
         }
         void set_name( const std::string& name )
         {
-            name_ = name ;
+            name_ = name;
         }
         const std::string& name() const
         {
-            return name_ ;
+            return name_;
         }
         void set_colormap( GLuint colormap )
         {
-            colormap_texture_ = colormap ;
+            colormap_texture_ = colormap;
         }
         GLuint colormap() const
         {
-            return colormap_texture_ ;
+            return colormap_texture_;
         }
 
     private:
-        GeoModelGfx& gfx_ ;
+        GeoModelGfx& gfx_;
 
-        std::string name_ ;
-        Attribute_location location_ ;
-        index_t coordinate_ ;
-        GLuint colormap_texture_ ;
-        double minimum_ ;
-        double maximum_ ;
+        std::string name_;
+        Attribute_location location_;
+        index_t coordinate_;
+        GLuint colormap_texture_;
+        double minimum_;
+        double maximum_;
 
-        AttributeGfx* attributes_[nb_locations] ;
+        std::unique_ptr< AttributeGfx > attributes_[nb_locations];
 
-    } ;
+    };
+
+    class AttributeGfx {
+    public:
+        AttributeGfx( AttributeGfxManager& manager )
+            : manager_( manager )
+        {
+        }
+        virtual ~AttributeGfx() = default;
+
+        virtual std::string location_name() const = 0;
+        void compute_range()
+        {
+            double attribute_min = max_float64();
+            double attribute_max = min_float64();
+            do_compute_range( attribute_min, attribute_max );
+            manager_.set_minimum( attribute_min );
+            manager_.set_maximum( attribute_max );
+        }
+        virtual void bind_attribute() = 0;
+        virtual void unbind_attribute() = 0;
+        virtual index_t nb_coordinates() = 0;
+
+    private:
+        virtual void do_compute_range(
+            double& attribute_min,
+            double& attribute_max ) = 0;
+
+    protected:
+        AttributeGfxManager& manager_;
+    };
 
     class RINGMESH_API GeoModelGfx {
-    ringmesh_disable_copy( GeoModelGfx ) ;
+    ringmesh_disable_copy( GeoModelGfx );
     public:
 
-        GeoModelGfx() ;
-        ~GeoModelGfx() ;
+        GeoModelGfx();
+        ~GeoModelGfx();
 
         /*!
          * Sets the GeoModel associated to the graphics
          * @param[in] geomodel the GeoModel
          */
-        void set_geomodel( const GeoModel& geomodel ) ;
+        void set_geomodel( const GeoModel& geomodel );
         /*!
          * Gets the GeoModel associated to the graphics
          * @return the GeoModel
          */
-        const GeoModel* geomodel() const ;
+        const GeoModel* geomodel() const;
         /*!
          * Initializes the database according the GeoModel dimensions
          */
-        void initialize() ;
-        void need_to_update() ;
+        void initialize();
+        void need_to_update();
 
     private:
         /// The GeoModel associated to the graphics
-        const GeoModel* geomodel_ ;
+        const GeoModel* geomodel_;
 
     public:
-        CornerGfxManager corners ;
-        LineGfxManager lines ;
-        SurfaceGfxManager surfaces ;
-        RegionGfxManager regions ;
-        AttributeGfxManager attribute ;
-    } ;
+        CornerGfxManager corners;
+        LineGfxManager lines;
+        SurfaceGfxManager surfaces;
+        RegionGfxManager regions;
+        AttributeGfxManager attribute;
+    };
 }
 
 #endif

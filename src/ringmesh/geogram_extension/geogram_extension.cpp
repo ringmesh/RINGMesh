@@ -39,7 +39,6 @@
 
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -51,23 +50,23 @@
  */
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     std::vector< std::string > bounded_attribute_names(
         GEO::AttributesManager& manager )
     {
-        GEO::vector< std::string > names ;
-        manager.list_attribute_names( names ) ;
-        std::vector< std::string > bounded_names ;
-        bounded_names.reserve( names.size() ) ;
+        GEO::vector< std::string > names;
+        manager.list_attribute_names( names );
+        std::vector< std::string > bounded_names;
+        bounded_names.reserve( names.size() );
         if( !names.empty() ) {
             for( std::string name : names ) {
                 if( manager.find_attribute_store( name )->has_observers() ) {
-                    bounded_names.push_back( name ) ;
+                    bounded_names.push_back( name );
                 }
             }
         }
-        return bounded_names ;
+        return bounded_names;
     }
 
     void print_bounded_attributes(
@@ -75,12 +74,11 @@ namespace {
         const std::string& output_location )
     {
         if( !names.empty() ) {
-            Logger::err( "Attributes" ) << "Attributes still bounded on "
-                << output_location << ":" ;
+            Logger::err( "Attributes", "Attributes still bounded on ",
+                output_location, ":" );
             for( std::string name : names ) {
-                Logger::err( "Attributes" ) << " " << name ;
+                Logger::err( "Attributes", " ", name );
             }
-            Logger::err( "Attributes" ) << std::endl ;
         }
     }
 
@@ -88,11 +86,11 @@ namespace {
         GEO::AttributesManager& manager,
         const std::string& output_location )
     {
-        std::vector< std::string > names = bounded_attribute_names( manager ) ;
-        print_bounded_attributes( names, output_location ) ;
+        std::vector< std::string > names = bounded_attribute_names( manager );
+        print_bounded_attributes( names, output_location );
     }
 
-    /*! 
+    /*!
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
     class TSurfMeshIOHandler final : public GEO::MeshIOHandler {
@@ -122,20 +120,20 @@ namespace {
             GEO::Mesh& mesh,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
         {
-            ringmesh_unused( flag ) ;
-            filename_ = filename ;
+            ringmesh_unused( flag );
+            filename_ = filename;
             if( !is_file_valid() ) {
-                return false ;
+                return false;
             } else {
-                read_number_of_vertices_and_triangles() ;
-                read_vertex_property_names() ;
-                read_vertex_property_sizes() ;
-                allocate_vertices() ;
-                allocate_triangles() ;
-                allocate_vertex_properties() ;
-                read_vertices_and_triangles() ;
-                assign_and_repair_mesh( mesh ) ;
-                return true ;
+                read_number_of_vertices_and_triangles();
+                read_vertex_property_names();
+                read_vertex_property_sizes();
+                allocate_vertices();
+                allocate_triangles();
+                allocate_vertex_properties();
+                read_vertices_and_triangles();
+                assign_and_repair_mesh( mesh );
+                return true;
             }
         }
 
@@ -147,26 +145,26 @@ namespace {
             const std::string& filename,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
         {
-            ringmesh_unused( flag ) ;
+            ringmesh_unused( flag );
             if( !mesh.facets.are_simplices() ) {
                 throw RINGMeshException( "I/O",
-                    "Cannot save a non triangulated mesh into TSurf format" ) ;
+                    "Cannot save a non triangulated mesh into TSurf format" );
             }
 
-            std::ofstream out( filename.c_str() ) ;
-            out.precision( 16 ) ;
-            save_header( out, GEO::FileSystem::base_name( filename ) ) ;
-            std::vector< std::string > att_v_double_names ;
-            std::vector< index_t > vertex_attr_dims ;
+            std::ofstream out( filename.c_str() );
+            out.precision( 16 );
+            save_header( out, GEO::FileSystem::base_name( filename ) );
+            std::vector< std::string > att_v_double_names;
+            std::vector< index_t > vertex_attr_dims;
             fill_vertex_attribute_header( mesh, out, att_v_double_names,
-                vertex_attr_dims ) ;
+                vertex_attr_dims );
 
-            out << "TFACE" << std::endl ;
-            save_vertices( out, mesh, att_v_double_names, vertex_attr_dims ) ;
-            save_triangles( out, mesh ) ;
-            out << "END" << std::endl ;
+            out << "TFACE" << std::endl;
+            save_vertices( out, mesh, att_v_double_names, vertex_attr_dims );
+            save_triangles( out, mesh );
+            out << "END" << std::endl;
 
-            return true ;
+            return true;
         }
 
     private:
@@ -180,36 +178,36 @@ namespace {
                 // PVRTX must be used instead of VRTX because
                 // properties are not read by Gocad if it is VRTX.
                 out << "PVRTX " << v + starting_index_ << " "
-                    << mesh.vertices.point( v ) ;
+                    << mesh.vertices.point( v );
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
                     GEO::Attribute< double > cur_attr( mesh.vertices.attributes(),
-                        att_v_double_names[attr_dbl_itr] ) ;
+                        att_v_double_names[attr_dbl_itr] );
                     for( index_t dim_itr = 0;
                         dim_itr < vertex_attr_dims[attr_dbl_itr]; ++dim_itr ) {
                         out << " "
-                            << cur_attr[v * vertex_attr_dims[attr_dbl_itr] + dim_itr] ;
+                            << cur_attr[v * vertex_attr_dims[attr_dbl_itr] + dim_itr];
                     }
                 }
-                out << std::endl ;
+                out << std::endl;
             }
         }
         void save_triangles( std::ofstream& out, const GEO::Mesh& mesh )
         {
             for( index_t t = 0; t < mesh.facets.nb(); t++ ) {
-                out << "TRGL" ;
+                out << "TRGL";
                 for( index_t v = 0; v < 3; v++ ) {
-                    out << " " << mesh.facets.vertex( t, v ) + starting_index_ ;
+                    out << " " << mesh.facets.vertex( t, v ) + starting_index_;
                 }
-                out << std::endl ;
+                out << std::endl;
             }
         }
         void save_header( std::ofstream& out, const std::string& mesh_name )
         {
-            out << "GOCAD TSurf" << std::endl ;
-            out << "HEADER {" << std::endl ;
-            out << "name: " << mesh_name << std::endl ;
-            out << "}" << std::endl ;
+            out << "GOCAD TSurf" << std::endl;
+            out << "HEADER {" << std::endl;
+            out << "name: " << mesh_name << std::endl;
+            out << "}" << std::endl;
         }
         void fill_vertex_attribute_header(
             const GEO::Mesh& mesh,
@@ -217,112 +215,112 @@ namespace {
             std::vector< std::string >& att_v_double_names,
             std::vector< index_t >& vertex_attr_dims ) const
         {
-            GEO::vector< std::string > att_v_names ;
-            GEO::AttributesManager& mesh_vertex_mgr = mesh.vertices.attributes() ;
-            mesh_vertex_mgr.list_attribute_names( att_v_names ) ;
+            GEO::vector< std::string > att_v_names;
+            GEO::AttributesManager& mesh_vertex_mgr = mesh.vertices.attributes();
+            mesh_vertex_mgr.list_attribute_names( att_v_names );
             for( index_t att_v = 0; att_v < mesh_vertex_mgr.nb(); att_v++ ) {
 
                 if( att_v_names[att_v] == "point" ) {
-                    continue ;
+                    continue;
                 }
 
                 if( !GEO::Attribute< double >::is_defined( mesh_vertex_mgr,
                     att_v_names[att_v] ) ) {
-                    continue ;
+                    continue;
                 }
-                att_v_double_names.push_back( att_v_names[att_v] ) ;
+                att_v_double_names.push_back( att_v_names[att_v] );
                 index_t cur_dim = mesh_vertex_mgr.find_attribute_store(
-                    att_v_names[att_v] )->dimension() ;
-                vertex_attr_dims.push_back( cur_dim ) ;
+                    att_v_names[att_v] )->dimension();
+                vertex_attr_dims.push_back( cur_dim );
             }
 
             if( !att_v_double_names.empty() ) {
-                out << "PROPERTIES" ;
+                out << "PROPERTIES";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " " << att_v_double_names[attr_dbl_itr] ;
+                    out << " " << att_v_double_names[attr_dbl_itr];
                 }
-                out << std::endl ;
-                out << "PROP_LEGAL_RANGES" ;
+                out << std::endl;
+                out << "PROP_LEGAL_RANGES";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " **none**  **none**" ;
+                    out << " **none**  **none**";
                 }
-                out << std::endl ;
-                out << "NO_DATA_VALUES" ;
+                out << std::endl;
+                out << "NO_DATA_VALUES";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " -99999" ;
+                    out << " -99999";
                 }
-                out << std::endl ;
-                out << "READ_ONLY" ;
+                out << std::endl;
+                out << "READ_ONLY";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " 1" ;
+                    out << " 1";
                 }
-                out << std::endl ;
-                out << "PROPERTY_CLASSES" ;
+                out << std::endl;
+                out << "PROPERTY_CLASSES";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " " << att_v_double_names[attr_dbl_itr] ;
+                    out << " " << att_v_double_names[attr_dbl_itr];
                 }
-                out << std::endl ;
-                out << "PROPERTY_KINDS" ;
+                out << std::endl;
+                out << "PROPERTY_KINDS";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " \"Real Number\"" ;
+                    out << " \"Real Number\"";
                 }
-                out << std::endl ;
-                out << "PROPERTY_SUBCLASSES" ;
+                out << std::endl;
+                out << "PROPERTY_SUBCLASSES";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " QUANTITY Float" ;
+                    out << " QUANTITY Float";
                 }
-                out << std::endl ;
-                out << "ESIZES" ;
+                out << std::endl;
+                out << "ESIZES";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
                     out << " "
-                        << GEO::String::to_string( vertex_attr_dims[attr_dbl_itr] ) ;
+                        << GEO::String::to_string( vertex_attr_dims[attr_dbl_itr] );
                 }
-                out << std::endl ;
-                out << "UNITS" ;
+                out << std::endl;
+                out << "UNITS";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " unitless" ;
+                    out << " unitless";
                 }
-                out << std::endl ;
+                out << std::endl;
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
                     out << "PROPERTY_CLASS_HEADER "
-                        << att_v_double_names[attr_dbl_itr] << " {" << std::endl ;
-                    out << "kind: Real Number" << std::endl ;
-                    out << "unit: unitless" << std::endl ;
-                    out << "}" << std::endl ;
+                        << att_v_double_names[attr_dbl_itr] << " {" << std::endl;
+                    out << "kind: Real Number" << std::endl;
+                    out << "unit: unitless" << std::endl;
+                    out << "}" << std::endl;
                 }
             }
         }
         // This function read the z_sign too [PA]
         void read_number_of_vertices_and_triangles()
         {
-            GEO::LineInput in( filename_ ) ;
+            GEO::LineInput in( filename_ );
             while( !in.eof() && in.get_line() ) {
-                in.get_fields() ;
+                in.get_fields();
                 if( in.nb_fields() > 0 ) {
                     if( in.field_matches( 0, "ZPOSITIVE" ) ) {
                         if( in.field_matches( 1, "Elevation" ) ) {
-                            z_sign_ = 1 ;
+                            z_sign_ = 1;
                         } else if( in.field_matches( 1, "Depth" ) ) {
-                            z_sign_ = -1 ;
+                            z_sign_ = -1;
                         }
                     } else if( in.field_matches( 0, "VRTX" )
                         || in.field_matches( 0, "PVRTX" ) ) {
-                        nb_vertices_++ ;
+                        nb_vertices_++;
                     } else if( in.field_matches( 0, "PATOM" )
                         || in.field_matches( 0, "ATOM" ) ) {
-                        nb_vertices_++ ;
+                        nb_vertices_++;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
-                        nb_triangles_++ ;
+                        nb_triangles_++;
                     }
                 }
             }
@@ -330,21 +328,20 @@ namespace {
 
         void read_vertices_and_triangles()
         {
-            GEO::LineInput in( filename_ ) ;
-            index_t v = 0 ;
-            index_t t = 0 ;
+            GEO::LineInput in( filename_ );
+            index_t v = 0;
+            index_t t = 0;
             while( !in.eof() && in.get_line() ) {
-                in.get_fields() ;
+                in.get_fields();
                 if( in.nb_fields() > 0 ) {
                     if( in.field_matches( 0, "VRTX" )
                         || in.field_matches( 0, "PVRTX" ) ) {
-                        vertices_[mesh_dimension_ * v] = in.field_as_double( 2 ) ;
-                        vertices_[mesh_dimension_ * v + 1] = in.field_as_double(
-                            3 ) ;
+                        vertices_[mesh_dimension_ * v] = in.field_as_double( 2 );
+                        vertices_[mesh_dimension_ * v + 1] = in.field_as_double( 3 );
                         vertices_[mesh_dimension_ * v + 2] = in.field_as_double( 4 )
-                            * z_sign_ ;
+                            * z_sign_;
                         if( in.field_matches( 0, "PVRTX" ) ) {
-                            index_t offset = 5 ;
+                            index_t offset = 5;
                             for( index_t prop_name_itr = 0;
                                 prop_name_itr < vertex_property_names_.size();
                                 ++prop_name_itr ) {
@@ -353,30 +350,30 @@ namespace {
                                         < vertex_attribute_dims_[prop_name_itr];
                                     ++v_attr_dim_itr ) {
                                     vertex_attributes_[prop_name_itr][v][v_attr_dim_itr] =
-                                        in.field_as_double( offset ) ;
-                                    ++offset ;
+                                        in.field_as_double( offset );
+                                    ++offset;
                                 }
                             }
                         }
-                        ++v ;
+                        ++v;
                     } else if( in.field_matches( 0, "PATOM" )
                         || in.field_matches( 0, "ATOM" ) ) {
-                        index_t v0 = in.field_as_uint( 2 ) - starting_index_ ;
+                        index_t v0 = in.field_as_uint( 2 ) - starting_index_;
                         vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_
-                            * v0] ;
+                            * v0];
                         vertices_[mesh_dimension_ * v + 1] =
-                            vertices_[mesh_dimension_ * v0 + 1] ;
+                            vertices_[mesh_dimension_ * v0 + 1];
                         vertices_[mesh_dimension_ * v + 2] =
-                            vertices_[mesh_dimension_ * v0 + 2] ;
-                        ++v ;
+                            vertices_[mesh_dimension_ * v0 + 2];
+                        ++v;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
                         triangles_[3 * t] = index_t(
-                            in.field_as_uint( 1 ) - starting_index_ ) ;
+                            in.field_as_uint( 1 ) - starting_index_ );
                         triangles_[3 * t + 1] = index_t(
-                            in.field_as_uint( 2 ) - starting_index_ ) ;
+                            in.field_as_uint( 2 ) - starting_index_ );
                         triangles_[3 * t + 2] = index_t(
-                            in.field_as_uint( 3 ) - starting_index_ ) ;
-                        t++ ;
+                            in.field_as_uint( 3 ) - starting_index_ );
+                        t++;
                     }
                 }
             }
@@ -384,40 +381,40 @@ namespace {
 
         void read_vertex_property_names()
         {
-            GEO::LineInput in( filename_ ) ;
+            GEO::LineInput in( filename_ );
             while( !in.eof() && in.get_line() ) {
-                in.get_fields() ;
+                in.get_fields();
                 if( in.nb_fields() > 0 ) {
                     if( !in.field_matches( 0, "PROPERTIES" ) ) {
-                        continue ;
+                        continue;
                     }
-                    vertex_property_names_.reserve( in.nb_fields() - 1 ) ;
+                    vertex_property_names_.reserve( in.nb_fields() - 1 );
                     for( index_t prop_name_itr = 1; prop_name_itr < in.nb_fields();
                         ++prop_name_itr ) {
                         vertex_property_names_.push_back(
-                            in.field( prop_name_itr ) ) ;
+                            in.field( prop_name_itr ) );
                     }
-                    return ; // No need to continue.
+                    return; // No need to continue.
                 }
             }
         }
 
         void read_vertex_property_sizes()
         {
-            GEO::LineInput in( filename_ ) ;
+            GEO::LineInput in( filename_ );
             while( !in.eof() && in.get_line() ) {
-                in.get_fields() ;
+                in.get_fields();
                 if( in.nb_fields() > 0 ) {
                     if( !in.field_matches( 0, "ESIZES" ) ) {
-                        continue ;
+                        continue;
                     }
-                    vertex_property_names_.reserve( in.nb_fields() - 1 ) ;
+                    vertex_property_names_.reserve( in.nb_fields() - 1 );
                     for( index_t prop_size_itr = 1; prop_size_itr < in.nb_fields();
                         ++prop_size_itr ) {
                         vertex_attribute_dims_.push_back(
-                            in.field_as_uint( prop_size_itr ) ) ;
+                            in.field_as_uint( prop_size_itr ) );
                     }
-                    return ; // No need to continue.
+                    return; // No need to continue.
                 }
             }
         }
@@ -425,32 +422,32 @@ namespace {
         void assign_and_repair_mesh( GEO::Mesh& mesh )
         {
             GEO::coord_index_t dimension =
-                static_cast< GEO::coord_index_t >( mesh_dimension_ ) ;
+                static_cast< GEO::coord_index_t >( mesh_dimension_ );
             mesh.facets.assign_triangle_mesh( dimension, vertices_, triangles_,
-                true ) ;
+                true );
 
-            assign_tsurf_properties_to_geogram_mesh( mesh ) ;
+            assign_tsurf_properties_to_geogram_mesh( mesh );
 
             // Do not use GEO::MESH_REPAIR_DEFAULT because it glues the
             // disconnected edges along internal boundaries
-            GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
+            GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F );
         }
 
         void assign_tsurf_properties_to_geogram_mesh( GEO::Mesh& mesh )
         {
             for( index_t prop_name_itr = 0;
                 prop_name_itr < vertex_property_names_.size(); ++prop_name_itr ) {
-                GEO::Attribute< double > attr ;
+                GEO::Attribute< double > attr;
                 attr.create_vector_attribute( mesh.vertices.attributes(),
                     vertex_property_names_[prop_name_itr],
-                    vertex_attribute_dims_[prop_name_itr] ) ;
+                    vertex_attribute_dims_[prop_name_itr] );
                 for( index_t v_itr = 0; v_itr < nb_vertices_; ++v_itr ) {
                     for( index_t prop_dim_itr = 0;
                         prop_dim_itr < vertex_attribute_dims_[prop_name_itr];
                         ++prop_dim_itr ) {
                         attr[v_itr * vertex_attribute_dims_[prop_name_itr]
                             + prop_dim_itr] =
-                            vertex_attributes_[prop_name_itr][v_itr][prop_dim_itr] ;
+                            vertex_attributes_[prop_name_itr][v_itr][prop_dim_itr];
                     }
                 }
             }
@@ -458,51 +455,51 @@ namespace {
 
         bool is_file_valid()
         {
-            GEO::LineInput in( filename_ ) ;
+            GEO::LineInput in( filename_ );
             if( !in.OK() ) {
-                return false ;
+                return false;
             } else {
-                return true ;
+                return true;
             }
         }
 
         void allocate_vertices()
         {
-            vertices_.resize( mesh_dimension_ * nb_vertices_ ) ;
+            vertices_.resize( mesh_dimension_ * nb_vertices_ );
         }
 
         void allocate_triangles()
         {
-            triangles_.resize( 3 * nb_triangles_ ) ;
+            triangles_.resize( 3 * nb_triangles_ );
         }
         void allocate_vertex_properties()
         {
-            vertex_attributes_.resize( vertex_property_names_.size() ) ;
+            vertex_attributes_.resize( vertex_property_names_.size() );
             for( index_t vertex_attributes_itr = 0;
                 vertex_attributes_itr < vertex_attributes_.size();
                 ++vertex_attributes_itr ) {
-                vertex_attributes_[vertex_attributes_itr].resize( nb_vertices_ ) ;
+                vertex_attributes_[vertex_attributes_itr].resize( nb_vertices_ );
                 for( index_t vertex_itr = 0; vertex_itr < nb_vertices_;
                     ++vertex_itr ) {
                     vertex_attributes_[vertex_attributes_itr][vertex_itr].resize(
-                        vertex_attribute_dims_[vertex_attributes_itr], 0 ) ;
+                        vertex_attribute_dims_[vertex_attributes_itr], 0 );
                 }
             }
         }
 
     private:
-        index_t starting_index_ ;
-        index_t mesh_dimension_ ;
-        index_t nb_vertices_ ;
-        index_t nb_triangles_ ;
-        int z_sign_ ;
-        std::string filename_ ;
-        GEO::vector< double > vertices_ ;
-        GEO::vector< index_t > triangles_ ;
-        GEO::vector< std::string > vertex_property_names_ ;
-        GEO::vector< index_t > vertex_attribute_dims_ ;
-        GEO::vector< GEO::vector< GEO::vector< double > > > vertex_attributes_ ;
-    } ;
+        index_t starting_index_;
+        index_t mesh_dimension_;
+        index_t nb_vertices_;
+        index_t nb_triangles_;
+        int z_sign_;
+        std::string filename_;
+        GEO::vector< double > vertices_;
+        GEO::vector< index_t > triangles_;
+        GEO::vector< std::string > vertex_property_names_;
+        GEO::vector< index_t > vertex_attribute_dims_;
+        GEO::vector< GEO::vector< GEO::vector< double > > > vertex_attributes_;
+    };
 
     class LINMeshIOHandler final : public GEO::MeshIOHandler {
     public:
@@ -511,22 +508,22 @@ namespace {
             GEO::Mesh& mesh,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
         {
-            ringmesh_unused( flag ) ;
-            GEO::LineInput file( filename ) ;
+            ringmesh_unused( flag );
+            GEO::LineInput file( filename );
 
             while( !file.eof() && file.get_line() ) {
-                file.get_fields() ;
+                file.get_fields();
                 if( file.nb_fields() > 0 ) {
                     if( file.field_matches( 0, "v" ) ) {
-                        vec3 vertex = load_vertex( file, 1 ) ;
-                        mesh.vertices.create_vertex( vertex.data() ) ;
+                        vec3 vertex = load_vertex( file, 1 );
+                        mesh.vertices.create_vertex( vertex.data() );
                     } else if( file.field_matches( 0, "s" ) ) {
                         mesh.edges.create_edge( file.field_as_uint( 1 ) - 1,
-                            file.field_as_uint( 2 ) - 1 ) ;
+                            file.field_as_uint( 2 ) - 1 );
                     }
                 }
             }
-            return true ;
+            return true;
 
         }
         virtual bool save(
@@ -534,23 +531,23 @@ namespace {
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() ) final
         {
-            ringmesh_unused( M ) ;
-            ringmesh_unused( filename ) ;
-            ringmesh_unused( ioflags ) ;
+            ringmesh_unused( M );
+            ringmesh_unused( filename );
+            ringmesh_unused( ioflags );
             throw RINGMeshException( "I/O",
-                "Saving a Mesh into .lin format not implemented yet" ) ;
-            return false ;
+                "Saving a Mesh into .lin format not implemented yet" );
+            return false;
         }
 
     private:
         vec3 load_vertex( GEO::LineInput& file, index_t field ) const
         {
-            double x = file.field_as_double( field++ ) ;
-            double y = file.field_as_double( field++ ) ;
-            double z = file.field_as_double( field++ ) ;
-            return vec3( x, y, z ) ;
+            double x = file.field_as_double( field++ );
+            double y = file.field_as_double( field++ );
+            double z = file.field_as_double( field++ );
+            return vec3( x, y, z );
         }
-    } ;
+    };
 
 }
 
@@ -561,36 +558,36 @@ namespace RINGMesh {
 
     void ringmesh_mesh_io_initialize()
     {
-        geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
-        geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
+        geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" );
+        geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" );
     }
 
     double mesh_cell_signed_volume( const GEO::Mesh& M, index_t c )
     {
-        double volume = 0 ;
+        double volume = 0;
         switch( M.cells.type( c ) ) {
             case GEO::MESH_TET:
                 volume = GEO::Geom::tetra_signed_volume(
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 0 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 1 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 2 ) ),
-                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 3 ) ) ) ;
-                break ;
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 3 ) ) );
+                break;
             case GEO::MESH_PYRAMID:
                 volume = GEO::Geom::tetra_signed_volume(
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 0 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 1 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 2 ) ),
-                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 4 ) ) ) ;
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 4 ) ) );
                 volume += GEO::Geom::tetra_signed_volume(
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 0 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 2 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 3 ) ),
-                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 4 ) ) ) ;
-                break ;
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 4 ) ) );
+                break;
             case GEO::MESH_PRISM:
             case GEO::MESH_HEX: {
-                vec3 ori( 0, 0, 0 ) ;
+                vec3 ori( 0, 0, 0 );
                 for( index_t f = 0; f < M.cells.nb_facets( c ); f++ ) {
                     switch( M.cells.facet_nb_vertices( c, f ) ) {
                         case 3:
@@ -600,8 +597,8 @@ namespace RINGMesh {
                                 GEO::Geom::mesh_vertex( M,
                                     M.cells.facet_vertex( c, f, 1 ) ),
                                 GEO::Geom::mesh_vertex( M,
-                                    M.cells.facet_vertex( c, f, 2 ) ), ori ) ;
-                            break ;
+                                    M.cells.facet_vertex( c, f, 2 ) ), ori );
+                            break;
                         case 4:
                             volume += GEO::Geom::tetra_signed_volume(
                                 GEO::Geom::mesh_vertex( M,
@@ -609,69 +606,69 @@ namespace RINGMesh {
                                 GEO::Geom::mesh_vertex( M,
                                     M.cells.facet_vertex( c, f, 1 ) ),
                                 GEO::Geom::mesh_vertex( M,
-                                    M.cells.facet_vertex( c, f, 2 ) ), ori ) ;
+                                    M.cells.facet_vertex( c, f, 2 ) ), ori );
                             volume += GEO::Geom::tetra_signed_volume(
                                 GEO::Geom::mesh_vertex( M,
                                     M.cells.facet_vertex( c, f, 0 ) ),
                                 GEO::Geom::mesh_vertex( M,
                                     M.cells.facet_vertex( c, f, 2 ) ),
                                 GEO::Geom::mesh_vertex( M,
-                                    M.cells.facet_vertex( c, f, 3 ) ), ori ) ;
-                            break ;
+                                    M.cells.facet_vertex( c, f, 3 ) ), ori );
+                            break;
                         default:
-                            ringmesh_assert_not_reached ;
-                            return 0 ;
+                            ringmesh_assert_not_reached;
+                            return 0;
                     }
                 }
-                break ;
+                break;
             }
             default:
-                return 0 ;
+                return 0;
         }
-        return volume ;
+        return volume;
     }
 
     double mesh_cell_volume( const GEO::Mesh& M, index_t c )
     {
-        return std::fabs( mesh_cell_signed_volume( M, c ) ) ;
+        return std::fabs( mesh_cell_signed_volume( M, c ) );
     }
 
     vec3 mesh_cell_facet_barycenter( const GEO::Mesh& M, index_t cell, index_t f )
     {
-        vec3 result( 0., 0., 0. ) ;
-        index_t nb_vertices = M.cells.facet_nb_vertices( cell, f ) ;
+        vec3 result( 0., 0., 0. );
+        index_t nb_vertices = M.cells.facet_nb_vertices( cell, f );
         for( index_t v = 0; v < nb_vertices; ++v ) {
             result += GEO::Geom::mesh_vertex( M,
-                M.cells.facet_vertex( cell, f, v ) ) ;
+                M.cells.facet_vertex( cell, f, v ) );
         }
-        ringmesh_assert( nb_vertices > 0 ) ;
+        ringmesh_assert( nb_vertices > 0 );
 
-        return result / static_cast< double >( nb_vertices ) ;
+        return result / static_cast< double >( nb_vertices );
     }
 
     vec3 mesh_cell_barycenter( const GEO::Mesh& M, index_t cell )
     {
-        vec3 result( 0.0, 0.0, 0.0 ) ;
-        double count = 0.0 ;
+        vec3 result( 0.0, 0.0, 0.0 );
+        double count = 0.0;
         for( index_t v = 0; v < M.cells.nb_vertices( cell ); ++v ) {
-            result += GEO::Geom::mesh_vertex( M, M.cells.vertex( cell, v ) ) ;
-            count += 1.0 ;
+            result += GEO::Geom::mesh_vertex( M, M.cells.vertex( cell, v ) );
+            count += 1.0;
         }
-        return ( 1.0 / count ) * result ;
+        return ( 1.0 / count ) * result;
     }
 
     void print_bounded_attributes( const GEO::Mesh& M )
     {
         std::vector< std::string > names = bounded_attribute_names(
-            M.vertices.attributes() ) ;
-        names.erase( std::find( names.begin(), names.end(), "point" ) ) ;
-        ::print_bounded_attributes( names, "vertices" ) ;
-        ::print_bounded_attributes( M.edges.attributes(), "edges" ) ;
-        ::print_bounded_attributes( M.facets.attributes(), "facets" ) ;
-        ::print_bounded_attributes( M.facet_corners.attributes(), "facet_corners" ) ;
-        ::print_bounded_attributes( M.cells.attributes(), "cells" ) ;
-        ::print_bounded_attributes( M.cell_corners.attributes(), "cell_corners" ) ;
-        ::print_bounded_attributes( M.cell_facets.attributes(), "cell_facets" ) ;
+            M.vertices.attributes() );
+        names.erase( std::find( names.begin(), names.end(), "point" ) );
+        ::print_bounded_attributes( names, "vertices" );
+        ::print_bounded_attributes( M.edges.attributes(), "edges" );
+        ::print_bounded_attributes( M.facets.attributes(), "facets" );
+        ::print_bounded_attributes( M.facet_corners.attributes(), "facet_corners" );
+        ::print_bounded_attributes( M.cells.attributes(), "cells" );
+        ::print_bounded_attributes( M.cell_corners.attributes(), "cell_corners" );
+        ::print_bounded_attributes( M.cell_facets.attributes(), "cell_facets" );
     }
 
 }

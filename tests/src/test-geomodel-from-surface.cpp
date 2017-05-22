@@ -53,139 +53,137 @@
 
 int main()
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
-        default_configure() ;
+        default_configure();
 
-        std::string file_name = ringmesh_test_data_path ;
-        file_name += "modelA6.mesh" ;
+        std::string file_name = ringmesh_test_data_path;
+        file_name += "modelA6.mesh";
 
         // Set an output log file
-        std::string log_file( ringmesh_test_output_path ) ;
-        log_file += "log.txt" ;
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        Logger::instance()->register_client( file_logger ) ;
+        std::string log_file( ringmesh_test_output_path );
+        log_file += "log.txt";
+        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
+        Logger::instance()->register_client( file_logger );
 
-        Logger::out( "TEST" ) << "Test GeoModel building from Surface"
-            << std::endl ;
+        Logger::out( "TEST", "Test GeoModel building from Surface" );
 
-        GEO::Mesh in ;
-        GEO::mesh_load( file_name, in ) ;
-        GeoModel model ;
+        GEO::Mesh in;
+        GEO::mesh_load( file_name, in );
+        GeoModel model;
 
-        GeoModelBuilderSurfaceMesh builder( model, in ) ;
-        builder.build_polygonal_surfaces_from_connected_components() ;
-        builder.from_surfaces.build() ;
-        print_geomodel( model ) ;
+        GeoModelBuilderSurfaceMesh builder( model, in );
+        builder.build_polygonal_surfaces_from_connected_components();
+        builder.from_surfaces.build();
+        print_geomodel( model );
 
         //Checking the validity of loaded model
 #ifdef RINGMESH_DEBUG
-        GEO::CmdLine::set_arg( "in:intersection_check", true ) ;
+        GEO::CmdLine::set_arg( "in:intersection_check", true );
 #else
-        GEO::CmdLine::set_arg( "in:intersection_check", false ) ;
+        GEO::CmdLine::set_arg( "in:intersection_check", false );
 #endif
 
         if( !is_geomodel_valid( model ) ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when loading model " + model.name()
-                    + ": the loaded model is not valid." ) ;
+                    + ": the loaded model is not valid." );
         }
 
         // Save and reload the model
-        std::string output_file( ringmesh_test_output_path ) ;
-        output_file += "saved_modelA6.gm" ;
-        geomodel_save( model, output_file ) ;
+        std::string output_file( ringmesh_test_output_path );
+        output_file += "saved_modelA6.gm";
+        geomodel_save( model, output_file );
 
         // Compute mesh with duplicated points to compares number
         // of mesh elements and mesh entities
-        GEO::Mesh surface_meshes ;
+        GEO::Mesh surface_meshes;
         for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-            const Surface& surface = model.surface( s ) ;
+            const Surface& surface = model.surface( s );
             index_t vertex_it = surface_meshes.vertices.create_vertices(
-                surface.nb_vertices() ) ;
+                surface.nb_vertices() );
             for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-                surface_meshes.vertices.point( vertex_it + v ) = surface.vertex(
-                    v ) ;
+                surface_meshes.vertices.point( vertex_it + v ) = surface.vertex( v );
             }
             index_t facet_it = surface_meshes.facets.create_triangles(
-                surface.nb_mesh_elements() ) ;
+                surface.nb_mesh_elements() );
             for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
                 for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
                     v++ ) {
                     surface_meshes.facets.set_vertex( facet_it + f, v,
-                        vertex_it + surface.mesh_element_vertex_index( f, v ) ) ;
+                        vertex_it + surface.mesh_element_vertex_index( f, v ) );
                 }
             }
         }
-        surface_meshes.facets.connect() ;
+        surface_meshes.facets.connect();
 
         // Save computed mesh
-        std::string output_file2( ringmesh_test_output_path ) ;
-        output_file2 += "saved_modelA6_dupl_points.mesh" ;
-        GEO::mesh_save( surface_meshes, output_file2 ) ;
+        std::string output_file2( ringmesh_test_output_path );
+        output_file2 += "saved_modelA6_dupl_points.mesh";
+        GEO::mesh_save( surface_meshes, output_file2 );
 
-        GeoModel reloaded_model ;
+        GeoModel reloaded_model;
 
-        GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes ) ;
-        builder2.build_polygonal_surfaces_from_connected_components() ;
-        builder2.from_surfaces.build() ;
-        print_geomodel( reloaded_model ) ;
+        GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes );
+        builder2.build_polygonal_surfaces_from_connected_components();
+        builder2.from_surfaces.build();
+        print_geomodel( reloaded_model );
 
         // Checking if building has been successfully done
         if( !is_geomodel_valid( reloaded_model ) ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when reloading model " + reloaded_model.name()
-                    + ": the reloaded model is not valid." ) ;
+                    + ": the reloaded model is not valid." );
         }
 
         // Checking number of mesh elements
         if( surface_meshes.vertices.nb() != in.vertices.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when building model: not same number of vertices "
-                    "than input mesh." ) ;
+                    "than input mesh." );
         }
         if( surface_meshes.facets.nb() != in.facets.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when building model: not same number of facets "
-                    "than input mesh." ) ;
+                    "than input mesh." );
         }
         if( surface_meshes.cells.nb() != in.cells.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when building model: not same number of cells "
-                    "than input mesh." ) ;
+                    "than input mesh." );
         }
 
         // Checking number of GeoModelMeshEntities
         if( reloaded_model.nb_corners() != model.nb_corners() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of corners "
-                    "between saved model and reload model." ) ;
+                    "between saved model and reload model." );
         }
         if( reloaded_model.nb_lines() != model.nb_lines() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of lines "
-                    "between saved model and reload model." ) ;
+                    "between saved model and reload model." );
         }
         if( reloaded_model.nb_surfaces() != model.nb_surfaces() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of surfaces "
-                    "between saved model and reload model." ) ;
+                    "between saved model and reload model." );
         }
         if( reloaded_model.nb_regions() != model.nb_regions() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of regions "
-                    "between saved model and reload model." ) ;
+                    "between saved model and reload model." );
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-    return 0 ;
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
 
 }

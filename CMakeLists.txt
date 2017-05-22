@@ -38,8 +38,10 @@ cmake_minimum_required(VERSION 2.8)
 # Options of the RINGMesh project 
 # They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 
-# Configuration modes - Debug and Release by default 
-set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
+# Configuration modes - Debug and Release by default + RelWithDebInfo for Windows.
+# RelWithDebInfo is mandatory to debug some plugins in Windows in debug mode (e.g., a Gocad plugin) to
+# avoid issues in particular in the STL (e.g., bad transfer of std::string from Gocad to RINGMesh).
+set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
 
 # If a path is specified RINGMesh will be compiled to work with - empty by default
 set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
@@ -242,7 +244,7 @@ include_directories(${PROJECT_BINARY_DIR})
 #------------------------------------------------------------------------------------------------
 # GEOGRAM 
 # Set the path to Geogram code
-set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
+set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/third_party/geogram)
 
 # Geogram platform dependent settings
 if(WIN32)
@@ -293,7 +295,7 @@ ExternalProject_Add_Step(geogram_ext forcebuild
   )
 
 # Add geogram include directories to the current ones
-include_directories( SYSTEM ${GEOGRAM_PATH}/src/lib)
+include_directories(SYSTEM ${GEOGRAM_PATH}/src/lib)
 
 # Add geogram project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
@@ -363,15 +365,23 @@ FOREACH(directory ${directories})
     ENDIF()
 ENDFOREACH()
 
-file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
-file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
+file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/third_party/zlib/*.c")
+file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/third_party/zlib/*.h")
 # Add configure file to ringmesh includes
 set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 
 # Group files of a project in directories
-# For this to work, all the files should be added to the sources of the project
+# All the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
 source_group("Zlib" FILES ${zlib_src} ${zlib_include})
+
+set(tinyxml2_src "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.cpp")
+set(tinyxml2_include "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.h")
+
+# Group files of a project in directories
+# All the files should be added to the sources of the project
+# and the global property USE_FOLDERS must be ON
+source_group("tinyxml2" FILES ${tinyxml2_src} ${tinyxml2_include})
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
@@ -381,6 +391,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 # Add include directories of RINGMesh
 include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
 
 #add generated export file to include directories
 set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
@@ -391,7 +402,9 @@ add_library(RINGMesh SHARED
     ${ringmesh_include} 
     ${ringmesh_src} 
     ${zlib_src}
-    ${zlib_include})
+    ${zlib_include}
+    ${tinyxml2_src}
+    ${tinyxml2_include})
     
 # Function for generation of export macros for libraries (dll)
 generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
@@ -408,7 +421,7 @@ if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    include(${CMAKE_SOURCE_DIR}/src/third_party/geogram/cmake/opengl.cmake)
+    include(${CMAKE_SOURCE_DIR}/third_party/geogram/cmake/opengl.cmake)
     add_ringmesh_binary(ringmesh-view geogram_gfx ${OPENGL_LIBRARIES})
     copy_for_windows()
 endif(BUILD_RINGMESH_VIEW)
