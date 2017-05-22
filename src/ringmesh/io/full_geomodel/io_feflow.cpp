@@ -83,6 +83,9 @@ namespace {
         {
             out << "PROBLEM:\n" ;
             out << "CLASS (v.7.006.14742)\n" ;
+            // 3 is for defining a 3D problem
+            // 8 is for using double precision
+            // More information on the CLASS keyword Feflow documentation
             out << "   0    0    0    3    0    0    8    8    0    0\n" ;
         }
         void write_dimensions( const GeoModel& geomodel, std::ofstream& out ) const
@@ -143,7 +146,7 @@ namespace {
             out << "XYZCOOR\n" << std::scientific ;
             for( index_t v = 0; v < vertices.nb(); v++ ) {
                 const vec3& point = vertices.vertex( v ) ;
-                std::string sep ;
+                std::string sep = "";
                 for( index_t i = 0; i < 3; i++ ) {
                     out << sep << SPACE << point[i] ;
                     sep = "," ;
