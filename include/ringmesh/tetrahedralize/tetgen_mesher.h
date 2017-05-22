@@ -117,7 +117,7 @@ namespace RINGMesh {
         void copy_mesh_to_tetgen_input( const GEO::Mesh& M );
         void copy_vertices_to_tetgen_input( const GEO::Mesh& M );
         void copy_edges_to_tetgen_input( const GEO::Mesh& M );
-        void copy_facets_to_tetgen_input( const GEO::Mesh& M );
+        void copy_polygons_to_tetgen_input( const GEO::Mesh& M );
 
         void set_regions( const std::vector< vec3 >& one_point_per_region );
 

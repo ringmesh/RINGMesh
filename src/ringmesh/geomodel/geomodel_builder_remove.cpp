@@ -186,6 +186,7 @@ namespace RINGMesh {
     }
     void GeoModelBuilderRemoval::update_mesh_entity_parents( GeoModelMeshEntity& E )
     {
+        gmme_id id = E.gmme();
         for( index_t p = 0; p < E.nb_parents(); ++p ) {
             const GeologicalEntityType& parent_type = E.parent_gmge( p ).type();
             index_t parent_type_index = geological_entity_type_to_index(
@@ -193,7 +194,7 @@ namespace RINGMesh {
 
             index_t old_id = E.parent_gmge( p ).index();
             index_t new_id = old_2_new_geological_entity_[parent_type_index][old_id];
-            builder_.geology.set_mesh_entity_parent( E.gmme(), p,
+            builder_.geology.set_mesh_entity_parent( id, p,
                 gmge_id( parent_type, new_id ) );
         }
     }
@@ -236,12 +237,13 @@ namespace RINGMesh {
         //  Cannot use remove directly, do it by hand like the signs
         index_t offset = 0;
         index_t new_size = 0;
+        gmme_id id = E.gmme();
         for( index_t i = 0; i + offset < E.nb_parents(); ++i ) {
             if( E.parent( i ).index() == NO_ID ) {
                 offset++;
             } else {
                 gmge_id new_id = E.parent_gmge( i + offset );
-                builder_.geology.set_mesh_entity_parent( E.gmme(), i, new_id );
+                builder_.geology.set_mesh_entity_parent( id, i, new_id );
             }
             new_size = i + 1; /// @todo Check that this is the correct size
         }
