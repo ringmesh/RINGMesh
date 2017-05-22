@@ -41,9 +41,9 @@
 
 namespace RINGMesh {
     class MeshBase;
-    class Mesh1D;
-    class Mesh2D;
-    class Mesh3D;
+    class LineMesh;
+    class SurfaceMesh;
+    class VolumeMesh;
 }
 
 namespace RINGMesh {
@@ -92,7 +92,7 @@ namespace RINGMesh {
          *      vec3& nearest_point,
          *      double& distance ) const ;
          * where query is the same than \p query, cur_box is the element box index
-         * (e.g. in the case of AABBTree2D, this index is a facet index) and nearest_point
+         * (e.g. in the case of AABBTree2D, this index is a polygon index) and nearest_point
          * and distance are the value computed using the element in the \p cur_box.
          */
         template< typename EvalDistance >
@@ -119,7 +119,7 @@ namespace RINGMesh {
          * @tparam EvalIntersection this functor should have an operator() defined like this:
          *  void operator()( index_t cur_box ) ;
          * where cur_box is the element box index
-         * (e.g. in the case of AABBTree2D, this index is a facet index)
+         * (e.g. in the case of AABBTree2D, this index is a polygon index)
          */
         template< class EvalIntersection >
         void compute_bbox_element_bbox_intersections(
@@ -136,7 +136,7 @@ namespace RINGMesh {
          * @tparam EvalIntersection this functor should have an operator() defined like this:
          *  void operator()( index_t box1, index_t box2 ) ;
          * where box1 and box2 are the element box indices
-         * (e.g. in the case of AABBTree2D, this index is a facet index)
+         * (e.g. in the case of AABBTree2D, this index is a polygon index)
          */
         template< class EvalIntersection >
         void compute_self_element_bbox_intersections(
@@ -264,7 +264,7 @@ namespace RINGMesh {
 
     class RINGMESH_API AABBTree1D: public AABBTree {
     public:
-        AABBTree1D( const Mesh1D& mesh );
+        AABBTree1D( const LineMesh& mesh );
         virtual ~AABBTree1D() = default;
 
         /*!
@@ -292,7 +292,7 @@ namespace RINGMesh {
          */
         class DistanceToEdge {
         public:
-            DistanceToEdge( const Mesh1D& mesh )
+            DistanceToEdge( const LineMesh& mesh )
                 : mesh_( mesh )
             {
             }
@@ -304,16 +304,16 @@ namespace RINGMesh {
                 double& distance ) const;
 
         private:
-            const Mesh1D& mesh_;
+            const LineMesh& mesh_;
         };
 
     private:
-        const Mesh1D& mesh_;
+        const LineMesh& mesh_;
     };
 
     class RINGMESH_API AABBTree2D: public AABBTree {
     public:
-        AABBTree2D( const Mesh2D& mesh );
+        AABBTree2D( const SurfaceMesh& mesh );
         virtual ~AABBTree2D() = default;
 
         /*!
@@ -342,7 +342,7 @@ namespace RINGMesh {
          */
         class DistanceToTriangle {
         public:
-            DistanceToTriangle( const Mesh2D& mesh )
+            DistanceToTriangle( const SurfaceMesh& mesh )
                 : mesh_( mesh )
             {
             }
@@ -354,16 +354,16 @@ namespace RINGMesh {
                 double& distance ) const;
 
         private:
-            const Mesh2D& mesh_;
+            const SurfaceMesh& mesh_;
         };
 
     private:
-        const Mesh2D& mesh_;
+        const SurfaceMesh& mesh_;
     };
 
     class RINGMESH_API AABBTree3D: public AABBTree {
     public:
-        AABBTree3D( const Mesh3D& mesh );
+        AABBTree3D( const VolumeMesh& mesh );
         virtual ~AABBTree3D() = default;
 
         /*!
@@ -389,7 +389,7 @@ namespace RINGMesh {
             index_t box_end ) const;
 
     private:
-        const Mesh3D& mesh_;
+        const VolumeMesh& mesh_;
     };
 
     double inner_point_box_distance( const vec3& p, const Box3d& B );
@@ -507,8 +507,8 @@ namespace RINGMesh {
 
         // Since we are intersecting the AABBTree with *itself*,
         // we can prune half of the cases by skipping the test
-        // whenever node2's facet index interval is greated than
-        // node1's facet index interval.
+        // whenever node2's polygon index interval is greated than
+        // node1's polygon index interval.
         if( element_end2 <= element_begin1 ) {
             return;
         }
@@ -526,7 +526,7 @@ namespace RINGMesh {
             return;
         }
 
-        // If node2 has more facets than node1, then
+        // If node2 has more polygons than node1, then
         //   intersect node2's two children with node1
         // else
         //   intersect node1's two children with node2

@@ -592,11 +592,11 @@ namespace RINGMesh {
             }
             if( ImGui::BeginPopup( "##Attributes" ) ) {
                 switch( GM_gfx_.attribute.location() ) {
-                    case AttributeGfxManager::facets:
+                    case AttributeGfxManager::polygons:
                         set_attribute_names(
-                            GM_.surface( 0 ).facet_attribute_manager() );
+                            GM_.surface( 0 ).polygon_attribute_manager() );
                         break;
-                    case AttributeGfxManager::facet_vertices:
+                    case AttributeGfxManager::polygon_vertices:
                         set_attribute_names(
                             GM_.surface( 0 ).vertex_attribute_manager() );
                         break;
@@ -1117,6 +1117,7 @@ namespace RINGMesh {
     void RINGMeshApplication::quit()
     {
         glup_viewer_exit_main_loop();
+        Logger::instance()->unregister_client( console_ );
     }
 
     RINGMeshApplication* RINGMeshApplication::instance()
@@ -1417,12 +1418,13 @@ namespace RINGMesh {
     {
         GEO::Application::draw_viewer_properties();
 
+        int id = 0;
         if( !geomodels_.empty() ) {
             ImGui::Separator();
             ImGui::Text( "GeoModel" );
             for( index_t i = 0; i < geomodels_.size(); i++ ) {
                 GeoModelViewer& viewer = *geomodels_[i];
-                ImGui::PushID( static_cast< int >( i ) );
+                ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.GM_.name().c_str(),
                     &viewer.is_visible_ ) ) {
                     current_viewer_ = i;
@@ -1448,7 +1450,7 @@ namespace RINGMesh {
             ImGui::Text( "Mesh" );
             for( index_t i = 0; i < meshes_.size(); i++ ) {
                 MeshViewer& viewer = *meshes_[i];
-                ImGui::PushID( static_cast< int >( i ) );
+                ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.name_.c_str(), &viewer.is_visible_ ) ) {
                     current_viewer_ = i;
                     current_viewer_type_ = MESH;

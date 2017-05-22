@@ -121,13 +121,17 @@ namespace RINGMesh {
                     index_t s = NO_ID;
                     GEO::String::from_string( &file_line.field( c )[1], s );
 
-                    builder_.topology.add_mesh_entity_boundary( entity, s, side );
+                    builder_.topology.add_mesh_entity_boundary_relation( entity,
+                        gmme_id( Surface::type_name_static(), s ), side );
                 }
             } else {
-                // Second line : indices of its in boundaries
+                MeshEntityType type = MeshEntityTypeManager::boundary_type(
+                    entity.type() );
+                // Second line : indices of boundaries
                 for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
-                    builder_.topology.add_mesh_entity_boundary( entity,
-                        file_line.field_as_uint( c ) );
+                    gmme_id boundary( type, file_line.field_as_uint( c ) );
+                    builder_.topology.add_mesh_entity_boundary_relation( entity,
+                        boundary );
                 }
             }
         }
@@ -318,19 +322,19 @@ namespace RINGMesh {
             index_t id = NO_ID;
             GEO::String::from_string( entity_id, id );
             if( MeshEntityTypeManager::is_corner( entity_type ) ) {
-                std::unique_ptr< Mesh0DBuilder > builder =
+                std::unique_ptr< PointMeshBuilder > builder =
                     geometry.create_corner_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_line( entity_type ) ) {
-                std::unique_ptr< Mesh1DBuilder > builder =
+                std::unique_ptr< LineMeshBuilder > builder =
                     geometry.create_line_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_surface( entity_type ) ) {
-                std::unique_ptr< Mesh2DBuilder > builder =
+                std::unique_ptr< SurfaceMeshBuilder > builder =
                     geometry.create_surface_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_region( entity_type ) ) {
-                std::unique_ptr< Mesh3DBuilder > builder =
+                std::unique_ptr< VolumeMeshBuilder > builder =
                     geometry.create_region_builder( id );
                 builder->load_mesh( file_name );
             }

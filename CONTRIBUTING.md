@@ -32,7 +32,12 @@ is being followed.
 
 # Naming convention
 
-Respect naming convention, e.g. avoid one-letter name (M instead of geomodel).
+## Avoid one-letter name (M instead of geomodel).
+## Use facet (boundary polygon of a cell) and polygon (surface mesh element) in the right context.
+
+# C++ syntax
+
+## Prefer defaulted or deleted empty constructors and destructors.
 
 # Yet another topic (add as many topics as you need)
 

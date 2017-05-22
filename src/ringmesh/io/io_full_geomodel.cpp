@@ -61,6 +61,7 @@ namespace {
 #include "full_geomodel/io_adeli.cpp"
 #include "full_geomodel/io_aster.cpp"
 #include "full_geomodel/io_csmp.cpp"
+#include "full_geomodel/io_feflow.cpp"
 #include "full_geomodel/io_geomodel.cpp"
 #include "full_geomodel/io_gprs.cpp"
 #include "full_geomodel/io_mfem.cpp"
@@ -111,6 +112,7 @@ namespace RINGMesh {
         ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" );
         ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" );
         ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" );
+        ringmesh_register_GeoModelIOHandler_creator( FeflowIOHandler, "fem" );
     }
 
 }

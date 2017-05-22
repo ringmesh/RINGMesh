@@ -42,7 +42,7 @@
 
 #ifdef RINGMESH_TEST_GRAPHICS
 
-#include <geogram/basic/process.h>
+#include <thread>
 
 #include <ringmesh/visualization/gfx_application.h>
 
@@ -72,40 +72,6 @@ namespace RINGMesh {
 #endif
     }
 
-    class StartAppThread: public GEO::Thread {
-    public:
-        StartAppThread( RINGMeshApplication& app )
-            : GEO::Thread(), app_( app )
-        {
-        }
-
-        virtual void run()
-        {
-            app_.start();
-        }
-
-    private:
-        RINGMeshApplication& app_;
-    };
-
-    class QuitAppThread: public GEO::Thread {
-    public:
-        QuitAppThread( RINGMeshApplication& app )
-            : GEO::Thread(), app_( app )
-        {
-        }
-
-        virtual void run()
-        {
-            // Wait some seconds to be sure that the windows is really opened
-            wait( 4000 );
-            app_.quit();
-        }
-
-    private:
-        RINGMeshApplication& app_;
-    };
-
     void open_viewer_load_geomodel_then_close(
         const int argc,
         char** argv,
@@ -115,18 +81,17 @@ namespace RINGMesh {
 
         RINGMeshApplication app( argc, argv );
 
-        // Create the threads for launching the app window
+        // Create and launch the threads for launching the app window
         // and the one for closing the window
-        StartAppThread* start_thread = new StartAppThread( app );
-        QuitAppThread* quit_thread = new QuitAppThread( app );
+        std::thread start( &RINGMeshApplication::start, &app );
+        std::thread quit( [&app]() {
+            // Wait some milliseconds to be sure that the window is really opened
+            wait( 4000 );
+            app.quit();
+        } );
 
-        // Add the both threads in a group
-        GEO::ThreadGroup thread_group;
-        thread_group.push_back( start_thread );
-        thread_group.push_back( quit_thread );
-
-        // Run concurrently the both threads
-        GEO::Process::run_threads( thread_group );
+        // Wait until RINGMeshView is really closed
+        quit.join();
     }
 
 }

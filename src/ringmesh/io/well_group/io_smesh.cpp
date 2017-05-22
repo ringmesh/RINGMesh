@@ -34,14 +34,13 @@
  */
 
 namespace {
-    void merge_colocated_vertices( double epsilon, Mesh1D& mesh )
+    void merge_colocated_vertices( double epsilon, LineMesh& mesh )
     {
         std::vector< index_t > old2new;
         index_t nb_colocated = mesh.vertices_nn_search().get_colocated_index_mapping(
             epsilon, old2new );
-        DEBUG( nb_colocated );
         if( nb_colocated > 0 ) {
-            std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+            std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
                 mesh );
             for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
                 for( index_t i = 0; i < 2; i++ ) {
@@ -68,9 +67,9 @@ namespace {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr< Mesh1D > mesh = Mesh1D::create_mesh(
-                GeogramMesh1D::type_name_static() );
-            std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+            std::unique_ptr< LineMesh > mesh = LineMesh::create_mesh(
+                GeogramLineMesh::type_name_static() );
+            std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
                 *mesh );
             std::string name = GEO::FileSystem::base_name( filename );
 

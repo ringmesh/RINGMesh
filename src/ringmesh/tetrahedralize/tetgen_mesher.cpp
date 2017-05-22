@@ -53,7 +53,7 @@ namespace {
     bool is_mesh_tetrahedralizable( const GEO::Mesh& M )
     {
         if( M.facets.nb() == 0 ) {
-            Logger::err( "RING", "Mesh to tetrahedralize has no facets " );
+            Logger::err( "RING", "Mesh to tetrahedralize has no polygons " );
             return false;
         }
         if( !M.facets.are_simplices() ) {
@@ -71,8 +71,8 @@ namespace RINGMesh {
 
     TetgenMesher::~TetgenMesher()
     {
-        // Take over facet deletion of tetgen that does not set to 
-        // nullptr pointers to polygonlist or holelist in facet
+        // Take over polygon deletion of tetgen that does not set to
+        // nullptr pointers to polygonlist or holelist in polygon
         delete[] tetgen_in_.facetlist;
         tetgen_in_.facetlist = nullptr;
         tetgen_in_.numberoffacets = 0;
@@ -80,7 +80,7 @@ namespace RINGMesh {
 
     void TetgenMesher::tetrahedralize(
         const GEO::Mesh& input_mesh,
-        Mesh3DBuilder& output_mesh_builder )
+        VolumeMeshBuilder& output_mesh_builder )
     {
         initialize();
         copy_mesh_to_tetgen_input( input_mesh );
@@ -128,7 +128,7 @@ namespace RINGMesh {
                     break;
                 case 5:
                     Logger::err( "Tetgen",
-                        "Two very close input facets were detected. Program stopped." );
+                        "Two very close input polygons were detected. Program stopped." );
                     Logger::err( "Tetgen",
                         "Hint: use -Y option to avoid adding Steiner points in boundary." );
                     break;
@@ -149,7 +149,7 @@ namespace RINGMesh {
             copy_edges_to_tetgen_input( M );
         }
         if( M.facets.nb() != 0 ) {
-            copy_facets_to_tetgen_input( M );
+            copy_polygons_to_tetgen_input( M );
         }
     }
 
@@ -169,7 +169,7 @@ namespace RINGMesh {
             M.edges.nb() * 2 * sizeof(int) );
     }
 
-    void TetgenMesher::copy_facets_to_tetgen_input( const GEO::Mesh& M )
+    void TetgenMesher::copy_polygons_to_tetgen_input( const GEO::Mesh& M )
     {
         polygons_.reset( new GEO_3rdParty::tetgenio::polygon[M.facets.nb()] );
 
@@ -220,7 +220,7 @@ namespace RINGMesh {
     }
 
     void TetgenMesher::assign_result_tetmesh_to_mesh(
-        Mesh3DBuilder& output_mesh_builder ) const
+        VolumeMeshBuilder& output_mesh_builder ) const
     {
         output_mesh_builder.assign_vertices( get_result_tetmesh_points() );
         output_mesh_builder.assign_cell_tet_mesh( get_result_tetmesh_tets() );
@@ -295,7 +295,7 @@ namespace RINGMesh {
     }
 
     void tetrahedralize_mesh_tetgen(
-        Mesh3DBuilder& out_tet_mesh,
+        VolumeMeshBuilder& out_tet_mesh,
         const GEO::Mesh& in_mesh,
         bool refine,
         double quality )
