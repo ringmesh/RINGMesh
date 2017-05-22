@@ -121,13 +121,17 @@ namespace RINGMesh {
                     index_t s = NO_ID;
                     GEO::String::from_string( &file_line.field( c )[1], s );
 
-                    builder_.topology.add_mesh_entity_boundary( entity, s, side );
+                    builder_.topology.add_mesh_entity_boundary_relation( entity,
+                        gmme_id( Surface::type_name_static(), s ), side );
                 }
             } else {
-                // Second line : indices of its in boundaries
+                MeshEntityType type = MeshEntityTypeManager::boundary_type(
+                    entity.type() );
+                // Second line : indices of boundaries
                 for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
-                    builder_.topology.add_mesh_entity_boundary( entity,
-                        file_line.field_as_uint( c ) );
+                    gmme_id boundary( type, file_line.field_as_uint( c ) );
+                    builder_.topology.add_mesh_entity_boundary_relation( entity,
+                        boundary );
                 }
             }
         }
