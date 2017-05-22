@@ -66,6 +66,7 @@ namespace RINGMesh {
      * on which we base the RINGMesh algorithm
      * @note For now, we encapsulate the GEO::Mesh class.
      */
+    template< typename DIMENSION >
     class RINGMESH_API MeshBase: public GEO::Counted {
     ringmesh_disable_copy( MeshBase );
         friend class MeshBaseBuilder;
@@ -102,7 +103,7 @@ namespace RINGMesh {
 
         /*!
          * @brief return the NNSearch at vertices
-         * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
+         * @warning the NNSearch is destroyed when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
          */
         const NNSearch& vertices_nn_search() const
         {
@@ -139,7 +140,8 @@ namespace RINGMesh {
     /*!
      * class for encapsulating isolated vertices structure
      */
-    class RINGMESH_API MeshPoint: public virtual MeshBase {
+    template< typename DIMENSION >
+    class RINGMESH_API MeshPoint: public virtual MeshBase< DIMENSION > {
     ringmesh_disable_copy( MeshPoint );
         friend class MeshPointBuilder;
 
@@ -160,7 +162,8 @@ namespace RINGMesh {
     /*!
      * class for encapsulating line mesh component
      */
-    class RINGMESH_API MeshLine: public virtual MeshBase {
+    template< typename DIMENSION >
+    class RINGMESH_API MeshLine: public virtual MeshBase< DIMENSION > {
     ringmesh_disable_copy( MeshLine );
         friend class MeshLineBuilder;
 
@@ -240,7 +243,8 @@ namespace RINGMesh {
     /*!
      * class for encapsulating surface mesh component
      */
-    class RINGMESH_API MeshSurface: public virtual MeshBase {
+    template< typename DIMENSION >
+    class RINGMESH_API MeshSurface: public virtual MeshBase< DIMENSION > {
     ringmesh_disable_copy( MeshSurface );
         friend class MeshSurfaceBuilder;
 
@@ -430,8 +434,10 @@ namespace RINGMesh {
          */
         double polygon_edge_length( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 - e0 ).length();
         }
         /*!
@@ -441,8 +447,10 @@ namespace RINGMesh {
          */
         vec3 polygon_edge_barycenter( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
         /*!
@@ -583,7 +591,8 @@ namespace RINGMesh {
     /*!
      * class for encapsulating volume mesh component
      */
-    class RINGMESH_API MeshVolume: public virtual MeshBase {
+    template< typename DIMENSION >
+    class RINGMESH_API MeshVolume: public virtual MeshBase< DIMENSION > {
     ringmesh_disable_copy( MeshVolume );
         friend class MeshVolumeBuilder;
 
