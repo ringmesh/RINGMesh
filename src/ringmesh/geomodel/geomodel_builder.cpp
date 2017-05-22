@@ -1070,11 +1070,6 @@ namespace RINGMesh {
         if( geomodel_.name().empty() ) {
             info.set_geomodel_name( "model_default_name" );
         }
-        // Get out if the geomodel has no surface
-        if( geomodel_.nb_surfaces() == 0 ) {
-            print_geomodel( geomodel_ );
-            throw RINGMeshException( "GeoModel", "The GeoModel has no surface" );
-        }
 
         topology.complete_entity_connectivity();
 
