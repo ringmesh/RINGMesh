@@ -64,15 +64,15 @@ namespace RINGMesh {
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramMesh1D::type_name_static();
+            new_type = GeogramMeshLine::type_name_static();
         }
-        MeshLine* mesh = Mesh1DFactory::create_object( new_type );
+        MeshLine* mesh = MeshLineFactory::create_object( new_type );
         if( !mesh ) {
-            Logger::warn( "Mesh1D", "Could not create mesh data structure: ",
+            Logger::warn( "MeshLine", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "Mesh1D", "Falling back to GeogramMesh1D data structure" );
+            Logger::warn( "MeshLine", "Falling back to GeogramMeshLine data structure" );
 
-            mesh = new GeogramMesh1D;
+            mesh = new GeogramMeshLine;
         }
         return std::unique_ptr< MeshLine >( mesh );
     }

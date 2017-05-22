@@ -249,9 +249,9 @@ namespace RINGMesh {
         {
         }
     };
-    using Mesh1DBuilderFactory = GEO::Factory0< MeshLineBuilder >;
+    using MeshLineBuilderFactory = GEO::Factory0< MeshLineBuilder >;
 #define ringmesh_register_mesh_1d_builder(type) \
-    geo_register_creator(RINGMesh::Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::MeshLineBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API MeshSurfaceBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy( MeshSurfaceBuilder );

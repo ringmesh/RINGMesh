@@ -297,7 +297,7 @@ namespace RINGMesh {
         :
             WellEntity( well ),
             id_( id ),
-            mesh_( MeshLine::create_mesh( GeogramMesh1D::type_name_static() ) )
+            mesh_( MeshLine::create_mesh( GeogramMeshLine::type_name_static() ) )
     {
         corners_[0] = NO_ID;
         corners_[1] = NO_ID;
@@ -486,7 +486,7 @@ namespace RINGMesh {
         Well& new_well = *wells_.back();
         new_well.set_name( name );
 
-        GeogramMesh1D conformal_mesh;
+        GeogramMeshLine conformal_mesh;
         compute_conformal_mesh( mesh, conformal_mesh );
 
         std::vector< std::vector< index_t > > edges_around_vertices(

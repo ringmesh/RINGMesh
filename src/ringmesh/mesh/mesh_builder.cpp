@@ -54,7 +54,7 @@ namespace {
 
     MeshLineBuilder* create_builder_1d( MeshBase& mesh )
     {
-        MeshLineBuilder* builder = Mesh1DBuilderFactory::create_object(
+        MeshLineBuilder* builder = MeshLineBuilderFactory::create_object(
             mesh.type_name() );
         if( builder ) {
             builder->set_mesh( dynamic_cast< MeshLine& >( mesh ) );
@@ -140,18 +140,18 @@ namespace RINGMesh {
 
     std::unique_ptr< MeshLineBuilder > MeshLineBuilder::create_builder( MeshLine& mesh )
     {
-        MeshLineBuilder* builder = Mesh1DBuilderFactory::create_object(
+        MeshLineBuilder* builder = MeshLineBuilderFactory::create_object(
             mesh.type_name() );
         if( !builder ) {
             builder = create_builder_1d( mesh );
         }
         if( !builder ) {
-            Logger::warn( "Mesh1DBuilder", "Could not create mesh data structure: ",
+            Logger::warn( "MeshLineBuilder", "Could not create mesh data structure: ",
                 mesh.type_name() );
-            Logger::warn( "Mesh1DBuilder",
-                "Falling back to GeogramMesh1DBuilder data structure" );
+            Logger::warn( "MeshLineBuilder",
+                "Falling back to GeogramMeshLineBuilder data structure" );
 
-            builder = new GeogramMesh1DBuilder;
+            builder = new GeogramMeshLineBuilder;
         }
         builder->set_mesh( mesh );
         return std::unique_ptr< MeshLineBuilder >( builder );
