@@ -69,6 +69,19 @@ To configure #RINGMesh with default option values:
 
 ### Compiling ###
 
+To compile you need the following packages (tested on Debian-based linux):
+- build-essential
+- libx11-dev
+- libxrandr-dev
+- libxinerama-dev
+- libxcursor-dev
+- freeglut3-dev
+- libxi-dev
+
+Note: you need gcc/g++ version higher or equal to 4.8 to compile RINGMesh.
+
+Then, to compile RINGMesh, go to RINGMesh root directory and:
+
     cd build/ringmesh/Release
     make [-j4]
 
@@ -96,6 +109,7 @@ The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/
 
 The generated documentation is placed in the build/doc/doc-devkit or build/doc/doc-devkit-lite directory.
 The main page html/index.html can be then opened in your favorite web browser. 
+A ringmesh.qch file is generated in doc/devkit[-lite]/html (to load in Qt Assistant).
 
 
 Windows 64 bits
@@ -111,6 +125,7 @@ RINGMesh has already been compiled with:
 - Visual Studio 10 2010 Win64
 - Visual Studio 11 2012 Win64
 - Visual Studio 12 2013 Win64
+- Visual Studio 14 2015 Win64
 
 
 ### Compiling ###
@@ -118,6 +133,14 @@ RINGMesh has already been compiled with:
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step.
 - cmake \--build . \--config Release
+- cmake \--build . \--config Debug
+- cmake \--build . \--config RelWithDebInfo
+
+The available compilation modes are:
+- Release
+- Debug
+- RelWithDebInfo (mandatory to debug a Gocad plugin in Debug mode with a Gocad
+  in Release, there are issues between libraries in Debug linked to a Gocad plugin)
 
 
 ### Compiling the documentation ###
@@ -133,7 +156,8 @@ CMake generate two projects that can be built by launching the compilation
 of doc-devkit  and/or doc-devkit-lite project using you favorite command line or IDE button.
 
 The generated documentation is placed in the build/doc/doc-devkit or build/doc/doc-devkit-lite directory.
-The main page html/index.html can be then opened in your favorite web browser. 
+The main page html/index.html can be then opened in your favorite web browser.
+A ringmesh.qch file is generated in doc/devkit[-lite]/html (to load in Qt Assistant).
 
 */
 
