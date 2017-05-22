@@ -271,8 +271,8 @@ namespace RINGMesh {
      * Computes the intersection between a disk and a segment
      * @param[in] p0 the first vertex of the segment
      * @param[in] p1 the second vertex of the segment
-     * @param[in] O_circle the center of the disk
-     * @param[in] N_circle the normal of the plane supporting the disk
+     * @param[in] O_disk the center of the disk
+     * @param[in] N_disk the normal of the plane supporting the disk
      * @param[in] r the radius of the disk
      * @param[out] result the intersected point
      * @return returns true if there is an intersection
@@ -280,8 +280,8 @@ namespace RINGMesh {
     bool RINGMESH_API disk_segment_intersection(
         const vec3& p0,
         const vec3& p1,
-        const vec3& O_circle,
-        const vec3& N_circle,
+        const vec3& O_disk,
+        const vec3& N_disk,
         double r,
         vec3& result );
 
@@ -534,7 +534,7 @@ namespace RINGMesh {
     private:
         void build_nn_search_vertices( const GEO::Mesh& mesh, bool copy );
         void build_nn_search_edges( const GEO::Mesh& mesh );
-        void build_nn_search_facets( const GEO::Mesh& mesh );
+        void build_nn_search_polygons( const GEO::Mesh& mesh );
         void build_nn_search_cells( const GEO::Mesh& mesh );
         void build_nn_search_cell_facets( const GEO::Mesh& mesh );
         void fill_nn_search_points( index_t index_in_nn, const vec3& center );

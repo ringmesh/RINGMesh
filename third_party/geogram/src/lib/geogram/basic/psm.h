@@ -81,26 +81,9 @@
 #define geo_parano_range_assert(x, min_val, max_val)
 #endif
 
+#define geo_cite(x)
 
 namespace GEO {
-    namespace Process {
-    
-        typedef int spinlock;
-        
-        inline void acquire_spinlock(spinlock& x) {
-            // Not implemented yet for PSMs
-            geo_argused(x);
-            geo_assert_not_reached;
-        }
-    
-        inline void release_spinlock(spinlock& x) {
-            // Not implemented yet for PSMs
-            geo_argused(x); 
-            geo_assert_not_reached;       
-        }
-    }
-
-
     namespace Logger {
         inline std::ostream& out(const std::string& name) {
             return std::cout << " [" << name << "]";
@@ -119,6 +102,36 @@ namespace GEO {
 
 #ifndef FPG_UNCERTAIN_VALUE
 #define FPG_UNCERTAIN_VALUE 0
+#endif
+
+
+/*
+ * If geogram/basic/thread_sync.h was not included in
+ * psm, then use dummy fallback.
+ */
+#ifndef GEOGRAM_SPINLOCK_INIT
+
+#define GEOGRAM_SPINLOCK_INIT 0
+
+namespace GEO {
+    namespace Process {
+    
+        typedef int spinlock;
+        
+        inline void acquire_spinlock(spinlock& x) {
+            // Not implemented yet for PSMs
+            geo_argused(x);
+            geo_assert_not_reached;
+        }
+    
+        inline void release_spinlock(spinlock& x) {
+            // Not implemented yet for PSMs
+            geo_argused(x); 
+            geo_assert_not_reached;       
+        }
+    }
+}
+
 #endif
 
 #endif

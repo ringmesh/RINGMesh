@@ -87,6 +87,10 @@ namespace GEO {
      * \param[out] result the intersection in symbolic
      *  form, as TriangleRegion pairs. There can be
      *  between 0 and 6 intersection pairs in the result.
+     * \param[in] degenerate if true, then input triangles can be
+     *  degenerate (i.e. with three vertices aligned, or three vertices
+     *  equal). If not, then a degenerate triangle may trigger an assertion
+     *  failure.
      * \retval true if there is a non-degenerate intersection
      * \retval false otherwise. Degenerate intersection cases are:
      *  - one vertex in common
@@ -98,6 +102,45 @@ namespace GEO {
         const vec3& q0, const vec3& q1, const vec3& q2,
         vector<TriangleIsect>& result
     );
+
+    /**
+     * \brief Converts a triangle region code to a string.
+     * \param[in] rgn the triangle region code.
+     * \return the string representation of \p rgn.
+     */
+    std::string GEOGRAM_API region_to_string(TriangleRegion rgn);
+    
+    /**
+     * \brief Prints a triangle intersection element to a stream.
+     * \details Used for debugging purposes.
+     * \param[in] out the stream.
+     * \param[in] I the intersection element to be printed.
+     */
+    inline std::ostream& operator<<(
+	std::ostream& out, const TriangleIsect& I
+    ) {
+	return (
+	    out << "("
+	    << region_to_string(I.first) << ","
+	    << region_to_string(I.second)
+	    << ")"
+	);
+    }
+    
+    /**
+     * \brief Prints the result of a triangle intersection to a stream.
+     * \details Used for debugging purposes.
+     * \param[in] out the stream.
+     * \param[in] II the intersections to be printed.
+     */
+    inline std::ostream& operator<<(
+	std::ostream& out, vector<TriangleIsect>& II
+    ) {
+	for(index_t i=0; i<II.size(); ++i) {
+	    out << II[i] << " ";
+	}
+	return out;
+    }
 }
 
 #endif

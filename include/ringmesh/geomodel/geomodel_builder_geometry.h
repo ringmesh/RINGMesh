@@ -199,19 +199,20 @@ namespace RINGMesh {
          */
         void set_line( index_t line_id, const std::vector< vec3 >& vertices );
         /*!
-         * @brief Sets the points and facets for a surface
-         * @details If facet_adjacencies are not given they are computed.
+         * @brief Sets the points and polygons for a surface
+         * @details If polygon_adjacencies are not given they are computed.
          *
          * @param[in] surface_id Index of the surface
          * @param[in] surface_vertices Coordinates of the vertices
-         * @param[in] surface_facets Indices in the vertices vector to build facets
-         * @param[in] surface_facet_ptr Pointer to the beginning of a facet in facets
+         * @param[in] surface_polygons Indices in the vertices vector to build polygons
+         * @param[in] surface_polygon_ptr Pointer to the beginning of a polygon in \p surface_polygons
          */
         void set_surface_geometry(
             index_t surface_id,
             const std::vector< vec3 >& surface_vertices,
-            const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr );
+            const std::vector< index_t >& surface_polygons,
+            const std::vector< index_t >& surface_polygon_ptr );
+
         /*!
          * @brief Set the points and tetras for a region
          *
@@ -277,19 +278,23 @@ namespace RINGMesh {
          */
 
         /*!
-         * @brief Sets the facets of a surface
+         * @brief Sets the polygons of a surface
          * @param[in] surface_id Index of the surface
-         * @param[in] facets Indices of the mesh vertices defining the facets
-         * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+         * @param[in] polygons Indices of the mesh vertices defining the polygons
+         * @param[in] polygon_ptr Pointer to the beginning of a polygon in \p polygons
          */
         void set_surface_geometry(
             index_t surface_id,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr );
+            const std::vector< index_t >& polygons,
+            const std::vector< index_t >& polygon_ptr );
 
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_vertices );
+            
         void set_surface_element_geometry(
             index_t surface_id,
-            index_t facet_id,
+            index_t polygon_id,
             const std::vector< index_t >& corners );
 
         void set_region_element_geometry(
@@ -312,7 +317,7 @@ namespace RINGMesh {
             const gmme_id& entity_id,
             index_t nb_vertices );
 
-        index_t create_surface_facet(
+        index_t create_surface_polygon(
             index_t surface_id,
             const std::vector< index_t >& vertex_indices );
 
@@ -348,7 +353,7 @@ namespace RINGMesh {
             index_t line_id,
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices );
-        void delete_surface_facets(
+        void delete_surface_polygons(
             index_t surface_id,
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices );
@@ -364,12 +369,12 @@ namespace RINGMesh {
 
         void set_surface_element_adjacency(
             index_t surface_id,
-            index_t facet_id,
+            index_t polygon_id,
             const std::vector< index_t >& adjacents );
 
         /*!
-         * @brief Computes and sets the adjacencies between the facets
-         * @details The adjacent facet is given for each vertex of each facet for the edge
+         * @brief Computes and sets the adjacencies between the polygons
+         * @details The adjacent polygon is given for each vertex of each polygon for the edge
          * starting at this vertex.
          * If there is no neighbor inside the same Surface adjacent is set to NO_ID
          *
@@ -409,20 +414,6 @@ namespace RINGMesh {
         GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel& geomodel );
 
     private:
-        void assign_surface_mesh_facets(
-            index_t surface_id,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr );
-
-        void assign_surface_triangle_mesh(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_vertices );
-
-        void assign_surface_triangle_mesh(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_vertices,
-            const std::vector< index_t >& adjacent_triangles );
-
         void assign_region_tet_mesh(
             index_t region_id,
             const std::vector< index_t >& tet_vertices );
@@ -438,20 +429,20 @@ namespace RINGMesh {
             index_t region_id,
             index_t surface_id );
         /*
-         * @brief Resets the adjacencies for all Surface facets adjacent to the Line
+         * @brief Resets the adjacencies for all Surface polygons adjacent to the Line
          * @return The number of disconnection done
-         * @pre All the edges of the Line are edges of at least one facet of the Surface
+         * @pre All the edges of the Line are edges of at least one polygon of the Surface
          */
-        index_t disconnect_surface_facets_along_line_edges(
+        index_t disconnect_surface_polygons_along_line_edges(
             index_t surface_id,
             index_t line_id );
-        index_t disconnect_region_cells_along_surface_facets(
+        index_t disconnect_region_cells_along_surface_polygons(
             index_t region_id,
             index_t surface_id );
 
-        void update_facet_vertex(
+        void update_polygon_vertex(
             index_t surface_id,
-            const std::vector< index_t >& facets,
+            const std::vector< index_t >& polygons,
             index_t old_vertex,
             index_t new_vertex );
 
