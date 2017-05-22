@@ -38,6 +38,7 @@ is being followed.
 # C++ syntax
 
 ## Prefer defaulted or deleted empty constructors and destructors.
+## Prefer c++11 loop syntax when possible.
 
 # Yet another topic (add as many topics as you need)
 
