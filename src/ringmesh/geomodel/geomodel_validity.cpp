@@ -689,8 +689,8 @@ namespace {
         const std::vector< index_t >& edge_indices,
         const std::vector< index_t >& non_manifold_edges )
     {
-        GeogramMeshLine mesh;
-        GeogramMeshLineBuilder builder;
+        GeogramLineMesh mesh;
+        GeogramLineMeshBuilder builder;
         builder.set_mesh( mesh );
         index_t nb_edges = static_cast< index_t >( non_manifold_edges.size() );
         builder.create_vertices( 2 * nb_edges );
