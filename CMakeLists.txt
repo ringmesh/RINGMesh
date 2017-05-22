@@ -66,7 +66,6 @@ include(CMakeDependentOption)
 # option is ON.
 CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
     "RINGMESH_WITH_GRAPHICS" OFF)
-
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
@@ -77,7 +76,6 @@ option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
 # option is ON.
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
     "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
-
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
 
@@ -191,7 +189,6 @@ message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}")
 message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}") 
 
 include(cmake/utils.cmake)
-
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(WIN32)
@@ -417,6 +414,7 @@ target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
+
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -437,6 +435,7 @@ if(RINGMESH_WITH_UTILITIES)
     add_ringmesh_binary(ringmesh-mesh-quality)
     add_ringmesh_binary(ringmesh-rotate)
     add_ringmesh_binary(ringmesh-translate)
+    add_ringmesh_binary(ringmesh-duplicate-faults)
     copy_for_windows()
 endif(RINGMESH_WITH_UTILITIES)
 
@@ -480,6 +479,7 @@ set(CPACK_PACKAGE_VERSION_MAJOR ${RINGMesh_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${RINGMesh_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${RINGMesh_VERSION_PATCH})
 set(CPACK_PACKAGE_VENDOR "RING-TEAM (www.ring-team.org)")
+
 set(CPACK_SOURCE_GENERATOR "ZIP")
 
 set(CPACK_SOURCE_IGNORE_FILES "/build/;/.hg/;/_CPack_Packages/")
