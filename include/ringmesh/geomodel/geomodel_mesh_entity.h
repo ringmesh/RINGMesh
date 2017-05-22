@@ -150,7 +150,7 @@ namespace RINGMesh {
             return static_cast< index_t >( parents_.size() );
         }
 
-        const gmge_id& parent_gmge( index_t id ) const ;
+        const gmge_id& parent_gmge( index_t id ) const;
 
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
@@ -275,17 +275,13 @@ namespace RINGMesh {
         GeoModelMeshEntity(
             const GeoModel& geomodel,
             index_t id,
-            const std::string& name = "No_name",
-            GEOL_FEATURE geological_feature = NO_GEOL )
-            :
-                GeoModelEntity( geomodel, id, name, geological_feature ),
-                mesh_( nullptr )
+            const std::string& name = "No_name" )
+            : GeoModelEntity( geomodel, id, name ), mesh_( nullptr )
         {
         }
 
         virtual void copy_mesh_entity( const GeoModelMeshEntity& from )
         {
-            GeoModelEntity::copy_name_and_geol_feature( from );
             id_ = from.id_;
             boundaries_ = from.boundaries_;
             in_boundary_ = from.in_boundary_;
@@ -1342,11 +1338,6 @@ namespace RINGMesh {
         index_t& modifiable_index()
         {
             return gmme_.id_;
-        }
-
-        GeoModelEntity::GEOL_FEATURE& modifiable_geol_feature()
-        {
-            return gmme_.geol_feature_;
         }
 
         std::vector< index_t >& modifiable_boundaries()

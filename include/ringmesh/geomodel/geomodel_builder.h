@@ -150,24 +150,9 @@ namespace RINGMesh {
             const GeologicalEntityType& type,
             index_t nb );
 
-        void complete_mesh_entities_geol_feature_from_first_parent(
-            const MeshEntityType& type );
-        void complete_geological_entities_geol_feature_from_first_child(
-            const GeologicalEntityType& type );
-
-        void set_mesh_entity_geol_feature(
-            const gmme_id& gmme_id,
-            GeoModelEntity::GEOL_FEATURE geol_feature )
-        {
-            GeoModelMeshEntityAccess gmme_access(
-                geomodel_access_.modifiable_mesh_entity( gmme_id ) );
-            gmme_access.modifiable_geol_feature() = geol_feature;
-
-        }
-
         void set_geological_entity_geol_feature(
             const gmge_id& gmge_id,
-            GeoModelEntity::GEOL_FEATURE geol_feature )
+            GeoModelGeologicalEntity::GEOL_FEATURE geol_feature )
         {
             GeoModelGeologicalEntityAccess gmge_access(
                 geomodel_access_.modifiable_geological_entity( gmge_id ) );
