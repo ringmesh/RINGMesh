@@ -7,6 +7,7 @@ New Features:
  * Add possibility to run specific validity check on GeoModels (topology, geometry, all, ...)
  * ASCII surface STL export
  * First implementation of a stratigraphic column
+ * Add Feflow export using .fem file. Support wells as discrete fractures and mixed element mesh. 
  * Add symmetric entity relationships management, an entity is be boundary of another entity 
       and the reverse is automatically set.
 
