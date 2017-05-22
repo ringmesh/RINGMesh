@@ -184,7 +184,7 @@ namespace {
         id[M.edges.create_edge( v3, v7 )] = n;
     }
 
-    bool mesh_cell_contains_point( const Mesh3D& M, index_t cell, const vec3& p )
+    bool mesh_cell_contains_point( const VolumeMesh& M, index_t cell, const vec3& p )
     {
         switch( M.cell_type( cell ) ) {
             case GEO::MESH_TET: {
@@ -319,7 +319,7 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    AABBTree1D::AABBTree1D( const Mesh1D& mesh )
+    AABBTree1D::AABBTree1D( const LineMesh& mesh )
         : AABBTree(), mesh_( mesh )
     {
         std::vector< Box3d > bboxes;
@@ -364,7 +364,7 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    AABBTree2D::AABBTree2D( const Mesh2D& mesh )
+    AABBTree2D::AABBTree2D( const SurfaceMesh& mesh )
         : AABBTree(), mesh_( mesh )
     {
         std::vector< Box3d > bboxes;
@@ -412,7 +412,7 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    AABBTree3D::AABBTree3D( const Mesh3D& mesh )
+    AABBTree3D::AABBTree3D( const VolumeMesh& mesh )
         : AABBTree(), mesh_( mesh )
     {
         std::vector< Box3d > bboxes;
