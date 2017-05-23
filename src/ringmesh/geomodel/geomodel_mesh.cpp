@@ -363,7 +363,7 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramMesh0D ),
+            mesh_( new GeogramPointMesh ),
             vertex_mapper_( *this, gmm.geomodel() )
     {
         set_mesh( mesh_.get() );
@@ -675,7 +675,7 @@ namespace RINGMesh {
     GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramMesh3D ),
+            mesh_( new GeogramVolumeMesh ),
             nb_tet_( 0 ),
             nb_hex_( 0 ),
             nb_prism_( 0 ),
@@ -1462,7 +1462,7 @@ namespace RINGMesh {
     GeoModelMeshPolygons::GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramMesh2D ),
+            mesh_( new GeogramSurfaceMesh ),
             nb_triangle_( 0 ),
             nb_quad_( 0 ),
             nb_unclassified_polygon_( 0 )
