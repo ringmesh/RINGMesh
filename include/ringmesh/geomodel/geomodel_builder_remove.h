@@ -546,7 +546,7 @@ namespace RINGMesh {
             const RelationshipManager& manager =
                 U.geomodel().entity_type_manager().relationship_manager;
             remove_invalid_values( universe_access.modifiable_boundaries(),
-                [&invalid, &manager](gmme_id id) {return id == invalid;} );
+                [&invalid, &manager](const gmme_id& id) {return id == invalid;} );
             universe_access.modifiable_sides().resize( U.nb_boundaries() );
         }
 
