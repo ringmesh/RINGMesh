@@ -33,8 +33,6 @@
  *     FRANCE
  */
 
-#include <ringmesh/basic/nnsearch.h>
-
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 
@@ -49,49 +47,18 @@
 
 namespace RINGMesh {
 
-    NNSearch::NNSearch(
-        const GEO::Mesh& mesh,
-        const MeshLocation& location,
+    template< index_t DIMENSION >
+    NNSearch< DIMENSION >::NNSearch(
+        const std::vector< vecn< DIMENSION > >& vertices,
         bool copy )
-        : nn_points_( nullptr ), delete_points_( true )
-    {
-        nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" );
-        switch( location ) {
-            case VERTICES: {
-                build_nn_search_vertices( mesh, copy );
-                break;
-            }
-            case EDGES: {
-                build_nn_search_edges( mesh );
-                break;
-            }
-            case FACETS: {
-                build_nn_search_polygons( mesh );
-                break;
-            }
-            case CELLS: {
-                build_nn_search_cells( mesh );
-                break;
-            }
-            case CELL_FACETS: {
-                build_nn_search_cell_facets( mesh );
-                break;
-            }
-            default:
-                ringmesh_assert_not_reached;
-                break;
-        }
-    }
-
-    NNSearch::NNSearch( const std::vector< vec3 >& vertices, bool copy )
     {
         index_t nb_vertices = static_cast< index_t >( vertices.size() );
-        nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" );
+        nn_tree_ = GEO::NearestNeighborSearch::create( DIMENSION, "BNN" );
         if( copy ) {
-            nn_points_ = new double[nb_vertices * 3];
+            nn_points_ = new double[nb_vertices * DIMENSION];
             delete_points_ = true;
             GEO::Memory::copy( nn_points_, vertices.data()->data(),
-                3 * nb_vertices * sizeof(double) );
+                DIMENSION * nb_vertices * sizeof(double) );
         } else {
             nn_points_ = const_cast< double* >( vertices.data()->data() );
             delete_points_ = false;
@@ -99,7 +66,8 @@ namespace RINGMesh {
         nn_tree_->set_points( nb_vertices, nn_points_ );
     }
 
-    index_t NNSearch::get_colocated_index_mapping(
+    template< index_t DIMENSION >
+    index_t NNSearch< DIMENSION >::get_colocated_index_mapping(
         double epsilon,
         std::vector< index_t >& index_map ) const
     {
@@ -126,10 +94,11 @@ namespace RINGMesh {
         return nb_colocalised_vertices;
     }
 
-    index_t NNSearch::get_colocated_index_mapping(
+    template< index_t DIMENSION >
+    index_t NNSearch< DIMENSION >::get_colocated_index_mapping(
         double epsilon,
         std::vector< index_t >& index_map,
-        std::vector< vec3 >& unique_points ) const
+        std::vector< vecn< DIMENSION > >& unique_points ) const
     {
         index_t nb_colocalised_vertices = get_colocated_index_mapping( epsilon,
             index_map );
@@ -148,8 +117,9 @@ namespace RINGMesh {
         return offset;
     }
 
-    std::vector< index_t > NNSearch::get_neighbors(
-        const vec3& v,
+    template< index_t DIMENSION >
+    std::vector< index_t > NNSearch< DIMENSION >::get_neighbors(
+        const vecn< DIMENSION >& v,
         double threshold_distance ) const
     {
         std::vector< index_t > result;
@@ -178,8 +148,9 @@ namespace RINGMesh {
 
     }
 
-    std::vector< index_t > NNSearch::get_neighbors(
-        const vec3& v,
+    template< index_t DIMENSION >
+    std::vector< index_t > NNSearch< DIMENSION >::get_neighbors(
+        const vecn< DIMENSION >& v,
         index_t nb_neighbors ) const
     {
         std::vector< index_t > result;
@@ -193,96 +164,13 @@ namespace RINGMesh {
         return result;
     }
 
-    void NNSearch::build_nn_search_vertices( const GEO::Mesh& mesh, bool copy )
-    {
-        const GEO::MeshVertices& mesh_vertices = mesh.vertices;
-        index_t nb_vertices = mesh_vertices.nb();
-        if( nb_vertices == 0 ) {
-            return;
-        }
-        if( !copy ) {
-            nn_points_ = const_cast< double* >( mesh_vertices.point_ptr( 0 ) );
-            delete_points_ = false;
-        } else {
-            nn_points_ = new double[nb_vertices * 3];
-            GEO::Memory::copy( nn_points_, mesh_vertices.point_ptr( 0 ),
-                nb_vertices * 3 * sizeof(double) );
-        }
-        nn_tree_->set_points( nb_vertices, nn_points_ );
-    }
-
-    void NNSearch::build_nn_search_edges( const GEO::Mesh& mesh )
-    {
-        const GEO::MeshEdges& mesh_edges = mesh.edges;
-        index_t nb_edges = mesh_edges.nb();
-        if( nb_edges == 0 ) {
-            return;
-        }
-        nn_points_ = new double[nb_edges * 3];
-        for( index_t i = 0; i < nb_edges; i++ ) {
-            index_t first_vertex_id = mesh_edges.vertex( i, 0 );
-            const vec3& first_vertex_vec = mesh.vertices.point( first_vertex_id );
-            index_t second_vertex_id = mesh.edges.vertex( i, 1 );
-            const vec3& second_vertex_vec = mesh.vertices.point( second_vertex_id );
-
-            vec3 center = ( first_vertex_vec + second_vertex_vec ) / 2.;
-            index_t index_in_nn_search = 3 * i;
-            fill_nn_search_points( index_in_nn_search, center );
-        }
-        nn_tree_->set_points( nb_edges, nn_points_ );
-    }
-
-    void NNSearch::build_nn_search_polygons( const GEO::Mesh& mesh )
-    {
-        index_t nb_polygons = mesh.facets.nb();
-        if( nb_polygons == 0 ) {
-            return;
-        }
-        nn_points_ = new double[nb_polygons * 3];
-        for( index_t i = 0; i < nb_polygons; i++ ) {
-            vec3 center = GEO::Geom::mesh_facet_center( mesh, i );
-            index_t index_in_nn_search = 3 * i;
-            fill_nn_search_points( index_in_nn_search, center );
-        }
-        nn_tree_->set_points( nb_polygons, nn_points_ );
-    }
-
-    void NNSearch::build_nn_search_cell_facets( const GEO::Mesh& mesh )
-    {
-        index_t nb_cell_facets = mesh.cell_facets.nb();
-        nn_points_ = new double[nb_cell_facets * 3];
-        index_t index_in_nn_search = 0;
-        for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-            for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
-                vec3 center = mesh_cell_facet_barycenter( mesh, c, f );
-                fill_nn_search_points( index_in_nn_search, center );
-                index_in_nn_search += 3;
-            }
-        }
-        nn_tree_->set_points( nb_cell_facets, nn_points_ );
-    }
-
-    void NNSearch::build_nn_search_cells( const GEO::Mesh& mesh )
-    {
-        index_t nb_cells = mesh.cells.nb();
-        if( nb_cells == 0 ) {
-            return;
-        }
-        nn_points_ = new double[nb_cells * 3];
-        for( index_t i = 0; i < nb_cells; i++ ) {
-            vec3 center = mesh_cell_barycenter( mesh, i );
-            index_t index_in_nn_search = 3 * i;
-            fill_nn_search_points( index_in_nn_search, center );
-        }
-        nn_tree_->set_points( nb_cells, nn_points_ );
-    }
-
-    void NNSearch::fill_nn_search_points(
+    template< index_t DIMENSION >
+    void NNSearch< DIMENSION >::fill_nn_search_points(
         index_t index_in_nn_search,
-        const vec3& center )
+        const vecn< DIMENSION >& center )
     {
-        nn_points_[index_in_nn_search] = center.x;
-        nn_points_[index_in_nn_search + 1] = center.y;
-        nn_points_[index_in_nn_search + 2] = center.z;
+        for( index_t i = 0; i < DIMENSION; i++ ) {
+            nn_points_[index_in_nn_search + i] = center[i];
+        }
     }
 }

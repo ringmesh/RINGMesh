@@ -222,7 +222,7 @@ namespace RINGMesh {
 
         void bind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
-        const NNSearch& nn_search() const
+        const NNSearch< 3 >& nn_search() const
         {
             test_and_initialize();
             return mesh_->vertices_nn_search();
@@ -663,7 +663,7 @@ namespace RINGMesh {
          */
         vec3 normal( index_t p ) const;
 
-        const NNSearch& nn_search() const
+        const NNSearch< 3 >& nn_search() const
         {
             test_and_initialize();
             return mesh_->polygons_nn_search();
@@ -1117,12 +1117,12 @@ namespace RINGMesh {
          */
         double volume( index_t c ) const;
 
-        const NNSearch& cell_nn_search() const
+        const NNSearch< 3 >& cell_nn_search() const
         {
             test_and_initialize();
             return mesh_->cells_nn_search();
         }
-        const NNSearch& cell_facet_nn_search() const
+        const NNSearch< 3 >& cell_facet_nn_search() const
         {
             test_and_initialize();
             return mesh_->cell_facets_nn_search();

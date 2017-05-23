@@ -179,7 +179,7 @@ namespace RINGMesh {
     index_t GeoModelBuilderRepair::detect_degenerate_polygons( const Surface& S )
     {
         std::vector< index_t > colocated;
-        const NNSearch& nn_search = S.vertex_nn_search();
+        const NNSearch< 3 >& nn_search = S.vertex_nn_search();
         nn_search.get_colocated_index_mapping( geomodel_.epsilon(), colocated );
 
         std::vector< index_t > degenerate;
@@ -202,7 +202,7 @@ namespace RINGMesh {
     index_t GeoModelBuilderRepair::repair_line_mesh( const Line& line )
     {
         std::vector< index_t > colocated;
-        const NNSearch& nn_search = line.vertex_nn_search();
+        const NNSearch< 3 >& nn_search = line.vertex_nn_search();
         nn_search.get_colocated_index_mapping( geomodel_.epsilon(), colocated );
 
         std::vector< bool > degenerate;
@@ -292,7 +292,7 @@ namespace RINGMesh {
             // We want to get the indices of the vertices in E
             // that are colocated with those of the inside boundary
             // We assume that the geomodel vertices are not computed
-            const NNSearch& nn_search = E.vertex_nn_search();
+            const NNSearch< 3 >& nn_search = E.vertex_nn_search();
 
             for( const GeoModelMeshEntity*& entity : inside_border ) {
                 for( index_t v = 0; v < entity->nb_vertices(); ++v ) {
@@ -325,7 +325,7 @@ namespace RINGMesh {
                 gmme_id entity_id( T, e );
                 const GeoModelMeshEntity& E = geomodel_.mesh_entity( entity_id );
 
-                const NNSearch& kdtree = E.vertex_nn_search();
+                const NNSearch< 3 >& kdtree = E.vertex_nn_search();
                 std::vector< index_t > colocated;
                 kdtree.get_colocated_index_mapping( geomodel_.epsilon(), colocated );
 

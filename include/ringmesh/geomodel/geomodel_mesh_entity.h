@@ -184,7 +184,7 @@ namespace RINGMesh {
          * @brief Return the NNSearch for the Entity vertices.
          */
 
-        const NNSearch& vertex_nn_search() const
+        const NNSearch< 3 >& vertex_nn_search() const
         {
             return mesh_->vertices_nn_search();
         }
@@ -504,7 +504,7 @@ namespace RINGMesh {
          * @brief Return the NNSearch for the edges of the line
          * @details The barycenter of the edges is used.
          */
-        const NNSearch& edge_nn_search() const
+        const NNSearch< 3 >& edge_nn_search() const
         {
             return mesh1d_->edges_nn_search();
         }
@@ -657,7 +657,7 @@ namespace RINGMesh {
          * @brief Return the NNSearch for the polygons of the surface
          * @details The barycenter of the polygons is used.
          */
-        const NNSearch& polygon_nn_search() const
+        const NNSearch< 3 >& polygon_nn_search() const
         {
             return mesh2d_->polygons_nn_search();
         }
@@ -1008,7 +1008,7 @@ namespace RINGMesh {
          * @brief Return the NNSearch for the cells of the region
          * @details The barycenter of the cells is used.
          */
-        const NNSearch& cell_nn_search() const
+        const NNSearch< 3 >& cell_nn_search() const
         {
             return mesh3d_->cells_nn_search();
         }
