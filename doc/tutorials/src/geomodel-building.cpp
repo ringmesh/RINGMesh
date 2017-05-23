@@ -442,7 +442,6 @@ int main()
         builder.topology.add_mesh_entity_boundary_relation(
             gmme_id( Line::type_name_static(), 15 ), corner3 );
 
-
         // For corner 4
         gmme_id corner4( Corner::type_name_static(), 4 );
         builder.topology.add_mesh_entity_boundary_relation(
@@ -531,9 +530,6 @@ int main()
             gmme_id( Surface::type_name_static(), 0 ), line0 );
         builder.topology.add_mesh_entity_boundary_relation(
             gmme_id( Surface::type_name_static(), 4 ), line0 );
-
-
-
 
         // For line 1
         gmme_id line1( Line::type_name_static(), 1 );
@@ -754,134 +750,167 @@ int main()
         // Child of an Interface is a Surface
         // Child of a Layer is a Region
 
-        // We use the method "add_geological_entity_child"
+        // We use the method "add_parent_children_relation"
         // First argument is the parent (ie a GeoModelGeologicalEntity)
         // Second argument is the index of the child (ie a GeoModelMeshEntity)
 
         // For Contact 0
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 0 ), 0 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 0 ),
+            gmme_id( Line::type_name_static(), 0 ) );
 
         // For Contact 1
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 1 ), 1 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 1 ),
+            gmme_id( Line::type_name_static(), 1 ) );
 
         // For Contact 2
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 2 ), 2 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 2 ),
+            gmme_id( Line::type_name_static(), 2 ) );
 
         // For Contact 3
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 3 ), 3 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 3 ),
+            gmme_id( Line::type_name_static(), 3 ) );
 
         // For Contact 4
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 4 ), 4 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 4 ),
+            gmme_id( Line::type_name_static(), 4 ) );
 
         // For Contact 5
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 5 ), 5 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 5 ),
+            gmme_id( Line::type_name_static(), 5 ) );
 
         // For Contact 6
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 6 ), 6 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 6 ),
+            gmme_id( Line::type_name_static(), 6 ) );
 
         // For Contact 7
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 7 ), 7 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 7 ),
+            gmme_id( Line::type_name_static(), 7 ) );
 
         // For Contact 8
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 8 ), 8 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 8 ),
+            gmme_id( Line::type_name_static(), 8 ) );
 
         // For Contact 9
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 9 ), 9 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 9 ),
+            gmme_id( Line::type_name_static(), 9 ) );
 
         // For Contact 10
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 10 ), 10 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 10 ),
+            gmme_id( Line::type_name_static(), 10 ) );
 
         // For Contact 11
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 11 ), 11 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 11 ),
+            gmme_id( Line::type_name_static(), 11 ) );
 
         // For Contact 12
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 12 ), 12 );
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 12 ), 13 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 12 ),
+            gmme_id( Line::type_name_static(), 12 ) );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 12 ),
+            gmme_id( Line::type_name_static(), 13 ) );
 
         // For Contact 13
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 13 ), 14 );
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 13 ), 15 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 13 ),
+            gmme_id( Line::type_name_static(), 14 ) );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 13 ),
+            gmme_id( Line::type_name_static(), 15 ) );
 
         // For Contact 14
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 14 ), 16 );
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 14 ), 17 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 14 ),
+            gmme_id( Line::type_name_static(), 16 ) );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 14 ),
+            gmme_id( Line::type_name_static(), 17 ) );
 
         // For Contact 15
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 15 ), 19 );
-        builder.geology.add_geological_entity_child(
-            gmge_id( Contact::type_name_static(), 15 ), 18 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 15 ),
+            gmme_id( Line::type_name_static(), 19 ) );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Contact::type_name_static(), 15 ),
+            gmme_id( Line::type_name_static(), 18 ) );
 
         /////////////////////////////////////////////////
 
         // For Interface 0
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 0 ), 0 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 0 ),
+            gmme_id( Surface::type_name_static(), 0 ) );
 
         // For Interface 1
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 1 ), 1 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 1 ),
+            gmme_id( Surface::type_name_static(), 1 ) );
 
         // For Interface 2
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 2 ), 2 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 2 ),
+            gmme_id( Surface::type_name_static(), 2 ) );
 
         // For Interface 3
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 3 ), 3 );
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 3 ), 4 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 3 ),
+            gmme_id( Surface::type_name_static(), 3 ) );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 3 ),
+            gmme_id( Surface::type_name_static(), 4 ) );
 
         // For Interface 4
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 4 ), 5 );
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 4 ), 6 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 4 ),
+            gmme_id( Surface::type_name_static(), 5 ) );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 4 ),
+            gmme_id( Surface::type_name_static(), 6 ) );
 
         // For Interface 5
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 5 ), 10 );
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 5 ), 9 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 5 ),
+            gmme_id( Surface::type_name_static(), 10 ) );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 5 ),
+            gmme_id( Surface::type_name_static(), 9 ) );
 
         // For Interface 6
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 6 ), 8 );
-        builder.geology.add_geological_entity_child(
-            gmge_id( Interface::type_name_static(), 6 ), 7 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 6 ),
+            gmme_id( Surface::type_name_static(), 8 ) );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Interface::type_name_static(), 6 ),
+            gmme_id( Surface::type_name_static(), 7 ) );
 
         ///////////////////////////////////////////////////
 
         // For Layer 0
-        builder.geology.add_geological_entity_child(
-            gmge_id( Layer::type_name_static(), 0 ), 0 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Layer::type_name_static(), 0 ),
+            gmme_id( Region::type_name_static(), 0 ) );
 
         // For Layer 1
-        builder.geology.add_geological_entity_child(
-            gmge_id( Layer::type_name_static(), 1 ), 1 );
+        builder.geology.add_parent_children_relation(
+            gmge_id( Layer::type_name_static(), 1 ),
+            gmme_id( Region::type_name_static(), 1 ) );
 
         // Then, we end the model building
         // This method will set the missing information for the boundaries
         // and parent/child relation. e. g., if you decide to use the
-        // add_geological_entity_child (like above), the child has no information of who
+        // add_parent_children_relation (like above), the child has no information of who
         // is his parent. This method deal with that by filling the missing information
         builder.end_geomodel();
 

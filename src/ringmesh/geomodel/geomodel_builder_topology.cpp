@@ -292,25 +292,6 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderTopology::complete_entity_connectivity()
-    {
-        // Order is important
-        complete_mesh_entity_connectivity( Line::type_name_static() );
-        complete_mesh_entity_connectivity( Corner::type_name_static() );
-        complete_mesh_entity_connectivity( Surface::type_name_static() );
-        complete_mesh_entity_connectivity( Region::type_name_static() );
-
-        // Geological entities
-        for( index_t i = 0; i < geomodel_.nb_geological_entity_types(); i++ ) {
-            const GeologicalEntityType& type = geomodel_.geological_entity_type( i );
-            if( geomodel_.nb_geological_entities( type ) > 0 ) {
-                if( geomodel_.geological_entity( type, 0 ).nb_children() == 0 ) {
-                    builder_.geology.fill_geological_entities_children( type );
-                }
-            }
-        }
-    }
-
     void GeoModelBuilderTopology::remove_mesh_entity_boundary_relation(
         const gmme_id& in_boundary,
         const gmme_id& boundary )
@@ -452,16 +433,5 @@ namespace RINGMesh {
         index_t index )
     {
         geomodel_access_.modifiable_mesh_entities( type )[index].reset();
-    }
-
-    void GeoModelBuilderTopology::complete_mesh_entity_connectivity(
-        const MeshEntityType& type )
-    {
-        if( geomodel_.nb_mesh_entities( type ) > 0 ) {
-            const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, 0 );
-            if( E.nb_parents() == 0 ) {
-                builder_.geology.fill_mesh_entities_parent( type );
-            }
-        }
     }
 }
