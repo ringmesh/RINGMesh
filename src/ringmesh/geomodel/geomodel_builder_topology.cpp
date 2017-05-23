@@ -35,6 +35,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder_topology.h>
 
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!

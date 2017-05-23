@@ -43,7 +43,7 @@
 
 #include <geogram/mesh/mesh.h>
 
-#include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/nnsearch.h>
 
 #include <ringmesh/mesh/aabb.h>
 

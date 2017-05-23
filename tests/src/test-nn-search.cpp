@@ -38,6 +38,7 @@
 #include <vector>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/nnsearch.h>
 
 /*!
  * @author Arnaud Botella
