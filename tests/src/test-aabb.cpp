@@ -135,7 +135,7 @@ void add_hexs( VolumeMeshBuilder* builder, index_t size )
     builder->connect_cells();
 }
 
-void check_tree( const AABBTree2D& tree, index_t size )
+void check_tree( const SurfaceAABBTree& tree, index_t size )
 {
     double offset = 0.2;
     index_t id = 0;
@@ -242,7 +242,7 @@ void test_AABB2D()
     add_vertices( builder.get(), size );
     add_triangles( builder.get(), size );
 
-    AABBTree2D tree( geogram_mesh );
+    SurfaceAABBTree tree( geogram_mesh );
     tree.save_tree( "tree" );
     check_tree( tree, size );
 
@@ -252,7 +252,7 @@ void test_locate_cell_on_3D_mesh( const GeogramVolumeMesh& mesh )
 {
     for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
         vec3 barycenter = mesh.cell_barycenter( c );
-        const AABBTree3D& aabb3D = mesh.cells_aabb();
+        const VolumeAABBTree& aabb3D = mesh.cells_aabb();
         index_t containing_cell = aabb3D.containing_cell( barycenter );
         if( containing_cell != c ) {
             throw RINGMeshException( "TEST", "Not the correct cell found" );
@@ -282,7 +282,7 @@ void test_locate_edge_on_1D_mesh( const GeogramLineMesh& mesh )
     vec3 nearest_point;
     for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
         vec3 barycenter = mesh.edge_barycenter( e );
-        const AABBTree1D& aabb1D = mesh.edges_aabb();
+        const LineAABBTree& aabb1D = mesh.edges_aabb();
         index_t closest_edge = aabb1D.closest_edge( barycenter, nearest_point,
             distance );
         if( closest_edge != e ) {
