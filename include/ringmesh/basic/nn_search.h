@@ -40,7 +40,7 @@
 #include <geogram/points/kd_tree.h>
 
 /*!
- * @file What
+ * @file Nearest Neighbor requests
  * @author Arnaud Botella
  */
 
