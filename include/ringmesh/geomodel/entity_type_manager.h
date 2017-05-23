@@ -217,10 +217,6 @@ namespace RINGMesh {
             index_t possibly_existing_relationship_id = find_boundary_relationship(
                 in_boundary, boundary );
             if( possibly_existing_relationship_id != NO_ID ) {
-                Logger::warn( "Relationship",
-                    "The relation between the in boundary ", in_boundary,
-                    " and the boundary ", boundary,
-                    " already exists. Nothing is done" );
                 return possibly_existing_relationship_id;
             } else {
                 index_t relationship_id =
@@ -280,9 +276,6 @@ namespace RINGMesh {
             index_t possibly_existing_relationship_id =
                 find_parent_child_relationship( parent, child );
             if( possibly_existing_relationship_id != NO_ID ) {
-                Logger::warn( "Relationship", "The relation between the parent ",
-                    parent, " and the child ", child,
-                    " already exists. Nothing is done" );
                 return possibly_existing_relationship_id;
             } else {
                 index_t relationship_id =
