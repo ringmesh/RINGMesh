@@ -231,18 +231,16 @@ namespace RINGMesh {
         bool border_only,
         index_t p0 ) const
     {
-
-        index_t p = 0;
-        while( p0 == NO_ID && p < nb_polygons() ) {
-            for( index_t lv = 0; lv < nb_polygon_vertices( p ); lv++ ) {
-                if( polygon_vertex( p, lv ) == surf_vertex_id ) {
-                    p0 = p;
+        index_t cur_p = 0;
+        while( p0 == NO_ID && cur_p < nb_polygons() ) {
+            for( index_t lv = 0; lv < nb_polygon_vertices( cur_p ); lv++ ) {
+                if( polygon_vertex( cur_p, lv ) == surf_vertex_id ) {
+                    p0 = cur_p;
                     break;
                 }
             }
-            p++;
+            cur_p++;
         }
-
         ringmesh_assert( p0 != NO_ID );
 
         // Flag the visited polygons
