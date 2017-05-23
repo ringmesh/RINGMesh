@@ -214,10 +214,20 @@ namespace RINGMesh {
             const gmme_id& in_boundary,
             const gmme_id& boundary )
         {
-            index_t relationship_id =
-                static_cast< index_t >( boundary_relationships_.size() );
-            boundary_relationships_.emplace_back( in_boundary, boundary );
-            return relationship_id;
+            index_t possibly_existing_relationship_id = find_boundary_relationship(
+                in_boundary, boundary );
+            if( possibly_existing_relationship_id != NO_ID ) {
+                Logger::warn( "Relationship" )
+                    << "The relation between the in boundary " << in_boundary
+                    << " and the boundary " << boundary
+                    << " already exists. Nothing is done";
+                return possibly_existing_relationship_id;
+            } else {
+                index_t relationship_id =
+                    static_cast< index_t >( boundary_relationships_.size() );
+                boundary_relationships_.emplace_back( in_boundary, boundary );
+                return relationship_id;
+            }
         }
 
         index_t find_boundary_relationship(
@@ -267,10 +277,19 @@ namespace RINGMesh {
             const gmge_id& parent,
             const gmme_id& child )
         {
-            index_t relationship_id =
-                static_cast< index_t >( parent_child_relationships_.size() );
-            parent_child_relationships_.emplace_back( parent, child );
-            return relationship_id;
+            index_t possibly_existing_relationship_id =
+                find_parent_child_relationship( parent, child );
+            if( possibly_existing_relationship_id != NO_ID ) {
+                Logger::warn( "Relationship" ) << "The relation between the parent "
+                    << parent << " and the child " << child
+                    << " already exists. Nothing is done";
+                return possibly_existing_relationship_id;
+            } else {
+                index_t relationship_id =
+                    static_cast< index_t >( parent_child_relationships_.size() );
+                parent_child_relationships_.emplace_back( parent, child );
+                return relationship_id;
+            }
         }
 
         index_t find_parent_child_relationship(
