@@ -1290,7 +1290,7 @@ namespace RINGMesh {
                 }
                 builder_.info.set_geological_entity_name( contact_id, name );
             }
-            add_parent_children_relation(contact_id,L.gmme()) ;
+            add_parent_children_relation( contact_id,L.gmme() ) ;
         }
     }
 
