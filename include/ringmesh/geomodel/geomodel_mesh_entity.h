@@ -491,7 +491,7 @@ namespace RINGMesh {
         const Surface& in_boundary( index_t x ) const;
         virtual bool is_connectivity_valid() const final;
 
-        const AABBTree1D& edges_aabb() const
+        const LineAABBTree& edges_aabb() const
         {
             return mesh1d_->edges_aabb();
         }
@@ -642,7 +642,7 @@ namespace RINGMesh {
             return mesh2d_->polygons_are_simplicies();
         }
 
-        const AABBTree2D& polygons_aabb() const
+        const SurfaceAABBTree& polygons_aabb() const
         {
             return mesh2d_->polygons_aabb();
         }
@@ -991,7 +991,7 @@ namespace RINGMesh {
             return mesh3d_->cells_are_simplicies();
         }
 
-        const AABBTree3D& cells_aabb() const
+        const VolumeAABBTree& cells_aabb() const
         {
             return mesh3d_->cells_aabb();
         }
