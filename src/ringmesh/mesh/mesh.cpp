@@ -47,15 +47,15 @@ namespace RINGMesh {
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramMesh0D::type_name_static();
+            new_type = GeogramPointMesh::type_name_static();
         }
-        PointMesh* mesh = Mesh0DFactory::create_object( new_type );
+        PointMesh* mesh = PointMeshFactory::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh0D", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "Mesh0D", "Falling back to GeogramMesh0D data structure" );
 
-            mesh = new GeogramMesh0D;
+            mesh = new GeogramPointMesh;
         }
         return std::unique_ptr< PointMesh >( mesh );
     }
@@ -81,15 +81,15 @@ namespace RINGMesh {
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramMesh2D::type_name_static();
+            new_type = GeogramSurfaceMesh::type_name_static();
         }
-        SurfaceMesh* mesh = Mesh2DFactory::create_object( new_type );
+        SurfaceMesh* mesh = SurfaceMeshFactory::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh2D", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "Mesh2D", "Falling back to GeogramMesh2D data structure" );
 
-            mesh = new GeogramMesh2D;
+            mesh = new GeogramSurfaceMesh;
         }
         return std::unique_ptr< SurfaceMesh >( mesh );
     }
@@ -231,18 +231,16 @@ namespace RINGMesh {
         bool border_only,
         index_t p0 ) const
     {
-
-        index_t p = 0;
-        while( p0 == NO_ID && p < nb_polygons() ) {
-            for( index_t lv = 0; lv < nb_polygon_vertices( p ); lv++ ) {
-                if( polygon_vertex( p, lv ) == surf_vertex_id ) {
-                    p0 = p;
+        index_t cur_p = 0;
+        while( p0 == NO_ID && cur_p < nb_polygons() ) {
+            for( index_t lv = 0; lv < nb_polygon_vertices( cur_p ); lv++ ) {
+                if( polygon_vertex( cur_p, lv ) == surf_vertex_id ) {
+                    p0 = cur_p;
                     break;
                 }
             }
-            p++;
+            cur_p++;
         }
-
         ringmesh_assert( p0 != NO_ID );
 
         // Flag the visited polygons
@@ -302,15 +300,15 @@ namespace RINGMesh {
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramMesh3D::type_name_static();
+            new_type = GeogramVolumeMesh::type_name_static();
         }
-        VolumeMesh* mesh = Mesh3DFactory::create_object( new_type );
+        VolumeMesh* mesh = VolumeMeshFactory::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh3D", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "Mesh3D", "Falling back to GeogramMesh3D data structure" );
 
-            mesh = new GeogramMesh3D;
+            mesh = new GeogramVolumeMesh;
         }
         return std::unique_ptr< VolumeMesh >( mesh );
     }

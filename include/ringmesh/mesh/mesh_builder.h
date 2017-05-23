@@ -157,7 +157,7 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API PointMeshBuilder: public virtual MeshBaseBuilder {
+    class RINGMESH_API PointMeshBuilder: public MeshBaseBuilder {
     ringmesh_disable_copy( PointMeshBuilder );
     public:
         virtual ~PointMeshBuilder()
@@ -179,11 +179,11 @@ namespace RINGMesh {
         {
         }
     };
-    using Mesh0DBuilderFactory = GEO::Factory0< PointMeshBuilder >;
-#define ringmesh_register_mesh_0d_builder(type) \
-    geo_register_creator(RINGMesh::Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
+    using PointMeshBuilderFactory = GEO::Factory0< PointMeshBuilder >;
+#define ringmesh_register_point_mesh_builder(type) \
+    geo_register_creator(RINGMesh::PointMeshBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API LineMeshBuilder: public virtual MeshBaseBuilder {
+    class RINGMESH_API LineMeshBuilder: public MeshBaseBuilder {
     ringmesh_disable_copy( LineMeshBuilder );
     public:
         virtual ~LineMeshBuilder()
@@ -250,10 +250,10 @@ namespace RINGMesh {
         }
     };
     using LineMeshBuilderFactory = GEO::Factory0< LineMeshBuilder >;
-#define ringmesh_register_mesh_1d_builder(type) \
+#define ringmesh_register_line_mesh_builder(type) \
     geo_register_creator(RINGMesh::LineMeshBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API SurfaceMeshBuilder: public virtual MeshBaseBuilder {
+    class RINGMESH_API SurfaceMeshBuilder: public MeshBaseBuilder {
     ringmesh_disable_copy( SurfaceMeshBuilder );
     public:
         virtual ~SurfaceMeshBuilder()
@@ -262,7 +262,8 @@ namespace RINGMesh {
 
         virtual void set_mesh( SurfaceMesh& mesh ) = 0;
 
-        static std::unique_ptr< SurfaceMeshBuilder > create_builder( SurfaceMesh& mesh );
+        static std::unique_ptr< SurfaceMeshBuilder > create_builder(
+            SurfaceMesh& mesh );
 
         /*!@}
          * \name Polygon related methods
@@ -282,8 +283,7 @@ namespace RINGMesh {
          *  contains the vertices
          * \return the index of the created polygon
          */
-        virtual index_t create_polygon(
-            const std::vector< index_t >& vertices ) = 0;
+        virtual index_t create_polygon( const std::vector< index_t >& vertices ) = 0;
         /*!
          * \brief Creates a contiguous chunk of triangles
          * \param[in] nb_triangles number of triangles to create
@@ -342,7 +342,8 @@ namespace RINGMesh {
          * @brief Retrieve the adjacencies of polygons
          */
         virtual void connect_polygons() = 0;
-        virtual void permute_polygons( const std::vector< index_t >& permutation ) = 0;
+        virtual void permute_polygons(
+            const std::vector< index_t >& permutation ) = 0;
         /*!
          * @brief Deletes a set of polygons.
          * @param[in] to_delete     a vector of size @function nb().
@@ -383,11 +384,11 @@ namespace RINGMesh {
         {
         }
     };
-    using Mesh2DBuilderFactory = GEO::Factory0< SurfaceMeshBuilder >;
-#define ringmesh_register_mesh_2d_builder(type) \
-    geo_register_creator(RINGMesh::Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
+    using SurfaceMeshBuilderFactory = GEO::Factory0< SurfaceMeshBuilder >;
+#define ringmesh_register_surface_mesh_builder(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API VolumeMeshBuilder: public virtual MeshBaseBuilder {
+    class RINGMESH_API VolumeMeshBuilder: public MeshBaseBuilder {
     ringmesh_disable_copy( VolumeMeshBuilder );
     public:
         virtual ~VolumeMeshBuilder()
@@ -396,7 +397,8 @@ namespace RINGMesh {
 
         virtual void set_mesh( VolumeMesh& mesh ) = 0;
 
-        static std::unique_ptr< VolumeMeshBuilder > create_builder( VolumeMesh& mesh );
+        static std::unique_ptr< VolumeMeshBuilder > create_builder(
+            VolumeMesh& mesh );
 
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
@@ -494,8 +496,8 @@ namespace RINGMesh {
         {
         }
     };
-    using Mesh3DBuilderFactory = GEO::Factory0< VolumeMeshBuilder >;
-#define ringmesh_register_mesh_3d_builder(type) \
-    geo_register_creator(RINGMesh::Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
+    using VolumeMeshBuilderFactory = GEO::Factory0< VolumeMeshBuilder >;
+#define ringmesh_register_volume_mesh_builder(type) \
+    geo_register_creator(RINGMesh::VolumeMeshBuilderFactory, type ## Builder, type::type_name_static())
 
 }
