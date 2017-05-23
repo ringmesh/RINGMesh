@@ -286,7 +286,7 @@ namespace RINGMesh {
          */
         void compute_surface_internal_borders(
             index_t surface_id,
-            const std::vector< std::unique_ptr< NNSearch > >& surface_nns,
+            const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
             const std::vector< Box3d >& surface_boxes );
 
         /*!
@@ -297,7 +297,7 @@ namespace RINGMesh {
          * @param[out] surface_boxes Bounding Box of surfaces
          */
         void compute_polygon_edge_centers_nn_and_surface_boxes(
-            std::vector< std::unique_ptr< NNSearch > >& surface_nns,
+            std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
             std::vector< Box3d >& surface_boxes );
 
         /*!

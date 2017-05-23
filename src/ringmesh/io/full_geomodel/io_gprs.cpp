@@ -111,7 +111,7 @@ namespace {
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
                 }
             }
-            NNSearch nn_search( edge_vertices, false );
+            NNSearch< 3 > nn_search( edge_vertices, false );
 
             const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
             for( index_t p = 0; p < polygons.nb(); p++ ) {

@@ -341,7 +341,7 @@ namespace RINGMesh {
         return vertex( mesh_->edge_vertex( edge, v ) );
     }
 
-    const NNSearch& WellPart::vertices_nn_search() const
+    const NNSearch< 3 >& WellPart::vertices_nn_search() const
     {
         return mesh_->vertices_nn_search();
     }

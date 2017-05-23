@@ -268,12 +268,12 @@ namespace {
      */
     void compute_cell_facet_centers_region_nn_searchs(
         const GeoModel& geomodel,
-        std::vector< std::unique_ptr< NNSearch > >& region_nn_searchs )
+        std::vector< std::unique_ptr< NNSearch< 3 > > >& region_nn_searchs )
     {
         for( index_t r = 0; r < geomodel.nb_regions(); ++r ) {
             std::vector< vec3 > cell_facet_centers;
             compute_region_cell_facet_centers( geomodel, r, cell_facet_centers );
-            region_nn_searchs[r].reset( new NNSearch( cell_facet_centers, true ) );
+            region_nn_searchs[r].reset( new NNSearch< 3 >( cell_facet_centers, true ) );
         }
     }
 
@@ -289,7 +289,7 @@ namespace {
      */
     index_t are_surface_sides_region_boundaries(
         const Surface& surface,
-        const NNSearch& region_nn_search,
+        const NNSearch< 3 >& region_nn_search,
         std::vector< index_t >& colocated_cell_facet_centers )
     {
         vec3 first_polygon_center = surface.mesh_element_barycenter( 0 );
@@ -430,7 +430,7 @@ namespace {
      */
     void add_surface_to_region_boundaries(
         index_t surface_id,
-        const std::vector< std::unique_ptr< NNSearch > >& region_nn_searchs,
+        const std::vector< std::unique_ptr< NNSearch< 3 > > >& region_nn_searchs,
         const GeoModel& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
@@ -462,7 +462,7 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder,
         const GeoModel& geomodel )
     {
-        std::vector< std::unique_ptr< NNSearch > > reg_nn_searchs(
+        std::vector< std::unique_ptr< NNSearch< 3 > > > reg_nn_searchs(
             geomodel.nb_regions() );
         compute_cell_facet_centers_region_nn_searchs( geomodel, reg_nn_searchs );
         for( index_t s = 0; s < geomodel.nb_surfaces(); ++s ) {
@@ -560,7 +560,7 @@ namespace {
         index_t surface_id,
         index_t polygon,
         index_t edge,
-        const std::vector< std::unique_ptr< NNSearch > >& surface_nns,
+        const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
         const std::vector< Box3d >& surface_boxes )
     {
         const Surface& S = geomodel.surface( surface_id );
@@ -1175,7 +1175,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_surface_internal_borders(
         index_t surface_id,
-        const std::vector< std::unique_ptr< NNSearch > >& surface_nns,
+        const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
         const std::vector< Box3d >& surface_boxes )
     {
         const Surface& S = geomodel_.surface( surface_id );
@@ -1198,7 +1198,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTSolid::compute_polygon_edge_centers_nn_and_surface_boxes(
-        std::vector< std::unique_ptr< NNSearch > >& surface_nns,
+        std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
         std::vector< Box3d >& surface_boxes )
     {
         for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
@@ -1209,13 +1209,13 @@ namespace RINGMesh {
             std::vector< vec3 > border_edge_barycenters;
             get_surface_border_edge_barycenters( geomodel_, s,
                 border_edge_barycenters );
-            surface_nns[s].reset( new NNSearch( border_edge_barycenters, true ) );
+            surface_nns[s].reset( new NNSearch< 3 >( border_edge_barycenters, true ) );
         }
     }
 
     void GeoModelBuilderTSolid::compute_surfaces_internal_borders()
     {
-        std::vector< std::unique_ptr< NNSearch > > nn_searchs(
+        std::vector< std::unique_ptr< NNSearch< 3 > > > nn_searchs(
             geomodel_.nb_surfaces() );
         std::vector< Box3d > boxes( geomodel_.nb_surfaces() );
         compute_polygon_edge_centers_nn_and_surface_boxes( nn_searchs, boxes );

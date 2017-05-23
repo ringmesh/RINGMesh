@@ -50,15 +50,12 @@ namespace GEO {
 
 namespace RINGMesh {
 
+    template< index_t DIMENSION = 3 >
     class RINGMESH_API NNSearch {
     ringmesh_disable_copy( NNSearch );
+        static_assert( DIMENSION == 2 || DIMENSION == 3, "DIMENSION template should be 2 or 3" );
     public:
-        enum MeshLocation {
-            VERTICES, EDGES, FACETS, CELLS, CELL_FACETS, NB_LOCATION
-        };
-        NNSearch( const GEO::Mesh& mesh, const MeshLocation& location, bool copy =
-            false );
-        NNSearch( const std::vector< vec3 >& vertices, bool copy = true );
+        NNSearch( const std::vector< vecn< DIMENSION > >& vertices, bool copy = true );
 
         ~NNSearch()
         {
@@ -90,13 +87,13 @@ namespace RINGMesh {
         index_t get_colocated_index_mapping(
             double epsilon,
             std::vector< index_t >& index_map,
-            std::vector< vec3 >& unique_points ) const;
+            std::vector< vecn< DIMENSION > >& unique_points ) const;
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test
          * return returns the index of the closest point
          */
-        index_t get_closest_neighbor( const vec3& v ) const
+        index_t get_closest_neighbor( const vecn< DIMENSION >& v ) const
         {
             index_t nb_neighbors = 1;
             index_t result = get_neighbors( v, nb_neighbors ).front();
@@ -110,7 +107,7 @@ namespace RINGMesh {
          * @return the point indices
          */
         std::vector< index_t > get_neighbors(
-            const vec3& v,
+            const vecn< DIMENSION >& v,
             double threshold_distance ) const;
 
         /*!
@@ -121,13 +118,16 @@ namespace RINGMesh {
          * if there is not enough points)
          */
         std::vector< index_t > get_neighbors(
-            const vec3& v,
+            const vecn< DIMENSION >& v,
             index_t nb_neighbors ) const;
 
-        vec3 point( index_t v ) const
+        vecn< DIMENSION > point( index_t v ) const
         {
-            return vec3( nn_points_[3 * v], nn_points_[3 * v + 1],
-                nn_points_[3 * v + 2] );
+            vecn< DIMENSION > result;
+            for( index_t i = 0; i < DIMENSION; i++ ) {
+                result[i] =  nn_points_[DIMENSION * v + i];
+            }
+            return result;
         }
 
         index_t nb_points() const
@@ -136,12 +136,7 @@ namespace RINGMesh {
         }
 
     private:
-        void build_nn_search_vertices( const GEO::Mesh& mesh, bool copy );
-        void build_nn_search_edges( const GEO::Mesh& mesh );
-        void build_nn_search_polygons( const GEO::Mesh& mesh );
-        void build_nn_search_cells( const GEO::Mesh& mesh );
-        void build_nn_search_cell_facets( const GEO::Mesh& mesh );
-        void fill_nn_search_points( index_t index_in_nn, const vec3& center );
+        void fill_nn_search_points( index_t index_in_nn, const vecn< DIMENSION >& center );
 
     private:
         /// KdTree to compute the nearest neighbor search
@@ -157,3 +152,5 @@ namespace RINGMesh {
     };
 
 }
+
+#include "nn_search.hpp"

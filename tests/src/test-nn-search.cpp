@@ -38,7 +38,7 @@
 #include <vector>
 
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/basic/nnsearch.h>
+#include <ringmesh/basic/nn_search.h>
 
 /*!
  * @author Arnaud Botella
@@ -79,7 +79,7 @@ void test_nn_search_ringmesh()
     hardcoded_unique_vertices[2] = p3;
     hardcoded_unique_vertices[3] = p4;
 
-    NNSearch nn_search( vertices );
+    NNSearch< 3 > nn_search( vertices );
     std::vector< vec3 > unique_vertices;
     std::vector< index_t > index_map;
     nn_search.get_colocated_index_mapping( global_epsilon, index_map,
