@@ -178,7 +178,7 @@ namespace RINGMesh {
         virtual void read_mesh_entity_line( GEO::LineInput& file_line ) override
         {
             // Read this entity
-            // First line : type - id - name - geol_feature - mesh type
+            // First line : type - id - name  - mesh type
             if( file_line.nb_fields() < 4 ) {
                 throw RINGMeshException( "I/O",
                     "Invalid line: "
