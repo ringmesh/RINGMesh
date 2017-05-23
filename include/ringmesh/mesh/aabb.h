@@ -247,10 +247,10 @@ namespace RINGMesh {
         std::vector< index_t > mapping_morton_;
     };
 
-    class RINGMESH_API AABBTreeBox: public AABBTree {
+    class RINGMESH_API BoxAABBTree: public AABBTree {
     public:
-        AABBTreeBox( const std::vector< Box3d >& boxes );
-        virtual ~AABBTreeBox() = default;
+        BoxAABBTree( const std::vector< Box3d >& boxes );
+        virtual ~BoxAABBTree() = default;
 
     private:
         /*!
@@ -262,10 +262,10 @@ namespace RINGMesh {
             index_t element_id ) const override;
     };
 
-    class RINGMESH_API AABBTree1D: public AABBTree {
+    class RINGMESH_API LineAABBTree: public AABBTree {
     public:
-        AABBTree1D( const LineMesh& mesh );
-        virtual ~AABBTree1D() = default;
+        LineAABBTree( const LineMesh& mesh );
+        virtual ~LineAABBTree() = default;
 
         /*!
          * @brief Gets the closest edge to a given point
@@ -311,10 +311,10 @@ namespace RINGMesh {
         const LineMesh& mesh_;
     };
 
-    class RINGMESH_API AABBTree2D: public AABBTree {
+    class RINGMESH_API SurfaceAABBTree: public AABBTree {
     public:
-        AABBTree2D( const SurfaceMesh& mesh );
-        virtual ~AABBTree2D() = default;
+        SurfaceAABBTree( const SurfaceMesh& mesh );
+        virtual ~SurfaceAABBTree() = default;
 
         /*!
          * @brief Gets the closest triangle to a given point
@@ -361,10 +361,10 @@ namespace RINGMesh {
         const SurfaceMesh& mesh_;
     };
 
-    class RINGMESH_API AABBTree3D: public AABBTree {
+    class RINGMESH_API VolumeAABBTree: public AABBTree {
     public:
-        AABBTree3D( const VolumeMesh& mesh );
-        virtual ~AABBTree3D() = default;
+        VolumeAABBTree( const VolumeMesh& mesh );
+        virtual ~VolumeAABBTree() = default;
 
         /*!
          * @brief Gets the cell contining a point
