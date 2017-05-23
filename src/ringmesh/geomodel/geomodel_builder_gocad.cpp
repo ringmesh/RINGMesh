@@ -35,6 +35,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder_gocad.h>
 
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!

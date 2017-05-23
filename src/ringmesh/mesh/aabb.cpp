@@ -37,6 +37,8 @@
 
 #include <geogram/mesh/mesh_io.h>
 
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/mesh/mesh.h>
 
 /// Copied and adapted from Geogram
