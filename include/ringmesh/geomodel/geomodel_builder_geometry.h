@@ -155,7 +155,7 @@ namespace RINGMesh {
         void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type );
         void copy_mesh( const GeoModel& from, const gmme_id& mesh_entity );
 
-        void assign_mesh_to_entity( const MeshBase& mesh, const gmme_id& to );
+        void assign_mesh_to_entity( const BaseMesh2< 3 >& mesh, const gmme_id& to );
 
         /*!
          * \name Set entity geometry from geometrical positions

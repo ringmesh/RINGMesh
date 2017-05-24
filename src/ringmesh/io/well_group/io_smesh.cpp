@@ -85,7 +85,7 @@ namespace {
                 if( is_first_part ) {
                     index_t nb_vertices = in.field_as_uint( 0 );
                     builder->create_vertices( nb_vertices );
-                    Box3d box;
+                    BoxND< 3 > box;
 
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         do {
