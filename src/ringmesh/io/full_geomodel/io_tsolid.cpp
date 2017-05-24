@@ -72,18 +72,9 @@ namespace {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
 
-            // Print Model3d headers
-            out << "GOCAD TSolid 1" << std::endl << "HEADER {" << std::endl
-                << "name:" << geomodel.name() << std::endl << "}" << std::endl;
-
-            out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
-                << std::endl << "AXIS_NAME \"X\" \"Y\" \"Z\"" << std::endl
-                << "AXIS_UNIT \"m\" \"m\" \"m\"" << std::endl
-                << "ZPOSITIVE Elevation" << std::endl
-                << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
-
+            fill_top_header(geomodel, out);
+            
             const GeoModelMesh& mesh = geomodel.mesh;
-            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             // att_v_double_names and att_c_double_names contain all the
@@ -100,7 +91,8 @@ namespace {
             fill_cell_attribute_header( geomodel, out, att_c_double_names,
                 cell_attr_dims );
 
-            std::vector< bool > vertex_exported( mesh.vertices.nb(), false );
+
+            std::vector< bool > vertex_exported(mesh.vertices.nb(), false);
             std::vector< bool > atom_exported( mesh.cells.nb_duplicated_vertices(),
                 false );
             std::vector< index_t > vertex_exported_id( mesh.vertices.nb(), NO_ID );
@@ -109,251 +101,27 @@ namespace {
             index_t nb_vertices_exported = 1;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 const RINGMesh::Region& region = geomodel.region( r );
-                GEO::AttributesManager& reg_vertex_attr_mgr =
-                    region.vertex_attribute_manager();
-                out << "TVOLUME " << region.name() << std::endl;
-
-                // Export not duplicated vertices
-                for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
-                    index_t cell = mesh.cells.cell( r, c );
-                    vec3 cell_center = mesh.cells.barycenter( cell );
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-                        index_t atom_id;
-                        if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
-                            index_t vertex_id = mesh.cells.vertex( cell, v );
-                            if( vertex_exported[vertex_id] ) continue;
-                            vertex_exported[vertex_id] = true;
-                            vertex_exported_id[vertex_id] = nb_vertices_exported;
-                            // PVRTX keyword must be used instead of VRTX keyword because
-                            // properties are not read by Gocad if it is VRTX keyword.
-                            out << "PVRTX " << nb_vertices_exported++ << " "
-                                << mesh.vertices.vertex( vertex_id );
-
-                            /// Export of vertex attributes
-                            index_t vertex_id_in_reg = NO_ID;
-                            bool vertex_id_in_reg_found = false;
-                            /// As we export the non duplicated vertices,
-                            /// gme_vertices should be at size 1 (to check),
-                            /// so the loop should not be needed but I [BC]
-                            /// keep it for now since duplicated nodes is not
-                            /// operational yet...
-                            const std::vector< GMEVertex >& gme_vertices =
-                                mesh.vertices.gme_vertices( vertex_id );
-                            for( index_t gme_vertices_i = 0;
-                                gme_vertices_i < gme_vertices.size();
-                                ++gme_vertices_i ) {
-                                const GMEVertex& cur_gme_vertex =
-                                    gme_vertices[gme_vertices_i];
-                                if( cur_gme_vertex.gmme != region.gmme() ) {
-                                    continue;
-                                }
-                                std::vector< index_t > cells_around_vertex =
-                                    region.cells_around_vertex(
-                                        cur_gme_vertex.v_index, NO_ID );
-                                /// WARNING: the cell id in the region corresponding
-                                /// to the cell id in the GMM "cell" is not the
-                                /// variable "c" (in the for loop over the region cells).
-                                for( index_t cells_around_vertex_i = 0;
-                                    cells_around_vertex_i
-                                        < cells_around_vertex.size();
-                                    ++cells_around_vertex_i ) {
-                                    vec3 center = region.mesh_element_barycenter(
-                                        cells_around_vertex[cells_around_vertex_i] );
-                                    if( ( center - cell_center ).length()
-                                        < geomodel.epsilon() ) {
-                                        vertex_id_in_reg = cur_gme_vertex.v_index;
-                                        vertex_id_in_reg_found = true;
-                                        break;
-                                    }
-                                }
-                                if( vertex_id_in_reg_found ) {
-                                    break;
-                                }
-                            }
-                            for( index_t attr_dbl_itr = 0;
-                                attr_dbl_itr < att_v_double_names.size();
-                                ++attr_dbl_itr ) {
-                                if( reg_vertex_attr_mgr.is_defined(
-                                    att_v_double_names[attr_dbl_itr] ) ) {
-                                    const GEO::AttributeStore* attr_store =
-                                        reg_vertex_attr_mgr.find_attribute_store(
-                                            att_v_double_names[attr_dbl_itr] );
-                                    ringmesh_assert( attr_store != nullptr );
-                                    ringmesh_assert(
-                                        attr_store->dimension()
-                                            == vertex_attr_dims[attr_dbl_itr] );
-                                    ringmesh_assert(
-                                        GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                                            attr_store ) );
-                                    GEO::ReadOnlyScalarAttributeAdapter cur_attr(
-                                        reg_vertex_attr_mgr,
-                                        att_v_double_names[attr_dbl_itr] );
-                                    for( index_t dim_itr = 0;
-                                        dim_itr < vertex_attr_dims[attr_dbl_itr];
-                                        ++dim_itr ) {
-                                        out << " "
-                                            << cur_attr[vertex_id_in_reg
-                                                * vertex_attr_dims[attr_dbl_itr]
-                                                + dim_itr];
-                                    }
-                                } else {
-                                    for( index_t dim_itr = 0;
-                                        dim_itr < vertex_attr_dims[attr_dbl_itr];
-                                        ++dim_itr ) {
-                                        out << " "
-                                            << GEO::String::to_string(
-                                                gocad_no_data_value_ );
-                                    }
-                                }
-                            }
-                            out << std::endl;
-                        }
-                    }
-                }
-
-                // Export duplicated vertices
-                /*for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
-                 index_t cell = mesh.cells.cell( r, c ) ;
-                 for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-                 index_t atom_id ;
-                 if( mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
-                 if( atom_exported[atom_id] ) continue ;
-                 atom_exported[atom_id] = true ;
-                 atom_exported_id[atom_id] = nb_vertices_exported ;
-                 index_t vertex_id = mesh.cells.vertex( cell, v ) ;
-                 out << "ATOM " << nb_vertices_exported++ << " "
-                 << vertex_exported_id[vertex_id] << std::endl ;
-                 }
-                 }
-                 }*/
-
-                // Mark if a boundary is ending in the region
-                std::map< index_t, index_t > sides;
-                for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-                    if( sides.count( region.boundary_gmme( s ).index() ) > 0 )
-                        // a surface is encountered twice, it is ending in the region
-                        sides[region.boundary_gmme( s ).index()] = 2;
-                    else
-                        sides[region.boundary_gmme( s ).index()] = region.side( s );
-                }
-
-                GEO::AttributesManager& reg_cell_attr_mgr =
-                    region.cell_attribute_manager();
-                for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
-                    out << "TETRA";
-                    index_t cell = mesh.cells.cell( r, c );
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-                        index_t atom_id;
-                        if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
-                            index_t vertex_id = mesh.cells.vertex( cell, v );
-                            out << " " << vertex_exported_id[vertex_id];
-                        } else {
-                            out << " " << atom_exported_id[atom_id];
-                        }
-                    }
-
-                    /// Export cell attributes
-                    vec3 center = mesh.cells.barycenter( cell );
-                    const std::vector< index_t > c_in_reg =
-                        region.cell_nn_search().get_neighbors( center,
-                            geomodel.epsilon() );
-                    ringmesh_assert( c_in_reg.size() == 1 );
-                    for( index_t attr_dbl_itr = 0;
-                        attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
-                        if( reg_cell_attr_mgr.is_defined(
-                            att_c_double_names[attr_dbl_itr] ) ) {
-                            const GEO::AttributeStore* attr_store =
-                                reg_cell_attr_mgr.find_attribute_store(
-                                    att_c_double_names[attr_dbl_itr] );
-                            ringmesh_assert( attr_store != nullptr );
-                            ringmesh_assert(
-                                attr_store->dimension()
-                                    == cell_attr_dims[attr_dbl_itr] );
-                            ringmesh_assert(
-                                GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                                    attr_store ) );
-                            GEO::ReadOnlyScalarAttributeAdapter cur_attr(
-                                reg_cell_attr_mgr,
-                                att_c_double_names[attr_dbl_itr] );
-                            for( index_t dim_itr = 0;
-                                dim_itr < cell_attr_dims[attr_dbl_itr]; ++dim_itr ) {
-                                out << " "
-                                    << cur_attr[c_in_reg[0]
-                                        * cell_attr_dims[attr_dbl_itr] + dim_itr];
-                            }
-                        } else {
-                            for( index_t dim_itr = 0;
-                                dim_itr < cell_attr_dims[attr_dbl_itr]; ++dim_itr ) {
-                                out << " "
-                                    << GEO::String::to_string(
-                                        gocad_no_data_value_ );
-                            }
-                        }
-                    }
-                    out << std::endl;
-                    out << "# CTETRA " << region.name();
-                    for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
-                        out << " ";
-                        index_t polygon = NO_ID;
-                        bool side;
-                        if( mesh.cells.is_cell_facet_on_surface( c, f, polygon,
-                            side ) ) {
-                            index_t surface_id = polygons.surface( polygon );
-                            side ? out << "+" : out << "-";
-                            out << geomodel.surface( surface_id ).parent( 0 ).name();
-                        } else {
-                            out << "none";
-                        }
-                    }
-                    out << std::endl;
-                }
+                export_one_region(region, out, nb_vertices_exported, vertex_exported, atom_exported);
             }
 
-            out << "MODEL" << std::endl;
-            int tface_count = 1;
-            for( index_t i = 0;
-                i < geomodel.nb_geological_entities( Interface::type_name_static() );
-                i++ ) {
-                const RINGMesh::GeoModelGeologicalEntity& interf =
-                    geomodel.geological_entity( Interface::type_name_static(), i );
-                out << "SURFACE " << interf.name() << std::endl;
-                for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    out << "TFACE " << tface_count++ << std::endl;
-                    index_t surface_id = interf.child_gmme( s ).index();
-                    out << "KEYVERTICES";
-                    index_t key_polygon_id = polygons.polygon( surface_id, 0 );
-                    for( index_t v = 0; v < polygons.nb_vertices( key_polygon_id );
-                        v++ ) {
-                        out << " "
-                            << vertex_exported_id[polygons.vertex( key_polygon_id,
-                                v )];
-                    }
-                    out << std::endl;
-                    for( index_t p = 0; p < polygons.nb_polygons( surface_id );
-                        p++ ) {
-                        index_t polygon_id = polygons.polygon( surface_id, p );
-                        out << "TRGL";
-                        for( index_t v = 0; v < polygons.nb_vertices( polygon_id );
-                            v++ ) {
-                            out << " "
-                                << vertex_exported_id[polygons.vertex( polygon_id,
-                                    v )];
-                        }
-                        out << std::endl;
-                    }
-                }
-            }
-
-            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                const RINGMesh::Region& region = geomodel.region( r );
-                out << "MODEL_REGION " << region.name() << " ";
-                region.side( 0 ) ? out << "+" : out << "-";
-                out << region.boundary_gmme( 0 ).index() + 1 << std::endl;
-            }
+            export_model(geomodel,out);
+            export_model_region(out);
 
             out << "END" << std::endl;
         }
     private:
+        void fill_top_header(const GeoModel& geomodel,std::ofstream& out) const
+        {
+            // Print Model3d headers
+            out << "GOCAD TSolid 1" << std::endl << "HEADER {" << std::endl
+                << "name:" << geomodel.name() << std::endl << "}" << std::endl;
+
+            out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
+                << std::endl << "AXIS_NAME \"X\" \"Y\" \"Z\"" << std::endl
+                << "AXIS_UNIT \"m\" \"m\" \"m\"" << std::endl
+                << "ZPOSITIVE Elevation" << std::endl
+                << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
+        }
         void fill_vertex_attribute_header(
             const GeoModel& geomodel,
             std::ofstream& out,
@@ -565,6 +333,268 @@ namespace {
             }
         }
 
+            void export_one_region(const RINGMesh::Region& region, std::ofstream& out, , index_t& nb_vertices_exported, std::vector< bool >& vertex_exported, std::vector< bool >& atom_exported, std::vector< index_t >& vertex_exported_id, const std::vector< std::string >& att_v_double_names, const std::vector< index_t >& vertex_attr_dims) const
+            {
+                out << "TVOLUME " << region.name() << std::endl;
+                export_region_vertices(region, out, nb_vertices_exported, vertex_exported, vertex_exported_id, att_v_double_names, vertex_attr_dims);
+                export_tetrahedra(region, out);
+            }
+
+            void export_region_vertices(const RINGMesh::Region& region, std::ofstream& out, index_t& nb_vertices_exported, std::vector< bool >& vertex_exported, std::vector< index_t >& vertex_exported_id, const std::vector< std::string >& att_v_double_names, const std::vector< index_t >& vertex_attr_dims) const
+            {
+                GEO::AttributesManager& reg_vertex_attr_mgr =
+                    region.vertex_attribute_manager();
+                const GeoModelMesh& mesh = region.geomodel().mesh;
+                // Export not duplicated vertices
+                for (index_t c = 0; c < region.nb_mesh_elements(); c++) {
+                    index_t cell = mesh.cells.cell(region.gmme().index, c);
+                    vec3 cell_center = mesh.cells.barycenter(cell);
+                    for (index_t v = 0; v < mesh.cells.nb_vertices(cell); v++) {
+                        index_t atom_id;
+                        if (!mesh.cells.is_corner_duplicated(cell, v, atom_id)) {
+                            index_t vertex_id = mesh.cells.vertex(cell, v);
+                            if (vertex_exported[vertex_id]) continue;
+                            vertex_exported[vertex_id] = true;
+                            vertex_exported_id[vertex_id] = nb_vertices_exported;
+                            // PVRTX keyword must be used instead of VRTX keyword because
+                            // properties are not read by Gocad if it is VRTX keyword.
+                            out << "PVRTX " << nb_vertices_exported++ << " "
+                                << mesh.vertices.vertex(vertex_id);
+
+                            /// Export of vertex attributes
+                            index_t vertex_id_in_reg = NO_ID;
+                            bool vertex_id_in_reg_found = false;
+                            /// As we export the non duplicated vertices,
+                            /// gme_vertices should be at size 1 (to check),
+                            /// so the loop should not be needed but I [BC]
+                            /// keep it for now since duplicated nodes is not
+                            /// operational yet...
+                            const std::vector< GMEVertex >& gme_vertices =
+                                mesh.vertices.gme_vertices(vertex_id);
+                            for (index_t gme_vertices_i = 0;
+                                gme_vertices_i < gme_vertices.size();
+                                ++gme_vertices_i) {
+                                const GMEVertex& cur_gme_vertex =
+                                    gme_vertices[gme_vertices_i];
+                                if (cur_gme_vertex.gmme != region.gmme()) {
+                                    continue;
+                                }
+                                std::vector< index_t > cells_around_vertex =
+                                    region.cells_around_vertex(
+                                    cur_gme_vertex.v_index, NO_ID);
+                                /// WARNING: the cell id in the region corresponding
+                                /// to the cell id in the GMM "cell" is not the
+                                /// variable "c" (in the for loop over the region cells).
+                                for (index_t cells_around_vertex_i = 0;
+                                    cells_around_vertex_i
+                                    < cells_around_vertex.size();
+                                ++cells_around_vertex_i) {
+                                    vec3 center = region.mesh_element_barycenter(
+                                        cells_around_vertex[cells_around_vertex_i]);
+                                    if ((center - cell_center).length()
+                                        < region.geomodel().epsilon()) {
+                                        vertex_id_in_reg = cur_gme_vertex.v_index;
+                                        vertex_id_in_reg_found = true;
+                                        break;
+                                    }
+                                }
+                                if (vertex_id_in_reg_found) {
+                                    break;
+                                }
+                            }
+                            for (index_t attr_dbl_itr = 0;
+                                attr_dbl_itr < att_v_double_names.size();
+                                ++attr_dbl_itr) {
+                                if (reg_vertex_attr_mgr.is_defined(
+                                    att_v_double_names[attr_dbl_itr])) {
+                                    const GEO::AttributeStore* attr_store =
+                                        reg_vertex_attr_mgr.find_attribute_store(
+                                        att_v_double_names[attr_dbl_itr]);
+                                    ringmesh_assert(attr_store != nullptr);
+                                    ringmesh_assert(
+                                        attr_store->dimension()
+                                        == vertex_attr_dims[attr_dbl_itr]);
+                                    ringmesh_assert(
+                                        GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
+                                        attr_store));
+                                    GEO::ReadOnlyScalarAttributeAdapter cur_attr(
+                                        reg_vertex_attr_mgr,
+                                        att_v_double_names[attr_dbl_itr]);
+                                    for (index_t dim_itr = 0;
+                                        dim_itr < vertex_attr_dims[attr_dbl_itr];
+                                        ++dim_itr) {
+                                        out << " "
+                                            << cur_attr[vertex_id_in_reg
+                                            * vertex_attr_dims[attr_dbl_itr]
+                                            + dim_itr];
+                                    }
+                                }
+                                else {
+                                    for (index_t dim_itr = 0;
+                                        dim_itr < vertex_attr_dims[attr_dbl_itr];
+                                        ++dim_itr) {
+                                        out << " "
+                                            << GEO::String::to_string(
+                                            gocad_no_data_value_);
+                                    }
+                                }
+                            }
+                            out << std::endl;
+                        }
+                    }
+                }
+            }
+            void export_tetrahedra(const RINGMesh::Region& region, std::ofstream& out) const
+            {
+                // Export duplicated vertices
+                /*for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+                index_t cell = mesh.cells.cell( r, c ) ;
+                for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
+                index_t atom_id ;
+                if( mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
+                if( atom_exported[atom_id] ) continue ;
+                atom_exported[atom_id] = true ;
+                atom_exported_id[atom_id] = nb_vertices_exported ;
+                index_t vertex_id = mesh.cells.vertex( cell, v ) ;
+                out << "ATOM " << nb_vertices_exported++ << " "
+                << vertex_exported_id[vertex_id] << std::endl ;
+                }
+                }
+                }*/
+
+                // Mark if a boundary is ending in the region
+                std::map< index_t, index_t > sides;
+                for (index_t s = 0; s < region.nb_boundaries(); s++) {
+                    if (sides.count(region.boundary_gmme(s).index()) > 0)
+                        // a surface is encountered twice, it is ending in the region
+                        sides[region.boundary_gmme(s).index()] = 2;
+                    else
+                        sides[region.boundary_gmme(s).index()] = region.side(s);
+                }
+
+                const GeoModelMesh& mesh = region.geomodel().mesh;
+                GEO::AttributesManager& reg_cell_attr_mgr =
+                    region.cell_attribute_manager();
+                for (index_t c = 0; c < region.nb_mesh_elements(); c++) {
+                    out << "TETRA";
+                    index_t cell = mesh.cells.cell(r, c);
+                    for (index_t v = 0; v < region.geomodel().mesh.cells.nb_vertices(cell); v++) {
+                        index_t atom_id;
+                        if (!mesh.cells.is_corner_duplicated(cell, v, atom_id)) {
+                            index_t vertex_id = mesh.cells.vertex(cell, v);
+                            out << " " << vertex_exported_id[vertex_id];
+                        }
+                        else {
+                            out << " " << atom_exported_id[atom_id];
+                        }
+                    }
+
+                    /// Export cell attributes
+                    vec3 center = mesh.cells.barycenter(cell);
+                    const std::vector< index_t > c_in_reg =
+                        region.cell_nn_search().get_neighbors(center,
+                        region.geomodel().epsilon());
+                    ringmesh_assert(c_in_reg.size() == 1);
+                    for (index_t attr_dbl_itr = 0;
+                        attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr) {
+                        if (reg_cell_attr_mgr.is_defined(
+                            att_c_double_names[attr_dbl_itr])) {
+                            const GEO::AttributeStore* attr_store =
+                                reg_cell_attr_mgr.find_attribute_store(
+                                att_c_double_names[attr_dbl_itr]);
+                            ringmesh_assert(attr_store != nullptr);
+                            ringmesh_assert(
+                                attr_store->dimension()
+                                == cell_attr_dims[attr_dbl_itr]);
+                            ringmesh_assert(
+                                GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
+                                attr_store));
+                            GEO::ReadOnlyScalarAttributeAdapter cur_attr(
+                                reg_cell_attr_mgr,
+                                att_c_double_names[attr_dbl_itr]);
+                            for (index_t dim_itr = 0;
+                                dim_itr < cell_attr_dims[attr_dbl_itr]; ++dim_itr) {
+                                out << " "
+                                    << cur_attr[c_in_reg[0]
+                                    * cell_attr_dims[attr_dbl_itr] + dim_itr];
+                            }
+                        }
+                        else {
+                            for (index_t dim_itr = 0;
+                                dim_itr < cell_attr_dims[attr_dbl_itr]; ++dim_itr) {
+                                out << " "
+                                    << GEO::String::to_string(
+                                    gocad_no_data_value_);
+                            }
+                        }
+                    }
+                    out << std::endl;
+                    out << "# CTETRA " << region.name();
+                    for (index_t f = 0; f < mesh.cells.nb_facets(c); f++) {
+                        out << " ";
+                        index_t polygon = NO_ID;
+                        bool side;
+                        if (mesh.cells.is_cell_facet_on_surface(c, f, polygon,
+                            side)) {
+                            index_t surface_id = mesh.polygons.surface(polygon);
+                            side ? out << "+" : out << "-";
+                            out << region.geomodel().surface(surface_id).parent(0).name();
+                        }
+                        else {
+                            out << "none";
+                        }
+                    }
+                    out << std::endl;
+                }
+            }
+            void export_model(const GeoModel& geomodel, std::ofstream& out) const
+            {
+                out << "MODEL" << std::endl;
+                int tface_count = 1;
+
+                const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
+                for (index_t i = 0;
+                    i < geomodel.nb_geological_entities(Interface::type_name_static());
+                    i++) {
+                    const RINGMesh::GeoModelGeologicalEntity& interf =
+                        geomodel.geological_entity(Interface::type_name_static(), i);
+                    out << "SURFACE " << interf.name() << std::endl;
+                    for (index_t s = 0; s < interf.nb_children(); s++) {
+                        out << "TFACE " << tface_count++ << std::endl;
+                        index_t surface_id = interf.child_gmme(s).index();
+                        out << "KEYVERTICES";
+                        index_t key_polygon_id = polygons.polygon(surface_id, 0);
+                        for (index_t v = 0; v < polygons.nb_vertices(key_polygon_id);
+                            v++) {
+                            out << " "
+                                << vertex_exported_id[polygons.vertex(key_polygon_id,
+                                v)];
+                        }
+                        out << std::endl;
+                        for (index_t p = 0; p < polygons.nb_polygons(surface_id);
+                            p++) {
+                            index_t polygon_id = polygons.polygon(surface_id, p);
+                            out << "TRGL";
+                            for (index_t v = 0; v < polygons.nb_vertices(polygon_id);
+                                v++) {
+                                out << " "
+                                    << vertex_exported_id[polygons.vertex(polygon_id,
+                                    v)];
+                            }
+                            out << std::endl;
+                        }
+                    }
+                }
+            }
+            void export_model_region(std::ofstream& out) const
+            {
+                for (index_t r = 0; r < geomodel.nb_regions(); r++) {
+                    const RINGMesh::Region& region = geomodel.region(r);
+                    out << "MODEL_REGION " << region.name() << " ";
+                    region.side(0) ? out << "+" : out << "-";
+                    out << region.boundary_gmme(0).index() + 1 << std::endl;
+                }
+            }
     private:
         const double gocad_no_data_value_;
     };
