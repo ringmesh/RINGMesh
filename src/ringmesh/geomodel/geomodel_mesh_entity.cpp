@@ -495,7 +495,7 @@ namespace RINGMesh {
     const gmge_id GeoModelMeshEntity::defined_parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
-        const gmge_id& parent_gmge = could_be_undefined_parent_gmge( parent_type_name );
+        const gmge_id parent_gmge = could_be_undefined_parent_gmge( parent_type_name );
         ringmesh_assert(parent_gmge.is_defined());
         return parent_gmge;
     }
