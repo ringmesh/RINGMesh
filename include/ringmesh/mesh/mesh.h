@@ -60,9 +60,77 @@ namespace RINGMesh {
 
     using MeshType = std::string;
 
+    /*!
+     * class base class for encapsulating Mesh structure
+     * @brief encapsulate adimensional mesh functionalities in order to provide an API
+     * on which we base the RINGMesh algorithms
+     * @note For now, we encapsulate the GEO::Mesh class.
+     */
     template< index_t DIMENSION >
     class RINGMESH_API ObjectMesh: public GEO::Counted {
+    ringmesh_disable_copy( ObjectMesh );
+        friend class MeshBaseBuilder; //@todo to rename the builder
         static_assert( DIMENSION == 2 || DIMENSION == 3, "DIMENSION template should be 2 or 3" );
+
+    public:
+        virtual ~ObjectMesh() = default;
+
+        virtual void save_mesh( const std::string& filename ) const = 0;
+
+        /*!
+         * get access to GEO::MESH... only for GFX..
+         * @todo Remove this function as soon as the GEO::MeshGFX is encapsulated
+         */
+        virtual const GEO::Mesh& gfx_mesh() const = 0;
+
+        //TODO maybe reimplement the function with a RINGMesh::Mesh??
+        virtual void print_mesh_bounded_attributes() const = 0;
+        /*!
+         * \name Vertex methods
+         * @{
+         */
+        /*!
+         * @brief Gets a point.
+         * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
+         * @return const reference to the point that corresponds to the vertex.
+         */
+        virtual const vecn< DIMENSION>& vertex( index_t v_id ) const = 0;
+        /*
+         * @brief Gets the number of vertices in the Mesh.
+         */
+        virtual index_t nb_vertices() const = 0;
+
+        virtual GEO::AttributesManager& vertex_attribute_manager() const = 0;
+
+        /*!
+         * @brief return the NNSearch at vertices
+         * @warning the NNSearch is destroyed when calling the Mesh::polygons_aabb()
+         * and Mesh::cells_aabb()
+         */
+        const NNSearch& vertices_nn_search() const
+        {
+            if( !vertices_nn_search_ ) {
+                std::vector< vec3 > vec_vertices( nb_vertices() );
+                for( index_t v = 0; v < nb_vertices(); ++v ) {
+                    vec_vertices[v] = vertex( v );
+                }
+                vertices_nn_search_.reset( new NNSearch( vec_vertices, true ) );
+            }
+            return *vertices_nn_search_.get();
+        }
+
+        virtual MeshType type_name() const = 0;
+
+        virtual std::string default_extension() const = 0;
+
+        /*!
+         * @}
+         */
+    protected:
+        ObjectMesh() = default;
+
+    protected:
+        mutable std::unique_ptr< NNSearch > vertices_nn_search_;
     };
 
     template< index_t DIMENSION >
