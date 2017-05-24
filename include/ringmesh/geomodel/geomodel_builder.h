@@ -201,7 +201,7 @@ namespace RINGMesh {
             index_t relationship_id = gmge_access.modifiable_children()[id];
             RelationshipManager& manager =
                 geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-            manager.set_child_to_parent_child_relationship(relationship_id,child) ;
+            manager.set_child_to_parent_child_relationship( relationship_id, child );
         }
 
         void delete_geological_entity(
@@ -226,6 +226,10 @@ namespace RINGMesh {
         void copy_geological_entity_topology(
             const GeoModel& from,
             const GeologicalEntityType& type );
+
+        bool check_if_boundary_in_boundary_relation_already_exists(
+            const gmge_id& parent,
+            const gmme_id& children );
 
     private:
         GeoModelBuilder& builder_;

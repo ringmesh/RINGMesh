@@ -320,6 +320,21 @@ namespace RINGMesh {
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
 
+    bool GeoModelBuilderTopology::check_if_boundary_in_boundary_relation_already_exists(
+        const gmme_id& in_boundary,
+        const gmme_id& boundary )
+    {
+        const GeoModelMeshEntity& boundary_mesh_entity =
+            geomodel_access_.modifiable_mesh_entity( boundary );
+        for( index_t in_b = 0; in_b < boundary_mesh_entity.nb_in_boundary();
+            in_b++ ) {
+            if( boundary_mesh_entity.in_boundary_gmme( in_b ) == in_boundary ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void GeoModelBuilderTopology::add_mesh_entity_boundary_relation(
         const gmme_id& in_boundary,
         const gmme_id& boundary,
@@ -338,6 +353,10 @@ namespace RINGMesh {
         }
         GeoModelMeshEntity& in_boundary_entity =
             geomodel_access_.modifiable_mesh_entity( in_boundary );
+        if( check_if_boundary_in_boundary_relation_already_exists( in_boundary,
+            boundary ) ) {
+            return;
+        }
         const MeshEntityType& boundary_type =
             geomodel_.entity_type_manager().mesh_entity_manager.boundary_type(
                 in_boundary.type() );
