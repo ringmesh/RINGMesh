@@ -155,9 +155,6 @@ namespace RINGMesh {
 #define ringmesh_register_point_mesh2(type) \
     geo_register_creator(RINGMesh::PointMesh2Factory< DIMENSION >, type, type::type_name_static())
 
-    using PointMesh2D = PointMesh2< 2 >;
-    using PointMesh3D = PointMesh2< 3 >;
-
     /*!
      * class for encapsulating line mesh (composed of edges)
      */
@@ -241,9 +238,6 @@ namespace RINGMesh {
     using LineMesh2Factory = GEO::Factory0< LineMesh2< DIMENSION> >;
 #define ringmesh_register_line_mesh2(type) \
     geo_register_creator(RINGMesh::LineMesh2Factory, type, type::type_name_static())
-
-    using LineMesh2D = LineMesh2< 2 >;
-    using LineMesh3D = LineMesh2< 3 >;
 
     /*!
      * class for encapsulating surface mesh component
@@ -599,9 +593,6 @@ namespace RINGMesh {
 #define ringmesh_register_surface_mesh(type) \
             geo_register_creator(RINGMesh::SurfaceMeshFactory, type, type::type_name_static())
 
-    using SurfaceMesh2D = SurfaceMesh2< 2 >;
-    using SurfaceMesh3D = SurfaceMesh2< 3 >;
-
     /*!
      * class for encapsulating volume mesh component
      */
@@ -893,9 +884,6 @@ namespace RINGMesh {
     using VolumeMesh2Factory = GEO::Factory0< VolumeMesh2< DIMENSION> >;
 #define ringmesh_register_volume_mesh2(type) \
             geo_register_creator(RINGMesh::VolumeMesh2Factory, type, type::type_name_static())
-
-    using VolumeMesh2D = VolumeMesh2< 2 >;
-    using VolumeMesh3D = VolumeMesh2< 3 >;
 
     /*!
      * class base class for encapsulating Mesh structure
