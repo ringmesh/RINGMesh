@@ -1125,8 +1125,9 @@ namespace RINGMesh {
             geomodel_access_.modifiable_mesh_entity( children );
         if( children_mesh_entity.parent_gmge( parent.type() ) == parent ) {
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     void GeoModelBuilderGeology::add_parent_children_relation(

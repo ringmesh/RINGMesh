@@ -353,10 +353,7 @@ namespace RINGMesh {
         }
         GeoModelMeshEntity& in_boundary_entity =
             geomodel_access_.modifiable_mesh_entity( in_boundary );
-        if( check_if_boundary_in_boundary_relation_already_exists( in_boundary,
-            boundary ) ) {
-            return;
-        }
+
         const MeshEntityType& boundary_type =
             geomodel_.entity_type_manager().mesh_entity_manager.boundary_type(
                 in_boundary.type() );
@@ -365,11 +362,18 @@ namespace RINGMesh {
             message << "Wrong boundary type in the boundary relation between "
                 << boundary << " and " << in_boundary;
             throw RINGMeshException( "Entity", message.str() );
+
         }
+        index_t relation_id = NO_ID;
         RelationshipManager& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-        index_t relation_id = manager.add_boundary_relationship( in_boundary,
-            boundary );
+        if( check_if_boundary_in_boundary_relation_already_exists( in_boundary,
+            boundary ) ) {
+            relation_id = manager.find_boundary_relationship( in_boundary,
+                boundary );
+        } else {
+            relation_id = manager.add_boundary_relationship( in_boundary, boundary );
+        }
         GeoModelMeshEntityAccess boundary_access( boundary_entity );
         boundary_access.modifiable_in_boundaries().push_back( relation_id );
         GeoModelMeshEntityAccess in_boundary_access( in_boundary_entity );
