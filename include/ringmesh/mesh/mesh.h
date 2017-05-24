@@ -60,27 +60,38 @@ namespace RINGMesh {
 
     using MeshType = std::string;
 
-    template< typename DIMENSION >
+    template< index_t DIMENSION >
     class RINGMESH_API ObjectMesh: public GEO::Counted {
+        static_assert( DIMENSION == 2 || DIMENSION == 3, "DIMENSION template should be 2 or 3" );
     };
 
-    template< typename DIMENSION >
+    template< index_t DIMENSION >
     class RINGMESH_API PointMeshTemplate: public virtual ObjectMesh< DIMENSION > {
     };
 
-    template< typename DIMENSION >
+    using PointMesh2D = PointMeshTemplate< 2 >;
+    using PointMesh3D = PointMeshTemplate< 3 >;
+
+    template< index_t DIMENSION >
     class RINGMESH_API LineMeshTemplate: public virtual ObjectMesh< DIMENSION > {
     };
 
-    template< typename DIMENSION >
+    using LineMesh2D = LineMeshTemplate< 2 >;
+    using LineMesh3D = LineMeshTemplate< 3 >;
+
+    template< index_t DIMENSION >
     class RINGMESH_API SurfaceMeshTemplate: public virtual ObjectMesh< DIMENSION > {
     };
 
-    template< typename DIMENSION >
+    using SurfaceMesh2D = SurfaceMeshTemplate< 2 >;
+    using SurfaceMesh3D = SurfaceMeshTemplate< 3 >;
+
+    template< index_t DIMENSION >
     class RINGMESH_API VolumeMeshTemplate: public virtual ObjectMesh< DIMENSION > {
     };
 
-
+    using VolumeMesh2D = VolumeMeshTemplate< 2 >;
+    using VolumeMesh3D = VolumeMeshTemplate< 3 >;
 
     /*!
      * class base class for encapsulating Mesh structure
@@ -452,8 +463,10 @@ namespace RINGMesh {
          */
         double polygon_edge_length( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 - e0 ).length();
         }
         /*!
@@ -463,8 +476,10 @@ namespace RINGMesh {
          */
         vec3 polygon_edge_barycenter( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
         /*!
