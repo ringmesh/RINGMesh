@@ -158,26 +158,744 @@ namespace RINGMesh {
     using PointMesh2D = PointMesh2< 2 >;
     using PointMesh3D = PointMesh2< 3 >;
 
+    /*!
+     * class for encapsulating line mesh (composed of edges)
+     */
     template< index_t DIMENSION >
     class RINGMESH_API LineMesh2: public virtual ObjectMesh< DIMENSION > {
+    ringmesh_disable_copy( LineMesh2 );
+        friend class LineMeshBuilder;
+    public:
+        virtual ~LineMesh2() = default;
+
+        static std::unique_ptr< LineMesh2 > create_mesh( const MeshType type );
+
+        /*
+         * @brief Gets the index of an edge vertex.
+         * @param[in] edge_id index of the edge.
+         * @param[in] vertex_id local index of the vertex, in {0,1}
+         * @return the global index of vertex \param vertex_id in edge \param edge_id.
+         */
+        virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const = 0;
+
+        /*!
+         * @brief Gets the number of all the edges in the whole Mesh.
+         */
+        virtual index_t nb_edges() const = 0;
+
+        /*!
+         * @brief Gets the length of the edge \param edge_id
+         */
+        double edge_length( index_t edge_id ) const
+        {
+            const vecn< DIMENSION >& e0 = vertex( edge_vertex( edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = vertex( edge_vertex( edge_id, 1 ) );
+            return ( e1 - e0 ).length();
+        }
+
+        vecn< DIMENSION > edge_barycenter( index_t edge_id ) const
+        {
+            const vecn< DIMENSION >& e0 = vertex( edge_vertex( edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = vertex( edge_vertex( edge_id, 1 ) );
+            return ( e1 + e0 ) / 2.;
+        }
+
+        /*!
+         * @brief return the NNSearch at edges
+         * @warning the NNSearch is destroyed when calling the Mesh::polygons_aabb()
+         * and Mesh::cells_aabb()
+         */
+        const NNSearch< DIMENSION >& edges_nn_search() const
+        {
+            if( !edges_nn_search_ ) {
+                std::vector< vecn< DIMENSION > > edge_centers( nb_edges() );
+                for( index_t e = 0; e < nb_edges(); ++e ) {
+                    edge_centers[e] = edge_barycenter( e );
+                }
+                edges_nn_search_.reset(
+                    new NNSearch< DIMENSION >( edge_centers, true ) );
+            }
+            return *edges_nn_search_.get();
+        }
+        /*!
+         * @brief Creates an AABB tree for a Mesh edges
+         */
+        const LineAABBTree& edges_aabb() const
+        {
+            if( !edges_aabb_ ) {
+                edges_aabb_.reset( new LineAABBTree( *this ) );
+            }
+            return *edges_aabb_.get();
+        }
+
+        virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
+    protected:
+        LineMesh2() = default;
+
+    protected:
+        mutable std::unique_ptr< NNSearch< DIMENSION > > edges_nn_search_;
+        mutable std::unique_ptr< LineAABBTree > edges_aabb_;
     };
+
+    template< index_t DIMENSION >
+    using LineMesh2Factory = GEO::Factory0< LineMesh2< DIMENSION> >;
+#define ringmesh_register_line_mesh2(type) \
+    geo_register_creator(RINGMesh::LineMesh2Factory, type, type::type_name_static())
 
     using LineMesh2D = LineMesh2< 2 >;
     using LineMesh3D = LineMesh2< 3 >;
 
+    /*!
+     * class for encapsulating surface mesh component
+     */
     template< index_t DIMENSION >
-    class RINGMESH_API Surface2Mesh: public virtual ObjectMesh< DIMENSION > {
+    class RINGMESH_API SurfaceMesh2: public virtual ObjectMesh< DIMENSION > {
+    ringmesh_disable_copy( SurfaceMesh2 );
+        friend class SurfaceMeshBuilder;
+
+    public:
+        virtual ~SurfaceMesh2() = default;
+
+        static std::unique_ptr< SurfaceMesh2 > create_mesh( const MeshType type );
+
+        /*!
+         * @brief Gets the vertex index by polygon index and local vertex index.
+         * @param[in] polygon_id the polygon index.
+         * @param[in] vertex_id the local edge index in \param polygon_id.
+         */
+        virtual index_t polygon_vertex(
+            index_t polygon_id,
+            index_t vertex_id ) const = 0;
+
+        /*!
+         * @brief Gets the number of all polygons in the whole Mesh.
+         */
+        virtual index_t nb_polygons() const = 0;
+        /*!
+         * @brief Gets the number of vertices in the polygon \param polygon_id.
+         * @param[in] polygon_id polygon index
+         */
+        virtual index_t nb_polygon_vertices( index_t polygon_id ) const = 0;
+        /*!
+         * @brief Gets the next vertex index in the polygon \param polygon_id.
+         * @param[in] polygon_id polygon index
+         * @param[in] vertex_id current index
+         */
+        index_t next_polygon_vertex( index_t polygon_id, index_t vertex_id ) const
+        {
+            ringmesh_assert( vertex_id < nb_polygon_vertices( polygon_id ) );
+            if( vertex_id != nb_polygon_vertices( polygon_id ) - 1 ) {
+                return vertex_id + 1;
+            } else {
+                return 0;
+            }
+        }
+        /*!
+         * @brief Get the next edge on the border
+         * @warning the edge index is in fact the index of the vertex where the edge starts.
+         * @details The returned border edge is the next in the way of polygon edges
+         * orientation.
+         * @param[in] p Input polygon index
+         * @param[in] e Edge index in the polygon
+         * @param[out] next_p Next polygon index
+         * @param[out] next_e Next edge index in the polygon
+         *
+         * @pre the given polygon edge must be on border
+         */
+        void next_on_border(
+            index_t p,
+            index_t e,
+            index_t& next_p,
+            index_t& next_e ) const;
+
+        /*!
+         * @brief Gets the previous vertex index in the polygon \param polygon_id.
+         * @param[in] polygon_id polygon index
+         * @param[in] vertex_id current index
+         */
+        index_t prev_polygon_vertex( index_t polygon_id, index_t vertex_id ) const
+        {
+            ringmesh_assert( vertex_id < nb_polygon_vertices( polygon_id ) );
+            if( vertex_id > 0 ) {
+                return vertex_id - 1;
+            } else {
+                return nb_polygon_vertices( polygon_id ) - 1;
+            }
+        }
+
+        /*!
+         * @brief Get the previous edge on the border
+         * @details The returned border edge is the previous in the way of polygon edges
+         * orientation.
+         * @param[in] p Input polygon index
+         * @param[in] e Edge index in the polygon
+         * @param[out] prev_p Previous polygon index
+         * @param[out] prev_e Previous edge index in the polygon
+         *
+         * @pre the surface must be correctly oriented and
+         * the given polygon edge must be on border
+         * @warning the edge index is in fact the index of the vertex where the edge starts.
+         */
+        void prev_on_border(
+            index_t p,
+            index_t e,
+            index_t& prev_p,
+            index_t& prev_e ) const;
+
+        /*!
+         * @brief Get the vertex index in a polygon @param polygon_index from its
+         * global index in the SurfaceMesh @param vertex_id
+         * @return NO_ID or index of the vertex in the polygon
+         */
+        index_t vertex_index_in_polygon(
+            index_t polygon_index,
+            index_t vertex_id ) const;
+
+        /*!
+         * @brief Compute closest vertex in a polygon to a point
+         * @param[in] polygon_index Polygon index
+         * @param[in] query_point Coordinates of the point to which distance is measured
+         * @return Index of the vertex of @param polygon_index closest to @param query_point
+         */
+        index_t closest_vertex_in_polygon(
+            index_t polygon_index,
+            const vec3& query_point ) const;
+
+        /*!
+         * @brief Get the first polygon of the surface that has an edge linking the two vertices (ids in the surface)
+         *
+         * @param[in] in0 Index of the first vertex in the surface
+         * @param[in] in1 Index of the second vertex in the surface
+         * @return NO_ID or the index of the polygon
+         */
+        index_t polygon_from_vertex_ids( index_t in0, index_t in1 ) const;
+
+        /*!
+         * @brief Determines the polygons around a vertex
+         * @param[in] vertex_id Index of the vertex in the surface
+         * @param[in] border_only If true only polygons on the border are considered
+         * @param[in] first_polygon (Optional) Index of one polygon containing the vertex @param P
+         * @return Indices of the polygons containing @param P
+         * @note If a polygon containing the vertex is given, polygons around this
+         * vertex is search by propagation. Else, a first polygon is found by brute
+         * force algorithm, and then the other by propagation
+         * @todo Try to use a AABB tree to remove @param first_polygon. [PA]
+         */
+        std::vector< index_t > polygons_around_vertex(
+            index_t vertex_id,
+            bool border_only,
+            index_t first_polygon ) const;
+
+        /*!
+         * @brief Gets an adjacent polygon index by polygon index and local edge index.
+         * @param[in] polygon_id the polygon index.
+         * @param[in] edge_id the local edge index in \param polygon_id.
+         * @return the global polygon index adjacent to the \param edge_id of the polygon \param polygon_id.
+         * @precondition  \param edge_id < number of edge of the polygon \param polygon_id .
+         */
+        virtual index_t polygon_adjacent(
+            index_t polygon_id,
+            index_t edge_id ) const = 0;
+
+        virtual GEO::AttributesManager& polygon_attribute_manager() const = 0;
+        /*!
+         * @brief Tests whether all the polygons are triangles. when all the polygons are triangles, storage and access is optimized.
+         * @return True if all polygons are triangles and False otherwise.
+         */
+        virtual bool polygons_are_simplicies() const = 0;
+        /*!
+         * return true if the polygon \param polygon_id is a triangle
+         */
+        bool is_triangle( index_t polygon_id ) const
+        {
+            return nb_polygon_vertices( polygon_id ) == 3;
+        }
+
+        /*!
+         * Is the edge starting with the given vertex of the polygon on a border of the Surface?
+         */
+        bool is_edge_on_border( index_t polygon_index, index_t vertex_index ) const
+        {
+            return polygon_adjacent( polygon_index, vertex_index ) == NO_ID;
+        }
+
+        /*!
+         * Is one of the edges of the polygon on the border of the surface?
+         */
+        bool is_polygon_on_border( index_t polygon_index ) const
+        {
+            for( index_t v = 0; v < nb_polygon_vertices( polygon_index ); v++ ) {
+                if( is_edge_on_border( polygon_index, v ) ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /*!
+         * @brief Gets the length of the edge starting at a given vertex
+         * @param[in] polygon_id index of the polygon
+         * @param[in] vertex_id the edge starting vertex index
+         */
+        double polygon_edge_length( index_t polygon_id, index_t vertex_id ) const
+        {
+            const vecn< DIMENSION >& e0 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vecn< DIMENSION >& e1 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            return ( e1 - e0 ).length();
+        }
+        /*!
+         * @brief Gets the barycenter of the edge starting at a given vertex
+         * @param[in] polygon_id index of the polygon
+         * @param[in] vertex_id the edge starting vertex index
+         */
+        vecn< DIMENSION > polygon_edge_barycenter(
+            index_t polygon_id,
+            index_t vertex_id ) const
+        {
+            const vecn< DIMENSION >& e0 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vecn< DIMENSION >& e1 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            return ( e1 + e0 ) / 2.;
+        }
+        /*!
+         * @brief Gets the vertex index on the polygon edge
+         * @param[in] polygon_id index of the polygon
+         * @param[in] edge_id index of the edge in the polygon \param polygon_id
+         * @param[in] vertex_id index of the local vertex in the edge \param edge_id (0 or 1)
+         * @return the vertex index
+         */
+        index_t polygon_edge_vertex(
+            index_t polygon_id,
+            index_t edge_id,
+            index_t vertex_id ) const
+        {
+            ringmesh_assert( vertex_id < 2 );
+            if( vertex_id == 0 ) {
+                return polygon_vertex( polygon_id, edge_id );
+            } else {
+                return polygon_vertex( polygon_id,
+                    ( edge_id + vertex_id ) % nb_polygon_vertices( polygon_id ) );
+            }
+        }
+
+//        /*!
+//         * Computes the Mesh polygon normal
+//         * @param[in] polygon_id the polygon index
+//         * @return the polygon normal
+//         */
+//        vec3 polygon_normal( index_t polygon_id ) const
+//        {
+//            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+//            const vec3& p2 = vertex( polygon_vertex( polygon_id, 1 ) );
+//            const vec3& p3 = vertex( polygon_vertex( polygon_id, 2 ) );
+//            vec3 norm = cross( p2 - p1, p3 - p1 );
+//            return normalize( norm );
+//        }
+//
+//        /*!
+//         * @brief Computes the normal of the Mesh2D at the vertex location
+//         * it computes the average value of polygon normal neighbors
+//         * @param[in] vertex_id the vertex index
+//         * @param[in] p0 index of a polygon that contain the vertex \param vertex_id
+//         * @return the normal at the given vertex
+//         */
+//        vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
+//        {
+//            ringmesh_assert( vertex_id < nb_vertices() );
+//            index_t p = 0;
+//            while( p0 == NO_ID && p < nb_polygons() ) {
+//                for( index_t lv = 0; lv < nb_polygon_vertices( p ); lv++ ) {
+//                    if( polygon_vertex( p, lv ) == vertex_id ) {
+//                        p0 = p;
+//                        break;
+//                    }
+//                }
+//                p++;
+//            }
+//
+//            std::vector< index_t > polygon_ids = polygons_around_vertex( vertex_id,
+//                false, p0 );
+//            vec3 norm;
+//            for( index_t polygon_id : polygon_ids ) {
+//                norm += polygon_normal( polygon_id );
+//            }
+//            return normalize( norm );
+//        }
+
+        /*!
+         * Computes the Mesh polygon barycenter
+         * @param[in] polygon_id the polygon index
+         * @return the polygon center
+         */
+        vecn< DIMENSION > polygon_barycenter( index_t polygon_id ) const
+        {
+            vecn< DIMENSION > result;
+            for( index_t i = 0; i < DIMENSION; i++ ) {
+                result[i] = 0.0;
+            }
+            double count = 0.0;
+            for( index_t v = 0; v < nb_polygon_vertices( polygon_id ); ++v ) {
+                result += vertex( polygon_vertex( polygon_id, v ) );
+                count += 1.0;
+            }
+            return ( 1.0 / count ) * result;
+        }
+        /*!
+         * Computes the Mesh polygon area
+         * @param[in] polygon_id the polygon index
+         * @return the polygon area
+         */
+        double polygon_area( index_t polygon_id ) const = 0;
+//        {
+//            double result = 0.0;
+//            if( nb_polygon_vertices( polygon_id ) == 0 ) {
+//                return result;
+//            }
+//            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+//            for( index_t i = 1; i + 1 < nb_polygon_vertices( polygon_id ); i++ ) {
+//                const vec3& p2 = vertex( polygon_vertex( polygon_id, i ) );
+//                const vec3& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
+//                result += 0.5 * length( cross( p2 - p1, p3 - p1 ) );
+//            }
+//            return result;
+//        }
+
+        /*!
+         * @brief return the NNSearch at polygons
+         */
+        const NNSearch< DIMENSION >& polygons_nn_search() const
+        {
+            if( !nn_search_ ) {
+                std::vector< vecn< DIMENSION > > polygon_centers( nb_polygons() );
+                for( index_t p = 0; p < nb_polygons(); ++p ) {
+                    polygon_centers[p] = polygon_barycenter( p );
+                }
+                nn_search_.reset(
+                    new NNSearch< DIMENSION >( polygon_centers, true ) );
+            }
+            return *nn_search_.get();
+        }
+        /*!
+         * @brief Creates an AABB tree for a Mesh polygons
+         */
+        const SurfaceAABBTree& polygons_aabb() const
+        {
+            if( !polygons_aabb_ ) {
+                polygons_aabb_.reset( new SurfaceAABBTree( *this ) );
+            }
+            return *polygons_aabb_;
+        }
+    protected:
+        SurfaceMesh2() = default;
+
+    protected:
+        mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_;
+        mutable std::unique_ptr< SurfaceAABBTree > polygons_aabb_;
+    };
+    using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh >;
+#define ringmesh_register_surface_mesh(type) \
+            geo_register_creator(RINGMesh::SurfaceMeshFactory, type, type::type_name_static())
+
+    using SurfaceMesh2D = SurfaceMesh2< 2 >;
+    using SurfaceMesh3D = SurfaceMesh2< 3 >;
+
+    /*!
+     * class for encapsulating volume mesh component
+     */
+    template< index_t DIMENSION >
+    class RINGMESH_API VolumeMesh2: public virtual ObjectMesh< DIMENSION > {
+        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );ringmesh_disable_copy( VolumeMesh2 );
+        friend class VolumeMeshBuilder;
+
+    public:
+        virtual ~VolumeMesh2() = default;
+
+        static std::unique_ptr< VolumeMesh2 > create_mesh( const MeshType type );
+
+        /*!
+         * @brief Gets a vertex index by cell and local vertex index.
+         * @param[in] cell_id the cell index.
+         * @param[in] vertex_id the local vertex index in \param cell_id.
+         * @return the global vertex index.
+         * @precondition vertex_id<number of vertices of the cell.
+         */
+        virtual index_t cell_vertex( index_t cell_id, index_t vertex_id ) const = 0;
+
+        /*!
+         * @brief Gets a vertex index by cell and local edge and local vertex index.
+         * @param[in] cell_id the cell index.
+         * @param[in] edge_id the local edge index in \param cell_id.
+         * @param[in] vertex_id the local vertex index in \param cell_id.
+         * @return the global vertex index.
+         * @precondition vertex_id<number of vertices of the cell.
+         */
+        virtual index_t cell_edge_vertex(
+            index_t cell_id,
+            index_t edge_id,
+            index_t vertex_id ) const = 0;
+
+        /*!
+         * @brief Gets a vertex by cell facet and local vertex index.
+         * @param[in] cell_id index of the cell
+         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] vertex_id index of the vertex in the facet \param facet_id
+         * @return the global vertex index.
+         * @precondition vertex_id < number of vertices in the facet \param facet_id
+         * and facet_id number of facet in th cell \param cell_id
+         */
+        virtual index_t cell_facet_vertex(
+            index_t cell_id,
+            index_t facet_id,
+            index_t vertex_id ) const = 0;
+
+        /*!
+         * @brief Gets a facet index by cell and local facet index.
+         * @param[in] cell_id index of the cell
+         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @return the global facet index.
+         */
+        virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0;
+
+        /*!
+         * Computes the Mesh cell edge length
+         * @param[in] cell_id the facet index
+         * @param[in] edge_id the edge index
+         * @return the cell edge length
+         */
+        double cell_edge_length( index_t cell_id, index_t edge_id ) const
+        {
+            const vecn< DIMENSION >& e0 = vertex(
+                cell_edge_vertex( cell_id, edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = vertex(
+                cell_edge_vertex( cell_id, edge_id, 1 ) );
+            return ( e1 - e0 ).length();
+        }
+
+        /*!
+         * Computes the Mesh cell edge barycenter
+         * @param[in] cell_id the facet index
+         * @param[in] edge_id the edge index
+         * @return the cell edge center
+         */
+        vecn< DIMENSION > cell_edge_barycenter(
+            index_t cell_id,
+            index_t edge_id ) const
+        {
+            const vecn< DIMENSION >& e0 = vertex(
+                cell_edge_vertex( cell_id, edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = vertex(
+                cell_edge_vertex( cell_id, edge_id, 1 ) );
+            return ( e1 + e0 ) / 2.;
+        }
+
+        /*!
+         * @brief Gets the number of facet in a cell
+         * @param[in] cell_id index of the cell
+         * @return the number of facet of the cell \param cell_id
+         */
+        virtual index_t nb_cell_facets( index_t cell_id ) const = 0;
+        /*!
+         * @brief Gets the total number of facet in a all cells
+         */
+        virtual index_t nb_cell_facets() const = 0;
+
+        /*!
+         * @brief Gets the number of edges in a cell
+         * @param[in] cell_id index of the cell
+         * @return the number of facet of the cell \param cell_id
+         */
+        virtual index_t nb_cell_edges( index_t cell_id ) const = 0;
+
+        /*!
+         * @brief Gets the number of vertices of a facet in a cell
+         * @param[in] cell_id index of the cell
+         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @return the number of vertices in the facet \param facet_id in the cell \param cell_id
+         */
+        virtual index_t nb_cell_facet_vertices(
+            index_t cell_id,
+            index_t facet_id ) const = 0;
+
+        /*!
+         * @brief Gets the number of vertices of a cell
+         * @param[in] cell_id index of the cell
+         * @return the number of vertices in the cell \param cell_id
+         */
+        virtual index_t nb_cell_vertices( index_t cell_id ) const = 0;
+
+        /*!
+         * @brief Gets the number of cells in the Mesh.
+         */
+        virtual index_t nb_cells() const = 0;
+
+        virtual index_t cell_begin( index_t cell_id ) const = 0;
+
+        virtual index_t cell_end( index_t cell_id ) const = 0;
+
+        /*!
+         * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
+         */
+        virtual index_t cell_adjacent( index_t cell_id, index_t facet_id ) const = 0;
+
+        virtual GEO::AttributesManager& cell_attribute_manager() const = 0;
+
+        virtual GEO::AttributesManager& cell_facet_attribute_manager() const = 0;
+
+        /*!
+         * @brief Gets the type of a cell.
+         * @param[in] cell_id the cell index, in 0..nb()-1
+         */
+        virtual GEO::MeshCellType cell_type( index_t cell_id ) const = 0;
+
+        /*!
+         * @brief Tests whether all the cells are tetrahedra.
+         * When all the cells are tetrahedra, storage and access is optimized.
+         * @return True if all cells are tetrahedra and False otherwise.
+         */
+        virtual bool cells_are_simplicies() const = 0;
+
+        /*!
+         * Computes the Mesh cell facet barycenter
+         * @param[in] cell_id the cell index
+         * @param[in] facet_id the facet index in the cell
+         * @return the cell facet center
+         */
+        vecn< DIMENSION > cell_facet_barycenter(
+            index_t cell_id,
+            index_t facet_id ) const
+        {
+            vecn< DIMENSION > result;
+            for( index_t i = 0; i < DIMENSION; i++ ) {
+                result[i] = 0.0;
+            }
+            index_t nb_vertices = nb_cell_facet_vertices( cell_id, facet_id );
+            for( index_t v = 0; v < nb_vertices; ++v ) {
+                result += vertex( cell_facet_vertex( cell_id, facet_id, v ) );
+            }
+            ringmesh_assert( nb_vertices > 0 );
+
+            return result / static_cast< double >( nb_vertices );
+        }
+        /*!
+         * Compute the non weighted barycenter of the \param cell_id
+         */
+        vecn< DIMENSION > cell_barycenter( index_t cell_id ) const
+        {
+            vecn< DIMENSION > result;
+            for( index_t i = 0; i < DIMENSION; i++ ) {
+                result[i] = 0.0;
+            }
+            double count = 0.0;
+            for( index_t v = 0; v < nb_cell_vertices( cell_id ); ++v ) {
+                result += vertex( cell_vertex( cell_id, v ) );
+                count += 1.0;
+            }
+            return ( 1.0 / count ) * result;
+        }
+        /*!
+         * Computes the Mesh cell facet normal
+         * @param[in] cell_id the cell index
+         * @param[in] facet_id the facet index in the cell
+         * @return the cell facet normal
+         */
+        vecn< DIMENSION > cell_facet_normal(
+            index_t cell_id,
+            index_t facet_id ) const
+        {
+            ringmesh_assert( cell_id < nb_cells() );
+            ringmesh_assert( facet_id < nb_cell_facets( cell_id ) );
+
+            const vecn< DIMENSION >& p1 = vertex(
+                cell_facet_vertex( cell_id, facet_id, 0 ) );
+            const vecn< DIMENSION >& p2 = vertex(
+                cell_facet_vertex( cell_id, facet_id, 1 ) );
+            const vecn< DIMENSION >& p3 = vertex(
+                cell_facet_vertex( cell_id, facet_id, 2 ) );
+
+            return cross( p2 - p1, p3 - p1 );
+        }
+
+        /*!
+         * @brief compute the volume of the cell \param cell_id.
+         */
+        virtual double cell_volume( index_t cell_id ) const = 0;
+
+        index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const
+        {
+            for( index_t v = 0; v < nb_cell_vertices( cell_id ); ++v ) {
+                if( cell_vertex( cell_id, v ) == vertex_id ) {
+                    return cell_vertex( cell_id, v );
+                }
+            }
+            return NO_ID;
+        }
+
+        /*!
+         * @brief return the NNSearch at cell facets
+         * @warning the NNSearch is destroyed when calling the Mesh::facets_aabb()
+         *  and Mesh::cells_aabb()
+         */
+        const NNSearch< DIMENSION >& cell_facets_nn_search() const
+        {
+            if( !cell_facets_nn_search_ ) {
+                std::vector< vecn< DIMENSION > > cell_facet_centers(
+                    nb_cell_facets() );
+                index_t cf = 0;
+                for( index_t c = 0; c < nb_cells(); ++c ) {
+                    for( index_t f = 0; f < nb_cell_facets( c ); ++f ) {
+                        cell_facet_centers[cf] = cell_facet_barycenter( c, f );
+                        ++cf;
+                    }
+                }
+                cell_facets_nn_search_.reset(
+                    new NNSearch< DIMENSION >( cell_facet_centers, true ) );
+            }
+            return *cell_facets_nn_search_.get();
+        }
+        /*!
+         * @brief return the NNSearch at cells
+         */
+        const NNSearch< DIMENSION >& cells_nn_search() const
+        {
+            if( !cell_nn_search_ ) {
+                std::vector< vecn< DIMENSION > > cell_centers( nb_cells() );
+                for( index_t c = 0; c < nb_cells(); ++c ) {
+                    cell_centers[c] = cell_barycenter( c );
+                }
+                cell_nn_search_.reset(
+                    new NNSearch< DIMENSION >( cell_centers, true ) );
+            }
+            return *cell_nn_search_.get();
+        }
+        /*!
+         * @brief Creates an AABB tree for a Mesh cells
+         */
+        const VolumeAABBTree& cells_aabb() const
+        {
+            if( !cell_aabb_ ) {
+                cell_aabb_.reset( new VolumeAABBTree( *this ) );
+            }
+            return *cell_aabb_.get();
+        }
+    protected:
+        VolumeMesh2() = default;
+
+    protected:
+        mutable std::unique_ptr< NNSearch< DIMENSION > > cell_facets_nn_search_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_;
+        mutable std::unique_ptr< VolumeAABBTree > cell_aabb_;
     };
 
-    using SurfaceMesh2D = Surface2Mesh< 2 >;
-    using SurfaceMesh3D = Surface2Mesh< 3 >;
-
     template< index_t DIMENSION >
-    class RINGMESH_API Volume2Mesh: public virtual ObjectMesh< DIMENSION > {
-    };
+    using VolumeMesh2Factory = GEO::Factory0< VolumeMesh2< DIMENSION> >;
+#define ringmesh_register_volume_mesh2(type) \
+            geo_register_creator(RINGMesh::VolumeMesh2Factory, type, type::type_name_static())
 
-    using VolumeMesh2D = Volume2Mesh< 2 >;
-    using VolumeMesh3D = Volume2Mesh< 3 >;
+    using VolumeMesh2D = VolumeMesh2< 2 >;
+    using VolumeMesh3D = VolumeMesh2< 3 >;
 
     /*!
      * class base class for encapsulating Mesh structure
@@ -699,9 +1417,10 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< 3 > > nn_search_;
         mutable std::unique_ptr< SurfaceAABBTree > polygons_aabb_;
     };
-    using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh >;
-#define ringmesh_register_surface_mesh(type) \
-    geo_register_creator(RINGMesh::SurfaceMeshFactory, type, type::type_name_static())
+    template< index_t DIMENSION >
+    using SurfaceMesh2Factory = GEO::Factory0< SurfaceMesh2< DIMENSION > >;
+#define ringmesh_register_surface_mesh2(type) \
+    geo_register_creator(RINGMesh::SurfaceMesh2Factory, type, type::type_name_static())
 
     /*!
      * class for encapsulating volume mesh component
