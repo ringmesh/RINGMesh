@@ -124,12 +124,12 @@ namespace RINGMesh {
          */
         virtual index_t create_vertices( index_t nb ) = 0;
 
-//        /*!
-//         * @brief set vertex coordinates from a std::vector of coordinates
-//         * @param[in] points_xyz_coordinates a set of x, y, z coordinates
-//         */
-//        virtual void assign_vertices(
-//            const std::vector< double >& points_xyz_coordinates ) = 0;
+        /*!
+         * @brief set vertex coordinates from a std::vector of coordinates
+         * @param[in] point_coordinates a set of x, y (, z) coordinates
+         */
+        virtual void assign_vertices(
+            const std::vector< double >& point_coordinates ) = 0;
 
         /*!
          * @brief Deletes a set of vertices.
@@ -185,10 +185,13 @@ namespace RINGMesh {
         {
         }
     };
+
     template< index_t DIMENSION >
     using PointMesh2BuilderFactory = GEO::Factory0< PointMesh2Builder< DIMENSION > >;
+
+    using PointMesh2BuilderFactory3D = PointMesh2BuilderFactory< 3 >;
 #define ringmesh_register_point_mesh_builder(type) \
-    geo_register_creator(RINGMesh::PointMesh2BuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::PointMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
     class RINGMESH_API LineMesh2Builder: public MeshBase2Builder< DIMENSION > {
@@ -255,14 +258,17 @@ namespace RINGMesh {
         virtual void remove_isolated_vertices() = 0;
     protected:
         LineMesh2Builder()
-        : MeshBase2Builder< DIMENSION >()
+            : MeshBase2Builder< DIMENSION >()
         {
         }
     };
+
     template< index_t DIMENSION >
     using LineMesh2BuilderFactory = GEO::Factory0< LineMesh2Builder< DIMENSION > >;
+
+    using LineMesh2BuilderFactory3D = LineMesh2BuilderFactory< 3 >;
 #define ringmesh_register_line_mesh_builder(type) \
-    geo_register_creator(RINGMesh::LineMesh2BuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::LineMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
     class RINGMESH_API SurfaceMesh2Builder: public MeshBase2Builder< DIMENSION > {
@@ -397,10 +403,13 @@ namespace RINGMesh {
         {
         }
     };
+
     template< index_t DIMENSION >
-    using SurfaceMesh2BuilderFactory = GEO::Factory0< SurfaceMesh2Builder< DIMENSION> >;
+    using SurfaceMesh2BuilderFactory = GEO::Factory0< SurfaceMesh2Builder< DIMENSION > >;
+
+    using SurfaceMesh2BuilderFactory3D = SurfaceMesh2BuilderFactory< 3 >;
 #define ringmesh_register_surface_mesh_builder(type) \
-    geo_register_creator(RINGMesh::SurfaceMesh2BuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::SurfaceMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
     class RINGMESH_API VolumeMesh2Builder: public MeshBase2Builder< DIMENSION > {
@@ -512,9 +521,11 @@ namespace RINGMesh {
         {
         }
     };
+
     template< index_t DIMENSION >
     using VolumeMesh2BuilderFactory = GEO::Factory0< VolumeMesh2Builder< DIMENSION > >;
-#define ringmesh_register_volume_mesh_builder(type) \
-    geo_register_creator(RINGMesh::VolumeMesh2BuilderFactory, type ## Builder, type::type_name_static())
 
+    using VolumeMesh2BuilderFactory3D = VolumeMesh2BuilderFactory< 3 >;
+#define ringmesh_register_volume_mesh_builder(type) \
+    geo_register_creator(RINGMesh::VolumeMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
 }

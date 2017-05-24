@@ -112,6 +112,9 @@ namespace RINGMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointMesh );
     };
 
+    using GeogramPointMesh2D = GeogramPointMesh< 2 >;
+    using GeogramPointMesh3D = GeogramPointMesh< 3 >;
+
     template< index_t DIMENSION >
     class RINGMESH_API GeogramLineMesh: public LineMesh2< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
@@ -131,6 +134,9 @@ namespace RINGMesh {
             return mesh_->edges.attributes();
         }
     };
+
+    using GeogramLineMesh2D = GeogramLineMesh< 2 >;
+    using GeogramLineMesh3D = GeogramLineMesh< 3 >;
 
     template< index_t DIMENSION >
     class RINGMESH_API GeogramSurfaceMesh: public SurfaceMesh2< DIMENSION > {
@@ -165,6 +171,9 @@ namespace RINGMesh {
             return mesh_->facets.are_simplices();
         }
     };
+
+    using GeogramSurfaceMesh2D = GeogramSurfaceMesh< 2 >;
+    using GeogramSurfaceMesh3D = GeogramSurfaceMesh< 3 >;
 
     template< index_t DIMENSION >
     class RINGMESH_API GeogramVolumeMesh: public VolumeMesh2< DIMENSION > {
@@ -265,6 +274,9 @@ namespace RINGMesh {
             return RINGMesh::mesh_cell_volume( *mesh_, cell_id );
         }
     };
+
+    using GeogramVolumeMesh2D = GeogramVolumeMesh< 2 >;
+    using GeogramVolumeMesh3D = GeogramVolumeMesh< 3 >;
 
     void register_geogram_mesh();
 }

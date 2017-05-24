@@ -42,7 +42,7 @@
 #include <geogram/mesh/mesh_geometry.h>
 
 #include <ringmesh/basic/algorithm.h>
-#include <ringmesh/basic/box3d.h>
+#include <ringmesh/basic/boxnd.h>
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/geomodel/geomodel.h>
