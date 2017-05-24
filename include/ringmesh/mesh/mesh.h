@@ -153,8 +153,10 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     using PointMesh2Factory = GEO::Factory0< PointMesh2< DIMENSION > >;
-#define ringmesh_register_point_mesh2(type) \
-    geo_register_creator(RINGMesh::PointMesh2Factory< DIMENSION >, type, type::type_name_static())
+
+    using PointMesh2Factory3D = PointMesh2Factory< 3 >;
+#define ringmesh_register_point_mesh_3d(type) \
+    geo_register_creator(RINGMesh::PointMesh2Factory3D, type, type::type_name_static())
 
     /*!
      * class for encapsulating line mesh (composed of edges)
@@ -237,9 +239,11 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using LineMesh2Factory = GEO::Factory0< LineMesh2< DIMENSION> >;
-#define ringmesh_register_line_mesh2(type) \
-    geo_register_creator(RINGMesh::LineMesh2Factory, type, type::type_name_static())
+    using LineMesh2Factory = GEO::Factory0< LineMesh2< DIMENSION > >;
+
+    using LineMesh2Factory3D = LineMesh2Factory< 3 >;
+#define ringmesh_register_line_mesh_3d(type) \
+    geo_register_creator(RINGMesh::LineMesh2Factory3D, type, type::type_name_static())
 
     /*!
      * class for encapsulating surface mesh component
@@ -478,50 +482,6 @@ namespace RINGMesh {
             }
         }
 
-//        /*!
-//         * Computes the Mesh polygon normal
-//         * @param[in] polygon_id the polygon index
-//         * @return the polygon normal
-//         */
-//        vec3 polygon_normal( index_t polygon_id ) const
-//        {
-//            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
-//            const vec3& p2 = vertex( polygon_vertex( polygon_id, 1 ) );
-//            const vec3& p3 = vertex( polygon_vertex( polygon_id, 2 ) );
-//            vec3 norm = cross( p2 - p1, p3 - p1 );
-//            return normalize( norm );
-//        }
-//
-//        /*!
-//         * @brief Computes the normal of the Mesh2D at the vertex location
-//         * it computes the average value of polygon normal neighbors
-//         * @param[in] vertex_id the vertex index
-//         * @param[in] p0 index of a polygon that contain the vertex \param vertex_id
-//         * @return the normal at the given vertex
-//         */
-//        vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
-//        {
-//            ringmesh_assert( vertex_id < nb_vertices() );
-//            index_t p = 0;
-//            while( p0 == NO_ID && p < nb_polygons() ) {
-//                for( index_t lv = 0; lv < nb_polygon_vertices( p ); lv++ ) {
-//                    if( polygon_vertex( p, lv ) == vertex_id ) {
-//                        p0 = p;
-//                        break;
-//                    }
-//                }
-//                p++;
-//            }
-//
-//            std::vector< index_t > polygon_ids = polygons_around_vertex( vertex_id,
-//                false, p0 );
-//            vec3 norm;
-//            for( index_t polygon_id : polygon_ids ) {
-//                norm += polygon_normal( polygon_id );
-//            }
-//            return normalize( norm );
-//        }
-
         /*!
          * Computes the Mesh polygon barycenter
          * @param[in] polygon_id the polygon index
@@ -592,13 +552,59 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_;
         mutable std::unique_ptr< SurfaceAABBTree > polygons_aabb_;
     };
+
     template< index_t DIMENSION >
     using SurfaceMesh2Factory = GEO::Factory0< SurfaceMesh2< DIMENSION > >;
-#define ringmesh_register_surface_mesh(type) \
-    geo_register_creator(RINGMesh::SurfaceMesh2Factory, type, type::type_name_static())
+
+    using SurfaceMesh2Factory3D = SurfaceMesh2Factory< 3 >;
+#define ringmesh_register_surface_mesh_3d(type) \
+    geo_register_creator(RINGMesh::SurfaceMesh2Factory3D, type, type::type_name_static())
 
     class SurfaceMesh3D: public SurfaceMesh2< 3 > {
     public:
+        /*!
+         * Computes the Mesh polygon normal
+         * @param[in] polygon_id the polygon index
+         * @return the polygon normal
+         */
+        vec3 polygon_normal( index_t polygon_id ) const
+        {
+            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+            const vec3& p2 = vertex( polygon_vertex( polygon_id, 1 ) );
+            const vec3& p3 = vertex( polygon_vertex( polygon_id, 2 ) );
+            vec3 norm = cross( p2 - p1, p3 - p1 );
+            return normalize( norm );
+        }
+
+        /*!
+         * @brief Computes the normal of the Mesh2D at the vertex location
+         * it computes the average value of polygon normal neighbors
+         * @param[in] vertex_id the vertex index
+         * @param[in] p0 index of a polygon that contain the vertex \param vertex_id
+         * @return the normal at the given vertex
+         */
+        vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
+        {
+            ringmesh_assert( vertex_id < nb_vertices() );
+            index_t p = 0;
+            while( p0 == NO_ID && p < nb_polygons() ) {
+                for( index_t lv = 0; lv < nb_polygon_vertices( p ); lv++ ) {
+                    if( polygon_vertex( p, lv ) == vertex_id ) {
+                        p0 = p;
+                        break;
+                    }
+                }
+                p++;
+            }
+
+            std::vector< index_t > polygon_ids = polygons_around_vertex( vertex_id,
+                false, p0 );
+            vec3 norm;
+            for( index_t polygon_id : polygon_ids ) {
+                norm += polygon_normal( polygon_id );
+            }
+            return normalize( norm );
+        }
         /*!
          * Computes the Mesh polygon area
          * @param[in] polygon_id the polygon index
@@ -910,9 +916,11 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using VolumeMesh2Factory = GEO::Factory0< VolumeMesh2< DIMENSION> >;
-#define ringmesh_register_volume_mesh2(type) \
-            geo_register_creator(RINGMesh::VolumeMesh2Factory, type, type::type_name_static())
+    using VolumeMesh2Factory = GEO::Factory0< VolumeMesh2< DIMENSION > >;
+
+    using VolumeMesh2Factory3D = VolumeMesh2Factory< 3 >;
+#define ringmesh_register_volume_mesh_3d(type) \
+    geo_register_creator(RINGMesh::VolumeMesh2Factory3D, type, type::type_name_static())
 
 }
 

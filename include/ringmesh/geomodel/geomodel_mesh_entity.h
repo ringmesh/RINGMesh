@@ -298,7 +298,7 @@ namespace RINGMesh {
             return mesh_ != nullptr;
         }
 
-        void set_mesh( std::shared_ptr< MeshBase > mesh )
+        void set_mesh( std::shared_ptr< BaseMesh2< 3 > > mesh )
         {
             ringmesh_assert( mesh != nullptr );
             mesh_ = std::move( mesh );
@@ -340,7 +340,7 @@ namespace RINGMesh {
 
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
-        std::shared_ptr< MeshBase > mesh_;
+        std::shared_ptr< BaseMesh2< 3 > > mesh_;
     };
 
     /*!
@@ -416,7 +416,7 @@ namespace RINGMesh {
          * @warn This function is for ADVANCED user only. If you use it,
          * you are responsible for low level mesh consistency.
          */
-        const PointMesh& low_level_mesh_storage() const
+        const PointMesh2< 3 >& low_level_mesh_storage() const
         {
             return *mesh0d_;
         }
@@ -428,7 +428,7 @@ namespace RINGMesh {
             : GeoModelMeshEntity( geomodel, id )
 
         {
-            update_mesh_storage_type( PointMesh::create_mesh( type ) );
+            update_mesh_storage_type( PointMesh2< 3 >::create_mesh( type ) );
         }
 
         /*!
@@ -450,7 +450,7 @@ namespace RINGMesh {
 
     private:
 
-        void update_mesh_storage_type( std::unique_ptr< PointMesh > mesh )
+        void update_mesh_storage_type( std::unique_ptr< PointMesh2< 3 > > mesh )
         {
             mesh0d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh0d_ );
@@ -459,7 +459,7 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
     private:
-        std::shared_ptr< PointMesh > mesh0d_;
+        std::shared_ptr< PointMesh2< 3 > > mesh0d_;
     };
 
     /*!
@@ -574,7 +574,7 @@ namespace RINGMesh {
          * @warn This function is for ADVANCED user only. If you use it,
          * you are responsible for low level mesh consistency.
          */
-        const LineMesh& low_level_mesh_storage() const
+        const LineMesh2< 3 >& low_level_mesh_storage() const
         {
             return *mesh1d_;
         }
@@ -582,7 +582,7 @@ namespace RINGMesh {
         Line( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
         {
-            update_mesh_storage_type( LineMesh::create_mesh( type ) );
+            update_mesh_storage_type( LineMesh2< 3 >::create_mesh( type ) );
         }
 
         /*!
@@ -600,7 +600,7 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const final;
 
     private:
-        void update_mesh_storage_type( std::unique_ptr< LineMesh > mesh )
+        void update_mesh_storage_type( std::unique_ptr< LineMesh2< 3 > > mesh )
         {
             mesh1d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh1d_ );
@@ -609,7 +609,7 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
     private:
-        std::shared_ptr< LineMesh > mesh1d_;
+        std::shared_ptr< LineMesh2< 3 > > mesh1d_;
     };
 
     /*!
@@ -910,7 +910,7 @@ namespace RINGMesh {
          * @warn This function is for ADVANCED user only. If you use it,
          * you are responsible for low level mesh consistency.
          */
-        const SurfaceMesh& low_level_mesh_storage() const
+        const SurfaceMesh2< 3 >& low_level_mesh_storage() const
         {
             return *mesh2d_;
         }
@@ -918,7 +918,7 @@ namespace RINGMesh {
         Surface( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
         {
-            update_mesh_storage_type( SurfaceMesh::create_mesh( type ) );
+            update_mesh_storage_type( SurfaceMesh2< 3 >::create_mesh( type ) );
         }
 
         /*!
@@ -945,7 +945,7 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const final;
 
     private:
-        void update_mesh_storage_type( std::unique_ptr< SurfaceMesh > mesh )
+        void update_mesh_storage_type( std::unique_ptr< SurfaceMesh2< 3 > > mesh )
         {
             mesh2d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh2d_ );
@@ -953,7 +953,7 @@ namespace RINGMesh {
 
         virtual void change_mesh_data_structure( const MeshType type ) override;
     private:
-        std::shared_ptr< SurfaceMesh > mesh2d_;
+        std::shared_ptr< SurfaceMesh2< 3 > > mesh2d_;
     };
 
     /*!
@@ -1264,7 +1264,7 @@ namespace RINGMesh {
          * @warn This function is for ADVANCED user only. If you use it,
          * you are responsible for low level mesh consistency.
          */
-        const VolumeMesh& low_level_mesh_storage() const
+        const VolumeMesh2< 3 >& low_level_mesh_storage() const
         {
             return *mesh3d_;
         }
@@ -1272,13 +1272,13 @@ namespace RINGMesh {
         Region( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
         {
-            update_mesh_storage_type( VolumeMesh::create_mesh( type ) );
+            update_mesh_storage_type( VolumeMesh2< 3 >::create_mesh( type ) );
         }
 
         virtual bool is_mesh_valid() const final;
 
     private:
-        void update_mesh_storage_type( std::unique_ptr< VolumeMesh > mesh )
+        void update_mesh_storage_type( std::unique_ptr< VolumeMesh2< 3 > > mesh )
         {
             mesh3d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh3d_ );
@@ -1300,7 +1300,7 @@ namespace RINGMesh {
          */
         std::vector< bool > sides_;
     private:
-        std::shared_ptr< VolumeMesh > mesh3d_;
+        std::shared_ptr< VolumeMesh2< 3 > > mesh3d_;
     };
 
     class GeoModelMeshEntityConstAccess {
@@ -1313,7 +1313,7 @@ namespace RINGMesh {
         {
         }
 
-        const std::shared_ptr< MeshBase >& mesh() const
+        const std::shared_ptr< BaseMesh2< 3 > >& mesh() const
         {
             return gmme_.mesh_;
         }
@@ -1372,7 +1372,7 @@ namespace RINGMesh {
             return gmme_.parents_;
         }
 
-        std::shared_ptr< MeshBase >& modifiable_mesh()
+        std::shared_ptr< BaseMesh2< 3 > >& modifiable_mesh()
         {
             return gmme_.mesh_;
         }

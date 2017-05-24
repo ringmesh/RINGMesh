@@ -315,7 +315,7 @@ namespace RINGMesh {
         if( new_type.empty() ) {
             new_type = GeogramVolumeMesh< DIMENSION >::type_name_static();
         }
-        VolumeMesh2< DIMENSION >* mesh = VolumeMeshFactory < DIMENSION
+        VolumeMesh2< DIMENSION >* mesh = VolumeMesh2Factory < DIMENSION
             > ::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh3D", "Could not create mesh data structure: ",

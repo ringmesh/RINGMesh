@@ -35,15 +35,14 @@
 
 #pragma once
 
+#include <ringmesh/basic/boxnd.h>
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/basic/box3d.h>
-
 namespace RINGMesh {
-    class MeshBase;
-    class LineMesh;
-    class SurfaceMesh;
-    class VolumeMesh;
+    template< index_t DIMENSION > class BaseMesh2;
+    template< index_t DIMENSION > class LineMesh2;
+    template< index_t DIMENSION > class SurfaceMesh2;
+    template< index_t DIMENSION > class VolumeMesh2;
 }
 
 namespace RINGMesh {
@@ -59,7 +58,9 @@ namespace RINGMesh {
      *  where B* are the input bboxes
      *  Storage: |empty|ROOT|A1|A2|B1|B2|B3|B4|
      */
+    template< index_t DIMENSION >
     class RINGMESH_API AABBTree {
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         /// The index where to store the root. It starts to one for algorithm trick.
         static const index_t ROOT_INDEX = 1;
@@ -97,15 +98,15 @@ namespace RINGMesh {
          */
         template< typename EvalDistance >
         index_t closest_element_box(
-            const vec3& query,
-            vec3& nearest_point,
+            const vecn< DIMENSION >& query,
+            vecn< DIMENSION >& nearest_point,
             double& distance,
             const EvalDistance& action ) const
         {
             index_t nearest_box = NO_ID;
             get_nearest_element_box_hint( query, nearest_box, nearest_point,
                 distance );
-            closest_element_box_recursive< EvalDistance >( query, nearest_box,
+            closest_element_box_recursive< DIMENSION, EvalDistance >( query, nearest_box,
                 nearest_point, distance, ROOT_INDEX, 0, nb_bboxes(), action );
             ringmesh_assert( nearest_box != NO_ID );
             return nearest_box;
@@ -123,7 +124,7 @@ namespace RINGMesh {
          */
         template< class EvalIntersection >
         void compute_bbox_element_bbox_intersections(
-            const Box3d& box,
+            const BoxND< DIMENSION > & box,
             EvalIntersection& action ) const
         {
             bbox_intersect_recursive< EvalIntersection >( box, ROOT_INDEX, 0,
@@ -154,7 +155,7 @@ namespace RINGMesh {
          * using the ordered bboxes
          * @param[in] bboxes the set of unordered bboxes
          */
-        void initialize_tree( const std::vector< Box3d >& bboxes );
+        void initialize_tree( const std::vector< BoxND< DIMENSION > >& bboxes );
 
         bool is_leaf( index_t box_begin, index_t box_end ) const
         {
@@ -185,7 +186,7 @@ namespace RINGMesh {
          * @brief The recursive instruction used in initialize_tree()
          */
         void initialize_tree_recursive(
-            const std::vector< Box3d >& bboxes,
+            const std::vector< BoxND< DIMENSION > >& bboxes,
             index_t node_index,
             index_t element_begin,
             index_t element_end );
@@ -195,9 +196,9 @@ namespace RINGMesh {
          */
         template< typename ACTION >
         void closest_element_box_recursive(
-            const vec3& query,
+            const vecn< DIMENSION > & query,
             index_t& nearest_box,
-            vec3& nearest_point,
+            vecn< DIMENSION > & nearest_point,
             double& distance,
             index_t node_index,
             index_t element_begin,
@@ -206,7 +207,7 @@ namespace RINGMesh {
 
         template< class ACTION >
         void bbox_intersect_recursive(
-            const Box3d& box,
+            const BoxND< DIMENSION >& box,
             index_t node_index,
             index_t element_begin,
             index_t element_end,
@@ -230,26 +231,28 @@ namespace RINGMesh {
          * inside the bboxes
          */
         void get_nearest_element_box_hint(
-            const vec3& query,
+            const vecn< DIMENSION >& query,
             index_t& nearest_box,
-            vec3& nearest_point,
+            vecn< DIMENSION >& nearest_point,
             double& distance ) const;
         /*!
          * @brief Gets an element point from its box
          * @details This function is used to get a result from the selected hint box
          */
-        virtual vec3 get_point_hint_from_box(
-            const Box3d& box,
+        virtual vecn< DIMENSION > get_point_hint_from_box(
+            const BoxND< DIMENSION >& box,
             index_t element_id ) const = 0;
 
     protected:
-        std::vector< Box3d > tree_;
+        std::vector< BoxND< DIMENSION > > tree_;
         std::vector< index_t > mapping_morton_;
     };
 
-    class RINGMESH_API BoxAABBTree: public AABBTree {
+    template< index_t DIMENSION>
+    class RINGMESH_API BoxAABBTree: public AABBTree< DIMENSION > {
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        BoxAABBTree( const std::vector< Box3d >& boxes );
+        BoxAABBTree( const std::vector< BoxND< DIMENSION > >& boxes );
         virtual ~BoxAABBTree() = default;
 
     private:
@@ -257,14 +260,16 @@ namespace RINGMesh {
          * @brief Gets an element point from its box
          * @details In this case, the point is the barycenter of the box
          */
-        virtual vec3 get_point_hint_from_box(
-            const Box3d& box,
+        virtual vecn< DIMENSION > get_point_hint_from_box(
+            const BoxND< DIMENSION >& box,
             index_t element_id ) const override;
     };
 
-    class RINGMESH_API LineAABBTree: public AABBTree {
+    template< index_t DIMENSION >
+    class RINGMESH_API LineAABBTree: public AABBTree< DIMENSION > {
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        LineAABBTree( const LineMesh& mesh );
+        LineAABBTree( const LineMesh2< DIMENSION >& mesh );
         virtual ~LineAABBTree() = default;
 
         /*!
@@ -275,16 +280,16 @@ namespace RINGMesh {
          * @return the closest edge index
          */
         index_t closest_edge(
-            const vec3& query,
-            vec3& nearest_point,
+            const vecn< DIMENSION >& query,
+            vecn< DIMENSION >& nearest_point,
             double& distance ) const;
     private:
         /*!
          * @brief Gets an element point from its box
          * @details In this case, the point is the first vertex of the element
          */
-        virtual vec3 get_point_hint_from_box(
-            const Box3d& box,
+        virtual vecn< DIMENSION > get_point_hint_from_box(
+            const BoxND< DIMENSION >& box,
             index_t element_id ) const override;
         /*!
          * This class is used as functor in closest_element_box() to compute
@@ -292,28 +297,30 @@ namespace RINGMesh {
          */
         class DistanceToEdge {
         public:
-            DistanceToEdge( const LineMesh& mesh )
+            DistanceToEdge( const LineMesh2< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }
 
             void operator()(
-                const vec3& query,
+                const vecn< DIMENSION >& query,
                 index_t cur_box,
-                vec3& nearest_point,
+                vecn< DIMENSION >& nearest_point,
                 double& distance ) const;
 
         private:
-            const LineMesh& mesh_;
+            const LineMesh2< DIMENSION >& mesh_;
         };
 
     private:
-        const LineMesh& mesh_;
+        const LineMesh2< DIMENSION >& mesh_;
     };
 
-    class RINGMESH_API SurfaceAABBTree: public AABBTree {
+    template< index_t DIMENSION >
+    class RINGMESH_API SurfaceAABBTree: public AABBTree< DIMENSION > {
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        SurfaceAABBTree( const SurfaceMesh& mesh );
+        SurfaceAABBTree( const SurfaceMesh2< DIMENSION >& mesh );
         virtual ~SurfaceAABBTree() = default;
 
         /*!
@@ -325,16 +332,16 @@ namespace RINGMesh {
          * @return the closest triangle index
          */
         index_t closest_triangle(
-            const vec3& query,
-            vec3& nearest_point,
+            const vecn< DIMENSION >& query,
+            vecn< DIMENSION >& nearest_point,
             double& distance ) const;
     private:
         /*!
          * @brief Gets an element point from its box
          * @details In this case, the point is the first vertex of the element
          */
-        virtual vec3 get_point_hint_from_box(
-            const Box3d& box,
+        virtual vecn< DIMENSION > get_point_hint_from_box(
+            const BoxND< DIMENSION >& box,
             index_t element_id ) const override;
         /*!
          * This class is used as functor in closest_element_box() to compute
@@ -342,28 +349,30 @@ namespace RINGMesh {
          */
         class DistanceToTriangle {
         public:
-            DistanceToTriangle( const SurfaceMesh& mesh )
+            DistanceToTriangle( const SurfaceMesh2< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }
 
             void operator()(
-                const vec3& query,
+                const vecn< DIMENSION >& query,
                 index_t cur_box,
-                vec3& nearest_point,
+                vecn< DIMENSION >& nearest_point,
                 double& distance ) const;
 
         private:
-            const SurfaceMesh& mesh_;
+            const SurfaceMesh2< DIMENSION >& mesh_;
         };
 
     private:
-        const SurfaceMesh& mesh_;
+        const SurfaceMesh2< DIMENSION >& mesh_;
     };
 
-    class RINGMESH_API VolumeAABBTree: public AABBTree {
+    template< index_t DIMENSION >
+    class RINGMESH_API VolumeAABBTree: public AABBTree< DIMENSION > {
+        static_assert( DIMENSION == 3, "DIMENSION template should be 2 or 3" );
     public:
-        VolumeAABBTree( const VolumeMesh& mesh );
+        VolumeAABBTree( const VolumeMesh2< DIMENSION >& mesh );
         virtual ~VolumeAABBTree() = default;
 
         /*!
@@ -372,35 +381,38 @@ namespace RINGMesh {
          * @return the cell index containing \p query,
          * NO_ID if no cell is corresponding
          */
-        index_t containing_cell( const vec3& query ) const;
+        index_t containing_cell( const vecn< DIMENSION >& query ) const;
 
     private:
         /*!
          * @brief Gets an element point from its box
          * @details In this case, the point is the first vertex of the element
          */
-        virtual vec3 get_point_hint_from_box(
-            const Box3d& box,
+        virtual vecn< DIMENSION > get_point_hint_from_box(
+            const BoxND< DIMENSION >& box,
             index_t element_id ) const override;
         index_t containing_cell_recursive(
-            const vec3& query,
+            const vecn< DIMENSION >& query,
             index_t node_index,
             index_t box_begin,
             index_t box_end ) const;
 
     private:
-        const VolumeMesh& mesh_;
+        const VolumeMesh2< DIMENSION >& mesh_;
     };
 
-    double inner_point_box_distance( const vec3& p, const Box3d& B );
+    template< index_t DIMENSION >
+    double inner_point_box_distance( const vecn< DIMENSION >& p, const BoxND< DIMENSION >& B );
 
-    double point_box_signed_distance( const vec3& p, const Box3d& B );
+    template< index_t DIMENSION >
+    double point_box_signed_distance( const vecn< DIMENSION >& p, const BoxND< DIMENSION >& B );
 
+    template< index_t DIMENSION >
     template< typename ACTION >
-    void AABBTree::closest_element_box_recursive(
-        const vec3& query,
+    void AABBTree< DIMENSION >::closest_element_box_recursive(
+        const vecn< DIMENSION >& query,
         index_t& nearest_box,
-        vec3& nearest_point,
+        vecn< DIMENSION >& nearest_point,
         double& distance,
         index_t node_index,
         index_t box_begin,
@@ -414,7 +426,7 @@ namespace RINGMesh {
         // and replace current if nearer
         if( is_leaf( box_begin, box_end ) ) {
             index_t cur_box = mapping_morton_[box_begin];
-            vec3 cur_nearest_point;
+            vecn< DIMENSION > cur_nearest_point;
             double cur_distance;
             action( query, cur_box, cur_nearest_point, cur_distance );
             if( cur_distance < distance ) {
@@ -436,32 +448,29 @@ namespace RINGMesh {
         // to prune the traversal of the other child.
         if( distance_left < distance_right ) {
             if( distance_left < distance ) {
-                closest_element_box_recursive< ACTION >( query, nearest_box,
-                    nearest_point, distance, child_left, box_begin, box_middle,
-                    action );
+                closest_element_box_recursive < ACTION
+                    > ( query, nearest_box, nearest_point, distance, child_left, box_begin, box_middle, action );
             }
             if( distance_right < distance ) {
-                closest_element_box_recursive< ACTION >( query, nearest_box,
-                    nearest_point, distance, child_right, box_middle, box_end,
-                    action );
+                closest_element_box_recursive < ACTION
+                    > ( query, nearest_box, nearest_point, distance, child_right, box_middle, box_end, action );
             }
         } else {
             if( distance_right < distance ) {
-                closest_element_box_recursive< ACTION >( query, nearest_box,
-                    nearest_point, distance, child_right, box_middle, box_end,
-                    action );
+                closest_element_box_recursive < ACTION
+                    > ( query, nearest_box, nearest_point, distance, child_right, box_middle, box_end, action );
             }
             if( distance_left < distance ) {
-                closest_element_box_recursive< ACTION >( query, nearest_box,
-                    nearest_point, distance, child_left, box_begin, box_middle,
-                    action );
+                closest_element_box_recursive < ACTION
+                    > ( query, nearest_box, nearest_point, distance, child_left, box_begin, box_middle, action );
             }
         }
     }
 
+    template< index_t DIMENSION >
     template< typename ACTION >
-    void AABBTree::bbox_intersect_recursive(
-        const Box3d& box,
+    void AABBTree< DIMENSION >::bbox_intersect_recursive(
+        const BoxND< DIMENSION >& box,
         index_t node_index,
         index_t element_begin,
         index_t element_end,
@@ -486,14 +495,15 @@ namespace RINGMesh {
         get_recursive_iterators( node_index, element_begin, element_end, box_middle,
             child_left, child_right );
 
-        bbox_intersect_recursive< ACTION >( box, child_left, element_begin,
-            box_middle, action );
-        bbox_intersect_recursive< ACTION >( box, child_right, box_middle,
-            element_end, action );
+        bbox_intersect_recursive < ACTION
+            > ( box, child_left, element_begin, box_middle, action );
+        bbox_intersect_recursive < ACTION
+            > ( box, child_right, box_middle, element_end, action );
     }
 
+    template< index_t DIMENSION >
     template< class ACTION >
-    void AABBTree::self_intersect_recursive(
+    void AABBTree< DIMENSION >::self_intersect_recursive(
         index_t node_index1,
         index_t element_begin1,
         index_t element_end1,
@@ -534,18 +544,18 @@ namespace RINGMesh {
             index_t middle_box2, child_left2, child_right2;
             get_recursive_iterators( node_index2, element_begin2, element_end2,
                 middle_box2, child_left2, child_right2 );
-            self_intersect_recursive< ACTION >( node_index1, element_begin1,
-                element_end1, child_left2, element_begin2, middle_box2, action );
-            self_intersect_recursive< ACTION >( node_index1, element_begin1,
-                element_end1, child_right2, middle_box2, element_end2, action );
+            self_intersect_recursive < ACTION
+                > ( node_index1, element_begin1, element_end1, child_left2, element_begin2, middle_box2, action );
+            self_intersect_recursive < ACTION
+                > ( node_index1, element_begin1, element_end1, child_right2, middle_box2, element_end2, action );
         } else {
             index_t middle_box1, child_left1, child_right1;
             get_recursive_iterators( node_index1, element_begin1, element_end1,
                 middle_box1, child_left1, child_right1 );
-            self_intersect_recursive< ACTION >( child_left1, element_begin1,
-                middle_box1, node_index2, element_begin2, element_end2, action );
-            self_intersect_recursive< ACTION >( child_right1, middle_box1,
-                element_end1, node_index2, element_begin2, element_end2, action );
+            self_intersect_recursive < ACTION
+                > ( child_left1, element_begin1, middle_box1, node_index2, element_begin2, element_end2, action );
+            self_intersect_recursive < ACTION
+                > ( child_right1, middle_box1, element_end1, node_index2, element_begin2, element_end2, action );
         }
     }
 }
