@@ -50,8 +50,24 @@ namespace GEO {
 
 namespace RINGMesh {
 
-    bool RINGMESH_API operator==( const vec3& u, const vec3& v );
-    bool RINGMESH_API operator!=( const vec3& u, const vec3& v );
+    template< index_t DIMENSION >
+    bool RINGMESH_API operator==(
+        const vecn< DIMENSION >& u,
+        const vecn< DIMENSION >& v )
+    {
+        for( index_t i = 0; i < DIMENSION; i++ ) {
+            if( u[i] != v[i] ) return false;
+        }
+        return true;
+    }
+
+    template< index_t DIMENSION >
+    bool RINGMESH_API operator!=(
+        const vecn< DIMENSION >& u,
+        const vecn< DIMENSION >& v )
+    {
+        return !( u == v );
+    }
 
     /* @warning Duplicate from Geogram/basic/numeric.h */
     enum Sign {
