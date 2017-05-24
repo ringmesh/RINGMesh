@@ -192,9 +192,9 @@ namespace RINGMesh {
             }
         }
 
-        bool check_if_boundary_in_boundary_relation_already_exists(
-            const gmme_id& in_boundary,
-            const gmme_id& boundary );
+        index_t check_if_boundary_in_boundary_relation_already_exists(
+                const gmme_id& in_boundary,
+                const gmme_id& boundary ) ;
 
     private:
         GeoModelBuilder& builder_;

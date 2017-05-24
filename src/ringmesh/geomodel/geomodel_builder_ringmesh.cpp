@@ -161,12 +161,32 @@ namespace RINGMesh {
             gmme_id entity = read_first_line( file_line );
 
             const std::string mesh_type = file_line.field( 4 );
-            builder_.geometry.change_mesh_data_structure( entity, mesh_type );
+            if( GEO::String::string_starts_with( mesh_type, "Geogram" ) ) {
+                builder_.geometry.change_mesh_data_structure( entity,
+                    old_2_new_name( mesh_type ) );
+
+            } else {
+                builder_.geometry.change_mesh_data_structure( entity, mesh_type );
+
+            }
 
             read_second_line( file_line, entity );
 
         }
-    };
+    private:
+        const std::string& old_2_new_name( const std::string& old_name )
+        {
+
+            index_t new_name_pos = GEO::String::to_int(
+                GEO::String::to_string( old_name.at( old_name.length() - 2 ) ) );
+            return new_names[new_name_pos];
+        }
+    private:
+        std::string new_names[4] = { "GeogramPointSetMesh", "GeogramLineMesh",
+                                     "GeogramSurfaceMesh", "GeogramVolumeMesh" };
+
+    }
+    ;
     class GeoModelBuilderGMImpl_2: public GeoModelBuilderGMImpl_1 {
     public:
         GeoModelBuilderGMImpl_2( GeoModelBuilderGM& builder )
@@ -355,7 +375,7 @@ namespace RINGMesh {
             index_t id = NO_ID;
             GEO::String::from_string( entity_id, id );
             if( MeshEntityTypeManager::is_corner( entity_type ) ) {
-                std::unique_ptr< PointMeshBuilder > builder =
+                std::unique_ptr< PointSetMeshBuilder > builder =
                     geometry.create_corner_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_line( entity_type ) ) {

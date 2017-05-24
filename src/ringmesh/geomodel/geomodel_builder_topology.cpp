@@ -320,19 +320,20 @@ namespace RINGMesh {
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
 
-    bool GeoModelBuilderTopology::check_if_boundary_in_boundary_relation_already_exists(
+    index_t GeoModelBuilderTopology::check_if_boundary_in_boundary_relation_already_exists(
         const gmme_id& in_boundary,
         const gmme_id& boundary )
     {
-        const GeoModelMeshEntity& boundary_mesh_entity =
-            geomodel_access_.modifiable_mesh_entity( boundary );
-        for( index_t in_b = 0; in_b < boundary_mesh_entity.nb_in_boundary();
+        GeoModelMeshEntity& in_boundary_mesh_entity =
+            geomodel_access_.modifiable_mesh_entity( in_boundary );
+        for( index_t in_b = 0; in_b < in_boundary_mesh_entity.nb_in_boundary();
             in_b++ ) {
-            if( boundary_mesh_entity.in_boundary_gmme( in_b ) == in_boundary ) {
-                return true;
+            if( in_boundary_mesh_entity.in_boundary_gmme( in_b ) == boundary ) {
+                GeoModelMeshEntityAccess entity_access( in_boundary_mesh_entity );
+                return entity_access.modifiable_in_boundaries()[in_b];
             }
         }
-        return false;
+        return NO_ID;
     }
 
     void GeoModelBuilderTopology::add_mesh_entity_boundary_relation(
@@ -364,19 +365,17 @@ namespace RINGMesh {
             throw RINGMeshException( "Entity", message.str() );
 
         }
-        index_t relation_id = NO_ID;
+
+        index_t relation_id = check_if_boundary_in_boundary_relation_already_exists(
+            in_boundary, boundary );
         RelationshipManager& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-        if( check_if_boundary_in_boundary_relation_already_exists( in_boundary,
-            boundary ) ) {
-            relation_id = manager.find_boundary_relationship( in_boundary,
-                boundary );
-        } else {
+        if( relation_id == NO_ID ) {
             relation_id = manager.add_boundary_relationship( in_boundary, boundary );
         }
         GeoModelMeshEntityAccess boundary_access( boundary_entity );
-        boundary_access.modifiable_in_boundaries().push_back( relation_id );
         GeoModelMeshEntityAccess in_boundary_access( in_boundary_entity );
+        boundary_access.modifiable_in_boundaries().push_back( relation_id );
         in_boundary_access.modifiable_boundaries().push_back( relation_id );
 
         if( in_boundary.type() == Region::type_name_static() ) {

@@ -142,7 +142,7 @@ namespace RINGMesh {
          */
         bool has_parent( const GeologicalEntityType& parent_type ) const
         {
-            return parent_gmge( parent_type ).is_defined();
+            return parent_gmge_unsafe( parent_type ).is_defined();
         }
 
         index_t nb_parents() const
@@ -321,6 +321,12 @@ namespace RINGMesh {
         void bind_vertex_mapping_attribute() const;
 
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
+
+        const gmge_id parent_gmge_safe(
+            const GeologicalEntityType& parent_type ) const;
+
+        const gmge_id parent_gmge_unsafe(
+            const GeologicalEntityType& parent_type ) const;
     protected:
 
         /// Boundary relations of this entity
@@ -410,7 +416,7 @@ namespace RINGMesh {
          * @warn This function is for ADVANCED user only. If you use it,
          * you are responsible for low level mesh consistency.
          */
-        const PointMesh& low_level_mesh_storage() const
+        const PointSetMesh& low_level_mesh_storage() const
         {
             return *mesh0d_;
         }
@@ -422,7 +428,7 @@ namespace RINGMesh {
             : GeoModelMeshEntity( geomodel, id )
 
         {
-            update_mesh_storage_type( PointMesh::create_mesh( type ) );
+            update_mesh_storage_type( PointSetMesh::create_mesh( type ) );
         }
 
         /*!
@@ -444,7 +450,7 @@ namespace RINGMesh {
 
     private:
 
-        void update_mesh_storage_type( std::unique_ptr< PointMesh > mesh )
+        void update_mesh_storage_type( std::unique_ptr< PointSetMesh > mesh )
         {
             mesh0d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh0d_ );
@@ -453,7 +459,7 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
     private:
-        std::shared_ptr< PointMesh > mesh0d_;
+        std::shared_ptr< PointSetMesh > mesh0d_;
     };
 
     /*!

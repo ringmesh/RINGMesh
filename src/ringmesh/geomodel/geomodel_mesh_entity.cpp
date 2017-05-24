@@ -478,13 +478,26 @@ namespace RINGMesh {
     const gmge_id GeoModelMeshEntity::parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
+        return parent_gmge_safe( parent_type_name );
+    }
+
+    const gmge_id GeoModelMeshEntity::parent_gmge_unsafe(
+        const GeologicalEntityType& parent_type_name ) const
+    {
         for( index_t i = 0; i < nb_parents(); ++i ) {
             if( parent_gmge( i ).type() == parent_type_name ) {
                 return parent_gmge( i );
             }
         }
-        ringmesh_assert_not_reached;
         return gmge_id( ForbiddenGeologicalEntityType::type_name_static(), NO_ID );
+    }
+
+    const gmge_id GeoModelMeshEntity::parent_gmge_safe(
+        const GeologicalEntityType& parent_type_name ) const
+    {
+        const gmge_id& parent_gmge = parent_gmge_unsafe( parent_type_name );
+        ringmesh_assert(parent_gmge.is_defined());
+        return parent_gmge;
     }
 
     const gmme_id& GeoModelMeshEntity::boundary_gmme( index_t x ) const
@@ -931,9 +944,9 @@ namespace RINGMesh {
 
     void Corner::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< PointMesh > new_mesh = PointMesh::create_mesh( type );
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
-            *new_mesh );
+        std::unique_ptr< PointSetMesh > new_mesh = PointSetMesh::create_mesh( type );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *new_mesh );
         builder->copy( *mesh0d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
@@ -950,8 +963,8 @@ namespace RINGMesh {
     void Surface::change_mesh_data_structure( const MeshType type )
     {
         std::unique_ptr< SurfaceMesh > new_mesh = SurfaceMesh::create_mesh( type );
-        std::unique_ptr< SurfaceMeshBuilder > builder = SurfaceMeshBuilder::create_builder(
-            *new_mesh );
+        std::unique_ptr< SurfaceMeshBuilder > builder =
+            SurfaceMeshBuilder::create_builder( *new_mesh );
         builder->copy( *mesh2d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
@@ -959,8 +972,8 @@ namespace RINGMesh {
     void Region::change_mesh_data_structure( const MeshType type )
     {
         std::unique_ptr< VolumeMesh > new_mesh = VolumeMesh::create_mesh( type );
-        std::unique_ptr< VolumeMeshBuilder > builder = VolumeMeshBuilder::create_builder(
-            *new_mesh );
+        std::unique_ptr< VolumeMeshBuilder > builder =
+            VolumeMeshBuilder::create_builder( *new_mesh );
         builder->copy( *mesh3d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
