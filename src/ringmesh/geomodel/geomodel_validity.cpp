@@ -710,7 +710,7 @@ namespace {
 
     bool is_surface_conformal_to_volume(
         const Surface& surface,
-        const NNSearch& cell_facet_barycenter_nn_search )
+        const NNSearch< 3 >& cell_facet_barycenter_nn_search )
     {
         std::vector< index_t > unconformal_polygons;
         for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
@@ -784,7 +784,7 @@ namespace {
         std::vector< bool >& edge_on_lines )
     {
         edge_on_lines.resize( edge_barycenters.size(), false );
-        NNSearch nn( edge_barycenters );
+        NNSearch< 3 > nn( edge_barycenters );
         for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
             const Line& line = geomodel.line( l );
             for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
@@ -950,7 +950,7 @@ namespace {
         {
             if( geomodel_.mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface polygons and Region cell facets
-                const NNSearch& nn_search =
+                const NNSearch< 3 >& nn_search =
                     geomodel_.mesh.cells.cell_facet_nn_search();
                 for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
                     if( !is_surface_conformal_to_volume( geomodel_.surface( i ),
