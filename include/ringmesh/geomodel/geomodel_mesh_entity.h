@@ -142,7 +142,7 @@ namespace RINGMesh {
          */
         bool has_parent( const GeologicalEntityType& parent_type ) const
         {
-            return parent_gmge_unsafe( parent_type ).is_defined();
+            return could_be_undefined_parent_gmge( parent_type ).is_defined();
         }
 
         index_t nb_parents() const
@@ -322,10 +322,11 @@ namespace RINGMesh {
 
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
 
-        const gmge_id parent_gmge_safe(
+    private:
+        const gmge_id defined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
 
-        const gmge_id parent_gmge_unsafe(
+        const gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
     protected:
 
@@ -1306,6 +1307,7 @@ namespace RINGMesh {
     class GeoModelMeshEntityConstAccess {
     ringmesh_disable_copy( GeoModelMeshEntityConstAccess );
         friend class GeoModelBuilderGeometry;
+        friend class GeoModelBuilderTopology;
 
     private:
         GeoModelMeshEntityConstAccess( const GeoModelMeshEntity& gme )
@@ -1316,6 +1318,16 @@ namespace RINGMesh {
         const std::shared_ptr< MeshBase >& mesh() const
         {
             return gmme_.mesh_;
+        }
+
+        const std::vector< index_t >& in_boundary_relation_ids() const
+        {
+            return gmme_.in_boundary_;
+        }
+
+        const std::vector< index_t >& boundary_relation_ids() const
+        {
+            return gmme_.boundaries_;
         }
 
     private:

@@ -1122,7 +1122,7 @@ namespace RINGMesh {
         const gmme_id& children )
     {
         const GeoModelMeshEntity& children_mesh_entity =
-            geomodel_access_.modifiable_mesh_entity( children );
+            geomodel_.mesh_entity( children );
         if( children_mesh_entity.has_parent( parent.type() ) ) {
             ringmesh_assert(parent == children_mesh_entity.parent_gmge(parent.type()));
             return true;

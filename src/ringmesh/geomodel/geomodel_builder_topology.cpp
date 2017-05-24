@@ -324,13 +324,14 @@ namespace RINGMesh {
         const gmme_id& in_boundary,
         const gmme_id& boundary )
     {
-        GeoModelMeshEntity& in_boundary_mesh_entity =
-            geomodel_access_.modifiable_mesh_entity( in_boundary );
+        const GeoModelMeshEntity& in_boundary_mesh_entity = geomodel_.mesh_entity(
+            in_boundary );
         for( index_t in_b = 0; in_b < in_boundary_mesh_entity.nb_in_boundary();
             in_b++ ) {
             if( in_boundary_mesh_entity.in_boundary_gmme( in_b ) == boundary ) {
-                GeoModelMeshEntityAccess entity_access( in_boundary_mesh_entity );
-                return entity_access.modifiable_in_boundaries()[in_b];
+                GeoModelMeshEntityConstAccess entity_access(
+                    in_boundary_mesh_entity );
+                return entity_access.in_boundary_relation_ids()[in_b];
             }
         }
         return NO_ID;
