@@ -191,15 +191,15 @@ namespace RINGMesh {
          */
         double edge_length( index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 = vertex( edge_vertex( edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 = vertex( edge_vertex( edge_id, 1 ) );
+            const vecn< DIMENSION >& e0 = this->vertex( edge_vertex( edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = this->vertex( edge_vertex( edge_id, 1 ) );
             return ( e1 - e0 ).length();
         }
 
         vecn< DIMENSION > edge_barycenter( index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 = vertex( edge_vertex( edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 = vertex( edge_vertex( edge_id, 1 ) );
+            const vecn< DIMENSION >& e0 = this->vertex( edge_vertex( edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = this->vertex( edge_vertex( edge_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
 
@@ -498,7 +498,7 @@ namespace RINGMesh {
             }
             double count = 0.0;
             for( index_t v = 0; v < nb_polygon_vertices( polygon_id ); ++v ) {
-                result += vertex( polygon_vertex( polygon_id, v ) );
+                result += this->vertex( polygon_vertex( polygon_id, v ) );
                 count += 1.0;
             }
             return ( 1.0 / count ) * result;
@@ -563,7 +563,7 @@ namespace RINGMesh {
 #define ringmesh_register_surface_mesh_3d(type) \
     geo_register_creator(RINGMesh::SurfaceMesh2Factory3D, type, type::type_name_static())
 
-    class SurfaceMesh3D: public SurfaceMesh2< 3 > {
+    class SurfaceMesh3D : SurfaceMesh2< 3 > {
     public:
         /*!
          * Computes the Mesh polygon normal
@@ -572,9 +572,9 @@ namespace RINGMesh {
          */
         vec3 polygon_normal( index_t polygon_id ) const
         {
-            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
-            const vec3& p2 = vertex( polygon_vertex( polygon_id, 1 ) );
-            const vec3& p3 = vertex( polygon_vertex( polygon_id, 2 ) );
+            const vec3& p1 = this->vertex( this->polygon_vertex( polygon_id, 0 ) );
+            const vec3& p2 = this->vertex( this->polygon_vertex( polygon_id, 1 ) );
+            const vec3& p3 = this->vertex( this->polygon_vertex( polygon_id, 2 ) );
             vec3 norm = cross( p2 - p1, p3 - p1 );
             return normalize( norm );
         }
@@ -600,7 +600,7 @@ namespace RINGMesh {
                 p++;
             }
 
-            std::vector< index_t > polygon_ids = polygons_around_vertex( vertex_id,
+            std::vector < index_t > polygon_ids = polygons_around_vertex( vertex_id,
                 false, p0 );
             vec3 norm;
             for( index_t polygon_id : polygon_ids ) {
@@ -802,7 +802,7 @@ namespace RINGMesh {
             }
             index_t nb_vertices = nb_cell_facet_vertices( cell_id, facet_id );
             for( index_t v = 0; v < nb_vertices; ++v ) {
-                result += vertex( cell_facet_vertex( cell_id, facet_id, v ) );
+                result += this->vertex( cell_facet_vertex( cell_id, facet_id, v ) );
             }
             ringmesh_assert( nb_vertices > 0 );
 
@@ -819,7 +819,7 @@ namespace RINGMesh {
             }
             double count = 0.0;
             for( index_t v = 0; v < nb_cell_vertices( cell_id ); ++v ) {
-                result += vertex( cell_vertex( cell_id, v ) );
+                result += this->vertex( cell_vertex( cell_id, v ) );
                 count += 1.0;
             }
             return ( 1.0 / count ) * result;
@@ -837,11 +837,11 @@ namespace RINGMesh {
             ringmesh_assert( cell_id < nb_cells() );
             ringmesh_assert( facet_id < nb_cell_facets( cell_id ) );
 
-            const vecn< DIMENSION >& p1 = vertex(
+            const vecn< DIMENSION >& p1 = this->vertex(
                 cell_facet_vertex( cell_id, facet_id, 0 ) );
-            const vecn< DIMENSION >& p2 = vertex(
+            const vecn< DIMENSION >& p2 = this->vertex(
                 cell_facet_vertex( cell_id, facet_id, 1 ) );
-            const vecn< DIMENSION >& p3 = vertex(
+            const vecn< DIMENSION >& p3 = this->vertex(
                 cell_facet_vertex( cell_id, facet_id, 2 ) );
 
             return cross( p2 - p1, p3 - p1 );
