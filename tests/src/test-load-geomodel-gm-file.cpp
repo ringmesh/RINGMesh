@@ -105,6 +105,7 @@ int main()
 
         test_file( "modelA1_version0.gm" );
         test_file( "modelA1_version1.gm" );
+        test_file( "modelA1_version2.gm" );
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
