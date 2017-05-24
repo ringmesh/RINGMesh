@@ -420,7 +420,7 @@ namespace RINGMesh {
          * @param[in] mesh the mesh of the well
          * @param[in] name the name of the well
          */
-        void add_well( const LineMesh& mesh, const std::string& name );
+        void add_well( const LineMesh2< 3 >& mesh, const std::string& name );
 
         /*!
          * Gets the number of wells

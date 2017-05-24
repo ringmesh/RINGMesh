@@ -478,7 +478,7 @@ namespace RINGMesh {
         }
     }
 
-    void WellGroup::add_well( const LineMesh& mesh, const std::string& name )
+    void WellGroup::add_well( const LineMesh2< 3 >& mesh, const std::string& name )
     {
         ringmesh_assert( geomodel() );
         if( find_well( name ) != NO_ID ) return;

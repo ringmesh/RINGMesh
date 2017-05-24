@@ -49,11 +49,11 @@
 
 namespace RINGMesh {
     class GeoModel;
-    class MeshBaseBuilder;
-    class PointMeshBuilder;
-    class LineMeshBuilder;
-    class SurfaceMeshBuilder;
-    class VolumeMeshBuilder;
+    template< index_t DIMENSION > class MeshBase2Builder;
+    template< index_t DIMENSION > class PointMesh2Builder;
+    template< index_t DIMENSION > class LineMesh2Builder;
+    template< index_t DIMENSION > class SurfaceMesh2Builder;
+    template< index_t DIMENSION > class VolumeMesh2Builder;
 }
 
 namespace RINGMesh {
@@ -67,10 +67,10 @@ namespace RINGMesh {
      * @note For now, we encapsulate the GEO::Mesh class.
      */
     template< index_t DIMENSION >
-    class RINGMESH_API BaseMesh2: public GEO::Counted {
+    class BaseMesh2: public GEO::Counted {
     ringmesh_disable_copy( BaseMesh2 );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class MeshBaseBuilder; //@todo to rename the builder
+        friend class MeshBase2Builder< DIMENSION > ; //@todo to rename the builder
 
     public:
         virtual ~BaseMesh2() = default;
@@ -141,7 +141,7 @@ namespace RINGMesh {
     class RINGMESH_API PointMesh2: public virtual BaseMesh2< DIMENSION > {
     ringmesh_disable_copy( PointMesh2 );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class PointMeshBuilder;
+        friend class PointMesh2Builder< DIMENSION >;
 
     public:
         virtual ~PointMesh2() = default;
@@ -163,7 +163,7 @@ namespace RINGMesh {
     class RINGMESH_API LineMesh2: public virtual BaseMesh2< DIMENSION > {
     ringmesh_disable_copy( LineMesh2 );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class LineMeshBuilder;
+        friend class LineMesh2Builder< DIMENSION >;
     public:
         virtual ~LineMesh2() = default;
 
@@ -248,7 +248,7 @@ namespace RINGMesh {
     class RINGMESH_API SurfaceMesh2: public virtual BaseMesh2< DIMENSION > {
     ringmesh_disable_copy( SurfaceMesh2 );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class SurfaceMeshBuilder;
+        friend class SurfaceMesh2Builder< DIMENSION >;
 
     public:
         virtual ~SurfaceMesh2() = default;
@@ -603,7 +603,7 @@ namespace RINGMesh {
     class RINGMESH_API VolumeMesh2: public virtual BaseMesh2< DIMENSION > {
     ringmesh_disable_copy( VolumeMesh2 );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
-        friend class VolumeMeshBuilder;
+        friend class VolumeMesh2Builder< DIMENSION >;
 
     public:
         virtual ~VolumeMesh2() = default;
@@ -888,6 +888,18 @@ namespace RINGMesh {
     using VolumeMesh2Factory = GEO::Factory0< VolumeMesh2< DIMENSION> >;
 #define ringmesh_register_volume_mesh2(type) \
             geo_register_creator(RINGMesh::VolumeMesh2Factory, type, type::type_name_static())
+
+}
+
+// @to delete
+
+namespace RINGMesh {
+
+    class MeshBaseBuilder;
+    class PointMeshBuilder;
+    class LineMeshBuilder;
+    class SurfaceMeshBuilder;
+    class VolumeMeshBuilder;
 
     /*!
      * class base class for encapsulating Mesh structure
