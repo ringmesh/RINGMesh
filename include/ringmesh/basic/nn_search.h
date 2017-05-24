@@ -49,7 +49,7 @@ namespace RINGMesh {
     template< index_t DIMENSION = 3 >
     class RINGMESH_API NNSearch {
     ringmesh_disable_copy( NNSearch );
-        static_assert( DIMENSION == 2 || DIMENSION == 3, "DIMENSION template should be 2 or 3" );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         NNSearch(
             const std::vector< vecn< DIMENSION > >& vertices,
