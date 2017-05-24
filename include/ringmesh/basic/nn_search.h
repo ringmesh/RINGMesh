@@ -44,10 +44,6 @@
  * @author Arnaud Botella
  */
 
-namespace GEO {
-    class Mesh;
-}
-
 namespace RINGMesh {
 
     template< index_t DIMENSION = 3 >

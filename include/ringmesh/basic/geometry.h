@@ -37,16 +37,10 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/points/kd_tree.h>
-
 /*!
- * @file What
+ * @file Basic geometrical requests
  * @author Arnaud Botella
  */
-
-namespace GEO {
-    class Mesh;
-}
 
 namespace RINGMesh {
 
