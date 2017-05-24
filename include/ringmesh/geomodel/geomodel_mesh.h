@@ -672,7 +672,7 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the polygons of the mesh
          */
-        const SurfaceAABBTree& aabb() const;
+        const SurfaceAABBTree< 3 >& aabb() const;
 
     private:
         /*!
@@ -780,7 +780,7 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the edges of the mesh
          */
-        const LineAABBTree& aabb() const;
+        const LineAABBTree< 3 >& aabb() const;
 
     private:
         /// Attached Mesh
@@ -1131,7 +1131,7 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the cells of the mesh
          */
-        const VolumeAABBTree& aabb() const;
+        const VolumeAABBTree< 3 >& aabb() const;
 
     private:
         /// enum to characterize the action to do concerning a surface

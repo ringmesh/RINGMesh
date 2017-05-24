@@ -217,10 +217,10 @@ namespace RINGMesh {
         /*!
          * @brief Creates an AABB tree for a Mesh edges
          */
-        const LineAABBTree& edges_aabb() const
+        const LineAABBTree< 3 >& edges_aabb() const
         {
             if( !edges_aabb_ ) {
-                edges_aabb_.reset( new LineAABBTree( *this ) );
+                edges_aabb_.reset( new LineAABBTree< 3 >( *this ) );
             }
             return *edges_aabb_.get();
         }
@@ -231,7 +231,7 @@ namespace RINGMesh {
 
     protected:
         mutable std::unique_ptr< NNSearch< 3 > > edges_nn_search_;
-        mutable std::unique_ptr< LineAABBTree > edges_aabb_;
+        mutable std::unique_ptr< LineAABBTree< 3 > > edges_aabb_;
     };
     using LineMeshFactory = GEO::Factory0< LineMesh >;
 #define ringmesh_register_line_mesh(type) \
@@ -562,10 +562,10 @@ namespace RINGMesh {
         /*!
          * @brief Creates an AABB tree for a Mesh polygons
          */
-        const SurfaceAABBTree& polygons_aabb() const
+        const SurfaceAABBTree< 3 >& polygons_aabb() const
         {
             if( !polygons_aabb_ ) {
-                polygons_aabb_.reset( new SurfaceAABBTree( *this ) );
+                polygons_aabb_.reset( new SurfaceAABBTree< 3 >( *this ) );
             }
             return *polygons_aabb_;
         }
@@ -574,7 +574,7 @@ namespace RINGMesh {
 
     protected:
         mutable std::unique_ptr< NNSearch< 3 > > nn_search_;
-        mutable std::unique_ptr< SurfaceAABBTree > polygons_aabb_;
+        mutable std::unique_ptr< SurfaceAABBTree< 3 > > polygons_aabb_;
     };
     using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh >;
 #define ringmesh_register_surface_mesh(type) \
@@ -827,10 +827,10 @@ namespace RINGMesh {
         /*!
          * @brief Creates an AABB tree for a Mesh cells
          */
-        const VolumeAABBTree& cells_aabb() const
+        const VolumeAABBTree< 3 >& cells_aabb() const
         {
             if( !cell_aabb_ ) {
-                cell_aabb_.reset( new VolumeAABBTree( *this ) );
+                cell_aabb_.reset( new VolumeAABBTree< 3 >( *this ) );
             }
             return *cell_aabb_.get();
         }
@@ -840,7 +840,7 @@ namespace RINGMesh {
     protected:
         mutable std::unique_ptr< NNSearch< 3 > > cell_facets_nn_search_;
         mutable std::unique_ptr< NNSearch< 3 > > cell_nn_search_;
-        mutable std::unique_ptr< VolumeAABBTree > cell_aabb_;
+        mutable std::unique_ptr< VolumeAABBTree< 3 > > cell_aabb_;
     };
     using VolumeMeshFactory = GEO::Factory0< VolumeMesh >;
 #define ringmesh_register_volume_mesh(type) \

@@ -129,7 +129,7 @@ namespace {
         return true;
     }
 
-    void compute_mesh_entity_bbox( const GeoModelMeshEntity& entity, Box3d& bbox )
+    void compute_mesh_entity_bbox( const GeoModelMeshEntity& entity, Box< 3 >& bbox )
     {
         for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
             bbox.add_point( entity.vertex( v ) );
@@ -1380,7 +1380,7 @@ namespace RINGMesh {
 
     void RINGMeshApplication::update_region_of_interest()
     {
-        Box3d bbox;
+        Box< 3 > bbox;
 
         for( std::unique_ptr< GeoModelViewer >& geomodel : geomodels_ ) {
             if( geomodel->is_visible_ ) {

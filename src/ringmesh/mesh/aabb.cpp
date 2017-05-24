@@ -49,10 +49,10 @@ namespace {
 
     typedef const std::vector< index_t >::iterator const_vector_itr;
 
-    template< index_t COORD >
+    template< index_t COORD, index_t DIMENSION >
     class Morton_cmp {
     public:
-        Morton_cmp( const std::vector< Box3d >& bboxes )
+        Morton_cmp( const std::vector< Box< DIMENSION > >& bboxes )
             : bboxes_( bboxes )
         {
         }
@@ -63,7 +63,7 @@ namespace {
         }
 
     private:
-        const std::vector< Box3d >& bboxes_;
+        const std::vector< Box< DIMENSION > >& bboxes_;
     };
 
     /**
@@ -103,12 +103,13 @@ namespace {
      *    - COORD the coordinate along which elements should be
      *      sorted
      */
-    template< template< index_t COORD > class CMP >
+    template< index_t DIMENSION,
+        template< index_t COORD, index_t DIMENSION > class CMP >
     struct MortonSort {
 
         template< index_t COORDX >
         static void sort(
-            const std::vector< Box3d >& bboxes,
+            const std::vector< Box< DIMENSION > >& bboxes,
             const_vector_itr& begin,
             const_vector_itr& end )
         {
@@ -118,13 +119,20 @@ namespace {
             const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3;
 
             const_vector_itr m0 = begin, m8 = end;
-            const_vector_itr m4 = split( m0, m8, CMP< COORDX >( bboxes ) );
-            const_vector_itr m2 = split( m0, m4, CMP< COORDY >( bboxes ) );
-            const_vector_itr m1 = split( m0, m2, CMP< COORDZ >( bboxes ) );
-            const_vector_itr m3 = split( m2, m4, CMP< COORDZ >( bboxes ) );
-            const_vector_itr m6 = split( m4, m8, CMP< COORDY >( bboxes ) );
-            const_vector_itr m5 = split( m4, m6, CMP< COORDZ >( bboxes ) );
-            const_vector_itr m7 = split( m6, m8, CMP< COORDZ >( bboxes ) );
+            const_vector_itr m4 = split( m0, m8,
+                CMP< COORDX, DIMENSION >( bboxes ) );
+            const_vector_itr m2 = split( m0, m4,
+                CMP< COORDY, DIMENSION >( bboxes ) );
+            const_vector_itr m1 = split( m0, m2,
+                CMP< COORDZ, DIMENSION >( bboxes ) );
+            const_vector_itr m3 = split( m2, m4,
+                CMP< COORDZ, DIMENSION >( bboxes ) );
+            const_vector_itr m6 = split( m4, m8,
+                CMP< COORDY, DIMENSION >( bboxes ) );
+            const_vector_itr m5 = split( m4, m6,
+                CMP< COORDZ, DIMENSION >( bboxes ) );
+            const_vector_itr m7 = split( m6, m8,
+                CMP< COORDZ, DIMENSION >( bboxes ) );
             sort< COORDZ >( bboxes, m0, m1 );
             sort< COORDY >( bboxes, m1, m2 );
             sort< COORDY >( bboxes, m2, m3 );
@@ -136,40 +144,48 @@ namespace {
         }
 
         MortonSort(
-            const std::vector< Box3d >& bboxes,
+            const std::vector< Box< DIMENSION > >& bboxes,
             std::vector< index_t >& mapping_morton )
         {
             sort< 0 >( bboxes, mapping_morton.begin(), mapping_morton.end() );
         }
     };
 
+    template< index_t DIMENSION >
     void morton_sort(
-        const std::vector< Box3d >& bboxes,
+        const std::vector< Box< DIMENSION > >& bboxes,
         std::vector< index_t >& mapping_morton )
     {
         mapping_morton.resize( bboxes.size() );
         for( index_t i = 0; i < bboxes.size(); i++ ) {
             mapping_morton[i] = i;
         }
-        MortonSort< Morton_cmp >( bboxes, mapping_morton );
+        MortonSort< DIMENSION, Morton_cmp >( bboxes, mapping_morton );
     }
 
-    void add_cube( GEO::Mesh& M, const Box3d& box, index_t n )
+    template< index_t DIMENSION >
+    void add_cube( GEO::Mesh& M, const Box< DIMENSION >& box, index_t n )
     {
         if( !box.initialized() ) return;
-        const vec3& min_vertex = box.min();
-        const vec3& max_vertex = box.max();
-        vec3 width( box.width(), 0, 0 );
-        vec3 height( 0, box.height(), 0 );
-        vec3 depth( 0, 0, box.depth() );
+        const vecn< DIMENSION >& min_vertex = box.min();
+        const vecn< DIMENSION >& max_vertex = box.max();
+        vecn< DIMENSION > width( box.width(), 0, 0 );
+        vecn< DIMENSION > height( 0, box.height(), 0 );
+        vecn< DIMENSION > depth( 0, 0, box.depth() );
         index_t v0 = M.vertices.create_vertex( min_vertex.data() );
-        index_t v1 = M.vertices.create_vertex( vec3( min_vertex + width ).data() );
-        index_t v2 = M.vertices.create_vertex( vec3( max_vertex - depth ).data() );
-        index_t v3 = M.vertices.create_vertex( vec3( min_vertex + height ).data() );
-        index_t v4 = M.vertices.create_vertex( vec3( min_vertex + depth ).data() );
-        index_t v5 = M.vertices.create_vertex( vec3( max_vertex - height ).data() );
+        index_t v1 = M.vertices.create_vertex(
+            vecn< DIMENSION >( min_vertex + width ).data() );
+        index_t v2 = M.vertices.create_vertex(
+            vecn< DIMENSION >( max_vertex - depth ).data() );
+        index_t v3 = M.vertices.create_vertex(
+            vecn< DIMENSION >( min_vertex + height ).data() );
+        index_t v4 = M.vertices.create_vertex(
+            vecn< DIMENSION >( min_vertex + depth ).data() );
+        index_t v5 = M.vertices.create_vertex(
+            vecn< DIMENSION >( max_vertex - height ).data() );
         index_t v6 = M.vertices.create_vertex( max_vertex.data() );
-        index_t v7 = M.vertices.create_vertex( vec3( max_vertex - width ).data() );
+        index_t v7 = M.vertices.create_vertex(
+            vecn< DIMENSION >( max_vertex - width ).data() );
 
         GEO::Attribute< index_t > id( M.edges.attributes(), "id" );
         id[M.edges.create_edge( v0, v1 )] = n;
@@ -186,14 +202,18 @@ namespace {
         id[M.edges.create_edge( v3, v7 )] = n;
     }
 
-    bool mesh_cell_contains_point( const VolumeMesh& M, index_t cell, const vec3& p )
+    template< index_t DIMENSION >
+    bool mesh_cell_contains_point(
+        const VolumeMesh& M,
+        index_t cell,
+        const vecn< DIMENSION >& p )
     {
         switch( M.cell_type( cell ) ) {
             case GEO::MESH_TET: {
-                const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) );
-                const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) );
-                const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) );
-                const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) );
+                const vecn< DIMENSION >& p0 = M.vertex( M.cell_vertex( cell, 0 ) );
+                const vecn< DIMENSION >& p1 = M.vertex( M.cell_vertex( cell, 1 ) );
+                const vecn< DIMENSION >& p2 = M.vertex( M.cell_vertex( cell, 2 ) );
+                const vecn< DIMENSION >& p3 = M.vertex( M.cell_vertex( cell, 3 ) );
                 return point_inside_tetra( p, p0, p1, p2, p3 );
             }
             default:
@@ -207,7 +227,9 @@ namespace {
 
 namespace RINGMesh {
 
-    void AABBTree::initialize_tree( const std::vector< Box3d >& bboxes )
+    template< index_t DIMENSION >
+    void AABBTree< DIMENSION >::initialize_tree(
+        const std::vector< Box< DIMENSION > >& bboxes )
     {
         morton_sort( bboxes, mapping_morton_ );
         index_t nb_bboxes = static_cast< index_t >( bboxes.size() );
@@ -215,7 +237,8 @@ namespace RINGMesh {
         initialize_tree_recursive( bboxes, ROOT_INDEX, 0, nb_bboxes );
     }
 
-    index_t AABBTree::max_node_index(
+    template< index_t DIMENSION >
+    index_t AABBTree< DIMENSION >::max_node_index(
         index_t node_index,
         index_t box_begin,
         index_t box_end )
@@ -238,8 +261,9 @@ namespace RINGMesh {
      * \param[in] box_begin first box index in the vector \p bboxes
      * \param[in] box_end one position past the last box index in the vector \p bboxes
      */
-    void AABBTree::initialize_tree_recursive(
-        const std::vector< Box3d >& bboxes,
+    template< index_t DIMENSION >
+    void AABBTree< DIMENSION >::initialize_tree_recursive(
+        const std::vector< Box< DIMENSION > >& bboxes,
         index_t node_index,
         index_t box_begin,
         index_t box_end )
@@ -260,7 +284,8 @@ namespace RINGMesh {
         tree_[node_index] = tree_[child_left].bbox_union( tree_[child_right] );
     }
 
-    void AABBTree::save_tree( const std::string& name ) const
+    template< index_t DIMENSION >
+    void AABBTree< DIMENSION >::save_tree( const std::string& name ) const
     {
         index_t nb_nodes = 0;
         for( double level = 1.; nb_nodes < tree_.size(); level++ ) {
@@ -276,10 +301,11 @@ namespace RINGMesh {
         }
     }
 
-    void AABBTree::get_nearest_element_box_hint(
-        const vec3& query,
+    template< index_t DIMENSION >
+    void AABBTree< DIMENSION >::get_nearest_element_box_hint(
+        const vecn< DIMENSION >& query,
         index_t& nearest_box,
-        vec3& nearest_point,
+        vecn< DIMENSION >& nearest_point,
         double& distance ) const
     {
         index_t box_begin = 0;
@@ -306,13 +332,16 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    BoxAABBTree::BoxAABBTree( const std::vector< Box3d >& bboxes )
+    template< index_t DIMENSION >
+    BoxAABBTree< DIMENSION >::BoxAABBTree(
+        const std::vector< Box< DIMENSION > >& bboxes )
     {
         initialize_tree( bboxes );
     }
 
-    vec3 BoxAABBTree::get_point_hint_from_box(
-        const Box3d& box,
+    template< index_t DIMENSION >
+    vecn< DIMENSION > BoxAABBTree< DIMENSION >::get_point_hint_from_box(
+        const Box< DIMENSION >& box,
         index_t element_id ) const
     {
         ringmesh_unused( element_id );
@@ -321,43 +350,50 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    LineAABBTree::LineAABBTree( const LineMesh& mesh )
-        : AABBTree(), mesh_( mesh )
+    template< index_t DIMENSION >
+    LineAABBTree< DIMENSION >::LineAABBTree( const LineMesh& mesh )
+        : mesh_( mesh )
     {
-        std::vector< Box3d > bboxes;
+        std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_edges() );
         for( index_t i = 0; i < mesh.nb_edges(); i++ ) {
             for( index_t v = 0; v < 2; v++ ) {
-                const vec3& point = mesh.vertex( mesh.edge_vertex( i, v ) );
+                const vecn< DIMENSION >& point = mesh.vertex(
+                    mesh.edge_vertex( i, v ) );
                 bboxes[i].add_point( point );
             }
         }
-        initialize_tree( bboxes );
+        this->initialize_tree( bboxes );
     }
 
-    index_t LineAABBTree::closest_edge(
-        const vec3& query,
-        vec3& nearest_point,
+    template< index_t DIMENSION >
+    index_t LineAABBTree< DIMENSION >::closest_edge(
+        const vecn< DIMENSION >& query,
+        vecn< DIMENSION >& nearest_point,
         double& distance ) const
     {
         DistanceToEdge action( mesh_ );
-        return closest_element_box< DistanceToEdge >( query, nearest_point, distance,
-            action );
+        return closest_element_box< DistanceToEdge >( query, nearest_point,
+            distance, action );
     }
 
-    void LineAABBTree::DistanceToEdge::operator()(
-        const vec3& query,
+    template< index_t DIMENSION >
+    void LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
+        const vecn< DIMENSION >& query,
         index_t cur_box,
-        vec3& nearest_point,
+        vecn< DIMENSION >& nearest_point,
         double& distance ) const
     {
-        const vec3& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) );
-        const vec3& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) );
+        const vecn< DIMENSION >& v0 = mesh_.vertex(
+            mesh_.edge_vertex( cur_box, 0 ) );
+        const vecn< DIMENSION >& v1 = mesh_.vertex(
+            mesh_.edge_vertex( cur_box, 1 ) );
         distance = point_segment_distance( query, v0, v1, nearest_point );
     }
 
-    vec3 LineAABBTree::get_point_hint_from_box(
-        const Box3d& box,
+    template< index_t DIMENSION >
+    vecn< DIMENSION > LineAABBTree< DIMENSION >::get_point_hint_from_box(
+        const Box< DIMENSION >& box,
         index_t element_id ) const
     {
         ringmesh_unused( box );
@@ -366,23 +402,26 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    SurfaceAABBTree::SurfaceAABBTree( const SurfaceMesh& mesh )
-        : AABBTree(), mesh_( mesh )
+    template< index_t DIMENSION >
+    SurfaceAABBTree< DIMENSION >::SurfaceAABBTree( const SurfaceMesh& mesh )
+        : mesh_( mesh )
     {
-        std::vector< Box3d > bboxes;
+        std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_polygons() );
         for( index_t i = 0; i < mesh.nb_polygons(); i++ ) {
             for( index_t v = 0; v < mesh.nb_polygon_vertices( i ); v++ ) {
-                const vec3& point = mesh.vertex( mesh.polygon_vertex( i, v ) );
+                const vecn< DIMENSION >& point = mesh.vertex(
+                    mesh.polygon_vertex( i, v ) );
                 bboxes[i].add_point( point );
             }
         }
-        initialize_tree( bboxes );
+        this->initialize_tree( bboxes );
     }
 
-    index_t SurfaceAABBTree::closest_triangle(
-        const vec3& query,
-        vec3& nearest_point,
+    template< index_t DIMENSION >
+    index_t SurfaceAABBTree< DIMENSION >::closest_triangle(
+        const vecn< DIMENSION >& query,
+        vecn< DIMENSION >& nearest_point,
         double& distance ) const
     {
         DistanceToTriangle action( mesh_ );
@@ -390,22 +429,27 @@ namespace RINGMesh {
             distance, action );
     }
 
-    void SurfaceAABBTree::DistanceToTriangle::operator()(
-        const vec3& query,
+    template< index_t DIMENSION >
+    void SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
+        const vecn< DIMENSION >& query,
         index_t cur_box,
-        vec3& nearest_point,
+        vecn< DIMENSION >& nearest_point,
         double& distance ) const
     {
-        const vec3& v0 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 0 ) );
-        const vec3& v1 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 1 ) );
-        const vec3& v2 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 2 ) );
+        const vecn< DIMENSION >& v0 = mesh_.vertex(
+            mesh_.polygon_vertex( cur_box, 0 ) );
+        const vecn< DIMENSION >& v1 = mesh_.vertex(
+            mesh_.polygon_vertex( cur_box, 1 ) );
+        const vecn< DIMENSION >& v2 = mesh_.vertex(
+            mesh_.polygon_vertex( cur_box, 2 ) );
         double lambda0, lambda1, lambda2;
         distance = point_triangle_distance( query, v0, v1, v2, nearest_point,
             lambda0, lambda1, lambda2 );
     }
 
-    vec3 SurfaceAABBTree::get_point_hint_from_box(
-        const Box3d& box,
+    template< index_t DIMENSION >
+    vecn< DIMENSION > SurfaceAABBTree< DIMENSION >::get_point_hint_from_box(
+        const Box< DIMENSION >& box,
         index_t element_id ) const
     {
         ringmesh_unused( box );
@@ -414,35 +458,41 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    VolumeAABBTree::VolumeAABBTree( const VolumeMesh& mesh )
-        : AABBTree(), mesh_( mesh )
+    template< index_t DIMENSION >
+    VolumeAABBTree< DIMENSION >::VolumeAABBTree( const VolumeMesh& mesh )
+        : mesh_( mesh )
     {
-        std::vector< Box3d > bboxes;
+        std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_cells() );
         for( index_t i = 0; i < mesh.nb_cells(); i++ ) {
             for( index_t v = 0; v < mesh.nb_cell_vertices( i ); v++ ) {
-                const vec3& point = mesh.vertex( mesh.cell_vertex( i, v ) );
+                const vecn< DIMENSION >& point = mesh.vertex(
+                    mesh.cell_vertex( i, v ) );
                 bboxes[i].add_point( point );
             }
         }
-        initialize_tree( bboxes );
+        this->initialize_tree( bboxes );
     }
 
-    vec3 VolumeAABBTree::get_point_hint_from_box(
-        const Box3d& box,
+    template< index_t DIMENSION >
+    vecn< DIMENSION > VolumeAABBTree< DIMENSION >::get_point_hint_from_box(
+        const Box< DIMENSION >& box,
         index_t element_id ) const
     {
         ringmesh_unused( box );
         return mesh_.vertex( mesh_.cell_vertex( element_id, 0 ) );
     }
 
-    index_t VolumeAABBTree::containing_cell( const vec3& query ) const
+    template< index_t DIMENSION >
+    index_t VolumeAABBTree< DIMENSION >::containing_cell(
+        const vecn< DIMENSION >& query ) const
     {
         return containing_cell_recursive( query, ROOT_INDEX, 0, nb_bboxes() );
     }
 
-    index_t VolumeAABBTree::containing_cell_recursive(
-        const vec3& query,
+    template< index_t DIMENSION >
+    index_t VolumeAABBTree< DIMENSION >::containing_cell_recursive(
+        const vecn< DIMENSION >& query,
         index_t node_index,
         index_t box_begin,
         index_t box_end ) const
@@ -472,7 +522,11 @@ namespace RINGMesh {
         }
         return result;
     }
-    double inner_point_box_distance( const vec3& p, const Box3d& B )
+
+    template< index_t DIMENSION >
+    double inner_point_box_distance(
+        const vecn< DIMENSION >& p,
+        const Box< DIMENSION >& B )
     {
         ringmesh_assert( B.contains( p ) );
         double result = std::abs( p[0] - B.min()[0] );
@@ -483,10 +537,14 @@ namespace RINGMesh {
         }
         return result;
     }
-    double point_box_signed_distance( const vec3& p, const Box3d& B )
+
+    template< index_t DIMENSION >
+    double point_box_signed_distance(
+        const vecn< DIMENSION >& p,
+        const Box< DIMENSION >& B )
     {
         bool inside = true;
-        vec3 result;
+        vecn< DIMENSION > result;
         for( index_t c = 0; c < 3; c++ ) {
             if( p[c] < B.min()[c] ) {
                 inside = false;
@@ -502,5 +560,6 @@ namespace RINGMesh {
             return result.length();
         }
     }
+
 }
 

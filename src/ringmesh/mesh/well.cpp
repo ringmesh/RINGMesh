@@ -42,7 +42,7 @@
 #include <geogram/mesh/mesh_geometry.h>
 
 #include <ringmesh/basic/algorithm.h>
-#include <ringmesh/basic/box3d.h>
+#include <ringmesh/basic/box.h>
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/geomodel/geomodel.h>
@@ -580,7 +580,7 @@ namespace RINGMesh {
             index_t to_id = in.edge_vertex( e, 1 );
             const vec3& to_vertex = in.vertex( to_id );
 
-            Box3d box;
+            Box< 3 > box;
             box.add_point( from_vertex );
             box.add_point( to_vertex );
             std::vector< LineInstersection > intersections;

@@ -42,12 +42,13 @@
 #include <geogram/basic/factory.h>
 #include <geogram/basic/line_stream.h>
 
+#include <ringmesh/basic/box.h>
+
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 namespace RINGMesh {
     class GeoModelBuilderTSolid;
     class GeoModelBuilderML;
-    class Box3d;
     struct VertexMap;
     struct TSolidLoadingStorage;
 }
@@ -287,7 +288,7 @@ namespace RINGMesh {
         void compute_surface_internal_borders(
             index_t surface_id,
             const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-            const std::vector< Box3d >& surface_boxes );
+            const std::vector< Box< 3 > >& surface_boxes );
 
         /*!
          * @brief Computes the NNSearchs of the centers of polygon edges for
@@ -298,7 +299,7 @@ namespace RINGMesh {
          */
         void compute_polygon_edge_centers_nn_and_surface_boxes(
             std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-            std::vector< Box3d >& surface_boxes );
+            std::vector< Box< 3 > >& surface_boxes );
 
         /*!
          * @brief Computes internal borders of the geomodel surfaces
