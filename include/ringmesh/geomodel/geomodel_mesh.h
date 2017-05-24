@@ -468,7 +468,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< PointMesh > mesh_;
+        std::unique_ptr< PointMesh2< 3 > > mesh_;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_;
     };
@@ -672,7 +672,7 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the polygons of the mesh
          */
-        const SurfaceAABBTree& aabb() const;
+        const SurfaceAABBTree< 3 >& aabb() const;
 
     private:
         /*!
@@ -699,7 +699,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< SurfaceMesh > mesh_;
+        std::unique_ptr< SurfaceMesh2< 3 > > mesh_;
 
         /// Attribute storing the surface index per polygon
         GEO::Attribute< index_t > surface_id_;
@@ -780,11 +780,11 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the edges of the mesh
          */
-        const LineAABBTree& aabb() const;
+        const LineAABBTree< 3 >& aabb() const;
 
     private:
         /// Attached Mesh
-        std::unique_ptr< LineMesh > mesh_;
+        std::unique_ptr< LineMesh2< 3 > > mesh_;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -1131,7 +1131,7 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the cells of the mesh
          */
-        const VolumeAABBTree& aabb() const;
+        const VolumeAABBTree< 3 >& aabb() const;
 
     private:
         /// enum to characterize the action to do concerning a surface
@@ -1205,7 +1205,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< VolumeMesh > mesh_;
+        std::unique_ptr< VolumeMesh2< 3 > > mesh_;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_;
