@@ -499,7 +499,7 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::index( const vec3& p ) const
     {
         test_and_initialize();
-        const NNSearch& colocator = mesh_->vertices_nn_search();
+        const NNSearch< 3 >& colocator = mesh_->vertices_nn_search();
         std::vector< index_t > vertices = colocator.get_neighbors( p,
             gm_.epsilon() );
         if( vertices.empty() ) {
@@ -1144,7 +1144,7 @@ namespace RINGMesh {
             SKIP );
         std::vector< bool > is_vertex_to_duplicate( corner_vertices.size(), false );
         {
-            NNSearch nn_search( corner_vertices, false );
+            NNSearch< 3 > nn_search( corner_vertices, false );
             for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
                 if( !is_surface_to_duplicate( s ) ) continue;
                 actions_on_surfaces[s] = TO_PROCESS;
@@ -1424,7 +1424,7 @@ namespace RINGMesh {
 
         polygon_id_.bind( mesh_->cell_facet_attribute_manager(), "polygon_id" );
         polygon_id_.fill( NO_ID );
-        const NNSearch& nn_search = gmm_.polygons.nn_search();
+        const NNSearch< 3 >& nn_search = gmm_.polygons.nn_search();
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh_->nb_cell_facets( c ); f++ ) {
                 std::vector< index_t > result = nn_search.get_neighbors(
@@ -2052,7 +2052,7 @@ namespace RINGMesh {
         GEO::vector< std::string > att_c_names;
         cells.attribute_manager().list_attribute_names( att_c_names );
 
-        const NNSearch& nn_search = cells.cell_nn_search();
+        const NNSearch< 3 >& nn_search = cells.cell_nn_search();
 
         for( const std::string& att_c : att_c_names ) {
             if( !GEO::Attribute< double >::is_defined( cells.attribute_manager(),

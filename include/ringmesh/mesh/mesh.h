@@ -43,7 +43,7 @@
 
 #include <geogram/mesh/mesh.h>
 
-#include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/aabb.h>
 
@@ -222,14 +222,14 @@ namespace RINGMesh {
          * @brief return the NNSearch at vertices
          * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
          */
-        const NNSearch& vertices_nn_search() const
+        const NNSearch< 3 >& vertices_nn_search() const
         {
             if( !vertices_nn_search_ ) {
                 std::vector< vec3 > vec_vertices( nb_vertices() );
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v );
                 }
-                vertices_nn_search_.reset( new NNSearch( vec_vertices, true ) );
+                vertices_nn_search_.reset( new NNSearch< 3 >( vec_vertices, true ) );
             }
             return *vertices_nn_search_.get();
         }
@@ -251,7 +251,7 @@ namespace RINGMesh {
         MeshBase() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > vertices_nn_search_;
+        mutable std::unique_ptr< NNSearch< 3 > > vertices_nn_search_;
     };
 
     /*!
@@ -321,14 +321,14 @@ namespace RINGMesh {
          * @brief return the NNSearch at edges
          * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
          */
-        const NNSearch& edges_nn_search() const
+        const NNSearch< 3 >& edges_nn_search() const
         {
             if( !edges_nn_search_ ) {
                 std::vector< vec3 > edge_centers( nb_edges() );
                 for( index_t e = 0; e < nb_edges(); ++e ) {
                     edge_centers[e] = edge_barycenter( e );
                 }
-                edges_nn_search_.reset( new NNSearch( edge_centers, true ) );
+                edges_nn_search_.reset( new NNSearch< 3 >( edge_centers, true ) );
             }
             return *edges_nn_search_.get();
         }
@@ -348,7 +348,7 @@ namespace RINGMesh {
         LineMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > edges_nn_search_;
+        mutable std::unique_ptr< NNSearch< 3 > > edges_nn_search_;
         mutable std::unique_ptr< LineAABBTree > edges_aabb_;
     };
     using LineMeshFactory = GEO::Factory0< LineMesh >;
@@ -670,14 +670,14 @@ namespace RINGMesh {
         /*!
          * @brief return the NNSearch at polygons
          */
-        const NNSearch& polygons_nn_search() const
+        const NNSearch< 3 >& polygons_nn_search() const
         {
             if( !nn_search_ ) {
                 std::vector< vec3 > polygon_centers( nb_polygons() );
                 for( index_t p = 0; p < nb_polygons(); ++p ) {
                     polygon_centers[p] = polygon_barycenter( p );
                 }
-                nn_search_.reset( new NNSearch( polygon_centers, true ) );
+                nn_search_.reset( new NNSearch< 3 >( polygon_centers, true ) );
             }
             return *nn_search_.get();
         }
@@ -695,7 +695,7 @@ namespace RINGMesh {
         SurfaceMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > nn_search_;
+        mutable std::unique_ptr< NNSearch< 3 > > nn_search_;
         mutable std::unique_ptr< SurfaceAABBTree > polygons_aabb_;
     };
     using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh >;
@@ -916,7 +916,7 @@ namespace RINGMesh {
          * @brief return the NNSearch at cell facets
          * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const NNSearch& cell_facets_nn_search() const
+        const NNSearch< 3 >& cell_facets_nn_search() const
         {
             if( !cell_facets_nn_search_ ) {
                 std::vector< vec3 > cell_facet_centers( nb_cell_facets() );
@@ -928,21 +928,21 @@ namespace RINGMesh {
                     }
                 }
                 cell_facets_nn_search_.reset(
-                    new NNSearch( cell_facet_centers, true ) );
+                    new NNSearch< 3 >( cell_facet_centers, true ) );
             }
             return *cell_facets_nn_search_.get();
         }
         /*!
          * @brief return the NNSearch at cells
          */
-        const NNSearch& cells_nn_search() const
+        const NNSearch< 3 >& cells_nn_search() const
         {
             if( !cell_nn_search_ ) {
                 std::vector< vec3 > cell_centers( nb_cells() );
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     cell_centers[c] = cell_barycenter( c );
                 }
-                cell_nn_search_.reset( new NNSearch( cell_centers, true ) );
+                cell_nn_search_.reset( new NNSearch< 3 >( cell_centers, true ) );
             }
             return *cell_nn_search_.get();
         }
@@ -960,8 +960,8 @@ namespace RINGMesh {
         VolumeMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > cell_facets_nn_search_;
-        mutable std::unique_ptr< NNSearch > cell_nn_search_;
+        mutable std::unique_ptr< NNSearch< 3 > > cell_facets_nn_search_;
+        mutable std::unique_ptr< NNSearch< 3 > > cell_nn_search_;
         mutable std::unique_ptr< VolumeAABBTree > cell_aabb_;
     };
     using VolumeMeshFactory = GEO::Factory0< VolumeMesh >;

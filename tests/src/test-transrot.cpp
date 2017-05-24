@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 
