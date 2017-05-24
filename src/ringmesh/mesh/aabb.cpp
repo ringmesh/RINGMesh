@@ -49,10 +49,10 @@ namespace {
 
     typedef const std::vector< index_t >::iterator const_vector_itr;
 
-    template< index_t COORD >
+    template< index_t DIMENSION, index_t COORD >
     class Morton_cmp {
     public:
-        Morton_cmp( const std::vector< Box3d >& bboxes )
+        Morton_cmp( const std::vector< BoxND< DIMENSION > >& bboxes )
             : bboxes_( bboxes )
         {
         }
@@ -63,7 +63,7 @@ namespace {
         }
 
     private:
-        const std::vector< Box3d >& bboxes_;
+        const std::vector< BoxND< DIMENSION > >& bboxes_;
     };
 
     /**
@@ -103,12 +103,12 @@ namespace {
      *    - COORD the coordinate along which elements should be
      *      sorted
      */
-    template< template< index_t COORD > class CMP >
+    template< index_t DIMENSION, template< index_t COORD > class CMP >
     struct MortonSort {
 
         template< index_t COORDX >
         static void sort(
-            const std::vector< Box3d >& bboxes,
+            const std::vector< BoxND< DIMENSION > >& bboxes,
             const_vector_itr& begin,
             const_vector_itr& end )
         {
@@ -118,13 +118,20 @@ namespace {
             const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3;
 
             const_vector_itr m0 = begin, m8 = end;
-            const_vector_itr m4 = split( m0, m8, CMP< COORDX >( bboxes ) );
-            const_vector_itr m2 = split( m0, m4, CMP< COORDY >( bboxes ) );
-            const_vector_itr m1 = split( m0, m2, CMP< COORDZ >( bboxes ) );
-            const_vector_itr m3 = split( m2, m4, CMP< COORDZ >( bboxes ) );
-            const_vector_itr m6 = split( m4, m8, CMP< COORDY >( bboxes ) );
-            const_vector_itr m5 = split( m4, m6, CMP< COORDZ >( bboxes ) );
-            const_vector_itr m7 = split( m6, m8, CMP< COORDZ >( bboxes ) );
+            const_vector_itr m4 = split( m0, m8,
+                CMP< COORDX, DIMENSION >( bboxes ) );
+            const_vector_itr m2 = split( m0, m4,
+                CMP< COORDY, DIMENSION >( bboxes ) );
+            const_vector_itr m1 = split( m0, m2,
+                CMP< COORDZ, DIMENSION >( bboxes ) );
+            const_vector_itr m3 = split( m2, m4,
+                CMP< COORDZ, DIMENSION >( bboxes ) );
+            const_vector_itr m6 = split( m4, m8,
+                CMP< COORDY, DIMENSION >( bboxes ) );
+            const_vector_itr m5 = split( m4, m6,
+                CMP< COORDZ, DIMENSION >( bboxes ) );
+            const_vector_itr m7 = split( m6, m8,
+                CMP< COORDZ, DIMENSION >( bboxes ) );
             sort< COORDZ >( bboxes, m0, m1 );
             sort< COORDY >( bboxes, m1, m2 );
             sort< COORDY >( bboxes, m2, m3 );
@@ -136,40 +143,48 @@ namespace {
         }
 
         MortonSort(
-            const std::vector< Box3d >& bboxes,
+            const std::vector< BoxND< DIMENSION > >& bboxes,
             std::vector< index_t >& mapping_morton )
         {
             sort< 0 >( bboxes, mapping_morton.begin(), mapping_morton.end() );
         }
     };
 
+    template< index_t DIMENSION >
     void morton_sort(
-        const std::vector< Box3d >& bboxes,
+        const std::vector< BoxND< DIMENSION > >& bboxes,
         std::vector< index_t >& mapping_morton )
     {
         mapping_morton.resize( bboxes.size() );
         for( index_t i = 0; i < bboxes.size(); i++ ) {
             mapping_morton[i] = i;
         }
-        MortonSort< Morton_cmp >( bboxes, mapping_morton );
+        MortonSort< DIMENSION, Morton_cmp >( bboxes, mapping_morton );
     }
 
-    void add_cube( GEO::Mesh& M, const Box3d& box, index_t n )
+    template< index_t DIMENSION >
+    void add_cube( GEO::Mesh& M, const BoxND< DIMENSION >& box, index_t n )
     {
         if( !box.initialized() ) return;
-        const vec3& min_vertex = box.min();
-        const vec3& max_vertex = box.max();
-        vec3 width( box.width(), 0, 0 );
-        vec3 height( 0, box.height(), 0 );
-        vec3 depth( 0, 0, box.depth() );
+        const vecn< DIMENSION >& min_vertex = box.min();
+        const vecn< DIMENSION >& max_vertex = box.max();
+        vecn< DIMENSION > width( box.width(), 0, 0 );
+        vecn< DIMENSION > height( 0, box.height(), 0 );
+        vecn< DIMENSION > depth( 0, 0, box.depth() );
         index_t v0 = M.vertices.create_vertex( min_vertex.data() );
-        index_t v1 = M.vertices.create_vertex( vec3( min_vertex + width ).data() );
-        index_t v2 = M.vertices.create_vertex( vec3( max_vertex - depth ).data() );
-        index_t v3 = M.vertices.create_vertex( vec3( min_vertex + height ).data() );
-        index_t v4 = M.vertices.create_vertex( vec3( min_vertex + depth ).data() );
-        index_t v5 = M.vertices.create_vertex( vec3( max_vertex - height ).data() );
+        index_t v1 = M.vertices.create_vertex(
+            vecn< DIMENSION >( min_vertex + width ).data() );
+        index_t v2 = M.vertices.create_vertex(
+            vecn< DIMENSION >( max_vertex - depth ).data() );
+        index_t v3 = M.vertices.create_vertex(
+            vecn< DIMENSION >( min_vertex + height ).data() );
+        index_t v4 = M.vertices.create_vertex(
+            vecn< DIMENSION >( min_vertex + depth ).data() );
+        index_t v5 = M.vertices.create_vertex(
+            vecn< DIMENSION >( max_vertex - height ).data() );
         index_t v6 = M.vertices.create_vertex( max_vertex.data() );
-        index_t v7 = M.vertices.create_vertex( vec3( max_vertex - width ).data() );
+        index_t v7 = M.vertices.create_vertex(
+            vecn< DIMENSION >( max_vertex - width ).data() );
 
         GEO::Attribute< index_t > id( M.edges.attributes(), "id" );
         id[M.edges.create_edge( v0, v1 )] = n;
@@ -186,14 +201,18 @@ namespace {
         id[M.edges.create_edge( v3, v7 )] = n;
     }
 
-    bool mesh_cell_contains_point( const VolumeMesh& M, index_t cell, const vec3& p )
+    template< index_t DIMENSION >
+    bool mesh_cell_contains_point(
+        const VolumeMesh& M,
+        index_t cell,
+        const vecn< DIMENSION >& p )
     {
         switch( M.cell_type( cell ) ) {
             case GEO::MESH_TET: {
-                const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) );
-                const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) );
-                const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) );
-                const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) );
+                const vecn< DIMENSION >& p0 = M.vertex( M.cell_vertex( cell, 0 ) );
+                const vecn< DIMENSION >& p1 = M.vertex( M.cell_vertex( cell, 1 ) );
+                const vecn< DIMENSION >& p2 = M.vertex( M.cell_vertex( cell, 2 ) );
+                const vecn< DIMENSION >& p3 = M.vertex( M.cell_vertex( cell, 3 ) );
                 return point_inside_tetra( p, p0, p1, p2, p3 );
             }
             default:
@@ -320,7 +339,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    vec3 BoxAABBTree< DIMENSION >::get_point_hint_from_box(
+    vecn< DIMENSION > BoxAABBTree< DIMENSION >::get_point_hint_from_box(
         const BoxND< DIMENSION >& box,
         index_t element_id ) const
     {
@@ -370,7 +389,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    vec3 LineAABBTree< DIMENSION >::get_point_hint_from_box(
+    vecn< DIMENSION > LineAABBTree< DIMENSION >::get_point_hint_from_box(
         const BoxND< DIMENSION >& box,
         index_t element_id ) const
     {
@@ -381,7 +400,8 @@ namespace RINGMesh {
     /****************************************************************************/
 
     template< index_t DIMENSION >
-    SurfaceAABBTree< DIMENSION >::SurfaceAABBTree( const SurfaceMesh2< 3 >& mesh )
+    SurfaceAABBTree< DIMENSION >::SurfaceAABBTree(
+        const SurfaceMesh2< DIMENSION >& mesh )
         : AABBTree(), mesh_( mesh )
     {
         std::vector< BoxND< DIMENSION > > bboxes;
@@ -393,7 +413,7 @@ namespace RINGMesh {
                 bboxes[i].add_point( point );
             }
         }
-        initialize_tree( bboxes );
+        this->initialize_tree( bboxes );
     }
 
     template< index_t DIMENSION >
@@ -426,7 +446,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    vec3 SurfaceAABBTree< DIMENSION >::get_point_hint_from_box(
+    vecn< DIMENSION > SurfaceAABBTree< DIMENSION >::get_point_hint_from_box(
         const BoxND< DIMENSION >& box,
         index_t element_id ) const
     {
@@ -454,7 +474,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    vec3 VolumeAABBTree< DIMENSION >::get_point_hint_from_box(
+    vecn< DIMENSION > VolumeAABBTree< DIMENSION >::get_point_hint_from_box(
         const BoxND< DIMENSION >& box,
         index_t element_id ) const
     {
