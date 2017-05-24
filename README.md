@@ -1,9 +1,8 @@
+How to compile RINGMesh             {#ringmesh_compiling}
+=======================
+
 [![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0/branch/default?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh/branch/default)
 [![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmeshcoverage/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmeshcoverage?branch=default)
-
-
-Instructions for compiling RINGMesh
-===================================
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 2.8.11). There is no other dependency (everything
