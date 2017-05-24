@@ -182,11 +182,12 @@ namespace RINGMesh {
             return new_names[new_name_pos];
         }
     private:
-        std::string new_names[4] = { "GeogramPointSetMesh", "GeogramLineMesh",
-                                     "GeogramSurfaceMesh", "GeogramVolumeMesh" };
-
+        static const std::string new_names[4];
     }
     ;
+    const std::string GeoModelBuilderGMImpl_1::new_names[4] = {
+        std::string( "GeogramPointSetMesh" ), std::string( "GeogramLineMesh" ),
+        std::string( "GeogramSurfaceMesh" ), std::string( "GeogramVolumeMesh" ) };
     class GeoModelBuilderGMImpl_2: public GeoModelBuilderGMImpl_1 {
     public:
         GeoModelBuilderGMImpl_2( GeoModelBuilderGM& builder )
