@@ -47,11 +47,13 @@
 namespace RINGMesh {
 
     template< index_t DIMENSION = 3 >
-    class NNSearch {
+    class RINGMESH_API NNSearch {
     ringmesh_disable_copy( NNSearch );
         static_assert( DIMENSION == 2 || DIMENSION == 3, "DIMENSION template should be 2 or 3" );
     public:
-        NNSearch( const std::vector< vecn< DIMENSION > >& vertices, bool copy = true );
+        NNSearch(
+            const std::vector< vecn< DIMENSION > >& vertices,
+            bool copy = true );
 
         ~NNSearch()
         {
@@ -121,7 +123,7 @@ namespace RINGMesh {
         {
             vecn< DIMENSION > result;
             for( index_t i = 0; i < DIMENSION; i++ ) {
-                result[i] =  nn_points_[DIMENSION * v + i];
+                result[i] = nn_points_[DIMENSION * v + i];
             }
             return result;
         }
@@ -132,15 +134,17 @@ namespace RINGMesh {
         }
 
     private:
-        void fill_nn_search_points( index_t index_in_nn, const vecn< DIMENSION >& center );
+        void fill_nn_search_points(
+            index_t index_in_nn,
+            const vecn< DIMENSION >& center );
 
     private:
         /// KdTree to compute the nearest neighbor search
         GEO::NearestNeighborSearch_var nn_tree_;
-        /// Array of the points (size of 3xnumber of points)
+        /// Array of the points (size of DIMENSIONxnumber of points)
         double* nn_points_;
         /*!
-         * @brief Indicates if ann_points_ should ne deleted.
+         * @brief Indicates if ann_points_ should be deleted.
          * @details No need to delete nn_points_ if it is a simple pointer
          * to the mesh vertex array.
          */
