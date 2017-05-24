@@ -60,13 +60,34 @@ namespace RINGMesh {
 
     using MeshType = std::string;
 
+    template< typename DIMENSION >
+    class RINGMESH_API ObjectMesh: public GEO::Counted {
+    };
+
+    template< typename DIMENSION >
+    class RINGMESH_API PointMeshTemplate: public virtual ObjectMesh< DIMENSION > {
+    };
+
+    template< typename DIMENSION >
+    class RINGMESH_API LineMeshTemplate: public virtual ObjectMesh< DIMENSION > {
+    };
+
+    template< typename DIMENSION >
+    class RINGMESH_API SurfaceMeshTemplate: public virtual ObjectMesh< DIMENSION > {
+    };
+
+    template< typename DIMENSION >
+    class RINGMESH_API VolumeMeshTemplate: public virtual ObjectMesh< DIMENSION > {
+    };
+
+
+
     /*!
      * class base class for encapsulating Mesh structure
      * @brief encapsulate adimensional mesh functionalities in order to provide an API
      * on which we base the RINGMesh algorithm
      * @note For now, we encapsulate the GEO::Mesh class.
      */
-    template< typename DIMENSION >
     class RINGMESH_API MeshBase: public GEO::Counted {
     ringmesh_disable_copy( MeshBase );
         friend class MeshBaseBuilder;
@@ -140,7 +161,6 @@ namespace RINGMesh {
     /*!
      * class for encapsulating isolated vertices structure
      */
-    template< typename DIMENSION >
     class RINGMESH_API PointMesh: public virtual MeshBase {
     ringmesh_disable_copy( PointMesh );
         friend class PointMeshBuilder;
@@ -162,7 +182,6 @@ namespace RINGMesh {
     /*!
      * class for encapsulating line mesh component
      */
-    template< typename DIMENSION >
     class RINGMESH_API LineMesh: public virtual MeshBase {
     ringmesh_disable_copy( LineMesh );
         friend class LineMeshBuilder;
@@ -243,7 +262,6 @@ namespace RINGMesh {
     /*!
      * class for encapsulating surface mesh component
      */
-    template< typename DIMENSION >
     class RINGMESH_API SurfaceMesh: public virtual MeshBase {
     ringmesh_disable_copy( SurfaceMesh );
         friend class SurfaceMeshBuilder;
@@ -587,7 +605,6 @@ namespace RINGMesh {
     /*!
      * class for encapsulating volume mesh component
      */
-    template< typename DIMENSION >
     class RINGMESH_API VolumeMesh: public virtual MeshBase {
     ringmesh_disable_copy( VolumeMesh );
         friend class VolumeMeshBuilder;
