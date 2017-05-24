@@ -1451,7 +1451,7 @@ namespace RINGMesh {
         return mesh_->cell_volume( c );
     }
 
-    const AABBTree3D& GeoModelMeshCells::aabb() const
+    const VolumeAABBTree& GeoModelMeshCells::aabb() const
     {
         test_and_initialize();
         return mesh_->cells_aabb();
@@ -1860,7 +1860,7 @@ namespace RINGMesh {
         return mesh_->polygon_area( p );
     }
 
-    const AABBTree2D& GeoModelMeshPolygons::aabb() const
+    const SurfaceAABBTree& GeoModelMeshPolygons::aabb() const
     {
         test_and_initialize();
         return mesh_->polygons_aabb();
@@ -1965,7 +1965,7 @@ namespace RINGMesh {
         }
     }
 
-    const AABBTree1D& GeoModelMeshEdges::aabb() const
+    const LineAABBTree& GeoModelMeshEdges::aabb() const
     {
         test_and_initialize();
         return mesh_->edges_aabb();

@@ -161,7 +161,7 @@ namespace RINGMesh {
     /*!
      * class for encapsulating isolated vertices structure
      */
-    class RINGMESH_API PointMesh: public virtual MeshBase {
+    class RINGMESH_API PointMesh: public MeshBase {
     ringmesh_disable_copy( PointMesh );
         friend class PointMeshBuilder;
 
@@ -182,7 +182,7 @@ namespace RINGMesh {
     /*!
      * class for encapsulating line mesh component
      */
-    class RINGMESH_API LineMesh: public virtual MeshBase {
+    class RINGMESH_API LineMesh: public MeshBase {
     ringmesh_disable_copy( LineMesh );
         friend class LineMeshBuilder;
 
@@ -239,10 +239,10 @@ namespace RINGMesh {
         /*!
          * @brief Creates an AABB tree for a Mesh edges
          */
-        const AABBTree1D& edges_aabb() const
+        const LineAABBTree& edges_aabb() const
         {
             if( !edges_aabb_ ) {
-                edges_aabb_.reset( new AABBTree1D( *this ) );
+                edges_aabb_.reset( new LineAABBTree( *this ) );
             }
             return *edges_aabb_.get();
         }
@@ -253,7 +253,7 @@ namespace RINGMesh {
 
     protected:
         mutable std::unique_ptr< NNSearch > edges_nn_search_;
-        mutable std::unique_ptr< AABBTree1D > edges_aabb_;
+        mutable std::unique_ptr< LineAABBTree > edges_aabb_;
     };
     using LineMeshFactory = GEO::Factory0< LineMesh >;
 #define ringmesh_register_line_mesh(type) \
@@ -262,7 +262,7 @@ namespace RINGMesh {
     /*!
      * class for encapsulating surface mesh component
      */
-    class RINGMESH_API SurfaceMesh: public virtual MeshBase {
+    class RINGMESH_API SurfaceMesh: public MeshBase {
     ringmesh_disable_copy( SurfaceMesh );
         friend class SurfaceMeshBuilder;
 
@@ -584,10 +584,10 @@ namespace RINGMesh {
         /*!
          * @brief Creates an AABB tree for a Mesh polygons
          */
-        const AABBTree2D& polygons_aabb() const
+        const SurfaceAABBTree& polygons_aabb() const
         {
             if( !polygons_aabb_ ) {
-                polygons_aabb_.reset( new AABBTree2D( *this ) );
+                polygons_aabb_.reset( new SurfaceAABBTree( *this ) );
             }
             return *polygons_aabb_;
         }
@@ -596,7 +596,7 @@ namespace RINGMesh {
 
     protected:
         mutable std::unique_ptr< NNSearch > nn_search_;
-        mutable std::unique_ptr< AABBTree2D > polygons_aabb_;
+        mutable std::unique_ptr< SurfaceAABBTree > polygons_aabb_;
     };
     using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh >;
 #define ringmesh_register_surface_mesh(type) \
@@ -605,7 +605,7 @@ namespace RINGMesh {
     /*!
      * class for encapsulating volume mesh component
      */
-    class RINGMESH_API VolumeMesh: public virtual MeshBase {
+    class RINGMESH_API VolumeMesh: public MeshBase {
     ringmesh_disable_copy( VolumeMesh );
         friend class VolumeMeshBuilder;
 
@@ -849,10 +849,10 @@ namespace RINGMesh {
         /*!
          * @brief Creates an AABB tree for a Mesh cells
          */
-        const AABBTree3D& cells_aabb() const
+        const VolumeAABBTree& cells_aabb() const
         {
             if( !cell_aabb_ ) {
-                cell_aabb_.reset( new AABBTree3D( *this ) );
+                cell_aabb_.reset( new VolumeAABBTree( *this ) );
             }
             return *cell_aabb_.get();
         }
@@ -862,7 +862,7 @@ namespace RINGMesh {
     protected:
         mutable std::unique_ptr< NNSearch > cell_facets_nn_search_;
         mutable std::unique_ptr< NNSearch > cell_nn_search_;
-        mutable std::unique_ptr< AABBTree3D > cell_aabb_;
+        mutable std::unique_ptr< VolumeAABBTree > cell_aabb_;
     };
     using VolumeMeshFactory = GEO::Factory0< VolumeMesh >;
 #define ringmesh_register_volume_mesh(type) \
