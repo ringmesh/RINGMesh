@@ -148,5 +148,3 @@ namespace RINGMesh {
     };
 
 }
-
-#include "nn_search.hpp"

@@ -40,6 +40,8 @@
  * @todo Comment on the robustness of the tests
  */
 
+#include <ringmesh/basic/nn_search.h>
+
 namespace RINGMesh {
 
     template< index_t DIMENSION >
@@ -168,4 +170,7 @@ namespace RINGMesh {
             nn_points_[index_in_nn_search + i] = center[i];
         }
     }
+
+    template class NNSearch< 2 >;
+    template class NNSearch< 3 >;
 }
