@@ -95,7 +95,7 @@ namespace RINGMesh {
         {                                                                           \
             return default_extension_static();                                      \
         }                                                                           \
-        virtual const vec3& vertex( index_t v_id ) const override                   \
+        virtual const vecn< DIMENSION >& vertex( index_t v_id ) const override      \
         {                                                                           \
             ringmesh_assert( v_id < nb_vertices() );                                \
             return mesh_->vertices.point( v_id );                                   \
@@ -107,11 +107,13 @@ namespace RINGMesh {
     protected:                                                                      \
         std::unique_ptr< GEO::Mesh > mesh_
 
-    class RINGMESH_API GeogramPointMesh: public PointMesh {
+    template< index_t DIMENSION >
+    class RINGMESH_API GeogramPointMesh: public PointMesh2< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointMesh );
     };
 
-    class RINGMESH_API GeogramLineMesh: public LineMesh {
+    template< index_t DIMENSION >
+    class RINGMESH_API GeogramLineMesh: public LineMesh2< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
     public:
         virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const override
@@ -130,7 +132,8 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramSurfaceMesh: public SurfaceMesh {
+    template< index_t DIMENSION >
+    class RINGMESH_API GeogramSurfaceMesh: public SurfaceMesh2< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
     public:
         virtual index_t polygon_vertex( index_t polygon_id, index_t vertex_id ) const override
@@ -163,7 +166,8 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramVolumeMesh: public VolumeMesh {
+    template< index_t DIMENSION >
+    class RINGMESH_API GeogramVolumeMesh: public VolumeMesh2< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramVolumeMesh );
     public:
         virtual index_t cell_vertex( index_t cell_id, index_t vertex_id ) const override

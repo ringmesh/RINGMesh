@@ -44,10 +44,10 @@ namespace {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr< LineMesh > mesh = LineMesh::create_mesh(
-                GeogramLineMesh::type_name_static() );
-            std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
-                *mesh );
+            std::unique_ptr< LineMesh2< 3 > > mesh = LineMesh2 < 3
+                > ::create_mesh( GeogramLineMesh::type_name_static() );
+            std::unique_ptr< LineMeshBuilder > builder =
+                LineMeshBuilder::create_builder( *mesh );
             std::string name;
             double z_sign = 1.0;
             vec3 vertex_ref;
@@ -77,7 +77,8 @@ namespace {
                     builder->create_edge( id - 1, id );
                 } else if( in.field_matches( 0, "END" ) ) {
                     wells.add_well( *mesh, name );
-                    mesh = LineMesh::create_mesh( GeogramLineMesh::type_name_static() );
+                    mesh = LineMesh::create_mesh(
+                        GeogramLineMesh::type_name_static() );
                     builder = LineMeshBuilder::create_builder( *mesh );
                 }
             }

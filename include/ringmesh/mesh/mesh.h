@@ -67,13 +67,13 @@ namespace RINGMesh {
      * @note For now, we encapsulate the GEO::Mesh class.
      */
     template< index_t DIMENSION >
-    class RINGMESH_API ObjectMesh: public GEO::Counted {
-    ringmesh_disable_copy( ObjectMesh );
+    class RINGMESH_API BaseMesh2: public GEO::Counted {
+    ringmesh_disable_copy( BaseMesh2 );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class MeshBaseBuilder; //@todo to rename the builder
-        static_assert( DIMENSION == 2 || DIMENSION == 3, "DIMENSION template should be 2 or 3" );
 
     public:
-        virtual ~ObjectMesh() = default;
+        virtual ~BaseMesh2() = default;
 
         virtual void save_mesh( const std::string& filename ) const = 0;
 
@@ -128,7 +128,7 @@ namespace RINGMesh {
          * @}
          */
     protected:
-        ObjectMesh() = default;
+        BaseMesh2() = default;
 
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertices_nn_search_;
@@ -138,8 +138,9 @@ namespace RINGMesh {
      * class for encapsulating mesh composed of points
      */
     template< index_t DIMENSION >
-    class RINGMESH_API PointMesh2: public virtual ObjectMesh< DIMENSION > {
+    class RINGMESH_API PointMesh2: public virtual BaseMesh2< DIMENSION > {
     ringmesh_disable_copy( PointMesh2 );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class PointMeshBuilder;
 
     public:
@@ -159,8 +160,9 @@ namespace RINGMesh {
      * class for encapsulating line mesh (composed of edges)
      */
     template< index_t DIMENSION >
-    class RINGMESH_API LineMesh2: public virtual ObjectMesh< DIMENSION > {
+    class RINGMESH_API LineMesh2: public virtual BaseMesh2< DIMENSION > {
     ringmesh_disable_copy( LineMesh2 );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class LineMeshBuilder;
     public:
         virtual ~LineMesh2() = default;
@@ -243,8 +245,9 @@ namespace RINGMesh {
      * class for encapsulating surface mesh component
      */
     template< index_t DIMENSION >
-    class RINGMESH_API SurfaceMesh2: public virtual ObjectMesh< DIMENSION > {
+    class RINGMESH_API SurfaceMesh2: public virtual BaseMesh2< DIMENSION > {
     ringmesh_disable_copy( SurfaceMesh2 );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class SurfaceMeshBuilder;
 
     public:
@@ -597,8 +600,9 @@ namespace RINGMesh {
      * class for encapsulating volume mesh component
      */
     template< index_t DIMENSION >
-    class RINGMESH_API VolumeMesh2: public virtual ObjectMesh< DIMENSION > {
-        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );ringmesh_disable_copy( VolumeMesh2 );
+    class RINGMESH_API VolumeMesh2: public virtual BaseMesh2< DIMENSION > {
+    ringmesh_disable_copy( VolumeMesh2 );
+        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
         friend class VolumeMeshBuilder;
 
     public:
