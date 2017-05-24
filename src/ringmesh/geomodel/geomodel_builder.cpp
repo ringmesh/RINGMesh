@@ -1117,13 +1117,25 @@ namespace RINGMesh {
         return true;
     }
 
+    bool GeoModelBuilderGeology::check_if_boundary_in_boundary_relation_already_exists(
+        const gmge_id& parent,
+        const gmme_id& children )
+    {
+        const GeoModelMeshEntity& children_mesh_entity =
+            geomodel_access_.modifiable_mesh_entity( children );
+        if( children_mesh_entity.parent_gmge( parent.type() ) == parent ) {
+            return true;
+        }
+        return false;
+    }
+
     void GeoModelBuilderGeology::add_parent_children_relation(
         const gmge_id& parent,
         const gmme_id& children )
     {
         GeoModelGeologicalEntity& parent_entity =
             geomodel_access_.modifiable_geological_entity( parent );
-        const std::vector< GeologicalEntityType>& parent_entity_types =
+        const std::vector< GeologicalEntityType >& parent_entity_types =
             geomodel_.entity_type_manager().relationship_manager.parent_types(
                 children.type() );
         if( !contains( parent_entity_types, parent.type() ) ) {
@@ -1131,6 +1143,11 @@ namespace RINGMesh {
             message << "Wrong Parent type in the parent children relation between "
                 << parent << " and " << children;
             throw RINGMeshException( "Entity", message.str() );
+        }
+
+        if( check_if_boundary_in_boundary_relation_already_exists( parent,
+            children ) ) {
+            return;
         }
 
         GeoModelMeshEntity& children_entity =
@@ -1166,20 +1183,18 @@ namespace RINGMesh {
             children );
         if( relation_id == NO_ID ) {
             std::ostringstream message;
-            message << "No parent children relation found between " << parent << " and "
-                << children;
+            message << "No parent children relation found between " << parent
+                << " and " << children;
             throw RINGMeshException( "Entity", message.str() );
         }
         GeoModelGeologicalEntityAccess parent_access(
             geomodel_access_.modifiable_geological_entity( parent ) );
-        std::vector< index_t >& childs =
-            parent_access.modifiable_children();
+        std::vector< index_t >& childs = parent_access.modifiable_children();
         std::remove_if( childs.begin(), childs.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
         GeoModelMeshEntityAccess children_access(
             geomodel_access_.modifiable_mesh_entity( children ) );
-        std::vector< index_t >& parents =
-            children_access.modifiable_parents();
+        std::vector< index_t >& parents = children_access.modifiable_parents();
         std::remove_if( parents.begin(), parents.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
@@ -1290,7 +1305,7 @@ namespace RINGMesh {
                 }
                 builder_.info.set_geological_entity_name( contact_id, name );
             }
-            add_parent_children_relation( contact_id,L.gmme() ) ;
+            add_parent_children_relation( contact_id, L.gmme() );
         }
     }
 
