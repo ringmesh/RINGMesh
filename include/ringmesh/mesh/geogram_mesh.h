@@ -47,19 +47,19 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    class GeogramPointMeshBuilder;
-    class GeogramLineMeshBuilder;
-    class GeogramSurfaceMeshBuilder;
-    class GeogramVolumeMeshBuilder;
+    template< index_t DIMENSION > class GeogramPointMeshBuilder;
+    template< index_t DIMENSION > class GeogramLineMeshBuilder;
+    template< index_t DIMENSION > class GeogramSurfaceMeshBuilder;
+    template< index_t DIMENSION > class GeogramVolumeMeshBuilder;
 }
 
 namespace RINGMesh {
 
 #define COMMON_GEOGRAM_MESH_IMPLEMENTATION( Class )                                 \
-    friend class Class ## Builder;                                                  \
+    friend class Class ## Builder< DIMENSION >;                                     \
     public:                                                                         \
         Class()                                                                     \
-            : mesh_( new GEO::Mesh( 3, false ) )                                    \
+            : mesh_( new GEO::Mesh( DIMENSION, false ) )                            \
         {                                                                           \
         }                                                                           \
         virtual ~Class() = default;                                                 \

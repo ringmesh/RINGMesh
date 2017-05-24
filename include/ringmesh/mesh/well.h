@@ -108,7 +108,7 @@ namespace RINGMesh {
         bool is_on_surface_;
         /// The id of the corresponding surface or region
         index_t id_;
-        std::unique_ptr< PointMesh > mesh_;
+        std::unique_ptr< PointMesh2< 3 > > mesh_;
     };
 
 // --------------------------------------------------------------------------
@@ -190,7 +190,7 @@ namespace RINGMesh {
         index_t id_;
         /// id in the corners_ vector the the well
         index_t corners_[2];
-        std::unique_ptr< LineMesh > mesh_;
+        std::unique_ptr< LineMesh2< 3 > > mesh_;
     };
 
 // --------------------------------------------------------------------------
@@ -440,7 +440,7 @@ namespace RINGMesh {
         }
 
     private:
-        void compute_conformal_mesh( const LineMesh& in, LineMesh& out );
+        void compute_conformal_mesh( const LineMesh2< 3 >& in, LineMesh2< 3 >& out );
 
     protected:
         /// Vector of the wells

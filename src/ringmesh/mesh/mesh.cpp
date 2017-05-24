@@ -43,55 +43,65 @@
 
 namespace RINGMesh {
 
-    std::unique_ptr< PointMesh > PointMesh::create_mesh( const MeshType type )
+    template< index_t DIMENSION >
+    std::unique_ptr< PointMesh2< DIMENSION > > PointMesh2< DIMENSION >::create_mesh(
+        const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramPointMesh::type_name_static();
+            new_type = GeogramPointMesh< DIMENSION >::type_name_static();
         }
-        PointMesh* mesh = PointMeshFactory::create_object( new_type );
+        PointMesh2< DIMENSION >* mesh =
+            PointMesh2Factory< DIMENSION >::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh0D", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "Mesh0D", "Falling back to GeogramMesh0D data structure" );
 
-            mesh = new GeogramPointMesh;
+            mesh = new GeogramPointMesh< DIMENSION >;
         }
-        return std::unique_ptr< PointMesh >( mesh );
+        return std::unique_ptr< PointMesh2< DIMENSION > >( mesh );
     }
 
-    std::unique_ptr< LineMesh > LineMesh::create_mesh( const MeshType type )
+    template< index_t DIMENSION >
+    std::unique_ptr< LineMesh2< DIMENSION > > LineMesh2< DIMENSION >::create_mesh(
+        const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramLineMesh::type_name_static();
+            new_type = GeogramLineMesh< DIMENSION >::type_name_static();
         }
-        LineMesh* mesh = LineMeshFactory::create_object( new_type );
+        LineMesh2< DIMENSION >* mesh = LineMesh2Factory< DIMENSION >::create_object(
+            new_type );
         if( !mesh ) {
             Logger::warn( "LineMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "LineMesh", "Falling back to GeogramLineMesh data structure" );
+            Logger::warn( "LineMesh",
+                "Falling back to GeogramLineMesh data structure" );
 
-            mesh = new GeogramLineMesh;
+            mesh = new GeogramLineMesh< DIMENSION >;
         }
-        return std::unique_ptr< LineMesh >( mesh );
+        return std::unique_ptr< LineMesh2< DIMENSION > >( mesh );
     }
 
-    std::unique_ptr< SurfaceMesh > SurfaceMesh::create_mesh( const MeshType type )
+    template< index_t DIMENSION >
+    std::unique_ptr< SurfaceMesh2< DIMENSION > > SurfaceMesh2< DIMENSION >::create_mesh(
+        const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramSurfaceMesh::type_name_static();
+            new_type = GeogramSurfaceMesh< DIMENSION >::type_name_static();
         }
-        SurfaceMesh* mesh = SurfaceMeshFactory::create_object( new_type );
+        SurfaceMesh2< DIMENSION > *mesh =
+            SurfaceMesh2Factory< DIMENSION >::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh2D", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "Mesh2D", "Falling back to GeogramMesh2D data structure" );
 
-            mesh = new GeogramSurfaceMesh;
+            mesh = new GeogramSurfaceMesh< DIMENSION >;
         }
-        return std::unique_ptr< SurfaceMesh >( mesh );
+        return std::unique_ptr< SurfaceMesh2< DIMENSION > >( mesh );
     }
 
     void SurfaceMesh::next_on_border(
@@ -110,7 +120,8 @@ namespace RINGMesh {
         // There must be one (the current one) or two (the next one on boundary)
         std::vector< index_t > polygons_around_next_v_id = polygons_around_vertex(
             next_v_id, true, p );
-        index_t nb_around = static_cast< index_t >( polygons_around_next_v_id.size() );
+        index_t nb_around =
+            static_cast< index_t >( polygons_around_next_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
         next_p = polygons_around_next_v_id[0];
@@ -146,8 +157,8 @@ namespace RINGMesh {
 
         // Get the polygons around the shared vertex (v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > polygons_around_v_id = polygons_around_vertex( v_id, true,
-            p );
+        std::vector< index_t > polygons_around_v_id = polygons_around_vertex( v_id,
+            true, p );
         index_t nb_around = static_cast< index_t >( polygons_around_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
@@ -296,21 +307,24 @@ namespace RINGMesh {
         return result;
     }
 
-    std::unique_ptr< VolumeMesh > VolumeMesh::create_mesh( const MeshType type )
+    template< index_t DIMENSION >
+    std::unique_ptr< VolumeMesh2< DIMENSION > > VolumeMesh2< DIMENSION >::create_mesh(
+        const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramVolumeMesh::type_name_static();
+            new_type = GeogramVolumeMesh< DIMENSION >::type_name_static();
         }
-        VolumeMesh* mesh = VolumeMeshFactory::create_object( new_type );
+        VolumeMesh2< DIMENSION >* mesh = VolumeMeshFactory < DIMENSION
+            > ::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh3D", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "Mesh3D", "Falling back to GeogramMesh3D data structure" );
 
-            mesh = new GeogramVolumeMesh;
+            mesh = new GeogramVolumeMesh< DIMENSION >;
         }
-        return std::unique_ptr< VolumeMesh >( mesh );
+        return std::unique_ptr< VolumeMesh2< DIMENSION > >( mesh );
     }
 
 } // namespace
