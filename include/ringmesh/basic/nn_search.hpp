@@ -33,11 +33,6 @@
  *     FRANCE
  */
 
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_geometry.h>
-
-#include <ringmesh/geogram_extension/geogram_extension.h>
-
 /*!
  * @file Nearest Neighbor requests
  * @author Arnaud Botella
