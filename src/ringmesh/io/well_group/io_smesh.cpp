@@ -40,8 +40,8 @@ namespace {
         index_t nb_colocated = mesh.vertices_nn_search().get_colocated_index_mapping(
             epsilon, old2new );
         if( nb_colocated > 0 ) {
-            std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
-                mesh );
+            std::unique_ptr< LineMeshBuilder< 3 > > builder =
+                LineMeshBuilder< 3 >::create_builder( mesh );
             for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
                 for( index_t i = 0; i < 2; i++ ) {
                     index_t v = mesh.edge_vertex( e, i );
@@ -68,9 +68,9 @@ namespace {
             }
 
             std::unique_ptr< LineMesh > mesh = LineMesh::create_mesh(
-                GeogramLineMesh::type_name_static() );
-            std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
-                *mesh );
+                GeogramLineMesh < 3 > ::type_name_static() );
+            std::unique_ptr< LineMeshBuilder > builder =
+                LineMeshBuilder::create_builder( *mesh );
             std::string name = GEO::FileSystem::base_name( filename );
 
             bool is_first_part = true;
