@@ -107,14 +107,15 @@ namespace RINGMesh {
          * @warning the NNSearch is destroyed when calling the Mesh::polygons_aabb()
          * and Mesh::cells_aabb()
          */
-        const NNSearch& vertices_nn_search() const
+        const NNSearch< DIMENSION >& vertices_nn_search() const
         {
             if( !vertices_nn_search_ ) {
-                std::vector< vec3 > vec_vertices( nb_vertices() );
+                std::vector< vecn< DIMENSION > > vec_vertices( nb_vertices() );
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v );
                 }
-                vertices_nn_search_.reset( new NNSearch( vec_vertices, true ) );
+                vertices_nn_search_.reset(
+                    new NNSearch< DIMENSION >( vec_vertices, true ) );
             }
             return *vertices_nn_search_.get();
         }
@@ -130,7 +131,7 @@ namespace RINGMesh {
         ObjectMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > vertices_nn_search_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > vertices_nn_search_;
     };
 
     /*!
