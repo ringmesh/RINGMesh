@@ -186,8 +186,6 @@ namespace RINGMesh {
         GEOL_FEATURE geol_feature_;
     };
 
-    /// @todo Review: I am still not convinced that we always have to 
-    /// derive the base class to define new entities. [JP]
     class RINGMESH_API Contact: public GeoModelGeologicalEntity {
     public:
         Contact( const GeoModel& geomodel )
