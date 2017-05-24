@@ -94,7 +94,7 @@ namespace RINGMesh {
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
          * @return const reference to the point that corresponds to the vertex.
          */
-        virtual const vecn< DIMENSION>& vertex( index_t v_id ) const = 0;
+        virtual const vecn< DIMENSION >& vertex( index_t v_id ) const = 0;
         /*
          * @brief Gets the number of vertices in the Mesh.
          */
@@ -133,33 +133,50 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch > vertices_nn_search_;
     };
 
+    /*!
+     * class for encapsulating mesh composed of points
+     */
     template< index_t DIMENSION >
-    class RINGMESH_API PointMeshTemplate: public virtual ObjectMesh< DIMENSION > {
+    class RINGMESH_API PointMesh2: public virtual ObjectMesh< DIMENSION > {
+    ringmesh_disable_copy( PointMesh2 );
+        friend class PointMeshBuilder;
+
+    public:
+        virtual ~PointMesh2() = default;
+
+        static std::unique_ptr< PointMesh2 > create_mesh( const MeshType type );
+    protected:
+        PointMesh2() = default;
     };
 
-    using PointMesh2D = PointMeshTemplate< 2 >;
-    using PointMesh3D = PointMeshTemplate< 3 >;
+    template< index_t DIMENSION >
+    using PointMesh2Factory = GEO::Factory0< PointMesh2< DIMENSION > >;
+#define ringmesh_register_point_mesh2(type) \
+    geo_register_creator(RINGMesh::PointMesh2Factory< DIMENSION >, type, type::type_name_static())
+
+    using PointMesh2D = PointMesh2< 2 >;
+    using PointMesh3D = PointMesh2< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API LineMeshTemplate: public virtual ObjectMesh< DIMENSION > {
+    class RINGMESH_API LineMesh2: public virtual ObjectMesh< DIMENSION > {
     };
 
-    using LineMesh2D = LineMeshTemplate< 2 >;
-    using LineMesh3D = LineMeshTemplate< 3 >;
+    using LineMesh2D = LineMesh2< 2 >;
+    using LineMesh3D = LineMesh2< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API SurfaceMeshTemplate: public virtual ObjectMesh< DIMENSION > {
+    class RINGMESH_API Surface2Mesh: public virtual ObjectMesh< DIMENSION > {
     };
 
-    using SurfaceMesh2D = SurfaceMeshTemplate< 2 >;
-    using SurfaceMesh3D = SurfaceMeshTemplate< 3 >;
+    using SurfaceMesh2D = Surface2Mesh< 2 >;
+    using SurfaceMesh3D = Surface2Mesh< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API VolumeMeshTemplate: public virtual ObjectMesh< DIMENSION > {
+    class RINGMESH_API Volume2Mesh: public virtual ObjectMesh< DIMENSION > {
     };
 
-    using VolumeMesh2D = VolumeMeshTemplate< 2 >;
-    using VolumeMesh3D = VolumeMeshTemplate< 3 >;
+    using VolumeMesh2D = Volume2Mesh< 2 >;
+    using VolumeMesh3D = Volume2Mesh< 3 >;
 
     /*!
      * class base class for encapsulating Mesh structure
