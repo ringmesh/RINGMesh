@@ -364,7 +364,7 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramPointMesh ),
+            mesh_( new GeogramPointSetMesh ),
             vertex_mapper_( *this, gmm.geomodel() )
     {
         set_mesh( mesh_.get() );
@@ -402,8 +402,8 @@ namespace RINGMesh {
         const MeshEntityType& entity_type,
         index_t& count )
     {
-        std::unique_ptr< PointMeshBuilder > mesh_builder =
-            PointMeshBuilder::create_builder( *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > mesh_builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
             GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
                 entity_type, i ) );
@@ -428,7 +428,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize()
     {
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
+        std::unique_ptr< PointSetMeshBuilder > builder = PointSetMeshBuilder::create_builder(
             *mesh_ );
         builder->clear( true, false );
 
@@ -467,7 +467,7 @@ namespace RINGMesh {
         gmm_.edges.clear();
         vertex_mapper_.clear();
 
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
+        std::unique_ptr< PointSetMeshBuilder > builder = PointSetMeshBuilder::create_builder(
             *mesh_ );
         builder->clear_vertices( true, false );
     }
@@ -558,7 +558,7 @@ namespace RINGMesh {
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
+        std::unique_ptr< PointSetMeshBuilder > builder = PointSetMeshBuilder::create_builder(
             *mesh_ );
         const index_t index = builder->create_vertex( point );
         vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
@@ -568,7 +568,7 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertices( const std::vector< vec3 >& points )
     {
         ringmesh_assert( !points.empty() );
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
+        std::unique_ptr< PointSetMeshBuilder > builder = PointSetMeshBuilder::create_builder(
             *mesh_ );
         const index_t start_index = builder->create_vertex( points[0] );
         for( size_t i = 1; i < points.size(); ++i ) {
@@ -583,8 +583,8 @@ namespace RINGMesh {
         test_and_initialize();
         ringmesh_assert( v < nb() );
         // Change the position of the unique_vertex
-        std::unique_ptr< PointMeshBuilder > mesh_builder =
-            PointMeshBuilder::create_builder( *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > mesh_builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         mesh_builder->set_vertex( v, point );
 
         GeoModelBuilder builder( gm_ );
@@ -666,7 +666,7 @@ namespace RINGMesh {
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
-        PointMeshBuilder::create_builder( *mesh_ )->delete_vertices( to_delete_bool );
+        PointSetMeshBuilder::create_builder( *mesh_ )->delete_vertices( to_delete_bool );
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete );
     }
