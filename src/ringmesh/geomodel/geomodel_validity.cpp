@@ -1001,7 +1001,7 @@ namespace {
                     + geomodel_.mesh.polygons.nb_quad() ) {
                 std::vector< bool > has_intersection;
                 StoreIntersections action( geomodel_, has_intersection );
-                const AABBTree2D& AABB = geomodel_.mesh.polygons.aabb();
+                const SurfaceAABBTree& AABB = geomodel_.mesh.polygons.aabb();
                 AABB.compute_self_element_bbox_intersections( action );
 
                 index_t nb_intersections = static_cast< index_t >( std::count(
