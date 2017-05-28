@@ -175,46 +175,46 @@ namespace RINGMesh {
             message_get_number( msg, &e );
 
             if( e == 0 ) {
-                Logger::err( "TetreGen", desc );
+                Logger::err( "TetraGen", desc );
             } else if( e == MESHGEMS_TETRA_CODE( -5110 ) ) {
                 message_get_integer_data( msg, 1, 4, ibuff );
-                Logger::err( "TetreGen", "two surface edges are intersecting : ",
+                Logger::err( "TetraGen", "two surface edges are intersecting : ",
                     ibuff[0], " ", ibuff[1], " intersects ", ibuff[2], " ",
                     ibuff[3] );
             } else if( e == MESHGEMS_TETRA_CODE( -5120 ) ) {
                 message_get_integer_data( msg, 1, 5, ibuff );
-                Logger::err( "TetreGen", "surface edge intersects a surface face : ",
+                Logger::err( "TetraGen", "surface edge intersects a surface face : ",
                     ibuff[0], " ", ibuff[1], " intersects ", ibuff[2], " ", ibuff[3],
                     " ", ibuff[4] );
             } else if( e == MESHGEMS_TETRA_CODE( -5150 ) ) {
                 message_get_integer_data( msg, 1, 4, ibuff );
-                Logger::err( "TetreGen", "boundary point inside a surface face : ",
+                Logger::err( "TetraGen", "boundary point inside a surface face : ",
                     ibuff[0], " in ", ibuff[1], " ", ibuff[2], " ", ibuff[3] );
             } else if( e == MESHGEMS_TETRA_CODE( 5200 ) ) {
                 message_get_integer_data( msg, 1, 3, ibuff );
-                Logger::err( "TetreGen", "duplicated face : ", ibuff[0], " ",
+                Logger::err( "TetraGen", "duplicated face : ", ibuff[0], " ",
                     ibuff[1], " ", ibuff[2], " ", ibuff[3] );
             } else if( e == MESHGEMS_TETRA_CODE( -5621 ) ) {
                 message_get_integer_data( msg, 1, 4, ibuff );
                 message_get_real_data( msg, 1, 1, rbuff );
-                Logger::err( "TetreGen", "degenerated face : face ", ibuff[0], " (",
+                Logger::err( "TetraGen", "degenerated face : face ", ibuff[0], " (",
                     ibuff[1], ", ", ibuff[2], ", ", ibuff[3],
                     ") with small inradius = ", rbuff[0] );
             } else if( e == MESHGEMS_TETRA_CODE( -5820 ) ) {
                 message_get_integer_data( msg, 1, 2, ibuff );
-                Logger::err( "TetreGen", "edge bounding a hole : ", ibuff[0], " ",
+                Logger::err( "TetraGen", "edge bounding a hole : ", ibuff[0], " ",
                     ibuff[1] );
             } else if( e == MESHGEMS_TETRA_CODE( 8423 ) ) {
                 message_get_integer_data( msg, 1, 3, ibuff );
-                Logger::err( "TetreGen", "constrained face cannot be enforced : ",
+                Logger::err( "TetraGen", "constrained face cannot be enforced : ",
                     ibuff[0], " ", ibuff[1], " ", ibuff[2] );
             } else if( e == MESHGEMS_TETRA_CODE( 8441 ) ) {
                 message_get_integer_data( msg, 1, 2, ibuff );
-                Logger::err( "TetreGen", "constrained edge cannot be enforced : ",
+                Logger::err( "TetraGen", "constrained edge cannot be enforced : ",
                     ibuff[0], " ", ibuff[1] );
             } else {
-                Logger::err( "TetreGen", "Error message not directly handle" );
-                Logger::err( "TetreGen", "Error(", e, ") : ", desc );
+                Logger::err( "TetraGen", "Error message not directly handle" );
+                Logger::err( "TetraGen", "Error(", e, ") : ", desc );
             }
             return STATUS_OK;
         }
