@@ -178,7 +178,7 @@ namespace RINGMesh {
         }
         index_t in_boundary_type_index = mesh_entity_type_to_index(
             in_boundary_type );
-        for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
+        for( index_t i = 0; i < E.nb_in_boundaries(); ++i ) {
             index_t old_id = E.in_boundary_gmme( i ).index();
             index_t new_id = old_2_new_mesh_entity_[in_boundary_type_index][old_id];
             builder_.topology.set_mesh_entity_in_boundary( E.gmme(), i, new_id );

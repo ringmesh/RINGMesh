@@ -257,7 +257,7 @@ namespace RINGMesh {
         gmme_id rhs_id = rhs.gmme();
         const RelationshipManager& manager =
             geomodel().entity_type_manager().relationship_manager;
-        return std::count_if( in_boundary_.begin(), in_boundary_.end(),
+        return std::count_if( in_boundaries_.begin(), in_boundaries_.end(),
             [&rhs_id, &manager](index_t i) {return manager.in_boundary_gmme( i ) == rhs_id;} )
             > 1;
     }
@@ -346,7 +346,7 @@ namespace RINGMesh {
                 const GeoModelMeshEntity& E = boundary( i );
                 bool found = false;
                 index_t j = 0;
-                while( !found && j < E.nb_in_boundary() ) {
+                while( !found && j < E.nb_in_boundaries() ) {
                     if( E.in_boundary_gmme( j ) == id ) {
                         found = true;
                     }
@@ -374,12 +374,12 @@ namespace RINGMesh {
         bool valid = true;
         gmme_id id = gmme();
         if( family.is_valid_type( in_boundary_type ) ) {
-            if( nb_in_boundary() == 0 ) {
+            if( nb_in_boundaries() == 0 ) {
                 Logger::warn( "GeoModelEntity", id,
                     " is in the boundary of no entity " );
                 valid = false;
             }
-            for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+            for( index_t i = 0; i < nb_in_boundaries(); ++i ) {
                 const GeoModelMeshEntity& E = in_boundary( i );
                 bool found = false;
                 index_t j = 0;
@@ -500,16 +500,16 @@ namespace RINGMesh {
     }
     const gmme_id& GeoModelMeshEntity::in_boundary_gmme( index_t x ) const
     {
-        ringmesh_assert( x < nb_in_boundary() );
+        ringmesh_assert( x < nb_in_boundaries() );
         return geomodel().entity_type_manager().relationship_manager.in_boundary_gmme(
-            in_boundary_[x] );
+            in_boundaries_[x] );
     }
     /**************************************************************/
 
     bool Corner::is_on_voi() const
     {
         // True if one of the incident surface define the universe
-        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+        for( index_t i = 0; i < nb_in_boundaries(); ++i ) {
             if( in_boundary( i ).is_on_voi() ) {
                 return true;
             }
@@ -645,7 +645,7 @@ namespace RINGMesh {
     bool Line::is_on_voi() const
     {
         // True if one of the incident surface define the universe
-        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+        for( index_t i = 0; i < nb_in_boundaries(); ++i ) {
             if( in_boundary( i ).is_on_voi() ) {
                 return true;
             }

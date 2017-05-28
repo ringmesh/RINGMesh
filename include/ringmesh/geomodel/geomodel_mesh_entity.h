@@ -110,9 +110,9 @@ namespace RINGMesh {
         const gmme_id& boundary_gmme( index_t x ) const;
         const GeoModelMeshEntity& boundary( index_t x ) const;
 
-        index_t nb_in_boundary() const
+        index_t nb_in_boundaries() const
         {
-            return static_cast< index_t >( in_boundary_.size() );
+            return static_cast< index_t >( in_boundaries_.size() );
         }
         const gmme_id& in_boundary_gmme( index_t x ) const;
         const GeoModelMeshEntity& in_boundary( index_t x ) const;
@@ -289,7 +289,7 @@ namespace RINGMesh {
             GeoModelEntity::copy_name_and_geol_feature( from );
             id_ = from.id_;
             boundaries_ = from.boundaries_;
-            in_boundary_ = from.in_boundary_;
+            in_boundaries_ = from.in_boundaries_;
             parents_ = from.parents_;
         }
         virtual bool is_index_valid() const final;
@@ -332,7 +332,7 @@ namespace RINGMesh {
         std::vector< index_t > boundaries_;
 
         /// In-boundary relation of this entity
-        std::vector< index_t > in_boundary_;
+        std::vector< index_t > in_boundaries_;
 
         /// The optional GeoModelGeologicalEntities 
         /// (groups of GeoModelMeshEntity this entity belongs to)
@@ -1358,7 +1358,7 @@ namespace RINGMesh {
 
         std::vector< index_t >& modifiable_in_boundaries()
         {
-            return gmme_.in_boundary_;
+            return gmme_.in_boundaries_;
         }
 
         std::vector< bool >& modifiable_sides()

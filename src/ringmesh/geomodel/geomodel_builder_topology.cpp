@@ -103,7 +103,7 @@ namespace {
         const GeoModelMeshEntity& E,
         std::vector< index_t >& incident_surfaces )
     {
-        index_t nb = E.nb_in_boundary();
+        index_t nb = E.nb_in_boundaries();
         incident_surfaces.resize( nb );
         for( index_t i = 0; i < nb; ++i ) {
             incident_surfaces[i] = E.in_boundary_gmme( i ).index();
@@ -181,7 +181,7 @@ namespace RINGMesh {
             for( index_t j = 0; j < geomodel_.nb_mesh_entities( type ); ++j ) {
                 bool no_incident = true;
                 const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, j );
-                for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
+                for( index_t k = 0; k < E.nb_in_boundaries(); ++k ) {
                     if( mesh_entities.count( E.in_boundary_gmme( k ) ) == 0 ) {
                         no_incident = false;
                         break;
@@ -435,7 +435,7 @@ namespace RINGMesh {
         /// NO_ID is used to flag entities to delete
         GeoModelMeshEntity& mesh_entity = geomodel_access_.modifiable_mesh_entity(
             gmme );
-        ringmesh_assert( id < mesh_entity.nb_in_boundary() );
+        ringmesh_assert( id < mesh_entity.nb_in_boundaries() );
         const MeshEntityType& in_b_type =
             geomodel_.entity_type_manager().mesh_entity_manager.in_boundary_type(
                 gmme.type() );
