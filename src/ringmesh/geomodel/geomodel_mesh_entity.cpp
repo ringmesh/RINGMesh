@@ -472,7 +472,7 @@ namespace RINGMesh {
         ringmesh_assert( id.is_defined() );
         return geomodel().geological_entity( id );
     }
-    const gmge_id GeoModelMeshEntity::parent_gmge(
+    const gmge_id& GeoModelMeshEntity::parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
