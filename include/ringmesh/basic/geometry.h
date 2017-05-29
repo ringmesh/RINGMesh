@@ -73,12 +73,17 @@ namespace RINGMesh {
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
-    template< index_t DIMENSION >
     double RINGMESH_API point_segment_distance(
-        const vecn< DIMENSION >& p,
-        const vecn< DIMENSION >& p0,
-        const vecn< DIMENSION >& p1,
-        vecn< DIMENSION >& nearest_p );
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        vec3& nearest_p );
+
+    double RINGMESH_API point_segment_distance(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        vec2& nearest_p );
 
     /*!
      * Computes the smallest distance between a point and a triangle
@@ -87,9 +92,6 @@ namespace RINGMesh {
      * @param[in] V1 the second vertex of the triangle
      * @param[in] V2 the third vertex of the triangle
      * @param[out] closest_point the closest point on the triangle
-     * @param[out] lambda0 barycentric coordinate from \p V0
-     * @param[out] lambda1 barycentric coordinate from \p V1
-     * @param[out] lambda2 barycentric coordinate from \p V2
      * @return the smallest distance
      */
     double RINGMESH_API point_triangle_distance(
@@ -97,10 +99,24 @@ namespace RINGMesh {
         const vec3& V0,
         const vec3& V1,
         const vec3& V2,
-        vec3& closest_point,
-        double& lambda0,
-        double& lambda1,
-        double& lambda2 );
+        vec3& closest_point );
+
+    /*!
+     * Computes the smallest distance between a point and a triangle
+     * @param[in] point the point to test
+     * @param[in] V0 the first vertex of the triangle
+     * @param[in] V1 the second vertex of the triangle
+     * @param[in] V2 the third vertex of the triangle
+     * @param[out] closest_point the closest point on the triangle
+     * @return the smallest distance
+     */
+    double RINGMESH_API point_triangle_distance(
+        const vec2& point,
+        const vec2& V0,
+        const vec2& V1,
+        const vec2& V2,
+        vec2& closest_point );
+
 
     /*!
      * Computes the smallest distance between a point and a quad
@@ -345,6 +361,23 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
+        bool exact_predicates = false );
+
+    /*!
+     * Tests if a point is inside a triangle, more precisely if it is inside
+     * a prism based on the triangle and its normal
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the triangle
+     * @param[in] p1 the second vertex of the triangle
+     * @param[in] p2 the third vertex of the triangle
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
+     * @return returns true if the point is inside
+     */
+    bool RINGMESH_API point_inside_triangle(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        const vec2& p2,
         bool exact_predicates = false );
 
     /*!
