@@ -70,7 +70,7 @@ namespace RINGMesh {
          *        an entity in the set does not exist.
          * @return True if at least one entity was added.
          */
-        bool get_dependent_entities(
+        void get_dependent_entities(
             std::set< gmme_id >& in_mesh_entities,
             std::set< gmge_id >& in_geological_entities ) const;
 

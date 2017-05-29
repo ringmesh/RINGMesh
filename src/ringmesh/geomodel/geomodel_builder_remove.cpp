@@ -86,6 +86,30 @@ namespace RINGMesh {
         remove_mesh_entities( mesh_entities );
     }
 
+    void GeoModelBuilderRemoval::remove_mesh_entity_and_dependencies(
+        const gmme_id& mesh_entity_to_remove )
+    {
+        std::set< gmme_id > mesh_entities_to_delete;
+        mesh_entities_to_delete.insert( mesh_entity_to_remove );
+        std::set< gmge_id > geological_entities_to_delete;
+        builder_.topology.get_dependent_entities( mesh_entities_to_delete,
+            geological_entities_to_delete );
+        remove_mesh_entities( mesh_entities_to_delete );
+        remove_geological_entities( geological_entities_to_delete );
+    }
+
+    void GeoModelBuilderRemoval::remove_geological_entity_and_dependencies(
+        const gmge_id& geological_entity_to_remove )
+    {
+        std::set< gmme_id > mesh_entities_to_delete;
+        std::set< gmge_id > geological_entities_to_delete;
+        geological_entities_to_delete.insert( geological_entity_to_remove );
+        builder_.topology.get_dependent_entities( mesh_entities_to_delete,
+            geological_entities_to_delete );
+        remove_mesh_entities( mesh_entities_to_delete );
+        remove_geological_entities( geological_entities_to_delete );
+    }
+
     void GeoModelBuilderRemoval::do_delete_flagged_geological_entities()
     {
         for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
