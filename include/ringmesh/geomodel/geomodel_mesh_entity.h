@@ -110,12 +110,12 @@ namespace RINGMesh {
         const gmme_id& boundary_gmme( index_t x ) const;
         const GeoModelMeshEntity& boundary( index_t x ) const;
 
-        index_t nb_in_boundaries() const
+        index_t nb_incident_entities() const
         {
-            return static_cast< index_t >( in_boundaries_.size() );
+            return static_cast< index_t >( incident_entities_.size() );
         }
-        const gmme_id& in_boundary_gmme( index_t x ) const;
-        const GeoModelMeshEntity& in_boundary( index_t x ) const;
+        const gmme_id& incident_entity_gmme( index_t x ) const;
+        const GeoModelMeshEntity& incident_entity( index_t x ) const;
 
         /*!
          * @brief Check if one entity is twice in the boundary
@@ -289,7 +289,7 @@ namespace RINGMesh {
             GeoModelEntity::copy_name_and_geol_feature( from );
             id_ = from.id_;
             boundaries_ = from.boundaries_;
-            in_boundaries_ = from.in_boundaries_;
+            incident_entities_ = from.incident_entities_;
             parents_ = from.parents_;
         }
         virtual bool is_index_valid() const final;
@@ -306,15 +306,15 @@ namespace RINGMesh {
 
         /*!
          * All entities in the boundary must have this in their
-         *  in_boundary vector
+         *  incident_entity vector
          */
         bool is_boundary_connectivity_valid() const;
         /*!
          * All entities must be at least in the boundary of another entity
-         * and all entities in the in_boundary must have this entity in their
+         * and all entities in the incident_entity must have this entity in their
          * boundary vector
          */
-        bool is_in_boundary_connectivity_valid() const;
+        bool is_incident_entity_connectivity_valid() const;
         /*!
          * @brief Check that geomodel vertex indices are consistent
          * with what is stored at the GeoModel level.
@@ -332,7 +332,7 @@ namespace RINGMesh {
         std::vector< index_t > boundaries_;
 
         /// In-boundary relation of this entity
-        std::vector< index_t > in_boundaries_;
+        std::vector< index_t > incident_entities_;
 
         /// The optional GeoModelGeologicalEntities 
         /// (groups of GeoModelMeshEntity this entity belongs to)
@@ -390,7 +390,7 @@ namespace RINGMesh {
             return nb_vertices;
         }
 
-        const Line& in_boundary( index_t x ) const;
+        const Line& incident_entity( index_t x ) const;
 
         /*! @}
          * \name Geometrical request on Corner
@@ -491,7 +491,7 @@ namespace RINGMesh {
 
         const Corner& boundary( index_t x ) const;
 
-        const Surface& in_boundary( index_t x ) const;
+        const Surface& incident_entity( index_t x ) const;
 
         virtual bool is_connectivity_valid() const final;
 
@@ -641,7 +641,7 @@ namespace RINGMesh {
 
         const Line& boundary( index_t x ) const;
 
-        const Region& in_boundary( index_t x ) const;
+        const Region& incident_entity( index_t x ) const;
 
         bool is_simplicial() const
         {
@@ -1356,9 +1356,9 @@ namespace RINGMesh {
             return gmme_.boundaries_;
         }
 
-        std::vector< index_t >& modifiable_in_boundaries()
+        std::vector< index_t >& modifiable_incident_entities()
         {
-            return gmme_.in_boundaries_;
+            return gmme_.incident_entities_;
         }
 
         std::vector< bool >& modifiable_sides()
