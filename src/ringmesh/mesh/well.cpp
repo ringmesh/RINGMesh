@@ -42,7 +42,7 @@
 #include <geogram/mesh/mesh_geometry.h>
 
 #include <ringmesh/basic/algorithm.h>
-#include <ringmesh/basic/box3d.h>
+#include <ringmesh/basic/box.h>
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/geomodel/geomodel.h>
@@ -241,7 +241,7 @@ namespace {
     };
 
     struct OrientedEdge {
-        OrientedEdge( const LineMesh& mesh, index_t edge, index_t vertex_from )
+        OrientedEdge( const LineMesh< 3 >& mesh, index_t edge, index_t vertex_from )
             : edge_( edge ), vertex_from_( vertex_from )
         {
             if( mesh.edge_vertex( edge, 0 ) == vertex_from ) {
@@ -276,9 +276,11 @@ namespace RINGMesh {
             WellEntity( well ),
             is_on_surface_( is_on_surface ),
             id_( id ),
-            mesh_( PointSetMesh::create_mesh( GeogramPointSetMesh::type_name_static() ) )
+            mesh_(
+                PointSetMesh< 3 >::create_mesh(
+                    GeogramPointSetMesh< 3 >::type_name_static() ) )
     {
-        PointSetMeshBuilder::create_builder( *mesh_ )->create_vertex( point );
+        PointSetMeshBuilder< 3 >::create_builder( *mesh_ )->create_vertex( point );
     }
 
     const vec3& WellCorner::point() const
@@ -297,7 +299,9 @@ namespace RINGMesh {
         :
             WellEntity( well ),
             id_( id ),
-            mesh_( LineMesh::create_mesh( GeogramLineMesh::type_name_static() ) )
+            mesh_(
+                LineMesh< 3 >::create_mesh(
+                    GeogramLineMesh< 3 >::type_name_static() ) )
     {
         corners_[0] = NO_ID;
         corners_[1] = NO_ID;
@@ -306,8 +310,8 @@ namespace RINGMesh {
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
         index_t nb_points = static_cast< index_t >( points.size() );
-        std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
-            *mesh_ );
+        std::unique_ptr< LineMeshBuilder< 3 > > builder =
+            LineMeshBuilder< 3 >::create_builder( *mesh_ );
         builder->create_vertices( nb_points );
         for( index_t p = 0; p < nb_points; p++ ) {
             builder->set_vertex( p, points[p] );
@@ -478,7 +482,7 @@ namespace RINGMesh {
         }
     }
 
-    void WellGroup::add_well( const LineMesh& mesh, const std::string& name )
+    void WellGroup::add_well( const LineMesh< 3 >& mesh, const std::string& name )
     {
         ringmesh_assert( geomodel() );
         if( find_well( name ) != NO_ID ) return;
@@ -486,7 +490,7 @@ namespace RINGMesh {
         Well& new_well = *wells_.back();
         new_well.set_name( name );
 
-        GeogramLineMesh conformal_mesh;
+        GeogramLineMesh< 3 > conformal_mesh;
         compute_conformal_mesh( mesh, conformal_mesh );
 
         std::vector< std::vector< index_t > > edges_around_vertices(
@@ -558,11 +562,13 @@ namespace RINGMesh {
         } while( !S.empty() );
     }
 
-    void WellGroup::compute_conformal_mesh( const LineMesh& in, LineMesh& out )
+    void WellGroup::compute_conformal_mesh(
+        const LineMesh< 3 >& in,
+        LineMesh< 3 >& out )
     {
         double epsilon = geomodel_->epsilon();
-        std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
-            out );
+        std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
+            > ::create_builder( out );
         builder->clear( false, false );
 
         GEO::Attribute< LineInstersection > vertex_info(
@@ -580,7 +586,7 @@ namespace RINGMesh {
             index_t to_id = in.edge_vertex( e, 1 );
             const vec3& to_vertex = in.vertex( to_id );
 
-            Box3d box;
+            Box< 3 > box;
             box.add_point( from_vertex );
             box.add_point( to_vertex );
             std::vector< LineInstersection > intersections;

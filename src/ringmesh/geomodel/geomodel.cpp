@@ -48,7 +48,7 @@
 namespace {
     using namespace RINGMesh;
 
-    void compute_mesh_entity_bbox( const GeoModelMeshEntity& entity, Box3d& bbox )
+    void compute_mesh_entity_bbox( const GeoModelMeshEntity& entity, Box< 3 >& bbox )
     {
         for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
             bbox.add_point( entity.vertex( v ) );
@@ -57,7 +57,7 @@ namespace {
 
     double compute_percentage_bbox_diagonal( const GeoModel& gm )
     {
-        Box3d bbox;
+        Box< 3 > bbox;
         if( gm.universe().nb_boundaries() > 0 ) {
             const Universe& universe = gm.universe();
             for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {

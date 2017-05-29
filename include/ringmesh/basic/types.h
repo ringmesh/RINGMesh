@@ -76,7 +76,6 @@ namespace RINGMesh {
     // This is an array of 3 doubles
     using vec2 = vecn< 2 >;
 
-
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
 

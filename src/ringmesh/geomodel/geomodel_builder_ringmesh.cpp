@@ -376,19 +376,19 @@ namespace RINGMesh {
             index_t id = NO_ID;
             GEO::String::from_string( entity_id, id );
             if( MeshEntityTypeManager::is_corner( entity_type ) ) {
-                std::unique_ptr< PointSetMeshBuilder > builder =
+                std::unique_ptr< PointSetMeshBuilder< 3 > > builder =
                     geometry.create_corner_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_line( entity_type ) ) {
-                std::unique_ptr< LineMeshBuilder > builder =
+                std::unique_ptr< LineMeshBuilder< 3 > > builder =
                     geometry.create_line_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_surface( entity_type ) ) {
-                std::unique_ptr< SurfaceMeshBuilder > builder =
+                std::unique_ptr< SurfaceMeshBuilder< 3 > > builder =
                     geometry.create_surface_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_region( entity_type ) ) {
-                std::unique_ptr< VolumeMeshBuilder > builder =
+                std::unique_ptr< VolumeMeshBuilder< 3 > > builder =
                     geometry.create_region_builder( id );
                 builder->load_mesh( file_name );
             }

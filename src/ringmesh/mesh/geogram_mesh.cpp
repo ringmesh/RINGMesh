@@ -41,14 +41,23 @@ namespace RINGMesh {
 
     void register_geogram_mesh()
     {
-        ringmesh_register_point_mesh( GeogramPointSetMesh );
-        ringmesh_register_point_mesh_builder( GeogramPointSetMesh );
-        ringmesh_register_line_mesh( GeogramLineMesh );
-        ringmesh_register_line_mesh_builder( GeogramLineMesh );
-        ringmesh_register_surface_mesh( GeogramSurfaceMesh );
-        ringmesh_register_surface_mesh_builder( GeogramSurfaceMesh );
-        ringmesh_register_volume_mesh( GeogramVolumeMesh );
-        ringmesh_register_volume_mesh_builder( GeogramVolumeMesh );
+        ringmesh_register_point_mesh_3d( GeogramPointSetMesh3D );
+        ringmesh_register_point_mesh_builder( GeogramPointSetMesh3D );
+        ringmesh_register_line_mesh_3d( GeogramLineMesh3D );
+        ringmesh_register_line_mesh_builder( GeogramLineMesh3D );
+        ringmesh_register_surface_mesh_3d( GeogramSurfaceMesh3D );
+        ringmesh_register_surface_mesh_builder( GeogramSurfaceMesh3D );
+        ringmesh_register_volume_mesh_3d( GeogramVolumeMesh3D );
+        ringmesh_register_volume_mesh_builder( GeogramVolumeMesh3D );
     }
+
+    template class GeogramPointSetMesh< 2 >;
+    template class GeogramLineMesh< 2 >;
+    template class GeogramSurfaceMesh< 2 >;
+
+    template class GeogramPointSetMesh< 3 >;
+    template class GeogramLineMesh< 3 >;
+    template class GeogramSurfaceMesh< 3 >;
+    template class GeogramVolumeMesh< 3 >;
 }
 

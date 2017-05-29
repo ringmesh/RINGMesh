@@ -64,7 +64,7 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine ) final
         {
-            std::unique_ptr< VolumeMeshBuilder > mesh3D_builder =
+            std::unique_ptr< VolumeMeshBuilder< 3 > > mesh3D_builder =
                 builder_->geometry.create_region_builder( output_region_ );
             tetrahedralize_mesh_tetgen( *mesh3D_builder.get(), tetmesh_constraint_,
                 refine, 1.0 );

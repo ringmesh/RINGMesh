@@ -689,8 +689,8 @@ namespace {
         const std::vector< index_t >& edge_indices,
         const std::vector< index_t >& non_manifold_edges )
     {
-        GeogramLineMesh mesh;
-        GeogramLineMeshBuilder builder;
+        GeogramLineMesh< 3 > mesh;
+        GeogramLineMeshBuilder< 3 > builder;
         builder.set_mesh( mesh );
         index_t nb_edges = static_cast< index_t >( non_manifold_edges.size() );
         builder.create_vertices( 2 * nb_edges );
@@ -1001,7 +1001,7 @@ namespace {
                     + geomodel_.mesh.polygons.nb_quad() ) {
                 std::vector< bool > has_intersection;
                 StoreIntersections action( geomodel_, has_intersection );
-                const SurfaceAABBTree& AABB = geomodel_.mesh.polygons.aabb();
+                const SurfaceAABBTree< 3 >& AABB = geomodel_.mesh.polygons.aabb();
                 AABB.compute_self_element_bbox_intersections( action );
 
                 index_t nb_intersections = static_cast< index_t >( std::count(

@@ -67,6 +67,15 @@ namespace {
         }
         return area;
     }
+
+    double triangle_area( const vec2& A, const vec2& B, const vec2& C )
+    {
+        vec2 AB = B - A;
+        vec2 AC = C - A;
+        double L_AB = length( AB );
+        vec2 projected = ( -AB / L_AB ) * ( dot( AC, AB ) / L_AB ) + A;
+        return L_AB * length( projected - C ) * 0.5;
+    }
 }
 
 namespace RINGMesh {
@@ -76,10 +85,7 @@ namespace RINGMesh {
         const vec3& V0,
         const vec3& V1,
         const vec3& V2,
-        vec3& closest_point,
-        double& lambda0,
-        double& lambda1,
-        double& lambda2 )
+        vec3& closest_point )
     {
         vec3 diff = V0 - point;
         vec3 edge0 = V1 - V0;
@@ -242,10 +248,79 @@ namespace RINGMesh {
         }
 
         closest_point = V0 + s * edge0 + t * edge1;
-        lambda0 = 1.0 - s - t;
-        lambda1 = s;
-        lambda2 = t;
-        return sqrt( sqrDistance );
+        return std::sqrt( sqrDistance );
+    }
+
+    double point_segment_distance(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        vec2& nearest_p )
+    {
+        // The direction vector is not unit length.  The normalization is deferred
+        // until it is needed.
+        vec2 direction = p1 - p0;
+        vec2 diff = p - p1;
+        double t = dot( direction, diff );
+        if( t >= global_epsilon ) {
+            nearest_p = p1;
+        } else {
+            diff = p - p0;
+            t = dot( direction, diff );
+            if( t <= global_epsilon ) {
+                nearest_p = p0;
+            } else {
+                double sqrLength = dot( direction, direction );
+                if( sqrLength > global_epsilon ) {
+                    t /= sqrLength;
+                    nearest_p = p0 + t * direction;
+                } else {
+                    nearest_p = p0;
+                }
+            }
+        }
+
+        diff = p - nearest_p;
+        return std::sqrt( dot( diff, diff ) );
+    }
+
+    double point_triangle_distance(
+        const vec2& point,
+        const vec2& V0,
+        const vec2& V1,
+        const vec2& V2,
+        vec2& closest_point )
+    {
+        double result = max_float64();
+        if( point_inside_triangle( point, V0, V1, V2 ) ) {
+            closest_point = point;
+            result = 0.0;
+        } else {
+            vec2 closest[3];
+            double distance[3];
+            distance[0] = point_segment_distance( point, V0, V1, closest[0] );
+            distance[1] = point_segment_distance( point, V1, V2, closest[1] );
+            distance[2] = point_segment_distance( point, V2, V0, closest[2] );
+            if( distance[0] < distance[1] ) {
+                if( distance[0] < distance[2] ) {
+                    result = distance[0];
+                    closest_point = closest[0];
+                } else {
+                    result = distance[2];
+                    closest_point = closest[2];
+                }
+            } else {
+                if( distance[1] < distance[2] ) {
+                    result = distance[1];
+                    closest_point = closest[1];
+                } else {
+                    result = distance[2];
+                    closest_point = closest[2];
+                }
+            }
+        }
+
+        return result;
     }
 
     double point_tetra_distance(
@@ -257,7 +332,6 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[4] = { p0, p1, p2, p3 };
-        double not_used0, not_used1, not_used2;
         double dist = max_float64();
         for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
             f++ ) {
@@ -267,7 +341,7 @@ namespace RINGMesh {
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]],
-                    cur_p, not_used0, not_used1, not_used2 );
+                    cur_p );
             if( distance < dist ) {
                 dist = distance;
                 nearest_p = cur_p;
@@ -286,7 +360,6 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 };
-        double not_used0, not_used1, not_used2;
         double dist = max_float64();
         for( index_t f = 0;
             f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
@@ -300,7 +373,7 @@ namespace RINGMesh {
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
-                        cur_p, not_used0, not_used1, not_used2 );
+                        cur_p );
             } else if( nb_vertices == 4 ) {
                 distance =
                     point_quad_distance( p,
@@ -331,8 +404,6 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 };
-        double not_used0, not_used1, not_used2;
-
         double dist = max_float64();
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
             f++ ) {
@@ -346,7 +417,7 @@ namespace RINGMesh {
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
-                        cur_p, not_used0, not_used1, not_used2 );
+                        cur_p );
             } else if( nb_vertices == 4 ) {
                 distance =
                     point_quad_distance( p,
@@ -665,15 +736,16 @@ namespace RINGMesh {
         return !result.empty();
     }
 
+    template< index_t DIMENSION >
     bool point_segment_projection(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        vec3& new_p )
+        const vecn< DIMENSION >& p,
+        const vecn< DIMENSION >& p0,
+        const vecn< DIMENSION >& p1,
+        vecn< DIMENSION >& new_p )
     {
-        vec3 center = ( p0 + p1 ) * 0.5;
-        vec3 diff = p - center;
-        vec3 edge = p1 - p0;
+        vecn< DIMENSION > center = ( p0 + p1 ) * 0.5;
+        vecn< DIMENSION > diff = p - center;
+        vecn< DIMENSION > edge = p1 - p0;
         double extent = 0.5 * edge.length();
         edge = normalize( edge );
         double d = dot( edge, diff );
@@ -683,18 +755,6 @@ namespace RINGMesh {
             return true;
         }
         return false;
-    }
-
-    void point_plane_projection(
-        const vec3& p,
-        const vec3& N_plane,
-        const vec3& O_plane,
-        vec3& projected_p )
-    {
-        vec3 N_unit_plane = normalize( N_plane );
-        vec3 v( p - O_plane );
-        double distance = dot( v, N_unit_plane );
-        projected_p = p - distance * N_unit_plane;
     }
 
     double point_segment_distance(
@@ -716,6 +776,18 @@ namespace RINGMesh {
                 return std::sqrt( p1_distance_sq );
             }
         }
+    }
+
+    void point_plane_projection(
+        const vec3& p,
+        const vec3& N_plane,
+        const vec3& O_plane,
+        vec3& projected_p )
+    {
+        vec3 N_unit_plane = normalize( N_plane );
+        vec3 v( p - O_plane );
+        double distance = dot( v, N_unit_plane );
+        projected_p = p - distance * N_unit_plane;
     }
 
     double point_quad_distance(
@@ -1097,17 +1169,68 @@ namespace RINGMesh {
             if( s1 == ZERO ) {
                 if( s2 == ZERO || s3 == ZERO ) {
                     //Case where p is exactly equal to one triangle vertex
-                    return true ;
+                    return true;
                 }
                 return s2 == s3;
             } else if( s2 == ZERO ) {
                 if( s1 == ZERO || s3 == ZERO ) {
-                    return true ;
+                    return true;
                 }
                 return s1 == s3;
             } else if( s3 == ZERO ) {
                 if( s1 == ZERO || s2 == ZERO ) {
-                    return true ;
+                    return true;
+                }
+                return s1 == s2;
+            }
+        }
+
+        return s1 == s2 && s2 == s3;
+    }
+
+    bool point_inside_triangle(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        const vec2& p2,
+        bool exact_predicates )
+    {
+        Sign s1, s2, s3;
+        if( !exact_predicates ) {
+            double area1 = triangle_area( p, p0, p1 );
+            if( is_almost_zero( area1 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true );
+            }
+            s1 = sign( area1 );
+            double area2 = triangle_area( p, p1, p2 );
+            if( is_almost_zero( area2 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true );
+            }
+            s2 = sign( area2 );
+            double area3 = triangle_area( p, p2, p0 );
+            if( is_almost_zero( area3 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true );
+            }
+            s3 = sign( area3 );
+        } else {
+            s1 = sign( GEO::PCK::orient_2d( p.data(), p0.data(), p1.data() ) );
+            s2 = sign( GEO::PCK::orient_2d( p.data(), p1.data(), p2.data() ) );
+            s3 = sign( GEO::PCK::orient_2d( p.data(), p2.data(), p0.data() ) );
+
+            if( s1 == ZERO ) {
+                if( s2 == ZERO || s3 == ZERO ) {
+                    //Case where p is exactly equal to one triangle vertex
+                    return true;
+                }
+                return s2 == s3;
+            } else if( s2 == ZERO ) {
+                if( s1 == ZERO || s3 == ZERO ) {
+                    return true;
+                }
+                return s1 == s3;
+            } else if( s3 == ZERO ) {
+                if( s1 == ZERO || s2 == ZERO ) {
+                    return true;
                 }
                 return s1 == s2;
             }
