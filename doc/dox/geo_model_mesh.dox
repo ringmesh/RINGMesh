@@ -1,0 +1,92 @@
+/*
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the ASGA nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
+
+
+/*!
+
+\page ringmesh_geomodel_mesh Description of the GeoModelMesh
+
+Each RINGMesh::GeoModelMeshEntity has a RINGMesh::Mesh independent from the other ones.
+Even if there are dependencies through the RINGMesh::GeoModelGeologicalEntity,
+it implies that there is no connection between the different meshes, in other words,
+each mesh stores its vertices, facets and cells.
+However, you may want/need (1) a more general information than the one stores inside a mesh, and
+(2) a single mesh representing the entire geological model.
+
+To ease the global access, four optional databases are attached to the RINGMesh::GeoModelMesh:
+ - RINGMesh::GeoModelMeshVertices: access to a global vertex without redundancy at the mesh interfaces.
+ It also own a link to each GEO::Mesh vertices.
+ - RINGMesh::GeoModelMeshFacets: access to a global facet.
+ - RINGMesh::GeoModelMeshCells: access to a global cell and its adjacent cells (even at the mesh interfaces). 
+ It also handle cell disconnection along surfaces if needed. Several disconnection mode can be set in the
+ RINGMesh::GeoModelMesh (cf. RINGMesh::DupplicationMode).
+ - RINGMesh::GeoModelMeshEdges: access to a global edge (to model wells).
+These databases are empty by default and are automatically filled as soon as they are used.
+
+Examples:
+\code
+    // Iterates on the RINGMesh::GeoModelMesh (gmm) vertices without redundancy
+    for( index_t v = 0; v < gmm.vertices.nb_vertices(); v++ ) {
+        const vec3& point = gmm.vertices.vertex( v ) ;
+    }
+
+    // Iterates on the RINGMesh::GeoModelMesh (gmm) facets without redundancy
+    for( index_t s = 0; s < gmm.model().nb_surfaces(); s++ ) {
+        // Each surface can be stored twice if it is at the interface of two meshes
+        for( index_t f = 0; f < gmm.facets.nb_facets( s ); f++ ) { // It is also possible to iterate only on triangle or quad
+            index_t facet_id_in_the_mesh = gmm.facets.facet( s, f ) ;
+            std::cout << "Nb vertices in the facets: " << gmm.facets.nb_vertices( facet_id_in_the_mesh ) << std::endl ;
+        }
+    }
+
+    // Iterates on the RINGMesh::GeoModelMesh (gmm) cells and its adjacent cells
+    for( index_t m = 0; m < gmm.model().nb_regions(); m++ ) {
+        for( index_t c = 0; c < gmm.cells.nb_cells( m ); c++ ) { // It is also possible to iterate only on one element type
+            index_t cell_in_gmm = gmm.cells.cell( m, c ) ;
+            for( index_t f = 0; f < gmm.cells.nb_facets( cell_in_gmm ); f++ ) {
+                index_t global_c_adj = gmm.cells.adjacent( cell_in_gmm, f ) ; // Global cell adjacent index
+                if( global_c_adj == GEO::NO_CELL ) {
+                    // The cell is on the border
+                    ...
+                } else {
+                    ...
+                }
+            } 
+        }
+    }
+\endcode
+ 
+*/
+
