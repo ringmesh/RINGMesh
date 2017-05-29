@@ -103,7 +103,7 @@ namespace {
      *    - COORD the coordinate along which elements should be
      *      sorted
      */
-    template< index_t DIMENSION, template< index_t COORD > class CMP >
+    template< index_t DIMENSION, template< index_t, index_t > class CMP >
     struct MortonSort {
 
         template< index_t COORDX >
@@ -203,7 +203,7 @@ namespace {
 
     template< index_t DIMENSION >
     bool mesh_cell_contains_point(
-        const VolumeMesh& M,
+        const VolumeMesh2< DIMENSION >& M,
         index_t cell,
         const vecn< DIMENSION >& p )
     {
@@ -351,7 +351,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     LineAABBTree< DIMENSION >::LineAABBTree( const LineMesh2< DIMENSION >& mesh )
-        : AABBTree(), mesh_( mesh )
+        : mesh_( mesh )
     {
         std::vector< BoxND< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_edges() );
@@ -372,8 +372,7 @@ namespace RINGMesh {
         double& distance ) const
     {
         DistanceToEdge action( mesh_ );
-        return closest_element_box< DistanceToEdge >( query, nearest_point, distance,
-            action );
+        return closest_element_box( query, nearest_point, distance, action );
     }
 
     template< index_t DIMENSION >
@@ -402,13 +401,13 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     SurfaceAABBTree< DIMENSION >::SurfaceAABBTree(
         const SurfaceMesh2< DIMENSION >& mesh )
-        : AABBTree(), mesh_( mesh )
+        : mesh_( mesh )
     {
         std::vector< BoxND< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_polygons() );
         for( index_t i = 0; i < mesh.nb_polygons(); i++ ) {
             for( index_t v = 0; v < mesh.nb_polygon_vertices( i ); v++ ) {
-                const vecND< DIMENSION >& point = mesh.vertex(
+                const vecn< DIMENSION >& point = mesh.vertex(
                     mesh.polygon_vertex( i, v ) );
                 bboxes[i].add_point( point );
             }
@@ -423,8 +422,7 @@ namespace RINGMesh {
         double& distance ) const
     {
         DistanceToTriangle action( mesh_ );
-        return closest_element_box< DistanceToTriangle >( query, nearest_point,
-            distance, action );
+        return closest_element_box( query, nearest_point, distance, action );
     }
 
     template< index_t DIMENSION >
@@ -459,7 +457,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     VolumeAABBTree< DIMENSION >::VolumeAABBTree(
         const VolumeMesh2< DIMENSION >& mesh )
-        : AABBTree(), mesh_( mesh )
+        : mesh_( mesh )
     {
         std::vector< BoxND< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_cells() );
@@ -486,7 +484,8 @@ namespace RINGMesh {
     index_t VolumeAABBTree< DIMENSION >::containing_cell(
         const vecn< DIMENSION >& query ) const
     {
-        return containing_cell_recursive( query, ROOT_INDEX, 0, nb_bboxes() );
+        return containing_cell_recursive( query, AABBTree< DIMENSION >::ROOT_INDEX,
+            0, this->nb_bboxes() );
     }
 
     template< index_t DIMENSION >
@@ -497,11 +496,11 @@ namespace RINGMesh {
         index_t box_end ) const
     {
 
-        if( !tree_[node_index].contains( query ) ) {
+        if( !this->tree_[node_index].contains( query ) ) {
             return NO_ID;
         }
         if( box_end == box_begin + 1 ) {
-            index_t cell_id = mapping_morton_[box_begin];
+            index_t cell_id = this->mapping_morton_[box_begin];
             if( mesh_cell_contains_point( mesh_, cell_id, query ) ) {
                 return cell_id;
             } else {
@@ -510,7 +509,7 @@ namespace RINGMesh {
         }
 
         index_t box_middle, child_left, child_right;
-        get_recursive_iterators( node_index, box_begin, box_end, box_middle,
+        this->get_recursive_iterators( node_index, box_begin, box_end, box_middle,
             child_left, child_right );
 
         index_t result = containing_cell_recursive( query, child_left, box_begin,
