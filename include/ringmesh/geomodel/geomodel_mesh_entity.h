@@ -282,6 +282,7 @@ namespace RINGMesh {
 
         virtual void copy_mesh_entity( const GeoModelMeshEntity& from )
         {
+            copy_name( from );
             id_ = from.id_;
             boundaries_ = from.boundaries_;
             in_boundary_ = from.in_boundary_;

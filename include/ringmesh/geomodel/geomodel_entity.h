@@ -75,7 +75,6 @@ namespace RINGMesh {
             return id_;
         }
 
-
     protected:
         /*!
          * @details Client code should only create GeoModelEntities through
@@ -90,14 +89,14 @@ namespace RINGMesh {
             const GeoModel& geomodel,
             index_t id,
             const std::string& name = "Unnamed" )
-            :
-                geomodel_( geomodel ),
-                name_( name ),
-                id_( id )
+            : geomodel_( geomodel ), name_( name ), id_( id )
         {
         }
 
-
+        void copy_name( const GeoModelEntity& from )
+        {
+            name_ = from.name_;
+        }
         virtual bool is_index_valid() const = 0;
 
     protected:
@@ -161,7 +160,7 @@ namespace RINGMesh {
         }
 
     private:
-        void copy_universe(const Universe& from)
+        void copy_universe( const Universe& from )
         {
             boundary_surfaces_ = from.boundary_surfaces_;
             boundary_surface_sides_ = from.boundary_surface_sides_;
