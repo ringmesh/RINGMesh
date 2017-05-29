@@ -219,4 +219,15 @@ namespace RINGMesh {
         return std::unique_ptr< VolumeMesh2Builder< DIMENSION > >( builder );
     }
 
+    template class PointMesh2Builder< 2 >;
+    template class LineMesh2Builder< 2 >;
+    template class SurfaceMesh2Builder< 2 >;
+
+    template class PointMesh2Builder< 3 >;
+    template class LineMesh2Builder< 3 >;
+    template class SurfaceMesh2Builder< 3 >;
+    template class VolumeMesh2Builder< 3 >;
+
+
+
 } // namespace
