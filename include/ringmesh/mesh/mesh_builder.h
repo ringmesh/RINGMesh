@@ -279,10 +279,10 @@ namespace RINGMesh {
         {
         }
 
-        virtual void set_mesh( SurfaceMesh2< DIMENSION >& mesh ) = 0;
+        virtual void set_mesh( SurfaceMeshBase2< DIMENSION >& mesh ) = 0;
 
         static std::unique_ptr< SurfaceMesh2Builder< DIMENSION > > create_builder(
-            SurfaceMesh2< DIMENSION >& mesh );
+            SurfaceMeshBase2< DIMENSION >& mesh );
 
         /*!@}
          * \name Polygon related methods
@@ -390,7 +390,7 @@ namespace RINGMesh {
         virtual void remove_small_connected_components(
             double min_area,
             index_t min_polygons ) = 0;
-        virtual void triangulate( const SurfaceMesh2< DIMENSION >& surface_in ) = 0;
+        virtual void triangulate( const SurfaceMeshBase2< DIMENSION >& surface_in ) = 0;
         /*!@}
          */
         /*!

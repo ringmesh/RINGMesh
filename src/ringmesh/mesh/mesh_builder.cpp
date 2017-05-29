@@ -73,7 +73,7 @@ namespace {
         SurfaceMesh2Builder< DIMENSION >* builder = SurfaceMesh2BuilderFactory<
             DIMENSION >::create_object( mesh.type_name() );
         if( builder ) {
-            builder->set_mesh( dynamic_cast< SurfaceMesh2< DIMENSION >& >( mesh ) );
+            builder->set_mesh( dynamic_cast< SurfaceMeshBase2< DIMENSION >& >( mesh ) );
         }
         return builder;
     }
@@ -115,7 +115,7 @@ namespace RINGMesh {
                     create_surface_mesh_builder( mesh );
                 if( builder2d ) {
                     builder2d->set_mesh(
-                        dynamic_cast< SurfaceMesh2< DIMENSION >& >( mesh ) );
+                        dynamic_cast< SurfaceMeshBase2< DIMENSION >& >( mesh ) );
                     builder = builder2d;
                 } else {
                     VolumeMesh2Builder< DIMENSION >* builder3d =
@@ -153,7 +153,7 @@ namespace RINGMesh {
             builder = new GeogramPointMeshBuilder< DIMENSION >;
         }
         builder->set_mesh( mesh );
-        return std::unique_ptr< PointMeshBuilder >( builder );
+        return std::unique_ptr< PointMesh2Builder >( builder );
     }
 
     template< index_t DIMENSION >
@@ -179,7 +179,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     std::unique_ptr< SurfaceMesh2Builder< DIMENSION > > SurfaceMesh2Builder<
-        DIMENSION >::create_builder( SurfaceMesh2< DIMENSION >& mesh )
+        DIMENSION >::create_builder( SurfaceMeshBase2< DIMENSION >& mesh )
     {
         SurfaceMesh2Builder< DIMENSION >* builder = SurfaceMesh2BuilderFactory<
             DIMENSION >::create_object( mesh.type_name() );

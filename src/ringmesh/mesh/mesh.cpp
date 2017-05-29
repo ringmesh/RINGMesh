@@ -85,7 +85,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::unique_ptr< SurfaceMesh2< DIMENSION > > SurfaceMesh2< DIMENSION >::create_mesh(
+    std::unique_ptr< SurfaceMesh2< DIMENSION > > SurfaceMeshBase2< DIMENSION >::create_mesh(
         const MeshType type )
     {
         MeshType new_type = type;
