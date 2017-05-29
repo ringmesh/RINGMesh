@@ -8,8 +8,9 @@ New Features:
  * ASCII surface STL export
  * First implementation of a stratigraphic column
  * Add Feflow export using .fem file. Support wells as discrete fractures and mixed element mesh. 
- * Add symmetric entity relationships management, an entity is be boundary of another entity 
-      and the reverse is automatically set.
+ * Add symmetric entity relationships management, an entity is the boundary of another entity 
+      and the reverse is automatically set. Same things for the parents/child relation
+ * New version of the .gm file format which not contains the GEOL_FEATURE on Mesh Entities anymore.
  * Export to gmsh file format (V2).
 
 Bug fix:
@@ -33,6 +34,8 @@ Improvements:
  * Use C++11 smartpointers for all the pointers allocated on the heap
  * Remove complex inheritance design of the GeogramMesh and GeogramMeshBuilder classes 
  * Add naming distinction between a facet (a boundary polygon of a cell) and a polygon (a surface mesh element)
+ * Mesh Entities have no longer a GEOL_FEATURE.
+ 
 Deprecated:
  * Remove support of .ogm
  * Remove support of .mesh and .meshb

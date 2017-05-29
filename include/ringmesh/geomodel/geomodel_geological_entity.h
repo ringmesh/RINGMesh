@@ -58,29 +58,92 @@ namespace RINGMesh {
     public:
         friend class GeoModelGeologicalEntityAccess;
 
+        /*!
+         * @brief Geological feature types for GeoModelEntity
+         */
+        enum GEOL_FEATURE {
+            /// All geological features
+            ALL_GEOL,
+            /// Default value - No geological feature defined
+            NO_GEOL,
+            /// Stratigraphic surface - an horizon
+            STRATI,
+            /// Unconformity
+            UNCONFORMITY,
+            /// A normal fault
+            NORMAL_FAULT,
+            /// A reverse fault
+            REVERSE_FAULT,
+            /// An unspecified fault
+            FAULT,
+            /// Volume Of Interest
+            VOI
+        };
+
+        /*!
+         * @brief Map the name of a geological type with a value of GEOL_FEATURE
+         *
+         * @param[in] in Name of the feature. Can be
+         * \li "reverse_fault"
+         * \li "normal_fault"
+         * \li "fault"
+         * \li "top"
+         * \li "none"
+         * \li "topographic"
+         * \li "unconformity"
+         * \li "boundary"
+         * Other strings will end up in \p NO_GEOL
+         * @return The geological feature index
+         * @todo Add other types of unconformity, see RINGMesh::GeoModelEntity::TYPE. --GC
+         */
+        static GEOL_FEATURE determine_geological_type( const std::string& in );
+        /*!
+         * \return the (lowercase) string associated to a
+         * GeoModelELement::GEOL_FEATURE
+         */
+        static std::string geol_name( GEOL_FEATURE );
+        static bool is_fault( GEOL_FEATURE T )
+        {
+            return T == FAULT || T == REVERSE_FAULT || T == NORMAL_FAULT;
+        }
+        static bool is_stratigraphic_limit( GEOL_FEATURE T )
+        {
+            return T == STRATI || T == UNCONFORMITY;
+        }
+
+        bool has_geological_feature() const
+        {
+            return geological_feature() != NO_GEOL;
+        }
+
+        GEOL_FEATURE geological_feature() const
+        {
+            return geol_feature_;
+        }
+
         static void initialize();
 
         virtual ~GeoModelGeologicalEntity() = default;
 
-        const gmge_id gmge() const
+        gmge_id gmge() const
         {
             return gmge_id( type_name(), id_ );
         }
 
-        const GeologicalEntityType entity_type() const
+        GeologicalEntityType entity_type() const
         {
             return gmge().type();
         }
 
-        virtual const MeshEntityType child_type_name() const = 0;
+        virtual MeshEntityType child_type_name() const = 0;
         virtual bool is_on_voi() const;
         virtual bool is_connectivity_valid() const;
         virtual bool is_valid() const;
-        static const GeologicalEntityType type_name_static()
+        static GeologicalEntityType type_name_static()
         {
             return ForbiddenGeologicalEntityType::type_name_static();
         }
-        virtual const GeologicalEntityType type_name() const
+        virtual GeologicalEntityType type_name() const
         {
             return type_name_static();
         }
@@ -88,11 +151,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( children_.size() );
         }
-        const gmme_id& child_gmme( index_t x ) const
-        {
-            ringmesh_assert( x < nb_children() );
-            return children_[x];
-        }
+        const gmme_id& child_gmme( index_t x ) const;
         const GeoModelMeshEntity& child( index_t x ) const;
 
         virtual bool is_identification_valid() const;
@@ -103,26 +162,30 @@ namespace RINGMesh {
             index_t id = NO_ID,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( geomodel, id, name, geological_feature )
+            :
+                GeoModelEntity( geomodel, id, name ),
+                geol_feature_( geological_feature )
         {
         }
 
         virtual bool is_index_valid() const;
 
     private:
-        void copy_geological_entity(const GeoModelGeologicalEntity& from)
+        void copy_geological_entity( const GeoModelGeologicalEntity& from )
         {
-            GeoModelEntity::copy_name_and_geol_feature(from);
+            copy_name( from );
+            geol_feature_ = from.geol_feature_;
             children_ = from.children_;
         }
 
     protected:
-        /// Entities constituting this one - see child_type( TYPE )
-        std::vector< gmme_id > children_;
+        /// Children relations of this entity
+        std::vector< index_t > children_;
+
+        /// Geological feature of this object - default is NO_GEOL
+        GEOL_FEATURE geol_feature_;
     };
 
-    /// @todo Review: I am still not convinced that we always have to 
-    /// derive the base class to define new entities. [JP]
     class RINGMESH_API Contact: public GeoModelGeologicalEntity {
     public:
         Contact( const GeoModel& geomodel )
@@ -131,15 +194,15 @@ namespace RINGMesh {
         }
         virtual ~Contact() = default;
 
-        static const GeologicalEntityType type_name_static()
+        static GeologicalEntityType type_name_static()
         {
             return GeologicalEntityType( "Contact" );
         }
-        virtual const GeologicalEntityType type_name() const override
+        virtual GeologicalEntityType type_name() const override
         {
             return type_name_static();
         }
-        virtual const MeshEntityType child_type_name() const override;
+        virtual MeshEntityType child_type_name() const override;
     };
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
@@ -150,15 +213,15 @@ namespace RINGMesh {
         }
         virtual ~Interface() = default;
 
-        static const GeologicalEntityType type_name_static()
+        static GeologicalEntityType type_name_static()
         {
             return GeologicalEntityType( "Interface" );
         }
-        virtual const GeologicalEntityType type_name() const override
+        virtual GeologicalEntityType type_name() const override
         {
             return type_name_static();
         }
-        virtual const MeshEntityType child_type_name() const override;
+        virtual MeshEntityType child_type_name() const override;
     };
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
@@ -169,15 +232,15 @@ namespace RINGMesh {
         }
         virtual ~Layer() = default;
 
-        static const GeologicalEntityType type_name_static()
+        static GeologicalEntityType type_name_static()
         {
             return GeologicalEntityType( "Layer" );
         }
-        virtual const GeologicalEntityType type_name() const override
+        virtual GeologicalEntityType type_name() const override
         {
             return type_name_static();
         }
-        virtual const MeshEntityType child_type_name() const override;
+        virtual MeshEntityType child_type_name() const override;
     };
 
     class GeoModelGeologicalEntityAccess {
@@ -203,12 +266,12 @@ namespace RINGMesh {
             return gmge_.id_;
         }
 
-        GeoModelEntity::GEOL_FEATURE& modifiable_geol_feature()
+        GeoModelGeologicalEntity::GEOL_FEATURE& modifiable_geol_feature()
         {
             return gmge_.geol_feature_;
         }
 
-        std::vector< gmme_id >& modifiable_children()
+        std::vector< index_t >& modifiable_children()
         {
             return gmge_.children_;
         }

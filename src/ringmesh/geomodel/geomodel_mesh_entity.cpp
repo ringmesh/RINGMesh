@@ -465,30 +465,48 @@ namespace RINGMesh {
         ringmesh_assert( parent.is_defined() );
         return geomodel().geological_entity( parent );
     }
+
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
         const GeologicalEntityType& parent_type_name ) const
     {
         gmge_id id = parent_gmge( parent_type_name );
         ringmesh_assert( id.is_defined() );
+
         return geomodel().geological_entity( id );
     }
+
     const gmge_id GeoModelMeshEntity::parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
+        return defined_parent_gmge( parent_type_name );
+    }
+
+    const gmge_id GeoModelMeshEntity::could_be_undefined_parent_gmge(
+        const GeologicalEntityType& parent_type_name ) const
+    {
         for( index_t i = 0; i < nb_parents(); ++i ) {
-            if( parents_[i].type() == parent_type_name ) {
+            if( parent_gmge( i ).type() == parent_type_name ) {
                 return parent_gmge( i );
             }
         }
-        ringmesh_assert_not_reached;
         return gmge_id( ForbiddenGeologicalEntityType::type_name_static(), NO_ID );
     }
+
+    const gmge_id GeoModelMeshEntity::defined_parent_gmge(
+        const GeologicalEntityType& parent_type_name ) const
+    {
+        const gmge_id parent_gmge = could_be_undefined_parent_gmge( parent_type_name );
+        ringmesh_assert(parent_gmge.is_defined());
+        return parent_gmge;
+    }
+
     const gmme_id& GeoModelMeshEntity::boundary_gmme( index_t x ) const
     {
         ringmesh_assert( x < nb_boundaries() );
         return geomodel().entity_type_manager().relationship_manager.boundary_gmme(
             boundaries_[x] );
     }
+
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
     {
         return geomodel().mesh_entity( boundary_gmme( x ) );
@@ -498,12 +516,20 @@ namespace RINGMesh {
     {
         return geomodel().mesh_entity( in_boundary_gmme( x ) );
     }
+
     const gmme_id& GeoModelMeshEntity::in_boundary_gmme( index_t x ) const
     {
         ringmesh_assert( x < nb_in_boundary() );
         return geomodel().entity_type_manager().relationship_manager.in_boundary_gmme(
             in_boundary_[x] );
     }
+    const gmge_id& GeoModelMeshEntity::parent_gmge( index_t id ) const
+    {
+        ringmesh_assert( id < nb_parents() );
+        return geomodel().entity_type_manager().relationship_manager.parent_of_gmme(
+            parents_[id] );
+    }
+
     /**************************************************************/
 
     bool Corner::is_on_voi() const
@@ -918,9 +944,9 @@ namespace RINGMesh {
 
     void Corner::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< PointMesh > new_mesh = PointMesh::create_mesh( type );
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
-            *new_mesh );
+        std::unique_ptr< PointSetMesh > new_mesh = PointSetMesh::create_mesh( type );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *new_mesh );
         builder->copy( *mesh0d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
@@ -937,8 +963,8 @@ namespace RINGMesh {
     void Surface::change_mesh_data_structure( const MeshType type )
     {
         std::unique_ptr< SurfaceMesh > new_mesh = SurfaceMesh::create_mesh( type );
-        std::unique_ptr< SurfaceMeshBuilder > builder = SurfaceMeshBuilder::create_builder(
-            *new_mesh );
+        std::unique_ptr< SurfaceMeshBuilder > builder =
+            SurfaceMeshBuilder::create_builder( *new_mesh );
         builder->copy( *mesh2d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
@@ -946,8 +972,8 @@ namespace RINGMesh {
     void Region::change_mesh_data_structure( const MeshType type )
     {
         std::unique_ptr< VolumeMesh > new_mesh = VolumeMesh::create_mesh( type );
-        std::unique_ptr< VolumeMeshBuilder > builder = VolumeMeshBuilder::create_builder(
-            *new_mesh );
+        std::unique_ptr< VolumeMeshBuilder > builder =
+            VolumeMeshBuilder::create_builder( *new_mesh );
         builder->copy( *mesh3d_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }

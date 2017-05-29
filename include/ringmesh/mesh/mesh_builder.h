@@ -157,16 +157,16 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API PointMeshBuilder: public MeshBaseBuilder {
-    ringmesh_disable_copy( PointMeshBuilder );
+    class RINGMESH_API PointSetMeshBuilder: public MeshBaseBuilder {
+    ringmesh_disable_copy( PointSetMeshBuilder );
     public:
-        virtual ~PointMeshBuilder()
+        virtual ~PointSetMeshBuilder()
         {
         }
 
-        virtual void set_mesh( PointMesh& mesh ) = 0;
+        virtual void set_mesh( PointSetMesh& mesh ) = 0;
 
-        static std::unique_ptr< PointMeshBuilder > create_builder( PointMesh& mesh );
+        static std::unique_ptr< PointSetMeshBuilder > create_builder( PointSetMesh& mesh );
 
         virtual void remove_isolated_vertices()
         {
@@ -174,14 +174,14 @@ namespace RINGMesh {
         }
 
     protected:
-        PointMeshBuilder()
+        PointSetMeshBuilder()
             : MeshBaseBuilder()
         {
         }
     };
-    using PointMeshBuilderFactory = GEO::Factory0< PointMeshBuilder >;
+    using PointSetMeshBuilderFactory = GEO::Factory0< PointSetMeshBuilder >;
 #define ringmesh_register_point_mesh_builder(type) \
-    geo_register_creator(RINGMesh::PointMeshBuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::PointSetMeshBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API LineMeshBuilder: public MeshBaseBuilder {
     ringmesh_disable_copy( LineMeshBuilder );
