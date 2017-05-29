@@ -160,7 +160,7 @@ namespace RINGMesh {
          * @param[in] parent_type_name the asking parent type
          *
          */
-        const gmge_id& parent_gmge( const GeologicalEntityType& parent_type ) const;
+        gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
         const GeoModelGeologicalEntity& parent( index_t id ) const;
         const GeoModelGeologicalEntity& parent(
             const GeologicalEntityType& parent_type ) const;
@@ -324,10 +324,10 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
 
     private:
-        const gmge_id defined_parent_gmge(
+        gmge_id defined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
 
-        const gmge_id could_be_undefined_parent_gmge(
+        gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
     protected:
 
