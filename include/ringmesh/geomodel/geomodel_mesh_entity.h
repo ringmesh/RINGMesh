@@ -326,12 +326,14 @@ namespace RINGMesh {
         void bind_vertex_mapping_attribute() const;
 
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
+
     private:
         const gmge_id defined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
 
         const gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
+
     protected:
 
         /// Boundary relations of this entity
@@ -429,6 +431,7 @@ namespace RINGMesh {
         {
             return *mesh0d_;
         }
+
     protected:
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
@@ -588,6 +591,7 @@ namespace RINGMesh {
         {
             return *mesh1d_;
         }
+
     protected:
         Line( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
@@ -924,6 +928,7 @@ namespace RINGMesh {
         {
             return *mesh2d_;
         }
+
     protected:
         Surface( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
@@ -962,6 +967,7 @@ namespace RINGMesh {
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override;
+
     private:
         std::shared_ptr< SurfaceMesh > mesh2d_;
     };
@@ -1309,6 +1315,7 @@ namespace RINGMesh {
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_;
+
     private:
         std::shared_ptr< VolumeMesh > mesh3d_;
     };
