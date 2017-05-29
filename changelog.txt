@@ -16,6 +16,7 @@ Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
  * Cannot delete Mesh in RINGMeshView
  * Fix crash on RINGMeshView exit (Logger was still register)
+ * RINGMesh now compiles when TetGen cmake option is set to off
 
 Improvements:
  * Refactoring of the io to have smaller files

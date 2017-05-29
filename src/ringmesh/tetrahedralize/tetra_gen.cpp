@@ -175,47 +175,46 @@ namespace RINGMesh {
             message_get_number( msg, &e );
 
             if( e == 0 ) {
-                std::cerr << desc << std::endl;
+                Logger::err( "TetraGen", desc );
             } else if( e == MESHGEMS_TETRA_CODE( -5110 ) ) {
                 message_get_integer_data( msg, 1, 4, ibuff );
-                std::cerr << "two surface edges are intersecting : " << ibuff[0]
-                    << " " << ibuff[1] << " intersects " << ibuff[2] << " "
-                    << ibuff[3] << std::endl;
+                Logger::err( "TetraGen", "two surface edges are intersecting : ",
+                    ibuff[0], " ", ibuff[1], " intersects ", ibuff[2], " ",
+                    ibuff[3] );
             } else if( e == MESHGEMS_TETRA_CODE( -5120 ) ) {
                 message_get_integer_data( msg, 1, 5, ibuff );
-                std::cerr << "surface edge intersects a surface face : " << ibuff[0]
-                    << " " << ibuff[1] << " intersects " << ibuff[2] << " "
-                    << ibuff[3] << " " << ibuff[4] << std::endl;
+                Logger::err( "TetraGen", "surface edge intersects a surface face : ",
+                    ibuff[0], " ", ibuff[1], " intersects ", ibuff[2], " ", ibuff[3],
+                    " ", ibuff[4] );
             } else if( e == MESHGEMS_TETRA_CODE( -5150 ) ) {
                 message_get_integer_data( msg, 1, 4, ibuff );
-                std::cerr << "boundary point inside a surface face : " << ibuff[0]
-                    << " in " << ibuff[1] << " " << ibuff[2] << " " << ibuff[3]
-                    << std::endl;
+                Logger::err( "TetraGen", "boundary point inside a surface face : ",
+                    ibuff[0], " in ", ibuff[1], " ", ibuff[2], " ", ibuff[3] );
             } else if( e == MESHGEMS_TETRA_CODE( 5200 ) ) {
                 message_get_integer_data( msg, 1, 3, ibuff );
-                std::cerr << "duplicated face : " << ibuff[0] << " " << ibuff[1]
-                    << " " << ibuff[2] << " " << ibuff[3] << std::endl;
+                Logger::err( "TetraGen", "duplicated face : ", ibuff[0], " ",
+                    ibuff[1], " ", ibuff[2], " ", ibuff[3] );
             } else if( e == MESHGEMS_TETRA_CODE( -5621 ) ) {
                 message_get_integer_data( msg, 1, 4, ibuff );
                 message_get_real_data( msg, 1, 1, rbuff );
-                std::cerr << "degenerated face : face " << ibuff[0] << " ("
-                    << ibuff[1] << ", " << ibuff[2] << ", " << ibuff[3]
-                    << ") with small inradius = " << rbuff[0] << std::endl;
+                Logger::err( "TetraGen", "degenerated face : face ", ibuff[0], " (",
+                    ibuff[1], ", ", ibuff[2], ", ", ibuff[3],
+                    ") with small inradius = ", rbuff[0] );
             } else if( e == MESHGEMS_TETRA_CODE( -5820 ) ) {
                 message_get_integer_data( msg, 1, 2, ibuff );
-                std::cerr << "edge bounding a hole : " << ibuff[0] << " " << ibuff[1]
-                    << std::endl;
+                Logger::err( "TetraGen", "edge bounding a hole : ", ibuff[0], " ",
+                    ibuff[1] );
             } else if( e == MESHGEMS_TETRA_CODE( 8423 ) ) {
                 message_get_integer_data( msg, 1, 3, ibuff );
-                std::cerr << "constrained face cannot be enforced : " << ibuff[0]
-                    << " " << ibuff[1] << " " << ibuff[2] << std::endl;
+                Logger::err( "TetraGen", "constrained face cannot be enforced : ",
+                    ibuff[0], " ", ibuff[1], " ", ibuff[2] );
             } else if( e == MESHGEMS_TETRA_CODE( 8441 ) ) {
                 message_get_integer_data( msg, 1, 2, ibuff );
-                std::cerr << "constrained edge cannot be enforced : " << ibuff[0]
-                    << " " << ibuff[1] << std::endl;
+                Logger::err( "TetraGen", "constrained edge cannot be enforced : ",
+                    ibuff[0], " ", ibuff[1] );
             } else {
-                std::cerr << "Error message not directly handle" << std::endl;
-                std::cerr << "Error(" << e << ") : " << desc << std::endl;
+                Logger::err( "TetraGen", "Error message not directly handle" );
+                Logger::err( "TetraGen", "Error(", e, ") : ", desc );
             }
             return STATUS_OK;
         }
@@ -320,9 +319,8 @@ namespace RINGMesh {
         {
             status_t ret = tetra_mesh_boundary( tms_ );
             if( ret != STATUS_OK ) {
-                Logger::err( "TetraGen" )
-                    << "Encountered a problem while meshing boundary..."
-                    << std::endl;
+                Logger::err( "TetraGen",
+                    "Encountered a problem while meshing boundary..." );
                 return false;
             }
             return true;
@@ -332,14 +330,14 @@ namespace RINGMesh {
         {
             status_t ret = tetra_insert_volume_vertices( tms_ );
             if( ret != STATUS_OK ) {
-                Logger::err( "TetraGen" )
-                    << "Encountered a problem while meshing inside..." << std::endl;
+                Logger::err( "TetraGen",
+                    "Encountered a problem while meshing inside..." );
                 return false;
             }
             ret = tetra_optimise_volume_regular( tms_ );
             if( ret != STATUS_OK ) {
-                Logger::err( "TetraGen" )
-                    << "Encountered a problem while meshing inside..." << std::endl;
+                Logger::err( "TetraGen",
+                    "Encountered a problem while meshing inside..." );
                 return false;
             }
             return true;
@@ -415,17 +413,16 @@ namespace RINGMesh {
             Logger::warn( "TetraGen", "Could not create TetraGen mesher: ",
                 algo_name );
             Logger::warn( "TetraGen", "Falling back to TetGen mode" );
-            mesher = new TetraGen_TetGen();
+            mesher = new TetraGen_TetGen;
 #else
             std::vector< std::string > names;
             TetraGenFactory::list_creators( names );
             Logger::err( "I/O", "Currently supported mesher are: " );
             for( const std::string& name : names ) {
-                Logger::out( "I/O", " ",< name;
-                }
-                Logger::out( "I/O" ) << std::endl;
-                throw RINGMeshException( "TetraGen", "Could not create TetraGen mesher: "
-                    + algo_name );
+                Logger::out( "I/O", " ", name );
+            }
+            throw RINGMeshException( "TetraGen", "Could not create TetraGen mesher: "
+                + algo_name );
 #endif
         }
 
