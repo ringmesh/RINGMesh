@@ -324,8 +324,8 @@ namespace RINGMesh {
         return result;
     }
 
-    template class SurfaceMeshBase2< 2 > ;
-    template class SurfaceMeshBase2< 3 > ;
+//    template class SurfaceMeshBase2< 2 > ;
+//    template class SurfaceMeshBase2< 3 > ;
 
     template< index_t DIMENSION >
     std::unique_ptr< VolumeMesh2< DIMENSION > > VolumeMesh2< DIMENSION >::create_mesh(

@@ -102,5 +102,8 @@ namespace RINGMesh {
         return result;
     }
 
+    template class Box< 2 >;
+    template class Box< 3 >;
+
 }
 
