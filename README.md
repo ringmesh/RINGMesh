@@ -32,6 +32,7 @@ Compiling RINGMesh
 ------------------
 
 To compile you need the following packages (tested on Debian-based linux):
+
 * build-essential
 * libx11-dev
 * libxrandr-dev
@@ -42,6 +43,7 @@ To compile you need the following packages (tested on Debian-based linux):
 Note: you need gcc/g++ version higher or equal to 4.8 to compile RINGMesh.
 
 Then, to compile RINGMesh, go to RINGMesh root directory and:
+
 * cd build/ringmesh/Release
 * make [-j4]
 
@@ -94,11 +96,13 @@ Compiling RINGMesh
 
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step:
+
 * cmake --build . --config Release
 * cmake --build . --config Debug
 * cmake --build . --config RelWithDebInfo
 
 The available compilation modes are:
+
 * Release
 * Debug
 * RelWithDebInfo (mandatory to debug a Gocad plugin in Debug mode with a Gocad
