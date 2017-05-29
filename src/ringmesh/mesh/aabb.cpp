@@ -168,9 +168,9 @@ namespace {
         if( !box.initialized() ) return;
         const vecn< DIMENSION >& min_vertex = box.min();
         const vecn< DIMENSION >& max_vertex = box.max();
-        vecn< DIMENSION > width( box.width(), 0, 0 );
-        vecn< DIMENSION > height( 0, box.height(), 0 );
-        vecn< DIMENSION > depth( 0, 0, box.depth() );
+        vecn< DIMENSION > width( max_vertex[0] - min_vertex[0], 0, 0 );
+        vecn< DIMENSION > height( 0, max_vertex[1] - min_vertex[1], 0 );
+        vecn< DIMENSION > depth( 0, 0, max_vertex[2] - min_vertex[2] );
         index_t v0 = M.vertices.create_vertex( min_vertex.data() );
         index_t v1 = M.vertices.create_vertex(
             vecn< DIMENSION >( min_vertex + width ).data() );
