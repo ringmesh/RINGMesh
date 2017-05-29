@@ -41,8 +41,8 @@ namespace RINGMesh {
 
     void register_geogram_mesh()
     {
-        ringmesh_register_point_mesh( GeogramPointMesh );
-        ringmesh_register_point_mesh_builder( GeogramPointMesh );
+        ringmesh_register_point_mesh( GeogramPointSetMesh );
+        ringmesh_register_point_mesh_builder( GeogramPointSetMesh );
         ringmesh_register_line_mesh( GeogramLineMesh );
         ringmesh_register_line_mesh_builder( GeogramLineMesh );
         ringmesh_register_surface_mesh( GeogramSurfaceMesh );

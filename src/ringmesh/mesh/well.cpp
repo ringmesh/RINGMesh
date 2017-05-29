@@ -276,9 +276,9 @@ namespace RINGMesh {
             WellEntity( well ),
             is_on_surface_( is_on_surface ),
             id_( id ),
-            mesh_( PointMesh::create_mesh( GeogramPointMesh::type_name_static() ) )
+            mesh_( PointSetMesh::create_mesh( GeogramPointSetMesh::type_name_static() ) )
     {
-        PointMeshBuilder::create_builder( *mesh_ )->create_vertex( point );
+        PointSetMeshBuilder::create_builder( *mesh_ )->create_vertex( point );
     }
 
     const vec3& WellCorner::point() const

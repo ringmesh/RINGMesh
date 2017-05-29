@@ -232,25 +232,6 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRemoval::delete_invalid_parents( GeoModelMeshEntity& E )
-    {
-        //  Cannot use remove directly, do it by hand like the signs
-        index_t offset = 0;
-        index_t new_size = 0;
-        gmme_id id = E.gmme();
-        for( index_t i = 0; i + offset < E.nb_parents(); ++i ) {
-            if( E.parent( i ).index() == NO_ID ) {
-                offset++;
-            } else {
-                gmge_id new_id = E.parent_gmge( i + offset );
-                builder_.geology.set_mesh_entity_parent( id, i, new_id );
-            }
-            new_size = i + 1; /// @todo Check that this is the correct size
-        }
-        GeoModelMeshEntityAccess gmme_access( E );
-        gmme_access.modifiable_parents().resize( new_size );
-    }
-
     void GeoModelBuilderRemoval::fill_nb_children_vector()
     {
         for( index_t i = 0; i < nb_childs_.size(); i++ ) {
@@ -260,20 +241,5 @@ namespace RINGMesh {
             }
         }
     }
-
-    void GeoModelBuilderRemoval::delete_invalid_children(
-        GeoModelGeologicalEntity& E )
-    {
-        if( E.nb_children() == 0 ) {
-            return;
-        } else {
-            const MeshEntityType& child_type = children_type( E.entity_type() );
-            gmme_id invalid_child( child_type, NO_ID );
-            GeoModelGeologicalEntityAccess gmge_access( E );
-            remove_invalid_values( gmge_access.modifiable_children(),
-                invalid_child );
-        }
-    }
-
 }
 

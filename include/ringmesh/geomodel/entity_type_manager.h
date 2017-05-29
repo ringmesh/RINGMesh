@@ -164,15 +164,36 @@ namespace RINGMesh {
         const MeshEntityType child_type(
             const GeologicalEntityType& parent_type ) const;
 
-        const gmme_id& boundary_gmme( index_t id ) const
+        /*! @}
+         * \name Access to the Boundary/Incident entity relations
+         * @{
+         */
+
+        const gmme_id& boundary_gmme( index_t relation_id ) const
         {
-            ringmesh_assert( id < boundary_relationships_.size() );
-            return boundary_relationships_[id].boundary_id_;
+            ringmesh_assert( relation_id < boundary_relationships_.size() );
+            return boundary_relationships_[relation_id].boundary_id_;
         }
-        const gmme_id& incident_entity_gmme( index_t id ) const
+        const gmme_id& incident_entity_gmme( index_t relation_id ) const
         {
-            ringmesh_assert( id < boundary_relationships_.size() );
-            return boundary_relationships_[id].incident_entity_id_;
+            ringmesh_assert( relation_id < boundary_relationships_.size() );
+            return boundary_relationships_[relation_id].incident_entity_id_;
+        }
+
+        /*! @}
+         * \name Access to the Parent / Child relations
+         * @{
+         */
+
+        const gmge_id& parent_of_gmme( index_t relation_id ) const
+        {
+            ringmesh_assert( relation_id < parent_child_relationships_.size() );
+            return parent_child_relationships_[relation_id].parent_id_;
+        }
+        const gmme_id& child_of_gmge( index_t relation_id ) const
+        {
+            ringmesh_assert( relation_id < parent_child_relationships_.size() );
+            return parent_child_relationships_[relation_id].child_id_;
         }
 
     private:
@@ -184,6 +205,10 @@ namespace RINGMesh {
             child_to_parents_[child_type_name].insert( parent_type_name );
         }
 
+        /*! @}
+         * \name Boundary Relationship manager
+         * @{
+         */
         index_t add_boundary_relationship(
             const gmme_id& incident_entity,
             const gmme_id& boundary )
@@ -232,10 +257,60 @@ namespace RINGMesh {
             gmme_id incident_entity_id_;
             gmme_id boundary_id_;
         };
+        /*! @}
+         * \name Parent/Child Relationship manager
+         * @{
+         */
+
+        index_t add_parent_child_relationship(
+            const gmge_id& parent,
+            const gmme_id& child )
+        {
+            index_t relationship_id =
+                static_cast< index_t >( parent_child_relationships_.size() );
+            parent_child_relationships_.emplace_back( parent, child );
+            return relationship_id;
+        }
+
+        index_t find_parent_child_relationship(
+            const gmge_id& parent,
+            const gmme_id& child )
+        {
+            return find( parent_child_relationships_,
+                ParentChildRelationship( parent, child ) );
+        }
+
+        void set_parent_to_parent_child_relationship(
+            index_t relationship_id,
+            const gmge_id& parent )
+        {
+            parent_child_relationships_[relationship_id].parent_id_ = parent;
+        }
+
+        void set_child_to_parent_child_relationship(
+            index_t relationship_id,
+            const gmme_id& child )
+        {
+            parent_child_relationships_[relationship_id].child_id_ = child;
+        }
+
+        struct ParentChildRelationship {
+            ParentChildRelationship( const gmge_id& parent, const gmme_id& child )
+                : parent_id_( parent ), child_id_( child )
+            {
+            }
+            bool operator==( const ParentChildRelationship& rhs ) const
+            {
+                return parent_id_ == rhs.parent_id_ && child_id_ == rhs.child_id_;
+            }
+            gmge_id parent_id_;
+            gmme_id child_id_;
+        };
     private:
         MeshEntityToParents child_to_parents_;
         GeologicalEntityToChild parent_to_child_;
         std::deque< BoundaryRelationship > boundary_relationships_;
+        std::deque< ParentChildRelationship > parent_child_relationships_;
     };
 
     /*!

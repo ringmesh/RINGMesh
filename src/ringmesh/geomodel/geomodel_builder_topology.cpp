@@ -292,25 +292,6 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderTopology::complete_entity_connectivity()
-    {
-        // Order is important
-        complete_mesh_entity_connectivity( Line::type_name_static() );
-        complete_mesh_entity_connectivity( Corner::type_name_static() );
-        complete_mesh_entity_connectivity( Surface::type_name_static() );
-        complete_mesh_entity_connectivity( Region::type_name_static() );
-
-        // Geological entities
-        for( index_t i = 0; i < geomodel_.nb_geological_entity_types(); i++ ) {
-            const GeologicalEntityType& type = geomodel_.geological_entity_type( i );
-            if( geomodel_.nb_geological_entities( type ) > 0 ) {
-                if( geomodel_.geological_entity( type, 0 ).nb_children() == 0 ) {
-                    builder_.geology.fill_geological_entities_children( type );
-                }
-            }
-        }
-    }
-
     void GeoModelBuilderTopology::remove_mesh_entity_boundary_relation(
         const gmme_id& incident_entity,
         const gmme_id& boundary )
@@ -339,13 +320,27 @@ namespace RINGMesh {
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
 
+    index_t GeoModelBuilderTopology::check_if_boundary_incident_entity_relation_already_exists(
+        const gmme_id& incident_entity,
+        const gmme_id& boundary )
+    {
+        const GeoModelMeshEntity& incident_mesh_entity = geomodel_.mesh_entity(
+            incident_entity );
+        for( index_t in_ent = 0; in_ent < incident_mesh_entity.nb_incident_entities();
+            in_ent++ ) {
+            if( incident_mesh_entity.incident_entity_gmme( in_ent ) == boundary ) {
+                GeoModelMeshEntityConstAccess entity_access(
+                    incident_mesh_entity );
+                return entity_access.incident_entity_relation_ids()[in_ent];
+            }
+        }
+        return NO_ID;
+    }
     void GeoModelBuilderTopology::add_mesh_entity_boundary_relation(
         const gmme_id& incident_entity_id,
         const gmme_id& boundary,
         bool side )
     {
-        GeoModelMeshEntity& boundary_entity =
-            geomodel_access_.modifiable_mesh_entity( boundary );
         const MeshEntityType& incident_entity_type =
             geomodel_.entity_type_manager().mesh_entity_manager.incident_entity_type(
                 boundary.type() );
@@ -364,14 +359,19 @@ namespace RINGMesh {
                 << boundary << " and " << incident_entity_id;
             throw RINGMeshException( "Entity", message.str() );
         }
+        index_t relation_id = check_if_boundary_incident_entity_relation_already_exists(
+            incident_entity_id, boundary );
         RelationshipManager& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-        index_t relation_id = manager.add_boundary_relationship( incident_entity_id,
-            boundary );
+        if( relation_id == NO_ID ) {
+            relation_id = manager.add_boundary_relationship( incident_entity_id, boundary );
+        }
+        GeoModelMeshEntity& boundary_entity =
+            geomodel_access_.modifiable_mesh_entity( boundary );
         GeoModelMeshEntityAccess boundary_access( boundary_entity );
         boundary_access.modifiable_incident_entities().push_back( relation_id );
         GeoModelMeshEntity& incident_entity =
-            geomodel_access_.modifiable_mesh_entity( boundary );
+                    geomodel_access_.modifiable_mesh_entity( incident_entity_id );
         GeoModelMeshEntityAccess incident_entity_access( incident_entity );
         incident_entity_access.modifiable_boundaries().push_back( relation_id );
 
@@ -452,16 +452,5 @@ namespace RINGMesh {
         index_t index )
     {
         geomodel_access_.modifiable_mesh_entities( type )[index].reset();
-    }
-
-    void GeoModelBuilderTopology::complete_mesh_entity_connectivity(
-        const MeshEntityType& type )
-    {
-        if( geomodel_.nb_mesh_entities( type ) > 0 ) {
-            const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, 0 );
-            if( E.nb_parents() == 0 ) {
-                builder_.geology.fill_mesh_entities_parent( type );
-            }
-        }
     }
 }
