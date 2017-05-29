@@ -137,12 +137,12 @@ namespace RINGMesh {
     private:                                                                                    \
         Class* mesh_
 
-    class RINGMESH_API GeogramPointMeshBuilder: public PointMeshBuilder {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointMesh );
+    class RINGMESH_API GeogramPointSetMeshBuilder: public PointSetMeshBuilder {
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );
     public:
-        virtual void set_mesh( PointMesh& mesh ) override
+        virtual void set_mesh( PointSetMesh& mesh ) override
         {
-            set_geogram_mesh( dynamic_cast< GeogramPointMesh& >( mesh ) );
+            set_geogram_mesh( dynamic_cast< GeogramPointSetMesh& >( mesh ) );
         }
         virtual void clear_vertex_linked_objects() override
         {

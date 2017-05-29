@@ -268,7 +268,8 @@ namespace RINGMesh {
             const GeoModelGeologicalEntity& cur_interface =
                 geomodel_.geological_entity( Interface::type_name_static(),
                     interface_itr );
-            if( GeoModelEntity::is_fault( cur_interface.geological_feature() ) ) {
+            if( GeoModelGeologicalEntity::is_fault(
+                cur_interface.geological_feature() ) ) {
                 return;
             }
         }
@@ -287,7 +288,8 @@ namespace RINGMesh {
             ++interface_itr ) {
             const GeoModelGeologicalEntity& cur_interface = interface(
                 interface_itr );
-            if( !GeoModelEntity::is_fault( cur_interface.geological_feature() ) ) {
+            if( !GeoModelGeologicalEntity::is_fault(
+                cur_interface.geological_feature() ) ) {
                 continue;
             }
             save_normals_on_one_old_interface( interface_itr );
@@ -316,7 +318,8 @@ namespace RINGMesh {
         const GeoModelGeologicalEntity& fault_interface = interface(
             fault_interface_id );
         ringmesh_assert(
-            GeoModelEntity::is_fault( fault_interface.geological_feature() ) );
+            GeoModelGeologicalEntity::is_fault(
+                fault_interface.geological_feature() ) );
         ringmesh_assert( fault_interface.nb_children() >= 1 );
         if( fault_interface.nb_children() == 1 ) {
             return;
@@ -585,7 +588,8 @@ namespace RINGMesh {
             ++interface_itr ) {
             const GeoModelGeologicalEntity& cur_interface = interface(
                 interface_itr );
-            if( !GeoModelEntity::is_fault( cur_interface.geological_feature() ) ) {
+            if( !GeoModelGeologicalEntity::is_fault(
+                cur_interface.geological_feature() ) ) {
                 continue;
             }
 
@@ -696,7 +700,7 @@ namespace RINGMesh {
     {
         geometry.recompute_geomodel_mesh();
         from_surfaces.build_lines_and_corners_from_surfaces();
-        topology.complete_entity_connectivity();
+//        topology.complete_entity_connectivity();
         geology.build_contacts();
     }
 
@@ -866,7 +870,7 @@ namespace RINGMesh {
                 ringmesh_assert( colocated_facets_reg1.size() == 2 );
                 // It is a fault with the region on the other side.
                 ringmesh_assert(
-                    GeoModelEntity::is_fault(
+                    GeoModelGeologicalEntity::is_fault(
                         cur_surface.parent( Interface::type_name_static() ).geological_feature() ) );
 
                 // Try to find which region facet is really on the surface.
@@ -950,7 +954,7 @@ namespace RINGMesh {
             const index_t nb_in_boundaries = cur_surface.nb_in_boundary();
 
             bool is_horizon_not_voi =
-                GeoModelEntity::is_stratigraphic_limit(
+                GeoModelGeologicalEntity::is_stratigraphic_limit(
                     cur_surface.parent( Interface::type_name_static() ).geological_feature() )
                     && !cur_surface.is_on_voi();
 
@@ -1468,9 +1472,9 @@ namespace RINGMesh {
                     continue;
                 }
 
-                GeoModelEntity::GEOL_FEATURE parent_geol_feature =
+                GeoModelGeologicalEntity::GEOL_FEATURE parent_geol_feature =
                     cur_in_boun_gme.parent( Interface::type_name_static() ).geological_feature();
-                if( !GeoModelEntity::is_fault( parent_geol_feature ) ) {
+                if( !GeoModelGeologicalEntity::is_fault( parent_geol_feature ) ) {
                     continue;
                 }
 
@@ -1582,10 +1586,8 @@ namespace RINGMesh {
         if( nb_connected_components == 1 ) {
             DEBUG( "ONE CONNECTED COMPONENT" );
             ringmesh_assert( cur_surface.nb_parents() == 0 );
-            geology.add_mesh_entity_parent( cur_surface.gmme(),
-                sided_interface_gme_t );
-            geology.add_geological_entity_child( sided_interface_gme_t,
-                new_surface_id );
+            geology.add_parent_children_relation( sided_interface_gme_t,
+                cur_surface.gmme() );
             // boundary informations are defined in build_merged_surfaces
             // expected for the universe.
             /*add_entity_in_boundary( new_surface_gme_t,
@@ -1685,11 +1687,8 @@ namespace RINGMesh {
             ringmesh_assert(
                 geomodel_.surface( new_new_surface_gme_t.index() ).nb_parents()
                     == 0 );
-            geology.add_mesh_entity_parent( new_new_surface_gme_t,
-                sided_interface_gme_t );
-
-            geology.add_geological_entity_child( sided_interface_gme_t,
-                new_new_surface_gme_t.index() );
+            geology.add_parent_children_relation( sided_interface_gme_t,
+                new_new_surface_gme_t );
             bool side = ( side_name == "_plus" );
             topology.add_mesh_entity_boundary_relation(
                 gmme_id( Region::type_name_static(), region_index ),
@@ -2305,7 +2304,7 @@ namespace RINGMesh {
                 cur_line.in_boundary( 0 ).type_name()
                     == Surface::type_name_static() );
             ringmesh_assert(
-                GeoModelEntity::is_fault(
+                GeoModelGeologicalEntity::is_fault(
                     cur_line.in_boundary( 0 ).parent( Interface::type_name_static() ).geological_feature() ) );
 
             ringmesh_assert( cur_line.nb_vertices() >= 2 );
@@ -2344,7 +2343,7 @@ namespace RINGMesh {
     {
         ringmesh_assert( line_one_in_boundary.nb_in_boundary() == 1 );
         ringmesh_assert(
-            GeoModelEntity::is_fault(
+            GeoModelGeologicalEntity::is_fault(
                 line_one_in_boundary.in_boundary( 0 ).parent(
                     Interface::type_name_static() ).geological_feature() ) );
         ringmesh_assert(
@@ -2363,7 +2362,7 @@ namespace RINGMesh {
                 surface_in_boun_itr < cur_line_gme.nb_in_boundary();
                 ++surface_in_boun_itr ) {
 
-                if( !GeoModelEntity::is_fault(
+                if( !GeoModelGeologicalEntity::is_fault(
                     cur_line_gme.in_boundary( surface_in_boun_itr ).parent(
                         Interface::type_name_static() ).geological_feature() ) ) {
                     continue;

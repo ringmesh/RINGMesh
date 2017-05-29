@@ -48,7 +48,7 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    class GeogramPointMeshBuilder;
+    class GeogramPointSetMeshBuilder;
     class GeogramLineMeshBuilder;
     class GeogramSurfaceMeshBuilder;
     class GeogramVolumeMeshBuilder;
@@ -117,8 +117,8 @@ namespace RINGMesh {
     protected:                                                                      \
         std::unique_ptr< GEO::Mesh > mesh_
 
-    class RINGMESH_API GeogramPointMesh: public PointMesh {
-        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointMesh );
+    class RINGMESH_API GeogramPointSetMesh: public PointSetMesh {
+        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
     };
 
     class RINGMESH_API GeogramLineMesh: public LineMesh {

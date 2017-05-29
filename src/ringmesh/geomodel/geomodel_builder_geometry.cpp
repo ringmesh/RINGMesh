@@ -569,7 +569,7 @@ namespace RINGMesh {
             builder->remove_isolated_vertices();
         } else if( geomodel_.entity_type_manager().mesh_entity_manager.is_corner(
             E_id.type() ) ) {
-            std::unique_ptr< PointMeshBuilder > builder = create_corner_builder(
+            std::unique_ptr< PointSetMeshBuilder > builder = create_corner_builder(
                 E_id.index() );
             builder->remove_isolated_vertices();
         } else {

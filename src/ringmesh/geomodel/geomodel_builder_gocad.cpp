@@ -682,10 +682,10 @@ namespace {
                 ringmesh_assert( parent.is_defined() );
             }
 
-            gmme_id id = builder().topology.create_mesh_entity< Surface >();
-            builder().geology.add_mesh_entity_parent( id, parent );
+            gmme_id children = builder().topology.create_mesh_entity< Surface >();
+            builder().geology.add_parent_children_relation( parent, children );
             builder().geology.set_geological_entity_geol_feature( parent,
-                GeoModelEntity::determine_geological_type( type ) );
+                GeoModelGeologicalEntity::determine_geological_type( type ) );
         }
     };
 
@@ -712,8 +712,9 @@ namespace {
                         // Remove Universe region
                         region_id -= geomodel().nb_surfaces() + 1;
                         // Correction because ids begin at 1 in the file
-                        builder().geology.add_geological_entity_child( layer_id,
-                            region_id - GOCAD_OFFSET );
+                        builder().geology.add_parent_children_relation( layer_id,
+                            gmme_id( Region::type_name_static(),
+                                region_id - GOCAD_OFFSET ) );
                     }
                 }
             }
@@ -1020,12 +1021,9 @@ namespace {
             // Create a new surface
             gmme_id new_surface = builder().topology.create_mesh_entity< Surface >();
             load_storage.cur_surface_ = new_surface.index();
-            builder().geology.add_mesh_entity_parent( new_surface,
+            builder().geology.add_parent_children_relation(
                 gmge_id( Interface::type_name_static(),
-                    load_storage.cur_interface_ ) );
-            builder().geology.add_geological_entity_child(
-                gmge_id( Interface::type_name_static(),
-                    load_storage.cur_interface_ ), new_surface.index() );
+                    load_storage.cur_interface_ ), new_surface);
         }
     };
 

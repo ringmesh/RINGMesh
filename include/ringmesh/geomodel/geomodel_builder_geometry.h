@@ -78,15 +78,15 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh0DBuilder_var.
          */
-        std::unique_ptr< PointMeshBuilder > create_corner_builder( index_t corner_id )
+        std::unique_ptr< PointSetMeshBuilder > create_corner_builder( index_t corner_id )
         {
             gmme_id id( Corner::type_name_static(), corner_id );
             GeoModelMeshEntity& corner = geomodel_access_.modifiable_mesh_entity(
                 id );
             GeoModelMeshEntityAccess corner_access( corner );
-            PointMesh& corner_mesh =
-                dynamic_cast< PointMesh& >( *corner_access.modifiable_mesh() );
-            return PointMeshBuilder::create_builder( corner_mesh );
+            PointSetMesh& corner_mesh =
+                dynamic_cast< PointSetMesh& >( *corner_access.modifiable_mesh() );
+            return PointSetMeshBuilder::create_builder( corner_mesh );
         }
 
         /*!
