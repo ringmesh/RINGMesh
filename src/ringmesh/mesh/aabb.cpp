@@ -382,8 +382,10 @@ namespace RINGMesh {
         vecn< DIMENSION >& nearest_point,
         double& distance ) const
     {
-        const vecn< DIMENSION >& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) );
-        const vecn< DIMENSION >& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) );
+        const vecn< DIMENSION >& v0 = mesh_.vertex(
+            mesh_.edge_vertex( cur_box, 0 ) );
+        const vecn< DIMENSION >& v1 = mesh_.vertex(
+            mesh_.edge_vertex( cur_box, 1 ) );
         distance = point_segment_distance( query, v0, v1, nearest_point );
     }
 
@@ -438,9 +440,7 @@ namespace RINGMesh {
             mesh_.polygon_vertex( cur_box, 1 ) );
         const vecn< DIMENSION >& v2 = mesh_.vertex(
             mesh_.polygon_vertex( cur_box, 2 ) );
-        double lambda0, lambda1, lambda2;
-        distance = point_triangle_distance( query, v0, v1, v2, nearest_point,
-            lambda0, lambda1, lambda2 );
+        distance = point_triangle_distance( query, v0, v1, v2, nearest_point );
     }
 
     template< index_t DIMENSION >
@@ -559,13 +559,13 @@ namespace RINGMesh {
         }
     }
 
-//    template class BoxAABBTree< 2 >;
-//    template class LineAABBTree< 2 >;
-//    template class SurfaceAABBTree< 2 >;
-//
-    template class BoxAABBTree< 3 >;
-    template class LineAABBTree< 3 >;
-    template class SurfaceAABBTree< 3 >;
-    template class VolumeAABBTree< 3 >;
+    template class BoxAABBTree< 2 > ;
+    template class LineAABBTree< 2 > ;
+    template class SurfaceAABBTree< 2 > ;
+
+    template class BoxAABBTree< 3 > ;
+    template class LineAABBTree< 3 > ;
+    template class SurfaceAABBTree< 3 > ;
+    template class VolumeAABBTree< 3 > ;
 }
 
