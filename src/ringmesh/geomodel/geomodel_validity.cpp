@@ -357,7 +357,7 @@ namespace {
         const gmme_id& in )
     {
         const GeoModelMeshEntity& E = geomodel.mesh_entity( in );
-        for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
+        for( index_t i = 0; i < E.nb_in_boundaries(); ++i ) {
             if( E.in_boundary_gmme( i ) == is ) {
                 return true;
             }
