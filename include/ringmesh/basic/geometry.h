@@ -73,11 +73,12 @@ namespace RINGMesh {
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
+    template< index_t DIMENSION >
     double RINGMESH_API point_segment_distance(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        vec3& nearest_p );
+        const vecn< DIMENSION >& p,
+        const vecn< DIMENSION >& p0,
+        const vecn< DIMENSION >& p1,
+        vecn< DIMENSION >& nearest_p );
 
     /*!
      * Computes the smallest distance between a point and a triangle
@@ -372,11 +373,12 @@ namespace RINGMesh {
      * @param[out] new_p the projected point
      * @return returns true if the projection is possible
      */
+    template< index_t DIMENSION >
     bool RINGMESH_API point_segment_projection(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        vec3& new_p );
+        const vecn< DIMENSION >& p,
+        const vecn< DIMENSION >& p0,
+        const vecn< DIMENSION >& p1,
+        vecn< DIMENSION >& new_p );
 
     /*!
      * Computes the orthogonal projection of a point on a plane

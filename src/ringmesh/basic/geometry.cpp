@@ -665,15 +665,16 @@ namespace RINGMesh {
         return !result.empty();
     }
 
+    template< index_t DIMENSION >
     bool point_segment_projection(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        vec3& new_p )
+        const vecn< DIMENSION >& p,
+        const vecn< DIMENSION >& p0,
+        const vecn< DIMENSION >& p1,
+        vecn< DIMENSION >& new_p )
     {
-        vec3 center = ( p0 + p1 ) * 0.5;
-        vec3 diff = p - center;
-        vec3 edge = p1 - p0;
+        vecn<DIMENSION> center = ( p0 + p1 ) * 0.5;
+        vecn<DIMENSION> diff = p - center;
+        vecn<DIMENSION> edge = p1 - p0;
         double extent = 0.5 * edge.length();
         edge = normalize( edge );
         double d = dot( edge, diff );
@@ -685,23 +686,12 @@ namespace RINGMesh {
         return false;
     }
 
-    void point_plane_projection(
-        const vec3& p,
-        const vec3& N_plane,
-        const vec3& O_plane,
-        vec3& projected_p )
-    {
-        vec3 N_unit_plane = normalize( N_plane );
-        vec3 v( p - O_plane );
-        double distance = dot( v, N_unit_plane );
-        projected_p = p - distance * N_unit_plane;
-    }
-
+    template< index_t DIMENSION >
     double point_segment_distance(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        vec3& nearest_p )
+        const vecn< DIMENSION >& p,
+        const vecn< DIMENSION >& p0,
+        const vecn< DIMENSION >& p1,
+        vecn< DIMENSION >& nearest_p )
     {
         if( point_segment_projection( p, p0, p1, nearest_p ) ) {
             return length( nearest_p - p );
@@ -716,6 +706,18 @@ namespace RINGMesh {
                 return std::sqrt( p1_distance_sq );
             }
         }
+    }
+
+    void point_plane_projection(
+        const vec3& p,
+        const vec3& N_plane,
+        const vec3& O_plane,
+        vec3& projected_p )
+    {
+        vec3 N_unit_plane = normalize( N_plane );
+        vec3 v( p - O_plane );
+        double distance = dot( v, N_unit_plane );
+        projected_p = p - distance * N_unit_plane;
     }
 
     double point_quad_distance(
@@ -1097,17 +1099,17 @@ namespace RINGMesh {
             if( s1 == ZERO ) {
                 if( s2 == ZERO || s3 == ZERO ) {
                     //Case where p is exactly equal to one triangle vertex
-                    return true ;
+                    return true;
                 }
                 return s2 == s3;
             } else if( s2 == ZERO ) {
                 if( s1 == ZERO || s3 == ZERO ) {
-                    return true ;
+                    return true;
                 }
                 return s1 == s3;
             } else if( s3 == ZERO ) {
                 if( s1 == ZERO || s2 == ZERO ) {
-                    return true ;
+                    return true;
                 }
                 return s1 == s2;
             }
