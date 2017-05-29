@@ -54,6 +54,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class LineMesh2Builder;
     template< index_t DIMENSION > class SurfaceMesh2Builder;
     template< index_t DIMENSION > class VolumeMesh2Builder;
+    template< index_t DIMENSION > class SurfaceMesh2;
 }
 
 namespace RINGMesh {
@@ -251,13 +252,13 @@ namespace RINGMesh {
      * class for encapsulating surface mesh component
      */
     template< index_t DIMENSION >
-    class RINGMESH_API SurfaceMesh2: public BaseMesh2< DIMENSION > {
-    ringmesh_disable_copy( SurfaceMesh2 );
+    class RINGMESH_API SurfaceMeshBase2: public BaseMesh2< DIMENSION > {
+    ringmesh_disable_copy( SurfaceMeshBase2 );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class SurfaceMesh2Builder< DIMENSION > ;
 
     public:
-        virtual ~SurfaceMesh2() = default;
+        virtual ~SurfaceMeshBase2() = default;
 
         static std::unique_ptr< SurfaceMesh2< DIMENSION > > create_mesh(
             const MeshType type );
@@ -549,11 +550,16 @@ namespace RINGMesh {
             return *polygons_aabb_;
         }
     protected:
-        SurfaceMesh2() = default;
+        SurfaceMeshBase2() = default;
 
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_;
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygons_aabb_;
+    };
+
+    template< index_t DIMENSION >
+    class RINGMESH_API SurfaceMesh2: public SurfaceMeshBase2< DIMENSION > {
+
     };
 
     template< index_t DIMENSION >
@@ -563,7 +569,8 @@ namespace RINGMesh {
 #define ringmesh_register_surface_mesh_3d(type) \
     geo_register_creator(RINGMesh::SurfaceMesh2Factory3D, type, type::type_name_static())
 
-    class SurfaceMesh3D : SurfaceMesh2< 3 > {
+    template<>
+    class SurfaceMesh2< 3 > : public SurfaceMeshBase2< 3 > {
     public:
         /*!
          * Computes the Mesh polygon normal

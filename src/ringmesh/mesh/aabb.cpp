@@ -401,7 +401,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     SurfaceAABBTree< DIMENSION >::SurfaceAABBTree(
-        const SurfaceMesh2< DIMENSION >& mesh )
+        const SurfaceMeshBase2< DIMENSION >& mesh )
         : AABBTree(), mesh_( mesh )
     {
         std::vector< Box< DIMENSION > > bboxes;

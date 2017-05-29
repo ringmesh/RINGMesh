@@ -41,7 +41,7 @@
 namespace RINGMesh {
     template< index_t DIMENSION > class BaseMesh2;
     template< index_t DIMENSION > class LineMesh2;
-    template< index_t DIMENSION > class SurfaceMesh2;
+    template< index_t DIMENSION > class SurfaceMeshBase2;
     template< index_t DIMENSION > class VolumeMesh2;
 }
 
@@ -320,7 +320,7 @@ namespace RINGMesh {
     class RINGMESH_API SurfaceAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        SurfaceAABBTree( const SurfaceMesh2< DIMENSION >& mesh );
+        SurfaceAABBTree( const SurfaceMeshBase2< DIMENSION >& mesh );
         virtual ~SurfaceAABBTree() = default;
 
         /*!
@@ -349,7 +349,7 @@ namespace RINGMesh {
          */
         class DistanceToTriangle {
         public:
-            DistanceToTriangle( const SurfaceMesh2< DIMENSION >& mesh )
+            DistanceToTriangle( const SurfaceMeshBase2< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }
@@ -361,11 +361,11 @@ namespace RINGMesh {
                 double& distance ) const;
 
         private:
-            const SurfaceMesh2< DIMENSION >& mesh_;
+            const SurfaceMeshBase2< DIMENSION >& mesh_;
         };
 
     private:
-        const SurfaceMesh2< DIMENSION >& mesh_;
+        const SurfaceMeshBase2< DIMENSION >& mesh_;
     };
 
     template< index_t DIMENSION >
