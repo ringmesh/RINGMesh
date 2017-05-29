@@ -209,6 +209,7 @@ namespace RINGMesh {
          * \name Boundary Relationship manager
          * @{
          */
+
         index_t add_boundary_relationship(
             const gmme_id& incident_entity,
             const gmme_id& boundary )
@@ -257,6 +258,7 @@ namespace RINGMesh {
             gmme_id incident_entity_id_;
             gmme_id boundary_id_;
         };
+
         /*! @}
          * \name Parent/Child Relationship manager
          * @{
@@ -309,8 +311,10 @@ namespace RINGMesh {
     private:
         MeshEntityToParents child_to_parents_;
         GeologicalEntityToChild parent_to_child_;
+
         std::deque< BoundaryRelationship > boundary_relationships_;
         std::deque< ParentChildRelationship > parent_child_relationships_;
+
     };
 
     /*!
