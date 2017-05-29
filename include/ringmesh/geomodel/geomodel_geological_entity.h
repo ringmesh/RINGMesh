@@ -173,7 +173,7 @@ namespace RINGMesh {
     private:
         void copy_geological_entity( const GeoModelGeologicalEntity& from )
         {
-            name_ = from.name_;
+            copy_name( from );
             geol_feature_ = from.geol_feature_;
             children_ = from.children_;
         }
