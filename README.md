@@ -1,4 +1,4 @@
-How to compile RINGMesh             {#ringmesh_compiling}
+How to compile RINGMesh             #{#ringmesh_compiling}
 =======================
 
 [![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0/branch/default?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh/branch/default)
