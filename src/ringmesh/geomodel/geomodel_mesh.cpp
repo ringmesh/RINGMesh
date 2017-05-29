@@ -68,7 +68,8 @@ namespace {
             if( surface_id_[i] != surface_id_[j] ) {
                 return surface_id_[i] < surface_id_[j];
             } else {
-                return mesh_.nb_polygon_vertices( i ) < mesh_.nb_polygon_vertices( j );
+                return mesh_.nb_polygon_vertices( i )
+                    < mesh_.nb_polygon_vertices( j );
             }
         }
     private:
@@ -370,7 +371,7 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramPointMesh ),
+            mesh_( new GeogramPointSetMesh ),
             vertex_mapper_( *this, gmm.geomodel() )
     {
         set_mesh( mesh_.get() );
@@ -408,8 +409,8 @@ namespace RINGMesh {
         const MeshEntityType& entity_type,
         index_t& count )
     {
-        std::unique_ptr< PointMeshBuilder > mesh_builder =
-            PointMeshBuilder::create_builder( *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > mesh_builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
             GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
                 entity_type, i ) );
@@ -434,8 +435,8 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize()
     {
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
-            *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         builder->clear( true, false );
 
         // Total number of vertices in the
@@ -473,8 +474,8 @@ namespace RINGMesh {
         gmm_.edges.clear();
         vertex_mapper_.clear();
 
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
-            *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         builder->clear_vertices( true, false );
     }
 
@@ -564,8 +565,8 @@ namespace RINGMesh {
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
-            *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         const index_t index = builder->create_vertex( point );
         vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
         return index;
@@ -574,8 +575,8 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertices( const std::vector< vec3 >& points )
     {
         ringmesh_assert( !points.empty() );
-        std::unique_ptr< PointMeshBuilder > builder = PointMeshBuilder::create_builder(
-            *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         const index_t start_index = builder->create_vertex( points[0] );
         for( size_t i = 1; i < points.size(); ++i ) {
             builder->create_vertex( points[i] );
@@ -589,8 +590,8 @@ namespace RINGMesh {
         test_and_initialize();
         ringmesh_assert( v < nb() );
         // Change the position of the unique_vertex
-        std::unique_ptr< PointMeshBuilder > mesh_builder =
-            PointMeshBuilder::create_builder( *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > mesh_builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         mesh_builder->set_vertex( v, point );
 
         GeoModelBuilder builder( gm_ );
@@ -672,7 +673,8 @@ namespace RINGMesh {
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
-        PointMeshBuilder::create_builder( *mesh_ )->delete_vertices( to_delete_bool );
+        PointSetMeshBuilder::create_builder( *mesh_ )->delete_vertices(
+            to_delete_bool );
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete );
     }
@@ -1220,7 +1222,8 @@ namespace RINGMesh {
                         // Find if the facet is on a surface or inside the domain
                         index_t polygon = NO_ID;
                         bool side;
-                        if( is_cell_facet_on_surface( cur_c, cur_f, polygon, side ) ) {
+                        if( is_cell_facet_on_surface( cur_c, cur_f, polygon,
+                            side ) ) {
                             index_t surface_id = gmm_.polygons.surface( polygon );
                             surfaces.push_back(
                                 action_on_surface( surface_id,
@@ -1332,14 +1335,20 @@ namespace RINGMesh {
 
     bool GeoModelMeshCells::is_surface_to_duplicate( index_t surface_id ) const
     {
-        if( gm_.surface( surface_id ).is_on_voi() ) return false;
+        const Surface& cur_surface = gm_.surface( surface_id );
+        if( cur_surface.is_on_voi() ) return false;
         switch( gmm_.duplicate_mode() ) {
             case ALL:
                 return true;
             case FAULT: {
-                GeoModelEntity::GEOL_FEATURE feature =
-                    gm_.surface( surface_id ).geological_feature();
-                return GeoModelEntity::is_fault( feature );
+                gmge_id parent_interface = cur_surface.parent_gmge(
+                    Interface::type_name_static() );
+                if( parent_interface.is_defined() ) {
+                    GeoModelGeologicalEntity::GEOL_FEATURE feature =
+                        gm_.geological_entity( parent_interface ).geological_feature();
+                    return GeoModelGeologicalEntity::is_fault( feature );
+                }
+                return false;
             }
             default:
                 return false;
@@ -1611,7 +1620,10 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelMeshPolygons::polygon( index_t s, index_t p, PolygonType type ) const
+    index_t GeoModelMeshPolygons::polygon(
+        index_t s,
+        index_t p,
+        PolygonType type ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
@@ -1787,7 +1799,8 @@ namespace RINGMesh {
                 index_t cur_polygon = NO_ID;
                 if( nb_vertices < 5 ) {
                     PolygonType T = static_cast< PolygonType >( nb_vertices - 3 );
-                    cur_polygon = polygon_offset_per_type[T] + cur_polygon_per_type[T]++;
+                    cur_polygon = polygon_offset_per_type[T]
+                        + cur_polygon_per_type[T]++;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         index_t v_id = geomodel_vertices.geomodel_vertex_id(
                             surface_id, p, v );

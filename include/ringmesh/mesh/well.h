@@ -52,7 +52,7 @@
 namespace RINGMesh {
     class GeoModel;
     class Well;
-    class PointMesh;
+    class PointSetMesh;
     class LineMesh;
 }
 
@@ -108,7 +108,7 @@ namespace RINGMesh {
         bool is_on_surface_;
         /// The id of the corresponding surface or region
         index_t id_;
-        std::unique_ptr< PointMesh > mesh_;
+        std::unique_ptr< PointSetMesh > mesh_;
     };
 
 // --------------------------------------------------------------------------

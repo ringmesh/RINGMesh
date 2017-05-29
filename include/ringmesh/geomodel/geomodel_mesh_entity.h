@@ -136,22 +136,21 @@ namespace RINGMesh {
         {
             return nb_parents() != 0;
         }
+
         /*!
          * @brief Check if the entity has a parent of the given type
          */
         bool has_parent( const GeologicalEntityType& parent_type ) const
         {
-            return parent_gmge( parent_type ).is_defined();
+            return could_be_undefined_parent_gmge( parent_type ).is_defined();
         }
+
         index_t nb_parents() const
         {
             return static_cast< index_t >( parents_.size() );
         }
-        const gmge_id& parent_gmge( index_t id ) const
-        {
-            ringmesh_assert( id < nb_parents() );
-            return parents_[id];
-        }
+
+        const gmge_id& parent_gmge( index_t id ) const;
 
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
@@ -276,17 +275,14 @@ namespace RINGMesh {
         GeoModelMeshEntity(
             const GeoModel& geomodel,
             index_t id,
-            const std::string& name = "No_name",
-            GEOL_FEATURE geological_feature = NO_GEOL )
-            :
-                GeoModelEntity( geomodel, id, name, geological_feature ),
-                mesh_( nullptr )
+            const std::string& name = "No_name" )
+            : GeoModelEntity( geomodel, id, name ), mesh_( nullptr )
         {
         }
 
         virtual void copy_mesh_entity( const GeoModelMeshEntity& from )
         {
-            GeoModelEntity::copy_name_and_geol_feature( from );
+            copy_name( from );
             id_ = from.id_;
             boundaries_ = from.boundaries_;
             in_boundary_ = from.in_boundary_;
@@ -326,17 +322,23 @@ namespace RINGMesh {
         void bind_vertex_mapping_attribute() const;
 
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
+
+    private:
+        const gmge_id defined_parent_gmge(
+            const GeologicalEntityType& parent_type ) const;
+
+        const gmge_id could_be_undefined_parent_gmge(
+            const GeologicalEntityType& parent_type ) const;
     protected:
 
-        /// Boundary relation of this entity
+        /// Boundary relations of this entity
         std::vector< index_t > boundaries_;
 
-        /// In-boundary relation of this entity
+        /// In-boundary relations of this entity
         std::vector< index_t > in_boundary_;
 
-        /// The optional GeoModelGeologicalEntities 
-        /// (groups of GeoModelMeshEntity this entity belongs to)
-        std::vector< gmge_id > parents_;
+        /// Parents relations of this entity
+        std::vector< index_t > parents_;
 
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
@@ -416,7 +418,7 @@ namespace RINGMesh {
          * @warn This function is for ADVANCED user only. If you use it,
          * you are responsible for low level mesh consistency.
          */
-        const PointMesh& low_level_mesh_storage() const
+        const PointSetMesh& low_level_mesh_storage() const
         {
             return *mesh0d_;
         }
@@ -428,7 +430,7 @@ namespace RINGMesh {
             : GeoModelMeshEntity( geomodel, id )
 
         {
-            update_mesh_storage_type( PointMesh::create_mesh( type ) );
+            update_mesh_storage_type( PointSetMesh::create_mesh( type ) );
         }
 
         /*!
@@ -450,7 +452,7 @@ namespace RINGMesh {
 
     private:
 
-        void update_mesh_storage_type( std::unique_ptr< PointMesh > mesh )
+        void update_mesh_storage_type( std::unique_ptr< PointSetMesh > mesh )
         {
             mesh0d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh0d_ );
@@ -459,7 +461,7 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
     private:
-        std::shared_ptr< PointMesh > mesh0d_;
+        std::shared_ptr< PointSetMesh > mesh0d_;
     };
 
     /*!
@@ -1307,6 +1309,7 @@ namespace RINGMesh {
     class GeoModelMeshEntityConstAccess {
     ringmesh_disable_copy( GeoModelMeshEntityConstAccess );
         friend class GeoModelBuilderGeometry;
+        friend class GeoModelBuilderTopology;
 
     private:
         GeoModelMeshEntityConstAccess( const GeoModelMeshEntity& gme )
@@ -1317,6 +1320,16 @@ namespace RINGMesh {
         const std::shared_ptr< MeshBase >& mesh() const
         {
             return gmme_.mesh_;
+        }
+
+        const std::vector< index_t >& in_boundary_relation_ids() const
+        {
+            return gmme_.in_boundary_;
+        }
+
+        const std::vector< index_t >& boundary_relation_ids() const
+        {
+            return gmme_.boundaries_;
         }
 
     private:
@@ -1347,11 +1360,6 @@ namespace RINGMesh {
             return gmme_.id_;
         }
 
-        GeoModelEntity::GEOL_FEATURE& modifiable_geol_feature()
-        {
-            return gmme_.geol_feature_;
-        }
-
         std::vector< index_t >& modifiable_boundaries()
         {
             return gmme_.boundaries_;
@@ -1368,7 +1376,7 @@ namespace RINGMesh {
             return dynamic_cast< Region& >( gmme_ ).sides_;
         }
 
-        std::vector< gmge_id >& modifiable_parents()
+        std::vector< index_t >& modifiable_parents()
         {
             return gmme_.parents_;
         }

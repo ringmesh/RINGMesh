@@ -43,21 +43,21 @@
 
 namespace RINGMesh {
 
-    std::unique_ptr< PointMesh > PointMesh::create_mesh( const MeshType type )
+    std::unique_ptr< PointSetMesh > PointSetMesh::create_mesh( const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramPointMesh::type_name_static();
+            new_type = GeogramPointSetMesh::type_name_static();
         }
-        PointMesh* mesh = PointMeshFactory::create_object( new_type );
+        PointSetMesh* mesh = PointSetMeshFactory::create_object( new_type );
         if( !mesh ) {
-            Logger::warn( "Mesh0D", "Could not create mesh data structure: ",
+            Logger::warn( "PointSetMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "Mesh0D", "Falling back to GeogramMesh0D data structure" );
+            Logger::warn( "PointSetMesh", "Falling back to GeogramPointSetMesh data structure" );
 
-            mesh = new GeogramPointMesh;
+            mesh = new GeogramPointSetMesh;
         }
-        return std::unique_ptr< PointMesh >( mesh );
+        return std::unique_ptr< PointSetMesh >( mesh );
     }
 
     std::unique_ptr< LineMesh > LineMesh::create_mesh( const MeshType type )
@@ -85,9 +85,9 @@ namespace RINGMesh {
         }
         SurfaceMesh* mesh = SurfaceMeshFactory::create_object( new_type );
         if( !mesh ) {
-            Logger::warn( "Mesh2D", "Could not create mesh data structure: ",
+            Logger::warn( "SurfaceMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "Mesh2D", "Falling back to GeogramMesh2D data structure" );
+            Logger::warn( "SurfaceMesh", "Falling back to GeogramSurfaceMesh data structure" );
 
             mesh = new GeogramSurfaceMesh;
         }
@@ -304,9 +304,9 @@ namespace RINGMesh {
         }
         VolumeMesh* mesh = VolumeMeshFactory::create_object( new_type );
         if( !mesh ) {
-            Logger::warn( "Mesh3D", "Could not create mesh data structure: ",
+            Logger::warn( "VolumeMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "Mesh3D", "Falling back to GeogramMesh3D data structure" );
+            Logger::warn( "VolumeMesh", "Falling back to GeogramVolumeMesh data structure" );
 
             mesh = new GeogramVolumeMesh;
         }
