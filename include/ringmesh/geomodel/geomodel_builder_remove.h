@@ -380,6 +380,7 @@ namespace RINGMesh {
                 geomodel_.entity_type_manager().mesh_entity_manager;
             return family.boundary_type( type );
         }
+        /// TODO unused function. To handle during removal refactoring BC.
         index_t incident_entity_type_to_index( const MeshEntityType& type ) const
         {
             const MeshEntityType& in_ent_type = incident_entity_type( type );
