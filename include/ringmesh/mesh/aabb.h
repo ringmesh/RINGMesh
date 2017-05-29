@@ -106,7 +106,7 @@ namespace RINGMesh {
             index_t nearest_box = NO_ID;
             get_nearest_element_box_hint( query, nearest_box, nearest_point,
                 distance );
-            closest_element_box_recursive< DIMENSION, EvalDistance >( query, nearest_box,
+            closest_element_box_recursive< EvalDistance >( query, nearest_box,
                 nearest_point, distance, ROOT_INDEX, 0, nb_bboxes(), action );
             ringmesh_assert( nearest_box != NO_ID );
             return nearest_box;
