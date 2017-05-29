@@ -561,7 +561,7 @@ namespace {
         index_t polygon,
         index_t edge,
         const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-        const std::vector< Box3d >& surface_boxes )
+        const std::vector< Box< 3 > >& surface_boxes )
     {
         const Surface& S = geomodel.surface( surface_id );
         const vec3 barycenter = GEO::Geom::barycenter(
@@ -1176,7 +1176,7 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::compute_surface_internal_borders(
         index_t surface_id,
         const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-        const std::vector< Box3d >& surface_boxes )
+        const std::vector< Box< 3 > >& surface_boxes )
     {
         const Surface& S = geomodel_.surface( surface_id );
 
@@ -1199,7 +1199,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_polygon_edge_centers_nn_and_surface_boxes(
         std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-        std::vector< Box3d >& surface_boxes )
+        std::vector< Box< 3 > >& surface_boxes )
     {
         for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
             const Surface& S = geomodel_.surface( s );
@@ -1217,7 +1217,7 @@ namespace RINGMesh {
     {
         std::vector< std::unique_ptr< NNSearch< 3 > > > nn_searchs(
             geomodel_.nb_surfaces() );
-        std::vector< Box3d > boxes( geomodel_.nb_surfaces() );
+        std::vector< Box< 3 > > boxes( geomodel_.nb_surfaces() );
         compute_polygon_edge_centers_nn_and_surface_boxes( nn_searchs, boxes );
         for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
             compute_surface_internal_borders( s, nn_searchs, boxes );
