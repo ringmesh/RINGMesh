@@ -44,9 +44,9 @@ namespace {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr< LineMesh2< 3 > > mesh = LineMesh2 < 3
+            std::unique_ptr< LineMesh< 3 > > mesh = LineMesh < 3
                 > ::create_mesh( GeogramLineMesh < 3 > ::type_name_static() );
-            std::unique_ptr< LineMesh2Builder< 3 > > builder = LineMesh2Builder < 3
+            std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
                 > ::create_builder( *mesh );
             std::string name;
             double z_sign = 1.0;
@@ -77,10 +77,10 @@ namespace {
                     builder->create_edge( id - 1, id );
                 } else if( in.field_matches( 0, "END" ) ) {
                     wells.add_well( *mesh, name );
-                    mesh = LineMesh2 < 3
+                    mesh = LineMesh < 3
                         > ::create_mesh(
                             GeogramLineMesh < 3 > ::type_name_static() );
-                    builder = LineMesh2Builder < 3 > ::create_builder( *mesh );
+                    builder = LineMeshBuilder < 3 > ::create_builder( *mesh );
                 }
             }
         }

@@ -59,7 +59,7 @@ namespace RINGMesh {
         {                                                                                       \
         }                                                                                       \
         virtual ~Class ## Builder() = default ;                                                 \
-        virtual void copy( const BaseMesh2< DIMENSION>& rhs, bool copy_attributes ) override                 \
+        virtual void copy( const MeshBase< DIMENSION>& rhs, bool copy_attributes ) override                 \
         {                                                                                       \
             const Class< DIMENSION >& geogrammesh = dynamic_cast< const Class< DIMENSION >& >( rhs );                     \
             mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes,                            \
@@ -138,10 +138,10 @@ namespace RINGMesh {
         Class< DIMENSION >* mesh_
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramPointMeshBuilder: public PointMesh2Builder< DIMENSION > {
+    class RINGMESH_API GeogramPointMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual void set_mesh( PointMesh2< DIMENSION >& mesh ) override
+        virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
                 dynamic_cast< GeogramPointMesh< DIMENSION > & >( mesh ) );
@@ -155,11 +155,11 @@ namespace RINGMesh {
     using GeogramPointMesh3DBuilder = GeogramPointMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramLineMeshBuilder: public LineMesh2Builder< DIMENSION > {
+    class RINGMESH_API GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
-        virtual void set_mesh( LineMesh2< DIMENSION >& mesh ) override
+        virtual void set_mesh( LineMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
                 dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) );
@@ -248,12 +248,12 @@ namespace RINGMesh {
     using GeogramLineMesh3DBuilder = GeogramLineMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramSurfaceMeshBuilder: public SurfaceMesh2Builder<
+    class RINGMESH_API GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder<
         DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
-        virtual void set_mesh( SurfaceMeshBase2< DIMENSION >& mesh ) override
+        virtual void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
                 dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) );
@@ -267,7 +267,7 @@ namespace RINGMesh {
                 min_polygons );
         }
 
-        virtual void triangulate( const SurfaceMeshBase2< DIMENSION >& surface_in ) override
+        virtual void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) override
         {
             Logger::instance()->set_minimal( true );
             const GeogramSurfaceMesh< DIMENSION >& geogram_surf_in =
@@ -412,12 +412,12 @@ namespace RINGMesh {
     using GeogramSurfaceMesh3DBuilder = GeogramSurfaceMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramVolumeMeshBuilder: public VolumeMesh2Builder< DIMENSION > {
+    class RINGMESH_API GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
 
-        virtual void set_mesh( VolumeMesh2< DIMENSION >& mesh ) override
+        virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
                 dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) );

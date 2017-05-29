@@ -53,7 +53,7 @@ namespace RINGMesh {
     class GeoModel;
     class Well;
     class PointMesh;
-    class LineMesh;
+    template< index_t DIMENSION > class LineMesh;
 }
 
 namespace RINGMesh {
@@ -108,7 +108,7 @@ namespace RINGMesh {
         bool is_on_surface_;
         /// The id of the corresponding surface or region
         index_t id_;
-        std::unique_ptr< PointMesh2< 3 > > mesh_;
+        std::unique_ptr< PointSetMesh< 3 > > mesh_;
     };
 
 // --------------------------------------------------------------------------
@@ -190,7 +190,7 @@ namespace RINGMesh {
         index_t id_;
         /// id in the corners_ vector the the well
         index_t corners_[2];
-        std::unique_ptr< LineMesh2< 3 > > mesh_;
+        std::unique_ptr< LineMesh< 3 > > mesh_;
     };
 
 // --------------------------------------------------------------------------
@@ -420,7 +420,7 @@ namespace RINGMesh {
          * @param[in] mesh the mesh of the well
          * @param[in] name the name of the well
          */
-        void add_well( const LineMesh2< 3 >& mesh, const std::string& name );
+        void add_well( const LineMesh< 3 >& mesh, const std::string& name );
 
         /*!
          * Gets the number of wells
@@ -440,7 +440,7 @@ namespace RINGMesh {
         }
 
     private:
-        void compute_conformal_mesh( const LineMesh2< 3 >& in, LineMesh2< 3 >& out );
+        void compute_conformal_mesh( const LineMesh< 3 >& in, LineMesh< 3 >& out );
 
     protected:
         /// Vector of the wells

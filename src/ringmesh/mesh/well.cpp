@@ -241,7 +241,7 @@ namespace {
     };
 
     struct OrientedEdge {
-        OrientedEdge( const LineMesh2< 3 >& mesh, index_t edge, index_t vertex_from )
+        OrientedEdge( const LineMesh< 3 >& mesh, index_t edge, index_t vertex_from )
             : edge_( edge ), vertex_from_( vertex_from )
         {
             if( mesh.edge_vertex( edge, 0 ) == vertex_from ) {
@@ -277,10 +277,10 @@ namespace RINGMesh {
             is_on_surface_( is_on_surface ),
             id_( id ),
             mesh_(
-                PointMesh2< 3 >::create_mesh(
+                PointSetMesh< 3 >::create_mesh(
                     GeogramPointMesh< 3 >::type_name_static() ) )
     {
-        PointMesh2Builder< 3 >::create_builder( *mesh_ )->create_vertex( point );
+        PointSetMeshBuilder< 3 >::create_builder( *mesh_ )->create_vertex( point );
     }
 
     const vec3& WellCorner::point() const
@@ -300,7 +300,7 @@ namespace RINGMesh {
             WellEntity( well ),
             id_( id ),
             mesh_(
-                LineMesh2< 3 >::create_mesh(
+                LineMesh< 3 >::create_mesh(
                     GeogramLineMesh< 3 >::type_name_static() ) )
     {
         corners_[0] = NO_ID;
@@ -310,8 +310,8 @@ namespace RINGMesh {
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
         index_t nb_points = static_cast< index_t >( points.size() );
-        std::unique_ptr< LineMesh2Builder< 3 > > builder =
-            LineMesh2Builder< 3 >::create_builder( *mesh_ );
+        std::unique_ptr< LineMeshBuilder< 3 > > builder =
+            LineMeshBuilder< 3 >::create_builder( *mesh_ );
         builder->create_vertices( nb_points );
         for( index_t p = 0; p < nb_points; p++ ) {
             builder->set_vertex( p, points[p] );
@@ -482,7 +482,7 @@ namespace RINGMesh {
         }
     }
 
-    void WellGroup::add_well( const LineMesh2< 3 >& mesh, const std::string& name )
+    void WellGroup::add_well( const LineMesh< 3 >& mesh, const std::string& name )
     {
         ringmesh_assert( geomodel() );
         if( find_well( name ) != NO_ID ) return;
@@ -563,11 +563,11 @@ namespace RINGMesh {
     }
 
     void WellGroup::compute_conformal_mesh(
-        const LineMesh2< 3 >& in,
-        LineMesh2< 3 >& out )
+        const LineMesh< 3 >& in,
+        LineMesh< 3 >& out )
     {
         double epsilon = geomodel_->epsilon();
-        std::unique_ptr< LineMesh2Builder< 3 > > builder = LineMesh2Builder < 3
+        std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
             > ::create_builder( out );
         builder->clear( false, false );
 

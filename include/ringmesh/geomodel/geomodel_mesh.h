@@ -77,7 +77,7 @@ namespace RINGMesh {
     protected:
         GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm );
 
-        void set_mesh( BaseMesh2<3>* mesh )
+        void set_mesh( MeshBase<3>* mesh )
         {
             mesh_base_ = mesh;
         }
@@ -92,7 +92,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         GeoModel& gm_;
         /// Attached MeshBase
-        BaseMesh2<3>* mesh_base_;
+        MeshBase<3>* mesh_base_;
     };
 
     class RINGMESH_API GeoModelMeshVertices: public GeoModelMeshBase {
@@ -468,7 +468,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< PointMesh2< 3 > > mesh_;
+        std::unique_ptr< PointSetMesh< 3 > > mesh_;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_;
     };
@@ -699,7 +699,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< SurfaceMesh2< 3 > > mesh_;
+        std::unique_ptr< SurfaceMesh< 3 > > mesh_;
 
         /// Attribute storing the surface index per polygon
         GEO::Attribute< index_t > surface_id_;
@@ -784,7 +784,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< LineMesh2< 3 > > mesh_;
+        std::unique_ptr< LineMesh< 3 > > mesh_;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -1205,7 +1205,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< VolumeMesh2< 3 > > mesh_;
+        std::unique_ptr< VolumeMesh< 3 > > mesh_;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_;

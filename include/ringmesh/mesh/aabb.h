@@ -39,10 +39,10 @@
 #include <ringmesh/basic/common.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class BaseMesh2;
-    template< index_t DIMENSION > class LineMesh2;
-    template< index_t DIMENSION > class SurfaceMeshBase2;
-    template< index_t DIMENSION > class VolumeMesh2;
+    template< index_t DIMENSION > class MeshBase;
+    template< index_t DIMENSION > class LineMesh;
+    template< index_t DIMENSION > class SurfaceMeshBase;
+    template< index_t DIMENSION > class VolumeMesh;
 }
 
 namespace RINGMesh {
@@ -269,7 +269,7 @@ namespace RINGMesh {
     class RINGMESH_API LineAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        LineAABBTree( const LineMesh2< DIMENSION >& mesh );
+        LineAABBTree( const LineMesh< DIMENSION >& mesh );
         virtual ~LineAABBTree() = default;
 
         /*!
@@ -297,7 +297,7 @@ namespace RINGMesh {
          */
         class DistanceToEdge {
         public:
-            DistanceToEdge( const LineMesh2< DIMENSION >& mesh )
+            DistanceToEdge( const LineMesh< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }
@@ -309,18 +309,18 @@ namespace RINGMesh {
                 double& distance ) const;
 
         private:
-            const LineMesh2< DIMENSION >& mesh_;
+            const LineMesh< DIMENSION >& mesh_;
         };
 
     private:
-        const LineMesh2< DIMENSION >& mesh_;
+        const LineMesh< DIMENSION >& mesh_;
     };
 
     template< index_t DIMENSION >
     class RINGMESH_API SurfaceAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        SurfaceAABBTree( const SurfaceMeshBase2< DIMENSION >& mesh );
+        SurfaceAABBTree( const SurfaceMeshBase< DIMENSION >& mesh );
         virtual ~SurfaceAABBTree() = default;
 
         /*!
@@ -349,7 +349,7 @@ namespace RINGMesh {
          */
         class DistanceToTriangle {
         public:
-            DistanceToTriangle( const SurfaceMeshBase2< DIMENSION >& mesh )
+            DistanceToTriangle( const SurfaceMeshBase< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }
@@ -361,18 +361,18 @@ namespace RINGMesh {
                 double& distance ) const;
 
         private:
-            const SurfaceMeshBase2< DIMENSION >& mesh_;
+            const SurfaceMeshBase< DIMENSION >& mesh_;
         };
 
     private:
-        const SurfaceMeshBase2< DIMENSION >& mesh_;
+        const SurfaceMeshBase< DIMENSION >& mesh_;
     };
 
     template< index_t DIMENSION >
     class RINGMESH_API VolumeAABBTree: public AABBTree< DIMENSION > {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
-        VolumeAABBTree( const VolumeMesh2< DIMENSION >& mesh );
+        VolumeAABBTree( const VolumeMesh< DIMENSION >& mesh );
         virtual ~VolumeAABBTree() = default;
 
         /*!
@@ -398,7 +398,7 @@ namespace RINGMesh {
             index_t box_end ) const;
 
     private:
-        const VolumeMesh2< DIMENSION >& mesh_;
+        const VolumeMesh< DIMENSION >& mesh_;
     };
 
     template< index_t DIMENSION >
