@@ -176,7 +176,7 @@ namespace RINGMesh {
         if( !valid_type ) {
             return;
         }
-        index_t incident_entity_type_index = incident_entity_type_to_index(
+        index_t incident_entity_type_index = mesh_entity_type_to_index(
             incident_entity_type );
         for( index_t i = 0; i < E.nb_incident_entities(); ++i ) {
             index_t old_id = E.incident_entity_gmme( i ).index();
