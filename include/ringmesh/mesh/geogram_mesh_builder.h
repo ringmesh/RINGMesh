@@ -253,7 +253,7 @@ namespace RINGMesh {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
-        virtual void set_mesh( SurfaceMesh2< DIMENSION >& mesh ) override
+        virtual void set_mesh( SurfaceMeshBase2< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
                 dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) );
@@ -267,7 +267,7 @@ namespace RINGMesh {
                 min_polygons );
         }
 
-        virtual void triangulate( const SurfaceMesh2< DIMENSION >& surface_in ) override
+        virtual void triangulate( const SurfaceMeshBase2< DIMENSION >& surface_in ) override
         {
             Logger::instance()->set_minimal( true );
             const GeogramSurfaceMesh< DIMENSION >& geogram_surf_in =

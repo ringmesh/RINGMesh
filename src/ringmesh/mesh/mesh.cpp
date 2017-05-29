@@ -85,7 +85,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::unique_ptr< SurfaceMesh2< DIMENSION > > SurfaceMesh2< DIMENSION >::create_mesh(
+    std::unique_ptr< SurfaceMesh2< DIMENSION > > SurfaceMeshBase2< DIMENSION >::create_mesh(
         const MeshType type )
     {
         MeshType new_type = type;
@@ -104,7 +104,8 @@ namespace RINGMesh {
         return std::unique_ptr< SurfaceMesh2< DIMENSION > >( mesh );
     }
 
-    void SurfaceMesh::next_on_border(
+    template< index_t DIMENSION >
+    void SurfaceMeshBase2< DIMENSION >::next_on_border(
         index_t p,
         index_t e,
         index_t& next_p,
@@ -143,7 +144,8 @@ namespace RINGMesh {
         }
     }
 
-    void SurfaceMesh::prev_on_border(
+    template< index_t DIMENSION >
+    void SurfaceMeshBase2< DIMENSION >::prev_on_border(
         index_t p,
         index_t e,
         index_t& prev_p,
@@ -184,7 +186,10 @@ namespace RINGMesh {
         }
     }
 
-    index_t SurfaceMesh::polygon_from_vertex_ids( index_t in0, index_t in1 ) const
+    template< index_t DIMENSION >
+    index_t SurfaceMeshBase2< DIMENSION >::polygon_from_vertex_ids(
+        index_t in0,
+        index_t in1 ) const
     {
         ringmesh_assert( in0 < nb_vertices() && in1 < nb_vertices() );
 
@@ -210,7 +215,8 @@ namespace RINGMesh {
         return NO_ID;
     }
 
-    index_t SurfaceMesh::vertex_index_in_polygon(
+    template< index_t DIMENSION >
+    index_t SurfaceMeshBase2< DIMENSION >::vertex_index_in_polygon(
         index_t polygon_index,
         index_t vertex_id ) const
     {
@@ -223,7 +229,10 @@ namespace RINGMesh {
         return NO_ID;
     }
 
-    index_t SurfaceMesh::closest_vertex_in_polygon( index_t p, const vec3& v ) const
+    template< index_t DIMENSION >
+    index_t SurfaceMeshBase2< DIMENSION >::closest_vertex_in_polygon(
+        index_t p,
+        const vecn< DIMENSION >& v ) const
     {
         index_t result = 0;
         double dist = DBL_MAX;
@@ -237,7 +246,8 @@ namespace RINGMesh {
         return result;
     }
 
-    std::vector< index_t > SurfaceMesh::polygons_around_vertex(
+    template< index_t DIMENSION >
+    std::vector< index_t > SurfaceMeshBase2< DIMENSION >::polygons_around_vertex(
         index_t surf_vertex_id,
         bool border_only,
         index_t p0 ) const
@@ -315,8 +325,8 @@ namespace RINGMesh {
         if( new_type.empty() ) {
             new_type = GeogramVolumeMesh< DIMENSION >::type_name_static();
         }
-        VolumeMesh2< DIMENSION >* mesh = VolumeMesh2Factory < DIMENSION
-            > ::create_object( new_type );
+        VolumeMesh2< DIMENSION >* mesh =
+            VolumeMesh2Factory< DIMENSION >::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh3D", "Could not create mesh data structure: ",
                 new_type );
