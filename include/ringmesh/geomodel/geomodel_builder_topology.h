@@ -106,7 +106,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Complete missing information in GeoModelEntities
-         * boundaries - in_boundary - parent - children
+         * boundaries - incident_entity - parent - children
          * @details For all 7 types of entities, check what information is available
          * for the first one and fill the entities of the same type accordingly
          * THIS MEANS that the all the entities of the same type have been initialized with
@@ -115,12 +115,12 @@ namespace RINGMesh {
         void complete_entity_connectivity();
 
         void remove_mesh_entity_boundary_relation(
-            const gmme_id& in_boundary,
+            const gmme_id& incident_entity,
             const gmme_id& boundary );
 
         void add_mesh_entity_boundary_relation(
             const gmme_id& boundary,
-            const gmme_id& in_boundary,
+            const gmme_id& incident_entity,
             bool side = false );
 
         void set_mesh_entity_boundary(
@@ -133,10 +133,10 @@ namespace RINGMesh {
 
         void set_universe_boundary( index_t id, index_t boundary_id, bool side );
 
-        void set_mesh_entity_in_boundary(
+        void set_mesh_entity_incident_entity(
             const gmme_id& gme_id,
             index_t id,
-            index_t in_boundary_id );
+            index_t incident_entity_id );
 
         void delete_mesh_entity( const MeshEntityType& type, index_t index );
 
