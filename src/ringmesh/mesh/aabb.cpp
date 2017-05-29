@@ -362,7 +362,7 @@ namespace RINGMesh {
                 bboxes[i].add_point( point );
             }
         }
-        initialize_tree( bboxes );
+        this->initialize_tree( bboxes );
     }
 
     template< index_t DIMENSION >
@@ -372,7 +372,7 @@ namespace RINGMesh {
         double& distance ) const
     {
         DistanceToEdge action( mesh_ );
-        return closest_element_box( query, nearest_point, distance, action );
+        return this->closest_element_box( query, nearest_point, distance, action );
     }
 
     template< index_t DIMENSION >
@@ -382,8 +382,8 @@ namespace RINGMesh {
         vecn< DIMENSION >& nearest_point,
         double& distance ) const
     {
-        const vec3& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) );
-        const vec3& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) );
+        const vecn< DIMENSION >& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) );
+        const vecn< DIMENSION >& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) );
         distance = point_segment_distance( query, v0, v1, nearest_point );
     }
 
@@ -542,8 +542,8 @@ namespace RINGMesh {
         const Box< DIMENSION >& B )
     {
         bool inside = true;
-        vec3 result;
-        for( index_t c = 0; c < 3; c++ ) {
+        vecn< DIMENSION > result;
+        for( index_t c = 0; c < DIMENSION; c++ ) {
             if( p[c] < B.min()[c] ) {
                 inside = false;
                 result[c] = p[c] - B.min()[c];
@@ -558,5 +558,14 @@ namespace RINGMesh {
             return result.length();
         }
     }
+
+//    template class BoxAABBTree< 2 >;
+//    template class LineAABBTree< 2 >;
+//    template class SurfaceAABBTree< 2 >;
+//
+//    template class BoxAABBTree< 3 >;
+//    template class LineAABBTree< 3 >;
+//    template class SurfaceAABBTree< 3 >;
+//    template class VolumeAABBTree< 3 >;
 }
 

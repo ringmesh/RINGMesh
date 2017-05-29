@@ -50,5 +50,14 @@ namespace RINGMesh {
         ringmesh_register_volume_mesh_3d( GeogramVolumeMesh3D );
         ringmesh_register_volume_mesh_builder( GeogramVolumeMesh3D );
     }
+
+    template class GeogramPointMesh< 2 >;
+    template class GeogramLineMesh< 2 >;
+    template class GeogramSurfaceMesh< 2 >;
+
+    template class GeogramPointMesh< 3 >;
+    template class GeogramLineMesh< 3 >;
+    template class GeogramSurfaceMesh< 3 >;
+    template class GeogramVolumeMesh< 3 >;
 }
 

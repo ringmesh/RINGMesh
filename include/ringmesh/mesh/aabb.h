@@ -370,7 +370,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class RINGMESH_API VolumeAABBTree: public AABBTree< DIMENSION > {
-        static_assert( DIMENSION == 3, "DIMENSION template should be 2 or 3" );
+        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
         VolumeAABBTree( const VolumeMesh2< DIMENSION >& mesh );
         virtual ~VolumeAABBTree() = default;
