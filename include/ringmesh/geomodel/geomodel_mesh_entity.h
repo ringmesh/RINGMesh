@@ -160,7 +160,7 @@ namespace RINGMesh {
          * @param[in] parent_type_name the asking parent type
          *
          */
-        const gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
+        const gmge_id& parent_gmge( const GeologicalEntityType& parent_type ) const;
         const GeoModelGeologicalEntity& parent( index_t id ) const;
         const GeoModelGeologicalEntity& parent(
             const GeologicalEntityType& parent_type ) const;
