@@ -525,7 +525,7 @@ namespace RINGMesh {
         bool valid = true;
         if( nb_vertices() != 1 ) {
             Logger::err( "GeoModelEntity", "Corner ", index(), " mesh has ",
-                mesh0d_->nb_vertices(), " vertices " );
+                point_mesh_->nb_vertices(), " vertices " );
             valid = false;
         }
         return valid;
@@ -545,12 +545,12 @@ namespace RINGMesh {
         // Check that the GEO::Mesh has the expected entities
         if( nb_vertices() < 2 ) {
             Logger::err( "GeoModelEntity", "Line ", index(), " has ",
-                mesh1d_->nb_vertices(), " vertices " );
+                line_mesh_->nb_vertices(), " vertices " );
             valid = false;
         }
-        if( mesh1d_->nb_edges() == 0 ) {
+        if( line_mesh_->nb_edges() == 0 ) {
             Logger::err( "GeoModelEntity", "Line ", index(), " mesh has ",
-                mesh1d_->nb_edges(), " edges " );
+                line_mesh_->nb_edges(), " edges " );
             valid = false;
         }
 
@@ -677,7 +677,7 @@ namespace RINGMesh {
             Logger::warn( "GeoModelEntity", id, " has less than 3 vertices " );
             valid = false;
         }
-        if( mesh2d_->nb_polygons() == 0 ) {
+        if( surface_mesh_->nb_polygons() == 0 ) {
             Logger::warn( "GeoModelEntity", id, " has no polygons " );
             valid = false;
         }
@@ -693,7 +693,7 @@ namespace RINGMesh {
         // No zero area polygon
         // No polygon incident to the same vertex check local and global indices
         index_t nb_degenerate = 0;
-        for( index_t p = 0; p < mesh2d_->nb_polygons(); p++ ) {
+        for( index_t p = 0; p < surface_mesh_->nb_polygons(); p++ ) {
             if( polygon_is_degenerate( *this, id, p ) ) {
                 nb_degenerate++;
             }
@@ -783,7 +783,7 @@ namespace RINGMesh {
             bool valid = true;
             // Check that the GEO::Mesh has the expected entities
             // at least 4 vertices and one cell.
-            if( mesh3d_->nb_vertices() < 4 ) {
+            if( volume_mesh_->nb_vertices() < 4 ) {
                 Logger::warn( "GeoModelEntity", gmme(),
                     " has less than 4 vertices " );
                 valid = false;
@@ -800,7 +800,7 @@ namespace RINGMesh {
             // No cell with negative volume
             // No cell incident to the same vertex check local and global indices
             index_t nb_degenerate = 0;
-            for( index_t c = 0; c < mesh3d_->nb_cells(); c++ ) {
+            for( index_t c = 0; c < volume_mesh_->nb_cells(); c++ ) {
                 if( cell_is_degenerate( *this, c ) ) {
                     nb_degenerate++;
                 }
@@ -831,7 +831,7 @@ namespace RINGMesh {
     {
         for( index_t c = 0; c < nb_mesh_elements(); c++ ) {
             index_t nb_vertices = nb_mesh_element_vertices( c );
-            double volume = mesh3d_->cell_volume( c );
+            double volume = volume_mesh_->cell_volume( c );
             switch( nb_vertices ) {
                 case 4:
                     tet_volume += volume;
@@ -923,7 +923,7 @@ namespace RINGMesh {
         std::unique_ptr< PointMesh2< 3 > > new_mesh = PointMesh2< 3 >::create_mesh( type );
         std::unique_ptr< PointMesh2Builder< 3 > > builder =
             PointMesh2Builder< 3 >::create_builder( *new_mesh );
-        builder->copy( *mesh0d_, true );
+        builder->copy( *point_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
@@ -933,7 +933,7 @@ namespace RINGMesh {
             type );
         std::unique_ptr< LineMesh2Builder< 3 > > builder =
             LineMesh2Builder< 3 >::create_builder( *new_mesh );
-        builder->copy( *mesh1d_, true );
+        builder->copy( *line_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
@@ -943,7 +943,7 @@ namespace RINGMesh {
             SurfaceMesh2< 3 >::create_mesh( type );
         std::unique_ptr< SurfaceMesh2Builder< 3 > > builder =
             SurfaceMesh2Builder< 3 >::create_builder( *new_mesh );
-        builder->copy( *mesh2d_, true );
+        builder->copy( *surface_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
@@ -953,7 +953,7 @@ namespace RINGMesh {
             type );
         std::unique_ptr< VolumeMesh2Builder< 3 > > builder =
             VolumeMesh2Builder< 3 >::create_builder( *new_mesh );
-        builder->copy( *mesh3d_, true );
+        builder->copy( *volume_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 }
