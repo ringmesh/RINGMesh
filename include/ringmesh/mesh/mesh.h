@@ -626,7 +626,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class SurfaceMesh2< 2 > : public SurfaceMeshBase2< 3 > {
+    class SurfaceMesh2< 2 > : public SurfaceMeshBase2< 2 > {
     public:
         /*!
          * Computes the Mesh polygon area
