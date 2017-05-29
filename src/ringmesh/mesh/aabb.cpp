@@ -203,7 +203,7 @@ namespace {
 
     template< index_t DIMENSION >
     bool mesh_cell_contains_point(
-        const VolumeMesh2< DIMENSION >& M,
+        const VolumeMesh< DIMENSION >& M,
         index_t cell,
         const vecn< DIMENSION >& p )
     {
@@ -350,7 +350,7 @@ namespace RINGMesh {
     /****************************************************************************/
 
     template< index_t DIMENSION >
-    LineAABBTree< DIMENSION >::LineAABBTree( const LineMesh2< DIMENSION >& mesh )
+    LineAABBTree< DIMENSION >::LineAABBTree( const LineMesh< DIMENSION >& mesh )
         : mesh_( mesh )
     {
         std::vector< Box< DIMENSION > > bboxes;
@@ -400,7 +400,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     SurfaceAABBTree< DIMENSION >::SurfaceAABBTree(
-        const SurfaceMeshBase2< DIMENSION >& mesh )
+        const SurfaceMeshBase< DIMENSION >& mesh )
         : mesh_( mesh )
     {
         std::vector< Box< DIMENSION > > bboxes;
@@ -456,7 +456,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     VolumeAABBTree< DIMENSION >::VolumeAABBTree(
-        const VolumeMesh2< DIMENSION >& mesh )
+        const VolumeMesh< DIMENSION >& mesh )
         : mesh_( mesh )
     {
         std::vector< Box< DIMENSION > > bboxes;

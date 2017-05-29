@@ -44,15 +44,15 @@
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    std::unique_ptr< PointMesh2< DIMENSION > > PointMesh2< DIMENSION >::create_mesh(
+    std::unique_ptr< PointSetMesh< DIMENSION > > PointSetMesh< DIMENSION >::create_mesh(
         const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
             new_type = GeogramPointMesh< DIMENSION >::type_name_static();
         }
-        PointMesh2< DIMENSION >* mesh =
-            PointMesh2Factory< DIMENSION >::create_object( new_type );
+        PointSetMesh< DIMENSION >* mesh =
+            PointMeshFactory< DIMENSION >::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh0D", "Could not create mesh data structure: ",
                 new_type );
@@ -60,18 +60,18 @@ namespace RINGMesh {
 
             mesh = new GeogramPointMesh< DIMENSION >;
         }
-        return std::unique_ptr< PointMesh2< DIMENSION > >( mesh );
+        return std::unique_ptr< PointSetMesh< DIMENSION > >( mesh );
     }
 
     template< index_t DIMENSION >
-    std::unique_ptr< LineMesh2< DIMENSION > > LineMesh2< DIMENSION >::create_mesh(
+    std::unique_ptr< LineMesh< DIMENSION > > LineMesh< DIMENSION >::create_mesh(
         const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
             new_type = GeogramLineMesh< DIMENSION >::type_name_static();
         }
-        LineMesh2< DIMENSION >* mesh = LineMesh2Factory< DIMENSION >::create_object(
+        LineMesh< DIMENSION >* mesh = LineMeshFactory< DIMENSION >::create_object(
             new_type );
         if( !mesh ) {
             Logger::warn( "LineMesh", "Could not create mesh data structure: ",
@@ -81,19 +81,19 @@ namespace RINGMesh {
 
             mesh = new GeogramLineMesh< DIMENSION >;
         }
-        return std::unique_ptr< LineMesh2< DIMENSION > >( mesh );
+        return std::unique_ptr< LineMesh< DIMENSION > >( mesh );
     }
 
     template< index_t DIMENSION >
-    std::unique_ptr< SurfaceMesh2< DIMENSION > > SurfaceMeshBase2< DIMENSION >::create_mesh(
+    std::unique_ptr< SurfaceMesh< DIMENSION > > SurfaceMeshBase< DIMENSION >::create_mesh(
         const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
             new_type = GeogramSurfaceMesh< DIMENSION >::type_name_static();
         }
-        SurfaceMesh2< DIMENSION > *mesh =
-            SurfaceMesh2Factory< DIMENSION >::create_object( new_type );
+        SurfaceMesh< DIMENSION > *mesh =
+            SurfaceMeshFactory< DIMENSION >::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh2D", "Could not create mesh data structure: ",
                 new_type );
@@ -101,11 +101,11 @@ namespace RINGMesh {
 
             mesh = new GeogramSurfaceMesh< DIMENSION >;
         }
-        return std::unique_ptr< SurfaceMesh2< DIMENSION > >( mesh );
+        return std::unique_ptr< SurfaceMesh< DIMENSION > >( mesh );
     }
 
     template< index_t DIMENSION >
-    void SurfaceMeshBase2< DIMENSION >::next_on_border(
+    void SurfaceMeshBase< DIMENSION >::next_on_border(
         index_t p,
         index_t e,
         index_t& next_p,
@@ -145,7 +145,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void SurfaceMeshBase2< DIMENSION >::prev_on_border(
+    void SurfaceMeshBase< DIMENSION >::prev_on_border(
         index_t p,
         index_t e,
         index_t& prev_p,
@@ -187,7 +187,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t SurfaceMeshBase2< DIMENSION >::polygon_from_vertex_ids(
+    index_t SurfaceMeshBase< DIMENSION >::polygon_from_vertex_ids(
         index_t in0,
         index_t in1 ) const
     {
@@ -216,7 +216,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t SurfaceMeshBase2< DIMENSION >::vertex_index_in_polygon(
+    index_t SurfaceMeshBase< DIMENSION >::vertex_index_in_polygon(
         index_t polygon_index,
         index_t vertex_id ) const
     {
@@ -230,7 +230,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t SurfaceMeshBase2< DIMENSION >::closest_vertex_in_polygon(
+    index_t SurfaceMeshBase< DIMENSION >::closest_vertex_in_polygon(
         index_t p,
         const vecn< DIMENSION >& v ) const
     {
@@ -248,7 +248,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::vector< index_t > SurfaceMeshBase2< DIMENSION >::polygons_around_vertex(
+    std::vector< index_t > SurfaceMeshBase< DIMENSION >::polygons_around_vertex(
         index_t surf_vertex_id,
         bool border_only,
         index_t p0 ) const
@@ -319,15 +319,15 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::unique_ptr< VolumeMesh2< DIMENSION > > VolumeMesh2< DIMENSION >::create_mesh(
+    std::unique_ptr< VolumeMesh< DIMENSION > > VolumeMesh< DIMENSION >::create_mesh(
         const MeshType type )
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
             new_type = GeogramVolumeMesh< DIMENSION >::type_name_static();
         }
-        VolumeMesh2< DIMENSION >* mesh =
-            VolumeMesh2Factory< DIMENSION >::create_object( new_type );
+        VolumeMesh< DIMENSION >* mesh =
+            VolumeMeshFactory< DIMENSION >::create_object( new_type );
         if( !mesh ) {
             Logger::warn( "Mesh3D", "Could not create mesh data structure: ",
                 new_type );
@@ -335,15 +335,15 @@ namespace RINGMesh {
 
             mesh = new GeogramVolumeMesh< DIMENSION >;
         }
-        return std::unique_ptr< VolumeMesh2< DIMENSION > >( mesh );
+        return std::unique_ptr< VolumeMesh< DIMENSION > >( mesh );
     }
 
-    template class PointMesh2< 2 > ;
-    template class LineMesh2< 2 > ;
-    template class SurfaceMeshBase2< 2 > ;
+    template class PointSetMesh< 2 > ;
+    template class LineMesh< 2 > ;
+    template class SurfaceMeshBase< 2 > ;
 
-    template class PointMesh2< 3 > ;
-    template class LineMesh2< 3 > ;
-    template class SurfaceMeshBase2< 3 > ;
-    template class VolumeMesh2< 3 > ;
+    template class PointSetMesh< 3 > ;
+    template class LineMesh< 3 > ;
+    template class SurfaceMeshBase< 3 > ;
+    template class VolumeMesh< 3 > ;
 }

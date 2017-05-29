@@ -49,12 +49,12 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     template< index_t DIMENSION >
-    class RINGMESH_API MeshBase2Builder: public GEO::Counted {
+    class RINGMESH_API MeshBaseBuilder: public GEO::Counted {
 //    ringmesh_disable_copy( MeshBaseBuilder );
 //        ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
-        virtual ~MeshBase2Builder()
+        virtual ~MeshBaseBuilder()
         {
         }
         /*!
@@ -68,7 +68,7 @@ namespace RINGMesh {
          * @return a modifiable reference to the point that corresponds to the vertex.
          */
         virtual void copy(
-            const BaseMesh2< DIMENSION >& rhs,
+            const MeshBase< DIMENSION >& rhs,
             bool copy_attributes ) = 0;
 
         virtual void load_mesh( const std::string& filename ) = 0;
@@ -154,25 +154,25 @@ namespace RINGMesh {
         /*!@}
          */
 
-        static std::unique_ptr< MeshBase2Builder< DIMENSION > > create_builder(
-            BaseMesh2< DIMENSION >& mesh );
+        static std::unique_ptr< MeshBaseBuilder< DIMENSION > > create_builder(
+            MeshBase< DIMENSION >& mesh );
     protected:
-        MeshBase2Builder() = default;
+        MeshBaseBuilder() = default;
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API PointMesh2Builder: public MeshBase2Builder< DIMENSION > {
-    ringmesh_disable_copy( PointMesh2Builder );
+    class RINGMESH_API PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    ringmesh_disable_copy( PointSetMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~PointMesh2Builder()
+        virtual ~PointSetMeshBuilder()
         {
         }
 
-        virtual void set_mesh( PointMesh2< DIMENSION >& mesh ) = 0;
+        virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) = 0;
 
-        static std::unique_ptr< PointMesh2Builder< DIMENSION > > create_builder(
-            PointMesh2< DIMENSION >& mesh );
+        static std::unique_ptr< PointSetMeshBuilder< DIMENSION > > create_builder(
+            PointSetMesh< DIMENSION >& mesh );
 
         virtual void remove_isolated_vertices()
         {
@@ -180,32 +180,32 @@ namespace RINGMesh {
         }
 
     protected:
-        PointMesh2Builder()
-            : MeshBase2Builder< DIMENSION >()
+        PointSetMeshBuilder()
+            : MeshBaseBuilder< DIMENSION >()
         {
         }
     };
 
     template< index_t DIMENSION >
-    using PointMesh2BuilderFactory = GEO::Factory0< PointMesh2Builder< DIMENSION > >;
+    using PointMesh2BuilderFactory = GEO::Factory0< PointSetMeshBuilder< DIMENSION > >;
 
     using PointMesh2BuilderFactory3D = PointMesh2BuilderFactory< 3 >;
 #define ringmesh_register_point_mesh_builder(type) \
     geo_register_creator(RINGMesh::PointMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
-    class RINGMESH_API LineMesh2Builder: public MeshBase2Builder< DIMENSION > {
-    ringmesh_disable_copy( LineMesh2Builder );
+    class RINGMESH_API LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    ringmesh_disable_copy( LineMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~LineMesh2Builder()
+        virtual ~LineMeshBuilder()
         {
         }
 
-        virtual void set_mesh( LineMesh2< DIMENSION >& mesh ) = 0;
+        virtual void set_mesh( LineMesh< DIMENSION >& mesh ) = 0;
 
-        static std::unique_ptr< LineMesh2Builder > create_builder(
-            LineMesh2< DIMENSION >& mesh );
+        static std::unique_ptr< LineMeshBuilder > create_builder(
+            LineMesh< DIMENSION >& mesh );
 
         /*!
          * @brief Create a new edge.
@@ -257,32 +257,32 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices() = 0;
     protected:
-        LineMesh2Builder()
-            : MeshBase2Builder< DIMENSION >()
+        LineMeshBuilder()
+            : MeshBaseBuilder< DIMENSION >()
         {
         }
     };
 
     template< index_t DIMENSION >
-    using LineMesh2BuilderFactory = GEO::Factory0< LineMesh2Builder< DIMENSION > >;
+    using LineMesh2BuilderFactory = GEO::Factory0< LineMeshBuilder< DIMENSION > >;
 
     using LineMesh2BuilderFactory3D = LineMesh2BuilderFactory< 3 >;
 #define ringmesh_register_line_mesh_builder(type) \
     geo_register_creator(RINGMesh::LineMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
-    class RINGMESH_API SurfaceMesh2Builder: public MeshBase2Builder< DIMENSION > {
-    ringmesh_disable_copy( SurfaceMesh2Builder );
+    class RINGMESH_API SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    ringmesh_disable_copy( SurfaceMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~SurfaceMesh2Builder()
+        virtual ~SurfaceMeshBuilder()
         {
         }
 
-        virtual void set_mesh( SurfaceMeshBase2< DIMENSION >& mesh ) = 0;
+        virtual void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) = 0;
 
-        static std::unique_ptr< SurfaceMesh2Builder< DIMENSION > > create_builder(
-            SurfaceMeshBase2< DIMENSION >& mesh );
+        static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > create_builder(
+            SurfaceMeshBase< DIMENSION >& mesh );
 
         /*!@}
          * \name Polygon related methods
@@ -390,7 +390,7 @@ namespace RINGMesh {
         virtual void remove_small_connected_components(
             double min_area,
             index_t min_polygons ) = 0;
-        virtual void triangulate( const SurfaceMeshBase2< DIMENSION >& surface_in ) = 0;
+        virtual void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) = 0;
         /*!@}
          */
         /*!
@@ -398,32 +398,32 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices() = 0;
     protected:
-        SurfaceMesh2Builder()
-            : MeshBase2Builder< DIMENSION >()
+        SurfaceMeshBuilder()
+            : MeshBaseBuilder< DIMENSION >()
         {
         }
     };
 
     template< index_t DIMENSION >
-    using SurfaceMesh2BuilderFactory = GEO::Factory0< SurfaceMesh2Builder< DIMENSION > >;
+    using SurfaceMesh2BuilderFactory = GEO::Factory0< SurfaceMeshBuilder< DIMENSION > >;
 
     using SurfaceMesh2BuilderFactory3D = SurfaceMesh2BuilderFactory< 3 >;
 #define ringmesh_register_surface_mesh_builder(type) \
     geo_register_creator(RINGMesh::SurfaceMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
-    class RINGMESH_API VolumeMesh2Builder: public MeshBase2Builder< DIMENSION > {
-    ringmesh_disable_copy( VolumeMesh2Builder );
+    class RINGMESH_API VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    ringmesh_disable_copy( VolumeMeshBuilder );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
-        virtual ~VolumeMesh2Builder()
+        virtual ~VolumeMeshBuilder()
         {
         }
 
-        virtual void set_mesh( VolumeMesh2< DIMENSION >& mesh ) = 0;
+        virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) = 0;
 
-        static std::unique_ptr< VolumeMesh2Builder< DIMENSION > > create_builder(
-            VolumeMesh2< DIMENSION >& mesh );
+        static std::unique_ptr< VolumeMeshBuilder< DIMENSION > > create_builder(
+            VolumeMesh< DIMENSION >& mesh );
 
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
@@ -516,14 +516,14 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices() = 0;
     protected:
-        VolumeMesh2Builder()
-            : MeshBase2Builder< DIMENSION >()
+        VolumeMeshBuilder()
+            : MeshBaseBuilder< DIMENSION >()
         {
         }
     };
 
     template< index_t DIMENSION >
-    using VolumeMesh2BuilderFactory = GEO::Factory0< VolumeMesh2Builder< DIMENSION > >;
+    using VolumeMesh2BuilderFactory = GEO::Factory0< VolumeMeshBuilder< DIMENSION > >;
 
     using VolumeMesh2BuilderFactory3D = VolumeMesh2BuilderFactory< 3 >;
 #define ringmesh_register_volume_mesh_builder(type) \

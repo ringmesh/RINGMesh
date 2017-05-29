@@ -78,16 +78,16 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh0DBuilder_var.
          */
-        std::unique_ptr< PointMesh2Builder< 3 > > create_corner_builder(
+        std::unique_ptr< PointSetMeshBuilder< 3 > > create_corner_builder(
             index_t corner_id )
         {
             gmme_id id( Corner::type_name_static(), corner_id );
             GeoModelMeshEntity& corner = geomodel_access_.modifiable_mesh_entity(
                 id );
             GeoModelMeshEntityAccess corner_access( corner );
-            PointMesh2< 3 >& corner_mesh =
-                dynamic_cast< PointMesh2< 3 >& >( *corner_access.modifiable_mesh() );
-            return PointMesh2Builder< 3 >::create_builder( corner_mesh );
+            PointSetMesh< 3 >& corner_mesh =
+                dynamic_cast< PointSetMesh< 3 >& >( *corner_access.modifiable_mesh() );
+            return PointSetMeshBuilder< 3 >::create_builder( corner_mesh );
         }
 
         /*!
@@ -97,15 +97,15 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer LineMeshBuilder_var.
          */
-        std::unique_ptr< LineMesh2Builder< 3 > > create_line_builder(
+        std::unique_ptr< LineMeshBuilder< 3 > > create_line_builder(
             index_t line_id )
         {
             gmme_id id( Line::type_name_static(), line_id );
             GeoModelMeshEntity& line = geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess line_access( line );
-            LineMesh2< 3 >& line_mesh =
-                dynamic_cast< LineMesh2< 3 >& >( *line_access.modifiable_mesh() );
-            return LineMesh2Builder< 3 >::create_builder( line_mesh );
+            LineMesh< 3 >& line_mesh =
+                dynamic_cast< LineMesh< 3 >& >( *line_access.modifiable_mesh() );
+            return LineMeshBuilder< 3 >::create_builder( line_mesh );
         }
 
         /*!
@@ -115,16 +115,16 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh2DBuilder_var.
          */
-        std::unique_ptr< SurfaceMesh2Builder< 3 > > create_surface_builder(
+        std::unique_ptr< SurfaceMeshBuilder< 3 > > create_surface_builder(
             index_t surface_id )
         {
             gmme_id id( Surface::type_name_static(), surface_id );
             GeoModelMeshEntity& surface = geomodel_access_.modifiable_mesh_entity(
                 id );
             GeoModelMeshEntityAccess surface_access( surface );
-            SurfaceMeshBase2< 3 >& surface_mesh =
-                dynamic_cast< SurfaceMeshBase2< 3 >& >( *surface_access.modifiable_mesh() );
-            return SurfaceMesh2Builder< 3 >::create_builder( surface_mesh );
+            SurfaceMeshBase< 3 >& surface_mesh =
+                dynamic_cast< SurfaceMeshBase< 3 >& >( *surface_access.modifiable_mesh() );
+            return SurfaceMeshBuilder< 3 >::create_builder( surface_mesh );
         }
 
         /*!
@@ -134,16 +134,16 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh3DBuilder_var.
          */
-        std::unique_ptr< VolumeMesh2Builder< 3 > > create_region_builder(
+        std::unique_ptr< VolumeMeshBuilder< 3 > > create_region_builder(
             index_t region_id )
         {
             gmme_id id( Region::type_name_static(), region_id );
             GeoModelMeshEntity& region = geomodel_access_.modifiable_mesh_entity(
                 id );
             GeoModelMeshEntityAccess region_access( region );
-            VolumeMesh2< 3 >& region_mesh =
-                dynamic_cast< VolumeMesh2< 3 >& >( *region_access.modifiable_mesh() );
-            return VolumeMesh2Builder< 3 >::create_builder( region_mesh );
+            VolumeMesh< 3 >& region_mesh =
+                dynamic_cast< VolumeMesh< 3 >& >( *region_access.modifiable_mesh() );
+            return VolumeMeshBuilder< 3 >::create_builder( region_mesh );
         }
 
         /*!
@@ -155,7 +155,7 @@ namespace RINGMesh {
         void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type );
         void copy_mesh( const GeoModel& from, const gmme_id& mesh_entity );
 
-        void assign_mesh_to_entity( const BaseMesh2< 3 >& mesh, const gmme_id& to );
+        void assign_mesh_to_entity( const MeshBase< 3 >& mesh, const gmme_id& to );
 
         /*!
          * \name Set entity geometry from geometrical positions
