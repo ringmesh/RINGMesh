@@ -98,7 +98,8 @@ namespace RINGMesh {
         virtual const vecn< DIMENSION >& vertex( index_t v_id ) const override      \
         {                                                                           \
             ringmesh_assert( v_id < nb_vertices() );                                \
-            return mesh_->vertices.point( v_id );                                   \
+            double* vertex_ptr = mesh_->vertices.point_ptr( v_id );                 \
+            return *( vecn< DIMENSION >* )( vertex_ptr );                           \
         }                                                                           \
         virtual index_t nb_vertices() const override                                \
         {                                                                           \
