@@ -428,8 +428,8 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize()
     {
-        std::unique_ptr< PointSetMeshBuilder > builder = PointSetMeshBuilder::create_builder(
-            *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         builder->clear( true, false );
 
         // Total number of vertices in the
@@ -467,8 +467,8 @@ namespace RINGMesh {
         gmm_.edges.clear();
         vertex_mapper_.clear();
 
-        std::unique_ptr< PointSetMeshBuilder > builder = PointSetMeshBuilder::create_builder(
-            *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         builder->clear_vertices( true, false );
     }
 
@@ -558,8 +558,8 @@ namespace RINGMesh {
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
-        std::unique_ptr< PointSetMeshBuilder > builder = PointSetMeshBuilder::create_builder(
-            *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         const index_t index = builder->create_vertex( point );
         vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
         return index;
@@ -568,8 +568,8 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertices( const std::vector< vec3 >& points )
     {
         ringmesh_assert( !points.empty() );
-        std::unique_ptr< PointSetMeshBuilder > builder = PointSetMeshBuilder::create_builder(
-            *mesh_ );
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         const index_t start_index = builder->create_vertex( points[0] );
         for( size_t i = 1; i < points.size(); ++i ) {
             builder->create_vertex( points[i] );
@@ -666,7 +666,8 @@ namespace RINGMesh {
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
-        PointSetMeshBuilder::create_builder( *mesh_ )->delete_vertices( to_delete_bool );
+        PointSetMeshBuilder::create_builder( *mesh_ )->delete_vertices(
+            to_delete_bool );
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete );
     }
@@ -1333,7 +1334,8 @@ namespace RINGMesh {
             case ALL:
                 return true;
             case FAULT: {
-                gmge_id parent_interface = cur_surface.parent_gmge(Interface::type_name_static());
+                gmge_id parent_interface = cur_surface.parent_gmge(
+                    Interface::type_name_static() );
                 if( parent_interface.is_defined() ) {
                     GeoModelGeologicalEntity::GEOL_FEATURE feature =
                         gm_.geological_entity( parent_interface ).geological_feature();
