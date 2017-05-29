@@ -223,6 +223,7 @@ namespace RINGMesh {
     template class LineMesh2Builder< 2 >;
     template class SurfaceMesh2Builder< 2 >;
 
+    template class MeshBase2Builder< 3 >;
     template class PointMesh2Builder< 3 >;
     template class LineMesh2Builder< 3 >;
     template class SurfaceMesh2Builder< 3 >;
