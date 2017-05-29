@@ -278,7 +278,7 @@ namespace RINGMesh {
             id_( id ),
             mesh_(
                 PointSetMesh< 3 >::create_mesh(
-                    GeogramPointMesh< 3 >::type_name_static() ) )
+                    GeogramPointSetMesh< 3 >::type_name_static() ) )
     {
         PointSetMeshBuilder< 3 >::create_builder( *mesh_ )->create_vertex( point );
     }

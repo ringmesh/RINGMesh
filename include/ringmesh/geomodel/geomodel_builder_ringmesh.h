@@ -59,7 +59,7 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile {
     public:
-        static const index_t NB_VERSION = 2;
+        static const index_t NB_VERSION = 3;
         GeoModelBuilderGM( GeoModel& geomodel, const std::string& filename );
         virtual ~GeoModelBuilderGM();
 

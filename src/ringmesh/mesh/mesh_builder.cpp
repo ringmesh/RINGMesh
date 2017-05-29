@@ -147,10 +147,10 @@ namespace RINGMesh {
         if( !builder ) {
             Logger::warn( "Mesh0DBuilder", "Could not create mesh data structure: ",
                 mesh.type_name() );
-            Logger::warn( "Mesh0DBuilder",
-                "Falling back to GeogramMesh0DBuilder data structure" );
+            Logger::warn( "PointMeshBuilder",
+                "Falling back to GeogramPointSetMeshBuilder data structure" );
 
-            builder = new GeogramPointMeshBuilder< DIMENSION >;
+            builder = new GeogramPointSetMeshBuilder< DIMENSION >;
         }
         builder->set_mesh( mesh );
         return std::unique_ptr< PointSetMeshBuilder >( builder );
@@ -187,10 +187,10 @@ namespace RINGMesh {
             builder = create_surface_mesh_builder( mesh );
         }
         if( !builder ) {
-            Logger::warn( "Mesh2DBuilder", "Could not create mesh data structure: ",
+            Logger::warn( "SurfaceMeshBuilder", "Could not create mesh data structure: ",
                 mesh.type_name() );
-            Logger::warn( "Mesh2DBuilder",
-                "Falling back to GeogramMesh2DBuilder data structure" );
+            Logger::warn( "SurfaceMeshBuilder",
+                "Falling back to GeogramSurfaceMeshBuilder data structure" );
 
             builder = new GeogramSurfaceMeshBuilder< DIMENSION >;
         }
@@ -208,10 +208,10 @@ namespace RINGMesh {
             builder = create_volume_mesh_builder( mesh );
         }
         if( !builder ) {
-            Logger::warn( "Mesh3DBuilder", "Could not create mesh data structure: ",
+            Logger::warn( "VolumeMeshBuilder", "Could not create mesh data structure: ",
                 mesh.type_name() );
-            Logger::warn( "Mesh3DBuilder",
-                "Falling back to GeogramMesh3DBuilder data structure" );
+            Logger::warn( "VolumeMeshBuilder",
+                "Falling back to GeogramVolumeMesshBuilder data structure" );
 
             builder = new GeogramVolumeMeshBuilder< DIMENSION >;
         }

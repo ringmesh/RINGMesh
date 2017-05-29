@@ -364,7 +364,7 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramPointMesh< 3 > ),
+            mesh_( new GeogramPointSetMesh< 3 > ),
             vertex_mapper_( *this, gmm.geomodel() )
     {
         set_mesh( mesh_.get() );
@@ -1328,14 +1328,20 @@ namespace RINGMesh {
 
     bool GeoModelMeshCells::is_surface_to_duplicate( index_t surface_id ) const
     {
-        if( gm_.surface( surface_id ).is_on_voi() ) return false;
+        const Surface& cur_surface = gm_.surface( surface_id );
+        if( cur_surface.is_on_voi() ) return false;
         switch( gmm_.duplicate_mode() ) {
             case ALL:
                 return true;
             case FAULT: {
-                GeoModelEntity::GEOL_FEATURE feature =
-                    gm_.surface( surface_id ).geological_feature();
-                return GeoModelEntity::is_fault( feature );
+                gmge_id parent_interface = cur_surface.parent_gmge(
+                    Interface::type_name_static() );
+                if( parent_interface.is_defined() ) {
+                    GeoModelGeologicalEntity::GEOL_FEATURE feature =
+                        gm_.geological_entity( parent_interface ).geological_feature();
+                    return GeoModelGeologicalEntity::is_fault( feature );
+                }
+                return false;
             }
             default:
                 return false;
