@@ -50,7 +50,7 @@
 namespace RINGMesh {
     class GeoModel;
     class MeshBaseBuilder;
-    class PointMeshBuilder;
+    class PointSetMeshBuilder;
     class LineMeshBuilder;
     class SurfaceMeshBuilder;
     class VolumeMeshBuilder;
@@ -139,23 +139,23 @@ namespace RINGMesh {
     /*!
      * class for encapsulating isolated vertices structure
      */
-    class RINGMESH_API PointMesh: public MeshBase {
-    ringmesh_disable_copy( PointMesh );
-        friend class PointMeshBuilder;
+    class RINGMESH_API PointSetMesh: public MeshBase {
+    ringmesh_disable_copy( PointSetMesh );
+        friend class PointSetMeshBuilder;
 
     public:
-        virtual ~PointMesh() = default;
+        virtual ~PointSetMesh() = default;
 
-        static std::unique_ptr< PointMesh > create_mesh( const MeshType type );
+        static std::unique_ptr< PointSetMesh > create_mesh( const MeshType type );
     protected:
         /*!
          * @brief Mesh0D constructor.
          */
-        PointMesh() = default;
+        PointSetMesh() = default;
     };
-    using PointMeshFactory = GEO::Factory0< PointMesh >;
+    using PointSetMeshFactory = GEO::Factory0< PointSetMesh >;
 #define ringmesh_register_point_mesh(type) \
-    geo_register_creator(RINGMesh::PointMeshFactory, type, type::type_name_static())
+    geo_register_creator(RINGMesh::PointSetMeshFactory, type, type::type_name_static())
 
     /*!
      * class for encapsulating line mesh component
