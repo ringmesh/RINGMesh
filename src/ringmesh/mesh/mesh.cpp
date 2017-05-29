@@ -49,16 +49,16 @@ namespace RINGMesh {
     {
         MeshType new_type = type;
         if( new_type.empty() ) {
-            new_type = GeogramPointMesh< DIMENSION >::type_name_static();
+            new_type = GeogramPointSetMesh< DIMENSION >::type_name_static();
         }
         PointSetMesh< DIMENSION >* mesh =
             PointMeshFactory< DIMENSION >::create_object( new_type );
         if( !mesh ) {
-            Logger::warn( "Mesh0D", "Could not create mesh data structure: ",
+            Logger::warn( "PointSetMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "Mesh0D", "Falling back to GeogramMesh0D data structure" );
+            Logger::warn( "PointSetMesh", "Falling back to GeogramPointSetMesh data structure" );
 
-            mesh = new GeogramPointMesh< DIMENSION >;
+            mesh = new GeogramPointSetMesh< DIMENSION >;
         }
         return std::unique_ptr< PointSetMesh< DIMENSION > >( mesh );
     }
@@ -95,9 +95,9 @@ namespace RINGMesh {
         SurfaceMesh< DIMENSION > *mesh =
             SurfaceMeshFactory< DIMENSION >::create_object( new_type );
         if( !mesh ) {
-            Logger::warn( "Mesh2D", "Could not create mesh data structure: ",
+            Logger::warn( "SurfaceMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "Mesh2D", "Falling back to GeogramMesh2D data structure" );
+            Logger::warn( "SurfaceMesh", "Falling back to GeogramSurfaceMesh data structure" );
 
             mesh = new GeogramSurfaceMesh< DIMENSION >;
         }
@@ -329,9 +329,9 @@ namespace RINGMesh {
         VolumeMesh< DIMENSION >* mesh =
             VolumeMeshFactory< DIMENSION >::create_object( new_type );
         if( !mesh ) {
-            Logger::warn( "Mesh3D", "Could not create mesh data structure: ",
+            Logger::warn( "VolumeMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "Mesh3D", "Falling back to GeogramMesh3D data structure" );
+            Logger::warn( "VolumeMesh", "Falling back to GeogramVolumeMesh data structure" );
 
             mesh = new GeogramVolumeMesh< DIMENSION >;
         }

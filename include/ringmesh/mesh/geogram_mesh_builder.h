@@ -59,9 +59,10 @@ namespace RINGMesh {
         {                                                                                       \
         }                                                                                       \
         virtual ~Class ## Builder() = default ;                                                 \
-        virtual void copy( const MeshBase< DIMENSION>& rhs, bool copy_attributes ) override                 \
+        virtual void copy( const MeshBase< DIMENSION>& rhs, bool copy_attributes ) override     \
         {                                                                                       \
-            const Class< DIMENSION >& geogrammesh = dynamic_cast< const Class< DIMENSION >& >( rhs );                     \
+            const Class< DIMENSION >& geogrammesh =                                             \
+                dynamic_cast< const Class< DIMENSION >& >( rhs );                               \
             mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes,                            \
                 GEO::MESH_ALL_ELEMENTS );                                                       \
             clear_vertex_linked_objects();                                                      \
@@ -138,13 +139,14 @@ namespace RINGMesh {
         Class< DIMENSION >* mesh_
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramPointMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
+    class RINGMESH_API GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
-                dynamic_cast< GeogramPointMesh< DIMENSION > & >( mesh ) );
+                dynamic_cast< GeogramPointSetMesh< DIMENSION > & >( mesh ) );
         }
         virtual void clear_vertex_linked_objects() override
         {
@@ -152,11 +154,12 @@ namespace RINGMesh {
         }
     };
 
-    using GeogramPointMesh3DBuilder = GeogramPointMeshBuilder< 3 >;
+    using GeogramPointSetMesh3DBuilder = GeogramPointSetMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
     class RINGMESH_API GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
         virtual void set_mesh( LineMesh< DIMENSION >& mesh ) override
@@ -250,7 +253,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder<
         DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
         virtual void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override

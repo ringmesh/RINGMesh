@@ -42,7 +42,6 @@
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/mesh/mesh.h>
 
 /*!
  * @file Well related classe declarations 
@@ -52,7 +51,8 @@
 namespace RINGMesh {
     class GeoModel;
     class Well;
-    class PointMesh;
+    template< index_t DIMENSION > class NNSearch;
+    template< index_t DIMENSION > class PointSetMesh;
     template< index_t DIMENSION > class LineMesh;
 }
 

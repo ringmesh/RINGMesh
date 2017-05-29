@@ -47,7 +47,7 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeogramPointMeshBuilder;
+    template< index_t DIMENSION > class GeogramPointSetMeshBuilder;
     template< index_t DIMENSION > class GeogramLineMeshBuilder;
     template< index_t DIMENSION > class GeogramSurfaceMeshBuilder;
     template< index_t DIMENSION > class GeogramVolumeMeshBuilder;
@@ -109,12 +109,12 @@ namespace RINGMesh {
         std::unique_ptr< GEO::Mesh > mesh_
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramPointMesh: public PointSetMesh< DIMENSION > {
-        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointMesh );
+    class RINGMESH_API GeogramPointSetMesh: public PointSetMesh< DIMENSION > {
+        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
     };
 
-    using GeogramPointMesh2D = GeogramPointMesh< 2 >;
-    using GeogramPointMesh3D = GeogramPointMesh< 3 >;
+    using GeogramPointSetMesh2D = GeogramPointSetMesh< 2 >;
+    using GeogramPointSetMesh3D = GeogramPointSetMesh< 3 >;
 
     template< index_t DIMENSION >
     class RINGMESH_API GeogramLineMesh: public LineMesh< DIMENSION > {
