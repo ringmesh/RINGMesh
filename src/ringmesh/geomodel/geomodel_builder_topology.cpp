@@ -292,25 +292,6 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderTopology::complete_entity_connectivity()
-    {
-        // Order is important
-        complete_mesh_entity_connectivity( Line::type_name_static() );
-        complete_mesh_entity_connectivity( Corner::type_name_static() );
-        complete_mesh_entity_connectivity( Surface::type_name_static() );
-        complete_mesh_entity_connectivity( Region::type_name_static() );
-
-        // Geological entities
-        for( index_t i = 0; i < geomodel_.nb_geological_entity_types(); i++ ) {
-            const GeologicalEntityType& type = geomodel_.geological_entity_type( i );
-            if( geomodel_.nb_geological_entities( type ) > 0 ) {
-                if( geomodel_.geological_entity( type, 0 ).nb_children() == 0 ) {
-                    builder_.geology.fill_geological_entities_children( type );
-                }
-            }
-        }
-    }
-
     void GeoModelBuilderTopology::remove_mesh_entity_boundary_relation(
         const gmme_id& in_boundary,
         const gmme_id& boundary )
@@ -339,6 +320,23 @@ namespace RINGMesh {
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
 
+    index_t GeoModelBuilderTopology::check_if_boundary_in_boundary_relation_already_exists(
+        const gmme_id& in_boundary,
+        const gmme_id& boundary )
+    {
+        const GeoModelMeshEntity& in_boundary_mesh_entity = geomodel_.mesh_entity(
+            in_boundary );
+        for( index_t in_b = 0; in_b < in_boundary_mesh_entity.nb_in_boundary();
+            in_b++ ) {
+            if( in_boundary_mesh_entity.in_boundary_gmme( in_b ) == boundary ) {
+                GeoModelMeshEntityConstAccess entity_access(
+                    in_boundary_mesh_entity );
+                return entity_access.in_boundary_relation_ids()[in_b];
+            }
+        }
+        return NO_ID;
+    }
+
     void GeoModelBuilderTopology::add_mesh_entity_boundary_relation(
         const gmme_id& in_boundary,
         const gmme_id& boundary,
@@ -357,6 +355,7 @@ namespace RINGMesh {
         }
         GeoModelMeshEntity& in_boundary_entity =
             geomodel_access_.modifiable_mesh_entity( in_boundary );
+
         const MeshEntityType& boundary_type =
             geomodel_.entity_type_manager().mesh_entity_manager.boundary_type(
                 in_boundary.type() );
@@ -365,14 +364,19 @@ namespace RINGMesh {
             message << "Wrong boundary type in the boundary relation between "
                 << boundary << " and " << in_boundary;
             throw RINGMeshException( "Entity", message.str() );
+
         }
+
+        index_t relation_id = check_if_boundary_in_boundary_relation_already_exists(
+            in_boundary, boundary );
         RelationshipManager& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-        index_t relation_id = manager.add_boundary_relationship( in_boundary,
-            boundary );
+        if( relation_id == NO_ID ) {
+            relation_id = manager.add_boundary_relationship( in_boundary, boundary );
+        }
         GeoModelMeshEntityAccess boundary_access( boundary_entity );
-        boundary_access.modifiable_in_boundaries().push_back( relation_id );
         GeoModelMeshEntityAccess in_boundary_access( in_boundary_entity );
+        boundary_access.modifiable_in_boundaries().push_back( relation_id );
         in_boundary_access.modifiable_boundaries().push_back( relation_id );
 
         if( in_boundary.type() == Region::type_name_static() ) {
@@ -452,16 +456,5 @@ namespace RINGMesh {
         index_t index )
     {
         geomodel_access_.modifiable_mesh_entities( type )[index].reset();
-    }
-
-    void GeoModelBuilderTopology::complete_mesh_entity_connectivity(
-        const MeshEntityType& type )
-    {
-        if( geomodel_.nb_mesh_entities( type ) > 0 ) {
-            const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, 0 );
-            if( E.nb_parents() == 0 ) {
-                builder_.geology.fill_mesh_entities_parent( type );
-            }
-        }
     }
 }
