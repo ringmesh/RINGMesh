@@ -136,6 +136,7 @@ namespace RINGMesh {
         {
             return nb_parents() != 0;
         }
+
         /*!
          * @brief Check if the entity has a parent of the given type
          */
@@ -143,10 +144,12 @@ namespace RINGMesh {
         {
             return could_be_undefined_parent_gmge( parent_type ).is_defined();
         }
+
         index_t nb_parents() const
         {
             return static_cast< index_t >( parents_.size() );
         }
+
         const gmge_id& parent_gmge( index_t id ) const;
 
         /*!
@@ -189,6 +192,7 @@ namespace RINGMesh {
          * \name Local access to the GeoModelMeshEntity geometry
          * @{
          */
+
         index_t nb_vertices() const
         {
             return mesh_->nb_vertices();
@@ -241,6 +245,7 @@ namespace RINGMesh {
          * \name Geometrical request on Entity
          * @{
          */
+
         virtual double mesh_element_size( index_t mesh_element_index ) const = 0;
         virtual vec3 mesh_element_barycenter( index_t mesh_element_index ) const = 0;
         virtual vec3 entity_barycenter() const
@@ -252,6 +257,7 @@ namespace RINGMesh {
             ringmesh_assert( nb_vertices() > 0 );
             return result / static_cast< double >( nb_vertices() );
         }
+
         virtual double size() const
         {
             double size = 0.0;
@@ -285,6 +291,7 @@ namespace RINGMesh {
             incident_entities_ = from.incident_entities_;
             parents_ = from.parents_;
         }
+
         virtual bool is_index_valid() const final;
         virtual bool is_mesh_valid() const
         {
@@ -364,6 +371,7 @@ namespace RINGMesh {
         {
             return type_name_static();
         }
+
         /*!
          * @brief Checks if this entity define the geomodel external boundary
          * @details Test if the entity is in the Surfaces defining the universe
@@ -377,6 +385,7 @@ namespace RINGMesh {
         {
             return 0;
         }
+
         /*!
          * @return the number of vertices of the Corner
          */
@@ -399,10 +408,12 @@ namespace RINGMesh {
             ringmesh_unused( mesh_element );
             return 0.0;
         }
+
         virtual double size() const
         {
             return 0.0;
         }
+
         virtual vec3 mesh_element_barycenter( index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element );
@@ -441,6 +452,7 @@ namespace RINGMesh {
             ringmesh_unused( vertex_index );
             return 0;
         }
+
         /*!
          * @brief Check that the Corner mesh is a unique point
          */
