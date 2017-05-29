@@ -63,9 +63,8 @@ namespace RINGMesh {
         return std::unique_ptr< PointMesh2< DIMENSION > >( mesh );
     }
 
-    template class PointMesh2< 2 >;
-    template class PointMesh2< 3 >;
-
+    template class PointMesh2< 2 > ;
+    template class PointMesh2< 3 > ;
 
     template< index_t DIMENSION >
     std::unique_ptr< LineMesh2< DIMENSION > > LineMesh2< DIMENSION >::create_mesh(
@@ -88,10 +87,8 @@ namespace RINGMesh {
         return std::unique_ptr< LineMesh2< DIMENSION > >( mesh );
     }
 
-    template class LineMesh2< 2 >;
-    template class LineMesh2< 3 >;
-
-
+    template class LineMesh2< 2 > ;
+    template class LineMesh2< 3 > ;
 
     template< index_t DIMENSION >
     std::unique_ptr< SurfaceMesh2< DIMENSION > > SurfaceMeshBase2< DIMENSION >::create_mesh(
@@ -246,7 +243,8 @@ namespace RINGMesh {
         index_t result = 0;
         double dist = DBL_MAX;
         for( index_t v_id = 0; v_id < nb_polygon_vertices( p ); v_id++ ) {
-            double distance = length2( v - vertex( polygon_vertex( p, v_id ) ) );
+            double distance = length2(
+                v - this->vertex( polygon_vertex( p, v_id ) ) );
             if( dist > distance ) {
                 dist = distance;
                 result = v_id;
@@ -326,8 +324,8 @@ namespace RINGMesh {
         return result;
     }
 
-    template class SurfaceMeshBase2< 2 >;
-    template class SurfaceMeshBase2< 3 >;
+    template class SurfaceMeshBase2< 2 > ;
+    template class SurfaceMeshBase2< 3 > ;
 
     template< index_t DIMENSION >
     std::unique_ptr< VolumeMesh2< DIMENSION > > VolumeMesh2< DIMENSION >::create_mesh(
@@ -349,5 +347,5 @@ namespace RINGMesh {
         return std::unique_ptr< VolumeMesh2< DIMENSION > >( mesh );
     }
 
-    template class VolumeMesh2< 3 >;
+    template class VolumeMesh2< 3 > ;
 }

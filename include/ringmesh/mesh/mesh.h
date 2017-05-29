@@ -444,9 +444,9 @@ namespace RINGMesh {
          */
         double polygon_edge_length( index_t polygon_id, index_t vertex_id ) const
         {
-            const vecn< DIMENSION >& e0 = vertex(
+            const vecn< DIMENSION >& e0 = this->vertex(
                 polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vecn< DIMENSION >& e1 = vertex(
+            const vecn< DIMENSION >& e1 = this->vertex(
                 polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 - e0 ).length();
         }
@@ -459,9 +459,9 @@ namespace RINGMesh {
             index_t polygon_id,
             index_t vertex_id ) const
         {
-            const vecn< DIMENSION >& e0 = vertex(
+            const vecn< DIMENSION >& e0 = this->vertex(
                 polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vecn< DIMENSION >& e1 = vertex(
+            const vecn< DIMENSION >& e1 = this->vertex(
                 polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
@@ -708,9 +708,9 @@ namespace RINGMesh {
          */
         double cell_edge_length( index_t cell_id, index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 = vertex(
+            const vecn< DIMENSION >& e0 = this->vertex(
                 cell_edge_vertex( cell_id, edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 = vertex(
+            const vecn< DIMENSION >& e1 = this->vertex(
                 cell_edge_vertex( cell_id, edge_id, 1 ) );
             return ( e1 - e0 ).length();
         }
@@ -725,9 +725,9 @@ namespace RINGMesh {
             index_t cell_id,
             index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 = vertex(
+            const vecn< DIMENSION >& e0 = this->vertex(
                 cell_edge_vertex( cell_id, edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 = vertex(
+            const vecn< DIMENSION >& e1 = this->vertex(
                 cell_edge_vertex( cell_id, edge_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
