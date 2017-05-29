@@ -245,7 +245,7 @@ namespace RINGMesh {
         lambda0 = 1.0 - s - t;
         lambda1 = s;
         lambda2 = t;
-        return sqrt( sqrDistance );
+        return std::sqrt( sqrDistance );
     }
 
     double point_tetra_distance(

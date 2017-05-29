@@ -335,7 +335,7 @@ namespace RINGMesh {
     BoxAABBTree< DIMENSION >::BoxAABBTree(
         const std::vector< Box< DIMENSION > >& bboxes )
     {
-        initialize_tree( bboxes );
+        this->initialize_tree( bboxes );
     }
 
     template< index_t DIMENSION >
@@ -422,7 +422,7 @@ namespace RINGMesh {
         double& distance ) const
     {
         DistanceToTriangle action( mesh_ );
-        return closest_element_box( query, nearest_point, distance, action );
+        return this->closest_element_box( query, nearest_point, distance, action );
     }
 
     template< index_t DIMENSION >
@@ -468,7 +468,7 @@ namespace RINGMesh {
                 bboxes[i].add_point( point );
             }
         }
-        initialize_tree( bboxes );
+        this->initialize_tree( bboxes );
     }
 
     template< index_t DIMENSION >
@@ -559,13 +559,13 @@ namespace RINGMesh {
         }
     }
 
-//    template class BoxAABBTree< 2 >;
-//    template class LineAABBTree< 2 >;
-//    template class SurfaceAABBTree< 2 >;
-//
-//    template class BoxAABBTree< 3 >;
-//    template class LineAABBTree< 3 >;
-//    template class SurfaceAABBTree< 3 >;
-//    template class VolumeAABBTree< 3 >;
+    template class BoxAABBTree< 2 >;
+    template class LineAABBTree< 2 >;
+    template class SurfaceAABBTree< 2 >;
+
+    template class BoxAABBTree< 3 >;
+    template class LineAABBTree< 3 >;
+    template class SurfaceAABBTree< 3 >;
+    template class VolumeAABBTree< 3 >;
 }
 
