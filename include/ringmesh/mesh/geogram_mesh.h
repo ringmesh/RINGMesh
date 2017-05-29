@@ -139,7 +139,7 @@ namespace RINGMesh {
     using GeogramLineMesh3D = GeogramLineMesh< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramSurfaceMesh: public SurfaceMeshBase2< DIMENSION > {
+    class RINGMESH_API GeogramSurfaceMesh: public SurfaceMesh2< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
     public:
         virtual index_t polygon_vertex( index_t polygon_id, index_t vertex_id ) const override
