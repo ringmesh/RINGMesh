@@ -477,6 +477,7 @@ namespace RINGMesh {
                 vector.erase( new_end, vector.end() );
             }
         }
+
         void delete_invalid_children( GeoModelGeologicalEntity& E )
         {
             if( E.nb_children() == 0 ) {
@@ -491,6 +492,7 @@ namespace RINGMesh {
                     [&invalid_child, &manager](index_t i) {return manager.boundary_gmme( i ) == invalid_child;} );
             }
         }
+
         void delete_invalid_boundaries( GeoModelMeshEntity& E )
         {
             const MeshEntityType& b_type = boundary_type( E.mesh_entity_type() );
@@ -505,6 +507,7 @@ namespace RINGMesh {
                     [&invalid, &manager](index_t i) {return manager.boundary_gmme( i ) == invalid;} );
             }
         }
+
         void delete_invalid_incident_entity( GeoModelMeshEntity& E )
         {
             const MeshEntityType& in_ent_type = incident_entity_type(
@@ -520,6 +523,7 @@ namespace RINGMesh {
                     [&invalid, &manager](index_t i) {return manager.incident_entity_gmme( i ) == invalid;} );
             }
         }
+
         void delete_invalid_parents( GeoModelMeshEntity& E )
         {
             GeoModelMeshEntityAccess gmme_access( E );
@@ -528,12 +532,14 @@ namespace RINGMesh {
             remove_invalid_values( gmme_access.modifiable_parents(),
                 [ &manager](index_t i) {return manager.parent_of_gmme( i ).index() == NO_ID;} );
         }
+
         void delete_invalid_signs( Region& R )
         {
             GeoModelMeshEntityAccess region_access(
                 geomodel_access_.modifiable_mesh_entity( R.gmme() ) );
             region_access.modifiable_sides().resize( R.nb_boundaries() );
         }
+
         void delete_invalid_universe_sided_boundaries( Universe& U )
         {
             const MeshEntityType& b_type = Surface::type_name_static();
