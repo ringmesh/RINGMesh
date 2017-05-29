@@ -699,7 +699,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< SurfaceMesh2< 3 > > mesh_;
+        std::unique_ptr< SurfaceMeshBase2< 3 > > mesh_;
 
         /// Attribute storing the surface index per polygon
         GEO::Attribute< index_t > surface_id_;

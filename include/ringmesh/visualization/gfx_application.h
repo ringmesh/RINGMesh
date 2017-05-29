@@ -41,7 +41,7 @@
 
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
-#include <ringmesh/basic/boxnd.h>
+#include <ringmesh/basic/box.h>
 #include <ringmesh/geomodel/geomodel.h>
 
 #include <ringmesh/visualization/gfx.h>

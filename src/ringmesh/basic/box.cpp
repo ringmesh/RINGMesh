@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/basic/boxnd.h>
-
+#include <ringmesh/basic/box.h>
 #include <algorithm>
 
 /*!
@@ -52,7 +51,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void BoxND< DIMENSION >::add_point( const vecn< DIMENSION >& p )
+    void Box< DIMENSION >::add_point( const vecn< DIMENSION >& p )
     {
         if( !initialized_ ) {
             min_ = p;
@@ -67,7 +66,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    double BoxND< DIMENSION >::signed_distance( const vecn< DIMENSION >& p ) const
+    double Box< DIMENSION >::signed_distance( const vecn< DIMENSION >& p ) const
     {
         bool inside = true;
         double result = 0.0;
@@ -93,7 +92,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    double BoxND< DIMENSION >::distance_to_center( const vecn< DIMENSION >& p ) const
+    double Box< DIMENSION >::distance_to_center( const vecn< DIMENSION >& p ) const
     {
         double result = 0.0;
         for( index_t c = 0; c < 3; ++c ) {
