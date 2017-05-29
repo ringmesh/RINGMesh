@@ -52,7 +52,7 @@ namespace {
     template< index_t DIMENSION, index_t COORD >
     class Morton_cmp {
     public:
-        Morton_cmp( const std::vector< BoxND< DIMENSION > >& bboxes )
+        Morton_cmp( const std::vector< Box< DIMENSION > >& bboxes )
             : bboxes_( bboxes )
         {
         }
@@ -63,7 +63,7 @@ namespace {
         }
 
     private:
-        const std::vector< BoxND< DIMENSION > >& bboxes_;
+        const std::vector< Box< DIMENSION > >& bboxes_;
     };
 
     /**
@@ -108,7 +108,7 @@ namespace {
 
         template< index_t COORDX >
         static void sort(
-            const std::vector< BoxND< DIMENSION > >& bboxes,
+            const std::vector< Box< DIMENSION > >& bboxes,
             const_vector_itr& begin,
             const_vector_itr& end )
         {
@@ -143,7 +143,7 @@ namespace {
         }
 
         MortonSort(
-            const std::vector< BoxND< DIMENSION > >& bboxes,
+            const std::vector< Box< DIMENSION > >& bboxes,
             std::vector< index_t >& mapping_morton )
         {
             sort< 0 >( bboxes, mapping_morton.begin(), mapping_morton.end() );
@@ -152,7 +152,7 @@ namespace {
 
     template< index_t DIMENSION >
     void morton_sort(
-        const std::vector< BoxND< DIMENSION > >& bboxes,
+        const std::vector< Box< DIMENSION > >& bboxes,
         std::vector< index_t >& mapping_morton )
     {
         mapping_morton.resize( bboxes.size() );
@@ -163,7 +163,7 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    void add_cube( GEO::Mesh& M, const BoxND< DIMENSION >& box, index_t n )
+    void add_cube( GEO::Mesh& M, const Box< DIMENSION >& box, index_t n )
     {
         if( !box.initialized() ) return;
         const vecn< DIMENSION >& min_vertex = box.min();
@@ -228,7 +228,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void AABBTree< DIMENSION >::initialize_tree(
-        const std::vector< BoxND< DIMENSION > >& bboxes )
+        const std::vector< Box< DIMENSION > >& bboxes )
     {
         morton_sort( bboxes, mapping_morton_ );
         index_t nb_bboxes = static_cast< index_t >( bboxes.size() );
@@ -262,7 +262,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     void AABBTree< DIMENSION >::initialize_tree_recursive(
-        const std::vector< BoxND< DIMENSION > >& bboxes,
+        const std::vector< Box< DIMENSION > >& bboxes,
         index_t node_index,
         index_t box_begin,
         index_t box_end )
@@ -333,14 +333,14 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     BoxAABBTree< DIMENSION >::BoxAABBTree(
-        const std::vector< BoxND< DIMENSION > >& bboxes )
+        const std::vector< Box< DIMENSION > >& bboxes )
     {
         initialize_tree( bboxes );
     }
 
     template< index_t DIMENSION >
     vecn< DIMENSION > BoxAABBTree< DIMENSION >::get_point_hint_from_box(
-        const BoxND< DIMENSION >& box,
+        const Box< DIMENSION >& box,
         index_t element_id ) const
     {
         ringmesh_unused( element_id );
@@ -353,7 +353,7 @@ namespace RINGMesh {
     LineAABBTree< DIMENSION >::LineAABBTree( const LineMesh2< DIMENSION >& mesh )
         : AABBTree(), mesh_( mesh )
     {
-        std::vector< BoxND< DIMENSION > > bboxes;
+        std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_edges() );
         for( index_t i = 0; i < mesh.nb_edges(); i++ ) {
             for( index_t v = 0; v < 2; v++ ) {
@@ -390,7 +390,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     vecn< DIMENSION > LineAABBTree< DIMENSION >::get_point_hint_from_box(
-        const BoxND< DIMENSION >& box,
+        const Box< DIMENSION >& box,
         index_t element_id ) const
     {
         ringmesh_unused( box );
@@ -404,7 +404,7 @@ namespace RINGMesh {
         const SurfaceMesh2< DIMENSION >& mesh )
         : AABBTree(), mesh_( mesh )
     {
-        std::vector< BoxND< DIMENSION > > bboxes;
+        std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_polygons() );
         for( index_t i = 0; i < mesh.nb_polygons(); i++ ) {
             for( index_t v = 0; v < mesh.nb_polygon_vertices( i ); v++ ) {
@@ -447,7 +447,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     vecn< DIMENSION > SurfaceAABBTree< DIMENSION >::get_point_hint_from_box(
-        const BoxND< DIMENSION >& box,
+        const Box< DIMENSION >& box,
         index_t element_id ) const
     {
         ringmesh_unused( box );
@@ -461,7 +461,7 @@ namespace RINGMesh {
         const VolumeMesh2< DIMENSION >& mesh )
         : AABBTree(), mesh_( mesh )
     {
-        std::vector< BoxND< DIMENSION > > bboxes;
+        std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_cells() );
         for( index_t i = 0; i < mesh.nb_cells(); i++ ) {
             for( index_t v = 0; v < mesh.nb_cell_vertices( i ); v++ ) {
@@ -475,7 +475,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     vecn< DIMENSION > VolumeAABBTree< DIMENSION >::get_point_hint_from_box(
-        const BoxND< DIMENSION >& box,
+        const Box< DIMENSION >& box,
         index_t element_id ) const
     {
         ringmesh_unused( box );
@@ -525,7 +525,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     double inner_point_box_distance(
         const vecn< DIMENSION >& p,
-        const BoxND< DIMENSION >& B )
+        const Box< DIMENSION >& B )
     {
         ringmesh_assert( B.contains( p ) );
         double result = std::abs( p[0] - B.min()[0] );
@@ -540,7 +540,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     double point_box_signed_distance(
         const vecn< DIMENSION >& p,
-        const BoxND< DIMENSION >& B )
+        const Box< DIMENSION >& B )
     {
         bool inside = true;
         vec3 result;

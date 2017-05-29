@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/boxnd.h>
+#include <ringmesh/basic/box.h>
 #include <ringmesh/basic/common.h>
 
 namespace RINGMesh {
@@ -124,7 +124,7 @@ namespace RINGMesh {
          */
         template< class EvalIntersection >
         void compute_bbox_element_bbox_intersections(
-            const BoxND< DIMENSION > & box,
+            const Box< DIMENSION > & box,
             EvalIntersection& action ) const
         {
             bbox_intersect_recursive< EvalIntersection >( box, ROOT_INDEX, 0,
@@ -155,7 +155,7 @@ namespace RINGMesh {
          * using the ordered bboxes
          * @param[in] bboxes the set of unordered bboxes
          */
-        void initialize_tree( const std::vector< BoxND< DIMENSION > >& bboxes );
+        void initialize_tree( const std::vector< Box< DIMENSION > >& bboxes );
 
         bool is_leaf( index_t box_begin, index_t box_end ) const
         {
@@ -186,7 +186,7 @@ namespace RINGMesh {
          * @brief The recursive instruction used in initialize_tree()
          */
         void initialize_tree_recursive(
-            const std::vector< BoxND< DIMENSION > >& bboxes,
+            const std::vector< Box< DIMENSION > >& bboxes,
             index_t node_index,
             index_t element_begin,
             index_t element_end );
@@ -207,7 +207,7 @@ namespace RINGMesh {
 
         template< class ACTION >
         void bbox_intersect_recursive(
-            const BoxND< DIMENSION >& box,
+            const Box< DIMENSION >& box,
             index_t node_index,
             index_t element_begin,
             index_t element_end,
@@ -240,11 +240,11 @@ namespace RINGMesh {
          * @details This function is used to get a result from the selected hint box
          */
         virtual vecn< DIMENSION > get_point_hint_from_box(
-            const BoxND< DIMENSION >& box,
+            const Box< DIMENSION >& box,
             index_t element_id ) const = 0;
 
     protected:
-        std::vector< BoxND< DIMENSION > > tree_;
+        std::vector< Box< DIMENSION > > tree_;
         std::vector< index_t > mapping_morton_;
     };
 
@@ -252,7 +252,7 @@ namespace RINGMesh {
     class RINGMESH_API BoxAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        BoxAABBTree( const std::vector< BoxND< DIMENSION > >& boxes );
+        BoxAABBTree( const std::vector< Box< DIMENSION > >& boxes );
         virtual ~BoxAABBTree() = default;
 
     private:
@@ -261,7 +261,7 @@ namespace RINGMesh {
          * @details In this case, the point is the barycenter of the box
          */
         virtual vecn< DIMENSION > get_point_hint_from_box(
-            const BoxND< DIMENSION >& box,
+            const Box< DIMENSION >& box,
             index_t element_id ) const override;
     };
 
@@ -289,7 +289,7 @@ namespace RINGMesh {
          * @details In this case, the point is the first vertex of the element
          */
         virtual vecn< DIMENSION > get_point_hint_from_box(
-            const BoxND< DIMENSION >& box,
+            const Box< DIMENSION >& box,
             index_t element_id ) const override;
         /*!
          * This class is used as functor in closest_element_box() to compute
@@ -341,7 +341,7 @@ namespace RINGMesh {
          * @details In this case, the point is the first vertex of the element
          */
         virtual vecn< DIMENSION > get_point_hint_from_box(
-            const BoxND< DIMENSION >& box,
+            const Box< DIMENSION >& box,
             index_t element_id ) const override;
         /*!
          * This class is used as functor in closest_element_box() to compute
@@ -389,7 +389,7 @@ namespace RINGMesh {
          * @details In this case, the point is the first vertex of the element
          */
         virtual vecn< DIMENSION > get_point_hint_from_box(
-            const BoxND< DIMENSION >& box,
+            const Box< DIMENSION >& box,
             index_t element_id ) const override;
         index_t containing_cell_recursive(
             const vecn< DIMENSION >& query,
@@ -402,10 +402,10 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    double inner_point_box_distance( const vecn< DIMENSION >& p, const BoxND< DIMENSION >& B );
+    double inner_point_box_distance( const vecn< DIMENSION >& p, const Box< DIMENSION >& B );
 
     template< index_t DIMENSION >
-    double point_box_signed_distance( const vecn< DIMENSION >& p, const BoxND< DIMENSION >& B );
+    double point_box_signed_distance( const vecn< DIMENSION >& p, const Box< DIMENSION >& B );
 
     template< index_t DIMENSION >
     template< typename ACTION >
@@ -470,7 +470,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     template< typename ACTION >
     void AABBTree< DIMENSION >::bbox_intersect_recursive(
-        const BoxND< DIMENSION >& box,
+        const Box< DIMENSION >& box,
         index_t node_index,
         index_t element_begin,
         index_t element_end,

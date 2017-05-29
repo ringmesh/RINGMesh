@@ -45,9 +45,9 @@
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class RINGMESH_API BoxND {
+    class RINGMESH_API Box {
     public:
-        BoxND()
+        Box()
             : initialized_( false )
         {
         }
@@ -99,7 +99,7 @@ namespace RINGMesh {
 
         void add_point( const vecn<DIMENSION>& p );
 
-        void add_box( const BoxND& b )
+        void add_box( const Box& b )
         {
             if( b.initialized() ) {
                 add_point( b.min() );
@@ -107,7 +107,7 @@ namespace RINGMesh {
             }
         }
 
-        inline bool bboxes_overlap( const BoxND& B ) const
+        inline bool bboxes_overlap( const Box& B ) const
         {
             for( index_t c = 0; c < 3; ++c ) {
                 if( max()[c] < B.min()[c] ) {
@@ -120,9 +120,9 @@ namespace RINGMesh {
             return true;
         }
 
-        inline BoxND bbox_union( const BoxND& B ) const
+        inline Box bbox_union( const Box& B ) const
         {
-            BoxND result = *this;
+            Box result = *this;
             result.add_box( B );
             return result;
         }
