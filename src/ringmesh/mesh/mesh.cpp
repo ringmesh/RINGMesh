@@ -63,6 +63,10 @@ namespace RINGMesh {
         return std::unique_ptr< PointMesh2< DIMENSION > >( mesh );
     }
 
+    template class PointMesh2< 2 >;
+    template class PointMesh2< 3 >;
+
+
     template< index_t DIMENSION >
     std::unique_ptr< LineMesh2< DIMENSION > > LineMesh2< DIMENSION >::create_mesh(
         const MeshType type )
@@ -83,6 +87,11 @@ namespace RINGMesh {
         }
         return std::unique_ptr< LineMesh2< DIMENSION > >( mesh );
     }
+
+    template class LineMesh2< 2 >;
+    template class LineMesh2< 3 >;
+
+
 
     template< index_t DIMENSION >
     std::unique_ptr< SurfaceMesh2< DIMENSION > > SurfaceMeshBase2< DIMENSION >::create_mesh(
@@ -317,6 +326,9 @@ namespace RINGMesh {
         return result;
     }
 
+    template class SurfaceMeshBase2< 2 >;
+    template class SurfaceMeshBase2< 3 >;
+
     template< index_t DIMENSION >
     std::unique_ptr< VolumeMesh2< DIMENSION > > VolumeMesh2< DIMENSION >::create_mesh(
         const MeshType type )
@@ -337,4 +349,5 @@ namespace RINGMesh {
         return std::unique_ptr< VolumeMesh2< DIMENSION > >( mesh );
     }
 
-} // namespace
+    template class VolumeMesh2< 3 >;
+}
