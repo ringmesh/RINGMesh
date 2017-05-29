@@ -100,6 +100,7 @@ namespace {
      *   3.9 edition, 2011
      * \tparam CMP the comparator class for ordering the elements. CMP
      *  is itself a template parameterized by~:
+     *    - DIMENSION the dimension of sorted elements
      *    - COORD the coordinate along which elements should be
      *      sorted
      */
