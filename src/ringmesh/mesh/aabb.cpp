@@ -49,7 +49,7 @@ namespace {
 
     typedef const std::vector< index_t >::iterator const_vector_itr;
 
-    template< index_t DIMENSION, index_t COORD >
+    template< index_t COORD, index_t DIMENSION >
     class Morton_cmp {
     public:
         Morton_cmp( const std::vector< Box< DIMENSION > >& bboxes )
