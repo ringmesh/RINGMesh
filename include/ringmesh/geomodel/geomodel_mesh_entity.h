@@ -1345,6 +1345,7 @@ namespace RINGMesh {
         {
             return gmme_.boundaries_;
         }
+
     private:
         const GeoModelMeshEntity& gmme_;
     };
