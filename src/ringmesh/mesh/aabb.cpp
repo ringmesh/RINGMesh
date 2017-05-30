@@ -492,7 +492,7 @@ namespace RINGMesh {
         ringmesh_assert( B.contains( p ) );
         double result = std::abs( p[0] - B.min()[0] );
         result = std::min( result, std::abs( p[0] - B.max()[0] ) );
-        for( index_t c = 1; c < 3; ++c ) {
+        for( index_t c = 1; c < DIMENSION; ++c ) {
             result = std::min( result, std::abs( p[c] - B.min()[c] ) );
             result = std::min( result, std::abs( p[c] - B.max()[c] ) );
         }

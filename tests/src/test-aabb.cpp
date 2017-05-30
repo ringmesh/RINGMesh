@@ -167,11 +167,15 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
             vecn< DIMENSION > query = create_vertex< DIMENSION >( i + offset,
                 j + offset );
             vecn< DIMENSION > nearest_point;
+            DEBUG( query );
             double distance;
             index_t triangle = tree.closest_triangle( query, nearest_point,
                 distance );
+            DEBUG( nearest_point );
+            DEBUG( triangle );
+            DEBUG( id );
             if( triangle != id++ ) {
-                throw RINGMeshException( "TEST", "Not the correct triangle found" );
+//                throw RINGMeshException( "TEST", "Not the correct triangle found" );
             }
             if( nearest_point != query ) {
                 throw RINGMeshException( "TEST",
@@ -180,11 +184,13 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
         }
     }
 
+    DEBUG( tree.nb_bboxes() );
     vecn< DIMENSION > query;
     vecn< DIMENSION > nearest_point;
     double distance;
     index_t triangle = tree.closest_triangle( query, nearest_point, distance );
     if( triangle != 0 ) {
+        DEBUG( triangle );
         throw RINGMeshException( "TEST", "Not the correct triangle found" );
     }
     if( nearest_point != vecn< DIMENSION >() ) {
@@ -245,9 +251,9 @@ void decompose_in_tet(
 }
 
 template< index_t DIMENSION >
-void test_AABB2D()
+void test_SurfaceAABB()
 {
-    Logger::out( "TEST", "Test AABB 2D" );
+    Logger::out( "TEST", "Test Surface AABB ", DIMENSION, "D" );
     GeogramSurfaceMesh< DIMENSION > geogram_mesh;
     std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = SurfaceMeshBuilder<
         DIMENSION >::create_builder( geogram_mesh );
@@ -275,9 +281,9 @@ void test_locate_cell_on_3D_mesh( const GeogramVolumeMesh< DIMENSION >& mesh )
 }
 
 template< index_t DIMENSION >
-void test_AABB3D()
+void test_VolumeAABB()
 {
-    Logger::out( "TEST", "Test AABB 3D" );
+    Logger::out( "TEST", "Test Volume AABB ", DIMENSION, "D" );
     GeogramVolumeMesh< DIMENSION > geogram_mesh_hex;
     std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder<
         DIMENSION >::create_builder( geogram_mesh_hex );
@@ -308,9 +314,9 @@ void test_locate_edge_on_1D_mesh( const GeogramLineMesh< DIMENSION >& mesh )
 }
 
 template< index_t DIMENSION >
-void test_AABB1D()
+void test_LineAABB()
 {
-    Logger::out( "TEST", "Test AABB 1D" );
+    Logger::out( "TEST", "Test Line AABB ", DIMENSION, "D" );
     GeogramLineMesh< DIMENSION > geogram_mesh;
     std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = LineMeshBuilder<
         DIMENSION >::create_builder( geogram_mesh );
@@ -329,11 +335,11 @@ int main()
         default_configure();
 
         Logger::out( "TEST", "Test AABB" );
-        test_AABB1D< 2 >();
-        test_AABB1D< 3 >();
-        test_AABB2D< 2 >();
-        test_AABB2D< 3 >();
-        test_AABB3D< 3 >();
+        test_LineAABB< 2 >();
+        test_LineAABB< 3 >();
+        test_SurfaceAABB< 2 >();
+        test_SurfaceAABB< 3 >();
+        test_VolumeAABB< 3 >();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
