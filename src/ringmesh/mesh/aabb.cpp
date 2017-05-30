@@ -458,7 +458,6 @@ namespace RINGMesh {
         index_t box_begin,
         index_t box_end ) const
     {
-
         if( !this->tree_[node_index].contains( query ) ) {
             return NO_ID;
         }
