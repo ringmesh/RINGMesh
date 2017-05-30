@@ -154,13 +154,16 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
-         * @note If this entity has no parent of the given type,
-         * it will return an undefined gmge_id (with no type and no id).
-         * You should check on the returned gmge_id.
+         * @pre The code assumes that this entity has a parent of the given type
+         * \p parent_type_name, else it will crash in debug and return an invalid
+         * entity in release.
+         * The method has_parent(GeologicalEntityType) is a safe way to check
+         * if the type \p parent_type_name is a valid parent type for the
+         * GeoModelMeshEntity.
          * @param[in] parent_type_name the asking parent type
          *
          */
-        const gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
+        gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
         const GeoModelGeologicalEntity& parent( index_t id ) const;
         const GeoModelGeologicalEntity& parent(
             const GeologicalEntityType& parent_type ) const;
@@ -328,10 +331,10 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
 
     private:
-        const gmge_id defined_parent_gmge(
+        gmge_id defined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
 
-        const gmge_id could_be_undefined_parent_gmge(
+        gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
 
     protected:
