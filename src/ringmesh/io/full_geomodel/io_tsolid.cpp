@@ -170,7 +170,7 @@ namespace {
             out << "MODEL" << std::endl;
             int tface_count = 1;
             for( index_t i = 0;
-                i < geomodel.nb_geological_entities( Interface::type_name_static() );
+                i < geomodel.nb_geological_entities( Interface< 3 >::type_name_static() );
                 i++ ) {
                 const RINGMesh::GeoModelGeologicalEntity< 3 >& interf =
                     geomodel.geological_entity( Interface< 3 >::type_name_static(), i );

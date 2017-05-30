@@ -75,7 +75,7 @@ namespace {
             out << nb_polygons( geomodel ) << "  0 " << std::endl;
 
             for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
-                const Surface& S = geomodel.surface( i );
+                const Surface< 3 >& S = geomodel.surface( i );
                 for( index_t p = 0; p < S.nb_mesh_elements(); p++ ) {
                     out << S.nb_mesh_element_vertices( p ) << " ";
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); v++ ) {

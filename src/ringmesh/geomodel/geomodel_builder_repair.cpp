@@ -220,7 +220,7 @@ namespace RINGMesh {
     {
         to_remove.clear();
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
-            const Line& line = geomodel_.line( i );
+            const Line< 3 >& line = geomodel_.line( i );
             index_t nb = repair_line_mesh( line );
             if( nb > 0 ) {
                 Logger::out( "GeoModel", nb, " degenerated edges removed in LINE ",
@@ -285,7 +285,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
             if( E.boundary( i ).is_inside_border( E ) ) {
                 inside_border.push_back(
-                    dynamic_cast< const GeoModelMeshEntity* >( &E.boundary( i ) ) );
+                    dynamic_cast< const GeoModelMeshEntity< 3 >* >( &E.boundary( i ) ) );
             }
         }
         if( !inside_border.empty() ) {

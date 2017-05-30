@@ -48,7 +48,7 @@
 namespace {
     using namespace RINGMesh;
 
-    void compute_mesh_entity_bbox( const GeoModelMeshEntity& entity, Box< 3 >& bbox )
+    void compute_mesh_entity_bbox( const GeoModelMeshEntity< 3 >& entity, Box< 3 >& bbox )
     {
         for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
             bbox.add_point( entity.vertex( v ) );
@@ -59,7 +59,7 @@ namespace {
     {
         Box< 3 > bbox;
         if( gm.universe().nb_boundaries() > 0 ) {
-            const Universe& universe = gm.universe();
+            const Universe< 3 >& universe = gm.universe();
             for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {
                 compute_mesh_entity_bbox(
                     gm.mesh_entity( universe.boundary_gmme( s ) ), bbox );
@@ -107,7 +107,7 @@ namespace RINGMesh {
         }
     }
 
-    const GeoModelMeshEntity& GeoModel::mesh_entity( gmme_id id ) const
+    const GeoModelMeshEntity< 3 >& GeoModel::mesh_entity( gmme_id id ) const
     {
         const MeshEntityType& type = id.type();
         index_t index = id.index();
@@ -124,7 +124,7 @@ namespace RINGMesh {
         return surface( 0 );
     }
 
-    const std::vector< std::unique_ptr< GeoModelMeshEntity > >& GeoModel::mesh_entities(
+    const std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& GeoModel::mesh_entities(
         const MeshEntityType& type ) const
     {
         if( MeshEntityTypeManager::is_corner( type ) ) {
@@ -141,25 +141,25 @@ namespace RINGMesh {
         }
     }
 
-    const Corner& GeoModel::corner( index_t index ) const
+    const Corner< 3 >& GeoModel::corner( index_t index ) const
     {
         ringmesh_assert( index < corners_.size() );
-        return *static_cast< const Corner* >( corners_[index].get() );
+        return *static_cast< const Corner< 3 >* >( corners_[index].get() );
     }
-    const Line& GeoModel::line( index_t index ) const
+    const Line< 3 >& GeoModel::line( index_t index ) const
     {
         ringmesh_assert( index < lines_.size() );
-        return *static_cast< const Line* >( lines_[index].get() );
+        return *static_cast< const Line< 3 >* >( lines_[index].get() );
     }
-    const Surface& GeoModel::surface( index_t index ) const
+    const Surface< 3 >& GeoModel::surface( index_t index ) const
     {
         ringmesh_assert( index < surfaces_.size() );
-        return *static_cast< const Surface* >( surfaces_[index].get() );
+        return *static_cast< const Surface< 3 >* >( surfaces_[index].get() );
     }
-    const Region& GeoModel::region( index_t index ) const
+    const Region< 3 >& GeoModel::region( index_t index ) const
     {
         ringmesh_assert( index < regions_.size() );
-        return *static_cast< const Region* >( regions_[index].get() );
+        return *static_cast< const Region< 3 >* >( regions_[index].get() );
     }
 
     void GeoModel::set_wells( const WellGroup* wells )

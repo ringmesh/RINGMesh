@@ -46,7 +46,7 @@
 namespace {
     using namespace RINGMesh;
 
-    bool check_has_children( const GeoModelGeologicalEntity& E )
+    bool check_has_children( const GeoModelGeologicalEntity< 3 >& E )
     {
         if( E.nb_children() == 0 ) {
             Logger::warn( "GeoModel", E.type_name(), " ", E.index(),
@@ -59,8 +59,9 @@ namespace {
 
 namespace RINGMesh {
 
-    GeoModelGeologicalEntity::GEOL_FEATURE GeoModelGeologicalEntity::determine_geological_type(
-        const std::string& in )
+    template< index_t DIMENSION >
+    typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE GeoModelGeologicalEntity<
+        DIMENSION >::determine_geological_type( const std::string& in )
     {
         if( in == "reverse_fault" ) {
             return REVERSE_FAULT;
@@ -86,8 +87,9 @@ namespace RINGMesh {
         }
     }
 
-    std::string GeoModelGeologicalEntity::geol_name(
-        GeoModelGeologicalEntity::GEOL_FEATURE t )
+    template< index_t DIMENSION >
+    std::string GeoModelGeologicalEntity< DIMENSION >::geol_name(
+        GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE t )
     {
         switch( t ) {
             case STRATI:
@@ -110,18 +112,24 @@ namespace RINGMesh {
         }
     }
 
-    const gmme_id& GeoModelGeologicalEntity::child_gmme( index_t x ) const
+    template< index_t DIMENSION >
+    const gmme_id& GeoModelGeologicalEntity< DIMENSION >::child_gmme(
+        index_t x ) const
     {
         ringmesh_assert( x < nb_children() );
-        return geomodel().entity_type_manager().relationship_manager.child_of_gmge(
+        return this->geomodel().entity_type_manager().relationship_manager.child_of_gmge(
             children_[x] );
     }
-    const GeoModelMeshEntity& GeoModelGeologicalEntity::child( index_t x ) const
+
+    template< index_t DIMENSION >
+    const GeoModelMeshEntity< DIMENSION >& GeoModelGeologicalEntity< DIMENSION >::child(
+        index_t x ) const
     {
-        return geomodel().mesh_entity( child_gmme( x ) );
+        return this->geomodel().mesh_entity( child_gmme( x ) );
     }
 
-    bool GeoModelGeologicalEntity::is_on_voi() const
+    template< index_t DIMENSION >
+    bool GeoModelGeologicalEntity< DIMENSION >::is_on_voi() const
     {
         for( index_t i = 0; i < nb_children(); i++ ) {
             if( !child( i ).is_on_voi() ) return false;
@@ -129,12 +137,14 @@ namespace RINGMesh {
         return true;
     }
 
-    bool GeoModelGeologicalEntity::is_index_valid() const
+    template< index_t DIMENSION >
+    bool GeoModelGeologicalEntity< DIMENSION >::is_index_valid() const
     {
-        return index() < geomodel().nb_geological_entities( type_name() );
+        return this->index() < this->geomodel().nb_geological_entities( type_name() );
     }
 
-    bool GeoModelGeologicalEntity::is_connectivity_valid() const
+    template< index_t DIMENSION >
+    bool GeoModelGeologicalEntity< DIMENSION >::is_connectivity_valid() const
     {
         bool valid = true;
         if( nb_children() == 0 ) {
@@ -144,7 +154,7 @@ namespace RINGMesh {
             // All children must have this entity as a parent
             const GeologicalEntityType entity_type = type_name();
             for( index_t i = 0; i < nb_children(); ++i ) {
-                const GeoModelMeshEntity& one_child = child( i );
+                const GeoModelMeshEntity< DIMENSION >& one_child = child( i );
                 if( one_child.parent_gmge( entity_type ) != gmge() ) {
                     Logger::warn( "GeoModelEntity",
                         "Inconsistency child-parent between ", gmge(), " and ",
@@ -156,12 +166,13 @@ namespace RINGMesh {
         return valid;
     }
 
-    bool GeoModelGeologicalEntity::is_identification_valid() const
+    template< index_t DIMENSION >
+    bool GeoModelGeologicalEntity< DIMENSION >::is_identification_valid() const
     {
         bool is_valid = true;
         if( !gmge().is_defined() ) {
             Logger::err( "GeoModelGeologicalEntity",
-                " Entity associated to geomodel ", geomodel().name(),
+                " Entity associated to geomodel ", this->geomodel().name(),
                 "has no type and/or no index " );
             is_valid = false;
             // No further checks are possible - This really should not happen
@@ -177,42 +188,49 @@ namespace RINGMesh {
         return is_valid;
     }
 
-    bool GeoModelGeologicalEntity::is_valid() const
+    template< index_t DIMENSION >
+    bool GeoModelGeologicalEntity< DIMENSION >::is_valid() const
     {
         return check_has_children( *this );
     }
 
-    void GeoModelGeologicalEntity::initialize()
+    template< index_t DIMENSION >
+    void GeoModelGeologicalEntity< DIMENSION >::initialize()
     {
-        ringmesh_register_GeoModelGeologicalEntity_creator( Contact );
-        ringmesh_register_GeoModelGeologicalEntity_creator( Interface );
-        ringmesh_register_GeoModelGeologicalEntity_creator( Layer );
+        ringmesh_register_GeoModelGeologicalEntity_creator( Contact< DIMENSION > );
+        ringmesh_register_GeoModelGeologicalEntity_creator( Interface< DIMENSION > );
+        ringmesh_register_GeoModelGeologicalEntity_creator( Layer< DIMENSION > );
     }
 
-    MeshEntityType Contact::child_type_name() const
+    template< index_t DIMENSION >
+    MeshEntityType Contact< DIMENSION >::child_type_name() const
     {
-        return Line::type_name_static();
+        return Line< DIMENSION >::type_name_static();
     }
 
-    MeshEntityType Interface::child_type_name() const
+    template< index_t DIMENSION >
+    MeshEntityType Interface< DIMENSION >::child_type_name() const
     {
-        return Surface::type_name_static();
+        return Surface< DIMENSION >::type_name_static();
     }
 
-    MeshEntityType Layer::child_type_name() const
+    template< index_t DIMENSION >
+    MeshEntityType Layer< DIMENSION >::child_type_name() const
     {
-        return Region::type_name_static();
+        return Region< DIMENSION >::type_name_static();
     }
 
-    std::unique_ptr< GeoModelGeologicalEntity > GeoModelGeologicalEntityAccess::create_geological_entity(
+    template< index_t DIMENSION >
+    std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > GeoModelGeologicalEntityAccess<
+        DIMENSION >::create_geological_entity(
         const GeologicalEntityType& type,
         const GeoModel& geomodel,
         index_t index_in_geomodel )
     {
-        GeoModelGeologicalEntity* GMGE =
+        GeoModelGeologicalEntity< DIMENSION >* GMGE =
             GeoModelGeologicalEntityFactory::create_object( type, geomodel );
         GMGE->id_ = index_in_geomodel;
-        return std::unique_ptr< GeoModelGeologicalEntity >( GMGE );
+        return std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > >( GMGE );
     }
 
 }
