@@ -155,7 +155,8 @@ namespace RINGMesh {
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
          * @pre The code assumes that this entity has a parent of the given type
-         * \p parent_type_name, else it will crash.
+         * \p parent_type_name, else it will crash in debug and return an invalid
+         * entity in release.
          * The method has_parent(GeologicalEntityType) is a safe way to check
          * if the type \p parent_type_name is a valid parent type for the
          * GeoModelMeshEntity.
