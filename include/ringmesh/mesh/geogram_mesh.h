@@ -105,6 +105,13 @@ namespace RINGMesh {
         {                                                                           \
             return mesh_->vertices.nb();                                            \
         }                                                                           \
+    private:                                                                        \
+        vecn< DIMENSION >& ref_vertex( index_t v_id )                               \
+        {                                                                           \
+            ringmesh_assert( v_id < nb_vertices() );                                \
+            double* vertex_ptr = mesh_->vertices.point_ptr( v_id );                 \
+            return *( vecn< DIMENSION >* )( vertex_ptr );                           \
+        }                                                                           \
     protected:                                                                      \
         std::unique_ptr< GEO::Mesh > mesh_
 
