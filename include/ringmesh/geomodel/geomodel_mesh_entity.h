@@ -52,6 +52,7 @@
 namespace RINGMesh {
     class GeoModel;
     template < index_t DIMENSION > class GeoModelGeologicalEntity;
+    template < index_t DIMENSION > class GeoModelMeshEntityConstAccess;
 }
 
 namespace RINGMesh {

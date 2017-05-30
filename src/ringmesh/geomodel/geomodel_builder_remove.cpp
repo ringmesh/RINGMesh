@@ -120,7 +120,7 @@ namespace RINGMesh {
         index_t new_index_in_geomodel )
     {
         GeoModelMeshEntityAccess< 3 > gmme_access(
-            dynamic_cast< GeoModelMeshEntity& >( E ) );
+            dynamic_cast< GeoModelMeshEntity< 3 >& >( E ) );
         gmme_access.modifiable_index() = new_index_in_geomodel;
     }
 
@@ -128,8 +128,8 @@ namespace RINGMesh {
         GeoModelGeologicalEntity< 3 >& E,
         index_t new_index_in_geomodel )
     {
-        GeoModelGeologicalEntityAccess gmge_access(
-            dynamic_cast< GeoModelGeologicalEntity& >( E ) );
+        GeoModelGeologicalEntityAccess< 3 > gmge_access(
+            dynamic_cast< GeoModelGeologicalEntity< 3 >& >( E ) );
         gmge_access.modifiable_index() = new_index_in_geomodel;
         return;
     }

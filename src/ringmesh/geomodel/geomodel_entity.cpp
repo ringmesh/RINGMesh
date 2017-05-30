@@ -44,18 +44,20 @@
 
 namespace RINGMesh {
 
-    GeoModelEntity::~GeoModelEntity()
+    template< index_t DIMENSION >
+    GeoModelEntity< DIMENSION >::~GeoModelEntity()
     {
     }
 
-    Universe::Universe( const GeoModel& geomodel )
-        : GeoModelEntity( geomodel, NO_ID )
+    template< index_t DIMENSION >
+    Universe< DIMENSION >::Universe( const GeoModel& geomodel )
+        : GeoModelEntity< DIMENSION >( geomodel, NO_ID )
     {
-        name_ = universe_type_name();
+        this->name_ = universe_type_name();
     }
 
-
-    bool Universe::is_valid() const
+    template< index_t DIMENSION >
+    bool Universe< DIMENSION >::is_valid() const
     {
         return true;
     }

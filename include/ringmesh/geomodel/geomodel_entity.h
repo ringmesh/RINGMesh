@@ -47,6 +47,7 @@
 
 namespace RINGMesh {
     class GeoModel;
+    template< index_t DIMENSION > class UniverseAccess;
 }
 
 namespace RINGMesh {
