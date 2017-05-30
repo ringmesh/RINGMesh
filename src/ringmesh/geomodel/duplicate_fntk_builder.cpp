@@ -357,24 +357,24 @@ namespace RINGMesh {
             const GeoModelMeshEntity& cur_line_boun = first_child.boundary(
                 line_boundary_itr );
             ringmesh_assert( cur_line_boun.type_name() == Line::type_name_static() );
-            for( index_t surf_in_boun_itr = 0;
-                surf_in_boun_itr < cur_line_boun.nb_incident_entities();
-                ++surf_in_boun_itr ) {
-                const GeoModelMeshEntity& cur_in_boun = cur_line_boun.incident_entity(
-                    surf_in_boun_itr );
+            for( index_t surf_incident_entity_itr = 0;
+                surf_incident_entity_itr < cur_line_boun.nb_incident_entities();
+                ++surf_incident_entity_itr ) {
+                const GeoModelMeshEntity& cur_incident_entity =
+                    cur_line_boun.incident_entity( surf_incident_entity_itr );
                 ringmesh_assert(
-                    cur_in_boun.type_name() == Surface::type_name_static() );
-                const Surface& cur_surf_in_boun = geomodel_.surface(
-                    cur_in_boun.index() );
-                if( cur_surf_in_boun.index() == first_child.index() ) {
+                    cur_incident_entity.type_name() == Surface::type_name_static() );
+                const Surface& cur_surf_incident_entity = geomodel_.surface(
+                    cur_incident_entity.index() );
+                if( cur_surf_incident_entity.index() == first_child.index() ) {
                     continue;
                 }
-                if( !does_surface_belong_to_interface( cur_surf_in_boun.index(),
-                    fault_interface_id ) ) {
+                if( !does_surface_belong_to_interface(
+                    cur_surf_incident_entity.index(), fault_interface_id ) ) {
                     continue;
                 }
 
-                if( already_seen[cur_in_boun.index()] ) {
+                if( already_seen[cur_incident_entity.index()] ) {
                     continue;
                 }
 
@@ -393,7 +393,7 @@ namespace RINGMesh {
                     if( gme_vertex_itr.gmme.index() == first_child.index() ) {
                         v_id_in_first_surf = gme_vertex_itr.v_index;
                     } else if( gme_vertex_itr.gmme.index()
-                        == cur_surf_in_boun.index() ) {
+                        == cur_surf_incident_entity.index() ) {
                         v_id_in_second_surf = gme_vertex_itr.v_index;
                     } else {
                         continue;
@@ -410,8 +410,8 @@ namespace RINGMesh {
 
                 vec3 first_normal = get_normal_on_surface_vertex( first_child,
                     v_id_in_first_surf );
-                vec3 second_normal = get_normal_on_surface_vertex( cur_surf_in_boun,
-                    v_id_in_second_surf );
+                vec3 second_normal = get_normal_on_surface_vertex(
+                    cur_surf_incident_entity, v_id_in_second_surf );
                 // As the normals are computed on different surfaces, they cannot
                 // be exactly the same. However they should be very close (0.3 here is arbitrary).
                 ringmesh_assert(
@@ -422,13 +422,14 @@ namespace RINGMesh {
                 ringmesh_assert( std::abs( std::abs( dot_product ) - 1 ) < 3e-1 ); //TODO to reput
                 if( dot_product < 0 ) {
                     surfaces_to_inverse_normals.push_back(
-                        cur_surf_in_boun.index() );
-                    inverse_normal_attribute_one_surface( cur_surf_in_boun );
-                    update_region_polarity( cur_surf_in_boun );
+                        cur_surf_incident_entity.index() );
+                    inverse_normal_attribute_one_surface( cur_surf_incident_entity );
+                    update_region_polarity( cur_surf_incident_entity );
                 }
-                already_seen[cur_surf_in_boun.index()] = true;
+                already_seen[cur_surf_incident_entity.index()] = true;
                 homogenize_surfaces_around_surface( fault_interface_id,
-                    cur_surf_in_boun, already_seen, surfaces_to_inverse_normals );
+                    cur_surf_incident_entity, already_seen,
+                    surfaces_to_inverse_normals );
                 break;
             }
         }
@@ -436,9 +437,9 @@ namespace RINGMesh {
 
     void DuplicateInterfaceBuilder::update_region_polarity( const Surface& surface )
     {
-        index_t nb_in_boundaries = surface.nb_incident_entities();
-        ringmesh_assert( nb_in_boundaries == 1 || nb_in_boundaries == 2 );
-        if( nb_in_boundaries == 1 ) {
+        index_t nb_incident_entities = surface.nb_incident_entities();
+        ringmesh_assert( nb_incident_entities == 1 || nb_incident_entities == 2 );
+        if( nb_incident_entities == 1 ) {
             const Region& reg_gme =
                 dynamic_cast< const Region& >( surface.incident_entity( 0 ) );
             index_t boundary_id = find_local_boundary_id( reg_gme, surface );
@@ -739,7 +740,8 @@ namespace RINGMesh {
         GEO::Attribute< index_t >& id_in_link_vector_reg1 )
     {
         ringmesh_assert( cur_surface.nb_incident_entities() == 2 );
-        ringmesh_assert( reg1.index() == cur_surface.incident_entity_gmme( 0 ).index() );
+        ringmesh_assert(
+            reg1.index() == cur_surface.incident_entity_gmme( 0 ).index() );
         const gmme_id& reg2_gmme_t = cur_surface.incident_entity_gmme( 1 );
         ringmesh_assert( reg2_gmme_t.type() == Region::type_name_static() );
         const Region& reg2 = geomodel_.region( reg2_gmme_t.index() );
@@ -958,7 +960,8 @@ namespace RINGMesh {
                     cur_surface.parent( Interface::type_name_static() ).geological_feature() )
                     && !cur_surface.is_on_voi();
 
-            ringmesh_assert( nb_incident_entities == 1 || nb_incident_entities == 2 );
+            ringmesh_assert(
+                nb_incident_entities == 1 || nb_incident_entities == 2 );
 
             const gmme_id& reg1_gme_t = cur_surface.incident_entity_gmme( 0 );
             ringmesh_assert( reg1_gme_t.type() == Region::type_name_static() );
@@ -1189,34 +1192,36 @@ namespace RINGMesh {
             to_erase_by_type[entity_type_to_index( Surface::type_name_static() )][cur_child.index()] =
                 NO_ID;
 
-            const index_t nb_in_boundary_cur_child = cur_child.nb_incident_entities();
+            const index_t nb_incident_entities_cur_child =
+                cur_child.nb_incident_entities();
             ringmesh_assert(
-                nb_in_boundary_cur_child == 1 || nb_in_boundary_cur_child == 2 );
-            if( nb_in_boundary_cur_child == 2 ) {
+                nb_incident_entities_cur_child == 1
+                    || nb_incident_entities_cur_child == 2 );
+            if( nb_incident_entities_cur_child == 2 ) {
                 ringmesh_assert( !cur_child.is_on_voi() );
-                const GeoModelMeshEntity& cur_in_boundary = cur_child.incident_entity(
-                    0 );
+                const GeoModelMeshEntity& cur_incident_entity =
+                    cur_child.incident_entity( 0 );
                 ringmesh_assert(
-                    cur_in_boundary.type_name() == Region::type_name_static() );
+                    cur_incident_entity.type_name() == Region::type_name_static() );
                 const Region& cur_reg =
-                    dynamic_cast< const Region& >( cur_in_boundary );
+                    dynamic_cast< const Region& >( cur_incident_entity );
 
-                const GeoModelMeshEntity& cur_in_boundary2 = cur_child.incident_entity(
-                    1 );
+                const GeoModelMeshEntity& cur_incident_entity2 =
+                    cur_child.incident_entity( 1 );
                 ringmesh_assert(
-                    cur_in_boundary2.type_name() == Region::type_name_static() );
+                    cur_incident_entity2.type_name() == Region::type_name_static() );
                 const Region& cur_reg2 =
-                    dynamic_cast< const Region& >( cur_in_boundary2 );
+                    dynamic_cast< const Region& >( cur_incident_entity2 );
 
                 /// @todo it seems that this if statement is contained in the else
                 /// case. To check and simplify if necessary.
-                if( cur_in_boundary.index() == cur_in_boundary2.index() ) {
-                    // if same region there is 2 in_boundarie even if they are the same
+                if( cur_incident_entity.index() == cur_incident_entity2.index() ) {
+                    // if same region there is 2 incident_entities even if they are the same
                     // The surface is internal and on the both side there is the
                     // same region. This surface is duplicated.
-                    surfaces_boundary_regions_side_plus[cur_in_boundary.index()].push_back(
+                    surfaces_boundary_regions_side_plus[cur_incident_entity.index()].push_back(
                         cur_child.index() );
-                    surfaces_boundary_regions_side_minus[cur_in_boundary.index()].push_back(
+                    surfaces_boundary_regions_side_minus[cur_incident_entity.index()].push_back(
                         cur_child.index() );
                 } else {
                     index_t local_boundary_id = find_local_boundary_id( cur_reg,
@@ -1231,34 +1236,34 @@ namespace RINGMesh {
 #endif
 
                     if( cur_reg.side( local_boundary_id ) ) {
-                        surfaces_boundary_regions_side_plus[cur_in_boundary.index()].push_back(
+                        surfaces_boundary_regions_side_plus[cur_incident_entity.index()].push_back(
                             cur_child.index() );
-                        surfaces_boundary_regions_side_minus[cur_in_boundary2.index()].push_back(
+                        surfaces_boundary_regions_side_minus[cur_incident_entity2.index()].push_back(
                             cur_child.index() );
                     } else {
-                        surfaces_boundary_regions_side_minus[cur_in_boundary.index()].push_back(
+                        surfaces_boundary_regions_side_minus[cur_incident_entity.index()].push_back(
                             cur_child.index() );
-                        surfaces_boundary_regions_side_plus[cur_in_boundary2.index()].push_back(
+                        surfaces_boundary_regions_side_plus[cur_incident_entity2.index()].push_back(
                             cur_child.index() );
                     }
                 }
             } else {
-                ringmesh_assert( nb_in_boundary_cur_child == 1 );
+                ringmesh_assert( nb_incident_entities_cur_child == 1 );
                 ringmesh_assert( cur_child.is_on_voi() );
-                const GeoModelMeshEntity& cur_in_boundary = cur_child.incident_entity(
-                    0 );
+                const GeoModelMeshEntity& cur_incident_entity =
+                    cur_child.incident_entity( 0 );
                 ringmesh_assert(
-                    cur_in_boundary.type_name() == Region::type_name_static() );
+                    cur_incident_entity.type_name() == Region::type_name_static() );
                 const Region& cur_reg =
-                    dynamic_cast< const Region& >( cur_in_boundary );
+                    dynamic_cast< const Region& >( cur_incident_entity );
 
                 index_t local_boundary_id = find_local_boundary_id( cur_reg,
                     geomodel_.surface( cur_child.index() ) );
                 if( cur_reg.side( local_boundary_id ) ) {
-                    surfaces_boundary_regions_side_plus[cur_in_boundary.index()].push_back(
+                    surfaces_boundary_regions_side_plus[cur_incident_entity.index()].push_back(
                         cur_child.index() );
                 } else {
-                    surfaces_boundary_regions_side_minus[cur_in_boundary.index()].push_back(
+                    surfaces_boundary_regions_side_minus[cur_incident_entity.index()].push_back(
                         cur_child.index() );
                 }
             }
@@ -1432,18 +1437,20 @@ namespace RINGMesh {
             // superior to 1 strictly.
             ringmesh_assert( cur_line.nb_incident_entities() > 1 );
             bool good_line = false;
-            for( index_t in_boun_itr = 0; in_boun_itr < cur_line.nb_incident_entities();
-                ++in_boun_itr ) {
-                const GeoModelMeshEntity& cur_in_boun_gme = cur_line.incident_entity(
-                    in_boun_itr );
+            for( index_t incident_ent_itr = 0;
+                incident_ent_itr < cur_line.nb_incident_entities();
+                ++incident_ent_itr ) {
+                const GeoModelMeshEntity& cur_incident_ent_gme =
+                    cur_line.incident_entity( incident_ent_itr );
                 ringmesh_assert(
-                    cur_in_boun_gme.type_name() == Surface::type_name_static() );
+                    cur_incident_ent_gme.type_name()
+                        == Surface::type_name_static() );
 
-                if( !cur_in_boun_gme.has_parent() ) {
+                if( !cur_incident_ent_gme.has_parent() ) {
                     continue;
                 }
 
-                if( does_surface_belong_to_interface( cur_in_boun_gme.index(),
+                if( does_surface_belong_to_interface( cur_incident_ent_gme.index(),
                     sided_interface_id ) ) {
                     continue;
                 }
@@ -1459,21 +1466,21 @@ namespace RINGMesh {
                         geomodel_.geological_entity( Interface::type_name_static(),
                             sided_interface_id + 1 );
 
-                    if( does_surface_belong_to_interface( cur_in_boun_gme.index(),
-                        plus_side_gme.index() ) ) {
+                    if( does_surface_belong_to_interface(
+                        cur_incident_ent_gme.index(), plus_side_gme.index() ) ) {
                         continue;
                     }
                 }
 
                 // Check if the surface is not from the old interface to
                 // duplicate.
-                if( does_surface_belong_to_interface( cur_in_boun_gme.index(),
+                if( does_surface_belong_to_interface( cur_incident_ent_gme.index(),
                     interface_to_duplicate_id ) ) {
                     continue;
                 }
 
                 GeoModelGeologicalEntity::GEOL_FEATURE parent_geol_feature =
-                    cur_in_boun_gme.parent( Interface::type_name_static() ).geological_feature();
+                    cur_incident_ent_gme.parent( Interface::type_name_static() ).geological_feature();
                 if( !GeoModelGeologicalEntity::is_fault( parent_geol_feature ) ) {
                     continue;
                 }
@@ -1496,7 +1503,7 @@ namespace RINGMesh {
                     if( cur_gme_vertex.gmme.index() == new_surface_id ) {
                         vertex_id_in_new_surface = cur_gme_vertex.v_index;
                     } else if( cur_gme_vertex.gmme.index()
-                        == cur_in_boun_gme.index() ) {
+                        == cur_incident_ent_gme.index() ) {
                         vertex_id_in_found_surface = cur_gme_vertex.v_index;
                     }
                     if( vertex_id_in_new_surface != NO_ID
@@ -1517,7 +1524,7 @@ namespace RINGMesh {
                 vec3 vertex_pos = geomodel_.surface( new_surface_id ).vertex(
                     vertex_id_in_new_surface );
                 if( !is_surface_on_right_side_of_sided_interface(
-                    cur_in_boun_gme.index(), local_translation_normal,
+                    cur_incident_ent_gme.index(), local_translation_normal,
                     vertex_id_in_found_surface, vertex_pos ) ) {
                     continue;
                 }
@@ -1860,9 +1867,9 @@ namespace RINGMesh {
     {
         // only one side for the sided interface
         ringmesh_assert( surface.nb_incident_entities() == 1 );
-        const GeoModelMeshEntity& in_boun = surface.incident_entity( 0 );
-        ringmesh_assert( in_boun.type_name() == Region::type_name_static() );
-        const Region& cur_reg = geomodel_.region( in_boun.index() );
+        const GeoModelMeshEntity& incident_ent = surface.incident_entity( 0 );
+        ringmesh_assert( incident_ent.type_name() == Region::type_name_static() );
+        const Region& cur_reg = geomodel_.region( incident_ent.index() );
         index_t local_surf_id = find_local_boundary_id( cur_reg, surface );
         bool side = cur_reg.side( local_surf_id );
 
@@ -2299,13 +2306,14 @@ namespace RINGMesh {
             if( cur_line.nb_incident_entities() != 1 ) {
                 continue;
             }
-            // cur_line.nb_in_boundary() == 1 means fault extension
+            // cur_line.nb_incident_entity() == 1 means fault extension
             ringmesh_assert(
                 cur_line.incident_entity( 0 ).type_name()
                     == Surface::type_name_static() );
             ringmesh_assert(
                 GeoModelGeologicalEntity::is_fault(
-                    cur_line.incident_entity( 0 ).parent( Interface::type_name_static() ).geological_feature() ) );
+                    cur_line.incident_entity( 0 ).parent(
+                        Interface::type_name_static() ).geological_feature() ) );
 
             ringmesh_assert( cur_line.nb_vertices() >= 2 );
             // Vertices not corner
@@ -2339,38 +2347,39 @@ namespace RINGMesh {
 
     bool DuplicateInterfaceBuilder::displace_corner(
         const Corner& corner,
-        const Line& line_one_in_boundary ) const
+        const Line& line_one_incident_entity ) const
     {
-        ringmesh_assert( line_one_in_boundary.nb_incident_entities() == 1 );
+        ringmesh_assert( line_one_incident_entity.nb_incident_entities() == 1 );
         ringmesh_assert(
             GeoModelGeologicalEntity::is_fault(
-                line_one_in_boundary.incident_entity( 0 ).parent(
+                line_one_incident_entity.incident_entity( 0 ).parent(
                     Interface::type_name_static() ).geological_feature() ) );
         ringmesh_assert(
-            line_one_in_boundary.boundary( 0 ).index() == corner.index()
-                || line_one_in_boundary.boundary( 1 ).index() == corner.index() );
-        for( index_t corner_in_boundaries_itr = 0;
-            corner_in_boundaries_itr < corner.nb_incident_entities();
-            ++corner_in_boundaries_itr ) {
+            line_one_incident_entity.boundary( 0 ).index() == corner.index()
+                || line_one_incident_entity.boundary( 1 ).index()
+                    == corner.index() );
+        for( index_t corner_incident_entities_itr = 0;
+            corner_incident_entities_itr < corner.nb_incident_entities();
+            ++corner_incident_entities_itr ) {
             const GeoModelMeshEntity& cur_line_gme = corner.incident_entity(
-                corner_in_boundaries_itr );
+                corner_incident_entities_itr );
             ringmesh_assert( cur_line_gme.type_name() == Line::type_name_static() );
-            if( cur_line_gme.index() == line_one_in_boundary.index() ) {
+            if( cur_line_gme.index() == line_one_incident_entity.index() ) {
                 continue;
             }
-            for( index_t surface_in_boun_itr = 0;
-                surface_in_boun_itr < cur_line_gme.nb_incident_entities();
-                ++surface_in_boun_itr ) {
+            for( index_t surface_incident_ent_itr = 0;
+                surface_incident_ent_itr < cur_line_gme.nb_incident_entities();
+                ++surface_incident_ent_itr ) {
 
                 if( !GeoModelGeologicalEntity::is_fault(
-                    cur_line_gme.incident_entity( surface_in_boun_itr ).parent(
+                    cur_line_gme.incident_entity( surface_incident_ent_itr ).parent(
                         Interface::type_name_static() ).geological_feature() ) ) {
                     continue;
                 }
 
-                if( cur_line_gme.incident_entity( surface_in_boun_itr ).parent(
+                if( cur_line_gme.incident_entity( surface_incident_ent_itr ).parent(
                     Interface::type_name_static() ).index()
-                    == line_one_in_boundary.incident_entity( 0 ).parent(
+                    == line_one_incident_entity.incident_entity( 0 ).parent(
                         Interface::type_name_static() ).index() ) {
                     continue;
                 }
