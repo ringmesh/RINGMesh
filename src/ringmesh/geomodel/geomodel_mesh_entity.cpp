@@ -255,12 +255,12 @@ namespace {
 namespace RINGMesh {
     bool GeoModelMeshEntity::is_inside_border( const GeoModelMeshEntity& rhs ) const
     {
-        // Find out if this surface is twice in the in_boundary vector
+        // Find out if this surface is twice in the incident_entity vector
         gmme_id rhs_id = rhs.gmme();
         const RelationshipManager& manager =
             geomodel().entity_type_manager().relationship_manager;
-        return std::count_if( in_boundary_.begin(), in_boundary_.end(),
-            [&rhs_id, &manager](index_t i) {return manager.in_boundary_gmme( i ) == rhs_id;} )
+        return std::count_if( incident_entities_.begin(), incident_entities_.end(),
+            [&rhs_id, &manager](index_t i) {return manager.incident_entity_gmme( i ) == rhs_id;} )
             > 1;
     }
 
@@ -348,15 +348,15 @@ namespace RINGMesh {
                 const GeoModelMeshEntity& E = boundary( i );
                 bool found = false;
                 index_t j = 0;
-                while( !found && j < E.nb_in_boundary() ) {
-                    if( E.in_boundary_gmme( j ) == id ) {
+                while( !found && j < E.nb_incident_entities() ) {
+                    if( E.incident_entity_gmme( j ) == id ) {
                         found = true;
                     }
                     j++;
                 }
                 if( !found ) {
                     Logger::warn( "GeoModelEntity",
-                        "Inconsistency boundary-in_boundary between ", id, " and ",
+                        "Inconsistency boundary-incident_entity between ", id, " and ",
                         E.gmme() );
                     valid = false;
                 }
@@ -365,24 +365,24 @@ namespace RINGMesh {
         return valid;
     }
 
-    bool GeoModelMeshEntity::is_in_boundary_connectivity_valid() const
+    bool GeoModelMeshEntity::is_incident_entity_connectivity_valid() const
     {
         const MeshEntityTypeManager& family =
             geomodel().entity_type_manager().mesh_entity_manager;
         const MeshEntityType entity_type = type_name();
-        const MeshEntityType& in_boundary_type = family.in_boundary_type(
+        const MeshEntityType& incident_entity_type = family.incident_entity_type(
             entity_type );
 
         bool valid = true;
         gmme_id id = gmme();
-        if( family.is_valid_type( in_boundary_type ) ) {
-            if( nb_in_boundary() == 0 ) {
+        if( family.is_valid_type( incident_entity_type ) ) {
+            if( nb_incident_entities() == 0 ) {
                 Logger::warn( "GeoModelEntity", id,
                     " is in the boundary of no entity " );
                 valid = false;
             }
-            for( index_t i = 0; i < nb_in_boundary(); ++i ) {
-                const GeoModelMeshEntity& E = in_boundary( i );
+            for( index_t i = 0; i < nb_incident_entities(); ++i ) {
+                const GeoModelMeshEntity& E = incident_entity( i );
                 bool found = false;
                 index_t j = 0;
                 while( !found && j < E.nb_boundaries() ) {
@@ -393,7 +393,7 @@ namespace RINGMesh {
                 }
                 if( !found ) {
                     Logger::warn( "GeoModelEntity",
-                        "Inconsistency in_boundary-boundary between ", id, " and ",
+                        "Inconsistency incident_entity-boundary between ", id, " and ",
                         E.gmme() );
                     valid = false;
                 }
@@ -457,7 +457,7 @@ namespace RINGMesh {
     bool GeoModelMeshEntity::is_connectivity_valid() const
     {
         return is_boundary_connectivity_valid()
-            && is_in_boundary_connectivity_valid();
+            && is_incident_entity_connectivity_valid();
     }
 
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
@@ -473,17 +473,16 @@ namespace RINGMesh {
     {
         gmge_id id = parent_gmge( parent_type_name );
         ringmesh_assert( id.is_defined() );
-
         return geomodel().geological_entity( id );
     }
 
-    const gmge_id GeoModelMeshEntity::parent_gmge(
+    gmge_id GeoModelMeshEntity::parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
         return defined_parent_gmge( parent_type_name );
     }
 
-    const gmge_id GeoModelMeshEntity::could_be_undefined_parent_gmge(
+    gmge_id GeoModelMeshEntity::could_be_undefined_parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
@@ -494,7 +493,7 @@ namespace RINGMesh {
         return gmge_id( ForbiddenGeologicalEntityType::type_name_static(), NO_ID );
     }
 
-    const gmge_id GeoModelMeshEntity::defined_parent_gmge(
+    gmge_id GeoModelMeshEntity::defined_parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
         const gmge_id parent_gmge = could_be_undefined_parent_gmge( parent_type_name );
@@ -514,31 +513,31 @@ namespace RINGMesh {
         return geomodel().mesh_entity( boundary_gmme( x ) );
     }
 
-    const GeoModelMeshEntity& GeoModelMeshEntity::in_boundary( index_t x ) const
+    const GeoModelMeshEntity& GeoModelMeshEntity::incident_entity( index_t x ) const
     {
-        return geomodel().mesh_entity( in_boundary_gmme( x ) );
+        return geomodel().mesh_entity( incident_entity_gmme( x ) );
     }
 
-    const gmme_id& GeoModelMeshEntity::in_boundary_gmme( index_t x ) const
+    const gmme_id& GeoModelMeshEntity::incident_entity_gmme( index_t x ) const
     {
-        ringmesh_assert( x < nb_in_boundary() );
-        return geomodel().entity_type_manager().relationship_manager.in_boundary_gmme(
-            in_boundary_[x] );
+        ringmesh_assert( x < nb_incident_entities() );
+        return geomodel().entity_type_manager().relationship_manager.incident_entity_gmme(
+            incident_entities_[x] );
     }
+
     const gmge_id& GeoModelMeshEntity::parent_gmge( index_t id ) const
     {
         ringmesh_assert( id < nb_parents() );
         return geomodel().entity_type_manager().relationship_manager.parent_of_gmme(
             parents_[id] );
     }
-
     /**************************************************************/
 
     bool Corner::is_on_voi() const
     {
         // True if one of the incident surface define the universe
-        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
-            if( in_boundary( i ).is_on_voi() ) {
+        for( index_t i = 0; i < nb_incident_entities(); ++i ) {
+            if( incident_entity( i ).is_on_voi() ) {
                 return true;
             }
         }
@@ -557,9 +556,9 @@ namespace RINGMesh {
         return valid;
     }
 
-    const Line& Corner::in_boundary( index_t x ) const
+    const Line& Corner::incident_entity( index_t x ) const
     {
-        return static_cast< const Line& >( GeoModelMeshEntity::in_boundary( x ) );
+        return static_cast< const Line& >( GeoModelMeshEntity::incident_entity( x ) );
     }
 
     /***************************************************************/
@@ -673,17 +672,17 @@ namespace RINGMesh {
     bool Line::is_on_voi() const
     {
         // True if one of the incident surface define the universe
-        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
-            if( in_boundary( i ).is_on_voi() ) {
+        for( index_t i = 0; i < nb_incident_entities(); ++i ) {
+            if( incident_entity( i ).is_on_voi() ) {
                 return true;
             }
         }
         return false;
     }
 
-    const Surface& Line::in_boundary( index_t x ) const
+    const Surface& Line::incident_entity( index_t x ) const
     {
-        return static_cast< const Surface& >( GeoModelMeshEntity::in_boundary( x ) );
+        return static_cast< const Surface& >( GeoModelMeshEntity::incident_entity( x ) );
     }
 
     const Corner& Line::boundary( index_t x ) const
@@ -770,9 +769,9 @@ namespace RINGMesh {
         return static_cast< const Line& >( GeoModelMeshEntity::boundary( x ) );
     }
 
-    const Region& Surface::in_boundary( index_t x ) const
+    const Region& Surface::incident_entity( index_t x ) const
     {
-        return static_cast< const Region& >( GeoModelMeshEntity::in_boundary( x ) );
+        return static_cast< const Region& >( GeoModelMeshEntity::incident_entity( x ) );
     }
 
     /********************************************************************/
