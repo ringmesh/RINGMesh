@@ -62,9 +62,11 @@ namespace RINGMesh {
         return true;
     }
 
+    template class GeoModelEntity< 2 >;
     template class Universe< 2 >;
     template class UniverseAccess< 2 >;
 
+    template class GeoModelEntity< 3 >;
     template class Universe< 3 >;
     template class UniverseAccess< 3 >;
 
