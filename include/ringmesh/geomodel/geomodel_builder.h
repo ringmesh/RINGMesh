@@ -227,7 +227,7 @@ namespace RINGMesh {
             const GeoModel& from,
             const GeologicalEntityType& type );
 
-        bool check_if_boundary_in_boundary_relation_already_exists(
+        bool check_if_boundary_incident_entity_relation_already_exists(
             const gmge_id& parent,
             const gmme_id& children );
 
