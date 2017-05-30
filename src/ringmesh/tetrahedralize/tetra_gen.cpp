@@ -440,17 +440,17 @@ namespace RINGMesh {
     {
     }
 
-    void TetraGen::set_boundaries( const Region& region, const WellGroup* wells )
+    void TetraGen::set_boundaries( const Region< 3 >& region, const WellGroup* wells )
     {
         region_ = &region;
         index_t nb_surfaces = region_->nb_boundaries();
-        std::vector< const GeoModelMeshEntity* > unique_surfaces;
+        std::vector< const GeoModelMeshEntity< 3 >* > unique_surfaces;
         unique_surfaces.reserve( nb_surfaces );
         std::vector< index_t > surface_id;
         surface_id.reserve( nb_surfaces );
         index_t nb_surface_vertices = 0, nb_polygons = 0;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
-            const Surface& surface = region_->boundary( s );
+            const Surface< 3 >& surface = region_->boundary( s );
             if( contains( surface_id, surface.index() ) ) continue;
             nb_surface_vertices += surface.nb_vertices();
             nb_polygons += surface.nb_mesh_elements();
@@ -471,7 +471,7 @@ namespace RINGMesh {
             nb_surface_vertices + nb_region_vertices + nb_well_vertices );
 
         // Add the surfaces vertices
-        for( const GeoModelMeshEntity*& surface : unique_surfaces ) {
+        for( const GeoModelMeshEntity< 3 >*& surface : unique_surfaces ) {
             for( index_t v = 0; v < surface->nb_vertices(); v++ ) {
                 region_surfaces_and_wells_vertices.push_back( surface->vertex( v ) );
             }
@@ -536,7 +536,7 @@ namespace RINGMesh {
         tetmesh_constraint_.facets.create_triangles( nb_polygons );
         GEO::Attribute< index_t > surface_region(
             tetmesh_constraint_.facets.attributes(), surface_att_name );
-        for( const GeoModelMeshEntity*& surface : unique_surfaces ) {
+        for( const GeoModelMeshEntity< 3 >*& surface : unique_surfaces ) {
 //            RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < surface->nb_mesh_elements(); t++ ) {
                 ringmesh_assert( surface->nb_mesh_element_vertices( t ) == 3 );

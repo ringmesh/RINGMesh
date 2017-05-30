@@ -203,9 +203,9 @@ namespace {
             for( index_t inter = 0;
                 inter
                     < geomodel.nb_geological_entities(
-                        Interface::type_name_static() ); inter++ ) {
-                const GeoModelGeologicalEntity& cur_interface =
-                    geomodel.geological_entity( Interface::type_name_static(),
+                        Interface< 3 >::type_name_static() ); inter++ ) {
+                const GeoModelGeologicalEntity< 3 >& cur_interface =
+                    geomodel.geological_entity( Interface< 3 >::type_name_static(),
                         inter );
                 for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
                     index_t surface_id = cur_interface.child( s ).index();

@@ -81,7 +81,7 @@ namespace RINGMesh {
             index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) );
             index_t new_id( nb_entities );
             geomodel_access_.modifiable_mesh_entities( entity_type ).emplace_back(
-                GeoModelMeshEntityAccess::create_entity< ENTITY >( geomodel_, new_id,
+                GeoModelMeshEntityAccess< 3 >::create_entity< ENTITY >( geomodel_, new_id,
                     mesh_type ) );
             return geomodel_access_.modifiable_mesh_entities( entity_type ).back()->gmme();
         }
@@ -91,13 +91,13 @@ namespace RINGMesh {
             index_t nb_additional_entities )
         {
             if( MeshEntityTypeManager::is_corner( type ) ) {
-                return create_mesh_entities< Corner >( nb_additional_entities );
+                return create_mesh_entities< Corner< 3 > >( nb_additional_entities );
             } else if( MeshEntityTypeManager::is_line( type ) ) {
-                return create_mesh_entities< Line >( nb_additional_entities );
+                return create_mesh_entities< Line< 3 > >( nb_additional_entities );
             } else if( MeshEntityTypeManager::is_surface( type ) ) {
-                return create_mesh_entities< Surface >( nb_additional_entities );
+                return create_mesh_entities< Surface< 3 > >( nb_additional_entities );
             } else if( MeshEntityTypeManager::is_region( type ) ) {
-                return create_mesh_entities< Region >( nb_additional_entities );
+                return create_mesh_entities< Region< 3 > >( nb_additional_entities );
             } else {
                 ringmesh_assert_not_reached;
                 return false;
@@ -164,14 +164,14 @@ namespace RINGMesh {
             const MeshType type = "" )
         {
             const MeshEntityType& entity_type = ENTITY::type_name_static();
-            std::vector< std::unique_ptr< GeoModelMeshEntity > >& store =
+            std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& store =
                 geomodel_access_.modifiable_mesh_entities( entity_type );
             index_t old_size = static_cast< index_t >( store.size() );
             index_t new_size = old_size + nb_additionnal_entities;
             store.reserve( new_size );
             for( index_t i = old_size; i < new_size; i++ ) {
                 store.emplace_back(
-                    GeoModelMeshEntityAccess::create_entity< ENTITY >( geomodel_, i,
+                    GeoModelMeshEntityAccess< 3 >::create_entity< ENTITY >( geomodel_, i,
                         type ) );
             }
             return true;
@@ -186,7 +186,7 @@ namespace RINGMesh {
             RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( type ); ++e ) {
                 gmme_id id( type, e );
-                GeoModelMeshEntityAccess gmme_access(
+                GeoModelMeshEntityAccess< 3 > gmme_access(
                     geomodel_access_.modifiable_mesh_entity( id ) );
                 gmme_access.copy( from.mesh_entity( id ) );
             }

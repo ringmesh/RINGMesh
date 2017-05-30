@@ -62,7 +62,7 @@ extern "C" {
 
 namespace RINGMesh {
     class GeoModel;
-    class Region;
+    template< index_t DIMENSION > class Region;
     class TetraGen;
     class WellGroup;
 }
@@ -85,7 +85,7 @@ namespace RINGMesh {
          * @param[in] wells the wells to be conformal to
          */
         void set_boundaries(
-            const Region& region,
+            const Region< 3 >& region,
             const WellGroup* wells = nullptr );
 
         /*!
@@ -110,7 +110,7 @@ namespace RINGMesh {
         std::unique_ptr< GeoModelBuilder > builder_;
         index_t output_region_;
         GEO::Mesh tetmesh_constraint_;
-        const Region* region_;
+        const Region< 3 >* region_;
         const WellGroup* wells_;
     };
 
