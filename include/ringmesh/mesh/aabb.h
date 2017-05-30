@@ -65,13 +65,6 @@ namespace RINGMesh {
         /// The index where to store the root. It starts to one for algorithm trick.
         static const index_t ROOT_INDEX = 1;
 
-        /*!
-         * @brief Saves the tree in a set of files
-         * @details Each level of the tree is saved in a .geogram file
-         * prefixed by \p name
-         * @param[in] name the prefix used for the file naming
-         */
-        void save_tree( const std::string& name ) const;
         index_t nb_bboxes() const
         {
             return static_cast< index_t >( mapping_morton_.size() );

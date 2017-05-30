@@ -163,45 +163,6 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    void add_cube( GEO::Mesh& M, const Box< DIMENSION >& box, index_t n )
-    {
-        if( !box.initialized() ) return;
-        const vecn< DIMENSION >& min_vertex = box.min();
-        const vecn< DIMENSION >& max_vertex = box.max();
-        vecn< DIMENSION > width( max_vertex[0] - min_vertex[0], 0, 0 );
-        vecn< DIMENSION > height( 0, max_vertex[1] - min_vertex[1], 0 );
-        vecn< DIMENSION > depth( 0, 0, max_vertex[2] - min_vertex[2] );
-        index_t v0 = M.vertices.create_vertex( min_vertex.data() );
-        index_t v1 = M.vertices.create_vertex(
-            vecn< DIMENSION >( min_vertex + width ).data() );
-        index_t v2 = M.vertices.create_vertex(
-            vecn< DIMENSION >( max_vertex - depth ).data() );
-        index_t v3 = M.vertices.create_vertex(
-            vecn< DIMENSION >( min_vertex + height ).data() );
-        index_t v4 = M.vertices.create_vertex(
-            vecn< DIMENSION >( min_vertex + depth ).data() );
-        index_t v5 = M.vertices.create_vertex(
-            vecn< DIMENSION >( max_vertex - height ).data() );
-        index_t v6 = M.vertices.create_vertex( max_vertex.data() );
-        index_t v7 = M.vertices.create_vertex(
-            vecn< DIMENSION >( max_vertex - width ).data() );
-
-        GEO::Attribute< index_t > id( M.edges.attributes(), "id" );
-        id[M.edges.create_edge( v0, v1 )] = n;
-        id[M.edges.create_edge( v1, v2 )] = n;
-        id[M.edges.create_edge( v2, v3 )] = n;
-        id[M.edges.create_edge( v3, v0 )] = n;
-        id[M.edges.create_edge( v4, v5 )] = n;
-        id[M.edges.create_edge( v5, v6 )] = n;
-        id[M.edges.create_edge( v6, v7 )] = n;
-        id[M.edges.create_edge( v7, v4 )] = n;
-        id[M.edges.create_edge( v0, v4 )] = n;
-        id[M.edges.create_edge( v1, v5 )] = n;
-        id[M.edges.create_edge( v2, v6 )] = n;
-        id[M.edges.create_edge( v3, v7 )] = n;
-    }
-
-    template< index_t DIMENSION >
     bool mesh_cell_contains_point(
         const VolumeMesh< DIMENSION >& M,
         index_t cell,
@@ -281,23 +242,6 @@ namespace RINGMesh {
         initialize_tree_recursive( bboxes, child_left, box_begin, element_middle );
         initialize_tree_recursive( bboxes, child_right, element_middle, box_end );
         tree_[node_index] = tree_[child_left].bbox_union( tree_[child_right] );
-    }
-
-    template< index_t DIMENSION >
-    void AABBTree< DIMENSION >::save_tree( const std::string& name ) const
-    {
-        index_t nb_nodes = 0;
-        for( double level = 1.; nb_nodes < tree_.size(); level++ ) {
-            index_t start_node = static_cast< index_t >( std::pow( 2., level ) );
-            nb_nodes = 2 * start_node;
-            GEO::Mesh M;
-            for( index_t n = start_node; n < nb_nodes; n++ ) {
-                add_cube( M, tree_[n], n );
-            }
-            std::ostringstream oss;
-            oss << name << level << ".geogram";
-            GEO::mesh_save( M, oss.str() );
-        }
     }
 
     template< index_t DIMENSION >
