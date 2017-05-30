@@ -101,6 +101,12 @@ namespace RINGMesh {
             double* vertex_ptr = mesh_->vertices.point_ptr( v_id );                 \
             return *( vecn< DIMENSION >* )( vertex_ptr );                           \
         }                                                                           \
+        vecn< DIMENSION >& ref_vertex( index_t v_id )                               \
+        {                                                                           \
+            ringmesh_assert( v_id < nb_vertices() );                                \
+            double* vertex_ptr = mesh_->vertices.point_ptr( v_id );                 \
+            return *( vecn< DIMENSION >* )( vertex_ptr );                           \
+        }                                                                           \
         virtual index_t nb_vertices() const override                                \
         {                                                                           \
             return mesh_->vertices.nb();                                            \

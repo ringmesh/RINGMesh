@@ -68,14 +68,29 @@ namespace {
         return area;
     }
 
-    double triangle_area( const vec2& A, const vec2& B, const vec2& C )
+    double triangle_signed_area( const vec2& A, const vec2& B, const vec2& C )
     {
+//        DEBUG( A );
+//        DEBUG( B );
+//        DEBUG( C );
+        vec3 p0( A.x, A.y, 0. );
+        vec3 p1( B.x, B.y, 0. );
+        vec3 p2( C.x, C.y, 0. );
+        vec3 triangle_normal = cross( p2 - p0, p1 - p0 );
+//        return triangle_signed_area( p0, p1, p2, triangle_normal );
         vec2 AB = B - A;
         vec2 AC = C - A;
         double L_AB = length( AB );
-        ringmesh_assert( L_AB > global_epsilon );
-        vec2 projected = ( -AB / L_AB ) * ( dot( AC, AB ) / L_AB ) + A;
-        return L_AB * length( projected - C ) * 0.5;
+        if( L_AB < global_epsilon ) {
+            return 0.0;
+        }
+        vec2 BA = -AB;
+        vec2 projected = ( BA / L_AB ) * ( dot( AC, AB ) / L_AB ) + A;
+        double area = L_AB * length( projected - C ) * 0.5;
+        if( AB.x * AC.y - AC.x * AB.y < 0 ) {
+            area = -area;
+        }
+        return area;
     }
 }
 
@@ -294,6 +309,7 @@ namespace RINGMesh {
     {
         double result = max_float64();
         if( point_inside_triangle( point, V0, V1, V2 ) ) {
+//            DEBUG( "inside" );
             closest_point = point;
             result = 0.0;
         } else {
@@ -320,7 +336,12 @@ namespace RINGMesh {
                 }
             }
         }
-
+        DEBUG( point );
+        DEBUG( V0 );
+        DEBUG( V1 );
+        DEBUG( V2 );
+        DEBUG( result );
+        DEBUG( closest_point );
         return result;
     }
 
@@ -1198,22 +1219,27 @@ namespace RINGMesh {
     {
         Sign s1, s2, s3;
         if( !exact_predicates ) {
-            double area1 = triangle_area( p, p0, p1 );
+//            DEBUG( "not exact" );
+            double area1 = triangle_signed_area( p, p0, p1 );
+//            DEBUG( area1 );
             if( is_almost_zero( area1 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
             s1 = sign( area1 );
-            double area2 = triangle_area( p, p1, p2 );
+            double area2 = triangle_signed_area( p, p1, p2 );
+//            DEBUG( area2 );
             if( is_almost_zero( area2 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
             s2 = sign( area2 );
-            double area3 = triangle_area( p, p2, p0 );
+            double area3 = triangle_signed_area( p, p2, p0 );
+//            DEBUG( area3 );
             if( is_almost_zero( area3 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
             s3 = sign( area3 );
         } else {
+//            DEBUG( "exact" );
             s1 = sign( GEO::PCK::orient_2d( p.data(), p0.data(), p1.data() ) );
             s2 = sign( GEO::PCK::orient_2d( p.data(), p1.data(), p2.data() ) );
             s3 = sign( GEO::PCK::orient_2d( p.data(), p2.data(), p0.data() ) );
