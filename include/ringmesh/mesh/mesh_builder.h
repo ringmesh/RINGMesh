@@ -100,7 +100,7 @@ namespace RINGMesh {
          * @param[in] vertex the vertex coordinates
          * @return reference to the point that corresponds to the vertex.
          */
-        virtual void set_vertex( index_t v_id, const vec3& vertex ) = 0;
+        virtual void set_vertex( index_t v_id, const vecn< DIMENSION >& vertex ) = 0;
         /*!
          * @brief Creates a new vertex.
          * @return the index of the created vertex
@@ -111,7 +111,7 @@ namespace RINGMesh {
          * @param[in] coords a pointer to @function dimension() coordinate.
          * @return the index of the created vertex
          */
-        virtual index_t create_vertex( const vec3& vertex )
+        virtual index_t create_vertex( const vecn< DIMENSION >& vertex )
         {
             index_t index = create_vertex();
             set_vertex( index, vertex );
@@ -187,11 +187,15 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using PointMesh2BuilderFactory = GEO::Factory0< PointSetMeshBuilder< DIMENSION > >;
+    using PointMeshBuilderFactory = GEO::Factory0< PointSetMeshBuilder< DIMENSION > >;
 
-    using PointMesh2BuilderFactory3D = PointMesh2BuilderFactory< 3 >;
-#define ringmesh_register_point_mesh_builder(type) \
-    geo_register_creator(RINGMesh::PointMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
+    using PointMeshBuilderFactory3D = PointMeshBuilderFactory< 3 >;
+#define ringmesh_register_point_mesh_builder_3d(type) \
+    geo_register_creator(RINGMesh::PointMeshBuilderFactory3D, type ## Builder, type::type_name_static())
+
+    using PointMeshBuilderFactory2D = PointMeshBuilderFactory< 2 >;
+#define ringmesh_register_point_mesh_builder_2d(type) \
+    geo_register_creator(RINGMesh::PointMeshBuilderFactory2D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
     class RINGMESH_API LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -264,11 +268,15 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using LineMesh2BuilderFactory = GEO::Factory0< LineMeshBuilder< DIMENSION > >;
+    using LineMeshBuilderFactory = GEO::Factory0< LineMeshBuilder< DIMENSION > >;
 
-    using LineMesh2BuilderFactory3D = LineMesh2BuilderFactory< 3 >;
-#define ringmesh_register_line_mesh_builder(type) \
-    geo_register_creator(RINGMesh::LineMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
+    using LineMeshBuilderFactory3D = LineMeshBuilderFactory< 3 >;
+#define ringmesh_register_line_mesh_builder_3d(type) \
+    geo_register_creator(RINGMesh::LineMeshBuilderFactory3D, type ## Builder, type::type_name_static())
+
+    using LineMeshBuilderFactory2D = LineMeshBuilderFactory< 2 >;
+#define ringmesh_register_line_mesh_builder_2d(type) \
+    geo_register_creator(RINGMesh::LineMeshBuilderFactory2D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
     class RINGMESH_API SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -405,11 +413,15 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using SurfaceMesh2BuilderFactory = GEO::Factory0< SurfaceMeshBuilder< DIMENSION > >;
+    using SurfaceMeshBuilderFactory = GEO::Factory0< SurfaceMeshBuilder< DIMENSION > >;
 
-    using SurfaceMesh2BuilderFactory3D = SurfaceMesh2BuilderFactory< 3 >;
-#define ringmesh_register_surface_mesh_builder(type) \
-    geo_register_creator(RINGMesh::SurfaceMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
+    using SurfaceMeshBuilderFactory3D = SurfaceMeshBuilderFactory< 3 >;
+#define ringmesh_register_surface_mesh_builder_3d(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshBuilderFactory3D, type ## Builder, type::type_name_static())
+
+    using SurfaceMeshBuilderFactory2D = SurfaceMeshBuilderFactory< 2 >;
+#define ringmesh_register_surface_mesh_builder_2d(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshBuilderFactory2D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
     class RINGMESH_API VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -523,9 +535,9 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using VolumeMesh2BuilderFactory = GEO::Factory0< VolumeMeshBuilder< DIMENSION > >;
+    using VolumeMeshBuilderFactory = GEO::Factory0< VolumeMeshBuilder< DIMENSION > >;
 
-    using VolumeMesh2BuilderFactory3D = VolumeMesh2BuilderFactory< 3 >;
-#define ringmesh_register_volume_mesh_builder(type) \
-    geo_register_creator(RINGMesh::VolumeMesh2BuilderFactory3D, type ## Builder, type::type_name_static())
+    using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory< 3 >;
+#define ringmesh_register_volume_mesh_builder_3d(type) \
+    geo_register_creator(RINGMesh::VolumeMeshBuilderFactory3D, type ## Builder, type::type_name_static())
 }

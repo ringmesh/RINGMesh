@@ -83,9 +83,9 @@ namespace RINGMesh {
             GEO::mesh_repair( *mesh_->mesh_, mode, colocate_epsilon );                          \
             clear_vertex_linked_objects();                                                      \
         }                                                                                       \
-        virtual void set_vertex( index_t v_id, const vec3& vertex ) override                    \
+        virtual void set_vertex( index_t v_id, const vecn< DIMENSION >& vertex ) override       \
         {                                                                                       \
-            mesh_->mesh_->vertices.point( v_id ) = vertex;                                      \
+            mesh_->ref_vertex( v_id ) = vertex;                                                 \
             clear_vertex_linked_objects();                                                      \
         }                                                                                       \
         virtual index_t create_vertex() override                                                \
@@ -154,6 +154,7 @@ namespace RINGMesh {
         }
     };
 
+    using GeogramPointSetMesh2DBuilder = GeogramPointSetMeshBuilder< 2 >;
     using GeogramPointSetMesh3DBuilder = GeogramPointSetMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
@@ -248,6 +249,7 @@ namespace RINGMesh {
         }
     };
 
+    using GeogramLineMesh2DBuilder = GeogramLineMeshBuilder< 2 >;
     using GeogramLineMesh3DBuilder = GeogramLineMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
@@ -413,6 +415,7 @@ namespace RINGMesh {
         }
     };
 
+    using GeogramSurfaceMesh2DBuilder = GeogramSurfaceMeshBuilder< 2 >;
     using GeogramSurfaceMesh3DBuilder = GeogramSurfaceMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
