@@ -110,12 +110,12 @@ namespace RINGMesh {
         const gmme_id& boundary_gmme( index_t x ) const;
         const GeoModelMeshEntity& boundary( index_t x ) const;
 
-        index_t nb_in_boundary() const
+        index_t nb_incident_entities() const
         {
-            return static_cast< index_t >( in_boundary_.size() );
+            return static_cast< index_t >( incident_entities_.size() );
         }
-        const gmme_id& in_boundary_gmme( index_t x ) const;
-        const GeoModelMeshEntity& in_boundary( index_t x ) const;
+        const gmme_id& incident_entity_gmme( index_t x ) const;
+        const GeoModelMeshEntity& incident_entity( index_t x ) const;
 
         /*!
          * @brief Check if one entity is twice in the boundary
@@ -154,13 +154,16 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
-         * @note If this entity has no parent of the given type,
-         * it will return an undefined gmge_id (with no type and no id).
-         * You should check on the returned gmge_id.
+         * @pre The code assumes that this entity has a parent of the given type
+         * \p parent_type_name, else it will crash in debug and return an invalid
+         * entity in release.
+         * The method has_parent(GeologicalEntityType) is a safe way to check
+         * if the type \p parent_type_name is a valid parent type for the
+         * GeoModelMeshEntity.
          * @param[in] parent_type_name the asking parent type
          *
          */
-        const gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
+        gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
         const GeoModelGeologicalEntity& parent( index_t id ) const;
         const GeoModelGeologicalEntity& parent(
             const GeologicalEntityType& parent_type ) const;
@@ -192,6 +195,7 @@ namespace RINGMesh {
          * \name Local access to the GeoModelMeshEntity geometry
          * @{
          */
+
         index_t nb_vertices() const
         {
             return mesh_->nb_vertices();
@@ -244,6 +248,7 @@ namespace RINGMesh {
          * \name Geometrical request on Entity
          * @{
          */
+
         virtual double mesh_element_size( index_t mesh_element_index ) const = 0;
         virtual vec3 mesh_element_barycenter( index_t mesh_element_index ) const = 0;
         virtual vec3 entity_barycenter() const
@@ -255,6 +260,7 @@ namespace RINGMesh {
             ringmesh_assert( nb_vertices() > 0 );
             return result / static_cast< double >( nb_vertices() );
         }
+
         virtual double size() const
         {
             double size = 0.0;
@@ -285,9 +291,10 @@ namespace RINGMesh {
             copy_name( from );
             id_ = from.id_;
             boundaries_ = from.boundaries_;
-            in_boundary_ = from.in_boundary_;
+            incident_entities_ = from.incident_entities_;
             parents_ = from.parents_;
         }
+
         virtual bool is_index_valid() const final;
         virtual bool is_mesh_valid() const
         {
@@ -302,15 +309,15 @@ namespace RINGMesh {
 
         /*!
          * All entities in the boundary must have this in their
-         *  in_boundary vector
+         *  incident_entity vector
          */
         bool is_boundary_connectivity_valid() const;
         /*!
          * All entities must be at least in the boundary of another entity
-         * and all entities in the in_boundary must have this entity in their
+         * and all entities in the incident_entity must have this entity in their
          * boundary vector
          */
-        bool is_in_boundary_connectivity_valid() const;
+        bool is_incident_entity_connectivity_valid() const;
         /*!
          * @brief Check that geomodel vertex indices are consistent
          * with what is stored at the GeoModel level.
@@ -324,18 +331,19 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
 
     private:
-        const gmge_id defined_parent_gmge(
+        gmge_id defined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
 
-        const gmge_id could_be_undefined_parent_gmge(
+        gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
+
     protected:
 
         /// Boundary relations of this entity
         std::vector< index_t > boundaries_;
 
-        /// In-boundary relations of this entity
-        std::vector< index_t > in_boundary_;
+        /// Incident-entity relations of this entity
+        std::vector< index_t > incident_entities_;
 
         /// Parents relations of this entity
         std::vector< index_t > parents_;
@@ -368,6 +376,7 @@ namespace RINGMesh {
         {
             return type_name_static();
         }
+
         /*!
          * @brief Checks if this entity define the geomodel external boundary
          * @details Test if the entity is in the Surfaces defining the universe
@@ -381,6 +390,7 @@ namespace RINGMesh {
         {
             return 0;
         }
+
         /*!
          * @return the number of vertices of the Corner
          */
@@ -392,7 +402,7 @@ namespace RINGMesh {
             return nb_vertices;
         }
 
-        const Line& in_boundary( index_t x ) const;
+        const Line& incident_entity( index_t x ) const;
 
         /*! @}
          * \name Geometrical request on Corner
@@ -403,10 +413,12 @@ namespace RINGMesh {
             ringmesh_unused( mesh_element );
             return 0.0;
         }
+
         virtual double size() const
         {
             return 0.0;
         }
+
         virtual vec3 mesh_element_barycenter( index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element );
@@ -422,6 +434,7 @@ namespace RINGMesh {
         {
             return *point_mesh_;
         }
+
     protected:
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
@@ -445,6 +458,7 @@ namespace RINGMesh {
             ringmesh_unused( vertex_index );
             return 0;
         }
+
         /*!
          * @brief Check that the Corner mesh is a unique point
          */
@@ -493,7 +507,7 @@ namespace RINGMesh {
 
         const Corner& boundary( index_t x ) const;
 
-        const Surface& in_boundary( index_t x ) const;
+        const Surface& incident_entity( index_t x ) const;
 
         virtual bool is_connectivity_valid() const final;
 
@@ -580,6 +594,7 @@ namespace RINGMesh {
         {
             return *line_mesh_;
         }
+
     protected:
         Line( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
@@ -643,7 +658,7 @@ namespace RINGMesh {
 
         const Line& boundary( index_t x ) const;
 
-        const Region& in_boundary( index_t x ) const;
+        const Region& incident_entity( index_t x ) const;
 
         bool is_simplicial() const
         {
@@ -916,6 +931,7 @@ namespace RINGMesh {
         {
             return *surface_mesh_;
         }
+
     protected:
         Surface( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
@@ -954,6 +970,7 @@ namespace RINGMesh {
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override;
+
     private:
         std::shared_ptr< SurfaceMesh< 3 > > surface_mesh_;
     };
@@ -1301,6 +1318,7 @@ namespace RINGMesh {
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_;
+
     private:
         std::shared_ptr< VolumeMesh< 3 > > volume_mesh_;
     };
@@ -1321,9 +1339,9 @@ namespace RINGMesh {
             return gmme_.mesh_;
         }
 
-        const std::vector< index_t >& in_boundary_relation_ids() const
+        const std::vector< index_t >& incident_entity_relation_ids() const
         {
-            return gmme_.in_boundary_;
+            return gmme_.incident_entities_;
         }
 
         const std::vector< index_t >& boundary_relation_ids() const
@@ -1364,9 +1382,9 @@ namespace RINGMesh {
             return gmme_.boundaries_;
         }
 
-        std::vector< index_t >& modifiable_in_boundaries()
+        std::vector< index_t >& modifiable_incident_entities()
         {
-            return gmme_.in_boundary_;
+            return gmme_.incident_entities_;
         }
 
         std::vector< bool >& modifiable_sides()

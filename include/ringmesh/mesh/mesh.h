@@ -506,6 +506,7 @@ namespace RINGMesh {
                 result[i] = 0.0;
             }
             double count = 0.0;
+            ringmesh_assert( nb_polygon_vertices( polygon_id ) >= 1 );
             for( index_t v = 0; v < nb_polygon_vertices( polygon_id ); ++v ) {
                 result += this->vertex( polygon_vertex( polygon_id, v ) );
                 count += 1.0;
@@ -842,6 +843,7 @@ namespace RINGMesh {
                 result[i] = 0.0;
             }
             double count = 0.0;
+            ringmesh_assert( nb_cell_vertices( cell_id ) >= 1 );
             for( index_t v = 0; v < nb_cell_vertices( cell_id ); ++v ) {
                 result += this->vertex( cell_vertex( cell_id, v ) );
                 count += 1.0;

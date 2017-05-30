@@ -1114,7 +1114,7 @@ namespace RINGMesh {
         return true;
     }
 
-    bool GeoModelBuilderGeology::check_if_boundary_in_boundary_relation_already_exists(
+    bool GeoModelBuilderGeology::check_if_boundary_incident_entity_relation_already_exists(
         const gmge_id& parent,
         const gmme_id& children )
     {
@@ -1144,7 +1144,7 @@ namespace RINGMesh {
             throw RINGMeshException( "Entity", message.str() );
         }
 
-        if( check_if_boundary_in_boundary_relation_already_exists( parent,
+        if( check_if_boundary_incident_entity_relation_already_exists( parent,
             children ) ) {
             return;
         }
@@ -1277,8 +1277,8 @@ namespace RINGMesh {
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
             const Line& L = geomodel_.line( i );
             std::set< gmge_id > cur_interfaces;
-            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                const GeoModelMeshEntity& S = L.in_boundary( j );
+            for( index_t j = 0; j < L.nb_incident_entities(); ++j ) {
+                const GeoModelMeshEntity& S = L.incident_entity( j );
                 gmge_id parent_interface = S.parent_gmge(
                     Interface::type_name_static() );
                 cur_interfaces.insert( parent_interface );
