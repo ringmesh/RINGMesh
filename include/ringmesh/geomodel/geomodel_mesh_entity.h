@@ -728,32 +728,6 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Gets the next vertex index in a polygon.
-         */
-        index_t next_polygon_vertex_index(
-            index_t polygon_index,
-            index_t vertex_index ) const
-        {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
-            ringmesh_assert(
-                vertex_index < nb_mesh_element_vertices( polygon_index ) );
-            return surface_mesh_->next_polygon_vertex( polygon_index, vertex_index );
-        }
-
-        /*!
-         * @brief Gets the previous vertex index in a polygon.
-         */
-        index_t prev_polygon_vertex_index(
-            index_t polygon_index,
-            index_t vertex_index ) const
-        {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
-            ringmesh_assert(
-                vertex_index < nb_mesh_element_vertices( polygon_index ) );
-            return surface_mesh_->prev_polygon_vertex( polygon_index, vertex_index );
-        }
-
-        /*!
          * @brief Gets the polygon adjacent along an edge of a polygon.
          * @param polygon_index in the polygon
          * @param edge_index in the edge
@@ -770,117 +744,9 @@ namespace RINGMesh {
             return surface_mesh_->polygon_adjacent( polygon_index, edge_index );
         }
 
-        /*!
-         * @brief Get the previous edge on the border
-         * @details The returned border edge is the previous in the way of polygon edges
-         * orientation.
-         * @param[in] p Input polygon index
-         * @param[in] e Edge index in the polygon
-         * @param[out] prev_p Previous polygon index
-         * @param[out] prev_e Previous edge index in the polygon
-         *
-         * @pre the surface must be correctly oriented and
-         * the given polygon edge must be on border
-         * @warning the edge index is in fact the index of the vertex where the edge starts.
-         */
-        void prev_on_border(
-            index_t p,
-            index_t e,
-            index_t& prev_p,
-            index_t& prev_e ) const
-        {
-            return surface_mesh_->prev_on_border( p, e, prev_p, prev_e );
-        }
-
-        /*!
-         * @brief Get the next edge on the border
-         * @details The returned border edge is the next in the way of polygon edges
-         * orientation.
-         * @param[in] p Input polygon index
-         * @param[in] e Edge index in the polygon
-         * @param[out] next_p Next polygon index
-         * @param[out] next_e Next edge index in the polygon
-         *
-         * @pre the given polygon edge must be on border
-         * @warning the edge index is in fact the index of the vertex where the edge starts.
-         */
-        void next_on_border(
-            index_t p,
-            index_t e,
-            index_t& next_p,
-            index_t& next_e ) const
-        {
-            return surface_mesh_->next_on_border( p, e, next_p, next_e );
-        }
-
-        /*!
-         * @brief Get the vertex index in a polygon @param polygon_index from its
-         * index in the Surface @param surface_vertex_index
-         * @return NO_ID or index of the vertex in the polygon
-         */
-        index_t vertex_index_in_polygon(
-            index_t polygon_index,
-            index_t surface_vertex_index ) const
-        {
-            return surface_mesh_->vertex_index_in_polygon( polygon_index,
-                surface_vertex_index );
-        }
-
-        /*!
-         * @brief Get the first polygon of the surface that has an edge linking the two vertices (ids in the surface)
-         *
-         * @param[in] in0 Index of the first vertex in the surface
-         * @param[in] in1 Index of the second vertex in the surface
-         * @return NO_ID or the index of the polygon
-         */
-        index_t polygon_from_surface_vertex_ids( index_t in0, index_t in1 ) const
-        {
-            return surface_mesh_->polygon_from_vertex_ids( in0, in1 );
-        }
-
-        /*!
-         * @brief Determines the polygons around a vertex
-         * @param[in] surf_vertex_id Index of the vertex in the surface
-         * @param[in] border_only If true only polygons on the border are considered
-         * @param[in] first_polygon (Optional) Index of one polygon containing the vertex @param P
-         * @return Indices of the polygons containing @param P
-         * @note If a polygon containing the vertex is given, polygons around this
-         * vertex is search by propagation. Else, a first polygon is found by brute
-         * force algorithm, and then the other by propagation
-         */
-        std::vector< index_t > polygons_around_vertex(
-            index_t surf_vertex_id,
-            bool border_only,
-            index_t first_polygon = NO_ID ) const
-        {
-            return surface_mesh_->polygons_around_vertex( surf_vertex_id,
-                border_only, first_polygon );
-        }
-
         /*! @}
-         * \name Geometrical request on polygons
          * @{
          */
-        /*!
-         * @return Normal to the polygon
-         */
-        vec3 polygon_normal( index_t polygon_index ) const
-        {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
-            return surface_mesh_->polygon_normal( polygon_index );
-        }
-        /*!
-         * @brief Computes the normal of the surface at the vertex location
-         * it computes the average value of polygon normal neighbors
-         * @param[in] vertex_id the vertex index
-         * @param[in] p0 index of a polygon that contain the vertex \param vertex_id
-         * @return the normal of the surface at the given vertex
-         */
-        vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
-        {
-            ringmesh_assert( vertex_id < this->nb_vertices() );
-            return surface_mesh_->normal_at_vertex( vertex_id, p0 );
-        }
         /*!
          * @return Polygon barycenter.
          */
@@ -899,38 +765,6 @@ namespace RINGMesh {
             ringmesh_assert( polygon_index < nb_mesh_elements() );
             return surface_mesh_->polygon_area( polygon_index );
         }
-
-        /*!
-         * @brief Compute closest vertex in a polygon of a Surface to a point
-         * @param[in] polygon_index Polygon index
-         * @param[in] query_point Coordinates of the point to which distance is measured
-         * @return Index of the vertex of @param polygon_index closest to @param query_point
-         */
-        index_t closest_vertex_in_polygon(
-            index_t polygon_index,
-            const vecn< DIMENSION >& query_point ) const
-        {
-            return surface_mesh_->closest_vertex_in_polygon( polygon_index,
-                query_point );
-        }
-
-        /*!
-         * Is the edge starting with the given vertex of the polygon on a border of the Surface?
-         */
-        bool is_on_border( index_t polygon_index, index_t vertex_index ) const
-        {
-            return surface_mesh_->is_edge_on_border( polygon_index, vertex_index );
-        }
-
-        /*!
-         * Is one of the edges of the polygon on the border of the surface?
-         */
-        bool is_on_border( index_t polygon_index ) const
-        {
-            return surface_mesh_->is_polygon_on_border( polygon_index );
-        }
-        /*! @}
-         */
 
         /*!
          * @brief Get the low level mesh data structure
@@ -1189,43 +1023,6 @@ namespace RINGMesh {
          * \name Geometrical request on Region Entity
          * @{
          */
-        bool is_cell_facet_on_border( index_t cell_index, index_t facet_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return volume_mesh_->cell_adjacent( cell_index, facet_index )
-                    == GEO::NO_CELL;
-            }
-            ringmesh_assert_not_reached;
-            return false;
-        }
-
-        vecn< DIMENSION > cell_facet_barycenter(
-            index_t cell_index,
-            index_t facet_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return volume_mesh_->cell_facet_barycenter( cell_index, facet_index );
-            }
-            ringmesh_assert_not_reached;
-            return vecn< DIMENSION >();
-        }
-
-        vecn< DIMENSION > cell_facet_normal(
-            index_t cell_index,
-            index_t facet_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return volume_mesh_->cell_facet_normal( cell_index, facet_index );
-            }
-            ringmesh_assert_not_reached;
-            return vecn< DIMENSION >();
-        }
 
         /*!
          * @brief Volume of a cell
@@ -1276,11 +1073,6 @@ namespace RINGMesh {
             ringmesh_assert_not_reached;
             return vecn< DIMENSION >();
         }
-
-        index_t cells_around_vertex(
-            index_t vertex_id,
-            std::vector< index_t >& result,
-            index_t cell_hint ) const;
 
         void compute_region_volumes_per_cell_type(
             double& tet_volume,

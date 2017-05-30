@@ -664,18 +664,19 @@ namespace RINGMesh {
             const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
             for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
                 const Surface< 3 >& S = geomodel_.surface( s );
+                const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
                 gmme_id S_id = S.gmme();
                 for( index_t p = 0; p < S.nb_mesh_elements(); ++p ) {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); ++v ) {
-                        if( S.is_on_border( p, v ) ) {
+                        if( mesh.is_edge_on_border( p, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
                                 S_id, p, v );
                             index_t next_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S_id, p,
-                                    S.next_polygon_vertex_index( p, v ) );
+                                    mesh.next_polygon_vertex( p, v ) );
                             index_t previous_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S_id, p,
-                                    S.prev_polygon_vertex_index( p, v ) );
+                                    mesh.prev_polygon_vertex( p, v ) );
                             border_triangles_.push_back(
                                 BorderTriangle( s, p, vertex, next_vertex,
                                     previous_vertex ) );
@@ -693,6 +694,7 @@ namespace RINGMesh {
         {
             const BorderTriangle& border_triangle = border_triangles_[from];
             const Surface< 3 >& S = geomodel_.surface( border_triangle.surface_ );
+            const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
 
             const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
 
@@ -704,12 +706,12 @@ namespace RINGMesh {
             ringmesh_assert( !possible_v0_id.empty() );
             index_t v0_id = NO_ID;
             for( index_t id : possible_v0_id ) {
-                if( S.vertex_index_in_polygon( p, id ) != NO_ID ) {
+                if( mesh.vertex_index_in_polygon( p, id ) != NO_ID ) {
                     v0_id = id;
                 }
             }
             ringmesh_assert( v0_id != NO_ID );
-            index_t v0_id_in_polygon = S.vertex_index_in_polygon( p, v0_id );
+            index_t v0_id_in_polygon = mesh.vertex_index_in_polygon( p, v0_id );
             ringmesh_assert( v0_id_in_polygon != NO_ID );
 
             index_t next_f = NO_ID;
@@ -717,13 +719,13 @@ namespace RINGMesh {
             index_t next_f_v1 = NO_ID;
 
             if( !backward ) {
-                S.next_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
+                mesh.next_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
+                next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
             } else {
-                S.prev_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
+                mesh.prev_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
+                next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
             }
 
             // Finds the BorderTriangle that is corresponding to this

@@ -78,6 +78,7 @@ namespace {
         index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() );
         index_t cur_neighbor = 0;
         index_t prev_neighbor = 0;
+        const SurfaceMesh< 3 >& mesh = surface.low_level_mesh_storage();
         do {
             prev_neighbor = cur_neighbor;
             cur_neighbor += nb_neighbors;
@@ -91,7 +92,7 @@ namespace {
                     j++ ) {
                     if( inexact_equal( surface.mesh_element_vertex( p, j ), v0,
                         surface.geomodel().epsilon() ) ) {
-                        index_t j_next = surface.next_polygon_vertex_index( p, j );
+                        index_t j_next = mesh.next_polygon_vertex( p, j );
                         if( inexact_equal( surface.mesh_element_vertex( p, j_next ),
                             v1, surface.geomodel().epsilon() ) ) {
                             e = j;
@@ -120,8 +121,9 @@ namespace {
         if( nb_cell_facet_vertices != nb_polygon_vertices ) {
             return false;
         }
-        vec3 cell_facet_barycenter = region.cell_facet_barycenter( cell,
-            cell_facet );
+        vec3 cell_facet_barycenter =
+            region.low_level_mesh_storage().cell_facet_barycenter( cell,
+                cell_facet );
         vec3 polygon_barycenter = surface.mesh_element_barycenter( polygon );
         return inexact_equal( cell_facet_barycenter, polygon_barycenter,
             region.geomodel().epsilon() );
@@ -238,11 +240,12 @@ namespace {
         const vec3& v0,
         const vec3& v1 )
     {
+        const SurfaceMesh< 3 >& mesh = surface.low_level_mesh_storage();
         for( index_t v = 0; v < surface.nb_mesh_element_vertices( p ); v++ ) {
             if( !inexact_equal( surface.mesh_element_vertex( p, v ), v0,
                 surface.geomodel().epsilon() ) ) continue;
-            index_t prev_v = surface.prev_polygon_vertex_index( p, v );
-            index_t next_v = surface.next_polygon_vertex_index( p, v );
+            index_t prev_v = mesh.prev_polygon_vertex( p, v );
+            index_t next_v = mesh.next_polygon_vertex( p, v );
             if( inexact_equal( surface.mesh_element_vertex( p, prev_v ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return prev_v;
@@ -260,9 +263,10 @@ namespace {
         const Surface< 3 >& surface,
         index_t polygon )
     {
+        const VolumeMesh< 3 >& mesh = region.low_level_mesh_storage();
         vec3 polygon_barycenter = surface.mesh_element_barycenter( polygon );
         for( index_t f = 0; f < region.nb_cell_facets( cell ); f++ ) {
-            vec3 cell_facet_barycenter = region.cell_facet_barycenter( cell, f );
+            vec3 cell_facet_barycenter = mesh.cell_facet_barycenter( cell, f );
             if( inexact_equal( cell_facet_barycenter, polygon_barycenter,
                 surface.geomodel().epsilon() ) ) {
                 return f;
@@ -363,7 +367,8 @@ namespace RINGMesh {
         const gmme_id& entity_id,
         index_t nb_vertices )
     {
-        GeoModelMeshEntity< 3 >& E = geomodel_access_.modifiable_mesh_entity( entity_id );
+        GeoModelMeshEntity< 3 >& E = geomodel_access_.modifiable_mesh_entity(
+            entity_id );
         GeoModelMeshEntityAccess< 3 > gmme_access( E );
         std::unique_ptr< MeshBaseBuilder< 3 > > builder =
             MeshBaseBuilder< 3 >::create_builder( *gmme_access.modifiable_mesh() );
@@ -375,7 +380,8 @@ namespace RINGMesh {
         const std::vector< index_t >& geomodel_vertices,
         bool clear )
     {
-        GeoModelMeshEntity< 3 >& E = geomodel_access_.modifiable_mesh_entity( entity_id );
+        GeoModelMeshEntity< 3 >& E = geomodel_access_.modifiable_mesh_entity(
+            entity_id );
         GeoModelMeshEntityAccess< 3 > gmme_access( E );
         std::unique_ptr< MeshBaseBuilder< 3 > > builder =
             MeshBaseBuilder< 3 >::create_builder( *gmme_access.modifiable_mesh() );
@@ -394,8 +400,8 @@ namespace RINGMesh {
     void GeoModelBuilderGeometry::set_corner( index_t corner_id, const vec3& point )
     {
         check_and_initialize_corner_vertex( geomodel_, corner_id );
-        set_mesh_entity_vertex( gmme_id( Corner< 3 >::type_name_static(), corner_id ), 0,
-            point, false );
+        set_mesh_entity_vertex(
+            gmme_id( Corner< 3 >::type_name_static(), corner_id ), 0, point, false );
     }
 
     void GeoModelBuilderGeometry::set_line(
@@ -405,8 +411,9 @@ namespace RINGMesh {
         set_mesh_entity_vertices( gmme_id( Line< 3 >::type_name_static(), line_id ),
             vertices, true );
 
-        Line< 3 >& line = dynamic_cast< Line< 3 >& >( geomodel_access_.modifiable_mesh_entity(
-            gmme_id( Line< 3 >::type_name_static(), line_id ) ) );
+        Line< 3 >& line =
+            dynamic_cast< Line< 3 >& >( geomodel_access_.modifiable_mesh_entity(
+                gmme_id( Line< 3 >::type_name_static(), line_id ) ) );
         std::unique_ptr< LineMeshBuilder< 3 > > builder = create_line_builder(
             line_id );
         for( index_t e = 1; e < line.nb_vertices(); e++ ) {
@@ -420,7 +427,8 @@ namespace RINGMesh {
         const std::vector< index_t >& surface_polygons,
         const std::vector< index_t >& surface_polygon_ptr )
     {
-        set_mesh_entity_vertices( gmme_id( Surface< 3 >::type_name_static(), surface_id ),
+        set_mesh_entity_vertices(
+            gmme_id( Surface< 3 >::type_name_static(), surface_id ),
             surface_vertices, true );
         set_surface_geometry( surface_id, surface_polygons, surface_polygon_ptr );
     }
@@ -451,8 +459,8 @@ namespace RINGMesh {
         const std::vector< vec3 >& points,
         const std::vector< index_t >& tetras )
     {
-        set_mesh_entity_vertices( gmme_id( Region< 3 >::type_name_static(), region_id ),
-            points, true );
+        set_mesh_entity_vertices(
+            gmme_id( Region< 3 >::type_name_static(), region_id ), points, true );
         assign_region_tet_mesh( region_id, tetras );
     }
 
@@ -461,7 +469,8 @@ namespace RINGMesh {
         index_t geomodel_vertex_id )
     {
         check_and_initialize_corner_vertex( geomodel_, corner_id );
-        set_mesh_entity_vertex( gmme_id( Corner< 3 >::type_name_static(), corner_id ), 0,
+        set_mesh_entity_vertex(
+            gmme_id( Corner< 3 >::type_name_static(), corner_id ), 0,
             geomodel_vertex_id );
     }
 
@@ -601,7 +610,8 @@ namespace RINGMesh {
         const std::vector< bool >& to_delete,
         bool remove_isolated_vertices )
     {
-        std::unique_ptr< LineMeshBuilder< 3 > > builder = create_line_builder( line_id );
+        std::unique_ptr< LineMeshBuilder< 3 > > builder = create_line_builder(
+            line_id );
         builder->delete_edges( to_delete, remove_isolated_vertices );
     }
     void GeoModelBuilderGeometry::delete_surface_polygons(
@@ -767,12 +777,13 @@ namespace RINGMesh {
             line.nb_vertices() );
         std::unique_ptr< SurfaceMeshBuilder< 3 > > surface_mesh_builder =
             create_surface_builder( surface_id );
+        const SurfaceMesh< 3 >& mesh = surface.low_level_mesh_storage();
         for( index_t v = 0; v < line.nb_vertices(); v++ ) {
             const vec3& p = line.vertex( v );
             const index_t& polygon_vertex = polygon_vertices[v].vertex_;
             const index_t& polygon = polygon_vertices[v].element_;
 
-            std::vector< index_t > polygons = surface.polygons_around_vertex(
+            std::vector< index_t > polygons = mesh.polygons_around_vertex(
                 polygon_vertex, false, polygon );
             update_polygon_vertex( surface_id, polygons, polygon_vertex, vertex_id );
             surface_mesh_builder->set_vertex( vertex_id, p );
@@ -807,13 +818,14 @@ namespace RINGMesh {
             surface.nb_vertices() );
         std::unique_ptr< VolumeMeshBuilder< 3 > > region_mesh_builder =
             create_region_builder( region_id );
+        const VolumeMesh< 3 >& mesh = region.low_level_mesh_storage();
         for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
             const vec3& p = surface.vertex( v );
             const index_t& cell = cell_vertices[v].element_;
             const index_t& cell_vertex = cell_vertices[v].vertex_;
 
             std::vector< index_t > cells;
-            region.cells_around_vertex( cell_vertex, cells, cell );
+            mesh.cells_around_vertex( cell_vertex, cells, cell );
             update_cell_vertex( region_id, cells, cell_vertex, vertex_id );
             region_mesh_builder->set_vertex( vertex_id, p );
             vertex_id++;

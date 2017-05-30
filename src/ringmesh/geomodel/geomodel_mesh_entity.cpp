@@ -945,64 +945,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t Region< DIMENSION >::cells_around_vertex(
-        index_t vertex_id,
-        std::vector< index_t >& result,
-        index_t cell_hint ) const
-    {
-        result.resize( 0 );
-
-        if( cell_hint == NO_ID ) {
-            return 0;
-        }
-
-        // Flag the visited cells
-        std::vector< index_t > visited;
-        visited.reserve( 10 );
-
-        // Stack of the adjacent cells
-        std::stack< index_t > S;
-        S.push( cell_hint );
-        visited.push_back( cell_hint );
-
-        do {
-            index_t c = S.top();
-            S.pop();
-
-            bool cell_includes_vertex = false;
-            for( index_t v = 0; v < nb_mesh_element_vertices( c ); v++ ) {
-                if( mesh_element_vertex_index( c, v ) == vertex_id ) {
-                    result.push_back( c );
-                    cell_includes_vertex = true;
-                    break;
-                }
-            }
-            if( !cell_includes_vertex ) {
-                continue;
-            }
-
-            for( index_t f = 0; f < nb_cell_facets( c ); f++ ) {
-                for( index_t v = 0; v < nb_cell_facet_vertices( c, f ); v++ ) {
-                    index_t vertex = cell_facet_vertex_index( c, f, v );
-                    if( vertex == vertex_id ) {
-                        index_t adj_P = cell_adjacent_index( c, f );
-
-                        if( adj_P != NO_ID ) {
-                            if( !contains( visited, adj_P ) ) {
-                                S.push( adj_P );
-                                visited.push_back( adj_P );
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-        } while( !S.empty() );
-
-        return static_cast< index_t >( result.size() );
-    }
-
-    template< index_t DIMENSION >
     void GeoModelMeshEntityAccess< DIMENSION >::change_mesh_data_structure(
         const MeshType type )
     {

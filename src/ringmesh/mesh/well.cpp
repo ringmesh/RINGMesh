@@ -139,7 +139,8 @@ namespace {
         index_t triangle )
     {
         vec3 direction = vertex - on_surface;
-        return dot( direction, surface.polygon_normal( triangle ) ) > 0;
+        return dot( direction,
+            surface.low_level_mesh_storage().polygon_normal( triangle ) ) > 0;
     }
 
     index_t find_region_from_corners(
@@ -567,8 +568,8 @@ namespace RINGMesh {
         LineMesh< 3 >& out )
     {
         double epsilon = geomodel_->epsilon();
-        std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
-            > ::create_builder( out );
+        std::unique_ptr< LineMeshBuilder< 3 > > builder =
+            LineMeshBuilder< 3 >::create_builder( out );
         builder->clear( false, false );
 
         GEO::Attribute< LineInstersection > vertex_info(
