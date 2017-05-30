@@ -81,12 +81,12 @@ namespace RINGMesh {
          * @return the index of the closest element box
          * @tparam EvalDistance this functor should have an operator() defined like this:
          *  void operator()(
-         *      const vec3& query,
+         *      const vecn< DIMENSION >& query,
          *      index_t cur_box,
-         *      vec3& nearest_point,
+         *      vecn< DIMENSION >& nearest_point,
          *      double& distance ) const ;
          * where query is the same than \p query, cur_box is the element box index
-         * (e.g. in the case of AABBTree2D, this index is a polygon index) and nearest_point
+         * (e.g. in the case of SurfaceAABBTree, this index is a polygon index) and nearest_point
          * and distance are the value computed using the element in the \p cur_box.
          */
         template< typename EvalDistance >
