@@ -46,7 +46,8 @@
 namespace {
     using namespace RINGMesh;
 
-    bool check_has_children( const GeoModelGeologicalEntity< 3 >& E )
+    template< index_t DIMENSION >
+    bool check_has_children( const GeoModelGeologicalEntity< DIMENSION >& E )
     {
         if( E.nb_children() == 0 ) {
             Logger::warn( "GeoModel", E.type_name(), " ", E.index(),
@@ -232,5 +233,11 @@ namespace RINGMesh {
         GMGE->id_ = index_in_geomodel;
         return std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > >( GMGE );
     }
+
+//    template class GeoModelGeologicalEntity< 2 > ;
+//    template class GeoModelGeologicalEntityAccess< 2 > ;
+
+    template class GeoModelGeologicalEntity< 3 > ;
+    template class GeoModelGeologicalEntityAccess< 3 > ;
 
 }

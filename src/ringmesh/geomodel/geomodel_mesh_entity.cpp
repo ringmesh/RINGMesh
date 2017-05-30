@@ -1056,11 +1056,14 @@ namespace RINGMesh {
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
-
+//    template class GeoModelMeshEntity< 2 >;
+//    template class GeoModelMeshEntityAccess< 2 >;
 //    template class Corner< 2 >;
 //    template class Line< 2 >;
 //    template class Surface< 2 >;
 
+    template class GeoModelMeshEntity< 3 >;
+    template class GeoModelMeshEntityAccess< 3 >;
     template class Corner< 3 >;
     template class Line< 3 >;
     template class Surface< 3 >;
