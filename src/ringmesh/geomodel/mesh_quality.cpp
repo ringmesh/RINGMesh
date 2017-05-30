@@ -377,7 +377,7 @@ namespace RINGMesh {
     {
         ringmesh_assert( geomodel.nb_regions() != 0 );
         for( index_t reg_itr = 0; reg_itr < geomodel.nb_regions(); ++reg_itr ) {
-            const Region& cur_reg = geomodel.region( reg_itr );
+            const Region< 3 >& cur_reg = geomodel.region( reg_itr );
             ringmesh_assert( cur_reg.is_meshed() );
             ringmesh_assert( cur_reg.is_simplicial() );
             GEO::AttributesManager& reg_attr_mgr = cur_reg.cell_attribute_manager();

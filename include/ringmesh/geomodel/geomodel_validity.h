@@ -49,7 +49,7 @@
 
 namespace RINGMesh {
     class GeoModel;
-    class GeoModelEntity;
+    template< index_t DIMENSION > class GeoModelEntity;
 }
 
 namespace RINGMesh {
