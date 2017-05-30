@@ -50,7 +50,7 @@ namespace RINGMesh {
         &hard_encoded_mesh_entity_types_array[4] );
 
     MeshEntityTypeBoundaryMap MeshEntityTypeManager::boundary_relationships_;
-    MeshEntityTypeInBoundaryMap MeshEntityTypeManager::in_boundary_relationships_;
+    MeshEntityTypeIncidentEntityMap MeshEntityTypeManager::incident_entity_relationships_;
     MeshEntityTypeManager::MeshEntityTypeManager()
     {
     }
@@ -64,14 +64,14 @@ namespace RINGMesh {
         register_boundary( Region< 3 >::type_name_static(), Surface< 3 >::type_name_static() );
     }
 
-    MeshEntityTypeInBoundaryMap::MeshEntityTypeInBoundaryMap()
+    MeshEntityTypeIncidentEntityMap::MeshEntityTypeIncidentEntityMap()
     {
-        register_in_boundary( Corner< 3 >::type_name_static(), Line< 3 >::type_name_static() );
-        register_in_boundary( Line< 3 >::type_name_static(),
+        register_incident_entity( Corner< 3 >::type_name_static(), Line< 3 >::type_name_static() );
+        register_incident_entity( Line< 3 >::type_name_static(),
             Surface< 3 >::type_name_static() );
-        register_in_boundary( Surface< 3 >::type_name_static(),
+        register_incident_entity( Surface< 3 >::type_name_static(),
             Region< 3 >::type_name_static() );
-        register_in_boundary( Region< 3 >::type_name_static(),
+        register_incident_entity( Region< 3 >::type_name_static(),
             ForbiddenMeshEntityType::type_name_static() );
     }
 
@@ -105,12 +105,12 @@ namespace RINGMesh {
         ringmesh_assert( itr != boundary_relationships_.map.end() );
         return itr->second;
     }
-    const MeshEntityType& MeshEntityTypeManager::in_boundary_type(
+    const MeshEntityType& MeshEntityTypeManager::incident_entity_type(
         const MeshEntityType& mesh_entity_type )
     {
-        MeshEntityTypeMap::const_iterator itr = in_boundary_relationships_.map.find(
+        MeshEntityTypeMap::const_iterator itr = incident_entity_relationships_.map.find(
             mesh_entity_type );
-        ringmesh_assert( itr != in_boundary_relationships_.map.end() );
+        ringmesh_assert( itr != incident_entity_relationships_.map.end() );
         return itr->second;
     }
 

@@ -265,12 +265,12 @@ namespace RINGMesh {
     bool GeoModelMeshEntity< DIMENSION >::is_inside_border(
         const GeoModelMeshEntity& rhs ) const
     {
-        // Find out if this surface is twice in the in_boundary vector
+        // Find out if this surface is twice in the incident_entity vector
         gmme_id rhs_id = rhs.gmme();
         const RelationshipManager& manager =
             this->geomodel().entity_type_manager().relationship_manager;
-        return std::count_if( in_boundary_.begin(), in_boundary_.end(),
-            [&rhs_id, &manager](index_t i) {return manager.in_boundary_gmme( i ) == rhs_id;} )
+        return std::count_if( incident_entities_.begin(), incident_entities_.end(),
+            [&rhs_id, &manager](index_t i) {return manager.incident_entity_gmme( i ) == rhs_id;} )
             > 1;
     }
 
@@ -366,15 +366,15 @@ namespace RINGMesh {
                 const GeoModelMeshEntity& E = boundary( i );
                 bool found = false;
                 index_t j = 0;
-                while( !found && j < E.nb_in_boundary() ) {
-                    if( E.in_boundary_gmme( j ) == id ) {
+                while( !found && j < E.nb_incident_entities() ) {
+                    if( E.incident_entity_gmme( j ) == id ) {
                         found = true;
                     }
                     j++;
                 }
                 if( !found ) {
                     Logger::warn( "GeoModelEntity",
-                        "Inconsistency boundary-in_boundary between ", id, " and ",
+                        "Inconsistency boundary-incident_entity between ", id, " and ",
                         E.gmme() );
                     valid = false;
                 }
@@ -383,25 +383,24 @@ namespace RINGMesh {
         return valid;
     }
 
-    template< index_t DIMENSION >
-    bool GeoModelMeshEntity< DIMENSION >::is_in_boundary_connectivity_valid() const
+    bool GeoModelMeshEntity::is_incident_entity_connectivity_valid() const
     {
         const MeshEntityTypeManager& family =
             this->geomodel().entity_type_manager().mesh_entity_manager;
         const MeshEntityType entity_type = type_name();
-        const MeshEntityType& in_boundary_type = family.in_boundary_type(
+        const MeshEntityType& incident_entity_type = family.incident_entity_type(
             entity_type );
 
         bool valid = true;
         gmme_id id = gmme();
-        if( family.is_valid_type( in_boundary_type ) ) {
-            if( nb_in_boundary() == 0 ) {
+        if( family.is_valid_type( incident_entity_type ) ) {
+            if( nb_incident_entities() == 0 ) {
                 Logger::warn( "GeoModelEntity", id,
                     " is in the boundary of no entity " );
                 valid = false;
             }
-            for( index_t i = 0; i < nb_in_boundary(); ++i ) {
-                const GeoModelMeshEntity& E = in_boundary( i );
+            for( index_t i = 0; i < nb_incident_entities(); ++i ) {
+                const GeoModelMeshEntity& E = incident_entity( i );
                 bool found = false;
                 index_t j = 0;
                 while( !found && j < E.nb_boundaries() ) {
@@ -412,7 +411,7 @@ namespace RINGMesh {
                 }
                 if( !found ) {
                     Logger::warn( "GeoModelEntity",
-                        "Inconsistency in_boundary-boundary between ", id, " and ",
+                        "Inconsistency incident_entity-boundary between ", id, " and ",
                         E.gmme() );
                     valid = false;
                 }
@@ -478,7 +477,7 @@ namespace RINGMesh {
     bool GeoModelMeshEntity< DIMENSION >::is_connectivity_valid() const
     {
         return is_boundary_connectivity_valid()
-            && is_in_boundary_connectivity_valid();
+            && is_incident_entity_connectivity_valid();
     }
 
     template< index_t DIMENSION >
@@ -545,19 +544,19 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const GeoModelMeshEntity< DIMENSION >& GeoModelMeshEntity< DIMENSION >::in_boundary(
+    const GeoModelMeshEntity< DIMENSION >& GeoModelMeshEntity< DIMENSION >::incident_entity(
         index_t x ) const
     {
-        return this->geomodel().mesh_entity( in_boundary_gmme( x ) );
+        return this->geomodel().mesh_entity( incident_entity_gmme( x ) );
     }
 
     template< index_t DIMENSION >
-    const gmme_id& GeoModelMeshEntity< DIMENSION >::in_boundary_gmme(
+    const gmme_id& GeoModelMeshEntity< DIMENSION >::incident_entity_gmme(
         index_t x ) const
     {
-        ringmesh_assert( x < nb_in_boundary() );
+        ringmesh_assert( x < nb_incident_entity() );
         return this->geomodel().entity_type_manager().relationship_manager.in_boundary_gmme(
-            in_boundary_[x] );
+            incident_entity_[x] );
     }
 
     template< index_t DIMENSION >
@@ -574,8 +573,8 @@ namespace RINGMesh {
     bool Corner< DIMENSION >::is_on_voi() const
     {
         // True if one of the incident surface define the universe
-        for( index_t i = 0; i < this->nb_in_boundary(); ++i ) {
-            if( in_boundary( i ).is_on_voi() ) {
+        for( index_t i = 0; i < this->nb_incident_entities(); ++i ) {
+            if( incident_entity( i ).is_on_voi() ) {
                 return true;
             }
         }
@@ -596,9 +595,9 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const Line< DIMENSION >& Corner< DIMENSION >::in_boundary( index_t x ) const
+    const Line< DIMENSION >& Corner< DIMENSION >::incident_entity( index_t x ) const
     {
-        return static_cast< const Line< DIMENSION >& >( GeoModelMeshEntity< DIMENSION >::in_boundary(
+        return static_cast< const Line< DIMENSION >& >( GeoModelMeshEntity< DIMENSION >::incident_entity(
             x ) );
     }
 
@@ -721,8 +720,8 @@ namespace RINGMesh {
     bool Line< DIMENSION >::is_on_voi() const
     {
         // True if one of the incident surface define the universe
-        for( index_t i = 0; i < this->nb_in_boundary(); ++i ) {
-            if( in_boundary( i ).is_on_voi() ) {
+        for( index_t i = 0; i < nb_incident_entities(); ++i ) {
+            if( incident_entity( i ).is_on_voi() ) {
                 return true;
             }
         }
@@ -730,10 +729,10 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const Surface< DIMENSION >& Line< DIMENSION >::in_boundary( index_t x ) const
+    const Surface< DIMENSION >& Line< DIMENSION >::incident_entity( index_t x ) const
     {
         return static_cast< const Surface< DIMENSION >& >( GeoModelMeshEntity<
-            DIMENSION >::in_boundary( x ) );
+            DIMENSION >::incident_entity( x ) );
     }
 
     template< index_t DIMENSION >
@@ -827,10 +826,10 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const Region< DIMENSION >& Surface< DIMENSION >::in_boundary( index_t x ) const
+    const Region< DIMENSION >& Surface< DIMENSION >::incident_entity( index_t x ) const
     {
         return static_cast< const Region< DIMENSION >& >( GeoModelMeshEntity<
-            DIMENSION >::in_boundary( x ) );
+            DIMENSION >::incident_entity( x ) );
     }
 
     /********************************************************************/
