@@ -1055,4 +1055,14 @@ namespace RINGMesh {
         builder->copy( *volume_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
+
+
+//    template class Corner< 2 >;
+//    template class Line< 2 >;
+//    template class Surface< 2 >;
+
+    template class Corner< 3 >;
+    template class Line< 3 >;
+    template class Surface< 3 >;
+    template class Region< 3 >;
 }
