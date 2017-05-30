@@ -59,7 +59,9 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelEntity );
     public:
 
-        virtual ~GeoModelEntity();
+        virtual ~GeoModelEntity()
+        {
+        }
 
         virtual bool is_on_voi() const = 0;
         virtual bool is_valid() const = 0;
@@ -115,7 +117,7 @@ namespace RINGMesh {
     class RINGMESH_API Universe: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy( Universe );
     public:
-        friend class UniverseAccess< DIMENSION >;
+        friend class UniverseAccess< DIMENSION > ;
 
         Universe( const GeoModel& geomodel );
 
@@ -124,7 +126,9 @@ namespace RINGMesh {
             return UniverseType();
         }
 
-        virtual ~Universe() = default;
+        virtual ~Universe()
+        {
+        }
 
         virtual bool is_valid() const override;
         virtual bool is_on_voi() const override
@@ -184,6 +188,10 @@ namespace RINGMesh {
     private:
         UniverseAccess( Universe< DIMENSION >& universe )
             : universe_( universe )
+        {
+        }
+
+        ~UniverseAccess()
         {
         }
 
