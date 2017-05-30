@@ -38,7 +38,7 @@
 #include <ringmesh/basic/common.h>
 
 /*!
- * @file BoxND class declaration
+ * @file Box class declaration
  * @author Arnaud Botella
  */
 

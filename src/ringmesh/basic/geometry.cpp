@@ -73,6 +73,7 @@ namespace {
         vec2 AB = B - A;
         vec2 AC = C - A;
         double L_AB = length( AB );
+        ringmesh_assert( L_AB > global_epsilon );
         vec2 projected = ( -AB / L_AB ) * ( dot( AC, AB ) / L_AB ) + A;
         return L_AB * length( projected - C ) * 0.5;
     }

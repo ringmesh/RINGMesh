@@ -559,15 +559,15 @@ namespace RINGMesh {
         }
     }
 
-//    template class AABBTree< 2 > ;
-    template class BoxAABBTree< 2 > ;
-    template class LineAABBTree< 2 > ;
-    template class SurfaceAABBTree< 2 > ;
+//    template class AABBTree< 2 >;
+    template class BoxAABBTree< 2 >;
+    template class LineAABBTree< 2 >;
+    template class SurfaceAABBTree< 2 >;
 
-    template class AABBTree< 3 > ;
-    template class BoxAABBTree< 3 > ;
-    template class LineAABBTree< 3 > ;
-    template class SurfaceAABBTree< 3 > ;
-    template class VolumeAABBTree< 3 > ;
+    template class AABBTree< 3 >;
+    template class BoxAABBTree< 3 >;
+    template class LineAABBTree< 3 >;
+    template class SurfaceAABBTree< 3 >;
+    template class VolumeAABBTree< 3 >;
 }
 
