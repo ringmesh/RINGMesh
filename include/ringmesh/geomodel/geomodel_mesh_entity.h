@@ -405,7 +405,7 @@ namespace RINGMesh {
             return nb_vertices;
         }
 
-        const Line& incident_entity( index_t x ) const;
+        const Line< DIMENSION >& incident_entity( index_t x ) const;
 
         /*! @}
          * \name Geometrical request on Corner
@@ -564,7 +564,7 @@ namespace RINGMesh {
          */
         bool is_closed() const
         {
-            ringmesh_assert( nb_boundaries() == 2 );
+            ringmesh_assert( this->nb_boundaries() == 2 );
             return ( this->boundary_gmme( 0 ).is_defined() )
                 && ( this->boundary_gmme( 0 ) == this->boundary_gmme( 1 ) );
         }
@@ -876,7 +876,7 @@ namespace RINGMesh {
          */
         vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
         {
-            ringmesh_assert( vertex_id < nb_vertices() );
+            ringmesh_assert( vertex_id < this->nb_vertices() );
             return surface_mesh_->normal_at_vertex( vertex_id, p0 );
         }
         /*!
@@ -1358,9 +1358,9 @@ namespace RINGMesh {
             return gmme_.mesh_;
         }
 
-        const std::vector< index_t >& in_boundary_relation_ids() const
+        const std::vector< index_t >& incident_entity_relation_ids() const
         {
-            return gmme_.in_boundary_;
+            return gmme_.incident_entities_;
         }
 
         const std::vector< index_t >& boundary_relation_ids() const
@@ -1402,9 +1402,9 @@ namespace RINGMesh {
             return gmme_.boundaries_;
         }
 
-        std::vector< index_t >& modifiable_in_boundaries()
+        std::vector< index_t >& modifiable_incident_entities()
         {
-            return gmme_.in_boundary_;
+            return gmme_.incident_entities_;
         }
 
         std::vector< bool >& modifiable_sides()

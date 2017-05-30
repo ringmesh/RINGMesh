@@ -56,7 +56,8 @@ namespace RINGMesh {
         if( !mesh ) {
             Logger::warn( "PointSetMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "PointSetMesh", "Falling back to GeogramPointSetMesh data structure" );
+            Logger::warn( "PointSetMesh",
+                "Falling back to GeogramPointSetMesh data structure" );
 
             mesh = new GeogramPointSetMesh< DIMENSION >;
         }
@@ -97,7 +98,8 @@ namespace RINGMesh {
         if( !mesh ) {
             Logger::warn( "SurfaceMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "SurfaceMesh", "Falling back to GeogramSurfaceMesh data structure" );
+            Logger::warn( "SurfaceMesh",
+                "Falling back to GeogramSurfaceMesh data structure" );
 
             mesh = new GeogramSurfaceMesh< DIMENSION >;
         }
@@ -191,7 +193,7 @@ namespace RINGMesh {
         index_t in0,
         index_t in1 ) const
     {
-        ringmesh_assert( in0 < nb_vertices() && in1 < nb_vertices() );
+        ringmesh_assert( in0 < this->nb_vertices() && in1 < this->nb_vertices() );
 
         // Another possible, probably faster, algorithm is to check if the 2 indices
         // are neighbors in polygons_ and check that they are in the same polygon
@@ -331,19 +333,20 @@ namespace RINGMesh {
         if( !mesh ) {
             Logger::warn( "VolumeMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "VolumeMesh", "Falling back to GeogramVolumeMesh data structure" );
+            Logger::warn( "VolumeMesh",
+                "Falling back to GeogramVolumeMesh data structure" );
 
             mesh = new GeogramVolumeMesh< DIMENSION >;
         }
         return std::unique_ptr< VolumeMesh< DIMENSION > >( mesh );
     }
 
-    template class PointSetMesh< 2 >;
-    template class LineMesh< 2 >;
-    template class SurfaceMeshBase< 2 >;
+    template class PointSetMesh< 2 > ;
+    template class LineMesh< 2 > ;
+    template class SurfaceMeshBase< 2 > ;
 
-    template class PointSetMesh< 3 >;
-    template class LineMesh< 3 >;
-    template class SurfaceMeshBase< 3 >;
-    template class VolumeMesh< 3 >;
+    template class PointSetMesh< 3 > ;
+    template class LineMesh< 3 > ;
+    template class SurfaceMeshBase< 3 > ;
+    template class VolumeMesh< 3 > ;
 }
