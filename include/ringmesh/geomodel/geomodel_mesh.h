@@ -77,7 +77,7 @@ namespace RINGMesh {
     protected:
         GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm );
 
-        void set_mesh( MeshBase<3>* mesh )
+        void set_mesh( MeshBase< 3 >* mesh )
         {
             mesh_base_ = mesh;
         }
@@ -92,7 +92,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         GeoModel& gm_;
         /// Attached MeshBase
-        MeshBase<3>* mesh_base_;
+        MeshBase< 3 >* mesh_base_;
     };
 
     class RINGMESH_API GeoModelMeshVertices: public GeoModelMeshBase {

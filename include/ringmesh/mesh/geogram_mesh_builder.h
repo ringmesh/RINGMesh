@@ -83,9 +83,9 @@ namespace RINGMesh {
             GEO::mesh_repair( *mesh_->mesh_, mode, colocate_epsilon );                          \
             clear_vertex_linked_objects();                                                      \
         }                                                                                       \
-        virtual void set_vertex( index_t v_id, const vec3& vertex ) override                    \
+        virtual void set_vertex( index_t v_id, const vecn< DIMENSION >& vertex ) override       \
         {                                                                                       \
-            mesh_->mesh_->vertices.point( v_id ) = vertex;                                      \
+            mesh_->ref_vertex( v_id ) = vertex;                                                 \
             clear_vertex_linked_objects();                                                      \
         }                                                                                       \
         virtual index_t create_vertex() override                                                \
