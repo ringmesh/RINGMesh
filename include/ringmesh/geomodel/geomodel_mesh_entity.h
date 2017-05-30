@@ -867,6 +867,7 @@ namespace RINGMesh {
         vec3 polygon_normal( index_t polygon_index ) const
         {
             ringmesh_assert( polygon_index < nb_mesh_elements() );
+            ringmesh_template_assert_3d( DIMENSION );
             return surface_mesh_->polygon_normal( polygon_index );
         }
         /*!
@@ -879,6 +880,7 @@ namespace RINGMesh {
         vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
         {
             ringmesh_assert( vertex_id < this->nb_vertices() );
+            ringmesh_template_assert_3d( DIMENSION );
             return surface_mesh_->normal_at_vertex( vertex_id, p0 );
         }
         /*!

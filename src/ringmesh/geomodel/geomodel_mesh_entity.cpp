@@ -830,6 +830,7 @@ namespace RINGMesh {
     const Region< DIMENSION >& Surface< DIMENSION >::incident_entity(
         index_t x ) const
     {
+        ringmesh_template_assert_3d( DIMENSION );
         return static_cast< const Region< DIMENSION >& >( GeoModelMeshEntity<
             DIMENSION >::incident_entity( x ) );
     }
