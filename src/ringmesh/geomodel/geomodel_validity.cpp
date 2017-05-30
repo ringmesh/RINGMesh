@@ -509,7 +509,8 @@ namespace {
                                 gmme_id s_id( Surface< 3 >::type_name_static(),
                                     surface );
                                 gmme_id l_id( Line< 3 >::type_name_static(), line );
-                                if( !is_in_incident_entity( geomodel, s_id, l_id ) ) {
+                                if( !is_in_incident_entity( geomodel, s_id,
+                                    l_id ) ) {
                                     Logger::warn( "GeoModel",
                                         " Inconsistent Line-Surface connectivity ",
                                         " Vertex ", i, " shows that ", s_id,
@@ -655,12 +656,14 @@ namespace {
                     && !is_edge_on_line( surface.geomodel(),
                         geomodel_vertices.geomodel_vertex_id( S_id, p, v ),
                         geomodel_vertices.geomodel_vertex_id( S_id, p,
-                            surface.next_polygon_vertex_index( p, v ) ) ) ) {
+                            surface.low_level_mesh_storage().next_polygon_vertex( p,
+                                v ) ) ) ) {
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id, p, v ) );
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id, p,
-                            surface.next_polygon_vertex_index( p, v ) ) );
+                            surface.low_level_mesh_storage().next_polygon_vertex( p,
+                                v ) ) );
                 }
             }
         }
