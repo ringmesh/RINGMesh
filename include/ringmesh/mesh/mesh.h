@@ -160,6 +160,10 @@ namespace RINGMesh {
 #define ringmesh_register_point_mesh_3d(type) \
     geo_register_creator(RINGMesh::PointMeshFactory3D, type, type::type_name_static())
 
+    using PointMeshFactory2D = PointMeshFactory< 2 >;
+#define ringmesh_register_point_mesh_2d(type) \
+    geo_register_creator(RINGMesh::PointMeshFactory2D, type, type::type_name_static())
+
     /*!
      * class for encapsulating line mesh (composed of edges)
      */
@@ -247,6 +251,10 @@ namespace RINGMesh {
     using LineMeshFactory3D = LineMeshFactory< 3 >;
 #define ringmesh_register_line_mesh_3d(type) \
     geo_register_creator(RINGMesh::LineMeshFactory3D, type, type::type_name_static())
+
+    using LineMeshFactory2D = LineMeshFactory< 2 >;
+#define ringmesh_register_line_mesh_2d(type) \
+    geo_register_creator(RINGMesh::LineMeshFactory2D, type, type::type_name_static())
 
     /*!
      * class for encapsulating surface mesh component
@@ -556,6 +564,10 @@ namespace RINGMesh {
     using SurfaceMeshFactory3D = SurfaceMeshFactory< 3 >;
 #define ringmesh_register_surface_mesh_3d(type) \
     geo_register_creator(RINGMesh::SurfaceMeshFactory3D, type, type::type_name_static())
+
+    using SurfaceMeshFactory2D = SurfaceMeshFactory< 2 >;
+#define ringmesh_register_surface_mesh_2d(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshFactory2D, type, type::type_name_static())
 
     template< >
     class SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {

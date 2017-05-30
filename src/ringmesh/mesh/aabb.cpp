@@ -49,21 +49,22 @@ namespace {
 
     typedef const std::vector< index_t >::iterator const_vector_itr;
 
-    template< index_t COORD, index_t DIMENSION >
+    template< index_t DIMENSION >
     class Morton_cmp {
     public:
-        Morton_cmp( const std::vector< Box< DIMENSION > >& bboxes )
-            : bboxes_( bboxes )
+        Morton_cmp( const std::vector< Box< DIMENSION > >& bboxes, index_t coord )
+            : bboxes_( bboxes ), coord_( coord )
         {
         }
 
         bool operator()( index_t box1, index_t box2 )
         {
-            return bboxes_[box1].center()[COORD] < bboxes_[box2].center()[COORD];
+            return bboxes_[box1].center()[coord_] < bboxes_[box2].center()[coord_];
         }
 
     private:
         const std::vector< Box< DIMENSION > >& bboxes_;
+        index_t coord_;
     };
 
     /**
@@ -98,49 +99,15 @@ namespace {
      *  - Christophe Delage and Olivier Devillers. Spatial Sorting.
      *   In CGAL User and Reference Manual. CGAL Editorial Board,
      *   3.9 edition, 2011
-     * \tparam CMP the comparator class for ordering the elements. CMP
-     *  is itself a template parameterized by:
-     *    - the coordinate along which elements should be sorted
-     *    - the dimension of sorted elements
      */
-    template< index_t DIMENSION, template< index_t, index_t > class CMP >
+    template< index_t DIMENSION >
     struct MortonSort {
 
         template< index_t COORDX >
-        static void sort(
+        void sort(
             const std::vector< Box< DIMENSION > >& bboxes,
             const_vector_itr& begin,
-            const_vector_itr& end )
-        {
-            if( end - begin <= 1 ) {
-                return;
-            }
-            const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3;
-
-            const_vector_itr m0 = begin, m8 = end;
-            const_vector_itr m4 = split( m0, m8,
-                CMP< COORDX, DIMENSION >( bboxes ) );
-            const_vector_itr m2 = split( m0, m4,
-                CMP< COORDY, DIMENSION >( bboxes ) );
-            const_vector_itr m1 = split( m0, m2,
-                CMP< COORDZ, DIMENSION >( bboxes ) );
-            const_vector_itr m3 = split( m2, m4,
-                CMP< COORDZ, DIMENSION >( bboxes ) );
-            const_vector_itr m6 = split( m4, m8,
-                CMP< COORDY, DIMENSION >( bboxes ) );
-            const_vector_itr m5 = split( m4, m6,
-                CMP< COORDZ, DIMENSION >( bboxes ) );
-            const_vector_itr m7 = split( m6, m8,
-                CMP< COORDZ, DIMENSION >( bboxes ) );
-            sort< COORDZ >( bboxes, m0, m1 );
-            sort< COORDY >( bboxes, m1, m2 );
-            sort< COORDY >( bboxes, m2, m3 );
-            sort< COORDX >( bboxes, m3, m4 );
-            sort< COORDX >( bboxes, m4, m5 );
-            sort< COORDY >( bboxes, m5, m6 );
-            sort< COORDY >( bboxes, m6, m7 );
-            sort< COORDZ >( bboxes, m7, m8 );
-        }
+            const_vector_itr& end );
 
         MortonSort(
             const std::vector< Box< DIMENSION > >& bboxes,
@@ -149,6 +116,58 @@ namespace {
             sort< 0 >( bboxes, mapping_morton.begin(), mapping_morton.end() );
         }
     };
+
+    template< >
+    template< index_t COORDX >
+    void MortonSort< 3 >::sort(
+        const std::vector< Box< 3 > >& bboxes,
+        const_vector_itr& begin,
+        const_vector_itr& end )
+    {
+        if( end - begin <= 1 ) {
+            return;
+        }
+        const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3;
+
+        const_vector_itr m0 = begin, m8 = end;
+        const_vector_itr m4 = split( m0, m8, Morton_cmp< 3 >( bboxes, COORDX ) );
+        const_vector_itr m2 = split( m0, m4, Morton_cmp< 3 >( bboxes, COORDY ) );
+        const_vector_itr m1 = split( m0, m2, Morton_cmp< 3 >( bboxes, COORDZ ) );
+        const_vector_itr m3 = split( m2, m4, Morton_cmp< 3 >( bboxes, COORDZ ) );
+        const_vector_itr m6 = split( m4, m8, Morton_cmp< 3 >( bboxes, COORDY ) );
+        const_vector_itr m5 = split( m4, m6, Morton_cmp< 3 >( bboxes, COORDZ ) );
+        const_vector_itr m7 = split( m6, m8, Morton_cmp< 3 >( bboxes, COORDZ ) );
+        sort < COORDZ > ( bboxes, m0, m1 );
+        sort < COORDY > ( bboxes, m1, m2 );
+        sort < COORDY > ( bboxes, m2, m3 );
+        sort < COORDX > ( bboxes, m3, m4 );
+        sort < COORDX > ( bboxes, m4, m5 );
+        sort < COORDY > ( bboxes, m5, m6 );
+        sort < COORDY > ( bboxes, m6, m7 );
+        sort < COORDZ > ( bboxes, m7, m8 );
+    }
+
+    template< >
+    template< index_t COORDX >
+    void MortonSort< 2 >::sort(
+        const std::vector< Box< 2 > >& bboxes,
+        const_vector_itr& begin,
+        const_vector_itr& end )
+    {
+        if( end - begin <= 1 ) {
+            return;
+        }
+        const index_t COORDY = ( COORDX + 1 ) % 2;
+
+        const_vector_itr m0 = begin, m4 = end;
+        const_vector_itr m2 = split( m0, m4, Morton_cmp< 2 >( bboxes, COORDX ) );
+        const_vector_itr m1 = split( m0, m2, Morton_cmp< 2 >( bboxes, COORDY ) );
+        const_vector_itr m3 = split( m2, m4, Morton_cmp< 2 >( bboxes, COORDY ) );
+        sort < COORDY > ( bboxes, m0, m1 );
+        sort < COORDX > ( bboxes, m1, m2 );
+        sort < COORDX > ( bboxes, m2, m3 );
+        sort < COORDY > ( bboxes, m3, m4 );
+    }
 
     template< index_t DIMENSION >
     void morton_sort(
@@ -159,46 +178,7 @@ namespace {
         for( index_t i = 0; i < bboxes.size(); i++ ) {
             mapping_morton[i] = i;
         }
-        MortonSort< DIMENSION, Morton_cmp >( bboxes, mapping_morton );
-    }
-
-    template< index_t DIMENSION >
-    void add_cube( GEO::Mesh& M, const Box< DIMENSION >& box, index_t n )
-    {
-        if( !box.initialized() ) return;
-        const vecn< DIMENSION >& min_vertex = box.min();
-        const vecn< DIMENSION >& max_vertex = box.max();
-        vecn< DIMENSION > width( max_vertex[0] - min_vertex[0], 0, 0 );
-        vecn< DIMENSION > height( 0, max_vertex[1] - min_vertex[1], 0 );
-        vecn< DIMENSION > depth( 0, 0, max_vertex[2] - min_vertex[2] );
-        index_t v0 = M.vertices.create_vertex( min_vertex.data() );
-        index_t v1 = M.vertices.create_vertex(
-            vecn< DIMENSION >( min_vertex + width ).data() );
-        index_t v2 = M.vertices.create_vertex(
-            vecn< DIMENSION >( max_vertex - depth ).data() );
-        index_t v3 = M.vertices.create_vertex(
-            vecn< DIMENSION >( min_vertex + height ).data() );
-        index_t v4 = M.vertices.create_vertex(
-            vecn< DIMENSION >( min_vertex + depth ).data() );
-        index_t v5 = M.vertices.create_vertex(
-            vecn< DIMENSION >( max_vertex - height ).data() );
-        index_t v6 = M.vertices.create_vertex( max_vertex.data() );
-        index_t v7 = M.vertices.create_vertex(
-            vecn< DIMENSION >( max_vertex - width ).data() );
-
-        GEO::Attribute< index_t > id( M.edges.attributes(), "id" );
-        id[M.edges.create_edge( v0, v1 )] = n;
-        id[M.edges.create_edge( v1, v2 )] = n;
-        id[M.edges.create_edge( v2, v3 )] = n;
-        id[M.edges.create_edge( v3, v0 )] = n;
-        id[M.edges.create_edge( v4, v5 )] = n;
-        id[M.edges.create_edge( v5, v6 )] = n;
-        id[M.edges.create_edge( v6, v7 )] = n;
-        id[M.edges.create_edge( v7, v4 )] = n;
-        id[M.edges.create_edge( v0, v4 )] = n;
-        id[M.edges.create_edge( v1, v5 )] = n;
-        id[M.edges.create_edge( v2, v6 )] = n;
-        id[M.edges.create_edge( v3, v7 )] = n;
+        MortonSort< DIMENSION >( bboxes, mapping_morton );
     }
 
     template< index_t DIMENSION >
@@ -281,23 +261,6 @@ namespace RINGMesh {
         initialize_tree_recursive( bboxes, child_left, box_begin, element_middle );
         initialize_tree_recursive( bboxes, child_right, element_middle, box_end );
         tree_[node_index] = tree_[child_left].bbox_union( tree_[child_right] );
-    }
-
-    template< index_t DIMENSION >
-    void AABBTree< DIMENSION >::save_tree( const std::string& name ) const
-    {
-        index_t nb_nodes = 0;
-        for( double level = 1.; nb_nodes < tree_.size(); level++ ) {
-            index_t start_node = static_cast< index_t >( std::pow( 2., level ) );
-            nb_nodes = 2 * start_node;
-            GEO::Mesh M;
-            for( index_t n = start_node; n < nb_nodes; n++ ) {
-                add_cube( M, tree_[n], n );
-            }
-            std::ostringstream oss;
-            oss << name << level << ".geogram";
-            GEO::mesh_save( M, oss.str() );
-        }
     }
 
     template< index_t DIMENSION >
@@ -495,7 +458,6 @@ namespace RINGMesh {
         index_t box_begin,
         index_t box_end ) const
     {
-
         if( !this->tree_[node_index].contains( query ) ) {
             return NO_ID;
         }
@@ -529,7 +491,7 @@ namespace RINGMesh {
         ringmesh_assert( B.contains( p ) );
         double result = std::abs( p[0] - B.min()[0] );
         result = std::min( result, std::abs( p[0] - B.max()[0] ) );
-        for( index_t c = 1; c < 3; ++c ) {
+        for( index_t c = 1; c < DIMENSION; ++c ) {
             result = std::min( result, std::abs( p[c] - B.min()[c] ) );
             result = std::min( result, std::abs( p[c] - B.max()[c] ) );
         }
@@ -559,15 +521,15 @@ namespace RINGMesh {
         }
     }
 
-//    template class AABBTree< 2 >;
-    template class BoxAABBTree< 2 >;
-    template class LineAABBTree< 2 >;
-    template class SurfaceAABBTree< 2 >;
+    template class AABBTree< 2 > ;
+    template class BoxAABBTree< 2 > ;
+    template class LineAABBTree< 2 > ;
+    template class SurfaceAABBTree< 2 > ;
 
-    template class AABBTree< 3 >;
-    template class BoxAABBTree< 3 >;
-    template class LineAABBTree< 3 >;
-    template class SurfaceAABBTree< 3 >;
-    template class VolumeAABBTree< 3 >;
+    template class AABBTree< 3 > ;
+    template class BoxAABBTree< 3 > ;
+    template class LineAABBTree< 3 > ;
+    template class SurfaceAABBTree< 3 > ;
+    template class VolumeAABBTree< 3 > ;
 }
 

@@ -52,11 +52,27 @@
 using namespace RINGMesh;
 
 template< index_t DIMENSION >
+vecn< DIMENSION > create_vertex( double i, double j );
+
+template< >
+vecn< 2 > create_vertex( double i, double j )
+{
+    return vec2( i, j );
+}
+
+template< >
+vecn< 3 > create_vertex( double i, double j )
+{
+
+    return vec3( i, j, 0 );
+}
+
+template< index_t DIMENSION >
 void add_vertices( LineMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_vertices( size );
     for( index_t i = 0; i < size; i++ ) {
-        builder->set_vertex( i, vecn< DIMENSION >( i, i + 1, 0 ) );
+        builder->set_vertex( i, create_vertex< DIMENSION >( i, i + 1 ) );
     }
 }
 
@@ -67,7 +83,7 @@ void add_vertices( SurfaceMeshBuilder< DIMENSION >* builder, index_t size )
     index_t id = 0;
     for( index_t i = 0; i < size; i++ ) {
         for( index_t j = 0; j < size; j++ ) {
-            builder->set_vertex( id++, vecn< DIMENSION >( i, j, 0 ) );
+            builder->set_vertex( id++, create_vertex< DIMENSION >( i, j ) );
         }
     }
 }
@@ -148,7 +164,8 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
     index_t id = 0;
     for( index_t i = 0; i < size - 1; i++ ) {
         for( index_t j = 0; j < size - 1; j++ ) {
-            vecn< DIMENSION > query1( i + offset, j + offset, 0 );
+            vecn< DIMENSION > query1 = create_vertex< DIMENSION >( i + offset,
+                j + offset );
             vecn< DIMENSION > nearest_point1;
             double distance1;
             index_t triangle1 = tree.closest_triangle( query1, nearest_point1,
@@ -156,12 +173,13 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
             if( triangle1 != id++ ) {
                 throw RINGMeshException( "TEST", "Not the correct triangle found" );
             }
-            if( nearest_point1 != vecn< DIMENSION >( i + offset, j + offset, 0 ) ) {
+            if( nearest_point1 != query1 ) {
                 throw RINGMeshException( "TEST",
                     "Not the correct nearest point found" );
             }
 
-            vecn< DIMENSION > query2( i + 1 - offset, j + 1 - offset, offset );
+            vecn< DIMENSION > query2 = create_vertex< DIMENSION >( i + 1 - offset,
+                j + 1 - offset );
             vecn< DIMENSION > nearest_point2;
             double distance2;
             index_t triangle2 = tree.closest_triangle( query2, nearest_point2,
@@ -169,22 +187,21 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
             if( triangle2 != id++ ) {
                 throw RINGMeshException( "TEST", "Not the correct triangle found" );
             }
-            if( nearest_point2
-                != vecn< DIMENSION >( i + 1 - offset, j + 1 - offset, 0 ) ) {
+            if( nearest_point2 != query2 ) {
                 throw RINGMeshException( "TEST",
                     "Not the correct nearest point found" );
             }
         }
     }
 
-    vecn< DIMENSION > query( 0, 0, 0 );
+    vecn< DIMENSION > query;
     vecn< DIMENSION > nearest_point;
     double distance;
     index_t triangle = tree.closest_triangle( query, nearest_point, distance );
     if( triangle != 0 ) {
         throw RINGMeshException( "TEST", "Not the correct triangle found" );
     }
-    if( nearest_point != vecn< DIMENSION >( 0, 0, 0 ) ) {
+    if( nearest_point != vecn< DIMENSION >() ) {
         throw RINGMeshException( "TEST", "Not the correct nearest point found" );
     }
 }
@@ -242,9 +259,9 @@ void decompose_in_tet(
 }
 
 template< index_t DIMENSION >
-void test_AABB2D()
+void test_SurfaceAABB()
 {
-    Logger::out( "TEST", "Test AABB 2D" );
+    Logger::out( "TEST", "Test Surface AABB ", DIMENSION, "D" );
     GeogramSurfaceMesh< DIMENSION > geogram_mesh;
     std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = SurfaceMeshBuilder<
         DIMENSION >::create_builder( geogram_mesh );
@@ -254,7 +271,6 @@ void test_AABB2D()
     add_triangles( builder.get(), size );
 
     SurfaceAABBTree< DIMENSION > tree( geogram_mesh );
-    tree.save_tree( "tree" );
     check_tree( tree, size );
 
 }
@@ -273,9 +289,9 @@ void test_locate_cell_on_3D_mesh( const GeogramVolumeMesh< DIMENSION >& mesh )
 }
 
 template< index_t DIMENSION >
-void test_AABB3D()
+void test_VolumeAABB()
 {
-    Logger::out( "TEST", "Test AABB 3D" );
+    Logger::out( "TEST", "Test Volume AABB ", DIMENSION, "D" );
     GeogramVolumeMesh< DIMENSION > geogram_mesh_hex;
     std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder<
         DIMENSION >::create_builder( geogram_mesh_hex );
@@ -306,9 +322,9 @@ void test_locate_edge_on_1D_mesh( const GeogramLineMesh< DIMENSION >& mesh )
 }
 
 template< index_t DIMENSION >
-void test_AABB1D()
+void test_LineAABB()
 {
-    Logger::out( "TEST", "Test AABB 1D" );
+    Logger::out( "TEST", "Test Line AABB ", DIMENSION, "D" );
     GeogramLineMesh< DIMENSION > geogram_mesh;
     std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = LineMeshBuilder<
         DIMENSION >::create_builder( geogram_mesh );
@@ -327,11 +343,11 @@ int main()
         default_configure();
 
         Logger::out( "TEST", "Test AABB" );
-//        test_AABB1D< 2 >();
-        test_AABB1D< 3 >();
-//        test_AABB2D< 2 >();
-        test_AABB2D< 3 >();
-        test_AABB3D< 3 >();
+        test_LineAABB< 2 >();
+        test_LineAABB< 3 >();
+        test_SurfaceAABB< 2 >();
+        test_SurfaceAABB< 3 >();
+        test_VolumeAABB< 3 >();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
