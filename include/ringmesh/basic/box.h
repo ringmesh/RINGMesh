@@ -62,42 +62,27 @@ namespace RINGMesh {
             initialized_ = false;
         }
 
-        double width() const
-        {
-            return max_[0] - min_[0];
-        }
-
-        double height() const
-        {
-            return max_[1] - min_[1];
-        }
-
-        double depth() const //@todo not defined in 2D
-        {
-            return max_[2] - min_[2];
-        }
-
-        const vecn<DIMENSION>& min() const
+        const vecn< DIMENSION >& min() const
         {
             return min_;
         }
 
-        const vecn<DIMENSION>& max() const
+        const vecn< DIMENSION >& max() const
         {
             return max_;
         }
 
-        vecn<DIMENSION> center() const
+        vecn< DIMENSION > center() const
         {
             return 0.5 * ( min() + max() );
         }
 
-        vecn<DIMENSION> diagonal() const
+        vecn< DIMENSION > diagonal() const
         {
             return max() - min();
         }
 
-        void add_point( const vecn<DIMENSION>& p );
+        void add_point( const vecn< DIMENSION >& p );
 
         void add_box( const Box& b )
         {
@@ -127,7 +112,7 @@ namespace RINGMesh {
             return result;
         }
 
-        bool contains( const vecn<DIMENSION>& b ) const
+        bool contains( const vecn< DIMENSION >& b ) const
         {
             for( index_t c = 0; c < DIMENSION; ++c ) {
                 if( b[c] < min()[c] ) {
@@ -140,14 +125,14 @@ namespace RINGMesh {
             return true;
         }
 
-        double distance_to_center( const vecn<DIMENSION>& p ) const;
+        double distance_to_center( const vecn< DIMENSION >& p ) const;
 
-        double signed_distance( const vecn<DIMENSION>& p ) const;
+        double signed_distance( const vecn< DIMENSION >& p ) const;
 
     private:
         bool initialized_;
-        vecn<DIMENSION> min_;
-        vecn<DIMENSION> max_;
+        vecn< DIMENSION > min_;
+        vecn< DIMENSION > max_;
 
     };
 

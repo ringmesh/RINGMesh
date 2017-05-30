@@ -100,7 +100,7 @@ namespace RINGMesh {
          * @param[in] vertex the vertex coordinates
          * @return reference to the point that corresponds to the vertex.
          */
-        virtual void set_vertex( index_t v_id, const vec3& vertex ) = 0;
+        virtual void set_vertex( index_t v_id, const vecn< DIMENSION >& vertex ) = 0;
         /*!
          * @brief Creates a new vertex.
          * @return the index of the created vertex
@@ -111,7 +111,7 @@ namespace RINGMesh {
          * @param[in] coords a pointer to @function dimension() coordinate.
          * @return the index of the created vertex
          */
-        virtual index_t create_vertex( const vec3& vertex )
+        virtual index_t create_vertex( const vecn< DIMENSION >& vertex )
         {
             index_t index = create_vertex();
             set_vertex( index, vertex );

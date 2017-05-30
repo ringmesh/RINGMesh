@@ -52,11 +52,27 @@
 using namespace RINGMesh;
 
 template< index_t DIMENSION >
+vecn< DIMENSION > create_vertex( double i, double j );
+
+template< >
+vecn< 2 > create_vertex( double i, double j )
+{
+    return vec2( i, j );
+}
+
+template< >
+vecn< 3 > create_vertex( double i, double j )
+{
+
+    return vec3( i, j, 0 );
+}
+
+template< index_t DIMENSION >
 void add_vertices( LineMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_vertices( size );
     for( index_t i = 0; i < size; i++ ) {
-        builder->set_vertex( i, vecn< DIMENSION >( i, i + 1, 0 ) );
+        builder->set_vertex( i, create_vertex< DIMENSION >( i, i + 1 ) );
     }
 }
 
@@ -67,7 +83,7 @@ void add_vertices( SurfaceMeshBuilder< DIMENSION >* builder, index_t size )
     index_t id = 0;
     for( index_t i = 0; i < size; i++ ) {
         for( index_t j = 0; j < size; j++ ) {
-            builder->set_vertex( id++, vecn< DIMENSION >( i, j, 0 ) );
+            builder->set_vertex( id++, create_vertex< DIMENSION >( i, j ) );
         }
     }
 }
@@ -148,43 +164,30 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
     index_t id = 0;
     for( index_t i = 0; i < size - 1; i++ ) {
         for( index_t j = 0; j < size - 1; j++ ) {
-            vecn< DIMENSION > query1( i + offset, j + offset, 0 );
-            vecn< DIMENSION > nearest_point1;
-            double distance1;
-            index_t triangle1 = tree.closest_triangle( query1, nearest_point1,
-                distance1 );
-            if( triangle1 != id++ ) {
+            vecn< DIMENSION > query = create_vertex< DIMENSION >( i + offset,
+                j + offset );
+            vecn< DIMENSION > nearest_point;
+            double distance;
+            index_t triangle = tree.closest_triangle( query, nearest_point,
+                distance );
+            if( triangle != id++ ) {
                 throw RINGMeshException( "TEST", "Not the correct triangle found" );
             }
-            if( nearest_point1 != vecn< DIMENSION >( i + offset, j + offset, 0 ) ) {
-                throw RINGMeshException( "TEST",
-                    "Not the correct nearest point found" );
-            }
-
-            vecn< DIMENSION > query2( i + 1 - offset, j + 1 - offset, offset );
-            vecn< DIMENSION > nearest_point2;
-            double distance2;
-            index_t triangle2 = tree.closest_triangle( query2, nearest_point2,
-                distance2 );
-            if( triangle2 != id++ ) {
-                throw RINGMeshException( "TEST", "Not the correct triangle found" );
-            }
-            if( nearest_point2
-                != vecn< DIMENSION >( i + 1 - offset, j + 1 - offset, 0 ) ) {
+            if( nearest_point != query ) {
                 throw RINGMeshException( "TEST",
                     "Not the correct nearest point found" );
             }
         }
     }
 
-    vecn< DIMENSION > query( 0, 0, 0 );
+    vecn< DIMENSION > query;
     vecn< DIMENSION > nearest_point;
     double distance;
     index_t triangle = tree.closest_triangle( query, nearest_point, distance );
     if( triangle != 0 ) {
         throw RINGMeshException( "TEST", "Not the correct triangle found" );
     }
-    if( nearest_point != vecn< DIMENSION >( 0, 0, 0 ) ) {
+    if( nearest_point != vecn< DIMENSION >() ) {
         throw RINGMeshException( "TEST", "Not the correct nearest point found" );
     }
 }
@@ -327,9 +330,9 @@ int main()
         default_configure();
 
         Logger::out( "TEST", "Test AABB" );
-//        test_AABB1D< 2 >();
+        test_AABB1D< 2 >();
         test_AABB1D< 3 >();
-//        test_AABB2D< 2 >();
+        test_AABB2D< 2 >();
         test_AABB2D< 3 >();
         test_AABB3D< 3 >();
 
