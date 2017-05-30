@@ -282,7 +282,7 @@ namespace {
     /*!
      * @brief Tests if a surface is a boundary of a region.
      * @details If it is the case, add the surface to the boundaries of
-     * the region and the region to the in_boundaries of the surface
+     * the region and the region to the incident_entities of the surface
      * @param[in] surface Surface to test
      * @param[in] region_nn_search NNSearch of the region to test
      * @param[out] colocated_cell_facet_centers Vector of colocated cell
@@ -329,7 +329,7 @@ namespace {
 
     /*!
      * @brief Both adds the surface in the boundaries of a region and
-     * adds the region to the in_boundaries of the surface
+     * adds the region to the incident_entities of the surface
      * @param[in] region_id Index of the region
      * @param[in] surface_id Index of the surface
      * @param[in] surf_side Side of the surface bounding the region
@@ -348,7 +348,7 @@ namespace {
 
     /*!
      * @brief Adds the both surface sides in the boundaries of a region
-     * (internal boundary) and add twice the region to the in_boundaries
+     * (internal boundary) and add twice the region to the incident_entities
      * of the surface
      * @param[in] region_id Index of the region
      * @param[in] surface_id Index of the surface
@@ -368,7 +368,7 @@ namespace {
 
     /*!
      * @brief Adds one surface side in the boundaries of a region
-     * and add the region to the in_boundaries of the surface
+     * and add the region to the incident_entities of the surface
      * @details The index of the cell facet center is used for the
      * determination of the side to add.
      * @param[in] region_id Index of the region
@@ -392,7 +392,7 @@ namespace {
 
     /*!
      * @brief Adds the surface sides which bound the region to the
-     * boundaries of the region (and add the region to in boundaries
+     * boundaries of the region (and add the region to incident entities
      * of the surface)
      * @param[in] surface_id Index of the surface
      * @param[in] region_id Index of the region

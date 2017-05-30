@@ -37,9 +37,8 @@
 #include <algorithm>
 
 /*!
- * @file Implementation of BoxND class
+ * @file Implementation of multi-dimensional Box class
  * @author Arnaud Botella
- * @todo Rename this file.
  */
 
 namespace RINGMesh {

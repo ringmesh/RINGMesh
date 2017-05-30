@@ -111,14 +111,14 @@ namespace RINGMesh {
             return static_cast< index_t >( boundaries_.size() );
         }
         const gmme_id& boundary_gmme( index_t x ) const;
-        const GeoModelMeshEntity& boundary( index_t x ) const;
+        const GeoModelMeshEntity< DIMENSION >& boundary( index_t x ) const;
 
-        index_t nb_in_boundary() const
+        index_t nb_incident_entities() const
         {
-            return static_cast< index_t >( in_boundary_.size() );
+            return static_cast< index_t >( incident_entities_.size() );
         }
-        const gmme_id& in_boundary_gmme( index_t x ) const;
-        const GeoModelMeshEntity& in_boundary( index_t x ) const;
+        const gmme_id& incident_entity_gmme( index_t x ) const;
+        const GeoModelMeshEntity< DIMENSION >& incident_entity( index_t x ) const;
 
         /*!
          * @brief Check if one entity is twice in the boundary
@@ -157,9 +157,12 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
-         * @note If this entity has no parent of the given type,
-         * it will return an undefined gmge_id (with no type and no id).
-         * You should check on the returned gmge_id.
+         * @pre The code assumes that this entity has a parent of the given type
+         * \p parent_type_name, else it will crash in debug and return an invalid
+         * entity in release.
+         * The method has_parent(GeologicalEntityType) is a safe way to check
+         * if the type \p parent_type_name is a valid parent type for the
+         * GeoModelMeshEntity.
          * @param[in] parent_type_name the asking parent type
          *
          */
@@ -195,6 +198,7 @@ namespace RINGMesh {
          * \name Local access to the GeoModelMeshEntity geometry
          * @{
          */
+
         index_t nb_vertices() const
         {
             return mesh_->nb_vertices();
@@ -292,7 +296,7 @@ namespace RINGMesh {
             this->copy_name( from );
             this->id_ = from.index();
             boundaries_ = from.boundaries_;
-            in_boundary_ = from.in_boundary_;
+            incident_entities_ = from.incident_entities_;
             parents_ = from.parents_;
         }
         virtual bool is_index_valid() const final;
@@ -309,15 +313,15 @@ namespace RINGMesh {
 
         /*!
          * All entities in the boundary must have this in their
-         *  in_boundary vector
+         *  incident_entity vector
          */
         bool is_boundary_connectivity_valid() const;
         /*!
          * All entities must be at least in the boundary of another entity
-         * and all entities in the in_boundary must have this entity in their
+         * and all entities in the incident_entity must have this entity in their
          * boundary vector
          */
-        bool is_in_boundary_connectivity_valid() const;
+        bool is_incident_entity_connectivity_valid() const;
         /*!
          * @brief Check that geomodel vertex indices are consistent
          * with what is stored at the GeoModel level.
@@ -341,8 +345,8 @@ namespace RINGMesh {
         /// Boundary relations of this entity
         std::vector< index_t > boundaries_;
 
-        /// In-boundary relations of this entity
-        std::vector< index_t > in_boundary_;
+        /// Incident-entity relations of this entity
+        std::vector< index_t > incident_entities_;
 
         /// Parents relations of this entity
         std::vector< index_t > parents_;
@@ -401,7 +405,7 @@ namespace RINGMesh {
             return nb_vertices;
         }
 
-        const Line< DIMENSION >& in_boundary( index_t x ) const;
+        const Line& incident_entity( index_t x ) const;
 
         /*! @}
          * \name Geometrical request on Corner
@@ -507,7 +511,7 @@ namespace RINGMesh {
 
         const Corner< DIMENSION >& boundary( index_t x ) const;
 
-        const Surface< DIMENSION >& in_boundary( index_t x ) const;
+        const Surface< DIMENSION >& incident_entity( index_t x ) const;
 
         virtual bool is_connectivity_valid() const final;
 
@@ -660,7 +664,7 @@ namespace RINGMesh {
 
         const Line< DIMENSION >& boundary( index_t x ) const;
 
-        const Region< DIMENSION >& in_boundary( index_t x ) const;
+        const Region< DIMENSION >& incident_entity( index_t x ) const;
 
         bool is_simplicial() const
         {
