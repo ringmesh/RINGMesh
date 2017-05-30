@@ -167,21 +167,21 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRemoval::update_mesh_entity_in_boundary(
+    void GeoModelBuilderRemoval::update_mesh_entity_incident_entity(
         GeoModelMeshEntity& E )
     {
-        const MeshEntityType& in_boundary_type =
-            MeshEntityTypeManager::in_boundary_type( E.mesh_entity_type() );
-        bool valid_type = MeshEntityTypeManager::is_valid_type( in_boundary_type );
+        const MeshEntityType& incident_entity_type =
+            MeshEntityTypeManager::incident_entity_type( E.mesh_entity_type() );
+        bool valid_type = MeshEntityTypeManager::is_valid_type( incident_entity_type );
         if( !valid_type ) {
             return;
         }
-        index_t in_boundary_type_index = mesh_entity_type_to_index(
-            in_boundary_type );
-        for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
-            index_t old_id = E.in_boundary_gmme( i ).index();
-            index_t new_id = old_2_new_mesh_entity_[in_boundary_type_index][old_id];
-            builder_.topology.set_mesh_entity_in_boundary( E.gmme(), i, new_id );
+        index_t incident_entity_type_index = mesh_entity_type_to_index(
+            incident_entity_type );
+        for( index_t i = 0; i < E.nb_incident_entities(); ++i ) {
+            index_t old_id = E.incident_entity_gmme( i ).index();
+            index_t new_id = old_2_new_mesh_entity_[incident_entity_type_index][old_id];
+            builder_.topology.set_mesh_entity_incident_entity( E.gmme(), i, new_id );
         }
     }
     void GeoModelBuilderRemoval::update_mesh_entity_parents( GeoModelMeshEntity& E )
