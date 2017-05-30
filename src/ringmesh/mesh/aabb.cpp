@@ -110,37 +110,7 @@ namespace {
         static void sort(
             const std::vector< Box< DIMENSION > >& bboxes,
             const_vector_itr& begin,
-            const_vector_itr& end )
-        {
-            if( end - begin <= 1 ) {
-                return;
-            }
-            const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3;
-
-            const_vector_itr m0 = begin, m8 = end;
-            const_vector_itr m4 = split( m0, m8,
-                CMP< COORDX, DIMENSION >( bboxes ) );
-            const_vector_itr m2 = split( m0, m4,
-                CMP< COORDY, DIMENSION >( bboxes ) );
-            const_vector_itr m1 = split( m0, m2,
-                CMP< COORDZ, DIMENSION >( bboxes ) );
-            const_vector_itr m3 = split( m2, m4,
-                CMP< COORDZ, DIMENSION >( bboxes ) );
-            const_vector_itr m6 = split( m4, m8,
-                CMP< COORDY, DIMENSION >( bboxes ) );
-            const_vector_itr m5 = split( m4, m6,
-                CMP< COORDZ, DIMENSION >( bboxes ) );
-            const_vector_itr m7 = split( m6, m8,
-                CMP< COORDZ, DIMENSION >( bboxes ) );
-            sort< COORDZ >( bboxes, m0, m1 );
-            sort< COORDY >( bboxes, m1, m2 );
-            sort< COORDY >( bboxes, m2, m3 );
-            sort< COORDX >( bboxes, m3, m4 );
-            sort< COORDX >( bboxes, m4, m5 );
-            sort< COORDY >( bboxes, m5, m6 );
-            sort< COORDY >( bboxes, m6, m7 );
-            sort< COORDZ >( bboxes, m7, m8 );
-        }
+            const_vector_itr& end );
 
         MortonSort(
             const std::vector< Box< DIMENSION > >& bboxes,
@@ -149,6 +119,56 @@ namespace {
             sort< 0 >( bboxes, mapping_morton.begin(), mapping_morton.end() );
         }
     };
+
+    template< template< index_t, index_t > class CMP, index_t COORDX >
+    void MortonSort< 3, CMP< COORDX, 3 > >::sort(
+        const std::vector< Box< 3 > >& bboxes,
+        const_vector_itr& begin,
+        const_vector_itr& end )
+    {
+        if( end - begin <= 1 ) {
+            return;
+        }
+        const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3;
+
+        const_vector_itr m0 = begin, m8 = end;
+        const_vector_itr m4 = split( m0, m8, CMP< COORDX, 3 >( bboxes ) );
+        const_vector_itr m2 = split( m0, m4, CMP< COORDY, 3 >( bboxes ) );
+        const_vector_itr m1 = split( m0, m2, CMP< COORDZ, 3 >( bboxes ) );
+        const_vector_itr m3 = split( m2, m4, CMP< COORDZ, 3 >( bboxes ) );
+        const_vector_itr m6 = split( m4, m8, CMP< COORDY, 3 >( bboxes ) );
+        const_vector_itr m5 = split( m4, m6, CMP< COORDZ, 3 >( bboxes ) );
+        const_vector_itr m7 = split( m6, m8, CMP< COORDZ, 3 >( bboxes ) );
+        sort < COORDZ > ( bboxes, m0, m1 );
+        sort < COORDY > ( bboxes, m1, m2 );
+        sort < COORDY > ( bboxes, m2, m3 );
+        sort < COORDX > ( bboxes, m3, m4 );
+        sort < COORDX > ( bboxes, m4, m5 );
+        sort < COORDY > ( bboxes, m5, m6 );
+        sort < COORDY > ( bboxes, m6, m7 );
+        sort < COORDZ > ( bboxes, m7, m8 );
+    }
+
+    template< template< index_t, index_t > class CMP, index_t COORDX >
+    void MortonSort< 2, CMP< COORDX, 2 > >::sort(
+        const std::vector< Box< 2 > >& bboxes,
+        const_vector_itr& begin,
+        const_vector_itr& end )
+    {
+        if( end - begin <= 1 ) {
+            return;
+        }
+        const index_t COORDY = ( COORDX + 1 ) % 2;
+
+        const_vector_itr m0 = begin, m4 = end;
+        const_vector_itr m2 = split( m0, m4, CMP< COORDX, 2 >( bboxes ) );
+        const_vector_itr m1 = split( m0, m2, CMP< COORDY, 2 >( bboxes ) );
+        const_vector_itr m3 = split( m2, m4, CMP< COORDY, 2 >( bboxes ) );
+        sort < COORDY > ( bboxes, m0, m1 );
+        sort < COORDX > ( bboxes, m1, m2 );
+        sort < COORDX > ( bboxes, m2, m3 );
+        sort < COORDY > ( bboxes, m3, m4 );
+    }
 
     template< index_t DIMENSION >
     void morton_sort(
