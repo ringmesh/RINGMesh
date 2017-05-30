@@ -257,7 +257,6 @@ void test_AABB2D()
     add_triangles( builder.get(), size );
 
     SurfaceAABBTree< DIMENSION > tree( geogram_mesh );
-    tree.save_tree( "tree" );
     check_tree( tree, size );
 
 }

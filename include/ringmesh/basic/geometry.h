@@ -347,8 +347,8 @@ namespace RINGMesh {
         vec3& N_inter );
 
     /*!
-     * Tests if a point is inside a triangle, more precisely if it is inside
-     * a prism based on the triangle and its normal
+     * @brief Tests if a point is inside a triangle
+     * @details if it is inside a prism based on the triangle and its normal
      * @param[in] p the point to test
      * @param[in] p0 the first vertex of the triangle
      * @param[in] p1 the second vertex of the triangle
@@ -364,8 +364,8 @@ namespace RINGMesh {
         bool exact_predicates = false );
 
     /*!
-     * Tests if a point is inside a triangle, more precisely if it is inside
-     * a prism based on the triangle and its normal
+     * @brief Tests if a point is inside a triangle
+     * @details if it is inside a prism based on the triangle and its normal
      * @param[in] p the point to test
      * @param[in] p0 the first vertex of the triangle
      * @param[in] p1 the second vertex of the triangle
