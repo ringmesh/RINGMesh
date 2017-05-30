@@ -49,21 +49,22 @@ namespace {
 
     typedef const std::vector< index_t >::iterator const_vector_itr;
 
-    template< index_t COORD, index_t DIMENSION >
+    template< index_t DIMENSION >
     class Morton_cmp {
     public:
-        Morton_cmp( const std::vector< Box< DIMENSION > >& bboxes )
-            : bboxes_( bboxes )
+        Morton_cmp( const std::vector< Box< DIMENSION > >& bboxes, index_t coord )
+            : bboxes_( bboxes ), coord_( coord )
         {
         }
 
         bool operator()( index_t box1, index_t box2 )
         {
-            return bboxes_[box1].center()[COORD] < bboxes_[box2].center()[COORD];
+            return bboxes_[box1].center()[coord_] < bboxes_[box2].center()[coord_];
         }
 
     private:
         const std::vector< Box< DIMENSION > >& bboxes_;
+        index_t coord_;
     };
 
     /**
@@ -98,16 +99,12 @@ namespace {
      *  - Christophe Delage and Olivier Devillers. Spatial Sorting.
      *   In CGAL User and Reference Manual. CGAL Editorial Board,
      *   3.9 edition, 2011
-     * \tparam CMP the comparator class for ordering the elements. CMP
-     *  is itself a template parameterized by:
-     *    - the coordinate along which elements should be sorted
-     *    - the dimension of sorted elements
      */
-    template< index_t DIMENSION, template< index_t, index_t > class CMP >
+    template< index_t DIMENSION >
     struct MortonSort {
 
         template< index_t COORDX >
-        static void sort(
+        void sort(
             const std::vector< Box< DIMENSION > >& bboxes,
             const_vector_itr& begin,
             const_vector_itr& end );
@@ -120,8 +117,9 @@ namespace {
         }
     };
 
-    template< template< index_t, index_t > class CMP, index_t COORDX >
-    void MortonSort< 3, CMP< COORDX, 3 > >::sort(
+    template< >
+    template< index_t COORDX >
+    void MortonSort< 3 >::sort(
         const std::vector< Box< 3 > >& bboxes,
         const_vector_itr& begin,
         const_vector_itr& end )
@@ -132,13 +130,13 @@ namespace {
         const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3;
 
         const_vector_itr m0 = begin, m8 = end;
-        const_vector_itr m4 = split( m0, m8, CMP< COORDX, 3 >( bboxes ) );
-        const_vector_itr m2 = split( m0, m4, CMP< COORDY, 3 >( bboxes ) );
-        const_vector_itr m1 = split( m0, m2, CMP< COORDZ, 3 >( bboxes ) );
-        const_vector_itr m3 = split( m2, m4, CMP< COORDZ, 3 >( bboxes ) );
-        const_vector_itr m6 = split( m4, m8, CMP< COORDY, 3 >( bboxes ) );
-        const_vector_itr m5 = split( m4, m6, CMP< COORDZ, 3 >( bboxes ) );
-        const_vector_itr m7 = split( m6, m8, CMP< COORDZ, 3 >( bboxes ) );
+        const_vector_itr m4 = split( m0, m8, Morton_cmp< 3 >( bboxes, COORDX ) );
+        const_vector_itr m2 = split( m0, m4, Morton_cmp< 3 >( bboxes, COORDY ) );
+        const_vector_itr m1 = split( m0, m2, Morton_cmp< 3 >( bboxes, COORDZ ) );
+        const_vector_itr m3 = split( m2, m4, Morton_cmp< 3 >( bboxes, COORDZ ) );
+        const_vector_itr m6 = split( m4, m8, Morton_cmp< 3 >( bboxes, COORDY ) );
+        const_vector_itr m5 = split( m4, m6, Morton_cmp< 3 >( bboxes, COORDZ ) );
+        const_vector_itr m7 = split( m6, m8, Morton_cmp< 3 >( bboxes, COORDZ ) );
         sort < COORDZ > ( bboxes, m0, m1 );
         sort < COORDY > ( bboxes, m1, m2 );
         sort < COORDY > ( bboxes, m2, m3 );
@@ -149,8 +147,9 @@ namespace {
         sort < COORDZ > ( bboxes, m7, m8 );
     }
 
-    template< template< index_t, index_t > class CMP, index_t COORDX >
-    void MortonSort< 2, CMP< COORDX, 2 > >::sort(
+    template< >
+    template< index_t COORDX >
+    void MortonSort< 2 >::sort(
         const std::vector< Box< 2 > >& bboxes,
         const_vector_itr& begin,
         const_vector_itr& end )
@@ -161,9 +160,9 @@ namespace {
         const index_t COORDY = ( COORDX + 1 ) % 2;
 
         const_vector_itr m0 = begin, m4 = end;
-        const_vector_itr m2 = split( m0, m4, CMP< COORDX, 2 >( bboxes ) );
-        const_vector_itr m1 = split( m0, m2, CMP< COORDY, 2 >( bboxes ) );
-        const_vector_itr m3 = split( m2, m4, CMP< COORDY, 2 >( bboxes ) );
+        const_vector_itr m2 = split( m0, m4, Morton_cmp< 2 >( bboxes, COORDX ) );
+        const_vector_itr m1 = split( m0, m2, Morton_cmp< 2 >( bboxes, COORDY ) );
+        const_vector_itr m3 = split( m2, m4, Morton_cmp< 2 >( bboxes, COORDY ) );
         sort < COORDY > ( bboxes, m0, m1 );
         sort < COORDX > ( bboxes, m1, m2 );
         sort < COORDX > ( bboxes, m2, m3 );
@@ -179,7 +178,7 @@ namespace {
         for( index_t i = 0; i < bboxes.size(); i++ ) {
             mapping_morton[i] = i;
         }
-        MortonSort< DIMENSION, Morton_cmp >( bboxes, mapping_morton );
+        MortonSort< DIMENSION >( bboxes, mapping_morton );
     }
 
     template< index_t DIMENSION >
