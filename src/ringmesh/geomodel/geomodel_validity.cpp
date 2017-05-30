@@ -349,16 +349,16 @@ namespace {
 
     /*!
      * @brief Check if entity @param is of the @param geomodel is in the
-     *        in_boundary vector of entity @param in.
+     *        incident_entity vector of entity @param in.
      */
-    bool is_in_in_boundary(
+    bool is_in_incident_entity(
         const GeoModel& geomodel,
         const gmme_id& is,
         const gmme_id& in )
     {
         const GeoModelMeshEntity& E = geomodel.mesh_entity( in );
-        for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
-            if( E.in_boundary_gmme( i ) == is ) {
+        for( index_t i = 0; i < E.nb_incident_entities(); ++i ) {
+            if( E.incident_entity_gmme( i ) == is ) {
                 return true;
             }
         }
@@ -502,13 +502,13 @@ namespace {
                                 }
                             }
                         }
-                        // Check that all the surfaces are in in_boundary of all
+                        // Check that all the surfaces are in incident_entity of all
                         // the lines 
                         for( index_t surface : surfaces ) {
                             for( index_t line : lines ) {
                                 gmme_id s_id( Surface::type_name_static(), surface );
                                 gmme_id l_id( Line::type_name_static(), line );
-                                if( !is_in_in_boundary( geomodel, s_id, l_id ) ) {
+                                if( !is_in_incident_entity( geomodel, s_id, l_id ) ) {
                                     Logger::warn( "GeoModel",
                                         " Inconsistent Line-Surface connectivity ",
                                         " Vertex ", i, " shows that ", s_id,
@@ -551,11 +551,11 @@ namespace {
                                 break;
                             }
                         }
-                        // Check that all the lines are in in_boundary of this corner
+                        // Check that all the lines are in incident_entity of this corner
                         for( index_t line : lines ) {
                             gmme_id l_id( Line::type_name_static(), line );
                             gmme_id c_id( Corner::type_name_static(), corner );
-                            if( !is_in_in_boundary( geomodel, l_id, c_id ) ) {
+                            if( !is_in_incident_entity( geomodel, l_id, c_id ) ) {
                                 Logger::warn( "GeoModel",
                                     " Inconsistent Line-Corner connectivity ",
                                     " vertex ", i, " shows that ", l_id,
