@@ -458,7 +458,7 @@ namespace RINGMesh {
                 }
             }
         }
-        void update_mesh_entity_incident_boundary( GeoModelMeshEntity< 3 >& E );
+        void update_mesh_entity_incident_entity( GeoModelMeshEntity< 3 >& E );
         void update_mesh_entity_parents( GeoModelMeshEntity< 3 >& E );
         void update_geological_entity_children( GeoModelGeologicalEntity< 3 >& E );
         void update_universe_sided_boundaries( Universe< 3 >& U );

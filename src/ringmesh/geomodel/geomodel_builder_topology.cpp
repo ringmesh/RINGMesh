@@ -105,10 +105,10 @@ namespace {
         const GeoModelMeshEntity< 3 >& E,
         std::vector< index_t >& incident_surfaces )
     {
-        index_t nb = E.nb_in_boundary();
+        index_t nb = E.nb_incident_entities();
         incident_surfaces.resize( nb );
         for( index_t i = 0; i < nb; ++i ) {
-            incident_surfaces[i] = E.in_boundary_gmme( i ).index();
+            incident_surfaces[i] = E.incident_entity_gmme( i ).index();
         }
         std::sort( incident_surfaces.begin(), incident_surfaces.end() );
     }
@@ -183,8 +183,8 @@ namespace RINGMesh {
             for( index_t j = 0; j < geomodel_.nb_mesh_entities( type ); ++j ) {
                 bool no_incident = true;
                 const GeoModelMeshEntity< 3 >& E = geomodel_.mesh_entity( type, j );
-                for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
-                    if( mesh_entities.count( E.in_boundary_gmme( k ) ) == 0 ) {
+                for( index_t k = 0; k < E.nb_incident_entities(); ++k ) {
+                    if( mesh_entities.count( E.incident_entity_gmme( k ) ) == 0 ) {
                         no_incident = false;
                         break;
                     }
@@ -315,7 +315,7 @@ namespace RINGMesh {
         std::remove_if( incident_entities.begin(), incident_entities.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
         GeoModelMeshEntityAccess< 3 > incident_entity_access(
-            geomodel_access_.modifiable_mesh_entity( in_boundary ) );
+            geomodel_access_.modifiable_mesh_entity( incident_entity ) );
         std::vector< index_t >& boundaries =
             incident_entity_access.modifiable_boundaries();
         std::remove_if( boundaries.begin(), boundaries.end(),
@@ -327,8 +327,8 @@ namespace RINGMesh {
         const gmme_id& boundary )
     {
         const GeoModelMeshEntity< 3 >& incident_entity_mesh_entity = geomodel_.mesh_entity(
-            in_boundary );
-        for( index_t in_ent = 0; in_ent < incident_entity_mesh_entity.nb_incident_entity();
+            incident_entity );
+        for( index_t in_ent = 0; in_ent < incident_entity_mesh_entity.nb_incident_entities();
             in_ent++ ) {
             if( incident_entity_mesh_entity.incident_entity_gmme( in_ent ) == boundary ) {
                 GeoModelMeshEntityConstAccess< 3 > entity_access(
@@ -378,7 +378,7 @@ namespace RINGMesh {
         GeoModelMeshEntityAccess< 3 > incident_entity_access( incident_entity );
         incident_entity_access.modifiable_boundaries().push_back( relation_id );
 
-        if( incident_entity_id.type() == Region::type_name_static() ) {
+        if( incident_entity_id.type() == Region< 3 >::type_name_static() ) {
             incident_entity_access.modifiable_sides().push_back( side );
         }
     }
