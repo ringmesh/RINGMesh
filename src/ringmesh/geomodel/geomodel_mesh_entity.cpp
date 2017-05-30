@@ -508,7 +508,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const gmge_id GeoModelMeshEntity< DIMENSION >::could_be_undefined_parent_gmge(
+    gmge_id GeoModelMeshEntity< DIMENSION >::could_be_undefined_parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
@@ -520,7 +520,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const gmge_id GeoModelMeshEntity< DIMENSION >::defined_parent_gmge(
+    gmge_id GeoModelMeshEntity< DIMENSION >::defined_parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
         const gmge_id parent_gmge = could_be_undefined_parent_gmge(

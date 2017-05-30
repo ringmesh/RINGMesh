@@ -102,14 +102,14 @@ namespace RINGMesh {
          * \return the (lowercase) string associated to a
          * GeoModelELement::GEOL_FEATURE
          */
-        static std::string geol_name( GEOL_FEATURE );
-        static bool is_fault( GEOL_FEATURE T )
+        static std::string geol_name( GEOL_FEATURE feature);
+        static bool is_fault( GEOL_FEATURE feature )
         {
-            return T == FAULT || T == REVERSE_FAULT || T == NORMAL_FAULT;
+            return feature == FAULT || feature == REVERSE_FAULT || feature == NORMAL_FAULT;
         }
-        static bool is_stratigraphic_limit( GEOL_FEATURE T )
+        static bool is_stratigraphic_limit( GEOL_FEATURE feature )
         {
-            return T == STRATI || T == UNCONFORMITY;
+            return feature == STRATI || feature == UNCONFORMITY;
         }
 
         bool has_geological_feature() const
