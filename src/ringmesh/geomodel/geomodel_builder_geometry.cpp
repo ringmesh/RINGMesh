@@ -809,8 +809,8 @@ namespace RINGMesh {
             const index_t& cell = cell_vertices[v].element_;
             const index_t& cell_vertex = cell_vertices[v].vertex_;
 
-            std::vector< index_t > cells;
-            region.cells_around_vertex( cell_vertex, cells, cell );
+            std::vector< index_t > cells = region.cells_around_vertex( cell_vertex,
+                cell );
             update_cell_vertex( region_id, cells, cell_vertex, vertex_id );
             region_mesh_builder->set_vertex( vertex_id, p );
             vertex_id++;

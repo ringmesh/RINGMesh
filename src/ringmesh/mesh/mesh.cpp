@@ -313,4 +313,94 @@ namespace RINGMesh {
         return std::unique_ptr< VolumeMesh >( mesh );
     }
 
+    std::vector< index_t > VolumeMesh::cells_around_vertex(
+        index_t vertex_id,
+        index_t cell_hint ) const
+    {
+        std::vector< index_t > result;
+
+        if( cell_hint == NO_ID ) {
+            cell_hint = find_first_cell_owing_vertex( vertex_id );
+            if( cell_hint == NO_ID ) {
+                return result;
+            }
+        }
+
+        // Flag the visited cells
+        std::vector< index_t > visited;
+        visited.reserve( 10 );
+
+        // Stack of the adjacent cells
+        std::stack< index_t > S;
+        S.push( cell_hint );
+        visited.push_back( cell_hint );
+
+        do {
+            index_t c = S.top();
+            S.pop();
+
+            bool cell_includes_vertex = false;
+            for( index_t v = 0; v < nb_cell_vertices( c ); v++ ) {
+                if( cell_vertex( c, v ) == vertex_id ) {
+                    result.push_back( c );
+                    cell_includes_vertex = true;
+                    break;
+                }
+            }
+            if( !cell_includes_vertex ) {
+                continue;
+            }
+
+            for( index_t f = 0; f < nb_cell_facets( c ); f++ ) {
+                for( index_t v = 0; v < nb_cell_facet_vertices( c, f ); v++ ) {
+                    index_t vertex = cell_facet_vertex( c, f, v );
+                    if( vertex == vertex_id ) {
+                        index_t adj_P = cell_adjacent( c, f );
+
+                        if( adj_P != NO_ID ) {
+                            if( !contains( visited, adj_P ) ) {
+                                S.push( adj_P );
+                                visited.push_back( adj_P );
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        } while( !S.empty() );
+
+        return result;
+    }
+
+    index_t VolumeMesh::find_first_cell_owing_vertex( index_t vertex_id_in_mesh ) const
+    {
+        ringmesh_assert( nb_cells() != 0 );
+        const NNSearch& ann_cells = cells_nn_search();
+        const vec3& vertex_pos = vertex( vertex_id_in_mesh );
+
+        index_t nb_neighbors = std::min( index_t( 5 ), nb_cells() );
+        std::vector< index_t > neighbors;
+        index_t cur_neighbor = 0;
+        index_t prev_neighbor = 0;
+        do {
+            prev_neighbor = cur_neighbor;
+            cur_neighbor += nb_neighbors;
+            cur_neighbor = std::min( cur_neighbor, nb_cells() );
+            neighbors.resize( cur_neighbor );
+            neighbors = ann_cells.get_neighbors( vertex_pos, cur_neighbor );
+            // nb_neighbors can be less than cur_neighbor.
+            nb_neighbors = static_cast< index_t >( neighbors.size() );
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                index_t c = neighbors[i];
+                for( index_t j = 0; j < nb_cell_vertices( c ); j++ ) {
+                    if( cell_vertex( c, j ) == vertex_id_in_mesh ) {
+                        return c;
+                    }
+                }
+            }
+        } while( nb_cells() != cur_neighbor );
+
+        return NO_ID;
+    }
+
 } // namespace

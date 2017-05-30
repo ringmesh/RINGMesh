@@ -71,6 +71,7 @@ namespace {
 #include "full_geomodel/io_vtk.cpp"
 
 }
+
 namespace RINGMesh {
 
     bool geomodel_load( GeoModel& geomodel, const std::string& filename )
