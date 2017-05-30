@@ -94,9 +94,27 @@ namespace {
         double& hex_volume,
         double& poly_volume )
     {
-        region.compute_region_volumes_per_cell_type( tet_volume, pyramid_volume,
-            prism_volume, hex_volume, poly_volume );
-
+        for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+            index_t nb_vertices = region.nb_mesh_element_vertices( c );
+            double volume = region.low_level_mesh_storage().cell_volume( c );
+            switch( nb_vertices ) {
+                case 4:
+                    tet_volume += volume;
+                    break;
+                case 5:
+                    pyramid_volume += volume;
+                    break;
+                case 6:
+                    prism_volume += volume;
+                    break;
+                case 8:
+                    hex_volume += volume;
+                    break;
+                default:
+                    poly_volume += volume;
+                    break;
+            }
+        }
     }
 
     double compute_geomodel_volumes_per_cell_type(

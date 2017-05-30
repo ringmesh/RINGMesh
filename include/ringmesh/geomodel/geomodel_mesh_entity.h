@@ -51,8 +51,8 @@
 
 namespace RINGMesh {
     class GeoModel;
-    template < index_t DIMENSION > class GeoModelGeologicalEntity;
-    template < index_t DIMENSION > class GeoModelMeshEntityConstAccess;
+    template< index_t DIMENSION > class GeoModelGeologicalEntity;
+    template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
 }
 
 namespace RINGMesh {
@@ -66,8 +66,8 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelMeshEntityAccess< DIMENSION >;
-        friend class GeoModelMeshEntityConstAccess< DIMENSION >;
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
+        friend class GeoModelMeshEntityConstAccess< DIMENSION > ;
 
     public:
         virtual ~GeoModelMeshEntity();
@@ -332,8 +332,7 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
 
     private:
-        gmge_id defined_parent_gmge(
-            const GeologicalEntityType& parent_type ) const;
+        gmge_id defined_parent_gmge( const GeologicalEntityType& parent_type ) const;
 
         gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
@@ -361,8 +360,8 @@ namespace RINGMesh {
     class RINGMESH_API Corner: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEntityAccess< DIMENSION >;
-        friend class GeoModelMeshEntityConstAccess< DIMENSION >;
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
+        friend class GeoModelMeshEntityConstAccess< DIMENSION > ;
 
         virtual ~Corner()
         {
@@ -430,8 +429,6 @@ namespace RINGMesh {
 
         /*!
          * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
          */
         const PointSetMesh< DIMENSION >& low_level_mesh_storage() const
         {
@@ -492,7 +489,7 @@ namespace RINGMesh {
     class RINGMESH_API Line: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEntityAccess< DIMENSION >;
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
 
         virtual ~Line()
         {
@@ -593,8 +590,6 @@ namespace RINGMesh {
 
         /*!
          * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
          */
         const LineMesh< DIMENSION >& low_level_mesh_storage() const
         {
@@ -645,7 +640,7 @@ namespace RINGMesh {
     class RINGMESH_API Surface: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEntityAccess< DIMENSION >;
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
 
         virtual ~Surface()
         {
@@ -768,8 +763,6 @@ namespace RINGMesh {
 
         /*!
          * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
          */
         const SurfaceMesh< DIMENSION >& low_level_mesh_storage() const
         {
@@ -831,7 +824,7 @@ namespace RINGMesh {
     class RINGMESH_API Region: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEntityAccess< DIMENSION >;
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
 
         virtual ~Region()
         {
@@ -1074,13 +1067,6 @@ namespace RINGMesh {
             return vecn< DIMENSION >();
         }
 
-        void compute_region_volumes_per_cell_type(
-            double& tet_volume,
-            double& pyramid_volume,
-            double& prism_volume,
-            double& hex_volume,
-            double& poly_volume ) const;
-
         bool side( index_t i ) const
         {
             return sides_[i];
@@ -1090,8 +1076,6 @@ namespace RINGMesh {
 
         /*!
          * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
          */
         const VolumeMesh< DIMENSION >& low_level_mesh_storage() const
         {
@@ -1169,7 +1153,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelMeshEntityAccess {
     ringmesh_disable_copy( GeoModelMeshEntityAccess );
-    ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderTopology;
         friend class GeoModelBuilderGeometry;
         friend class GeoModelBuilderGeology;
@@ -1204,7 +1188,8 @@ namespace RINGMesh {
 
         std::vector< bool >& modifiable_sides()
         {
-            ringmesh_assert( gmme_.type_name() == Region< DIMENSION >::type_name_static() );
+            ringmesh_assert(
+                gmme_.type_name() == Region< DIMENSION >::type_name_static() );
             return dynamic_cast< Region< DIMENSION >& >( gmme_ ).sides_;
         }
 

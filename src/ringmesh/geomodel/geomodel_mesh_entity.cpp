@@ -914,37 +914,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void Region< DIMENSION >::compute_region_volumes_per_cell_type(
-        double& tet_volume,
-        double& pyramid_volume,
-        double& prism_volume,
-        double& hex_volume,
-        double& poly_volume ) const
-    {
-        for( index_t c = 0; c < nb_mesh_elements(); c++ ) {
-            index_t nb_vertices = nb_mesh_element_vertices( c );
-            double volume = volume_mesh_->cell_volume( c );
-            switch( nb_vertices ) {
-                case 4:
-                    tet_volume += volume;
-                    break;
-                case 5:
-                    pyramid_volume += volume;
-                    break;
-                case 6:
-                    prism_volume += volume;
-                    break;
-                case 8:
-                    hex_volume += volume;
-                    break;
-                default:
-                    poly_volume += volume;
-                    break;
-            }
-        }
-    }
-
-    template< index_t DIMENSION >
     void GeoModelMeshEntityAccess< DIMENSION >::change_mesh_data_structure(
         const MeshType type )
     {
