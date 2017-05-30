@@ -154,6 +154,7 @@ namespace RINGMesh {
         }
     };
 
+    using GeogramPointSetMesh2DBuilder = GeogramPointSetMeshBuilder< 2 >;
     using GeogramPointSetMesh3DBuilder = GeogramPointSetMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
@@ -248,6 +249,7 @@ namespace RINGMesh {
         }
     };
 
+    using GeogramLineMesh2DBuilder = GeogramLineMeshBuilder< 2 >;
     using GeogramLineMesh3DBuilder = GeogramLineMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
@@ -413,6 +415,7 @@ namespace RINGMesh {
         }
     };
 
+    using GeogramSurfaceMesh2DBuilder = GeogramSurfaceMeshBuilder< 2 >;
     using GeogramSurfaceMesh3DBuilder = GeogramSurfaceMeshBuilder< 3 >;
 
     template< index_t DIMENSION >

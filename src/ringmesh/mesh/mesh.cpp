@@ -191,7 +191,7 @@ namespace RINGMesh {
         index_t in0,
         index_t in1 ) const
     {
-        ringmesh_assert( in0 < nb_vertices() && in1 < nb_vertices() );
+        ringmesh_assert( in0 < this->nb_vertices() && in1 < this->nb_vertices() );
 
         // Another possible, probably faster, algorithm is to check if the 2 indices
         // are neighbors in polygons_ and check that they are in the same polygon
