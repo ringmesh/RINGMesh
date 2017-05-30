@@ -61,8 +61,8 @@ namespace RINGMesh {
     class GeoModelMesh;
     class GeoModelMeshVertices;
     class GeoModel;
-    class GeoModelEntity;
-    class GeoModelMeshEntity;
+    template< index_t DIMENSION > class GeoModelEntity;
+    template< index_t DIMENSION > class GeoModelMeshEntity;
 }
 
 namespace RINGMesh {
