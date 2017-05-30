@@ -128,7 +128,7 @@ namespace RINGMesh {
 
         gmge_id gmge() const
         {
-            return gmge_id( type_name(), id_ );
+            return gmge_id( type_name(), this->index() );
         }
 
         GeologicalEntityType entity_type() const
@@ -272,7 +272,7 @@ namespace RINGMesh {
             return gmge_.id_;
         }
 
-        GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE& modifiable_geol_feature()
+        typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE& modifiable_geol_feature()
         {
             return gmge_.geol_feature_;
         }

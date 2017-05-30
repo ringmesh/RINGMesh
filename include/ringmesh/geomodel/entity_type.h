@@ -189,8 +189,10 @@ namespace RINGMesh {
      */
     template< class Entity_type_template >
     struct gme_id {
-        friend GeoModelMeshEntityAccess< DIMENSION >;
-        friend GeoModelGeologicalEntityAccess< DIMENSION >;
+        friend GeoModelMeshEntityAccess< 2 >;
+        friend GeoModelGeologicalEntityAccess< 2 >;
+        friend GeoModelMeshEntityAccess< 3 >;
+        friend GeoModelGeologicalEntityAccess< 3 >;
     public:
         index_t index() const
         {

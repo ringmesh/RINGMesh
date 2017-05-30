@@ -75,7 +75,7 @@ namespace RINGMesh {
 
         gmme_id gmme() const
         {
-            return gmme_id( type_name(), id_ );
+            return gmme_id( type_name(), this->index() );
         }
         MeshEntityType mesh_entity_type() const
         {
@@ -288,8 +288,8 @@ namespace RINGMesh {
 
         virtual void copy_mesh_entity( const GeoModelMeshEntity< DIMENSION >& from )
         {
-            copy_name( from );
-            id_ = from.id_;
+            this->copy_name( from );
+            this->id_ = from.index();
             boundaries_ = from.boundaries_;
             in_boundary_ = from.in_boundary_;
             parents_ = from.parents_;
@@ -1238,7 +1238,7 @@ namespace RINGMesh {
         virtual double size() const final
         {
             double result = 0.;
-            for( index_t i = 0; i < nb_boundaries(); i++ ) {
+            for( index_t i = 0; i < this->nb_boundaries(); i++ ) {
                 const Surface< DIMENSION >& surface = dynamic_cast< const Surface<
                     DIMENSION >& >( boundary( i ) );
 
