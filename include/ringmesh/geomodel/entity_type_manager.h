@@ -73,18 +73,18 @@ namespace RINGMesh {
     };
 
     /*!
-     * @brief struct used to map the type of a Mesh Entity to the type of its in boundary
-     * "Line" is in boundary of "Corner"
-     * "Surface" is in boundary of "Line"
-     * "Region" is in boundary of "Surface"
+     * @brief struct used to map the type of a Mesh Entity to the type of its incident entities
+     * "Line" is incident entity of "Corner"
+     * "Surface" is incident entity of "Line"
+     * "Region" is incident entity of "Surface"
      */
-    struct MeshEntityTypeInBoundaryMap {
-        MeshEntityTypeInBoundaryMap();
-        void register_in_boundary(
+    struct MeshEntityTypeIncidentEntityMap {
+        MeshEntityTypeIncidentEntityMap();
+        void register_incident_entity(
             const MeshEntityType& type,
-            const MeshEntityType& in_boundary )
+            const MeshEntityType& incident_entity )
         {
-            map.emplace( type, in_boundary );
+            map.emplace( type, incident_entity );
         }
         MeshEntityTypeMap map;
     };
@@ -105,14 +105,14 @@ namespace RINGMesh {
         static bool is_valid_type( const MeshEntityType& type );
 
         static const MeshEntityType& boundary_type( const MeshEntityType& type );
-        static const MeshEntityType& in_boundary_type( const MeshEntityType& type );
+        static const MeshEntityType& incident_entity_type( const MeshEntityType& type );
 
         static const std::vector< MeshEntityType >& mesh_entity_types();
         static index_t nb_mesh_entity_types();
 
     private:
         static MeshEntityTypeBoundaryMap boundary_relationships_;
-        static MeshEntityTypeInBoundaryMap in_boundary_relationships_;
+        static MeshEntityTypeIncidentEntityMap incident_entity_relationships_;
 
     };
 
@@ -165,7 +165,7 @@ namespace RINGMesh {
             const GeologicalEntityType& parent_type ) const;
 
         /*! @}
-         * \name Access to the Boundary/In Boundary relations
+         * \name Access to the Boundary/Incident entity relations
          * @{
          */
 
@@ -174,10 +174,10 @@ namespace RINGMesh {
             ringmesh_assert( relation_id < boundary_relationships_.size() );
             return boundary_relationships_[relation_id].boundary_id_;
         }
-        const gmme_id& in_boundary_gmme( index_t relation_id ) const
+        const gmme_id& incident_entity_gmme( index_t relation_id ) const
         {
             ringmesh_assert( relation_id < boundary_relationships_.size() );
-            return boundary_relationships_[relation_id].in_boundary_id_;
+            return boundary_relationships_[relation_id].incident_entity_id_;
         }
 
         /*! @}
@@ -211,21 +211,21 @@ namespace RINGMesh {
          */
 
         index_t add_boundary_relationship(
-            const gmme_id& in_boundary,
+            const gmme_id& incident_entity,
             const gmme_id& boundary )
         {
             index_t relationship_id =
                 static_cast< index_t >( boundary_relationships_.size() );
-            boundary_relationships_.emplace_back( in_boundary, boundary );
+            boundary_relationships_.emplace_back( incident_entity, boundary );
             return relationship_id;
         }
 
         index_t find_boundary_relationship(
-            const gmme_id& in_boundary,
+            const gmme_id& incident_entity,
             const gmme_id& boundary )
         {
             return find( boundary_relationships_,
-                BoundaryRelationship( in_boundary, boundary ) );
+                BoundaryRelationship( incident_entity, boundary ) );
         }
 
         void set_boundary_to_boundary_relationship(
@@ -235,26 +235,27 @@ namespace RINGMesh {
             boundary_relationships_[relationship_id].boundary_id_ = boundary;
         }
 
-        void set_in_boundary_to_boundary_relationship(
+        void set_incident_entity_to_boundary_relationship(
+
             index_t relationship_id,
-            const gmme_id& in_boundary )
+            const gmme_id& incident_entity )
         {
-            boundary_relationships_[relationship_id].in_boundary_id_ = in_boundary;
+            boundary_relationships_[relationship_id].incident_entity_id_ = incident_entity;
         }
 
         struct BoundaryRelationship {
             BoundaryRelationship(
-                const gmme_id& in_boundary,
+                const gmme_id& incident_entity,
                 const gmme_id& boundary )
-                : in_boundary_id_( in_boundary ), boundary_id_( boundary )
+                : incident_entity_id_( incident_entity ), boundary_id_( boundary )
             {
             }
             bool operator==( const BoundaryRelationship& rhs ) const
             {
-                return in_boundary_id_ == rhs.in_boundary_id_
+                return incident_entity_id_ == rhs.incident_entity_id_
                     && boundary_id_ == rhs.boundary_id_;
             }
-            gmme_id in_boundary_id_;
+            gmme_id incident_entity_id_;
             gmme_id boundary_id_;
         };
 
