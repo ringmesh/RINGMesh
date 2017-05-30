@@ -41,6 +41,7 @@
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_topology.h>
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
@@ -104,6 +105,15 @@ namespace RINGMesh {
         {                                                                           \
             return mesh_->vertices.nb();                                            \
         }                                                                           \
+        virtual index_t nb_connected_components() const final                       \
+        {                                                                           \
+            return GEO::mesh_nb_connected_components( *mesh_ ) ;                    \
+        }                                                                           \
+        virtual index_t get_connected_components(                                   \
+            GEO::vector< index_t >& component ) const final                         \
+        {                                                                           \
+            return GEO::get_connected_components( *mesh_, component ) ;             \
+        }                                                                           \
     protected:                                                                      \
         std::unique_ptr< GEO::Mesh > mesh_
 
@@ -113,12 +123,12 @@ namespace RINGMesh {
 
     class RINGMESH_API GeogramLineMesh: public LineMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
+
     public:
         virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const override
         {
             return mesh_->edges.vertex( edge_id, vertex_id );
         }
-
         virtual index_t nb_edges() const override
         {
             return mesh_->edges.nb();
@@ -132,6 +142,7 @@ namespace RINGMesh {
 
     class RINGMESH_API GeogramSurfaceMesh: public SurfaceMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
+
     public:
         virtual index_t polygon_vertex( index_t polygon_id, index_t vertex_id ) const override
         {
@@ -142,7 +153,6 @@ namespace RINGMesh {
         {
             return mesh_->facets.nb();
         }
-
         virtual index_t nb_polygon_vertices( index_t polygon_id ) const override
         {
             return mesh_->facets.nb_vertices( polygon_id );
@@ -156,7 +166,6 @@ namespace RINGMesh {
         {
             return mesh_->facets.attributes();
         }
-
         virtual bool polygons_are_simplicies() const override
         {
             return mesh_->facets.are_simplices();
@@ -165,12 +174,12 @@ namespace RINGMesh {
 
     class RINGMESH_API GeogramVolumeMesh: public VolumeMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramVolumeMesh );
+
     public:
         virtual index_t cell_vertex( index_t cell_id, index_t vertex_id ) const override
         {
             return mesh_->cells.vertex( cell_id, vertex_id );
         }
-
         virtual index_t cell_edge_vertex(
             index_t cell_id,
             index_t edge_id,
@@ -178,7 +187,6 @@ namespace RINGMesh {
         {
             return mesh_->cells.edge_vertex( cell_id, edge_id, vertex_id );
         }
-
         virtual index_t cell_facet_vertex(
             index_t cell_id,
             index_t facet_id,
@@ -186,7 +194,6 @@ namespace RINGMesh {
         {
             return mesh_->cells.facet_vertex( cell_id, facet_id, vertex_id );
         }
-
         virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const override
         {
             return mesh_->cells.facet( cell_id, facet_id );
@@ -196,29 +203,24 @@ namespace RINGMesh {
         {
             return mesh_->cells.nb_facets( cell_id );
         }
-
         virtual index_t nb_cell_facets() const override
         {
             return mesh_->cell_facets.nb();
         }
-
         virtual index_t nb_cell_edges( index_t cell_id ) const override
         {
             return mesh_->cells.nb_edges( cell_id );
         }
-
         virtual index_t nb_cell_facet_vertices(
             index_t cell_id,
             index_t facet_id ) const override
         {
             return mesh_->cells.facet_nb_vertices( cell_id, facet_id );
         }
-
         virtual index_t nb_cell_vertices( index_t cell_id ) const override
         {
             return mesh_->cells.nb_vertices( cell_id );
         }
-
         virtual index_t nb_cells() const override
         {
             return mesh_->cells.nb();
@@ -232,7 +234,6 @@ namespace RINGMesh {
         {
             return mesh_->cells.corners_end( cell_id );
         }
-
         virtual index_t cell_adjacent( index_t cell_id, index_t facet_id ) const override
         {
             return mesh_->cells.adjacent( cell_id, facet_id );
@@ -245,12 +246,10 @@ namespace RINGMesh {
         {
             return mesh_->cell_facets.attributes();
         }
-
         virtual GEO::MeshCellType cell_type( index_t cell_id ) const override
         {
             return mesh_->cells.type( cell_id );
         }
-
         virtual bool cells_are_simplicies() const override
         {
             return mesh_->cells.are_simplices();

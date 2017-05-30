@@ -875,6 +875,37 @@ namespace RINGMesh {
         }
     }
 
+    index_t Region::find_first_cell_owing_vertex( index_t vertex_id_in_region ) const
+    {
+        ringmesh_assert( is_meshed() );
+        const NNSearch& ann_cells = cell_nn_search();
+        const vec3& vertex_pos = vertex( vertex_id_in_region );
+
+        index_t nb_neighbors = std::min( index_t( 5 ), nb_mesh_elements() );
+        std::vector< index_t > neighbors;
+        index_t cur_neighbor = 0;
+        index_t prev_neighbor = 0;
+        do {
+            prev_neighbor = cur_neighbor;
+            cur_neighbor += nb_neighbors;
+            cur_neighbor = std::min( cur_neighbor, nb_mesh_elements() );
+            neighbors.resize( cur_neighbor );
+            neighbors = ann_cells.get_neighbors( vertex_pos, cur_neighbor );
+            // nb_neighbors can be less than cur_neighbor.
+            nb_neighbors = static_cast< index_t >( neighbors.size() );
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                index_t c = neighbors[i];
+                for( index_t j = 0; j < nb_mesh_element_vertices( c ); j++ ) {
+                    if( mesh_element_vertex_index( c, j ) == vertex_id_in_region ) {
+                        return c;
+                    }
+                }
+            }
+        } while( nb_mesh_elements() != cur_neighbor );
+
+        return NO_ID;
+    }
+
     index_t Region::cells_around_vertex(
         index_t vertex_id,
         std::vector< index_t >& result,
@@ -883,7 +914,10 @@ namespace RINGMesh {
         result.resize( 0 );
 
         if( cell_hint == NO_ID ) {
-            return 0;
+            cell_hint = find_first_cell_owing_vertex( vertex_id );
+            if( cell_hint == NO_ID ) {
+                return 0;
+            }
         }
 
         // Flag the visited cells
