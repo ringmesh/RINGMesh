@@ -397,7 +397,7 @@ int main()
         // Setting the Boundaries relations #
         //###################################
 
-        //We set the Corners which are in boundary of the lines
+        //We set the Corners which are incident entities of the lines
         // The add_mesh_entity_boundary_relation method take as first argument the
         // gme_t of the boundary and in second argument
         // the id of the GeoModelMeshentity bounded by the boundary

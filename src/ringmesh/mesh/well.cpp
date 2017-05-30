@@ -78,9 +78,9 @@ namespace {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() );
         gmme_id cur_surface( Surface::type_name_static(), surface_part_id );
         const Surface& surface = geomodel.surface( surface_part_id );
-        for( index_t r = 0; r < surface.nb_in_boundary(); r++ ) {
+        for( index_t r = 0; r < surface.nb_incident_entities(); r++ ) {
             const Region& cur_region =
-                dynamic_cast< const Region& >( surface.in_boundary( r ) );
+                dynamic_cast< const Region& >( surface.incident_entity( r ) );
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
                     && cur_region.boundary_gmme( s ) == cur_surface ) {
