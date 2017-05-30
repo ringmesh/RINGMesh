@@ -126,16 +126,16 @@ namespace RINGMesh {
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          *
          * @brief Tests whether a polygon is degenerate.
-         * @param[in] S the Surface that the polygon belongs to
-         * @param[in] f the index of the polygon in \p S
+         * @param[in] surface the Surface that the polygon belongs to
+         * @param[in] polygon_id the index of the polygon in \p S
          * @param[out] colocated_vertices contains the found colocated vertices
          * in \p f if any.
          * \return true if polygon \p f has duplicated vertices,
          *  false otherwise
          */
         bool polygon_is_degenerate(
-            const Surface< 3 >& S,
-            index_t p,
+            const Surface< 3 >& surface,
+            index_t polygon_id,
             std::vector< index_t >& colocated_vertices );
 
         /*!

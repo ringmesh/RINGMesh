@@ -257,9 +257,6 @@ namespace RINGMesh {
         virtual vecn< DIMENSION > entity_barycenter() const
         {
             vecn< DIMENSION > result;
-            for( index_t c = 0; c < DIMENSION; c++ ) {
-                result[c] = 0.;
-            }
             for( index_t v = 0; v < nb_vertices(); v++ ) {
                 result += vertex( v );
             }
@@ -335,10 +332,10 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
 
     private:
-        const gmge_id defined_parent_gmge(
+        gmge_id defined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
 
-        const gmge_id could_be_undefined_parent_gmge(
+        gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
     protected:
 
@@ -381,6 +378,7 @@ namespace RINGMesh {
         {
             return type_name_static();
         }
+
         /*!
          * @brief Checks if this entity define the geomodel external boundary
          * @details Test if the entity is in the Surfaces defining the universe
@@ -394,6 +392,7 @@ namespace RINGMesh {
         {
             return 0;
         }
+
         /*!
          * @return the number of vertices of the Corner
          */
@@ -416,10 +415,12 @@ namespace RINGMesh {
             ringmesh_unused( mesh_element );
             return 0.0;
         }
+
         virtual double size() const
         {
             return 0.0;
         }
+
         virtual vecn< DIMENSION > mesh_element_barycenter(
             index_t mesh_element = 0 ) const override
         {
@@ -436,6 +437,7 @@ namespace RINGMesh {
         {
             return *point_set_mesh_;
         }
+
     protected:
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
@@ -993,7 +995,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class RINGMESH_API Region: public GeoModelMeshEntity< DIMENSION > {
-        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
+        ringmesh_template_assert_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION >;
 
@@ -1375,6 +1377,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelMeshEntityAccess {
     ringmesh_disable_copy( GeoModelMeshEntityAccess );
+    ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderTopology;
         friend class GeoModelBuilderGeometry;
         friend class GeoModelBuilderGeology;

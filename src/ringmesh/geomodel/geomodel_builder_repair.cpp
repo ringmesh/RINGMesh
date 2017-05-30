@@ -144,24 +144,24 @@ namespace RINGMesh {
     }
 
     bool GeoModelBuilderRepair::polygon_is_degenerate(
-        const Surface< 3 >& S,
-        index_t p,
+        const Surface< 3 >& surface,
+        index_t polygon_id,
         std::vector< index_t >& colocated_vertices )
     {
-        index_t nb_vertices = S.nb_mesh_element_vertices( p );
+        index_t nb_vertices = surface.nb_mesh_element_vertices( polygon_id );
         if( nb_vertices != 3 ) {
             index_t* vertices = (index_t*) alloca( nb_vertices * sizeof(index_t) );
             for( index_t lv = 0; lv < nb_vertices; ++lv ) {
-                vertices[lv] = colocated_vertices[S.mesh_element_vertex_index( p,
+                vertices[lv] = colocated_vertices[surface.mesh_element_vertex_index( polygon_id,
                     lv )];
             }
             std::sort( vertices, vertices + nb_vertices );
             return std::unique( vertices, vertices + nb_vertices )
                 != vertices + nb_vertices;
         }
-        index_t v1 = colocated_vertices[S.mesh_element_vertex_index( p, 0 )];
-        index_t v2 = colocated_vertices[S.mesh_element_vertex_index( p, 1 )];
-        index_t v3 = colocated_vertices[S.mesh_element_vertex_index( p, 2 )];
+        index_t v1 = colocated_vertices[surface.mesh_element_vertex_index( polygon_id, 0 )];
+        index_t v2 = colocated_vertices[surface.mesh_element_vertex_index( polygon_id, 1 )];
+        index_t v3 = colocated_vertices[surface.mesh_element_vertex_index( polygon_id, 2 )];
         return v1 == v2 || v2 == v3 || v3 == v1;
     }
 

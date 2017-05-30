@@ -90,9 +90,9 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     std::string GeoModelGeologicalEntity< DIMENSION >::geol_name(
-        GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE t )
+        typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE feature )
     {
-        switch( t ) {
+        switch( feature ) {
             case STRATI:
                 return "top";
             case FAULT:
