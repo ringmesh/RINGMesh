@@ -406,10 +406,10 @@ namespace RINGMesh {
         region( m ).set_mesh_color( r, g, b );
     }
 
-    void RegionGfxEntity::set_cells_colors_by_type()
+    void RegionGfxEntity::set_cell_colors_by_type()
     {
         for( index_t m = 0; m < entities_.size(); m++ ) {
-            set_cells_colors_by_type( m );
+            set_cell_colors_by_type( m );
         }
     }
 
@@ -425,9 +425,9 @@ namespace RINGMesh {
         region( m ).set_draw_cells( type, x );
     }
 
-    void RegionGfxEntity::set_cells_colors_by_type( index_t m )
+    void RegionGfxEntity::set_cell_colors_by_type( index_t m )
     {
-        region( m ).set_cells_colors_by_type();
+        region( m ).set_cell_colors_by_type();
     }
 
     void RegionGfxEntity::set_mesh_visibility( bool b )
