@@ -48,6 +48,7 @@
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
 #include <ringmesh/visualization/geomodel_gfx.h>
+#include <ringmesh/visualization/geogram_gfx.h>
 
 namespace {
     using namespace RINGMesh;
@@ -319,6 +320,71 @@ namespace RINGMesh {
             return attributes_[location()]->nb_coordinates();
         }
         return 0;
+    }
+
+    std::unique_ptr< PointSetMeshGfx > PointSetMeshGfx::create_gfx(
+        const PointSetMesh& mesh )
+    {
+        PointSetMeshGfx* gfx = PointSetMeshGfxFactory::create_object(
+            mesh.type_name() );
+        if( !gfx ) {
+            Logger::warn( "PointSetMeshGfx",
+                "Could not create mesh data structure: ", mesh.type_name() );
+            Logger::warn( "PointSetMeshGfx",
+                "Falling back to PointSetMeshGfx data structure" );
+
+            gfx = new GeogramPointSetMeshGfx;
+        }
+        gfx->set_mesh( mesh );
+        return std::unique_ptr< PointSetMeshGfx >( gfx );
+    }
+
+    std::unique_ptr< LineMeshGfx > LineMeshGfx::create_gfx( const LineMesh& mesh )
+    {
+        LineMeshGfx* gfx = LineMeshGfxFactory::create_object( mesh.type_name() );
+        if( !gfx ) {
+            Logger::warn( "LineMeshGfx", "Could not create mesh data structure: ",
+                mesh.type_name() );
+            Logger::warn( "LineMeshGfx",
+                "Falling back to LineMeshGfx data structure" );
+
+            gfx = new GeogramLineMeshGfx;
+        }
+        gfx->set_mesh( mesh );
+        return std::unique_ptr< LineMeshGfx >( gfx );
+    }
+
+    std::unique_ptr< SurfaceMeshGfx > SurfaceMeshGfx::create_gfx(
+        const SurfaceMesh& mesh )
+    {
+        SurfaceMeshGfx* gfx = SurfaceMeshGfxFactory::create_object(
+            mesh.type_name() );
+        if( !gfx ) {
+            Logger::warn( "SurfaceMeshGfx", "Could not create mesh data structure: ",
+                mesh.type_name() );
+            Logger::warn( "SurfaceMeshGfx",
+                "Falling back to SurfaceMeshGfx data structure" );
+
+            gfx = new GeogramSurfaceMeshGfx;
+        }
+        gfx->set_mesh( mesh );
+        return std::unique_ptr< SurfaceMeshGfx >( gfx );
+    }
+
+    std::unique_ptr< VolumeMeshGfx > VolumeMeshGfx::create_gfx(
+        const VolumeMesh& mesh )
+    {
+        VolumeMeshGfx* gfx = VolumeMeshGfxFactory::create_object( mesh.type_name() );
+        if( !gfx ) {
+            Logger::warn( "VolumeMeshGfx", "Could not create mesh data structure: ",
+                mesh.type_name() );
+            Logger::warn( "VolumeMeshGfx",
+                "Falling back to VolumeMeshGfx data structure" );
+
+            gfx = new GeogramVolumeMeshGfx;
+        }
+        gfx->set_mesh( mesh );
+        return std::unique_ptr< VolumeMeshGfx >( gfx );
     }
 }
 

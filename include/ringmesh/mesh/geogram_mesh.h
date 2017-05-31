@@ -71,7 +71,7 @@ namespace RINGMesh {
         {                                                                           \
             GEO::mesh_save( *mesh_, filename, GEO::MeshIOFlags() );                 \
         }                                                                           \
-        virtual const GEO::Mesh& gfx_mesh() const override                          \
+        const GEO::Mesh& gfx_mesh() const                                           \
         {                                                                           \
             return *mesh_;                                                          \
         }                                                                           \
