@@ -35,7 +35,7 @@
 
 /*! 
  * @file Implementation of visualization of GeoModelEntities
- * @author Benjamin Chaunvin and Arnaud Botella
+ * @author Benjamin Chauvin and Arnaud Botella
  */
 
 #include <ringmesh/visualization/geomodel_gfx.h>
