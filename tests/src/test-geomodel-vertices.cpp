@@ -58,7 +58,6 @@ void test_geomodel_vertices( const GeoModel& geomodel )
                 index_t vertex_id_in_geomodel_mesh =
                     geomodel_mesh_vertices.geomodel_vertex_id(
                         cur_geomodel_mesh_entity.gmme(), vertex_id_in_mesh_entity );
-
                 if( geomodel_mesh_vertices.vertex( vertex_id_in_geomodel_mesh )
                     != cur_geomodel_mesh_entity.vertex(
                         vertex_id_in_mesh_entity ) ) {
@@ -76,7 +75,6 @@ void test_geomodel_vertices( const GeoModel& geomodel )
             }
         }
     }
-
 }
 
 void test_GMEVertex( const GeoModel& geomodel )
@@ -104,11 +102,10 @@ void test_GMEVertex( const GeoModel& geomodel )
                         + GEO::String::to_string( vertex_id_in_geomodel_mesh )
                         + " in the GeoModelMesh" );
             }
-
         }
-
     }
 }
+
 int main()
 {
     using namespace RINGMesh;
