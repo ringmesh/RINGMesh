@@ -35,7 +35,7 @@
 
 /*! 
  * @file Implementation of visualization of GeoModelEntities
- * @author Benjamin Chaunvin and Arnaud Botella
+ * @author Benjamin Chauvin and Arnaud Botella
  */
 
 #include <ringmesh/visualization/gfx_application.h>
@@ -228,7 +228,7 @@ namespace RINGMesh {
     {
         show_colored_regions_.new_status = false;
         show_colored_layers_.new_status = false;
-        GM_gfx_.regions.set_color_cell_type();
+        GM_gfx_.regions.set_cell_colors_by_type();
     }
     void RINGMeshApplication::GeoModelViewer::toggle_colored_regions()
     {
@@ -278,19 +278,19 @@ namespace RINGMesh {
         }
 
         if( show_corners_ ) {
-            GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_color(
+            GM_gfx_.corners.GeoModelGfxEntity::set_mesh_element_color(
                 corner_style_.color_.Value.x, corner_style_.color_.Value.y,
                 corner_style_.color_.Value.z );
-            GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_size(
+            GM_gfx_.corners.GeoModelGfxEntity::set_mesh_element_size(
                 static_cast< index_t >( corner_style_.size_ ) );
             GM_gfx_.corners.draw();
         }
 
         if( show_lines_ ) {
-            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_color(
+            GM_gfx_.lines.GeoModelGfxEntity::set_mesh_element_color(
                 line_style_.color_.Value.x, line_style_.color_.Value.y,
                 line_style_.color_.Value.z );
-            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_size(
+            GM_gfx_.lines.GeoModelGfxEntity::set_mesh_element_size(
                 static_cast< index_t >( line_style_.size_ ) );
             if( selected_entity_type_ == 0 ) {
                 GM_gfx_.lines.set_vertex_visibility( line_style_.visible_vertices_ );
@@ -308,7 +308,7 @@ namespace RINGMesh {
         if( show_surface_ ) {
             GM_gfx_.surfaces.set_mesh_color( mesh_color_.Value.x,
                 mesh_color_.Value.y, mesh_color_.Value.z );
-            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color(
+            GM_gfx_.surfaces.GeoModelGfxEntity::set_mesh_element_color(
                 surface_style_.color_.Value.x, surface_style_.color_.Value.y,
                 surface_style_.color_.Value.z );
             GM_gfx_.surfaces.set_mesh_size(
@@ -359,7 +359,7 @@ namespace RINGMesh {
                 show_colored_layers_.update();
                 GM_gfx_.regions.set_mesh_color( mesh_color_.Value.x,
                     mesh_color_.Value.y, mesh_color_.Value.z );
-                GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color(
+                GM_gfx_.regions.GeoModelGfxEntity::set_mesh_element_color(
                     volume_style_.color_.Value.x, volume_style_.color_.Value.y,
                     volume_style_.color_.Value.z );
             }
@@ -441,28 +441,28 @@ namespace RINGMesh {
             static_cast< index_t >( selected_entity_type_ );
         const std::string& type = entity_types_[selected_entity_type_casted];
         if( selected_entity_type_ == 0 ) {
-            GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_visibility( true );
-            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_visibility( true );
-            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_visibility( true );
-            GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_visibility( true );
+            GM_gfx_.corners.GeoModelGfxEntity::set_mesh_element_visibility( true );
+            GM_gfx_.lines.GeoModelGfxEntity::set_mesh_element_visibility( true );
+            GM_gfx_.surfaces.GeoModelGfxEntity::set_mesh_element_visibility( true );
+            GM_gfx_.regions.GeoModelGfxEntity::set_mesh_element_visibility( true );
             if( line_style_.visible_vertices_ ) {
-                GM_gfx_.lines.GeoModelGfxManager::set_vertex_visibility( true );
+                GM_gfx_.lines.GeoModelGfxEntity::set_vertex_visibility( true );
             }
             if( surface_style_.visible_vertices_ ) {
-                GM_gfx_.surfaces.GeoModelGfxManager::set_vertex_visibility( true );
+                GM_gfx_.surfaces.GeoModelGfxEntity::set_vertex_visibility( true );
             }
             if( volume_style_.visible_vertices_ ) {
-                GM_gfx_.regions.GeoModelGfxManager::set_vertex_visibility( true );
+                GM_gfx_.regions.GeoModelGfxEntity::set_vertex_visibility( true );
             }
         } else {
-            GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_visibility( false );
-            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_visibility( false );
-            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_visibility(
+            GM_gfx_.corners.GeoModelGfxEntity::set_mesh_element_visibility( false );
+            GM_gfx_.lines.GeoModelGfxEntity::set_mesh_element_visibility( false );
+            GM_gfx_.surfaces.GeoModelGfxEntity::set_mesh_element_visibility(
                 false );
-            GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_visibility( false );
-            GM_gfx_.lines.GeoModelGfxManager::set_vertex_visibility( false );
-            GM_gfx_.surfaces.GeoModelGfxManager::set_vertex_visibility( false );
-            GM_gfx_.regions.GeoModelGfxManager::set_vertex_visibility( false );
+            GM_gfx_.regions.GeoModelGfxEntity::set_mesh_element_visibility( false );
+            GM_gfx_.lines.GeoModelGfxEntity::set_vertex_visibility( false );
+            GM_gfx_.surfaces.GeoModelGfxEntity::set_vertex_visibility( false );
+            GM_gfx_.regions.GeoModelGfxEntity::set_vertex_visibility( false );
             if( selected_entity_type_casted
                 < MeshEntityTypeManager::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
