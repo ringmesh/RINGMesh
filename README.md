@@ -1,9 +1,8 @@
+How to compile RINGMesh             {#ringmesh_compiling}
+=======================
+
 [![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0/branch/default?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh/branch/default)
 [![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmeshcoverage/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmeshcoverage?branch=default)
-
-
-Instructions for compiling RINGMesh
-===================================
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 2.8.11). There is no other dependency (everything
@@ -32,6 +31,19 @@ To define the options, use the cmake interface:
 Compiling RINGMesh
 ------------------
 
+To compile you need the following packages (tested on Debian-based linux):
+
+* build-essential
+* libx11-dev
+* libxrandr-dev
+* libxinerama-dev
+* libxcursor-dev
+* freeglut3-dev
+* libxi-dev
+Note: you need gcc/g++ version higher or equal to 4.8 to compile RINGMesh.
+
+Then, to compile RINGMesh, go to RINGMesh root directory and:
+
 * cd build/ringmesh/Release
 * make [-j4]
 
@@ -59,7 +71,8 @@ The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/
 doc-devkit include full documentation of RINGMesh and Geogram
 doc-devkit-lite include only the RINGMesh documentation
 
-Then you can go in doc/devkit[-lite]/html and open the index.html with your web browser
+Then you can go in doc/devkit[-lite]/html and open the index.html with your web browser.
+A ringmesh.qch file is generated in doc/devkit[-lite]/html (to load in Qt Assistant).
 
 Windows
 =======
@@ -82,8 +95,18 @@ Compiling RINGMesh
 ------------------
 
 You can either launch building in VisualStudio or calling cmake in command line
-in the build directory created at the configuration step.
-  cmake --build . --config Release
+in the build directory created at the configuration step:
+
+* cmake --build . --config Release
+* cmake --build . --config Debug
+* cmake --build . --config RelWithDebInfo
+
+The available compilation modes are:
+
+* Release
+* Debug
+* RelWithDebInfo (mandatory to debug a Gocad plugin in Debug mode with a Gocad
+  in Release, there are issues between libraries in Debug linked to a Gocad plugin)
 
 Compiling the documentation
 ---------------------------
@@ -97,4 +120,5 @@ The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/
 doc-devkit include full documentation of RINGMesh and Geogram
 doc-devkit-lite include only the RINGMesh documentation
 
-Then you can go in doc/devkit[-lite]/html and open the index.html with your web browser
+Then you can go in doc/devkit[-lite]/html and open the index.html with your web browser.
+A ringmesh.qch file is generated in doc/devkit[-lite]/html (to load in Qt Assistant).

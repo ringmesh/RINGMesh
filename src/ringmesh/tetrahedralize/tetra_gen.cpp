@@ -64,7 +64,7 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine ) final
         {
-            std::unique_ptr< Mesh3DBuilder > mesh3D_builder =
+            std::unique_ptr< VolumeMeshBuilder > mesh3D_builder =
                 builder_->geometry.create_region_builder( output_region_ );
             tetrahedralize_mesh_tetgen( *mesh3D_builder.get(), tetmesh_constraint_,
                 refine, 1.0 );
@@ -175,47 +175,46 @@ namespace RINGMesh {
             message_get_number( msg, &e );
 
             if( e == 0 ) {
-                std::cerr << desc << std::endl;
+                Logger::err( "TetraGen", desc );
             } else if( e == MESHGEMS_TETRA_CODE( -5110 ) ) {
                 message_get_integer_data( msg, 1, 4, ibuff );
-                std::cerr << "two surface edges are intersecting : " << ibuff[0]
-                    << " " << ibuff[1] << " intersects " << ibuff[2] << " "
-                    << ibuff[3] << std::endl;
+                Logger::err( "TetraGen", "two surface edges are intersecting : ",
+                    ibuff[0], " ", ibuff[1], " intersects ", ibuff[2], " ",
+                    ibuff[3] );
             } else if( e == MESHGEMS_TETRA_CODE( -5120 ) ) {
                 message_get_integer_data( msg, 1, 5, ibuff );
-                std::cerr << "surface edge intersects a surface face : " << ibuff[0]
-                    << " " << ibuff[1] << " intersects " << ibuff[2] << " "
-                    << ibuff[3] << " " << ibuff[4] << std::endl;
+                Logger::err( "TetraGen", "surface edge intersects a surface face : ",
+                    ibuff[0], " ", ibuff[1], " intersects ", ibuff[2], " ", ibuff[3],
+                    " ", ibuff[4] );
             } else if( e == MESHGEMS_TETRA_CODE( -5150 ) ) {
                 message_get_integer_data( msg, 1, 4, ibuff );
-                std::cerr << "boundary point inside a surface face : " << ibuff[0]
-                    << " in " << ibuff[1] << " " << ibuff[2] << " " << ibuff[3]
-                    << std::endl;
+                Logger::err( "TetraGen", "boundary point inside a surface face : ",
+                    ibuff[0], " in ", ibuff[1], " ", ibuff[2], " ", ibuff[3] );
             } else if( e == MESHGEMS_TETRA_CODE( 5200 ) ) {
                 message_get_integer_data( msg, 1, 3, ibuff );
-                std::cerr << "duplicated face : " << ibuff[0] << " " << ibuff[1]
-                    << " " << ibuff[2] << " " << ibuff[3] << std::endl;
+                Logger::err( "TetraGen", "duplicated face : ", ibuff[0], " ",
+                    ibuff[1], " ", ibuff[2], " ", ibuff[3] );
             } else if( e == MESHGEMS_TETRA_CODE( -5621 ) ) {
                 message_get_integer_data( msg, 1, 4, ibuff );
                 message_get_real_data( msg, 1, 1, rbuff );
-                std::cerr << "degenerated face : face " << ibuff[0] << " ("
-                    << ibuff[1] << ", " << ibuff[2] << ", " << ibuff[3]
-                    << ") with small inradius = " << rbuff[0] << std::endl;
+                Logger::err( "TetraGen", "degenerated face : face ", ibuff[0], " (",
+                    ibuff[1], ", ", ibuff[2], ", ", ibuff[3],
+                    ") with small inradius = ", rbuff[0] );
             } else if( e == MESHGEMS_TETRA_CODE( -5820 ) ) {
                 message_get_integer_data( msg, 1, 2, ibuff );
-                std::cerr << "edge bounding a hole : " << ibuff[0] << " " << ibuff[1]
-                    << std::endl;
+                Logger::err( "TetraGen", "edge bounding a hole : ", ibuff[0], " ",
+                    ibuff[1] );
             } else if( e == MESHGEMS_TETRA_CODE( 8423 ) ) {
                 message_get_integer_data( msg, 1, 3, ibuff );
-                std::cerr << "constrained face cannot be enforced : " << ibuff[0]
-                    << " " << ibuff[1] << " " << ibuff[2] << std::endl;
+                Logger::err( "TetraGen", "constrained face cannot be enforced : ",
+                    ibuff[0], " ", ibuff[1], " ", ibuff[2] );
             } else if( e == MESHGEMS_TETRA_CODE( 8441 ) ) {
                 message_get_integer_data( msg, 1, 2, ibuff );
-                std::cerr << "constrained edge cannot be enforced : " << ibuff[0]
-                    << " " << ibuff[1] << std::endl;
+                Logger::err( "TetraGen", "constrained edge cannot be enforced : ",
+                    ibuff[0], " ", ibuff[1] );
             } else {
-                std::cerr << "Error message not directly handle" << std::endl;
-                std::cerr << "Error(" << e << ") : " << desc << std::endl;
+                Logger::err( "TetraGen", "Error message not directly handle" );
+                Logger::err( "TetraGen", "Error(", e, ") : ", desc );
             }
             return STATUS_OK;
         }
@@ -320,9 +319,8 @@ namespace RINGMesh {
         {
             status_t ret = tetra_mesh_boundary( tms_ );
             if( ret != STATUS_OK ) {
-                Logger::err( "TetraGen" )
-                    << "Encountered a problem while meshing boundary..."
-                    << std::endl;
+                Logger::err( "TetraGen",
+                    "Encountered a problem while meshing boundary..." );
                 return false;
             }
             return true;
@@ -332,14 +330,14 @@ namespace RINGMesh {
         {
             status_t ret = tetra_insert_volume_vertices( tms_ );
             if( ret != STATUS_OK ) {
-                Logger::err( "TetraGen" )
-                    << "Encountered a problem while meshing inside..." << std::endl;
+                Logger::err( "TetraGen",
+                    "Encountered a problem while meshing inside..." );
                 return false;
             }
             ret = tetra_optimise_volume_regular( tms_ );
             if( ret != STATUS_OK ) {
-                Logger::err( "TetraGen" )
-                    << "Encountered a problem while meshing inside..." << std::endl;
+                Logger::err( "TetraGen",
+                    "Encountered a problem while meshing inside..." );
                 return false;
             }
             return true;
@@ -415,17 +413,16 @@ namespace RINGMesh {
             Logger::warn( "TetraGen", "Could not create TetraGen mesher: ",
                 algo_name );
             Logger::warn( "TetraGen", "Falling back to TetGen mode" );
-            mesher = new TetraGen_TetGen();
+            mesher = new TetraGen_TetGen;
 #else
             std::vector< std::string > names;
             TetraGenFactory::list_creators( names );
             Logger::err( "I/O", "Currently supported mesher are: " );
             for( const std::string& name : names ) {
-                Logger::out( "I/O", " ",< name;
-                }
-                Logger::out( "I/O" ) << std::endl;
-                throw RINGMeshException( "TetraGen", "Could not create TetraGen mesher: "
-                    + algo_name );
+                Logger::out( "I/O", " ", name );
+            }
+            throw RINGMeshException( "TetraGen", "Could not create TetraGen mesher: "
+                + algo_name );
 #endif
         }
 
@@ -451,12 +448,12 @@ namespace RINGMesh {
         unique_surfaces.reserve( nb_surfaces );
         std::vector< index_t > surface_id;
         surface_id.reserve( nb_surfaces );
-        index_t nb_surface_vertices = 0, nb_facets = 0;
+        index_t nb_surface_vertices = 0, nb_polygons = 0;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
             const Surface& surface = region_->boundary( s );
             if( contains( surface_id, surface.index() ) ) continue;
             nb_surface_vertices += surface.nb_vertices();
-            nb_facets += surface.nb_mesh_elements();
+            nb_polygons += surface.nb_mesh_elements();
             surface_id.push_back( surface.index() );
             unique_surfaces.push_back( &surface );
         }
@@ -535,8 +532,8 @@ namespace RINGMesh {
         }
 
         index_t offset_vertices = 0;
-        index_t offset_facets = 0;
-        tetmesh_constraint_.facets.create_triangles( nb_facets );
+        index_t offset_polygons = 0;
+        tetmesh_constraint_.facets.create_triangles( nb_polygons );
         GEO::Attribute< index_t > surface_region(
             tetmesh_constraint_.facets.attributes(), surface_att_name );
         for( const GeoModelMeshEntity*& surface : unique_surfaces ) {
@@ -544,16 +541,16 @@ namespace RINGMesh {
             for( index_t t = 0; t < surface->nb_mesh_elements(); t++ ) {
                 ringmesh_assert( surface->nb_mesh_element_vertices( t ) == 3 );
                 for( index_t v = 0; v < 3; v++ ) {
-                    tetmesh_constraint_.facets.set_vertex( offset_facets + t, v,
+                    tetmesh_constraint_.facets.set_vertex( offset_polygons + t, v,
                         starting_index
                             + unique_indices[offset_vertices
                                 + surface->mesh_element_vertex_index( t, v )] );
                 }
-                surface_region[offset_facets + t] = surface->index();
+                surface_region[offset_polygons + t] = surface->index();
 
             }
             offset_vertices += surface->nb_vertices();
-            offset_facets += surface->nb_mesh_elements();
+            offset_polygons += surface->nb_mesh_elements();
         }
         tetmesh_constraint_.facets.connect();
     }

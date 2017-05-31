@@ -9,5 +9,8 @@ IMAGE_PATH             = @CMAKE_SOURCE_DIR@/doc
 GENERATE_TODOLIST   = NO
 
 # Input files
-INPUT                  = @CMAKE_SOURCE_DIR@/include/ringmesh @CMAKE_SOURCE_DIR@/src/ringmesh @CMAKE_SOURCE_DIR@/doc/dox @CMAKE_SOURCE_DIR@/tests/src/
+# README.md is put to be used as doxygen page
+# The first line of README.md MUST be a header and its label,
+# else the integration in doxygen will fail.
+INPUT                  = @CMAKE_SOURCE_DIR@/README.md @CMAKE_SOURCE_DIR@/include/ringmesh @CMAKE_SOURCE_DIR@/src/ringmesh @CMAKE_SOURCE_DIR@/doc/dox @CMAKE_SOURCE_DIR@/tests/src/
 

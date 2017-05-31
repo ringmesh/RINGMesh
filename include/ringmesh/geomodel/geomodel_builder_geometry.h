@@ -78,32 +78,32 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh0DBuilder_var.
          */
-        std::unique_ptr< Mesh0DBuilder > create_corner_builder( index_t corner_id )
+        std::unique_ptr< PointSetMeshBuilder > create_corner_builder( index_t corner_id )
         {
             gmme_id id( Corner::type_name_static(), corner_id );
             GeoModelMeshEntity& corner = geomodel_access_.modifiable_mesh_entity(
                 id );
             GeoModelMeshEntityAccess corner_access( corner );
-            Mesh0D& corner_mesh =
-                dynamic_cast< Mesh0D& >( *corner_access.modifiable_mesh() );
-            return Mesh0DBuilder::create_builder( corner_mesh );
+            PointSetMesh& corner_mesh =
+                dynamic_cast< PointSetMesh& >( *corner_access.modifiable_mesh() );
+            return PointSetMeshBuilder::create_builder( corner_mesh );
         }
 
         /*!
-         * @brief Create a Mesh1DBuilder for a given line
+         * @brief Create a LineMeshBuilder for a given line
          * @param[in] line_id the line index
-         * @return The created Mesh1DBuilder
+         * @return The created LineMeshBuilder
          * @warn The client code is responsible for the memory unallocation.
-         * You can use the smartpointer Mesh1DBuilder_var.
+         * You can use the smartpointer LineMeshBuilder_var.
          */
-        std::unique_ptr< Mesh1DBuilder > create_line_builder( index_t line_id )
+        std::unique_ptr< LineMeshBuilder > create_line_builder( index_t line_id )
         {
             gmme_id id( Line::type_name_static(), line_id );
             GeoModelMeshEntity& line = geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess line_access( line );
-            Mesh1D& line_mesh =
-                dynamic_cast< Mesh1D& >( *line_access.modifiable_mesh() );
-            return Mesh1DBuilder::create_builder( line_mesh );
+            LineMesh& line_mesh =
+                dynamic_cast< LineMesh& >( *line_access.modifiable_mesh() );
+            return LineMeshBuilder::create_builder( line_mesh );
         }
 
         /*!
@@ -113,15 +113,15 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh2DBuilder_var.
          */
-        std::unique_ptr< Mesh2DBuilder > create_surface_builder( index_t surface_id )
+        std::unique_ptr< SurfaceMeshBuilder > create_surface_builder( index_t surface_id )
         {
             gmme_id id( Surface::type_name_static(), surface_id );
             GeoModelMeshEntity& surface = geomodel_access_.modifiable_mesh_entity(
                 id );
             GeoModelMeshEntityAccess surface_access( surface );
-            Mesh2D& surface_mesh =
-                dynamic_cast< Mesh2D& >( *surface_access.modifiable_mesh() );
-            return Mesh2DBuilder::create_builder( surface_mesh );
+            SurfaceMesh& surface_mesh =
+                dynamic_cast< SurfaceMesh& >( *surface_access.modifiable_mesh() );
+            return SurfaceMeshBuilder::create_builder( surface_mesh );
         }
 
         /*!
@@ -131,15 +131,15 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh3DBuilder_var.
          */
-        std::unique_ptr< Mesh3DBuilder > create_region_builder( index_t region_id )
+        std::unique_ptr< VolumeMeshBuilder > create_region_builder( index_t region_id )
         {
             gmme_id id( Region::type_name_static(), region_id );
             GeoModelMeshEntity& region = geomodel_access_.modifiable_mesh_entity(
                 id );
             GeoModelMeshEntityAccess region_access( region );
-            Mesh3D& region_mesh =
-                dynamic_cast< Mesh3D& >( *region_access.modifiable_mesh() );
-            return Mesh3DBuilder::create_builder( region_mesh );
+            VolumeMesh& region_mesh =
+                dynamic_cast< VolumeMesh& >( *region_access.modifiable_mesh() );
+            return VolumeMeshBuilder::create_builder( region_mesh );
         }
 
         /*!
@@ -199,19 +199,19 @@ namespace RINGMesh {
          */
         void set_line( index_t line_id, const std::vector< vec3 >& vertices );
         /*!
-         * @brief Sets the points and facets for a surface
-         * @details If facet_adjacencies are not given they are computed.
+         * @brief Sets the points and polygons for a surface
+         * @details If polygon_adjacencies are not given they are computed.
          *
          * @param[in] surface_id Index of the surface
          * @param[in] surface_vertices Coordinates of the vertices
-         * @param[in] surface_facets Indices in the vertices vector to build facets
-         * @param[in] surface_facet_ptr Pointer to the beginning of a facet in facets
+         * @param[in] surface_polygons Indices in the vertices vector to build polygons
+         * @param[in] surface_polygon_ptr Pointer to the beginning of a polygon in \p surface_polygons
          */
         void set_surface_geometry(
             index_t surface_id,
             const std::vector< vec3 >& surface_vertices,
-            const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr );
+            const std::vector< index_t >& surface_polygons,
+            const std::vector< index_t >& surface_polygon_ptr );
 
         /*!
          * @brief Set the points and tetras for a region
@@ -278,15 +278,15 @@ namespace RINGMesh {
          */
 
         /*!
-         * @brief Sets the facets of a surface
+         * @brief Sets the polygons of a surface
          * @param[in] surface_id Index of the surface
-         * @param[in] facets Indices of the mesh vertices defining the facets
-         * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+         * @param[in] polygons Indices of the mesh vertices defining the polygons
+         * @param[in] polygon_ptr Pointer to the beginning of a polygon in \p polygons
          */
         void set_surface_geometry(
             index_t surface_id,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr );
+            const std::vector< index_t >& polygons,
+            const std::vector< index_t >& polygon_ptr );
 
         void set_surface_geometry(
             index_t surface_id,
@@ -294,7 +294,7 @@ namespace RINGMesh {
             
         void set_surface_element_geometry(
             index_t surface_id,
-            index_t facet_id,
+            index_t polygon_id,
             const std::vector< index_t >& corners );
 
         void set_region_element_geometry(
@@ -317,7 +317,7 @@ namespace RINGMesh {
             const gmme_id& entity_id,
             index_t nb_vertices );
 
-        index_t create_surface_facet(
+        index_t create_surface_polygon(
             index_t surface_id,
             const std::vector< index_t >& vertex_indices );
 
@@ -353,7 +353,7 @@ namespace RINGMesh {
             index_t line_id,
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices );
-        void delete_surface_facets(
+        void delete_surface_polygons(
             index_t surface_id,
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices );
@@ -369,12 +369,12 @@ namespace RINGMesh {
 
         void set_surface_element_adjacency(
             index_t surface_id,
-            index_t facet_id,
+            index_t polygon_id,
             const std::vector< index_t >& adjacents );
 
         /*!
-         * @brief Computes and sets the adjacencies between the facets
-         * @details The adjacent facet is given for each vertex of each facet for the edge
+         * @brief Computes and sets the adjacencies between the polygons
+         * @details The adjacent polygon is given for each vertex of each polygon for the edge
          * starting at this vertex.
          * If there is no neighbor inside the same Surface adjacent is set to NO_ID
          *
@@ -429,20 +429,20 @@ namespace RINGMesh {
             index_t region_id,
             index_t surface_id );
         /*
-         * @brief Resets the adjacencies for all Surface facets adjacent to the Line
+         * @brief Resets the adjacencies for all Surface polygons adjacent to the Line
          * @return The number of disconnection done
-         * @pre All the edges of the Line are edges of at least one facet of the Surface
+         * @pre All the edges of the Line are edges of at least one polygon of the Surface
          */
-        index_t disconnect_surface_facets_along_line_edges(
+        index_t disconnect_surface_polygons_along_line_edges(
             index_t surface_id,
             index_t line_id );
-        index_t disconnect_region_cells_along_surface_facets(
+        index_t disconnect_region_cells_along_surface_polygons(
             index_t region_id,
             index_t surface_id );
 
-        void update_facet_vertex(
+        void update_polygon_vertex(
             index_t surface_id,
-            const std::vector< index_t >& facets,
+            const std::vector< index_t >& polygons,
             index_t old_vertex,
             index_t new_vertex );
 

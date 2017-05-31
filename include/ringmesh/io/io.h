@@ -59,6 +59,7 @@ const std::streamsize PRECISION = 10;
  */
 
 namespace RINGMesh {
+    class StratigraphicColumn;
     class GeoModel;
     class WellGroup;
 }
@@ -163,4 +164,38 @@ namespace RINGMesh {
 
     void RINGMESH_API enable_truncated_floating_point();
     void RINGMESH_API desable_truncated_floating_point();
+    
+    /*********************************************************************************************/
+    class RINGMESH_API StratigraphicColumnIOHandler: public GEO::Counted {
+    public:
+        static void initialize();
+
+        static StratigraphicColumnIOHandler* create( const std::string& format );
+
+        static StratigraphicColumnIOHandler* get_handler(
+            const std::string& filename );
+
+        virtual void load(
+            const std::string& filename,
+            StratigraphicColumn& column,
+            GeoModel& geomodel ) = 0;
+
+        virtual void save(
+            const StratigraphicColumn& column,
+            const std::string& filename ) = 0;
+
+    protected:
+        StratigraphicColumnIOHandler()
+        {
+        }
+
+        virtual ~StratigraphicColumnIOHandler()
+        {
+        }
+    };
+    typedef GEO::SmartPointer< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler_var;
+    typedef GEO::Factory0< StratigraphicColumnIOHandler > StratigraphicColumnIOHandlerFactory;
+
+    #define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
+		geo_register_creator( StratigraphicColumnIOHandlerFactory, type, name )
 }

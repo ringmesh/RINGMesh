@@ -78,9 +78,9 @@ namespace {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() );
         gmme_id cur_surface( Surface::type_name_static(), surface_part_id );
         const Surface& surface = geomodel.surface( surface_part_id );
-        for( index_t r = 0; r < surface.nb_in_boundary(); r++ ) {
+        for( index_t r = 0; r < surface.nb_incident_entities(); r++ ) {
             const Region& cur_region =
-                dynamic_cast< const Region& >( surface.in_boundary( r ) );
+                dynamic_cast< const Region& >( surface.incident_entity( r ) );
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
                     && cur_region.boundary_gmme( s ) == cur_surface ) {
@@ -139,7 +139,7 @@ namespace {
         index_t triangle )
     {
         vec3 direction = vertex - on_surface;
-        return dot( direction, surface.facet_normal( triangle ) ) > 0;
+        return dot( direction, surface.polygon_normal( triangle ) ) > 0;
     }
 
     index_t find_region_from_corners(
@@ -165,7 +165,7 @@ namespace {
                 const Surface& surface = geomodel.surface( s );
                 vec3 nearest;
                 double distance;
-                index_t triangle = surface.facets_aabb().closest_triangle(
+                index_t triangle = surface.polygons_aabb().closest_triangle(
                     start.intersection_, nearest, distance );
                 if( distance < best_distance ) {
                     best_distance = distance;
@@ -241,7 +241,7 @@ namespace {
     };
 
     struct OrientedEdge {
-        OrientedEdge( const Mesh1D& mesh, index_t edge, index_t vertex_from )
+        OrientedEdge( const LineMesh& mesh, index_t edge, index_t vertex_from )
             : edge_( edge ), vertex_from_( vertex_from )
         {
             if( mesh.edge_vertex( edge, 0 ) == vertex_from ) {
@@ -276,9 +276,9 @@ namespace RINGMesh {
             WellEntity( well ),
             is_on_surface_( is_on_surface ),
             id_( id ),
-            mesh_( Mesh0D::create_mesh( GeogramMesh0D::type_name_static() ) )
+            mesh_( PointSetMesh::create_mesh( GeogramPointSetMesh::type_name_static() ) )
     {
-        Mesh0DBuilder::create_builder( *mesh_ )->create_vertex( point );
+        PointSetMeshBuilder::create_builder( *mesh_ )->create_vertex( point );
     }
 
     const vec3& WellCorner::point() const
@@ -297,7 +297,7 @@ namespace RINGMesh {
         :
             WellEntity( well ),
             id_( id ),
-            mesh_( Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) )
+            mesh_( LineMesh::create_mesh( GeogramLineMesh::type_name_static() ) )
     {
         corners_[0] = NO_ID;
         corners_[1] = NO_ID;
@@ -306,7 +306,7 @@ namespace RINGMesh {
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
         index_t nb_points = static_cast< index_t >( points.size() );
-        std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+        std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
             *mesh_ );
         builder->create_vertices( nb_points );
         for( index_t p = 0; p < nb_points; p++ ) {
@@ -478,7 +478,7 @@ namespace RINGMesh {
         }
     }
 
-    void WellGroup::add_well( const Mesh1D& mesh, const std::string& name )
+    void WellGroup::add_well( const LineMesh& mesh, const std::string& name )
     {
         ringmesh_assert( geomodel() );
         if( find_well( name ) != NO_ID ) return;
@@ -486,7 +486,7 @@ namespace RINGMesh {
         Well& new_well = *wells_.back();
         new_well.set_name( name );
 
-        GeogramMesh1D conformal_mesh;
+        GeogramLineMesh conformal_mesh;
         compute_conformal_mesh( mesh, conformal_mesh );
 
         std::vector< std::vector< index_t > > edges_around_vertices(
@@ -558,10 +558,10 @@ namespace RINGMesh {
         } while( !S.empty() );
     }
 
-    void WellGroup::compute_conformal_mesh( const Mesh1D& in, Mesh1D& out )
+    void WellGroup::compute_conformal_mesh( const LineMesh& in, LineMesh& out )
     {
         double epsilon = geomodel_->epsilon();
-        std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+        std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
             out );
         builder->clear( false, false );
 
@@ -588,7 +588,7 @@ namespace RINGMesh {
                 const Surface& surface = geomodel()->surface( s );
                 EdgeConformerAction action( surface, from_vertex, to_vertex,
                     intersections );
-                surface.facets_aabb().compute_bbox_element_bbox_intersections( box,
+                surface.polygons_aabb().compute_bbox_element_bbox_intersections( box,
                     action );
             }
 

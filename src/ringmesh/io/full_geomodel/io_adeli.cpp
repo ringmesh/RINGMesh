@@ -60,13 +60,13 @@ namespace {
      */
     class AdeliIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Adeli .msh mesh not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             enable_truncated_floating_point();
             std::ofstream out( filename.c_str() );
@@ -88,7 +88,7 @@ namespace {
         }
 
     private:
-        void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out ) const
         {
             out << "$NOD" << std::endl;
             out << geomodel_mesh.vertices.nb() << std::endl;
@@ -102,7 +102,7 @@ namespace {
         void write_corners(
             const GeoModel& geomodel,
             std::ofstream& out,
-            index_t& elt )
+            index_t& elt ) const
         {
             out << "$ELM" << std::endl;
             out << nb_total_elements( geomodel ) << std::endl;
@@ -119,7 +119,7 @@ namespace {
         void write_mesh_elements(
             const GeoModel& geomodel,
             std::ofstream& out,
-            index_t& elt )
+            index_t& elt ) const
         {
             // Corners are already written so we start this loop at 1
             for( index_t geomodel_mesh_entities = 1;
@@ -141,7 +141,7 @@ namespace {
             out << "$ENDELM" << std::endl;
         }
 
-        index_t nb_total_elements( const GeoModel& geomodel )
+        index_t nb_total_elements( const GeoModel& geomodel ) const
         {
             // Because corners does not have mesh elements, but are considered as elements
             // in adeli, we have to count the vertex of each corner in a different
@@ -169,7 +169,7 @@ namespace {
             const GeoModelMeshEntity& geomodel_mesh_entity,
             index_t cell_descriptor,
             index_t& elt_id,
-            std::ofstream& out )
+            std::ofstream& out ) const
         {
             for( index_t elt = 0; elt < geomodel_mesh_entity.nb_mesh_elements();
                 elt++ ) {

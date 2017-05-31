@@ -453,7 +453,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( AttributeGfxManager );
     public:
         enum Attribute_location {
-            facets, facet_vertices, cells, cell_vertices, nb_locations
+            polygons, polygon_vertices, cells, cell_vertices, nb_locations
         };
         AttributeGfxManager( GeoModelGfx& gfx );
 

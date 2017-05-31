@@ -744,16 +744,16 @@ namespace RINGMesh {
         }
     };
 
-    class FacetAttributeGfx: public AttributeGfx {
+    class PolygonAttributeGfx: public AttributeGfx {
     public:
-        FacetAttributeGfx( AttributeGfxManager& manager )
+        PolygonAttributeGfx( AttributeGfxManager& manager )
             : AttributeGfx( manager )
         {
         }
 
         virtual std::string location_name() const override
         {
-            return "facet";
+            return "polygon";
         }
         virtual void bind_attribute() override
         {
@@ -771,7 +771,7 @@ namespace RINGMesh {
         {
             const GeoModel* geomodel = manager_.gfx().geomodel();
             GEO::AttributeStore* store =
-                geomodel->surface( 0 ).facet_attribute_manager().find_attribute_store(
+                geomodel->surface( 0 ).polygon_attribute_manager().find_attribute_store(
                     manager_.name() );
 
             if( store == nullptr ) return 0;
@@ -785,23 +785,23 @@ namespace RINGMesh {
             const GeoModel* geomodel = manager_.gfx().geomodel();
             for( index_t s = 0; s < geomodel->nb_surfaces(); s++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->surface( s ).facet_attribute_manager(),
+                    geomodel->surface( s ).polygon_attribute_manager(),
                     attribute_name );
                 compute_attribute_range( attribute, attribute_min, attribute_max );
             }
         }
     };
 
-    class FacetVertexAttributeGfx: public AttributeGfx {
+    class PolygonVertexAttributeGfx: public AttributeGfx {
     public:
-        FacetVertexAttributeGfx( AttributeGfxManager& manager )
+        PolygonVertexAttributeGfx( AttributeGfxManager& manager )
             : AttributeGfx( manager )
         {
         }
 
         virtual std::string location_name() const override
         {
-            return "facet_vertices";
+            return "polygon_vertices";
         }
         virtual void bind_attribute() override
         {
@@ -849,8 +849,8 @@ namespace RINGMesh {
             minimum_( 0.0 ),
             maximum_( 0.0 )
     {
-        attributes_[facets].reset( new FacetAttributeGfx( *this ) );
-        attributes_[facet_vertices].reset( new FacetVertexAttributeGfx( *this ) );
+        attributes_[polygons].reset( new PolygonAttributeGfx( *this ) );
+        attributes_[polygon_vertices].reset( new PolygonVertexAttributeGfx( *this ) );
         attributes_[cells].reset( new CellAttributeGfx( *this ) );
         attributes_[cell_vertices].reset( new CellVertexAttributeGfx( *this ) );
     }

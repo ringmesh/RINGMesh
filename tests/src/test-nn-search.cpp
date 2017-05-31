@@ -47,7 +47,7 @@ using namespace RINGMesh;
 
 void test_nn_search_ringmesh()
 {
-    Logger::out( "TEST", "Test MakeUnique RINGMesh" );
+    Logger::out( "TEST", "Test NNsearch RINGMesh" );
     vec3 p1( 0, 0, 0 );
     vec3 p2( 1, 1, 1 );
     vec3 p3( 2, 2, 2 );

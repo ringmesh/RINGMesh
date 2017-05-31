@@ -184,7 +184,7 @@ namespace {
         id[M.edges.create_edge( v3, v7 )] = n;
     }
 
-    bool mesh_cell_contains_point( const Mesh3D& M, index_t cell, const vec3& p )
+    bool mesh_cell_contains_point( const VolumeMesh& M, index_t cell, const vec3& p )
     {
         switch( M.cell_type( cell ) ) {
             case GEO::MESH_TET: {
@@ -304,12 +304,12 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    AABBTreeBox::AABBTreeBox( const std::vector< Box3d >& bboxes )
+    BoxAABBTree::BoxAABBTree( const std::vector< Box3d >& bboxes )
     {
         initialize_tree( bboxes );
     }
 
-    vec3 AABBTreeBox::get_point_hint_from_box(
+    vec3 BoxAABBTree::get_point_hint_from_box(
         const Box3d& box,
         index_t element_id ) const
     {
@@ -319,7 +319,7 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    AABBTree1D::AABBTree1D( const Mesh1D& mesh )
+    LineAABBTree::LineAABBTree( const LineMesh& mesh )
         : AABBTree(), mesh_( mesh )
     {
         std::vector< Box3d > bboxes;
@@ -333,7 +333,7 @@ namespace RINGMesh {
         initialize_tree( bboxes );
     }
 
-    index_t AABBTree1D::closest_edge(
+    index_t LineAABBTree::closest_edge(
         const vec3& query,
         vec3& nearest_point,
         double& distance ) const
@@ -343,7 +343,7 @@ namespace RINGMesh {
             action );
     }
 
-    void AABBTree1D::DistanceToEdge::operator()(
+    void LineAABBTree::DistanceToEdge::operator()(
         const vec3& query,
         index_t cur_box,
         vec3& nearest_point,
@@ -354,7 +354,7 @@ namespace RINGMesh {
         distance = point_segment_distance( query, v0, v1, nearest_point );
     }
 
-    vec3 AABBTree1D::get_point_hint_from_box(
+    vec3 LineAABBTree::get_point_hint_from_box(
         const Box3d& box,
         index_t element_id ) const
     {
@@ -364,21 +364,21 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    AABBTree2D::AABBTree2D( const Mesh2D& mesh )
+    SurfaceAABBTree::SurfaceAABBTree( const SurfaceMesh& mesh )
         : AABBTree(), mesh_( mesh )
     {
         std::vector< Box3d > bboxes;
-        bboxes.resize( mesh.nb_facets() );
-        for( index_t i = 0; i < mesh.nb_facets(); i++ ) {
-            for( index_t v = 0; v < mesh.nb_facet_vertices( i ); v++ ) {
-                const vec3& point = mesh.vertex( mesh.facet_vertex( i, v ) );
+        bboxes.resize( mesh.nb_polygons() );
+        for( index_t i = 0; i < mesh.nb_polygons(); i++ ) {
+            for( index_t v = 0; v < mesh.nb_polygon_vertices( i ); v++ ) {
+                const vec3& point = mesh.vertex( mesh.polygon_vertex( i, v ) );
                 bboxes[i].add_point( point );
             }
         }
         initialize_tree( bboxes );
     }
 
-    index_t AABBTree2D::closest_triangle(
+    index_t SurfaceAABBTree::closest_triangle(
         const vec3& query,
         vec3& nearest_point,
         double& distance ) const
@@ -388,31 +388,31 @@ namespace RINGMesh {
             distance, action );
     }
 
-    void AABBTree2D::DistanceToTriangle::operator()(
+    void SurfaceAABBTree::DistanceToTriangle::operator()(
         const vec3& query,
         index_t cur_box,
         vec3& nearest_point,
         double& distance ) const
     {
-        const vec3& v0 = mesh_.vertex( mesh_.facet_vertex( cur_box, 0 ) );
-        const vec3& v1 = mesh_.vertex( mesh_.facet_vertex( cur_box, 1 ) );
-        const vec3& v2 = mesh_.vertex( mesh_.facet_vertex( cur_box, 2 ) );
+        const vec3& v0 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 0 ) );
+        const vec3& v1 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 1 ) );
+        const vec3& v2 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 2 ) );
         double lambda0, lambda1, lambda2;
         distance = point_triangle_distance( query, v0, v1, v2, nearest_point,
             lambda0, lambda1, lambda2 );
     }
 
-    vec3 AABBTree2D::get_point_hint_from_box(
+    vec3 SurfaceAABBTree::get_point_hint_from_box(
         const Box3d& box,
         index_t element_id ) const
     {
         ringmesh_unused( box );
-        return mesh_.vertex( mesh_.facet_vertex( element_id, 0 ) );
+        return mesh_.vertex( mesh_.polygon_vertex( element_id, 0 ) );
     }
 
     /****************************************************************************/
 
-    AABBTree3D::AABBTree3D( const Mesh3D& mesh )
+    VolumeAABBTree::VolumeAABBTree( const VolumeMesh& mesh )
         : AABBTree(), mesh_( mesh )
     {
         std::vector< Box3d > bboxes;
@@ -426,7 +426,7 @@ namespace RINGMesh {
         initialize_tree( bboxes );
     }
 
-    vec3 AABBTree3D::get_point_hint_from_box(
+    vec3 VolumeAABBTree::get_point_hint_from_box(
         const Box3d& box,
         index_t element_id ) const
     {
@@ -434,12 +434,12 @@ namespace RINGMesh {
         return mesh_.vertex( mesh_.cell_vertex( element_id, 0 ) );
     }
 
-    index_t AABBTree3D::containing_cell( const vec3& query ) const
+    index_t VolumeAABBTree::containing_cell( const vec3& query ) const
     {
         return containing_cell_recursive( query, ROOT_INDEX, 0, nb_bboxes() );
     }
 
-    index_t AABBTree3D::containing_cell_recursive(
+    index_t VolumeAABBTree::containing_cell_recursive(
         const vec3& query,
         index_t node_index,
         index_t box_begin,

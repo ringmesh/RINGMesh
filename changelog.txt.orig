@@ -5,7 +5,8 @@ New Features:
       Each call to Logger::XXX will output consistently in the console in multithreading environment
       The Logger uses variadic templates, you can use as many parameters as you want in the function.
  * Add possibility to run specific validity check on GeoModels (topology, geometry, all, ...)
- * New automatic non-regression output file testing
+ * ASCII surface STL export
+ * Automatic non-regression input/output file testing
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
@@ -19,15 +20,17 @@ Improvements:
       he is working.
  * EntityType are not a std::string anymore but an abstract class. GeologicalEntityType and MeshEntityType inherit
       from EntityType.
- * Remove support of .ogm
- * Remove support of .mesh and .meshb
  * Remove MeshAllD and inherited classes, user should only use Mesh0D, Mesh1D, Mesh2D or Mesh3D.
       The GeoModelMesh has been modified according this modification.
  * Improve some designs by using the NRVO/RVO (Named Return Value Optimization)
  * Use C++11 smartpointers for all the pointers allocated on the heap
- * Improve of the GMSH export using the GeoModelMeshEntities
- 
- 
+ * Improve of the GMSH export using the GeoModelMeshEntities 
+ * Remove complex inheritance design of the GeogramMesh and GeogramMeshBuilder classes 
+
+Deprecated:
+ * Remove support of .ogm
+ * Remove support of .mesh and .meshb
+
 Architecture:
  * All third party files (zlib, geogram) are now in a "third_party" directory at the RINGMesh root.
  * Removal of ThreeJS third party.

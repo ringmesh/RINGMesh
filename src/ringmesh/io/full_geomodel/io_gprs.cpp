@@ -44,13 +44,13 @@ namespace {
             index_t v0;
             index_t v1;
         };
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             std::string path = GEO::FileSystem::dir_name( filename );
             std::string name = GEO::FileSystem::base_name( filename ) ;
@@ -108,22 +108,23 @@ namespace {
             }
             NNSearch nn_search( edge_vertices, false );
 
-            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-                for( index_t e = 0; e < mesh.facets.nb_vertices( f ); e++ ) {
-                    index_t adj = mesh.facets.adjacent( f, e );
-                    if( adj != GEO::NO_CELL && adj < f ) {
-                        pipes.emplace_back( f + cell_offset, adj + cell_offset );
+            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
+            for( index_t p = 0; p < polygons.nb(); p++ ) {
+                for( index_t e = 0; e < polygons.nb_vertices( p ); e++ ) {
+                    index_t adj = polygons.adjacent( p, e );
+                    if( adj != GEO::NO_CELL && adj < p ) {
+                        pipes.emplace_back( p + cell_offset, adj + cell_offset );
                     } else {
                         const vec3& e0 = mesh.vertices.vertex(
-                            mesh.facets.vertex( f, e ) );
+                            polygons.vertex( p, e ) );
                         const vec3& e1 = mesh.vertices.vertex(
-                            mesh.facets.vertex( f,
-                                ( e + 1 ) % mesh.facets.nb_vertices( f ) ) );
+                            polygons.vertex( p,
+                                ( e + 1 ) % polygons.nb_vertices( p ) ) );
                         vec3 query = 0.5 * ( e0 + e1 );
                         std::vector< index_t > results = nn_search.get_neighbors(
                             query, geomodel.epsilon() );
                         if( !results.empty() ) {
-                            edges[results[0]].push_back( cell_offset + f );
+                            edges[results[0]].push_back( cell_offset + p );
                         } else {
                             ringmesh_assert_not_reached;
                         }
@@ -157,9 +158,9 @@ namespace {
                 out_xyz << mesh.cells.barycenter( c ) << std::endl;
                 out_vol << mesh.cells.volume( c ) << std::endl;
             }
-            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-                out_xyz << mesh.facets.center( f ) << std::endl;
-                out_vol << mesh.facets.area( f ) << std::endl;
+            for( index_t p = 0; p < polygons.nb(); p++ ) {
+                out_xyz << polygons.center( p ) << std::endl;
+                out_vol << polygons.area( p ) << std::endl;
             }
         }
         index_t binomial_coef( index_t n ) const

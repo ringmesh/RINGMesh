@@ -36,7 +36,7 @@
 namespace {
     class TSolidIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
             if( input ) {
@@ -62,7 +62,7 @@ namespace {
                 return false;
             }
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( PRECISION );
@@ -78,6 +78,7 @@ namespace {
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
 
             const GeoModelMesh& mesh = geomodel.mesh;
+            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false );
@@ -135,8 +136,6 @@ namespace {
                         sides[region.boundary_gmme( s ).index()] = region.side( s );
                 }
 
-                /*GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
-                 surface_att_name ) ;*/
                 for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
                     out << "TETRA";
                     index_t cell = mesh.cells.cell( r, c );
@@ -153,11 +152,11 @@ namespace {
                     out << "# CTETRA " << region.name();
                     for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                         out << " ";
-                        index_t facet = NO_ID;
+                        index_t polygon = NO_ID;
                         bool side;
-                        if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
+                        if( mesh.cells.is_cell_facet_on_surface( c, f, polygon,
                             side ) ) {
-                            index_t surface_id = mesh.facets.surface( facet );
+                            index_t surface_id = polygons.surface( polygon );
                             side ? out << "+" : out << "-";
                             out << geomodel.surface( surface_id ).parent( 0 ).name();
                         } else {
@@ -180,22 +179,22 @@ namespace {
                     out << "TFACE " << tface_count++ << std::endl;
                     index_t surface_id = interf.child_gmme( s ).index();
                     out << "KEYVERTICES";
-                    index_t key_facet_id = mesh.facets.facet( surface_id, 0 );
-                    for( index_t v = 0; v < mesh.facets.nb_vertices( key_facet_id );
+                    index_t key_polygon_id = polygons.polygon( surface_id, 0 );
+                    for( index_t v = 0; v < polygons.nb_vertices( key_polygon_id );
                         v++ ) {
                         out << " "
-                            << vertex_exported_id[mesh.facets.vertex( key_facet_id,
+                            << vertex_exported_id[polygons.vertex( key_polygon_id,
                                 v )];
                     }
                     out << std::endl;
-                    for( index_t f = 0; f < mesh.facets.nb_facets( surface_id );
-                        f++ ) {
-                        index_t facet_id = mesh.facets.facet( surface_id, f );
+                    for( index_t p = 0; p < polygons.nb_polygons( surface_id );
+                        p++ ) {
+                        index_t polygon_id = polygons.polygon( surface_id, p );
                         out << "TRGL";
-                        for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id );
+                        for( index_t v = 0; v < polygons.nb_vertices( polygon_id );
                             v++ ) {
                             out << " "
-                                << vertex_exported_id[mesh.facets.vertex( facet_id,
+                                << vertex_exported_id[polygons.vertex( polygon_id,
                                     v )];
                         }
                         out << std::endl;

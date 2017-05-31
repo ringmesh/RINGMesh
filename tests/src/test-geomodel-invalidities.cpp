@@ -87,24 +87,13 @@ int main()
 
         Logger::out( "TEST", "Break geomodels:" );
 
-        {
-            GeoModel invalid_model;
-            make_geomodel_copy( in, "broken model 1", invalid_model );
-            GeoModelBuilder geomodel_breaker( invalid_model );
-            geomodel_breaker.topology.add_mesh_entity_boundary(
-                invalid_model.surface( 0 ).gmme(), 4 );
-            verdict( invalid_model, "detect artificial added surface boundary" );
-        }
-
-        {
-            GeoModel invalid_model;
-            make_geomodel_copy( in, "broken model 2", invalid_model );
-            GeoModelBuilder geomodel_breaker( invalid_model );
-            geomodel_breaker.geology.add_mesh_entity_parent(
-                invalid_model.surface( 0 ).gmme(),
-                gmge_id( Interface::type_name_static(), 0 ) );
-            verdict( invalid_model, "detect addition of incoherent parent" );
-        }
+        GeoModel invalid_model;
+        make_geomodel_copy( in, "broken model 1", invalid_model );
+        GeoModelBuilder geomodel_breaker( invalid_model );
+        geomodel_breaker.geology.create_geological_entity(
+            RINGMesh::Interface::type_name_static() );
+        verdict( invalid_model,
+            "detect addition of an isolated GeoModelGeologicalEntity" );
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );

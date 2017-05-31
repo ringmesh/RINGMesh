@@ -58,6 +58,10 @@
 
 namespace RINGMesh {
 
+    /*!
+     * This function configures geogram by setting some geogram options.
+     * \pre This function should be call after GEO::initialize().
+     */
     void configure_geogram()
     {
         Logger::instance()->unregister_all_clients();

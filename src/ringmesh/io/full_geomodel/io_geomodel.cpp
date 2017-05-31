@@ -43,7 +43,8 @@ namespace {
     {
         /// First line:  TYPE - ID - NAME - GEOL
         out << E.gmge() << " " << E.name() << " ";
-        out << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl;
+        out << GeoModelGeologicalEntity::geol_name( E.geological_feature() )
+            << std::endl;
 
         /// Second line:  IDS of children
         for( index_t j = 0; j < E.nb_children(); ++j ) {
@@ -93,9 +94,7 @@ namespace {
             const ENTITY& cur_mesh_entity =
                 dynamic_cast< const ENTITY& >( M.mesh_entity( type, e ) );
             out << type << " " << e << " " << cur_mesh_entity.name() << " "
-                << GeoModelEntity::geol_name( cur_mesh_entity.geological_feature() )
-                << " " << cur_mesh_entity.low_level_mesh_storage().type_name()
-                << std::endl;
+                << cur_mesh_entity.low_level_mesh_storage().type_name() << std::endl;
             out << "boundary ";
             for( index_t b = 0; b < cur_mesh_entity.nb_boundaries(); b++ ) {
                 out << cur_mesh_entity.boundary_gmme( b ).index() << " ";
@@ -118,7 +117,7 @@ namespace {
                 "Error when opening the file: " + file_name );
         }
 
-        out << "Version 1" << std::endl;
+        out << "Version 2" << std::endl;
         out << "GeoModel name " << M.name() << std::endl;
 
         // Numbers of the different types of mesh entities
@@ -139,7 +138,6 @@ namespace {
             const Region& E = M.region( i );
             // Save ID - NAME
             out << Region::type_name_static() << " " << i << " " << E.name() << " "
-                << GeoModelEntity::geol_name( E.geological_feature() ) << " "
                 << E.low_level_mesh_storage().type_name() << std::endl;
             // Second line Signed ids of boundary surfaces
             for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
@@ -164,7 +162,6 @@ namespace {
             out << M.universe().boundary_gmme( j ).index() << " ";
         }
         out << std::endl;
-
     }
 
     bool save_mesh(
@@ -241,7 +238,7 @@ namespace {
 
     class GeoModelHandlerGM final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(
@@ -257,7 +254,7 @@ namespace {
             return is_valid;
 
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             const std::string pwd = GEO::FileSystem::get_current_working_directory();
             bool valid_new_working_directory =

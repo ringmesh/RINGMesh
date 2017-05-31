@@ -52,13 +52,13 @@ namespace {
     public:
         static const index_t NB_ENTRY_PER_LINE = 16;
 
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from abaqus not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( PRECISION );
@@ -70,7 +70,7 @@ namespace {
             out << "*PART, name=Part-1" << std::endl;
 
             save_vertices( geomodel, out );
-            save_facets( geomodel, out );
+            save_nb_polygons( geomodel, out );
             save_cells( geomodel, out );
 
             out << "*END PART" << std::endl;
@@ -90,7 +90,7 @@ namespace {
             }
 
         }
-        void save_facets( const GeoModel& geomodel, std::ofstream& out ) const
+        void save_nb_polygons( const GeoModel& geomodel, std::ofstream& out ) const
         {
             const GeologicalEntityType& type = Interface::type_name_static();
             index_t nb_interfaces = geomodel.nb_geological_entities( type );
@@ -103,7 +103,7 @@ namespace {
             index_t interface_id,
             std::ofstream& out ) const
         {
-            const GeoModelMeshFacets& facets = geomodel.mesh.facets;
+            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
             const GeoModelGeologicalEntity& entity = geomodel.geological_entity(
                 Interface::type_name_static(), interface_id );
             std::string sep;
@@ -113,10 +113,10 @@ namespace {
             out << "*NSET, nset=" << entity.name() << std::endl;
             for( index_t s = 0; s < entity.nb_children(); s++ ) {
                 index_t surface_id = entity.child_gmme( s ).index();
-                for( index_t f = 0; f < facets.nb_facets( surface_id ); f++ ) {
-                    index_t facet_id = facets.facet( surface_id, f );
-                    for( index_t v = 0; v < facets.nb_vertices( facet_id ); v++ ) {
-                        index_t vertex_id = facets.vertex( facet_id, v );
+                for( index_t p = 0; p < polygons.nb_polygons( surface_id ); p++ ) {
+                    index_t polygon_id = polygons.polygon( surface_id, p );
+                    for( index_t v = 0; v < polygons.nb_vertices( polygon_id ); v++ ) {
+                        index_t vertex_id = polygons.vertex( polygon_id, v );
                         if( vertex_exported[vertex_id] ) continue;
                         vertex_exported[vertex_id] = true;
                         out << sep << vertex_id + 1;

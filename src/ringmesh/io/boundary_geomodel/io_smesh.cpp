@@ -41,13 +41,13 @@ namespace {
      */
     class SMESHIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from UCD mesh not yet implemented" );
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             if( out.bad() ) {
@@ -72,16 +72,16 @@ namespace {
             /// 2. Write the triangles
             out << "# Part 2 - facet list" << std::endl;
             out << "# facet count, no boundary marker" << std::endl;
-            out << nb_facets( geomodel ) << "  0 " << std::endl;
+            out << nb_polygons( geomodel ) << "  0 " << std::endl;
 
             for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
                 const Surface& S = geomodel.surface( i );
-                for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
-                    out << S.nb_mesh_element_vertices( f ) << " ";
-                    for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
+                for( index_t p = 0; p < S.nb_mesh_elements(); p++ ) {
+                    out << S.nb_mesh_element_vertices( p ) << " ";
+                    for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); v++ ) {
                         out
                             << geomodel.mesh.vertices.geomodel_vertex_id( S.gmme(),
-                                f, v ) << " ";
+                                p, v ) << " ";
                     }
                     out << std::endl;
                 }

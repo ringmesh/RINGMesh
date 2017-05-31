@@ -104,33 +104,13 @@ namespace RINGMesh {
             }
         }
 
-        /*!
-         * @brief Complete missing information in GeoModelEntities
-         * boundaries - in_boundary - parent - children
-         * @details For all 7 types of entities, check what information is available
-         * for the first one and fill the entities of the same type accordingly
-         * THIS MEANS that the all the entities of the same type have been initialized with
-         * the same information
-         */
-        void complete_entity_connectivity();
+        void remove_mesh_entity_boundary_relation(
+            const gmme_id& incident_entity,
+            const gmme_id& boundary );
 
-        /*!
-         * @brief Fill the boundaries of all entities of the given type
-         * @details If the boundary entities do not have any in_boundary
-         * information, nothing is done.
-         */
-        void fill_mesh_entities_boundaries( const MeshEntityType& type );
-
-        /*!
-         * @brief Fill the in_boundary vector of all entities of the given type
-         * @details If the in_boundary entities do not have any boundary
-         * information, nothing is done, and geomodel construction will eventually fail.
-         */
-        void fill_mesh_entities_in_boundaries( const MeshEntityType& type );
-
-        void add_mesh_entity_boundary(
-            const gmme_id& gme_id,
-            index_t boundary_id,
+        void add_mesh_entity_boundary_relation(
+            const gmme_id& boundary,
+            const gmme_id& incident_entity,
             bool side = false );
 
         void set_mesh_entity_boundary(
@@ -143,12 +123,10 @@ namespace RINGMesh {
 
         void set_universe_boundary( index_t id, index_t boundary_id, bool side );
 
-        void add_mesh_entity_in_boundary( const gmme_id& t, index_t in_boundary_id );
-
-        void set_mesh_entity_in_boundary(
+        void set_mesh_entity_incident_entity(
             const gmme_id& gme_id,
             index_t id,
-            index_t in_boundary_id );
+            index_t incident_entity_id );
 
         void delete_mesh_entity( const MeshEntityType& type, index_t index );
 
@@ -199,8 +177,6 @@ namespace RINGMesh {
             return true;
         }
 
-        void complete_mesh_entity_connectivity( const MeshEntityType& type );
-
         template< typename ENTITY >
         void copy_mesh_entity_topology( const GeoModel& from )
         {
@@ -215,6 +191,10 @@ namespace RINGMesh {
                 gmme_access.copy( from.mesh_entity( id ) );
             }
         }
+
+        index_t check_if_boundary_incident_entity_relation_already_exists(
+                const gmme_id& incident_entity,
+                const gmme_id& boundary ) ;
 
     private:
         GeoModelBuilder& builder_;

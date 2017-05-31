@@ -101,9 +101,9 @@ void check_geomodel( const GeoModel& geomodel, const std::string& result )
         throw_error( geomodel, "vertices" );
     }
     get_line( in );
-    index_t nb_facets = in.field_as_uint( 1 );
-    if( geomodel.mesh.facets.nb() != nb_facets ) {
-        throw_error( geomodel, "facets" );
+    index_t nb_polygons = in.field_as_uint( 1 );
+    if( geomodel.mesh.polygons.nb() != nb_polygons ) {
+        throw_error( geomodel, "polygons" );
     }
     get_line( in );
     index_t nb_cells = in.field_as_uint( 1 );

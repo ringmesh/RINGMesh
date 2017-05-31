@@ -39,14 +39,14 @@ namespace {
 
     class HTMLIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from HTML mesh not yet implemented" );
             return false;
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             GEOLOGYJS::JSWriter js( filename );
             js.build_js_gui_ = true;
@@ -129,12 +129,12 @@ namespace {
                         xyz.push_back( cur_surface.vertex( v_itr ).z );
                     }
 
-                    for( index_t f_itr = 0; f_itr < cur_surface.nb_mesh_elements();
-                        ++f_itr ) {
+                    for( index_t p_itr = 0; p_itr < cur_surface.nb_mesh_elements();
+                        ++p_itr ) {
                         for( index_t v_itr = 0; v_itr < 3; ++v_itr ) {
                             indices.push_back(
                                 vertex_count
-                                    + cur_surface.mesh_element_vertex_index( f_itr,
+                                    + cur_surface.mesh_element_vertex_index( p_itr,
                                         v_itr ) );
                         }
                     }

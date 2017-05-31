@@ -157,16 +157,16 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API Mesh0DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy( Mesh0DBuilder );
+    class RINGMESH_API PointSetMeshBuilder: public MeshBaseBuilder {
+    ringmesh_disable_copy( PointSetMeshBuilder );
     public:
-        virtual ~Mesh0DBuilder()
+        virtual ~PointSetMeshBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh0D& mesh ) = 0;
+        virtual void set_mesh( PointSetMesh& mesh ) = 0;
 
-        static std::unique_ptr< Mesh0DBuilder > create_builder( Mesh0D& mesh );
+        static std::unique_ptr< PointSetMeshBuilder > create_builder( PointSetMesh& mesh );
 
         virtual void remove_isolated_vertices()
         {
@@ -174,25 +174,25 @@ namespace RINGMesh {
         }
 
     protected:
-        Mesh0DBuilder()
+        PointSetMeshBuilder()
             : MeshBaseBuilder()
         {
         }
     };
-    using Mesh0DBuilderFactory = GEO::Factory0< Mesh0DBuilder >;
-#define ringmesh_register_mesh_0d_builder(type) \
-    geo_register_creator(RINGMesh::Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
+    using PointSetMeshBuilderFactory = GEO::Factory0< PointSetMeshBuilder >;
+#define ringmesh_register_point_mesh_builder(type) \
+    geo_register_creator(RINGMesh::PointSetMeshBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API Mesh1DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy( Mesh1DBuilder );
+    class RINGMESH_API LineMeshBuilder: public MeshBaseBuilder {
+    ringmesh_disable_copy( LineMeshBuilder );
     public:
-        virtual ~Mesh1DBuilder()
+        virtual ~LineMeshBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh1D& mesh ) = 0;
+        virtual void set_mesh( LineMesh& mesh ) = 0;
 
-        static std::unique_ptr< Mesh1DBuilder > create_builder( Mesh1D& mesh );
+        static std::unique_ptr< LineMeshBuilder > create_builder( LineMesh& mesh );
 
         /*!
          * @brief Create a new edge.
@@ -207,12 +207,12 @@ namespace RINGMesh {
          */
         virtual index_t create_edges( index_t nb_edges ) = 0;
         /*!
-         * @brief Sets a vertex of a facet by local vertex index.
+         * @brief Sets a vertex of a edge by local vertex index.
          * @param[in] edge_id index of the edge, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the facet.
+         * @param[in] local_vertex_id index of the vertex in the edge.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
-         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet
-         * \param of the facet facet_id. Index between 0 and @function nb() - 1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of edge
+         * \param edge_id. Index between 0 and @function nb() - 1.
          */
         virtual void set_edge_vertex(
             index_t edge_id,
@@ -244,117 +244,118 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices() = 0;
     protected:
-        Mesh1DBuilder()
+        LineMeshBuilder()
             : MeshBaseBuilder()
         {
         }
     };
-    using Mesh1DBuilderFactory = GEO::Factory0< Mesh1DBuilder >;
-#define ringmesh_register_mesh_1d_builder(type) \
-    geo_register_creator(RINGMesh::Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
+    using LineMeshBuilderFactory = GEO::Factory0< LineMeshBuilder >;
+#define ringmesh_register_line_mesh_builder(type) \
+    geo_register_creator(RINGMesh::LineMeshBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API Mesh2DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy( Mesh2DBuilder );
+    class RINGMESH_API SurfaceMeshBuilder: public MeshBaseBuilder {
+    ringmesh_disable_copy( SurfaceMeshBuilder );
     public:
-        virtual ~Mesh2DBuilder()
+        virtual ~SurfaceMeshBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh2D& mesh ) = 0;
+        virtual void set_mesh( SurfaceMesh& mesh ) = 0;
 
-        static std::unique_ptr< Mesh2DBuilder > create_builder( Mesh2D& mesh );
+        static std::unique_ptr< SurfaceMeshBuilder > create_builder(
+            SurfaceMesh& mesh );
 
         /*!@}
-         * \name Facet related methods
+         * \name Polygon related methods
          * @{
          */
         /*!
-         * brief create facet polygons
-         * @param[in] facets is the vector of vertex index for each facet
-         * @param[in] facet_ptr is the vector addressing the first facet vertex for each facet.
+         * brief create polygons
+         * @param[in] polygons is the vector of vertex index for each polygon
+         * @param[in] polygon_ptr is the vector addressing the first polygon vertex for each polygon.
          */
-        virtual void create_facet_polygons(
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr ) = 0;
+        virtual void create_polygons(
+            const std::vector< index_t >& polygons,
+            const std::vector< index_t >& polygon_ptr ) = 0;
         /*!
-         * \brief Creates a polygonal facet
+         * \brief Creates a polygon
          * \param[in] vertices a const reference to a vector that
          *  contains the vertices
-         * \return the index of the created facet
+         * \return the index of the created polygon
          */
-        virtual index_t create_facet_polygon(
-            const std::vector< index_t >& vertices ) = 0;
+        virtual index_t create_polygon( const std::vector< index_t >& vertices ) = 0;
         /*!
          * \brief Creates a contiguous chunk of triangles
          * \param[in] nb_triangles number of triangles to create
          * \return the index of the first triangle
          */
-        virtual index_t create_facet_triangles( index_t nb_triangles ) = 0;
+        virtual index_t create_triangles( index_t nb_triangles ) = 0;
         /*!
          * \brief Creates a contiguous chunk of quads
          * \param[in] nb_quads number of quads to create
          * \return the index of the first quad
          */
-        virtual index_t create_facet_quads( index_t nb_quads ) = 0;
+        virtual index_t create_quads( index_t nb_quads ) = 0;
         /*!
-         * @brief Sets a vertex of a facet by local vertex index.
-         * @param[in] facet_id index of the facet, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the facet.
+         * @brief Sets a vertex of a polygon by local vertex index.
+         * @param[in] polygon_id index of the polygon, in 0.. @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the polygon.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the vertex \param local_vertex_id of the
-         * facet \param facet_id. Index between 0 and @function nb() - 1.
+         * polygon \param polygon_id. Index between 0 and @function nb() - 1.
          */
-        virtual void set_facet_vertex(
-            index_t facet_id,
+        virtual void set_polygon_vertex(
+            index_t polygon_id,
             index_t local_vertex_id,
             index_t vertex_id ) = 0;
         /*!
-         * @brief Sets an adjacent facet by both its facet \param facet_id
+         * @brief Sets an adjacent polygon by both its polygon \param polygon_id
          * and its local edge index \param edge_id.
-         * @param[in] facet_id the facet index
-         * @param[in] edge_id the local index of an edge in facet \p facet_id
-         * @param[in] specifies the facet adjacent to \param facet_id along edge
+         * @param[in] polygon_id the polygon index
+         * @param[in] edge_id the local index of an edge in polygon \p polygon_id
+         * @param[in] specifies the polygon adjacent to \param polygon_id along edge
          * \param edge_id or GEO::NO_FACET if the parameter \param edge_id is
          * on the border.
          */
-        virtual void set_facet_adjacent(
-            index_t facet_id,
+        virtual void set_polygon_adjacent(
+            index_t polygon_id,
             index_t edge_id,
             index_t specifies ) = 0;
         /*
          * \brief Copies a triangle mesh into this Mesh.
-         * \details Facet adjacence are not computed.
-         *   Facet and corner attributes are zeroed.
-         * \param[in] triangles facet to vertex links
+         * \details Polygon adjacence are not computed.
+         *   Polygon and corner attributes are zeroed.
+         * \param[in] triangles polygon to vertex links
          * (using vector::swap).
          */
-        virtual void assign_facet_triangle_mesh(
+        virtual void assign_triangle_mesh(
             const std::vector< index_t >& triangles ) = 0;
         /*!
-         * @brief Removes all the facets and attributes.
+         * @brief Removes all the polygons and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
          * names / bindings are kept (but they are cleared). If false, they are destroyed.
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        virtual void clear_facets( bool keep_attributes, bool keep_memory ) = 0;
+        virtual void clear_polygons( bool keep_attributes, bool keep_memory ) = 0;
         /*!
-         * @brief Retrieve the adjacencies of facets
+         * @brief Retrieve the adjacencies of polygons
          */
-        virtual void connect_facets() = 0;
-        virtual void permute_facets( const std::vector< index_t >& permutation ) = 0;
+        virtual void connect_polygons() = 0;
+        virtual void permute_polygons(
+            const std::vector< index_t >& permutation ) = 0;
         /*!
-         * @brief Deletes a set of facets.
+         * @brief Deletes a set of polygons.
          * @param[in] to_delete     a vector of size @function nb().
          * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
          * @param[in] remove_isolated_vertices if true, then the vertices that are
          * no longer incident to any entity are deleted.
          */
-        virtual void delete_facets(
+        virtual void delete_polygons(
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) = 0;
 
-        virtual void clear_facet_linked_objects() = 0;
+        virtual void clear_polygon_linked_objects() = 0;
         /*!@}
          * \name Mesh2D algorithms
          * @{
@@ -364,13 +365,13 @@ namespace RINGMesh {
          *  smaller than a given threshold.
          * \param[in] min_area the connected components with an
          *  area smaller than this threshold are removed
-         * \param[in] min_facets the connected components with
-         *  less than \param min_facets facets are removed
+         * \param[in] min_polygons the connected components with
+         *  less than \param min_polygons polygons are removed
          */
         virtual void remove_small_connected_components(
             double min_area,
-            index_t min_facets ) = 0;
-        virtual void triangulate( const Mesh2D& surface_in ) = 0;
+            index_t min_polygons ) = 0;
+        virtual void triangulate( const SurfaceMesh& surface_in ) = 0;
         /*!@}
          */
         /*!
@@ -378,25 +379,26 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices() = 0;
     protected:
-        Mesh2DBuilder()
+        SurfaceMeshBuilder()
             : MeshBaseBuilder()
         {
         }
     };
-    using Mesh2DBuilderFactory = GEO::Factory0< Mesh2DBuilder >;
-#define ringmesh_register_mesh_2d_builder(type) \
-    geo_register_creator(RINGMesh::Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
+    using SurfaceMeshBuilderFactory = GEO::Factory0< SurfaceMeshBuilder >;
+#define ringmesh_register_surface_mesh_builder(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API Mesh3DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy( Mesh3DBuilder );
+    class RINGMESH_API VolumeMeshBuilder: public MeshBaseBuilder {
+    ringmesh_disable_copy( VolumeMeshBuilder );
     public:
-        virtual ~Mesh3DBuilder()
+        virtual ~VolumeMeshBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh3D& mesh ) = 0;
+        virtual void set_mesh( VolumeMesh& mesh ) = 0;
 
-        static std::unique_ptr< Mesh3DBuilder > create_builder( Mesh3D& mesh );
+        static std::unique_ptr< VolumeMeshBuilder > create_builder(
+            VolumeMesh& mesh );
 
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
@@ -489,13 +491,13 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices() = 0;
     protected:
-        Mesh3DBuilder()
+        VolumeMeshBuilder()
             : MeshBaseBuilder()
         {
         }
     };
-    using Mesh3DBuilderFactory = GEO::Factory0< Mesh3DBuilder >;
-#define ringmesh_register_mesh_3d_builder(type) \
-    geo_register_creator(RINGMesh::Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
+    using VolumeMeshBuilderFactory = GEO::Factory0< VolumeMeshBuilder >;
+#define ringmesh_register_volume_mesh_builder(type) \
+    geo_register_creator(RINGMesh::VolumeMeshBuilderFactory, type ## Builder, type::type_name_static())
 
 }

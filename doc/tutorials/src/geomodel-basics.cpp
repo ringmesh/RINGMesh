@@ -58,6 +58,8 @@
 
 int main()
 {
+#ifdef RINGMESH_WITH_TETGEN
+
     using namespace RINGMesh;
 
     try {
@@ -109,5 +111,8 @@ int main()
         Logger::err( "Exception", e.what() );
         return 1;
     }
+
+#endif
+
     return 0;
 }

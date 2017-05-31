@@ -59,6 +59,63 @@ namespace {
 
 namespace RINGMesh {
 
+    GeoModelGeologicalEntity::GEOL_FEATURE GeoModelGeologicalEntity::determine_geological_type(
+        const std::string& in )
+    {
+        if( in == "reverse_fault" ) {
+            return REVERSE_FAULT;
+        } else if( in == "normal_fault" ) {
+            return NORMAL_FAULT;
+        } else if( in == "fault" ) {
+            return FAULT;
+        } else if( in == "top" ) {
+            return STRATI;
+        } else if( in == "none" ) {
+            // This might seem strange - but it seems that what's
+            // Gocad is doing
+            return STRATI;
+        } else if( in == "topographic" ) {
+            return STRATI;
+        } else if( in == "unconformity" ) {
+            return UNCONFORMITY;
+        } else if( in == "boundary" ) {
+            return VOI;
+        } else {
+            // Default case - no information
+            return NO_GEOL;
+        }
+    }
+
+    std::string GeoModelGeologicalEntity::geol_name(
+        GeoModelGeologicalEntity::GEOL_FEATURE t )
+    {
+        switch( t ) {
+            case STRATI:
+                return "top";
+            case FAULT:
+                return "fault";
+            case REVERSE_FAULT:
+                return "reverse_fault";
+            case NORMAL_FAULT:
+                return "normal_fault";
+            case UNCONFORMITY:
+                return "unconformity";
+            case VOI:
+                return "boundary";
+            case NO_GEOL:
+                return "no_geological_feature";
+            default:
+                return "no_geological_feature";
+                break;
+        }
+    }
+
+    const gmme_id& GeoModelGeologicalEntity::child_gmme( index_t x ) const
+    {
+        ringmesh_assert( x < nb_children() );
+        return geomodel().entity_type_manager().relationship_manager.child_of_gmge(
+            children_[x] );
+    }
     const GeoModelMeshEntity& GeoModelGeologicalEntity::child( index_t x ) const
     {
         return geomodel().mesh_entity( child_gmme( x ) );
@@ -132,17 +189,17 @@ namespace RINGMesh {
         ringmesh_register_GeoModelGeologicalEntity_creator( Layer );
     }
 
-    const MeshEntityType Contact::child_type_name() const
+    MeshEntityType Contact::child_type_name() const
     {
         return Line::type_name_static();
     }
 
-    const MeshEntityType Interface::child_type_name() const
+    MeshEntityType Interface::child_type_name() const
     {
         return Surface::type_name_static();
     }
 
-    const MeshEntityType Layer::child_type_name() const
+    MeshEntityType Layer::child_type_name() const
     {
         return Region::type_name_static();
     }

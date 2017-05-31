@@ -97,14 +97,16 @@ namespace RINGMesh {
         }
 
     protected:
-        gmme_id read_first_line( GEO::LineInput& file_line )
+        virtual gmme_id read_first_line( GEO::LineInput& file_line )
         {
 
             gmme_id cur_gmme( MeshEntityType( file_line.field( 0 ) ),
                 file_line.field_as_uint( 1 ) );
             builder_.info.set_mesh_entity_name( cur_gmme, file_line.field( 2 ) );
-            builder_.geology.set_mesh_entity_geol_feature( cur_gmme,
-                GeoModelEntity::determine_geological_type( file_line.field( 3 ) ) );
+            GeoModelGeologicalEntity::GEOL_FEATURE not_used =
+                GeoModelGeologicalEntity::determine_geological_type(
+                    file_line.field( 3 ) );
+            ringmesh_unused( not_used );
             return cur_gmme;
         }
         void read_second_line( GEO::LineInput& file_line, const gmme_id& entity )
@@ -121,13 +123,17 @@ namespace RINGMesh {
                     index_t s = NO_ID;
                     GEO::String::from_string( &file_line.field( c )[1], s );
 
-                    builder_.topology.add_mesh_entity_boundary( entity, s, side );
+                    builder_.topology.add_mesh_entity_boundary_relation( entity,
+                        gmme_id( Surface::type_name_static(), s ), side );
                 }
             } else {
-                // Second line : indices of its in boundaries
+                MeshEntityType type = MeshEntityTypeManager::boundary_type(
+                    entity.type() );
+                // Second line : indices of boundaries
                 for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
-                    builder_.topology.add_mesh_entity_boundary( entity,
-                        file_line.field_as_uint( c ) );
+                    gmme_id boundary( type, file_line.field_as_uint( c ) );
+                    builder_.topology.add_mesh_entity_boundary_relation( entity,
+                        boundary );
                 }
             }
         }
@@ -155,6 +161,55 @@ namespace RINGMesh {
             gmme_id entity = read_first_line( file_line );
 
             const std::string mesh_type = file_line.field( 4 );
+            if( GEO::String::string_starts_with( mesh_type, "Geogram" ) ) {
+                builder_.geometry.change_mesh_data_structure( entity,
+                    old_2_new_name( mesh_type ) );
+
+            } else {
+                builder_.geometry.change_mesh_data_structure( entity, mesh_type );
+
+            }
+
+            read_second_line( file_line, entity );
+
+        }
+    private:
+        const std::string& old_2_new_name( const std::string& old_name )
+        {
+
+            index_t new_name_pos = GEO::String::to_int(
+                GEO::String::to_string( old_name.at( old_name.length() - 2 ) ) );
+            return new_names[new_name_pos];
+        }
+    private:
+        static const std::string new_names[4];
+    }
+    ;
+    const std::string GeoModelBuilderGMImpl_1::new_names[4] = {
+        std::string( "GeogramPointSetMesh" ), std::string( "GeogramLineMesh" ),
+        std::string( "GeogramSurfaceMesh" ), std::string( "GeogramVolumeMesh" ) };
+    class GeoModelBuilderGMImpl_2: public GeoModelBuilderGMImpl_1 {
+    public:
+        GeoModelBuilderGMImpl_2( GeoModelBuilderGM& builder )
+            : GeoModelBuilderGMImpl_1( builder )
+        {
+        }
+        virtual ~GeoModelBuilderGMImpl_2() = default;
+
+        virtual void read_mesh_entity_line( GEO::LineInput& file_line ) override
+        {
+            // Read this entity
+            // First line : type - id - name  - mesh type
+            if( file_line.nb_fields() < 4 ) {
+                throw RINGMeshException( "I/O",
+                    "Invalid line: "
+                        + GEO::String::to_string( file_line.line_number() )
+                        + ", 4 fields are expected, the type, id, name, "
+                        + "geological feature, and mesh type" );
+            }
+            gmme_id entity = read_first_line( file_line );
+
+            const std::string mesh_type = file_line.field( 3 );
             builder_.geometry.change_mesh_data_structure( entity, mesh_type );
 
             read_second_line( file_line, entity );
@@ -168,6 +223,7 @@ namespace RINGMesh {
     {
         version_impl_[0].reset( new GeoModelBuilderGMImpl_0( *this ) );
         version_impl_[1].reset( new GeoModelBuilderGMImpl_1( *this ) );
+        version_impl_[2].reset( new GeoModelBuilderGMImpl_2( *this ) );
     }
 
     GeoModelBuilderGM::~GeoModelBuilderGM()
@@ -272,13 +328,15 @@ namespace RINGMesh {
                     gmge_id entity( type, id );
                     info.set_geological_entity_name( entity, file_line.field( 2 ) );
                     geology.set_geological_entity_geol_feature( entity,
-                        GeoModelEntity::determine_geological_type(
+                        GeoModelGeologicalEntity::determine_geological_type(
                             file_line.field( 3 ) ) );
                     file_line.get_line();
                     file_line.get_fields();
                     for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {
-                        geology.add_geological_entity_child( entity,
-                            file_line.field_as_uint( in_b ) );
+                        geology.add_parent_children_relation( entity,
+                            gmme_id(
+                                geomodel_.entity_type_manager().relationship_manager.child_type(
+                                    type ), file_line.field_as_uint( in_b ) ) );
                     }
                 }
             }
@@ -318,19 +376,19 @@ namespace RINGMesh {
             index_t id = NO_ID;
             GEO::String::from_string( entity_id, id );
             if( MeshEntityTypeManager::is_corner( entity_type ) ) {
-                std::unique_ptr< Mesh0DBuilder > builder =
+                std::unique_ptr< PointSetMeshBuilder > builder =
                     geometry.create_corner_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_line( entity_type ) ) {
-                std::unique_ptr< Mesh1DBuilder > builder =
+                std::unique_ptr< LineMeshBuilder > builder =
                     geometry.create_line_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_surface( entity_type ) ) {
-                std::unique_ptr< Mesh2DBuilder > builder =
+                std::unique_ptr< SurfaceMeshBuilder > builder =
                     geometry.create_surface_builder( id );
                 builder->load_mesh( file_name );
             } else if( MeshEntityTypeManager::is_region( entity_type ) ) {
-                std::unique_ptr< Mesh3DBuilder > builder =
+                std::unique_ptr< VolumeMeshBuilder > builder =
                     geometry.create_region_builder( id );
                 builder->load_mesh( file_name );
             }

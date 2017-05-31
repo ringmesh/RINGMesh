@@ -54,55 +54,6 @@ namespace RINGMesh {
         name_ = universe_type_name();
     }
 
-    GeoModelEntity::GEOL_FEATURE GeoModelEntity::determine_geological_type(
-        const std::string& in )
-    {
-        if( in == "reverse_fault" ) {
-            return REVERSE_FAULT;
-        } else if( in == "normal_fault" ) {
-            return NORMAL_FAULT;
-        } else if( in == "fault" ) {
-            return FAULT;
-        } else if( in == "top" ) {
-            return STRATI;
-        } else if( in == "none" ) {
-            // This might seem strange - but it seems that what's
-            // Gocad is doing
-            return STRATI;
-        } else if( in == "topographic" ) {
-            return STRATI;
-        } else if( in == "unconformity" ) {
-            return UNCONFORMITY;
-        } else if( in == "boundary" ) {
-            return VOI;
-        } else {
-            // Default case - no information
-            return NO_GEOL;
-        }
-    }
-
-    std::string GeoModelEntity::geol_name( GeoModelEntity::GEOL_FEATURE t )
-    {
-        switch( t ) {
-            case STRATI:
-                return "top";
-            case FAULT:
-                return "fault";
-            case REVERSE_FAULT:
-                return "reverse_fault";
-            case NORMAL_FAULT:
-                return "normal_fault";
-            case UNCONFORMITY:
-                return "unconformity";
-            case VOI:
-                return "boundary";
-            case NO_GEOL:
-                return "no_geological_feature";
-            default:
-                return "no_geological_feature";
-                break;
-        }
-    }
 
     bool Universe::is_valid() const
     {
