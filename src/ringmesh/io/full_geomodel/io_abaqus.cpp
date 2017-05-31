@@ -92,7 +92,7 @@ namespace {
         }
         void save_nb_polygons( const GeoModel& geomodel, std::ofstream& out ) const
         {
-            const GeologicalEntityType& type = Interface::type_name_static();
+            const GeologicalEntityType& type = Interface< 3 >::type_name_static();
             index_t nb_interfaces = geomodel.nb_geological_entities( type );
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 save_interface( geomodel, i, out );
@@ -104,8 +104,8 @@ namespace {
             std::ofstream& out ) const
         {
             const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
-            const GeoModelGeologicalEntity& entity = geomodel.geological_entity(
-                Interface::type_name_static(), interface_id );
+            const GeoModelGeologicalEntity< 3 >& entity = geomodel.geological_entity(
+                Interface< 3 >::type_name_static(), interface_id );
             std::string sep;
             index_t count = 0;
             std::vector< bool > vertex_exported( geomodel.mesh.vertices.nb(),

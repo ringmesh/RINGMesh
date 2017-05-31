@@ -77,7 +77,7 @@ namespace RINGMesh {
     {
         std::set< gmme_id > mesh_entities;
         for( const gmge_id& it : entities ) {
-            const GeoModelGeologicalEntity& cur_gmge = geomodel_.geological_entity(
+            const GeoModelGeologicalEntity< 3 >& cur_gmge = geomodel_.geological_entity(
                 it );
             for( index_t i = 0; i < cur_gmge.nb_children(); i++ ) {
                 mesh_entities.insert( cur_gmge.child( i ).gmme() );
@@ -109,32 +109,32 @@ namespace RINGMesh {
     }
 
     index_t GeoModelBuilderRemoval::geological_entity_type_index(
-        const GeoModelGeologicalEntity& E ) const
+        const GeoModelGeologicalEntity< 3 >& E ) const
     {
         const GeologicalEntityType& type = E.type_name();
         return geological_entity_type_to_index( type );
     }
 
     void GeoModelBuilderRemoval::set_mesh_entity_index(
-        GeoModelMeshEntity& E,
+        GeoModelMeshEntity< 3 >& E,
         index_t new_index_in_geomodel )
     {
-        GeoModelMeshEntityAccess gmme_access(
-            dynamic_cast< GeoModelMeshEntity& >( E ) );
+        GeoModelMeshEntityAccess< 3 > gmme_access(
+            dynamic_cast< GeoModelMeshEntity< 3 >& >( E ) );
         gmme_access.modifiable_index() = new_index_in_geomodel;
     }
 
     void GeoModelBuilderRemoval::set_geological_entity_index(
-        GeoModelGeologicalEntity& E,
+        GeoModelGeologicalEntity< 3 >& E,
         index_t new_index_in_geomodel )
     {
-        GeoModelGeologicalEntityAccess gmge_access(
-            dynamic_cast< GeoModelGeologicalEntity& >( E ) );
+        GeoModelGeologicalEntityAccess< 3 > gmge_access(
+            dynamic_cast< GeoModelGeologicalEntity< 3 >& >( E ) );
         gmge_access.modifiable_index() = new_index_in_geomodel;
         return;
     }
 
-    void GeoModelBuilderRemoval::update_mesh_entity_index( GeoModelMeshEntity& ME )
+    void GeoModelBuilderRemoval::update_mesh_entity_index( GeoModelMeshEntity< 3 >& ME )
     {
         index_t old_id = ME.index();
         index_t type = mesh_entity_type_index( ME );
@@ -144,7 +144,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRemoval::update_geological_entity_index(
-        GeoModelGeologicalEntity& GE )
+        GeoModelGeologicalEntity< 3 >& GE )
     {
         index_t old_id = GE.index();
         index_t type = geological_entity_type_index( GE );
@@ -154,7 +154,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRemoval::update_mesh_entity_boundaries(
-        GeoModelMeshEntity& ME )
+        GeoModelMeshEntity< 3 >& ME )
     {
         index_t type_index = boundary_type_index( ME.mesh_entity_type() );
         if( type_index == NO_ID ) {
@@ -168,7 +168,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRemoval::update_mesh_entity_incident_entity(
-        GeoModelMeshEntity& E )
+        GeoModelMeshEntity< 3 >& E )
     {
         const MeshEntityType& incident_entity_type =
             MeshEntityTypeManager::incident_entity_type( E.mesh_entity_type() );
@@ -184,7 +184,7 @@ namespace RINGMesh {
             builder_.topology.set_mesh_entity_incident_entity( E.gmme(), i, new_id );
         }
     }
-    void GeoModelBuilderRemoval::update_mesh_entity_parents( GeoModelMeshEntity& E )
+    void GeoModelBuilderRemoval::update_mesh_entity_parents( GeoModelMeshEntity< 3 >& E )
     {
         gmme_id id = E.gmme();
         for( index_t p = 0; p < E.nb_parents(); ++p ) {
@@ -199,7 +199,7 @@ namespace RINGMesh {
         }
     }
     void GeoModelBuilderRemoval::update_geological_entity_children(
-        GeoModelGeologicalEntity& E )
+        GeoModelGeologicalEntity< 3 >& E )
     {
         if( E.nb_children() > 0 ) {
             index_t child_type = children_type_index( E.entity_type() );
@@ -210,10 +210,10 @@ namespace RINGMesh {
             }
         }
     }
-    void GeoModelBuilderRemoval::update_universe_sided_boundaries( Universe& U )
+    void GeoModelBuilderRemoval::update_universe_sided_boundaries( Universe< 3 >& U )
     {
         index_t b_type_index = mesh_entity_type_to_index(
-            Surface::type_name_static() );
+            Surface< 3 >::type_name_static() );
         index_t side_offset = 0;
         for( index_t i = 0; i < U.nb_boundaries(); ++i ) {
             index_t old_id = U.boundary_gmme( i ).index();

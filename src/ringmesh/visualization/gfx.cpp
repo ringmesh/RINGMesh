@@ -75,7 +75,7 @@ namespace RINGMesh {
 
     class CornerGfx: public MeshEntityGfx {
     public:
-        CornerGfx( const GeoModelGfx& gfx, const Corner& corner )
+        CornerGfx( const GeoModelGfx& gfx, const Corner< 3 >& corner )
             : MeshEntityGfx( gfx, corner.gfx_mesh(), true )
         {
             set_points_color( 1, 0, 0 );
@@ -84,7 +84,7 @@ namespace RINGMesh {
 
     class LineGfx: public MeshEntityGfx {
     public:
-        LineGfx( const GeoModelGfx& gfx, const Line& line )
+        LineGfx( const GeoModelGfx& gfx, const Line< 3 >& line )
             : MeshEntityGfx( gfx, line.gfx_mesh(), false ), edges_visible_( true )
         {
             set_points_color( 1, 1, 1 );
@@ -106,7 +106,7 @@ namespace RINGMesh {
 
     class SurfaceGfx: public MeshEntityGfx {
     public:
-        SurfaceGfx( const GeoModelGfx& gfx, const Surface& surface )
+        SurfaceGfx( const GeoModelGfx& gfx, const Surface< 3 >& surface )
             :
                 MeshEntityGfx( gfx, surface.gfx_mesh(), false ),
                 surface_visible_( true )
@@ -133,7 +133,7 @@ namespace RINGMesh {
 
     class RegionGfx: public MeshEntityGfx {
     public:
-        RegionGfx( const GeoModelGfx& gfx, const Region& region )
+        RegionGfx( const GeoModelGfx& gfx, const Region< 3 >& region )
             :
                 MeshEntityGfx( gfx, region.gfx_mesh(), false ),
                 region_visible_( true ),

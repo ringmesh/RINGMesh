@@ -76,11 +76,11 @@ namespace {
         bool side )
     {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() );
-        gmme_id cur_surface( Surface::type_name_static(), surface_part_id );
-        const Surface& surface = geomodel.surface( surface_part_id );
+        gmme_id cur_surface( Surface< 3 >::type_name_static(), surface_part_id );
+        const Surface< 3 >& surface = geomodel.surface( surface_part_id );
         for( index_t r = 0; r < surface.nb_incident_entities(); r++ ) {
-            const Region& cur_region =
-                dynamic_cast< const Region& >( surface.incident_entity( r ) );
+            const Region< 3 >& cur_region =
+                dynamic_cast< const Region< 3 >& >( surface.incident_entity( r ) );
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
                     && cur_region.boundary_gmme( s ) == cur_surface ) {
@@ -135,11 +135,12 @@ namespace {
     bool get_side(
         const vec3& vertex,
         const vec3& on_surface,
-        const Surface& surface,
+        const Surface< 3 >& surface,
         index_t triangle )
     {
         vec3 direction = vertex - on_surface;
-        return dot( direction, surface.polygon_normal( triangle ) ) > 0;
+        return dot( direction,
+            surface.low_level_mesh_storage().polygon_normal( triangle ) ) > 0;
     }
 
     index_t find_region_from_corners(
@@ -162,7 +163,7 @@ namespace {
             vec3 best_nearest;
             index_t best_triangle = NO_ID;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
-                const Surface& surface = geomodel.surface( s );
+                const Surface< 3 >& surface = geomodel.surface( s );
                 vec3 nearest;
                 double distance;
                 index_t triangle = surface.polygons_aabb().closest_triangle(
@@ -208,7 +209,7 @@ namespace {
     class EdgeConformerAction {
     public:
         EdgeConformerAction(
-            const Surface& surface,
+            const Surface< 3 >& surface,
             const vec3& v_from,
             const vec3& v_to,
             std::vector< LineInstersection >& intersections )
@@ -233,7 +234,7 @@ namespace {
         }
 
     private:
-        const Surface& surface_;
+        const Surface< 3 >& surface_;
         const vec3& v_from_;
         const vec3& v_to_;
 
@@ -567,8 +568,8 @@ namespace RINGMesh {
         LineMesh< 3 >& out )
     {
         double epsilon = geomodel_->epsilon();
-        std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
-            > ::create_builder( out );
+        std::unique_ptr< LineMeshBuilder< 3 > > builder =
+            LineMeshBuilder< 3 >::create_builder( out );
         builder->clear( false, false );
 
         GEO::Attribute< LineInstersection > vertex_info(
@@ -591,7 +592,7 @@ namespace RINGMesh {
             box.add_point( to_vertex );
             std::vector< LineInstersection > intersections;
             for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
-                const Surface& surface = geomodel()->surface( s );
+                const Surface< 3 >& surface = geomodel()->surface( s );
                 EdgeConformerAction action( surface, from_vertex, to_vertex,
                     intersections );
                 surface.polygons_aabb().compute_bbox_element_bbox_intersections( box,

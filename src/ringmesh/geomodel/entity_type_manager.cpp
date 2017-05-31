@@ -43,8 +43,8 @@ namespace RINGMesh {
 
     // Not the smartest but hopefully compiles in C++98
     static const MeshEntityType hard_encoded_mesh_entity_types_array[4] = {
-        Corner::type_name_static(), Line::type_name_static(),
-        Surface::type_name_static(), Region::type_name_static() };
+        Corner< 3 >::type_name_static(), Line< 3 >::type_name_static(),
+        Surface< 3 >::type_name_static(), Region< 3 >::type_name_static() };
     static const std::vector< MeshEntityType > hard_encoded_mesh_entity_types(
         &hard_encoded_mesh_entity_types_array[0],
         &hard_encoded_mesh_entity_types_array[4] );
@@ -57,21 +57,21 @@ namespace RINGMesh {
 
     MeshEntityTypeBoundaryMap::MeshEntityTypeBoundaryMap()
     {
-        register_boundary( Corner::type_name_static(),
+        register_boundary( Corner< 3 >::type_name_static(),
             ForbiddenMeshEntityType::type_name_static() );
-        register_boundary( Line::type_name_static(), Corner::type_name_static() );
-        register_boundary( Surface::type_name_static(), Line::type_name_static() );
-        register_boundary( Region::type_name_static(), Surface::type_name_static() );
+        register_boundary( Line< 3 >::type_name_static(), Corner< 3 >::type_name_static() );
+        register_boundary( Surface< 3 >::type_name_static(), Line< 3 >::type_name_static() );
+        register_boundary( Region< 3 >::type_name_static(), Surface< 3 >::type_name_static() );
     }
 
     MeshEntityTypeIncidentEntityMap::MeshEntityTypeIncidentEntityMap()
     {
-        register_incident_entity( Corner::type_name_static(), Line::type_name_static() );
-        register_incident_entity( Line::type_name_static(),
-            Surface::type_name_static() );
-        register_incident_entity( Surface::type_name_static(),
-            Region::type_name_static() );
-        register_incident_entity( Region::type_name_static(),
+        register_incident_entity( Corner< 3 >::type_name_static(), Line< 3 >::type_name_static() );
+        register_incident_entity( Line< 3 >::type_name_static(),
+            Surface< 3 >::type_name_static() );
+        register_incident_entity( Surface< 3 >::type_name_static(),
+            Region< 3 >::type_name_static() );
+        register_incident_entity( Region< 3 >::type_name_static(),
             ForbiddenMeshEntityType::type_name_static() );
     }
 

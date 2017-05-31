@@ -83,6 +83,9 @@
 #define ringmesh_template_assert_2d_or_3d( type ) \
     static_assert( type == 2 || type == 3, #type " template should be 2 or 3" )
 
+#define ringmesh_template_assert_3d( type ) \
+    static_assert( type == 3, #type " template should be 3" )
+
 // To avoid unused argument warning in function definition
 template< typename T > inline void ringmesh_unused( T const& )
 {
