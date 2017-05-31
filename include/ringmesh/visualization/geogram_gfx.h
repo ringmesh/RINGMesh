@@ -173,7 +173,7 @@ namespace RINGMesh {
         {
             mesh_gfx_.set_draw_cells( type, x );
         }
-        virtual void set_cells_colors_by_type() override
+        virtual void set_cell_colors_by_type() override
         {
             mesh_gfx_.set_cells_colors_by_type();
         }

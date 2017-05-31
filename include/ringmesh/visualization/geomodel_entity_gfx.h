@@ -350,12 +350,12 @@ namespace RINGMesh {
         /*!
          * Toggles the cell region color per cell type to all the regions
          */
-        void set_cells_colors_by_type();
+        void set_cell_colors_by_type();
         /*!
          * Toggles the cell region color per cell type
          * @param[in] m the region index
          */
-        void set_cells_colors_by_type( index_t m );
+        void set_cell_colors_by_type( index_t m );
         void set_cell_type_visibility( GEO::MeshCellType t, bool b );
         void set_cell_type_visibility( index_t m, GEO::MeshCellType t, bool b );
         /*!

@@ -228,7 +228,7 @@ namespace RINGMesh {
     {
         show_colored_regions_.new_status = false;
         show_colored_layers_.new_status = false;
-        GM_gfx_.regions.set_cells_colors_by_type();
+        GM_gfx_.regions.set_cell_colors_by_type();
     }
     void RINGMeshApplication::GeoModelViewer::toggle_colored_regions()
     {
