@@ -64,7 +64,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class Surface;
     template< index_t DIMENSION > class Line;
     template< index_t DIMENSION > class Region;
-    class EntityTypeManager;
+    template< index_t DIMENSION > class EntityTypeManager;
 }
 
 namespace RINGMesh {
@@ -93,7 +93,7 @@ namespace RINGMesh {
         /*!
          * @brief Gets the EntityTypeManager associated to the GeoModel
          */
-        const EntityTypeManager& entity_type_manager() const
+        const EntityTypeManager< 3 >& entity_type_manager() const
         {
             return entity_type_manager_;
         }
@@ -259,7 +259,7 @@ namespace RINGMesh {
         std::string geomodel_name_;
         mutable double epsilon_;
 
-        EntityTypeManager entity_type_manager_;
+        EntityTypeManager< 3 > entity_type_manager_;
 
         /*!
          * \name Mandatory entities of the geomodel
@@ -315,7 +315,7 @@ namespace RINGMesh {
             return geomodel_.geomodel_name_;
         }
 
-        EntityTypeManager& modifiable_entity_type_manager()
+        EntityTypeManager< 3 >& modifiable_entity_type_manager()
         {
             return geomodel_.entity_type_manager_;
         }

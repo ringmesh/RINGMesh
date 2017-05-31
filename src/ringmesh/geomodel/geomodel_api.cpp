@@ -192,7 +192,7 @@ namespace RINGMesh {
         }
         Logger::out( "GeoModel" );
 
-        const EntityTypeManager& manager = geomodel.entity_type_manager();
+        const EntityTypeManager< 3 >& manager = geomodel.entity_type_manager();
         const std::vector< MeshEntityType >& mesh_entity_types =
             manager.mesh_entity_manager.mesh_entity_types();
         for( const MeshEntityType& type : mesh_entity_types ) {

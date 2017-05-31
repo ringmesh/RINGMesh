@@ -113,7 +113,7 @@ namespace RINGMesh {
         {
             file_line.get_line();
             file_line.get_fields();
-            if( MeshEntityTypeManager::is_region( entity.type() ) ) {
+            if( MeshEntityTypeManager< 3 >::is_region( entity.type() ) ) {
                 // Second line : signed indices of boundaries
                 for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
                     bool side = false;
@@ -127,7 +127,7 @@ namespace RINGMesh {
                         gmme_id( Surface< 3 >::type_name_static(), s ), side );
                 }
             } else {
-                MeshEntityType type = MeshEntityTypeManager::boundary_type(
+                MeshEntityType type = MeshEntityTypeManager< 3 >::boundary_type(
                     entity.type() );
                 // Second line : indices of boundaries
                 for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
@@ -348,7 +348,7 @@ namespace RINGMesh {
         if( unzGoToFirstFile( uz ) != UNZ_OK ) {
             throw RINGMeshException( "I/O", "Unable to uncompress the first file" );
         }
-        std::vector< std::string > filenames;
+        std::vector < std::string > filenames;
         do {
             char char_file_name[MAX_FILENAME];
             if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
@@ -375,19 +375,19 @@ namespace RINGMesh {
                 entity_id );
             index_t id = NO_ID;
             GEO::String::from_string( entity_id, id );
-            if( MeshEntityTypeManager::is_corner( entity_type ) ) {
+            if( MeshEntityTypeManager< 3 >::is_corner( entity_type ) ) {
                 std::unique_ptr< PointSetMeshBuilder< 3 > > builder =
                     geometry.create_corner_builder( id );
                 builder->load_mesh( file_name );
-            } else if( MeshEntityTypeManager::is_line( entity_type ) ) {
+            } else if( MeshEntityTypeManager< 3 >::is_line( entity_type ) ) {
                 std::unique_ptr< LineMeshBuilder< 3 > > builder =
                     geometry.create_line_builder( id );
                 builder->load_mesh( file_name );
-            } else if( MeshEntityTypeManager::is_surface( entity_type ) ) {
+            } else if( MeshEntityTypeManager< 3 >::is_surface( entity_type ) ) {
                 std::unique_ptr< SurfaceMeshBuilder< 3 > > builder =
                     geometry.create_surface_builder( id );
                 builder->load_mesh( file_name );
-            } else if( MeshEntityTypeManager::is_region( entity_type ) ) {
+            } else if( MeshEntityTypeManager< 3 >::is_region( entity_type ) ) {
                 std::unique_ptr< VolumeMeshBuilder< 3 > > builder =
                     geometry.create_region_builder( id );
                 builder->load_mesh( file_name );
