@@ -348,7 +348,7 @@ namespace RINGMesh {
         if( unzGoToFirstFile( uz ) != UNZ_OK ) {
             throw RINGMeshException( "I/O", "Unable to uncompress the first file" );
         }
-        std::vector < std::string > filenames;
+        std::vector< std::string > filenames;
         do {
             char char_file_name[MAX_FILENAME];
             if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,

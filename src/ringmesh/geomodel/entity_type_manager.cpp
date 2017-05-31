@@ -41,15 +41,6 @@
 
 namespace RINGMesh {
 
-    // Not the smartest but hopefully compiles in C++98
-
-//    static const std::vector< MeshEntityType > hard_encoded_mesh_entity_types_2d(
-//        &hard_encoded_mesh_entity_types_array[0],
-//        &hard_encoded_mesh_entity_types_array[3] );
-//    static const std::vector< MeshEntityType > hard_encoded_mesh_entity_types(
-//        &hard_encoded_mesh_entity_types_array[0],
-//        &hard_encoded_mesh_entity_types_array[4] );
-
     template< index_t DIMENSION >
     MeshEntityTypeBoundaryMap< DIMENSION > MeshEntityTypeManager< DIMENSION >::boundary_relationships_;
 

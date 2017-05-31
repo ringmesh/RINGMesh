@@ -157,11 +157,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API MeshEntityTypeManager {
     public:
-        MeshEntityTypeManager()
-        {
-
-        }
-
         static bool is_corner( const MeshEntityType& type )
         {
             return type == mesh_entity_types_.container()[0];
