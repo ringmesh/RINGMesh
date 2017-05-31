@@ -331,7 +331,7 @@ namespace RINGMesh {
             Logger::warn( "PointSetMeshGfx",
                 "Could not create mesh data structure: ", mesh.type_name() );
             Logger::warn( "PointSetMeshGfx",
-                "Falling back to PointSetMeshGfx data structure" );
+                "Falling back to GeogramPointSetMeshGfx data structure" );
 
             gfx = new GeogramPointSetMeshGfx;
         }
@@ -346,7 +346,7 @@ namespace RINGMesh {
             Logger::warn( "LineMeshGfx", "Could not create mesh data structure: ",
                 mesh.type_name() );
             Logger::warn( "LineMeshGfx",
-                "Falling back to LineMeshGfx data structure" );
+                "Falling back to GeogramLineMeshGfx data structure" );
 
             gfx = new GeogramLineMeshGfx;
         }
@@ -363,7 +363,7 @@ namespace RINGMesh {
             Logger::warn( "SurfaceMeshGfx", "Could not create mesh data structure: ",
                 mesh.type_name() );
             Logger::warn( "SurfaceMeshGfx",
-                "Falling back to SurfaceMeshGfx data structure" );
+                "Falling back to GeogramSurfaceMeshGfx data structure" );
 
             gfx = new GeogramSurfaceMeshGfx;
         }
@@ -379,7 +379,7 @@ namespace RINGMesh {
             Logger::warn( "VolumeMeshGfx", "Could not create mesh data structure: ",
                 mesh.type_name() );
             Logger::warn( "VolumeMeshGfx",
-                "Falling back to VolumeMeshGfx data structure" );
+                "Falling back to GeogramVolumeMeshGfx data structure" );
 
             gfx = new GeogramVolumeMeshGfx;
         }
