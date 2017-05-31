@@ -201,7 +201,8 @@ namespace RINGMesh {
     void CornerGfxEnity::draw()
     {
         for( index_t c = 0; c < entities_.size(); c++ ) {
-            if( entities_[c]->get_vertices_visible() ) entities_[c]->draw_vertices();
+            PointSetGfx& pointset = corner( c );
+            if( pointset.get_vertices_visible() ) pointset.draw_vertices();
         }
     }
 

@@ -46,54 +46,42 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
- * @file Classes for GeoModel visualization
+ * @file Classes for geogram visualization
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
 namespace RINGMesh {
-    class GeoModel;
-    class GeoModelGfx;
-    class AttributeGfx;
-    class PointSetGfx;
-    class LineGfx;
-    class SurfaceGfx;
-    class VolumeGfx;
-    class MeshEntityGfx;
-    class MeshEntityGfx2;
-}
 
-namespace RINGMesh {
-
-#define COMMON_GEOGRAM_GFX_IMPLEMENTATION \
-    public:\
-    virtual void draw_vertices() override \
-    {\
-        mesh_gfx_.draw_vertices();\
-    }\
-    virtual void set_vertices_color( float r, float g, float b ) override \
-    {\
-        mesh_gfx_.set_points_color( r, g, b );\
-    }\
-    virtual void set_vertices_size( index_t s ) override\
-    {\
-        mesh_gfx_.set_points_size( static_cast< float >( s ) );\
-    }\
-    virtual void set_scalar_attribute(\
-        GEO::MeshElementsFlags subelements,\
-        const std::string& name,\
-        double attr_min,\
-        double attr_max,\
-        GLuint colormap_texture ) override\
-    {\
-        mesh_gfx_.set_scalar_attribute( subelements, name, attr_min, attr_max,\
-            colormap_texture );\
-    }\
-    virtual void unset_scalar_attribute() override\
-    {\
-        mesh_gfx_.unset_scalar_attribute();\
-    }\
-private:\
-    GEO::MeshGfx mesh_gfx_
+#define COMMON_GEOGRAM_GFX_IMPLEMENTATION                                       \
+    public:                                                                     \
+    virtual void draw_vertices() override                                       \
+    {                                                                           \
+        mesh_gfx_.draw_vertices();                                              \
+    }                                                                           \
+    virtual void set_vertices_color( float r, float g, float b ) override       \
+    {                                                                           \
+        mesh_gfx_.set_points_color( r, g, b );                                  \
+    }                                                                           \
+    virtual void set_vertices_size( index_t s ) override                        \
+    {                                                                           \
+        mesh_gfx_.set_points_size( static_cast< float >( s ) );                 \
+    }                                                                           \
+    virtual void set_scalar_attribute(                                          \
+        GEO::MeshElementsFlags subelements,                                     \
+        const std::string& name,                                                \
+        double attr_min,                                                        \
+        double attr_max,                                                        \
+        GLuint colormap_texture ) override                                      \
+    {                                                                           \
+        mesh_gfx_.set_scalar_attribute( subelements, name, attr_min, attr_max,  \
+            colormap_texture );                                                 \
+    }                                                                           \
+    virtual void unset_scalar_attribute() override                              \
+    {                                                                           \
+        mesh_gfx_.unset_scalar_attribute();                                     \
+    }                                                                           \
+    private:                                                                    \
+        GEO::MeshGfx mesh_gfx_
 
     class GeogramPointSetGfx: public PointSetGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;

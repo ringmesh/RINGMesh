@@ -285,10 +285,11 @@ namespace RINGMesh {
 
     std::string AttributeGfxManager::location_name( Attribute_location location )
     {
-        if( location == nb_locations )
+        if( location == nb_locations ) {
             return "location";
-        else
+        } else {
             return attributes_[location]->location_name();
+        }
     }
 
     void AttributeGfxManager::compute_range()
