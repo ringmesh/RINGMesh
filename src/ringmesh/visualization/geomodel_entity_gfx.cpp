@@ -146,11 +146,13 @@ namespace RINGMesh {
         ringmesh_unused( g );
         ringmesh_unused( b );
     }
+
     void GeoModelGfxEntity::set_mesh_element_visibility( index_t e, bool b )
     {
         ringmesh_unused( e );
         ringmesh_unused( b );
     }
+
     void GeoModelGfxEntity::set_mesh_element_size( index_t e, index_t s )
     {
         ringmesh_unused( e );
@@ -189,10 +191,12 @@ namespace RINGMesh {
     {
         set_vertex_color( e, r, g, b );
     }
+
     void CornerGfxEnity::set_mesh_element_visibility( index_t e, bool b )
     {
         set_vertex_visibility( e, b );
     }
+
     void CornerGfxEnity::set_mesh_element_size( index_t e, index_t s )
     {
         set_vertex_size( e, s );
@@ -463,12 +467,14 @@ namespace RINGMesh {
     {
         region( m ).set_region_visible( b );
     }
+
     void RegionGfxEntity::set_cell_type_visibility( GEO::MeshCellType t, bool b )
     {
         for( index_t m = 0; m < entities_.size(); m++ ) {
             set_cell_type_visibility( m, t, b );
         }
     }
+
     void RegionGfxEntity::set_cell_type_visibility(
         index_t m,
         GEO::MeshCellType t,
