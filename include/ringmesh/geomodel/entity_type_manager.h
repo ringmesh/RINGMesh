@@ -54,7 +54,6 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-
     using MeshEntityTypeMap = std::map< MeshEntityType, MeshEntityType >;
 
     /*!
@@ -178,6 +177,7 @@ namespace RINGMesh {
         }
         static bool is_region( const MeshEntityType& type )
         {
+            ringmesh_template_assert_3d( DIMENSION );
             return type == mesh_entity_types_.container()[3];
 
         }
