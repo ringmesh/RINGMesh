@@ -53,6 +53,9 @@ namespace {
     {
         return value < global_epsilon && value > -global_epsilon;
     }
+}
+
+namespace RINGMesh {
 
     double triangle_signed_area(
         const vec3& p0,
@@ -83,9 +86,6 @@ namespace {
         }
         return area;
     }
-}
-
-namespace RINGMesh {
 
     double point_triangle_distance(
         const vec3& point,
