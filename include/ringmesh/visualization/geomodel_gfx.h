@@ -53,14 +53,6 @@
 
 namespace RINGMesh {
     class GeoModel;
-    class GeoModelGfx;
-    class AttributeGfx;
-    class PointSetGfx;
-    class LineGfx;
-    class SurfaceGfx;
-    class VolumeGfx;
-    class MeshEntityGfx;
-    class MeshEntityGfx2;
 }
 
 namespace RINGMesh {

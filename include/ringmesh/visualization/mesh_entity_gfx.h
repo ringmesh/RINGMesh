@@ -44,20 +44,13 @@
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 /*!
- * @file Classes for GeoModel visualization
+ * @file Classes for mesh entity visualization
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
 namespace RINGMesh {
-    class GeoModel;
     class GeoModelGfx;
     class AttributeGfx;
-    class PointSetGfx;
-    class LineGfx;
-    class SurfaceGfx;
-    class VolumeGfx;
-    class MeshEntityGfx;
-    class MeshEntityGfx2;
 }
 
 namespace RINGMesh {
