@@ -105,7 +105,7 @@ namespace {
             std::vector< vec3 > edge_vertices( nb_edges );
             index_t count_edge = 0;
             for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
-                const Line& line = geomodel.line( l );
+                const Line< 3 >& line = geomodel.line( l );
                 for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );

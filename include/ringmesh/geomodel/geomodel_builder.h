@@ -105,7 +105,7 @@ namespace RINGMesh {
          */
         void set_mesh_entity_name( const gmme_id& gmme_id, const std::string& name )
         {
-            GeoModelMeshEntityAccess gmme_access(
+            GeoModelMeshEntityAccess< 3 > gmme_access(
                 geomodel_access_.modifiable_mesh_entity( gmme_id ) );
             gmme_access.modifiable_name() = name;
 
@@ -118,7 +118,7 @@ namespace RINGMesh {
             const gmge_id& gmge_id,
             const std::string& name )
         {
-            GeoModelGeologicalEntityAccess gmge_access(
+            GeoModelGeologicalEntityAccess< 3 > gmge_access(
                 geomodel_access_.modifiable_geological_entity( gmge_id ) );
             gmge_access.modifiable_name() = name;
         }
@@ -152,9 +152,9 @@ namespace RINGMesh {
 
         void set_geological_entity_geol_feature(
             const gmge_id& gmge_id,
-            GeoModelGeologicalEntity::GEOL_FEATURE geol_feature )
+            GeoModelGeologicalEntity< 3 >::GEOL_FEATURE geol_feature )
         {
-            GeoModelGeologicalEntityAccess gmge_access(
+            GeoModelGeologicalEntityAccess< 3 > gmge_access(
                 geomodel_access_.modifiable_geological_entity( gmge_id ) );
             gmge_access.modifiable_geol_feature() = geol_feature;
         }
@@ -166,10 +166,10 @@ namespace RINGMesh {
         {
             /// No check on the validity of the index of the entity parents_
             /// NO_ID is used to flag entities to delete
-            GeoModelMeshEntity& mesh_entity =
+            GeoModelMeshEntity< 3 >& mesh_entity =
                 geomodel_access_.modifiable_mesh_entity( child_gmme );
             ringmesh_assert( id < mesh_entity.nb_parents() );
-            GeoModelMeshEntityAccess gmme_access( mesh_entity );
+            GeoModelMeshEntityAccess< 3 > gmme_access( mesh_entity );
             index_t relationship_id = gmme_access.modifiable_parents()[id];
             RelationshipManager& manager =
                 geomodel_access_.modifiable_entity_type_manager().relationship_manager;
@@ -191,13 +191,13 @@ namespace RINGMesh {
         {
             /// No check on the validity of the index of the entity child_index
             /// NO_ID is used to flag entities to delete
-            GeoModelGeologicalEntity& geol_entity =
+            GeoModelGeologicalEntity< 3 >& geol_entity =
                 geomodel_access_.modifiable_geological_entity( parent_gmge );
             const MeshEntityType& child_type =
                 geomodel_.entity_type_manager().relationship_manager.child_type(
                     parent_gmge.type() );
             gmme_id child( child_type, child_id );
-            GeoModelGeologicalEntityAccess gmge_access( geol_entity );
+            GeoModelGeologicalEntityAccess< 3 > gmge_access( geol_entity );
             index_t relationship_id = gmge_access.modifiable_children()[id];
             RelationshipManager& manager =
                 geomodel_access_.modifiable_entity_type_manager().relationship_manager;

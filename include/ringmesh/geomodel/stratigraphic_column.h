@@ -48,8 +48,8 @@
  */
 
 namespace RINGMesh {
-    class Interface;
-    class Layer;
+    template < index_t DIMENSION > class Interface;
+    template < index_t DIMENSION > class Layer;
 
     // @todo To develop
     enum struct ROCKTYPE {
@@ -164,8 +164,8 @@ namespace RINGMesh {
         virtual bool is_conformable_top() const = 0;
         virtual RELATION get_relation_base() const = 0;
         virtual RELATION get_relation_top() const = 0;
-        virtual const Interface& get_interface_base() const = 0;
-        virtual const Interface& get_interface_top() const = 0;
+        virtual const Interface< 3 >& get_interface_base() const = 0;
+        virtual const Interface< 3 >& get_interface_top() const = 0;
         virtual double get_min_thick() const = 0;
         virtual double get_max_thick() const = 0;
 
@@ -186,9 +186,9 @@ namespace RINGMesh {
 
         UnsubdividedStratigraphicUnit(
             const std::string& name,
-            const Interface& interface_base,
-            const Interface& interface_top,
-            const Layer& layer,
+            const Interface< 3 >& interface_base,
+            const Interface< 3 >& interface_top,
+            const Layer< 3 >& layer,
             RELATION relation_top,
             RELATION relation_base,
             const RockFeature& rock,
@@ -217,12 +217,12 @@ namespace RINGMesh {
             return relation_top_;
         }
 
-        virtual const Interface& get_interface_base() const final
+        virtual const Interface< 3 >& get_interface_base() const final
         {
             return *interface_base_;
         }
 
-        virtual const Interface& get_interface_top() const final
+        virtual const Interface< 3 >& get_interface_top() const final
         {
             return *interface_top_;
         }
@@ -238,9 +238,9 @@ namespace RINGMesh {
         }
 
     private:
-        const Interface* interface_top_;
-        const Interface* interface_base_;
-        const Layer* layer_;
+        const Interface< 3 >* interface_top_;
+        const Interface< 3 >* interface_base_;
+        const Layer< 3 >* layer_;
         RELATION relation_top_;
         RELATION relation_base_;
         double min_thick_;
@@ -280,12 +280,12 @@ namespace RINGMesh {
             return units_.front()->get_relation_top();
         }
 
-        virtual const Interface& get_interface_base() const final
+        virtual const Interface< 3 >& get_interface_base() const final
         {
             return units_.back()->get_interface_base();
         }
 
-        virtual const Interface& get_interface_top() const final
+        virtual const Interface< 3 >& get_interface_top() const final
         {
             return units_.front()->get_interface_top();
         }
@@ -471,7 +471,7 @@ namespace RINGMesh {
          * @brief get_interface_base for the Stratigraphic Column
          * @return the base interface of the last unit in the Stratigraphic Column
          */
-        const Interface& get_interface_base() const
+        const Interface< 3 >& get_interface_base() const
         {
             return ( units_.back()->get_interface_base() );
         }
@@ -479,7 +479,7 @@ namespace RINGMesh {
          * @brief get_interface_top for the Stratigraphic Column
          * @return the top interface of the first unit in the Stratigraphic Column
          */
-        const Interface& get_interface_top() const
+        const Interface< 3 >& get_interface_top() const
         {
             return ( units_.front()->get_interface_top() );
         }

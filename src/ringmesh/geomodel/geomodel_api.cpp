@@ -87,16 +87,34 @@ namespace {
     }
 
     void compute_region_volumes_per_cell_type(
-        const Region& region,
+        const Region< 3 >& region,
         double& tet_volume,
         double& pyramid_volume,
         double& prism_volume,
         double& hex_volume,
         double& poly_volume )
     {
-        region.compute_region_volumes_per_cell_type( tet_volume, pyramid_volume,
-            prism_volume, hex_volume, poly_volume );
-
+        for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+            index_t nb_vertices = region.nb_mesh_element_vertices( c );
+            double volume = region.low_level_mesh_storage().cell_volume( c );
+            switch( nb_vertices ) {
+                case 4:
+                    tet_volume += volume;
+                    break;
+                case 5:
+                    pyramid_volume += volume;
+                    break;
+                case 6:
+                    prism_volume += volume;
+                    break;
+                case 8:
+                    hex_volume += volume;
+                    break;
+                default:
+                    poly_volume += volume;
+                    break;
+            }
+        }
     }
 
     double compute_geomodel_volumes_per_cell_type(
@@ -113,7 +131,7 @@ namespace {
         hex_volume = 0;
         poly_volume = 0;
         for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-            const Region& region = geomodel.region( r );
+            const Region< 3 >& region = geomodel.region( r );
             compute_region_volumes_per_cell_type( region, tet_volume, pyramid_volume,
                 prism_volume, hex_volume, poly_volume );
         }
@@ -293,7 +311,7 @@ namespace RINGMesh {
         index_t mesh_entity_id = NO_ID;
         for( index_t elt_i = 0; elt_i < geomodel.nb_mesh_entities( gmme_type );
             elt_i++ ) {
-            const RINGMesh::GeoModelMeshEntity& cur_gme = geomodel.mesh_entity(
+            const RINGMesh::GeoModelMeshEntity< 3 >& cur_gme = geomodel.mesh_entity(
                 gmme_type, elt_i );
             if( cur_gme.name() == name ) {
                 if( mesh_entity_id != NO_ID ) {
@@ -320,7 +338,7 @@ namespace RINGMesh {
         index_t geological_entity_id = NO_ID;
         for( index_t elt_i = 0; elt_i < geomodel.nb_geological_entities( gmge_type );
             elt_i++ ) {
-            const RINGMesh::GeoModelGeologicalEntity& cur_gme =
+            const RINGMesh::GeoModelGeologicalEntity< 3 >& cur_gme =
                 geomodel.geological_entity( gmge_type, elt_i );
             if( cur_gme.name() == name ) {
                 if( geological_entity_id != NO_ID ) {

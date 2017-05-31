@@ -90,7 +90,7 @@ int main()
         make_geomodel_copy( in, "broken model 1", invalid_model );
         GeoModelBuilder geomodel_breaker( invalid_model );
         geomodel_breaker.geology.create_geological_entity(
-            RINGMesh::Interface::type_name_static() );
+            RINGMesh::Interface< 3 >::type_name_static() );
         verdict( invalid_model,
             "detect addition of an isolated GeoModelGeologicalEntity" );
 

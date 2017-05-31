@@ -56,7 +56,8 @@ namespace RINGMesh {
         if( !mesh ) {
             Logger::warn( "PointSetMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "PointSetMesh", "Falling back to GeogramPointSetMesh data structure" );
+            Logger::warn( "PointSetMesh",
+                "Falling back to GeogramPointSetMesh data structure" );
 
             mesh = new GeogramPointSetMesh< DIMENSION >;
         }
@@ -97,7 +98,8 @@ namespace RINGMesh {
         if( !mesh ) {
             Logger::warn( "SurfaceMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "SurfaceMesh", "Falling back to GeogramSurfaceMesh data structure" );
+            Logger::warn( "SurfaceMesh",
+                "Falling back to GeogramSurfaceMesh data structure" );
 
             mesh = new GeogramSurfaceMesh< DIMENSION >;
         }
@@ -331,19 +333,20 @@ namespace RINGMesh {
         if( !mesh ) {
             Logger::warn( "VolumeMesh", "Could not create mesh data structure: ",
                 new_type );
-            Logger::warn( "VolumeMesh", "Falling back to GeogramVolumeMesh data structure" );
+            Logger::warn( "VolumeMesh",
+                "Falling back to GeogramVolumeMesh data structure" );
 
             mesh = new GeogramVolumeMesh< DIMENSION >;
         }
         return std::unique_ptr< VolumeMesh< DIMENSION > >( mesh );
     }
 
-    template class PointSetMesh< 2 >;
-    template class LineMesh< 2 >;
-    template class SurfaceMeshBase< 2 >;
+    template class PointSetMesh< 2 > ;
+    template class LineMesh< 2 > ;
+    template class SurfaceMeshBase< 2 > ;
 
-    template class PointSetMesh< 3 >;
-    template class LineMesh< 3 >;
-    template class SurfaceMeshBase< 3 >;
-    template class VolumeMesh< 3 >;
+    template class PointSetMesh< 3 > ;
+    template class LineMesh< 3 > ;
+    template class SurfaceMeshBase< 3 > ;
+    template class VolumeMesh< 3 > ;
 }

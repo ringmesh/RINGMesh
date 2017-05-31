@@ -75,7 +75,7 @@ void build_geomodel( GeoModel& geomodel )
     std::vector< vec3 > vertices( 4 );
     gmme_id id;
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity< Surface< 3 > >();
     vertices[0] = v0;
     vertices[1] = v1;
     vertices[2] = v2;
@@ -83,7 +83,7 @@ void build_geomodel( GeoModel& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity< Surface< 3 > >();
     vertices[0] = v1;
     vertices[1] = v5;
     vertices[2] = v6;
@@ -91,7 +91,7 @@ void build_geomodel( GeoModel& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity< Surface< 3 > >();
     vertices[0] = v4;
     vertices[1] = v5;
     vertices[2] = v6;
@@ -99,7 +99,7 @@ void build_geomodel( GeoModel& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity< Surface< 3 > >();
     vertices[0] = v0;
     vertices[1] = v3;
     vertices[2] = v7;
@@ -107,7 +107,7 @@ void build_geomodel( GeoModel& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity< Surface< 3 > >();
     vertices[0] = v3;
     vertices[1] = v2;
     vertices[2] = v6;
@@ -115,7 +115,7 @@ void build_geomodel( GeoModel& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity< Surface< 3 > >();
     vertices[0] = v0;
     vertices[1] = v1;
     vertices[2] = v5;
