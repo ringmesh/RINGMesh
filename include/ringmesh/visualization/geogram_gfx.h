@@ -134,7 +134,7 @@ namespace RINGMesh {
     class RINGMESH_API GeogramSurfaceMeshGfx: public SurfaceMeshGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
-        GeogramSurfaceMeshGfx() = default ;
+        GeogramSurfaceMeshGfx() = default;
 
         virtual void set_mesh( const SurfaceMesh& mesh ) override
         {
