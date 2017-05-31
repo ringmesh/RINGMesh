@@ -183,6 +183,7 @@ namespace {
                         vertex_id = region.mesh_element_vertex_index( i,
                             j );
                         element_id = i;
+                        result = true;
                         return true;
                     }
                 }
