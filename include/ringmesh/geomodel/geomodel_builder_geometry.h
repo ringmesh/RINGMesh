@@ -409,6 +409,15 @@ namespace RINGMesh {
         void cut_surface_by_line( index_t surface_id, index_t line_id );
 
         void cut_region_by_surface( index_t region_id, index_t surface_id );
+        void invert_surface_normals( index_t surface_id );
+        /*
+         * @brief Resets the adjacencies for all Surface polygons adjacent to the Line
+         * @return The number of disconnection done
+         * @pre All the edges of the Line are edges of at least one polygon of the Surface
+         */
+        index_t disconnect_surface_polygons_along_line_edges(
+            index_t surface_id,
+            index_t line_id );
 
     protected:
         GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel& geomodel );
@@ -428,14 +437,6 @@ namespace RINGMesh {
         void duplicate_region_vertices_along_surface(
             index_t region_id,
             index_t surface_id );
-        /*
-         * @brief Resets the adjacencies for all Surface polygons adjacent to the Line
-         * @return The number of disconnection done
-         * @pre All the edges of the Line are edges of at least one polygon of the Surface
-         */
-        index_t disconnect_surface_polygons_along_line_edges(
-            index_t surface_id,
-            index_t line_id );
         index_t disconnect_region_cells_along_surface_polygons(
             index_t region_id,
             index_t surface_id );
