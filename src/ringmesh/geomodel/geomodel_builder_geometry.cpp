@@ -89,11 +89,11 @@ namespace {
                             edge = j;
                             polygon = i;
                             result = true;
-                            return true;
+                            break;
                         }
                     }
                 }
-                return false;} );
+                return result;} );
         return result;
     }
 
@@ -136,10 +136,10 @@ namespace {
                         cell_facet = cell_facet_i;
                         cell = i;
                         result = true;
-                        return true;
+                        break;
                     }
                 }
-                return false;} );
+                return result;} );
         return result;
     }
 
@@ -160,10 +160,10 @@ namespace {
                             j );
                         element_id = i;
                         result = true;
-                        return true;
+                        break;
                     }
                 }
-                return false;} );
+                return result;} );
         return result;
     }
 
@@ -184,10 +184,10 @@ namespace {
                             j );
                         element_id = i;
                         result = true;
-                        return true;
+                        break;
                     }
                 }
-                return false;} );
+                return result;} );
         return result;
     }
 
