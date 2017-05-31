@@ -138,7 +138,7 @@ int main()
     try {
         char ringmesh_view[] = "ringmesh-view";
         std::string input_model_file_name( ringmesh_test_data_path );
-        input_model_file_name += "load/modelA6.ml";
+        input_model_file_name += "modelA6.ml";
         char* input_model = &input_model_file_name[0];
 
         char* argv[2] = { ringmesh_view, input_model };
