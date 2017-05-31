@@ -166,10 +166,10 @@ namespace RINGMesh {
     {
     }
 
-    PointSetGfx& CornerGfxEnity::corner( index_t c )
+    PointSetMeshGfx& CornerGfxEnity::corner( index_t c )
     {
         ringmesh_assert( c < entities_.size() );
-        return static_cast< PointSetGfx& >( *entities_[c] );
+        return static_cast< PointSetMeshGfx& >( *entities_[c] );
     }
 
     void CornerGfxEnity::initialize()
@@ -177,8 +177,9 @@ namespace RINGMesh {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_corners() );
             for( index_t e = 0; e < gfx_.geomodel()->nb_corners(); e++ ) {
-                entities_.emplace_back(
-                    new GeogramPointSetGfx( gfx_, gfx_.geomodel()->corner( e ) ) );
+                entities_.push_back(
+                    PointSetMeshGfx::create_gfx(
+                        gfx_.geomodel()->corner( e ).low_level_mesh_storage() ) );
             }
         }
     }
@@ -205,7 +206,7 @@ namespace RINGMesh {
     void CornerGfxEnity::draw()
     {
         for( index_t c = 0; c < entities_.size(); c++ ) {
-            PointSetGfx& pointset = corner( c );
+            PointSetMeshGfx& pointset = corner( c );
             if( pointset.get_vertices_visible() ) pointset.draw_vertices();
         }
     }
@@ -217,10 +218,10 @@ namespace RINGMesh {
     {
     }
 
-    LineGfx& LineGfxEntity::line( index_t l )
+    LineMeshGfx& LineGfxEntity::line( index_t l )
     {
         ringmesh_assert( l < entities_.size() );
-        return static_cast< LineGfx& >( *entities_[l] );
+        return static_cast< LineMeshGfx& >( *entities_[l] );
     }
 
     void LineGfxEntity::initialize()
@@ -228,8 +229,9 @@ namespace RINGMesh {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_lines() );
             for( index_t e = 0; e < gfx_.geomodel()->nb_lines(); e++ ) {
-                entities_.emplace_back(
-                    new GeogramLineGfx( gfx_, gfx_.geomodel()->line( e ) ) );
+                entities_.push_back(
+                    LineMeshGfx::create_gfx(
+                        gfx_.geomodel()->line( e ).low_level_mesh_storage() ) );
             }
         }
     }
@@ -237,7 +239,7 @@ namespace RINGMesh {
     void LineGfxEntity::draw()
     {
         for( index_t l = 0; l < entities_.size(); l++ ) {
-            LineGfx& line = this->line( l );
+            LineMeshGfx& line = this->line( l );
             if( line.get_vertices_visible() ) line.draw_vertices();
             if( line.get_edges_visible() ) line.draw_edges();
         }
@@ -269,10 +271,10 @@ namespace RINGMesh {
     {
     }
 
-    SurfaceGfx& SurfaceGfxEntity::surface( index_t s )
+    SurfaceMeshGfx& SurfaceGfxEntity::surface( index_t s )
     {
         ringmesh_assert( s < entities_.size() );
-        return static_cast< SurfaceGfx& >( *entities_[s] );
+        return static_cast< SurfaceMeshGfx& >( *entities_[s] );
     }
 
     void SurfaceGfxEntity::initialize()
@@ -280,8 +282,9 @@ namespace RINGMesh {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_surfaces() );
             for( index_t e = 0; e < gfx_.geomodel()->nb_surfaces(); e++ ) {
-                entities_.emplace_back(
-                    new GeogramSurfaceGfx( gfx_, gfx_.geomodel()->surface( e ) ) );
+                entities_.push_back(
+                    SurfaceMeshGfx::create_gfx(
+                        gfx_.geomodel()->surface( e ).low_level_mesh_storage() ) );
             }
         }
     }
@@ -289,7 +292,7 @@ namespace RINGMesh {
     void SurfaceGfxEntity::draw()
     {
         for( index_t s = 0; s < entities_.size(); s++ ) {
-            SurfaceGfx& surface = this->surface( s );
+            SurfaceMeshGfx& surface = this->surface( s );
             if( surface.get_vertices_visible() ) surface.draw_vertices();
             if( surface.get_surface_visible() ) surface.draw_surface();
         }
@@ -368,10 +371,10 @@ namespace RINGMesh {
     {
     }
 
-    VolumeGfx& RegionGfxEntity::region( index_t r )
+    VolumeMeshGfx& RegionGfxEntity::region( index_t r )
     {
         ringmesh_assert( r < entities_.size() );
-        return static_cast< VolumeGfx& >( *entities_[r] );
+        return static_cast< VolumeMeshGfx& >( *entities_[r] );
     }
 
     void RegionGfxEntity::initialize()
@@ -379,8 +382,9 @@ namespace RINGMesh {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_regions() );
             for( index_t e = 0; e < gfx_.geomodel()->nb_regions(); e++ ) {
-                entities_.emplace_back(
-                    new GeogramVolumeGfx( gfx_, gfx_.geomodel()->region( e ) ) );
+                entities_.push_back(
+                    VolumeMeshGfx::create_gfx(
+                        gfx_.geomodel()->region( e ).low_level_mesh_storage() ) );
             }
         }
     }
@@ -388,7 +392,7 @@ namespace RINGMesh {
     void RegionGfxEntity::draw()
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
-            VolumeGfx& region = this->region( r );
+            VolumeMeshGfx& region = this->region( r );
             if( region.get_vertices_visible() ) region.draw_vertices();
             if( region.get_region_visible() ) region.draw_volume();
         }

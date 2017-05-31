@@ -44,6 +44,8 @@
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
+#include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/visualization/mesh_entity_gfx.h>
 
 /*!
  * @file Classes for geogram visualization
@@ -83,27 +85,35 @@ namespace RINGMesh {
     private:                                                                    \
         GEO::MeshGfx mesh_gfx_
 
-    class GeogramPointSetGfx: public PointSetGfx {
+    class RINGMESH_API GeogramPointSetMeshGfx: public PointSetMeshGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
-        GeogramPointSetGfx( const GeoModelGfx& gfx, const Corner& corner )
-            : PointSetGfx( gfx )
+        GeogramPointSetMeshGfx()
         {
-            mesh_gfx_.set_mesh( &corner.low_level_mesh_storage().gfx_mesh() );
             set_vertices_color( 1, 0, 0 );
+        }
+
+        virtual void set_mesh( const PointSetMesh& mesh ) override
+        {
+            mesh_gfx_.set_mesh(
+                &dynamic_cast< const GeogramPointSetMesh& >( mesh ).gfx_mesh() );
         }
 
     };
 
-    class GeogramLineGfx: public LineGfx {
+    class RINGMESH_API GeogramLineMeshGfx: public LineMeshGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
-        GeogramLineGfx( const GeoModelGfx& gfx, const Line& line )
-            : LineGfx( gfx )
+        GeogramLineMeshGfx()
         {
-            mesh_gfx_.set_mesh( &line.low_level_mesh_storage().gfx_mesh() );
             set_vertices_color( 1, 1, 1 );
             set_edges_color( 1, 1, 1 );
+        }
+
+        virtual void set_mesh( const LineMesh& mesh ) override
+        {
+            mesh_gfx_.set_mesh(
+                &dynamic_cast< const GeogramLineMesh& >( mesh ).gfx_mesh() );
         }
 
         virtual void draw_edges() override
@@ -121,13 +131,15 @@ namespace RINGMesh {
 
     };
 
-    class GeogramSurfaceGfx: public SurfaceGfx {
+    class RINGMESH_API GeogramSurfaceMeshGfx: public SurfaceMeshGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
-        GeogramSurfaceGfx( const GeoModelGfx& gfx, const Surface& surface )
-            : SurfaceGfx( gfx )
+        GeogramSurfaceMeshGfx() = default;
+
+        virtual void set_mesh( const SurfaceMesh& mesh ) override
         {
-            mesh_gfx_.set_mesh( &surface.low_level_mesh_storage().gfx_mesh() );
+            mesh_gfx_.set_mesh(
+                &dynamic_cast< const GeogramSurfaceMesh& >( mesh ).gfx_mesh() );
         }
 
         virtual void draw_surface() override
@@ -156,13 +168,15 @@ namespace RINGMesh {
         }
     };
 
-    class GeogramVolumeGfx: public VolumeGfx {
+    class RINGMESH_API GeogramVolumeMeshGfx: public VolumeMeshGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
-        GeogramVolumeGfx( const GeoModelGfx& gfx, const Region& region )
-            : VolumeGfx( gfx )
+        GeogramVolumeMeshGfx() = default;
+
+        virtual void set_mesh( const VolumeMesh& mesh ) override
         {
-            mesh_gfx_.set_mesh( &region.low_level_mesh_storage().gfx_mesh() );
+            mesh_gfx_.set_mesh(
+                &dynamic_cast< const GeogramVolumeMesh& >( mesh ).gfx_mesh() );
         }
 
         virtual void draw_volume() override
@@ -199,6 +213,7 @@ namespace RINGMesh {
         }
     };
 
+    void register_geogram_mesh_gfx();
 }
 
 #endif
