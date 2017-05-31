@@ -134,12 +134,12 @@ namespace {
 
             index_t nb_families = 0;
             index_t nb_interfaces = gm.nb_geological_entities(
-                Interface::type_name_static() );
+                Interface< 3 >::type_name_static() );
             std::vector< index_t > nb_triangle_interface( nb_interfaces, 0 );
             std::vector< index_t > nb_quad_interface( nb_interfaces, 0 );
             for( index_t i = 0; i < nb_interfaces; i++ ) {
-                const GeoModelGeologicalEntity& interf = gm.geological_entity(
-                    Interface::type_name_static(), i );
+                const GeoModelGeologicalEntity< 3 >& interf = gm.geological_entity(
+                    Interface< 3 >::type_name_static(), i );
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_gmme( s ).index();
                     nb_triangle_interface[i] += polygons.nb_triangle( s_id );
@@ -160,7 +160,7 @@ namespace {
             ascii << "# Object name" << TAB << "Entity type" << TAB << "Material-ID"
                 << TAB << "Number of entities" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const RINGMesh::GeoModelEntity& region = gm.region( r );
+                const RINGMesh::GeoModelEntity< 3 >& region = gm.region( r );
                 regions << region.name() << std::endl;
                 std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
                                                "PYRA_5" };
@@ -247,7 +247,7 @@ namespace {
                 << std::endl;
             index_t cur_cell = 0;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const RINGMesh::GeoModelEntity& region = gm.region( r );
+                const RINGMesh::GeoModelEntity< 3 >& region = gm.region( r );
                 std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
                                                "PYRA_5" };
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
@@ -320,8 +320,8 @@ namespace {
                 }
             }
             for( index_t i = 0; i < nb_interfaces; i++ ) {
-                const GeoModelGeologicalEntity& interf = gm.geological_entity(
-                    Interface::type_name_static(), i );
+                const GeoModelGeologicalEntity< 3 >& interf = gm.geological_entity(
+                    Interface< 3 >::type_name_static(), i );
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_gmme( s ).index();
                     for( index_t el = 0; el < polygons.nb_triangle( s_id );
@@ -382,8 +382,8 @@ namespace {
                 }
             }
             for( index_t i = 0; i < nb_interfaces; i++ ) {
-                const GeoModelGeologicalEntity& interf = gm.geological_entity(
-                    Interface::type_name_static(), i );
+                const GeoModelGeologicalEntity< 3 >& interf = gm.geological_entity(
+                    Interface< 3 >::type_name_static(), i );
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_gmme( s ).index();
                     for( index_t el = 0; el < polygons.nb_triangle( s_id );
@@ -505,9 +505,9 @@ namespace {
                         for( index_t i = 0;
                             i
                                 < geomodel.nb_geological_entities(
-                                    Interface::type_name_static() ); i++ ) {
+                                    Interface< 3 >::type_name_static() ); i++ ) {
                             if( geomodel.geological_entity(
-                                Interface::type_name_static(), i ).name() == name ) {
+                                Interface< 3 >::type_name_static(), i ).name() == name ) {
                                 interface_id = i;
                                 break;
                             }
@@ -674,7 +674,7 @@ namespace {
                     return "RIGHT";
                 }
             }
-            return geomodel.geological_entity( Interface::type_name_static(), i ).name();
+            return geomodel.geological_entity( Interface< 3 >::type_name_static(), i ).name();
         }
         signed_index_t point_boundary( index_t p ) const
         {

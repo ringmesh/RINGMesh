@@ -61,8 +61,8 @@ namespace RINGMesh {
     class GeoModelMesh;
     class GeoModelMeshVertices;
     class GeoModel;
-    class GeoModelEntity;
-    class GeoModelMeshEntity;
+    template< index_t DIMENSION > class GeoModelEntity;
+    template< index_t DIMENSION > class GeoModelMeshEntity;
 }
 
 namespace RINGMesh {
@@ -77,7 +77,7 @@ namespace RINGMesh {
     protected:
         GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm );
 
-        void set_mesh( MeshBase* mesh )
+        void set_mesh( MeshBase< 3 >* mesh )
         {
             mesh_base_ = mesh;
         }
@@ -92,7 +92,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         GeoModel& gm_;
         /// Attached MeshBase
-        MeshBase* mesh_base_;
+        MeshBase< 3 >* mesh_base_;
     };
 
     class RINGMESH_API GeoModelMeshVertices: public GeoModelMeshBase {
@@ -222,7 +222,7 @@ namespace RINGMesh {
 
         void bind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
-        const NNSearch& nn_search() const
+        const NNSearch< 3 >& nn_search() const
         {
             test_and_initialize();
             return mesh_->vertices_nn_search();
@@ -468,7 +468,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< PointSetMesh > mesh_;
+        std::unique_ptr< PointSetMesh< 3 > > mesh_;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_;
     };
@@ -663,7 +663,7 @@ namespace RINGMesh {
          */
         vec3 normal( index_t p ) const;
 
-        const NNSearch& nn_search() const
+        const NNSearch< 3 >& nn_search() const
         {
             test_and_initialize();
             return mesh_->polygons_nn_search();
@@ -672,7 +672,7 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the polygons of the mesh
          */
-        const SurfaceAABBTree& aabb() const;
+        const SurfaceAABBTree< 3 >& aabb() const;
 
     private:
         /*!
@@ -699,7 +699,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< SurfaceMesh > mesh_;
+        std::unique_ptr< SurfaceMesh< 3 > > mesh_;
 
         /// Attribute storing the surface index per polygon
         GEO::Attribute< index_t > surface_id_;
@@ -780,11 +780,11 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the edges of the mesh
          */
-        const LineAABBTree& aabb() const;
+        const LineAABBTree< 3 >& aabb() const;
 
     private:
         /// Attached Mesh
-        std::unique_ptr< LineMesh > mesh_;
+        std::unique_ptr< LineMesh< 3 > > mesh_;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -1117,12 +1117,12 @@ namespace RINGMesh {
          */
         double volume( index_t c ) const;
 
-        const NNSearch& cell_nn_search() const
+        const NNSearch< 3 >& cell_nn_search() const
         {
             test_and_initialize();
             return mesh_->cells_nn_search();
         }
-        const NNSearch& cell_facet_nn_search() const
+        const NNSearch< 3 >& cell_facet_nn_search() const
         {
             test_and_initialize();
             return mesh_->cell_facets_nn_search();
@@ -1131,7 +1131,7 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the cells of the mesh
          */
-        const VolumeAABBTree& aabb() const;
+        const VolumeAABBTree< 3 >& aabb() const;
 
     private:
         /// enum to characterize the action to do concerning a surface
@@ -1205,7 +1205,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< VolumeMesh > mesh_;
+        std::unique_ptr< VolumeMesh< 3 > > mesh_;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_;

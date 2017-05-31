@@ -110,32 +110,32 @@ namespace RINGMesh {
          * @brief Detect and remove degenerate edges in a \param line.
          * @return the number of degenerate edges that have been removed from the line.
          */
-        index_t repair_line_mesh( const Line& line );
+        index_t repair_line_mesh( const Line< 3 >& line );
         void line_detect_degenerate_edges(
-            const Line& L,
+            const Line< 3 >& L,
             std::vector< bool >& e_is_degenerate,
             std::vector< index_t >& colocated_vertices );
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          */
         void surface_detect_degenerate_polygons(
-            const Surface& S,
+            const Surface< 3 >& S,
             std::vector< index_t >& f_is_degenerate,
             std::vector< index_t >& colocated_vertices );
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          *
          * @brief Tests whether a polygon is degenerate.
-         * @param[in] S the Surface that the polygon belongs to
-         * @param[in] f the index of the polygon in \p S
+         * @param[in] surface the Surface that the polygon belongs to
+         * @param[in] polygon_id the index of the polygon in \p S
          * @param[out] colocated_vertices contains the found colocated vertices
          * in \p f if any.
          * \return true if polygon \p f has duplicated vertices,
          *  false otherwise
          */
         bool polygon_is_degenerate(
-            const Surface& S,
-            index_t p,
+            const Surface< 3 >& surface,
+            index_t polygon_id,
             std::vector< index_t >& colocated_vertices );
 
         /*!
@@ -143,7 +143,7 @@ namespace RINGMesh {
          * @param[in,out] S Surface to check for potential degenerate polygons.
          * @return the number of degenerate polygons in \p S.
          */
-        index_t detect_degenerate_polygons( const Surface& S );
+        index_t detect_degenerate_polygons( const Surface< 3 >& S );
 
         /*!
          * @brief Remove degenerate polygons and edges from the Surface
@@ -181,7 +181,7 @@ namespace RINGMesh {
          * @return true if the edge is degenerate. Else false.
          */
         bool edge_is_degenerate(
-            const Line& L,
+            const Line< 3 >& L,
             index_t e,
             const std::vector< index_t >& colocated_vertices );
 

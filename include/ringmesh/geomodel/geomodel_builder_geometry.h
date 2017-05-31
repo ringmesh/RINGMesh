@@ -66,27 +66,28 @@ namespace RINGMesh {
          */
         void change_mesh_data_structure( const gmme_id& id, const MeshType type )
         {
-            GeoModelMeshEntityAccess gmme_access(
+            GeoModelMeshEntityAccess< 3 > gmme_access(
                 geomodel_access_.modifiable_mesh_entity( id ) );
             gmme_access.change_mesh_data_structure( type );
         }
 
         /*!
-         * @brief Create a Mesh0DBuilder for a given corner
+         * @brief Create a PointMeshBuilder for a given corner
          * @param[in] corner_id the corner index
          * @return The created Mesh0DBuilder
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh0DBuilder_var.
          */
-        std::unique_ptr< PointSetMeshBuilder > create_corner_builder( index_t corner_id )
+        std::unique_ptr< PointSetMeshBuilder< 3 > > create_corner_builder(
+            index_t corner_id )
         {
-            gmme_id id( Corner::type_name_static(), corner_id );
-            GeoModelMeshEntity& corner = geomodel_access_.modifiable_mesh_entity(
+            gmme_id id( Corner< 3 >::type_name_static(), corner_id );
+            GeoModelMeshEntity< 3 >& corner = geomodel_access_.modifiable_mesh_entity(
                 id );
-            GeoModelMeshEntityAccess corner_access( corner );
-            PointSetMesh& corner_mesh =
-                dynamic_cast< PointSetMesh& >( *corner_access.modifiable_mesh() );
-            return PointSetMeshBuilder::create_builder( corner_mesh );
+            GeoModelMeshEntityAccess< 3 > corner_access( corner );
+            PointSetMesh< 3 >& corner_mesh =
+                dynamic_cast< PointSetMesh< 3 >& >( *corner_access.modifiable_mesh() );
+            return PointSetMeshBuilder< 3 >::create_builder( corner_mesh );
         }
 
         /*!
@@ -96,14 +97,15 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer LineMeshBuilder_var.
          */
-        std::unique_ptr< LineMeshBuilder > create_line_builder( index_t line_id )
+        std::unique_ptr< LineMeshBuilder< 3 > > create_line_builder(
+            index_t line_id )
         {
-            gmme_id id( Line::type_name_static(), line_id );
-            GeoModelMeshEntity& line = geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess line_access( line );
-            LineMesh& line_mesh =
-                dynamic_cast< LineMesh& >( *line_access.modifiable_mesh() );
-            return LineMeshBuilder::create_builder( line_mesh );
+            gmme_id id( Line< 3 >::type_name_static(), line_id );
+            GeoModelMeshEntity< 3 >& line = geomodel_access_.modifiable_mesh_entity( id );
+            GeoModelMeshEntityAccess< 3 > line_access( line );
+            LineMesh< 3 >& line_mesh =
+                dynamic_cast< LineMesh< 3 >& >( *line_access.modifiable_mesh() );
+            return LineMeshBuilder< 3 >::create_builder( line_mesh );
         }
 
         /*!
@@ -113,15 +115,16 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh2DBuilder_var.
          */
-        std::unique_ptr< SurfaceMeshBuilder > create_surface_builder( index_t surface_id )
+        std::unique_ptr< SurfaceMeshBuilder< 3 > > create_surface_builder(
+            index_t surface_id )
         {
-            gmme_id id( Surface::type_name_static(), surface_id );
-            GeoModelMeshEntity& surface = geomodel_access_.modifiable_mesh_entity(
+            gmme_id id( Surface< 3 >::type_name_static(), surface_id );
+            GeoModelMeshEntity< 3 >& surface = geomodel_access_.modifiable_mesh_entity(
                 id );
-            GeoModelMeshEntityAccess surface_access( surface );
-            SurfaceMesh& surface_mesh =
-                dynamic_cast< SurfaceMesh& >( *surface_access.modifiable_mesh() );
-            return SurfaceMeshBuilder::create_builder( surface_mesh );
+            GeoModelMeshEntityAccess< 3 > surface_access( surface );
+            SurfaceMeshBase< 3 >& surface_mesh =
+                dynamic_cast< SurfaceMeshBase< 3 >& >( *surface_access.modifiable_mesh() );
+            return SurfaceMeshBuilder< 3 >::create_builder( surface_mesh );
         }
 
         /*!
@@ -131,15 +134,16 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh3DBuilder_var.
          */
-        std::unique_ptr< VolumeMeshBuilder > create_region_builder( index_t region_id )
+        std::unique_ptr< VolumeMeshBuilder< 3 > > create_region_builder(
+            index_t region_id )
         {
-            gmme_id id( Region::type_name_static(), region_id );
-            GeoModelMeshEntity& region = geomodel_access_.modifiable_mesh_entity(
+            gmme_id id( Region< 3 >::type_name_static(), region_id );
+            GeoModelMeshEntity< 3 >& region = geomodel_access_.modifiable_mesh_entity(
                 id );
-            GeoModelMeshEntityAccess region_access( region );
-            VolumeMesh& region_mesh =
-                dynamic_cast< VolumeMesh& >( *region_access.modifiable_mesh() );
-            return VolumeMeshBuilder::create_builder( region_mesh );
+            GeoModelMeshEntityAccess< 3 > region_access( region );
+            VolumeMesh< 3 >& region_mesh =
+                dynamic_cast< VolumeMesh< 3 >& >( *region_access.modifiable_mesh() );
+            return VolumeMeshBuilder< 3 >::create_builder( region_mesh );
         }
 
         /*!
@@ -151,7 +155,7 @@ namespace RINGMesh {
         void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type );
         void copy_mesh( const GeoModel& from, const gmme_id& mesh_entity );
 
-        void assign_mesh_to_entity( const MeshBase& mesh, const gmme_id& to );
+        void assign_mesh_to_entity( const MeshBase< 3 >& mesh, const gmme_id& to );
 
         /*!
          * \name Set entity geometry from geometrical positions
@@ -291,7 +295,7 @@ namespace RINGMesh {
         void set_surface_geometry(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices );
-            
+
         void set_surface_element_geometry(
             index_t surface_id,
             index_t polygon_id,

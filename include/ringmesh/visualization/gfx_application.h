@@ -41,7 +41,7 @@
 
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
-#include <ringmesh/basic/box3d.h>
+#include <ringmesh/basic/box.h>
 #include <ringmesh/geomodel/geomodel.h>
 
 #include <ringmesh/visualization/geomodel_gfx.h>
@@ -168,7 +168,7 @@ namespace RINGMesh {
             bool is_visible_;
             GeoModel GM_;
             GeoModelGfx GM_gfx_;
-            Box3d bbox_;
+            Box< 3 > bbox_;
             std::vector< std::string > entity_types_;
             int selected_entity_type_;
             int selected_entity_id_;
@@ -219,7 +219,7 @@ namespace RINGMesh {
             bool is_visible_;
             GEO::Mesh mesh_;
             GEO::MeshGfx mesh_gfx_;
-            Box3d bbox_;
+            Box< 3 > bbox_;
             std::string name_;
 
             bool show_vertices_;

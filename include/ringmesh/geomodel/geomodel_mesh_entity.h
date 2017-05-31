@@ -51,7 +51,8 @@
 
 namespace RINGMesh {
     class GeoModel;
-    class GeoModelGeologicalEntity;
+    template< index_t DIMENSION > class GeoModelGeologicalEntity;
+    template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
 }
 
 namespace RINGMesh {
@@ -61,10 +62,12 @@ namespace RINGMesh {
      * is stored as a RINGMesh::Mesh. We defines generic access to
      * the RINGMesh::Mesh geometry.
      */
-    class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity {
+    template< index_t DIMENSION >
+    class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshEntity );
-        friend class GeoModelMeshEntityAccess;
-        friend class GeoModelMeshEntityConstAccess;
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
+        friend class GeoModelMeshEntityConstAccess< DIMENSION > ;
 
     public:
         virtual ~GeoModelMeshEntity();
@@ -73,7 +76,7 @@ namespace RINGMesh {
 
         gmme_id gmme() const
         {
-            return gmme_id( type_name(), id_ );
+            return gmme_id( type_name(), this->index() );
         }
         MeshEntityType mesh_entity_type() const
         {
@@ -108,14 +111,14 @@ namespace RINGMesh {
             return static_cast< index_t >( boundaries_.size() );
         }
         const gmme_id& boundary_gmme( index_t x ) const;
-        const GeoModelMeshEntity& boundary( index_t x ) const;
+        const GeoModelMeshEntity< DIMENSION >& boundary( index_t x ) const;
 
         index_t nb_incident_entities() const
         {
             return static_cast< index_t >( incident_entities_.size() );
         }
         const gmme_id& incident_entity_gmme( index_t x ) const;
-        const GeoModelMeshEntity& incident_entity( index_t x ) const;
+        const GeoModelMeshEntity< DIMENSION >& incident_entity( index_t x ) const;
 
         /*!
          * @brief Check if one entity is twice in the boundary
@@ -163,9 +166,9 @@ namespace RINGMesh {
          * @param[in] parent_type_name the asking parent type
          *
          */
-        gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
-        const GeoModelGeologicalEntity& parent( index_t id ) const;
-        const GeoModelGeologicalEntity& parent(
+        const gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
+        const GeoModelGeologicalEntity< DIMENSION >& parent( index_t id ) const;
+        const GeoModelGeologicalEntity< DIMENSION >& parent(
             const GeologicalEntityType& parent_type ) const;
 
         /*!
@@ -186,7 +189,7 @@ namespace RINGMesh {
          * @brief Return the NNSearch for the Entity vertices.
          */
 
-        const NNSearch& vertex_nn_search() const
+        const NNSearch< DIMENSION >& vertex_nn_search() const
         {
             return mesh_->vertices_nn_search();
         }
@@ -203,7 +206,7 @@ namespace RINGMesh {
         /*!
          * @brief Coordinates of the \p vertex_index.
          */
-        const vec3& vertex( index_t vertex_index ) const
+        const vecn< DIMENSION >& vertex( index_t vertex_index ) const
         {
             return mesh_->vertex( vertex_index );
         }
@@ -236,7 +239,7 @@ namespace RINGMesh {
          * mesh element
          * @return the vertex coordinates in the GeoModelMeshEntity
          */
-        const vec3& mesh_element_vertex(
+        const vecn< DIMENSION > & mesh_element_vertex(
             index_t mesh_element_index,
             index_t vertex_local_index ) const
         {
@@ -248,19 +251,18 @@ namespace RINGMesh {
          * \name Geometrical request on Entity
          * @{
          */
-
         virtual double mesh_element_size( index_t mesh_element_index ) const = 0;
-        virtual vec3 mesh_element_barycenter( index_t mesh_element_index ) const = 0;
-        virtual vec3 entity_barycenter() const
+        virtual vecn< DIMENSION > mesh_element_barycenter(
+            index_t mesh_element_index ) const = 0;
+        virtual vecn< DIMENSION > entity_barycenter() const
         {
-            vec3 result( 0., 0., 0. );
+            vecn< DIMENSION > result;
             for( index_t v = 0; v < nb_vertices(); v++ ) {
                 result += vertex( v );
             }
             ringmesh_assert( nb_vertices() > 0 );
             return result / static_cast< double >( nb_vertices() );
         }
-
         virtual double size() const
         {
             double size = 0.0;
@@ -282,26 +284,25 @@ namespace RINGMesh {
             const GeoModel& geomodel,
             index_t id,
             const std::string& name = "No_name" )
-            : GeoModelEntity( geomodel, id, name ), mesh_( nullptr )
+            : GeoModelEntity< DIMENSION >( geomodel, id, name ), mesh_( nullptr )
         {
         }
 
-        virtual void copy_mesh_entity( const GeoModelMeshEntity& from )
+        virtual void copy_mesh_entity( const GeoModelMeshEntity< DIMENSION >& from )
         {
-            copy_name( from );
-            id_ = from.id_;
+            this->copy_name( from );
+            this->id_ = from.index();
             boundaries_ = from.boundaries_;
             incident_entities_ = from.incident_entities_;
             parents_ = from.parents_;
         }
-
         virtual bool is_index_valid() const final;
         virtual bool is_mesh_valid() const
         {
             return mesh_ != nullptr;
         }
 
-        void set_mesh( std::shared_ptr< MeshBase > mesh )
+        void set_mesh( std::shared_ptr< MeshBase< DIMENSION > > mesh )
         {
             ringmesh_assert( mesh != nullptr );
             mesh_ = std::move( mesh );
@@ -331,12 +332,10 @@ namespace RINGMesh {
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
 
     private:
-        gmge_id defined_parent_gmge(
-            const GeologicalEntityType& parent_type ) const;
+        gmge_id defined_parent_gmge( const GeologicalEntityType& parent_type ) const;
 
         gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
-
     protected:
 
         /// Boundary relations of this entity
@@ -350,21 +349,23 @@ namespace RINGMesh {
 
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
-        std::shared_ptr< MeshBase > mesh_;
+        std::shared_ptr< MeshBase< DIMENSION > > mesh_;
     };
 
     /*!
      * @brief A GeoModelEntity of type CORNER
      * @details It is a unique point.
      */
-    class RINGMESH_API Corner: public GeoModelMeshEntity {
+    template< index_t DIMENSION >
+    class RINGMESH_API Corner: public GeoModelMeshEntity< DIMENSION > {
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEntityAccess;
-        friend class GeoModelMeshEntityConstAccess;
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
+        friend class GeoModelMeshEntityConstAccess< DIMENSION > ;
 
         virtual ~Corner()
         {
-            unbind_vertex_mapping_attribute();
+            this->unbind_vertex_mapping_attribute();
         }
 
         static MeshEntityType type_name_static()
@@ -397,12 +398,12 @@ namespace RINGMesh {
         virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element );
-            index_t nb_vertices = mesh0d_->nb_vertices();
+            index_t nb_vertices = point_set_mesh_->nb_vertices();
             ringmesh_assert( nb_vertices < 2 );
             return nb_vertices;
         }
 
-        const Line& incident_entity( index_t x ) const;
+        const Line< DIMENSION >& incident_entity( index_t x ) const;
 
         /*! @}
          * \name Geometrical request on Corner
@@ -419,20 +420,19 @@ namespace RINGMesh {
             return 0.0;
         }
 
-        virtual vec3 mesh_element_barycenter( index_t mesh_element = 0 ) const override
+        virtual vecn< DIMENSION > mesh_element_barycenter(
+            index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element );
-            return vertex( 0 );
+            return this->vertex( 0 );
         }
 
         /*!
          * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
          */
-        const PointSetMesh& low_level_mesh_storage() const
+        const PointSetMesh< DIMENSION >& low_level_mesh_storage() const
         {
-            return *mesh0d_;
+            return *point_set_mesh_;
         }
 
     protected:
@@ -440,10 +440,11 @@ namespace RINGMesh {
          *  A point is added to its Mesh.
          */
         Corner( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel, id )
+            : GeoModelMeshEntity< DIMENSION >( geomodel, id )
 
         {
-            update_mesh_storage_type( PointSetMesh::create_mesh( type ) );
+            update_mesh_storage_type(
+                PointSetMesh< DIMENSION >::create_mesh( type ) );
         }
 
         /*!
@@ -458,7 +459,6 @@ namespace RINGMesh {
             ringmesh_unused( vertex_index );
             return 0;
         }
-
         /*!
          * @brief Check that the Corner mesh is a unique point
          */
@@ -466,16 +466,17 @@ namespace RINGMesh {
 
     private:
 
-        void update_mesh_storage_type( std::unique_ptr< PointSetMesh > mesh )
+        void update_mesh_storage_type(
+            std::unique_ptr< PointSetMesh< DIMENSION > > mesh )
         {
-            mesh0d_ = std::move( mesh );
-            GeoModelMeshEntity::set_mesh( mesh0d_ );
+            point_set_mesh_ = std::move( mesh );
+            GeoModelMeshEntity< DIMENSION >::set_mesh( point_set_mesh_ );
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
     private:
-        std::shared_ptr< PointSetMesh > mesh0d_;
+        std::shared_ptr< PointSetMesh< DIMENSION > > point_set_mesh_;
     };
 
     /*!
@@ -484,13 +485,15 @@ namespace RINGMesh {
      * @details This must be one connected component (one part) of
      * a 1-manifold (Line with no T intersections).
      */
-    class RINGMESH_API Line: public GeoModelMeshEntity {
+    template< index_t DIMENSION >
+    class RINGMESH_API Line: public GeoModelMeshEntity< DIMENSION > {
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEntityAccess;
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
 
         virtual ~Line()
         {
-            unbind_vertex_mapping_attribute();
+            this->unbind_vertex_mapping_attribute();
         }
 
         static MeshEntityType type_name_static()
@@ -505,24 +508,24 @@ namespace RINGMesh {
 
         virtual bool is_on_voi() const final;
 
-        const Corner& boundary( index_t x ) const;
+        const Corner< DIMENSION >& boundary( index_t x ) const;
 
-        const Surface& incident_entity( index_t x ) const;
+        const Surface< DIMENSION >& incident_entity( index_t x ) const;
 
         virtual bool is_connectivity_valid() const final;
 
-        const LineAABBTree& edges_aabb() const
+        const LineAABBTree< DIMENSION >& edges_aabb() const
         {
-            return mesh1d_->edges_aabb();
+            return line_mesh_->edges_aabb();
         }
 
         /*!
          * @brief Return the NNSearch for the edges of the line
          * @details The barycenter of the edges is used.
          */
-        const NNSearch& edge_nn_search() const
+        const NNSearch< DIMENSION >& edge_nn_search() const
         {
-            return mesh1d_->edges_nn_search();
+            return line_mesh_->edges_nn_search();
         }
 
         /*!
@@ -530,7 +533,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_mesh_elements() const final
         {
-            return mesh1d_->nb_edges();
+            return line_mesh_->nb_edges();
         }
 
         /*!
@@ -552,7 +555,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( edge_index < nb_mesh_elements() );
             ringmesh_assert( vertex_index < 2 );
-            return mesh1d_->edge_vertex( edge_index, vertex_index );
+            return line_mesh_->edge_vertex( edge_index, vertex_index );
         }
 
         /*!
@@ -560,9 +563,9 @@ namespace RINGMesh {
          */
         bool is_closed() const
         {
-            ringmesh_assert( nb_boundaries() == 2 );
-            return ( boundary_gmme( 0 ).is_defined() )
-                && ( boundary_gmme( 0 ) == boundary_gmme( 1 ) );
+            ringmesh_assert( this->nb_boundaries() == 2 );
+            return ( this->boundary_gmme( 0 ).is_defined() )
+                && ( this->boundary_gmme( 0 ) == this->boundary_gmme( 1 ) );
         }
 
         /*!
@@ -571,35 +574,32 @@ namespace RINGMesh {
         virtual double mesh_element_size( index_t edge_index ) const final
         {
             ringmesh_assert( edge_index < nb_mesh_elements() );
-            return mesh1d_->edge_length( edge_index );
+            return line_mesh_->edge_length( edge_index );
         }
 
         /*!
          * @brief Gets the barycenter of an edge
          */
-        virtual vec3 mesh_element_barycenter( index_t edge_index ) const final
+        virtual vecn< DIMENSION > mesh_element_barycenter( index_t edge_index ) const final
         {
             ringmesh_assert( edge_index < nb_mesh_elements() );
-            return mesh1d_->edge_barycenter( edge_index );
+            return line_mesh_->edge_barycenter( edge_index );
         }
 
         bool is_first_corner_first_vertex() const;
 
         /*!
          * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
          */
-        const LineMesh& low_level_mesh_storage() const
+        const LineMesh< DIMENSION >& low_level_mesh_storage() const
         {
-            return *mesh1d_;
+            return *line_mesh_;
         }
-
     protected:
         Line( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel, id )
+            : GeoModelMeshEntity< DIMENSION >( geomodel, id )
         {
-            update_mesh_storage_type( LineMesh::create_mesh( type ) );
+            update_mesh_storage_type( LineMesh< DIMENSION >::create_mesh( type ) );
         }
 
         /*!
@@ -617,16 +617,17 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const final;
 
     private:
-        void update_mesh_storage_type( std::unique_ptr< LineMesh > mesh )
+        void update_mesh_storage_type(
+            std::unique_ptr< LineMesh< DIMENSION > > mesh )
         {
-            mesh1d_ = std::move( mesh );
-            GeoModelMeshEntity::set_mesh( mesh1d_ );
+            line_mesh_ = std::move( mesh );
+            GeoModelMeshEntity< DIMENSION >::set_mesh( line_mesh_ );
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
     private:
-        std::shared_ptr< LineMesh > mesh1d_;
+        std::shared_ptr< LineMesh< DIMENSION > > line_mesh_;
     };
 
     /*!
@@ -635,13 +636,15 @@ namespace RINGMesh {
      * @details One connected component (part) of a 2-manifold surface
      * (all edges of the polygons are in at most 2 polygons)
      */
-    class RINGMESH_API Surface: public GeoModelMeshEntity {
+    template< index_t DIMENSION >
+    class RINGMESH_API Surface: public GeoModelMeshEntity< DIMENSION > {
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEntityAccess;
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
 
         virtual ~Surface()
         {
-            unbind_vertex_mapping_attribute();
+            this->unbind_vertex_mapping_attribute();
         }
 
         virtual MeshEntityType type_name() const override
@@ -656,32 +659,32 @@ namespace RINGMesh {
 
         virtual bool is_on_voi() const final;
 
-        const Line& boundary( index_t x ) const;
+        const Line< DIMENSION >& boundary( index_t x ) const;
 
-        const Region& incident_entity( index_t x ) const;
+        const Region< DIMENSION >& incident_entity( index_t x ) const;
 
         bool is_simplicial() const
         {
-            return mesh2d_->polygons_are_simplicies();
+            return surface_mesh_->polygons_are_simplicies();
         }
 
-        const SurfaceAABBTree& polygons_aabb() const
+        const SurfaceAABBTree< DIMENSION >& polygons_aabb() const
         {
-            return mesh2d_->polygons_aabb();
+            return surface_mesh_->polygons_aabb();
         }
 
         /*!
          * @brief Return the NNSearch for the polygons of the surface
          * @details The barycenter of the polygons is used.
          */
-        const NNSearch& polygon_nn_search() const
+        const NNSearch< DIMENSION >& polygon_nn_search() const
         {
-            return mesh2d_->polygons_nn_search();
+            return surface_mesh_->polygons_nn_search();
         }
 
         GEO::AttributesManager& polygon_attribute_manager() const
         {
-            return mesh2d_->polygon_attribute_manager();
+            return surface_mesh_->polygon_attribute_manager();
         }
 
         /*!
@@ -693,7 +696,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_mesh_elements() const final
         {
-            return mesh2d_->nb_polygons();
+            return surface_mesh_->nb_polygons();
         }
 
         /*!
@@ -702,7 +705,7 @@ namespace RINGMesh {
         virtual index_t nb_mesh_element_vertices( index_t polygon_index ) const final
         {
             ringmesh_assert( polygon_index < nb_mesh_elements() );
-            return mesh2d_->nb_polygon_vertices( polygon_index );
+            return surface_mesh_->nb_polygon_vertices( polygon_index );
         }
 
         /*!
@@ -716,33 +719,7 @@ namespace RINGMesh {
             ringmesh_assert( polygon_index < nb_mesh_elements() );
             ringmesh_assert(
                 vertex_index < nb_mesh_element_vertices( polygon_index ) );
-            return mesh2d_->polygon_vertex( polygon_index, vertex_index );
-        }
-
-        /*!
-         * @brief Gets the next vertex index in a polygon.
-         */
-        index_t next_polygon_vertex_index(
-            index_t polygon_index,
-            index_t vertex_index ) const
-        {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
-            ringmesh_assert(
-                vertex_index < nb_mesh_element_vertices( polygon_index ) );
-            return mesh2d_->next_polygon_vertex( polygon_index, vertex_index );
-        }
-
-        /*!
-         * @brief Gets the previous vertex index in a polygon.
-         */
-        index_t prev_polygon_vertex_index(
-            index_t polygon_index,
-            index_t vertex_index ) const
-        {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
-            ringmesh_assert(
-                vertex_index < nb_mesh_element_vertices( polygon_index ) );
-            return mesh2d_->prev_polygon_vertex( polygon_index, vertex_index );
+            return surface_mesh_->polygon_vertex( polygon_index, vertex_index );
         }
 
         /*!
@@ -759,127 +736,20 @@ namespace RINGMesh {
             ringmesh_assert( polygon_index < nb_mesh_elements() );
             ringmesh_assert(
                 edge_index < nb_mesh_element_vertices( polygon_index ) );
-            return mesh2d_->polygon_adjacent( polygon_index, edge_index );
-        }
-
-        /*!
-         * @brief Get the previous edge on the border
-         * @details The returned border edge is the previous in the way of polygon edges
-         * orientation.
-         * @param[in] p Input polygon index
-         * @param[in] e Edge index in the polygon
-         * @param[out] prev_p Previous polygon index
-         * @param[out] prev_e Previous edge index in the polygon
-         *
-         * @pre the surface must be correctly oriented and
-         * the given polygon edge must be on border
-         * @warning the edge index is in fact the index of the vertex where the edge starts.
-         */
-        void prev_on_border(
-            index_t p,
-            index_t e,
-            index_t& prev_p,
-            index_t& prev_e ) const
-        {
-            return mesh2d_->prev_on_border( p, e, prev_p, prev_e );
-        }
-
-        /*!
-         * @brief Get the next edge on the border
-         * @details The returned border edge is the next in the way of polygon edges
-         * orientation.
-         * @param[in] p Input polygon index
-         * @param[in] e Edge index in the polygon
-         * @param[out] next_p Next polygon index
-         * @param[out] next_e Next edge index in the polygon
-         *
-         * @pre the given polygon edge must be on border
-         * @warning the edge index is in fact the index of the vertex where the edge starts.
-         */
-        void next_on_border(
-            index_t p,
-            index_t e,
-            index_t& next_p,
-            index_t& next_e ) const
-        {
-            return mesh2d_->next_on_border( p, e, next_p, next_e );
-        }
-
-        /*!
-         * @brief Get the vertex index in a polygon @param polygon_index from its
-         * index in the Surface @param surface_vertex_index
-         * @return NO_ID or index of the vertex in the polygon
-         */
-        index_t vertex_index_in_polygon(
-            index_t polygon_index,
-            index_t surface_vertex_index ) const
-        {
-            return mesh2d_->vertex_index_in_polygon( polygon_index,
-                surface_vertex_index );
-        }
-
-        /*!
-         * @brief Get the first polygon of the surface that has an edge linking the two vertices (ids in the surface)
-         *
-         * @param[in] in0 Index of the first vertex in the surface
-         * @param[in] in1 Index of the second vertex in the surface
-         * @return NO_ID or the index of the polygon
-         */
-        index_t polygon_from_surface_vertex_ids( index_t in0, index_t in1 ) const
-        {
-            return mesh2d_->polygon_from_vertex_ids( in0, in1 );
-        }
-
-        /*!
-         * @brief Determines the polygons around a vertex
-         * @param[in] surf_vertex_id Index of the vertex in the surface
-         * @param[in] border_only If true only polygons on the border are considered
-         * @param[in] first_polygon (Optional) Index of one polygon containing the vertex @param P
-         * @return Indices of the polygons containing @param P
-         * @note If a polygon containing the vertex is given, polygons around this
-         * vertex is search by propagation. Else, a first polygon is found by brute
-         * force algorithm, and then the other by propagation
-         */
-        std::vector< index_t > polygons_around_vertex(
-            index_t surf_vertex_id,
-            bool border_only,
-            index_t first_polygon = NO_ID ) const
-        {
-            return mesh2d_->polygons_around_vertex( surf_vertex_id, border_only,
-                first_polygon );
+            return surface_mesh_->polygon_adjacent( polygon_index, edge_index );
         }
 
         /*! @}
-         * \name Geometrical request on polygons
          * @{
          */
         /*!
-         * @return Normal to the polygon
-         */
-        vec3 polygon_normal( index_t polygon_index ) const
-        {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
-            return mesh2d_->polygon_normal( polygon_index );
-        }
-        /*!
-         * @brief Computes the normal of the surface at the vertex location
-         * it computes the average value of polygon normal neighbors
-         * @param[in] vertex_id the vertex index
-         * @param[in] p0 index of a polygon that contain the vertex \param vertex_id
-         * @return the normal of the surface at the given vertex
-         */
-        vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
-        {
-            ringmesh_assert( vertex_id < nb_vertices() );
-            return mesh2d_->normal_at_vertex( vertex_id, p0 );
-        }
-        /*!
          * @return Polygon barycenter.
          */
-        virtual vec3 mesh_element_barycenter( index_t polygon_index ) const final
+        virtual vecn< DIMENSION > mesh_element_barycenter(
+            index_t polygon_index ) const final
         {
             ringmesh_assert( polygon_index < nb_mesh_elements() );
-            return mesh2d_->polygon_barycenter( polygon_index );
+            return surface_mesh_->polygon_barycenter( polygon_index );
         }
 
         /*!
@@ -888,55 +758,22 @@ namespace RINGMesh {
         virtual double mesh_element_size( index_t polygon_index ) const final
         {
             ringmesh_assert( polygon_index < nb_mesh_elements() );
-            return mesh2d_->polygon_area( polygon_index );
+            return surface_mesh_->polygon_area( polygon_index );
         }
-
-        /*!
-         * @brief Compute closest vertex in a polygon of a Surface to a point
-         * @param[in] polygon_index Polygon index
-         * @param[in] query_point Coordinates of the point to which distance is measured
-         * @return Index of the vertex of @param polygon_index closest to @param query_point
-         */
-        index_t closest_vertex_in_polygon(
-            index_t polygon_index,
-            const vec3& query_point ) const
-        {
-            return mesh2d_->closest_vertex_in_polygon( polygon_index, query_point );
-        }
-
-        /*!
-         * Is the edge starting with the given vertex of the polygon on a border of the Surface?
-         */
-        bool is_on_border( index_t polygon_index, index_t vertex_index ) const
-        {
-            return mesh2d_->is_edge_on_border( polygon_index, vertex_index );
-        }
-
-        /*!
-         * Is one of the edges of the polygon on the border of the surface?
-         */
-        bool is_on_border( index_t polygon_index ) const
-        {
-            return mesh2d_->is_polygon_on_border( polygon_index );
-        }
-        /*! @}
-         */
 
         /*!
          * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
          */
-        const SurfaceMesh& low_level_mesh_storage() const
+        const SurfaceMesh< DIMENSION >& low_level_mesh_storage() const
         {
-            return *mesh2d_;
+            return *surface_mesh_;
         }
-
     protected:
         Surface( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel, id )
+            : GeoModelMeshEntity< DIMENSION >( geomodel, id )
         {
-            update_mesh_storage_type( SurfaceMesh::create_mesh( type ) );
+            update_mesh_storage_type(
+                SurfaceMesh< DIMENSION >::create_mesh( type ) );
         }
 
         /*!
@@ -963,16 +800,16 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const final;
 
     private:
-        void update_mesh_storage_type( std::unique_ptr< SurfaceMesh > mesh )
+        void update_mesh_storage_type(
+            std::unique_ptr< SurfaceMesh< DIMENSION > > mesh )
         {
-            mesh2d_ = std::move( mesh );
-            GeoModelMeshEntity::set_mesh( mesh2d_ );
+            surface_mesh_ = std::move( mesh );
+            GeoModelMeshEntity< DIMENSION >::set_mesh( surface_mesh_ );
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override;
-
     private:
-        std::shared_ptr< SurfaceMesh > mesh2d_;
+        std::shared_ptr< SurfaceMesh< DIMENSION > > surface_mesh_;
     };
 
     /*!
@@ -983,13 +820,15 @@ namespace RINGMesh {
      * The Region can be only defined by its boundary Surfaces.
      * Its volumetric mesh is optional.
      */
-    class RINGMESH_API Region: public GeoModelMeshEntity {
+    template< index_t DIMENSION >
+    class RINGMESH_API Region: public GeoModelMeshEntity< DIMENSION > {
+        ringmesh_template_assert_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEntityAccess;
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
 
         virtual ~Region()
         {
-            unbind_vertex_mapping_attribute();
+            this->unbind_vertex_mapping_attribute();
         }
 
         static MeshEntityType type_name_static()
@@ -1004,37 +843,37 @@ namespace RINGMesh {
 
         virtual bool is_on_voi() const final;
 
-        const Surface& boundary( index_t x ) const;
+        const Surface< DIMENSION >& boundary( index_t x ) const;
 
         virtual bool is_connectivity_valid() const final;
 
         bool is_meshed() const
         {
-            return mesh3d_->nb_cells() > 0;
+            return volume_mesh_->nb_cells() > 0;
         }
 
         bool is_simplicial() const
         {
-            return mesh3d_->cells_are_simplicies();
+            return volume_mesh_->cells_are_simplicies();
         }
 
-        const VolumeAABBTree& cells_aabb() const
+        const VolumeAABBTree< DIMENSION >& cells_aabb() const
         {
-            return mesh3d_->cells_aabb();
+            return volume_mesh_->cells_aabb();
         }
 
         /*!
          * @brief Return the NNSearch for the cells of the region
          * @details The barycenter of the cells is used.
          */
-        const NNSearch& cell_nn_search() const
+        const NNSearch< DIMENSION >& cell_nn_search() const
         {
-            return mesh3d_->cells_nn_search();
+            return volume_mesh_->cells_nn_search();
         }
 
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh3d_->cell_attribute_manager();
+            return volume_mesh_->cell_attribute_manager();
         }
 
         /*!
@@ -1047,7 +886,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_mesh_elements() const final
         {
-            return mesh3d_->nb_cells();
+            return volume_mesh_->nb_cells();
         }
 
         /*!
@@ -1057,7 +896,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
-                return mesh3d_->nb_cell_vertices( cell_index );
+                return volume_mesh_->nb_cell_vertices( cell_index );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1074,7 +913,7 @@ namespace RINGMesh {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert(
                     vertex_index < nb_mesh_element_vertices( cell_index ) );
-                return mesh3d_->cell_vertex( cell_index, vertex_index );
+                return volume_mesh_->cell_vertex( cell_index, vertex_index );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1088,7 +927,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
-                return mesh3d_->cell_type( cell_index );
+                return volume_mesh_->cell_type( cell_index );
             }
             ringmesh_assert_not_reached;
             return GEO::MESH_NB_CELL_TYPES;
@@ -1098,7 +937,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
-                return mesh3d_->nb_cell_edges( cell_index );
+                return volume_mesh_->nb_cell_edges( cell_index );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1108,7 +947,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
-                return mesh3d_->nb_cell_facets( cell_index );
+                return volume_mesh_->nb_cell_facets( cell_index );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1121,7 +960,8 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return mesh3d_->nb_cell_facet_vertices( cell_index, facet_index );
+                return volume_mesh_->nb_cell_facet_vertices( cell_index,
+                    facet_index );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1137,7 +977,7 @@ namespace RINGMesh {
                 ringmesh_assert( edge_index < nb_cell_edges( cell_index ) );
                 ringmesh_assert(
                     vertex_index < nb_mesh_element_vertices( cell_index ) );
-                return mesh3d_->cell_edge_vertex( cell_index, edge_index,
+                return volume_mesh_->cell_edge_vertex( cell_index, edge_index,
                     vertex_index );
             }
             ringmesh_assert_not_reached;
@@ -1154,7 +994,7 @@ namespace RINGMesh {
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
                 ringmesh_assert(
                     vertex_index < nb_mesh_element_vertices( cell_index ) );
-                return mesh3d_->cell_facet_vertex( cell_index, facet_index,
+                return volume_mesh_->cell_facet_vertex( cell_index, facet_index,
                     vertex_index );
             }
             ringmesh_assert_not_reached;
@@ -1166,7 +1006,7 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return mesh3d_->cell_adjacent( cell_index, facet_index );
+                return volume_mesh_->cell_adjacent( cell_index, facet_index );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1176,39 +1016,6 @@ namespace RINGMesh {
          * \name Geometrical request on Region Entity
          * @{
          */
-        bool is_cell_facet_on_border( index_t cell_index, index_t facet_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return mesh3d_->cell_adjacent( cell_index, facet_index )
-                    == GEO::NO_CELL;
-            }
-            ringmesh_assert_not_reached;
-            return false;
-        }
-
-        vec3 cell_facet_barycenter( index_t cell_index, index_t facet_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return mesh3d_->cell_facet_barycenter( cell_index, facet_index );
-            }
-            ringmesh_assert_not_reached;
-            return vec3();
-        }
-
-        vec3 cell_facet_normal( index_t cell_index, index_t facet_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return mesh3d_->cell_facet_normal( cell_index, facet_index );
-            }
-            ringmesh_assert_not_reached;
-            return vec3();
-        }
 
         /*!
          * @brief Volume of a cell
@@ -1217,7 +1024,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
-                return mesh3d_->cell_volume( cell_index );
+                return volume_mesh_->cell_volume( cell_index );
             }
             ringmesh_assert_not_reached;
             return 0;
@@ -1228,12 +1035,13 @@ namespace RINGMesh {
         virtual double size() const final
         {
             double result = 0.;
-            for( index_t i = 0; i < nb_boundaries(); i++ ) {
-                const Surface& surface = dynamic_cast< const Surface& >( boundary(
-                    i ) );
+            for( index_t i = 0; i < this->nb_boundaries(); i++ ) {
+                const Surface< DIMENSION >& surface = dynamic_cast< const Surface<
+                    DIMENSION >& >( boundary( i ) );
 
                 for( index_t t = 0; t < surface.nb_mesh_elements(); t++ ) {
-                    const vec3& p0 = surface.mesh_element_vertex( t, 0 );
+                    const vecn< DIMENSION >& p0 = surface.mesh_element_vertex( t,
+                        0 );
                     for( index_t v = 1;
                         v + 1 < surface.nb_mesh_element_vertices( t ); ++v ) {
                         double cur_volume = ( dot( p0,
@@ -1249,27 +1057,15 @@ namespace RINGMesh {
         /*!
          * @brief Get the center of the cell \param cell_index
          */
-        virtual vec3 mesh_element_barycenter( index_t cell_index ) const final
+        virtual vecn< DIMENSION > mesh_element_barycenter( index_t cell_index ) const final
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
-                return mesh3d_->cell_barycenter( cell_index );
+                return volume_mesh_->cell_barycenter( cell_index );
             }
             ringmesh_assert_not_reached;
-            return vec3();
+            return vecn< DIMENSION >();
         }
-
-        index_t cells_around_vertex(
-            index_t vertex_id,
-            std::vector< index_t >& result,
-            index_t cell_hint ) const;
-
-        void compute_region_volumes_per_cell_type(
-            double& tet_volume,
-            double& pyramid_volume,
-            double& prism_volume,
-            double& hex_volume,
-            double& poly_volume ) const;
 
         bool side( index_t i ) const
         {
@@ -1280,35 +1076,35 @@ namespace RINGMesh {
 
         /*!
          * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
          */
-        const VolumeMesh& low_level_mesh_storage() const
+        const VolumeMesh< DIMENSION >& low_level_mesh_storage() const
         {
-            return *mesh3d_;
+            return *volume_mesh_;
         }
     protected:
         Region( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel, id )
+            : GeoModelMeshEntity< DIMENSION >( geomodel, id )
         {
-            update_mesh_storage_type( VolumeMesh::create_mesh( type ) );
+            update_mesh_storage_type( VolumeMesh< DIMENSION >::create_mesh( type ) );
         }
 
         virtual bool is_mesh_valid() const final;
 
     private:
-        void update_mesh_storage_type( std::unique_ptr< VolumeMesh > mesh )
+        void update_mesh_storage_type(
+            std::unique_ptr< VolumeMesh< DIMENSION > > mesh )
         {
-            mesh3d_ = std::move( mesh );
-            GeoModelMeshEntity::set_mesh( mesh3d_ );
+            volume_mesh_ = std::move( mesh );
+            GeoModelMeshEntity< DIMENSION >::set_mesh( volume_mesh_ );
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
-        virtual void copy_mesh_entity( const GeoModelMeshEntity& from ) final
+        virtual void copy_mesh_entity( const GeoModelMeshEntity< DIMENSION >& from ) final
         {
-            const Region& region_from = dynamic_cast< const Region& >( from );
-            GeoModelMeshEntity::copy_mesh_entity( from );
+            const Region< DIMENSION >& region_from = dynamic_cast< const Region<
+                DIMENSION >& >( from );
+            GeoModelMeshEntity< DIMENSION >::copy_mesh_entity( from );
             sides_ = region_from.sides_;
         }
 
@@ -1318,23 +1114,24 @@ namespace RINGMesh {
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_;
-
     private:
-        std::shared_ptr< VolumeMesh > mesh3d_;
+        std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_;
     };
 
+    template< index_t DIMENSION >
     class GeoModelMeshEntityConstAccess {
     ringmesh_disable_copy( GeoModelMeshEntityConstAccess );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderGeometry;
         friend class GeoModelBuilderTopology;
 
     private:
-        GeoModelMeshEntityConstAccess( const GeoModelMeshEntity& gme )
+        GeoModelMeshEntityConstAccess( const GeoModelMeshEntity< DIMENSION >& gme )
             : gmme_( gme )
         {
         }
 
-        const std::shared_ptr< MeshBase >& mesh() const
+        const std::shared_ptr< MeshBase< DIMENSION > >& mesh() const
         {
             return gmme_.mesh_;
         }
@@ -1350,11 +1147,13 @@ namespace RINGMesh {
         }
 
     private:
-        const GeoModelMeshEntity& gmme_;
+        const GeoModelMeshEntity< DIMENSION >& gmme_;
     };
 
+    template< index_t DIMENSION >
     class GeoModelMeshEntityAccess {
     ringmesh_disable_copy( GeoModelMeshEntityAccess );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderTopology;
         friend class GeoModelBuilderGeometry;
         friend class GeoModelBuilderGeology;
@@ -1362,7 +1161,7 @@ namespace RINGMesh {
         friend class GeoModelBuilderRemoval;
 
     private:
-        GeoModelMeshEntityAccess( GeoModelMeshEntity& gme )
+        GeoModelMeshEntityAccess( GeoModelMeshEntity< DIMENSION >& gme )
             : gmme_( gme )
         {
         }
@@ -1389,8 +1188,9 @@ namespace RINGMesh {
 
         std::vector< bool >& modifiable_sides()
         {
-            ringmesh_assert( gmme_.type_name() == Region::type_name_static() );
-            return dynamic_cast< Region& >( gmme_ ).sides_;
+            ringmesh_assert(
+                gmme_.type_name() == Region< DIMENSION >::type_name_static() );
+            return dynamic_cast< Region< DIMENSION >& >( gmme_ ).sides_;
         }
 
         std::vector< index_t >& modifiable_parents()
@@ -1398,12 +1198,12 @@ namespace RINGMesh {
             return gmme_.parents_;
         }
 
-        std::shared_ptr< MeshBase >& modifiable_mesh()
+        std::shared_ptr< MeshBase< DIMENSION > >& modifiable_mesh()
         {
             return gmme_.mesh_;
         }
 
-        void copy( const GeoModelMeshEntity& from )
+        void copy( const GeoModelMeshEntity< DIMENSION >& from )
         {
             gmme_.copy_mesh_entity( from );
         }
@@ -1420,6 +1220,6 @@ namespace RINGMesh {
         }
 
     private:
-        GeoModelMeshEntity& gmme_;
+        GeoModelMeshEntity< DIMENSION >& gmme_;
     };
 }

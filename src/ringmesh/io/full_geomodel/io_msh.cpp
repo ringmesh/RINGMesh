@@ -130,7 +130,7 @@ namespace {
                     index_of_gmme_of_the_current_type++ ) {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
                         index_of_gmme_of_the_current_type );
-                    const GeoModelMeshEntity& cur_gmme = geomodel.mesh_entity(
+                    const GeoModelMeshEntity< 3 >& cur_gmme = geomodel.mesh_entity(
                         cur_gmme_id );
                     for( index_t elem_in_cur_gmme = 0;
                         elem_in_cur_gmme < cur_gmme.nb_mesh_elements();
@@ -214,7 +214,7 @@ namespace {
                     index_of_gmme_of_the_current_type++ ) {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
                         index_of_gmme_of_the_current_type );
-                    const GeoModelMeshEntity& cur_gmme = geomodel.mesh_entity(
+                    const GeoModelMeshEntity< 3 >& cur_gmme = geomodel.mesh_entity(
                         cur_gmme_id );
                     nb_elements += cur_gmme.nb_mesh_elements();
                 }

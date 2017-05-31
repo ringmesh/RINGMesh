@@ -37,6 +37,8 @@
 
 #include <stack>
 
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!
@@ -54,7 +56,7 @@ namespace {
         const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
             geomodel_point_id );
         for( const GMEVertex& vertex : vertices ) {
-            if( vertex.gmme.type() == Corner::type_name_static() ) {
+            if( vertex.gmme.type() == Corner< 3 >::type_name_static() ) {
                 return vertex.gmme;
             }
         }
@@ -62,10 +64,10 @@ namespace {
     }
 
     /*!
-     * @brief Returns true if the Line has exactly the given vertices
+     * @brief Returns true if the Line< 3 > has exactly the given vertices
      * @todo Reimplement using std::iterators
      */
-    bool line_equal( const Line& L, const std::vector< index_t >& rhs_vertices )
+    bool line_equal( const Line< 3 >& L, const std::vector< index_t >& rhs_vertices )
     {
         if( L.nb_vertices() != rhs_vertices.size() ) {
             return false;
@@ -385,10 +387,10 @@ namespace RINGMesh {
     };
 
     /*! 
-     * @brief Determines the geometry of the Lines of a GeoModel in which 
+     * @brief Determines the geometry of the Line< 3 >s of a GeoModel in which
      * the geometry of the Surfaces is given
-     * @details All the triangles on the boundaries are classified as belonging to a Line
-     * Two neighboring edges on the boundary belong to the same Line if their incident Surfaces
+     * @details All the triangles on the boundaries are classified as belonging to a Line< 3 >
+     * Two neighboring edges on the boundary belong to the same Line< 3 > if their incident Surfaces
      * are the same.
      */
     class LineGeometryFromGeoModelSurfaces {
@@ -396,7 +398,7 @@ namespace RINGMesh {
         /*!
          * @param geomodel GeoModel providing the Surfaces
          * @param collect_region_info If true, information needed to determine closed Regions
-         *  from a GeoModel Surfaces are collected for each Line.
+         *  from a GeoModel Surfaces are collected for each Line< 3 >.
          */
         LineGeometryFromGeoModelSurfaces(
             const GeoModel& geomodel,
@@ -661,19 +663,20 @@ namespace RINGMesh {
         {
             const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
             for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
-                const Surface& S = geomodel_.surface( s );
+                const Surface< 3 >& S = geomodel_.surface( s );
+                const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
                 gmme_id S_id = S.gmme();
                 for( index_t p = 0; p < S.nb_mesh_elements(); ++p ) {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); ++v ) {
-                        if( S.is_on_border( p, v ) ) {
+                        if( mesh.is_edge_on_border( p, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
                                 S_id, p, v );
                             index_t next_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S_id, p,
-                                    S.next_polygon_vertex_index( p, v ) );
+                                    mesh.next_polygon_vertex( p, v ) );
                             index_t previous_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S_id, p,
-                                    S.prev_polygon_vertex_index( p, v ) );
+                                    mesh.prev_polygon_vertex( p, v ) );
                             border_triangles_.push_back(
                                 BorderTriangle( s, p, vertex, next_vertex,
                                     previous_vertex ) );
@@ -690,7 +693,8 @@ namespace RINGMesh {
         index_t get_next_border_triangle( index_t from, bool backward ) const
         {
             const BorderTriangle& border_triangle = border_triangles_[from];
-            const Surface& S = geomodel_.surface( border_triangle.surface_ );
+            const Surface< 3 >& S = geomodel_.surface( border_triangle.surface_ );
+            const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
 
             const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
 
@@ -702,12 +706,12 @@ namespace RINGMesh {
             ringmesh_assert( !possible_v0_id.empty() );
             index_t v0_id = NO_ID;
             for( index_t id : possible_v0_id ) {
-                if( S.vertex_index_in_polygon( p, id ) != NO_ID ) {
+                if( mesh.vertex_index_in_polygon( p, id ) != NO_ID ) {
                     v0_id = id;
                 }
             }
             ringmesh_assert( v0_id != NO_ID );
-            index_t v0_id_in_polygon = S.vertex_index_in_polygon( p, v0_id );
+            index_t v0_id_in_polygon = mesh.vertex_index_in_polygon( p, v0_id );
             ringmesh_assert( v0_id_in_polygon != NO_ID );
 
             index_t next_f = NO_ID;
@@ -715,13 +719,13 @@ namespace RINGMesh {
             index_t next_f_v1 = NO_ID;
 
             if( !backward ) {
-                S.next_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
+                mesh.next_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
+                next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
             } else {
-                S.prev_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
+                mesh.prev_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
+                next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
             }
 
             // Finds the BorderTriangle that is corresponding to this
@@ -788,7 +792,7 @@ namespace RINGMesh {
         bool collect_region_information_;
         // All the triangles on a boundary of all the Surfaces of the GeoModel
         std::vector< BorderTriangle > border_triangles_;
-        // Internal use to flag the visited border_triangles when computing the Lines
+        // Internal use to flag the visited border_triangles when computing the Line< 3 >s
         std::vector< bool > visited_;
 
         // Currently computed line information
@@ -860,7 +864,7 @@ namespace RINGMesh {
                 builder_.geometry.set_line( line_index.index(), vertices );
 
                 for( index_t j : adjacent_surfaces ) {
-                    gmme_id surface_index( Surface::type_name_static(), j );
+                    gmme_id surface_index( Surface< 3 >::type_name_static(), j );
                     builder_.topology.add_mesh_entity_boundary_relation(
                         surface_index, line_index );
                 }
@@ -905,8 +909,9 @@ namespace RINGMesh {
                 /// the + side. No further check.
                 bool inside = true;
                 // Create the region - set the surface on its boundaries
-                gmme_id region_id = builder_.topology.create_mesh_entity< Region >();
-                gmme_id surface_id( Surface::type_name_static(), 0 );
+                gmme_id region_id =
+                    builder_.topology.create_mesh_entity< Region< 3 > >();
+                gmme_id surface_id( Surface< 3 >::type_name_static(), 0 );
                 builder_.topology.add_mesh_entity_boundary_relation( region_id,
                     surface_id, inside );
 
@@ -932,8 +937,8 @@ namespace RINGMesh {
                     continue;
                 }
                 // Create a new region
-                gmme_id cur_region_id =
-                    builder_.topology.create_mesh_entity< Region >();
+                gmme_id cur_region_id = builder_.topology.create_mesh_entity<
+                    Region< 3 > >();
                 // Get all oriented surfaces defining this region
                 std::stack< std::pair< index_t, bool > > SR;
                 SR.push( cur );
@@ -948,7 +953,8 @@ namespace RINGMesh {
                     // Add the surface to the current region
                     builder_.topology.add_mesh_entity_boundary_relation(
                         cur_region_id,
-                        gmme_id( Surface::type_name_static(), s.first ), s.second );
+                        gmme_id( Surface< 3 >::type_name_static(), s.first ),
+                        s.second );
                     surf_2_region[s_id] = cur_region_id.index();
 
                     // Check the other side of the surface and push it in S
@@ -958,7 +964,7 @@ namespace RINGMesh {
                         S.emplace( s.first, !s.second );
                     }
                     // For each contact, push the next oriented surface that is in the same region
-                    const Surface& surface = geomodel_.surface( s.first );
+                    const Surface< 3 >& surface = geomodel_.surface( s.first );
                     for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
                         const std::pair< index_t, bool >& n =
                             regions_info_[surface.boundary_gmme( i ).index()]->next(
@@ -995,7 +1001,7 @@ namespace RINGMesh {
                     universe_id = i;
                 }
             }
-            const Region& cur_region = geomodel_.region( universe_id );
+            const Region< 3 >& cur_region = geomodel_.region( universe_id );
             for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
                 // Fill the Universe region boundaries
                 // They are supposed to be empty
@@ -1070,11 +1076,6 @@ namespace RINGMesh {
         if( geomodel_.name().empty() ) {
             info.set_geomodel_name( "model_default_name" );
         }
-        // Get out if the geomodel has no surface
-        if( geomodel_.nb_surfaces() == 0 ) {
-            print_geomodel( geomodel_ );
-            throw RINGMeshException( "GeoModel", "The GeoModel has no surface" );
-        }
 
         geometry.cut_surfaces_by_internal_lines();
         geometry.cut_regions_by_internal_surfaces();
@@ -1104,14 +1105,14 @@ namespace RINGMesh {
         index_t nb_additional_entities )
     {
         find_or_create_geological_entity_type( type );
-        std::vector< std::unique_ptr< GeoModelGeologicalEntity > >& store =
+        std::vector< std::unique_ptr< GeoModelGeologicalEntity< 3 > > >& store =
             geomodel_access_.modifiable_geological_entities( type );
         index_t old_size = static_cast< index_t >( store.size() );
         index_t new_size = old_size + nb_additional_entities;
         store.reserve( new_size );
         for( index_t i = old_size; i < new_size; i++ ) {
             store.emplace_back(
-                GeoModelGeologicalEntityAccess::create_geological_entity( type,
+                GeoModelGeologicalEntityAccess< 3 >::create_geological_entity( type,
                     geomodel_, i ) );
         }
         return true;
@@ -1121,10 +1122,11 @@ namespace RINGMesh {
         const gmge_id& parent,
         const gmme_id& children )
     {
-        const GeoModelMeshEntity& children_mesh_entity =
-            geomodel_.mesh_entity( children );
+        const GeoModelMeshEntity< 3 >& children_mesh_entity = geomodel_.mesh_entity(
+            children );
         if( children_mesh_entity.has_parent( parent.type() ) ) {
-            ringmesh_assert(parent == children_mesh_entity.parent_gmge(parent.type()));
+            ringmesh_assert(
+                parent == children_mesh_entity.parent_gmge( parent.type() ) );
             return true;
         } else {
             return false;
@@ -1135,7 +1137,7 @@ namespace RINGMesh {
         const gmge_id& parent,
         const gmme_id& children )
     {
-        GeoModelGeologicalEntity& parent_entity =
+        GeoModelGeologicalEntity< 3 >& parent_entity =
             geomodel_access_.modifiable_geological_entity( parent );
         const std::vector< GeologicalEntityType >& parent_entity_types =
             geomodel_.entity_type_manager().relationship_manager.parent_types(
@@ -1152,7 +1154,7 @@ namespace RINGMesh {
             return;
         }
 
-        GeoModelMeshEntity& children_entity =
+        GeoModelMeshEntity< 3 >& children_entity =
             geomodel_access_.modifiable_mesh_entity( children );
         const MeshEntityType& children_type =
             geomodel_.entity_type_manager().relationship_manager.child_type(
@@ -1169,9 +1171,9 @@ namespace RINGMesh {
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
         index_t relation_id = manager.add_parent_child_relationship( parent,
             children );
-        GeoModelGeologicalEntityAccess parent_access( parent_entity );
+        GeoModelGeologicalEntityAccess< 3 > parent_access( parent_entity );
         parent_access.modifiable_children().push_back( relation_id );
-        GeoModelMeshEntityAccess children_access( children_entity );
+        GeoModelMeshEntityAccess< 3 > children_access( children_entity );
         children_access.modifiable_parents().push_back( relation_id );
     }
 
@@ -1189,12 +1191,12 @@ namespace RINGMesh {
                 << " and " << children;
             throw RINGMeshException( "Entity", message.str() );
         }
-        GeoModelGeologicalEntityAccess parent_access(
+        GeoModelGeologicalEntityAccess< 3 > parent_access(
             geomodel_access_.modifiable_geological_entity( parent ) );
         std::vector< index_t >& childs = parent_access.modifiable_children();
         std::remove_if( childs.begin(), childs.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
-        GeoModelMeshEntityAccess children_access(
+        GeoModelMeshEntityAccess< 3 > children_access(
             geomodel_access_.modifiable_mesh_entity( children ) );
         std::vector< index_t >& parents = children_access.modifiable_parents();
         std::remove_if( parents.begin(), parents.end(),
@@ -1214,7 +1216,7 @@ namespace RINGMesh {
         index_t id =
             static_cast< index_t >( geomodel_.nb_geological_entities( type ) );
         geomodel_access_.modifiable_geological_entities()[index].emplace_back(
-            GeoModelGeologicalEntityAccess::create_geological_entity( type,
+            GeoModelGeologicalEntityAccess< 3 >::create_geological_entity( type,
                 geomodel_, id ) );
         return geomodel_access_.modifiable_geological_entities()[index].back()->gmge();
     }
@@ -1239,8 +1241,8 @@ namespace RINGMesh {
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type );
         geomodel_access_.modifiable_geological_entities().push_back(
-            std::vector< std::unique_ptr< GeoModelGeologicalEntity > >() );
-        std::unique_ptr< GeoModelGeologicalEntity > E(
+            std::vector< std::unique_ptr< GeoModelGeologicalEntity< 3 > > >() );
+        std::unique_ptr< GeoModelGeologicalEntity< 3 > > E(
             GeoModelGeologicalEntityFactory::create_object( type, geomodel_ ) );
 
         const MeshEntityType child_type = E->child_type_name();
@@ -1261,7 +1263,7 @@ namespace RINGMesh {
         RINGMESH_PARALLEL_LOOP
         for( index_t e = 0; e < geomodel_.nb_geological_entities( type ); ++e ) {
             gmge_id id( type, e );
-            GeoModelGeologicalEntityAccess gmge_access(
+            GeoModelGeologicalEntityAccess< 3 > gmge_access(
                 geomodel_access_.modifiable_geological_entity( id ) );
             gmge_access.copy( from.geological_entity( id ) );
         }
@@ -1270,20 +1272,20 @@ namespace RINGMesh {
     void GeoModelBuilderGeology::build_contacts()
     {
         if( geomodel_.entity_type_manager().geological_entity_manager.is_valid_type(
-            Contact::type_name_static() )
-            && geomodel_.nb_geological_entities( Contact::type_name_static() )
+            Contact< 3 >::type_name_static() )
+            && geomodel_.nb_geological_entities( Contact< 3 >::type_name_static() )
                 > 0 ) {
             return;
         }
 
         std::vector< std::set< gmge_id > > interfaces;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
-            const Line& L = geomodel_.line( i );
+            const Line< 3 >& L = geomodel_.line( i );
             std::set< gmge_id > cur_interfaces;
             for( index_t j = 0; j < L.nb_incident_entities(); ++j ) {
-                const GeoModelMeshEntity& S = L.incident_entity( j );
+                const GeoModelMeshEntity< 3 >& S = L.incident_entity( j );
                 gmge_id parent_interface = S.parent_gmge(
-                    Interface::type_name_static() );
+                    Interface< 3 >::type_name_static() );
                 cur_interfaces.insert( parent_interface );
             }
             gmge_id contact_id;
@@ -1291,12 +1293,13 @@ namespace RINGMesh {
                 if( cur_interfaces.size() == interfaces[j].size()
                     && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
                         interfaces[j].begin() ) ) {
-                    contact_id = gmge_id( Contact::type_name_static(), j );
+                    contact_id = gmge_id( Contact< 3 >::type_name_static(), j );
                     break;
                 }
             }
             if( !contact_id.is_defined() ) {
-                contact_id = create_geological_entity( Contact::type_name_static() );
+                contact_id = create_geological_entity(
+                    Contact< 3 >::type_name_static() );
                 ringmesh_assert( contact_id.index() == interfaces.size() );
                 interfaces.push_back( cur_interfaces );
                 // Create a name for this contact

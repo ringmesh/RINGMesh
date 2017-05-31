@@ -105,7 +105,7 @@ namespace {
             out << "$ELM" << std::endl;
             out << nb_total_elements( geomodel ) << std::endl;
             for( index_t corner = 0; corner < geomodel.nb_corners(); corner++ ) {
-                const Corner& cur_corner = geomodel.corner( corner );
+                const Corner< 3 >& cur_corner = geomodel.corner( corner );
                 out << elt++ << " " << adeli_cell_types[0] << " " << reg_phys << " "
                     << cur_corner.index() + id_offset_adeli << " "
                     << cur_corner.nb_vertices() << " "
@@ -164,7 +164,7 @@ namespace {
         }
 
         void write_mesh_elements_for_a_mesh_entity(
-            const GeoModelMeshEntity& geomodel_mesh_entity,
+            const GeoModelMeshEntity< 3 >& geomodel_mesh_entity,
             index_t cell_descriptor,
             index_t& elt_id,
             std::ofstream& out ) const

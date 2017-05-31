@@ -100,7 +100,7 @@ int main()
         // of mesh elements and mesh entities
         GEO::Mesh surface_meshes;
         for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-            const Surface& surface = model.surface( s );
+            const Surface< 3 >& surface = model.surface( s );
             index_t vertex_it = surface_meshes.vertices.create_vertices(
                 surface.nb_vertices() );
             for( index_t v = 0; v < surface.nb_vertices(); v++ ) {

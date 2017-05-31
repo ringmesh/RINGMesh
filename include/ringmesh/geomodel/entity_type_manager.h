@@ -44,11 +44,11 @@
 
 namespace RINGMesh {
     class GeoModel;
-    class GeoModelMeshEntity;
-    class Corner;
-    class Line;
-    class Surface;
-    class Region;
+    template< index_t DIMENSION > class GeoModelMeshEntity;
+    template< index_t DIMENSION > class Corner;
+    template< index_t DIMENSION > class Line;
+    template< index_t DIMENSION > class Surface;
+    template< index_t DIMENSION > class Region;
     class EntityTypeManager;
 }
 
