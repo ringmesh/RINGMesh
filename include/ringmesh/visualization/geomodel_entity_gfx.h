@@ -50,10 +50,10 @@
 
 namespace RINGMesh {
     class GeoModelGfx;
-    class PointSetGfx;
-    class LineGfx;
-    class SurfaceGfx;
-    class VolumeGfx;
+    class PointSetMeshGfx;
+    class LineMeshGfx;
+    class SurfaceMeshGfx;
+    class VolumeMeshGfx;
     class MeshEntityGfx;
 }
 
@@ -143,7 +143,7 @@ namespace RINGMesh {
     public:
         CornerGfxEnity( GeoModelGfx& gfx );
 
-        PointSetGfx& corner( index_t c );
+        PointSetMeshGfx& corner( index_t c );
 
         /*!
          * Draws the corners
@@ -162,7 +162,7 @@ namespace RINGMesh {
     public:
         LineGfxEntity( GeoModelGfx& gfx );
 
-        LineGfx& line( index_t l );
+        LineMeshGfx& line( index_t l );
 
         /*!
          * Draws the lines
@@ -197,7 +197,7 @@ namespace RINGMesh {
     public:
         SurfaceGfxEntity( GeoModelGfx& gfx );
 
-        SurfaceGfx& surface( index_t s );
+        SurfaceMeshGfx& surface( index_t s );
 
         /*!
          * Draws the surfaces
@@ -277,7 +277,7 @@ namespace RINGMesh {
     public:
         RegionGfxEntity( GeoModelGfx& gfx );
 
-        VolumeGfx& region( index_t r );
+        VolumeMeshGfx& region( index_t r );
 
         /*!
          * Draws the Regions
