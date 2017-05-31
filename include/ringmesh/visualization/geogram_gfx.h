@@ -86,7 +86,7 @@ namespace RINGMesh {
     class GeogramPointSetGfx: public PointSetGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
-        GeogramPointSetGfx( const GeoModelGfx& gfx, const Corner& corner )
+        GeogramPointSetGfx( const GeoModelGfx& gfx, const Corner< 3 >& corner )
             : PointSetGfx( gfx )
         {
             mesh_gfx_.set_mesh( &corner.low_level_mesh_storage().gfx_mesh() );
@@ -98,7 +98,7 @@ namespace RINGMesh {
     class GeogramLineGfx: public LineGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
-        GeogramLineGfx( const GeoModelGfx& gfx, const Line& line )
+        GeogramLineGfx( const GeoModelGfx& gfx, const Line< 3 >& line )
             : LineGfx( gfx )
         {
             mesh_gfx_.set_mesh( &line.low_level_mesh_storage().gfx_mesh() );
@@ -124,7 +124,7 @@ namespace RINGMesh {
     class GeogramSurfaceGfx: public SurfaceGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
-        GeogramSurfaceGfx( const GeoModelGfx& gfx, const Surface& surface )
+        GeogramSurfaceGfx( const GeoModelGfx& gfx, const Surface< 3 >& surface )
             : SurfaceGfx( gfx )
         {
             mesh_gfx_.set_mesh( &surface.low_level_mesh_storage().gfx_mesh() );
@@ -159,7 +159,7 @@ namespace RINGMesh {
     class GeogramVolumeGfx: public VolumeGfx {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
-        GeogramVolumeGfx( const GeoModelGfx& gfx, const Region& region )
+        GeogramVolumeGfx( const GeoModelGfx& gfx, const Region< 3 >& region )
             : VolumeGfx( gfx )
         {
             mesh_gfx_.set_mesh( &region.low_level_mesh_storage().gfx_mesh() );

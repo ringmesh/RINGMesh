@@ -64,7 +64,7 @@ void test_geomodel_vertices( const GeoModel& geomodel )
         for( index_t mesh_entity_id = 0;
             mesh_entity_id < geomodel.nb_mesh_entities( mesh_entity_type );
             mesh_entity_id++ ) {
-            const GeoModelMeshEntity& cur_geomodel_mesh_entity =
+            const GeoModelMeshEntity< 3 >& cur_geomodel_mesh_entity =
                 geomodel.mesh_entity( gmme_id( mesh_entity_type, mesh_entity_id ) );
             for( index_t vertex_id_in_mesh_entity = 0;
                 vertex_id_in_mesh_entity < cur_geomodel_mesh_entity.nb_vertices();
@@ -94,7 +94,7 @@ void test_GMEVertex( const GeoModel& geomodel )
         std::vector< GMEVertex > vertices_on_geomodel_mesh_entity =
             geomodel_mesh_vertices.gme_vertices( vertex_id_in_geomodel_mesh );
         for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_mesh_entity ) {
-            const GeoModelMeshEntity& cur_geomodel_mesh_entity =
+            const GeoModelMeshEntity< 3 >& cur_geomodel_mesh_entity =
                 geomodel.mesh_entity( cur_vertex_on_geomodel.gmme );
             index_t vertex_id_in_mesh_entity = cur_vertex_on_geomodel.v_index;
             if( geomodel_mesh_vertices.vertex( vertex_id_in_geomodel_mesh )
