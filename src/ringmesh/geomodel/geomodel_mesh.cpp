@@ -2021,7 +2021,7 @@ namespace RINGMesh {
                 if( geomodel_.region( reg ).vertex_attribute_manager().is_defined(
                     att_v_names[att_v] ) ) {
                     Logger::warn( "Transfer attribute", "The attribute ",
-                        att_v_names[att_v], " already exist on the region ", reg );
+                        att_v_names[att_v], " already exists on the region ", reg );
                     continue;
                 }
                 GEO::Attribute< double > cur_v_att;
@@ -2080,7 +2080,7 @@ namespace RINGMesh {
                 if( geomodel_.region( reg ).cell_attribute_manager().is_defined(
                     att_c ) ) {
                     Logger::warn( "Transfer attribute", "The attribute ", att_c,
-                        " already exist on the region ", reg );
+                        " already exists on the region ", reg );
                     continue;
                 }
                 GEO::Attribute< double > cur_att_on_geomodel_mesh_entity;
