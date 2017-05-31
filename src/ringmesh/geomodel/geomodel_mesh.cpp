@@ -2004,19 +2004,19 @@ namespace RINGMesh {
     {
     }
 
-    void GeoModelMesh::transfert_attributes_from_gmm_to_gm_regions() const
+    void GeoModelMesh::transfer_attributes_from_gmm_to_gm_regions() const
     {
-        transfert_vertex_attributes_from_gmm_to_gm_regions();
-        transfert_cell_attributes_from_gmm_to_gm_regions();
+        transfer_vertex_attributes_from_gmm_to_gm_regions();
+        transfer_cell_attributes_from_gmm_to_gm_regions();
     }
 
-    void GeoModelMesh::transfert_attributes_from_gm_regions_to_gmm() const
+    void GeoModelMesh::transfer_attributes_from_gm_regions_to_gmm() const
     {
-        transfert_vertex_attributes_from_gm_regions_to_gmm() ;
-        transfert_cell_attributes_from_gm_regions_to_gmm() ;
+        transfer_vertex_attributes_from_gm_regions_to_gmm() ;
+        transfer_cell_attributes_from_gm_regions_to_gmm() ;
     }
 
-    void GeoModelMesh::transfert_vertex_attributes_from_gmm_to_gm_regions() const
+    void GeoModelMesh::transfer_vertex_attributes_from_gmm_to_gm_regions() const
     {
         GEO::vector< std::string > att_v_names;
         std::vector< std::string > att_v_double_names;
@@ -2034,7 +2034,7 @@ namespace RINGMesh {
                 if( geomodel_.region( reg ).vertex_attribute_manager().is_defined(
                     att_v_names[att_v] ) ) {
                     Logger::warn( "Transfer attribute", "The attribute ",
-                        att_v_names[att_v], " already exist on the region ", reg );
+                        att_v_names[att_v], " already exists on the region ", reg );
                     continue;
                 }
                 GEO::Attribute< double > cur_v_att;
@@ -2072,7 +2072,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh::transfert_vertex_attributes_from_gm_regions_to_gmm() const
+    void GeoModelMesh::transfer_vertex_attributes_from_gm_regions_to_gmm() const
     {
         for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
             GEO::vector< std::string > att_v_names ;
@@ -2116,7 +2116,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh::transfert_cell_attributes_from_gmm_to_gm_regions() const
+    void GeoModelMesh::transfer_cell_attributes_from_gmm_to_gm_regions() const
     {
 
         GEO::vector< std::string > att_c_names;
@@ -2137,7 +2137,7 @@ namespace RINGMesh {
                 if( geomodel_.region( reg ).cell_attribute_manager().is_defined(
                     att_c ) ) {
                     Logger::warn( "Transfer attribute", "The attribute ", att_c,
-                        " already exist on the region ", reg );
+                        " already exists on the region ", reg );
                     continue;
                 }
                 GEO::Attribute< double > cur_att_on_geomodel_mesh_entity;
@@ -2161,7 +2161,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh::transfert_cell_attributes_from_gm_regions_to_gmm() const
+    void GeoModelMesh::transfer_cell_attributes_from_gm_regions_to_gmm() const
     {
         const NNSearch& nn_search = cells.cell_nn_search();
         for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
