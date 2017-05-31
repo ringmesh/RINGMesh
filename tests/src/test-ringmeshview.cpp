@@ -42,7 +42,7 @@
 
 #ifdef RINGMESH_TEST_GRAPHICS
 
-#include <thread>
+#include <geogram/basic/process.h>
 
 #include <ringmesh/visualization/gfx_application.h>
 
@@ -72,6 +72,40 @@ namespace RINGMesh {
 #endif
     }
 
+    class StartAppThread: public GEO::Thread {
+    public:
+        StartAppThread( RINGMeshApplication& app )
+            : GEO::Thread(), app_( app )
+        {
+        }
+
+        virtual void run()
+        {
+            app_.start();
+        }
+
+    private:
+        RINGMeshApplication& app_;
+    };
+
+    class QuitAppThread: public GEO::Thread {
+    public:
+        QuitAppThread( RINGMeshApplication& app )
+            : GEO::Thread(), app_( app )
+        {
+        }
+
+        virtual void run()
+        {
+            // Wait some seconds to be sure that the windows is really opened
+            wait( 4000 );
+            app_.quit();
+        }
+
+    private:
+        RINGMeshApplication& app_;
+    };
+
     void open_viewer_load_geomodel_then_close(
         const int argc,
         char** argv,
@@ -81,17 +115,18 @@ namespace RINGMesh {
 
         RINGMeshApplication app( argc, argv );
 
-        // Create and launch the threads for launching the app window
+        // Create the threads for launching the app window
         // and the one for closing the window
-        std::thread start( &RINGMeshApplication::start, &app );
-        std::thread quit( [&app]() {
-            // Wait some milliseconds to be sure that the window is really opened
-            wait( 4000 );
-            app.quit();
-        } );
+        StartAppThread* start_thread = new StartAppThread( app );
+        QuitAppThread* quit_thread = new QuitAppThread( app );
 
-        // Wait until RINGMeshView is really closed
-        quit.join();
+        // Add the both threads in a group
+        GEO::ThreadGroup thread_group;
+        thread_group.push_back( start_thread );
+        thread_group.push_back( quit_thread );
+
+        // Run concurrently the both threads
+        GEO::Process::run_threads( thread_group );
     }
 
 }
@@ -101,11 +136,9 @@ int main()
     using namespace RINGMesh;
 
     try {
-        default_configure();
-
         char ringmesh_view[] = "ringmesh-view";
         std::string input_model_file_name( ringmesh_test_data_path );
-        input_model_file_name += "modelA6.ml";
+        input_model_file_name += "load/modelA6.ml";
         char* input_model = &input_model_file_name[0];
 
         char* argv[2] = { ringmesh_view, input_model };
