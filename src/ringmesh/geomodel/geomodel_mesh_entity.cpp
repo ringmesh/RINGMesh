@@ -354,7 +354,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::is_boundary_connectivity_valid() const
     {
-        const MeshEntityTypeManager& family =
+        const MeshEntityTypeManager< DIMENSION >& family =
             this->geomodel().entity_type_manager().mesh_entity_manager;
         const MeshEntityType entity_type = type_name();
         const MeshEntityType& boundary_type = family.boundary_type( entity_type );
@@ -386,7 +386,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::is_incident_entity_connectivity_valid() const
     {
-        const MeshEntityTypeManager& family =
+        const MeshEntityTypeManager< DIMENSION >& family =
             this->geomodel().entity_type_manager().mesh_entity_manager;
         const MeshEntityType entity_type = type_name();
         const MeshEntityType& incident_entity_type = family.incident_entity_type(

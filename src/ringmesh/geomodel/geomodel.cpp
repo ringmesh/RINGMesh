@@ -93,13 +93,13 @@ namespace RINGMesh {
 
     index_t GeoModel::nb_mesh_entities( const MeshEntityType& type ) const
     {
-        if( MeshEntityTypeManager::is_line( type ) ) {
+        if( MeshEntityTypeManager< 3 >::is_line( type ) ) {
             return nb_lines();
-        } else if( MeshEntityTypeManager::is_corner( type ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_corner( type ) ) {
             return nb_corners();
-        } else if( MeshEntityTypeManager::is_surface( type ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_surface( type ) ) {
             return nb_surfaces();
-        } else if( MeshEntityTypeManager::is_region( type ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_region( type ) ) {
             return nb_regions();
         } else {
             ringmesh_assert_not_reached;
@@ -111,13 +111,13 @@ namespace RINGMesh {
     {
         const MeshEntityType& type = id.type();
         index_t index = id.index();
-        if( MeshEntityTypeManager::is_line( type ) ) {
+        if( MeshEntityTypeManager< 3 >::is_line( type ) ) {
             return line( index );
-        } else if( MeshEntityTypeManager::is_corner( type ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_corner( type ) ) {
             return corner( index );
-        } else if( MeshEntityTypeManager::is_surface( type ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_surface( type ) ) {
             return surface( index );
-        } else if( MeshEntityTypeManager::is_region( type ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_region( type ) ) {
             return region( index );
         }
         ringmesh_assert_not_reached;
@@ -127,13 +127,13 @@ namespace RINGMesh {
     const std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& GeoModel::mesh_entities(
         const MeshEntityType& type ) const
     {
-        if( MeshEntityTypeManager::is_corner( type ) ) {
+        if( MeshEntityTypeManager< 3 >::is_corner( type ) ) {
             return corners_;
-        } else if( MeshEntityTypeManager::is_line( type ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_line( type ) ) {
             return lines_;
-        } else if( MeshEntityTypeManager::is_surface( type ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_surface( type ) ) {
             return surfaces_;
-        } else if( MeshEntityTypeManager::is_region( type ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_region( type ) ) {
             return regions_;
         } else {
             ringmesh_assert_not_reached;
