@@ -1997,13 +1997,13 @@ namespace RINGMesh {
     {
     }
 
-    void GeoModelMesh::transfert_attributes() const
+    void GeoModelMesh::transfer_attributes() const
     {
-        transfert_vertex_attributes();
-        transfert_cell_attributes();
+        transfer_vertex_attributes();
+        transfer_cell_attributes();
     }
 
-    void GeoModelMesh::transfert_vertex_attributes() const
+    void GeoModelMesh::transfer_vertex_attributes() const
     {
         GEO::vector< std::string > att_v_names;
         std::vector< std::string > att_v_double_names;
@@ -2059,7 +2059,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh::transfert_cell_attributes() const
+    void GeoModelMesh::transfer_cell_attributes() const
     {
 
         GEO::vector< std::string > att_c_names;
