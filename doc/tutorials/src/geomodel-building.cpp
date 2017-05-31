@@ -116,7 +116,7 @@ int main()
         GEO::Stopwatch total( "Total time" );
 
         // We instantiate the class GeoModel
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
 
         // To build the model, we have to use the class
         // GeoModelBuilder, which is a safety for the user

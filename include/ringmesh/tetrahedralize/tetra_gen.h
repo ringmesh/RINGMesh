@@ -61,7 +61,7 @@ extern "C" {
 #endif
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class Region;
     class TetraGen;
     class WellGroup;
@@ -74,7 +74,7 @@ namespace RINGMesh {
     public:
         virtual ~TetraGen() = default;
         static std::unique_ptr< TetraGen > create(
-            GeoModel& M,
+            GeoModel< 3 >& M,
             index_t region_id,
             const std::string& algo_name );
         static void initialize();

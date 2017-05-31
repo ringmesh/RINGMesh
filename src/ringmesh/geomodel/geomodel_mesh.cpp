@@ -132,14 +132,14 @@ namespace {
 
 namespace RINGMesh {
 
-    GeoModelMeshBase::GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm )
+    GeoModelMeshBase::GeoModelMeshBase( GeoModelMesh& gmm, GeoModel< 3 >& gm )
         : gmm_( gmm ), gm_( gm )
     {
     }
 
     GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
         GeoModelMeshVertices& geomodel_vertices,
-        const GeoModel& geomodel )
+        const GeoModel< 3 >& geomodel )
         : geomodel_vertices_( geomodel_vertices ), geomodel_( geomodel )
     {
         vertex_maps_[Corner< 3 >::type_name_static()] = &corner_vertex_maps_;
@@ -361,7 +361,7 @@ namespace RINGMesh {
         return mesh_entity.vertex_attribute_manager();
     }
 
-    GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
+    GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel< 3 >& gm )
         :
             GeoModelMeshBase( gmm, gm ),
             mesh_( new GeogramPointSetMesh< 3 > ),
@@ -387,7 +387,7 @@ namespace RINGMesh {
     }
 
     index_t nb_entity_vertices(
-        const GeoModel& M,
+        const GeoModel< 3 >& M,
         const MeshEntityType& entity_type )
     {
         index_t count = 0;
@@ -398,7 +398,7 @@ namespace RINGMesh {
     }
 
     void GeoModelMeshVertices::fill_vertices(
-        const GeoModel& M,
+        const GeoModel< 3 >& M,
         const MeshEntityType& entity_type,
         index_t& count )
     {
@@ -675,7 +675,7 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GeoModel& gm )
+    GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GeoModel< 3 >& gm )
         :
             GeoModelMeshBase( gmm, gm ),
             mesh_( new GeogramVolumeMesh< 3 > ),
@@ -1469,7 +1469,7 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshPolygons::GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel& gm )
+    GeoModelMeshPolygons::GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel< 3 >& gm )
         :
             GeoModelMeshBase( gmm, gm ),
             mesh_( new GeogramSurfaceMesh< 3 > ),
@@ -1881,7 +1881,7 @@ namespace RINGMesh {
     }
     /*******************************************************************************/
 
-    GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm )
+    GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel< 3 >& gm )
         : GeoModelMeshBase( gmm, gm ), mesh_( new GeogramLineMesh< 3 > )
     {
         set_mesh( mesh_.get() );
@@ -1987,7 +1987,7 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMesh::GeoModelMesh( GeoModel& geomodel )
+    GeoModelMesh::GeoModelMesh( GeoModel< 3 >& geomodel )
         :
             geomodel_( geomodel ),
             mode_( GeoModelMeshCells::NONE ),

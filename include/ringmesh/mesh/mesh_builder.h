@@ -44,7 +44,7 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
 }
 
 namespace RINGMesh {

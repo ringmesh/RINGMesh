@@ -373,7 +373,7 @@ namespace RINGMesh {
 
     void compute_prop_tet_mesh_quality(
         MeshQualityMode mesh_qual_mode,
-        const GeoModel& geomodel )
+        const GeoModel< 3 >& geomodel )
     {
         ringmesh_assert( geomodel.nb_regions() != 0 );
         for( index_t reg_itr = 0; reg_itr < geomodel.nb_regions(); ++reg_itr ) {

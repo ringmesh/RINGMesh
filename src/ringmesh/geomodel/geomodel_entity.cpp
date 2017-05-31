@@ -45,7 +45,7 @@
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    Universe< DIMENSION >::Universe( const GeoModel& geomodel )
+    Universe< DIMENSION >::Universe( const GeoModel< DIMENSION >& geomodel )
         : GeoModelEntity< DIMENSION >( geomodel, NO_ID )
     {
         this->name_ = universe_type_name();

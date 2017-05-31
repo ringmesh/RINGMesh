@@ -217,7 +217,7 @@ namespace RINGMesh {
     };
 
     GeoModelBuilderGM::GeoModelBuilderGM(
-        GeoModel& geomodel,
+        GeoModel< 3 >& geomodel,
         const std::string& filename )
         : GeoModelBuilderFile( geomodel, filename ), file_version_( 0 )
     {
