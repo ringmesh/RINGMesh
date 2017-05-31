@@ -91,7 +91,7 @@ namespace RINGMesh {
      * its incident mesh entity
      * "Line" is incident of "Corner"
      * "Surface" is incident of "Line"
-     * "Refion" is incident of "Surface"
+     * "Region" is incident of "Surface"
      */
     template< index_t DIMENSION >
     struct MeshEntityTypeIncidentEntityMapBase {
