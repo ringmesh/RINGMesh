@@ -88,7 +88,7 @@ namespace RINGMesh {
             const std::set< gmme_id >& entities_to_remove );
 
     private:
-        GeoModelBuilderRemoval( GeoModelBuilder& builder, GeoModel& geomodel );
+        GeoModelBuilderRemoval( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
 
         // ---  High level functions ----------
         void initialize_for_removal(
