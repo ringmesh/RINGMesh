@@ -52,7 +52,7 @@ void error(
         "Vertex " + GEO::String::to_string( vertex_id_in_mesh_entity )
             + " in entity " + GEO::String::to_string( mesh_entity_gmme_id.type() )
             + GEO::String::to_string( mesh_entity_gmme_id.index() )
-            + +" has not the same coordinate than its equivalent vertex "
+            + +" has not the same coordinates than its equivalent vertex "
             + GEO::String::to_string( vertex_id_in_geomodel_mesh )
             + " in the GeoModelMesh" );
 
