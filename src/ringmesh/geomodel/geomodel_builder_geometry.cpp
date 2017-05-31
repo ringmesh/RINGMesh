@@ -82,7 +82,8 @@ namespace {
                     j++ ) {
                     if( inexact_equal( surface.mesh_element_vertex( i, j ), v0,
                             surface.geomodel().epsilon() ) ) {
-                        index_t j_next = surface.next_polygon_vertex_index( i, j );
+                        index_t j_next = surface.low_level_mesh_storage().next_polygon_vertex(
+                            i, j );
                         if( inexact_equal( surface.mesh_element_vertex( i, j_next ),
                                 v1, surface.geomodel().epsilon() ) ) {
                             edge = j;
