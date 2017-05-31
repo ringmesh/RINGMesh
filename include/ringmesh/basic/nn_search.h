@@ -108,6 +108,35 @@ namespace RINGMesh {
             const vecn< DIMENSION >& v,
             double threshold_distance ) const;
 
+        template< typename TEST >
+        std::vector< index_t > get_neighbors(
+            const vecn< DIMENSION >& v,
+            const TEST& test ) const
+        {
+            std::vector< index_t > result;
+            index_t nb_points = nn_tree_->nb_points();
+            if( nb_points != 0 ) {
+                index_t nb_neighbors = std::min( index_t( 5 ), nb_points );
+                index_t cur_neighbor = 0;
+                index_t prev_neighbor = 0;
+                do {
+                    prev_neighbor = cur_neighbor;
+                    cur_neighbor += nb_neighbors;
+                    result.reserve( cur_neighbor );
+                    std::vector< index_t > neighbors = get_neighbors( v,
+                        cur_neighbor );
+                    nb_neighbors = static_cast< index_t >( neighbors.size() );
+                    for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                        if( test( neighbors[i] ) ) {
+                            break;
+                        }
+                        result.push_back( neighbors[i] );
+                    }
+                } while( result.size() == cur_neighbor && result.size() < nb_points );
+            }
+            return result;
+        }
+
         /*!
          * Gets the neighboring points of a given one sorted by increasing distance
          * @param[in] v the point to test

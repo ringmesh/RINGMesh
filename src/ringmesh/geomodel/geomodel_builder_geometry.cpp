@@ -63,48 +63,37 @@ namespace {
      * @param[in] surface the surface where to find the polygon
      * @param[in] v0 the first vertex of the edge
      * @param[in] v1 the second vertex of the edge
-     * @param[out] f the found polygon index
-     * @param[out] e the found edge index
+     * @param[out] polygon the found polygon index
+     * @param[out] edge the found edge index
      * @return True if the polygon and the edge indices are found
      */
     bool find_polygon_from_edge_vertices(
         const Surface& surface,
         const vec3& v0,
         const vec3& v1,
-        index_t& p,
-        index_t& e )
+        index_t& polygon,
+        index_t& edge )
     {
         vec3 v_bary = 0.5 * ( v0 + v1 );
-        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() );
-        index_t cur_neighbor = 0;
-        index_t prev_neighbor = 0;
-        do {
-            prev_neighbor = cur_neighbor;
-            cur_neighbor += nb_neighbors;
-            cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() );
-            std::vector< index_t > neighbors =
-                surface.polygon_nn_search().get_neighbors( v_bary, cur_neighbor );
-            nb_neighbors = static_cast< index_t >( neighbors.size() );
-            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                p = neighbors[i];
-                for( index_t j = 0; j < surface.nb_mesh_element_vertices( p );
+        bool result = false;
+        surface.polygon_nn_search().get_neighbors( v_bary,
+            [&surface, &v0, &v1, &result, &edge, &polygon]( index_t i ) {
+                for( index_t j = 0; j < surface.nb_mesh_element_vertices( i );
                     j++ ) {
-                    if( inexact_equal( surface.mesh_element_vertex( p, j ), v0,
-                        surface.geomodel().epsilon() ) ) {
-                        index_t j_next = surface.next_polygon_vertex_index( p, j );
-                        if( inexact_equal( surface.mesh_element_vertex( p, j_next ),
-                            v1, surface.geomodel().epsilon() ) ) {
-                            e = j;
+                    if( inexact_equal( surface.mesh_element_vertex( i, j ), v0,
+                            surface.geomodel().epsilon() ) ) {
+                        index_t j_next = surface.next_polygon_vertex_index( i, j );
+                        if( inexact_equal( surface.mesh_element_vertex( i, j_next ),
+                                v1, surface.geomodel().epsilon() ) ) {
+                            edge = j;
+                            polygon = i;
+                            result = true;
                             return true;
                         }
                     }
                 }
-            }
-        } while( surface.nb_mesh_elements() != cur_neighbor );
-
-        p = NO_ID;
-        e = NO_ID;
-        return false;
+                return false;} );
+        return result;
     }
 
     bool are_cell_facet_and_polygon_equal(
@@ -135,31 +124,21 @@ namespace {
         index_t& cell_facet )
     {
         vec3 v_bary = surface.mesh_element_barycenter( polygon );
-        index_t nb_neighbors = std::min( index_t( 5 ), region.nb_mesh_elements() );
-        index_t cur_neighbor = 0;
-        index_t prev_neighbor = 0;
-        do {
-            prev_neighbor = cur_neighbor;
-            cur_neighbor += nb_neighbors;
-            cur_neighbor = std::min( cur_neighbor, region.nb_mesh_elements() );
-            std::vector< index_t > neighbors = region.cell_nn_search().get_neighbors(
-                v_bary, cur_neighbor );
-            nb_neighbors = static_cast< index_t >( neighbors.size() );
-            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                cell = neighbors[i];
-                for( cell_facet = 0; cell_facet < region.nb_cell_facets( cell );
-                    cell_facet++ ) {
-                    if( are_cell_facet_and_polygon_equal( region, cell, cell_facet,
-                        surface, polygon ) ) {
+        bool result = false;
+        region.cell_nn_search().get_neighbors( v_bary,
+            [&region, &surface, polygon, &result, &cell_facet, &cell]( index_t i ) {
+                for( index_t cell_facet_i = 0; cell_facet_i < region.nb_cell_facets( i );
+                    cell_facet_i++ ) {
+                    if( are_cell_facet_and_polygon_equal( region, i, cell_facet_i,
+                            surface, polygon ) ) {
+                        cell_facet = cell_facet_i;
+                        cell = i;
+                        result = true;
                         return true;
                     }
                 }
-            }
-        } while( region.nb_mesh_elements() != cur_neighbor );
-
-        cell = NO_ID;
-        cell_facet = NO_ID;
-        return false;
+                return false;} );
+        return result;
     }
 
     bool find_polygon_from_vertex(
@@ -168,68 +147,45 @@ namespace {
         index_t& element_id,
         index_t& vertex_id )
     {
-        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() );
-        index_t cur_neighbor = 0;
-        index_t prev_neighbor = 0;
-        do {
-            prev_neighbor = cur_neighbor;
-            cur_neighbor += nb_neighbors;
-            cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() );
-            std::vector< index_t > neighbors =
-                surface.polygon_nn_search().get_neighbors( v, cur_neighbor );
-            nb_neighbors = static_cast< index_t >( neighbors.size() );
-            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                element_id = neighbors[i];
+        bool result = false;
+        surface.polygon_nn_search().get_neighbors( v,
+            [&surface, &v, &result, &vertex_id, &element_id]( index_t i ) {
                 for( index_t j = 0;
-                    j < surface.nb_mesh_element_vertices( element_id ); j++ ) {
-                    if( inexact_equal( surface.mesh_element_vertex( element_id, j ),
-                        v, surface.geomodel().epsilon() ) ) {
-                        vertex_id = surface.mesh_element_vertex_index( element_id,
+                    j < surface.nb_mesh_element_vertices( i ); j++ ) {
+                    if( inexact_equal( surface.mesh_element_vertex( i, j ),
+                            v, surface.geomodel().epsilon() ) ) {
+                        vertex_id = surface.mesh_element_vertex_index( i,
                             j );
+                        element_id = i;
+                        result = true;
                         return true;
                     }
                 }
-            }
-        } while( surface.nb_mesh_elements() != cur_neighbor );
-
-        element_id = NO_ID;
-        vertex_id = NO_ID;
-        return false;
+                return false;} );
+        return result;
     }
 
     bool find_cell_from_vertex(
-        const Region& entity,
+        const Region& region,
         const vec3& v,
         index_t& element_id,
         index_t& vertex_id )
     {
-        index_t nb_neighbors = std::min( index_t( 5 ), entity.nb_mesh_elements() );
-        index_t cur_neighbor = 0;
-        index_t prev_neighbor = 0;
-        do {
-            prev_neighbor = cur_neighbor;
-            cur_neighbor += nb_neighbors;
-            cur_neighbor = std::min( cur_neighbor, entity.nb_mesh_elements() );
-            std::vector< index_t > neighbors = entity.cell_nn_search().get_neighbors(
-                v, cur_neighbor );
-            nb_neighbors = static_cast< index_t >( neighbors.size() );
-            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                element_id = neighbors[i];
+        bool result = false;
+        region.cell_nn_search().get_neighbors( v,
+            [&region, &v, &result, &element_id, &vertex_id]( index_t i ) {
                 for( index_t j = 0;
-                    j < entity.nb_mesh_element_vertices( element_id ); j++ ) {
-                    if( inexact_equal( entity.mesh_element_vertex( element_id, j ),
-                        v, entity.geomodel().epsilon() ) ) {
-                        vertex_id = entity.mesh_element_vertex_index( element_id,
+                    j < region.nb_mesh_element_vertices( i ); j++ ) {
+                    if( inexact_equal( region.mesh_element_vertex( i, j ),
+                            v, region.geomodel().epsilon() ) ) {
+                        vertex_id = region.mesh_element_vertex_index( i,
                             j );
+                        element_id = i;
                         return true;
                     }
                 }
-            }
-        } while( entity.nb_mesh_elements() != cur_neighbor );
-
-        element_id = NO_ID;
-        vertex_id = NO_ID;
-        return false;
+                return false;} );
+        return result;
     }
 
     index_t edge_index_from_polygon_and_edge_vertex_indices(
@@ -601,7 +557,8 @@ namespace RINGMesh {
         const std::vector< bool >& to_delete,
         bool remove_isolated_vertices )
     {
-        std::unique_ptr< LineMeshBuilder< 3 > > builder = create_line_builder( line_id );
+        std::unique_ptr< LineMeshBuilder< 3 > > builder = create_line_builder(
+            line_id );
         builder->delete_edges( to_delete, remove_isolated_vertices );
     }
     void GeoModelBuilderGeometry::delete_surface_polygons(
