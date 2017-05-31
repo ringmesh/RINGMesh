@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?><diagram program="umlet" version="13.3">
+  <zoom_level>7</zoom_level>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>217</x>
+      <y>70</y>
+      <w>119</w>
+      <h>56</h>
+    </coordinates>
+    <panel_attributes>_GeoModel_
+--
+name: std::string
+--
+bool is_model_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>259</x>
+      <y>476</y>
+      <w>147</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>_Surface_
+--
+virtual bool is_mesh_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>259</x>
+      <y>700</y>
+      <w>147</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>_Corner_
+--
+virtual bool is_mesh_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>259</x>
+      <y>588</y>
+      <w>147</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>_Line_
+--
+virtual bool is_mesh_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>315</x>
+      <y>70</y>
+      <w>118</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=*</panel_attributes>
+    <additional_attributes>21;21;56;21;56;77;105;77</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>252</x>
+      <y>224</y>
+      <w>175</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>/AbstractClass/
+_GeoModelMeshEntity_
+--
+mesh: Mesh 
+--
+virtual bool is_mesh_valid() = 0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>196</x>
+      <y>483</y>
+      <w>76</w>
+      <h>139</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>21;21;21;126;63;126</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>420</x>
+      <y>112</y>
+      <w>161</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>/AbstractClass/
+_GeoModelEntity_
+--
+name: std::string
+--
+virtual bool is_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>315</x>
+      <y>154</y>
+      <w>195</w>
+      <h>83</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>182;21;182;42;21;42;21;70</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>294</x>
+      <y>504</y>
+      <w>82</w>
+      <h>97</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;
+m1=in_boundary   .
+m2=boundary</panel_attributes>
+    <additional_attributes>42;21;42;84</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>294</x>
+      <y>616</y>
+      <w>82</w>
+      <h>97</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;
+m1=in_boundary   .
+m2=boundary</panel_attributes>
+    <additional_attributes>42;21;42;84</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>259</x>
+      <y>357</y>
+      <w>147</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>_Region_
+--
+virtual bool is_mesh_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>294</x>
+      <y>385</y>
+      <w>82</w>
+      <h>104</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;
+m1=in_boundary   .
+m2=boundary</panel_attributes>
+    <additional_attributes>42;21;42;91</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>658</x>
+      <y>28</y>
+      <w>126</w>
+      <h>126</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+GEOL_FEATURE
+--
+ALL_GEOL
+NO_GEOL
+STRATI
+UNCONFORMITY
+NORMAL_FAULT
+REVERSE_FAULT
+FAULT
+VOI</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>567</x>
+      <y>77</y>
+      <w>104</w>
+      <h>83</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>91;21;49;21;49;70;21;70</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>196</x>
+      <y>588</y>
+      <w>76</w>
+      <h>153</h>
+    </coordinates>
+    <panel_attributes>lt=-
+</panel_attributes>
+    <additional_attributes>21;21;21;140;63;140</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>196</x>
+      <y>364</y>
+      <w>76</w>
+      <h>153</h>
+    </coordinates>
+    <panel_attributes>lt=-
+</panel_attributes>
+    <additional_attributes>63;140;21;140;21;21</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>196</x>
+      <y>266</y>
+      <w>153</w>
+      <h>132</h>
+    </coordinates>
+    <panel_attributes>lt=&gt;&gt;-
+</panel_attributes>
+    <additional_attributes>63;119;21;119;21;63;140;63;140;21</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>420</x>
+      <y>7</y>
+      <w>161</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>_GeoModelMesh_
+--
+mesh: Mesh 
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>350</x>
+      <y>14</y>
+      <w>83</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m2=1</panel_attributes>
+    <additional_attributes>21;77;21;21;70;21</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>560</x>
+      <y>224</y>
+      <w>175</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>/AbstractClass/
+_GeoModelGeologicalEntity_
+
+--
+virtual bool is_connectivity_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>476</x>
+      <y>175</y>
+      <w>188</w>
+      <h>62</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>21;21;175;21;175;49</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>581</x>
+      <y>588</y>
+      <w>147</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>_Contact_
+--
+virtual bool is_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>581</x>
+      <y>476</y>
+      <w>147</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>_Interface_
+--
+virtual bool is_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>588</x>
+      <y>357</y>
+      <w>147</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>_Layer_
+--
+virtual bool is_valid()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>630</x>
+      <y>266</y>
+      <w>174</w>
+      <h>132</h>
+    </coordinates>
+    <panel_attributes>lt=&gt;&gt;-
+</panel_attributes>
+    <additional_attributes>105;119;161;119;161;63;21;63;21;21</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>707</x>
+      <y>364</y>
+      <w>97</w>
+      <h>153</h>
+    </coordinates>
+    <panel_attributes>lt=-
+</panel_attributes>
+    <additional_attributes>21;140;84;140;84;21</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>707</x>
+      <y>483</y>
+      <w>97</w>
+      <h>139</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>84;21;84;126;21;126</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>385</x>
+      <y>364</y>
+      <w>216</w>
+      <h>34</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;
+m1=parent
+m2=child</panel_attributes>
+    <additional_attributes>203;21;21;21</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>385</x>
+      <y>595</y>
+      <w>209</w>
+      <h>34</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;
+m1=parent
+m2=child</panel_attributes>
+    <additional_attributes>196;21;21;21</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>385</x>
+      <y>483</y>
+      <w>209</w>
+      <h>34</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;
+m1=parent
+m2=child</panel_attributes>
+    <additional_attributes>196;21;21;21</additional_attributes>
+  </element>
+</diagram>
