@@ -54,14 +54,15 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+
+    using MeshEntityTypeMap = std::map< MeshEntityType, MeshEntityType >;
+
     /*!
      * @brief struct used to map the type of a Mesh Entity to the type of its boundary
      * "Corner" is boundary of "Line"
      * "Line" is boundary of "Surface"
      * "Surface" is boundary of "Region"
      */
-    using MeshEntityTypeMap = std::map< MeshEntityType, MeshEntityType >;
-
     template< index_t DIMENSION >
     struct MeshEntityTypeBoundaryMapBase {
         void register_boundary(
@@ -85,6 +86,13 @@ namespace RINGMesh {
         MeshEntityTypeBoundaryMap< 3 >();
     };
 
+    /*!
+     * @brief struct used to map the type of a Mesh Entity to the type of
+     * its incident mesh entity
+     * "Line" is incident of "Corner"
+     * "Surface" is incident of "Line"
+     * "Refion" is incident of "Surface"
+     */
     template< index_t DIMENSION >
     struct MeshEntityTypeIncidentEntityMapBase {
         void register_incident_entity(
