@@ -47,7 +47,7 @@ namespace RINGMesh {
 
     GeoModelBuilderRepair::GeoModelBuilderRepair(
         GeoModelBuilder& builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }

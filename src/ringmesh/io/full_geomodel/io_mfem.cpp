@@ -59,13 +59,13 @@ namespace {
      */
     class MFEMIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from MFEM not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             const GeoModelMesh& geomodel_mesh = geomodel.mesh;
             index_t nb_cells = geomodel_mesh.cells.nb();

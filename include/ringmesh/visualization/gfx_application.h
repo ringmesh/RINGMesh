@@ -166,7 +166,7 @@ namespace RINGMesh {
         public:
             RINGMeshApplication& app_;
             bool is_visible_;
-            GeoModel GM_;
+            GeoModel< 3 > GM_;
             GeoModelGfx GM_gfx_;
             Box< 3 > bbox_;
             std::vector< std::string > entity_types_;

@@ -275,7 +275,7 @@ namespace {
         return NO_ID;
     }
 
-    void check_and_initialize_corner_vertex( GeoModel& geomodel, index_t corner_id )
+    void check_and_initialize_corner_vertex( GeoModel< 3 >& geomodel, index_t corner_id )
     {
         if( geomodel.corner( corner_id ).nb_vertices() == 0 ) {
             GeoModelBuilder builder( geomodel );
@@ -288,7 +288,7 @@ namespace {
 namespace RINGMesh {
     GeoModelBuilderGeometry::GeoModelBuilderGeometry(
         GeoModelBuilder& builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
@@ -299,7 +299,7 @@ namespace RINGMesh {
         geomodel_.mesh.vertices.test_and_initialize();
     }
 
-    void GeoModelBuilderGeometry::copy_meshes( const GeoModel& geomodel )
+    void GeoModelBuilderGeometry::copy_meshes( const GeoModel< 3 >& geomodel )
     {
         copy_meshes( geomodel, Corner< 3 >::type_name_static() );
         copy_meshes( geomodel, Line< 3 >::type_name_static() );
@@ -940,7 +940,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderGeometry::copy_meshes(
-        const GeoModel& from,
+        const GeoModel< 3 >& from,
         const MeshEntityType& entity_type )
     {
         for( index_t i = 0; i < geomodel_.nb_mesh_entities( entity_type ); ++i ) {
@@ -949,7 +949,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderGeometry::copy_mesh(
-        const GeoModel& from,
+        const GeoModel< 3 >& from,
         const gmme_id& mesh_entity )
     {
         const GeoModelMeshEntityConstAccess< 3 > from_E_const_access(

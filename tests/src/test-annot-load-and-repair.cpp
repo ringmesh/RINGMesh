@@ -56,7 +56,7 @@ int main()
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
         Logger::instance()->register_client( file_logger );
 
-        GeoModel M;
+        GeoModel< 3 > M;
         std::string file_name( ringmesh_test_data_path );
         file_name += "annot.ml";
 

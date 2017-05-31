@@ -90,13 +90,13 @@ namespace {
      */
     class MSHIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GMSH not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -202,7 +202,7 @@ namespace {
          * - A Prism
          * - An Hexaedron
          */
-        index_t count_elements( const GeoModel& geomodel )
+        index_t count_elements( const GeoModel< 3 >& geomodel )
         {
             index_t nb_elements = 0;
             const std::vector< MeshEntityType >& gmme_types =

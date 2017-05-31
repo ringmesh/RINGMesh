@@ -46,7 +46,7 @@
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class UniverseAccess;
 }
 
@@ -66,7 +66,7 @@ namespace RINGMesh {
         virtual bool is_on_voi() const = 0;
         virtual bool is_valid() const = 0;
 
-        const GeoModel& geomodel() const
+        const GeoModel< DIMENSION >& geomodel() const
         {
             return geomodel_;
         }
@@ -89,8 +89,9 @@ namespace RINGMesh {
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */
-        GeoModelEntity(
-            const GeoModel& geomodel,
+        template< index_t DIMENSION >
+        GeoModelEntity (
+            const GeoModel< DIMENSION >& geomodel,
             index_t id,
             const std::string& name = "Unnamed" )
             : geomodel_( geomodel ), name_( name ), id_( id )
@@ -105,7 +106,7 @@ namespace RINGMesh {
 
     protected:
         /// Reference to the GeoModel owning this entity
-        const GeoModel& geomodel_;
+        const GeoModel< DIMENSION >& geomodel_;
         /// Name of the entity - default is "Unnamed"
         std::string name_;
 
@@ -119,7 +120,7 @@ namespace RINGMesh {
     public:
         friend class UniverseAccess< DIMENSION > ;
 
-        Universe( const GeoModel& geomodel );
+        Universe( const GeoModel< DIMENSION >& geomodel );
 
         static const UniverseType universe_type_name()
         {

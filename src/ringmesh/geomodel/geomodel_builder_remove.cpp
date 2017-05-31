@@ -47,7 +47,7 @@ namespace RINGMesh {
 
     GeoModelBuilderRemoval::GeoModelBuilderRemoval(
         GeoModelBuilder& builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
         nb_mesh_entity_types_ = MeshEntityTypeManager::nb_mesh_entity_types();

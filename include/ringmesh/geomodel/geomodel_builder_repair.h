@@ -81,7 +81,7 @@ namespace RINGMesh {
          */
         void repair( RepairMode repair_mode );
     private:
-        GeoModelBuilderRepair( GeoModelBuilder& builder, GeoModel& geomodel );
+        GeoModelBuilderRepair( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
 
         /*!
          * All implemented repair for a GeoModel.
@@ -189,7 +189,7 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel& geomodel_;
+        GeoModel< 3 >& geomodel_;
         GeoModelAccess geomodel_access_;
     };
 

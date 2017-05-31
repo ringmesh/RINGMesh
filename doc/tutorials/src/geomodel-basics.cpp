@@ -80,7 +80,7 @@ int main()
         GEO::Stopwatch total( "Total time" );
 
         // We instantiate the class GeoModel
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
 
         //load GeoModel
         //here you can load whatever the model you want in the ringmesh_home/test/data directory

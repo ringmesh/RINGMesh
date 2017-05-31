@@ -225,7 +225,7 @@ namespace RINGMesh {
     std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > GeoModelGeologicalEntityAccess<
         DIMENSION >::create_geological_entity(
         const GeologicalEntityType& type,
-        const GeoModel& geomodel,
+        const GeoModel< DIMENSION >& geomodel,
         index_t index_in_geomodel )
     {
         GeoModelGeologicalEntity< DIMENSION >* GMGE =
