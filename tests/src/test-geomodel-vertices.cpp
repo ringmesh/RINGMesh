@@ -43,6 +43,20 @@
 
 using namespace RINGMesh;
 
+void error(
+    index_t vertex_id_in_mesh_entity,
+    index_t vertex_id_in_geomodel_mesh,
+    const gmme_id& mesh_entity_gmme_id )
+{
+    throw RINGMeshException( "TEST",
+        "Vertex " + GEO::String::to_string( vertex_id_in_mesh_entity )
+            + " in entity " + GEO::String::to_string( mesh_entity_gmme_id.type() )
+            + GEO::String::to_string( mesh_entity_gmme_id.index() )
+            + +" has not the same coordinate than its equivalent vertex "
+            + GEO::String::to_string( vertex_id_in_geomodel_mesh )
+            + " in the GeoModelMesh" );
+
+}
 void test_geomodel_vertices( const GeoModel& geomodel )
 {
     const GeoModelMeshVertices& geomodel_mesh_vertices = geomodel.mesh.vertices;
@@ -61,18 +75,11 @@ void test_geomodel_vertices( const GeoModel& geomodel )
                 if( geomodel_mesh_vertices.vertex( vertex_id_in_geomodel_mesh )
                     != cur_geomodel_mesh_entity.vertex(
                         vertex_id_in_mesh_entity ) ) {
-                    throw RINGMeshException( "TEST",
-                        "Vertex "
-                            + GEO::String::to_string( vertex_id_in_mesh_entity )
-                            + " in entity "
-                            + GEO::String::to_string(
-                                cur_geomodel_mesh_entity.type_name() )
-                            + GEO::String::to_string( mesh_entity_id )
-                            + +" has not the same coordinate than its equivalent vertex "
-                            + GEO::String::to_string( vertex_id_in_geomodel_mesh )
-                            + " in the GeoModelMesh" );
+                    error( vertex_id_in_mesh_entity, vertex_id_in_geomodel_mesh,
+                        cur_geomodel_mesh_entity.gmme() );
                 }
             }
+
         }
     }
 }
@@ -92,15 +99,8 @@ void test_GMEVertex( const GeoModel& geomodel )
             index_t vertex_id_in_mesh_entity = cur_vertex_on_geomodel.v_index;
             if( geomodel_mesh_vertices.vertex( vertex_id_in_geomodel_mesh )
                 != cur_geomodel_mesh_entity.vertex( vertex_id_in_mesh_entity ) ) {
-                throw RINGMeshException( "TEST",
-                    "Vertex " + GEO::String::to_string( vertex_id_in_mesh_entity )
-                        + " in entity "
-                        + GEO::String::to_string(
-                            cur_geomodel_mesh_entity.type_name() )
-                        + GEO::String::to_string( cur_geomodel_mesh_entity.index() )
-                        + +" has not the same coordinate than its equivalent vertex "
-                        + GEO::String::to_string( vertex_id_in_geomodel_mesh )
-                        + " in the GeoModelMesh" );
+                error( vertex_id_in_mesh_entity, vertex_id_in_geomodel_mesh,
+                    cur_geomodel_mesh_entity.gmme() );
             }
         }
     }
@@ -126,7 +126,6 @@ int main()
         }
         test_geomodel_vertices( in );
         test_GMEVertex( in );
-
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
