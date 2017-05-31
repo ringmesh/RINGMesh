@@ -167,7 +167,7 @@ namespace {
     }
 
     bool find_cell_from_vertex(
-        const Region& region,
+        const Region< 3 >& region,
         const vec3& v,
         index_t& element_id,
         index_t& vertex_id )

@@ -108,6 +108,13 @@ namespace RINGMesh {
             const vecn< DIMENSION >& v,
             double threshold_distance ) const;
 
+        /*!
+         * Compute the neighbors of a given point according the \param test
+         * @param[in] v the point to test
+         * @tparam[in] test This functor takes an index of a neighbor point as parameter
+         * and returns true to stop the search, false to continue.
+         * @return the point indices
+         */
         template< typename TEST >
         std::vector< index_t > get_neighbors(
             const vecn< DIMENSION >& v,
