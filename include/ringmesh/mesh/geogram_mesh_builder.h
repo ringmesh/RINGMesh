@@ -47,7 +47,7 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
 }
 
 namespace RINGMesh {
@@ -128,7 +128,7 @@ namespace RINGMesh {
         }                                                                                       \
         void set_geogram_mesh( Class< DIMENSION >& mesh )                                       \
         {                                                                                       \
-            mesh_ = &dynamic_cast< Class< DIMENSION >& >( mesh );                               \
+            mesh_ = &mesh;                                                                      \
         }                                                                                       \
     protected:                                                                                  \
         void delete_vertex_nn_search()                                                          \
@@ -139,7 +139,7 @@ namespace RINGMesh {
         Class< DIMENSION >* mesh_
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
+    class GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -158,7 +158,7 @@ namespace RINGMesh {
     using GeogramPointSetMesh3DBuilder = GeogramPointSetMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
+    class GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -253,7 +253,7 @@ namespace RINGMesh {
     using GeogramLineMesh3DBuilder = GeogramLineMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder<
+    class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder<
         DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -419,9 +419,9 @@ namespace RINGMesh {
     using GeogramSurfaceMesh3DBuilder = GeogramSurfaceMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {
+    class GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );
-        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
+        ringmesh_template_assert_3d( DIMENSION );
     public:
 
         virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) override

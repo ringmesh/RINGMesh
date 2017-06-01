@@ -82,13 +82,13 @@ namespace {
             clear();
         }
 
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename ) final
+        virtual void save( const GeoModel< 3 >& gm, const std::string& filename ) final
         {
             initialize( gm );
 
@@ -480,11 +480,11 @@ namespace {
             edge_boundary_flags_.clear();
             surface_boundary_flags_.clear();
         }
-        void initialize( const GeoModel& gm )
+        void initialize( const GeoModel< 3 >& gm )
         {
             clear();
 
-            const GeoModel& geomodel = gm;
+            const GeoModel< 3 >& geomodel = gm;
             std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" );
             box_model_ = cmsp_filename != "";
             if( box_model_ ) {
@@ -657,7 +657,7 @@ namespace {
                 }
             }
         }
-        std::string interface_csmp_name( index_t i, const GeoModel& geomodel ) const
+        std::string interface_csmp_name( index_t i, const GeoModel< 3 >& geomodel ) const
         {
             if( box_model_ ) {
                 if( i == back_ ) {

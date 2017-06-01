@@ -37,47 +37,59 @@
 
 #include <ringmesh/basic/common.h>
 
+#ifdef RINGMESH_WITH_GRAPHICS
+
 #include <memory>
 
-#include <geogram/basic/line_stream.h>
+#include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
-#include <zlib/unzip.h>
-
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/visualization/geomodel_entity_gfx.h>
+#include <ringmesh/visualization/mesh_entity_gfx.h>
 
 /*!
- * @file ringmesh/geomodel_builder_ringmesh.h
- * @brief Classes to build GeoModel from various inputs
- * @author 
+ * @file Classes for GeoModel visualization
+ * @author Benjamin Chauvin and Arnaud Botella
  */
 
 namespace RINGMesh {
-    class GeoModelBuilderGMImpl;
+    template < index_t DIMENSION > class GeoModel;
 }
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile {
+    class RINGMESH_API GeoModelGfx {
+    ringmesh_disable_copy( GeoModelGfx );
     public:
-        static const index_t NB_VERSION = 3;
-        GeoModelBuilderGM( GeoModel< 3 >& geomodel, const std::string& filename );
-        virtual ~GeoModelBuilderGM();
 
-    private:
-        void load_geological_entities( const std::string& geological_entity_file );
+        GeoModelGfx();
+        ~GeoModelGfx();
 
         /*!
-         * @brief Load meshes of all the mesh entities from a zip file
-         * @param[in] uz the zip file
+         * Sets the GeoModel associated to the graphics
+         * @param[in] geomodel the GeoModel
          */
-        void load_meshes( unzFile& uz );
-
-        virtual void load_file() final;
-
-        void load_mesh_entities( const std::string& mesh_entity_file );
+        void set_geomodel( const GeoModel< 3 >& geomodel );
+        /*!
+         * Gets the GeoModel associated to the graphics
+         * @return the GeoModel
+         */
+        const GeoModel< 3 >* geomodel() const;
+        /*!
+         * Initializes the database according the GeoModel dimensions
+         */
+        void initialize();
 
     private:
-        index_t file_version_;
-        std::unique_ptr< GeoModelBuilderGMImpl > version_impl_[NB_VERSION];
+        /// The GeoModel associated to the graphics
+        const GeoModel< 3 >* geomodel_;
+
+    public:
+        CornerGfxEnity corners;
+        LineGfxEntity lines;
+        SurfaceGfxEntity surfaces;
+        RegionGfxEntity regions;
+        AttributeGfxManager attribute;
     };
 }
+
+#endif

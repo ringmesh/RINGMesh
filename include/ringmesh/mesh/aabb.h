@@ -59,7 +59,7 @@ namespace RINGMesh {
      *  Storage: |empty|ROOT|A1|A2|B1|B2|B3|B4|
      */
     template< index_t DIMENSION >
-    class RINGMESH_API AABBTree {
+    class AABBTree {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         /// The index where to store the root. It starts to one for algorithm trick.
@@ -242,7 +242,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION>
-    class RINGMESH_API BoxAABBTree: public AABBTree< DIMENSION > {
+    class BoxAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         BoxAABBTree( const std::vector< Box< DIMENSION > >& boxes );
@@ -259,7 +259,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API LineAABBTree: public AABBTree< DIMENSION > {
+    class LineAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         LineAABBTree( const LineMesh< DIMENSION >& mesh );
@@ -310,7 +310,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API SurfaceAABBTree: public AABBTree< DIMENSION > {
+    class SurfaceAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         SurfaceAABBTree( const SurfaceMeshBase< DIMENSION >& mesh );
@@ -362,7 +362,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API VolumeAABBTree: public AABBTree< DIMENSION > {
+    class VolumeAABBTree: public AABBTree< DIMENSION > {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
         VolumeAABBTree( const VolumeMesh< DIMENSION >& mesh );

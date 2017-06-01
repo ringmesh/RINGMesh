@@ -119,30 +119,9 @@ namespace RINGMesh {
         const vecn< DIMENSION >& v,
         double threshold_distance ) const
     {
-        std::vector< index_t > result;
-        index_t nb_points = nn_tree_->nb_points();
-        if( nb_points != 0 ) {
-            double threshold_distance_sq = threshold_distance * threshold_distance;
-            index_t nb_neighbors = std::min( index_t( 5 ), nb_points );
-            index_t cur_neighbor = 0;
-            index_t prev_neighbor = 0;
-            do {
-                prev_neighbor = cur_neighbor;
-                cur_neighbor += nb_neighbors;
-                result.reserve( cur_neighbor );
-                std::vector< index_t > neighbors = get_neighbors( v, cur_neighbor );
-                nb_neighbors = static_cast< index_t >( neighbors.size() );
-                for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                    if( length2( v - point( neighbors[i] ) )
-                        > threshold_distance_sq ) {
-                        break;
-                    }
-                    result.push_back( neighbors[i] );
-                }
-            } while( result.size() == cur_neighbor && result.size() < nb_points );
-        }
-        return result;
-
+        double threshold_distance_sq = threshold_distance * threshold_distance;
+        return get_neighbors( v, [this, &v, threshold_distance_sq]( index_t i ) {
+            return length2( v - point( i ) ) > threshold_distance_sq;} );
     }
 
     template< index_t DIMENSION >
@@ -171,6 +150,6 @@ namespace RINGMesh {
         }
     }
 
-    template class NNSearch< 2 >;
-    template class NNSearch< 3 >;
+    template class RINGMESH_API NNSearch< 2 >;
+    template class RINGMESH_API NNSearch< 3 >;
 }
