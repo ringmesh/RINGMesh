@@ -68,8 +68,8 @@ namespace RINGMesh {
         virtual ~MeshEntityGfx() = default;
 
         virtual void draw_vertices() = 0;
-        virtual void set_vertices_color( float r, float g, float b ) = 0;
-        virtual void set_vertices_size( index_t s ) = 0;
+        virtual void set_vertex_color( float r, float g, float b ) = 0;
+        virtual void set_vertex_size( index_t s ) = 0;
 
         virtual void set_scalar_attribute(
             GEO::MeshElementsFlags subelements,
@@ -79,24 +79,24 @@ namespace RINGMesh {
             GLuint colormap_texture ) = 0;
         virtual void unset_scalar_attribute() = 0;
 
-        void set_vertices_visible( bool b )
+        void set_vertex_visible( bool b )
         {
-            vertices_visible_ = b;
+            vertex_visible_ = b;
         }
 
-        bool get_vertices_visible() const
+        bool get_vertex_visible() const
         {
-            return vertices_visible_;
+            return vertex_visible_;
         }
 
     protected:
         MeshEntityGfx()
         {
-            set_vertices_visible( false );
+            set_vertex_visible( false );
         }
 
-    protected:
-        bool vertices_visible_;
+    private:
+        bool vertex_visible_;
     };
 
     class RINGMESH_API PointSetMeshGfx: public MeshEntityGfx {
@@ -109,7 +109,7 @@ namespace RINGMesh {
     protected:
         PointSetMeshGfx()
         {
-            set_vertices_visible( true );
+            set_vertex_visible( true );
         }
 
     };
@@ -123,28 +123,28 @@ namespace RINGMesh {
 
         static std::unique_ptr< LineMeshGfx > create_gfx( const LineMesh& mesh );
 
-        void set_edges_visible( bool b )
+        void set_edge_visible( bool b )
         {
-            edges_visible_ = b;
+            edge_visible_ = b;
         }
-        bool get_edges_visible() const
+        bool get_edge_visible() const
         {
-            return edges_visible_;
+            return edge_visible_;
         }
 
         virtual void draw_edges() = 0;
-        virtual void set_edges_color( float r, float g, float b ) = 0;
-        virtual void set_edges_width( index_t s ) = 0;
+        virtual void set_edge_color( float r, float g, float b ) = 0;
+        virtual void set_edge_width( index_t s ) = 0;
 
     protected:
         LineMeshGfx()
         {
-            set_vertices_visible( false );
-            set_edges_visible( true );
+            set_vertex_visible( false );
+            set_edge_visible( true );
         }
 
     private:
-        bool edges_visible_;
+        bool edge_visible_;
     };
     using LineMeshGfxFactory = GEO::Factory0< LineMeshGfx >;
 #define ringmesh_register_line_gfx(type) \
@@ -176,7 +176,7 @@ namespace RINGMesh {
     protected:
         SurfaceMeshGfx()
         {
-            set_vertices_visible( false );
+            set_vertex_visible( false );
             set_surface_visible( true );
         }
     private:
@@ -213,7 +213,7 @@ namespace RINGMesh {
     protected:
         VolumeMeshGfx()
         {
-            set_vertices_visible( false );
+            set_vertex_visible( false );
             set_region_visible( true );
         }
 
