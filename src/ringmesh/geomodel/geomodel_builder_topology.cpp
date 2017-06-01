@@ -48,7 +48,7 @@
 namespace {
     using namespace RINGMesh;
 
-    gmme_id find_corner( const GeoModel& geomodel, const vec3& point )
+    gmme_id find_corner( const GeoModel< 3 >& geomodel, const vec3& point )
     {
         for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
             if( geomodel.corner( i ).vertex( 0 ) == point ) {
@@ -58,7 +58,7 @@ namespace {
         return gmme_id();
     }
 
-    gmme_id find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
+    gmme_id find_corner( const GeoModel< 3 >& geomodel, index_t geomodel_point_id )
     {
         const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices;
         const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
@@ -118,12 +118,12 @@ namespace RINGMesh {
 
     GeoModelBuilderTopology::GeoModelBuilderTopology(
         GeoModelBuilder& builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
 
-    void GeoModelBuilderTopology::copy_topology( const GeoModel& from )
+    void GeoModelBuilderTopology::copy_topology( const GeoModel< 3 >& from )
     {
 
         copy_mesh_entity_topology< Corner< 3 > >( from );

@@ -341,12 +341,12 @@ namespace RINGMesh {
         return std::unique_ptr< VolumeMesh< DIMENSION > >( mesh );
     }
 
-    template class PointSetMesh< 2 > ;
-    template class LineMesh< 2 > ;
-    template class SurfaceMeshBase< 2 > ;
+    template class RINGMESH_API PointSetMesh< 2 > ;
+    template class RINGMESH_API LineMesh< 2 > ;
+    template class RINGMESH_API SurfaceMeshBase< 2 > ;
 
-    template class PointSetMesh< 3 > ;
-    template class LineMesh< 3 > ;
-    template class SurfaceMeshBase< 3 > ;
-    template class VolumeMesh< 3 > ;
+    template class RINGMESH_API PointSetMesh< 3 > ;
+    template class RINGMESH_API LineMesh< 3 > ;
+    template class RINGMESH_API SurfaceMeshBase< 3 > ;
+    template class RINGMESH_API VolumeMesh< 3 > ;
 }

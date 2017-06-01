@@ -102,7 +102,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_coordinates() override
         {
-            const GeoModel* geomodel = manager_.gfx().geomodel();
+            const GeoModel< 3 >* geomodel = manager_.gfx().geomodel();
             GEO::AttributeStore* store =
                 geomodel->region( 0 ).cell_attribute_manager().find_attribute_store(
                     manager_.name() );
@@ -115,7 +115,7 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() );
-            const GeoModel* geomodel = manager_.gfx().geomodel();
+            const GeoModel< 3 >* geomodel = manager_.gfx().geomodel();
             for( index_t r = 0; r < geomodel->nb_regions(); r++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     geomodel->region( r ).cell_attribute_manager(), attribute_name );
@@ -149,7 +149,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_coordinates() override
         {
-            const GeoModel* geomodel = manager_.gfx().geomodel();
+            const GeoModel< 3 >* geomodel = manager_.gfx().geomodel();
             GEO::AttributeStore* store =
                 geomodel->region( 0 ).vertex_attribute_manager().find_attribute_store(
                     manager_.name() );
@@ -162,7 +162,7 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() );
-            const GeoModel* geomodel = manager_.gfx().geomodel();
+            const GeoModel< 3 >* geomodel = manager_.gfx().geomodel();
             for( index_t r = 0; r < geomodel->nb_regions(); r++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     geomodel->region( r ).vertex_attribute_manager(),
@@ -197,7 +197,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_coordinates() override
         {
-            const GeoModel* geomodel = manager_.gfx().geomodel();
+            const GeoModel< 3 >* geomodel = manager_.gfx().geomodel();
             GEO::AttributeStore* store =
                 geomodel->surface( 0 ).polygon_attribute_manager().find_attribute_store(
                     manager_.name() );
@@ -210,7 +210,7 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() );
-            const GeoModel* geomodel = manager_.gfx().geomodel();
+            const GeoModel< 3 >* geomodel = manager_.gfx().geomodel();
             for( index_t s = 0; s < geomodel->nb_surfaces(); s++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     geomodel->surface( s ).polygon_attribute_manager(),
@@ -245,7 +245,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_coordinates() override
         {
-            const GeoModel* geomodel = manager_.gfx().geomodel();
+            const GeoModel< 3 >* geomodel = manager_.gfx().geomodel();
             GEO::AttributeStore* store =
                 geomodel->surface( 0 ).vertex_attribute_manager().find_attribute_store(
                     manager_.name() );
@@ -258,7 +258,7 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() );
-            const GeoModel* geomodel = manager_.gfx().geomodel();
+            const GeoModel< 3 >* geomodel = manager_.gfx().geomodel();
             for( index_t s = 0; s < geomodel->nb_surfaces(); s++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     geomodel->surface( s ).vertex_attribute_manager(),

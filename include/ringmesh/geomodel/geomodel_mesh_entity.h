@@ -50,7 +50,7 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class GeoModelGeologicalEntity;
     template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
 }
@@ -63,7 +63,7 @@ namespace RINGMesh {
      * the RINGMesh::Mesh geometry.
      */
     template< index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity< DIMENSION > {
+    class GeoModelMeshEntity: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -275,7 +275,7 @@ namespace RINGMesh {
 
     protected:
         GeoModelMeshEntity(
-            const GeoModel& geomodel,
+            const GeoModel< DIMENSION >& geomodel,
             index_t id,
             const std::string& name = "No_name" )
             : GeoModelEntity< DIMENSION >( geomodel, id, name ), mesh_( nullptr )
@@ -351,7 +351,7 @@ namespace RINGMesh {
      * @details It is a unique point.
      */
     template< index_t DIMENSION >
-    class RINGMESH_API Corner: public GeoModelMeshEntity< DIMENSION > {
+    class Corner: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -433,7 +433,7 @@ namespace RINGMesh {
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
          */
-        Corner( const GeoModel& geomodel, index_t id, const MeshType type )
+        Corner( const GeoModel< DIMENSION >& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity< DIMENSION >( geomodel, id )
 
         {
@@ -480,7 +480,7 @@ namespace RINGMesh {
      * a 1-manifold (Line with no T intersections).
      */
     template< index_t DIMENSION >
-    class RINGMESH_API Line: public GeoModelMeshEntity< DIMENSION > {
+    class Line: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -590,7 +590,7 @@ namespace RINGMesh {
             return *line_mesh_;
         }
     protected:
-        Line( const GeoModel& geomodel, index_t id, const MeshType type )
+        Line( const GeoModel< DIMENSION >& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity< DIMENSION >( geomodel, id )
         {
             update_mesh_storage_type( LineMesh< DIMENSION >::create_mesh( type ) );
@@ -631,7 +631,7 @@ namespace RINGMesh {
      * (all edges of the polygons are in at most 2 polygons)
      */
     template< index_t DIMENSION >
-    class RINGMESH_API Surface: public GeoModelMeshEntity< DIMENSION > {
+    class Surface: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -763,7 +763,7 @@ namespace RINGMesh {
             return *surface_mesh_;
         }
     protected:
-        Surface( const GeoModel& geomodel, index_t id, const MeshType type )
+        Surface( const GeoModel< DIMENSION >& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity< DIMENSION >( geomodel, id )
         {
             update_mesh_storage_type(
@@ -815,7 +815,7 @@ namespace RINGMesh {
      * Its volumetric mesh is optional.
      */
     template< index_t DIMENSION >
-    class RINGMESH_API Region: public GeoModelMeshEntity< DIMENSION > {
+    class Region: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -1076,7 +1076,7 @@ namespace RINGMesh {
             return *volume_mesh_;
         }
     protected:
-        Region( const GeoModel& geomodel, index_t id, const MeshType type )
+        Region( const GeoModel< DIMENSION >& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity< DIMENSION >( geomodel, id )
         {
             update_mesh_storage_type( VolumeMesh< DIMENSION >::create_mesh( type ) );
@@ -1206,7 +1206,7 @@ namespace RINGMesh {
 
         template< typename ENTITY >
         static std::unique_ptr< ENTITY > create_entity(
-            const GeoModel& geomodel,
+            const GeoModel< DIMENSION >& geomodel,
             index_t id,
             const MeshType type )
         {
