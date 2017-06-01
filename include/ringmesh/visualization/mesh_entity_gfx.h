@@ -54,10 +54,10 @@ namespace RINGMesh {
     class GeoModelGfx;
     class AttributeGfx;
 
-    class PointSetMesh;
-    class LineMesh;
-    class SurfaceMesh;
-    class VolumeMesh;
+    template< index_t DIMENSION > class PointSetMesh;
+    template< index_t DIMENSION > class LineMesh;
+    template< index_t DIMENSION > class SurfaceMesh;
+    template< index_t DIMENSION > class VolumeMesh;
 }
 
 namespace RINGMesh {
@@ -101,10 +101,10 @@ namespace RINGMesh {
 
     class RINGMESH_API PointSetMeshGfx: public MeshEntityGfx {
     public:
-        virtual void set_mesh( const PointSetMesh& mesh ) = 0;
+        virtual void set_mesh( const PointSetMesh< 3 >& mesh ) = 0;
 
         static std::unique_ptr< PointSetMeshGfx > create_gfx(
-            const PointSetMesh& mesh );
+            const PointSetMesh< 3 >& mesh );
 
     protected:
         PointSetMeshGfx()
@@ -119,9 +119,10 @@ namespace RINGMesh {
 
     class RINGMESH_API LineMeshGfx: public MeshEntityGfx {
     public:
-        virtual void set_mesh( const LineMesh& mesh ) = 0;
+        virtual void set_mesh( const LineMesh< 3 >& mesh ) = 0;
 
-        static std::unique_ptr< LineMeshGfx > create_gfx( const LineMesh& mesh );
+        static std::unique_ptr< LineMeshGfx > create_gfx(
+            const LineMesh< 3 >& mesh );
 
         void set_edge_visible( bool is_visible )
         {
@@ -152,14 +153,17 @@ namespace RINGMesh {
 
     class RINGMESH_API SurfaceMeshGfx: public MeshEntityGfx {
     public:
-        virtual void set_mesh( const SurfaceMesh& mesh ) = 0;
+        virtual void set_mesh( const SurfaceMesh< 3 >& mesh ) = 0;
 
         static std::unique_ptr< SurfaceMeshGfx > create_gfx(
-            const SurfaceMesh& mesh );
+            const SurfaceMesh< 3 >& mesh );
 
         virtual void draw_surface() = 0;
         virtual void set_surface_color( float red, float green, float blue ) = 0;
-        virtual void set_backface_surface_color( float red, float green, float blue ) = 0;
+        virtual void set_backface_surface_color(
+            float red,
+            float green,
+            float blue ) = 0;
         virtual void set_mesh_color( float red, float green, float blue ) = 0;
         virtual void set_mesh_visibility( bool is_visible ) = 0;
         virtual void set_mesh_width( index_t s ) = 0;
@@ -188,9 +192,10 @@ namespace RINGMesh {
 
     class RINGMESH_API VolumeMeshGfx: public MeshEntityGfx {
     public:
-        virtual void set_mesh( const VolumeMesh& mesh ) = 0;
+        virtual void set_mesh( const VolumeMesh< 3 >& mesh ) = 0;
 
-        static std::unique_ptr< VolumeMeshGfx > create_gfx( const VolumeMesh& mesh );
+        static std::unique_ptr< VolumeMeshGfx > create_gfx(
+            const VolumeMesh< 3 >& mesh );
 
         void set_region_visible( bool is_visible )
         {

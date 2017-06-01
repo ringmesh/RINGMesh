@@ -176,7 +176,7 @@ namespace RINGMesh {
         virtual void set_mesh( const VolumeMesh< 3 >& mesh ) override
         {
             mesh_gfx_.set_mesh(
-                &dynamic_cast< const GeogramVolumeMesh< 3 >& 1( mesh ).gfx_mesh() );
+                &dynamic_cast< const GeogramVolumeMesh< 3 >& >( mesh ).gfx_mesh() );
         }
 
         virtual void draw_volume() override
