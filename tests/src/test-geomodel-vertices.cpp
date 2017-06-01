@@ -57,7 +57,7 @@ void error(
             + " in the GeoModelMesh" );
 
 }
-void test_geomodel_vertices( const GeoModel& geomodel )
+void test_geomodel_vertices( const GeoModel< 3 >& geomodel )
 {
     const GeoModelMeshVertices& geomodel_mesh_vertices = geomodel.mesh.vertices;
     for( const MeshEntityType& mesh_entity_type : geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types() ) {
@@ -84,7 +84,7 @@ void test_geomodel_vertices( const GeoModel& geomodel )
     }
 }
 
-void test_GMEVertex( const GeoModel& geomodel )
+void test_GMEVertex( const GeoModel< 3 >& geomodel )
 {
     const GeoModelMeshVertices& geomodel_mesh_vertices = geomodel.mesh.vertices;
 
@@ -117,7 +117,7 @@ int main()
         std::string input_model_file_name = ringmesh_test_data_path
             + "unit_cube_volume_meshed.gm";
 
-        GeoModel in;
+        GeoModel< 3 > in;
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
 
         if( !loaded_model_is_valid ) {
