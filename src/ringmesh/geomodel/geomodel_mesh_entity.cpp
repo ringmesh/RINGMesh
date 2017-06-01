@@ -974,10 +974,10 @@ namespace RINGMesh {
 //    template class Line< 2 >;
 //    template class Surface< 2 >;
 
-    template class GeoModelMeshEntity< 3 > ;
-    template class GeoModelMeshEntityAccess< 3 > ;
-    template class Corner< 3 > ;
-    template class Line< 3 > ;
-    template class Surface< 3 > ;
-    template class Region< 3 > ;
+    template class RINGMESH_API GeoModelMeshEntity< 3 > ;
+    template class RINGMESH_API GeoModelMeshEntityAccess< 3 > ;
+    template class RINGMESH_API Corner< 3 > ;
+    template class RINGMESH_API Line< 3 > ;
+    template class RINGMESH_API Surface< 3 > ;
+    template class RINGMESH_API Region< 3 > ;
 }

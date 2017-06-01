@@ -199,7 +199,8 @@ namespace RINGMesh {
     void GeoModelGeologicalEntity< DIMENSION >::initialize()
     {
         ringmesh_register_GeoModelGeologicalEntity3D_creator( Contact< DIMENSION > );
-        ringmesh_register_GeoModelGeologicalEntity3D_creator( Interface< DIMENSION > );
+        ringmesh_register_GeoModelGeologicalEntity3D_creator(
+            Interface< DIMENSION > );
         ringmesh_register_GeoModelGeologicalEntity3D_creator( Layer< DIMENSION > );
     }
 
@@ -237,7 +238,7 @@ namespace RINGMesh {
 //    template class GeoModelGeologicalEntity< 2 > ;
 //    template class GeoModelGeologicalEntityAccess< 2 > ;
 
-    template class GeoModelGeologicalEntity< 3 > ;
+    template class RINGMESH_API GeoModelGeologicalEntity< 3 > ;
     template class GeoModelGeologicalEntityAccess< 3 > ;
 
 }

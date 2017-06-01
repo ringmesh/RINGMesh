@@ -141,7 +141,7 @@ namespace RINGMesh {
      * class for encapsulating mesh composed of points
      */
     template< index_t DIMENSION >
-    class RINGMESH_API PointSetMesh: public MeshBase< DIMENSION > {
+    class PointSetMesh: public MeshBase< DIMENSION > {
     ringmesh_disable_copy( PointSetMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class PointSetMeshBuilder< DIMENSION > ;
@@ -170,7 +170,7 @@ namespace RINGMesh {
      * class for encapsulating line mesh (composed of edges)
      */
     template< index_t DIMENSION >
-    class RINGMESH_API LineMesh: public MeshBase< DIMENSION > {
+    class LineMesh: public MeshBase< DIMENSION > {
     ringmesh_disable_copy( LineMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class LineMeshBuilder< DIMENSION > ;
@@ -262,7 +262,7 @@ namespace RINGMesh {
      * class for encapsulating surface mesh component
      */
     template< index_t DIMENSION >
-    class RINGMESH_API SurfaceMeshBase: public MeshBase< DIMENSION > {
+    class SurfaceMeshBase: public MeshBase< DIMENSION > {
     ringmesh_disable_copy( SurfaceMeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class SurfaceMeshBuilder< DIMENSION > ;
@@ -556,7 +556,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
+    class SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
 
     };
 
@@ -669,7 +669,7 @@ namespace RINGMesh {
      * class for encapsulating volume mesh component
      */
     template< index_t DIMENSION >
-    class RINGMESH_API VolumeMesh: public MeshBase< DIMENSION > {
+    class VolumeMesh: public MeshBase< DIMENSION > {
     ringmesh_disable_copy( VolumeMesh );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
         friend class VolumeMeshBuilder< DIMENSION > ;

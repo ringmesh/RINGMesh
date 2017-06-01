@@ -63,7 +63,7 @@ namespace RINGMesh {
      * the RINGMesh::Mesh geometry.
      */
     template< index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity< DIMENSION > {
+    class GeoModelMeshEntity: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -357,7 +357,7 @@ namespace RINGMesh {
      * @details It is a unique point.
      */
     template< index_t DIMENSION >
-    class RINGMESH_API Corner: public GeoModelMeshEntity< DIMENSION > {
+    class Corner: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -486,7 +486,7 @@ namespace RINGMesh {
      * a 1-manifold (Line with no T intersections).
      */
     template< index_t DIMENSION >
-    class RINGMESH_API Line: public GeoModelMeshEntity< DIMENSION > {
+    class Line: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -637,7 +637,7 @@ namespace RINGMesh {
      * (all edges of the polygons are in at most 2 polygons)
      */
     template< index_t DIMENSION >
-    class RINGMESH_API Surface: public GeoModelMeshEntity< DIMENSION > {
+    class Surface: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -821,7 +821,7 @@ namespace RINGMesh {
      * Its volumetric mesh is optional.
      */
     template< index_t DIMENSION >
-    class RINGMESH_API Region: public GeoModelMeshEntity< DIMENSION > {
+    class Region: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;

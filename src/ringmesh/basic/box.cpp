@@ -101,8 +101,8 @@ namespace RINGMesh {
         return result;
     }
 
-    template class Box< 2 >;
-    template class Box< 3 >;
+    template class RINGMESH_API Box< 2 >;
+    template class RINGMESH_API Box< 3 >;
 
 }
 

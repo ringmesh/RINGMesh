@@ -55,7 +55,7 @@ namespace RINGMesh {
      * @brief Abstract base class describing one entity of a GeoModel
      */
     template< index_t DIMENSION >
-    class RINGMESH_API GeoModelEntity {
+    class GeoModelEntity {
     ringmesh_disable_copy( GeoModelEntity );
     public:
 
@@ -114,7 +114,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API Universe: public GeoModelEntity< DIMENSION > {
+    class Universe: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy( Universe );
     public:
         friend class UniverseAccess< DIMENSION > ;
