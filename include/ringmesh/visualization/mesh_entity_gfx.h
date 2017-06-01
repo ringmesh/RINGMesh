@@ -68,7 +68,7 @@ namespace RINGMesh {
         virtual ~MeshEntityGfx() = default;
 
         virtual void draw_vertices() = 0;
-        virtual void set_vertex_color( float r, float g, float b ) = 0;
+        virtual void set_vertex_color( float red, float green, float blue ) = 0;
         virtual void set_vertex_size( index_t s ) = 0;
 
         virtual void set_scalar_attribute(
@@ -79,9 +79,9 @@ namespace RINGMesh {
             GLuint colormap_texture ) = 0;
         virtual void unset_scalar_attribute() = 0;
 
-        void set_vertex_visible( bool b )
+        void set_vertex_visible( bool is_visible )
         {
-            vertex_visible_ = b;
+            vertex_visible_ = is_visible;
         }
 
         bool get_vertex_visible() const
@@ -123,9 +123,9 @@ namespace RINGMesh {
 
         static std::unique_ptr< LineMeshGfx > create_gfx( const LineMesh& mesh );
 
-        void set_edge_visible( bool b )
+        void set_edge_visible( bool is_visible )
         {
-            edge_visible_ = b;
+            edge_visible_ = is_visible;
         }
         bool get_edge_visible() const
         {
@@ -133,7 +133,7 @@ namespace RINGMesh {
         }
 
         virtual void draw_edges() = 0;
-        virtual void set_edge_color( float r, float g, float b ) = 0;
+        virtual void set_edge_color( float red, float green, float blue ) = 0;
         virtual void set_edge_width( index_t s ) = 0;
 
     protected:
@@ -158,15 +158,15 @@ namespace RINGMesh {
             const SurfaceMesh& mesh );
 
         virtual void draw_surface() = 0;
-        virtual void set_surface_color( float r, float g, float b ) = 0;
-        virtual void set_backface_surface_color( float r, float g, float b ) = 0;
-        virtual void set_mesh_color( float r, float g, float b ) = 0;
-        virtual void set_mesh_visibility( bool b ) = 0;
+        virtual void set_surface_color( float red, float green, float blue ) = 0;
+        virtual void set_backface_surface_color( float red, float green, float blue ) = 0;
+        virtual void set_mesh_color( float red, float green, float blue ) = 0;
+        virtual void set_mesh_visibility( bool is_visible ) = 0;
         virtual void set_mesh_width( index_t s ) = 0;
 
-        void set_surface_visible( bool b )
+        void set_surface_visible( bool is_visible )
         {
-            surface_visible_ = b;
+            surface_visible_ = is_visible;
         }
         bool get_surface_visible() const
         {
@@ -192,9 +192,9 @@ namespace RINGMesh {
 
         static std::unique_ptr< VolumeMeshGfx > create_gfx( const VolumeMesh& mesh );
 
-        void set_region_visible( bool b )
+        void set_region_visible( bool is_visible )
         {
-            region_visible_ = b;
+            region_visible_ = is_visible;
         }
         bool get_region_visible() const
         {
@@ -204,8 +204,8 @@ namespace RINGMesh {
         virtual void draw_volume() = 0;
         virtual void set_draw_cells( GEO::MeshCellType type, bool x ) = 0;
         virtual void set_cell_colors_by_type() = 0;
-        virtual void set_cells_color( float r, float g, float b ) = 0;
-        virtual void set_mesh_color( float r, float g, float b ) = 0;
+        virtual void set_cells_color( float red, float green, float blue ) = 0;
+        virtual void set_mesh_color( float red, float green, float blue ) = 0;
         virtual void set_mesh_visibility( bool b ) = 0;
         virtual void set_mesh_width( index_t s ) = 0;
         virtual void set_shrink( double s ) = 0;
