@@ -34,7 +34,7 @@
  */
 
 /*!
- * @file Implementation of THE GeoModel
+ * @file Implementation of the GeoModel
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
@@ -59,12 +59,12 @@ namespace {
     template< index_t DIMENSION >
     double compute_percentage_bbox_diagonal( const GeoModel< DIMENSION >& gm )
     {
-        Box< 3 > bbox;
+        Box< DIMENSION > bbox;
         if( gm.universe().nb_boundaries() > 0 ) {
-            const Universe< 3 >& universe = gm.universe();
-            for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {
+            const Universe< DIMENSION >& universe = gm.universe();
+            for( index_t b = 0; b < universe.nb_boundaries(); b++ ) {
                 compute_mesh_entity_bbox(
-                    gm.mesh_entity( universe.boundary_gmme( s ) ), bbox );
+                    gm.mesh_entity( universe.boundary_gmme( b ) ), bbox );
             }
         } else {
             if( gm.nb_surfaces() > 0 ) {
@@ -150,25 +150,25 @@ namespace RINGMesh {
     const Corner< DIMENSION >& GeoModel< DIMENSION >::corner( index_t index ) const
     {
         ringmesh_assert( index < corners_.size() );
-        return *static_cast< const Corner< 3 >* >( corners_[index].get() );
+        return *static_cast< const Corner< DIMENSION >* >( corners_[index].get() );
     }
     template< index_t DIMENSION >
     const Line< DIMENSION >& GeoModel< DIMENSION >::line( index_t index ) const
     {
         ringmesh_assert( index < lines_.size() );
-        return *static_cast< const Line< 3 >* >( lines_[index].get() );
+        return *static_cast< const Line< DIMENSION >* >( lines_[index].get() );
     }
     template< index_t DIMENSION >
     const Surface< DIMENSION >& GeoModel< DIMENSION >::surface( index_t index ) const
     {
         ringmesh_assert( index < surfaces_.size() );
-        return *static_cast< const Surface< 3 >* >( surfaces_[index].get() );
+        return *static_cast< const Surface< DIMENSION >* >( surfaces_[index].get() );
     }
     template< index_t DIMENSION >
     const Region< DIMENSION >& GeoModel< DIMENSION >::region( index_t index ) const
     {
         ringmesh_assert( index < regions_.size() );
-        return *static_cast< const Region< 3 >* >( regions_[index].get() );
+        return *static_cast< const Region< DIMENSION >* >( regions_[index].get() );
     }
 
     template< index_t DIMENSION >
@@ -187,6 +187,6 @@ namespace RINGMesh {
     }
 
    // template class GeoModel < 2 > ;
-    template RINGMESH_API class GeoModel < 3 > ;
+    template class GeoModel < 3 > ;
 
 } // namespace

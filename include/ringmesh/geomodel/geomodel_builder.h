@@ -129,7 +129,7 @@ namespace RINGMesh {
     private:
         GeoModelBuilder& builder_;
         GeoModel< 3 >& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModelAccess< 3 > geomodel_access_;
 
     };
 
@@ -234,7 +234,7 @@ namespace RINGMesh {
     private:
         GeoModelBuilder& builder_;
         GeoModel< 3 >& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModelAccess< 3 > geomodel_access_;
     };
 
     class RINGMESH_API GeoModelBuilderCopy {
@@ -249,7 +249,7 @@ namespace RINGMesh {
     private:
         GeoModelBuilder& builder_;
         GeoModel< 3 >& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModelAccess< 3 > geomodel_access_;
     };
 
     class RINGMESH_API GeoModelBuilderFromSurfaces {
@@ -290,7 +290,7 @@ namespace RINGMesh {
     private:
         GeoModelBuilder& builder_;
         GeoModel< 3 >& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModelAccess< 3 > geomodel_access_;
 
         /*! Internal information */
         std::vector< GeoModelRegionFromSurfaces* > regions_info_;
@@ -326,7 +326,7 @@ namespace RINGMesh {
 
     protected:
         GeoModel< 3 >& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModelAccess< 3 > geomodel_access_;
     };
 
     /*!
