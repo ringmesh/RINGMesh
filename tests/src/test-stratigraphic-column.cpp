@@ -69,7 +69,7 @@ void test_rock_feature()
     }
 }
 
-void test_stratigraphic_unit( const GeoModel& in )
+void test_stratigraphic_unit( const GeoModel< 3 >& in )
 {
     RINGMesh::Logger::out( "StratigraphicUnit", "Test StratigraphicUnit building" );
 
@@ -113,7 +113,7 @@ void test_stratigraphic_unit( const GeoModel& in )
     }
 }
 
-void test_stratigraphic_column_building( const GeoModel& in )
+void test_stratigraphic_column_building( const GeoModel< 3 >& in )
 {
     RINGMesh::Logger::out( "StratigraphicColumn",
         "Test StratigraphicColumn building" );
@@ -309,7 +309,7 @@ void test_load_from_gocad_xml_file()
 
     std::string input_geomodel_file_name( ringmesh_test_data_path );
     input_geomodel_file_name += "CloudSpin.ml";
-    GeoModel in;
+    GeoModel< 3 > in;
     geomodel_load( in, input_geomodel_file_name );
 
     std::string input_column_file_name( RINGMesh::ringmesh_test_data_path );
@@ -338,7 +338,7 @@ int main()
         //build geomodel
         std::string input_model_file_name( ringmesh_test_data_path );
         input_model_file_name += "CloudSpin.ml";
-        GeoModel in;
+        GeoModel< 3 > in;
         geomodel_load( in, input_model_file_name );
 
         //test RockFeature

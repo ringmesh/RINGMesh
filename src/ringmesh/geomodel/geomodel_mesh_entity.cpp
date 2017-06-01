@@ -297,14 +297,14 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshEntity< DIMENSION >::unbind_vertex_mapping_attribute() const
     {
-        GeoModel& modifiable_model = const_cast< GeoModel& >( this->geomodel() );
+        GeoModel< DIMENSION >& modifiable_model = const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
         modifiable_model.mesh.vertices.unbind_geomodel_vertex_map( gmme() );
     }
 
     template< index_t DIMENSION >
     void GeoModelMeshEntity< DIMENSION >::bind_vertex_mapping_attribute() const
     {
-        GeoModel& modifiable_model = const_cast< GeoModel& >( this->geomodel() );
+        GeoModel< DIMENSION >& modifiable_model = const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
         modifiable_model.mesh.vertices.bind_geomodel_vertex_map( gmme() );
     }
 
@@ -974,10 +974,10 @@ namespace RINGMesh {
 //    template class Line< 2 >;
 //    template class Surface< 2 >;
 
-    template class GeoModelMeshEntity< 3 > ;
-    template class GeoModelMeshEntityAccess< 3 > ;
-    template class Corner< 3 > ;
-    template class Line< 3 > ;
-    template class Surface< 3 > ;
-    template class Region< 3 > ;
+    template class RINGMESH_API GeoModelMeshEntity< 3 > ;
+    template class RINGMESH_API GeoModelMeshEntityAccess< 3 > ;
+    template class RINGMESH_API Corner< 3 > ;
+    template class RINGMESH_API Line< 3 > ;
+    template class RINGMESH_API Surface< 3 > ;
+    template class RINGMESH_API Region< 3 > ;
 }

@@ -33,29 +33,16 @@
  *     FRANCE
  */
 
-#include <ringmesh/mesh/geogram_mesh.h>
-
-#include <ringmesh/mesh/geogram_mesh_builder.h>
+#include <ringmesh/visualization/geogram_gfx.h>
 
 namespace RINGMesh {
 
-    void register_geogram_mesh()
+    void register_geogram_mesh_gfx()
     {
-        ringmesh_register_point_mesh_2d( GeogramPointSetMesh2D );
-        ringmesh_register_point_mesh_builder_2d( GeogramPointSetMesh2D );
-        ringmesh_register_line_mesh_2d( GeogramLineMesh2D );
-        ringmesh_register_line_mesh_builder_2d( GeogramLineMesh2D );
-        ringmesh_register_surface_mesh_2d( GeogramSurfaceMesh2D );
-        ringmesh_register_surface_mesh_builder_2d( GeogramSurfaceMesh2D );
-
-        ringmesh_register_point_mesh_3d( GeogramPointSetMesh3D );
-        ringmesh_register_point_mesh_builder_3d( GeogramPointSetMesh3D );
-        ringmesh_register_line_mesh_3d( GeogramLineMesh3D );
-        ringmesh_register_line_mesh_builder_3d( GeogramLineMesh3D );
-        ringmesh_register_surface_mesh_3d( GeogramSurfaceMesh3D );
-        ringmesh_register_surface_mesh_builder_3d( GeogramSurfaceMesh3D );
-        ringmesh_register_volume_mesh_3d( GeogramVolumeMesh3D );
-        ringmesh_register_volume_mesh_builder_3d( GeogramVolumeMesh3D );
+        ringmesh_register_point_set_gfx( GeogramPointSetMesh3D );
+        ringmesh_register_line_gfx( GeogramLineMesh3D );
+        ringmesh_register_surface_gfx( GeogramSurfaceMesh3D );
+        ringmesh_register_volume_gfx( GeogramVolumeMesh3D );
     }
 }
 

@@ -198,9 +198,10 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelGeologicalEntity< DIMENSION >::initialize()
     {
-        ringmesh_register_GeoModelGeologicalEntity_creator( Contact< DIMENSION > );
-        ringmesh_register_GeoModelGeologicalEntity_creator( Interface< DIMENSION > );
-        ringmesh_register_GeoModelGeologicalEntity_creator( Layer< DIMENSION > );
+        ringmesh_register_GeoModelGeologicalEntity3D_creator( Contact< DIMENSION > );
+        ringmesh_register_GeoModelGeologicalEntity3D_creator(
+            Interface< DIMENSION > );
+        ringmesh_register_GeoModelGeologicalEntity3D_creator( Layer< DIMENSION > );
     }
 
     template< index_t DIMENSION >
@@ -225,11 +226,11 @@ namespace RINGMesh {
     std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > GeoModelGeologicalEntityAccess<
         DIMENSION >::create_geological_entity(
         const GeologicalEntityType& type,
-        const GeoModel& geomodel,
+        const GeoModel< DIMENSION >& geomodel,
         index_t index_in_geomodel )
     {
         GeoModelGeologicalEntity< DIMENSION >* GMGE =
-            GeoModelGeologicalEntityFactory::create_object( type, geomodel );
+            GeoModelGeologicalEntityFactory3D::create_object( type, geomodel );
         GMGE->id_ = index_in_geomodel;
         return std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > >( GMGE );
     }
@@ -237,7 +238,7 @@ namespace RINGMesh {
 //    template class GeoModelGeologicalEntity< 2 > ;
 //    template class GeoModelGeologicalEntityAccess< 2 > ;
 
-    template class GeoModelGeologicalEntity< 3 > ;
+    template class RINGMESH_API GeoModelGeologicalEntity< 3 > ;
     template class GeoModelGeologicalEntityAccess< 3 > ;
 
 }

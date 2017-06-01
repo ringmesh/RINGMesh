@@ -60,7 +60,7 @@
 namespace RINGMesh {
     class GeoModelMesh;
     class GeoModelMeshVertices;
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class GeoModelEntity;
     template< index_t DIMENSION > class GeoModelMeshEntity;
 }
@@ -75,7 +75,7 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelMeshBase {
     protected:
-        GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshBase( GeoModelMesh& gmm, GeoModel< 3 >& gm );
 
         void set_mesh( MeshBase< 3 >* mesh )
         {
@@ -90,7 +90,7 @@ namespace RINGMesh {
         /// Attached GeoModelMesh
         GeoModelMesh& gmm_;
         /// Attached GeoModel
-        GeoModel& gm_;
+        GeoModel< 3 >& gm_;
         /// Attached MeshBase
         MeshBase< 3 >* mesh_base_;
     };
@@ -102,7 +102,7 @@ namespace RINGMesh {
         friend class GeoModelMeshPolygons;
         friend class GeoModelMeshCells;
 
-        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel< 3 >& gm );
 
         ~GeoModelMeshVertices();
 
@@ -248,7 +248,7 @@ namespace RINGMesh {
 
     private:
         void fill_vertices(
-            const GeoModel& M,
+            const GeoModel< 3 >& M,
             const MeshEntityType& entity_type,
             index_t& count );
 
@@ -270,7 +270,7 @@ namespace RINGMesh {
         public:
             GeoModelVertexMapper(
                 GeoModelMeshVertices& geomodel_vertices,
-                const GeoModel& geomodel );
+                const GeoModel< 3 >& geomodel );
 
             /*!
              * \name Query
@@ -453,7 +453,7 @@ namespace RINGMesh {
 
         private:
             GeoModelMeshVertices& geomodel_vertices_;
-            const GeoModel& geomodel_;
+            const GeoModel< 3 >& geomodel_;
 
             /// Vertex maps
             AttributeVector< index_t > corner_vertex_maps_;
@@ -482,7 +482,7 @@ namespace RINGMesh {
             TRIANGLE, QUAD, UNCLASSIFIED_POLYGON, ALL, NO_POLYGON
         };
 
-        GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel< 3 >& gm );
         ~GeoModelMeshPolygons();
 
         GEO::AttributesManager& attribute_manager() const
@@ -726,7 +726,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMeshEdges: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshEdges );
     public:
-        GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel< 3 >& gm );
         ~GeoModelMeshEdges();
 
         GEO::AttributesManager& attribute_manager() const
@@ -809,7 +809,7 @@ namespace RINGMesh {
             NONE, FAULT, HORIZON, ALL
         };
 
-        GeoModelMeshCells( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshCells( GeoModelMesh& gmm, GeoModel< 3 >& gm );
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -1252,10 +1252,10 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMesh {
     ringmesh_disable_copy( GeoModelMesh );
     public:
-        GeoModelMesh( GeoModel& geomodel );
+        GeoModelMesh( GeoModel< 3 >& geomodel );
         ~GeoModelMesh();
 
-        const GeoModel& geomodel() const
+        const GeoModel< 3 >& geomodel() const
         {
             return geomodel_;
         }
@@ -1264,18 +1264,18 @@ namespace RINGMesh {
          * @brief Transfer attributes from the GeoModelMesh to the
          * GeoModel
          */
-        void transfert_attributes() const;
+        void transfer_attributes() const;
 
         /*!
          * @brief Transfer attributes from the GeoModelMeshCell to the
          * GeoModel
          */
-        void transfert_cell_attributes() const;
+        void transfer_cell_attributes() const;
         /*!
          * @brief Transfer attributes from the GeoModelMeshVertices to the
          * GeoModel
          */
-        void transfert_vertex_attributes() const;
+        void transfer_vertex_attributes() const;
 
         /*!
          * Access the DuplicateMode
@@ -1322,7 +1322,7 @@ namespace RINGMesh {
 
     private:
         /*! Attached GeoModel */
-        const GeoModel& geomodel_;
+        const GeoModel< 3 >& geomodel_;
 
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_;

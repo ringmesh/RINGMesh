@@ -49,7 +49,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     class Well;
     template< index_t DIMENSION > class NNSearch;
     template< index_t DIMENSION > class PointSetMesh;
@@ -390,14 +390,14 @@ namespace RINGMesh {
         /*!
          * Gets the associated GeoModel
          */
-        const GeoModel* geomodel() const
+        const GeoModel< 3 >* geomodel() const
         {
             return geomodel_;
         }
         /*!
          * Sets the associated GeoModel
          */
-        void set_geomodel( RINGMesh::GeoModel* geomodel )
+        void set_geomodel( GeoModel< 3 >* geomodel )
         {
             geomodel_ = geomodel;
         }
@@ -446,6 +446,6 @@ namespace RINGMesh {
         /// Vector of the wells
         std::vector< Well* > wells_;
         /// Associated GeoModel
-        GeoModel* geomodel_;
+        GeoModel< 3 >* geomodel_;
     };
 }

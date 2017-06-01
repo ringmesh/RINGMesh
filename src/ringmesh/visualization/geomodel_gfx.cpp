@@ -33,51 +33,56 @@
  *     FRANCE
  */
 
-#pragma once
-
-#include <ringmesh/basic/common.h>
-
-#include <memory>
-
-#include <geogram/basic/line_stream.h>
-
-#include <zlib/unzip.h>
-
-#include <ringmesh/geomodel/geomodel_builder.h>
-
-/*!
- * @file ringmesh/geomodel_builder_ringmesh.h
- * @brief Classes to build GeoModel from various inputs
- * @author 
+/*! 
+ * @file Implementation of visualization of GeoModelEntities
+ * @author Benjamin Chauvin and Arnaud Botella
  */
 
-namespace RINGMesh {
-    class GeoModelBuilderGMImpl;
-}
+#include <ringmesh/visualization/geomodel_gfx.h>
+
+#ifdef RINGMESH_WITH_GRAPHICS
+
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile {
-    public:
-        static const index_t NB_VERSION = 3;
-        GeoModelBuilderGM( GeoModel< 3 >& geomodel, const std::string& filename );
-        virtual ~GeoModelBuilderGM();
+    GeoModelGfx::GeoModelGfx()
+        :
+            geomodel_( nullptr ),
+            corners( *this ),
+            lines( *this ),
+            surfaces( *this ),
+            regions( *this ),
+            attribute( *this )
+    {
+    }
 
-    private:
-        void load_geological_entities( const std::string& geological_entity_file );
+    GeoModelGfx::~GeoModelGfx()
+    {
+    }
 
-        /*!
-         * @brief Load meshes of all the mesh entities from a zip file
-         * @param[in] uz the zip file
-         */
-        void load_meshes( unzFile& uz );
+    void GeoModelGfx::set_geomodel( const GeoModel< 3 >& geomodel )
+    {
+        geomodel_ = &geomodel;
+        initialize();
+    }
 
-        virtual void load_file() final;
+    const GeoModel< 3 >* GeoModelGfx::geomodel() const
+    {
+        return geomodel_;
+    }
 
-        void load_mesh_entities( const std::string& mesh_entity_file );
-
-    private:
-        index_t file_version_;
-        std::unique_ptr< GeoModelBuilderGMImpl > version_impl_[NB_VERSION];
-    };
+    void GeoModelGfx::initialize()
+    {
+        ringmesh_assert( geomodel_ );
+        corners.initialize();
+        lines.initialize();
+        surfaces.initialize();
+        regions.initialize();
+    }
 }
+
+#endif

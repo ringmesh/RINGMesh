@@ -60,13 +60,13 @@ namespace {
      */
     class AdeliIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Adeli .msh mesh not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -98,7 +98,7 @@ namespace {
         }
 
         void write_corners(
-            const GeoModel& geomodel,
+            const GeoModel< 3 >& geomodel,
             std::ofstream& out,
             index_t& elt ) const
         {
@@ -115,7 +115,7 @@ namespace {
         }
 
         void write_mesh_elements(
-            const GeoModel& geomodel,
+            const GeoModel< 3 >& geomodel,
             std::ofstream& out,
             index_t& elt ) const
         {
@@ -139,7 +139,7 @@ namespace {
             out << "$ENDELM" << std::endl;
         }
 
-        index_t nb_total_elements( const GeoModel& geomodel ) const
+        index_t nb_total_elements( const GeoModel< 3 >& geomodel ) const
         {
             // Because corners does not have mesh elements, but are considered as elements
             // in adeli, we have to count the vertex of each corner in a different

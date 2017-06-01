@@ -151,9 +151,9 @@ namespace RINGMesh {
          * @pre The geomodel under construction has exaclty the same number of entities
          * than the input geomodel.
          */
-        void copy_meshes( const GeoModel& from );
-        void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type );
-        void copy_mesh( const GeoModel& from, const gmme_id& mesh_entity );
+        void copy_meshes( const GeoModel< 3 >& from );
+        void copy_meshes( const GeoModel< 3 >& from, const MeshEntityType& entity_type );
+        void copy_mesh( const GeoModel< 3 >& from, const gmme_id& mesh_entity );
 
         void assign_mesh_to_entity( const MeshBase< 3 >& mesh, const gmme_id& to );
 
@@ -415,7 +415,7 @@ namespace RINGMesh {
         void cut_region_by_surface( index_t region_id, index_t surface_id );
 
     protected:
-        GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel& geomodel );
+        GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
 
     private:
         void assign_region_tet_mesh(
@@ -458,8 +458,8 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModel< 3 >& geomodel_;
+        GeoModelAccess< 3 > geomodel_access_;
     };
 
 }
