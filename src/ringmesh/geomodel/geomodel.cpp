@@ -187,6 +187,6 @@ namespace RINGMesh {
     }
 
    // template class GeoModel < 2 > ;
-    template class GeoModel < 3 > ;
+    template RINGMESH_API class GeoModel < 3 > ;
 
 } // namespace
