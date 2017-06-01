@@ -56,7 +56,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     template< index_t DIMENSION >
-    class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity< DIMENSION > {
+    class GeoModelGeologicalEntity: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy( GeoModelGeologicalEntity );
     public:
         friend class GeoModelGeologicalEntityAccess< DIMENSION > ;
@@ -196,7 +196,7 @@ namespace RINGMesh {
     geo_register_creator( GeoModelGeologicalEntityFactory3D, type, type::type_name_static() )
 
     template< index_t DIMENSION >
-    class RINGMESH_API Contact: public GeoModelGeologicalEntity< DIMENSION > {
+    class Contact: public GeoModelGeologicalEntity< DIMENSION > {
     public:
         Contact( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -216,7 +216,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API Interface: public GeoModelGeologicalEntity< DIMENSION > {
+    class Interface: public GeoModelGeologicalEntity< DIMENSION > {
     public:
         Interface( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -236,7 +236,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API Layer: public GeoModelGeologicalEntity< DIMENSION > {
+    class Layer: public GeoModelGeologicalEntity< DIMENSION > {
     public:
         Layer( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )

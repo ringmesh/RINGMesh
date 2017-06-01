@@ -49,7 +49,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     template< index_t DIMENSION >
-    class RINGMESH_API MeshBaseBuilder: public GEO::Counted {
+    class MeshBaseBuilder: public GEO::Counted {
     ringmesh_disable_copy( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
@@ -161,7 +161,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    class PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
     ringmesh_disable_copy( PointSetMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -198,7 +198,7 @@ namespace RINGMesh {
     geo_register_creator(RINGMesh::PointMeshBuilderFactory2D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
-    class RINGMESH_API LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    class LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
     ringmesh_disable_copy( LineMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -279,7 +279,7 @@ namespace RINGMesh {
     geo_register_creator(RINGMesh::LineMeshBuilderFactory2D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
-    class RINGMESH_API SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    class SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
     ringmesh_disable_copy( SurfaceMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -424,7 +424,7 @@ namespace RINGMesh {
     geo_register_creator(RINGMesh::SurfaceMeshBuilderFactory2D, type ## Builder, type::type_name_static())
 
     template< index_t DIMENSION >
-    class RINGMESH_API VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {
     ringmesh_disable_copy( VolumeMeshBuilder );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
