@@ -45,8 +45,8 @@
 #include <geogram/mesh/mesh.h>
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/nn_search.h>
-
 #include <ringmesh/mesh/aabb.h>
 
 namespace RINGMesh {
@@ -590,9 +590,10 @@ namespace RINGMesh {
             for( index_t i = 1; i + 1 < nb_polygon_vertices( polygon_id ); i++ ) {
                 const vec3& p2 = vertex( polygon_vertex( polygon_id, i ) );
                 const vec3& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
-                result += 0.5 * length( cross( p2 - p1, p3 - p1 ) );
+                result += triangle_signed_area( p1, p2, p3,
+                    polygon_normal( polygon_id ) );
             }
-            return result;
+            return std::fabs( result );
         }
 
         /*!
@@ -650,10 +651,17 @@ namespace RINGMesh {
          */
         virtual double polygon_area( index_t polygon_id ) const override
         {
-            //@todo To be implemented
-            ringmesh_unused( polygon_id );
-            ringmesh_assert_not_reached;
-            return 0.;
+            double result = 0.0;
+            if( nb_polygon_vertices( polygon_id ) == 0 ) {
+                return result;
+            }
+            const vec2& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+            for( index_t i = 1; i + 1 < nb_polygon_vertices( polygon_id ); i++ ) {
+                const vec2& p2 = vertex( polygon_vertex( polygon_id, i ) );
+                const vec2& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
+                result += triangle_signed_area( p1, p2, p3 );
+            }
+            return std::fabs( result );
         }
     };
 

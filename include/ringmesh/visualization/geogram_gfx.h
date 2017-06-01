@@ -49,7 +49,7 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
+    class GeoModel;
     class GeoModelGfx;
     class AttributeGfx;
     class CornerGfx;

@@ -70,6 +70,17 @@ namespace RINGMesh {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
 
+    double RINGMESH_API triangle_signed_area(
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& triangle_normal );
+
+    double RINGMESH_API triangle_signed_area(
+        const vec2& A,
+        const vec2& B,
+        const vec2& C );
+
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
@@ -116,7 +127,6 @@ namespace RINGMesh {
         const vec2& V1,
         const vec2& V2,
         vec2& closest_point );
-
 
     /*!
      * Computes the smallest distance between a point and a quad
