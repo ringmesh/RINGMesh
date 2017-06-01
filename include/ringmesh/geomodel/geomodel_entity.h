@@ -89,7 +89,6 @@ namespace RINGMesh {
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */
-        template< index_t DIMENSION >
         GeoModelEntity (
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
@@ -98,7 +97,7 @@ namespace RINGMesh {
         {
         }
 
-        void copy_name( const GeoModelEntity& from )
+        void copy_name( const GeoModelEntity< DIMENSION >& from )
         {
             name_ = from.name_;
         }
