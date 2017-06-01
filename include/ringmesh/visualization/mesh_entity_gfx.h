@@ -41,6 +41,8 @@
 
 #include <memory>
 
+#include <geogram/basic/factory.h>
+
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 /*!
@@ -51,6 +53,11 @@
 namespace RINGMesh {
     class GeoModelGfx;
     class AttributeGfx;
+
+    template< index_t DIMENSION > class PointSetMesh;
+    template< index_t DIMENSION > class LineMesh;
+    template< index_t DIMENSION > class SurfaceMesh;
+    template< index_t DIMENSION > class VolumeMesh;
 }
 
 namespace RINGMesh {
@@ -58,15 +65,11 @@ namespace RINGMesh {
     class RINGMESH_API MeshEntityGfx {
     ringmesh_disable_copy( MeshEntityGfx );
     public:
-        MeshEntityGfx( const GeoModelGfx& gfx )
-            : vertices_visible_( false ), gfx_( gfx )
-        {
-        }
         virtual ~MeshEntityGfx() = default;
 
         virtual void draw_vertices() = 0;
-        virtual void set_vertices_color( float r, float g, float b ) = 0;
-        virtual void set_vertices_size( index_t s ) = 0;
+        virtual void set_vertex_color( float red, float green, float blue ) = 0;
+        virtual void set_vertex_size( index_t s ) = 0;
 
         virtual void set_scalar_attribute(
             GEO::MeshElementsFlags subelements,
@@ -76,96 +79,127 @@ namespace RINGMesh {
             GLuint colormap_texture ) = 0;
         virtual void unset_scalar_attribute() = 0;
 
-        void set_vertices_visible( bool b )
+        void set_vertex_visible( bool is_visible )
         {
-            vertices_visible_ = b;
+            vertex_visible_ = is_visible;
         }
 
-        bool get_vertices_visible() const
+        bool get_vertex_visible() const
         {
-            return vertices_visible_;
+            return vertex_visible_;
         }
 
     protected:
-        bool vertices_visible_;
-        const GeoModelGfx& gfx_;
+        MeshEntityGfx()
+        {
+            set_vertex_visible( false );
+        }
+
+    private:
+        bool vertex_visible_;
     };
 
-    class PointSetGfx: public MeshEntityGfx {
+    class RINGMESH_API PointSetMeshGfx: public MeshEntityGfx {
     public:
-        PointSetGfx( const GeoModelGfx& gfx )
-            : MeshEntityGfx( gfx )
-        {
-            set_vertices_visible( true );
-        }
-    };
+        virtual void set_mesh( const PointSetMesh< 3 >& mesh ) = 0;
 
-    class LineGfx: public MeshEntityGfx {
+        static std::unique_ptr< PointSetMeshGfx > create_gfx(
+            const PointSetMesh< 3 >& mesh );
+
+    protected:
+        PointSetMeshGfx()
+        {
+            set_vertex_visible( true );
+        }
+
+    };
+    using PointSetMeshGfxFactory = GEO::Factory0< PointSetMeshGfx >;
+#define ringmesh_register_point_set_gfx(type) \
+    geo_register_creator(RINGMesh::PointSetMeshGfxFactory, type ## Gfx, type::type_name_static())
+
+    class RINGMESH_API LineMeshGfx: public MeshEntityGfx {
     public:
-        LineGfx( const GeoModelGfx& gfx )
-            : MeshEntityGfx( gfx )
+        virtual void set_mesh( const LineMesh< 3 >& mesh ) = 0;
+
+        static std::unique_ptr< LineMeshGfx > create_gfx(
+            const LineMesh< 3 >& mesh );
+
+        void set_edge_visible( bool is_visible )
         {
-            set_vertices_visible( false );
-            set_edges_visible( true );
+            edge_visible_ = is_visible;
         }
-        void set_edges_visible( bool b )
+        bool get_edge_visible() const
         {
-            edges_visible_ = b;
-        }
-        bool get_edges_visible() const
-        {
-            return edges_visible_;
+            return edge_visible_;
         }
 
         virtual void draw_edges() = 0;
-        virtual void set_edges_color( float r, float g, float b ) = 0;
-        virtual void set_edges_width( index_t s ) = 0;
+        virtual void set_edge_color( float red, float green, float blue ) = 0;
+        virtual void set_edge_width( index_t s ) = 0;
 
-    private:
-        bool edges_visible_;
-
-    };
-
-    class SurfaceGfx: public MeshEntityGfx {
-    public:
-        SurfaceGfx( const GeoModelGfx& gfx )
-            : MeshEntityGfx( gfx )
+    protected:
+        LineMeshGfx()
         {
-            set_vertices_visible( false );
-            set_surface_visible( true );
+            set_vertex_visible( false );
+            set_edge_visible( true );
         }
 
+    private:
+        bool edge_visible_;
+    };
+    using LineMeshGfxFactory = GEO::Factory0< LineMeshGfx >;
+#define ringmesh_register_line_gfx(type) \
+    geo_register_creator(RINGMesh::LineMeshGfxFactory, type ## Gfx, type::type_name_static())
+
+    class RINGMESH_API SurfaceMeshGfx: public MeshEntityGfx {
+    public:
+        virtual void set_mesh( const SurfaceMesh< 3 >& mesh ) = 0;
+
+        static std::unique_ptr< SurfaceMeshGfx > create_gfx(
+            const SurfaceMesh< 3 >& mesh );
+
         virtual void draw_surface() = 0;
-        virtual void set_surface_color( float r, float g, float b ) = 0;
-        virtual void set_backface_surface_color( float r, float g, float b ) = 0;
-        virtual void set_mesh_color( float r, float g, float b ) = 0;
-        virtual void set_mesh_visibility( bool b ) = 0;
+        virtual void set_surface_color( float red, float green, float blue ) = 0;
+        virtual void set_backface_surface_color(
+            float red,
+            float green,
+            float blue ) = 0;
+        virtual void set_mesh_color( float red, float green, float blue ) = 0;
+        virtual void set_mesh_visibility( bool is_visible ) = 0;
         virtual void set_mesh_width( index_t s ) = 0;
 
-        void set_surface_visible( bool b )
+        void set_surface_visible( bool is_visible )
         {
-            surface_visible_ = b;
+            surface_visible_ = is_visible;
         }
         bool get_surface_visible() const
         {
             return surface_visible_;
         }
+
+    protected:
+        SurfaceMeshGfx()
+        {
+            set_vertex_visible( false );
+            set_surface_visible( true );
+        }
     private:
         bool surface_visible_;
-
     };
+    using SurfaceMeshGfxFactory = GEO::Factory0< SurfaceMeshGfx >;
+#define ringmesh_register_surface_gfx(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshGfxFactory, type ## Gfx, type::type_name_static())
 
-    class VolumeGfx: public MeshEntityGfx {
+    class RINGMESH_API VolumeMeshGfx: public MeshEntityGfx {
     public:
-        VolumeGfx( const GeoModelGfx& gfx )
-            : MeshEntityGfx( gfx )
+        virtual void set_mesh( const VolumeMesh< 3 >& mesh ) = 0;
+
+        static std::unique_ptr< VolumeMeshGfx > create_gfx(
+            const VolumeMesh< 3 >& mesh );
+
+        void set_region_visible( bool is_visible )
         {
-            set_vertices_visible( false );
-            set_region_visible( true );
-        }
-        void set_region_visible( bool b )
-        {
-            region_visible_ = b;
+            region_visible_ = is_visible;
         }
         bool get_region_visible() const
         {
@@ -175,16 +209,25 @@ namespace RINGMesh {
         virtual void draw_volume() = 0;
         virtual void set_draw_cells( GEO::MeshCellType type, bool x ) = 0;
         virtual void set_cell_colors_by_type() = 0;
-        virtual void set_cells_color( float r, float g, float b ) = 0;
-        virtual void set_mesh_color( float r, float g, float b ) = 0;
+        virtual void set_cells_color( float red, float green, float blue ) = 0;
+        virtual void set_mesh_color( float red, float green, float blue ) = 0;
         virtual void set_mesh_visibility( bool b ) = 0;
         virtual void set_mesh_width( index_t s ) = 0;
         virtual void set_shrink( double s ) = 0;
 
+    protected:
+        VolumeMeshGfx()
+        {
+            set_vertex_visible( false );
+            set_region_visible( true );
+        }
+
     private:
         bool region_visible_;
     };
-
+    using VolumeMeshGfxFactory = GEO::Factory0< VolumeMeshGfx >;
+#define ringmesh_register_volume_gfx(type) \
+    geo_register_creator(RINGMesh::VolumeMeshGfxFactory, type ## Gfx, type::type_name_static())
 
     class RINGMESH_API AttributeGfxManager {
     ringmesh_disable_copy( AttributeGfxManager );
@@ -270,7 +313,7 @@ namespace RINGMesh {
 
     };
 
-    class AttributeGfx {
+    class RINGMESH_API AttributeGfx {
     public:
         AttributeGfx( AttributeGfxManager& manager )
             : manager_( manager )

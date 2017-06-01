@@ -80,12 +80,6 @@ namespace RINGMesh {
 
         virtual void save_mesh( const std::string& filename ) const = 0;
 
-        /*!
-         * get access to GEO::MESH... only for GFX..
-         * @todo Remove this function as soon as the GEO::MeshGFX is encapsulated
-         */
-        virtual const GEO::Mesh& gfx_mesh() const = 0;
-
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         virtual void print_mesh_bounded_attributes() const = 0;
         /*!
