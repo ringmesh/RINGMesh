@@ -44,6 +44,8 @@
 
 #include <memory>
 
+#include <geogram/basic/factory.h>
+
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 
@@ -187,6 +189,11 @@ namespace RINGMesh {
         /// Geological feature of this object - default is NO_GEOL
         GEOL_FEATURE geol_feature_;
     };
+
+    using GeoModelGeologicalEntityFactory3D = GEO::Factory1< GeoModelGeologicalEntity< 3 >, GeoModel < 3 > >;
+
+#define ringmesh_register_GeoModelGeologicalEntity3D_creator( type ) \
+    geo_register_creator( GeoModelGeologicalEntityFactory3D, type, type::type_name_static() )
 
     template< index_t DIMENSION >
     class RINGMESH_API Contact: public GeoModelGeologicalEntity< DIMENSION > {

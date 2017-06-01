@@ -39,10 +39,7 @@
 
 #include <vector>
 
-#include <geogram/basic/factory.h>
-
 #include <ringmesh/basic/algorithm.h>
-
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
@@ -372,10 +369,4 @@ namespace RINGMesh {
     private:
         GeoModel< DIMENSION >& geomodel_;
     };
-
-    using GeoModelGeologicalEntityFactory = GEO::Factory1< GeoModelGeologicalEntity< 3 >, GeoModel < 3 > >;
-
-#define ringmesh_register_GeoModelGeologicalEntity_creator( type ) \
-    geo_register_creator( GeoModelGeologicalEntityFactory, type, type::type_name_static() )
-
 }
