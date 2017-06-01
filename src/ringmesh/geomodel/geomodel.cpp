@@ -186,4 +186,7 @@ namespace RINGMesh {
         return epsilon_;
     }
 
+   // template class GeoModel < 2 > ;
+    template class GeoModel < 3 > ;
+
 } // namespace
