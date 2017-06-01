@@ -35,6 +35,8 @@
 
 #include <ringmesh/visualization/geogram_gfx.h>
 
+#ifdef RINGMESH_WITH_GRAPHICS
+
 namespace RINGMesh {
 
     void register_geogram_mesh_gfx()
@@ -45,4 +47,6 @@ namespace RINGMesh {
         ringmesh_register_volume_gfx( GeogramVolumeMesh );
     }
 }
+
+#endif
 
