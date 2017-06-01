@@ -128,7 +128,7 @@ namespace RINGMesh {
         }                                                                                       \
         void set_geogram_mesh( Class< DIMENSION >& mesh )                                       \
         {                                                                                       \
-            mesh_ = &dynamic_cast< Class< DIMENSION >& >( mesh );                               \
+            mesh_ = &mesh;                                                                      \
         }                                                                                       \
     protected:                                                                                  \
         void delete_vertex_nn_search()                                                          \
@@ -421,7 +421,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );
-        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
+        ringmesh_template_assert_3d( DIMENSION );
     public:
 
         virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) override
