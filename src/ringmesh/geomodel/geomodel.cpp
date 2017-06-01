@@ -49,7 +49,9 @@ namespace {
     using namespace RINGMesh;
 
     template< index_t DIMENSION >
-    void compute_mesh_entity_bbox( const GeoModelMeshEntity< DIMENSION >& entity, Box< 3 >& bbox )
+    void compute_mesh_entity_bbox(
+        const GeoModelMeshEntity< DIMENSION >& entity,
+        Box< DIMENSION >& bbox )
     {
         for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
             bbox.add_point( entity.vertex( v ) );
@@ -94,7 +96,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModel< DIMENSION >::nb_mesh_entities( const MeshEntityType& type ) const
+    index_t GeoModel< DIMENSION >::nb_mesh_entities(
+        const MeshEntityType& type ) const
     {
         if( MeshEntityTypeManager::is_line( type ) ) {
             return nb_lines();
@@ -111,7 +114,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const GeoModelMeshEntity< DIMENSION >& GeoModel< DIMENSION >::mesh_entity( gmme_id id ) const
+    const GeoModelMeshEntity< DIMENSION >& GeoModel< DIMENSION >::mesh_entity(
+        gmme_id id ) const
     {
         const MeshEntityType& type = id.type();
         index_t index = id.index();
@@ -129,8 +133,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& GeoModel< DIMENSION >::mesh_entities(
-        const MeshEntityType& type ) const
+    const std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& GeoModel<
+        DIMENSION >::mesh_entities( const MeshEntityType& type ) const
     {
         if( MeshEntityTypeManager::is_corner( type ) ) {
             return corners_;
@@ -186,8 +190,8 @@ namespace RINGMesh {
         return epsilon_;
     }
 
-   // template class GeoModel < 2 > ;
-    template class RINGMESH_API GeoModel < 3 > ;
-    template class RINGMESH_API GeoModelAccess < 3 > ;
+    // template class GeoModel < 2 > ;
+    template class RINGMESH_API GeoModel< 3 > ;
+    template class RINGMESH_API GeoModelAccess< 3 > ;
 
 } // namespace

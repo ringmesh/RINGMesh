@@ -49,7 +49,7 @@
 
 /*!
  * @file ringmesh/geomodel.h
- * @brief Class representing a geological structural geomodel: GeoModel
+ * @brief Class representing a geological structural model: GeoModel
  * @author Jeanne Pellerin and Arnaud Botella
  */
 
@@ -67,7 +67,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     /*!
-     * @brief The class to describe a geological geomodel represented 
+     * @brief The class to describe a geological structural model represented
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     template< index_t DIMENSION >
@@ -180,6 +180,7 @@ namespace RINGMesh {
         }
         index_t nb_regions() const
         {
+            ringmesh_template_assert_3d( DIMENSION );
             return static_cast< index_t >( regions_.size() );
         }
 
