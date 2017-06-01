@@ -175,12 +175,6 @@ namespace RINGMesh {
          * @}
          */
 
-        /*! @todo To remove when GFX Mesh is encapsulated */
-        const GEO::Mesh& gfx_mesh() const
-        {
-            return mesh_->gfx_mesh();
-        }
-
         void save( const std::string& filename ) const
         {
             mesh_->save_mesh( filename );
