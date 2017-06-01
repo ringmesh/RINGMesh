@@ -1236,14 +1236,14 @@ namespace RINGMesh {
     index_t GeoModelBuilderGeology::create_geological_entity_type(
         const GeologicalEntityType& type )
     {
-        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) );
+        ringmesh_assert( GeoModelGeologicalEntityFactory3D::has_creator( type ) );
 
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type );
         geomodel_access_.modifiable_geological_entities().push_back(
             std::vector< std::unique_ptr< GeoModelGeologicalEntity< 3 > > >() );
         std::unique_ptr< GeoModelGeologicalEntity< 3 > > E(
-            GeoModelGeologicalEntityFactory::create_object( type, geomodel_ ) );
+            GeoModelGeologicalEntityFactory3D::create_object( type, geomodel_ ) );
 
         const MeshEntityType child_type = E->child_type_name();
         RelationshipManager& parentage =
