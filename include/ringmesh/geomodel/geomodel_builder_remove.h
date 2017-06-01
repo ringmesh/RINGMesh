@@ -575,7 +575,7 @@ namespace RINGMesh {
     private:
         GeoModelBuilder& builder_;
         GeoModel< 3 >& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModelAccess< 3 > geomodel_access_;
 
         index_t nb_entity_types_;
         index_t nb_geological_entity_types_;

@@ -199,7 +199,7 @@ namespace RINGMesh {
     private:
         GeoModelBuilder& builder_;
         GeoModel< 3 >& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModelAccess< 3 > geomodel_access_;
     };
 
 }
