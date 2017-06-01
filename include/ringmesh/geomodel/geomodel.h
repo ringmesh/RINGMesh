@@ -71,7 +71,7 @@ namespace RINGMesh {
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     template< index_t DIMENSION >
-    class RINGMESH_API GeoModel {
+    class GeoModel {
     ringmesh_disable_copy( GeoModel );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelAccess< DIMENSION > ;
