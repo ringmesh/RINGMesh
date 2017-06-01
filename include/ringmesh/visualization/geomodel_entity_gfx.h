@@ -77,127 +77,117 @@ namespace RINGMesh {
 
         /*!
          * Sets the entity color to all the entities
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_vertex_color( float r, float g, float b );
+        void set_vertex_color( float red, float green, float blue );
         /*!
          * Sets the vertex color
-         * @param[in] e the entity index
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] entity_id the entity index
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_vertex_color( index_t e, float r, float g, float b );
+        void set_vertex_color( index_t entity_id, float red, float green, float blue );
         /*!
          * Sets the vertex entity visibility to all the entities
-         * @param[in] b the visibility
+         * @param[in] is_visible the visibility
          */
-        void set_vertex_visibility( bool b );
+        void set_vertex_visibility( bool is_visible );
         /*!
          * Sets the vertex entity visibility
-         * @param[in] e the entity index
-         * @param[in] b the visibility
+         * @param[in] entity_id the entity index
+         * @param[in] is_visible the visibility
          */
-        void set_vertex_visibility( index_t e, bool b );
+        void set_vertex_visibility( index_t entity_id, bool is_visible );
         /*!
          * Sets the vertex size to all the elements
-         * @param[in] s the size
+         * @param[in] size the size
          */
-        void set_vertex_size( index_t s );
+        void set_vertex_size( index_t size );
         /*!
          * Sets the vertex size to all the elements
-         * @param[in] e the entity index
-         * @param[in] s the size
+         * @param[in] entity_id the entity index
+         * @param[in] size the size
          */
-        void set_vertex_size( index_t e, index_t s );
-
-        /*!
-         * Sets the entity color to all the elements
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
-         */
-        void set_mesh_element_color( float r, float g, float b );
-        /*!
-         * Sets the entity visibility to all the elements
-         * @param[in] b the visibility
-         */
-        void set_mesh_element_visibility( bool b );
-        /*!
-         * Sets the mesh_element entity size to all the elements
-         * @param[in] s the size
-         */
-        void set_mesh_element_size( index_t s );
-        virtual void set_mesh_element_color( index_t e, float r, float g, float b );
-        virtual void set_mesh_element_visibility( index_t e, bool b );
-        virtual void set_mesh_element_size( index_t e, index_t s );
+        void set_vertex_size( index_t entity_id, index_t size );
 
     protected:
         GeoModelGfx& gfx_;
         std::vector< std::unique_ptr< MeshEntityGfx > > entities_;
     };
 
-    class RINGMESH_API CornerGfxEnity: public GeoModelGfxEntity {
+    class RINGMESH_API CornerGfxEnity final: public GeoModelGfxEntity {
     public:
         CornerGfxEnity( GeoModelGfx& gfx );
 
-        PointSetMeshGfx& corner( index_t c );
+        PointSetMeshGfx& corner( index_t corner_id );
 
         /*!
          * Draws the corners
          */
         virtual void draw() override;
         virtual void initialize() override;
-
-        virtual void set_mesh_element_color( index_t c, float r, float g, float b )
-            override;
-        virtual void set_mesh_element_visibility( index_t c, bool b ) override;
-        virtual void set_mesh_element_size( index_t c, index_t s ) override;
-
     };
 
-    class RINGMESH_API LineGfxEntity: public GeoModelGfxEntity {
+    class RINGMESH_API LineGfxEntity final: public GeoModelGfxEntity {
     public:
         LineGfxEntity( GeoModelGfx& gfx );
 
-        LineMeshGfx& line( index_t l );
+        LineMeshGfx& line( index_t line_id );
 
         /*!
          * Draws the lines
          */
         virtual void draw() override;
         virtual void initialize() override;
+
         /*!
          * Sets the line color
-         * @param[in] l the line index
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        virtual void set_mesh_element_color( index_t l, float r, float g, float b )
-            override;
+        void set_line_color( float red, float green, float blue );
+        /*!
+         * Sets the line color
+         * @param[in] line_id the line index
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
+         */
+        void set_line_color( index_t line_id, float red, float green, float blue );
         /*!
          * Sets the line visibility
-         * @param[in] l the line index
-         * @param[in] b the visibility
+         * @param[in] is_visible the visibility
          */
-        virtual void set_mesh_element_visibility( index_t l, bool b ) override;
+        void set_line_visibility( bool is_visible );
         /*!
-         * Sets the mesh_element line size
-         * @param[in] l the line index
-         * @param[in] s the size
+         * Sets the line visibility
+         * @param[in] line_id the line index
+         * @param[in] is_visible the visibility
          */
-        virtual void set_mesh_element_size( index_t l, index_t s ) override;
+        void set_line_visibility( index_t line_id, bool is_visible );
+        /*!
+         * Sets the line size
+         * @param[in] size the size
+         */
+        void set_line_size( index_t size );
+        /*!
+         * Sets the line size
+         * @param[in] line_id the line index
+         * @param[in] size the size
+         */
+        void set_line_size( index_t line_id, index_t size );
 
     };
 
-    class RINGMESH_API SurfaceGfxEntity: public GeoModelGfxEntity {
+    class RINGMESH_API SurfaceGfxEntity final: public GeoModelGfxEntity {
     public:
         SurfaceGfxEntity( GeoModelGfx& gfx );
 
-        SurfaceMeshGfx& surface( index_t s );
+        SurfaceMeshGfx& surface( index_t surface_id );
 
         /*!
          * Draws the surfaces
@@ -205,79 +195,94 @@ namespace RINGMesh {
         virtual void draw() override;
         virtual void initialize() override;
         /*!
+         * Sets the surfaces color
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
+         */
+        void set_surface_color( float red, float green, float blue );
+        /*!
          * Sets the surface color
          * @param[in] s the surface index
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        virtual void set_mesh_element_color( index_t s, float r, float g, float b )
-            override;
+        void set_surface_color( index_t surface_id, float red, float green, float blue );
         /*!
          * Sets the surface visibility
-         * @param[in] s the surface index
-         * @param[in] b the visibility
+         * @param[in] is_visible the visibility
          */
-        virtual void set_mesh_element_visibility( index_t s, bool b ) override;
+        void set_surface_visibility( bool is_visible );
+        /*!
+         * Sets the surface visibility
+         * @param[in] surface_id the surface index
+         * @param[in] is_visible the visibility
+         */
+        void set_surface_visibility( index_t surface_id, bool is_visible );
         /*!
          * Sets the backface surface color to all the elements
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_backface_surfaces_color( float r, float g, float b );
+        void set_backface_surface_color( float red, float green, float blue );
         /*!
          * Sets the backsurface surface color
-         * @param[in] s the surface index
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] surface_id the surface index
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_backface_surface_color( index_t s, float r, float g, float b );
+        void set_backface_surface_color(
+            index_t surface_id,
+            float red,
+            float green,
+            float blue );
         /*!
          * Sets the mesh surface color to all the elements
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( float r, float g, float b );
+        void set_mesh_color( float red, float green, float blue );
         /*!
          * Sets the mesh surface color
-         * @param[in] s the surface index
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] surface_id the surface index
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( index_t s, float r, float g, float b );
+        void set_mesh_color( index_t surface_id, float red, float green, float blue );
         /*!
          * Sets the mesh surface visibility to all the elements
-         * @param[in] b the visibility
+         * @param[in] is_visible the visibility
          */
-        void set_mesh_visibility( bool b );
+        void set_mesh_visibility( bool is_visible );
         /*!
          * Sets the mesh surface visibility
-         * @param[in] s the surface index
-         * @param[in] b the visibility
+         * @param[in] surface_id the surface index
+         * @param[in] is_visible the visibility
          */
-        void set_mesh_visibility( index_t s, bool b );
+        void set_mesh_visibility( index_t surface_id, bool is_visible );
         /*!
          * Sets the mesh surface size to all the elements
-         * @param[in] s the size
-         */
-        void set_mesh_size( index_t s );
-        /*!
-         * Sets the mesh surface size
-         * @param[in] s the surface index
          * @param[in] size the size
          */
-        void set_mesh_size( index_t s, index_t size );
+        void set_mesh_size( index_t size );
+        /*!
+         * Sets the mesh surface size
+         * @param[in] surface_id the surface index
+         * @param[in] size the size
+         */
+        void set_mesh_size( index_t surface_id, index_t size );
     };
 
-    class RINGMESH_API RegionGfxEntity: public GeoModelGfxEntity {
+    class RINGMESH_API RegionGfxEntity final: public GeoModelGfxEntity {
     public:
         RegionGfxEntity( GeoModelGfx& gfx );
 
-        VolumeMeshGfx& region( index_t r );
+        VolumeMeshGfx& region( index_t region_id );
 
         /*!
          * Draws the Regions
@@ -286,58 +291,69 @@ namespace RINGMesh {
         virtual void initialize() override;
 
         /*!
-         * Sets the cell region color
-         * @param[in] m the region index
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * Sets the region color
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        virtual void set_mesh_element_color( index_t e, float r, float g, float b )
-            override;
+        void set_region_color( float red, float green, float blue );
         /*!
-         * Sets the cell region visibility to all the regions
-         * @param[in] m the region index
-         * @param[in] b the visibility
+         * Sets the region color
+         * @param[in] region_id the region index
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        virtual void set_mesh_element_visibility( index_t e, bool b ) override;
+        void set_region_color( index_t region_id, float red, float green, float blue );
+        /*!
+         * Sets the region visibility to all the regions
+         * @param[in] is_visible the visibility
+         */
+        void set_region_visibility( bool is_visible );
+        /*!
+         * Sets the region visibility to all the regions
+         * @param[in] region_id the region index
+         * @param[in] is_visible the visibility
+         */
+        void set_region_visibility( index_t region_id, bool is_visible );
 
         /*!
          * Sets the mesh region color to all the regions
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( float r, float g, float b );
+        void set_mesh_color( float red, float green, float blue );
         /*!
          * Sets the mesh region color
-         * @param[in] m the region index
-         * @param[in] r the red component of the color in [0.0, 1.0]
-         * @param[in] g the green component of the color in [0.0, 1.0]
-         * @param[in] b the blue component of the color in [0.0, 1.0]
+         * @param[in] region_id the region index
+         * @param[in] red the red component of the color in [0.0, 1.0]
+         * @param[in] green the green component of the color in [0.0, 1.0]
+         * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( index_t m, float r, float g, float b );
+        void set_mesh_color( index_t region_id, float red, float green, float blue );
         /*!
          * Sets the mesh region visibility to all the regions
-         * @param[in] b the visibility
+         * @param[in] is_visible the visibility
          */
-        void set_mesh_visibility( bool b );
+        void set_mesh_visibility( bool is_visible );
         /*!
          * Sets the mesh region visibility
-         * @param[in] m the region index
-         * @param[in] b the visibility
+         * @param[in] region_id the region index
+         * @param[in] is_visible the visibility
          */
-        void set_mesh_visibility( index_t m, bool b );
+        void set_mesh_visibility( index_t region_id, bool is_visible );
         /*!
          * Sets the mesh region size to all the regions
-         * @param[in] s the size
+         * @param[in] size the size
          */
-        void set_mesh_size( index_t s );
+        void set_mesh_size( index_t size );
         /*!
          * Sets the mesh region size
-         * @param[in] m the region index
-         * @param[in] s the size
+         * @param[in] region_id the region index
+         * @param[in] size the size
          */
-        void set_mesh_size( index_t m, index_t s );
+        void set_mesh_size( index_t region_id, index_t size );
 
         /*!
          * Toggles the cell type to all the regions
@@ -346,29 +362,32 @@ namespace RINGMesh {
         /*!
          * Toggles the cell type display
          */
-        void set_draw_cells( index_t m, GEO::MeshCellType type, bool x );
+        void set_draw_cells( index_t region_id, GEO::MeshCellType type, bool x );
         /*!
          * Toggles the cell region color per cell type to all the regions
          */
         void set_cell_colors_by_type();
         /*!
          * Toggles the cell region color per cell type
-         * @param[in] m the region index
+         * @param[in] region_id the region index
          */
-        void set_cell_colors_by_type( index_t m );
-        void set_cell_type_visibility( GEO::MeshCellType t, bool b );
-        void set_cell_type_visibility( index_t m, GEO::MeshCellType t, bool b );
+        void set_cell_colors_by_type( index_t region_id );
+        void set_cell_type_visibility( GEO::MeshCellType t, bool is_visible );
+        void set_cell_type_visibility(
+            index_t region_id,
+            GEO::MeshCellType t,
+            bool is_visible );
         /*!
          * Sets the cell region shrink to all the regions
-         * @param[in] s the shrink
+         * @param[in] shrink the shrink
          */
-        void set_shrink( double s );
+        void set_shrink( double shrink );
         /*!
          * Sets the cell region shrink
-         * @param[in] m the region index
-         * @param[in] s the shrink
+         * @param[in] region_id the region index
+         * @param[in] shrink the shrink
          */
-        void set_shrink( index_t m, double s );
+        void set_shrink( index_t region_id, double shrink );
 
     };
 }
