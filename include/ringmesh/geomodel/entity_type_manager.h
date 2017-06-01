@@ -43,7 +43,7 @@
 #include <vector>
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class GeoModelMeshEntity;
     template< index_t DIMENSION > class Corner;
     template< index_t DIMENSION > class Line;

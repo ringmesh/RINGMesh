@@ -64,13 +64,13 @@ namespace RINGMesh {
     {
     }
 
-    void GeoModelGfx::set_geomodel( const GeoModel& geomodel )
+    void GeoModelGfx::set_geomodel( const GeoModel< 3 >& geomodel )
     {
         geomodel_ = &geomodel;
         initialize();
     }
 
-    const GeoModel* GeoModelGfx::geomodel() const
+    const GeoModel< 3 >* GeoModelGfx::geomodel() const
     {
         return geomodel_;
     }

@@ -124,11 +124,11 @@ namespace RINGMesh {
         }
 
     protected:
-        GeoModelBuilderInfo( GeoModelBuilder& builder, GeoModel& geomodel );
+        GeoModelBuilderInfo( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel& geomodel_;
+        GeoModel< 3 >& geomodel_;
         GeoModelAccess geomodel_access_;
 
     };
@@ -138,7 +138,7 @@ namespace RINGMesh {
         friend class GeoModelBuilder;
 
     public:
-        void copy_geology( const GeoModel& from );
+        void copy_geology( const GeoModel< 3 >& from );
 
         /*!
          * @brief Create and store a geological entity of the given type
@@ -215,7 +215,7 @@ namespace RINGMesh {
         void build_contacts();
 
     protected:
-        GeoModelBuilderGeology( GeoModelBuilder& builder, GeoModel& geomodel );
+        GeoModelBuilderGeology( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
 
     private:
         index_t create_geological_entity_type( const GeologicalEntityType& type );
@@ -224,7 +224,7 @@ namespace RINGMesh {
             const GeologicalEntityType& type );
 
         void copy_geological_entity_topology(
-            const GeoModel& from,
+            const GeoModel< 3 >& from,
             const GeologicalEntityType& type );
 
         bool check_if_boundary_incident_entity_relation_already_exists(
@@ -233,7 +233,7 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel& geomodel_;
+        GeoModel< 3 >& geomodel_;
         GeoModelAccess geomodel_access_;
     };
 
@@ -241,14 +241,14 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelBuilderCopy );
         friend class GeoModelBuilder;
     public:
-        void copy_geomodel( const GeoModel& from );
+        void copy_geomodel( const GeoModel< 3 >& from );
 
     private:
-        GeoModelBuilderCopy( GeoModelBuilder& builder, GeoModel& geomodel );
+        GeoModelBuilderCopy( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel& geomodel_;
+        GeoModel< 3 >& geomodel_;
         GeoModelAccess geomodel_access_;
     };
 
@@ -281,7 +281,7 @@ namespace RINGMesh {
         bool build_brep_regions_from_surfaces();
 
     private:
-        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel& geomodel );
+        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
 
     public:
         /*! Options to toggle the building of entities from the available entities */
@@ -289,7 +289,7 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel& geomodel_;
+        GeoModel< 3 >& geomodel_;
         GeoModelAccess geomodel_access_;
 
         /*! Internal information */
@@ -306,7 +306,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelBuilder );
 
     public:
-        GeoModelBuilder( GeoModel& geomodel );
+        GeoModelBuilder( GeoModel< 3 >& geomodel );
         virtual ~GeoModelBuilder() = default;
 
         /*!
@@ -325,7 +325,7 @@ namespace RINGMesh {
         GeoModelBuilderFromSurfaces from_surfaces;
 
     protected:
-        GeoModel& geomodel_;
+        GeoModel< 3 >& geomodel_;
         GeoModelAccess geomodel_access_;
     };
 
@@ -334,7 +334,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder {
     public:
-        GeoModelBuilderFile( GeoModel& geomodel, const std::string& filename );
+        GeoModelBuilderFile( GeoModel< 3 >& geomodel, const std::string& filename );
 
         virtual ~GeoModelBuilderFile() = default;
 

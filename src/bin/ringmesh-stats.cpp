@@ -93,7 +93,7 @@ int main( int argc, char** argv )
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
         geomodel_load( geomodel, model_name );
 
         if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {

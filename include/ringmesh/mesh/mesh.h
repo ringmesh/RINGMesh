@@ -50,7 +50,7 @@
 #include <ringmesh/mesh/aabb.h>
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class MeshBaseBuilder;
     template< index_t DIMENSION > class PointSetMeshBuilder;
     template< index_t DIMENSION > class LineMeshBuilder;

@@ -299,8 +299,6 @@ namespace RINGMesh {
     protected:
         AttributeGfxManager& manager_;
     };
-
-
 }
 
 #endif

@@ -297,14 +297,14 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshEntity< DIMENSION >::unbind_vertex_mapping_attribute() const
     {
-        GeoModel& modifiable_model = const_cast< GeoModel& >( this->geomodel() );
+        GeoModel< DIMENSION >& modifiable_model = const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
         modifiable_model.mesh.vertices.unbind_geomodel_vertex_map( gmme() );
     }
 
     template< index_t DIMENSION >
     void GeoModelMeshEntity< DIMENSION >::bind_vertex_mapping_attribute() const
     {
-        GeoModel& modifiable_model = const_cast< GeoModel& >( this->geomodel() );
+        GeoModel< DIMENSION >& modifiable_model = const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
         modifiable_model.mesh.vertices.bind_geomodel_vertex_map( gmme() );
     }
 

@@ -48,7 +48,7 @@
 #include <ringmesh/geomodel/geomodel_entity.h>
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class GeoModelMeshEntity;
 }
 
@@ -159,7 +159,7 @@ namespace RINGMesh {
 
     protected:
         GeoModelGeologicalEntity(
-            const GeoModel& geomodel,
+            const GeoModel< DIMENSION >& geomodel,
             index_t id = NO_ID,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
@@ -191,7 +191,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API Contact: public GeoModelGeologicalEntity< DIMENSION > {
     public:
-        Contact( const GeoModel& geomodel )
+        Contact( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
         {
         }
@@ -211,7 +211,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API Interface: public GeoModelGeologicalEntity< DIMENSION > {
     public:
-        Interface( const GeoModel& geomodel )
+        Interface( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
         {
         }
@@ -231,7 +231,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API Layer: public GeoModelGeologicalEntity< DIMENSION > {
     public:
-        Layer( const GeoModel& geomodel )
+        Layer( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
         {
         }
@@ -284,7 +284,7 @@ namespace RINGMesh {
 
         static std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > create_geological_entity(
             const GeologicalEntityType& type,
-            const GeoModel& geomodel,
+            const GeoModel< DIMENSION >& geomodel,
             index_t index_in_geomodel );
 
         void copy( const GeoModelGeologicalEntity< DIMENSION >& from )

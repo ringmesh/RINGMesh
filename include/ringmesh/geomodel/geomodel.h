@@ -72,8 +72,10 @@ namespace RINGMesh {
      * @brief The class to describe a geological geomodel represented 
      * by its boundary surfaces and whose regions can be optionally meshed
      */
+    template< index_t DIMENSION >
     class RINGMESH_API GeoModel {
     ringmesh_disable_copy( GeoModel );
+    ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelAccess;
 
     public:
@@ -135,14 +137,14 @@ namespace RINGMesh {
          * pair (Region, NO_ID) universe region is returned.
          * @pre Entity identification is valid.
          */
-        const GeoModelGeologicalEntity< 3 >& geological_entity( gmge_id id ) const
+        const GeoModelGeologicalEntity< DIMENSION >& geological_entity( gmge_id id ) const
         {
             return *geological_entities( id.type() )[id.index()];
         }
         /*!
          * Convenient overload of entity( gmge_id id )
          */
-        const GeoModelGeologicalEntity< 3 >& geological_entity(
+        const GeoModelGeologicalEntity< DIMENSION >& geological_entity(
             const GeologicalEntityType& entity_type,
             index_t entity_index ) const
         {
@@ -152,11 +154,11 @@ namespace RINGMesh {
          * @brief Generic access to a meshed entity
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION
          */
-        const GeoModelMeshEntity< 3 >& mesh_entity( gmme_id id ) const;
+        const GeoModelMeshEntity< DIMENSION >& mesh_entity( gmme_id id ) const;
         /*!
          * Convenient overload of mesh_entity( gmme_id id )
          */
-        const GeoModelMeshEntity< 3 >& mesh_entity(
+        const GeoModelMeshEntity< DIMENSION >& mesh_entity(
             const MeshEntityType& entity_type,
             index_t entity_index ) const
         {
@@ -183,11 +185,11 @@ namespace RINGMesh {
             return static_cast< index_t >( regions_.size() );
         }
 
-        const Corner< 3 >& corner( index_t index ) const;
-        const Line< 3 >& line( index_t index ) const;
-        const Surface< 3 >& surface( index_t index ) const;
-        const Region< 3 >& region( index_t index ) const;
-        const Universe< 3 >& universe() const
+        const Corner< DIMENSION >& corner( index_t index ) const;
+        const Line< DIMENSION >& line( index_t index ) const;
+        const Surface< DIMENSION >& surface( index_t index ) const;
+        const Region< DIMENSION >& region( index_t index ) const;
+        const Universe< DIMENSION >& universe() const
         {
             return universe_;
         }
@@ -235,20 +237,20 @@ namespace RINGMesh {
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type
          */
-        const std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& mesh_entities(
+        const std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& mesh_entities(
             const MeshEntityType& type ) const;
 
         /*!
          * @brief Generic accessor to the storage of geological entities of the given type
          */
-        const std::vector< std::unique_ptr< GeoModelGeologicalEntity< 3 > > >& geological_entities(
+        const std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >& geological_entities(
             const GeologicalEntityType& type ) const
         {
             index_t entity_index = geological_entity_type_index( type );
             return geological_entities( entity_index );
         }
 
-        const std::vector< std::unique_ptr< GeoModelGeologicalEntity< 3 > > >& geological_entities(
+        const std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >& geological_entities(
             index_t geological_entity_type_index ) const
         {
             ringmesh_assert( geological_entity_type_index != NO_ID );
@@ -265,21 +267,21 @@ namespace RINGMesh {
          * \name Mandatory entities of the geomodel
          * @{
          */
-        std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > > corners_;
-        std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > > lines_;
-        std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > > surfaces_;
-        std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > > regions_;
+        std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > corners_;
+        std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > lines_;
+        std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > surfaces_;
+        std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > regions_;
 
         /*!
          * The Universe defines the extension of the GeoModel
          */
-        Universe< 3 > universe_;
+        Universe< DIMENSION > universe_;
 
         /*!
          * @brief Geological entities. They are optional.
          * The EntityTypes are managed by the EntityTypeManager of the class.
          */
-        std::vector< std::vector< std::unique_ptr< GeoModelGeologicalEntity< 3 > > > > geological_entities_;
+        std::vector< std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > > geological_entities_;
 
         /*!
          * @}
@@ -305,7 +307,7 @@ namespace RINGMesh {
         friend class GeoModelBuilderFromSurfaces;
 
     private:
-        GeoModelAccess( GeoModel& geomodel )
+        GeoModelAccess( GeoModel< 3 >& geomodel )
             : geomodel_( geomodel )
         {
         }
@@ -363,10 +365,10 @@ namespace RINGMesh {
         }
 
     private:
-        GeoModel& geomodel_;
+        GeoModel< 3 >& geomodel_;
     };
 
-    using GeoModelGeologicalEntityFactory = GEO::Factory1< GeoModelGeologicalEntity< 3 >, GeoModel >;
+    using GeoModelGeologicalEntityFactory = GEO::Factory1< GeoModelGeologicalEntity< 3 >, GeoModel < 3 > >;
 
 #define ringmesh_register_GeoModelGeologicalEntity_creator( type ) \
     geo_register_creator( GeoModelGeologicalEntityFactory, type, type::type_name_static() )

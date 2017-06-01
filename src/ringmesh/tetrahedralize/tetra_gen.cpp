@@ -403,7 +403,7 @@ namespace RINGMesh {
 #endif
 
     std::unique_ptr< TetraGen > TetraGen::create(
-        GeoModel& M,
+        GeoModel< 3 >& M,
         index_t region_id,
         const std::string& algo_name )
     {

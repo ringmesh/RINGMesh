@@ -62,7 +62,7 @@ int main()
         std::string file_name( ringmesh_test_data_path );
         file_name += "modelA4.so";
 
-        GeoModel model;
+        GeoModel< 3 > model;
         bool loaded_model_is_valid = geomodel_load( model, file_name );
 
         if( !loaded_model_is_valid ) {

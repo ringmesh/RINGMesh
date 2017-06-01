@@ -48,7 +48,7 @@
 namespace {
     using namespace RINGMesh;
 
-    gmme_id find_corner( const GeoModel& geomodel, const vec3& point )
+    gmme_id find_corner( const GeoModel< 3 >& geomodel, const vec3& point )
     {
         for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
             if( geomodel.corner( i ).vertex( 0 ) == point ) {
@@ -91,7 +91,7 @@ namespace {
      * @return Index of the interface in the geomodel, NO_ID if not found.
      */
     gmge_id find_interface(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const std::string& interface_name )
     {
         for( index_t i = 0;
@@ -135,7 +135,7 @@ namespace {
      * @return Coordinates of the point
      */
     vec3 get_point_from_gocad_id(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const VertexMap& vertex_map,
         index_t point_gocad_id )
     {
@@ -161,7 +161,7 @@ namespace {
      */
     void get_surface_point_and_polygon_from_gocad_index(
         index_t vertex_gocad_id,
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const TSolidLoadingStorage& load_storage,
         std::vector< index_t >& gocad_vertices2cur_surf_points,
         std::vector< vec3 >& cur_surf_points,
@@ -197,7 +197,7 @@ namespace {
      * the cur_surf_points vector to build polygons
      */
     void get_surface_points_and_polygons_from_gocad_indices(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const TSolidLoadingStorage& load_storage,
         std::vector< vec3 >& cur_surf_points,
         std::vector< index_t >& cur_surf_polygons )
@@ -220,7 +220,7 @@ namespace {
      */
     void build_surface(
         GeoModelBuilderGocad& builder,
-        GeoModel& geomodel,
+        GeoModel< 3 >& geomodel,
         TSolidLoadingStorage& load_storage )
     {
         std::vector< vec3 > cur_surf_points;
@@ -247,7 +247,7 @@ namespace {
      * @param[out] cell_facet_centers Vector of cell facet centers
      */
     void compute_region_cell_facet_centers(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         index_t region_id,
         std::vector< vec3 >& cell_facet_centers )
     {
@@ -269,7 +269,7 @@ namespace {
      * @param[out] region_nn_searchs Pointers to the NNSearchs of regions
      */
     void compute_cell_facet_centers_region_nn_searchs(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         std::vector< std::unique_ptr< NNSearch< 3 > > >& region_nn_searchs )
     {
         for( index_t r = 0; r < geomodel.nb_regions(); ++r ) {
@@ -314,7 +314,7 @@ namespace {
      * '-' side (other side)
      */
     bool determine_surface_side_to_add(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         index_t region_id,
         index_t surface_id,
         index_t cell_facet_center_id )
@@ -385,7 +385,7 @@ namespace {
         index_t surface_id,
         index_t cell_facet_center_id,
         GeoModelBuilderTSolid& geomodel_builder,
-        const GeoModel& geomodel )
+        const GeoModel< 3 >& geomodel )
     {
         bool side = determine_surface_side_to_add( geomodel, region_id, surface_id,
             cell_facet_center_id );
@@ -407,7 +407,7 @@ namespace {
         index_t surface_id,
         index_t region_id,
         const std::vector< index_t >& colocated_cell_facet_centers,
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
         switch( colocated_cell_facet_centers.size() ) {
@@ -436,7 +436,7 @@ namespace {
     void add_surface_to_region_boundaries(
         index_t surface_id,
         const std::vector< std::unique_ptr< NNSearch< 3 > > >& region_nn_searchs,
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
         index_t cur_region = 0;
@@ -465,7 +465,7 @@ namespace {
      */
     void compute_boundaries_of_geomodel_regions(
         GeoModelBuilderTSolid& geomodel_builder,
-        const GeoModel& geomodel )
+        const GeoModel< 3 >& geomodel )
     {
         std::vector< std::unique_ptr< NNSearch< 3 > > > reg_nn_searchs(
             geomodel.nb_regions() );
@@ -508,7 +508,7 @@ namespace {
      * surfaces are in the boundaries of geomodel regions
      */
     void determine_if_surface_sides_bound_regions(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         std::vector< bool >& surface_sides )
     {
         for( index_t r = 0; r < geomodel.nb_regions(); ++r ) {
@@ -533,7 +533,7 @@ namespace {
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void compute_universe_boundaries(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
         // The universe boundaries are the surfaces with only one side in all
@@ -561,7 +561,7 @@ namespace {
      * @return True is the edge is found in at least another surface
      */
     bool is_edge_in_several_surfaces(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         index_t surface_id,
         index_t polygon,
         index_t edge,
@@ -592,7 +592,7 @@ namespace {
      * edge barycenters of the surface
      */
     void get_surface_border_edge_barycenters(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         index_t surface_id,
         std::vector< vec3 >& border_edge_barycenters )
     {
@@ -909,7 +909,7 @@ namespace {
          * @param[in] vertex_map Map between Gocad and GeoModel vertex indices
          */
         void read_and_add_atom_to_region_vertices(
-            const GeoModel& geomodel,
+            const GeoModel< 3 >& geomodel,
             GEO::LineInput& line,
             index_t region_id,
             std::vector< vec3 >& region_vertices,
@@ -1130,7 +1130,7 @@ namespace RINGMesh {
     std::unique_ptr< GocadLineParser > GocadLineParser::create(
         const std::string& keyword,
         GeoModelBuilderGocad& gm_builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
     {
         std::unique_ptr< GocadLineParser > parser(
             GocadLineParserFactory::create_object( keyword ) );
@@ -1236,7 +1236,7 @@ namespace RINGMesh {
     std::unique_ptr< TSolidLineParser > TSolidLineParser::create(
         const std::string& keyword,
         GeoModelBuilderTSolid& gm_builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
     {
         std::unique_ptr< TSolidLineParser > parser(
             TSolidLineParserFactory::create_object( keyword ) );
@@ -1252,7 +1252,7 @@ namespace RINGMesh {
     std::unique_ptr< MLLineParser > MLLineParser::create(
         const std::string& keyword,
         GeoModelBuilderML& gm_builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
     {
         std::unique_ptr< MLLineParser > parser(
             MLLineParserFactory::create_object( keyword ) );
