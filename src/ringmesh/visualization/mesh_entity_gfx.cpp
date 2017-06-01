@@ -323,7 +323,7 @@ namespace RINGMesh {
     }
 
     std::unique_ptr< PointSetMeshGfx > PointSetMeshGfx::create_gfx(
-        const PointSetMesh& mesh )
+        const PointSetMesh< 3 >& mesh )
     {
         PointSetMeshGfx* gfx = PointSetMeshGfxFactory::create_object(
             mesh.type_name() );
@@ -339,7 +339,8 @@ namespace RINGMesh {
         return std::unique_ptr< PointSetMeshGfx >( gfx );
     }
 
-    std::unique_ptr< LineMeshGfx > LineMeshGfx::create_gfx( const LineMesh& mesh )
+    std::unique_ptr< LineMeshGfx > LineMeshGfx::create_gfx(
+        const LineMesh< 3 >& mesh )
     {
         LineMeshGfx* gfx = LineMeshGfxFactory::create_object( mesh.type_name() );
         if( !gfx ) {
@@ -355,7 +356,7 @@ namespace RINGMesh {
     }
 
     std::unique_ptr< SurfaceMeshGfx > SurfaceMeshGfx::create_gfx(
-        const SurfaceMesh& mesh )
+        const SurfaceMesh< 3 >& mesh )
     {
         SurfaceMeshGfx* gfx = SurfaceMeshGfxFactory::create_object(
             mesh.type_name() );
@@ -372,7 +373,7 @@ namespace RINGMesh {
     }
 
     std::unique_ptr< VolumeMeshGfx > VolumeMeshGfx::create_gfx(
-        const VolumeMesh& mesh )
+        const VolumeMesh< 3 >& mesh )
     {
         VolumeMeshGfx* gfx = VolumeMeshGfxFactory::create_object( mesh.type_name() );
         if( !gfx ) {
