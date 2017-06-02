@@ -320,7 +320,7 @@ namespace RINGMesh {
         GeoModelBuilderGeometry< 3 > geometry;
         GeoModelBuilderGeology< 3 > geology;
         GeoModelBuilderRemoval< 3 > removal;
-        GeoModelBuilderRepair repair;
+        GeoModelBuilderRepair< 3 > repair;
         GeoModelBuilderCopy copy;
         GeoModelBuilderInfo info;
         GeoModelBuilderFromSurfaces from_surfaces;

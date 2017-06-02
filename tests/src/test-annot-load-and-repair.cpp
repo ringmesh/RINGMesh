@@ -78,7 +78,7 @@ int main()
         // Repair the model
 
         GeoModelBuilder model_builder( M );
-        model_builder.repair.repair( GeoModelBuilderRepair::ALL );
+        model_builder.repair.repair( GeoModelBuilderRepair< 3 >::ALL );
 
         // Test the validity again
         if( is_geomodel_valid( M ) ) {

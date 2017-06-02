@@ -58,8 +58,10 @@ namespace RINGMesh {
      * @warning This function will by no mean fix all errors in a GeoModel
      *          It has been tested on a very small number of geomodels.
      */
+    template< index_t DIMENSION >
     class RINGMESH_API GeoModelBuilderRepair {
     ringmesh_disable_copy( GeoModelBuilderRepair );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilder;
 
     public:
@@ -81,7 +83,7 @@ namespace RINGMesh {
          */
         void repair( RepairMode repair_mode );
     private:
-        GeoModelBuilderRepair( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
+        GeoModelBuilderRepair( GeoModelBuilder& builder, GeoModel< DIMENSION >& geomodel );
 
         /*!
          * All implemented repair for a GeoModel.
@@ -110,16 +112,16 @@ namespace RINGMesh {
          * @brief Detect and remove degenerate edges in a \param line.
          * @return the number of degenerate edges that have been removed from the line.
          */
-        index_t repair_line_mesh( const Line< 3 >& line );
+        index_t repair_line_mesh( const Line< DIMENSION >& line );
         void line_detect_degenerate_edges(
-            const Line< 3 >& L,
+            const Line< DIMENSION >& L,
             std::vector< bool >& e_is_degenerate,
             std::vector< index_t >& colocated_vertices );
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          */
         void surface_detect_degenerate_polygons(
-            const Surface< 3 >& S,
+            const Surface< DIMENSION >& S,
             std::vector< index_t >& f_is_degenerate,
             std::vector< index_t >& colocated_vertices );
         /*!
@@ -134,7 +136,7 @@ namespace RINGMesh {
          *  false otherwise
          */
         bool polygon_is_degenerate(
-            const Surface< 3 >& surface,
+            const Surface< DIMENSION >& surface,
             index_t polygon_id,
             std::vector< index_t >& colocated_vertices );
 
@@ -143,7 +145,7 @@ namespace RINGMesh {
          * @param[in,out] S Surface to check for potential degenerate polygons.
          * @return the number of degenerate polygons in \p S.
          */
-        index_t detect_degenerate_polygons( const Surface< 3 >& S );
+        index_t detect_degenerate_polygons( const Surface< DIMENSION >& S );
 
         /*!
          * @brief Remove degenerate polygons and edges from the Surface
@@ -181,7 +183,7 @@ namespace RINGMesh {
          * @return true if the edge is degenerate. Else false.
          */
         bool edge_is_degenerate(
-            const Line< 3 >& L,
+            const Line< DIMENSION >& L,
             index_t e,
             const std::vector< index_t >& colocated_vertices );
 
@@ -189,8 +191,8 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel< 3 >& geomodel_;
-        GeoModelAccess< 3 > geomodel_access_;
+        GeoModel< DIMENSION >& geomodel_;
+        GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
 } //namespace RINGMesh
