@@ -87,8 +87,10 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+    template< index_t DIMENSION >
     class RINGMESH_API GeoModelBuilderInfo {
     ringmesh_disable_copy( GeoModelBuilderInfo );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilder;
 
     public:
@@ -105,7 +107,7 @@ namespace RINGMesh {
          */
         void set_mesh_entity_name( const gmme_id& gmme_id, const std::string& name )
         {
-            GeoModelMeshEntityAccess< 3 > gmme_access(
+            GeoModelMeshEntityAccess< DIMENSION > gmme_access(
                 geomodel_access_.modifiable_mesh_entity( gmme_id ) );
             gmme_access.modifiable_name() = name;
 
@@ -118,18 +120,18 @@ namespace RINGMesh {
             const gmge_id& gmge_id,
             const std::string& name )
         {
-            GeoModelGeologicalEntityAccess< 3 > gmge_access(
+            GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
                 geomodel_access_.modifiable_geological_entity( gmge_id ) );
             gmge_access.modifiable_name() = name;
         }
 
     protected:
-        GeoModelBuilderInfo( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
+        GeoModelBuilderInfo( GeoModelBuilder& builder, GeoModel< DIMENSION >& geomodel );
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel< 3 >& geomodel_;
-        GeoModelAccess< 3 > geomodel_access_;
+        GeoModel< DIMENSION >& geomodel_;
+        GeoModelAccess< DIMENSION > geomodel_access_;
 
     };
 
@@ -326,7 +328,7 @@ namespace RINGMesh {
         GeoModelBuilderRemoval< 3 > removal;
         GeoModelBuilderRepair< 3 > repair;
         GeoModelBuilderCopy< 3 > copy;
-        GeoModelBuilderInfo info;
+        GeoModelBuilderInfo< 3 > info;
         GeoModelBuilderFromSurfaces from_surfaces;
 
     protected:

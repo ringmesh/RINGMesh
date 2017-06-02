@@ -55,6 +55,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderTopology;
     template< index_t DIMENSION > class GeoModelBuilderGeology;
     template< index_t DIMENSION > class GeoModelBuilderRemoval;
+    template< index_t DIMENSION > class GeoModelBuilderInfo;
 }
 
 namespace RINGMesh {
@@ -263,7 +264,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelGeologicalEntityAccess );
         friend class GeoModelBuilderTopology< DIMENSION >;
         friend class GeoModelBuilderGeology< DIMENSION >;
-        friend class GeoModelBuilderInfo;
+        friend class GeoModelBuilderInfo< DIMENSION>;
         friend class GeoModelBuilderRemoval< DIMENSION >;
 
     private:
