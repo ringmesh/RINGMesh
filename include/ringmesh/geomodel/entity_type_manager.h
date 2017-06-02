@@ -50,6 +50,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class Surface;
     template< index_t DIMENSION > class Region;
     class EntityTypeManager;
+    template< index_t DIMENSION > class GeoModelBuilderTopology;
 }
 
 namespace RINGMesh {
@@ -153,7 +154,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API RelationshipManager {
         friend class GeoModelBuilderGeology;
-        friend class GeoModelBuilderTopology;
+        friend class GeoModelBuilderTopology< 3 >;
     public:
         using GeologicalEntityToChild = std::map< GeologicalEntityType, MeshEntityType >;
         using MeshEntityToParents = std::map< MeshEntityType, std::set< GeologicalEntityType > >;

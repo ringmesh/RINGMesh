@@ -315,7 +315,7 @@ namespace RINGMesh {
         void end_geomodel();
 
     public:
-        GeoModelBuilderTopology topology;
+        GeoModelBuilderTopology< 3 > topology;
         GeoModelBuilderGeometry geometry;
         GeoModelBuilderGeology geology;
         GeoModelBuilderRemoval removal;
