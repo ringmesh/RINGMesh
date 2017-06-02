@@ -154,7 +154,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API RelationshipManager {
         friend class GeoModelBuilderGeology;
-        friend class GeoModelBuilderTopology< 3 >;
+        friend GeoModelBuilderTopology< 3 >;
     public:
         using GeologicalEntityToChild = std::map< GeologicalEntityType, MeshEntityType >;
         using MeshEntityToParents = std::map< MeshEntityType, std::set< GeologicalEntityType > >;
