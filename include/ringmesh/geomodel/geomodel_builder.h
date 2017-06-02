@@ -133,12 +133,14 @@ namespace RINGMesh {
 
     };
 
-    class RINGMESH_API GeoModelBuilderGeology {
+    template< index_t DIMENSION >
+    class GeoModelBuilderGeology {
     ringmesh_disable_copy( GeoModelBuilderGeology );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilder;
 
     public:
-        void copy_geology( const GeoModel< 3 >& from );
+        void copy_geology( const GeoModel< DIMENSION >& from );
 
         /*!
          * @brief Create and store a geological entity of the given type
@@ -152,12 +154,7 @@ namespace RINGMesh {
 
         void set_geological_entity_geol_feature(
             const gmge_id& gmge_id,
-            GeoModelGeologicalEntity< 3 >::GEOL_FEATURE geol_feature )
-        {
-            GeoModelGeologicalEntityAccess< 3 > gmge_access(
-                geomodel_access_.modifiable_geological_entity( gmge_id ) );
-            gmge_access.modifiable_geol_feature() = geol_feature;
-        }
+            typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE geol_feature );
 
         void set_mesh_entity_parent(
             const gmme_id& child_gmme,
@@ -166,10 +163,10 @@ namespace RINGMesh {
         {
             /// No check on the validity of the index of the entity parents_
             /// NO_ID is used to flag entities to delete
-            GeoModelMeshEntity< 3 >& mesh_entity =
+            GeoModelMeshEntity< DIMENSION >& mesh_entity =
                 geomodel_access_.modifiable_mesh_entity( child_gmme );
             ringmesh_assert( id < mesh_entity.nb_parents() );
-            GeoModelMeshEntityAccess< 3 > gmme_access( mesh_entity );
+            GeoModelMeshEntityAccess< DIMENSION > gmme_access( mesh_entity );
             index_t relationship_id = gmme_access.modifiable_parents()[id];
             RelationshipManager& manager =
                 geomodel_access_.modifiable_entity_type_manager().relationship_manager;
@@ -191,13 +188,13 @@ namespace RINGMesh {
         {
             /// No check on the validity of the index of the entity child_index
             /// NO_ID is used to flag entities to delete
-            GeoModelGeologicalEntity< 3 >& geol_entity =
+            GeoModelGeologicalEntity< DIMENSION >& geol_entity =
                 geomodel_access_.modifiable_geological_entity( parent_gmge );
             const MeshEntityType& child_type =
                 geomodel_.entity_type_manager().relationship_manager.child_type(
                     parent_gmge.type() );
             gmme_id child( child_type, child_id );
-            GeoModelGeologicalEntityAccess< 3 > gmge_access( geol_entity );
+            GeoModelGeologicalEntityAccess< DIMENSION > gmge_access( geol_entity );
             index_t relationship_id = gmge_access.modifiable_children()[id];
             RelationshipManager& manager =
                 geomodel_access_.modifiable_entity_type_manager().relationship_manager;
@@ -215,7 +212,9 @@ namespace RINGMesh {
         void build_contacts();
 
     protected:
-        GeoModelBuilderGeology( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
+        GeoModelBuilderGeology(
+            GeoModelBuilder& builder,
+            GeoModel< DIMENSION >& geomodel );
 
     private:
         index_t create_geological_entity_type( const GeologicalEntityType& type );
@@ -224,7 +223,7 @@ namespace RINGMesh {
             const GeologicalEntityType& type );
 
         void copy_geological_entity_topology(
-            const GeoModel< 3 >& from,
+            const GeoModel< DIMENSION >& from,
             const GeologicalEntityType& type );
 
         bool check_if_boundary_incident_entity_relation_already_exists(
@@ -233,8 +232,8 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel< 3 >& geomodel_;
-        GeoModelAccess< 3 > geomodel_access_;
+        GeoModel< DIMENSION >& geomodel_;
+        GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
     class RINGMESH_API GeoModelBuilderCopy {
@@ -281,7 +280,9 @@ namespace RINGMesh {
         bool build_brep_regions_from_surfaces();
 
     private:
-        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
+        GeoModelBuilderFromSurfaces(
+            GeoModelBuilder& builder,
+            GeoModel< 3 >& geomodel );
 
     public:
         /*! Options to toggle the building of entities from the available entities */
@@ -317,7 +318,7 @@ namespace RINGMesh {
     public:
         GeoModelBuilderTopology< 3 > topology;
         GeoModelBuilderGeometry< 3 > geometry;
-        GeoModelBuilderGeology geology;
+        GeoModelBuilderGeology< 3 > geology;
         GeoModelBuilderRemoval removal;
         GeoModelBuilderRepair repair;
         GeoModelBuilderCopy copy;
