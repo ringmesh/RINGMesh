@@ -236,19 +236,23 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
+    template< index_t DIMENSION >
     class RINGMESH_API GeoModelBuilderCopy {
     ringmesh_disable_copy( GeoModelBuilderCopy );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilder;
     public:
-        void copy_geomodel( const GeoModel< 3 >& from );
+        void copy_geomodel( const GeoModel< DIMENSION >& from );
 
     private:
-        GeoModelBuilderCopy( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
+        GeoModelBuilderCopy(
+            GeoModelBuilder& builder,
+            GeoModel< DIMENSION >& geomodel );
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel< 3 >& geomodel_;
-        GeoModelAccess< 3 > geomodel_access_;
+        GeoModel< DIMENSION >& geomodel_;
+        GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
     class RINGMESH_API GeoModelBuilderFromSurfaces {
@@ -321,7 +325,7 @@ namespace RINGMesh {
         GeoModelBuilderGeology< 3 > geology;
         GeoModelBuilderRemoval< 3 > removal;
         GeoModelBuilderRepair< 3 > repair;
-        GeoModelBuilderCopy copy;
+        GeoModelBuilderCopy< 3 > copy;
         GeoModelBuilderInfo info;
         GeoModelBuilderFromSurfaces from_surfaces;
 

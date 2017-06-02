@@ -1035,14 +1035,17 @@ namespace RINGMesh {
         builder_.end_geomodel();
     }
 
-    GeoModelBuilderCopy::GeoModelBuilderCopy(
+    template< index_t DIMENSION >
+    GeoModelBuilderCopy< DIMENSION >::GeoModelBuilderCopy(
         GeoModelBuilder& builder,
-        GeoModel< 3 >& geomodel )
+        GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
 
-    void GeoModelBuilderCopy::copy_geomodel( const GeoModel< 3 >& from )
+    template< index_t DIMENSION >
+    void GeoModelBuilderCopy< DIMENSION >::copy_geomodel(
+        const GeoModel< DIMENSION >& from )
     {
         builder_.topology.copy_topology( from );
         builder_.geometry.copy_meshes( from );
@@ -1339,6 +1342,9 @@ namespace RINGMesh {
         gmge_access.modifiable_geol_feature() = geol_feature;
     }
     //    template class RINGMESH_API GeoModelBuilderGeology< 2 > ;
-        template class RINGMESH_API GeoModelBuilderGeology< 3 > ;
+    //    template class RINGMESH_API GeoModelBuilderCopy< 2 > ;
+
+    template class RINGMESH_API GeoModelBuilderGeology< 3 > ;
+    template class RINGMESH_API GeoModelBuilderCopy< 3 > ;
 
 } // namespace
