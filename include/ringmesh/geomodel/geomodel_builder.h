@@ -88,7 +88,7 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderInfo {
+    class GeoModelBuilderInfo {
     ringmesh_disable_copy( GeoModelBuilderInfo );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilder;
@@ -239,7 +239,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderCopy {
+    class GeoModelBuilderCopy {
     ringmesh_disable_copy( GeoModelBuilderCopy );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilder;
@@ -257,8 +257,10 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-    class RINGMESH_API GeoModelBuilderFromSurfaces {
+    template< index_t DIMENSION >
+    class GeoModelBuilderFromSurfaces {
     ringmesh_disable_copy( GeoModelBuilderFromSurfaces );
+    ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilder;
 
     public:
@@ -288,7 +290,7 @@ namespace RINGMesh {
     private:
         GeoModelBuilderFromSurfaces(
             GeoModelBuilder& builder,
-            GeoModel< 3 >& geomodel );
+            GeoModel< DIMENSION >& geomodel );
 
     public:
         /*! Options to toggle the building of entities from the available entities */
@@ -296,8 +298,8 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel< 3 >& geomodel_;
-        GeoModelAccess< 3 > geomodel_access_;
+        GeoModel< DIMENSION >& geomodel_;
+        GeoModelAccess< DIMENSION > geomodel_access_;
 
         /*! Internal information */
         std::vector< GeoModelRegionFromSurfaces* > regions_info_;
@@ -329,7 +331,7 @@ namespace RINGMesh {
         GeoModelBuilderRepair< 3 > repair;
         GeoModelBuilderCopy< 3 > copy;
         GeoModelBuilderInfo< 3 > info;
-        GeoModelBuilderFromSurfaces from_surfaces;
+        GeoModelBuilderFromSurfaces< 3 > from_surfaces;
 
     protected:
         GeoModel< 3 >& geomodel_;
