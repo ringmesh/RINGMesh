@@ -316,7 +316,7 @@ namespace RINGMesh {
 
     public:
         GeoModelBuilderTopology< 3 > topology;
-        GeoModelBuilderGeometry geometry;
+        GeoModelBuilderGeometry< 3 > geometry;
         GeoModelBuilderGeology geology;
         GeoModelBuilderRemoval removal;
         GeoModelBuilderRepair repair;
