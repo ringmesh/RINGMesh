@@ -319,7 +319,7 @@ namespace RINGMesh {
         GeoModelBuilderTopology< 3 > topology;
         GeoModelBuilderGeometry< 3 > geometry;
         GeoModelBuilderGeology< 3 > geology;
-        GeoModelBuilderRemoval removal;
+        GeoModelBuilderRemoval< 3 > removal;
         GeoModelBuilderRepair repair;
         GeoModelBuilderCopy copy;
         GeoModelBuilderInfo info;

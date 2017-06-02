@@ -54,6 +54,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelMeshEntity;
     template< index_t DIMENSION > class GeoModelBuilderTopology;
     template< index_t DIMENSION > class GeoModelBuilderGeology;
+    template< index_t DIMENSION > class GeoModelBuilderRemoval;
 }
 
 namespace RINGMesh {
@@ -263,7 +264,7 @@ namespace RINGMesh {
         friend class GeoModelBuilderTopology< DIMENSION >;
         friend class GeoModelBuilderGeology< DIMENSION >;
         friend class GeoModelBuilderInfo;
-        friend class GeoModelBuilderRemoval;
+        friend class GeoModelBuilderRemoval< DIMENSION >;
 
     private:
         GeoModelGeologicalEntityAccess( GeoModelGeologicalEntity< DIMENSION >& gmge )
