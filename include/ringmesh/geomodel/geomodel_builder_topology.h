@@ -85,15 +85,15 @@ namespace RINGMesh {
         {
             if( MeshEntityTypeManager::is_corner( type ) ) {
                 return this->create_mesh_entities< Corner< DIMENSION > >( nb_additional_entities );
-//            } else if( MeshEntityTypeManager::is_line( type ) ) {
-//                return create_mesh_entities< Line< DIMENSION > >(
-//                    nb_additional_entities );
-//            } else if( MeshEntityTypeManager::is_surface( type ) ) {
-//                return create_mesh_entities< Surface< DIMENSION > >(
-//                    nb_additional_entities );
-//            } else if( MeshEntityTypeManager::is_region( type ) ) {
-//                return create_mesh_entities< Region< DIMENSION > >(
-//                    nb_additional_entities );
+            } else if( MeshEntityTypeManager::is_line( type ) ) {
+                return create_mesh_entities< Line< DIMENSION > >(
+                    nb_additional_entities );
+            } else if( MeshEntityTypeManager::is_surface( type ) ) {
+                return create_mesh_entities< Surface< DIMENSION > >(
+                    nb_additional_entities );
+            } else if( MeshEntityTypeManager::is_region( type ) ) {
+                return create_mesh_entities< Region< DIMENSION > >(
+                    nb_additional_entities );
             } else {
                 ringmesh_assert_not_reached;
                 return false;
@@ -167,7 +167,7 @@ namespace RINGMesh {
             const MeshEntityType& type = ENTITY::type_name_static();
             create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
 
-//            RINGMESH_PARALLEL_LOOP
+            RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( type ); ++e ) {
                 gmme_id id( type, e );
                 GeoModelMeshEntityAccess< DIMENSION > gmme_access(

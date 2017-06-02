@@ -529,4 +529,12 @@ namespace RINGMesh {
 
 //    template class RINGMESH_API GeoModelBuilderTopology< 2 > ;
     template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
+    template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
+        Corner< 3 > >( const MeshType );
+    template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
+        Line< 3 > >( const MeshType );
+    template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
+        Surface< 3 > >( const MeshType );
+    template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
+        Region< 3 > >( const MeshType );
 }
