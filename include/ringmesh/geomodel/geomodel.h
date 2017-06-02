@@ -69,6 +69,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderRemoval;
     template< index_t DIMENSION > class GeoModelBuilderRepair;
     template< index_t DIMENSION > class GeoModelBuilderCopy;
+    template< index_t DIMENSION > class GeoModelBuilderInfo;
 }
 
 namespace RINGMesh {
@@ -311,7 +312,7 @@ namespace RINGMesh {
         friend class GeoModelBuilderRemoval< DIMENSION >;
         friend class GeoModelBuilderRepair< DIMENSION >;
         friend class GeoModelBuilderCopy< DIMENSION >;
-        friend class GeoModelBuilderInfo;
+        friend class GeoModelBuilderInfo< DIMENSION >;
         friend class GeoModelBuilderFromSurfaces;
 
     private:
