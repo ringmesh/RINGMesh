@@ -76,17 +76,8 @@ namespace RINGMesh {
             std::set< gmme_id >& in_mesh_entities,
             std::set< gmge_id >& in_geological_entities ) const;
 
-        template< template< index_t > class ENTITY >
-        gmme_id create_mesh_entity( const MeshType mesh_type = "" )
-        {
-            const MeshEntityType entity_type = ENTITY< DIMENSION >::type_name_static();
-            index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) );
-            index_t new_id( nb_entities );
-            geomodel_access_.modifiable_mesh_entities( entity_type ).emplace_back(
-                GeoModelMeshEntityAccess< DIMENSION >::create_entity< ENTITY< DIMENSION > >(
-                    geomodel_, new_id, mesh_type ) );
-            return geomodel_access_.modifiable_mesh_entities( entity_type ).back()->gmme();
-        }
+        template< typename ENTITY >
+        gmme_id create_mesh_entity( const MeshType mesh_type = "" );
 
         bool create_mesh_entities(
             const MeshEntityType& type,
@@ -165,31 +156,16 @@ namespace RINGMesh {
             GeoModelBuilder& builder,
             GeoModel< DIMENSION >& geomodel );
 
-        template< template< index_t > class ENTITY >
+        template< typename ENTITY >
         bool create_mesh_entities(
             index_t nb_additionnal_entities,
-            const MeshType type = "" )
-        {
-            const MeshEntityType& entity_type =
-                ENTITY< DIMENSION >::type_name_static();
-            std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& store =
-                geomodel_access_.modifiable_mesh_entities( entity_type );
-            index_t old_size = static_cast< index_t >( store.size() );
-            index_t new_size = old_size + nb_additionnal_entities;
-            store.reserve( new_size );
-            for( index_t i = old_size; i < new_size; i++ ) {
-                store.emplace_back(
-                    GeoModelMeshEntityAccess< DIMENSION >::create_entity<
-                        ENTITY< DIMENSION > >( geomodel_, i, type ) );
-            }
-            return true;
-        }
+            const MeshType type = "" );
 
-        template< template< index_t > class ENTITY >
+        template< typename ENTITY >
         void copy_mesh_entity_topology( const GeoModel< DIMENSION >& from )
         {
-            const MeshEntityType& type = ENTITY< DIMENSION >::type_name_static();
-            create_mesh_entities< ENTITY< DIMENSION > >( from.nb_mesh_entities( type ) );
+            const MeshEntityType& type = ENTITY::type_name_static();
+            create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
 
 //            RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( type ); ++e ) {
