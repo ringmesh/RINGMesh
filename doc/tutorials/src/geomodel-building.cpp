@@ -122,7 +122,7 @@ int main()
         // GeoModelBuilder, which is a safety for the user
         // Indeed, the GeoModel can't be directly modified,
         // It has to be done using the GeoModelBuilder
-        GeoModelBuilder builder( geomodel );
+        GeoModelBuilder< 3 > builder( geomodel );
 
         //#############################
         // Declaration of the Entities#
