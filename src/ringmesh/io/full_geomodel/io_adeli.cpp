@@ -70,7 +70,7 @@ namespace {
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
-            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
+            const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
             if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
                 {
                     throw RINGMeshException( "I/O",
@@ -86,7 +86,7 @@ namespace {
         }
 
     private:
-        void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out ) const
+        void write_vertices( const GeoModelMesh< 3 >& geomodel_mesh, std::ofstream& out ) const
         {
             out << "$NOD" << std::endl;
             out << geomodel_mesh.vertices.nb() << std::endl;

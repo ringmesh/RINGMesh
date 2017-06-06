@@ -77,7 +77,7 @@ namespace {
             out << "ASCII" << std::endl;
             out << "DATASET UNSTRUCTURED_GRID" << std::endl;
 
-            const GeoModelMesh& mesh = geomodel.mesh;
+            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
             out << "POINTS " << mesh.vertices.nb() << " double" << std::endl;
             for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
                 out << mesh.vertices.vertex( v ) << std::endl;

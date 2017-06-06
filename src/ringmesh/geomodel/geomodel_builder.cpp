@@ -52,7 +52,7 @@ namespace {
 
     gmme_id find_corner( const GeoModel< 3 >& geomodel, index_t geomodel_point_id )
     {
-        const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices;
+        const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel.mesh.vertices;
         const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
             geomodel_point_id );
         for( const GMEVertex& vertex : vertices ) {
@@ -72,7 +72,7 @@ namespace {
         if( L.nb_vertices() != rhs_vertices.size() ) {
             return false;
         }
-        const GeoModelMeshVertices& geomodel_vertices = L.geomodel().mesh.vertices;
+        const GeoModelMeshVertices< 3 >& geomodel_vertices = L.geomodel().mesh.vertices;
         bool equal = true;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
@@ -661,7 +661,7 @@ namespace RINGMesh {
 
         void initialize_border_triangles_from_model_surfaces()
         {
-            const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
+            const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel_.mesh.vertices;
             for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
                 const Surface< 3 >& S = geomodel_.surface( s );
                 const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
@@ -696,7 +696,7 @@ namespace RINGMesh {
             const Surface< 3 >& S = geomodel_.surface( border_triangle.surface_ );
             const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
 
-            const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
+            const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel_.mesh.vertices;
 
             // Gets the next edge on border in the Surface
             index_t p = border_triangle.polygon_;

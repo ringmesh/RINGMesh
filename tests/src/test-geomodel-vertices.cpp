@@ -59,7 +59,7 @@ void error(
 }
 void test_geomodel_vertices( const GeoModel< 3 >& geomodel )
 {
-    const GeoModelMeshVertices& geomodel_mesh_vertices = geomodel.mesh.vertices;
+    const GeoModelMeshVertices< 3 >& geomodel_mesh_vertices = geomodel.mesh.vertices;
     for( const MeshEntityType& mesh_entity_type : geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types() ) {
         for( index_t mesh_entity_id = 0;
             mesh_entity_id < geomodel.nb_mesh_entities( mesh_entity_type );
@@ -86,7 +86,7 @@ void test_geomodel_vertices( const GeoModel< 3 >& geomodel )
 
 void test_GMEVertex( const GeoModel< 3 >& geomodel )
 {
-    const GeoModelMeshVertices& geomodel_mesh_vertices = geomodel.mesh.vertices;
+    const GeoModelMeshVertices< 3 >& geomodel_mesh_vertices = geomodel.mesh.vertices;
 
     for( index_t vertex_id_in_geomodel_mesh = 0;
         vertex_id_in_geomodel_mesh < geomodel_mesh_vertices.nb();

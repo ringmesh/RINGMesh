@@ -281,7 +281,7 @@ namespace {
         }
         out << "END" << std::endl;
 
-        const GeoModelMeshVertices& geomodel_vertices = M.mesh.vertices;
+        const GeoModelMeshVertices< 3 >& geomodel_vertices = M.mesh.vertices;
         // Save the geometry of the Surfaces, Interface per Interface
         for( index_t i = 0; i < nb_interfaces; ++i ) {
             const GeoModelGeologicalEntity< 3 >& tsurf = M.geological_entity(

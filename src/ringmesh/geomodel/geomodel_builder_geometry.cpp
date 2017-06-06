@@ -271,7 +271,7 @@ namespace RINGMesh {
         bool update )
     {
         GeoModelMeshEntity< 3 >& E = geomodel_access_.modifiable_mesh_entity( t );
-        GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
+        GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel_.mesh.vertices;
         ringmesh_assert( v < E.nb_vertices() );
         if( update ) {
             geomodel_vertices.update_point(
@@ -290,7 +290,7 @@ namespace RINGMesh {
         index_t v,
         index_t geomodel_vertex )
     {
-        GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
+        GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel_.mesh.vertices;
         set_mesh_entity_vertex( entity_id, v,
             geomodel_vertices.vertex( geomodel_vertex ), false );
 

@@ -114,6 +114,14 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
+    bool GeoModelGeologicalEntity< DIMENSION >::is_fault(
+        typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE feature )
+    {
+        return feature == FAULT || feature == REVERSE_FAULT
+            || feature == NORMAL_FAULT;
+    }
+
+    template< index_t DIMENSION >
     const gmme_id& GeoModelGeologicalEntity< DIMENSION >::child_gmme(
         index_t x ) const
     {
