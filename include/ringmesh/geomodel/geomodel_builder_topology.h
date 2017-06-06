@@ -56,7 +56,7 @@ namespace RINGMesh {
     class GeoModelBuilderTopology {
     ringmesh_disable_copy( GeoModelBuilderTopology );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder< DIMENSION >;
+        friend class GeoModelBuilder< DIMENSION > ;
 
     public:
         /*!
@@ -84,16 +84,13 @@ namespace RINGMesh {
             index_t nb_additional_entities )
         {
             if( MeshEntityTypeManager::is_corner( type ) ) {
-                return this->create_mesh_entities< Corner< DIMENSION > >( nb_additional_entities );
+                return this->create_mesh_entities< Corner >( nb_additional_entities );
             } else if( MeshEntityTypeManager::is_line( type ) ) {
-                return create_mesh_entities< Line< DIMENSION > >(
-                    nb_additional_entities );
+                return create_mesh_entities< Line >( nb_additional_entities );
             } else if( MeshEntityTypeManager::is_surface( type ) ) {
-                return create_mesh_entities< Surface< DIMENSION > >(
-                    nb_additional_entities );
+                return create_mesh_entities< Surface >( nb_additional_entities );
             } else if( MeshEntityTypeManager::is_region( type ) ) {
-                return create_mesh_entities< Region< DIMENSION > >(
-                    nb_additional_entities );
+                return create_mesh_entities< Region >( nb_additional_entities );
             } else {
                 ringmesh_assert_not_reached;
                 return false;
@@ -156,7 +153,7 @@ namespace RINGMesh {
             GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
-        template< typename ENTITY >
+        template< template< index_t > class ENTITY >
         bool create_mesh_entities(
             index_t nb_additionnal_entities,
             const MeshType type = "" );

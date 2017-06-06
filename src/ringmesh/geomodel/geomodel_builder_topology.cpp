@@ -359,12 +359,12 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    template< typename ENTITY >
+    template< template< index_t > class ENTITY >
     bool GeoModelBuilderTopology< DIMENSION >::create_mesh_entities(
         index_t nb_additionnal_entities,
         const MeshType type )
     {
-        const MeshEntityType& entity_type = ENTITY::type_name_static();
+        const MeshEntityType& entity_type = ENTITY< DIMENSION >::type_name_static();
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& store =
             geomodel_access_.modifiable_mesh_entities( entity_type );
         index_t old_size = static_cast< index_t >( store.size() );
