@@ -77,8 +77,8 @@ namespace {
                 << "ZPOSITIVE Elevation" << std::endl
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
 
-            const GeoModelMesh& mesh = geomodel.mesh;
-            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
+            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
+            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false );

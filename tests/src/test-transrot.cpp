@@ -137,7 +137,7 @@ void test_translate( GeoModel< 3 >& geomodel )
     vec3 translation_vector( 1., 2.5, -3.5 );
     translate( geomodel, translation_vector );
 
-    const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+    const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
     check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) );
     check_vertex( vertices.vertex( 1 ), vec3( 2., 2.5, -3.5 ) );
     check_vertex( vertices.vertex( 2 ), vec3( 2., 3.5, -3.5 ) );
@@ -155,7 +155,7 @@ void test_rotation( GeoModel< 3 >& geomodel )
     vec3 axis( 0, 0, 1 );
     rotate( geomodel, origin, axis, 90, true );
 
-    const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+    const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
     check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) );
     check_vertex( vertices.vertex( 1 ), vec3( 1., 3.5, -3.5 ) );
     check_vertex( vertices.vertex( 2 ), vec3( 0., 3.5, -3.5 ) );

@@ -76,7 +76,7 @@ namespace {
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
-            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
+            const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
 
             write_title( out, geomodel );
 
@@ -105,7 +105,7 @@ namespace {
         }
         void write_vertices(
             std::ofstream& out,
-            const RINGMesh::GeoModelMesh& geomodel_mesh ) const
+            const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh ) const
         {
             out << "COOR_3D" << std::endl;
             for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
@@ -117,7 +117,7 @@ namespace {
 
         void write_cells( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMesh& geomodel_mesh = geomodel.mesh;
+            const GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 // -1 Because connectors doesn't exist in aster
                 for( index_t ct = 0; ct < GEO::MESH_NB_CELL_TYPES - 1; ct++ ) {
@@ -132,14 +132,14 @@ namespace {
 
         void write_polygons( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMesh& geomodel_mesh = geomodel.mesh;
+            const GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
                 // -1 because polygons doesn' t exist in aster
-                for( index_t pt = 0; pt < GeoModelMeshPolygons::ALL - 1; pt++ ) {
+                for( index_t pt = 0; pt < GeoModelMeshPolygons< 3 >::ALL - 1; pt++ ) {
                     if( geomodel_mesh.polygons.nb_polygons( s,
-                        GeoModelMeshPolygons::PolygonType( pt ) ) > 0 ) {
+                        GeoModelMeshPolygons< 3 >::PolygonType( pt ) ) > 0 ) {
                         write_polygons_in_interface(
-                            GeoModelMeshPolygons::PolygonType( pt ), s, geomodel_mesh,
+                            GeoModelMeshPolygons< 3 >::PolygonType( pt ), s, geomodel_mesh,
                             out );
                     }
                 }
@@ -148,7 +148,7 @@ namespace {
         void write_cells_in_region(
             const GEO::MeshCellType& cell_type,
             index_t region,
-            const GeoModelMesh& geomodel_mesh,
+            const GeoModelMesh< 3 >& geomodel_mesh,
             std::ofstream& out ) const
         {
             out << *cell_name_in_aster_mail_file[cell_type] << std::endl;
@@ -165,9 +165,9 @@ namespace {
         }
 
         void write_polygons_in_interface(
-            const GeoModelMeshPolygons::PolygonType& polygon_type,
+            const GeoModelMeshPolygons< 3 >::PolygonType& polygon_type,
             index_t surface,
-            const RINGMesh::GeoModelMesh& mesh,
+            const RINGMesh::GeoModelMesh< 3 >& mesh,
             std::ofstream& out ) const
         {
             out << *polygon_name_in_aster_mail_file[polygon_type] << std::endl;

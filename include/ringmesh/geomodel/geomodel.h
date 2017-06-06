@@ -221,7 +221,7 @@ namespace RINGMesh {
         }
 
     public:
-        GeoModelMesh mesh;
+        GeoModelMesh< DIMENSION > mesh;
 
     private:
         /*!

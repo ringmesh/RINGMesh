@@ -90,7 +90,7 @@ namespace {
         }
         void write_dimensions( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMesh& mesh = geomodel.mesh ;
+            const GeoModelMesh< 3 >& mesh = geomodel.mesh ;
             out << "DIMENS\n" ;
             out << SPACE << mesh.vertices.nb() << SPACE << mesh.cells.nb()
                 << " 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0\n" ;
@@ -98,7 +98,7 @@ namespace {
         }
         void write_elements( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells& cells = geomodel.mesh.cells ;
+            const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells ;
             out << "VARNODE\n" ;
             out << SPACE << cells.nb() ;
             index_t min_nb_vertices_per_element ;
@@ -142,7 +142,7 @@ namespace {
         }
         void write_vertices( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
+            const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices ;
             out << "XYZCOOR\n" << std::scientific ;
             for( index_t v = 0; v < vertices.nb(); v++ ) {
                 const vec3& point = vertices.vertex( v ) ;
@@ -184,7 +184,7 @@ namespace {
         }
         void write_well_edges( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshEdges& edges = geomodel.mesh.edges ;
+            const GeoModelMeshEdges< 3 >& edges = geomodel.mesh.edges ;
             out << " <nop count=\"" << edges.nb_edges() << "\">\n" ;
             out << " <![CDATA[" ;
             for( index_t w = 0; w < edges.nb_wells(); w++ ) {
@@ -198,7 +198,7 @@ namespace {
         }
         void write_well_groups( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshEdges& edges = geomodel.mesh.edges ;
+            const GeoModelMeshEdges< 3 >& edges = geomodel.mesh.edges ;
             const WellGroup* wells = geomodel.wells() ;
             index_t offset = 0 ;
             out << " <groups count=\"" << edges.nb_wells() << "\">\n" ;

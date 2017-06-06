@@ -114,8 +114,8 @@ namespace {
             regions << "'" << oss_regions.str() << std::endl;
             regions << "no properties" << std::endl;
 
-            const GeoModelMesh& mesh = gm.mesh;
-            const GeoModelMeshPolygons& polygons = mesh.polygons;
+            const GeoModelMesh< 3 >& mesh = gm.mesh;
+            const GeoModelMeshPolygons< 3 >& polygons = mesh.polygons;
             index_t count = 0;
             // Conversion from (X,Y,Z) to (X,Z,-Y)
             signed_index_t conversion_sign[3] = { 1, 1, -1 };

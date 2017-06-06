@@ -76,7 +76,7 @@ namespace {
             std::ofstream out_xyz( oss_xyz.str().c_str() );
             out_xyz.precision( 16 );
 
-            const GeoModelMesh& mesh = geomodel.mesh;
+            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
@@ -113,7 +113,7 @@ namespace {
             }
             NNSearch< 3 > nn_search( edge_vertices, false );
 
-            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
+            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
             for( index_t p = 0; p < polygons.nb(); p++ ) {
                 for( index_t e = 0; e < polygons.nb_vertices( p ); e++ ) {
                     index_t adj = polygons.adjacent( p, e );

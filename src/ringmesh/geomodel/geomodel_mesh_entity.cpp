@@ -58,7 +58,7 @@ namespace {
     template< index_t DIMENSION >
     bool check_range_model_vertex_ids( const GeoModelMeshEntity< DIMENSION >& E )
     {
-        const GeoModelMeshVertices& geomodel_vertices = E.geomodel().mesh.vertices;
+        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices = E.geomodel().mesh.vertices;
         /// Check that the stored geomodel vertex indices are in a valid range
         gmme_id id = E.gmme();
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
@@ -224,7 +224,7 @@ namespace {
         std::vector< index_t > corners( nb_polygon_vertices, NO_ID );
         std::vector< index_t > corners_global( nb_polygon_vertices, NO_ID );
         index_t v = 0;
-        const GeoModelMeshVertices& geomodel_vertices = S.geomodel().mesh.vertices;
+        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices = S.geomodel().mesh.vertices;
         for( index_t c = 0; c < S.nb_mesh_element_vertices( p ); ++c ) {
             index_t polygon_vertex_index = S.mesh_element_vertex_index( p, c );
             corners[v] = polygon_vertex_index;
@@ -247,7 +247,7 @@ namespace {
         std::vector< index_t > vertices( nb_vertices_in_cell, NO_ID );
         std::vector< index_t > vertices_global( nb_vertices_in_cell, NO_ID );
         gmme_id id = region.gmme();
-        const GeoModelMeshVertices& geomodel_vertices =
+        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             region.geomodel().mesh.vertices;
         for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
             vertices[v] = region.mesh_element_vertex_index( cell_index, v );
@@ -315,7 +315,7 @@ namespace RINGMesh {
         // For all vertices
         // Check that the global vertex has an index backward to 
         // the vertex of this entity
-        const GeoModelMeshVertices& geomodel_vertices =
+        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             this->geomodel().mesh.vertices;
         gmme_id id = gmme();
         for( index_t v = 0; v < nb_vertices(); ++v ) {
