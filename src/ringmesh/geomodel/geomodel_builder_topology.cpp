@@ -176,10 +176,10 @@ namespace RINGMesh {
             }
         }
         // Add mesh entities that are in the boundary of no mesh entity
-        for( index_t i = 0; i < MeshEntityTypeManager::nb_mesh_entity_types();
+        for( index_t i = 0; i < MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
             ++i ) {
             const MeshEntityType& type =
-                MeshEntityTypeManager::mesh_entity_types()[i];
+                MeshEntityTypeManager< 3 >::mesh_entity_types()[i];
             for( index_t j = 0; j < geomodel_.nb_mesh_entities( type ); ++j ) {
                 bool no_incident = true;
                 const GeoModelMeshEntity< 3 >& E = geomodel_.mesh_entity( type, j );

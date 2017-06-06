@@ -403,7 +403,7 @@ namespace RINGMesh {
             const std::string& type = entity_types_[selected_entity_type_casted];
 
             if( selected_entity_type_casted
-                < MeshEntityTypeManager::nb_mesh_entity_types() + 1 ) {
+                < MeshEntityTypeManager< 3 >::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ );
@@ -475,7 +475,7 @@ namespace RINGMesh {
             GM_gfx_.surfaces.set_vertex_visibility( false );
             GM_gfx_.regions.set_vertex_visibility( false );
             if( selected_entity_type_casted
-                < MeshEntityTypeManager::nb_mesh_entity_types() + 1 ) {
+                < MeshEntityTypeManager< 3 >::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ );
@@ -496,13 +496,13 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer::toggle_mesh_entity_and_boundaries_visibility(
         const gmme_id& entity_id )
     {
-        if( MeshEntityTypeManager::is_corner( entity_id.type() ) ) {
+        if( MeshEntityTypeManager< 3 >::is_corner( entity_id.type() ) ) {
             toggle_corner_visibility( entity_id.index() );
-        } else if( MeshEntityTypeManager::is_line( entity_id.type() ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_line( entity_id.type() ) ) {
             toggle_line_and_boundaries_visibility( entity_id.index() );
-        } else if( MeshEntityTypeManager::is_surface( entity_id.type() ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_surface( entity_id.type() ) ) {
             toggle_surface_and_boundaries_visibility( entity_id.index() );
-        } else if( MeshEntityTypeManager::is_region( entity_id.type() ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_region( entity_id.type() ) ) {
             toggle_region_and_boundaries_visibility( entity_id.index() );
         } else {
             ringmesh_assert_not_reached;

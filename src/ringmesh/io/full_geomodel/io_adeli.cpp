@@ -122,16 +122,16 @@ namespace {
             // Corners are already written so we start this loop at 1
             for( index_t geomodel_mesh_entities = 1;
                 geomodel_mesh_entities
-                    < MeshEntityTypeManager::nb_mesh_entity_types();
+                    < MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
                 geomodel_mesh_entities++ ) {
                 for( index_t entity = 0;
                     entity
                         < geomodel.nb_mesh_entities(
-                            MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities] );
+                            MeshEntityTypeManager< 3 >::mesh_entity_types()[geomodel_mesh_entities] );
                     entity++ ) {
                     write_mesh_elements_for_a_mesh_entity(
                         geomodel.mesh_entity(
-                            MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities],
+                            MeshEntityTypeManager< 3 >::mesh_entity_types()[geomodel_mesh_entities],
                             entity ), adeli_cell_types[geomodel_mesh_entities], elt,
                         out );
                 }
@@ -147,16 +147,16 @@ namespace {
             index_t nb_mesh_entities = geomodel.nb_corners();
             for( index_t geomodel_mesh_entities = 1;
                 geomodel_mesh_entities
-                    < MeshEntityTypeManager::nb_mesh_entity_types();
+                    < MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
                 geomodel_mesh_entities++ ) {
                 for( index_t entity = 0;
                     entity
                         < geomodel.nb_mesh_entities(
-                            MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities] );
+                            MeshEntityTypeManager< 3 >::mesh_entity_types()[geomodel_mesh_entities] );
                     entity++ ) {
                     nb_mesh_entities +=
                         geomodel.mesh_entity(
-                            MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities],
+                            MeshEntityTypeManager< 3 >::mesh_entity_types()[geomodel_mesh_entities],
                             entity ).nb_mesh_elements();
                 }
             }
