@@ -45,7 +45,7 @@
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class RINGMESH_API Box {
+    class Box {
     public:
         Box()
             : initialized_( false )

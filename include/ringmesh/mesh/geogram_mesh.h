@@ -71,7 +71,7 @@ namespace RINGMesh {
         {                                                                           \
             GEO::mesh_save( *mesh_, filename, GEO::MeshIOFlags() );                 \
         }                                                                           \
-        virtual const GEO::Mesh& gfx_mesh() const override                          \
+        const GEO::Mesh& gfx_mesh() const                                           \
         {                                                                           \
             return *mesh_;                                                          \
         }                                                                           \
@@ -116,7 +116,7 @@ namespace RINGMesh {
         std::unique_ptr< GEO::Mesh > mesh_
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramPointSetMesh: public PointSetMesh< DIMENSION > {
+    class GeogramPointSetMesh: public PointSetMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
     };
 
@@ -124,7 +124,7 @@ namespace RINGMesh {
     using GeogramPointSetMesh3D = GeogramPointSetMesh< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramLineMesh: public LineMesh< DIMENSION > {
+    class GeogramLineMesh: public LineMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
     public:
         virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const override
@@ -147,7 +147,7 @@ namespace RINGMesh {
     using GeogramLineMesh3D = GeogramLineMesh< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramSurfaceMesh: public SurfaceMesh< DIMENSION > {
+    class GeogramSurfaceMesh: public SurfaceMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
     public:
         virtual index_t polygon_vertex( index_t polygon_id, index_t vertex_id ) const override
@@ -184,7 +184,7 @@ namespace RINGMesh {
     using GeogramSurfaceMesh3D = GeogramSurfaceMesh< 3 >;
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeogramVolumeMesh: public VolumeMesh< DIMENSION > {
+    class GeogramVolumeMesh: public VolumeMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramVolumeMesh );
     public:
         virtual index_t cell_vertex( index_t cell_id, index_t vertex_id ) const override

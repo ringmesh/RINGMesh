@@ -57,7 +57,7 @@ namespace {
     using namespace RINGMesh;
 
     bool triangles_intersect(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const GeoModelMeshPolygons& polygons,
         index_t triangle1,
         index_t triangle2 )
@@ -77,7 +77,7 @@ namespace {
     }
 
     bool triangle_quad_intersect(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const GeoModelMeshPolygons& polygons,
         index_t triangle,
         index_t quad )
@@ -104,7 +104,7 @@ namespace {
     }
 
     bool quad_quad_intersect(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const GeoModelMeshPolygons& polygons,
         index_t quad1,
         index_t quad2 )
@@ -164,7 +164,7 @@ namespace {
      * @param[in] v0 Index in the geomodel of the edge first point
      * @param[in] v1 Index in the geomodel of the edge second point
      */
-    bool is_edge_on_line( const GeoModel& geomodel, index_t v0, index_t v1 )
+    bool is_edge_on_line( const GeoModel< 3 >& geomodel, index_t v0, index_t v1 )
     {
         MeshEntityType line_type = Line< 3 >::type_name_static();
         std::vector< GMEVertex > v0_line_bme =
@@ -202,7 +202,7 @@ namespace {
      *
      */
     bool polygons_share_line_edge(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const GeoModelMeshPolygons& polygons,
         index_t p1,
         index_t p2 )
@@ -263,7 +263,7 @@ namespace {
          *  whether it has intersections
          */
         StoreIntersections(
-            const GeoModel& geomodel,
+            const GeoModel< 3 >& geomodel,
             std::vector< bool >& has_isect )
             :
                 geomodel_( geomodel ),
@@ -331,7 +331,7 @@ namespace {
         }
 
     private:
-        const GeoModel& geomodel_;
+        const GeoModel< 3 >& geomodel_;
         const GeoModelMeshPolygons& polygons_;
         std::vector< bool >& has_intersection_;
     };
@@ -352,7 +352,7 @@ namespace {
      *        incident_entity vector of entity @param in.
      */
     bool is_in_incident_entity(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const gmme_id& is,
         const gmme_id& in )
     {
@@ -367,7 +367,7 @@ namespace {
 
     void save_invalid_points(
         const std::ostringstream& file,
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const std::vector< bool >& valid )
     {
         GEO::Mesh point_mesh;
@@ -389,7 +389,7 @@ namespace {
      * @todo Implementation for regions
      * @todo Split in smaller functions
      */
-    bool check_model_points_validity( const GeoModel& geomodel )
+    bool check_model_points_validity( const GeoModel< 3 >& geomodel )
     {
         // For all the vertices of the geomodel 
         // We check that the entities in which they are are consistent 
@@ -597,7 +597,7 @@ namespace {
 
     void save_edges(
         const std::ostringstream& file,
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const std::vector< index_t >& e )
     {
         GEO::Mesh edge_mesh;
@@ -689,7 +689,7 @@ namespace {
      * @brief Save in a .lin file the
      */
     void debug_save_non_manifold_edges(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const std::vector< index_t >& edge_indices,
         const std::vector< index_t >& non_manifold_edges )
     {
@@ -746,7 +746,7 @@ namespace {
     }
 
     void compute_border_edges(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         std::vector< index_t >& edge_indices )
     {
         const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
@@ -768,7 +768,7 @@ namespace {
     }
 
     void compute_border_edge_barycenters(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const std::vector< index_t >& edge_indices,
         std::vector< vec3 >& edge_barycenters )
     {
@@ -783,7 +783,7 @@ namespace {
     }
 
     void compute_edge_on_lines(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const std::vector< vec3 >& edge_barycenters,
         std::vector< bool >& edge_on_lines )
     {
@@ -819,7 +819,7 @@ namespace {
     class GeoModelValidityCheck {
     public:
         GeoModelValidityCheck(
-            const GeoModel& geomodel,
+            const GeoModel< 3 >& geomodel,
             const ValidityCheckMode validity_check_mode )
             : geomodel_( geomodel ), valid_( true ), mode_( validity_check_mode )
         {
@@ -1048,7 +1048,7 @@ namespace {
         }
 
     private:
-        const GeoModel& geomodel_;
+        const GeoModel< 3 >& geomodel_;
         bool valid_;
         ValidityCheckMode mode_;
     };
@@ -1070,7 +1070,7 @@ namespace RINGMesh {
         }
     }
 
-    bool are_geomodel_mesh_entities_mesh_valid( const GeoModel& geomodel )
+    bool are_geomodel_mesh_entities_mesh_valid( const GeoModel< 3 >& geomodel )
     {
         const std::vector< MeshEntityType >& meshed_types =
             MeshEntityTypeManager< 3 >::mesh_entity_types();
@@ -1091,7 +1091,7 @@ namespace RINGMesh {
         return count_invalid == 0;
     }
 
-    bool are_geomodel_mesh_entities_connectivity_valid( const GeoModel& geomodel )
+    bool are_geomodel_mesh_entities_connectivity_valid( const GeoModel< 3 >& geomodel )
     {
         const std::vector< MeshEntityType >& meshed_types =
             MeshEntityTypeManager< 3 >::mesh_entity_types();
@@ -1112,7 +1112,7 @@ namespace RINGMesh {
         return count_invalid == 0;
     }
 
-    bool are_geomodel_geological_entities_valid( const GeoModel& geomodel )
+    bool are_geomodel_geological_entities_valid( const GeoModel< 3 >& geomodel )
     {
         const std::vector< GeologicalEntityType >& geological_types =
             geomodel.entity_type_manager().geological_entity_manager.geological_entity_types();
@@ -1134,7 +1134,7 @@ namespace RINGMesh {
         return count_invalid == 0;
     }
 
-    bool are_geomodel_mesh_entities_parent_valid( const GeoModel& geomodel )
+    bool are_geomodel_mesh_entities_parent_valid( const GeoModel< 3 >& geomodel )
     {
         const std::vector< MeshEntityType >& meshed_types =
             MeshEntityTypeManager< 3 >::mesh_entity_types();
@@ -1157,7 +1157,7 @@ namespace RINGMesh {
     }
 
     bool is_geomodel_valid(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         ValidityCheckMode validity_check_mode )
     {
         if( validity_check_mode == ValidityCheckMode::GEOMETRY

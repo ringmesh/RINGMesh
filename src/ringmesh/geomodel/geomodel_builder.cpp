@@ -50,7 +50,7 @@
 namespace {
     using namespace RINGMesh;
 
-    gmme_id find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
+    gmme_id find_corner( const GeoModel< 3 >& geomodel, index_t geomodel_point_id )
     {
         const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices;
         const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
@@ -102,7 +102,7 @@ namespace {
      * @note Closed line has front()==back().
      */
     void reorder_closed_line_vertices_to_start_at_corner(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         std::vector< index_t >& line_vertices )
     {
         if( geomodel.nb_corners() == 0 ) {
@@ -401,7 +401,7 @@ namespace RINGMesh {
          *  from a GeoModel Surfaces are collected for each Line< 3 >.
          */
         LineGeometryFromGeoModelSurfaces(
-            const GeoModel& geomodel,
+            const GeoModel< 3 >& geomodel,
             bool collect_region_info )
             :
                 geomodel_( geomodel ),
@@ -788,7 +788,7 @@ namespace RINGMesh {
         }
 
     private:
-        const GeoModel& geomodel_;
+        const GeoModel< 3 >& geomodel_;
         bool collect_region_information_;
         // All the triangles on a boundary of all the Surfaces of the GeoModel
         std::vector< BorderTriangle > border_triangles_;
@@ -804,7 +804,7 @@ namespace RINGMesh {
 
     /*************************************************************************/
     GeoModelBuilderFile::GeoModelBuilderFile(
-        GeoModel& geomodel,
+        GeoModel< 3 >& geomodel,
         const std::string& filename )
         : GeoModelBuilder( geomodel ), filename_( filename )
     {
@@ -813,7 +813,7 @@ namespace RINGMesh {
 
     GeoModelBuilderFromSurfaces::GeoModelBuilderFromSurfaces(
         GeoModelBuilder& builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
         :
             options_(),
             builder_( builder ),
@@ -1037,12 +1037,12 @@ namespace RINGMesh {
 
     GeoModelBuilderCopy::GeoModelBuilderCopy(
         GeoModelBuilder& builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
 
-    void GeoModelBuilderCopy::copy_geomodel( const GeoModel& from )
+    void GeoModelBuilderCopy::copy_geomodel( const GeoModel< 3 >& from )
     {
         builder_.topology.copy_topology( from );
         builder_.geometry.copy_meshes( from );
@@ -1051,12 +1051,12 @@ namespace RINGMesh {
 
     GeoModelBuilderInfo::GeoModelBuilderInfo(
         GeoModelBuilder& builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
 
-    GeoModelBuilder::GeoModelBuilder( GeoModel& geomodel )
+    GeoModelBuilder::GeoModelBuilder( GeoModel< 3 >& geomodel )
         :
             topology( *this, geomodel ),
             geometry( *this, geomodel ),
@@ -1087,12 +1087,12 @@ namespace RINGMesh {
 
     GeoModelBuilderGeology::GeoModelBuilderGeology(
         GeoModelBuilder& builder,
-        GeoModel& geomodel )
+        GeoModel< 3 >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
 
-    void GeoModelBuilderGeology::copy_geology( const GeoModel& from )
+    void GeoModelBuilderGeology::copy_geology( const GeoModel< 3 >& from )
     {
         for( index_t t = 0; t < from.nb_geological_entity_types(); t++ ) {
             builder_.geology.copy_geological_entity_topology( from,
@@ -1236,14 +1236,14 @@ namespace RINGMesh {
     index_t GeoModelBuilderGeology::create_geological_entity_type(
         const GeologicalEntityType& type )
     {
-        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) );
+        ringmesh_assert( GeoModelGeologicalEntityFactory3D::has_creator( type ) );
 
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type );
         geomodel_access_.modifiable_geological_entities().push_back(
             std::vector< std::unique_ptr< GeoModelGeologicalEntity< 3 > > >() );
         std::unique_ptr< GeoModelGeologicalEntity< 3 > > E(
-            GeoModelGeologicalEntityFactory::create_object( type, geomodel_ ) );
+            GeoModelGeologicalEntityFactory3D::create_object( type, geomodel_ ) );
 
         const MeshEntityType child_type = E->child_type_name();
         RelationshipManager& parentage =
@@ -1255,7 +1255,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderGeology::copy_geological_entity_topology(
-        const GeoModel& from,
+        const GeoModel< 3 >& from,
         const GeologicalEntityType& type )
     {
         create_geological_entities( type, from.nb_geological_entities( type ) );

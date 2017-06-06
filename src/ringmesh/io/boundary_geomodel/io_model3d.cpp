@@ -38,7 +38,7 @@ namespace {
     /*!
      * @brief Total number of polygons in the Surfaces of a GM
      */
-    inline index_t nb_polygons( const GeoModel& GM )
+    inline index_t nb_polygons( const GeoModel< 3 >& GM )
     {
         index_t result = 0;
         for( index_t i = 0; i < GM.nb_surfaces(); ++i ) {
@@ -152,7 +152,7 @@ namespace {
      *   - all Surfaces are triangulated
      *   - all Regions have a name
      */
-    bool check_gocad_validity( const GeoModel& M )
+    bool check_gocad_validity( const GeoModel< 3 >& M )
     {
         index_t nb_interfaces = M.nb_geological_entities(
             Interface < 3 > ::type_name_static() );
@@ -205,7 +205,7 @@ namespace {
      * @param[in] M the geomodel to save
      * @param[in,out] out Output file stream
      */
-    void save_gocad_model3d( const GeoModel& M, std::ostream& out )
+    void save_gocad_model3d( const GeoModel< 3 >& M, std::ostream& out )
     {
         if( !check_gocad_validity( M ) ) {
             throw RINGMeshException( "I/O",
@@ -403,7 +403,7 @@ namespace {
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
          */
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
             if( !input ) {
@@ -421,7 +421,7 @@ namespace {
             return is_valid;
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
 
             std::ofstream out( filename.c_str() );

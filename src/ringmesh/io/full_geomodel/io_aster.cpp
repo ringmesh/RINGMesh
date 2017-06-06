@@ -66,13 +66,13 @@ namespace {
      */
     class AsterIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Code_Aster mesh not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -97,7 +97,7 @@ namespace {
 
     private:
 
-        void write_title( std::ofstream& out, const RINGMesh::GeoModel& geomodel ) const
+        void write_title( std::ofstream& out, const GeoModel< 3 >& geomodel ) const
         {
             out << "TITRE" << std::endl;
             out << geomodel.name() << std::endl;
@@ -115,9 +115,9 @@ namespace {
             out << "FINSF" << std::endl;
         }
 
-        void write_cells( const RINGMesh::GeoModel& geomodel, std::ofstream& out ) const
+        void write_cells( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
+            const GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 // -1 Because connectors doesn't exist in aster
                 for( index_t ct = 0; ct < GEO::MESH_NB_CELL_TYPES - 1; ct++ ) {
@@ -130,9 +130,9 @@ namespace {
             }
         }
 
-        void write_polygons( const RINGMesh::GeoModel& geomodel, std::ofstream& out ) const
+        void write_polygons( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
+            const GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
                 // -1 because polygons doesn' t exist in aster
                 for( index_t pt = 0; pt < GeoModelMeshPolygons::ALL - 1; pt++ ) {
@@ -148,7 +148,7 @@ namespace {
         void write_cells_in_region(
             const GEO::MeshCellType& cell_type,
             index_t region,
-            const RINGMesh::GeoModelMesh& geomodel_mesh,
+            const GeoModelMesh& geomodel_mesh,
             std::ofstream& out ) const
         {
             out << *cell_name_in_aster_mail_file[cell_type] << std::endl;
@@ -183,7 +183,7 @@ namespace {
             out << "FINSF" << std::endl;
         }
 
-        void write_regions( const GeoModel& geomodel, std::ofstream& out ) const
+        void write_regions( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 if( geomodel.region( r ).is_meshed() ) {
@@ -198,7 +198,7 @@ namespace {
             }
         }
 
-        void write_interfaces( const GeoModel& geomodel, std::ofstream& out ) const
+        void write_interfaces( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
             for( index_t inter = 0;
                 inter
