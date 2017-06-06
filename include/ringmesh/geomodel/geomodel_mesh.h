@@ -815,7 +815,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelMeshCells: public GeoModelMeshBase< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshCells );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_3d( DIMENSION );
     public:
         friend class GeoModelMesh< DIMENSION > ;
 
