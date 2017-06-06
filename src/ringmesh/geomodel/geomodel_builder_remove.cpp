@@ -47,7 +47,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     GeoModelBuilderRemoval< DIMENSION >::GeoModelBuilderRemoval(
-        GeoModelBuilder& builder,
+        GeoModelBuilder< DIMENSION >& builder,
         GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
@@ -269,6 +269,6 @@ namespace RINGMesh {
     }
 
     //    template class RINGMESH_API GeoModelBuilderRemoval< 2 > ;
-        template class RINGMESH_API GeoModelBuilderRemoval< 3 > ;
+    template class RINGMESH_API GeoModelBuilderRemoval< 3 > ;
 }
 

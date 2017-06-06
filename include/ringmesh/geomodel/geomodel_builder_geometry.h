@@ -47,7 +47,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder;
+    template< index_t DIMENSION > class GeoModelBuilder;
 }
 
 namespace RINGMesh {
@@ -56,7 +56,7 @@ namespace RINGMesh {
     class GeoModelBuilderGeometry {
     ringmesh_disable_copy( GeoModelBuilderGeometry );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder;
+        friend class GeoModelBuilder< DIMENSION > ;
 
     public:
         void recompute_geomodel_mesh();
@@ -87,8 +87,8 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >& corner =
                 geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess< DIMENSION > corner_access( corner );
-            PointSetMesh< DIMENSION >& corner_mesh =
-                dynamic_cast< PointSetMesh< DIMENSION >& >( *corner_access.modifiable_mesh() );
+            PointSetMesh< DIMENSION >& corner_mesh = dynamic_cast< PointSetMesh<
+                DIMENSION >& >( *corner_access.modifiable_mesh() );
             return PointSetMeshBuilder< DIMENSION >::create_builder( corner_mesh );
         }
 
@@ -103,8 +103,8 @@ namespace RINGMesh {
             index_t line_id )
         {
             gmme_id id( Line< DIMENSION >::type_name_static(), line_id );
-            GeoModelMeshEntity< DIMENSION >& line = geomodel_access_.modifiable_mesh_entity(
-                id );
+            GeoModelMeshEntity< DIMENSION >& line =
+                geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess< DIMENSION > line_access( line );
             LineMesh< DIMENSION >& line_mesh =
                 dynamic_cast< LineMesh< DIMENSION >& >( *line_access.modifiable_mesh() );
@@ -144,8 +144,8 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >& region =
                 geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess< DIMENSION > region_access( region );
-            VolumeMesh< DIMENSION >& region_mesh =
-                dynamic_cast< VolumeMesh< DIMENSION >& >( *region_access.modifiable_mesh() );
+            VolumeMesh< DIMENSION >& region_mesh = dynamic_cast< VolumeMesh<
+                DIMENSION >& >( *region_access.modifiable_mesh() );
             return VolumeMeshBuilder< DIMENSION >::create_builder( region_mesh );
         }
 
@@ -158,9 +158,13 @@ namespace RINGMesh {
         void copy_meshes(
             const GeoModel< DIMENSION >& from,
             const MeshEntityType& entity_type );
-        void copy_mesh( const GeoModel< DIMENSION >& from, const gmme_id& mesh_entity );
+        void copy_mesh(
+            const GeoModel< DIMENSION >& from,
+            const gmme_id& mesh_entity );
 
-        void assign_mesh_to_entity( const MeshBase< DIMENSION >& mesh, const gmme_id& to );
+        void assign_mesh_to_entity(
+            const MeshBase< DIMENSION >& mesh,
+            const gmme_id& to );
 
         /*!
          * \name Set entity geometry from geometrical positions
@@ -420,7 +424,9 @@ namespace RINGMesh {
         void cut_region_by_surface( index_t region_id, index_t surface_id );
 
     protected:
-        GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel< DIMENSION >& geomodel );
+        GeoModelBuilderGeometry(
+            GeoModelBuilder< DIMENSION >& builder,
+            GeoModel< DIMENSION >& geomodel );
 
     private:
         void assign_region_tet_mesh(
@@ -462,7 +468,7 @@ namespace RINGMesh {
             index_t new_vertex );
 
     private:
-        GeoModelBuilder& builder_;
+        GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
     };

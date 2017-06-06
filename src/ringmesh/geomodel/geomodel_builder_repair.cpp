@@ -47,7 +47,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     GeoModelBuilderRepair< DIMENSION >::GeoModelBuilderRepair(
-        GeoModelBuilder& builder,
+        GeoModelBuilder< DIMENSION >& builder,
         GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
@@ -159,16 +159,19 @@ namespace RINGMesh {
         if( nb_vertices != 3 ) {
             index_t* vertices = (index_t*) alloca( nb_vertices * sizeof(index_t) );
             for( index_t lv = 0; lv < nb_vertices; ++lv ) {
-                vertices[lv] = colocated_vertices[surface.mesh_element_vertex_index( polygon_id,
-                    lv )];
+                vertices[lv] = colocated_vertices[surface.mesh_element_vertex_index(
+                    polygon_id, lv )];
             }
             std::sort( vertices, vertices + nb_vertices );
             return std::unique( vertices, vertices + nb_vertices )
                 != vertices + nb_vertices;
         }
-        index_t v1 = colocated_vertices[surface.mesh_element_vertex_index( polygon_id, 0 )];
-        index_t v2 = colocated_vertices[surface.mesh_element_vertex_index( polygon_id, 1 )];
-        index_t v3 = colocated_vertices[surface.mesh_element_vertex_index( polygon_id, 2 )];
+        index_t v1 = colocated_vertices[surface.mesh_element_vertex_index(
+            polygon_id, 0 )];
+        index_t v2 = colocated_vertices[surface.mesh_element_vertex_index(
+            polygon_id, 1 )];
+        index_t v3 = colocated_vertices[surface.mesh_element_vertex_index(
+            polygon_id, 2 )];
         return v1 == v2 || v2 == v3 || v3 == v1;
     }
 
@@ -185,7 +188,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelBuilderRepair< DIMENSION >::detect_degenerate_polygons( const Surface< DIMENSION >& S )
+    index_t GeoModelBuilderRepair< DIMENSION >::detect_degenerate_polygons(
+        const Surface< DIMENSION >& S )
     {
         std::vector< index_t > colocated;
         const NNSearch< DIMENSION >& nn_search = S.vertex_nn_search();
@@ -210,7 +214,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelBuilderRepair< DIMENSION >::repair_line_mesh( const Line< DIMENSION >& line )
+    index_t GeoModelBuilderRepair< DIMENSION >::repair_line_mesh(
+        const Line< DIMENSION >& line )
     {
         std::vector< index_t > colocated;
         const NNSearch< DIMENSION >& nn_search = line.vertex_nn_search();
@@ -298,7 +303,8 @@ namespace RINGMesh {
         for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
             if( E.boundary( i ).is_inside_border( E ) ) {
                 inside_border.push_back(
-                    dynamic_cast< const GeoModelMeshEntity< DIMENSION >* >( &E.boundary( i ) ) );
+                    dynamic_cast< const GeoModelMeshEntity< DIMENSION >* >( &E.boundary(
+                        i ) ) );
             }
         }
         if( !inside_border.empty() ) {
@@ -337,7 +343,8 @@ namespace RINGMesh {
 
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( T ); ++e ) {
                 gmme_id entity_id( T, e );
-                const GeoModelMeshEntity< DIMENSION >& E = geomodel_.mesh_entity( entity_id );
+                const GeoModelMeshEntity< DIMENSION >& E = geomodel_.mesh_entity(
+                    entity_id );
 
                 const NNSearch< DIMENSION >& kdtree = E.vertex_nn_search();
                 std::vector< index_t > colocated;
@@ -425,5 +432,5 @@ namespace RINGMesh {
     }
 
     //    template class RINGMESH_API GeoModelBuilderRepair< 2 > ;
-        template class RINGMESH_API GeoModelBuilderRepair< 3 > ;
+    template class RINGMESH_API GeoModelBuilderRepair< 3 > ;
 }

@@ -53,6 +53,10 @@
  */
 
 namespace RINGMesh {
+    template< index_t DIMENSION > class GeoModelBuilder;
+}
+
+namespace RINGMesh {
     /*!
      * @brief First draft of flags to build a GeoModel
      * @todo Implements functions to set, access the values, depending on what ?
@@ -91,7 +95,7 @@ namespace RINGMesh {
     class GeoModelBuilderInfo {
     ringmesh_disable_copy( GeoModelBuilderInfo );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder;
+        friend class GeoModelBuilder< DIMENSION >;
 
     public:
         /*!
@@ -126,10 +130,12 @@ namespace RINGMesh {
         }
 
     protected:
-        GeoModelBuilderInfo( GeoModelBuilder& builder, GeoModel< DIMENSION >& geomodel );
+        GeoModelBuilderInfo(
+            GeoModelBuilder< DIMENSION >& builder,
+            GeoModel< DIMENSION >& geomodel );
 
     private:
-        GeoModelBuilder& builder_;
+        GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
 
@@ -139,7 +145,7 @@ namespace RINGMesh {
     class GeoModelBuilderGeology {
     ringmesh_disable_copy( GeoModelBuilderGeology );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder;
+        friend class GeoModelBuilder< DIMENSION >;
 
     public:
         void copy_geology( const GeoModel< DIMENSION >& from );
@@ -215,7 +221,7 @@ namespace RINGMesh {
 
     protected:
         GeoModelBuilderGeology(
-            GeoModelBuilder& builder,
+            GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
     private:
@@ -233,7 +239,7 @@ namespace RINGMesh {
             const gmme_id& children );
 
     private:
-        GeoModelBuilder& builder_;
+        GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
@@ -242,17 +248,17 @@ namespace RINGMesh {
     class GeoModelBuilderCopy {
     ringmesh_disable_copy( GeoModelBuilderCopy );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder;
+        friend class GeoModelBuilder< DIMENSION >;
     public:
         void copy_geomodel( const GeoModel< DIMENSION >& from );
 
     private:
         GeoModelBuilderCopy(
-            GeoModelBuilder& builder,
+            GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
     private:
-        GeoModelBuilder& builder_;
+        GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
@@ -260,8 +266,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelBuilderFromSurfaces {
     ringmesh_disable_copy( GeoModelBuilderFromSurfaces );
-    ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder;
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class GeoModelBuilder< DIMENSION >;
 
     public:
         /*!
@@ -289,7 +295,7 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilderFromSurfaces(
-            GeoModelBuilder& builder,
+            GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
     public:
@@ -297,7 +303,7 @@ namespace RINGMesh {
         GeoModelBuildingFlags options_;
 
     private:
-        GeoModelBuilder& builder_;
+        GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
 
@@ -311,11 +317,13 @@ namespace RINGMesh {
      * in accordance with the kind of edition operation (copy, repair, ...) or
      * with the GeoModel part which is edited (topology, geometry, geology, info)
      */
+    template< index_t DIMENSION >
     class RINGMESH_API GeoModelBuilder {
     ringmesh_disable_copy( GeoModelBuilder );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
-        GeoModelBuilder( GeoModel< 3 >& geomodel );
+        GeoModelBuilder( GeoModel< DIMENSION >& geomodel );
         virtual ~GeoModelBuilder() = default;
 
         /*!
@@ -324,24 +332,24 @@ namespace RINGMesh {
         void end_geomodel();
 
     public:
-        GeoModelBuilderTopology< 3 > topology;
-        GeoModelBuilderGeometry< 3 > geometry;
-        GeoModelBuilderGeology< 3 > geology;
-        GeoModelBuilderRemoval< 3 > removal;
-        GeoModelBuilderRepair< 3 > repair;
-        GeoModelBuilderCopy< 3 > copy;
-        GeoModelBuilderInfo< 3 > info;
-        GeoModelBuilderFromSurfaces< 3 > from_surfaces;
+        GeoModelBuilderTopology< DIMENSION > topology;
+        GeoModelBuilderGeometry< DIMENSION > geometry;
+        GeoModelBuilderGeology< DIMENSION > geology;
+        GeoModelBuilderRemoval< DIMENSION > removal;
+        GeoModelBuilderRepair< DIMENSION > repair;
+        GeoModelBuilderCopy< DIMENSION > copy;
+        GeoModelBuilderInfo< DIMENSION > info;
+        GeoModelBuilderFromSurfaces< DIMENSION > from_surfaces;
 
     protected:
-        GeoModel< 3 >& geomodel_;
-        GeoModelAccess< 3 > geomodel_access_;
+        GeoModel< DIMENSION >& geomodel_;
+        GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
     /*!
      * @brief Abstract interface class to load and build GeoModels from files
      */
-    class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder {
+    class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder< 3 > {
     public:
         GeoModelBuilderFile( GeoModel< 3 >& geomodel, const std::string& filename );
 

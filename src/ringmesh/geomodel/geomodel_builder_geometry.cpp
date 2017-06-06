@@ -241,10 +241,12 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    void check_and_initialize_corner_vertex( GeoModel< DIMENSION >& geomodel, index_t corner_id )
+    void check_and_initialize_corner_vertex(
+        GeoModel< DIMENSION >& geomodel,
+        index_t corner_id )
     {
         if( geomodel.corner( corner_id ).nb_vertices() == 0 ) {
-            GeoModelBuilder builder( geomodel );
+            GeoModelBuilder< DIMENSION > builder( geomodel );
             builder.geometry.create_mesh_entity_vertices(
                 gmme_id( Corner< DIMENSION >::type_name_static(), corner_id ), 1 );
         }
@@ -254,7 +256,7 @@ namespace {
 namespace RINGMesh {
     template< index_t DIMENSION >
     GeoModelBuilderGeometry< DIMENSION >::GeoModelBuilderGeometry(
-        GeoModelBuilder& builder,
+        GeoModelBuilder< DIMENSION >& builder,
         GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
@@ -268,7 +270,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilderGeometry< DIMENSION >::copy_meshes( const GeoModel< DIMENSION >& geomodel )
+    void GeoModelBuilderGeometry< DIMENSION >::copy_meshes(
+        const GeoModel< DIMENSION >& geomodel )
     {
         copy_meshes( geomodel, Corner< DIMENSION >::type_name_static() );
         copy_meshes( geomodel, Line< DIMENSION >::type_name_static() );
@@ -283,7 +286,8 @@ namespace RINGMesh {
         const vec3& point,
         bool update )
     {
-        GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity( t );
+        GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity(
+            t );
         GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
         ringmesh_assert( v < E.nb_vertices() );
         if( update ) {
@@ -318,10 +322,11 @@ namespace RINGMesh {
         const std::vector< vec3 >& points,
         bool clear )
     {
-        GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity( id );
+        GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity(
+            id );
         GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
-        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder =
-            MeshBaseBuilder< DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
+        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder = MeshBaseBuilder<
+            DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
         // Clear the mesh, but keep the attributes and the space
         if( clear ) {
             builder->clear( true, true );
@@ -343,8 +348,8 @@ namespace RINGMesh {
         GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity(
             entity_id );
         GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
-        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder =
-            MeshBaseBuilder< DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
+        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder = MeshBaseBuilder<
+            DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
         return builder->create_vertices( nb_vertices );
     }
 
@@ -357,8 +362,8 @@ namespace RINGMesh {
         GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity(
             entity_id );
         GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
-        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder =
-            MeshBaseBuilder< DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
+        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder = MeshBaseBuilder<
+            DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
         // Clear the mesh, but keep the attributes and the space
         if( clear ) {
             builder->clear( true, true );
@@ -372,11 +377,14 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilderGeometry< DIMENSION >::set_corner( index_t corner_id, const vec3& point )
+    void GeoModelBuilderGeometry< DIMENSION >::set_corner(
+        index_t corner_id,
+        const vec3& point )
     {
         check_and_initialize_corner_vertex( geomodel_, corner_id );
         set_mesh_entity_vertex(
-            gmme_id( Corner< DIMENSION >::type_name_static(), corner_id ), 0, point, false );
+            gmme_id( Corner< DIMENSION >::type_name_static(), corner_id ), 0, point,
+            false );
     }
 
     template< index_t DIMENSION >
@@ -384,14 +392,15 @@ namespace RINGMesh {
         index_t line_id,
         const std::vector< vec3 >& vertices )
     {
-        set_mesh_entity_vertices( gmme_id( Line< DIMENSION >::type_name_static(), line_id ),
-            vertices, true );
+        set_mesh_entity_vertices(
+            gmme_id( Line< DIMENSION >::type_name_static(), line_id ), vertices,
+            true );
 
         Line< DIMENSION >& line =
             dynamic_cast< Line< DIMENSION >& >( geomodel_access_.modifiable_mesh_entity(
                 gmme_id( Line< DIMENSION >::type_name_static(), line_id ) ) );
-        std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = create_line_builder(
-            line_id );
+        std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
+            create_line_builder( line_id );
         for( index_t e = 1; e < line.nb_vertices(); e++ ) {
             builder->create_edge( e - 1, e );
         }
@@ -416,8 +425,8 @@ namespace RINGMesh {
         const std::vector< index_t >& polygons,
         const std::vector< index_t >& polygon_ptr )
     {
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = create_surface_builder(
-            surface_id );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            create_surface_builder( surface_id );
         builder->create_polygons( polygons, polygon_ptr );
         compute_surface_adjacencies( surface_id );
     }
@@ -427,8 +436,8 @@ namespace RINGMesh {
         index_t surface_id,
         const std::vector< index_t >& triangle_vertices )
     {
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = create_surface_builder(
-            surface_id );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            create_surface_builder( surface_id );
         builder->assign_triangle_mesh( triangle_vertices );
         compute_surface_adjacencies( surface_id );
     }
@@ -440,7 +449,8 @@ namespace RINGMesh {
         const std::vector< index_t >& tetras )
     {
         set_mesh_entity_vertices(
-            gmme_id( Region< DIMENSION >::type_name_static(), region_id ), points, true );
+            gmme_id( Region< DIMENSION >::type_name_static(), region_id ), points,
+            true );
         assign_region_tet_mesh( region_id, tetras );
     }
 
@@ -470,8 +480,8 @@ namespace RINGMesh {
         /// @todo Do this test for all others set_something
         set_mesh_entity_vertices( E.gmme(), unique_vertices, clear_vertices );
 
-        std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = create_line_builder(
-            line_id );
+        std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
+            create_line_builder( line_id );
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {
             builder->create_edge( e - 1, e );
         }
@@ -483,8 +493,8 @@ namespace RINGMesh {
         index_t polygon_id,
         const std::vector< index_t >& corners )
     {
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = create_surface_builder(
-            surface_id );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            create_surface_builder( surface_id );
         for( index_t polygon_vertex = 0; polygon_vertex < corners.size();
             polygon_vertex++ ) {
             builder->set_polygon_vertex( polygon_id, polygon_vertex,
@@ -498,8 +508,8 @@ namespace RINGMesh {
         index_t cell_id,
         const std::vector< index_t >& corners )
     {
-        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = create_region_builder(
-            region_id );
+        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
+            create_region_builder( region_id );
         for( index_t cell_vertex = 0; cell_vertex < corners.size(); cell_vertex++ ) {
             builder->set_cell_vertex( cell_id, cell_vertex, corners[cell_vertex] );
         }
@@ -510,8 +520,8 @@ namespace RINGMesh {
         index_t surface_id,
         const std::vector< index_t >& vertex_indices )
     {
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = create_surface_builder(
-            surface_id );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            create_surface_builder( surface_id );
         return builder->create_polygon( vertex_indices );
     }
 
@@ -521,8 +531,8 @@ namespace RINGMesh {
         GEO::MeshCellType type,
         index_t nb_cells )
     {
-        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = create_region_builder(
-            region_id );
+        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
+            create_region_builder( region_id );
         return builder->create_cells( nb_cells, type );
     }
 
@@ -538,12 +548,13 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilderGeometry< DIMENSION >::delete_mesh_entity_mesh( const gmme_id& E_id )
+    void GeoModelBuilderGeometry< DIMENSION >::delete_mesh_entity_mesh(
+        const gmme_id& E_id )
     {
         GeoModelMeshEntityAccess< DIMENSION > gmme_access(
             geomodel_access_.modifiable_mesh_entity( E_id ) );
-        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder =
-            MeshBaseBuilder< DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
+        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder = MeshBaseBuilder<
+            DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
         builder->clear( true, false );
     }
 
@@ -553,8 +564,8 @@ namespace RINGMesh {
     {
         if( geomodel_.entity_type_manager().mesh_entity_manager.is_line(
             E_id.type() ) ) {
-            std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = create_line_builder(
-                E_id.index() );
+            std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
+                create_line_builder( E_id.index() );
             builder->remove_isolated_vertices();
         } else if( geomodel_.entity_type_manager().mesh_entity_manager.is_surface(
             E_id.type() ) ) {
@@ -583,13 +594,14 @@ namespace RINGMesh {
     {
         GeoModelMeshEntityAccess< DIMENSION > gmme_access(
             geomodel_access_.modifiable_mesh_entity( E_id ) );
-        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder =
-            MeshBaseBuilder< DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
+        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder = MeshBaseBuilder<
+            DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
         builder->delete_vertices( to_delete );
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilderGeometry< DIMENSION >::delete_corner_vertex( index_t corner_id )
+    void GeoModelBuilderGeometry< DIMENSION >::delete_corner_vertex(
+        index_t corner_id )
     {
         gmme_id corner( Corner< DIMENSION >::type_name_static(), corner_id );
         std::vector< bool > to_delete;
@@ -603,8 +615,8 @@ namespace RINGMesh {
         const std::vector< bool >& to_delete,
         bool remove_isolated_vertices )
     {
-        std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = create_line_builder(
-            line_id );
+        std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
+            create_line_builder( line_id );
         builder->delete_edges( to_delete, remove_isolated_vertices );
     }
 
@@ -614,8 +626,8 @@ namespace RINGMesh {
         const std::vector< bool >& to_delete,
         bool remove_isolated_vertices )
     {
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = create_surface_builder(
-            surface_id );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            create_surface_builder( surface_id );
         builder->delete_polygons( to_delete, remove_isolated_vertices );
     }
 
@@ -625,8 +637,8 @@ namespace RINGMesh {
         const std::vector< bool >& to_delete,
         bool remove_isolated_vertices )
     {
-        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = create_region_builder(
-            region_id );
+        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
+            create_region_builder( region_id );
         builder->delete_cells( to_delete, remove_isolated_vertices );
     }
 
@@ -636,8 +648,8 @@ namespace RINGMesh {
         index_t polygon_id,
         const std::vector< index_t >& adjacents )
     {
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = create_surface_builder(
-            surface_id );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            create_surface_builder( surface_id );
         for( index_t polygon_edge = 0; polygon_edge < adjacents.size();
             polygon_edge++ ) {
             builder->set_polygon_adjacent( polygon_id, polygon_edge,
@@ -651,8 +663,8 @@ namespace RINGMesh {
         bool recompute_adjacency )
     {
         const Surface< DIMENSION >& surface = geomodel_.surface( surface_id );
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = create_surface_builder(
-            surface_id );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            create_surface_builder( surface_id );
 
         if( recompute_adjacency ) {
             for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
@@ -671,8 +683,8 @@ namespace RINGMesh {
         bool recompute_adjacency )
     {
         const Region< DIMENSION >& region = geomodel_.region( region_id );
-        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = create_region_builder(
-            region_id );
+        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
+            create_region_builder( region_id );
 
         if( recompute_adjacency ) {
             for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
@@ -848,8 +860,8 @@ namespace RINGMesh {
 
         const Surface< DIMENSION >& surface = geomodel_.surface( surface_id );
         const Line< DIMENSION >& line = geomodel_.line( line_id );
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = create_surface_builder(
-            surface_id );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            create_surface_builder( surface_id );
         index_t nb_disconnected_edges = 0;
         for( index_t i = 0; i < line.nb_mesh_elements(); ++i ) {
             const vec3& p0 = line.vertex( i );
@@ -884,8 +896,8 @@ namespace RINGMesh {
 
         const Region< DIMENSION >& region = geomodel_.region( region_id );
         const Surface< DIMENSION >& surface = geomodel_.surface( surface_id );
-        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = create_region_builder(
-            region_id );
+        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
+            create_region_builder( region_id );
         index_t nb_disconnected_polygons = 0;
         for( index_t polygon = 0; polygon < surface.nb_mesh_elements(); ++polygon ) {
             index_t cell = NO_ID;
@@ -916,8 +928,8 @@ namespace RINGMesh {
         index_t new_vertex )
     {
         const Surface< DIMENSION >& surface = geomodel_.surface( surface_id );
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = create_surface_builder(
-            surface_id );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            create_surface_builder( surface_id );
         for( index_t cur_p : polygons ) {
             for( index_t cur_v = 0;
                 cur_v < surface.nb_mesh_element_vertices( cur_p ); cur_v++ ) {
@@ -937,8 +949,8 @@ namespace RINGMesh {
         index_t new_vertex )
     {
         const Region< DIMENSION >& region = geomodel_.region( region_id );
-        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = create_region_builder(
-            region_id );
+        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
+            create_region_builder( region_id );
         for( index_t cur_c : cells ) {
             for( index_t cur_v = 0; cur_v < region.nb_mesh_element_vertices( cur_c );
                 cur_v++ ) {
@@ -975,10 +987,11 @@ namespace RINGMesh {
         const MeshBase< DIMENSION >& mesh,
         const gmme_id& to )
     {
-        GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity( to );
+        GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity(
+            to );
         GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
-        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder =
-            MeshBaseBuilder< DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
+        std::unique_ptr< MeshBaseBuilder< DIMENSION > > builder = MeshBaseBuilder<
+            DIMENSION >::create_builder( *gmme_access.modifiable_mesh() );
         builder->copy( mesh, true );
     }
 
@@ -987,12 +1000,12 @@ namespace RINGMesh {
         index_t region_id,
         const std::vector< index_t >& tet_vertices )
     {
-        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = create_region_builder(
-            region_id );
+        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
+            create_region_builder( region_id );
         builder->assign_cell_tet_mesh( tet_vertices );
         builder->connect_cells();
     }
 
     //    template class RINGMESH_API GeoModelBuilderGeometry< 2 > ;
-        template class RINGMESH_API GeoModelBuilderGeometry< 3 > ;
+    template class RINGMESH_API GeoModelBuilderGeometry< 3 > ;
 }
