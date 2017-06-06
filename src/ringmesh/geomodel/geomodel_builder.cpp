@@ -914,8 +914,7 @@ namespace RINGMesh {
                 /// the + side. No further check.
                 bool inside = true;
                 // Create the region - set the surface on its boundaries
-                gmme_id region_id = builder_.topology.create_mesh_entity<
-                    Region< DIMENSION > >();
+                gmme_id region_id = builder_.topology.create_mesh_entity< Region >();
                 gmme_id surface_id( Surface< DIMENSION >::type_name_static(), 0 );
                 builder_.topology.add_mesh_entity_boundary_relation( region_id,
                     surface_id, inside );

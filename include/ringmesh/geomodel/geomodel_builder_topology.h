@@ -76,7 +76,7 @@ namespace RINGMesh {
             std::set< gmme_id >& in_mesh_entities,
             std::set< gmge_id >& in_geological_entities ) const;
 
-        template< typename ENTITY >
+        template< template< index_t > class ENTITY >
         gmme_id create_mesh_entity( const MeshType mesh_type = "" );
 
         bool create_mesh_entities(
