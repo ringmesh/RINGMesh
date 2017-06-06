@@ -54,7 +54,7 @@ void make_geomodel_copy(
     const std::string& name,
     GeoModel< 3 >& to )
 {
-    GeoModelBuilder geomodel_breaker2( to );
+    GeoModelBuilder< 3 > geomodel_breaker2( to );
     geomodel_breaker2.copy.copy_geomodel( from );
     geomodel_breaker2.info.set_geomodel_name( name );
 }
@@ -88,7 +88,7 @@ int main()
 
         GeoModel< 3 > invalid_model;
         make_geomodel_copy( in, "broken model 1", invalid_model );
-        GeoModelBuilder geomodel_breaker( invalid_model );
+        GeoModelBuilder< 3 > geomodel_breaker( invalid_model );
         geomodel_breaker.geology.create_geological_entity(
             RINGMesh::Interface< 3 >::type_name_static() );
         verdict( invalid_model,
