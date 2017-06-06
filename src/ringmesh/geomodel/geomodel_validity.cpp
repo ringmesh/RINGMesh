@@ -1073,7 +1073,7 @@ namespace RINGMesh {
     bool are_geomodel_mesh_entities_mesh_valid( const GeoModel< 3 >& geomodel )
     {
         const std::vector< MeshEntityType >& meshed_types =
-            MeshEntityTypeManager::mesh_entity_types();
+            MeshEntityTypeManager< 3 >::mesh_entity_types();
         index_t count_invalid = 0;
         for( const MeshEntityType& type : meshed_types ) {
             index_t nb_entities = geomodel.nb_mesh_entities( type );
@@ -1094,7 +1094,7 @@ namespace RINGMesh {
     bool are_geomodel_mesh_entities_connectivity_valid( const GeoModel< 3 >& geomodel )
     {
         const std::vector< MeshEntityType >& meshed_types =
-            MeshEntityTypeManager::mesh_entity_types();
+            MeshEntityTypeManager< 3 >::mesh_entity_types();
         index_t count_invalid = 0;
         for( const MeshEntityType& type : meshed_types ) {
             index_t nb_entities = geomodel.nb_mesh_entities( type );
@@ -1137,7 +1137,7 @@ namespace RINGMesh {
     bool are_geomodel_mesh_entities_parent_valid( const GeoModel< 3 >& geomodel )
     {
         const std::vector< MeshEntityType >& meshed_types =
-            MeshEntityTypeManager::mesh_entity_types();
+            MeshEntityTypeManager< 3 >::mesh_entity_types();
         index_t count_invalid = 0;
         for( const MeshEntityType& type : meshed_types ) {
             index_t nb_entities = geomodel.nb_mesh_entities( type );

@@ -255,7 +255,7 @@ namespace RINGMesh {
     void GeoModelMeshVertices< DIMENSION >::GeoModelVertexMapper::bind_all_mesh_entity_vertex_maps()
     {
         const std::vector< MeshEntityType >& all_mesh_entity_types =
-            MeshEntityTypeManager::mesh_entity_types();
+            MeshEntityTypeManager< 3 >::mesh_entity_types();
         for( const MeshEntityType& cur_entity_type : all_mesh_entity_types ) {
             index_t nb_cur_type_entities = geomodel_.nb_mesh_entities(
                 cur_entity_type );
@@ -290,7 +290,7 @@ namespace RINGMesh {
         const std::vector< index_t >& old2new )
     {
         const std::vector< MeshEntityType >& all_mesh_entity_types =
-            MeshEntityTypeManager::mesh_entity_types();
+            MeshEntityTypeManager< 3 >::mesh_entity_types();
         for( const MeshEntityType& cur_entity_type : all_mesh_entity_types ) {
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_entity_type );
                 e++ ) {
@@ -364,10 +364,10 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshVertices< DIMENSION >::GeoModelVertexMapper::clear_all_mesh_entity_vertex_map()
     {
-        for( index_t t = 0; t < MeshEntityTypeManager::nb_mesh_entity_types();
+        for( index_t t = 0; t < MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
             t++ ) {
             const MeshEntityType& cur_type =
-                MeshEntityTypeManager::mesh_entity_types()[t];
+                MeshEntityTypeManager< 3 >::mesh_entity_types()[t];
             for( index_t e = 0; e < vertex_maps_[cur_type]->size(); e++ ) {
                 vertex_maps_[cur_type]->unbind( e );
             }

@@ -90,13 +90,13 @@ namespace RINGMesh {
             const MeshEntityType& type,
             index_t nb_additional_entities )
         {
-            if( MeshEntityTypeManager::is_corner( type ) ) {
+            if( MeshEntityTypeManager< 3 >::is_corner( type ) ) {
                 return create_mesh_entities< Corner< 3 > >( nb_additional_entities );
-            } else if( MeshEntityTypeManager::is_line( type ) ) {
+            } else if( MeshEntityTypeManager< 3 >::is_line( type ) ) {
                 return create_mesh_entities< Line< 3 > >( nb_additional_entities );
-            } else if( MeshEntityTypeManager::is_surface( type ) ) {
+            } else if( MeshEntityTypeManager< 3 >::is_surface( type ) ) {
                 return create_mesh_entities< Surface< 3 > >( nb_additional_entities );
-            } else if( MeshEntityTypeManager::is_region( type ) ) {
+            } else if( MeshEntityTypeManager< 3 >::is_region( type ) ) {
                 return create_mesh_entities< Region< 3 > >( nb_additional_entities );
             } else {
                 ringmesh_assert_not_reached;
