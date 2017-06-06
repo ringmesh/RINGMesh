@@ -84,7 +84,7 @@ namespace {
         geomodel_load( geomodel, in_model_file_name );
 
         index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" );
-        GeoModelBuilder builder( geomodel );
+        GeoModelBuilder< 3 > builder( geomodel );
         builder.repair.repair(
             static_cast< GeoModelBuilderRepair< 3 >::RepairMode >( repair_mode ) );
 
