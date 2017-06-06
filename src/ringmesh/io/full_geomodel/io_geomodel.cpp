@@ -58,7 +58,7 @@ namespace {
      * @param[in] M the GeoModel
      * @param[in] file_name path to the input file
      */
-    void save_geological_entities( const GeoModel& M, const std::string& file_name )
+    void save_geological_entities( const GeoModel< 3 >& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() );
         out.precision( 16 );
@@ -87,7 +87,7 @@ namespace {
     }
 
     template< typename ENTITY >
-    void save_mesh_entities_of_type( const GeoModel& M, std::ofstream& out )
+    void save_mesh_entities_of_type( const GeoModel< 3 >& M, std::ofstream& out )
     {
         const std::string& type = ENTITY::type_name_static();
         for( index_t e = 0; e < M.nb_mesh_entities( type ); e++ ) {
@@ -108,7 +108,7 @@ namespace {
      * @param[in] M the GeoModel
      * @param[in] file_name the output file name
      */
-    void save_mesh_entities( const GeoModel& M, const std::string& file_name )
+    void save_mesh_entities( const GeoModel< 3 >& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() );
         out.precision( 16 );
@@ -220,7 +220,7 @@ namespace {
 
     template< typename ENTITY >
     void save_geomodel_mesh_entities(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         std::vector< std::string >& filenames )
     {
         const std::string& type = ENTITY::type_name_static();
@@ -238,7 +238,7 @@ namespace {
 
     class GeoModelHandlerGM final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(
@@ -254,7 +254,7 @@ namespace {
             return is_valid;
 
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             const std::string pwd = GEO::FileSystem::get_current_working_directory();
             bool valid_new_working_directory =

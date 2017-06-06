@@ -46,8 +46,8 @@
 
 namespace RINGMesh {
 
-    template< index_t DIMENSION = 3 >
-    class RINGMESH_API NNSearch {
+    template< index_t DIMENSION >
+    class NNSearch {
     ringmesh_disable_copy( NNSearch );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -107,6 +107,42 @@ namespace RINGMesh {
         std::vector< index_t > get_neighbors(
             const vecn< DIMENSION >& v,
             double threshold_distance ) const;
+
+        /*!
+         * Compute the neighbors of a given point according the \param test
+         * @param[in] v the point to test
+         * @tparam[in] test This functor takes an index of a neighbor point as parameter
+         * and returns true to stop the search, false to continue.
+         * @return the point indices
+         */
+        template< typename TEST >
+        std::vector< index_t > get_neighbors(
+            const vecn< DIMENSION >& v,
+            const TEST& test ) const
+        {
+            std::vector< index_t > result;
+            index_t nb_points = nn_tree_->nb_points();
+            if( nb_points != 0 ) {
+                index_t nb_neighbors = std::min( index_t( 5 ), nb_points );
+                index_t cur_neighbor = 0;
+                index_t prev_neighbor = 0;
+                do {
+                    prev_neighbor = cur_neighbor;
+                    cur_neighbor += nb_neighbors;
+                    result.reserve( cur_neighbor );
+                    std::vector< index_t > neighbors = get_neighbors( v,
+                        cur_neighbor );
+                    nb_neighbors = static_cast< index_t >( neighbors.size() );
+                    for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                        if( test( neighbors[i] ) ) {
+                            break;
+                        }
+                        result.push_back( neighbors[i] );
+                    }
+                } while( result.size() == cur_neighbor && result.size() < nb_points );
+            }
+            return result;
+        }
 
         /*!
          * Gets the neighboring points of a given one sorted by increasing distance

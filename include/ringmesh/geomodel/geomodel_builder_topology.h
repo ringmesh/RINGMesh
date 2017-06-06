@@ -63,7 +63,7 @@ namespace RINGMesh {
          * ignoring their geometry
          * @param[in] from Model to copy the information from
          */
-        void copy_topology( const GeoModel& from );
+        void copy_topology( const GeoModel< 3 >& from );
 
         /*!
          * @brief Add to the vector the entities which cannot exist if
@@ -156,7 +156,7 @@ namespace RINGMesh {
         void compute_universe();
 
     private:
-        GeoModelBuilderTopology( GeoModelBuilder& builder, GeoModel& geomodel );
+        GeoModelBuilderTopology( GeoModelBuilder& builder, GeoModel< 3 >& geomodel );
 
         template< typename ENTITY >
         bool create_mesh_entities(
@@ -178,7 +178,7 @@ namespace RINGMesh {
         }
 
         template< typename ENTITY >
-        void copy_mesh_entity_topology( const GeoModel& from )
+        void copy_mesh_entity_topology( const GeoModel< 3 >& from )
         {
             const MeshEntityType& type = ENTITY::type_name_static();
             create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
@@ -198,8 +198,8 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilder& builder_;
-        GeoModel& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModel< 3 >& geomodel_;
+        GeoModelAccess< 3 > geomodel_access_;
     };
 
 }

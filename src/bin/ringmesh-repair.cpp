@@ -80,7 +80,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
         geomodel_load( geomodel, in_model_file_name );
 
         index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" );

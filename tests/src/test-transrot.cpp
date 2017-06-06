@@ -46,7 +46,7 @@
 
 using namespace RINGMesh;
 
-void build_geomodel( GeoModel& geomodel )
+void build_geomodel( GeoModel< 3 >& geomodel )
 {
     GeoModelBuilder builder( geomodel );
 
@@ -131,7 +131,7 @@ void check_vertex( const vec3& in, const vec3& result )
     }
 }
 
-void test_translate( GeoModel& geomodel )
+void test_translate( GeoModel< 3 >& geomodel )
 {
     Logger::out( "TEST", "Test translation" );
     vec3 translation_vector( 1., 2.5, -3.5 );
@@ -148,7 +148,7 @@ void test_translate( GeoModel& geomodel )
     check_vertex( vertices.vertex( 7 ), vec3( 1., 3.5, -2.5 ) );
 }
 
-void test_rotation( GeoModel& geomodel )
+void test_rotation( GeoModel< 3 >& geomodel )
 {
     Logger::out( "TEST", "Test rotation" );
     vec3 origin( 1., 2.5, -3.5 );
@@ -277,7 +277,7 @@ int main()
     try {
         default_configure();
 
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
         build_geomodel( geomodel );
         test_translate( geomodel );
         test_rotation_matrix();
