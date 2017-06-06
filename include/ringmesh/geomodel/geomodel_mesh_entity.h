@@ -1167,9 +1167,9 @@ namespace RINGMesh {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderTopology< DIMENSION > ;
         friend class GeoModelBuilderGeometry< DIMENSION > ;
-        friend class GeoModelBuilderGeology< DIMENSION >;
-        friend class GeoModelBuilderInfo< DIMENSION >;
-        friend class GeoModelBuilderRemoval< DIMENSION >;
+        friend class GeoModelBuilderGeology< DIMENSION > ;
+        friend class GeoModelBuilderInfo< DIMENSION > ;
+        friend class GeoModelBuilderRemoval< DIMENSION > ;
 
     private:
         GeoModelMeshEntityAccess( GeoModelMeshEntity< DIMENSION >& gme )
@@ -1221,14 +1221,14 @@ namespace RINGMesh {
 
         void change_mesh_data_structure( const MeshType type );
 
-        template< typename ENTITY >
-        static std::unique_ptr< ENTITY > create_entity(
+        template< template< index_t > class ENTITY >
+        static std::unique_ptr< ENTITY< DIMENSION > > create_entity(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
             const MeshType type )
         {
-            return std::unique_ptr< ENTITY >(
-                new ENTITY( geomodel, id, type ) );
+            return std::unique_ptr< ENTITY< DIMENSION > >(
+                new ENTITY< DIMENSION >( geomodel, id, type ) );
         }
 
     private:

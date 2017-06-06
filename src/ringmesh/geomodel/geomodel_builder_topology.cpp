@@ -219,11 +219,11 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    template< typename ENTITY >
+    template< template< index_t > class ENTITY >
     gmme_id GeoModelBuilderTopology< DIMENSION >::create_mesh_entity(
         const MeshType mesh_type )
     {
-        const MeshEntityType entity_type = ENTITY::type_name_static();
+        const MeshEntityType entity_type = ENTITY< DIMENSION >::type_name_static();
         index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) );
         index_t new_id( nb_entities );
         geomodel_access_.modifiable_mesh_entities( entity_type ).emplace_back(
@@ -238,7 +238,7 @@ namespace RINGMesh {
     {
         gmme_id result = find_corner( geomodel_, point );
         if( !result.is_defined() ) {
-            result = create_mesh_entity< Corner< DIMENSION > >();
+            result = create_mesh_entity< Corner >();
             builder_.geometry.set_corner( result.index(), point );
         }
         return result;
@@ -250,7 +250,7 @@ namespace RINGMesh {
     {
         gmme_id result = find_corner( geomodel_, geomodel_point_id );
         if( !result.is_defined() ) {
-            result = create_mesh_entity< Corner< DIMENSION > >();
+            result = create_mesh_entity< Corner >();
             builder_.geometry.set_corner( result.index(), geomodel_point_id );
         }
         return result;
@@ -267,7 +267,7 @@ namespace RINGMesh {
             }
         }
         if( !result.is_defined() ) {
-            result = create_mesh_entity< Line< DIMENSION > >();
+            result = create_mesh_entity< Line >();
             builder_.geometry.set_line( result.index(), vertices );
 
             // Finds the indices of the corner at both extremities
@@ -303,7 +303,7 @@ namespace RINGMesh {
                 }
             }
         }
-        return create_mesh_entity< Line< DIMENSION > >();
+        return create_mesh_entity< Line >();
     }
 
     template< index_t DIMENSION >
@@ -528,13 +528,13 @@ namespace RINGMesh {
     }
 
 //    template class RINGMESH_API GeoModelBuilderTopology< 2 > ;
-    template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
+//    template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
-        Corner< 3 > >( const MeshType );
+        Corner >( const MeshType );
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
-        Line< 3 > >( const MeshType );
+        Line >( const MeshType );
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
-        Surface< 3 > >( const MeshType );
+        Surface >( const MeshType );
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
-        Region< 3 > >( const MeshType );
+        Region >( const MeshType );
 }
