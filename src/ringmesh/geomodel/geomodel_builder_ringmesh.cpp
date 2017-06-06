@@ -265,7 +265,7 @@ namespace RINGMesh {
                     file_line.get_fields();
                     for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
                         bool side = false;
-                        if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
+                        if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                             side = true;
                         }
                         index_t s = NO_ID;
