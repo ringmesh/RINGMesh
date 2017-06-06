@@ -77,7 +77,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     struct MeshEntityTypeBoundaryMap: public MeshEntityTypeBoundaryMapBase< DIMENSION > {
-
+        MeshEntityTypeBoundaryMap< DIMENSION >() = default ;
     };
 
     template< >
@@ -108,7 +108,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     struct MeshEntityTypeIncidentEntityMap: public MeshEntityTypeIncidentEntityMapBase<
         DIMENSION > {
-
+        MeshEntityTypeIncidentEntityMap< DIMENSION >() = default;
     };
 
     template< >
@@ -157,6 +157,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API MeshEntityTypeManager {
     public:
+        MeshEntityTypeManager() = default;
+
         static bool is_corner( const MeshEntityType& type )
         {
             return type == mesh_entity_types_.container()[0];
@@ -221,6 +223,7 @@ namespace RINGMesh {
     class RINGMESH_API GeologicalTypeManager {
         friend class GeoModelBuilderGeology;
     public:
+        GeologicalTypeManager() = default;
         index_t nb_geological_entity_types() const;
         const std::vector< GeologicalEntityType >& geological_entity_types() const;
         const GeologicalEntityType& geological_entity_type( index_t index ) const;
