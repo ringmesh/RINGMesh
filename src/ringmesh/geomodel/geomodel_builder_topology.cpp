@@ -136,11 +136,10 @@ namespace RINGMesh {
     void GeoModelBuilderTopology< DIMENSION >::copy_topology(
         const GeoModel< DIMENSION >& from )
     {
-
-        copy_mesh_entity_topology< Corner< DIMENSION > >( from );
-        copy_mesh_entity_topology< Line< DIMENSION > >( from );
-        copy_mesh_entity_topology< Surface< DIMENSION > >( from );
-        copy_mesh_entity_topology< Region< DIMENSION > >( from );
+        copy_mesh_entity_topology< Corner >( from );
+        copy_mesh_entity_topology< Line >( from );
+        copy_mesh_entity_topology< Surface >( from );
+        copy_mesh_entity_topology< Region >( from );
 
         UniverseAccess< DIMENSION > universe_access(
             geomodel_access_.modifiable_universe() );
@@ -528,7 +527,7 @@ namespace RINGMesh {
     }
 
 //    template class RINGMESH_API GeoModelBuilderTopology< 2 > ;
-//    template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
+    template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
         Corner >( const MeshType );
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
