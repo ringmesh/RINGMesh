@@ -55,7 +55,7 @@
 
 namespace RINGMesh {
     class WellGroup;
-    template< index_t  > class GeoModelGeologicalEntity;
+    template< index_t > class GeoModelGeologicalEntity;
     template< index_t DIMENSION > class GeoModelMeshEntity;
     template< index_t DIMENSION > class Corner;
     template< index_t DIMENSION > class Surface;
@@ -221,7 +221,7 @@ namespace RINGMesh {
         }
 
     public:
-        GeoModelMesh mesh;
+        GeoModelMesh< DIMENSION > mesh;
 
     private:
         /*!

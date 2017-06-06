@@ -58,13 +58,13 @@ namespace {
 
     bool triangles_intersect(
         const GeoModel< 3 >& geomodel,
-        const GeoModelMeshPolygons& polygons,
+        const GeoModelMeshPolygons< 3 >& polygons,
         index_t triangle1,
         index_t triangle2 )
     {
         ringmesh_assert( polygons.nb_vertices( triangle1 ) == 3 );
         ringmesh_assert( polygons.nb_vertices( triangle2 ) == 3 );
-        const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+        const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
         const vec3& p1 = vertices.vertex( polygons.vertex( triangle1, 0 ) );
         const vec3& p2 = vertices.vertex( polygons.vertex( triangle1, 1 ) );
         const vec3& p3 = vertices.vertex( polygons.vertex( triangle1, 2 ) );
@@ -78,13 +78,13 @@ namespace {
 
     bool triangle_quad_intersect(
         const GeoModel< 3 >& geomodel,
-        const GeoModelMeshPolygons& polygons,
+        const GeoModelMeshPolygons< 3 >& polygons,
         index_t triangle,
         index_t quad )
     {
         ringmesh_assert( polygons.nb_vertices( triangle ) == 3 );
         ringmesh_assert( polygons.nb_vertices( quad ) == 4 );
-        const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+        const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
         const vec3& p1 = vertices.vertex( polygons.vertex( triangle, 0 ) );
         const vec3& p2 = vertices.vertex( polygons.vertex( triangle, 1 ) );
         const vec3& p3 = vertices.vertex( polygons.vertex( triangle, 2 ) );
@@ -105,13 +105,13 @@ namespace {
 
     bool quad_quad_intersect(
         const GeoModel< 3 >& geomodel,
-        const GeoModelMeshPolygons& polygons,
+        const GeoModelMeshPolygons< 3 >& polygons,
         index_t quad1,
         index_t quad2 )
     {
         ringmesh_assert( polygons.nb_vertices( quad1 ) == 4 );
         ringmesh_assert( polygons.nb_vertices( quad2 ) == 4 );
-        const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+        const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
         const vec3& p1 = vertices.vertex( polygons.vertex( quad1, 0 ) );
         const vec3& p2 = vertices.vertex( polygons.vertex( quad1, 1 ) );
         const vec3& p3 = vertices.vertex( polygons.vertex( quad1, 2 ) );
@@ -203,7 +203,7 @@ namespace {
      */
     bool polygons_share_line_edge(
         const GeoModel< 3 >& geomodel,
-        const GeoModelMeshPolygons& polygons,
+        const GeoModelMeshPolygons< 3 >& polygons,
         index_t p1,
         index_t p2 )
     {
@@ -235,7 +235,7 @@ namespace {
     }
 
     bool polygons_are_adjacent(
-        const GeoModelMeshPolygons& polygons,
+        const GeoModelMeshPolygons< 3 >& polygons,
         index_t p1,
         index_t p2 )
     {
@@ -322,17 +322,17 @@ namespace {
         bool is_triangle( index_t p ) const
         {
             index_t index;
-            return polygons_.type( p, index ) == GeoModelMeshPolygons::TRIANGLE;
+            return polygons_.type( p, index ) == GeoModelMeshPolygons< 3 >::TRIANGLE;
         }
         bool is_quad( index_t p ) const
         {
             index_t index;
-            return polygons_.type( p, index ) == GeoModelMeshPolygons::QUAD;
+            return polygons_.type( p, index ) == GeoModelMeshPolygons< 3 >::QUAD;
         }
 
     private:
         const GeoModel< 3 >& geomodel_;
-        const GeoModelMeshPolygons& polygons_;
+        const GeoModelMeshPolygons< 3 >& polygons_;
         std::vector< bool >& has_intersection_;
     };
 
@@ -646,7 +646,7 @@ namespace {
      */
     bool surface_boundary_valid( const Surface< 3 >& surface )
     {
-        const GeoModelMeshVertices& geomodel_vertices =
+        const GeoModelMeshVertices< 3 >& geomodel_vertices =
             surface.geomodel().mesh.vertices;
         std::vector< index_t > invalid_corners;
         gmme_id S_id = surface.gmme();
@@ -699,7 +699,7 @@ namespace {
         index_t nb_edges = static_cast< index_t >( non_manifold_edges.size() );
         builder.create_vertices( 2 * nb_edges );
         builder.create_edges( nb_edges );
-        const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+        const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
         for( index_t e = 0; e < non_manifold_edges.size(); e++ ) {
             index_t edge_id = non_manifold_edges[e];
             const vec3& v0 = vertices.vertex( edge_indices[edge_id] );
@@ -749,7 +749,7 @@ namespace {
         const GeoModel< 3 >& geomodel,
         std::vector< index_t >& edge_indices )
     {
-        const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
+        const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
         for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
             for( index_t p = 0; p < polygons.nb_polygons( s ); p++ ) {
                 index_t polygon_id = polygons.polygon( s, p );
@@ -772,7 +772,7 @@ namespace {
         const std::vector< index_t >& edge_indices,
         std::vector< vec3 >& edge_barycenters )
     {
-        const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+        const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
         index_t nb_edges = static_cast< index_t >( edge_indices.size() / 2 );
         edge_barycenters.reserve( nb_edges );
         for( index_t e = 0; e < edge_indices.size(); e += 2 ) {

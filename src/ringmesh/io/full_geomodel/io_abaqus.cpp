@@ -78,7 +78,7 @@ namespace {
     private:
         void save_vertices( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+            const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
             out << "*NODE" << std::endl;
             for( index_t v = 0; v < vertices.nb(); v++ ) {
                 out << v + 1;
@@ -103,7 +103,7 @@ namespace {
             index_t interface_id,
             std::ofstream& out ) const
         {
-            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
+            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
             const GeoModelGeologicalEntity< 3 >& entity = geomodel.geological_entity(
                 Interface< 3 >::type_name_static(), interface_id );
             std::string sep;
@@ -130,7 +130,7 @@ namespace {
 
         void save_tets( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells& cells = geomodel.mesh.cells;
+            const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
             if( cells.nb_tet() > 0 ) {
                 out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type
                     << std::endl;
@@ -150,7 +150,7 @@ namespace {
         }
         void save_hex( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells& cells = geomodel.mesh.cells;
+            const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
             if( cells.nb_hex() > 0 ) {
                 out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type
                     << std::endl;
@@ -170,7 +170,7 @@ namespace {
         }
         void save_regions( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells& cells = geomodel.mesh.cells;
+            const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 const std::string& name = geomodel.region( r ).name();
                 out << "*ELSET, elset=" << name << std::endl;
