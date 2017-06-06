@@ -52,7 +52,7 @@ namespace RINGMesh {
     /*!
      * @brief To build a GeoModel from a set of disconnected polygonal surfaces
      */
-    class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder {
+    class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder< 3 > {
     public:
         GeoModelBuilderSurfaceMesh( GeoModel< 3 >& geomodel, const GEO::Mesh& mesh )
             : GeoModelBuilder( geomodel ), mesh_( mesh )

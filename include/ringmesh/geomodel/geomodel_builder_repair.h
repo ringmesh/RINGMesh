@@ -46,7 +46,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder;
+    template< index_t DIMENSION > class GeoModelBuilder;
 }
 
 namespace RINGMesh {
@@ -62,7 +62,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderRepair {
     ringmesh_disable_copy( GeoModelBuilderRepair );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder;
+        friend class GeoModelBuilder< DIMENSION > ;
 
     public:
         /*!
@@ -83,7 +83,9 @@ namespace RINGMesh {
          */
         void repair( RepairMode repair_mode );
     private:
-        GeoModelBuilderRepair( GeoModelBuilder& builder, GeoModel< DIMENSION >& geomodel );
+        GeoModelBuilderRepair(
+            GeoModelBuilder< DIMENSION >& builder,
+            GeoModel< DIMENSION >& geomodel );
 
         /*!
          * All implemented repair for a GeoModel.
@@ -190,7 +192,7 @@ namespace RINGMesh {
         void build_contacts();
 
     private:
-        GeoModelBuilder& builder_;
+        GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
     };

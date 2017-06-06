@@ -47,7 +47,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder;
+    template< index_t DIMENSION > class GeoModelBuilder;
 }
 
 namespace RINGMesh {
@@ -59,7 +59,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderRemoval {
     ringmesh_disable_copy( GeoModelBuilderRemoval );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder;
+        friend class GeoModelBuilder< DIMENSION >;
 
     public:
 
@@ -91,7 +91,7 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilderRemoval(
-            GeoModelBuilder& builder,
+            GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
         // ---  High level functions ----------
@@ -588,7 +588,7 @@ namespace RINGMesh {
         }
 
     private:
-        GeoModelBuilder& builder_;
+        GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
 

@@ -813,7 +813,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     GeoModelBuilderFromSurfaces< DIMENSION >::GeoModelBuilderFromSurfaces(
-        GeoModelBuilder& builder,
+        GeoModelBuilder< DIMENSION >& builder,
         GeoModel< DIMENSION >& geomodel )
         :
             options_(),
@@ -867,7 +867,8 @@ namespace RINGMesh {
                 builder_.geometry.set_line( line_index.index(), vertices );
 
                 for( index_t j : adjacent_surfaces ) {
-                    gmme_id surface_index( Surface< DIMENSION >::type_name_static(), j );
+                    gmme_id surface_index( Surface< DIMENSION >::type_name_static(),
+                        j );
                     builder_.topology.add_mesh_entity_boundary_relation(
                         surface_index, line_index );
                 }
@@ -913,8 +914,8 @@ namespace RINGMesh {
                 /// the + side. No further check.
                 bool inside = true;
                 // Create the region - set the surface on its boundaries
-                gmme_id region_id =
-                    builder_.topology.create_mesh_entity< Region< DIMENSION > >();
+                gmme_id region_id = builder_.topology.create_mesh_entity<
+                    Region< DIMENSION > >();
                 gmme_id surface_id( Surface< DIMENSION >::type_name_static(), 0 );
                 builder_.topology.add_mesh_entity_boundary_relation( region_id,
                     surface_id, inside );
@@ -968,7 +969,8 @@ namespace RINGMesh {
                         S.emplace( s.first, !s.second );
                     }
                     // For each contact, push the next oriented surface that is in the same region
-                    const Surface< DIMENSION >& surface = geomodel_.surface( s.first );
+                    const Surface< DIMENSION >& surface = geomodel_.surface(
+                        s.first );
                     for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
                         const std::pair< index_t, bool >& n =
                             regions_info_[surface.boundary_gmme( i ).index()]->next(
@@ -1042,7 +1044,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     GeoModelBuilderCopy< DIMENSION >::GeoModelBuilderCopy(
-        GeoModelBuilder& builder,
+        GeoModelBuilder< DIMENSION >& builder,
         GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
@@ -1059,13 +1061,14 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     GeoModelBuilderInfo< DIMENSION >::GeoModelBuilderInfo(
-        GeoModelBuilder& builder,
+        GeoModelBuilder< DIMENSION >& builder,
         GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
 
-    GeoModelBuilder::GeoModelBuilder( GeoModel< 3 >& geomodel )
+    template< index_t DIMENSION >
+    GeoModelBuilder< DIMENSION >::GeoModelBuilder( GeoModel< DIMENSION >& geomodel )
         :
             topology( *this, geomodel ),
             geometry( *this, geomodel ),
@@ -1080,7 +1083,8 @@ namespace RINGMesh {
     {
     }
 
-    void GeoModelBuilder::end_geomodel()
+    template< index_t DIMENSION >
+    void GeoModelBuilder< DIMENSION >::end_geomodel()
     {
         if( geomodel_.name().empty() ) {
             info.set_geomodel_name( "model_default_name" );
@@ -1096,7 +1100,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     GeoModelBuilderGeology< DIMENSION >::GeoModelBuilderGeology(
-        GeoModelBuilder& builder,
+        GeoModelBuilder< DIMENSION >& builder,
         GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {

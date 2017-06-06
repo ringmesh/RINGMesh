@@ -47,7 +47,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder;
+    template< index_t DIMENSION > class GeoModelBuilder;
 }
 
 namespace RINGMesh {
@@ -56,7 +56,7 @@ namespace RINGMesh {
     class GeoModelBuilderTopology {
     ringmesh_disable_copy( GeoModelBuilderTopology );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder;
+        friend class GeoModelBuilder< DIMENSION >;
 
     public:
         /*!
@@ -153,7 +153,7 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilderTopology(
-            GeoModelBuilder& builder,
+            GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
         template< typename ENTITY >
@@ -181,7 +181,7 @@ namespace RINGMesh {
             const gmme_id& boundary );
 
     private:
-        GeoModelBuilder& builder_;
+        GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
