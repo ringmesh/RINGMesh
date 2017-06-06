@@ -136,7 +136,7 @@ namespace RINGMesh {
      * with the GeoModel part which is edited (topology, geometry, geology, info)
      */
     template< index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilder {
+    class GeoModelBuilder {
     ringmesh_disable_copy( GeoModelBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
