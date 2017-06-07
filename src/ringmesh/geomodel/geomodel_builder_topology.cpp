@@ -60,7 +60,7 @@ namespace {
 
     gmme_id find_corner( const GeoModel< 3 >& geomodel, index_t geomodel_point_id )
     {
-        const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices;
+        const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel.mesh.vertices;
         const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
             geomodel_point_id );
         for( const GMEVertex& vertex : vertices ) {
