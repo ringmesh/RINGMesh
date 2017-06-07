@@ -107,7 +107,7 @@ namespace RINGMesh {
         TetraGen();
 
     protected:
-        std::unique_ptr< GeoModelBuilder > builder_;
+        std::unique_ptr< GeoModelBuilder< 3 > > builder_;
         index_t output_region_;
         GEO::Mesh tetmesh_constraint_;
         const Region< 3 >* region_;

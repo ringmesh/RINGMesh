@@ -47,71 +47,87 @@
  * @author Jeanne Pellerin
  */
 
-namespace RINGMesh {
+namespace {
+    using namespace RINGMesh;
 
-    GeoModelBuilderFile::GeoModelBuilderFile(
-        GeoModel< 3 >& geomodel,
-        const std::string& filename )
-        : GeoModelBuilder( geomodel ), filename_( filename )
+    gmme_id find_corner( const GeoModel< 3 >& geomodel, index_t geomodel_point_id )
     {
-
-    }
-
-    template< index_t DIMENSION >
-    GeoModelBuilderCopy< DIMENSION >::GeoModelBuilderCopy(
-        GeoModelBuilder< DIMENSION >& builder,
-        GeoModel< DIMENSION >& geomodel )
-        : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
-    {
-    }
-
-    template< index_t DIMENSION >
-    void GeoModelBuilderCopy< DIMENSION >::copy_geomodel(
-        const GeoModel< DIMENSION >& from )
-    {
-        builder_.topology.copy_topology( from );
-        builder_.geometry.copy_meshes( from );
-        builder_.geology.copy_geology( from );
-    }
-
-    template< index_t DIMENSION >
-    GeoModelBuilderInfo< DIMENSION >::GeoModelBuilderInfo(
-        GeoModelBuilder< DIMENSION >& builder,
-        GeoModel< DIMENSION >& geomodel )
-        : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
-    {
-    }
-
-    template< index_t DIMENSION >
-    GeoModelBuilder< DIMENSION >::GeoModelBuilder( GeoModel< DIMENSION >& geomodel )
-        :
-            topology( *this, geomodel ),
-            geometry( *this, geomodel ),
-            geology( *this, geomodel ),
-            removal( *this, geomodel ),
-            repair( *this, geomodel ),
-            copy( *this, geomodel ),
-            info( *this, geomodel ),
-            from_surfaces( *this, geomodel ),
-            geomodel_( geomodel ),
-            geomodel_access_( geomodel )
-    {
-    }
-
-    template< index_t DIMENSION >
-    void GeoModelBuilder< DIMENSION >::end_geomodel()
-    {
-        if( geomodel_.name().empty() ) {
-            info.set_geomodel_name( "model_default_name" );
+        const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel.mesh.vertices;
+        const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
+            geomodel_point_id );
+        for( const GMEVertex& vertex : vertices ) {
+            if( vertex.gmme.type() == Corner< 3 >::type_name_static() ) {
+                return vertex.gmme;
+            }
         }
-
-        geometry.cut_surfaces_by_internal_lines();
-        geometry.cut_regions_by_internal_surfaces();
-        topology.compute_universe();
-
-        // Deliberate clear of the geomodel vertices used for geomodel building
-        geomodel_.mesh.vertices.clear();
+        return gmme_id();
     }
+
+    /*!
+     * @brief Returns true if the Line< 3 > has exactly the given vertices
+     * @todo Reimplement using std::iterators
+     */
+    bool line_equal( const Line< 3 >& L, const std::vector< index_t >& rhs_vertices )
+    {
+        if( L.nb_vertices() != rhs_vertices.size() ) {
+            return false;
+        }
+        const GeoModelMeshVertices< 3 >& geomodel_vertices = L.geomodel().mesh.vertices;
+        bool equal = true;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[i]
+                != geomodel_vertices.geomodel_vertex_id( L.gmme(), i ) ) {
+                equal = false;
+                break;
+            }
+        }
+        if( equal ) {
+            return true;
+        }
+        // If the order is the other one
+        equal = true;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[i]
+                != geomodel_vertices.geomodel_vertex_id( L.gmme(),
+                    L.nb_vertices() - i - 1 ) ) {
+                equal = false;
+                break;
+            }
+        }
+        return equal;
+    }
+
+    /*!
+     * @brief Reorders the line so that front() is a corner.
+     * @note Closed line has front()==back().
+     */
+    void reorder_closed_line_vertices_to_start_at_corner(
+        const GeoModel< 3 >& geomodel,
+        std::vector< index_t >& line_vertices )
+    {
+        if( geomodel.nb_corners() == 0 ) {
+            // Maybe should throw an assertion, but I am not sure [JP]
+            // this really may happen for sure, so no throw [RM]
+            return;
+        }
+        if( line_vertices.empty() ) {
+            return;
+        }
+        for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
+            gmme_id corner = find_corner( geomodel, line_vertices[i] );
+            if( corner.is_defined() ) {
+                line_vertices.pop_back();
+                std::rotate( line_vertices.begin(), line_vertices.begin() + i,
+                    line_vertices.end() );
+                line_vertices.push_back( line_vertices.front() );
+                break;
+            }
+        }
+    }
+
+} // anonymous namespace
+
+namespace RINGMesh {
 
     template< index_t DIMENSION >
     GeoModelBuilderGeology< DIMENSION >::GeoModelBuilderGeology(
@@ -371,10 +387,9 @@ namespace RINGMesh {
     //    template class RINGMESH_API GeoModelBuilderCopy< 2 > ;
     //    template class RINGMESH_API GeoModelBuilderFromSurfaces< 2 > ;
 
-    template class RINGMESH_API GeoModelBuilder< 3 > ;
-    template class RINGMESH_API GeoModelBuilderInfo< 3 > ;
+//    template class RINGMESH_API GeoModelBuilderInfo< 3 > ;
     template class RINGMESH_API GeoModelBuilderGeology< 3 > ;
-    template class RINGMESH_API GeoModelBuilderCopy< 3 > ;
+//    template class RINGMESH_API GeoModelBuilderCopy< 3 > ;
 //    template class RINGMESH_API GeoModelBuilderFromSurfaces< 3 > ;
 
 } // namespace
