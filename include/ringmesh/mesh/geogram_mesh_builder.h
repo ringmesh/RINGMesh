@@ -127,7 +127,7 @@ namespace RINGMesh {
         }                                                                                       \
         void set_geogram_mesh( Class& mesh )                                                    \
         {                                                                                       \
-            mesh_ = &dynamic_cast< Class& >( mesh );                                            \
+            mesh_ = &mesh;                                                                      \
         }                                                                                       \
     protected:                                                                                  \
         void delete_vertex_nn_search()                                                          \

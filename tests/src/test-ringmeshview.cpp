@@ -136,8 +136,6 @@ int main()
     using namespace RINGMesh;
 
     try {
-        default_configure();
-
         char ringmesh_view[] = "ringmesh-view";
         std::string input_model_file_name( ringmesh_test_data_path );
         input_model_file_name += "load/modelA6.ml";
