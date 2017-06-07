@@ -50,13 +50,17 @@
 namespace {
     using namespace RINGMesh;
 
-    gmme_id find_corner( const GeoModel< 3 >& geomodel, index_t geomodel_point_id )
+    template< index_t DIMENSION >
+    gmme_id find_corner(
+        const GeoModel< DIMENSION >& geomodel,
+        index_t geomodel_point_id )
     {
-        const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel.mesh.vertices;
+        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
+            geomodel.mesh.vertices;
         const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
             geomodel_point_id );
         for( const GMEVertex& vertex : vertices ) {
-            if( vertex.gmme.type() == Corner< 3 >::type_name_static() ) {
+            if( vertex.gmme.type() == Corner< DIMENSION >::type_name_static() ) {
                 return vertex.gmme;
             }
         }
@@ -64,15 +68,19 @@ namespace {
     }
 
     /*!
-     * @brief Returns true if the Line< 3 > has exactly the given vertices
+     * @brief Returns true if the Line< DIMENSION > has exactly the given vertices
      * @todo Reimplement using std::iterators
      */
-    bool line_equal( const Line< 3 >& L, const std::vector< index_t >& rhs_vertices )
+    template< index_t DIMENSION >
+    bool line_equal(
+        const Line< DIMENSION >& L,
+        const std::vector< index_t >& rhs_vertices )
     {
         if( L.nb_vertices() != rhs_vertices.size() ) {
             return false;
         }
-        const GeoModelMeshVertices< 3 >& geomodel_vertices = L.geomodel().mesh.vertices;
+        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
+            L.geomodel().mesh.vertices;
         bool equal = true;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
@@ -101,8 +109,9 @@ namespace {
      * @brief Reorders the line so that front() is a corner.
      * @note Closed line has front()==back().
      */
+    template< index_t DIMENSION >
     void reorder_closed_line_vertices_to_start_at_corner(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel< DIMENSION >& geomodel,
         std::vector< index_t >& line_vertices )
     {
         if( geomodel.nb_corners() == 0 ) {
@@ -661,7 +670,8 @@ namespace RINGMesh {
 
         void initialize_border_triangles_from_model_surfaces()
         {
-            const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel_.mesh.vertices;
+            const GeoModelMeshVertices< 3 >& geomodel_vertices =
+                geomodel_.mesh.vertices;
             for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
                 const Surface< 3 >& S = geomodel_.surface( s );
                 const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
@@ -696,7 +706,8 @@ namespace RINGMesh {
             const Surface< 3 >& S = geomodel_.surface( border_triangle.surface_ );
             const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
 
-            const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel_.mesh.vertices;
+            const GeoModelMeshVertices< 3 >& geomodel_vertices =
+                geomodel_.mesh.vertices;
 
             // Gets the next edge on border in the Surface
             index_t p = border_triangle.polygon_;
