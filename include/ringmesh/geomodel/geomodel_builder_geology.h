@@ -49,7 +49,7 @@
 #include <ringmesh/geomodel/geomodel_builder_topology.h>
 
 /*!
- * @brief Classes to build GeoModel from various inputs
+ * @brief Classes to build GeoModel geological entities
  * @author Jeanne Pellerin
  */
 

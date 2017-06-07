@@ -43,7 +43,7 @@
 
 /*!
  * @file ringmesh/geomodel/geomodel_builder.cpp
- * @brief Implementation of the classes to build GeoModel from various inputs
+ * @brief Implementation of the classes to build GeoModel from surfaces
  * @author Jeanne Pellerin
  */
 
