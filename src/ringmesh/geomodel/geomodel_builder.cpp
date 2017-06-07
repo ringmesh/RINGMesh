@@ -366,15 +366,12 @@ namespace RINGMesh {
             geomodel_access_.modifiable_geological_entity( gmge_id ) );
         gmge_access.modifiable_geol_feature() = geol_feature;
     }
+//    template class RINGMESH_API GeoModelBuilder< 2 > ;
     //    template class RINGMESH_API GeoModelBuilderInfo< 2 > ;
-    //    template class RINGMESH_API GeoModelBuilderGeology< 2 > ;
     //    template class RINGMESH_API GeoModelBuilderCopy< 2 > ;
-    //    template class RINGMESH_API GeoModelBuilderFromSurfaces< 2 > ;
 
     template class RINGMESH_API GeoModelBuilder< 3 > ;
     template class RINGMESH_API GeoModelBuilderInfo< 3 > ;
-    template class RINGMESH_API GeoModelBuilderGeology< 3 > ;
     template class RINGMESH_API GeoModelBuilderCopy< 3 > ;
-//    template class RINGMESH_API GeoModelBuilderFromSurfaces< 3 > ;
 
 } // namespace
