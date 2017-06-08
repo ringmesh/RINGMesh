@@ -87,12 +87,25 @@ namespace RINGMesh {
         return area;
     }
 
+    bool operator==( const vec3& u, const vec3& v )
+    {
+        return u.x == v.x && u.y == v.y && u.z == v.z;
+    }
+
+    bool operator!=( const vec3& u, const vec3& v )
+    {
+        return u.x != v.x || u.y != v.y || u.z != v.z;
+    }
+
     double point_triangle_distance(
         const vec3& point,
         const vec3& V0,
         const vec3& V1,
         const vec3& V2,
-        vec3& closest_point )
+        vec3& closest_point,
+        double& lambda0,
+        double& lambda1,
+        double& lambda2 )
     {
         vec3 diff = V0 - point;
         vec3 edge0 = V1 - V0;
@@ -255,6 +268,9 @@ namespace RINGMesh {
         }
 
         closest_point = V0 + s * edge0 + t * edge1;
+        lambda0 = 1.0 - s - t;
+        lambda1 = s;
+        lambda2 = t;
         return std::sqrt( sqrDistance );
     }
 
@@ -338,6 +354,7 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[4] = { p0, p1, p2, p3 };
+        double not_used0, not_used1, not_used2;
         double dist = max_float64();
         for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
             f++ ) {
@@ -347,7 +364,7 @@ namespace RINGMesh {
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]],
-                    cur_p );
+                    cur_p, not_used0, not_used1, not_used2 );
             if( distance < dist ) {
                 dist = distance;
                 nearest_p = cur_p;
@@ -366,6 +383,7 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 };
+        double not_used0, not_used1, not_used2;
         double dist = max_float64();
         for( index_t f = 0;
             f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
@@ -379,7 +397,7 @@ namespace RINGMesh {
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
-                        cur_p );
+                        cur_p, not_used0, not_used1, not_used2 );
             } else if( nb_vertices == 4 ) {
                 distance =
                     point_quad_distance( p,
@@ -410,6 +428,8 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 };
+        double not_used0, not_used1, not_used2;
+
         double dist = max_float64();
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
             f++ ) {
@@ -423,7 +443,7 @@ namespace RINGMesh {
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
-                        cur_p );
+                        cur_p, not_used0, not_used1, not_used2 );
             } else if( nb_vertices == 4 ) {
                 distance =
                     point_quad_distance( p,
@@ -763,6 +783,18 @@ namespace RINGMesh {
         return false;
     }
 
+    void point_plane_projection(
+        const vec3& p,
+        const vec3& N_plane,
+        const vec3& O_plane,
+        vec3& projected_p )
+    {
+        vec3 N_unit_plane = normalize( N_plane );
+        vec3 v( p - O_plane );
+        double distance = dot( v, N_unit_plane );
+        projected_p = p - distance * N_unit_plane;
+    }
+
     double point_segment_distance(
         const vec3& p,
         const vec3& p0,
@@ -782,18 +814,6 @@ namespace RINGMesh {
                 return std::sqrt( p1_distance_sq );
             }
         }
-    }
-
-    void point_plane_projection(
-        const vec3& p,
-        const vec3& N_plane,
-        const vec3& O_plane,
-        vec3& projected_p )
-    {
-        vec3 N_unit_plane = normalize( N_plane );
-        vec3 v( p - O_plane );
-        double distance = dot( v, N_unit_plane );
-        projected_p = p - distance * N_unit_plane;
     }
 
     double point_quad_distance(
