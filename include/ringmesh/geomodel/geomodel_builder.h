@@ -163,26 +163,4 @@ namespace RINGMesh {
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
-
-    /*!
-     * @brief Abstract interface class to load and build GeoModels from files
-     */
-    class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder< 3 > {
-    public:
-        GeoModelBuilderFile( GeoModel< 3 >& geomodel, const std::string& filename );
-
-        virtual ~GeoModelBuilderFile() = default;
-
-        void build_geomodel()
-        {
-            load_file();
-            end_geomodel();
-        }
-
-    private:
-        virtual void load_file() = 0;
-
-    protected:
-        std::string filename_;
-    };
 }

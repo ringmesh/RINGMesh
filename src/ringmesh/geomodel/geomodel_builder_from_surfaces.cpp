@@ -42,7 +42,7 @@
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!
- * @file ringmesh/geomodel/geomodel_builder.cpp
+ * @file ringmesh/geomodel/geomodel_builder_from_surfaces.cpp
  * @brief Implementation of the classes to build GeoModel from surfaces
  * @author Jeanne Pellerin
  */
@@ -396,21 +396,22 @@ namespace RINGMesh {
     };
 
     /*! 
-     * @brief Determines the geometry of the Line< 3 >s of a GeoModel in which
+     * @brief Determines the geometry of the Lines of a GeoModel in which
      * the geometry of the Surfaces is given
      * @details All the triangles on the boundaries are classified as belonging to a Line< 3 >
      * Two neighboring edges on the boundary belong to the same Line< 3 > if their incident Surfaces
      * are the same.
      */
+    template< index_t DIMENSION >
     class LineGeometryFromGeoModelSurfaces {
     public:
         /*!
          * @param geomodel GeoModel providing the Surfaces
          * @param collect_region_info If true, information needed to determine closed Regions
-         *  from a GeoModel Surfaces are collected for each Line< 3 >.
+         *  from a GeoModel Surfaces are collected for each Line< DIMENSION >.
          */
         LineGeometryFromGeoModelSurfaces(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel< DIMENSION >& geomodel,
             bool collect_region_info )
             :
                 geomodel_( geomodel ),
@@ -670,11 +671,11 @@ namespace RINGMesh {
 
         void initialize_border_triangles_from_model_surfaces()
         {
-            const GeoModelMeshVertices< 3 >& geomodel_vertices =
+            const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
                 geomodel_.mesh.vertices;
             for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
-                const Surface< 3 >& S = geomodel_.surface( s );
-                const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
+                const Surface< DIMENSION >& S = geomodel_.surface( s );
+                const SurfaceMesh< DIMENSION >& mesh = S.low_level_mesh_storage();
                 gmme_id S_id = S.gmme();
                 for( index_t p = 0; p < S.nb_mesh_elements(); ++p ) {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); ++v ) {
@@ -703,10 +704,11 @@ namespace RINGMesh {
         index_t get_next_border_triangle( index_t from, bool backward ) const
         {
             const BorderTriangle& border_triangle = border_triangles_[from];
-            const Surface< 3 >& S = geomodel_.surface( border_triangle.surface_ );
-            const SurfaceMesh< 3 >& mesh = S.low_level_mesh_storage();
+            const Surface< DIMENSION >& S = geomodel_.surface(
+                border_triangle.surface_ );
+            const SurfaceMesh< DIMENSION >& mesh = S.low_level_mesh_storage();
 
-            const GeoModelMeshVertices< 3 >& geomodel_vertices =
+            const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
                 geomodel_.mesh.vertices;
 
             // Gets the next edge on border in the Surface
@@ -799,11 +801,11 @@ namespace RINGMesh {
         }
 
     private:
-        const GeoModel< 3 >& geomodel_;
+        const GeoModel< DIMENSION >& geomodel_;
         bool collect_region_information_;
         // All the triangles on a boundary of all the Surfaces of the GeoModel
         std::vector< BorderTriangle > border_triangles_;
-        // Internal use to flag the visited border_triangles when computing the Line< 3 >s
+        // Internal use to flag the visited border_triangles when computing the Lines
         std::vector< bool > visited_;
 
         // Currently computed line information
@@ -838,7 +840,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelBuilderFromSurfaces< DIMENSION >::build_lines_and_corners_from_surfaces()
     {
-        LineGeometryFromGeoModelSurfaces line_computer( geomodel_,
+        LineGeometryFromGeoModelSurfaces< DIMENSION > line_computer( geomodel_,
             options_.compute_regions_brep );
 
         bool new_line_was_built = true;

@@ -211,6 +211,7 @@ namespace RINGMesh {
 
         double epsilon3() const
         {
+            ringmesh_template_assert_3d( DIMENSION );
             return epsilon2() * epsilon();
         }
 
