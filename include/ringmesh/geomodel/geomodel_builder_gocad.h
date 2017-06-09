@@ -42,7 +42,7 @@
 #include <geogram/basic/factory.h>
 #include <geogram/basic/line_stream.h>
 
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_builder_file.h>
 
 namespace RINGMesh {
     class GeoModelBuilderTSolid;
@@ -56,7 +56,7 @@ namespace RINGMesh {
 
     void RINGMESH_API initialize_gocad_import_factories();
 
-    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
+    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile< 3 > {
     public:
         GeoModelBuilderGocad( GeoModel< 3 >& geomodel, const std::string& filename )
             : GeoModelBuilderFile( geomodel, filename ), file_line_( filename )

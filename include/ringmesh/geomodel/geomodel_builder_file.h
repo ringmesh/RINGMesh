@@ -33,25 +33,41 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geomodel_builder_file.h>
+#pragma once
+
+#include <ringmesh/basic/common.h>
+
+#include <ringmesh/geomodel/geomodel.h>
+
+#include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
- * @file ringmesh/geomodel/geomodel_builder_file.cpp
- * @brief Implementation of the classes to build GeoModel from various inputs
+ * @brief Classes to build GeoModel from various inputs
  * @author Jeanne Pellerin
  */
 
 namespace RINGMesh {
 
+    /*!
+     * @brief Abstract interface class to load and build GeoModels from files
+     */
     template< index_t DIMENSION >
-    GeoModelBuilderFile< DIMENSION >::GeoModelBuilderFile(
-        GeoModel< DIMENSION >& geomodel,
-        const std::string& filename )
-        : GeoModelBuilder< DIMENSION >( geomodel ), filename_( filename )
-    {
+    class GeoModelBuilderFile: public GeoModelBuilder< DIMENSION > {
+    public:
+        GeoModelBuilderFile( GeoModel< DIMENSION >& geomodel, const std::string& filename );
 
-    }
-//    template class RINGMESH_API GeoModelBuilderFile< 2 > ;
-    template class RINGMESH_API GeoModelBuilderFile< 3 > ;
+        virtual ~GeoModelBuilderFile() = default;
 
-} // namespace
+        void build_geomodel()
+        {
+            load_file();
+            this->end_geomodel();
+        }
+
+    private:
+        virtual void load_file() = 0;
+
+    protected:
+        std::string filename_;
+    };
+}
