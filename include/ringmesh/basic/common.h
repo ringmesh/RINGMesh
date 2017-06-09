@@ -63,6 +63,7 @@
 #endif
 
 #ifdef USE_OPENMP
+#   include <omp.h>
 #   ifdef WIN32
 #       define RINGMESH_PARALLEL_LOOP __pragma("omp parallel for")
 #       define RINGMESH_PARALLEL_LOOP_DYNAMIC __pragma( "omp parallel for schedule(dynamic)" )
@@ -84,8 +85,6 @@
 template< typename T > inline void ringmesh_unused( T const& )
 {
 }
-
-#include <omp.h>
 
 #include <ringmesh/basic/types.h>
 #include <ringmesh/basic/ringmesh_assert.h>

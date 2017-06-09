@@ -1187,22 +1187,16 @@ namespace RINGMesh {
         for( index_t i = 0; i < index_map.size(); i++ ) {
             index_map[i] = i;
         }
-        index_t nb_threads = static_cast< index_t >( omp_get_max_threads() );
-        std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 );
+        index_t nb_colocalised_vertices = 0;
         for( index_t i = 0; i < index_map.size(); i++ ) {
             std::vector< index_t > results = get_neighbors( point( i ), epsilon );
             index_t id = *std::min_element( results.begin(), results.end() );
             if( id < i ) {
                 index_map[i] = id;
-                index_t thread_id = static_cast< index_t >( omp_get_thread_num() );
-                nb_colocalised_per_thread[thread_id]++;
+                nb_colocalised_vertices++;
             }
         }
 
-        index_t nb_colocalised_vertices = 0;
-        for( index_t nb_colocalised : nb_colocalised_per_thread ) {
-            nb_colocalised_vertices += nb_colocalised;
-        }
         return nb_colocalised_vertices;
     }
 
