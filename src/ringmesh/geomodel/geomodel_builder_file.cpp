@@ -33,51 +33,25 @@
  *     FRANCE
  */
 
-#pragma once
-
-#include <ringmesh/basic/common.h>
-
-#include <memory>
-
-#include <geogram/basic/line_stream.h>
-
-#include <zlib/unzip.h>
-
 #include <ringmesh/geomodel/geomodel_builder_file.h>
 
 /*!
- * @file ringmesh/geomodel_builder_ringmesh.h
- * @brief Classes to build GeoModel from various inputs
- * @author 
+ * @file ringmesh/geomodel/geomodel_builder_file.cpp
+ * @brief Implementation of the classes to build GeoModel from various inputs
+ * @author Jeanne Pellerin
  */
 
 namespace RINGMesh {
-    class GeoModelBuilderGMImpl;
-}
 
-namespace RINGMesh {
+    template< index_t DIMENSION >
+    GeoModelBuilderFile< DIMENSION >::GeoModelBuilderFile(
+        GeoModel< DIMENSION >& geomodel,
+        const std::string& filename )
+        : GeoModelBuilder< DIMENSION >( geomodel ), filename_( filename )
+    {
 
-    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile< 3 > {
-    public:
-        static const index_t NB_VERSION = 3;
-        GeoModelBuilderGM( GeoModel< 3 >& geomodel, const std::string& filename );
-        virtual ~GeoModelBuilderGM();
+    }
+//    template class RINGMESH_API GeoModelBuilderFile< 2 > ;
+    template class RINGMESH_API GeoModelBuilderFile< 3 > ;
 
-    private:
-        void load_geological_entities( const std::string& geological_entity_file );
-
-        /*!
-         * @brief Load meshes of all the mesh entities from a zip file
-         * @param[in] uz the zip file
-         */
-        void load_meshes( unzFile& uz );
-
-        virtual void load_file() final;
-
-        void load_mesh_entities( const std::string& mesh_entity_file );
-
-    private:
-        index_t file_version_;
-        std::unique_ptr< GeoModelBuilderGMImpl > version_impl_[NB_VERSION];
-    };
-}
+} // namespace
