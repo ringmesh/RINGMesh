@@ -1264,18 +1264,21 @@ namespace RINGMesh {
          * @brief Transfer attributes from the GeoModelMesh to the
          * GeoModel
          */
-        void transfer_attributes() const;
+        void transfer_attributes_from_gmm_to_gm_regions() const;
+        void transfer_attributes_from_gm_regions_to_gmm() const;
 
         /*!
          * @brief Transfer attributes from the GeoModelMeshCell to the
          * GeoModel
          */
-        void transfer_cell_attributes() const;
+        void transfer_cell_attributes_from_gmm_to_gm_regions() const;
+        void transfer_cell_attributes_from_gm_regions_to_gmm() const;
         /*!
          * @brief Transfer attributes from the GeoModelMeshVertices to the
          * GeoModel
          */
-        void transfer_vertex_attributes() const;
+        void transfer_vertex_attributes_from_gmm_to_gm_regions() const;
+        void transfer_vertex_attributes_from_gm_regions_to_gmm() const;
 
         /*!
          * Access the DuplicateMode
