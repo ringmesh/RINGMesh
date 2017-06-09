@@ -647,7 +647,7 @@ namespace RINGMesh {
             PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         mesh_builder->set_vertex( v, point );
 
-        GeoModelBuilder builder( this->gm_ );
+        GeoModelBuilder< 3 > builder( this->gm_ );
 
         const std::vector< GMEVertex >& gme_v = gme_vertices( v );
         for( const GMEVertex& info : gme_v ) {

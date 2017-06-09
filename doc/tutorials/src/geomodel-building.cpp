@@ -122,7 +122,7 @@ int main()
         // GeoModelBuilder, which is a safety for the user
         // Indeed, the GeoModel can't be directly modified,
         // It has to be done using the GeoModelBuilder
-        GeoModelBuilder builder( geomodel );
+        GeoModelBuilder< 3 > builder( geomodel );
 
         //#############################
         // Declaration of the Entities#
@@ -173,23 +173,23 @@ int main()
         // Then we create the GeoModelMeshEntity
         // Create the Corners
         for( index_t corner = 0; corner < nb_corners; corner++ ) {
-            builder.topology.create_mesh_entity< Corner< 3 > >();
+            builder.topology.create_mesh_entity< Corner >();
         }
 
         // Create the Lines
         for( index_t lines = 0; lines < nb_lines; lines++ ) {
-            builder.topology.create_mesh_entity< Line< 3 > >();
+            builder.topology.create_mesh_entity< Line >();
         }
 
         // Create the Surfaces
         for( index_t surface = 0; surface < nb_surfaces; surface++ ) {
-            builder.topology.create_mesh_entity< Surface< 3 > >();
+            builder.topology.create_mesh_entity< Surface >();
 
         }
 
         // Create the Regions
         for( index_t region = 0; region < nb_regions; region++ ) {
-            builder.topology.create_mesh_entity< Region< 3 > >();
+            builder.topology.create_mesh_entity< Region >();
         }
 
         //#############################

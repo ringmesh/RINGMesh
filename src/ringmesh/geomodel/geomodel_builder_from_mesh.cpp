@@ -38,7 +38,7 @@
 #include <stack>
 
 /*!
- * @file ringmesh/geomodel/geomodel_builder.cpp
+ * @file ringmesh/geomodel/geomodel_builder_from_mesh.cpp
  * @brief Implementation of the classes to build GeoModel from various meshes
  * @author Jeanne Pellerin
  */
@@ -95,7 +95,7 @@ namespace RINGMesh {
                     cc_facets_ptr.push_back( nb_cc_corners );
                 }
 
-                gmme_id surface_gme = topology.create_mesh_entity< Surface< 3 > >();
+                gmme_id surface_gme = topology.create_mesh_entity< Surface >();
                 geometry.set_surface_geometry( surface_gme.index(), cc_vertices,
                     cc_corners, cc_facets_ptr );
             }

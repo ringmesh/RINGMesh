@@ -55,7 +55,7 @@
 
 namespace RINGMesh {
     class WellGroup;
-    template< index_t > class GeoModelGeologicalEntity;
+    template< index_t DIMENSION > class GeoModelGeologicalEntity;
     template< index_t DIMENSION > class GeoModelMeshEntity;
     template< index_t DIMENSION > class Corner;
     template< index_t DIMENSION > class Surface;
@@ -63,6 +63,15 @@ namespace RINGMesh {
     template< index_t DIMENSION > class Region;
     template< index_t DIMENSION > class GeoModelAccess;
     template< index_t DIMENSION > class EntityTypeManager;
+    template< index_t DIMENSION > class GeoModelBuilderTopology;
+    template< index_t DIMENSION > class GeoModelBuilderGeometry;
+    template< index_t DIMENSION > class GeoModelBuilderGeology;
+    template< index_t DIMENSION > class GeoModelBuilderRemoval;
+    template< index_t DIMENSION > class GeoModelBuilderRepair;
+    template< index_t DIMENSION > class GeoModelBuilderCopy;
+    template< index_t DIMENSION > class GeoModelBuilderInfo;
+    template< index_t DIMENSION > class GeoModelBuilderFromSurfaces;
+    template< index_t DIMENSION > class GeoModelBuilder;
 }
 
 namespace RINGMesh {
@@ -202,6 +211,7 @@ namespace RINGMesh {
 
         double epsilon3() const
         {
+            ringmesh_template_assert_3d( DIMENSION );
             return epsilon2() * epsilon();
         }
 
@@ -297,16 +307,16 @@ namespace RINGMesh {
     class GeoModelAccess {
     ringmesh_disable_copy( GeoModelAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder;
+        friend class GeoModelBuilder< DIMENSION >;
         friend class GeoModelBuilderGM;
-        friend class GeoModelBuilderTopology;
-        friend class GeoModelBuilderGeometry;
-        friend class GeoModelBuilderGeology;
-        friend class GeoModelBuilderRemoval;
-        friend class GeoModelBuilderRepair;
-        friend class GeoModelBuilderCopy;
-        friend class GeoModelBuilderInfo;
-        friend class GeoModelBuilderFromSurfaces;
+        friend class GeoModelBuilderTopology< DIMENSION >;
+        friend class GeoModelBuilderGeometry< DIMENSION >;
+        friend class GeoModelBuilderGeology< DIMENSION >;
+        friend class GeoModelBuilderRemoval< DIMENSION >;
+        friend class GeoModelBuilderRepair< DIMENSION >;
+        friend class GeoModelBuilderCopy< DIMENSION >;
+        friend class GeoModelBuilderInfo< DIMENSION >;
+        friend class GeoModelBuilderFromSurfaces< DIMENSION >;
 
     private:
         GeoModelAccess( GeoModel< DIMENSION >& geomodel )
