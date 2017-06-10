@@ -1031,27 +1031,6 @@ namespace RINGMesh {
         return true;
     }
 
-    template< index_t DIMENSION >
-    void GeoModelBuilderFromSurfaces< DIMENSION >::build()
-    {
-        if( geomodel_.nb_surfaces() == 0 ) {
-            throw RINGMeshException( "GeoModel",
-                "No surface to build the geomodel " );
-        }
-
-        // Initialize geomodel() global vertices
-        geomodel_.mesh.vertices.test_and_initialize();
-
-        build_lines_and_corners_from_surfaces();
-
-        if( options_.compute_regions_brep ) {
-            build_brep_regions_from_surfaces();
-        }
-
-        // Finish up the geomodel
-        builder_.end_geomodel();
-    }
-
     template class RINGMESH_API GeoModelBuilderFromSurfaces< 3 > ;
 
 } // namespace
