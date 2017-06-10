@@ -19,6 +19,7 @@ Bug fix:
  * Cannot delete Mesh in RINGMeshView
  * Fix crash on RINGMeshView exit (Logger was still register)
  * RINGMesh now compiles when TetGen cmake option is set to off
+ * GeoModelMeshVertices was not cleared after a tetrahedralize step
 
 Improvements:
  * Refactoring of the io to have smaller files
