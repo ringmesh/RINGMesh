@@ -102,12 +102,6 @@ namespace RINGMesh {
          * Delete all GeoModelRegionFromSurfaces owned by the builder
          */
         virtual ~GeoModelBuilderFromSurfaces();
-        /*
-         * @brief From a GeoModel in which only Surfaces are defined,
-         * create Corners, Lines and Regions depending on the building flags
-         * @note Validity is not checked
-         */
-        void build();
 
         /*!
          * @brief From the Surfaces of the GeoModel, build its Lines and Corners
