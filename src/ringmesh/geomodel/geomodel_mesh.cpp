@@ -123,6 +123,7 @@ namespace {
 
     void copy_vertices( MeshBaseBuilder* builder, const MeshBase& mesh )
     {
+        builder->clear_vertices( true, false );
         builder->create_vertices( mesh.nb_vertices() );
         for( index_t v = 0; v < mesh.nb_vertices(); v++ ) {
             builder->set_vertex( v, mesh.vertex( v ) );
@@ -472,7 +473,7 @@ GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
 
         std::unique_ptr< PointSetMeshBuilder > builder =
             PointSetMeshBuilder::create_builder( *mesh_ );
-        builder->clear_vertices( true, false );
+        builder->clear( true, false );
     }
 
     void GeoModelMeshVertices::unbind_geomodel_vertex_map(
@@ -712,7 +713,7 @@ GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
         clear();
         std::unique_ptr< VolumeMeshBuilder > mesh_builder =
             VolumeMeshBuilder::create_builder( *mesh_ );
-        if( mesh_->nb_vertices() == 0 ) {
+        if( mesh_->nb_vertices() != gmm_.vertices.nb() ) {
             copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
         }
 
@@ -1400,7 +1401,7 @@ GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
     {
         std::unique_ptr< VolumeMeshBuilder > mesh_builder =
             VolumeMeshBuilder::create_builder( *mesh_ );
-        mesh_builder->clear_cells( true, false );
+        mesh_builder->clear( true, false );
         region_cell_ptr_.clear();
         nb_tet_ = 0;
         nb_hex_ = 0;
@@ -1718,7 +1719,7 @@ GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
         nb_quad_ = 0;
         std::unique_ptr< SurfaceMeshBuilder > mesh_builder =
             SurfaceMeshBuilder::create_builder( *mesh_ );
-        mesh_builder->clear_polygons( true, false );
+        mesh_builder->clear( true, false );
     }
 
     void GeoModelMeshPolygons::test_and_initialize() const
@@ -1735,7 +1736,7 @@ GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
         surface_polygon_ptr_.resize( gm_.nb_surfaces() * ALL + 1, 0 );
         std::unique_ptr< SurfaceMeshBuilder > mesh_builder =
             SurfaceMeshBuilder::create_builder( *mesh_ );
-        if( mesh_->nb_vertices() == 0 ) {
+        if( mesh_->nb_vertices() != gmm_.vertices.nb() ) {
             copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
         }
 
@@ -1936,7 +1937,7 @@ GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
     {
         std::unique_ptr< LineMeshBuilder > mesh_builder =
             LineMeshBuilder::create_builder( *mesh_ );
-        mesh_builder->clear_edges( true, false );
+        mesh_builder->clear( true, false );
         well_ptr_.clear();
     }
 
@@ -1959,7 +1960,7 @@ GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
         clear();
         std::unique_ptr< LineMeshBuilder > mesh_builder =
             LineMeshBuilder::create_builder( *mesh_ );
-        if( mesh_->nb_vertices() == 0 ) {
+        if( mesh_->nb_vertices() != gmm_.vertices.nb() ) {
             copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
         }
 
