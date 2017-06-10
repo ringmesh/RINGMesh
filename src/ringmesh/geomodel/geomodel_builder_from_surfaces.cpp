@@ -688,9 +688,8 @@ namespace RINGMesh {
                             index_t previous_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S_id, p,
                                     mesh.prev_polygon_vertex( p, v ) );
-                            border_triangles_.push_back(
-                                BorderTriangle( s, p, vertex, next_vertex,
-                                    previous_vertex ) );
+                            border_triangles_.emplace_back( s, p, vertex,
+                                next_vertex, previous_vertex );
                         }
                     }
                 }
@@ -843,10 +842,8 @@ namespace RINGMesh {
         LineGeometryFromGeoModelSurfaces< DIMENSION > line_computer( geomodel_,
             options_.compute_regions_brep );
 
-        bool new_line_was_built = true;
-        while( new_line_was_built ) {
-            new_line_was_built = line_computer.compute_next_line_geometry();
-
+        line_computer.compute_next_line_geometry();
+        do {
             // I know this is a copy - but should'nt be too big [JP]
             std::vector< index_t > vertices = line_computer.vertices();
 
@@ -896,7 +893,7 @@ namespace RINGMesh {
                     builder_.geometry.set_line( line_index.index(), vertices );
                 }
             }
-        }
+        } while( line_computer.compute_next_line_geometry() );
         return true;
     }
 
