@@ -870,9 +870,10 @@ namespace {
                 threads.emplace_back(
                     &GeoModelValidityCheck::test_surface_line_mesh_conformity,
                     this );
-                threads.emplace_back(
-                    &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
-                    this );
+                /// TODO: find a way to add this test for Model3d. See BC.
+//                threads.emplace_back(
+//                    &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
+//                    this );
             }
 
             // Geological validity must always be checked
