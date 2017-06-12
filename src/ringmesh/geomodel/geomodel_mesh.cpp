@@ -134,11 +134,11 @@ namespace {
 namespace RINGMesh {
 
     GeoModelMeshBase::GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm )
-        : gmm_( gmm ), gm_( gm )
+        : gmm_( gmm ), gm_( gm ), mesh_base_( nullptr )
     {
     }
 
-GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
+    GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
         GeoModelMeshVertices& geomodel_vertices,
         const GeoModel& geomodel )
         : geomodel_vertices_( geomodel_vertices ), geomodel_( geomodel )
@@ -2143,32 +2143,32 @@ GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
 
     void GeoModelMesh::change_point_set_mesh_data_structure( const MeshType& type )
     {
-        vertices.clear();
         if( mesh_set_.point_set_mesh->type_name() != type ) {
+            vertices.clear();
             mesh_set_.create_point_set_mesh( type );
         }
     }
 
     void GeoModelMesh::change_line_mesh_data_structure( const MeshType& type )
     {
-        edges.clear();
         if( mesh_set_.line_mesh->type_name() != type ) {
+            edges.clear();
             mesh_set_.create_line_mesh( type );
         }
     }
 
     void GeoModelMesh::change_surface_mesh_data_structure( const MeshType& type )
     {
-        polygons.clear();
         if( mesh_set_.surface_mesh->type_name() != type ) {
+            polygons.clear();
             mesh_set_.create_surface_mesh( type );
         }
     }
 
     void GeoModelMesh::change_volume_mesh_data_structure( const MeshType& type )
     {
-        cells.clear();
         if( mesh_set_.volume_mesh->type_name() != type ) {
+            cells.clear();
             mesh_set_.create_volume_mesh( type );
         }
     }
