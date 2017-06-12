@@ -465,6 +465,7 @@ namespace RINGMesh {
         ringmesh_assert( parent.is_defined() );
         return geomodel().geological_entity( parent );
     }
+
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
         const GeologicalEntityType& parent_type_name ) const
     {
@@ -472,6 +473,7 @@ namespace RINGMesh {
         ringmesh_assert( id.is_defined() );
         return geomodel().geological_entity( id );
     }
+
     gmge_id GeoModelMeshEntity::parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
@@ -488,6 +490,7 @@ namespace RINGMesh {
         }
         return gmge_id( ForbiddenGeologicalEntityType::type_name_static(), NO_ID );
     }
+
     gmge_id GeoModelMeshEntity::defined_parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
@@ -495,12 +498,14 @@ namespace RINGMesh {
         ringmesh_assert(parent_gmge.is_defined());
         return parent_gmge;
     }
+
     const gmme_id& GeoModelMeshEntity::boundary_gmme( index_t x ) const
     {
         ringmesh_assert( x < nb_boundaries() );
         return geomodel().entity_type_manager().relationship_manager.boundary_gmme(
             boundaries_[x] );
     }
+
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
     {
         return geomodel().mesh_entity( boundary_gmme( x ) );
@@ -510,12 +515,14 @@ namespace RINGMesh {
     {
         return geomodel().mesh_entity( incident_entity_gmme( x ) );
     }
+
     const gmme_id& GeoModelMeshEntity::incident_entity_gmme( index_t x ) const
     {
         ringmesh_assert( x < nb_incident_entities() );
         return geomodel().entity_type_manager().relationship_manager.incident_entity_gmme(
             incident_entities_[x] );
     }
+
     const gmge_id& GeoModelMeshEntity::parent_gmge( index_t id ) const
     {
         ringmesh_assert( id < nb_parents() );
