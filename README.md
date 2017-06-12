@@ -40,6 +40,7 @@ To compile you need the following packages (tested on Debian-based linux):
 * libxcursor-dev
 * freeglut3-dev
 * libxi-dev
+
 Note: you need gcc/g++ version higher or equal to 4.8 to compile RINGMesh.
 
 Then, to compile RINGMesh, go to RINGMesh root directory and:
