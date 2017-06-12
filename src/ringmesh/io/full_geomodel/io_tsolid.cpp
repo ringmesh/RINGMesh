@@ -297,8 +297,7 @@ namespace {
                 out << std::endl;
                 out << "TETRA_ESIZES";
                 for( const index_t& cur_cell_attr_dim : cell_attr_dims ) {
-                    out << " "
-                        << GEO::String::to_string( cur_cell_attr_dim );
+                    out << " " << GEO::String::to_string( cur_cell_attr_dim );
                 }
                 out << std::endl;
                 out << "TETRA_UNITS";
@@ -307,8 +306,8 @@ namespace {
                 }
                 out << std::endl;
                 for( const std::string& cur_att_c_double_name : att_c_double_names ) {
-                    out << "TETRA_PROPERTY_CLASS_HEADER "
-                        << cur_att_c_double_name << " {" << std::endl;
+                    out << "TETRA_PROPERTY_CLASS_HEADER " << cur_att_c_double_name
+                        << " {" << std::endl;
                     out << "kind: Real Number" << std::endl;
                     out << "unit: unitless" << std::endl;
                     out << "}" << std::endl;
@@ -375,11 +374,7 @@ namespace {
                         /// operational yet...
                         const std::vector< GMEVertex >& gme_vertices =
                             mesh.vertices.gme_vertices( vertex_id );
-                        for( index_t gme_vertices_i = 0;
-                            gme_vertices_i < gme_vertices.size();
-                            ++gme_vertices_i ) {
-                            const GMEVertex& cur_gme_vertex =
-                                gme_vertices[gme_vertices_i];
+                        for( const GMEVertex& cur_gme_vertex : gme_vertices ) {
                             if( cur_gme_vertex.gmme != region.gmme() ) {
                                 continue;
                             }
@@ -389,11 +384,9 @@ namespace {
                             /// WARNING: the cell id in the region corresponding
                             /// to the cell id in the GMM "cell" is not the
                             /// variable "c" (in the for loop over the region cells).
-                            for( index_t cells_around_vertex_i = 0;
-                                cells_around_vertex_i < cells_around_vertex.size();
-                                ++cells_around_vertex_i ) {
+                            for( const index_t& cur_cell_around_vertex : cells_around_vertex ) {
                                 vec3 center = region.mesh_element_barycenter(
-                                    cells_around_vertex[cells_around_vertex_i] );
+                                    cur_cell_around_vertex );
                                 if( ( center - cell_center ).length()
                                     < region.geomodel().epsilon() ) {
                                     vertex_id_in_reg = cur_gme_vertex.v_index;
