@@ -90,13 +90,13 @@ namespace {
      */
     class MSHIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GMSH not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -130,7 +130,7 @@ namespace {
                     index_of_gmme_of_the_current_type++ ) {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
                         index_of_gmme_of_the_current_type );
-                    const GeoModelMeshEntity& cur_gmme = geomodel.mesh_entity(
+                    const GeoModelMeshEntity< 3 >& cur_gmme = geomodel.mesh_entity(
                         cur_gmme_id );
                     for( index_t elem_in_cur_gmme = 0;
                         elem_in_cur_gmme < cur_gmme.nb_mesh_elements();
@@ -202,7 +202,7 @@ namespace {
          * - A Prism
          * - An Hexaedron
          */
-        index_t count_elements( const GeoModel& geomodel )
+        index_t count_elements( const GeoModel< 3 >& geomodel )
         {
             index_t nb_elements = 0;
             const std::vector< MeshEntityType >& gmme_types =
@@ -214,7 +214,7 @@ namespace {
                     index_of_gmme_of_the_current_type++ ) {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
                         index_of_gmme_of_the_current_type );
-                    const GeoModelMeshEntity& cur_gmme = geomodel.mesh_entity(
+                    const GeoModelMeshEntity< 3 >& cur_gmme = geomodel.mesh_entity(
                         cur_gmme_id );
                     nb_elements += cur_gmme.nb_mesh_elements();
                 }

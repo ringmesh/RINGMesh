@@ -48,7 +48,7 @@
 namespace {
     using namespace RINGMesh;
 
-    void load_geomodel( GeoModel& in, const std::string& filename )
+    void load_geomodel( GeoModel< 3 >& in, const std::string& filename )
     {
         std::string input_model_file_name( ringmesh_test_data_path );
         input_model_file_name += filename;
@@ -62,13 +62,13 @@ namespace {
         }
     }
 
-    void save_and_compare_geomodels( const GeoModel& in )
+    void save_and_compare_geomodels( const GeoModel< 3 >& in )
     {
         std::string output_model_file_name( ringmesh_test_output_path );
         output_model_file_name += "modelA1_saved_out.gm";
         geomodel_save( in, output_model_file_name );
 
-        GeoModel in2;
+        GeoModel< 3 > in2;
         bool reloaded_model_is_valid = geomodel_load( in2, output_model_file_name );
 
         if( !reloaded_model_is_valid ) {
@@ -88,7 +88,7 @@ namespace {
 
     void test_file( const std::string& filename )
     {
-        GeoModel in;
+        GeoModel< 3 > in;
         load_geomodel( in, filename );
         save_and_compare_geomodels( in );
     }

@@ -33,56 +33,76 @@
  *     FRANCE
  */
 
-/*! 
- * @file Implementation of visualization of GeoModelEntities
- * @author Benjamin Chauvin and Arnaud Botella
+#include <ringmesh/basic/box.h>
+#include <algorithm>
+
+/*!
+ * @file Implementation of multi-dimensional Box class
+ * @author Arnaud Botella
  */
-
-#include <ringmesh/visualization/geomodel_gfx.h>
-
-#ifdef RINGMESH_WITH_GRAPHICS
-
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
 
 namespace RINGMesh {
 
-    GeoModelGfx::GeoModelGfx()
-        :
-            geomodel_( nullptr ),
-            corners( *this ),
-            lines( *this ),
-            surfaces( *this ),
-            regions( *this ),
-            attribute( *this )
+    template< typename T >
+    inline T sqr( T x )
     {
+        return x * x;
     }
 
-    GeoModelGfx::~GeoModelGfx()
+    template< index_t DIMENSION >
+    void Box< DIMENSION >::add_point( const vecn< DIMENSION >& p )
     {
+        if( !initialized_ ) {
+            min_ = p;
+            max_ = p;
+            initialized_ = true;
+        } else {
+            for( index_t i = 0; i < DIMENSION; i++ ) {
+                min_[i] = std::min( min_[i], p[i] );
+                max_[i] = std::max( max_[i], p[i] );
+            }
+        }
     }
 
-    void GeoModelGfx::set_geomodel( const GeoModel< 3 >& geomodel )
+    template< index_t DIMENSION >
+    double Box< DIMENSION >::signed_distance( const vecn< DIMENSION >& p ) const
     {
-        geomodel_ = &geomodel;
-        initialize();
+        bool inside = true;
+        double result = 0.0;
+        for( index_t c = 0; c < 3; c++ ) {
+            if( p[c] < min()[c] ) {
+                inside = false;
+                result += sqr( p[c] - min()[c] );
+            } else if( p[c] > max()[c] ) {
+                inside = false;
+                result += sqr( p[c] - max()[c] );
+            }
+        }
+        if( inside ) {
+            result = sqr( p[0] - min()[0] );
+            result = std::min( result, sqr( p[0] - max()[0] ) );
+            for( index_t c = 1; c < 3; ++c ) {
+                result = std::min( result, sqr( p[c] - min()[c] ) );
+                result = std::min( result, sqr( p[c] - max()[c] ) );
+            }
+            result = -result;
+        }
+        return result;
     }
 
-    const GeoModel< 3 >* GeoModelGfx::geomodel() const
+    template< index_t DIMENSION >
+    double Box< DIMENSION >::distance_to_center( const vecn< DIMENSION >& p ) const
     {
-        return geomodel_;
+        double result = 0.0;
+        for( index_t c = 0; c < 3; ++c ) {
+            double d = p[c] - 0.5 * ( min()[c] + max()[c] );
+            result += sqr( d );
+        }
+        return result;
     }
 
-    void GeoModelGfx::initialize()
-    {
-        ringmesh_assert( geomodel_ );
-        corners.initialize();
-        lines.initialize();
-        surfaces.initialize();
-        regions.initialize();
-    }
+    template class RINGMESH_API Box< 2 >;
+    template class RINGMESH_API Box< 3 >;
+
 }
 
-#endif

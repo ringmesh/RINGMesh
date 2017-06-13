@@ -47,14 +47,16 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder;
+    template< index_t DIMENSION > class GeoModelBuilder;
 }
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelBuilderGeometry {
+    template< index_t DIMENSION >
+    class GeoModelBuilderGeometry {
     ringmesh_disable_copy( GeoModelBuilderGeometry );
-        friend class GeoModelBuilder;
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class GeoModelBuilder< DIMENSION > ;
 
     public:
         void clear_geomodel_mesh();
@@ -66,27 +68,28 @@ namespace RINGMesh {
          */
         void change_mesh_data_structure( const gmme_id& id, const MeshType type )
         {
-            GeoModelMeshEntityAccess gmme_access(
+            GeoModelMeshEntityAccess< DIMENSION > gmme_access(
                 geomodel_access_.modifiable_mesh_entity( id ) );
             gmme_access.change_mesh_data_structure( type );
         }
 
         /*!
-         * @brief Create a Mesh0DBuilder for a given corner
+         * @brief Create a PointMeshBuilder for a given corner
          * @param[in] corner_id the corner index
          * @return The created Mesh0DBuilder
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh0DBuilder_var.
          */
-        std::unique_ptr< PointSetMeshBuilder > create_corner_builder( index_t corner_id )
+        std::unique_ptr< PointSetMeshBuilder< DIMENSION > > create_corner_builder(
+            index_t corner_id )
         {
-            gmme_id id( Corner::type_name_static(), corner_id );
-            GeoModelMeshEntity& corner = geomodel_access_.modifiable_mesh_entity(
-                id );
-            GeoModelMeshEntityAccess corner_access( corner );
-            PointSetMesh& corner_mesh =
-                dynamic_cast< PointSetMesh& >( *corner_access.modifiable_mesh() );
-            return PointSetMeshBuilder::create_builder( corner_mesh );
+            gmme_id id( Corner< DIMENSION >::type_name_static(), corner_id );
+            GeoModelMeshEntity< DIMENSION >& corner =
+                geomodel_access_.modifiable_mesh_entity( id );
+            GeoModelMeshEntityAccess< DIMENSION > corner_access( corner );
+            PointSetMesh< DIMENSION >& corner_mesh = dynamic_cast< PointSetMesh<
+                DIMENSION >& >( *corner_access.modifiable_mesh() );
+            return PointSetMeshBuilder< DIMENSION >::create_builder( corner_mesh );
         }
 
         /*!
@@ -96,14 +99,16 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer LineMeshBuilder_var.
          */
-        std::unique_ptr< LineMeshBuilder > create_line_builder( index_t line_id )
+        std::unique_ptr< LineMeshBuilder< DIMENSION > > create_line_builder(
+            index_t line_id )
         {
-            gmme_id id( Line::type_name_static(), line_id );
-            GeoModelMeshEntity& line = geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess line_access( line );
-            LineMesh& line_mesh =
-                dynamic_cast< LineMesh& >( *line_access.modifiable_mesh() );
-            return LineMeshBuilder::create_builder( line_mesh );
+            gmme_id id( Line< DIMENSION >::type_name_static(), line_id );
+            GeoModelMeshEntity< DIMENSION >& line =
+                geomodel_access_.modifiable_mesh_entity( id );
+            GeoModelMeshEntityAccess< DIMENSION > line_access( line );
+            LineMesh< DIMENSION >& line_mesh =
+                dynamic_cast< LineMesh< DIMENSION >& >( *line_access.modifiable_mesh() );
+            return LineMeshBuilder< DIMENSION >::create_builder( line_mesh );
         }
 
         /*!
@@ -113,15 +118,16 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh2DBuilder_var.
          */
-        std::unique_ptr< SurfaceMeshBuilder > create_surface_builder( index_t surface_id )
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > create_surface_builder(
+            index_t surface_id )
         {
-            gmme_id id( Surface::type_name_static(), surface_id );
-            GeoModelMeshEntity& surface = geomodel_access_.modifiable_mesh_entity(
-                id );
-            GeoModelMeshEntityAccess surface_access( surface );
-            SurfaceMesh& surface_mesh =
-                dynamic_cast< SurfaceMesh& >( *surface_access.modifiable_mesh() );
-            return SurfaceMeshBuilder::create_builder( surface_mesh );
+            gmme_id id( Surface< DIMENSION >::type_name_static(), surface_id );
+            GeoModelMeshEntity< DIMENSION >& surface =
+                geomodel_access_.modifiable_mesh_entity( id );
+            GeoModelMeshEntityAccess< DIMENSION > surface_access( surface );
+            SurfaceMeshBase< DIMENSION >& surface_mesh =
+                dynamic_cast< SurfaceMeshBase< DIMENSION >& >( *surface_access.modifiable_mesh() );
+            return SurfaceMeshBuilder< DIMENSION >::create_builder( surface_mesh );
         }
 
         /*!
@@ -131,15 +137,16 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh3DBuilder_var.
          */
-        std::unique_ptr< VolumeMeshBuilder > create_region_builder( index_t region_id )
+        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > create_region_builder(
+            index_t region_id )
         {
-            gmme_id id( Region::type_name_static(), region_id );
-            GeoModelMeshEntity& region = geomodel_access_.modifiable_mesh_entity(
-                id );
-            GeoModelMeshEntityAccess region_access( region );
-            VolumeMesh& region_mesh =
-                dynamic_cast< VolumeMesh& >( *region_access.modifiable_mesh() );
-            return VolumeMeshBuilder::create_builder( region_mesh );
+            gmme_id id( Region< DIMENSION >::type_name_static(), region_id );
+            GeoModelMeshEntity< DIMENSION >& region =
+                geomodel_access_.modifiable_mesh_entity( id );
+            GeoModelMeshEntityAccess< DIMENSION > region_access( region );
+            VolumeMesh< DIMENSION >& region_mesh = dynamic_cast< VolumeMesh<
+                DIMENSION >& >( *region_access.modifiable_mesh() );
+            return VolumeMeshBuilder< DIMENSION >::create_builder( region_mesh );
         }
 
         /*!
@@ -147,11 +154,17 @@ namespace RINGMesh {
          * @pre The geomodel under construction has exaclty the same number of entities
          * than the input geomodel.
          */
-        void copy_meshes( const GeoModel& from );
-        void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type );
-        void copy_mesh( const GeoModel& from, const gmme_id& mesh_entity );
+        void copy_meshes( const GeoModel< DIMENSION >& from );
+        void copy_meshes(
+            const GeoModel< DIMENSION >& from,
+            const MeshEntityType& entity_type );
+        void copy_mesh(
+            const GeoModel< DIMENSION >& from,
+            const gmme_id& mesh_entity );
 
-        void assign_mesh_to_entity( const MeshBase& mesh, const gmme_id& to );
+        void assign_mesh_to_entity(
+            const MeshBase< DIMENSION >& mesh,
+            const gmme_id& to );
 
         /*!
          * \name Set entity geometry from geometrical positions
@@ -291,7 +304,7 @@ namespace RINGMesh {
         void set_surface_geometry(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices );
-            
+
         void set_surface_element_geometry(
             index_t surface_id,
             index_t polygon_id,
@@ -411,7 +424,9 @@ namespace RINGMesh {
         void cut_region_by_surface( index_t region_id, index_t surface_id );
 
     protected:
-        GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel& geomodel );
+        GeoModelBuilderGeometry(
+            GeoModelBuilder< DIMENSION >& builder,
+            GeoModel< DIMENSION >& geomodel );
 
     private:
         void assign_region_tet_mesh(
@@ -453,9 +468,9 @@ namespace RINGMesh {
             index_t new_vertex );
 
     private:
-        GeoModelBuilder& builder_;
-        GeoModel& geomodel_;
-        GeoModelAccess geomodel_access_;
+        GeoModelBuilder< DIMENSION >& builder_;
+        GeoModel< DIMENSION >& geomodel_;
+        GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
 }

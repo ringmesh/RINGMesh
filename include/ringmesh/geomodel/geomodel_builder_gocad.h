@@ -42,12 +42,12 @@
 #include <geogram/basic/factory.h>
 #include <geogram/basic/line_stream.h>
 
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_builder_file.h>
 
 namespace RINGMesh {
     class GeoModelBuilderTSolid;
     class GeoModelBuilderML;
-    class Box3d;
+    template< index_t DIMENSION > class Box;
     struct VertexMap;
     struct TSolidLoadingStorage;
 }
@@ -56,9 +56,9 @@ namespace RINGMesh {
 
     void RINGMESH_API initialize_gocad_import_factories();
 
-    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
+    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile< 3 > {
     public:
-        GeoModelBuilderGocad( GeoModel& geomodel, const std::string& filename )
+        GeoModelBuilderGocad( GeoModel< 3 >& geomodel, const std::string& filename )
             : GeoModelBuilderFile( geomodel, filename ), file_line_( filename )
         {
             /*! @todo Review: A constructor is not supposed to throw, the object is left in an
@@ -99,7 +99,7 @@ namespace RINGMesh {
             return *builder_;
         }
 
-        GeoModel& geomodel()
+        GeoModel< 3 >& geomodel()
         {
             ringmesh_assert( geomodel_ != nullptr );
             return *geomodel_;
@@ -110,14 +110,14 @@ namespace RINGMesh {
             builder_ = &builder;
         }
 
-        void set_geomodel( GeoModel& geomodel )
+        void set_geomodel( GeoModel< 3 >& geomodel )
         {
             geomodel_ = &geomodel;
         }
 
     private:
         GeoModelBuilderGocad* builder_;
-        GeoModel* geomodel_;
+        GeoModel< 3 >* geomodel_;
     };
 
     struct GocadLoadingStorage {
@@ -160,7 +160,7 @@ namespace RINGMesh {
         static std::unique_ptr< GocadLineParser > create(
             const std::string& keyword,
             GeoModelBuilderGocad& gm_builder,
-            GeoModel& geomodel );
+            GeoModel< 3 >& geomodel );
         virtual void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) = 0;
@@ -244,7 +244,7 @@ namespace RINGMesh {
         static std::unique_ptr< TSolidLineParser > create(
             const std::string& keyword,
             GeoModelBuilderTSolid& gm_builder,
-            GeoModel& geomodel );
+            GeoModel< 3 >& geomodel );
         virtual void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) = 0;
@@ -259,7 +259,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderTSolid final : public GeoModelBuilderGocad {
     public:
-        GeoModelBuilderTSolid( GeoModel& geomodel, const std::string& filename )
+        GeoModelBuilderTSolid( GeoModel< 3 >& geomodel, const std::string& filename )
             : GeoModelBuilderGocad( geomodel, filename )
         {
         }
@@ -286,8 +286,8 @@ namespace RINGMesh {
          */
         void compute_surface_internal_borders(
             index_t surface_id,
-            const std::vector< std::unique_ptr< NNSearch > >& surface_nns,
-            const std::vector< Box3d >& surface_boxes );
+            const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
+            const std::vector< Box< 3 > >& surface_boxes );
 
         /*!
          * @brief Computes the NNSearchs of the centers of polygon edges for
@@ -297,8 +297,8 @@ namespace RINGMesh {
          * @param[out] surface_boxes Bounding Box of surfaces
          */
         void compute_polygon_edge_centers_nn_and_surface_boxes(
-            std::vector< std::unique_ptr< NNSearch > >& surface_nns,
-            std::vector< Box3d >& surface_boxes );
+            std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
+            std::vector< Box< 3 > >& surface_boxes );
 
         /*!
          * @brief Computes internal borders of the geomodel surfaces
@@ -330,7 +330,7 @@ namespace RINGMesh {
         static std::unique_ptr< MLLineParser > create(
             const std::string& keyword,
             GeoModelBuilderML& gm_builder,
-            GeoModel& geomodel );
+            GeoModel< 3 >& geomodel );
         virtual void execute(
             GEO::LineInput& line,
             MLLoadingStorage& load_storage ) = 0;
@@ -345,7 +345,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderML final : public GeoModelBuilderGocad {
     public:
-        GeoModelBuilderML( GeoModel& geomodel, const std::string& filename )
+        GeoModelBuilderML( GeoModel< 3 >& geomodel, const std::string& filename )
             : GeoModelBuilderGocad( geomodel, filename )
         {
         }

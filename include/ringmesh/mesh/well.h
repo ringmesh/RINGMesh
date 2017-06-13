@@ -42,7 +42,6 @@
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/mesh/mesh.h>
 
 /*!
  * @file Well related classe declarations 
@@ -50,10 +49,11 @@
  */
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     class Well;
-    class PointSetMesh;
-    class LineMesh;
+    template< index_t DIMENSION > class NNSearch;
+    template< index_t DIMENSION > class PointSetMesh;
+    template< index_t DIMENSION > class LineMesh;
 }
 
 namespace RINGMesh {
@@ -108,7 +108,7 @@ namespace RINGMesh {
         bool is_on_surface_;
         /// The id of the corresponding surface or region
         index_t id_;
-        std::unique_ptr< PointSetMesh > mesh_;
+        std::unique_ptr< PointSetMesh< 3 > > mesh_;
     };
 
 // --------------------------------------------------------------------------
@@ -183,14 +183,14 @@ namespace RINGMesh {
         GEO::AttributesManager& vertex_attribute_manager() const;
         GEO::AttributesManager& edge_attribute_manager() const;
 
-        const NNSearch& vertices_nn_search() const;
+        const NNSearch< 3 >& vertices_nn_search() const;
 
     private:
         /// id of the part corresponding to the position in the parts_ vector of the well
         index_t id_;
         /// id in the corners_ vector the the well
         index_t corners_[2];
-        std::unique_ptr< LineMesh > mesh_;
+        std::unique_ptr< LineMesh< 3 > > mesh_;
     };
 
 // --------------------------------------------------------------------------
@@ -390,14 +390,14 @@ namespace RINGMesh {
         /*!
          * Gets the associated GeoModel
          */
-        const GeoModel* geomodel() const
+        const GeoModel< 3 >* geomodel() const
         {
             return geomodel_;
         }
         /*!
          * Sets the associated GeoModel
          */
-        void set_geomodel( RINGMesh::GeoModel* geomodel )
+        void set_geomodel( GeoModel< 3 >* geomodel )
         {
             geomodel_ = geomodel;
         }
@@ -420,7 +420,7 @@ namespace RINGMesh {
          * @param[in] mesh the mesh of the well
          * @param[in] name the name of the well
          */
-        void add_well( const LineMesh& mesh, const std::string& name );
+        void add_well( const LineMesh< 3 >& mesh, const std::string& name );
 
         /*!
          * Gets the number of wells
@@ -440,12 +440,12 @@ namespace RINGMesh {
         }
 
     private:
-        void compute_conformal_mesh( const LineMesh& in, LineMesh& out );
+        void compute_conformal_mesh( const LineMesh< 3 >& in, LineMesh< 3 >& out );
 
     protected:
         /// Vector of the wells
         std::vector< Well* > wells_;
         /// Associated GeoModel
-        GeoModel* geomodel_;
+        GeoModel< 3 >* geomodel_;
     };
 }

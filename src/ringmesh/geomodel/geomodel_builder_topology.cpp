@@ -35,6 +35,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder_topology.h>
 
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
@@ -46,23 +48,27 @@
 namespace {
     using namespace RINGMesh;
 
-    gmme_id find_corner( const GeoModel& geomodel, const vec3& point )
+    template< index_t DIMENSION >
+    gmme_id find_corner( const GeoModel< DIMENSION >& geomodel, const vec3& point )
     {
         for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
             if( geomodel.corner( i ).vertex( 0 ) == point ) {
-                return gmme_id( Corner::type_name_static(), i );
+                return gmme_id( Corner< DIMENSION >::type_name_static(), i );
             }
         }
         return gmme_id();
     }
 
-    gmme_id find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
+    template< index_t DIMENSION >
+    gmme_id find_corner(
+        const GeoModel< DIMENSION >& geomodel,
+        index_t geomodel_point_id )
     {
-        const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices;
+        const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel.mesh.vertices;
         const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
             geomodel_point_id );
         for( const GMEVertex& vertex : vertices ) {
-            if( vertex.gmme.type() == Corner::type_name_static() ) {
+            if( vertex.gmme.type() == Corner< DIMENSION >::type_name_static() ) {
                 return vertex.gmme;
             }
         }
@@ -75,7 +81,10 @@ namespace {
      * @param[in] L the line to compare to
      * @param[in] rhs_vertices Vertices to compare to
      */
-    bool line_equal( const Line& L, const std::vector< vec3 >& rhs_vertices )
+    template< index_t DIMENSION >
+    bool line_equal(
+        const Line< DIMENSION >& L,
+        const std::vector< vec3 >& rhs_vertices )
     {
         if( L.nb_vertices() != rhs_vertices.size() ) {
             return false;
@@ -99,8 +108,9 @@ namespace {
         return equal;
     }
 
+    template< index_t DIMENSION >
     void get_sorted_incident_surfaces(
-        const GeoModelMeshEntity& E,
+        const GeoModelMeshEntity< DIMENSION >& E,
         std::vector< index_t >& incident_surfaces )
     {
         index_t nb = E.nb_incident_entities();
@@ -114,29 +124,33 @@ namespace {
 
 namespace RINGMesh {
 
-    GeoModelBuilderTopology::GeoModelBuilderTopology(
-        GeoModelBuilder& builder,
-        GeoModel& geomodel )
+    template< index_t DIMENSION >
+    GeoModelBuilderTopology< DIMENSION >::GeoModelBuilderTopology(
+        GeoModelBuilder< DIMENSION >& builder,
+        GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
 
-    void GeoModelBuilderTopology::copy_topology( const GeoModel& from )
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::copy_topology(
+        const GeoModel< DIMENSION >& from )
     {
-
         copy_mesh_entity_topology< Corner >( from );
         copy_mesh_entity_topology< Line >( from );
         copy_mesh_entity_topology< Surface >( from );
         copy_mesh_entity_topology< Region >( from );
 
-        UniverseAccess universe_access( geomodel_access_.modifiable_universe() );
+        UniverseAccess< DIMENSION > universe_access(
+            geomodel_access_.modifiable_universe() );
         universe_access.copy( from.universe() );
         geomodel_access_.modifiable_epsilon() = from.epsilon();
         geomodel_access_.modifiable_entity_type_manager().relationship_manager =
             from.entity_type_manager().relationship_manager;
     }
 
-    bool GeoModelBuilderTopology::get_dependent_entities(
+    template< index_t DIMENSION >
+    bool GeoModelBuilderTopology< DIMENSION >::get_dependent_entities(
         std::set< gmme_id >& mesh_entities,
         std::set< gmge_id >& geological_entities ) const
     {
@@ -145,7 +159,8 @@ namespace RINGMesh {
 
         // Add children of geological entities
         for( const gmge_id& cur : geological_entities ) {
-            const GeoModelGeologicalEntity& E = geomodel_.geological_entity( cur );
+            const GeoModelGeologicalEntity< DIMENSION >& E =
+                geomodel_.geological_entity( cur );
             for( index_t j = 0; j < E.nb_children(); ++j ) {
                 mesh_entities.insert( E.child_gmme( j ) );
             }
@@ -160,8 +175,8 @@ namespace RINGMesh {
 
             for( index_t j = 0; j < geomodel_.nb_geological_entities( type ); ++j ) {
                 bool no_child = true;
-                const GeoModelGeologicalEntity& E = geomodel_.geological_entity(
-                    type, j );
+                const GeoModelGeologicalEntity< DIMENSION >& E =
+                    geomodel_.geological_entity( type, j );
                 for( index_t k = 0; k < E.nb_children(); ++k ) {
                     if( mesh_entities.count( E.child_gmme( k ) ) == 0 ) {
                         no_child = false;
@@ -174,13 +189,14 @@ namespace RINGMesh {
             }
         }
         // Add mesh entities that are in the boundary of no mesh entity
-        for( index_t i = 0; i < MeshEntityTypeManager::nb_mesh_entity_types();
+        for( index_t i = 0; i < MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
             ++i ) {
             const MeshEntityType& type =
-                MeshEntityTypeManager::mesh_entity_types()[i];
+                MeshEntityTypeManager< 3 >::mesh_entity_types()[i];
             for( index_t j = 0; j < geomodel_.nb_mesh_entities( type ); ++j ) {
                 bool no_incident = true;
-                const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, j );
+                const GeoModelMeshEntity< DIMENSION >& E = geomodel_.mesh_entity(
+                    type, j );
                 for( index_t k = 0; k < E.nb_incident_entities(); ++k ) {
                     if( mesh_entities.count( E.incident_entity_gmme( k ) ) == 0 ) {
                         no_incident = false;
@@ -201,7 +217,23 @@ namespace RINGMesh {
         }
     }
 
-    gmme_id GeoModelBuilderTopology::find_or_create_corner( const vec3& point )
+    template< index_t DIMENSION >
+    template< template< index_t > class ENTITY >
+    gmme_id GeoModelBuilderTopology< DIMENSION >::create_mesh_entity(
+        const MeshType mesh_type )
+    {
+        const MeshEntityType entity_type = ENTITY< DIMENSION >::type_name_static();
+        index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) );
+        index_t new_id( nb_entities );
+        geomodel_access_.modifiable_mesh_entities( entity_type ).emplace_back(
+            GeoModelMeshEntityAccess< DIMENSION >::template create_entity< ENTITY >(
+                geomodel_, new_id, mesh_type ) );
+        return geomodel_access_.modifiable_mesh_entities( entity_type ).back()->gmme();
+    }
+
+    template< index_t DIMENSION >
+    gmme_id GeoModelBuilderTopology< DIMENSION >::find_or_create_corner(
+        const vec3& point )
     {
         gmme_id result = find_corner( geomodel_, point );
         if( !result.is_defined() ) {
@@ -211,7 +243,8 @@ namespace RINGMesh {
         return result;
     }
 
-    gmme_id GeoModelBuilderTopology::find_or_create_corner(
+    template< index_t DIMENSION >
+    gmme_id GeoModelBuilderTopology< DIMENSION >::find_or_create_corner(
         index_t geomodel_point_id )
     {
         gmme_id result = find_corner( geomodel_, geomodel_point_id );
@@ -222,7 +255,8 @@ namespace RINGMesh {
         return result;
     }
 
-    gmme_id GeoModelBuilderTopology::find_or_create_line(
+    template< index_t DIMENSION >
+    gmme_id GeoModelBuilderTopology< DIMENSION >::find_or_create_line(
         const std::vector< vec3 >& vertices )
     {
         gmme_id result;
@@ -245,13 +279,14 @@ namespace RINGMesh {
         return result;
     }
 
-    gmme_id GeoModelBuilderTopology::find_or_create_line(
+    template< index_t DIMENSION >
+    gmme_id GeoModelBuilderTopology< DIMENSION >::find_or_create_line(
         const std::vector< index_t >& sorted_adjacent_surfaces,
         const gmme_id& first_corner,
         const gmme_id& second_corner )
     {
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
-            const Line& line = geomodel_.line( i );
+            const Line< DIMENSION >& line = geomodel_.line( i );
             gmme_id c0 = line.boundary_gmme( 0 );
             gmme_id c1 = line.boundary_gmme( 1 );
 
@@ -270,14 +305,15 @@ namespace RINGMesh {
         return create_mesh_entity< Line >();
     }
 
-    void GeoModelBuilderTopology::compute_universe()
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::compute_universe()
     {
         if( geomodel_.universe().nb_boundaries() != 0 ) return;
         std::vector< bool > is_surface_universe_boundary( geomodel_.nb_surfaces(),
             false );
         std::vector< bool > surface_side( geomodel_.nb_surfaces() );
         for( index_t r = 0; r < geomodel_.nb_regions(); r++ ) {
-            const Region& region = geomodel_.region( r );
+            const Region< DIMENSION >& region = geomodel_.region( r );
             for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
                 index_t surface_id = region.boundary_gmme( s ).index();
                 is_surface_universe_boundary[surface_id] =
@@ -292,7 +328,8 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderTopology::remove_mesh_entity_boundary_relation(
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::remove_mesh_entity_boundary_relation(
         const gmme_id& incident_entity,
         const gmme_id& boundary )
     {
@@ -306,13 +343,13 @@ namespace RINGMesh {
                 << incident_entity;
             throw RINGMeshException( "Entity", message.str() );
         }
-        GeoModelMeshEntityAccess boundary_access(
+        GeoModelMeshEntityAccess< DIMENSION > boundary_access(
             geomodel_access_.modifiable_mesh_entity( boundary ) );
         std::vector< index_t >& incident_entities =
             boundary_access.modifiable_incident_entities();
         std::remove_if( incident_entities.begin(), incident_entities.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
-        GeoModelMeshEntityAccess incident_entity_access(
+        GeoModelMeshEntityAccess< DIMENSION > incident_entity_access(
             geomodel_access_.modifiable_mesh_entity( incident_entity ) );
         std::vector< index_t >& boundaries =
             incident_entity_access.modifiable_boundaries();
@@ -320,23 +357,47 @@ namespace RINGMesh {
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
 
-    index_t GeoModelBuilderTopology::check_if_boundary_incident_entity_relation_already_exists(
+    template< index_t DIMENSION >
+    template< template< index_t > class ENTITY >
+    bool GeoModelBuilderTopology< DIMENSION >::create_mesh_entities(
+        index_t nb_additionnal_entities,
+        const MeshType type )
+    {
+        const MeshEntityType& entity_type = ENTITY< DIMENSION >::type_name_static();
+        std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& store =
+            geomodel_access_.modifiable_mesh_entities( entity_type );
+        index_t old_size = static_cast< index_t >( store.size() );
+        index_t new_size = old_size + nb_additionnal_entities;
+        store.reserve( new_size );
+        for( index_t i = old_size; i < new_size; i++ ) {
+            store.emplace_back(
+                GeoModelMeshEntityAccess< DIMENSION >::template create_entity< ENTITY >(
+                    geomodel_, i, type ) );
+        }
+        return true;
+    }
+
+    template< index_t DIMENSION >
+    index_t GeoModelBuilderTopology< DIMENSION >::check_if_boundary_incident_entity_relation_already_exists(
         const gmme_id& incident_entity,
         const gmme_id& boundary )
     {
-        const GeoModelMeshEntity& incident_mesh_entity = geomodel_.mesh_entity(
-            incident_entity );
-        for( index_t in_ent = 0; in_ent < incident_mesh_entity.nb_incident_entities();
-            in_ent++ ) {
-            if( incident_mesh_entity.incident_entity_gmme( in_ent ) == boundary ) {
-                GeoModelMeshEntityConstAccess entity_access(
-                    incident_mesh_entity );
+        const GeoModelMeshEntity< DIMENSION >& incident_entity_mesh_entity =
+            geomodel_.mesh_entity( incident_entity );
+        for( index_t in_ent = 0;
+            in_ent < incident_entity_mesh_entity.nb_incident_entities(); in_ent++ ) {
+            if( incident_entity_mesh_entity.incident_entity_gmme( in_ent )
+                == boundary ) {
+                GeoModelMeshEntityConstAccess< DIMENSION > entity_access(
+                    incident_entity_mesh_entity );
                 return entity_access.incident_entity_relation_ids()[in_ent];
             }
         }
         return NO_ID;
     }
-    void GeoModelBuilderTopology::add_mesh_entity_boundary_relation(
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::add_mesh_entity_boundary_relation(
         const gmme_id& incident_entity_id,
         const gmme_id& boundary,
         bool side )
@@ -359,98 +420,120 @@ namespace RINGMesh {
                 << boundary << " and " << incident_entity_id;
             throw RINGMeshException( "Entity", message.str() );
         }
-        index_t relation_id = check_if_boundary_incident_entity_relation_already_exists(
-            incident_entity_id, boundary );
+        index_t relation_id =
+            check_if_boundary_incident_entity_relation_already_exists(
+                incident_entity_id, boundary );
         RelationshipManager& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
         if( relation_id == NO_ID ) {
-            relation_id = manager.add_boundary_relationship( incident_entity_id, boundary );
+            relation_id = manager.add_boundary_relationship( incident_entity_id,
+                boundary );
         }
-        GeoModelMeshEntity& boundary_entity =
+        GeoModelMeshEntity< DIMENSION >& boundary_entity =
             geomodel_access_.modifiable_mesh_entity( boundary );
-        GeoModelMeshEntityAccess boundary_access( boundary_entity );
+        GeoModelMeshEntityAccess< DIMENSION > boundary_access( boundary_entity );
         boundary_access.modifiable_incident_entities().push_back( relation_id );
-        GeoModelMeshEntity& incident_entity =
-                    geomodel_access_.modifiable_mesh_entity( incident_entity_id );
-        GeoModelMeshEntityAccess incident_entity_access( incident_entity );
+        GeoModelMeshEntity< DIMENSION >& incident_entity =
+            geomodel_access_.modifiable_mesh_entity( incident_entity_id );
+        GeoModelMeshEntityAccess< DIMENSION > incident_entity_access(
+            incident_entity );
         incident_entity_access.modifiable_boundaries().push_back( relation_id );
 
-        if( incident_entity_id.type() == Region::type_name_static() ) {
+        if( incident_entity_id.type() == Region< DIMENSION >::type_name_static() ) {
             incident_entity_access.modifiable_sides().push_back( side );
         }
     }
 
-    void GeoModelBuilderTopology::set_mesh_entity_boundary(
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::set_mesh_entity_boundary(
         const gmme_id& gmme,
         index_t id,
         index_t boundary_id,
         bool side )
     {
         ringmesh_assert( id < geomodel_.mesh_entity( gmme ).nb_boundaries() );
-        GeoModelMeshEntity& mesh_entity = geomodel_access_.modifiable_mesh_entity(
-            gmme );
+        GeoModelMeshEntity< DIMENSION >& mesh_entity =
+            geomodel_access_.modifiable_mesh_entity( gmme );
         const MeshEntityType& b_type =
             geomodel_.entity_type_manager().mesh_entity_manager.boundary_type(
                 gmme.type() );
         gmme_id boundary( b_type, boundary_id );
-        GeoModelMeshEntityAccess gme_access( mesh_entity );
+        GeoModelMeshEntityAccess< DIMENSION > gme_access( mesh_entity );
         index_t relation_id = gme_access.modifiable_boundaries()[id];
         RelationshipManager& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
         manager.set_boundary_to_boundary_relationship( relation_id, boundary );
 
-        if( gmme.type() == Region::type_name_static() ) {
+        if( gmme.type() == Region< DIMENSION >::type_name_static() ) {
             gme_access.modifiable_sides()[id] = side;
         }
     }
 
-    void GeoModelBuilderTopology::add_universe_boundary(
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::add_universe_boundary(
         index_t boundary_id,
         bool side )
     {
-        gmme_id boundary( Surface::type_name_static(), boundary_id );
-        UniverseAccess universe_access( geomodel_access_.modifiable_universe() );
+        gmme_id boundary( Surface< DIMENSION >::type_name_static(), boundary_id );
+        UniverseAccess< DIMENSION > universe_access(
+            geomodel_access_.modifiable_universe() );
         universe_access.modifiable_boundaries().push_back( boundary );
         universe_access.modifiable_sides().push_back( side );
     }
 
-    void GeoModelBuilderTopology::set_universe_boundary(
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::set_universe_boundary(
         index_t id,
         index_t boundary_id,
         bool side )
     {
         ringmesh_assert( id < geomodel_.universe().nb_boundaries() );
-        gmme_id boundary( Surface::type_name_static(), boundary_id );
-        UniverseAccess universe_access( geomodel_access_.modifiable_universe() );
+        gmme_id boundary( Surface< DIMENSION >::type_name_static(), boundary_id );
+        UniverseAccess< DIMENSION > universe_access(
+            geomodel_access_.modifiable_universe() );
         universe_access.modifiable_boundaries()[id] = boundary;
         universe_access.modifiable_sides()[id] = side;
     }
 
-    void GeoModelBuilderTopology::set_mesh_entity_incident_entity(
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::set_mesh_entity_incident_entity(
         const gmme_id& gmme,
         index_t id,
         index_t incident_entity_id )
     {
         /// No check on the validity of the index of the entity incident_entity
         /// NO_ID is used to flag entities to delete
-        GeoModelMeshEntity& mesh_entity = geomodel_access_.modifiable_mesh_entity(
-            gmme );
+        GeoModelMeshEntity< DIMENSION >& mesh_entity =
+            geomodel_access_.modifiable_mesh_entity( gmme );
         ringmesh_assert( id < mesh_entity.nb_incident_entities() );
         const MeshEntityType& in_ent_type =
             geomodel_.entity_type_manager().mesh_entity_manager.incident_entity_type(
                 gmme.type() );
         gmme_id incident_entity( in_ent_type, incident_entity_id );
-        GeoModelMeshEntityAccess gme_access( mesh_entity );
+        GeoModelMeshEntityAccess< DIMENSION > gme_access( mesh_entity );
         index_t relation_id = gme_access.modifiable_incident_entities()[id];
         RelationshipManager& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-        manager.set_incident_entity_to_boundary_relationship( relation_id, incident_entity );
+        manager.set_incident_entity_to_boundary_relationship( relation_id,
+            incident_entity );
     }
 
-    void GeoModelBuilderTopology::delete_mesh_entity(
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::delete_mesh_entity(
         const MeshEntityType& type,
         index_t index )
     {
         geomodel_access_.modifiable_mesh_entities( type )[index].reset();
     }
+
+//    template class RINGMESH_API GeoModelBuilderTopology< 2 > ;
+    template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
+    template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
+        Corner >( const MeshType );
+    template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
+        Line >( const MeshType );
+    template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
+        Surface >( const MeshType );
+    template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
+        Region >( const MeshType );
 }
