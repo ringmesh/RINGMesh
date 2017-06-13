@@ -298,7 +298,7 @@ namespace RINGMesh {
         }
 
         invert_normals_of_surface_list( surfaces_to_inverse_normals );
-        geometry.recompute_geomodel_mesh();
+        geometry.clear_geomodel_mesh(); // TODO check if rebuild is needed (as before: recompute geomodel mesh)
     }
 
     void DuplicateInterfaceBuilder::invert_normals_of_surface_list(
@@ -671,7 +671,7 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::delete_old_entities(
         std::vector< std::vector< index_t > >& to_erase_by_type )
     {
-        geometry.recompute_geomodel_mesh();
+        geometry.clear_geomodel_mesh(); // TODO check if rebuild is needed (as before: recompute geomodel mesh)
 
         std::set< gmme_id > to_delete_mesh_entities;
         std::set< gmge_id > to_delete_geological_entities;
@@ -699,7 +699,7 @@ namespace RINGMesh {
 
     void DuplicateInterfaceBuilder::rebuild_valid_geomodel()
     {
-        geometry.recompute_geomodel_mesh();
+        geometry.clear_geomodel_mesh(); // TODO check if rebuild is needed (as before: recompute geomodel mesh)
         from_surfaces.build_lines_and_corners_from_surfaces();
 //        topology.complete_entity_connectivity();
         geology.build_contacts();
@@ -933,7 +933,7 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::do_define_motion_relation(
         const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
-        geometry.recompute_geomodel_mesh(); /// @todo check if it is really necessary
+        geometry.clear_geomodel_mesh(); /// @todo check if it is really necessary // TODO check if rebuild is needed (as before: recompute geomodel mesh)
 
         for( index_t surf_itr = 0; surf_itr < geomodel_.nb_surfaces(); ++surf_itr ) {
             if( to_erase_by_type[entity_type_to_index( Surface::type_name_static() )][surf_itr]
@@ -1412,7 +1412,7 @@ namespace RINGMesh {
         std::vector< std::vector< index_t > >& to_erase_by_type,
         index_t region_index )
     {
-        geometry.recompute_geomodel_mesh(); // to take into account the new surface in gme_vertices.
+        geometry.clear_geomodel_mesh(); // to take into account the new surface in gme_vertices. // TODO check if rebuild is needed (as before: recompute geomodel mesh)
         save_normal_on_one_surface( geomodel_.surface( new_surface_id ) );
         const GeoModelMeshVertices& gmmv = geomodel_.mesh.vertices;
         // I DO THAT HERE BUT MAYBE IT IS SIMPLIER TO DO THAT AFTER HAVING
@@ -1715,7 +1715,7 @@ namespace RINGMesh {
                 previous
                     == geomodel_.surface( new_new_surface_gme_t.index() ).nb_vertices() );
 #endif
-            geometry.recompute_geomodel_mesh();
+            geometry.clear_geomodel_mesh(); // TODO check if rebuild is needed (as before: recompute geomodel mesh)
             // HANDLE THE INTERNAL BORDER
             Surface& new_new_surf = const_cast< Surface& >( geomodel_.surface(
                 new_new_surface_gme_t.index() ) );
@@ -2009,7 +2009,7 @@ namespace RINGMesh {
                 interface_gme.index() );
 
             // Clear to take into account the new gme in the geomodel.
-            geometry.recompute_geomodel_mesh(); // not done in geomodel_vertex_id
+            geometry.clear_geomodel_mesh(); // not done in geomodel_vertex_id // TODO check if rebuild is needed (as before: recompute geomodel mesh)
 
             const GeoModelMeshVertices& gmmv = geomodel_.mesh.vertices;
 

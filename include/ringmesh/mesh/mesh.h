@@ -425,8 +425,10 @@ namespace RINGMesh {
          */
         double polygon_edge_length( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 - e0 ).length();
         }
         /*!
@@ -436,8 +438,10 @@ namespace RINGMesh {
          */
         vec3 polygon_edge_barycenter( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex( polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+            const vec3& e0 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex(
+                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
         /*!
@@ -839,5 +843,26 @@ namespace RINGMesh {
     using VolumeMeshFactory = GEO::Factory0< VolumeMesh >;
 #define ringmesh_register_volume_mesh(type) \
     geo_register_creator(RINGMesh::VolumeMeshFactory, type, type::type_name_static())
+
+    /*!
+     * class composed of meshes from all the dimensions
+     */
+    class RINGMESH_API MeshSet {
+        ringmesh_disable_copy( MeshSet );
+    public:
+        MeshSet();
+
+        void create_point_set_mesh( const MeshType type );
+        void create_line_mesh( const MeshType type );
+        void create_surface_mesh( const MeshType type );
+        void create_volume_mesh( const MeshType type );
+
+    public:
+        std::unique_ptr< PointSetMesh > point_set_mesh;
+        std::unique_ptr< LineMesh > line_mesh;
+        std::unique_ptr< SurfaceMesh > surface_mesh;
+        std::unique_ptr< VolumeMesh > volume_mesh;
+
+    };
 
 }
