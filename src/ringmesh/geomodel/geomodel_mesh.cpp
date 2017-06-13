@@ -123,6 +123,7 @@ namespace {
 
     void copy_vertices( MeshBaseBuilder* builder, const MeshBase& mesh )
     {
+        builder->clear_vertices( true, false );
         builder->create_vertices( mesh.nb_vertices() );
         for( index_t v = 0; v < mesh.nb_vertices(); v++ ) {
             builder->set_vertex( v, mesh.vertex( v ) );
@@ -140,7 +141,7 @@ namespace {
 namespace RINGMesh {
 
     GeoModelMeshBase::GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm )
-        : gmm_( gmm ), gm_( gm )
+        : gmm_( gmm ), gm_( gm ), mesh_base_( nullptr )
     {
     }
 
@@ -368,10 +369,13 @@ namespace RINGMesh {
         return mesh_entity.vertex_attribute_manager();
     }
 
-    GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
+    GeoModelMeshVertices::GeoModelMeshVertices(
+        GeoModelMesh& gmm,
+        GeoModel& gm,
+        std::unique_ptr< PointSetMesh >& mesh )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramPointSetMesh ),
+            mesh_( mesh ),
             vertex_mapper_( *this, gmm.geomodel() )
     {
         set_mesh( mesh_.get() );
@@ -435,9 +439,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize()
     {
-        std::unique_ptr< PointSetMeshBuilder > builder =
-            PointSetMeshBuilder::create_builder( *mesh_ );
-        builder->clear( true, false );
+        clear();
 
         // Total number of vertices in the
         // Corners, Lines, Surfaces and Regions of the GeoModel
@@ -453,6 +455,8 @@ namespace RINGMesh {
         }
 
         // Fill the vertices
+        std::unique_ptr< PointSetMeshBuilder > builder =
+            PointSetMeshBuilder::create_builder( *mesh_ );
         builder->create_vertices( nb );
         vertex_mapper_.clear_and_resize_geomodel_vertex_gmes( nb );
         vertex_mapper_.bind_all_mesh_entity_vertex_maps();
@@ -476,7 +480,7 @@ namespace RINGMesh {
 
         std::unique_ptr< PointSetMeshBuilder > builder =
             PointSetMeshBuilder::create_builder( *mesh_ );
-        builder->clear_vertices( true, false );
+        builder->clear( true, false );
     }
 
     void GeoModelMeshVertices::unbind_geomodel_vertex_map(
@@ -681,10 +685,13 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GeoModel& gm )
+    GeoModelMeshCells::GeoModelMeshCells(
+        GeoModelMesh& gmm,
+        GeoModel& gm,
+        std::unique_ptr< VolumeMesh >& mesh )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramVolumeMesh ),
+            mesh_( mesh ),
             nb_tet_( 0 ),
             nb_hex_( 0 ),
             nb_prism_( 0 ),
@@ -710,9 +717,12 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize()
     {
         gmm_.vertices.test_and_initialize();
+        clear();
         std::unique_ptr< VolumeMeshBuilder > mesh_builder =
             VolumeMeshBuilder::create_builder( *mesh_ );
-        copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
+        if( mesh_->nb_vertices() != gmm_.vertices.nb() ) {
+            copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
+        }
 
         region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1, 0 );
 
@@ -1136,6 +1146,7 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize_duplication()
     {
         test_and_initialize();
+        clear_duplication();
 
         /// 1. Get all the corner vertices (a lot of duplicated vertices)
         std::vector< vec3 > corner_vertices(
@@ -1397,7 +1408,7 @@ namespace RINGMesh {
     {
         std::unique_ptr< VolumeMeshBuilder > mesh_builder =
             VolumeMeshBuilder::create_builder( *mesh_ );
-        mesh_builder->clear_cells( true, false );
+        mesh_builder->clear( true, false );
         region_cell_ptr_.clear();
         nb_tet_ = 0;
         nb_hex_ = 0;
@@ -1475,10 +1486,13 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshPolygons::GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel& gm )
+    GeoModelMeshPolygons::GeoModelMeshPolygons(
+        GeoModelMesh& gmm,
+        GeoModel& gm,
+        std::unique_ptr< SurfaceMesh >& mesh )
         :
             GeoModelMeshBase( gmm, gm ),
-            mesh_( new GeogramSurfaceMesh ),
+            mesh_( mesh ),
             nb_triangle_( 0 ),
             nb_quad_( 0 ),
             nb_unclassified_polygon_( 0 )
@@ -1712,7 +1726,7 @@ namespace RINGMesh {
         nb_quad_ = 0;
         std::unique_ptr< SurfaceMeshBuilder > mesh_builder =
             SurfaceMeshBuilder::create_builder( *mesh_ );
-        mesh_builder->clear_polygons( true, false );
+        mesh_builder->clear( true, false );
     }
 
     void GeoModelMeshPolygons::test_and_initialize() const
@@ -1729,7 +1743,9 @@ namespace RINGMesh {
         surface_polygon_ptr_.resize( gm_.nb_surfaces() * ALL + 1, 0 );
         std::unique_ptr< SurfaceMeshBuilder > mesh_builder =
             SurfaceMeshBuilder::create_builder( *mesh_ );
-        copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
+        if( mesh_->nb_vertices() != gmm_.vertices.nb() ) {
+            copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
+        }
 
         // Compute the total number of polygons per type and per surface
         std::vector< index_t > nb_polygon_per_type( ALL, 0 );
@@ -1887,8 +1903,11 @@ namespace RINGMesh {
     }
     /*******************************************************************************/
 
-    GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm )
-        : GeoModelMeshBase( gmm, gm ), mesh_( new GeogramLineMesh )
+    GeoModelMeshEdges::GeoModelMeshEdges(
+        GeoModelMesh& gmm,
+        GeoModel& gm,
+        std::unique_ptr< LineMesh >& mesh )
+        : GeoModelMeshBase( gmm, gm ), mesh_( mesh )
     {
         set_mesh( mesh_.get() );
     }
@@ -1925,7 +1944,7 @@ namespace RINGMesh {
     {
         std::unique_ptr< LineMeshBuilder > mesh_builder =
             LineMeshBuilder::create_builder( *mesh_ );
-        mesh_builder->clear_edges( true, false );
+        mesh_builder->clear( true, false );
         well_ptr_.clear();
     }
 
@@ -1948,7 +1967,9 @@ namespace RINGMesh {
         clear();
         std::unique_ptr< LineMeshBuilder > mesh_builder =
             LineMeshBuilder::create_builder( *mesh_ );
-        copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
+        if( mesh_->nb_vertices() != gmm_.vertices.nb() ) {
+            copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
+        }
 
         // Compute the total number of edge per well
         const WellGroup& wells = *gm_.wells();
@@ -1997,10 +2018,10 @@ namespace RINGMesh {
         :
             geomodel_( geomodel ),
             mode_( GeoModelMeshCells::NONE ),
-            vertices( *this, geomodel ),
-            edges( *this, geomodel ),
-            polygons( *this, geomodel ),
-            cells( *this, geomodel )
+            vertices( *this, geomodel, mesh_set_.point_set_mesh ),
+            edges( *this, geomodel, mesh_set_.line_mesh ),
+            polygons( *this, geomodel, mesh_set_.surface_mesh ),
+            cells( *this, geomodel, mesh_set_.volume_mesh )
     {
     }
 
@@ -2218,6 +2239,38 @@ namespace RINGMesh {
     void GeoModelMesh::erase_vertices( std::vector< index_t >& to_delete )
     {
         vertices.erase_vertices( to_delete );
+    }
+
+    void GeoModelMesh::change_point_set_mesh_data_structure( const MeshType& type )
+    {
+        if( mesh_set_.point_set_mesh->type_name() != type ) {
+            vertices.clear();
+            mesh_set_.create_point_set_mesh( type );
+        }
+    }
+
+    void GeoModelMesh::change_line_mesh_data_structure( const MeshType& type )
+    {
+        if( mesh_set_.line_mesh->type_name() != type ) {
+            edges.clear();
+            mesh_set_.create_line_mesh( type );
+        }
+    }
+
+    void GeoModelMesh::change_surface_mesh_data_structure( const MeshType& type )
+    {
+        if( mesh_set_.surface_mesh->type_name() != type ) {
+            polygons.clear();
+            mesh_set_.create_surface_mesh( type );
+        }
+    }
+
+    void GeoModelMesh::change_volume_mesh_data_structure( const MeshType& type )
+    {
+        if( mesh_set_.volume_mesh->type_name() != type ) {
+            cells.clear();
+            mesh_set_.create_volume_mesh( type );
+        }
     }
 
 }

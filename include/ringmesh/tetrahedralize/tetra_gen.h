@@ -101,10 +101,12 @@ namespace RINGMesh {
          * are launched in order to control the outputs
          * @param[in] refine tells whether or not there are refined options to set (true by defaults)
          */
-        virtual bool tetrahedralize( bool refine = true ) = 0;
+        bool tetrahedralize( bool refine = true );
 
     protected:
         TetraGen();
+
+        virtual bool do_tetrahedralize( bool refine ) = 0;
 
     protected:
         std::unique_ptr< GeoModelBuilder > builder_;
