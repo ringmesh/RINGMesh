@@ -403,4 +403,32 @@ namespace RINGMesh {
         return NO_ID;
     }
 
+    MeshSet::MeshSet()
+    {
+        create_point_set_mesh( "" );
+        create_line_mesh( "" );
+        create_surface_mesh( "" );
+        create_volume_mesh( "" );
+    }
+
+    void MeshSet::create_point_set_mesh( const MeshType type )
+    {
+        point_set_mesh = PointSetMesh::create_mesh( type );
+    }
+
+    void MeshSet::create_line_mesh( const MeshType type )
+    {
+        line_mesh = LineMesh::create_mesh( type );
+    }
+
+    void MeshSet::create_surface_mesh( const MeshType type )
+    {
+        surface_mesh = SurfaceMesh::create_mesh( type );
+    }
+
+    void MeshSet::create_volume_mesh( const MeshType type )
+    {
+        volume_mesh = VolumeMesh::create_mesh( type );
+    }
+
 } // namespace

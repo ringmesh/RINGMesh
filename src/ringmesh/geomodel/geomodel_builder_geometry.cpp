@@ -289,10 +289,9 @@ namespace RINGMesh {
     {
     }
 
-    void GeoModelBuilderGeometry::recompute_geomodel_mesh()
+    void GeoModelBuilderGeometry::clear_geomodel_mesh()
     {
         geomodel_.mesh.vertices.clear();
-        geomodel_.mesh.vertices.test_and_initialize();
     }
 
     void GeoModelBuilderGeometry::copy_meshes( const GeoModel& geomodel )

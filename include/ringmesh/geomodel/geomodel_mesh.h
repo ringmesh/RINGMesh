@@ -95,14 +95,17 @@ namespace RINGMesh {
         MeshBase* mesh_base_;
     };
 
-    class RINGMESH_API GeoModelMeshVertices: public GeoModelMeshBase {
+    class RINGMESH_API GeoModelMeshVertices final: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshVertices );
     public:
         friend class GeoModelMeshEdges;
         friend class GeoModelMeshPolygons;
         friend class GeoModelMeshCells;
 
-        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshVertices(
+            GeoModelMesh& gmm,
+            GeoModel& gm,
+            std::unique_ptr< PointSetMesh >& mesh );
 
         ~GeoModelMeshVertices();
 
@@ -255,7 +258,7 @@ namespace RINGMesh {
         /*!
          * @brief Initialize the vertices from the vertices
          *        of the GeoModel Corners, Lines, Surfaces and Regions
-         * @details Fills the mesh_.vertices, computes the vertex mapping and
+         * @details Fills the mesh_->vertices, computes the vertex mapping and
          *         delete colocated vertices
          */
         void initialize();
@@ -468,12 +471,12 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< PointSetMesh > mesh_;
+        std::unique_ptr< PointSetMesh >& mesh_;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_;
     };
 
-    class RINGMESH_API GeoModelMeshPolygons: public GeoModelMeshBase {
+    class RINGMESH_API GeoModelMeshPolygons final: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshPolygons );
     public:
         friend class GeoModelMesh;
@@ -482,7 +485,10 @@ namespace RINGMesh {
             TRIANGLE, QUAD, UNCLASSIFIED_POLYGON, ALL, NO_POLYGON
         };
 
-        GeoModelMeshPolygons( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshPolygons(
+            GeoModelMesh& gmm,
+            GeoModel& gm,
+            std::unique_ptr< SurfaceMesh >& mesh );
         ~GeoModelMeshPolygons();
 
         GEO::AttributesManager& attribute_manager() const
@@ -699,7 +705,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< SurfaceMesh > mesh_;
+        std::unique_ptr< SurfaceMesh >& mesh_;
 
         /// Attribute storing the surface index per polygon
         GEO::Attribute< index_t > surface_id_;
@@ -723,10 +729,13 @@ namespace RINGMesh {
         index_t nb_unclassified_polygon_;
     };
 
-    class RINGMESH_API GeoModelMeshEdges: public GeoModelMeshBase {
+    class RINGMESH_API GeoModelMeshEdges final: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshEdges );
     public:
-        GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshEdges(
+            GeoModelMesh& gmm,
+            GeoModel& gm,
+            std::unique_ptr< LineMesh >& mesh );
         ~GeoModelMeshEdges();
 
         GEO::AttributesManager& attribute_manager() const
@@ -784,7 +793,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< LineMesh > mesh_;
+        std::unique_ptr< LineMesh >& mesh_;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -793,7 +802,7 @@ namespace RINGMesh {
         std::vector< index_t > well_ptr_;
     };
 
-    class RINGMESH_API GeoModelMeshCells: public GeoModelMeshBase {
+    class RINGMESH_API GeoModelMeshCells final: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshCells );
     public:
         friend class GeoModelMesh;
@@ -809,7 +818,10 @@ namespace RINGMesh {
             NONE, FAULT, HORIZON, ALL
         };
 
-        GeoModelMeshCells( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshCells(
+            GeoModelMesh& gmm,
+            GeoModel& gm,
+            std::unique_ptr< VolumeMesh >& mesh );
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -1152,7 +1164,6 @@ namespace RINGMesh {
         /*!
          * @brief Initialize the  cells from the cells
          *        of the GeoModel Region cells
-         * @details Fills the mesh_.cells
          */
         void initialize();
 
@@ -1205,7 +1216,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< VolumeMesh > mesh_;
+        std::unique_ptr< VolumeMesh >& mesh_;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_;
@@ -1323,12 +1334,21 @@ namespace RINGMesh {
          */
         void erase_invalid_vertices();
 
+
+        void change_point_set_mesh_data_structure( const MeshType& type );
+        void change_line_mesh_data_structure( const MeshType& type );
+        void change_surface_mesh_data_structure( const MeshType& type );
+        void change_volume_mesh_data_structure( const MeshType& type );
+
     private:
         /*! Attached GeoModel */
         const GeoModel& geomodel_;
 
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_;
+
+        /// Mesh storing all the elements
+        MeshSet mesh_set_;
 
     public:
         GeoModelMeshVertices vertices;
