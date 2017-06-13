@@ -116,18 +116,18 @@ namespace RINGMesh {
 
     /*****************************************************************/
 
-    CornerGfxEnity::CornerGfxEnity( GeoModelGfx& gfx )
+    CornerGfxEntity::CornerGfxEntity( GeoModelGfx& gfx )
         : GeoModelGfxEntity( gfx )
     {
     }
 
-    PointSetMeshGfx& CornerGfxEnity::corner( index_t corner_id )
+    PointSetMeshGfx& CornerGfxEntity::corner( index_t corner_id )
     {
         ringmesh_assert( corner_id < entities_.size() );
         return static_cast< PointSetMeshGfx& >( *entities_[corner_id] );
     }
 
-    void CornerGfxEnity::initialize()
+    void CornerGfxEntity::initialize()
     {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_corners() );
@@ -139,7 +139,7 @@ namespace RINGMesh {
         }
     }
 
-    void CornerGfxEnity::draw()
+    void CornerGfxEntity::draw()
     {
         for( index_t c = 0; c < entities_.size(); c++ ) {
             PointSetMeshGfx& pointset = corner( c );
