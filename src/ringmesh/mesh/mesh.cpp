@@ -341,12 +341,47 @@ namespace RINGMesh {
         return std::unique_ptr< VolumeMesh< DIMENSION > >( mesh );
     }
 
+    template< index_t DIMENSION >
+    MeshSet< DIMENSION >::MeshSet()
+    {
+        create_point_set_mesh( "" );
+        create_line_mesh( "" );
+        create_surface_mesh( "" );
+        create_volume_mesh( "" );
+    }
+
+    template< index_t DIMENSION >
+    void MeshSet< DIMENSION >::create_point_set_mesh( const MeshType type )
+    {
+        point_set_mesh = PointSetMesh< DIMENSION >::create_mesh( type );
+    }
+
+    template< index_t DIMENSION >
+    void MeshSet< DIMENSION >::create_line_mesh( const MeshType type )
+    {
+        line_mesh = LineMesh< DIMENSION >::create_mesh( type );
+    }
+
+    template< index_t DIMENSION >
+    void MeshSet< DIMENSION >::create_surface_mesh( const MeshType type )
+    {
+        surface_mesh = SurfaceMesh< DIMENSION >::create_mesh( type );
+    }
+
+    template< index_t DIMENSION >
+    void MeshSet< DIMENSION >::create_volume_mesh( const MeshType type )
+    {
+        volume_mesh = VolumeMesh< DIMENSION >::create_mesh( type );
+    }
+
     template class RINGMESH_API PointSetMesh< 2 > ;
     template class RINGMESH_API LineMesh< 2 > ;
     template class RINGMESH_API SurfaceMeshBase< 2 > ;
+//    template class RINGMESH_API MeshSet< 2 > ;
 
     template class RINGMESH_API PointSetMesh< 3 > ;
     template class RINGMESH_API LineMesh< 3 > ;
     template class RINGMESH_API SurfaceMeshBase< 3 > ;
     template class RINGMESH_API VolumeMesh< 3 > ;
+    template class RINGMESH_API MeshSet< 3 > ;
 }

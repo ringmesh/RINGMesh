@@ -1012,4 +1012,26 @@ namespace RINGMesh {
 #define ringmesh_register_volume_mesh_3d(type) \
     geo_register_creator(RINGMesh::VolumeMeshFactory3D, type, type::type_name_static())
 
+    /*!
+     * class composed of meshes from all the dimensions
+     */
+    template< index_t DIMENSION >
+    class RINGMESH_API MeshSet {
+        ringmesh_disable_copy( MeshSet );
+        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
+    public:
+        MeshSet();
+
+        void create_point_set_mesh( const MeshType type );
+        void create_line_mesh( const MeshType type );
+        void create_surface_mesh( const MeshType type );
+        void create_volume_mesh( const MeshType type );
+
+    public:
+        std::unique_ptr< PointSetMesh< DIMENSION > > point_set_mesh;
+        std::unique_ptr< LineMesh< DIMENSION > > line_mesh;
+        std::unique_ptr< SurfaceMesh< DIMENSION > > surface_mesh;
+        std::unique_ptr< VolumeMesh< DIMENSION > > volume_mesh;
+
+    };
 }

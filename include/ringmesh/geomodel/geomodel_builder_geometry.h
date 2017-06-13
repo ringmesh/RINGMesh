@@ -59,7 +59,7 @@ namespace RINGMesh {
         friend class GeoModelBuilder< DIMENSION > ;
 
     public:
-        void recompute_geomodel_mesh();
+        void clear_geomodel_mesh();
         /*!
          * @brief Transfer general mesh information from one mesh
          * data structure to another one

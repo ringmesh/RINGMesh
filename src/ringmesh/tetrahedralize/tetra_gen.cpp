@@ -62,7 +62,7 @@ namespace RINGMesh {
         }
         virtual ~TetraGen_TetGen() = default;
 
-        virtual bool tetrahedralize( bool refine ) final
+        virtual bool do_tetrahedralize( bool refine ) final
         {
             std::unique_ptr< VolumeMeshBuilder< 3 > > mesh3D_builder =
                 builder_->geometry.create_region_builder( output_region_ );
@@ -139,7 +139,7 @@ namespace RINGMesh {
             stop_redirect( pos_err, stderr, fd_err );
         }
 
-        virtual bool tetrahedralize( bool refine ) final
+        virtual bool do_tetrahedralize( bool refine ) final
         {
             fpos_t pos;
             int fd = 0;
@@ -564,6 +564,14 @@ namespace RINGMesh {
             points.front().data(), points.size() * 3 * sizeof(double) );
     }
 
+    bool TetraGen::tetrahedralize( bool refine )
+    {
+        bool result = do_tetrahedralize( refine );
+        if( result ) {
+            builder_->geometry.clear_geomodel_mesh();
+        }
+        return result;
+    }
     void TetraGen::initialize()
     {
 #ifdef RINGMESH_WITH_TETGEN

@@ -263,10 +263,9 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilderGeometry< DIMENSION >::recompute_geomodel_mesh()
+    void GeoModelBuilderGeometry< DIMENSION >::clear_geomodel_mesh()
     {
         geomodel_.mesh.vertices.clear();
-        geomodel_.mesh.vertices.test_and_initialize();
     }
 
     template< index_t DIMENSION >
