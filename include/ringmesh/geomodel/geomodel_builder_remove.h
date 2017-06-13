@@ -84,8 +84,11 @@ namespace RINGMesh {
         /*!
          * Should be rewritten. Put as it was before someone removed it...
          */
-        void remove_entities_and_dependencies(
-            const std::set< gmme_id >& entities_to_remove );
+        void remove_mesh_entity_and_dependencies(
+            const gmme_id& mesh_entity_to_remove );
+
+        void remove_geological_entity_and_dependencies(
+            const gmge_id& geological_entity_to_remove );
 
     private:
         GeoModelBuilderRemoval( GeoModelBuilder& builder, GeoModel& geomodel );
