@@ -95,7 +95,7 @@ namespace RINGMesh {
         MeshBase* mesh_base_;
     };
 
-    class RINGMESH_API GeoModelMeshVertices: public GeoModelMeshBase {
+    class RINGMESH_API GeoModelMeshVertices final: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshVertices );
     public:
         friend class GeoModelMeshEdges;
@@ -476,7 +476,7 @@ namespace RINGMesh {
         GeoModelVertexMapper vertex_mapper_;
     };
 
-    class RINGMESH_API GeoModelMeshPolygons: public GeoModelMeshBase {
+    class RINGMESH_API GeoModelMeshPolygons final: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshPolygons );
     public:
         friend class GeoModelMesh;
@@ -729,7 +729,7 @@ namespace RINGMesh {
         index_t nb_unclassified_polygon_;
     };
 
-    class RINGMESH_API GeoModelMeshEdges: public GeoModelMeshBase {
+    class RINGMESH_API GeoModelMeshEdges final: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshEdges );
     public:
         GeoModelMeshEdges(
@@ -802,7 +802,7 @@ namespace RINGMesh {
         std::vector< index_t > well_ptr_;
     };
 
-    class RINGMESH_API GeoModelMeshCells: public GeoModelMeshBase {
+    class RINGMESH_API GeoModelMeshCells final: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshCells );
     public:
         friend class GeoModelMesh;
