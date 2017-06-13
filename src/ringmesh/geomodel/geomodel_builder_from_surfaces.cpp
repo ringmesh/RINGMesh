@@ -135,8 +135,6 @@ namespace RINGMesh {
     /*!
      * @brief Utility class to sort a set of oriented polygons around a common edge
      * Used in GeoModelBuilderSurface.
-     *
-     * @todo This code could certainly be improved [JP]
      */
     class GeoModelRegionFromSurfaces {
     public:
@@ -161,16 +159,12 @@ namespace RINGMesh {
                     index_( index ),
                     surface_index_( surface_index ),
                     N_( normal ),
-                    B_A_(),
-                    angle_( -99999 ),
+                    angle_( -max_float64() ),
                     side_( false )
             {
                 ringmesh_assert( p0 != p1 );
                 vec3 e1 = normalize( p1 - p0 );
-                ringmesh_assert( dot( N_, e1 ) < global_epsilon );
                 B_A_ = normalize( cross( e1, N_ ) );
-                ringmesh_assert( dot( B_A_, e1 ) < global_epsilon );
-                ringmesh_assert( B_A_.length() > global_epsilon );
             }
 
             bool operator<( const PolygonToSort& r ) const
@@ -180,16 +174,12 @@ namespace RINGMesh {
 
             /// Index in GeoModelRegionFromSurfaces
             index_t index_;
-
             /// Global index of the surface owning this polygon
             index_t surface_index_;
-
             /// Normal to the polygon - normalized vector
             vec3 N_;
-
             /// Normal to the edge p0p1 in the plane defined by the polygon - normalized
             vec3 B_A_;
-
             // Values filled by sorting function in GeoModelRegionFromSurfaces
             double angle_;
             bool side_;
@@ -214,44 +204,36 @@ namespace RINGMesh {
          */
         static vec3 rotate( const vec3& axis, double angle, const vec3& V )
         {
-            vec3 q = axis;
-            if( q.length() > 0 ) {
-                double s = 1.0 / q.length();
-                q[0] *= s;
-                q[1] *= s;
-                q[2] *= s;
-            }
-            q *= std::sin( 0.5 * angle );
+            vec3 q = normalize( axis ) * std::sin( 0.5 * angle );
+            vecn< 4 > quat( q[0], q[1], q[2], std::cos( 0.5 * angle ) );
 
-            double quat[4] = { q[0], q[1], q[2], std::cos( 0.5 * angle ) };
+            GEO::Matrix< 4, double > mat;
+            mat( 0, 0 ) = 1 - 2.0 * ( quat[1] * quat[1] + quat[2] * quat[2] );
+            mat( 1, 0 ) = 2.0 * ( quat[0] * quat[1] + quat[2] * quat[3] );
+            mat( 2, 0 ) = 2.0 * ( quat[2] * quat[0] - quat[1] * quat[3] );
+            mat( 3, 0 ) = 0.0;
 
-            double m[4][4];
+            mat( 0, 1 ) = 2.0 * ( quat[0] * quat[1] - quat[2] * quat[3] );
+            mat( 1, 1 ) = 1 - 2.0 * ( quat[2] * quat[2] + quat[0] * quat[0] );
+            mat( 2, 1 ) = 2.0 * ( quat[1] * quat[2] + quat[0] * quat[3] );
+            mat( 3, 1 ) = 0.0;
 
-            m[0][0] = 1 - 2.0 * ( quat[1] * quat[1] + quat[2] * quat[2] );
-            m[0][1] = 2.0 * ( quat[0] * quat[1] + quat[2] * quat[3] );
-            m[0][2] = 2.0 * ( quat[2] * quat[0] - quat[1] * quat[3] );
-            m[0][3] = 0.0;
+            mat( 0, 2 ) = 2.0 * ( quat[2] * quat[0] + quat[1] * quat[3] );
+            mat( 1, 2 ) = 2.0 * ( quat[1] * quat[2] - quat[0] * quat[3] );
+            mat( 2, 2 ) = 1 - 2.0 * ( quat[1] * quat[1] + quat[0] * quat[0] );
+            mat( 3, 2 ) = 0.0;
 
-            m[1][0] = 2.0 * ( quat[0] * quat[1] - quat[2] * quat[3] );
-            m[1][1] = 1 - 2.0 * ( quat[2] * quat[2] + quat[0] * quat[0] );
-            m[1][2] = 2.0 * ( quat[1] * quat[2] + quat[0] * quat[3] );
-            m[1][3] = 0.0;
+            mat( 0, 3 ) = 0.0;
+            mat( 1, 3 ) = 0.0;
+            mat( 2, 3 ) = 0.0;
+            mat( 3, 3 ) = 1.0;
 
-            m[2][0] = 2.0 * ( quat[2] * quat[0] + quat[1] * quat[3] );
-            m[2][1] = 2.0 * ( quat[1] * quat[2] - quat[0] * quat[3] );
-            m[2][2] = 1 - 2.0 * ( quat[1] * quat[1] + quat[0] * quat[0] );
-            m[2][3] = 0.0;
+            vecn< 4 > normalizedV( V.x, V.y, V.z, 1.0 );
+            vecn< 4 > result;
+            GEO::mult( mat, normalizedV.data(), result.data() );
 
-            m[3][0] = 0.0;
-            m[3][1] = 0.0;
-            m[3][2] = 0.0;
-            m[3][3] = 1.0;
-
-            double x = V[0] * m[0][0] + V[1] * m[1][0] + V[2] * m[2][0] + m[3][0];
-            double y = V[0] * m[0][1] + V[1] * m[1][1] + V[2] * m[2][1] + m[3][1];
-            double z = V[0] * m[0][2] + V[1] * m[1][2] + V[2] * m[2][2] + m[3][2];
-            double w = V[0] * m[0][3] + V[1] * m[1][3] + V[2] * m[2][3] + m[3][3];
-            return vec3( x / w, y / w, z / w );
+            double inv_w = 1.0 / result.w;
+            return vec3( result.x * inv_w, result.y * inv_w, result.z * inv_w );
         }
 
         void sort()
@@ -555,11 +537,11 @@ namespace RINGMesh {
         {
             const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
                 geomodel_.mesh.vertices;
-            for( index_t j = cur_border_polygon_; j < border_polygons_.size();
-                j++ ) {
+            for( index_t i = cur_border_polygon_; i < border_polygons_.size();
+                i++ ) {
                 if( have_border_polygons_same_boundary_edge( cur_border_polygon_,
-                    j ) ) {
-                    const BorderPolygon& border = border_polygons_[j];
+                    i ) ) {
+                    const BorderPolygon& border = border_polygons_[i];
                     index_t surface_id = border.surface_;
                     cur_line_.region_information_.add_polygon_edge( surface_id,
                         geomodel_.surface( surface_id ).low_level_mesh_storage().polygon_normal(
@@ -764,11 +746,7 @@ namespace RINGMesh {
         LineGeometryFromGeoModelSurfaces< DIMENSION > line_computer( geomodel_,
             options_.compute_regions_brep );
 
-        bool new_line_was_built = true;
-        while( new_line_was_built ) {
-            new_line_was_built = line_computer.compute_next_line_geometry();
-
-//        while( line_computer.compute_next_line_geometry() ) {
+        while( line_computer.compute_next_line_geometry() ) {
             LineDefinition line = line_computer.current_line();
 
             if( line.is_closed() ) {
