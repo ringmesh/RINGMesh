@@ -660,7 +660,6 @@ namespace RINGMesh {
             for( index_t id : possible_v0_id ) {
                 if( mesh.vertex_index_in_polygon( p, id ) != NO_ID ) {
                     v0_id = id;
-                    break;
                 }
             }
             ringmesh_assert( v0_id != NO_ID );
@@ -765,7 +764,11 @@ namespace RINGMesh {
         LineGeometryFromGeoModelSurfaces< DIMENSION > line_computer( geomodel_,
             options_.compute_regions_brep );
 
-        while( line_computer.compute_next_line_geometry() ) {
+        bool new_line_was_built = true;
+        while( new_line_was_built ) {
+            new_line_was_built = line_computer.compute_next_line_geometry();
+
+//        while( line_computer.compute_next_line_geometry() ) {
             LineDefinition line = line_computer.current_line();
 
             if( line.is_closed() ) {
