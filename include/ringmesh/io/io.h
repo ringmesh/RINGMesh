@@ -60,7 +60,7 @@ const std::string COMMA = ",";
 namespace RINGMesh {
     class StratigraphicColumn;
     template< index_t DIMENSION > class GeoModel;
-    class WellGroup;
+    template< index_t DIMENSION > class WellGroup;
 }
 
 namespace GEO {
@@ -97,7 +97,7 @@ namespace RINGMesh {
      * @param[in] filename the file to load
      * @param][out] wells the wells to fill
      */
-    void RINGMESH_API well_load( const std::string& filename, WellGroup& wells );
+    void RINGMESH_API well_load( const std::string& filename, WellGroup< 3 >& wells );
 
     class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
     public:
@@ -134,9 +134,9 @@ namespace RINGMesh {
         static std::unique_ptr< WellGroupIOHandler > get_handler(
             const std::string& filename );
 
-        virtual void load( const std::string& filename, WellGroup& mesh ) = 0;
+        virtual void load( const std::string& filename, WellGroup< 3 >& mesh ) = 0;
 
-        virtual void save( const WellGroup& mesh, const std::string& filename ) = 0;
+        virtual void save( const WellGroup< 3 >& mesh, const std::string& filename ) = 0;
 
     protected:
         WellGroupIOHandler() = default;

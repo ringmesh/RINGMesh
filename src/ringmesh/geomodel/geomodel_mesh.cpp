@@ -2140,7 +2140,7 @@ namespace RINGMesh {
         }
 
         // Compute the total number of edge per well
-        const WellGroup& wells = *this->gm_.wells();
+        const WellGroup< DIMENSION >& wells = *this->gm_.wells();
         well_ptr_.resize( wells.nb_wells() + 1, 0 );
         index_t nb_edges = 0;
         for( index_t w = 0; w < wells.nb_wells(); w++ ) {
@@ -2159,7 +2159,7 @@ namespace RINGMesh {
         // Fill edges
         index_t cur_edge = 0;
         for( index_t w = 0; w < wells.nb_wells(); w++ ) {
-            const Well& well = wells.well( w );
+            const Well< DIMENSION >& well = wells.well( w );
             for( index_t p = 0; p < well.nb_parts(); p++ ) {
                 for( index_t e = 0; e < well.part( p ).nb_edges(); e++ ) {
                     const vecn< DIMENSION >& e0 = well.part( p ).edge_vertex( e, 0 );
