@@ -1035,6 +1035,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class MeshSet: public MeshSetBase< DIMENSION > {
+    public:
         MeshSet() = default;
     };
 
