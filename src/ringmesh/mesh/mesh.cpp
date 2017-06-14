@@ -380,11 +380,13 @@ namespace RINGMesh {
     template class RINGMESH_API PointSetMesh< 2 > ;
     template class RINGMESH_API LineMesh< 2 > ;
     template class RINGMESH_API SurfaceMeshBase< 2 > ;
+    template class RINGMESH_API MeshSetBase< 2 > ;
     template class RINGMESH_API MeshSet< 2 > ;
 
     template class RINGMESH_API PointSetMesh< 3 > ;
     template class RINGMESH_API LineMesh< 3 > ;
     template class RINGMESH_API SurfaceMeshBase< 3 > ;
     template class RINGMESH_API VolumeMesh< 3 > ;
+    template class RINGMESH_API MeshSetBase< 3 > ;
     template class RINGMESH_API MeshSet< 3 > ;
 }
