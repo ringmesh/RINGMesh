@@ -352,19 +352,19 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void MeshSetBase< DIMENSION >::create_point_set_mesh( const MeshType type )
     {
-        point_set_mesh = PointSetMesh < DIMENSION > ::create_mesh( type );
+        point_set_mesh = PointSetMesh< DIMENSION >::create_mesh( type );
     }
 
     template< index_t DIMENSION >
     void MeshSetBase< DIMENSION >::create_line_mesh( const MeshType type )
     {
-        line_mesh = LineMesh < DIMENSION > ::create_mesh( type );
+        line_mesh = LineMesh< DIMENSION >::create_mesh( type );
     }
 
     template< index_t DIMENSION >
     void MeshSetBase< DIMENSION >::create_surface_mesh( const MeshType type )
     {
-        surface_mesh = SurfaceMesh < DIMENSION > ::create_mesh( type );
+        surface_mesh = SurfaceMesh< DIMENSION >::create_mesh( type );
     }
 
     MeshSet< 3 >::MeshSet()
