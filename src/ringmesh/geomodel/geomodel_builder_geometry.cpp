@@ -282,12 +282,12 @@ namespace RINGMesh {
     void GeoModelBuilderGeometry< DIMENSION >::set_mesh_entity_vertex(
         const gmme_id& t,
         index_t v,
-        const vec3& point,
+        const vecn< DIMENSION >& point,
         bool update )
     {
         GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity(
             t );
-        GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel_.mesh.vertices;
+        GeoModelMeshVertices< DIMENSION >& geomodel_vertices = geomodel_.mesh.vertices;
         ringmesh_assert( v < E.nb_vertices() );
         if( update ) {
             geomodel_vertices.update_point(
@@ -307,7 +307,7 @@ namespace RINGMesh {
         index_t v,
         index_t geomodel_vertex )
     {
-        GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel_.mesh.vertices;
+        GeoModelMeshVertices< DIMENSION >& geomodel_vertices = geomodel_.mesh.vertices;
         set_mesh_entity_vertex( entity_id, v,
             geomodel_vertices.vertex( geomodel_vertex ), false );
 
@@ -318,7 +318,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderGeometry< DIMENSION >::set_mesh_entity_vertices(
         const gmme_id& id,
-        const std::vector< vec3 >& points,
+        const std::vector< vecn< DIMENSION > >& points,
         bool clear )
     {
         GeoModelMeshEntity< DIMENSION >& E = geomodel_access_.modifiable_mesh_entity(
@@ -378,7 +378,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderGeometry< DIMENSION >::set_corner(
         index_t corner_id,
-        const vec3& point )
+        const vecn< DIMENSION >& point )
     {
         check_and_initialize_corner_vertex( geomodel_, corner_id );
         set_mesh_entity_vertex(
@@ -389,7 +389,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderGeometry< DIMENSION >::set_line(
         index_t line_id,
-        const std::vector< vec3 >& vertices )
+        const std::vector< vecn< DIMENSION > >& vertices )
     {
         set_mesh_entity_vertices(
             gmme_id( Line< DIMENSION >::type_name_static(), line_id ), vertices,
@@ -408,7 +408,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderGeometry< DIMENSION >::set_surface_geometry(
         index_t surface_id,
-        const std::vector< vec3 >& surface_vertices,
+        const std::vector< vecn< DIMENSION > >& surface_vertices,
         const std::vector< index_t >& surface_polygons,
         const std::vector< index_t >& surface_polygon_ptr )
     {
