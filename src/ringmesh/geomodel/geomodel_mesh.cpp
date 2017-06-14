@@ -540,7 +540,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const vecn< DIMENSION >& GeoModelMeshVertices< DIMENSION >::vertex( index_t v ) const
+    const vecn< DIMENSION >& GeoModelMeshVertices< DIMENSION >::vertex(
+        index_t v ) const
     {
         test_and_initialize();
         ringmesh_assert( v < nb() );
@@ -548,7 +549,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshVertices< DIMENSION >::index( const vecn< DIMENSION >& p ) const
+    index_t GeoModelMeshVertices< DIMENSION >::index(
+        const vecn< DIMENSION >& p ) const
     {
         test_and_initialize();
         const NNSearch< DIMENSION >& colocator = mesh_->vertices_nn_search();
@@ -613,7 +615,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshVertices< DIMENSION >::add_vertex( const vecn< DIMENSION >& point )
+    index_t GeoModelMeshVertices< DIMENSION >::add_vertex(
+        const vecn< DIMENSION >& point )
     {
         std::unique_ptr< PointSetMeshBuilder< DIMENSION > > builder =
             PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
@@ -649,7 +652,7 @@ namespace RINGMesh {
             PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         mesh_builder->set_vertex( v, point );
 
-        GeoModelBuilder< 3 > builder( this->gm_ );
+        GeoModelBuilder< DIMENSION > builder( this->gm_ );
 
         const std::vector< GMEVertex >& gme_v = gme_vertices( v );
         for( const GMEVertex& info : gme_v ) {
@@ -2195,7 +2198,6 @@ namespace RINGMesh {
     {
     }
 
-
     template< index_t DIMENSION >
     GeoModelMeshBase< DIMENSION >::~GeoModelMeshBase()
     {
@@ -2247,7 +2249,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     GeoModelMesh< DIMENSION >::GeoModelMesh( GeoModel< DIMENSION >& geomodel )
-        : GeoModelMeshBase< DIMENSION >( geomodel )
+        : GeoModelMeshBase< DIMENSION >( *this, geomodel )
     {
     }
 
@@ -2366,8 +2368,7 @@ namespace RINGMesh {
 
             for( index_t v = 0; v < vertices.nb(); v++ ) {
                 std::vector< GMEVertex > vertices_on_geomodel_region =
-                    vertices.gme_type_vertices(
-                        Region< 3 >::type_name_static(), v );
+                    vertices.gme_type_vertices( Region< 3 >::type_name_static(), v );
                 for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_region ) {
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
                         att_on_regions[cur_vertex_on_geomodel.gmme.index()][cur_vertex_on_geomodel.v_index
