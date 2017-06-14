@@ -440,7 +440,7 @@ namespace RINGMesh {
     {
     }
 
-    void TetraGen::set_boundaries( const Region< 3 >& region, const WellGroup* wells )
+    void TetraGen::set_boundaries( const Region< 3 >& region, const WellGroup< 3 >* wells )
     {
         region_ = &region;
         index_t nb_surfaces = region_->nb_boundaries();
@@ -459,7 +459,7 @@ namespace RINGMesh {
         }
 
         std::vector< vec3 > region_surfaces_and_wells_vertices;
-        std::vector< std::vector< Edge > > well_edges;
+        std::vector< std::vector< Edge< 3 > > > well_edges;
         index_t nb_region_vertices = region.nb_vertices();
         index_t nb_well_vertices = 0;
         if( wells ) {

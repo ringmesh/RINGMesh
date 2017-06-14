@@ -59,7 +59,7 @@ namespace {
 
 namespace RINGMesh {
 
-    void well_load( const std::string& filename, WellGroup& wells )
+    void well_load( const std::string& filename, WellGroup< 3 >& wells )
     {
         Logger::out( "I/O", "Loading file ", filename, "..." );
 
