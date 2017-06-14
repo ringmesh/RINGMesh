@@ -168,7 +168,7 @@ namespace {
         }
         void write_wells( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            const WellGroup* wells = geomodel.wells() ;
+            const WellGroup< 3 >* wells = geomodel.wells() ;
             if( !wells ) {
                 return ;
             }
@@ -199,7 +199,7 @@ namespace {
         void write_well_groups( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshEdges< 3 >& edges = geomodel.mesh.edges ;
-            const WellGroup* wells = geomodel.wells() ;
+            const WellGroup< 3 >* wells = geomodel.wells() ;
             index_t offset = 0 ;
             out << " <groups count=\"" << edges.nb_wells() << "\">\n" ;
             for( index_t w = 0; w < edges.nb_wells(); w++ ) {

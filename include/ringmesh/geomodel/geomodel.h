@@ -54,7 +54,7 @@
  */
 
 namespace RINGMesh {
-    class WellGroup;
+    template< index_t DIMENSION > class WellGroup;
     template< index_t DIMENSION > class GeoModelGeologicalEntity;
     template< index_t DIMENSION > class GeoModelMeshEntity;
     template< index_t DIMENSION > class Corner;
@@ -224,8 +224,8 @@ namespace RINGMesh {
          * @todo Review : What is this for ?
          * @todo Extend to other object types.
          */
-        void set_wells( const WellGroup* wells );
-        const WellGroup* wells() const
+        void set_wells( const WellGroup< DIMENSION >* wells );
+        const WellGroup< DIMENSION >* wells() const
         {
             return wells_;
         }
@@ -300,7 +300,7 @@ namespace RINGMesh {
         /*! Optional WellGroup associated with the geomodel
          * @todo Move it out. It has nothing to do here. [JP]
          */
-        const WellGroup* wells_;
+        const WellGroup< DIMENSION >* wells_;
     };
 
     template< index_t DIMENSION >

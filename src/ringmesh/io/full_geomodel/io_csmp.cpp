@@ -186,7 +186,7 @@ namespace {
             }
             if( gm.wells() ) {
                 for( index_t w = 0; w < gm.wells()->nb_wells(); w++ ) {
-                    const Well& well = gm.wells()->well( w );
+                    const Well< 3 >& well = gm.wells()->well( w );
                     regions << well.name() << std::endl;
                     ascii << well.name() << TAB << "BAR_2" << TAB << 0 << TAB
                         << well.nb_edges() << std::endl;
@@ -233,7 +233,7 @@ namespace {
             }
             if( gm.wells() ) {
                 for( index_t w = 0; w < gm.wells()->nb_wells(); w++ ) {
-                    const Well& well = gm.wells()->well( w );
+                    const Well< 3 >& well = gm.wells()->well( w );
                     for( index_t e = 0; e < well.nb_edges(); e++ ) {
                         data << " " << std::setw( 3 ) << 2;
                         new_line( count, 20, data );
@@ -287,7 +287,7 @@ namespace {
             }
             if( gm.wells() ) {
                 for( index_t w = 0; w < gm.wells()->nb_wells(); w++ ) {
-                    const Well& well = gm.wells()->well( w );
+                    const Well< 3 >& well = gm.wells()->well( w );
                     ascii << well.name() << " " << "BAR_2" << " " << well.nb_edges()
                         << std::endl;
                     for( index_t e = 0; e < well.nb_edges(); e++ ) {

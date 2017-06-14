@@ -64,7 +64,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class Region;
     class TetraGen;
-    class WellGroup;
+    template< index_t DIMENSION > class WellGroup;
 }
 
 namespace RINGMesh {
@@ -86,7 +86,7 @@ namespace RINGMesh {
          */
         void set_boundaries(
             const Region< 3 >& region,
-            const WellGroup* wells = nullptr );
+            const WellGroup< 3 >* wells = nullptr );
 
         /*!
          * Set additional points to be in the output tetrahedral mesh
@@ -113,7 +113,7 @@ namespace RINGMesh {
         index_t output_region_;
         GEO::Mesh tetmesh_constraint_;
         const Region< 3 >* region_;
-        const WellGroup* wells_;
+        const WellGroup< 3 >* wells_;
     };
 
     typedef GEO::Factory0< TetraGen > TetraGenFactory;
