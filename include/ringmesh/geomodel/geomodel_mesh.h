@@ -1417,7 +1417,7 @@ namespace RINGMesh {
          * Access the DuplicateMode
          * @return the current DuplicateMode
          */
-        typename GeoModelMeshCells< 3 >::DuplicateMode duplicate_mode() const
+        GeoModelMeshCells< 3 >::DuplicateMode duplicate_mode() const
         {
             return mode_;
         }
@@ -1426,7 +1426,7 @@ namespace RINGMesh {
          * @param[in] mode the new DuplicateMode for the GeoModelMesh
          */
         void set_duplicate_mode(
-            const typename GeoModelMeshCells< 3 >::DuplicateMode& mode ) const
+            const GeoModelMeshCells< 3 >::DuplicateMode& mode ) const
         {
             if( mode_ == mode ) return;
             mode_ = mode;
@@ -1437,7 +1437,7 @@ namespace RINGMesh {
 
     private:
         /// Optional duplication mode to compute the duplication of cells on surfaces
-        mutable typename GeoModelMeshCells< 3 >::DuplicateMode mode_;
+        mutable GeoModelMeshCells< 3 >::DuplicateMode mode_;
 
     public:
         GeoModelMeshCells< 3 > cells;
