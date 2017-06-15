@@ -271,7 +271,7 @@ namespace RINGMesh {
             std::unique_ptr< PointSetMesh< DIMENSION > >& mesh );
 
         virtual index_t nb_total_vertices() const;
-        virtual void fill_vertices();
+        virtual index_t fill_vertices();
         void fill_vertices_for_entity_type(
             const GeoModel< DIMENSION >& M,
             const MeshEntityType& entity_type,
@@ -509,7 +509,7 @@ namespace RINGMesh {
 
         virtual void clear() override;
         virtual index_t nb_total_vertices() const override;
-        virtual void fill_vertices() override;
+        virtual index_t fill_vertices() override;
     };
 
     template< index_t DIMENSION >

@@ -501,7 +501,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshVerticesBase< DIMENSION >::fill_vertices()
+    index_t GeoModelMeshVerticesBase< DIMENSION >::fill_vertices()
     {
         index_t count = 0;
         fill_vertices_for_entity_type( this->gm_,
@@ -510,6 +510,7 @@ namespace RINGMesh {
             Line< DIMENSION >::type_name_static(), count );
         fill_vertices_for_entity_type( this->gm_,
             Surface< DIMENSION >::type_name_static(), count );
+        return count;
     }
 
     template< index_t DIMENSION >
@@ -777,17 +778,12 @@ namespace RINGMesh {
         return nb;
     }
 
-    void GeoModelMeshVertices< 3 >::fill_vertices()
+    index_t GeoModelMeshVertices< 3 >::fill_vertices()
     {
-        index_t count = 0;
-        fill_vertices_for_entity_type( this->gm_, Corner< 3 >::type_name_static(),
-            count );
-        fill_vertices_for_entity_type( this->gm_, Line< 3 >::type_name_static(),
-            count );
-        fill_vertices_for_entity_type( this->gm_, Surface< 3 >::type_name_static(),
-            count );
+        index_t count = GeoModelMeshVerticesBase< 3 >::fill_vertices();
         fill_vertices_for_entity_type( this->gm_, Region< 3 >::type_name_static(),
             count );
+        return count;
     }
 
     template< >
