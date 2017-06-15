@@ -42,7 +42,6 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
-#include <ringmesh/geomodel/geomodel_builder_from_surfaces.h>
 #include <ringmesh/geomodel/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/geomodel_builder_remove.h>
@@ -149,6 +148,10 @@ namespace RINGMesh {
          */
         void end_geomodel();
 
+        void build_lines_and_corners_from_surfaces();
+
+        void build_regions_from_lines_and_surfaces();
+
     public:
         GeoModelBuilderTopology< DIMENSION > topology;
         GeoModelBuilderGeometry< DIMENSION > geometry;
@@ -157,7 +160,6 @@ namespace RINGMesh {
         GeoModelBuilderRepair< DIMENSION > repair;
         GeoModelBuilderCopy< DIMENSION > copy;
         GeoModelBuilderInfo< DIMENSION > info;
-        GeoModelBuilderFromSurfaces< DIMENSION > from_surfaces;
 
     protected:
         GeoModel< DIMENSION >& geomodel_;

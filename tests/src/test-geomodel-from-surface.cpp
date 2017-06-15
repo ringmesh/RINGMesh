@@ -75,8 +75,8 @@ int main()
 
         GeoModelBuilderSurfaceMesh builder( model, in );
         builder.build_polygonal_surfaces_from_connected_components();
-        builder.from_surfaces.build_lines_and_corners_from_surfaces();
-        builder.from_surfaces.build_brep_regions_from_surfaces();
+        builder.build_lines_and_corners_from_surfaces();
+        builder.build_regions_from_lines_and_surfaces();
         builder.end_geomodel();
         print_geomodel( model );
 
@@ -129,8 +129,8 @@ int main()
 
         GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes );
         builder2.build_polygonal_surfaces_from_connected_components();
-        builder2.from_surfaces.build_lines_and_corners_from_surfaces();
-        builder2.from_surfaces.build_brep_regions_from_surfaces();
+        builder2.build_lines_and_corners_from_surfaces();
+        builder2.build_regions_from_lines_and_surfaces();
         builder2.end_geomodel();
         print_geomodel( reloaded_model );
 
