@@ -86,7 +86,6 @@ namespace RINGMesh {
 
     template< >
     MeshEntityTypeIncidentEntityMap< 3 >::MeshEntityTypeIncidentEntityMap()
-        : MeshEntityTypeIncidentEntityMap< 3 >()
     {
         initialize_base();
         register_incident_entity( Surface< 3 >::type_name_static(),
@@ -97,7 +96,6 @@ namespace RINGMesh {
 
     template< >
     MeshEntityTypeIncidentEntityMap< 2 >::MeshEntityTypeIncidentEntityMap()
-        : MeshEntityTypeIncidentEntityMap< 2 >()
     {
         initialize_base();
         register_incident_entity( Surface< 2 >::type_name_static(),
