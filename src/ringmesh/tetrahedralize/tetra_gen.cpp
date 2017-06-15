@@ -62,7 +62,7 @@ namespace RINGMesh {
         }
         virtual ~TetraGen_TetGen() = default;
 
-        virtual bool tetrahedralize( bool refine ) final
+        virtual bool do_tetrahedralize( bool refine ) final
         {
             std::unique_ptr< VolumeMeshBuilder< 3 > > mesh3D_builder =
                 builder_->geometry.create_region_builder( output_region_ );
@@ -139,7 +139,7 @@ namespace RINGMesh {
             stop_redirect( pos_err, stderr, fd_err );
         }
 
-        virtual bool tetrahedralize( bool refine ) final
+        virtual bool do_tetrahedralize( bool refine ) final
         {
             fpos_t pos;
             int fd = 0;
@@ -440,7 +440,7 @@ namespace RINGMesh {
     {
     }
 
-    void TetraGen::set_boundaries( const Region< 3 >& region, const WellGroup* wells )
+    void TetraGen::set_boundaries( const Region< 3 >& region, const WellGroup< 3 >* wells )
     {
         region_ = &region;
         index_t nb_surfaces = region_->nb_boundaries();
@@ -459,7 +459,7 @@ namespace RINGMesh {
         }
 
         std::vector< vec3 > region_surfaces_and_wells_vertices;
-        std::vector< std::vector< Edge > > well_edges;
+        std::vector< std::vector< Edge< 3 > > > well_edges;
         index_t nb_region_vertices = region.nb_vertices();
         index_t nb_well_vertices = 0;
         if( wells ) {
@@ -564,6 +564,14 @@ namespace RINGMesh {
             points.front().data(), points.size() * 3 * sizeof(double) );
     }
 
+    bool TetraGen::tetrahedralize( bool refine )
+    {
+        bool result = do_tetrahedralize( refine );
+        if( result ) {
+            builder_->geometry.clear_geomodel_mesh();
+        }
+        return result;
+    }
     void TetraGen::initialize()
     {
 #ifdef RINGMESH_WITH_TETGEN

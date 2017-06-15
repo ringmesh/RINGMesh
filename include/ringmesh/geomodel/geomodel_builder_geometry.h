@@ -59,7 +59,7 @@ namespace RINGMesh {
         friend class GeoModelBuilder< DIMENSION > ;
 
     public:
-        void recompute_geomodel_mesh();
+        void clear_geomodel_mesh();
         /*!
          * @brief Transfer general mesh information from one mesh
          * data structure to another one
@@ -182,7 +182,7 @@ namespace RINGMesh {
         void set_mesh_entity_vertex(
             const gmme_id& entity_id,
             index_t v,
-            const vec3& point,
+            const vecn< DIMENSION >& point,
             bool update );
 
         /*!
@@ -194,7 +194,7 @@ namespace RINGMesh {
          */
         void set_mesh_entity_vertices(
             const gmme_id& entity_id,
-            const std::vector< vec3 >& points,
+            const std::vector< vecn< DIMENSION > >& points,
             bool clear );
 
         /*!
@@ -202,7 +202,7 @@ namespace RINGMesh {
          * @param[in] corner_id the index of the corner in the GeoModel
          * @param[in] point the coordinates to set
          */
-        void set_corner( index_t corner_id, const vec3& point );
+        void set_corner( index_t corner_id, const vecn< DIMENSION >& point );
         /*!
          * @brief Sets the mesh of a given existing Line
          * @param[in] line_id the index of the line in the GeoModel
@@ -210,7 +210,7 @@ namespace RINGMesh {
          * @warning the vertices should be ordered from the first boundary
          * corner to the second one
          */
-        void set_line( index_t line_id, const std::vector< vec3 >& vertices );
+        void set_line( index_t line_id, const std::vector< vecn< DIMENSION > >& vertices );
         /*!
          * @brief Sets the points and polygons for a surface
          * @details If polygon_adjacencies are not given they are computed.
@@ -222,7 +222,7 @@ namespace RINGMesh {
          */
         void set_surface_geometry(
             index_t surface_id,
-            const std::vector< vec3 >& surface_vertices,
+            const std::vector< vecn< DIMENSION > >& surface_vertices,
             const std::vector< index_t >& surface_polygons,
             const std::vector< index_t >& surface_polygon_ptr );
 

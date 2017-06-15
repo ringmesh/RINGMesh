@@ -12,6 +12,7 @@ New Features:
       and the reverse is automatically set. Same things for the parents/child relation
  * New version of the .gm file format which not contains the GEOL_FEATURE on Mesh Entities anymore.
  * Export to gmsh file format (V2).
+ * Add MeshSet, a mesh composed from all the other mesh types (PointSet, Line, Surface and Volume).
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
@@ -19,6 +20,7 @@ Bug fix:
  * RINGMesh now compiles when TetGen cmake option is set to off
  * Cannot delete Mesh in RINGMeshView
  * Error in computation of polygon area (for 3D concave polygons)
+ * GeoModelMeshVertices was not cleared after a tetrahedralize step
 
 Improvements:
  * Refactoring of the io to have smaller files
