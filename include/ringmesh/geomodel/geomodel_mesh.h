@@ -492,15 +492,11 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshVertices: public GeoModelMeshVerticesBase< DIMENSION > {
-    };
-
-    template< >
-    class GeoModelMeshVertices< 2 > : public GeoModelMeshVerticesBase< 2 > {
     public:
         GeoModelMeshVertices(
-            GeoModelMesh< 2 >& gmm,
-            GeoModel< 2 >& gm,
-            std::unique_ptr< PointSetMesh< 2 > >& mesh );
+            GeoModelMesh< DIMENSION >& gmm,
+            GeoModel< DIMENSION >& gm,
+            std::unique_ptr< PointSetMesh< DIMENSION > >& mesh );
     };
 
     template< >
