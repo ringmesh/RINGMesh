@@ -132,6 +132,85 @@ namespace {
 } // anonymous namespace
 
 namespace RINGMesh {
+
+    /*!
+     * @brief Stores the vertices of a polygon which is on the boundary of a Surface
+     */
+    struct BorderPolygon {
+        BorderPolygon( index_t surface, index_t polygon, index_t v0, index_t v1 )
+            : v0_( v0 ), v1_( v1 ), surface_( surface ), polygon_( polygon )
+        {
+        }
+
+        /*!
+         * @brief Compares two polygons so those sharing an edge follow one another
+         */
+        bool operator<( const BorderPolygon& rhs ) const
+        {
+            if( std::min( v0_, v1_ ) != std::min( rhs.v0_, rhs.v1_ ) ) {
+                return std::min( v0_, v1_ ) < std::min( rhs.v0_, rhs.v1_ );
+            } else if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) ) {
+                return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ );
+            } else if( surface_ != rhs.surface_ ) {
+                return surface_ < rhs.surface_;
+            } else {
+                return polygon_ < rhs.polygon_;
+            }
+        }
+
+        bool same_edge( const BorderPolygon& rhs ) const
+        {
+            return std::min( v0_, v1_ ) == std::min( rhs.v0_, rhs.v1_ )
+                && std::max( v0_, v1_ ) == std::max( rhs.v0_, rhs.v1_ );
+        }
+
+        /// Indices of the points in the geomodel.
+        /// The edge v0v1 is on the one on the boundary.
+        index_t v0_;
+        index_t v1_;
+        // Index of the surface containing the polygon
+        index_t surface_;
+        // Index of the polygon in the surface
+        index_t polygon_;
+    };
+
+    template< index_t DIMENSION >
+    class GeoModelSurfacesBase {
+    ringmesh_disable_copy( GeoModelSurfacesBase );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+    public:
+        GeoModelSurfacesBase( const GeoModel< DIMENSION >& geomodel )
+            : geomodel_( geomodel )
+        {
+            const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
+                geomodel_.mesh.vertices;
+            for( index_t s = 0; s < geomodel_.nb_surfaces(); s++ ) {
+                const Surface< DIMENSION >& S = geomodel_.surface( s );
+                const SurfaceMesh< DIMENSION >& mesh = S.low_level_mesh_storage();
+                gmme_id S_id = S.gmme();
+                for( index_t p = 0; p < S.nb_mesh_elements(); p++ ) {
+                    for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); ++v ) {
+                        if( mesh.is_edge_on_border( p, v ) ) {
+                            index_t vertex = geomodel_vertices.geomodel_vertex_id(
+                                S_id, p, v );
+                            index_t next_vertex =
+                                geomodel_vertices.geomodel_vertex_id( S_id, p,
+                                    mesh.next_polygon_vertex( p, v ) );
+                            border_polygons_.emplace_back( s, p, vertex,
+                                next_vertex );
+                        }
+                    }
+                }
+            }
+            std::sort( border_polygons_.begin(), border_polygons_.end() );
+        }
+
+    protected:
+        const GeoModel< DIMENSION >& geomodel_;
+        // All the polygons on a boundary of all the Surfaces of the GeoModel
+        std::vector< BorderPolygon > border_polygons_;
+    };
+
     /*!
      * @brief Utility class to sort a set of oriented polygons around a common edge
      * Used in GeoModelBuilderSurface.
@@ -378,11 +457,41 @@ namespace RINGMesh {
         {
             vertices_.clear();
             adjacent_surfaces_.clear();
-            region_information_.clear();
         }
+
         std::vector< index_t > vertices_;
         std::vector< index_t > adjacent_surfaces_;
-        RINGMesh::GeoModelRegionFromSurfaces region_information_;
+    };
+
+    class RegionTopologyFromGeoModelSurfaces: public GeoModelSurfacesBase< 3 > {
+    public:
+        RegionTopologyFromGeoModelSurfaces( const GeoModel< 3 >& geomodel )
+            :
+                GeoModelSurfacesBase< 3 >( geomodel ),
+                region_info_( geomodel.nb_lines() )
+        {
+            std::vector< vec3 > points;
+            points.reserve( this->border_polygons_.size() );
+            const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
+            for( const BorderPolygon& border : this->border_polygons_ ) {
+                vec3 bary = ( vertices.vertex( border.v0_ )
+                    + vertices.vertex( border.v0_ ) ) / 2.;
+                points.push_back( bary );
+            }
+            nn_search_.reset( new NNSearch< 3 >( points ) );
+        }
+
+        void compute_region_info()
+        {
+            for( index_t line_id = 0; line_id < this->geomodel_.nb_lines();
+                line_id++ ) {
+
+            }
+        }
+
+    private:
+        std::vector< GeoModelRegionFromSurfaces > region_info_;
+        std::unique_ptr< NNSearch< 3 > > nn_search_;
     };
 
     /*! 
@@ -393,7 +502,7 @@ namespace RINGMesh {
      * are the same.
      */
     template< index_t DIMENSION >
-    class LineGeometryFromGeoModelSurfaces {
+    class LineGeometryFromGeoModelSurfaces: public GeoModelSurfacesBase< DIMENSION > {
     public:
         /*!
          * @param geomodel GeoModel providing the Surfaces
@@ -404,12 +513,11 @@ namespace RINGMesh {
             const GeoModel< DIMENSION >& geomodel,
             bool collect_region_info )
             :
-                geomodel_( geomodel ),
+                GeoModelSurfacesBase< DIMENSION >( geomodel ),
                 collect_region_information_( collect_region_info ),
                 cur_border_polygon_( 0 )
         {
-            initialize_border_polygons_from_model_surfaces();
-            visited_.resize( border_polygons_.size(), false );
+            visited_.resize( this->border_polygons_.size(), false );
         }
 
         /*!
@@ -419,7 +527,7 @@ namespace RINGMesh {
          */
         bool compute_next_line_geometry()
         {
-            for( ; cur_border_polygon_ < border_polygons_.size();
+            for( ; cur_border_polygon_ < this->border_polygons_.size();
                 cur_border_polygon_++ ) {
                 if( is_visited( cur_border_polygon_ ) ) {
                     continue;
@@ -437,52 +545,11 @@ namespace RINGMesh {
         }
 
     private:
-        /*!
-         * @brief Stores the vertices of a polygon which is on the boundary of a Surface
-         */
-        struct BorderPolygon {
-            BorderPolygon( index_t surface, index_t polygon, index_t v0, index_t v1 )
-                : v0_( v0 ), v1_( v1 ), surface_( surface ), polygon_( polygon )
-            {
-            }
-
-            /*!
-             * @brief Compares two polygons so those sharing an edge follow one another
-             */
-            bool operator<( const BorderPolygon& rhs ) const
-            {
-                if( std::min( v0_, v1_ ) != std::min( rhs.v0_, rhs.v1_ ) ) {
-                    return std::min( v0_, v1_ ) < std::min( rhs.v0_, rhs.v1_ );
-                } else if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) ) {
-                    return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ );
-                } else if( surface_ != rhs.surface_ ) {
-                    return surface_ < rhs.surface_;
-                } else {
-                    return polygon_ < rhs.polygon_;
-                }
-            }
-
-            bool same_edge( const BorderPolygon& rhs ) const
-            {
-                return std::min( v0_, v1_ ) == std::min( rhs.v0_, rhs.v1_ )
-                    && std::max( v0_, v1_ ) == std::max( rhs.v0_, rhs.v1_ );
-            }
-
-            /// Indices of the points in the geomodel. 
-            /// The edge v0v1 is on the one on the boundary.
-            index_t v0_;
-            index_t v1_;
-            // Index of the surface containing the polygon
-            index_t surface_;
-            // Index of the polygon in the surface
-            index_t polygon_;
-        };
-
         void compute_line_geometry()
         {
             visit_border_polygons_on_same_edge( cur_border_polygon_ );
-            index_t p0 = border_polygons_[cur_border_polygon_].v0_;
-            index_t p1 = border_polygons_[cur_border_polygon_].v1_;
+            index_t p0 = this->border_polygons_[cur_border_polygon_].v0_;
+            index_t p1 = this->border_polygons_[cur_border_polygon_].v1_;
             cur_line_.vertices_.push_back( p0 );
             cur_line_.vertices_.push_back( p1 );
 
@@ -505,7 +572,7 @@ namespace RINGMesh {
          */
         void get_one_line_vertices( bool backward )
         {
-            ringmesh_assert( cur_border_polygon_ < border_polygons_.size() );
+            ringmesh_assert( cur_border_polygon_ < this->border_polygons_.size() );
             ringmesh_assert( cur_border_polygon_ != NO_ID );
 
             index_t t = get_next_border_polygon( cur_border_polygon_, backward );
@@ -526,7 +593,7 @@ namespace RINGMesh {
 
         bool have_border_polygons_same_boundary_edge( index_t t0, index_t t1 ) const
         {
-            return border_polygons_[t0].same_edge( border_polygons_[t1] );
+            return this->border_polygons_[t0].same_edge( this->border_polygons_[t1] );
         }
 
         /*!
@@ -535,21 +602,21 @@ namespace RINGMesh {
          */
         void collect_region_information()
         {
-            const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-                geomodel_.mesh.vertices;
-            for( index_t i = cur_border_polygon_; i < border_polygons_.size();
-                i++ ) {
-                if( have_border_polygons_same_boundary_edge( cur_border_polygon_,
-                    i ) ) {
-                    const BorderPolygon& border = border_polygons_[i];
-                    index_t surface_id = border.surface_;
-                    cur_line_.region_information_.add_polygon_edge( surface_id,
-                        geomodel_.surface( surface_id ).low_level_mesh_storage().polygon_normal(
-                            border.polygon_ ),
-                        geomodel_vertices.vertex( border.v0_ ),
-                        geomodel_vertices.vertex( border.v1_ ) );
-                }
-            }
+//            const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
+//                this->geomodel_.mesh.vertices;
+//            for( index_t i = cur_border_polygon_; i < this->border_polygons_.size();
+//                i++ ) {
+//                if( have_border_polygons_same_boundary_edge( cur_border_polygon_,
+//                    i ) ) {
+//                    const BorderPolygon& border = this->border_polygons_[i];
+//                    index_t surface_id = border.surface_;
+//                    cur_line_.region_information_.add_polygon_edge( surface_id,
+//                        this->geomodel_.surface( surface_id ).low_level_mesh_storage().polygon_normal(
+//                            border.polygon_ ),
+//                        geomodel_vertices.vertex( border.v0_ ),
+//                        geomodel_vertices.vertex( border.v1_ ) );
+//                }
+//            }
         }
 
         bool equal_to_line_adjacent_surfaces(
@@ -567,7 +634,8 @@ namespace RINGMesh {
             index_t polygon_index,
             bool backward )
         {
-            const BorderPolygon& border_polygon = border_polygons_[polygon_index];
+            const BorderPolygon& border_polygon =
+                this->border_polygons_[polygon_index];
             add_vertices_to_line( border_polygon.v0_, border_polygon.v1_,
                 !backward );
         }
@@ -594,43 +662,18 @@ namespace RINGMesh {
             }
         }
 
-        void initialize_border_polygons_from_model_surfaces()
-        {
-            const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-                geomodel_.mesh.vertices;
-            for( index_t s = 0; s < geomodel_.nb_surfaces(); s++ ) {
-                const Surface< DIMENSION >& S = geomodel_.surface( s );
-                const SurfaceMesh< DIMENSION >& mesh = S.low_level_mesh_storage();
-                gmme_id S_id = S.gmme();
-                for( index_t p = 0; p < S.nb_mesh_elements(); p++ ) {
-                    for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); ++v ) {
-                        if( mesh.is_edge_on_border( p, v ) ) {
-                            index_t vertex = geomodel_vertices.geomodel_vertex_id(
-                                S_id, p, v );
-                            index_t next_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S_id, p,
-                                    mesh.next_polygon_vertex( p, v ) );
-                            border_polygons_.emplace_back( s, p, vertex,
-                                next_vertex );
-                        }
-                    }
-                }
-            }
-            std::sort( border_polygons_.begin(), border_polygons_.end() );
-        }
-
         /*!
          * @brief Gets the next BorderPolygon in the same surface
          */
         index_t get_next_border_polygon( index_t from, bool backward ) const
         {
-            const BorderPolygon& border_polygon = border_polygons_[from];
-            const Surface< DIMENSION >& S = geomodel_.surface(
+            const BorderPolygon& border_polygon = this->border_polygons_[from];
+            const Surface< DIMENSION >& S = this->geomodel_.surface(
                 border_polygon.surface_ );
             const SurfaceMesh< DIMENSION >& mesh = S.low_level_mesh_storage();
             gmme_id surface_id = S.gmme();
             const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-                geomodel_.mesh.vertices;
+                this->geomodel_.mesh.vertices;
 
             // Gets the next edge on border in the Surface
             index_t p = border_polygon.polygon_;
@@ -669,10 +712,10 @@ namespace RINGMesh {
                     next_f_v0 ),
                 geomodel_vertices.geomodel_vertex_id( surface_id, next_f,
                     next_f_v1 ) );
-            index_t result = find_sorted( border_polygons_, bait );
+            index_t result = find_sorted( this->border_polygons_, bait );
 
             ringmesh_assert( result != NO_ID );
-            ringmesh_assert( border_polygons_[result].same_edge( bait ) );
+            ringmesh_assert( this->border_polygons_[result].same_edge( bait ) );
             return result;
         }
 
@@ -681,7 +724,7 @@ namespace RINGMesh {
          */
         void visit_border_polygons_on_same_edge( index_t border_id )
         {
-            for( index_t i = 0; i < border_polygons_.size(); i++ ) {
+            for( index_t i = 0; i < this->border_polygons_.size(); i++ ) {
                 if( have_border_polygons_same_boundary_edge( border_id, i ) ) {
                     visited_[i] = true;
                 }
@@ -696,9 +739,10 @@ namespace RINGMesh {
         std::vector< index_t > get_adjacent_surfaces( index_t border_id )
         {
             std::vector< index_t > adjacent_surfaces;
-            for( index_t i = 0; i < border_polygons_.size(); i++ ) {
+            for( index_t i = 0; i < this->border_polygons_.size(); i++ ) {
                 if( have_border_polygons_same_boundary_edge( border_id, i ) ) {
-                    adjacent_surfaces.push_back( border_polygons_[i].surface_ );
+                    adjacent_surfaces.push_back(
+                        this->border_polygons_[i].surface_ );
                 }
             }
             std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() );
@@ -706,10 +750,7 @@ namespace RINGMesh {
         }
 
     private:
-        const GeoModel< DIMENSION >& geomodel_;
         bool collect_region_information_;
-        // All the polygons on a boundary of all the Surfaces of the GeoModel
-        std::vector< BorderPolygon > border_polygons_;
         // Internal use to flag the visited border_polygons when computing the Lines
         std::vector< bool > visited_;
 
@@ -781,8 +822,8 @@ namespace RINGMesh {
 
                 // If the plan is to then build_regions, get the information
                 if( options_.compute_regions_brep ) {
-                    regions_info_.push_back(
-                        new GeoModelRegionFromSurfaces( line.region_information_ ) );
+//                    regions_info_.push_back(
+//                        new GeoModelRegionFromSurfaces( line.region_information_ ) );
                 }
             } else {
                 bool same_geometry = line_equal(
