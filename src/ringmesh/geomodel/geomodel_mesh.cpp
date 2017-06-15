@@ -747,11 +747,12 @@ namespace RINGMesh {
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete );
     }
 
-    GeoModelMeshVertices< 2 >::GeoModelMeshVertices(
-        GeoModelMesh< 2 >& gmm,
-        GeoModel< 2 >& gm,
-        std::unique_ptr< PointSetMesh< 2 > >& mesh )
-        : GeoModelMeshVerticesBase< 2 >( gmm, gm, mesh )
+    template< index_t DIMENSION >
+    GeoModelMeshVertices< DIMENSION >::GeoModelMeshVertices(
+        GeoModelMesh< DIMENSION >& gmm,
+        GeoModel< DIMENSION >& gm,
+        std::unique_ptr< PointSetMesh< DIMENSION > >& mesh )
+        : GeoModelMeshVerticesBase< DIMENSION >( gmm, gm, mesh )
     {
     }
 
@@ -2467,11 +2468,11 @@ namespace RINGMesh {
         }
     }
 
-    template class RINGMESH_API GeoModelMeshBase< 2 > ;
-    template class RINGMESH_API GeoModelMesh< 2 > ;
-    template class RINGMESH_API GeoModelMeshVerticesBase< 2 > ;
-    template class RINGMESH_API GeoModelMeshEdges< 2 > ;
-    template class RINGMESH_API GeoModelMeshPolygonsBase< 2 > ;
+//    template class RINGMESH_API GeoModelMeshBase< 2 > ;
+//    template class RINGMESH_API GeoModelMesh< 2 > ;
+//    template class RINGMESH_API GeoModelMeshVerticesBase< 2 > ;
+//    template class RINGMESH_API GeoModelMeshEdges< 2 > ;
+//    template class RINGMESH_API GeoModelMeshPolygonsBase< 2 > ;
 
     template class RINGMESH_API GeoModelMeshBase< 3 > ;
     template class RINGMESH_API GeoModelMesh< 3 > ;
