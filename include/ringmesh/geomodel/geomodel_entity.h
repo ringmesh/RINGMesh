@@ -49,7 +49,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class UniverseAccess;
     template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderRemoval;
+    template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
 }
 
 namespace RINGMesh {
@@ -185,7 +185,7 @@ namespace RINGMesh {
     class UniverseAccess {
     ringmesh_disable_copy( UniverseAccess );
         friend class GeoModelBuilderTopology< DIMENSION >;
-        friend class GeoModelBuilderRemoval< DIMENSION >;
+        friend class GeoModelBuilderRemovalBase< DIMENSION >;
 
     private:
         UniverseAccess( Universe< DIMENSION >& universe )

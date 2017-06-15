@@ -255,7 +255,7 @@ namespace RINGMesh {
      *
      */
     class RINGMESH_API RelationshipManager {
-//        friend class GeoModelBuilderGeology< 2 >;
+        friend class GeoModelBuilderGeology< 2 >;
 //        friend class GeoModelBuilderTopology< 2 >;
         friend class GeoModelBuilderGeology< 3 >;
         friend class GeoModelBuilderTopology< 3 >;
