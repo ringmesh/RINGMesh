@@ -73,18 +73,18 @@ namespace {
      */
     template< index_t DIMENSION >
     bool line_equal(
-        const Line< DIMENSION >& L,
+        const Line< DIMENSION >& line,
         const std::vector< index_t >& rhs_vertices )
     {
-        if( L.nb_vertices() != rhs_vertices.size() ) {
+        if( line.nb_vertices() != rhs_vertices.size() ) {
             return false;
         }
         const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-            L.geomodel().mesh.vertices;
+            line.geomodel().mesh.vertices;
         bool equal = true;
-        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+        for( index_t i = 0; i < line.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.geomodel_vertex_id( L.gmme(), i ) ) {
+                != geomodel_vertices.geomodel_vertex_id( line.gmme(), i ) ) {
                 equal = false;
                 break;
             }
@@ -94,10 +94,10 @@ namespace {
         }
         // If the order is the other one
         equal = true;
-        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+        for( index_t i = 0; i < line.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.geomodel_vertex_id( L.gmme(),
-                    L.nb_vertices() - i - 1 ) ) {
+                != geomodel_vertices.geomodel_vertex_id( line.gmme(),
+                    line.nb_vertices() - i - 1 ) ) {
                 equal = false;
                 break;
             }
@@ -214,7 +214,6 @@ namespace {
 
     /*!
      * @brief Utility class to sort a set of oriented polygons around a common edge
-     * Used in GeoModelBuilderSurface.
      */
     class GeoModelRegionFromSurfaces {
     public:
