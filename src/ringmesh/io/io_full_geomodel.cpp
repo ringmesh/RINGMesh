@@ -73,7 +73,7 @@ namespace {
 }
 namespace RINGMesh {
 
-    bool geomodel_load( GeoModel& geomodel, const std::string& filename )
+    bool geomodel_load( GeoModel< 3 >& geomodel, const std::string& filename )
     {
         if( !GEO::FileSystem::is_file( filename ) ) {
             throw RINGMeshException( "I/O", "File does not exist: " + filename );
@@ -85,7 +85,7 @@ namespace RINGMesh {
         return handler->load( filename, geomodel );
     }
 
-    void geomodel_save( const GeoModel& geomodel, const std::string& filename )
+    void geomodel_save( const GeoModel< 3 >& geomodel, const std::string& filename )
     {
         Logger::out( "I/O", "Saving file ", filename, "..." );
 

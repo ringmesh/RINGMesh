@@ -61,10 +61,10 @@ extern "C" {
 #endif
 
 namespace RINGMesh {
-    class GeoModel;
-    class Region;
+    template< index_t DIMENSION > class GeoModel;
+    template< index_t DIMENSION > class Region;
     class TetraGen;
-    class WellGroup;
+    template< index_t DIMENSION > class WellGroup;
 }
 
 namespace RINGMesh {
@@ -74,7 +74,7 @@ namespace RINGMesh {
     public:
         virtual ~TetraGen() = default;
         static std::unique_ptr< TetraGen > create(
-            GeoModel& M,
+            GeoModel< 3 >& M,
             index_t region_id,
             const std::string& algo_name );
         static void initialize();
@@ -85,8 +85,8 @@ namespace RINGMesh {
          * @param[in] wells the wells to be conformal to
          */
         void set_boundaries(
-            const Region& region,
-            const WellGroup* wells = nullptr );
+            const Region< 3 >& region,
+            const WellGroup< 3 >* wells = nullptr );
 
         /*!
          * Set additional points to be in the output tetrahedral mesh
@@ -109,11 +109,11 @@ namespace RINGMesh {
         virtual bool do_tetrahedralize( bool refine ) = 0;
 
     protected:
-        std::unique_ptr< GeoModelBuilder > builder_;
+        std::unique_ptr< GeoModelBuilder< 3 > > builder_;
         index_t output_region_;
         GEO::Mesh tetmesh_constraint_;
-        const Region* region_;
-        const WellGroup* wells_;
+        const Region< 3 >* region_;
+        const WellGroup< 3 >* wells_;
     };
 
     typedef GEO::Factory0< TetraGen > TetraGenFactory;

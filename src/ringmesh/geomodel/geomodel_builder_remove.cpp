@@ -45,17 +45,19 @@
 
 namespace RINGMesh {
 
-    GeoModelBuilderRemoval::GeoModelBuilderRemoval(
-        GeoModelBuilder& builder,
-        GeoModel& geomodel )
+    template< index_t DIMENSION >
+    GeoModelBuilderRemoval< DIMENSION >::GeoModelBuilderRemoval(
+        GeoModelBuilder< DIMENSION >& builder,
+        GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
-        nb_mesh_entity_types_ = MeshEntityTypeManager::nb_mesh_entity_types();
+        nb_mesh_entity_types_ = MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
         nb_geological_entity_types_ = geomodel_.nb_geological_entity_types();
         nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_;
     }
 
-    void GeoModelBuilderRemoval::remove_mesh_entities(
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::remove_mesh_entities(
         const std::set< gmme_id >& entities )
     {
         if( entities.empty() ) {
@@ -72,13 +74,14 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRemoval::remove_geological_entities(
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::remove_geological_entities(
         const std::set< gmge_id >& entities )
     {
         std::set< gmme_id > mesh_entities;
         for( const gmge_id& it : entities ) {
-            const GeoModelGeologicalEntity& cur_gmge = geomodel_.geological_entity(
-                it );
+            const GeoModelGeologicalEntity< DIMENSION >& cur_gmge =
+                geomodel_.geological_entity( it );
             for( index_t i = 0; i < cur_gmge.nb_children(); i++ ) {
                 mesh_entities.insert( cur_gmge.child( i ).gmme() );
             }
@@ -86,7 +89,8 @@ namespace RINGMesh {
         remove_mesh_entities( mesh_entities );
     }
 
-    void GeoModelBuilderRemoval::do_delete_flagged_geological_entities()
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::do_delete_flagged_geological_entities()
     {
         for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
             const GeologicalEntityType& entity_type =
@@ -101,40 +105,48 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRemoval::delete_mesh_entity( index_t type, index_t index )
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::delete_mesh_entity(
+        index_t type,
+        index_t index )
     {
         const MeshEntityType& type_name = index_to_mesh_entity_type( type );
         gmme_id id( type_name, index );
         builder_.topology.delete_mesh_entity( type_name, index );
     }
 
-    index_t GeoModelBuilderRemoval::geological_entity_type_index(
-        const GeoModelGeologicalEntity& E ) const
+    template< index_t DIMENSION >
+    index_t GeoModelBuilderRemoval< DIMENSION >::geological_entity_type_index(
+        const GeoModelGeologicalEntity< DIMENSION >& E ) const
     {
         const GeologicalEntityType& type = E.type_name();
         return geological_entity_type_to_index( type );
     }
 
-    void GeoModelBuilderRemoval::set_mesh_entity_index(
-        GeoModelMeshEntity& E,
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::set_mesh_entity_index(
+        GeoModelMeshEntity< DIMENSION >& E,
         index_t new_index_in_geomodel )
     {
-        GeoModelMeshEntityAccess gmme_access(
-            dynamic_cast< GeoModelMeshEntity& >( E ) );
+        GeoModelMeshEntityAccess< DIMENSION > gmme_access(
+            dynamic_cast< GeoModelMeshEntity< DIMENSION >& >( E ) );
         gmme_access.modifiable_index() = new_index_in_geomodel;
     }
 
-    void GeoModelBuilderRemoval::set_geological_entity_index(
-        GeoModelGeologicalEntity& E,
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::set_geological_entity_index(
+        GeoModelGeologicalEntity< DIMENSION >& E,
         index_t new_index_in_geomodel )
     {
-        GeoModelGeologicalEntityAccess gmge_access(
-            dynamic_cast< GeoModelGeologicalEntity& >( E ) );
+        GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
+            dynamic_cast< GeoModelGeologicalEntity< DIMENSION >& >( E ) );
         gmge_access.modifiable_index() = new_index_in_geomodel;
         return;
     }
 
-    void GeoModelBuilderRemoval::update_mesh_entity_index( GeoModelMeshEntity& ME )
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::update_mesh_entity_index(
+        GeoModelMeshEntity< DIMENSION >& ME )
     {
         index_t old_id = ME.index();
         index_t type = mesh_entity_type_index( ME );
@@ -143,8 +155,9 @@ namespace RINGMesh {
         set_mesh_entity_index( ME, new_id );
     }
 
-    void GeoModelBuilderRemoval::update_geological_entity_index(
-        GeoModelGeologicalEntity& GE )
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::update_geological_entity_index(
+        GeoModelGeologicalEntity< DIMENSION >& GE )
     {
         index_t old_id = GE.index();
         index_t type = geological_entity_type_index( GE );
@@ -153,8 +166,9 @@ namespace RINGMesh {
         set_geological_entity_index( GE, new_id );
     }
 
-    void GeoModelBuilderRemoval::update_mesh_entity_boundaries(
-        GeoModelMeshEntity& ME )
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::update_mesh_entity_boundaries(
+        GeoModelMeshEntity< DIMENSION >& ME )
     {
         index_t type_index = boundary_type_index( ME.mesh_entity_type() );
         if( type_index == NO_ID ) {
@@ -167,12 +181,15 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRemoval::update_mesh_entity_incident_entity(
-        GeoModelMeshEntity& E )
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::update_mesh_entity_incident_entity(
+        GeoModelMeshEntity< DIMENSION >& E )
     {
         const MeshEntityType& incident_entity_type =
-            MeshEntityTypeManager::incident_entity_type( E.mesh_entity_type() );
-        bool valid_type = MeshEntityTypeManager::is_valid_type( incident_entity_type );
+            MeshEntityTypeManager< DIMENSION >::incident_entity_type(
+                E.mesh_entity_type() );
+        bool valid_type = MeshEntityTypeManager< DIMENSION >::is_valid_type(
+            incident_entity_type );
         if( !valid_type ) {
             return;
         }
@@ -180,11 +197,15 @@ namespace RINGMesh {
             incident_entity_type );
         for( index_t i = 0; i < E.nb_incident_entities(); ++i ) {
             index_t old_id = E.incident_entity_gmme( i ).index();
-            index_t new_id = old_2_new_mesh_entity_[incident_entity_type_index][old_id];
+            index_t new_id =
+                old_2_new_mesh_entity_[incident_entity_type_index][old_id];
             builder_.topology.set_mesh_entity_incident_entity( E.gmme(), i, new_id );
         }
     }
-    void GeoModelBuilderRemoval::update_mesh_entity_parents( GeoModelMeshEntity& E )
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::update_mesh_entity_parents(
+        GeoModelMeshEntity< DIMENSION >& E )
     {
         gmme_id id = E.gmme();
         for( index_t p = 0; p < E.nb_parents(); ++p ) {
@@ -198,8 +219,10 @@ namespace RINGMesh {
                 gmge_id( parent_type, new_id ) );
         }
     }
-    void GeoModelBuilderRemoval::update_geological_entity_children(
-        GeoModelGeologicalEntity& E )
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::update_geological_entity_children(
+        GeoModelGeologicalEntity< DIMENSION >& E )
     {
         if( E.nb_children() > 0 ) {
             index_t child_type = children_type_index( E.entity_type() );
@@ -210,10 +233,13 @@ namespace RINGMesh {
             }
         }
     }
-    void GeoModelBuilderRemoval::update_universe_sided_boundaries( Universe& U )
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::update_universe_sided_boundaries(
+        Universe< DIMENSION >& U )
     {
         index_t b_type_index = mesh_entity_type_to_index(
-            Surface::type_name_static() );
+            Surface< DIMENSION >::type_name_static() );
         index_t side_offset = 0;
         for( index_t i = 0; i < U.nb_boundaries(); ++i ) {
             index_t old_id = U.boundary_gmme( i ).index();
@@ -232,7 +258,8 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRemoval::fill_nb_children_vector()
+    template< index_t DIMENSION >
+    void GeoModelBuilderRemoval< DIMENSION >::fill_nb_children_vector()
     {
         for( index_t i = 0; i < nb_childs_.size(); i++ ) {
             for( index_t j = 0; j < nb_childs_[i].size(); j++ ) {
@@ -241,5 +268,8 @@ namespace RINGMesh {
             }
         }
     }
+
+    //    template class RINGMESH_API GeoModelBuilderRemoval< 2 > ;
+    template class RINGMESH_API GeoModelBuilderRemoval< 3 > ;
 }
 

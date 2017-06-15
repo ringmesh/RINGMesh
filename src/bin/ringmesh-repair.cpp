@@ -80,13 +80,13 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
         geomodel_load( geomodel, in_model_file_name );
 
         index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" );
-        GeoModelBuilder builder( geomodel );
+        GeoModelBuilder< 3 > builder( geomodel );
         builder.repair.repair(
-            static_cast< GeoModelBuilderRepair::RepairMode >( repair_mode ) );
+            static_cast< GeoModelBuilderRepair< 3 >::RepairMode >( repair_mode ) );
 
         std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( out_model_file_name.empty() ) {

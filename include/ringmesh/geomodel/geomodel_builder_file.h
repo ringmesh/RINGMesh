@@ -37,59 +37,37 @@
 
 #include <ringmesh/basic/common.h>
 
-#ifdef RINGMESH_WITH_GRAPHICS
+#include <ringmesh/geomodel/geomodel.h>
 
-#include <memory>
-
-#include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
-
-#include <ringmesh/visualization/geomodel_entity_gfx.h>
-#include <ringmesh/visualization/mesh_entity_gfx.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
- * @file Classes for GeoModel visualization
- * @author Benjamin Chauvin and Arnaud Botella
+ * @brief Classes to build GeoModel from various inputs
+ * @author Jeanne Pellerin
  */
 
 namespace RINGMesh {
-    template < index_t DIMENSION > class GeoModel;
-}
 
-namespace RINGMesh {
-
-    class RINGMESH_API GeoModelGfx {
-    ringmesh_disable_copy( GeoModelGfx );
+    /*!
+     * @brief Abstract interface class to load and build GeoModels from files
+     */
+    template< index_t DIMENSION >
+    class GeoModelBuilderFile: public GeoModelBuilder< DIMENSION > {
     public:
+        GeoModelBuilderFile( GeoModel< DIMENSION >& geomodel, const std::string& filename );
 
-        GeoModelGfx();
-        ~GeoModelGfx();
+        virtual ~GeoModelBuilderFile() = default;
 
-        /*!
-         * Sets the GeoModel associated to the graphics
-         * @param[in] geomodel the GeoModel
-         */
-        void set_geomodel( const GeoModel< 3 >& geomodel );
-        /*!
-         * Gets the GeoModel associated to the graphics
-         * @return the GeoModel
-         */
-        const GeoModel< 3 >* geomodel() const;
-        /*!
-         * Initializes the database according the GeoModel dimensions
-         */
-        void initialize();
+        void build_geomodel()
+        {
+            load_file();
+            this->end_geomodel();
+        }
 
     private:
-        /// The GeoModel associated to the graphics
-        const GeoModel< 3 >* geomodel_;
+        virtual void load_file() = 0;
 
-    public:
-        CornerGfxEntity corners;
-        LineGfxEntity lines;
-        SurfaceGfxEntity surfaces;
-        RegionGfxEntity regions;
-        AttributeGfxManager attribute;
+    protected:
+        std::string filename_;
     };
 }
-
-#endif

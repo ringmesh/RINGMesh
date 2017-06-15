@@ -41,87 +41,70 @@
 
 namespace RINGMesh {
 
-    // Not the smartest but hopefully compiles in C++98
-    static const MeshEntityType hard_encoded_mesh_entity_types_array[4] = {
-        Corner::type_name_static(), Line::type_name_static(),
-        Surface::type_name_static(), Region::type_name_static() };
-    static const std::vector< MeshEntityType > hard_encoded_mesh_entity_types(
-        &hard_encoded_mesh_entity_types_array[0],
-        &hard_encoded_mesh_entity_types_array[4] );
+    template< index_t DIMENSION >
+    MeshEntityTypeBoundaryMap< DIMENSION > MeshEntityTypeManager< DIMENSION >::boundary_relationships_;
 
-    MeshEntityTypeBoundaryMap MeshEntityTypeManager::boundary_relationships_;
-    MeshEntityTypeIncidentEntityMap MeshEntityTypeManager::incident_entity_relationships_;
-    MeshEntityTypeManager::MeshEntityTypeManager()
-    {
-    }
+    template< index_t DIMENSION >
+    MeshEntityTypeIncidentEntityMap< DIMENSION > MeshEntityTypeManager< DIMENSION >::incident_entity_relationships_;
 
-    MeshEntityTypeBoundaryMap::MeshEntityTypeBoundaryMap()
+    template< index_t DIMENSION >
+    MeshEntityTypes< DIMENSION > MeshEntityTypeManager< DIMENSION >::mesh_entity_types_;
+
+    template< index_t DIMENSION >
+    MeshEntityTypeBoundaryMapBase< DIMENSION >::MeshEntityTypeBoundaryMapBase()
     {
-        register_boundary( Corner::type_name_static(),
+        register_boundary( Corner< DIMENSION >::type_name_static(),
             ForbiddenMeshEntityType::type_name_static() );
-        register_boundary( Line::type_name_static(), Corner::type_name_static() );
-        register_boundary( Surface::type_name_static(), Line::type_name_static() );
-        register_boundary( Region::type_name_static(), Surface::type_name_static() );
+        register_boundary( Line< DIMENSION >::type_name_static(),
+            Corner< DIMENSION >::type_name_static() );
+        register_boundary( Surface< DIMENSION >::type_name_static(),
+            Line< DIMENSION >::type_name_static() );
     }
 
-    MeshEntityTypeIncidentEntityMap::MeshEntityTypeIncidentEntityMap()
+    MeshEntityTypeBoundaryMap< 3 >::MeshEntityTypeBoundaryMap()
+        : MeshEntityTypeBoundaryMapBase< 3 >()
     {
-        register_incident_entity( Corner::type_name_static(), Line::type_name_static() );
-        register_incident_entity( Line::type_name_static(),
-            Surface::type_name_static() );
-        register_incident_entity( Surface::type_name_static(),
-            Region::type_name_static() );
-        register_incident_entity( Region::type_name_static(),
+        register_boundary( Region< 3 >::type_name_static(),
+            Surface< 3 >::type_name_static() );
+    }
+
+    template< index_t DIMENSION >
+    MeshEntityTypeIncidentEntityMapBase< DIMENSION >::MeshEntityTypeIncidentEntityMapBase()
+    {
+        register_incident_entity( Corner< DIMENSION >::type_name_static(),
+            Line< DIMENSION >::type_name_static() );
+        register_incident_entity( Line< DIMENSION >::type_name_static(),
+            Surface< DIMENSION >::type_name_static() );
+    }
+
+    MeshEntityTypeIncidentEntityMap< 3 >::MeshEntityTypeIncidentEntityMap()
+        : MeshEntityTypeIncidentEntityMapBase< 3 >()
+    {
+        register_incident_entity( Surface< 3 >::type_name_static(),
+            Region< 3 >::type_name_static() );
+        register_incident_entity( Region< 3 >::type_name_static(),
             ForbiddenMeshEntityType::type_name_static() );
     }
 
-    bool MeshEntityTypeManager::is_corner( const MeshEntityType& type )
+    MeshEntityTypeIncidentEntityMap< 2 >::MeshEntityTypeIncidentEntityMap()
+        : MeshEntityTypeIncidentEntityMapBase< 2 >()
     {
-        return type == hard_encoded_mesh_entity_types[0];
-    }
-    bool MeshEntityTypeManager::is_line( const MeshEntityType& type )
-    {
-        return type == hard_encoded_mesh_entity_types[1];
-    }
-    bool MeshEntityTypeManager::is_surface( const MeshEntityType& type )
-    {
-        return type == hard_encoded_mesh_entity_types[2];
-    }
-    bool MeshEntityTypeManager::is_region( const MeshEntityType& type )
-    {
-        return type == hard_encoded_mesh_entity_types[3];
+        register_incident_entity( Surface< 2 >::type_name_static(),
+            ForbiddenMeshEntityType::type_name_static() );
     }
 
-    bool MeshEntityTypeManager::is_valid_type( const MeshEntityType& type )
+    template< index_t DIMENSION >
+    MeshEntityTypesBase< DIMENSION >::MeshEntityTypesBase()
     {
-        return find( hard_encoded_mesh_entity_types, type ) != NO_ID;
+        mesh_entity_types_.push_back( Corner< DIMENSION >::type_name_static() );
+        mesh_entity_types_.push_back( Line< DIMENSION >::type_name_static() );
+        mesh_entity_types_.push_back( Surface< DIMENSION >::type_name_static() );
     }
 
-    const MeshEntityType& MeshEntityTypeManager::boundary_type(
-        const MeshEntityType& mesh_entity_type )
+    MeshEntityTypes< 3 >::MeshEntityTypes()
+        : MeshEntityTypesBase< 3 >()
     {
-        MeshEntityTypeMap::const_iterator itr = boundary_relationships_.map.find(
-            mesh_entity_type );
-        ringmesh_assert( itr != boundary_relationships_.map.end() );
-        return itr->second;
-    }
-    const MeshEntityType& MeshEntityTypeManager::incident_entity_type(
-        const MeshEntityType& mesh_entity_type )
-    {
-        MeshEntityTypeMap::const_iterator itr = incident_entity_relationships_.map.find(
-            mesh_entity_type );
-        ringmesh_assert( itr != incident_entity_relationships_.map.end() );
-        return itr->second;
-    }
-
-    const std::vector< MeshEntityType >& MeshEntityTypeManager::mesh_entity_types()
-    {
-        return hard_encoded_mesh_entity_types;
-    }
-    index_t MeshEntityTypeManager::nb_mesh_entity_types()
-    {
-        return static_cast< index_t >( hard_encoded_mesh_entity_types.size() );
-
+        mesh_entity_types_.push_back( Region< 3 >::type_name_static() );
     }
 
     index_t GeologicalTypeManager::nb_geological_entity_types() const
@@ -177,4 +160,7 @@ namespace RINGMesh {
         }
     }
 
+    template class MeshEntityTypeManager< 3 > ;
+    template class MeshEntityTypeIncidentEntityMap< 3 > ;
+    template class MeshEntityTypeBoundaryMap< 3 > ;
 }

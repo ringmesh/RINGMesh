@@ -129,6 +129,13 @@ namespace {
         return true;
     }
 
+    void compute_mesh_entity_bbox( const GeoModelMeshEntity< 3 >& entity, Box< 3 >& bbox )
+    {
+        for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
+            bbox.add_point( entity.vertex( v ) );
+        }
+    }
+
 }
 namespace RINGMesh {
 
@@ -189,20 +196,29 @@ namespace RINGMesh {
         reset_attribute_name();
 
         geomodel_load( GM_, filename );
-        for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
-            const RINGMesh::Surface& S = GM_.surface( s );
-            for( GEO::index_t v = 0; v < S.nb_vertices(); ++v ) {
-                const vec3& p = S.vertex( v );
-                bbox_.add_point( p );
+        // Computation of the BBox is set with surface vertices
+        // or with those of lines and corners if the model has no surface
+        if( GM_.nb_surfaces() > 0 ) {
+            for( index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
+                compute_mesh_entity_bbox( GM_.surface( s ), bbox_ );
+            }
+        } else if ( GM_.nb_lines() > 0 ) {
+            for( index_t l = 0; l < GM_.nb_lines(); l++ ) {
+                compute_mesh_entity_bbox( GM_.line( l ), bbox_ );
+            }
+        } else {
+            for( index_t c = 0; c < GM_.nb_corners(); c++ ) {
+                compute_mesh_entity_bbox( GM_.corner( c ), bbox_ );
             }
         }
+
         selected_entity_type_ = 0;
         selected_entity_id_ = 0;
         entity_types_.emplace_back( "All" );
-        entity_types_.emplace_back( Corner::type_name_static() );
-        entity_types_.emplace_back( Line::type_name_static() );
-        entity_types_.emplace_back( Surface::type_name_static() );
-        entity_types_.emplace_back( Region::type_name_static() );
+        entity_types_.emplace_back( Corner< 3 >::type_name_static() );
+        entity_types_.emplace_back( Line< 3 >::type_name_static() );
+        entity_types_.emplace_back( Surface< 3 >::type_name_static() );
+        entity_types_.emplace_back( Region< 3 >::type_name_static() );
         for( index_t i = 0; i < GM_.nb_geological_entity_types(); i++ ) {
             entity_types_.emplace_back( GM_.geological_entity_type( i ) );
         }
@@ -247,19 +263,19 @@ namespace RINGMesh {
         // To disable the key 'R'. If no layer within the model, layer is not
         // a valid type.
         if( !GM_.entity_type_manager().geological_entity_manager.is_valid_type(
-            Layer::type_name_static() ) ) {
+            Layer< 3 >::type_name_static() ) ) {
             show_colored_layers_.new_status = false;
             return;
         }
         colored_cells_.new_status = false;
         show_colored_regions_.new_status = false;
         for( GEO::index_t l = 0;
-            l < GM_.nb_geological_entities( Layer::type_name_static() ); l++ ) {
+            l < GM_.nb_geological_entities( Layer< 3 >::type_name_static() ); l++ ) {
             float red = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float green = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float blue = std::fmod( GEO::Numeric::random_float32(), 1.f );
-            const GeoModelGeologicalEntity& cur_layer = GM_.geological_entity(
-                Layer::type_name_static(), l );
+            const GeoModelGeologicalEntity< 3 >& cur_layer = GM_.geological_entity(
+                Layer< 3 >::type_name_static(), l );
             for( index_t r = 0; r < cur_layer.nb_children(); ++r )
                 GM_gfx_.regions.set_region_color( cur_layer.child( r ).index(), red,
                     green, blue );
@@ -387,7 +403,7 @@ namespace RINGMesh {
             const std::string& type = entity_types_[selected_entity_type_casted];
 
             if( selected_entity_type_casted
-                < MeshEntityTypeManager::nb_mesh_entity_types() + 1 ) {
+                < MeshEntityTypeManager< 3 >::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ );
@@ -459,7 +475,7 @@ namespace RINGMesh {
             GM_gfx_.surfaces.set_vertex_visibility( false );
             GM_gfx_.regions.set_vertex_visibility( false );
             if( selected_entity_type_casted
-                < MeshEntityTypeManager::nb_mesh_entity_types() + 1 ) {
+                < MeshEntityTypeManager< 3 >::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ );
@@ -480,13 +496,13 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer::toggle_mesh_entity_and_boundaries_visibility(
         const gmme_id& entity_id )
     {
-        if( MeshEntityTypeManager::is_corner( entity_id.type() ) ) {
+        if( MeshEntityTypeManager< 3 >::is_corner( entity_id.type() ) ) {
             toggle_corner_visibility( entity_id.index() );
-        } else if( MeshEntityTypeManager::is_line( entity_id.type() ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_line( entity_id.type() ) ) {
             toggle_line_and_boundaries_visibility( entity_id.index() );
-        } else if( MeshEntityTypeManager::is_surface( entity_id.type() ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_surface( entity_id.type() ) ) {
             toggle_surface_and_boundaries_visibility( entity_id.index() );
-        } else if( MeshEntityTypeManager::is_region( entity_id.type() ) ) {
+        } else if( MeshEntityTypeManager< 3 >::is_region( entity_id.type() ) ) {
             toggle_region_and_boundaries_visibility( entity_id.index() );
         } else {
             ringmesh_assert_not_reached;
@@ -505,7 +521,7 @@ namespace RINGMesh {
         GM_gfx_.lines.set_line_visibility( line_id, true );
         GM_gfx_.lines.set_vertex_visibility( line_id,
             line_style_.visible_vertices_ );
-        const Line& line = GM_.line( line_id );
+        const Line< 3 >& line = GM_.line( line_id );
         toggle_corner_visibility( line.boundary_gmme( 0 ).index() );
         toggle_corner_visibility( line.boundary_gmme( 1 ).index() );
     }
@@ -516,7 +532,7 @@ namespace RINGMesh {
         GM_gfx_.surfaces.set_surface_visibility( surface_id, true );
         GM_gfx_.surfaces.set_vertex_visibility( surface_id,
             surface_style_.visible_vertices_ );
-        const Surface& surface = GM_.surface( surface_id );
+        const Surface< 3 >& surface = GM_.surface( surface_id );
         for( index_t i = 0; i < surface.nb_boundaries(); i++ ) {
             toggle_line_and_boundaries_visibility(
                 surface.boundary_gmme( i ).index() );
@@ -529,7 +545,7 @@ namespace RINGMesh {
         GM_gfx_.regions.set_region_visibility( region_id, true );
         GM_gfx_.regions.set_vertex_visibility( region_id,
             volume_style_.visible_vertices_ );
-        const Region& region = GM_.region( region_id );
+        const Region< 3 >& region = GM_.region( region_id );
         for( index_t i = 0; i < region.nb_boundaries(); i++ ) {
             toggle_surface_and_boundaries_visibility(
                 region.boundary_gmme( i ).index() );
@@ -539,7 +555,7 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer::toggle_geological_entity_visibility(
         const gmge_id& entity_id )
     {
-        const GeoModelGeologicalEntity& entity = GM_.geological_entity( entity_id );
+        const GeoModelGeologicalEntity< 3 >& entity = GM_.geological_entity( entity_id );
         for( index_t i = 0; i < entity.nb_children(); i++ ) {
             const gmme_id& child_id = entity.child_gmme( i );
             toggle_mesh_entity_and_boundaries_visibility( child_id );
@@ -703,7 +719,7 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Col. regions [r]",
                     &show_colored_regions_.new_status );
                 if( GM_.entity_type_manager().geological_entity_manager.is_valid_type(
-                    Layer::type_name_static() ) ) {
+                    Layer< 3 >::type_name_static() ) ) {
                     ImGui::Checkbox( "Col. layers [R]",
                         &show_colored_layers_.new_status );
                 }
@@ -1359,8 +1375,7 @@ namespace RINGMesh {
 
     void RINGMeshApplication::update_region_of_interest()
     {
-        Box3d bbox;
-
+        Box< 3 > bbox;
         for( std::unique_ptr< GeoModelViewer >& geomodel : geomodels_ ) {
             if( geomodel->is_visible_ ) {
                 bbox.add_box( geomodel->bbox_ );
