@@ -118,9 +118,9 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< MeshEntityGfx > > entities_;
     };
 
-    class RINGMESH_API CornerGfxEnity final: public GeoModelGfxEntity {
+    class RINGMESH_API CornerGfxEntity final: public GeoModelGfxEntity {
     public:
-        CornerGfxEnity( GeoModelGfx& gfx );
+        CornerGfxEntity( GeoModelGfx& gfx );
 
         PointSetMeshGfx& corner( index_t corner_id );
 

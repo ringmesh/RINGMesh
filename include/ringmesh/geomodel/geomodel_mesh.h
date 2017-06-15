@@ -103,7 +103,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshVertices: public GeoModelMeshBase< DIMENSION > {
+    class GeoModelMeshVertices final: public GeoModelMeshBase< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshVertices );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -486,7 +486,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshPolygons: public GeoModelMeshBase< DIMENSION > {
+    class GeoModelMeshPolygons final: public GeoModelMeshBase< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshPolygons );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -741,7 +741,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshEdges: public GeoModelMeshBase< DIMENSION > {
+    class GeoModelMeshEdges final: public GeoModelMeshBase< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshEdges );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -816,7 +816,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshCells: public GeoModelMeshBase< DIMENSION > {
+    class GeoModelMeshCells final: public GeoModelMeshBase< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshCells );
         ringmesh_template_assert_3d( DIMENSION );
     public:
