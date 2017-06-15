@@ -84,7 +84,7 @@ namespace RINGMesh {
         const GeoModel< 3 >* geomodel_;
 
     public:
-        CornerGfxEnity corners;
+        CornerGfxEntity corners;
         LineGfxEntity lines;
         SurfaceGfxEntity surfaces;
         RegionGfxEntity regions;
