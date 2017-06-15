@@ -459,7 +459,7 @@ namespace {
                 BorderPolygon line_border( NO_ID, NO_ID,
                     vertices.geomodel_vertex_id( line.gmme(), 0 ),
                     vertices.geomodel_vertex_id( line.gmme(), 1 ) );
-                for( const BorderPolygon& border : this->border_polygons_.size() ) {
+                for( const BorderPolygon& border : this->border_polygons_ ) {
                     if( line_border.same_edge( border ) ) {
                         index_t surface_id = border.surface_;
                         region_info_[line_id].add_polygon_edge( surface_id,
