@@ -491,7 +491,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshVertices: public GeoModelMeshVerticesBase< DIMENSION > {
+    class GeoModelMeshVertices final: public GeoModelMeshVerticesBase< DIMENSION > {
     public:
         GeoModelMeshVertices(
             GeoModelMesh< DIMENSION >& gmm,
@@ -500,7 +500,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelMeshVertices< 3 > : public GeoModelMeshVerticesBase< 3 > {
+    class GeoModelMeshVertices< 3 > final: public GeoModelMeshVerticesBase< 3 > {
     public:
         GeoModelMeshVertices(
             GeoModelMesh< 3 >& gmm,
@@ -766,7 +766,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshPolygons: public GeoModelMeshPolygonsBase< DIMENSION > {
+    class GeoModelMeshPolygons final: public GeoModelMeshPolygonsBase< DIMENSION > {
     public:
         GeoModelMeshPolygons(
             GeoModelMesh< DIMENSION >& gmm,
@@ -775,7 +775,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelMeshPolygons< 3 > : public GeoModelMeshPolygonsBase< 3 > {
+    class GeoModelMeshPolygons< 3 > final: public GeoModelMeshPolygonsBase< 3 > {
     public:
         GeoModelMeshPolygons(
             GeoModelMesh< 3 >& gmm,
@@ -790,7 +790,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshEdges: public GeoModelMeshCommon< DIMENSION > {
+    class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshEdges );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -865,7 +865,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshCells: public GeoModelMeshCommon< DIMENSION > {
+    class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshCells );
         ringmesh_template_assert_3d( DIMENSION );
     public:
@@ -1384,13 +1384,13 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMesh: public GeoModelMeshBase< DIMENSION > {
+    class GeoModelMesh final: public GeoModelMeshBase< DIMENSION > {
     public:
         GeoModelMesh( GeoModel< DIMENSION >& geomodel );
     };
 
     template< >
-    class GeoModelMesh< 3 > : public GeoModelMeshBase< 3 > {
+    class GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
     public:
         GeoModelMesh( GeoModel< 3 >& geomodel );
         virtual ~GeoModelMesh();
