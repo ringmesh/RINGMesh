@@ -312,6 +312,7 @@ namespace {
             vecn< 4 > result;
             GEO::mult( mat, normalizedV.data(), result.data() );
 
+            ringmesh_assert( std::fabs( result.w ) > global_epsilon );
             double inv_w = 1.0 / result.w;
             return vec3( result.x * inv_w, result.y * inv_w, result.z * inv_w );
         }
@@ -458,12 +459,8 @@ namespace {
                 BorderPolygon line_border( NO_ID, NO_ID,
                     vertices.geomodel_vertex_id( line.gmme(), 0 ),
                     vertices.geomodel_vertex_id( line.gmme(), 1 ) );
-                for( index_t border_id = 0;
-                    border_id < this->border_polygons_.size(); border_id++ ) {
-                    if( line_border.same_edge(
-                        this->border_polygons_[border_id] ) ) {
-                        const BorderPolygon& border =
-                            this->border_polygons_[border_id];
+                for( const BorderPolygon& border : this->border_polygons_.size() ) {
+                    if( line_border.same_edge( border ) ) {
                         index_t surface_id = border.surface_;
                         region_info_[line_id].add_polygon_edge( surface_id,
                             this->geomodel_.surface( surface_id ).low_level_mesh_storage().polygon_normal(
@@ -727,10 +724,10 @@ namespace {
         }
 
     private:
-// Internal use to flag the visited border_polygons when computing the Lines
+        // Internal use to flag the visited border_polygons when computing the Lines
         std::vector< bool > visited_;
 
-// Currently computed line information
+        // Currently computed line information
         index_t cur_border_polygon_;
         LineDefinition cur_line_;
     };
