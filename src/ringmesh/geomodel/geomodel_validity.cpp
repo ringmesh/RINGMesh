@@ -874,6 +874,10 @@ namespace {
                 threads.emplace_back(
                     &GeoModelValidityCheck::test_surface_line_mesh_conformity,
                     this );
+                /// TODO: find a way to add this test for Model3d. See BC.
+//                threads.emplace_back(
+//                    &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
+//                    this );
             }
 
             // Geological validity must always be checked
@@ -961,6 +965,44 @@ namespace {
                         nn_search ) ) {
                         set_invalid_model();
                     }
+                }
+            }
+        }
+
+        void test_non_free_line_at_two_interfaces_intersection()
+        {
+            if( !geomodel_.entity_type_manager().geological_entity_manager.is_valid_type(
+                Interface< 3 >::type_name_static() ) ) {
+                return;
+            }
+            for( index_t line_i = 0; line_i < geomodel_.nb_lines(); ++line_i ) {
+                const Line< 3 >& cur_line = geomodel_.line( line_i );
+                if( cur_line.nb_incident_entities() == 1 ) {
+                    continue;
+                }
+
+                const index_t first_interface_id =
+                    cur_line.incident_entity( 0 ).parent_gmge(
+                        Interface< 3 >::type_name_static() ).index();
+                ringmesh_assert( first_interface_id != NO_ID );
+                bool at_least_two_different_interfaces = false;
+                for( index_t in_boundary_i = 1;
+                    in_boundary_i < cur_line.nb_incident_entities(); ++in_boundary_i ) {
+                    const index_t cur_interface_id =
+                        cur_line.incident_entity( in_boundary_i ).parent_gmge(
+                            Interface< 3 >::type_name_static() ).index();
+                    ringmesh_assert( cur_interface_id != NO_ID );
+                    if( cur_interface_id != first_interface_id ) {
+                        at_least_two_different_interfaces = true;
+                        break;
+                    }
+                }
+
+                if( !at_least_two_different_interfaces ) {
+                    Logger::warn( "GeoModel",
+                        "All in boundaries (surfaces) of line ", line_i,
+                        " are children of a same interface." );
+                    set_invalid_model();
                 }
             }
         }

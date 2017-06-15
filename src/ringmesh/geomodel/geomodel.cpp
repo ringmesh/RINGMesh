@@ -176,7 +176,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModel< DIMENSION >::set_wells( const WellGroup* wells )
+    void GeoModel< DIMENSION >::set_wells( const WellGroup< DIMENSION >* wells )
     {
         wells_ = wells;
     }
