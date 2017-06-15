@@ -41,13 +41,13 @@
 
 namespace RINGMesh {
 
-    template< index_t DIMENSION >
+    template< index_t DIMENSION > RINGMESH_API
     MeshEntityTypeBoundaryMap< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::boundary_relationships_;
 
-    template< index_t DIMENSION >
+    template< index_t DIMENSION > RINGMESH_API
     MeshEntityTypeIncidentEntityMap< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::incident_entity_relationships_;
 
-    template< index_t DIMENSION >
+    template< index_t DIMENSION > RINGMESH_API
     MeshEntityTypes< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::mesh_entity_types_;
 
     template< index_t DIMENSION >
