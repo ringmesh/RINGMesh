@@ -357,7 +357,7 @@ namespace RINGMesh {
      * @details It is a unique point.
      */
     template< index_t DIMENSION >
-    class Corner: public GeoModelMeshEntity< DIMENSION > {
+    class Corner final: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -489,7 +489,7 @@ namespace RINGMesh {
      * a 1-manifold (Line with no T intersections).
      */
     template< index_t DIMENSION >
-    class Line: public GeoModelMeshEntity< DIMENSION > {
+    class Line final: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -643,12 +643,12 @@ namespace RINGMesh {
      * (all edges of the polygons are in at most 2 polygons)
      */
     template< index_t DIMENSION >
-    class Surface: public GeoModelMeshEntity< DIMENSION > {
+    class SurfaceBase: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
 
-        virtual ~Surface()
+        virtual ~SurfaceBase()
         {
             this->unbind_vertex_mapping_attribute();
         }
@@ -775,7 +775,7 @@ namespace RINGMesh {
             return *surface_mesh_;
         }
     protected:
-        Surface(
+        SurfaceBase(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
             const MeshType type )
@@ -821,6 +821,32 @@ namespace RINGMesh {
         std::shared_ptr< SurfaceMesh< DIMENSION > > surface_mesh_;
     };
 
+    template< index_t DIMENSION >
+    class Surface final: public SurfaceBase< DIMENSION > {
+        friend class GeoModelMeshEntityAccess< DIMENSION > ;
+    private:
+        Surface(
+            const GeoModel< DIMENSION >& geomodel,
+            index_t id,
+            const MeshType type )
+            : SurfaceBase< DIMENSION >( geomodel, id, type )
+        {
+        }
+    };
+
+    template< >
+    class Surface< 3 > final: public SurfaceBase< 3 > {
+        friend class GeoModelMeshEntityAccess< 3 > ;
+    private:
+        Surface( const GeoModel< 3 >& geomodel, index_t id, const MeshType type )
+            : SurfaceBase< 3 >( geomodel, id, type )
+        {
+        }
+
+    public:
+        const Region< 3 >& incident_entity( index_t x ) const;
+    };
+
     /*!
      * @brief A GeoModelEntity of type REGION
      *
@@ -830,7 +856,7 @@ namespace RINGMesh {
      * Its volumetric mesh is optional.
      */
     template< index_t DIMENSION >
-    class Region: public GeoModelMeshEntity< DIMENSION > {
+    class Region final: public GeoModelMeshEntity< DIMENSION > {
         ringmesh_template_assert_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -1090,7 +1116,7 @@ namespace RINGMesh {
         {
             return *volume_mesh_;
         }
-    protected:
+    private:
         Region(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
@@ -1102,7 +1128,6 @@ namespace RINGMesh {
 
         virtual bool is_mesh_valid() const final;
 
-    private:
         void update_mesh_storage_type(
             std::unique_ptr< VolumeMesh< DIMENSION > > mesh )
         {
