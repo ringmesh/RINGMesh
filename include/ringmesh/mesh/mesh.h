@@ -1016,22 +1016,38 @@ namespace RINGMesh {
      * class composed of meshes from all the dimensions
      */
     template< index_t DIMENSION >
-    class RINGMESH_API MeshSet {
-        ringmesh_disable_copy( MeshSet );
-        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
+    class MeshSetBase {
+    ringmesh_disable_copy( MeshSetBase );
+    ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        MeshSet();
-
         void create_point_set_mesh( const MeshType type );
         void create_line_mesh( const MeshType type );
         void create_surface_mesh( const MeshType type );
-        void create_volume_mesh( const MeshType type );
+
+    protected:
+        MeshSetBase();
 
     public:
         std::unique_ptr< PointSetMesh< DIMENSION > > point_set_mesh;
         std::unique_ptr< LineMesh< DIMENSION > > line_mesh;
         std::unique_ptr< SurfaceMesh< DIMENSION > > surface_mesh;
-        std::unique_ptr< VolumeMesh< DIMENSION > > volume_mesh;
+    };
 
+    template< index_t DIMENSION >
+    class MeshSet: public MeshSetBase< DIMENSION > {
+    public:
+        MeshSet() = default;
+    };
+
+
+    template< >
+    class MeshSet< 3 >: public MeshSetBase< 3 > {
+    public:
+        MeshSet();
+
+        void create_volume_mesh( const MeshType type );
+
+    public:
+        std::unique_ptr< VolumeMesh< 3 > > volume_mesh;
     };
 }
