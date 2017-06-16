@@ -440,7 +440,8 @@ namespace {
         std::vector< std::pair< index_t, bool > > sorted_polygons_;
     };
 
-    class RegionTopologyFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces< 3 > {
+    class RegionTopologyFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces<
+        3 > {
     public:
         RegionTopologyFromGeoModelSurfaces( const GeoModel< 3 >& geomodel )
             :
@@ -512,7 +513,8 @@ namespace {
      * are the same.
      */
     template< index_t DIMENSION >
-    class LineGeometryFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces< DIMENSION > {
+    class LineGeometryFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces<
+        DIMENSION > {
     public:
         /*!
          * @param geomodel GeoModel providing the Surfaces
@@ -520,7 +522,9 @@ namespace {
          *  from a GeoModel Surfaces are collected for each Line< DIMENSION >.
          */
         LineGeometryFromGeoModelSurfaces( const GeoModel< DIMENSION >& geomodel )
-            : CommonDataFromGeoModelSurfaces< DIMENSION >( geomodel ), cur_border_polygon_( 0 )
+            :
+                CommonDataFromGeoModelSurfaces< DIMENSION >( geomodel ),
+                cur_border_polygon_( 0 )
         {
             visited_.resize( this->border_polygons_.size(), false );
         }
@@ -846,86 +850,63 @@ namespace RINGMesh {
         const std::vector< GeoModelRegionFromSurfaces >& region_info =
             region_computer.region_info();
 
-        if( geomodel_.nb_surfaces() == 1 ) {
-            if( geomodel_.nb_lines() != 0 ) {
-                Logger::err( "GeoModel",
-                    "The unique surface provided to build the geomodel has boundaries " );
-                return;
-            } else {
-                /// If there is only one surface, its inside is set to be
-                /// the + side. No further check.
-                bool inside = true;
-                // Create the region - set the surface on its boundaries
-                gmme_id region_id( Region< DIMENSION >::type_name_static(),
-                    geomodel_.nb_regions() );
-                topology.create_mesh_entities(
-                    Region< DIMENSION >::type_name_static(), 1 );
-                gmme_id surface_id( Surface< DIMENSION >::type_name_static(), 0 );
-                topology.add_mesh_entity_boundary_relation( region_id, surface_id,
-                    inside );
+        if( geomodel_.nb_surfaces() < 2 || geomodel_.nb_lines() == 0 ) {
+            throw RINGMeshException( "GeoModel",
+                "You need at least 1 line and 2 surfaces to use"
+                    "GeoModelBuilder::build_regions_from_lines_and_surfaces" );
+        }
 
-                // Set universe boundary
-                topology.add_universe_boundary( 0, !inside );
+        // Each side of each Surface is in one Region( +side is first )
+        std::vector< index_t > surf_2_region( 2 * geomodel_.nb_surfaces(), NO_ID );
+
+        // Start with the first Surface on its + side
+        std::stack< std::pair< index_t, bool > > S;
+        S.emplace( 0, true );
+
+        while( !S.empty() ) {
+            std::pair< index_t, bool > cur = S.top();
+            S.pop();
+            // This side is already assigned
+            if( surf_2_region[cur.second == true ? 2 * cur.first : 2 * cur.first + 1]
+                != NO_ID ) {
+                continue;
             }
-        } else {
-            // Each side of each Surface is in one Region( +side is first )
-            std::vector< index_t > surf_2_region( 2 * geomodel_.nb_surfaces(),
-                NO_ID );
-
-            // Start with the first Surface on its + side
-            std::stack< std::pair< index_t, bool > > S;
-            S.emplace( 0, true );
-
-            while( !S.empty() ) {
-                std::pair< index_t, bool > cur = S.top();
-                S.pop();
-                // This side is already assigned
-                if( surf_2_region[
-                    cur.second == true ? 2 * cur.first : 2 * cur.first + 1]
-                    != NO_ID ) {
+            // Create a new region
+            gmme_id cur_region_id( Region< DIMENSION >::type_name_static(),
+                geomodel_.nb_regions() );
+            topology.create_mesh_entities( Region< DIMENSION >::type_name_static(),
+                1 );
+            // Get all oriented surfaces defining this region
+            std::stack< std::pair< index_t, bool > > SR;
+            SR.push( cur );
+            while( !SR.empty() ) {
+                std::pair< index_t, bool > s = SR.top();
+                SR.pop();
+                index_t s_id = s.second == true ? 2 * s.first : 2 * s.first + 1;
+                // This oriented surface has already been visited
+                if( surf_2_region[s_id] != NO_ID ) {
                     continue;
                 }
-                // Create a new region
-                gmme_id cur_region_id( Region< DIMENSION >::type_name_static(),
-                    geomodel_.nb_regions() );
-                topology.create_mesh_entities(
-                    Region< DIMENSION >::type_name_static(), 1 );
-                // Get all oriented surfaces defining this region
-                std::stack< std::pair< index_t, bool > > SR;
-                SR.push( cur );
-                while( !SR.empty() ) {
-                    std::pair< index_t, bool > s = SR.top();
-                    SR.pop();
-                    index_t s_id = s.second == true ? 2 * s.first : 2 * s.first + 1;
-                    // This oriented surface has already been visited
-                    if( surf_2_region[s_id] != NO_ID ) {
-                        continue;
-                    }
-                    // Add the surface to the current region
-                    topology.add_mesh_entity_boundary_relation( cur_region_id,
-                        gmme_id( Surface< DIMENSION >::type_name_static(), s.first ),
-                        s.second );
-                    surf_2_region[s_id] = cur_region_id.index();
+                // Add the surface to the current region
+                topology.add_mesh_entity_boundary_relation( cur_region_id,
+                    gmme_id( Surface< DIMENSION >::type_name_static(), s.first ),
+                    s.second );
+                surf_2_region[s_id] = cur_region_id.index();
 
-                    // Check the other side of the surface and push it in S
-                    index_t s_id_opp =
-                        !s.second == true ? 2 * s.first : 2 * s.first + 1;
-                    if( surf_2_region[s_id_opp] == NO_ID ) {
-                        S.emplace( s.first, !s.second );
-                    }
-                    // For each contact, push the next oriented surface that is in the same region
-                    const Surface< DIMENSION >& surface = geomodel_.surface(
-                        s.first );
-                    for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
-                        const std::pair< index_t, bool >& n =
-                            region_info[surface.boundary_gmme( i ).index()].next(
-                                s );
-                        index_t n_id =
-                            n.second == true ? 2 * n.first : 2 * n.first + 1;
+                // Check the other side of the surface and push it in S
+                index_t s_id_opp = !s.second == true ? 2 * s.first : 2 * s.first + 1;
+                if( surf_2_region[s_id_opp] == NO_ID ) {
+                    S.emplace( s.first, !s.second );
+                }
+                // For each contact, push the next oriented surface that is in the same region
+                const Surface< DIMENSION >& surface = geomodel_.surface( s.first );
+                for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
+                    const std::pair< index_t, bool >& n =
+                        region_info[surface.boundary_gmme( i ).index()].next( s );
+                    index_t n_id = n.second == true ? 2 * n.first : 2 * n.first + 1;
 
-                        if( surf_2_region[n_id] == NO_ID ) {
-                            SR.push( n );
-                        }
+                    if( surf_2_region[n_id] == NO_ID ) {
+                        SR.push( n );
                     }
                 }
             }
