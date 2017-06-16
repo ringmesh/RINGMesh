@@ -108,7 +108,7 @@ namespace RINGMesh {
          * \return the (lowercase) string associated to a
          * GeoModelELement::GEOL_FEATURE
          */
-        static std::string geol_name( GEOL_FEATURE feature);
+        static std::string geol_name( GEOL_FEATURE feature );
         static bool is_fault( GEOL_FEATURE feature );
         static bool is_stratigraphic_limit( GEOL_FEATURE feature )
         {
@@ -191,7 +191,14 @@ namespace RINGMesh {
         GEOL_FEATURE geol_feature_;
     };
 
-    using GeoModelGeologicalEntityFactory3D = GEO::Factory1< GeoModelGeologicalEntity< 3 >, GeoModel < 3 > >;
+    template< index_t DIMENSION >
+    using GeoModelGeologicalEntityFactory = GEO::Factory1< GeoModelGeologicalEntity< DIMENSION >, GeoModel < DIMENSION > >;
+
+    using GeoModelGeologicalEntityFactory2D = GeoModelGeologicalEntityFactory< 2 >;
+    using GeoModelGeologicalEntityFactory3D = GeoModelGeologicalEntityFactory< 3 >;
+
+#define ringmesh_register_GeoModelGeologicalEntity2D_creator( type ) \
+    geo_register_creator( GeoModelGeologicalEntityFactory2D, type, type::type_name_static() )
 
 #define ringmesh_register_GeoModelGeologicalEntity3D_creator( type ) \
     geo_register_creator( GeoModelGeologicalEntityFactory3D, type, type::type_name_static() )
@@ -259,10 +266,10 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelGeologicalEntityAccess {
     ringmesh_disable_copy( GeoModelGeologicalEntityAccess );
-        friend class GeoModelBuilderTopology< DIMENSION >;
-        friend class GeoModelBuilderGeology< DIMENSION >;
-        friend class GeoModelBuilderInfo< DIMENSION>;
-        friend class GeoModelBuilderRemoval< DIMENSION >;
+        friend class GeoModelBuilderTopology< DIMENSION > ;
+        friend class GeoModelBuilderGeology< DIMENSION > ;
+        friend class GeoModelBuilderInfo< DIMENSION > ;
+        friend class GeoModelBuilderRemoval< DIMENSION > ;
 
     private:
         GeoModelGeologicalEntityAccess( GeoModelGeologicalEntity< DIMENSION >& gmge )
