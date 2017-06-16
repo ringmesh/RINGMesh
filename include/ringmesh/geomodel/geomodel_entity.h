@@ -61,9 +61,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelEntity );
     public:
 
-        virtual ~GeoModelEntity()
-        {
-        }
+        virtual ~GeoModelEntity() = default;
 
         virtual bool is_on_voi() const = 0;
         virtual bool is_valid() const = 0;
@@ -128,9 +126,7 @@ namespace RINGMesh {
             return UniverseType();
         }
 
-        virtual ~Universe()
-        {
-        }
+        virtual ~Universe() = default;
 
         virtual bool is_valid() const override;
         virtual bool is_on_voi() const override
@@ -193,9 +189,7 @@ namespace RINGMesh {
         {
         }
 
-        ~UniverseAccess()
-        {
-        }
+        ~UniverseAccess() = default;
 
         std::vector< gmme_id >& modifiable_boundaries()
         {
