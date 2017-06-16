@@ -172,11 +172,13 @@ namespace RINGMesh {
         }
     }
 
+    template class RINGMESH_API MeshEntityTypes< 2 > ;
     template class RINGMESH_API MeshEntityTypeManagerBase< 2 > ;
     template class RINGMESH_API MeshEntityTypeManager< 2 > ;
     template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 2 > ;
     template class RINGMESH_API MeshEntityTypeBoundaryMap< 2 > ;
 
+    template class RINGMESH_API MeshEntityTypes< 3 > ;
     template class RINGMESH_API MeshEntityTypeManagerBase< 3 > ;
     template class RINGMESH_API MeshEntityTypeManager< 3 > ;
     template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 3 > ;
