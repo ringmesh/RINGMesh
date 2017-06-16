@@ -173,6 +173,10 @@ namespace RINGMesh {
             index_t id,
             index_t boundary_id );
 
+        void copy_mesh_entity_topology_base( const GeoModel< DIMENSION >& from );
+
+        void copy_all_mesh_entity_topology( const GeoModel< DIMENSION >& from );
+
     private:
         GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;

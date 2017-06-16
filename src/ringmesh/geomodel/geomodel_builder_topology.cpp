@@ -136,13 +136,34 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilderTopology< DIMENSION >::copy_topology(
+    void GeoModelBuilderTopology< DIMENSION >::copy_mesh_entity_topology_base(
         const GeoModel< DIMENSION >& from )
     {
         copy_mesh_entity_topology< Corner >( from );
         copy_mesh_entity_topology< Line >( from );
         copy_mesh_entity_topology< Surface >( from );
+    }
+
+    template< >
+    void GeoModelBuilderTopology< 2 >::copy_all_mesh_entity_topology(
+        const GeoModel< 2 >& from )
+    {
+        copy_mesh_entity_topology_base( from );
+    }
+
+    template< >
+    void GeoModelBuilderTopology< 3 >::copy_all_mesh_entity_topology(
+        const GeoModel< 3 >& from )
+    {
+        copy_mesh_entity_topology_base( from );
         copy_mesh_entity_topology< Region >( from );
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderTopology< DIMENSION >::copy_topology(
+        const GeoModel< DIMENSION >& from )
+    {
+        copy_all_mesh_entity_topology( from );
 
         UniverseAccess< DIMENSION > universe_access(
             geomodel_access_.modifiable_universe() );
@@ -308,15 +329,61 @@ namespace RINGMesh {
         return create_mesh_entity< Line >();
     }
 
-    template< index_t DIMENSION >
-    void GeoModelBuilderTopology< DIMENSION >::compute_universe()
+    template< >
+    void GeoModelBuilderTopology< 2 >::add_universe_boundary(
+        index_t boundary_id,
+        bool side )
+    {
+        gmme_id boundary( Line< 2 >::type_name_static(), boundary_id );
+        UniverseAccess< 2 > universe_access(
+            geomodel_access_.modifiable_universe() );
+        universe_access.modifiable_boundaries().push_back( boundary );
+        universe_access.modifiable_sides().push_back( side );
+    }
+
+    template< >
+    void GeoModelBuilderTopology< 3 >::add_universe_boundary(
+        index_t boundary_id,
+        bool side )
+    {
+        gmme_id boundary( Surface< 3 >::type_name_static(), boundary_id );
+        UniverseAccess< 3 > universe_access(
+            geomodel_access_.modifiable_universe() );
+        universe_access.modifiable_boundaries().push_back( boundary );
+        universe_access.modifiable_sides().push_back( side );
+    }
+
+    template< >
+    void GeoModelBuilderTopology< 2 >::compute_universe()
+    {
+        if( geomodel_.universe().nb_boundaries() != 0 ) return;
+        std::vector< bool > is_line_universe_boundary( geomodel_.nb_lines(), false );
+        std::vector< bool > line_side( geomodel_.nb_lines() );
+        for( index_t s = 0; s < geomodel_.nb_surfaces(); s++ ) {
+            const Surface< 2 >& surface = geomodel_.surface( s );
+            for( index_t l = 0; l < surface.nb_boundaries(); l++ ) {
+                index_t line_id = surface.boundary_gmme( l ).index();
+                is_line_universe_boundary[line_id] =
+                    !is_line_universe_boundary[line_id];
+                line_side[line_id] = surface.side( l );
+            }
+        }
+
+        for( index_t l = 0; l < geomodel_.nb_lines(); l++ ) {
+            if( !is_line_universe_boundary[l] ) continue;
+            add_universe_boundary( l, line_side[l] );
+        }
+    }
+
+    template< >
+    void GeoModelBuilderTopology< 3 >::compute_universe()
     {
         if( geomodel_.universe().nb_boundaries() != 0 ) return;
         std::vector< bool > is_surface_universe_boundary( geomodel_.nb_surfaces(),
             false );
         std::vector< bool > surface_side( geomodel_.nb_surfaces() );
         for( index_t r = 0; r < geomodel_.nb_regions(); r++ ) {
-            const Region< DIMENSION >& region = geomodel_.region( r );
+            const Region< 3 >& region = geomodel_.region( r );
             for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
                 index_t surface_id = region.boundary_gmme( s ).index();
                 is_surface_universe_boundary[surface_id] =
@@ -515,19 +582,6 @@ namespace RINGMesh {
         RelationshipManager& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
         manager.set_boundary_to_boundary_relationship( relation_id, boundary );
-
-    }
-
-    template< index_t DIMENSION >
-    void GeoModelBuilderTopology< DIMENSION >::add_universe_boundary(
-        index_t boundary_id,
-        bool side )
-    {
-        gmme_id boundary( Surface< DIMENSION >::type_name_static(), boundary_id );
-        UniverseAccess< DIMENSION > universe_access(
-            geomodel_access_.modifiable_universe() );
-        universe_access.modifiable_boundaries().push_back( boundary );
-        universe_access.modifiable_sides().push_back( side );
     }
 
     template< index_t DIMENSION >

@@ -823,15 +823,29 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class Surface final: public SurfaceBase< DIMENSION > {
-        friend class GeoModelMeshEntityAccess< DIMENSION > ;
+    };
+
+
+    template< >
+    class Surface< 2 > final: public SurfaceBase< 2 > {
+        friend class GeoModelMeshEntityAccess< 2 > ;
     private:
-        Surface(
-            const GeoModel< DIMENSION >& geomodel,
-            index_t id,
-            const MeshType type )
-            : SurfaceBase< DIMENSION >( geomodel, id, type )
+        Surface( const GeoModel< 2 >& geomodel, index_t id, const MeshType type )
+            : SurfaceBase< 2 >( geomodel, id, type )
         {
         }
+
+    public:
+        bool side( index_t i ) const
+        {
+            return sides_[i];
+        }
+    private:
+        /*! Additional information to store oriented boundary Lines
+         * Side: + (true) or - (false)
+         * The size of this vector must be the same than boundary_
+         */
+        std::vector< bool > sides_;
     };
 
     template< >
