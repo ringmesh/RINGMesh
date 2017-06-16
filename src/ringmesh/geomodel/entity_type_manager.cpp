@@ -42,16 +42,22 @@
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    MeshEntityTypeBoundaryMap< DIMENSION > MeshEntityTypeManager< DIMENSION >::boundary_relationships_;
+    MeshEntityTypeBoundaryMap< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::boundary_relationships_;
 
     template< index_t DIMENSION >
-    MeshEntityTypeIncidentEntityMap< DIMENSION > MeshEntityTypeManager< DIMENSION >::incident_entity_relationships_;
+    MeshEntityTypeIncidentEntityMap< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::incident_entity_relationships_;
 
     template< index_t DIMENSION >
-    MeshEntityTypes< DIMENSION > MeshEntityTypeManager< DIMENSION >::mesh_entity_types_;
+    MeshEntityTypes< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::mesh_entity_types_;
 
     template< index_t DIMENSION >
-    MeshEntityTypeBoundaryMapBase< DIMENSION >::MeshEntityTypeBoundaryMapBase()
+    MeshEntityTypeBoundaryMap< DIMENSION >::MeshEntityTypeBoundaryMap()
+    {
+        initialize_base();
+    }
+
+    template< index_t DIMENSION >
+    void MeshEntityTypeBoundaryMap< DIMENSION >::initialize_base()
     {
         register_boundary( Corner< DIMENSION >::type_name_static(),
             ForbiddenMeshEntityType::type_name_static() );
@@ -61,15 +67,16 @@ namespace RINGMesh {
             Line< DIMENSION >::type_name_static() );
     }
 
+    template< >
     MeshEntityTypeBoundaryMap< 3 >::MeshEntityTypeBoundaryMap()
-        : MeshEntityTypeBoundaryMapBase< 3 >()
     {
+        initialize_base();
         register_boundary( Region< 3 >::type_name_static(),
             Surface< 3 >::type_name_static() );
     }
 
     template< index_t DIMENSION >
-    MeshEntityTypeIncidentEntityMapBase< DIMENSION >::MeshEntityTypeIncidentEntityMapBase()
+    void MeshEntityTypeIncidentEntityMap< DIMENSION >::initialize_base()
     {
         register_incident_entity( Corner< DIMENSION >::type_name_static(),
             Line< DIMENSION >::type_name_static() );
@@ -77,33 +84,42 @@ namespace RINGMesh {
             Surface< DIMENSION >::type_name_static() );
     }
 
+    template< >
     MeshEntityTypeIncidentEntityMap< 3 >::MeshEntityTypeIncidentEntityMap()
-        : MeshEntityTypeIncidentEntityMapBase< 3 >()
     {
+        initialize_base();
         register_incident_entity( Surface< 3 >::type_name_static(),
             Region< 3 >::type_name_static() );
         register_incident_entity( Region< 3 >::type_name_static(),
             ForbiddenMeshEntityType::type_name_static() );
     }
 
+    template< >
     MeshEntityTypeIncidentEntityMap< 2 >::MeshEntityTypeIncidentEntityMap()
-        : MeshEntityTypeIncidentEntityMapBase< 2 >()
     {
+        initialize_base();
         register_incident_entity( Surface< 2 >::type_name_static(),
             ForbiddenMeshEntityType::type_name_static() );
     }
 
     template< index_t DIMENSION >
-    MeshEntityTypesBase< DIMENSION >::MeshEntityTypesBase()
+    MeshEntityTypes< DIMENSION >::MeshEntityTypes()
+    {
+        initialize_base();
+    }
+
+    template< index_t DIMENSION >
+    void MeshEntityTypes< DIMENSION >::initialize_base()
     {
         mesh_entity_types_.push_back( Corner< DIMENSION >::type_name_static() );
         mesh_entity_types_.push_back( Line< DIMENSION >::type_name_static() );
         mesh_entity_types_.push_back( Surface< DIMENSION >::type_name_static() );
     }
 
+    template< >
     MeshEntityTypes< 3 >::MeshEntityTypes()
-        : MeshEntityTypesBase< 3 >()
     {
+        initialize_base();
         mesh_entity_types_.push_back( Region< 3 >::type_name_static() );
     }
 
@@ -160,7 +176,13 @@ namespace RINGMesh {
         }
     }
 
-    template class MeshEntityTypeManager< 3 > ;
-    template class MeshEntityTypeIncidentEntityMap< 3 > ;
-    template class MeshEntityTypeBoundaryMap< 3 > ;
+    template class RINGMESH_API MeshEntityTypeManagerBase< 2 > ;
+    template class RINGMESH_API MeshEntityTypeManager< 2 > ;
+    template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 2 > ;
+    template class RINGMESH_API MeshEntityTypeBoundaryMap< 2 > ;
+
+    template class RINGMESH_API MeshEntityTypeManagerBase< 3 > ;
+    template class RINGMESH_API MeshEntityTypeManager< 3 > ;
+    template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 3 > ;
+    template class RINGMESH_API MeshEntityTypeBoundaryMap< 3 > ;
 }

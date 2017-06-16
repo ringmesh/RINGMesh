@@ -81,21 +81,7 @@ namespace RINGMesh {
 
         bool create_mesh_entities(
             const MeshEntityType& type,
-            index_t nb_additional_entities )
-        {
-            if( MeshEntityTypeManager< DIMENSION >::is_corner( type ) ) {
-                return this->create_mesh_entities< Corner >( nb_additional_entities );
-            } else if( MeshEntityTypeManager< DIMENSION >::is_line( type ) ) {
-                return create_mesh_entities< Line >( nb_additional_entities );
-            } else if( MeshEntityTypeManager< DIMENSION >::is_surface( type ) ) {
-                return create_mesh_entities< Surface >( nb_additional_entities );
-            } else if( MeshEntityTypeManager< DIMENSION >::is_region( type ) ) {
-                return create_mesh_entities< Region >( nb_additional_entities );
-            } else {
-                ringmesh_assert_not_reached;
-                return false;
-            }
-        }
+            index_t nb_additional_entities );
 
         void remove_mesh_entity_boundary_relation(
             const gmme_id& incident_entity,
@@ -128,7 +114,7 @@ namespace RINGMesh {
          * @param[in] point Geometric location of the Corner
          * @return Index of the Corner
          */
-        gmme_id find_or_create_corner( const vec3& point );
+        gmme_id find_or_create_corner( const vecn< DIMENSION >& point );
         gmme_id find_or_create_corner( index_t geomodel_point_id );
 
         /*!
@@ -136,7 +122,8 @@ namespace RINGMesh {
          * @param[in] vertices Coordinates of the vertices of the line
          * @return Index of the Line
          */
-        gmme_id find_or_create_line( const std::vector< vec3 >& vertices );
+        gmme_id find_or_create_line(
+            const std::vector< vecn< DIMENSION > >& vertices );
 
         /*!
          * @brief Finds or creates a line knowing its topological adjacencies
@@ -176,6 +163,19 @@ namespace RINGMesh {
         index_t check_if_boundary_incident_entity_relation_already_exists(
             const gmme_id& incident_entity,
             const gmme_id& boundary );
+
+        void add_mesh_entity_boundary_relation_base(
+            const gmme_id& boundary,
+            const gmme_id& incident_entity );
+
+        void set_mesh_entity_boundary_base(
+            const gmme_id& gme_id,
+            index_t id,
+            index_t boundary_id );
+
+        void copy_mesh_entity_topology_base( const GeoModel< DIMENSION >& from );
+
+        void copy_all_mesh_entity_topology( const GeoModel< DIMENSION >& from );
 
     private:
         GeoModelBuilder< DIMENSION >& builder_;
