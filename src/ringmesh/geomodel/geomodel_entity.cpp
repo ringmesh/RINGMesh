@@ -45,24 +45,38 @@
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    Universe< DIMENSION >::Universe( const GeoModel< DIMENSION >& geomodel )
+    UniverseBase< DIMENSION >::UniverseBase( const GeoModel< DIMENSION >& geomodel )
         : GeoModelEntity< DIMENSION >( geomodel, NO_ID )
     {
         this->name_ = universe_type_name();
     }
 
     template< index_t DIMENSION >
-    bool Universe< DIMENSION >::is_valid() const
+    bool UniverseBase< DIMENSION >::is_valid() const
     {
         return true;
     }
 
-    template class RINGMESH_API GeoModelEntity< 2 >;
-    template class RINGMESH_API Universe< 2 >;
-    template class RINGMESH_API UniverseAccess< 2 >;
+    Universe< 2 >::Universe( const GeoModel< 2 >& geomodel )
+        : UniverseBase( geomodel )
+    {
+    }
 
-    template class RINGMESH_API GeoModelEntity< 3 >;
-    template class RINGMESH_API Universe< 3 >;
-    template class RINGMESH_API UniverseAccess< 3 >;
+    Universe< 3 >::Universe( const GeoModel< 3 >& geomodel )
+        : UniverseBase( geomodel )
+    {
+    }
+
+    template class RINGMESH_API GeoModelEntity< 2 > ;
+    template class RINGMESH_API UniverseBase< 2 > ;
+    template class RINGMESH_API Universe< 2 > ;
+    template class RINGMESH_API UniverseAccessBase< 2 > ;
+    template class RINGMESH_API UniverseAccess< 2 > ;
+
+    template class RINGMESH_API GeoModelEntity< 3 > ;
+    template class RINGMESH_API UniverseBase< 3 > ;
+    template class RINGMESH_API Universe< 3 > ;
+    template class RINGMESH_API UniverseAccessBase< 3 > ;
+    template class RINGMESH_API UniverseAccess< 3 > ;
 
 }
