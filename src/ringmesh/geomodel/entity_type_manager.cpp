@@ -172,13 +172,6 @@ namespace RINGMesh {
         }
     }
 
-    template< index_t DIMENSION > RINGMESH_API MeshEntityTypeIncidentEntityMap< DIMENSION > MeshEntityTypeManagerBase<
-        DIMENSION >::incident_entity_relationships_;
-
-
-    template< index_t DIMENSION > MeshEntityTypeBoundaryMap< DIMENSION > RINGMESH_API MeshEntityTypeManagerBase<
-        DIMENSION >::boundary_relationships_;
-
     template class RINGMESH_API MeshEntityTypeManagerBase< 2 > ;
     template class RINGMESH_API MeshEntityTypeManager< 2 > ;
     template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 2 > ;
