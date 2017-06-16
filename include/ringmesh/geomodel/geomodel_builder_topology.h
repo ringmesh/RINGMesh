@@ -47,6 +47,7 @@
  */
 
 namespace RINGMesh {
+    template< index_t DIMENSION > class GeoModelBuilderBase;
     template< index_t DIMENSION > class GeoModelBuilder;
 }
 
@@ -56,6 +57,7 @@ namespace RINGMesh {
     class GeoModelBuilderTopology {
     ringmesh_disable_copy( GeoModelBuilderTopology );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
 
     public:
