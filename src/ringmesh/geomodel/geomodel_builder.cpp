@@ -852,8 +852,7 @@ namespace RINGMesh {
 
         if( geomodel_.nb_surfaces() < 2 || geomodel_.nb_lines() == 0 ) {
             throw RINGMeshException( "GeoModel",
-                "You need at least 1 line and 2 surfaces to use"
-                    "GeoModelBuilder::build_regions_from_lines_and_surfaces" );
+                "You need at least 1 line and 2 surfaces to use GeoModelBuilder::build_regions_from_lines_and_surfaces" );
         }
 
         // Each side of each Surface is in one Region( +side is first )
@@ -910,41 +909,40 @@ namespace RINGMesh {
                     }
                 }
             }
-
-            // Check if all the surfaces were visited
-            // If not, this means that there are additionnal regions included in those built
-            if( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID )
-                != 0 ) {
-                Logger::err( "GeoModel",
-                    "Small bubble regions were skipped at geomodel building " );
-                // Or, most probably, we have a problem before
-                ringmesh_assert( false );
-                /// @todo handle the region building of small bubble regions
-            }
-
-            topology.compute_universe();
-            // We need to remove from the regions_ the one corresponding
-            // to the universe_, the one with the biggest volume
-            double max_volume = -1.;
-            index_t universe_id = NO_ID;
-            for( index_t i = 0; i < geomodel_.nb_regions(); ++i ) {
-                double cur_volume = geomodel_.region( i ).size();
-                if( cur_volume > max_volume ) {
-                    max_volume = cur_volume;
-                    universe_id = i;
-                }
-            }
-            const Region< DIMENSION >& cur_region = geomodel_.region( universe_id );
-            for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
-                // Fill the Universe region boundaries
-                // They are supposed to be empty
-                topology.add_universe_boundary( cur_region.boundary( i ).index(),
-                    cur_region.side( i ) );
-            }
-            std::set< gmme_id > to_erase;
-            to_erase.insert( cur_region.gmme() );
-            removal.remove_mesh_entities( to_erase );
         }
+
+        // Check if all the surfaces were visited
+        // If not, this means that there are additionnal regions included in those built
+        if( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID ) != 0 ) {
+            Logger::err( "GeoModel",
+                "Small bubble regions were skipped at geomodel building " );
+            // Or, most probably, we have a problem before
+            ringmesh_assert( false );
+            /// @todo handle the region building of small bubble regions
+        }
+
+        topology.compute_universe();
+        // We need to remove from the regions_ the one corresponding
+        // to the universe_, the one with the biggest volume
+        double max_volume = -1.;
+        index_t universe_id = NO_ID;
+        for( index_t i = 0; i < geomodel_.nb_regions(); ++i ) {
+            double cur_volume = geomodel_.region( i ).size();
+            if( cur_volume > max_volume ) {
+                max_volume = cur_volume;
+                universe_id = i;
+            }
+        }
+        const Region< DIMENSION >& cur_region = geomodel_.region( universe_id );
+        for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
+            // Fill the Universe region boundaries
+            // They are supposed to be empty
+            topology.add_universe_boundary( cur_region.boundary( i ).index(),
+                cur_region.side( i ) );
+        }
+        std::set< gmme_id > to_erase;
+        to_erase.insert( cur_region.gmme() );
+        removal.remove_mesh_entities( to_erase );
     }
 
     //    template class RINGMESH_API GeoModelBuilder< 2 > ;
