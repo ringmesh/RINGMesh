@@ -171,11 +171,11 @@ namespace {
     };
 
     template< index_t DIMENSION >
-    class GeoModelSurfacesBase {
-    ringmesh_disable_copy( GeoModelSurfacesBase );
+    class CommonDataFromGeoModelSurfaces {
+    ringmesh_disable_copy( CommonDataFromGeoModelSurfaces );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     protected:
-        GeoModelSurfacesBase( const GeoModel< DIMENSION >& geomodel )
+        CommonDataFromGeoModelSurfaces( const GeoModel< DIMENSION >& geomodel )
             : geomodel_( geomodel )
         {
             const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
@@ -440,11 +440,11 @@ namespace {
         std::vector< std::pair< index_t, bool > > sorted_polygons_;
     };
 
-    class RegionTopologyFromGeoModelSurfaces: public GeoModelSurfacesBase< 3 > {
+    class RegionTopologyFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces< 3 > {
     public:
         RegionTopologyFromGeoModelSurfaces( const GeoModel< 3 >& geomodel )
             :
-                GeoModelSurfacesBase< 3 >( geomodel ),
+                CommonDataFromGeoModelSurfaces< 3 >( geomodel ),
                 region_info_( geomodel.nb_lines() )
         {
         }
@@ -507,12 +507,12 @@ namespace {
     /*!
      * @brief Determines the geometry of the Lines of a GeoModel in which
      * the geometry of the Surfaces is given
-     * @details All the polygons on the boundaries are classified as belonging to a Line< 3 >
-     * Two neighboring edges on the boundary belong to the same Line< 3 > if their incident Surfaces
+     * @details All the polygons on the boundaries are classified as belonging to a Line< DIMENSION >
+     * Two neighboring edges on the boundary belong to the same Line< DIMENSION > if their incident Surfaces
      * are the same.
      */
     template< index_t DIMENSION >
-    class LineGeometryFromGeoModelSurfaces: public GeoModelSurfacesBase< DIMENSION > {
+    class LineGeometryFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces< DIMENSION > {
     public:
         /*!
          * @param geomodel GeoModel providing the Surfaces
@@ -520,7 +520,7 @@ namespace {
          *  from a GeoModel Surfaces are collected for each Line< DIMENSION >.
          */
         LineGeometryFromGeoModelSurfaces( const GeoModel< DIMENSION >& geomodel )
-            : GeoModelSurfacesBase< DIMENSION >( geomodel ), cur_border_polygon_( 0 )
+            : CommonDataFromGeoModelSurfaces< DIMENSION >( geomodel ), cur_border_polygon_( 0 )
         {
             visited_.resize( this->border_polygons_.size(), false );
         }
@@ -938,6 +938,7 @@ namespace RINGMesh {
                     "Small bubble regions were skipped at geomodel building " );
                 // Or, most probably, we have a problem before
                 ringmesh_assert( false );
+                /// @todo handle the region building of small bubble regions
             }
 
             topology.compute_universe();
