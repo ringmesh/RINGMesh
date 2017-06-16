@@ -205,13 +205,6 @@ namespace RINGMesh {
         }
     };
 
-    template< index_t DIMENSION > MeshEntityTypeIncidentEntityMap< DIMENSION > MeshEntityTypeManagerBase<
-        DIMENSION >::incident_entity_relationships_{};
-    template< index_t DIMENSION > MeshEntityTypeBoundaryMap< DIMENSION > MeshEntityTypeManagerBase<
-        DIMENSION >::boundary_relationships_{};
-    template< index_t DIMENSION > MeshEntityTypes< DIMENSION > MeshEntityTypeManagerBase<
-        DIMENSION >::mesh_entity_types_{};
-
     /*!
      * @brief this class contains methods to manage the type of the
      * GeoModelGeologicalEntity. It gives access to the number of geological entities of each
