@@ -1241,12 +1241,7 @@ namespace RINGMesh {
             return gmme_.incident_entities_;
         }
 
-        std::vector< bool >& modifiable_sides()
-        {
-            ringmesh_assert(
-                gmme_.type_name() == Region< DIMENSION >::type_name_static() );
-            return dynamic_cast< Region< DIMENSION >& >( gmme_ ).sides_;
-        }
+        std::vector< bool >& modifiable_sides();
 
         std::vector< index_t >& modifiable_parents()
         {

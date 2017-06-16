@@ -47,6 +47,7 @@
  */
 
 namespace RINGMesh {
+    template< index_t DIMENSION > class GeoModelBuilderBase;
     template< index_t DIMENSION > class GeoModelBuilder;
 }
 
@@ -589,6 +590,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelBuilderRemoval: public GeoModelBuilderRemovalBase< DIMENSION > {
+        friend class GeoModelBuilderBase< DIMENSION >;
         friend class GeoModelBuilder< DIMENSION >;
     private:
         GeoModelBuilderRemoval(
@@ -599,6 +601,7 @@ namespace RINGMesh {
 
     template< >
     class GeoModelBuilderRemoval< 3 > : public GeoModelBuilderRemovalBase< 3 > {
+        friend class GeoModelBuilderBase< 3 >;
         friend class GeoModelBuilder< 3 >;
     private:
         GeoModelBuilderRemoval(

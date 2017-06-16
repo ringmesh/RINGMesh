@@ -970,8 +970,22 @@ namespace RINGMesh {
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
-    template class GeoModelMeshEntity< 2 >;
-//    template class GeoModelMeshEntityAccess< 2 >;
+    template< >
+    std::vector< bool >& GeoModelMeshEntityAccess< 2 >::modifiable_sides()
+    {
+        ringmesh_assert( gmme_.type_name() == Surface< 2 >::type_name_static() );
+        return dynamic_cast< Surface< 2 >& >( gmme_ ).sides_;
+    }
+
+    template< >
+    std::vector< bool >& GeoModelMeshEntityAccess< 3 >::modifiable_sides()
+    {
+        ringmesh_assert( gmme_.type_name() == Region< 3 >::type_name_static() );
+        return dynamic_cast< Region< 3 >& >( gmme_ ).sides_;
+    }
+
+    template class GeoModelMeshEntity< 2 > ;
+    template class GeoModelMeshEntityAccess< 2 > ;
     template class RINGMESH_API Corner< 2 > ;
     template class RINGMESH_API Line< 2 > ;
     template class RINGMESH_API SurfaceBase< 2 > ;
