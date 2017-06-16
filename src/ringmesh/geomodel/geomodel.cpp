@@ -59,7 +59,7 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    double compute_percentage_bbox_diagonal( const GeoModel< DIMENSION >& gm )
+    double compute_percentage_bbox_diagonal( const GeoModelBase< DIMENSION >& gm )
     {
         Box< DIMENSION > bbox;
         if( gm.universe().nb_boundaries() > 0 ) {
@@ -90,13 +90,13 @@ namespace {
 
 namespace RINGMesh {
     template< index_t DIMENSION >
-    GeoModel< DIMENSION >::GeoModel()
-        : mesh( *this ), epsilon_( -1 ), universe_( *this ), wells_( nullptr )
+    GeoModelBase< DIMENSION >::GeoModelBase( GeoModel< DIMENSION >& geomodel )
+        : mesh( geomodel ), epsilon_( -1 ), universe_( geomodel ), wells_( nullptr )
     {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModel< DIMENSION >::nb_mesh_entities(
+    index_t GeoModelBase< DIMENSION >::nb_mesh_entities(
         const MeshEntityType& type ) const
     {
         if( MeshEntityTypeManager< DIMENSION >::is_line( type ) ) {
@@ -105,8 +105,6 @@ namespace RINGMesh {
             return nb_corners();
         } else if( MeshEntityTypeManager< DIMENSION >::is_surface( type ) ) {
             return nb_surfaces();
-        } else if( MeshEntityTypeManager< DIMENSION >::is_region( type ) ) {
-            return nb_regions();
         } else {
             ringmesh_assert_not_reached;
             return 0;
@@ -114,7 +112,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const GeoModelMeshEntity< DIMENSION >& GeoModel< DIMENSION >::mesh_entity(
+    const GeoModelMeshEntity< DIMENSION >& GeoModelBase< DIMENSION >::mesh_entity(
         gmme_id id ) const
     {
         const MeshEntityType& type = id.type();
@@ -125,15 +123,13 @@ namespace RINGMesh {
             return corner( index );
         } else if( MeshEntityTypeManager< DIMENSION >::is_surface( type ) ) {
             return surface( index );
-        } else if( MeshEntityTypeManager< DIMENSION >::is_region( type ) ) {
-            return region( index );
         }
         ringmesh_assert_not_reached;
         return surface( 0 );
     }
 
     template< index_t DIMENSION >
-    const std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& GeoModel<
+    const std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& GeoModelBase<
         DIMENSION >::mesh_entities( const MeshEntityType& type ) const
     {
         if( MeshEntityTypeManager< DIMENSION >::is_corner( type ) ) {
@@ -142,8 +138,6 @@ namespace RINGMesh {
             return lines_;
         } else if( MeshEntityTypeManager< DIMENSION >::is_surface( type ) ) {
             return surfaces_;
-        } else if( MeshEntityTypeManager< DIMENSION >::is_region( type ) ) {
-            return regions_;
         } else {
             ringmesh_assert_not_reached;
             return surfaces_;
@@ -151,38 +145,34 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const Corner< DIMENSION >& GeoModel< DIMENSION >::corner( index_t index ) const
+    const Corner< DIMENSION >& GeoModelBase< DIMENSION >::corner(
+        index_t index ) const
     {
         ringmesh_assert( index < corners_.size() );
         return *static_cast< const Corner< DIMENSION >* >( corners_[index].get() );
     }
     template< index_t DIMENSION >
-    const Line< DIMENSION >& GeoModel< DIMENSION >::line( index_t index ) const
+    const Line< DIMENSION >& GeoModelBase< DIMENSION >::line( index_t index ) const
     {
         ringmesh_assert( index < lines_.size() );
         return *static_cast< const Line< DIMENSION >* >( lines_[index].get() );
     }
     template< index_t DIMENSION >
-    const Surface< DIMENSION >& GeoModel< DIMENSION >::surface( index_t index ) const
+    const Surface< DIMENSION >& GeoModelBase< DIMENSION >::surface(
+        index_t index ) const
     {
         ringmesh_assert( index < surfaces_.size() );
         return *static_cast< const Surface< DIMENSION >* >( surfaces_[index].get() );
     }
-    template< index_t DIMENSION >
-    const Region< DIMENSION >& GeoModel< DIMENSION >::region( index_t index ) const
-    {
-        ringmesh_assert( index < regions_.size() );
-        return *static_cast< const Region< DIMENSION >* >( regions_[index].get() );
-    }
 
     template< index_t DIMENSION >
-    void GeoModel< DIMENSION >::set_wells( const WellGroup< DIMENSION >* wells )
+    void GeoModelBase< DIMENSION >::set_wells( const WellGroup< DIMENSION >* wells )
     {
         wells_ = wells;
     }
 
     template< index_t DIMENSION >
-    double GeoModel< DIMENSION >::epsilon() const
+    double GeoModelBase< DIMENSION >::epsilon() const
     {
         if( epsilon_ == -1 ) {
             epsilon_ = compute_percentage_bbox_diagonal( *this );
@@ -190,9 +180,61 @@ namespace RINGMesh {
         return epsilon_;
     }
 
-//     template class GeoModel < 2 > ;
+    template< index_t DIMENSION >
+    GeoModel< DIMENSION >::GeoModel()
+        : GeoModelBase< DIMENSION >( *this )
+    {
+    }
+
+    GeoModel< 3 >::GeoModel()
+        : GeoModelBase< 3 >( *this )
+    {
+    }
+
+    const Region< 3 >& GeoModel< 3 >::region( index_t index ) const
+    {
+        ringmesh_assert( index < regions_.size() );
+        return *static_cast< const Region< 3 >* >( regions_[index].get() );
+    }
+
+    const std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& GeoModel< 3 >::mesh_entities(
+        const MeshEntityType& type ) const
+    {
+        if( MeshEntityTypeManager< 3 >::is_region( type ) ) {
+            return regions_;
+        } else {
+            return GeoModelBase< 3 >::mesh_entities( type );
+        }
+    }
+
+    const GeoModelMeshEntity< 3 >& GeoModel< 3 >::mesh_entity( gmme_id id ) const
+    {
+        const MeshEntityType& type = id.type();
+        index_t index = id.index();
+        if( MeshEntityTypeManager< 3 >::is_region( type ) ) {
+            return region( index );
+        } else {
+            return GeoModelBase< 3 >::mesh_entity( id );
+        }
+        ringmesh_assert_not_reached;
+        return surface( 0 );
+    }
+
+    index_t GeoModel< 3 >::nb_mesh_entities( const MeshEntityType& type ) const
+    {
+        if( MeshEntityTypeManager< 3 >::is_region( type ) ) {
+            return nb_regions();
+        } else {
+            return GeoModelBase< 3 >::nb_mesh_entities( type );
+        }
+    }
+
+    template class RINGMESH_API GeoModel< 2 > ;
+    template class RINGMESH_API GeoModelBase< 2 > ;
+    template class RINGMESH_API GeoModelAccess< 2 > ;
 
     template class RINGMESH_API GeoModel< 3 > ;
+    template class RINGMESH_API GeoModelBase< 3 > ;
     template class RINGMESH_API GeoModelAccess< 3 > ;
 
 } // namespace
