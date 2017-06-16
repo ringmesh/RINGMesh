@@ -433,7 +433,6 @@ namespace RINGMesh {
             well.create_part( part_region_id( part_id ) );
             const WellPart< DIMENSION >& from_part = part( part_id );
             WellPart< DIMENSION >& cur_part = well.part( part_id );
-//            cur_part.mesh().copy( from_part.mesh() ) ;
             cur_part.set_corner( 0, from_part.corner( 0 ) );
             cur_part.set_corner( 1, from_part.corner( 1 ) );
         }
@@ -532,7 +531,7 @@ namespace RINGMesh {
     {
         ringmesh_unused( in );
         ringmesh_unused( out );
-        throw RINGMeshException( "Wells", "2D Wells not fuly implemented yet" );
+        throw RINGMeshException( "Wells", "2D Wells not fully implemented yet" );
     }
 
     template< >
@@ -607,7 +606,7 @@ namespace RINGMesh {
     {
         ringmesh_unused( mesh );
         ringmesh_unused( name );
-        throw RINGMeshException( "Wells", "2D Wells not fuly implemented yet" );
+        throw RINGMeshException( "Wells", "2D Wells not fully implemented yet" );
     }
 
     template< >
