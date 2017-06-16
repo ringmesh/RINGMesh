@@ -53,7 +53,11 @@ namespace {
         }
     }
 
-    bool inexact_equal( const vec3& v1, const vec3& v2, double epsilon )
+    template< index_t DIMENSION >
+    bool inexact_equal(
+        const vecn< DIMENSION >& v1,
+        const vecn< DIMENSION >& v2,
+        double epsilon )
     {
         return length( v2 - v1 ) < epsilon;
     }
@@ -71,12 +75,12 @@ namespace {
     template< index_t DIMENSION >
     bool find_polygon_from_edge_vertices(
         const Surface< DIMENSION >& surface,
-        const vec3& v0,
-        const vec3& v1,
+        const vecn< DIMENSION >& v0,
+        const vecn< DIMENSION >& v1,
         index_t& polygon,
         index_t& edge )
     {
-        vec3 v_bary = 0.5 * ( v0 + v1 );
+        vecn< DIMENSION > v_bary = 0.5 * ( v0 + v1 );
         bool result = false;
         surface.polygon_nn_search().get_neighbors( v_bary,
             [&surface, &v0, &v1, &result, &edge, &polygon]( index_t i ) {
@@ -150,7 +154,7 @@ namespace {
     template< index_t DIMENSION >
     bool find_polygon_from_vertex(
         const Surface< DIMENSION >& surface,
-        const vec3& v,
+        const vecn< DIMENSION >& v,
         index_t& element_id,
         index_t& vertex_id )
     {
@@ -201,8 +205,8 @@ namespace {
     index_t edge_index_from_polygon_and_edge_vertex_indices(
         const Surface< DIMENSION >& surface,
         index_t p,
-        const vec3& v0,
-        const vec3& v1 )
+        const vecn< DIMENSION >& v0,
+        const vecn< DIMENSION >& v1 )
     {
         const SurfaceMesh< DIMENSION >& mesh = surface.low_level_mesh_storage();
         for( index_t v = 0; v < surface.nb_mesh_element_vertices( p ); v++ ) {
@@ -275,7 +279,6 @@ namespace RINGMesh {
         copy_meshes( geomodel, Corner< DIMENSION >::type_name_static() );
         copy_meshes( geomodel, Line< DIMENSION >::type_name_static() );
         copy_meshes( geomodel, Surface< DIMENSION >::type_name_static() );
-        copy_meshes( geomodel, Region< DIMENSION >::type_name_static() );
     }
 
     template< index_t DIMENSION >
@@ -666,7 +669,7 @@ namespace RINGMesh {
 
         std::vector< ElementVertex > polygon_vertices( line.nb_vertices() );
         for( index_t v = 0; v < line.nb_vertices(); v++ ) {
-            const vec3& p = line.vertex( v );
+            const vecn< DIMENSION >& p = line.vertex( v );
 
             index_t& polygon_vertex = polygon_vertices[v].vertex_;
             index_t& polygon = polygon_vertices[v].element_;
@@ -682,7 +685,7 @@ namespace RINGMesh {
             create_surface_builder( surface_id );
         const SurfaceMesh< DIMENSION >& mesh = surface.low_level_mesh_storage();
         for( index_t v = 0; v < line.nb_vertices(); v++ ) {
-            const vec3& p = line.vertex( v );
+            const vecn< DIMENSION >& p = line.vertex( v );
             const index_t& polygon_vertex = polygon_vertices[v].vertex_;
             const index_t& polygon = polygon_vertices[v].element_;
 
@@ -708,8 +711,8 @@ namespace RINGMesh {
             create_surface_builder( surface_id );
         index_t nb_disconnected_edges = 0;
         for( index_t i = 0; i < line.nb_mesh_elements(); ++i ) {
-            const vec3& p0 = line.vertex( i );
-            const vec3& p1 = line.vertex( i + 1 );
+            const vecn< DIMENSION >& p0 = line.vertex( i );
+            const vecn< DIMENSION >& p1 = line.vertex( i + 1 );
 
             index_t p = NO_ID;
             index_t e = NO_ID;
@@ -1001,6 +1004,16 @@ namespace RINGMesh {
         return cell_id;
     }
 
+    void GeoModelBuilderGeometry< 3 >::copy_meshes( const GeoModel< 3 >& geomodel )
+    {
+        GeoModelBuilderGeometryBase< 3 >::copy_meshes( geomodel );
+        GeoModelBuilderGeometryBase< 3 >::copy_meshes( geomodel,
+            Region< 3 >::type_name_static() );
+    }
+
     template class RINGMESH_API GeoModelBuilderGeometry< 2 > ;
+    template class RINGMESH_API GeoModelBuilderGeometryBase< 2 > ;
+
+    template class RINGMESH_API GeoModelBuilderGeometryBase< 3 > ;
     template class RINGMESH_API GeoModelBuilderGeometry< 3 > ;
 }
