@@ -134,16 +134,18 @@ namespace RINGMesh {
         static bool is_corner( const MeshEntityType& type )
         {
             return type == mesh_entity_types_.container()[0];
-            return false;
         }
+
         static bool is_line( const MeshEntityType& type )
         {
             return type == mesh_entity_types_.container()[1];
         }
+
         static bool is_surface( const MeshEntityType& type )
         {
             return type == mesh_entity_types_.container()[2];
         }
+
         static bool is_valid_type( const MeshEntityType& type )
         {
             return find( mesh_entity_types_.container(), type ) != NO_ID;
@@ -157,6 +159,7 @@ namespace RINGMesh {
             ringmesh_assert( itr != boundary_relationships_.map.end() );
             return itr->second;
         }
+
         static const MeshEntityType& incident_entity_type(
             const MeshEntityType& mesh_entity_type )
         {
@@ -183,7 +186,6 @@ namespace RINGMesh {
         static MeshEntityTypeBoundaryMap< DIMENSION > boundary_relationships_;
         static MeshEntityTypeIncidentEntityMap< DIMENSION > incident_entity_relationships_;
         static MeshEntityTypes< DIMENSION > mesh_entity_types_;
-
     };
 
     template< index_t DIMENSION >
@@ -200,9 +202,11 @@ namespace RINGMesh {
         static bool is_region( const MeshEntityType& type )
         {
             return type == mesh_entity_types_.container()[3];
-
         }
     };
+
+    template< index_t DIMENSION > MeshEntityTypes< DIMENSION > MeshEntityTypeManagerBase<
+        DIMENSION >::mesh_entity_types_;
 
     /*!
      * @brief this class contains methods to manage the type of the
@@ -416,9 +420,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API EntityTypeManager {
     public:
-        EntityTypeManager()
-        {
-        }
+        EntityTypeManager() = default;
+
         MeshEntityTypeManager< DIMENSION > mesh_entity_manager;
         GeologicalTypeManager geological_entity_manager;
         RelationshipManager relationship_manager;
