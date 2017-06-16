@@ -42,7 +42,6 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
-#include <ringmesh/geomodel/geomodel_builder_from_surfaces.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/geomodel_builder_remove.h>
 #include <ringmesh/geomodel/geomodel_builder_repair.h>
