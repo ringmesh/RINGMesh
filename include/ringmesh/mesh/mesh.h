@@ -551,7 +551,6 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
-
     };
 
     template< index_t DIMENSION >
