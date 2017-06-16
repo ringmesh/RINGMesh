@@ -1174,6 +1174,7 @@ namespace RINGMesh {
     class GeoModelMeshEntityConstAccess {
     ringmesh_disable_copy( GeoModelMeshEntityConstAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class GeoModelBuilderGeometryBase< DIMENSION > ;
         friend class GeoModelBuilderGeometry< DIMENSION > ;
         friend class GeoModelBuilderTopology< DIMENSION > ;
 

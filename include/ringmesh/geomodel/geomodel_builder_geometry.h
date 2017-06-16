@@ -135,7 +135,7 @@ namespace RINGMesh {
          * @pre The geomodel under construction has exaclty the same number of entities
          * than the input geomodel.
          */
-        void copy_meshes( const GeoModel< DIMENSION >& from );
+        virtual void copy_meshes( const GeoModel< DIMENSION >& from );
         void copy_meshes(
             const GeoModel< DIMENSION >& from,
             const MeshEntityType& entity_type );
@@ -420,6 +420,8 @@ namespace RINGMesh {
                 dynamic_cast< VolumeMesh< 3 >& >( *region_access.modifiable_mesh() );
             return VolumeMeshBuilder< 3 >::create_builder( region_mesh );
         }
+
+        virtual void copy_meshes( const GeoModel< 3 >& geomodel ) override;
 
         void set_region_element_geometry(
             index_t region_id,
