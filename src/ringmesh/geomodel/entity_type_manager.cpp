@@ -41,15 +41,6 @@
 
 namespace RINGMesh {
 
-    template< index_t DIMENSION > RINGMESH_API
-    MeshEntityTypeBoundaryMap< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::boundary_relationships_;
-
-    template< index_t DIMENSION > RINGMESH_API
-    MeshEntityTypeIncidentEntityMap< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::incident_entity_relationships_;
-
-    template< index_t DIMENSION > RINGMESH_API
-    MeshEntityTypes< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::mesh_entity_types_;
-
     template< index_t DIMENSION >
     MeshEntityTypeBoundaryMap< DIMENSION >::MeshEntityTypeBoundaryMap()
     {
@@ -127,15 +118,18 @@ namespace RINGMesh {
     {
         return static_cast< index_t >( geological_entity_types_.size() );
     }
+
     const std::vector< GeologicalEntityType >& GeologicalTypeManager::geological_entity_types() const
     {
         return geological_entity_types_;
     }
+
     const GeologicalEntityType& GeologicalTypeManager::geological_entity_type(
         index_t index ) const
     {
         return geological_entity_types_.at( index );
     }
+
     index_t GeologicalTypeManager::geological_entity_type_index(
         const GeologicalEntityType& type ) const
     {
@@ -159,11 +153,13 @@ namespace RINGMesh {
         }
         return result;
     }
+
     index_t RelationshipManager::nb_parent_types(
         const MeshEntityType& child_type ) const
     {
         return static_cast< index_t >( parent_types( child_type ).size() );
     }
+
     const MeshEntityType RelationshipManager::child_type(
         const GeologicalEntityType& parent_type ) const
     {
@@ -175,6 +171,13 @@ namespace RINGMesh {
             return itr->second;
         }
     }
+
+    template< index_t DIMENSION > RINGMESH_API MeshEntityTypeIncidentEntityMap< DIMENSION > MeshEntityTypeManagerBase<
+        DIMENSION >::incident_entity_relationships_;
+
+
+    template< index_t DIMENSION > MeshEntityTypeBoundaryMap< DIMENSION > RINGMESH_API MeshEntityTypeManagerBase<
+        DIMENSION >::boundary_relationships_;
 
     template class RINGMESH_API MeshEntityTypeManagerBase< 2 > ;
     template class RINGMESH_API MeshEntityTypeManager< 2 > ;

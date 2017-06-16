@@ -59,7 +59,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderRemoval {
     ringmesh_disable_copy( GeoModelBuilderRemoval );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder< DIMENSION >;
+        friend class GeoModelBuilder< DIMENSION > ;
 
     public:
 
@@ -142,8 +142,8 @@ namespace RINGMesh {
             const std::set< gmme_id >& mesh_entities_to_remove )
         {
             for( const gmme_id& it : mesh_entities_to_remove ) {
-                if( !RINGMesh::MeshEntityTypeManager < 3
-                    > ::is_valid_type( it.type() ) ) {
+                if( !RINGMesh::MeshEntityTypeManager< 3 >::is_valid_type(
+                    it.type() ) ) {
                     throw RINGMeshException( "REMOVE",
                         "You try to remove a Geological Entity using mesh removal." );
                 }
@@ -362,55 +362,64 @@ namespace RINGMesh {
             const MeshEntityType& type = E.type_name();
             return mesh_entity_type_to_index( type );
         }
+
         index_t geological_entity_type_index(
             const GeoModelGeologicalEntity< DIMENSION >& E ) const;
+
         index_t children_type_index( const GeologicalEntityType& type ) const
         {
             const MeshEntityType& child_type = children_type( type );
             return mesh_entity_type_to_index( child_type );
         }
+
         const MeshEntityType children_type( const GeologicalEntityType& type ) const
         {
             const RelationshipManager& family =
                 geomodel_.entity_type_manager().relationship_manager;
             return family.child_type( type );
         }
+
         index_t boundary_type_index( const MeshEntityType& type ) const
         {
             const MeshEntityType& b_type = boundary_type( type );
-            if( !MeshEntityTypeManager< 3 >::is_valid_type( b_type ) ) {
+            if( !MeshEntityTypeManager< DIMENSION >::is_valid_type( b_type ) ) {
                 return NO_ID;
             } else {
                 return mesh_entity_type_to_index( b_type );
             }
         }
+
         const MeshEntityType& boundary_type( const MeshEntityType& type ) const
         {
-            const MeshEntityTypeManager< 3 >& family =
+            const MeshEntityTypeManager< DIMENSION >& family =
                 geomodel_.entity_type_manager().mesh_entity_manager;
             return family.boundary_type( type );
         }
+
         /// TODO unused function. To handle during removal refactoring BC.
         index_t incident_entity_type_to_index( const MeshEntityType& type ) const
         {
             const MeshEntityType& in_ent_type = incident_entity_type( type );
-            if( !MeshEntityTypeManager< 3 >::is_valid_type( in_ent_type ) ) {
+            if( !MeshEntityTypeManager< DIMENSION >::is_valid_type( in_ent_type ) ) {
                 return NO_ID;
             } else {
                 return mesh_entity_type_to_index( in_ent_type );
             }
         }
+
         const MeshEntityType& incident_entity_type(
             const MeshEntityType& type ) const
         {
-            const MeshEntityTypeManager< 3 >& family =
+            const MeshEntityTypeManager< DIMENSION >& family =
                 geomodel_.entity_type_manager().mesh_entity_manager;
             return family.incident_entity_type( type );
         }
+
         bool is_mesh_entity( index_t i ) const
         {
             return i < nb_mesh_entity_types_;
         }
+
         bool is_geological_entity( index_t i ) const
         {
             return !is_mesh_entity( i );
