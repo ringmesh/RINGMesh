@@ -172,6 +172,17 @@ namespace RINGMesh {
         }
     }
 
+    template< > MeshEntityTypes< 2 > RINGMESH_API MeshEntityTypeManagerBase< 2 >::mesh_entity_types_ { };
+    template< > MeshEntityTypeBoundaryMap< 2 > RINGMESH_API MeshEntityTypeManagerBase<
+        2 >::boundary_relationships_ { };
+    template< > MeshEntityTypeIncidentEntityMap< 2 > RINGMESH_API MeshEntityTypeManagerBase<
+        2 >::incident_entity_relationships_ { };
+    template< > MeshEntityTypes< 3 > RINGMESH_API MeshEntityTypeManagerBase< 3 >::mesh_entity_types_ { };
+    template< > MeshEntityTypeBoundaryMap< 3 > RINGMESH_API MeshEntityTypeManagerBase<
+        3 >::boundary_relationships_ { };
+    template< > MeshEntityTypeIncidentEntityMap< 3 > RINGMESH_API MeshEntityTypeManagerBase<
+        3 >::incident_entity_relationships_ { };
+
     template class RINGMESH_API MeshEntityTypes< 2 > ;
     template class RINGMESH_API MeshEntityTypeManagerBase< 2 > ;
     template class RINGMESH_API MeshEntityTypeManager< 2 > ;
