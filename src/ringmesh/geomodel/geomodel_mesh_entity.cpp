@@ -58,7 +58,8 @@ namespace {
     template< index_t DIMENSION >
     bool check_range_model_vertex_ids( const GeoModelMeshEntity< DIMENSION >& E )
     {
-        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices = E.geomodel().mesh.vertices;
+        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
+            E.geomodel().mesh.vertices;
         /// Check that the stored geomodel vertex indices are in a valid range
         gmme_id id = E.gmme();
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
@@ -80,7 +81,7 @@ namespace {
      */
     template< index_t DIMENSION >
     index_t compute_nb_surface_connected_components(
-        const Surface< DIMENSION >& surface )
+        const SurfaceBase< DIMENSION >& surface )
     {
         const index_t NO_COMPONENT = index_t( -1 );
         GEO::Attribute< index_t > component( surface.polygon_attribute_manager(),
@@ -216,7 +217,7 @@ namespace {
      */
     template< index_t DIMENSION >
     bool polygon_is_degenerate(
-        const Surface< DIMENSION >& S,
+        const SurfaceBase< DIMENSION >& S,
         const gmme_id& id,
         index_t p )
     {
@@ -224,7 +225,8 @@ namespace {
         std::vector< index_t > corners( nb_polygon_vertices, NO_ID );
         std::vector< index_t > corners_global( nb_polygon_vertices, NO_ID );
         index_t v = 0;
-        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices = S.geomodel().mesh.vertices;
+        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
+            S.geomodel().mesh.vertices;
         for( index_t c = 0; c < S.nb_mesh_element_vertices( p ); ++c ) {
             index_t polygon_vertex_index = S.mesh_element_vertex_index( p, c );
             corners[v] = polygon_vertex_index;
@@ -297,14 +299,16 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshEntity< DIMENSION >::unbind_vertex_mapping_attribute() const
     {
-        GeoModel< DIMENSION >& modifiable_model = const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
+        GeoModel< DIMENSION >& modifiable_model =
+            const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
         modifiable_model.mesh.vertices.unbind_geomodel_vertex_map( gmme() );
     }
 
     template< index_t DIMENSION >
     void GeoModelMeshEntity< DIMENSION >::bind_vertex_mapping_attribute() const
     {
-        GeoModel< DIMENSION >& modifiable_model = const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
+        GeoModel< DIMENSION >& modifiable_model =
+            const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
         modifiable_model.mesh.vertices.bind_geomodel_vertex_map( gmme() );
     }
 
@@ -746,7 +750,7 @@ namespace RINGMesh {
     /********************************************************************/
 
     template< index_t DIMENSION >
-    bool Surface< DIMENSION >::is_mesh_valid() const
+    bool SurfaceBase< DIMENSION >::is_mesh_valid() const
     {
         bool valid = true;
         gmme_id id = this->gmme();
@@ -809,7 +813,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool Surface< DIMENSION >::is_on_voi() const
+    bool SurfaceBase< DIMENSION >::is_on_voi() const
     {
         for( index_t i = 0; i < this->geomodel().universe().nb_boundaries(); ++i ) {
             if( this->geomodel().universe().boundary_gmme( i ) == this->gmme() ) {
@@ -820,18 +824,16 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const Line< DIMENSION >& Surface< DIMENSION >::boundary( index_t x ) const
+    const Line< DIMENSION >& SurfaceBase< DIMENSION >::boundary( index_t x ) const
     {
         return static_cast< const Line< DIMENSION >& >( GeoModelMeshEntity< DIMENSION >::boundary(
             x ) );
     }
 
-    template< index_t DIMENSION >
-    const Region< DIMENSION >& Surface< DIMENSION >::incident_entity(
-        index_t x ) const
+    const Region< 3 >& Surface< 3 >::incident_entity( index_t x ) const
     {
-        return static_cast< const Region< DIMENSION >& >( GeoModelMeshEntity<
-            DIMENSION >::incident_entity( x ) );
+        return static_cast< const Region< 3 >& >( GeoModelMeshEntity< 3 >::incident_entity(
+            x ) );
     }
 
     /********************************************************************/
@@ -927,10 +929,10 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void Corner< DIMENSION >::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< PointSetMesh< 3 > > new_mesh =
-            PointSetMesh< 3 >::create_mesh( type );
-        std::unique_ptr< PointSetMeshBuilder< 3 > > builder =
-            PointSetMeshBuilder< 3 >::create_builder( *new_mesh );
+        std::unique_ptr< PointSetMesh< DIMENSION > > new_mesh = PointSetMesh<
+            DIMENSION >::create_mesh( type );
+        std::unique_ptr< PointSetMeshBuilder< DIMENSION > > builder =
+            PointSetMeshBuilder< DIMENSION >::create_builder( *new_mesh );
         builder->copy( *point_set_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
@@ -938,21 +940,21 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void Line< DIMENSION >::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< LineMesh< 3 > > new_mesh = LineMesh< 3 >::create_mesh(
-            type );
-        std::unique_ptr< LineMeshBuilder< 3 > > builder =
-            LineMeshBuilder< 3 >::create_builder( *new_mesh );
+        std::unique_ptr< LineMesh< DIMENSION > > new_mesh =
+            LineMesh< DIMENSION >::create_mesh( type );
+        std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = LineMeshBuilder<
+            DIMENSION >::create_builder( *new_mesh );
         builder->copy( *line_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
     template< index_t DIMENSION >
-    void Surface< DIMENSION >::change_mesh_data_structure( const MeshType type )
+    void SurfaceBase< DIMENSION >::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< SurfaceMesh< 3 > > new_mesh = SurfaceMesh< 3 >::create_mesh(
-            type );
-        std::unique_ptr< SurfaceMeshBuilder< 3 > > builder =
-            SurfaceMeshBuilder< 3 >::create_builder( *new_mesh );
+        std::unique_ptr< SurfaceMesh< DIMENSION > > new_mesh =
+            SurfaceMesh< DIMENSION >::create_mesh( type );
+        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+            SurfaceMeshBuilder< DIMENSION >::create_builder( *new_mesh );
         builder->copy( *surface_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
@@ -960,24 +962,26 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void Region< DIMENSION >::change_mesh_data_structure( const MeshType type )
     {
-        std::unique_ptr< VolumeMesh< 3 > > new_mesh = VolumeMesh< 3 >::create_mesh(
-            type );
-        std::unique_ptr< VolumeMeshBuilder< 3 > > builder =
-            VolumeMeshBuilder< 3 >::create_builder( *new_mesh );
+        std::unique_ptr< VolumeMesh< DIMENSION > > new_mesh =
+            VolumeMesh< DIMENSION >::create_mesh( type );
+        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
+            VolumeMeshBuilder< DIMENSION >::create_builder( *new_mesh );
         builder->copy( *volume_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
-//    template class GeoModelMeshEntity< 2 >;
+    template class GeoModelMeshEntity< 2 >;
 //    template class GeoModelMeshEntityAccess< 2 >;
-//    template class Corner< 2 >;
-//    template class Line< 2 >;
-//    template class Surface< 2 >;
+    template class RINGMESH_API Corner< 2 > ;
+    template class RINGMESH_API Line< 2 > ;
+    template class RINGMESH_API SurfaceBase< 2 > ;
+    template class RINGMESH_API Surface< 2 > ;
 
     template class RINGMESH_API GeoModelMeshEntity< 3 > ;
     template class RINGMESH_API GeoModelMeshEntityAccess< 3 > ;
     template class RINGMESH_API Corner< 3 > ;
     template class RINGMESH_API Line< 3 > ;
+    template class RINGMESH_API SurfaceBase< 3 > ;
     template class RINGMESH_API Surface< 3 > ;
     template class RINGMESH_API Region< 3 > ;
 }
