@@ -63,26 +63,26 @@ namespace RINGMesh {
         const std::string& in )
     {
         if( in == "reverse_fault" ) {
-            return REVERSE_FAULT;
+            return GEOL_FEATURE::REVERSE_FAULT;
         } else if( in == "normal_fault" ) {
-            return NORMAL_FAULT;
+            return GEOL_FEATURE::NORMAL_FAULT;
         } else if( in == "fault" ) {
-            return FAULT;
+            return GEOL_FEATURE::FAULT;
         } else if( in == "top" ) {
-            return STRATI;
+            return GEOL_FEATURE::STRATI;
         } else if( in == "none" ) {
             // This might seem strange - but it seems that what's
             // Gocad is doing
-            return STRATI;
+            return GEOL_FEATURE::STRATI;
         } else if( in == "topographic" ) {
-            return STRATI;
+            return GEOL_FEATURE::STRATI;
         } else if( in == "unconformity" ) {
-            return UNCONFORMITY;
+            return GEOL_FEATURE::UNCONFORMITY;
         } else if( in == "boundary" ) {
-            return VOI;
+            return GEOL_FEATURE::VOI;
         } else {
             // Default case - no information
-            return NO_GEOL;
+            return GEOL_FEATURE::NO_GEOL;
         }
     }
 
@@ -90,19 +90,19 @@ namespace RINGMesh {
         GeoModelGeologicalEntity::GEOL_FEATURE t )
     {
         switch( t ) {
-            case STRATI:
+            case GEOL_FEATURE::STRATI:
                 return "top";
-            case FAULT:
+            case GEOL_FEATURE::FAULT:
                 return "fault";
-            case REVERSE_FAULT:
+            case GEOL_FEATURE::REVERSE_FAULT:
                 return "reverse_fault";
-            case NORMAL_FAULT:
+            case GEOL_FEATURE::NORMAL_FAULT:
                 return "normal_fault";
-            case UNCONFORMITY:
+            case GEOL_FEATURE::UNCONFORMITY:
                 return "unconformity";
-            case VOI:
+            case GEOL_FEATURE::VOI:
                 return "boundary";
-            case NO_GEOL:
+            case GEOL_FEATURE::NO_GEOL:
                 return "no_geological_feature";
             default:
                 return "no_geological_feature";
