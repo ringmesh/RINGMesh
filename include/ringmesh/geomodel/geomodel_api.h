@@ -57,7 +57,8 @@ namespace RINGMesh {
      * @details Output number of polygons, vertices, and of the different entity types
      * @todo Implement a test are_geomodels_equals to be able to check that tests went well
      */
-    void RINGMESH_API print_geomodel( const GeoModel< 3 >& geomodel );
+    template< index_t DIMENSION >
+    void print_geomodel( const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * Output the number of vertices, edges, polygons and cells.
@@ -65,7 +66,8 @@ namespace RINGMesh {
      * Also output the number of tetra, prisms, pyramids, hex and polyhedra if any.
      * @param[in] geomodel the geomodel to compute the statistics on
      */
-    void RINGMESH_API print_geomodel_mesh_stats( const GeoModel< 3 >& geomodel );
+    template< index_t DIMENSION >
+    void print_geomodel_mesh_stats( const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * Output the volume of the geomodel and the volume per cell type.
@@ -73,8 +75,9 @@ namespace RINGMesh {
      */
     void RINGMESH_API print_geomodel_mesh_cell_volumes( const GeoModel< 3 >& geomodel );
 
-    bool RINGMESH_API are_geomodel_surface_meshes_simplicial(
-        const GeoModel< 3 >& geomodel );
+    template< index_t DIMENSION >
+    bool are_geomodel_surface_meshes_simplicial(
+        const GeoModel< DIMENSION >& geomodel );
 
     bool RINGMESH_API are_geomodel_region_meshes_simplicial(
         const GeoModel< 3 >& geomodel );
@@ -85,8 +88,9 @@ namespace RINGMesh {
      * @note throw exception if no entities have this \param name or if two entities
      * have the same \param name
      */
-    index_t RINGMESH_API find_mesh_entity_id_from_name(
-        const GeoModel< 3 >& geomodel,
+    template< index_t DIMENSION >
+    index_t find_mesh_entity_id_from_name(
+        const GeoModel< DIMENSION >& geomodel,
         const MeshEntityType& gmme_type,
         const std::string& name );
 
@@ -96,8 +100,9 @@ namespace RINGMesh {
      * @note throw exception if no entities have this \param name or if two entities
      * have the same \param name
      */
-    index_t RINGMESH_API find_geological_entity_id_from_name(
-        const RINGMesh::GeoModel< 3 >& geomodel,
+    template< index_t DIMENSION >
+    index_t find_geological_entity_id_from_name(
+        const RINGMesh::GeoModel< DIMENSION >& geomodel,
         const RINGMesh::GeologicalEntityType& gmge_type,
         const std::string& name );
 
@@ -140,9 +145,10 @@ namespace RINGMesh {
      * @param[in/out] geomodel GeoModel on which compute the translation
      * @param[in] translation_vector vector of translation.
      */
-    void RINGMESH_API translate(
-        GeoModel< 3 >& geomodel,
-        const vec3& translation_vector );
+    template< index_t DIMENSION >
+    void translate(
+        GeoModel< DIMENSION >& geomodel,
+        const vecn< DIMENSION >& translation_vector );
 
     /*!
      * \brief Rotate the boundary geomodel.
