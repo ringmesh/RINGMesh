@@ -83,8 +83,9 @@ namespace RINGMesh {
      * @param[in] validity_check_mode Mode to select what model feature should
      * be checked. Set by default to the most complete check option.
      */
-    bool RINGMESH_API is_geomodel_valid(
-        const GeoModel< 3 >& geomodel,
+    template< index_t DIMENSION >
+    bool is_geomodel_valid(
+        const GeoModel< DIMENSION >& geomodel,
         ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL );
 
     /*!

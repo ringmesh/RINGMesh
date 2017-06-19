@@ -987,10 +987,11 @@ namespace {
                 ringmesh_assert( first_interface_id != NO_ID );
                 bool at_least_two_different_interfaces = false;
                 for( index_t in_boundary_i = 1;
-                    in_boundary_i < cur_line.nb_incident_entities(); ++in_boundary_i ) {
-                    const index_t cur_interface_id =
-                        cur_line.incident_entity( in_boundary_i ).parent_gmge(
-                            Interface< 3 >::type_name_static() ).index();
+                    in_boundary_i < cur_line.nb_incident_entities();
+                    ++in_boundary_i ) {
+                    const index_t cur_interface_id = cur_line.incident_entity(
+                        in_boundary_i ).parent_gmge(
+                        Interface< 3 >::type_name_static() ).index();
                     ringmesh_assert( cur_interface_id != NO_ID );
                     if( cur_interface_id != first_interface_id ) {
                         at_least_two_different_interfaces = true;
@@ -1133,7 +1134,8 @@ namespace RINGMesh {
         return count_invalid == 0;
     }
 
-    bool are_geomodel_mesh_entities_connectivity_valid( const GeoModel< 3 >& geomodel )
+    bool are_geomodel_mesh_entities_connectivity_valid(
+        const GeoModel< 3 >& geomodel )
     {
         const std::vector< MeshEntityType >& meshed_types =
             MeshEntityTypeManager< 3 >::mesh_entity_types();
@@ -1198,8 +1200,9 @@ namespace RINGMesh {
         return count_invalid == 0;
     }
 
+    template< index_t DIMENSION >
     bool is_geomodel_valid(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel< DIMENSION >& geomodel,
         ValidityCheckMode validity_check_mode )
     {
         if( validity_check_mode == ValidityCheckMode::GEOMETRY
@@ -1227,4 +1230,7 @@ namespace RINGMesh {
         return valid;
     }
 
-} // namespace RINGMesh
+    template bool is_geomodel_valid< 3 >( const GeoModel< 3 >&, ValidityCheckMode );
+
+}
+// namespace RINGMesh
