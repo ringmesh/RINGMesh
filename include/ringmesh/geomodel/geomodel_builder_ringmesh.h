@@ -52,7 +52,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilderGMImpl;
+    template< index_t DIMENSION > class GeoModelBuilderGMImpl;
 }
 
 namespace RINGMesh {
@@ -78,6 +78,6 @@ namespace RINGMesh {
 
     private:
         index_t file_version_;
-        std::unique_ptr< GeoModelBuilderGMImpl > version_impl_[NB_VERSION];
+        std::unique_ptr< GeoModelBuilderGMImpl< 3 > > version_impl_[NB_VERSION];
     };
 }

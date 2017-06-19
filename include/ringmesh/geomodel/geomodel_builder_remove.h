@@ -99,7 +99,7 @@ namespace RINGMesh {
             const std::set< gmme_id >& mesh_entities_to_remove )
         {
             nb_mesh_entity_types_ =
-                MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
+                geomodel_.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types();
             nb_geological_entity_types_ = geomodel_.nb_geological_entity_types();
             nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_;
             nb_removed_mesh_entities_.resize( nb_mesh_entity_types_, 0 );
@@ -142,7 +142,7 @@ namespace RINGMesh {
             const std::set< gmme_id >& mesh_entities_to_remove )
         {
             for( const gmme_id& it : mesh_entities_to_remove ) {
-                if( !RINGMesh::MeshEntityTypeManager< 3 >::is_valid_type(
+                if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
                     it.type() ) ) {
                     throw RINGMeshException( "REMOVE",
                         "You try to remove a Geological Entity using mesh removal." );
@@ -382,7 +382,8 @@ namespace RINGMesh {
         index_t boundary_type_index( const MeshEntityType& type ) const
         {
             const MeshEntityType& b_type = boundary_type( type );
-            if( !MeshEntityTypeManager< DIMENSION >::is_valid_type( b_type ) ) {
+            if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
+                b_type ) ) {
                 return NO_ID;
             } else {
                 return mesh_entity_type_to_index( b_type );
@@ -400,7 +401,8 @@ namespace RINGMesh {
         index_t incident_entity_type_to_index( const MeshEntityType& type ) const
         {
             const MeshEntityType& in_ent_type = incident_entity_type( type );
-            if( !MeshEntityTypeManager< DIMENSION >::is_valid_type( in_ent_type ) ) {
+            if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
+                in_ent_type ) ) {
                 return NO_ID;
             } else {
                 return mesh_entity_type_to_index( in_ent_type );
@@ -523,7 +525,8 @@ namespace RINGMesh {
         {
             const MeshEntityType& b_type = boundary_type( E.mesh_entity_type() );
             gmme_id invalid( b_type, NO_ID );
-            if( !MeshEntityTypeManager< 3 >::is_valid_type( b_type ) ) {
+            if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
+                b_type ) ) {
                 return;
             } else {
                 GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
@@ -539,7 +542,8 @@ namespace RINGMesh {
             const MeshEntityType& in_ent_type = incident_entity_type(
                 E.mesh_entity_type() );
             gmme_id invalid( in_ent_type, NO_ID );
-            if( !MeshEntityTypeManager< 3 >::is_valid_type( in_ent_type ) ) {
+            if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
+                in_ent_type ) ) {
                 return;
             } else {
                 GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
