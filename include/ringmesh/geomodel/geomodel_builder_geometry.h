@@ -61,6 +61,8 @@ namespace RINGMesh {
         friend class GeoModelBuilder< DIMENSION > ;
 
     public:
+        virtual ~GeoModelBuilderGeometryBase() = default;
+
         void clear_geomodel_mesh();
         /*!
          * @brief Transfer general mesh information from one mesh
@@ -392,6 +394,9 @@ namespace RINGMesh {
         DIMENSION > {
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
+    public:
+        virtual ~GeoModelBuilderGeometry() = default;
+
     protected:
         GeoModelBuilderGeometry(
             GeoModelBuilder< DIMENSION >& builder,
@@ -406,6 +411,8 @@ namespace RINGMesh {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
     public:
+        virtual ~GeoModelBuilderGeometry() = default;
+
         /*!
          * @brief Create a Mesh3DBuilder for a given region
          * @param[in] region_id the region index
