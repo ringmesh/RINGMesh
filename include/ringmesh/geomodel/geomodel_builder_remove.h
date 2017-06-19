@@ -233,7 +233,6 @@ namespace RINGMesh {
                     gmme_id new_id( entity_type, j );
                     GeoModelMeshEntity< DIMENSION >& ME =
                         geomodel_access_.modifiable_mesh_entity( new_id );
-                    ringmesh_assert( new_id == ME.gmme() );
                     update_mesh_entity( ME );
                 }
             }
