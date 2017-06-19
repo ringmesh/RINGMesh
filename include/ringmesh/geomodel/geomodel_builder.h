@@ -42,7 +42,6 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
-#include <ringmesh/geomodel/geomodel_builder_from_surfaces.h>
 #include <ringmesh/geomodel/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/geomodel_builder_remove.h>
@@ -55,6 +54,7 @@
  */
 
 namespace RINGMesh {
+    template< index_t DIMENSION > class GeoModelBuilderBase;
     template< index_t DIMENSION > class GeoModelBuilder;
 }
 
@@ -64,7 +64,8 @@ namespace RINGMesh {
     class GeoModelBuilderInfo {
     ringmesh_disable_copy( GeoModelBuilderInfo );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder< DIMENSION >;
+        friend class GeoModelBuilderBase< DIMENSION > ;
+        friend class GeoModelBuilder< DIMENSION > ;
 
     public:
         /*!
@@ -114,7 +115,8 @@ namespace RINGMesh {
     class GeoModelBuilderCopy {
     ringmesh_disable_copy( GeoModelBuilderCopy );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder< DIMENSION >;
+        friend class GeoModelBuilderBase< DIMENSION > ;
+        friend class GeoModelBuilder< DIMENSION > ;
     public:
         void copy_geomodel( const GeoModel< DIMENSION >& from );
 
@@ -136,18 +138,25 @@ namespace RINGMesh {
      * with the GeoModel part which is edited (topology, geometry, geology, info)
      */
     template< index_t DIMENSION >
-    class GeoModelBuilder {
-    ringmesh_disable_copy( GeoModelBuilder );
+    class GeoModelBuilderBase {
+    ringmesh_disable_copy( GeoModelBuilderBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-
     public:
-        GeoModelBuilder( GeoModel< DIMENSION >& geomodel );
-        virtual ~GeoModelBuilder() = default;
+        virtual ~GeoModelBuilderBase();
 
         /*!
          * @brief Finish up geomodel building and complete missing information.
          */
         void end_geomodel();
+
+        void build_lines_and_corners_from_surfaces();
+
+    protected:
+        GeoModelBuilderBase(
+            GeoModelBuilder< DIMENSION >& builder,
+            GeoModel< DIMENSION >& geomodel );
+
+        void cut_geomodel_on_boundaries();
 
     public:
         GeoModelBuilderTopology< DIMENSION > topology;
@@ -157,10 +166,29 @@ namespace RINGMesh {
         GeoModelBuilderRepair< DIMENSION > repair;
         GeoModelBuilderCopy< DIMENSION > copy;
         GeoModelBuilderInfo< DIMENSION > info;
-        GeoModelBuilderFromSurfaces< DIMENSION > from_surfaces;
 
     protected:
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
+    };
+
+    template< index_t DIMENSION >
+    class GeoModelBuilder: public GeoModelBuilderBase< DIMENSION > {
+    };
+
+    template< >
+    class GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 > {
+    public:
+        GeoModelBuilder( GeoModel< 2 >& geomodel );
+        virtual ~GeoModelBuilder();
+    };
+
+    template< >
+    class GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 > {
+    public:
+        GeoModelBuilder( GeoModel< 3 >& geomodel );
+        virtual ~GeoModelBuilder();
+
+        void build_regions_from_lines_and_surfaces();
     };
 }

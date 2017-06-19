@@ -42,7 +42,6 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
-#include <ringmesh/geomodel/geomodel_builder_from_surfaces.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/geomodel_builder_remove.h>
 #include <ringmesh/geomodel/geomodel_builder_repair.h>
@@ -54,15 +53,17 @@
  */
 
 namespace RINGMesh {
+    template< index_t DIMENSION > class GeoModelBuilderBase;
     template< index_t DIMENSION > class GeoModelBuilder;
 }
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class GeoModelBuilderGeology {
+    class GeoModelBuilderGeology final {
     ringmesh_disable_copy( GeoModelBuilderGeology );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class GeoModelBuilderBase< DIMENSION >;
         friend class GeoModelBuilder< DIMENSION >;
 
     public:

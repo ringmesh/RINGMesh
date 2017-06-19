@@ -431,6 +431,6 @@ namespace RINGMesh {
         builder_.geology.build_contacts();
     }
 
-    //    template class RINGMESH_API GeoModelBuilderRepair< 2 > ;
+    template class RINGMESH_API GeoModelBuilderRepair< 2 > ;
     template class RINGMESH_API GeoModelBuilderRepair< 3 > ;
 }

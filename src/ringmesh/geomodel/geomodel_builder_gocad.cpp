@@ -1153,7 +1153,7 @@ namespace RINGMesh {
         compute_surfaces_internal_borders();
 
         geomodel_.mesh.vertices.test_and_initialize();
-        from_surfaces.build_lines_and_corners_from_surfaces();
+        build_lines_and_corners_from_surfaces();
 
         compute_boundaries_of_geomodel_regions( *this, ( *this ).geomodel_ );
 
@@ -1271,7 +1271,7 @@ namespace RINGMesh {
     {
         read_file();
         geomodel_.mesh.vertices.test_and_initialize();
-        from_surfaces.build_lines_and_corners_from_surfaces();
+        build_lines_and_corners_from_surfaces();
         geology.build_contacts();
     }
 

@@ -57,9 +57,6 @@ namespace RINGMesh {
         GeoModelBuilderSurfaceMesh( GeoModel< 3 >& geomodel, const GEO::Mesh& mesh )
             : GeoModelBuilder( geomodel ), mesh_( mesh )
         {
-            from_surfaces.options_.compute_lines = true;
-            from_surfaces.options_.compute_corners = true;
-            from_surfaces.options_.compute_regions_brep = true;
         }
 
         /*!

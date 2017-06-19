@@ -211,7 +211,7 @@ namespace RINGMesh {
      * type and also give the opportunity to create and manage new one.
      */
     class RINGMESH_API GeologicalTypeManager {
-//        friend class GeoModelBuilderGeology< 2 >;
+        friend class GeoModelBuilderGeology< 2 >;
         friend class GeoModelBuilderGeology< 3 > ;
     public:
         GeologicalTypeManager() = default;
@@ -243,8 +243,8 @@ namespace RINGMesh {
      *
      */
     class RINGMESH_API RelationshipManager {
-//        friend class GeoModelBuilderGeology< 2 >;
-//        friend class GeoModelBuilderTopology< 2 >;
+        friend class GeoModelBuilderGeology< 2 >;
+        friend class GeoModelBuilderTopology< 2 >;
         friend class GeoModelBuilderGeology< 3 > ;
         friend class GeoModelBuilderTopology< 3 > ;
     public:
