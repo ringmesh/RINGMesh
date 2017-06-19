@@ -670,6 +670,13 @@ namespace RINGMesh {
     }
 
     template class RINGMESH_API GeoModelBuilderTopology< 2 > ;
+    template void RINGMESH_API GeoModelBuilderTopology< 2 >::add_universe_boundary(
+        index_t,
+        bool );
+    template void RINGMESH_API GeoModelBuilderTopology< 2 >::add_mesh_entity_boundary_relation(
+        const gmme_id&,
+        const gmme_id&,
+        bool );
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 2 >::create_mesh_entity<
         Corner >( const MeshType );
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 2 >::create_mesh_entity<
@@ -680,6 +687,10 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
     template void RINGMESH_API GeoModelBuilderTopology< 3 >::add_universe_boundary(
         index_t,
+        bool );
+    template void RINGMESH_API GeoModelBuilderTopology< 3 >::add_mesh_entity_boundary_relation(
+        const gmme_id&,
+        const gmme_id&,
         bool );
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
         Corner >( const MeshType );
