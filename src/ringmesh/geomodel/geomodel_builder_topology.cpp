@@ -678,6 +678,9 @@ namespace RINGMesh {
         Surface >( const MeshType );
 
     template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
+    template void RINGMESH_API GeoModelBuilderTopology< 3 >::add_universe_boundary(
+        index_t,
+        bool );
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
         Corner >( const MeshType );
     template gmme_id RINGMESH_API GeoModelBuilderTopology< 3 >::create_mesh_entity<
