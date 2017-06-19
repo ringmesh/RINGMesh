@@ -1230,7 +1230,9 @@ namespace RINGMesh {
         return valid;
     }
 
-    template bool is_geomodel_valid< 3 >( const GeoModel< 3 >&, ValidityCheckMode );
+    template bool RINGMESH_API is_geomodel_valid< 3 >(
+        const GeoModel< 3 >&,
+        ValidityCheckMode );
 
 }
 // namespace RINGMesh
