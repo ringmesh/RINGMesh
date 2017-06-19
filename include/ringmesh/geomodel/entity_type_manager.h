@@ -131,28 +131,28 @@ namespace RINGMesh {
     class MeshEntityTypeManagerBase {
     public:
 
-        static bool is_corner( const MeshEntityType& type )
+        bool is_corner( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[0];
         }
 
-        static bool is_line( const MeshEntityType& type )
+        bool is_line( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[1];
         }
 
-        static bool is_surface( const MeshEntityType& type )
+        bool is_surface( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[2];
         }
 
-        static bool is_valid_type( const MeshEntityType& type )
+        bool is_valid_type( const MeshEntityType& type ) const
         {
             return find( mesh_entity_types_.container(), type ) != NO_ID;
         }
 
-        static const MeshEntityType& boundary_type(
-            const MeshEntityType& mesh_entity_type )
+        const MeshEntityType& boundary_type(
+            const MeshEntityType& mesh_entity_type ) const
         {
             MeshEntityTypeMap::const_iterator itr = boundary_relationships_.map.find(
                 mesh_entity_type );
@@ -160,8 +160,8 @@ namespace RINGMesh {
             return itr->second;
         }
 
-        static const MeshEntityType& incident_entity_type(
-            const MeshEntityType& mesh_entity_type )
+        const MeshEntityType& incident_entity_type(
+            const MeshEntityType& mesh_entity_type ) const
         {
             MeshEntityTypeMap::const_iterator itr =
                 incident_entity_relationships_.map.find( mesh_entity_type );
@@ -169,12 +169,12 @@ namespace RINGMesh {
             return itr->second;
         }
 
-        static const std::vector< MeshEntityType >& mesh_entity_types()
+        const std::vector< MeshEntityType >& mesh_entity_types() const
         {
             return mesh_entity_types_.container();
 
         }
-        static index_t nb_mesh_entity_types()
+        index_t nb_mesh_entity_types() const
         {
             return static_cast< index_t >( mesh_entity_types_.size() );
         }
@@ -183,9 +183,9 @@ namespace RINGMesh {
         MeshEntityTypeManagerBase() = default;
 
     protected:
-        static MeshEntityTypeBoundaryMap< DIMENSION > boundary_relationships_;
-        static MeshEntityTypeIncidentEntityMap< DIMENSION > incident_entity_relationships_;
-        static MeshEntityTypes< DIMENSION > mesh_entity_types_;
+        MeshEntityTypeBoundaryMap< DIMENSION > boundary_relationships_;
+        MeshEntityTypeIncidentEntityMap< DIMENSION > incident_entity_relationships_;
+        MeshEntityTypes< DIMENSION > mesh_entity_types_;
     };
 
     template< index_t DIMENSION >
@@ -199,7 +199,7 @@ namespace RINGMesh {
     public:
         MeshEntityTypeManager() = default;
 
-        static bool is_region( const MeshEntityType& type )
+        bool is_region( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[3];
         }
