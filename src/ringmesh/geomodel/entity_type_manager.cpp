@@ -41,6 +41,14 @@
 
 namespace RINGMesh {
 
+    template< >
+    MeshEntityTypeBoundaryMap< 3 >::MeshEntityTypeBoundaryMap()
+    {
+        initialize_base();
+        register_boundary( Region< 3 >::type_name_static(),
+            Surface< 3 >::type_name_static() );
+    }
+
     template< index_t DIMENSION >
     MeshEntityTypeBoundaryMap< DIMENSION >::MeshEntityTypeBoundaryMap()
     {
@@ -56,14 +64,6 @@ namespace RINGMesh {
             Corner< DIMENSION >::type_name_static() );
         register_boundary( Surface< DIMENSION >::type_name_static(),
             Line< DIMENSION >::type_name_static() );
-    }
-
-    template< >
-    MeshEntityTypeBoundaryMap< 3 >::MeshEntityTypeBoundaryMap()
-    {
-        initialize_base();
-        register_boundary( Region< 3 >::type_name_static(),
-            Surface< 3 >::type_name_static() );
     }
 
     template< index_t DIMENSION >
@@ -93,6 +93,13 @@ namespace RINGMesh {
             ForbiddenMeshEntityType::type_name_static() );
     }
 
+    template< >
+    MeshEntityTypes< 3 >::MeshEntityTypes()
+    {
+        initialize_base();
+        mesh_entity_types_.push_back( Region< 3 >::type_name_static() );
+    }
+
     template< index_t DIMENSION >
     MeshEntityTypes< DIMENSION >::MeshEntityTypes()
     {
@@ -105,13 +112,6 @@ namespace RINGMesh {
         mesh_entity_types_.push_back( Corner< DIMENSION >::type_name_static() );
         mesh_entity_types_.push_back( Line< DIMENSION >::type_name_static() );
         mesh_entity_types_.push_back( Surface< DIMENSION >::type_name_static() );
-    }
-
-    template< >
-    MeshEntityTypes< 3 >::MeshEntityTypes()
-    {
-        initialize_base();
-        mesh_entity_types_.push_back( Region< 3 >::type_name_static() );
     }
 
     index_t GeologicalTypeManager::nb_geological_entity_types() const
