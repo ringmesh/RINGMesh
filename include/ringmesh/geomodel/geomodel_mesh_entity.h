@@ -53,6 +53,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class GeoModelGeologicalEntity;
     template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
+    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
     template< index_t DIMENSION > class GeoModelBuilderTopology;
     template< index_t DIMENSION > class GeoModelBuilderGeometryBase;
     template< index_t DIMENSION > class GeoModelBuilderGeometry;
@@ -1176,6 +1177,7 @@ namespace RINGMesh {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderGeometryBase< DIMENSION > ;
         friend class GeoModelBuilderGeometry< DIMENSION > ;
+        friend class GeoModelBuilderTopologyBase< DIMENSION > ;
         friend class GeoModelBuilderTopology< DIMENSION > ;
 
     private:
@@ -1207,6 +1209,7 @@ namespace RINGMesh {
     class GeoModelMeshEntityAccess {
     ringmesh_disable_copy( GeoModelMeshEntityAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class GeoModelBuilderTopologyBase< DIMENSION > ;
         friend class GeoModelBuilderTopology< DIMENSION > ;
         friend class GeoModelBuilderGeometryBase< DIMENSION > ;
         friend class GeoModelBuilderGeometry< DIMENSION > ;

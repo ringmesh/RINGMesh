@@ -54,8 +54,8 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class GeoModelBuilderTopology {
-    ringmesh_disable_copy( GeoModelBuilderTopology );
+    class GeoModelBuilderTopologyBase {
+    ringmesh_disable_copy( GeoModelBuilderTopologyBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
@@ -100,8 +100,6 @@ namespace RINGMesh {
             index_t boundary_id,
             bool side = false );
 
-        void add_universe_boundary( index_t boundary_id, bool side );
-
         void set_universe_boundary( index_t id, index_t boundary_id, bool side );
 
         void set_mesh_entity_incident_entity(
@@ -137,8 +135,8 @@ namespace RINGMesh {
 
         void compute_universe();
 
-    private:
-        GeoModelBuilderTopology(
+    protected:
+        GeoModelBuilderTopologyBase(
             GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
@@ -166,23 +164,75 @@ namespace RINGMesh {
             const gmme_id& incident_entity,
             const gmme_id& boundary );
 
-        void add_mesh_entity_boundary_relation_base(
-            const gmme_id& boundary,
-            const gmme_id& incident_entity );
-
-        void set_mesh_entity_boundary_base(
-            const gmme_id& gme_id,
-            index_t id,
-            index_t boundary_id );
-
         void copy_mesh_entity_topology_base( const GeoModel< DIMENSION >& from );
 
         void copy_all_mesh_entity_topology( const GeoModel< DIMENSION >& from );
 
-    private:
+    protected:
         GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
+    };
+
+    template< index_t DIMENSION >
+    class GeoModelBuilderTopology: public GeoModelBuilderTopologyBase< DIMENSION > {
+    };
+
+    template< >
+    class GeoModelBuilderTopology< 2 > : public GeoModelBuilderTopologyBase< 2 > {
+        friend class GeoModelBuilderBase< 2 > ;
+        friend class GeoModelBuilder< 2 > ;
+    public:
+        void add_universe_boundary( index_t boundary_id, bool side );
+
+        void set_universe_boundary( index_t id, index_t boundary_id, bool side );
+
+        void compute_universe();
+
+    private:
+        GeoModelBuilderTopology(
+            GeoModelBuilder< 2 >& builder,
+            GeoModel< 2 >& geomodel )
+            : GeoModelBuilderTopologyBase< 2 >( builder, geomodel )
+        {
+        }
+    };
+
+    template< >
+    class GeoModelBuilderTopology< 3 > : public GeoModelBuilderTopologyBase< 3 > {
+        friend class GeoModelBuilderBase< 3 > ;
+        friend class GeoModelBuilder< 3 > ;
+    public:
+        void add_universe_boundary( index_t boundary_id, bool side );
+
+        void set_universe_boundary( index_t id, index_t boundary_id, bool side );
+
+        void compute_universe();
+
+        void add_mesh_entity_boundary_relation(
+            const gmme_id& boundary,
+            const gmme_id& incident_entity,
+            bool side = false );
+
+        bool create_mesh_entities(
+            const MeshEntityType& type,
+            index_t nb_additional_entities );
+
+        void set_mesh_entity_boundary(
+            const gmme_id& gmme,
+            index_t id,
+            index_t boundary_id,
+            bool side = false );
+
+    private:
+        GeoModelBuilderTopology(
+            GeoModelBuilder< 3 >& builder,
+            GeoModel< 3 >& geomodel )
+            : GeoModelBuilderTopologyBase< 3 >( builder, geomodel )
+        {
+        }
+
+        void copy_all_mesh_entity_topology( const GeoModel< 3 >& from );
     };
 
 }

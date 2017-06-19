@@ -63,6 +63,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class Region;
     template< index_t DIMENSION > class GeoModelAccess;
     template< index_t DIMENSION > class EntityTypeManager;
+    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
     template< index_t DIMENSION > class GeoModelBuilderTopology;
     template< index_t DIMENSION > class GeoModelBuilderGeometryBase;
     template< index_t DIMENSION > class GeoModelBuilderGeometry;
@@ -347,6 +348,7 @@ namespace RINGMesh {
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
         friend class GeoModelBuilderGM;
+        friend class GeoModelBuilderTopologyBase< DIMENSION > ;
         friend class GeoModelBuilderTopology< DIMENSION > ;
         friend class GeoModelBuilderGeometryBase< DIMENSION > ;
         friend class GeoModelBuilderGeometry< DIMENSION > ;
