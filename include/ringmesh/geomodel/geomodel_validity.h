@@ -93,18 +93,22 @@ namespace RINGMesh {
      * @details Check that the entities belong to this geomodel,
      *          call the check validity for each entity
      */
+    template< index_t DIMENSION >
     bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
-        const GeoModel< 3 >& geomodel );
+        const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * @brief Check the connectivity of mesh entities
      */
+    template< index_t DIMENSION >
     bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
-        const GeoModel< 3 >& geomodel );
+        const GeoModel< DIMENSION >& geomodel );
 
+    template< index_t DIMENSION >
     bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
-        const GeoModel< 3 >& geomodel );
+        const GeoModel< DIMENSION >& geomodel );
 
+    template< index_t DIMENSION >
     bool RINGMESH_API are_geomodel_geological_entities_valid(
-        const GeoModel< 3 >& geomodel );
+        const GeoModel< DIMENSION >& geomodel );
 }
