@@ -213,10 +213,10 @@ namespace RINGMesh {
             }
         }
         // Add mesh entities that are in the boundary of no mesh entity
-        for( index_t i = 0; i < MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
-            ++i ) {
-            const MeshEntityType& type =
-                MeshEntityTypeManager< 3 >::mesh_entity_types()[i];
+        const MeshEntityTypeManager< DIMENSION >& manager =
+            geomodel_.entity_type_manager().mesh_entity_manager;
+        for( index_t i = 0; i < manager.nb_mesh_entity_types(); ++i ) {
+            const MeshEntityType& type = manager.mesh_entity_types()[i];
             for( index_t j = 0; j < geomodel_.nb_mesh_entities( type ); ++j ) {
                 bool no_incident = true;
                 const GeoModelMeshEntity< DIMENSION >& E = geomodel_.mesh_entity(
@@ -634,11 +634,13 @@ namespace RINGMesh {
         const MeshEntityType& type,
         index_t nb_additional_entities )
     {
-        if( MeshEntityTypeManager< 2 >::is_corner( type ) ) {
+        const MeshEntityTypeManager< 2 >& manager =
+            geomodel_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_corner( type ) ) {
             return this->create_mesh_entities< Corner >( nb_additional_entities );
-        } else if( MeshEntityTypeManager< 2 >::is_line( type ) ) {
+        } else if( manager.is_line( type ) ) {
             return create_mesh_entities< Line >( nb_additional_entities );
-        } else if( MeshEntityTypeManager< 2 >::is_surface( type ) ) {
+        } else if( manager.is_surface( type ) ) {
             return create_mesh_entities< Surface >( nb_additional_entities );
         } else {
             ringmesh_assert_not_reached;
@@ -651,13 +653,15 @@ namespace RINGMesh {
         const MeshEntityType& type,
         index_t nb_additional_entities )
     {
-        if( MeshEntityTypeManager< 3 >::is_corner( type ) ) {
+        const MeshEntityTypeManager< 3 >& manager =
+            geomodel_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_corner( type ) ) {
             return this->create_mesh_entities< Corner >( nb_additional_entities );
-        } else if( MeshEntityTypeManager< 3 >::is_line( type ) ) {
+        } else if( manager.is_line( type ) ) {
             return create_mesh_entities< Line >( nb_additional_entities );
-        } else if( MeshEntityTypeManager< 3 >::is_surface( type ) ) {
+        } else if( manager.is_surface( type ) ) {
             return create_mesh_entities< Surface >( nb_additional_entities );
-        } else if( MeshEntityTypeManager< 3 >::is_region( type ) ) {
+        } else if( manager.is_region( type ) ) {
             return create_mesh_entities< Region >( nb_additional_entities );
         } else {
             ringmesh_assert_not_reached;

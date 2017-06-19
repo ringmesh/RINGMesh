@@ -41,14 +41,13 @@
 
 namespace RINGMesh {
 
-    template< index_t DIMENSION >
-    MeshEntityTypeBoundaryMap< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::boundary_relationships_;
-
-    template< index_t DIMENSION >
-    MeshEntityTypeIncidentEntityMap< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::incident_entity_relationships_;
-
-    template< index_t DIMENSION >
-    MeshEntityTypes< DIMENSION > MeshEntityTypeManagerBase< DIMENSION >::mesh_entity_types_;
+    template< >
+    MeshEntityTypeBoundaryMap< 3 >::MeshEntityTypeBoundaryMap()
+    {
+        initialize_base();
+        register_boundary( Region< 3 >::type_name_static(),
+            Surface< 3 >::type_name_static() );
+    }
 
     template< index_t DIMENSION >
     MeshEntityTypeBoundaryMap< DIMENSION >::MeshEntityTypeBoundaryMap()
@@ -65,14 +64,6 @@ namespace RINGMesh {
             Corner< DIMENSION >::type_name_static() );
         register_boundary( Surface< DIMENSION >::type_name_static(),
             Line< DIMENSION >::type_name_static() );
-    }
-
-    template< >
-    MeshEntityTypeBoundaryMap< 3 >::MeshEntityTypeBoundaryMap()
-    {
-        initialize_base();
-        register_boundary( Region< 3 >::type_name_static(),
-            Surface< 3 >::type_name_static() );
     }
 
     template< index_t DIMENSION >
@@ -102,6 +93,13 @@ namespace RINGMesh {
             ForbiddenMeshEntityType::type_name_static() );
     }
 
+    template< >
+    MeshEntityTypes< 3 >::MeshEntityTypes()
+    {
+        initialize_base();
+        mesh_entity_types_.push_back( Region< 3 >::type_name_static() );
+    }
+
     template< index_t DIMENSION >
     MeshEntityTypes< DIMENSION >::MeshEntityTypes()
     {
@@ -116,26 +114,22 @@ namespace RINGMesh {
         mesh_entity_types_.push_back( Surface< DIMENSION >::type_name_static() );
     }
 
-    template< >
-    MeshEntityTypes< 3 >::MeshEntityTypes()
-    {
-        initialize_base();
-        mesh_entity_types_.push_back( Region< 3 >::type_name_static() );
-    }
-
     index_t GeologicalTypeManager::nb_geological_entity_types() const
     {
         return static_cast< index_t >( geological_entity_types_.size() );
     }
+
     const std::vector< GeologicalEntityType >& GeologicalTypeManager::geological_entity_types() const
     {
         return geological_entity_types_;
     }
+
     const GeologicalEntityType& GeologicalTypeManager::geological_entity_type(
         index_t index ) const
     {
         return geological_entity_types_.at( index );
     }
+
     index_t GeologicalTypeManager::geological_entity_type_index(
         const GeologicalEntityType& type ) const
     {
@@ -159,11 +153,13 @@ namespace RINGMesh {
         }
         return result;
     }
+
     index_t RelationshipManager::nb_parent_types(
         const MeshEntityType& child_type ) const
     {
         return static_cast< index_t >( parent_types( child_type ).size() );
     }
+
     const MeshEntityType RelationshipManager::child_type(
         const GeologicalEntityType& parent_type ) const
     {
@@ -176,13 +172,26 @@ namespace RINGMesh {
         }
     }
 
+//    template< > MeshEntityTypes< 2 > RINGMESH_API MeshEntityTypeManagerBase< 2 >::mesh_entity_types_ { };
+//    template< > MeshEntityTypeBoundaryMap< 2 > RINGMESH_API MeshEntityTypeManagerBase<
+//        2 >::boundary_relationships_ { };
+//    template< > MeshEntityTypeIncidentEntityMap< 2 > RINGMESH_API MeshEntityTypeManagerBase<
+//        2 >::incident_entity_relationships_ { };
+//    template< > MeshEntityTypes< 3 > RINGMESH_API MeshEntityTypeManagerBase< 3 >::mesh_entity_types_ { };
+//    template< > MeshEntityTypeBoundaryMap< 3 > RINGMESH_API MeshEntityTypeManagerBase<
+//        3 >::boundary_relationships_ { };
+//    template< > MeshEntityTypeIncidentEntityMap< 3 > RINGMESH_API MeshEntityTypeManagerBase<
+//        3 >::incident_entity_relationships_ { };
+
+    template class RINGMESH_API MeshEntityTypes< 2 > ;
     template class RINGMESH_API MeshEntityTypeManagerBase< 2 > ;
     template class RINGMESH_API MeshEntityTypeManager< 2 > ;
     template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 2 > ;
     template class RINGMESH_API MeshEntityTypeBoundaryMap< 2 > ;
 
+//    template class RINGMESH_API MeshEntityTypes< 3 > ;
     template class RINGMESH_API MeshEntityTypeManagerBase< 3 > ;
     template class RINGMESH_API MeshEntityTypeManager< 3 > ;
     template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 3 > ;
-    template class RINGMESH_API MeshEntityTypeBoundaryMap< 3 > ;
+//    template class RINGMESH_API MeshEntityTypeBoundaryMap< 3 > ;
 }
