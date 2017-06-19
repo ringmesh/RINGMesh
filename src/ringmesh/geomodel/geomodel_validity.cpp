@@ -66,13 +66,19 @@ namespace {
         ringmesh_assert( polygons.nb_vertices( triangle1 ) == 3 );
         ringmesh_assert( polygons.nb_vertices( triangle2 ) == 3 );
         const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
-        const vec3& p1 = vertices.vertex( polygons.vertex( triangle1, 0 ) );
-        const vec3& p2 = vertices.vertex( polygons.vertex( triangle1, 1 ) );
-        const vec3& p3 = vertices.vertex( polygons.vertex( triangle1, 2 ) );
+        const vecn< DIMENSION >& p1 = vertices.vertex(
+            polygons.vertex( triangle1, 0 ) );
+        const vecn< DIMENSION >& p2 = vertices.vertex(
+            polygons.vertex( triangle1, 1 ) );
+        const vecn< DIMENSION >& p3 = vertices.vertex(
+            polygons.vertex( triangle1, 2 ) );
 
-        const vec3& q1 = vertices.vertex( polygons.vertex( triangle2, 0 ) );
-        const vec3& q2 = vertices.vertex( polygons.vertex( triangle2, 1 ) );
-        const vec3& q3 = vertices.vertex( polygons.vertex( triangle2, 2 ) );
+        const vecn< DIMENSION >& q1 = vertices.vertex(
+            polygons.vertex( triangle2, 0 ) );
+        const vecn< DIMENSION >& q2 = vertices.vertex(
+            polygons.vertex( triangle2, 1 ) );
+        const vecn< DIMENSION >& q3 = vertices.vertex(
+            polygons.vertex( triangle2, 2 ) );
         GEO::vector< GEO::TriangleIsect > sym;
         return triangles_intersections( p1, p2, p3, q1, q2, q3, sym );
     }
@@ -87,14 +93,17 @@ namespace {
         ringmesh_assert( polygons.nb_vertices( triangle ) == 3 );
         ringmesh_assert( polygons.nb_vertices( quad ) == 4 );
         const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
-        const vec3& p1 = vertices.vertex( polygons.vertex( triangle, 0 ) );
-        const vec3& p2 = vertices.vertex( polygons.vertex( triangle, 1 ) );
-        const vec3& p3 = vertices.vertex( polygons.vertex( triangle, 2 ) );
+        const vecn< DIMENSION >& p1 = vertices.vertex(
+            polygons.vertex( triangle, 0 ) );
+        const vecn< DIMENSION >& p2 = vertices.vertex(
+            polygons.vertex( triangle, 1 ) );
+        const vecn< DIMENSION >& p3 = vertices.vertex(
+            polygons.vertex( triangle, 2 ) );
 
-        const vec3& q1 = vertices.vertex( polygons.vertex( quad, 0 ) );
-        const vec3& q2 = vertices.vertex( polygons.vertex( quad, 1 ) );
-        const vec3& q3 = vertices.vertex( polygons.vertex( quad, 2 ) );
-        const vec3& q4 = vertices.vertex( polygons.vertex( quad, 3 ) );
+        const vecn< DIMENSION >& q1 = vertices.vertex( polygons.vertex( quad, 0 ) );
+        const vecn< DIMENSION >& q2 = vertices.vertex( polygons.vertex( quad, 1 ) );
+        const vecn< DIMENSION >& q3 = vertices.vertex( polygons.vertex( quad, 2 ) );
+        const vecn< DIMENSION >& q4 = vertices.vertex( polygons.vertex( quad, 3 ) );
         GEO::vector< GEO::TriangleIsect > sym;
         if( triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ) {
             return true;
@@ -115,15 +124,15 @@ namespace {
         ringmesh_assert( polygons.nb_vertices( quad1 ) == 4 );
         ringmesh_assert( polygons.nb_vertices( quad2 ) == 4 );
         const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
-        const vec3& p1 = vertices.vertex( polygons.vertex( quad1, 0 ) );
-        const vec3& p2 = vertices.vertex( polygons.vertex( quad1, 1 ) );
-        const vec3& p3 = vertices.vertex( polygons.vertex( quad1, 2 ) );
-        const vec3& p4 = vertices.vertex( polygons.vertex( quad1, 3 ) );
+        const vecn< DIMENSION >& p1 = vertices.vertex( polygons.vertex( quad1, 0 ) );
+        const vecn< DIMENSION >& p2 = vertices.vertex( polygons.vertex( quad1, 1 ) );
+        const vecn< DIMENSION >& p3 = vertices.vertex( polygons.vertex( quad1, 2 ) );
+        const vecn< DIMENSION >& p4 = vertices.vertex( polygons.vertex( quad1, 3 ) );
 
-        const vec3& q1 = vertices.vertex( polygons.vertex( quad2, 0 ) );
-        const vec3& q2 = vertices.vertex( polygons.vertex( quad2, 1 ) );
-        const vec3& q3 = vertices.vertex( polygons.vertex( quad2, 2 ) );
-        const vec3& q4 = vertices.vertex( polygons.vertex( quad2, 3 ) );
+        const vecn< DIMENSION >& q1 = vertices.vertex( polygons.vertex( quad2, 0 ) );
+        const vecn< DIMENSION >& q2 = vertices.vertex( polygons.vertex( quad2, 1 ) );
+        const vecn< DIMENSION >& q3 = vertices.vertex( polygons.vertex( quad2, 2 ) );
+        const vecn< DIMENSION >& q4 = vertices.vertex( polygons.vertex( quad2, 3 ) );
         GEO::vector< GEO::TriangleIsect > sym;
         if( triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ) {
             return true;
@@ -388,7 +397,7 @@ namespace {
         GEO::Mesh point_mesh;
         for( index_t i = 0; i < valid.size(); ++i ) {
             if( !valid[i] ) {
-                const vec3& V = geomodel.mesh.vertices.vertex( i );
+                const vecn< DIMENSION >& V = geomodel.mesh.vertices.vertex( i );
                 point_mesh.vertices.create_vertex( V.data() );
             }
         }
@@ -726,8 +735,9 @@ namespace {
         const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
         for( index_t e = 0; e < non_manifold_edges.size(); e++ ) {
             index_t edge_id = non_manifold_edges[e];
-            const vec3& v0 = vertices.vertex( edge_indices[edge_id] );
-            const vec3& v1 = vertices.vertex( edge_indices[edge_id + 1] );
+            const vecn< DIMENSION >& v0 = vertices.vertex( edge_indices[edge_id] );
+            const vecn< DIMENSION >& v1 = vertices.vertex(
+                edge_indices[edge_id + 1] );
             builder.set_vertex( 2 * e, v0 );
             builder.set_vertex( 2 * e + 1, v1 );
             builder.set_edge_vertex( e, 0, 2 * e );
@@ -743,7 +753,7 @@ namespace {
     {
         std::vector< index_t > unconformal_polygons;
         for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
-            vec3 center = surface.mesh_element_barycenter( p );
+            vecn< DIMENSION > center = surface.mesh_element_barycenter( p );
             std::vector< index_t > result =
                 cell_facet_barycenter_nn_search.get_neighbors( center,
                     surface.geomodel().epsilon() );
@@ -797,14 +807,14 @@ namespace {
     void compute_border_edge_barycenters(
         const GeoModel< DIMENSION >& geomodel,
         const std::vector< index_t >& edge_indices,
-        std::vector< vec3 >& edge_barycenters )
+        std::vector< vecn< DIMENSION > >& edge_barycenters )
     {
         const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
         index_t nb_edges = static_cast< index_t >( edge_indices.size() / 2 );
         edge_barycenters.reserve( nb_edges );
         for( index_t e = 0; e < edge_indices.size(); e += 2 ) {
-            const vec3& v0 = vertices.vertex( edge_indices[e] );
-            const vec3& v1 = vertices.vertex( edge_indices[e + 1] );
+            const vecn< DIMENSION >& v0 = vertices.vertex( edge_indices[e] );
+            const vecn< DIMENSION >& v1 = vertices.vertex( edge_indices[e + 1] );
             edge_barycenters.push_back( ( v0 + v1 ) * 0.5 );
         }
     }
@@ -812,7 +822,7 @@ namespace {
     template< index_t DIMENSION >
     void compute_edge_on_lines(
         const GeoModel< DIMENSION >& geomodel,
-        const std::vector< vec3 >& edge_barycenters,
+        const std::vector< vecn< DIMENSION > >& edge_barycenters,
         std::vector< bool >& edge_on_lines )
     {
         edge_on_lines.resize( edge_barycenters.size(), false );
@@ -820,7 +830,7 @@ namespace {
         for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
             const Line< DIMENSION >& line = geomodel.line( l );
             for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
-                const vec3 query = line.mesh_element_barycenter( e );
+                const vecn< DIMENSION > query = line.mesh_element_barycenter( e );
                 std::vector< index_t > results = nn.get_neighbors( query,
                     geomodel.epsilon() );
                 for( index_t edge : results ) {
@@ -1047,7 +1057,7 @@ namespace {
         {
             std::vector< index_t > edge_indices;
             compute_border_edges( geomodel_, edge_indices );
-            std::vector< vec3 > edge_barycenters;
+            std::vector< vecn< DIMENSION > > edge_barycenters;
             compute_border_edge_barycenters( geomodel_, edge_indices,
                 edge_barycenters );
             std::vector< bool > edge_on_lines;
@@ -1271,6 +1281,18 @@ namespace RINGMesh {
         }
         return valid;
     }
+
+//    template bool RINGMESH_API is_geomodel_valid< 2 >(
+//        const GeoModel< 2 >&,
+//        ValidityCheckMode );
+//    template bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
+//        const GeoModel< 2 >& );
+//    template bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
+//        const GeoModel< 2 >& );
+//    template bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
+//        const GeoModel< 2 >& );
+//    template bool RINGMESH_API are_geomodel_geological_entities_valid(
+//        const GeoModel< 2 >& );
 
     template bool RINGMESH_API is_geomodel_valid< 3 >(
         const GeoModel< 3 >&,
