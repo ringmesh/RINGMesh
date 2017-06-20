@@ -150,6 +150,6 @@ namespace RINGMesh {
         }
     }
 
-    template class RINGMESH_API NNSearch< 2 >;
-    template class RINGMESH_API NNSearch< 3 >;
+    template class RINGMESH_API NNSearch< 2 > ;
+    template class RINGMESH_API NNSearch< 3 > ;
 }

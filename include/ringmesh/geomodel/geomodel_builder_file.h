@@ -54,7 +54,9 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelBuilderFile: public GeoModelBuilder< DIMENSION > {
     public:
-        GeoModelBuilderFile( GeoModel< DIMENSION >& geomodel, const std::string& filename );
+        GeoModelBuilderFile(
+            GeoModel< DIMENSION >& geomodel,
+            const std::string& filename );
 
         virtual ~GeoModelBuilderFile() = default;
 

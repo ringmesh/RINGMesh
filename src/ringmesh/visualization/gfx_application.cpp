@@ -129,7 +129,9 @@ namespace {
         return true;
     }
 
-    void compute_mesh_entity_bbox( const GeoModelMeshEntity< 3 >& entity, Box< 3 >& bbox )
+    void compute_mesh_entity_bbox(
+        const GeoModelMeshEntity< 3 >& entity,
+        Box< 3 >& bbox )
     {
         for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
             bbox.add_point( entity.vertex( v ) );
@@ -202,7 +204,7 @@ namespace RINGMesh {
             for( index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
                 compute_mesh_entity_bbox( GM_.surface( s ), bbox_ );
             }
-        } else if ( GM_.nb_lines() > 0 ) {
+        } else if( GM_.nb_lines() > 0 ) {
             for( index_t l = 0; l < GM_.nb_lines(); l++ ) {
                 compute_mesh_entity_bbox( GM_.line( l ), bbox_ );
             }
@@ -403,7 +405,8 @@ namespace RINGMesh {
             const std::string& type = entity_types_[selected_entity_type_casted];
 
             if( selected_entity_type_casted
-                < MeshEntityTypeManager< 3 >::nb_mesh_entity_types() + 1 ) {
+                < GM_.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types()
+                    + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ );
@@ -475,7 +478,8 @@ namespace RINGMesh {
             GM_gfx_.surfaces.set_vertex_visibility( false );
             GM_gfx_.regions.set_vertex_visibility( false );
             if( selected_entity_type_casted
-                < MeshEntityTypeManager< 3 >::nb_mesh_entity_types() + 1 ) {
+                < GM_.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types()
+                    + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ );
@@ -496,13 +500,15 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer::toggle_mesh_entity_and_boundaries_visibility(
         const gmme_id& entity_id )
     {
-        if( MeshEntityTypeManager< 3 >::is_corner( entity_id.type() ) ) {
+        const MeshEntityTypeManager< 3 >& manager =
+            GM_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_corner( entity_id.type() ) ) {
             toggle_corner_visibility( entity_id.index() );
-        } else if( MeshEntityTypeManager< 3 >::is_line( entity_id.type() ) ) {
+        } else if( manager.is_line( entity_id.type() ) ) {
             toggle_line_and_boundaries_visibility( entity_id.index() );
-        } else if( MeshEntityTypeManager< 3 >::is_surface( entity_id.type() ) ) {
+        } else if( manager.is_surface( entity_id.type() ) ) {
             toggle_surface_and_boundaries_visibility( entity_id.index() );
-        } else if( MeshEntityTypeManager< 3 >::is_region( entity_id.type() ) ) {
+        } else if( manager.is_region( entity_id.type() ) ) {
             toggle_region_and_boundaries_visibility( entity_id.index() );
         } else {
             ringmesh_assert_not_reached;
@@ -555,7 +561,8 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer::toggle_geological_entity_visibility(
         const gmge_id& entity_id )
     {
-        const GeoModelGeologicalEntity< 3 >& entity = GM_.geological_entity( entity_id );
+        const GeoModelGeologicalEntity< 3 >& entity = GM_.geological_entity(
+            entity_id );
         for( index_t i = 0; i < entity.nb_children(); i++ ) {
             const gmme_id& child_id = entity.child_gmme( i );
             toggle_mesh_entity_and_boundaries_visibility( child_id );
@@ -1119,10 +1126,6 @@ namespace RINGMesh {
 
         Logger::div( "RINGMesh-View" );
         Logger::out( "", "Welcome to RINGMesh-View !" );
-    }
-
-    RINGMeshApplication::~RINGMeshApplication()
-    {
     }
 
     void RINGMeshApplication::quit()

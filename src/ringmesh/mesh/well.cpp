@@ -483,11 +483,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    WellGroup< DIMENSION >::~WellGroup()
-    {
-    }
-
-    template< index_t DIMENSION >
     void WellGroup< DIMENSION >::get_region_edges(
         index_t region,
         std::vector< Edge< DIMENSION > >& edges ) const
