@@ -621,6 +621,23 @@ namespace {
         load_storage.cur_surface_++;
     }
 
+    /*!
+     * @brief Creates an empty entity of type GeoModelEntity::REGION and sets
+     * its name from .so file
+     * @param[in] region_name Name of the new region
+     * @param[in] geomodel_builder Builder of the geomodel
+     * @return The index of the initialized region
+     */
+    index_t initialize_region(
+        const std::string& region_name,
+        GeoModelBuilderGocad& geomodel_builder )
+    {
+        gmme_id cur_region =
+            geomodel_builder.topology.create_mesh_entity< Region >();
+        geomodel_builder.info.set_mesh_entity_name( cur_region, region_name );
+        return cur_region.index();
+    }
+
     // Indices begin to 1 in Gocad
     index_t GOCAD_OFFSET = 1;
 
@@ -818,27 +835,13 @@ namespace {
                 builder().geometry.set_region_geometry( load_storage.cur_region_,
                     load_storage.vertices_, load_storage.tetra_corners_ );
             }
-            load_storage.cur_region_ = initialize_region( line.field( 1 ),
-                builder() );
+            std::string region_name = "unnamed_region";
+            if( line.nb_fields() > 1 ) {
+                region_name = line.field( 1 );
+            }
+            load_storage.cur_region_ = initialize_region( region_name, builder() );
             load_storage.vertices_.clear();
             load_storage.tetra_corners_.clear();
-        }
-
-        /*!
-         * @brief Creates an empty entity of type GeoModelEntity::REGION and sets
-         * its name from .so file
-         * @param[in] region_name Name of the new region
-         * @param[in] geomodel_builder Builder of the geomodel
-         * @return The index of the initialized region
-         */
-        index_t initialize_region(
-            const std::string& region_name,
-            GeoModelBuilderGocad& geomodel_builder )
-        {
-            gmme_id cur_region =
-                geomodel_builder.topology.create_mesh_entity< Region >();
-            geomodel_builder.info.set_mesh_entity_name( cur_region, region_name );
-            return cur_region.index();
         }
     };
 
@@ -986,6 +989,11 @@ namespace {
         {
             ringmesh_unused( line );
             if( !load_storage.vertices_.empty() ) {
+                if( load_storage.cur_region_ == NO_ID ) {
+                    // In LightTSolid files
+                    load_storage.cur_region_ = initialize_region( "unnamed_region",
+                        builder() );
+                }
                 builder().geometry.set_region_geometry( load_storage.cur_region_,
                     load_storage.vertices_, load_storage.tetra_corners_ );
                 load_storage.vertices_.clear();
@@ -1077,6 +1085,7 @@ namespace {
         ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "PVRTX" );
         ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "ATOM" );
         ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "PATOM" );
+        ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "SHAREDVRTX" );
         ringmesh_register_TSolidLineParser_creator( LoadTetra, "TETRA" );
         ringmesh_register_TSolidLineParser_creator( LoadLastRegion, "MODEL" );
         ringmesh_register_TSolidLineParser_creator( LoadInterface, "SURFACE" );
@@ -1139,6 +1148,11 @@ namespace RINGMesh {
     {
         read_file();
 
+        // Input file has no attached surface model
+        if( geomodel_.nb_surfaces() == 0 ) {
+            throw RINGMeshException( "I/O", "Input file has no attached model. "
+                "(mandatory for loading a .so file)." );
+        }
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
         compute_surfaces_internal_borders();
