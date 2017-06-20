@@ -49,9 +49,9 @@ namespace RINGMesh {
         const std::string& filename )
         : GeoModelBuilder< DIMENSION >( geomodel ), filename_( filename )
     {
-
     }
-//    template class RINGMESH_API GeoModelBuilderFile< 2 > ;
+
+    template class RINGMESH_API GeoModelBuilderFile< 2 > ;
     template class RINGMESH_API GeoModelBuilderFile< 3 > ;
 
 } // namespace
