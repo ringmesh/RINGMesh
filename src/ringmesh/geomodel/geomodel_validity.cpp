@@ -404,6 +404,26 @@ namespace {
         save_mesh_locating_geomodel_inconsistencies( point_mesh, file );
     }
 
+    std::map< MeshEntityType, std::vector< index_t > > get_entities(
+        const std::vector< GMEVertex >& bmes )
+    {
+        std::map< MeshEntityType, std::vector< index_t > > entities;
+        for( const GMEVertex& vertex : bmes ) {
+            const MeshEntityType& T = vertex.gmme.type();
+            index_t id = vertex.gmme.index();
+            entities[T].push_back( id );
+        }
+        return entities;
+    }
+
+    template< index_t DIMENSION >
+    bool is_geomodel_vertex_valid( const GeoModel< DIMENSION >& geomodel, index_t i )
+    {
+        // Get the mesh entities in which this vertex is
+        std::map< MeshEntityType, std::vector< index_t > > entities = get_entities(
+            geomodel.mesh.vertices.gme_vertices( i ) );
+    }
+
     /*!
      * @brief Check the geometrical-topological consistency of the geomodel
      * @details Verification is based on the information stored by the unique
@@ -421,9 +441,13 @@ namespace {
         // to have a valid B-Rep geomodel
         std::vector< bool > valid( geomodel.mesh.vertices.nb(), true );
         for( index_t i = 0; i < geomodel.mesh.vertices.nb(); ++i ) {
+            valid[i] = is_geomodel_vertex_valid( geomodel, i );
             bool valid_vertex = true;
 
             // Get the mesh entities in which this vertex is            
+            std::map< MeshEntityType, std::vector< index_t > > entities =
+                get_entities( geomodel.mesh.vertices.gme_vertices( i ) );
+
             index_t corner = NO_ID;
             std::vector< index_t > lines;
             std::vector< index_t > surfaces;
@@ -435,6 +459,7 @@ namespace {
             for( const GMEVertex& vertex : bmes ) {
                 const MeshEntityType& T = vertex.gmme.type();
                 index_t id = vertex.gmme.index();
+                entities[T].push_back( id );
                 if( T == Region< DIMENSION >::type_name_static() ) {
                     regions.push_back( id );
                 } else if( T == Surface< DIMENSION >::type_name_static() ) {
@@ -896,7 +921,7 @@ namespace {
             threads.emplace_back( &GeoModelValidityCheck::test_finite_extension,
                 this );
             threads.emplace_back(
-                        &GeoModelValidityCheck::test_surface_line_mesh_conformity, this );
+                &GeoModelValidityCheck::test_surface_line_mesh_conformity, this );
         }
 
         void do_check_geometry( std::vector< std::thread >& threads );
