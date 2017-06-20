@@ -33,61 +33,43 @@
  *     FRANCE
  */
 
-/*!
- * @file ringmesh/geomodel/stratigraphic_column_builder.h
- * @author Marie Sirvent, Pierre Anquez and Francois Bonneau
- */
-
 #pragma once
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/stratigraphic_column.h>
 #include <ringmesh/geomodel/geomodel.h>
 
-namespace RINGMesh {
-    class RINGMESH_API StratigraphicColumnBuilder {
-    ringmesh_disable_copy(StratigraphicColumnBuilder);
-    public:
-        StratigraphicColumnBuilder(
-            StratigraphicColumn& column,
-            GeoModel< 3 >& model );
-        virtual ~StratigraphicColumnBuilder()
-        {
-        }
-    protected:
-        StratigraphicColumn& column_;
-        GeoModel< 3 >& model_;
-    };
+#include <ringmesh/geomodel/geomodel_builder.h>
 
-    class RINGMESH_API StratigraphicColumnBuilderFile: public StratigraphicColumnBuilder {
+/*!
+ * @brief Classes to build GeoModel from various inputs
+ * @author Jeanne Pellerin
+ */
+
+namespace RINGMesh {
+
+    /*!
+     * @brief Abstract interface class to load and build GeoModels from files
+     */
+    template< index_t DIMENSION >
+    class GeoModelBuilderFile: public GeoModelBuilder< DIMENSION > {
     public:
-        StratigraphicColumnBuilderFile(
-            StratigraphicColumn& column,
-            GeoModel< 3 >& model,
+        GeoModelBuilderFile(
+            GeoModel< DIMENSION >& geomodel,
             const std::string& filename );
-        virtual ~StratigraphicColumnBuilderFile() = default;
-        void build_column()
+
+        virtual ~GeoModelBuilderFile() = default;
+
+        void build_geomodel()
         {
             load_file();
+            this->end_geomodel();
         }
+
     private:
         virtual void load_file() = 0;
 
     protected:
         std::string filename_;
-    };
-
-    class RINGMESH_API StratigraphicColumnBuilderXML: public StratigraphicColumnBuilderFile {
-    public:
-        StratigraphicColumnBuilderXML(
-            StratigraphicColumn& column,
-            GeoModel< 3 >& model,
-            const std::string& filename )
-            : StratigraphicColumnBuilderFile( column, model, filename )
-        {
-        }
-        virtual ~StratigraphicColumnBuilderXML() = default;
-        void load_file();
     };
 }

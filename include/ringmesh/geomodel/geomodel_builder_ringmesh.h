@@ -43,7 +43,7 @@
 
 #include <zlib/unzip.h>
 
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_builder_file.h>
 
 /*!
  * @file ringmesh/geomodel_builder_ringmesh.h
@@ -52,15 +52,15 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilderGMImpl;
+    template< index_t DIMENSION > class GeoModelBuilderGMImpl;
 }
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile {
+    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile< 3 > {
     public:
         static const index_t NB_VERSION = 3;
-        GeoModelBuilderGM( GeoModel& geomodel, const std::string& filename );
+        GeoModelBuilderGM( GeoModel< 3 >& geomodel, const std::string& filename );
         virtual ~GeoModelBuilderGM();
 
     private:
@@ -78,6 +78,6 @@ namespace RINGMesh {
 
     private:
         index_t file_version_;
-        std::unique_ptr< GeoModelBuilderGMImpl > version_impl_[NB_VERSION];
+        std::unique_ptr< GeoModelBuilderGMImpl< 3 > > version_impl_[NB_VERSION];
     };
 }

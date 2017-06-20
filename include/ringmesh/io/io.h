@@ -59,8 +59,8 @@ const std::string COMMA = ",";
 
 namespace RINGMesh {
     class StratigraphicColumn;
-    class GeoModel;
-    class WellGroup;
+    template< index_t DIMENSION > class GeoModel;
+    template< index_t DIMENSION > class WellGroup;
 }
 
 namespace GEO {
@@ -82,7 +82,7 @@ namespace RINGMesh {
      * @param[in] filename the file to load
      */
     bool RINGMESH_API geomodel_load(
-        GeoModel& geomodel,
+        GeoModel< 3 >& geomodel,
         const std::string& filename );
     /*!
      * Saves a GeoModel to a file
@@ -90,14 +90,16 @@ namespace RINGMesh {
      * @param[in] filename the file to save
      */
     void RINGMESH_API geomodel_save(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         const std::string& filename );
     /*!
      * Loads a WellGroup from a file
      * @param[in] filename the file to load
      * @param][out] wells the wells to fill
      */
-    void RINGMESH_API well_load( const std::string& filename, WellGroup& wells );
+    void RINGMESH_API well_load(
+        const std::string& filename,
+        WellGroup< 3 >& wells );
 
     class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
     public:
@@ -108,10 +110,12 @@ namespace RINGMesh {
         static std::unique_ptr< GeoModelIOHandler > get_handler(
             const std::string& filename );
 
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) = 0;
+        virtual bool load(
+            const std::string& filename,
+            GeoModel< 3 >& geomodel ) = 0;
 
         virtual void save(
-            const GeoModel& geomodel,
+            const GeoModel< 3 >& geomodel,
             const std::string& filename ) = 0;
 
     protected:
@@ -134,9 +138,11 @@ namespace RINGMesh {
         static std::unique_ptr< WellGroupIOHandler > get_handler(
             const std::string& filename );
 
-        virtual void load( const std::string& filename, WellGroup& mesh ) = 0;
+        virtual void load( const std::string& filename, WellGroup< 3 >& mesh ) = 0;
 
-        virtual void save( const WellGroup& mesh, const std::string& filename ) = 0;
+        virtual void save(
+            const WellGroup< 3 >& mesh,
+            const std::string& filename ) = 0;
 
     protected:
         WellGroupIOHandler() = default;
@@ -174,7 +180,7 @@ namespace RINGMesh {
         virtual void load(
             const std::string& filename,
             StratigraphicColumn& column,
-            GeoModel& geomodel ) = 0;
+            GeoModel< 3 >& geomodel ) = 0;
 
         virtual void save(
             const StratigraphicColumn& column,
@@ -192,6 +198,6 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler_var;
     typedef GEO::Factory0< StratigraphicColumnIOHandler > StratigraphicColumnIOHandlerFactory;
 
-    #define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
+#define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
 		geo_register_creator( StratigraphicColumnIOHandlerFactory, type, name )
 }

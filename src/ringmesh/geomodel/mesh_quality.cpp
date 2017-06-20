@@ -101,13 +101,13 @@ namespace {
         const double tetra_circum_radius = vec3( tetra_circum_center - v0 ).length();
         ringmesh_assert(
             std::abs( tetra_circum_radius - ( tetra_circum_center - v1 ).length() )
-            < global_epsilon );
+                < global_epsilon );
         ringmesh_assert(
             std::abs( tetra_circum_radius - ( tetra_circum_center - v2 ).length() )
-            < global_epsilon );
+                < global_epsilon );
         ringmesh_assert(
             std::abs( tetra_circum_radius - ( tetra_circum_center - v3 ).length() )
-            < global_epsilon );
+                < global_epsilon );
 
         // insphere computation
         double in_radius = tetra_insphere_radius( v0, v1, v2, v3 );
@@ -364,8 +364,8 @@ namespace {
             default:
                 ringmesh_assert_not_reached;
         }
-        ringmesh_assert( quality > -1 * global_epsilon
-            && quality < 1 + global_epsilon );
+        ringmesh_assert(
+            quality > -1 * global_epsilon && quality < 1 + global_epsilon );
         return quality;
     }
 }
@@ -373,11 +373,11 @@ namespace RINGMesh {
 
     void compute_prop_tet_mesh_quality(
         MeshQualityMode mesh_qual_mode,
-        const GeoModel& geomodel )
+        const GeoModel< 3 >& geomodel )
     {
         ringmesh_assert( geomodel.nb_regions() != 0 );
         for( index_t reg_itr = 0; reg_itr < geomodel.nb_regions(); ++reg_itr ) {
-            const Region& cur_reg = geomodel.region( reg_itr );
+            const Region< 3 >& cur_reg = geomodel.region( reg_itr );
             ringmesh_assert( cur_reg.is_meshed() );
             ringmesh_assert( cur_reg.is_simplicial() );
             GEO::AttributesManager& reg_attr_mgr = cur_reg.cell_attribute_manager();

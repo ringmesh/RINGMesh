@@ -116,13 +116,13 @@ int main()
         GEO::Stopwatch total( "Total time" );
 
         // We instantiate the class GeoModel
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
 
         // To build the model, we have to use the class
         // GeoModelBuilder, which is a safety for the user
         // Indeed, the GeoModel can't be directly modified,
         // It has to be done using the GeoModelBuilder
-        GeoModelBuilder builder( geomodel );
+        GeoModelBuilder< 3 > builder( geomodel );
 
         //#############################
         // Declaration of the Entities#
@@ -152,7 +152,7 @@ int main()
         //We first create the GeoModelGeoglogicalEntity
         // Create the contacts
         for( index_t contact = 0; contact < nb_contacts; contact++ ) {
-            builder.geology.create_geological_entity( Contact::type_name_static() );
+            builder.geology.create_geological_entity( Contact< 3 >::type_name_static() );
             // the static method type_name_static() is available for each
             // GeoModelEntity. It returns an EntityType which is a string
             // corresponding to the Type of the entity.
@@ -162,12 +162,12 @@ int main()
         for( index_t interface_itr = 0; interface_itr < nb_interfaces;
             interface_itr++ ) {
             builder.geology.create_geological_entity(
-                Interface::type_name_static() );
+                Interface< 3 >::type_name_static() );
         }
 
         // Create the Layers
         for( index_t layer = 0; layer < nb_layers; layer++ ) {
-            builder.geology.create_geological_entity( Layer::type_name_static() );
+            builder.geology.create_geological_entity( Layer< 3 >::type_name_static() );
         }
 
         // Then we create the GeoModelMeshEntity
@@ -407,327 +407,327 @@ int main()
         // Region are bounded by Surfaces
 
         // For corner 0
-        gmme_id corner0( Corner::type_name_static(), 0 );
+        gmme_id corner0( Corner< 3 >::type_name_static(), 0 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 0 ), corner0 );
+            gmme_id( Line< 3 >::type_name_static(), 0 ), corner0 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 13 ), corner0 );
+            gmme_id( Line< 3 >::type_name_static(), 13 ), corner0 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 3 ), corner0 );
+            gmme_id( Line< 3 >::type_name_static(), 3 ), corner0 );
 
         // For corner 1
-        gmme_id corner1( Corner::type_name_static(), 1 );
+        gmme_id corner1( Corner< 3 >::type_name_static(), 1 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 2 ), corner1 );
+            gmme_id( Line< 3 >::type_name_static(), 2 ), corner1 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 3 ), corner1 );
+            gmme_id( Line< 3 >::type_name_static(), 3 ), corner1 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 17 ), corner1 );
+            gmme_id( Line< 3 >::type_name_static(), 17 ), corner1 );
 
         // For corner 2
-        gmme_id corner2( Corner::type_name_static(), 2 );
+        gmme_id corner2( Corner< 3 >::type_name_static(), 2 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 2 ), corner2 );
+            gmme_id( Line< 3 >::type_name_static(), 2 ), corner2 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 19 ), corner2 );
+            gmme_id( Line< 3 >::type_name_static(), 19 ), corner2 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 1 ), corner2 );
+            gmme_id( Line< 3 >::type_name_static(), 1 ), corner2 );
 
         // For corner 3
-        gmme_id corner3( Corner::type_name_static(), 3 );
+        gmme_id corner3( Corner< 3 >::type_name_static(), 3 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 0 ), corner3 );
+            gmme_id( Line< 3 >::type_name_static(), 0 ), corner3 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 1 ), corner3 );
+            gmme_id( Line< 3 >::type_name_static(), 1 ), corner3 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 15 ), corner3 );
+            gmme_id( Line< 3 >::type_name_static(), 15 ), corner3 );
 
         // For corner 4
-        gmme_id corner4( Corner::type_name_static(), 4 );
+        gmme_id corner4( Corner< 3 >::type_name_static(), 4 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 12 ), corner4 );
+            gmme_id( Line< 3 >::type_name_static(), 12 ), corner4 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 8 ), corner4 );
+            gmme_id( Line< 3 >::type_name_static(), 8 ), corner4 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 11 ), corner4 );
+            gmme_id( Line< 3 >::type_name_static(), 11 ), corner4 );
 
         // For corner 5
-        gmme_id corner5( Corner::type_name_static(), 5 );
+        gmme_id corner5( Corner< 3 >::type_name_static(), 5 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 10 ), corner5 );
+            gmme_id( Line< 3 >::type_name_static(), 10 ), corner5 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 16 ), corner5 );
+            gmme_id( Line< 3 >::type_name_static(), 16 ), corner5 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 11 ), corner5 );
+            gmme_id( Line< 3 >::type_name_static(), 11 ), corner5 );
 
         // For corner 6
-        gmme_id corner6( Corner::type_name_static(), 6 );
+        gmme_id corner6( Corner< 3 >::type_name_static(), 6 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 10 ), corner6 );
+            gmme_id( Line< 3 >::type_name_static(), 10 ), corner6 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 18 ), corner6 );
+            gmme_id( Line< 3 >::type_name_static(), 18 ), corner6 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 9 ), corner6 );
+            gmme_id( Line< 3 >::type_name_static(), 9 ), corner6 );
 
         // For corner 7
-        gmme_id corner7( Corner::type_name_static(), 7 );
+        gmme_id corner7( Corner< 3 >::type_name_static(), 7 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 8 ), corner7 );
+            gmme_id( Line< 3 >::type_name_static(), 8 ), corner7 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 9 ), corner7 );
+            gmme_id( Line< 3 >::type_name_static(), 9 ), corner7 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 14 ), corner7 );
+            gmme_id( Line< 3 >::type_name_static(), 14 ), corner7 );
 
         // For corner 8
-        gmme_id corner8( Corner::type_name_static(), 8 );
+        gmme_id corner8( Corner< 3 >::type_name_static(), 8 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 12 ), corner8 );
+            gmme_id( Line< 3 >::type_name_static(), 12 ), corner8 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 13 ), corner8 );
+            gmme_id( Line< 3 >::type_name_static(), 13 ), corner8 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 7 ), corner8 );
+            gmme_id( Line< 3 >::type_name_static(), 7 ), corner8 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 4 ), corner8 );
+            gmme_id( Line< 3 >::type_name_static(), 4 ), corner8 );
 
         // For corner 9
-        gmme_id corner9( Corner::type_name_static(), 9 );
+        gmme_id corner9( Corner< 3 >::type_name_static(), 9 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 16 ), corner9 );
+            gmme_id( Line< 3 >::type_name_static(), 16 ), corner9 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 17 ), corner9 );
+            gmme_id( Line< 3 >::type_name_static(), 17 ), corner9 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 6 ), corner9 );
+            gmme_id( Line< 3 >::type_name_static(), 6 ), corner9 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 7 ), corner9 );
+            gmme_id( Line< 3 >::type_name_static(), 7 ), corner9 );
 
         // For corner 10
-        gmme_id corner10( Corner::type_name_static(), 10 );
+        gmme_id corner10( Corner< 3 >::type_name_static(), 10 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 6 ), corner10 );
+            gmme_id( Line< 3 >::type_name_static(), 6 ), corner10 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 18 ), corner10 );
+            gmme_id( Line< 3 >::type_name_static(), 18 ), corner10 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 19 ), corner10 );
+            gmme_id( Line< 3 >::type_name_static(), 19 ), corner10 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 5 ), corner10 );
+            gmme_id( Line< 3 >::type_name_static(), 5 ), corner10 );
 
         // For corner 11
-        gmme_id corner11( Corner::type_name_static(), 11 );
+        gmme_id corner11( Corner< 3 >::type_name_static(), 11 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 4 ), corner11 );
+            gmme_id( Line< 3 >::type_name_static(), 4 ), corner11 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 14 ), corner11 );
+            gmme_id( Line< 3 >::type_name_static(), 14 ), corner11 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 15 ), corner11 );
+            gmme_id( Line< 3 >::type_name_static(), 15 ), corner11 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line::type_name_static(), 5 ), corner11 );
+            gmme_id( Line< 3 >::type_name_static(), 5 ), corner11 );
 
         /////////////////////////////////////////////////////////
 
         // For line 0
-        gmme_id line0( Line::type_name_static(), 0 );
+        gmme_id line0( Line< 3 >::type_name_static(), 0 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 0 ), line0 );
+            gmme_id( Surface< 3 >::type_name_static(), 0 ), line0 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 4 ), line0 );
+            gmme_id( Surface< 3 >::type_name_static(), 4 ), line0 );
 
         // For line 1
-        gmme_id line1( Line::type_name_static(), 1 );
+        gmme_id line1( Line< 3 >::type_name_static(), 1 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 0 ), line1 );
+            gmme_id( Surface< 3 >::type_name_static(), 0 ), line1 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 10 ), line1 );
+            gmme_id( Surface< 3 >::type_name_static(), 10 ), line1 );
 
         // For line 2
-        gmme_id line2( Line::type_name_static(), 2 );
+        gmme_id line2( Line< 3 >::type_name_static(), 2 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 0 ), line2 );
+            gmme_id( Surface< 3 >::type_name_static(), 0 ), line2 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 6 ), line2 );
+            gmme_id( Surface< 3 >::type_name_static(), 6 ), line2 );
 
         // For line 3
-        gmme_id line3( Line::type_name_static(), 3 );
+        gmme_id line3( Line< 3 >::type_name_static(), 3 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 0 ), line3 );
+            gmme_id( Surface< 3 >::type_name_static(), 0 ), line3 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 8 ), line3 );
+            gmme_id( Surface< 3 >::type_name_static(), 8 ), line3 );
 
         // For line 4
-        gmme_id line4( Line::type_name_static(), 4 );
+        gmme_id line4( Line< 3 >::type_name_static(), 4 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 1 ), line4 );
+            gmme_id( Surface< 3 >::type_name_static(), 1 ), line4 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 4 ), line4 );
+            gmme_id( Surface< 3 >::type_name_static(), 4 ), line4 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 3 ), line4 );
+            gmme_id( Surface< 3 >::type_name_static(), 3 ), line4 );
 
         // For line 5
-        gmme_id line5( Line::type_name_static(), 5 );
+        gmme_id line5( Line< 3 >::type_name_static(), 5 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 1 ), line5 );
+            gmme_id( Surface< 3 >::type_name_static(), 1 ), line5 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 9 ), line5 );
+            gmme_id( Surface< 3 >::type_name_static(), 9 ), line5 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 10 ), line5 );
+            gmme_id( Surface< 3 >::type_name_static(), 10 ), line5 );
 
         // For line 6
-        gmme_id line6( Line::type_name_static(), 6 );
+        gmme_id line6( Line< 3 >::type_name_static(), 6 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 1 ), line6 );
+            gmme_id( Surface< 3 >::type_name_static(), 1 ), line6 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 6 ), line6 );
+            gmme_id( Surface< 3 >::type_name_static(), 6 ), line6 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 5 ), line6 );
+            gmme_id( Surface< 3 >::type_name_static(), 5 ), line6 );
 
         // For line 7
-        gmme_id line7( Line::type_name_static(), 7 );
+        gmme_id line7( Line< 3 >::type_name_static(), 7 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 1 ), line7 );
+            gmme_id( Surface< 3 >::type_name_static(), 1 ), line7 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 7 ), line7 );
+            gmme_id( Surface< 3 >::type_name_static(), 7 ), line7 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 8 ), line7 );
+            gmme_id( Surface< 3 >::type_name_static(), 8 ), line7 );
 
         // For line 8
-        gmme_id line8( Line::type_name_static(), 8 );
+        gmme_id line8( Line< 3 >::type_name_static(), 8 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 2 ), line8 );
+            gmme_id( Surface< 3 >::type_name_static(), 2 ), line8 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 3 ), line8 );
+            gmme_id( Surface< 3 >::type_name_static(), 3 ), line8 );
 
         // For line 9
-        gmme_id line9( Line::type_name_static(), 9 );
+        gmme_id line9( Line< 3 >::type_name_static(), 9 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 2 ), line9 );
+            gmme_id( Surface< 3 >::type_name_static(), 2 ), line9 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 9 ), line9 );
+            gmme_id( Surface< 3 >::type_name_static(), 9 ), line9 );
 
         // For line 10
-        gmme_id line10( Line::type_name_static(), 10 );
+        gmme_id line10( Line< 3 >::type_name_static(), 10 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 2 ), line10 );
+            gmme_id( Surface< 3 >::type_name_static(), 2 ), line10 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 5 ), line10 );
+            gmme_id( Surface< 3 >::type_name_static(), 5 ), line10 );
 
         // For line 11
-        gmme_id line11( Line::type_name_static(), 11 );
+        gmme_id line11( Line< 3 >::type_name_static(), 11 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 2 ), line11 );
+            gmme_id( Surface< 3 >::type_name_static(), 2 ), line11 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 7 ), line11 );
+            gmme_id( Surface< 3 >::type_name_static(), 7 ), line11 );
 
         // For line 12
-        gmme_id line12( Line::type_name_static(), 12 );
+        gmme_id line12( Line< 3 >::type_name_static(), 12 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 3 ), line12 );
+            gmme_id( Surface< 3 >::type_name_static(), 3 ), line12 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 7 ), line12 );
+            gmme_id( Surface< 3 >::type_name_static(), 7 ), line12 );
 
         // For line 13
-        gmme_id line13( Line::type_name_static(), 13 );
+        gmme_id line13( Line< 3 >::type_name_static(), 13 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 8 ), line13 );
+            gmme_id( Surface< 3 >::type_name_static(), 8 ), line13 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 4 ), line13 );
+            gmme_id( Surface< 3 >::type_name_static(), 4 ), line13 );
 
         // For line 14
-        gmme_id line14( Line::type_name_static(), 14 );
+        gmme_id line14( Line< 3 >::type_name_static(), 14 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 3 ), line14 );
+            gmme_id( Surface< 3 >::type_name_static(), 3 ), line14 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 9 ), line14 );
+            gmme_id( Surface< 3 >::type_name_static(), 9 ), line14 );
 
         // For line 15
-        gmme_id line15( Line::type_name_static(), 15 );
+        gmme_id line15( Line< 3 >::type_name_static(), 15 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 4 ), line15 );
+            gmme_id( Surface< 3 >::type_name_static(), 4 ), line15 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 10 ), line15 );
+            gmme_id( Surface< 3 >::type_name_static(), 10 ), line15 );
 
         // For line 16
-        gmme_id line16( Line::type_name_static(), 16 );
+        gmme_id line16( Line< 3 >::type_name_static(), 16 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 7 ), line16 );
+            gmme_id( Surface< 3 >::type_name_static(), 7 ), line16 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 5 ), line16 );
+            gmme_id( Surface< 3 >::type_name_static(), 5 ), line16 );
 
         // For line 17
-        gmme_id line17( Line::type_name_static(), 17 );
+        gmme_id line17( Line< 3 >::type_name_static(), 17 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 8 ), line17 );
+            gmme_id( Surface< 3 >::type_name_static(), 8 ), line17 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 6 ), line17 );
+            gmme_id( Surface< 3 >::type_name_static(), 6 ), line17 );
 
         // For line 18
-        gmme_id line18( Line::type_name_static(), 18 );
+        gmme_id line18( Line< 3 >::type_name_static(), 18 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 5 ), line18 );
+            gmme_id( Surface< 3 >::type_name_static(), 5 ), line18 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 9 ), line18 );
+            gmme_id( Surface< 3 >::type_name_static(), 9 ), line18 );
 
         // For line 19
-        gmme_id line19( Line::type_name_static(), 19 );
+        gmme_id line19( Line< 3 >::type_name_static(), 19 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 6 ), line19 );
+            gmme_id( Surface< 3 >::type_name_static(), 6 ), line19 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface::type_name_static(), 10 ), line19 );
+            gmme_id( Surface< 3 >::type_name_static(), 10 ), line19 );
 
         /////////////////////////////////////////////////////////
 
         // For surface 0
-        gmme_id surface0( Surface::type_name_static(), 0 );
+        gmme_id surface0( Surface< 3 >::type_name_static(), 0 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 0 ), surface0 );
+            gmme_id( Region< 3 >::type_name_static(), 0 ), surface0 );
 
         // For surface 1
-        gmme_id surface1( Surface::type_name_static(), 1 );
+        gmme_id surface1( Surface< 3 >::type_name_static(), 1 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 0 ), surface1 );
+            gmme_id( Region< 3 >::type_name_static(), 0 ), surface1 );
 
         // For surface 2
-        gmme_id surface2( Surface::type_name_static(), 2 );
+        gmme_id surface2( Surface< 3 >::type_name_static(), 2 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 1 ), surface2 );
+            gmme_id( Region< 3 >::type_name_static(), 1 ), surface2 );
 
         // For surface 3
-        gmme_id surface3( Surface::type_name_static(), 3 );
+        gmme_id surface3( Surface< 3 >::type_name_static(), 3 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 1 ), surface3 );
+            gmme_id( Region< 3 >::type_name_static(), 1 ), surface3 );
 
         // For surface 4
-        gmme_id surface4( Surface::type_name_static(), 4 );
+        gmme_id surface4( Surface< 3 >::type_name_static(), 4 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 0 ), surface4 );
+            gmme_id( Region< 3 >::type_name_static(), 0 ), surface4 );
 
         // For surface 5
-        gmme_id surface5( Surface::type_name_static(), 5 );
+        gmme_id surface5( Surface< 3 >::type_name_static(), 5 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 1 ), surface5 );
+            gmme_id( Region< 3 >::type_name_static(), 1 ), surface5 );
 
         // For surface 6
-        gmme_id surface6( Surface::type_name_static(), 6 );
+        gmme_id surface6( Surface< 3 >::type_name_static(), 6 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 0 ), surface6 );
+            gmme_id( Region< 3 >::type_name_static(), 0 ), surface6 );
 
         // For surface 7
-        gmme_id surface7( Surface::type_name_static(), 7 );
+        gmme_id surface7( Surface< 3 >::type_name_static(), 7 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 1 ), surface7 );
+            gmme_id( Region< 3 >::type_name_static(), 1 ), surface7 );
 
         // For surface 8
-        gmme_id surface8( Surface::type_name_static(), 8 );
+        gmme_id surface8( Surface< 3 >::type_name_static(), 8 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 0 ), surface8 );
+            gmme_id( Region< 3 >::type_name_static(), 0 ), surface8 );
 
         // For surface 9
-        gmme_id surface9( Surface::type_name_static(), 9 );
+        gmme_id surface9( Surface< 3 >::type_name_static(), 9 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 1 ), surface9 );
+            gmme_id( Region< 3 >::type_name_static(), 1 ), surface9 );
 
         // For surface 10
-        gmme_id surface10( Surface::type_name_static(), 10 );
+        gmme_id surface10( Surface< 3 >::type_name_static(), 10 );
         builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region::type_name_static(), 0 ), surface10 );
+            gmme_id( Region< 3 >::type_name_static(), 0 ), surface10 );
 
         // For the Universe Boundary
         builder.topology.add_universe_boundary( 0, true );
@@ -756,156 +756,156 @@ int main()
 
         // For Contact 0
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 0 ),
-            gmme_id( Line::type_name_static(), 0 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 0 ),
+            gmme_id( Line< 3 >::type_name_static(), 0 ) );
 
         // For Contact 1
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 1 ),
-            gmme_id( Line::type_name_static(), 1 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 1 ),
+            gmme_id( Line< 3 >::type_name_static(), 1 ) );
 
         // For Contact 2
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 2 ),
-            gmme_id( Line::type_name_static(), 2 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 2 ),
+            gmme_id( Line< 3 >::type_name_static(), 2 ) );
 
         // For Contact 3
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 3 ),
-            gmme_id( Line::type_name_static(), 3 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 3 ),
+            gmme_id( Line< 3 >::type_name_static(), 3 ) );
 
         // For Contact 4
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 4 ),
-            gmme_id( Line::type_name_static(), 4 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 4 ),
+            gmme_id( Line< 3 >::type_name_static(), 4 ) );
 
         // For Contact 5
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 5 ),
-            gmme_id( Line::type_name_static(), 5 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 5 ),
+            gmme_id( Line< 3 >::type_name_static(), 5 ) );
 
         // For Contact 6
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 6 ),
-            gmme_id( Line::type_name_static(), 6 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 6 ),
+            gmme_id( Line< 3 >::type_name_static(), 6 ) );
 
         // For Contact 7
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 7 ),
-            gmme_id( Line::type_name_static(), 7 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 7 ),
+            gmme_id( Line< 3 >::type_name_static(), 7 ) );
 
         // For Contact 8
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 8 ),
-            gmme_id( Line::type_name_static(), 8 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 8 ),
+            gmme_id( Line< 3 >::type_name_static(), 8 ) );
 
         // For Contact 9
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 9 ),
-            gmme_id( Line::type_name_static(), 9 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 9 ),
+            gmme_id( Line< 3 >::type_name_static(), 9 ) );
 
         // For Contact 10
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 10 ),
-            gmme_id( Line::type_name_static(), 10 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 10 ),
+            gmme_id( Line< 3 >::type_name_static(), 10 ) );
 
         // For Contact 11
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 11 ),
-            gmme_id( Line::type_name_static(), 11 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 11 ),
+            gmme_id( Line< 3 >::type_name_static(), 11 ) );
 
         // For Contact 12
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 12 ),
-            gmme_id( Line::type_name_static(), 12 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 12 ),
+            gmme_id( Line< 3 >::type_name_static(), 12 ) );
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 12 ),
-            gmme_id( Line::type_name_static(), 13 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 12 ),
+            gmme_id( Line< 3 >::type_name_static(), 13 ) );
 
         // For Contact 13
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 13 ),
-            gmme_id( Line::type_name_static(), 14 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 13 ),
+            gmme_id( Line< 3 >::type_name_static(), 14 ) );
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 13 ),
-            gmme_id( Line::type_name_static(), 15 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 13 ),
+            gmme_id( Line< 3 >::type_name_static(), 15 ) );
 
         // For Contact 14
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 14 ),
-            gmme_id( Line::type_name_static(), 16 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 14 ),
+            gmme_id( Line< 3 >::type_name_static(), 16 ) );
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 14 ),
-            gmme_id( Line::type_name_static(), 17 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 14 ),
+            gmme_id( Line< 3 >::type_name_static(), 17 ) );
 
         // For Contact 15
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 15 ),
-            gmme_id( Line::type_name_static(), 19 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 15 ),
+            gmme_id( Line< 3 >::type_name_static(), 19 ) );
         builder.geology.add_parent_children_relation(
-            gmge_id( Contact::type_name_static(), 15 ),
-            gmme_id( Line::type_name_static(), 18 ) );
+            gmge_id( Contact< 3 >::type_name_static(), 15 ),
+            gmme_id( Line< 3 >::type_name_static(), 18 ) );
 
         /////////////////////////////////////////////////
 
         // For Interface 0
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 0 ),
-            gmme_id( Surface::type_name_static(), 0 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 0 ),
+            gmme_id( Surface< 3 >::type_name_static(), 0 ) );
 
         // For Interface 1
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 1 ),
-            gmme_id( Surface::type_name_static(), 1 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 1 ),
+            gmme_id( Surface< 3 >::type_name_static(), 1 ) );
 
         // For Interface 2
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 2 ),
-            gmme_id( Surface::type_name_static(), 2 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 2 ),
+            gmme_id( Surface< 3 >::type_name_static(), 2 ) );
 
         // For Interface 3
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 3 ),
-            gmme_id( Surface::type_name_static(), 3 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 3 ),
+            gmme_id( Surface< 3 >::type_name_static(), 3 ) );
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 3 ),
-            gmme_id( Surface::type_name_static(), 4 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 3 ),
+            gmme_id( Surface< 3 >::type_name_static(), 4 ) );
 
         // For Interface 4
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 4 ),
-            gmme_id( Surface::type_name_static(), 5 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 4 ),
+            gmme_id( Surface< 3 >::type_name_static(), 5 ) );
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 4 ),
-            gmme_id( Surface::type_name_static(), 6 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 4 ),
+            gmme_id( Surface< 3 >::type_name_static(), 6 ) );
 
         // For Interface 5
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 5 ),
-            gmme_id( Surface::type_name_static(), 10 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 5 ),
+            gmme_id( Surface< 3 >::type_name_static(), 10 ) );
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 5 ),
-            gmme_id( Surface::type_name_static(), 9 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 5 ),
+            gmme_id( Surface< 3 >::type_name_static(), 9 ) );
 
         // For Interface 6
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 6 ),
-            gmme_id( Surface::type_name_static(), 8 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 6 ),
+            gmme_id( Surface< 3 >::type_name_static(), 8 ) );
         builder.geology.add_parent_children_relation(
-            gmge_id( Interface::type_name_static(), 6 ),
-            gmme_id( Surface::type_name_static(), 7 ) );
+            gmge_id( Interface< 3 >::type_name_static(), 6 ),
+            gmme_id( Surface< 3 >::type_name_static(), 7 ) );
 
         ///////////////////////////////////////////////////
 
         // For Layer 0
         builder.geology.add_parent_children_relation(
-            gmge_id( Layer::type_name_static(), 0 ),
-            gmme_id( Region::type_name_static(), 0 ) );
+            gmge_id( Layer< 3 >::type_name_static(), 0 ),
+            gmme_id( Region< 3 >::type_name_static(), 0 ) );
 
         // For Layer 1
         builder.geology.add_parent_children_relation(
-            gmge_id( Layer::type_name_static(), 1 ),
-            gmme_id( Region::type_name_static(), 1 ) );
+            gmge_id( Layer< 3 >::type_name_static(), 1 ),
+            gmme_id( Region< 3 >::type_name_static(), 1 ) );
 
         // Then, we end the model building
         // This method will set the missing information for the boundaries

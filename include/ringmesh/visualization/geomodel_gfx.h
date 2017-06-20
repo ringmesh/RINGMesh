@@ -52,7 +52,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
 }
 
 namespace RINGMesh {
@@ -62,18 +62,18 @@ namespace RINGMesh {
     public:
 
         GeoModelGfx();
-        ~GeoModelGfx();
+        ~GeoModelGfx() = default;
 
         /*!
          * Sets the GeoModel associated to the graphics
          * @param[in] geomodel the GeoModel
          */
-        void set_geomodel( const GeoModel& geomodel );
+        void set_geomodel( const GeoModel< 3 >& geomodel );
         /*!
          * Gets the GeoModel associated to the graphics
          * @return the GeoModel
          */
-        const GeoModel* geomodel() const;
+        const GeoModel< 3 >* geomodel() const;
         /*!
          * Initializes the database according the GeoModel dimensions
          */
@@ -81,7 +81,7 @@ namespace RINGMesh {
 
     private:
         /// The GeoModel associated to the graphics
-        const GeoModel* geomodel_;
+        const GeoModel< 3 >* geomodel_;
 
     public:
         CornerGfxEntity corners;

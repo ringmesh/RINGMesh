@@ -39,12 +39,12 @@ namespace {
      */
     void save_geological_entity(
         std::ofstream& out,
-        const GeoModelGeologicalEntity& E )
+        const GeoModelGeologicalEntity< 3 >& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
         out << E.gmge() << " " << E.name() << " ";
-        out << GeoModelGeologicalEntity::geol_name( E.geological_feature() )
-            << std::endl;
+        out << GeoModelGeologicalEntity < 3
+            > ::geol_name( E.geological_feature() ) << std::endl;
 
         /// Second line:  IDS of children
         for( index_t j = 0; j < E.nb_children(); ++j ) {
@@ -58,7 +58,9 @@ namespace {
      * @param[in] M the GeoModel
      * @param[in] file_name path to the input file
      */
-    void save_geological_entities( const GeoModel& M, const std::string& file_name )
+    void save_geological_entities(
+        const GeoModel< 3 >& M,
+        const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() );
         out.precision( 16 );
@@ -87,7 +89,7 @@ namespace {
     }
 
     template< typename ENTITY >
-    void save_mesh_entities_of_type( const GeoModel& M, std::ofstream& out )
+    void save_mesh_entities_of_type( const GeoModel< 3 >& M, std::ofstream& out )
     {
         const std::string& type = ENTITY::type_name_static();
         for( index_t e = 0; e < M.nb_mesh_entities( type ); e++ ) {
@@ -108,7 +110,7 @@ namespace {
      * @param[in] M the GeoModel
      * @param[in] file_name the output file name
      */
-    void save_mesh_entities( const GeoModel& M, const std::string& file_name )
+    void save_mesh_entities( const GeoModel< 3 >& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() );
         out.precision( 16 );
@@ -121,24 +123,26 @@ namespace {
         out << "GeoModel name " << M.name() << std::endl;
 
         // Numbers of the different types of mesh entities
-        out << "Nb " << Corner::type_name_static() << " " << M.nb_corners()
-            << std::endl;
-        out << "Nb " << Line::type_name_static() << " " << M.nb_lines() << std::endl;
-        out << "Nb " << Surface::type_name_static() << " " << M.nb_surfaces()
-            << std::endl;
-        out << "Nb " << Region::type_name_static() << " " << M.nb_regions()
-            << std::endl;
+        out << "Nb " << Corner < 3
+            > ::type_name_static() << " " << M.nb_corners() << std::endl;
+        out << "Nb " << Line < 3
+            > ::type_name_static() << " " << M.nb_lines() << std::endl;
+        out << "Nb " << Surface < 3
+            > ::type_name_static() << " " << M.nb_surfaces() << std::endl;
+        out << "Nb " << Region < 3
+            > ::type_name_static() << " " << M.nb_regions() << std::endl;
 
-        save_mesh_entities_of_type< Corner >( M, out );
-        save_mesh_entities_of_type< Line >( M, out );
-        save_mesh_entities_of_type< Surface >( M, out );
+        save_mesh_entities_of_type< Corner< 3 > >( M, out );
+        save_mesh_entities_of_type< Line< 3 > >( M, out );
+        save_mesh_entities_of_type< Surface< 3 > >( M, out );
 
         // Regions
         for( index_t i = 0; i < M.nb_regions(); ++i ) {
-            const Region& E = M.region( i );
+            const Region< 3 >& E = M.region( i );
             // Save ID - NAME
-            out << Region::type_name_static() << " " << i << " " << E.name() << " "
-                << E.low_level_mesh_storage().type_name() << std::endl;
+            out << Region < 3
+                > ::type_name_static() << " " << i << " " << E.name() << " "
+                    << E.low_level_mesh_storage().type_name() << std::endl;
             // Second line Signed ids of boundary surfaces
             for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
                 if( E.side( j ) ) {
@@ -165,11 +169,11 @@ namespace {
     }
 
     bool save_mesh(
-        const GeoModelMeshEntity& geomodel_entity_mesh,
+        const GeoModelMeshEntity< 3 >& geomodel_entity_mesh,
         const std::string& name )
     {
-        if( geomodel_entity_mesh.type_name() == Region::type_name_static() ) {
-            const Region& region = geomodel_entity_mesh.geomodel().region(
+        if( geomodel_entity_mesh.type_name() == Region < 3 > ::type_name_static() ) {
+            const Region< 3 >& region = geomodel_entity_mesh.geomodel().region(
                 geomodel_entity_mesh.index() );
             if( !region.is_meshed() ) {
                 // a region is not necessary meshed.
@@ -220,7 +224,7 @@ namespace {
 
     template< typename ENTITY >
     void save_geomodel_mesh_entities(
-        const GeoModel& geomodel,
+        const GeoModel< 3 >& geomodel,
         std::vector< std::string >& filenames )
     {
         const std::string& type = ENTITY::type_name_static();
@@ -238,7 +242,7 @@ namespace {
 
     class GeoModelHandlerGM final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(
@@ -254,7 +258,9 @@ namespace {
             return is_valid;
 
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             const std::string pwd = GEO::FileSystem::get_current_working_directory();
             bool valid_new_working_directory =
@@ -283,10 +289,10 @@ namespace {
                 + geomodel.nb_surfaces() + geomodel.nb_regions();
             std::vector< std::string > filenames;
             filenames.reserve( nb_mesh_entites );
-            save_geomodel_mesh_entities< Corner >( geomodel, filenames );
-            save_geomodel_mesh_entities< Line >( geomodel, filenames );
-            save_geomodel_mesh_entities< Surface >( geomodel, filenames );
-            save_geomodel_mesh_entities< Region >( geomodel, filenames );
+            save_geomodel_mesh_entities< Corner< 3 > >( geomodel, filenames );
+            save_geomodel_mesh_entities< Line< 3 > >( geomodel, filenames );
+            save_geomodel_mesh_entities< Surface< 3 > >( geomodel, filenames );
+            save_geomodel_mesh_entities< Region< 3 > >( geomodel, filenames );
             std::sort( filenames.begin(), filenames.end() );
             zip_files( filenames, zf );
 

@@ -67,7 +67,7 @@ namespace {
 
     void convert_geomodel( const std::string& geomodel_in_name )
     {
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
         geomodel_load( geomodel, geomodel_in_name );
         std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( geomodel_out_name.empty() ) {

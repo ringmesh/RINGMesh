@@ -36,13 +36,15 @@
 namespace {
     class TetGenIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from TetGen not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             std::string directory = GEO::FileSystem::dir_name( filename );
             std::string file = GEO::FileSystem::base_name( filename );
@@ -52,7 +54,7 @@ namespace {
             std::ofstream node( oss_node.str().c_str() );
             node.precision( 16 );
 
-            const GeoModelMesh& mesh = geomodel.mesh;
+            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
             node << mesh.vertices.nb() << " 3 0 0" << std::endl;
             for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
                 node << v << SPACE << mesh.vertices.vertex( v ) << std::endl;
