@@ -897,38 +897,7 @@ namespace {
             threads.emplace_back( &GeoModelValidityCheck::test_finite_extension,
                 this );
         }
-        void do_check_validity( ValidityCheckMode mode )
-        {
-            std::vector< std::thread > threads;
-            threads.reserve( 8 );
-            if( mode == ValidityCheckMode::GEOMETRY
-                || mode == ValidityCheckMode::ALL ) {
-                threads.emplace_back(
-                    &GeoModelValidityCheck::test_polygon_intersections, this );
-            }
-            if( mode != ValidityCheckMode::TOPOLOGY ) {
-
-            }
-            if( mode != ValidityCheckMode::GEOMETRY ) {
-                // Add topological validity check
-                threads.emplace_back(
-                    &GeoModelValidityCheck::test_geomodel_connectivity_validity,
-                    this );
-                threads.emplace_back( &GeoModelValidityCheck::test_finite_extension,
-                    this );
-                threads.emplace_back(
-                    &GeoModelValidityCheck::test_surface_line_mesh_conformity,
-                    this );
-            }
-
-            // Geological validity must always be checked
-            threads.emplace_back(
-                &GeoModelValidityCheck::test_geomodel_geological_validity, this );
-
-            for( index_t i = 0; i < threads.size(); i++ ) {
-                threads[i].join();
-            }
-        }
+        void do_check_validity( ValidityCheckMode mode ) ;
 
         /*! 
          * @brief Verify the validity of all GeoModelMeshEntities
