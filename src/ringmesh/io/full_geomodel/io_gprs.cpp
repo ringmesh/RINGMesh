@@ -34,7 +34,7 @@
  */
 
 namespace {
-    class GPRSIOHandler final: public GeoModelIOHandler {
+    class GPRSIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         struct Pipe {
             Pipe( index_t v0_in, index_t v1_in )

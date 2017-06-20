@@ -34,7 +34,7 @@
  */
 
 namespace {
-    class TetGenIOHandler final: public GeoModelIOHandler {
+    class TetGenIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {

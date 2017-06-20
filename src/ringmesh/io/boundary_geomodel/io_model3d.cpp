@@ -398,7 +398,7 @@ namespace {
         }
     }
 
-    class MLIOHandler final: public GeoModelIOHandler {
+    class MLIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid

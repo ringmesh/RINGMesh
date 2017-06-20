@@ -57,7 +57,7 @@ namespace {
      * "MFEM is a free, lightweight, scalable C++ library for finite element
      * methods"
      */
-    class MFEMIOHandler final: public GeoModelIOHandler {
+    class MFEMIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {

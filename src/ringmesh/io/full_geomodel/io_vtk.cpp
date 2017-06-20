@@ -59,7 +59,7 @@ namespace {
         &tet_descriptor_vtk, &hex_descriptor_vtk, &prism_descriptor_vtk,
         &pyramid_descriptor_vtk };
 
-    class VTKIOHandler final: public GeoModelIOHandler {
+    class VTKIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
