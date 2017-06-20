@@ -77,9 +77,9 @@ namespace {
 
 namespace RINGMesh {
 
-    class CellAttributeGfx: public AttributeGfx {
+    class CellAttributeGfx: public AttributeGfx< 3 > {
     public:
-        CellAttributeGfx( AttributeGfxManager& manager )
+        CellAttributeGfx( AttributeGfxManager< 3 >& manager )
             : AttributeGfx( manager )
         {
         }
@@ -124,9 +124,9 @@ namespace RINGMesh {
         }
     };
 
-    class CellVertexAttributeGfx: public AttributeGfx {
+    class CellVertexAttributeGfx: public AttributeGfx< 3 > {
     public:
-        CellVertexAttributeGfx( AttributeGfxManager& manager )
+        CellVertexAttributeGfx( AttributeGfxManager< 3 >& manager )
             : AttributeGfx( manager )
         {
         }
@@ -172,9 +172,9 @@ namespace RINGMesh {
         }
     };
 
-    class PolygonAttributeGfx: public AttributeGfx {
+    class PolygonAttributeGfx: public AttributeGfx< 3 > {
     public:
-        PolygonAttributeGfx( AttributeGfxManager& manager )
+        PolygonAttributeGfx( AttributeGfxManager< 3 >& manager )
             : AttributeGfx( manager )
         {
         }
@@ -220,9 +220,9 @@ namespace RINGMesh {
         }
     };
 
-    class PolygonVertexAttributeGfx: public AttributeGfx {
+    class PolygonVertexAttributeGfx: public AttributeGfx< 3 > {
     public:
-        PolygonVertexAttributeGfx( AttributeGfxManager& manager )
+        PolygonVertexAttributeGfx( AttributeGfxManager< 3 >& manager )
             : AttributeGfx( manager )
         {
         }
@@ -268,7 +268,9 @@ namespace RINGMesh {
         }
     };
 
-    AttributeGfxManager::AttributeGfxManager( GeoModelGfx& gfx )
+    template< index_t DIMENSION >
+    AttributeGfxManager< DIMENSION >::AttributeGfxManager(
+        GeoModelGfx< DIMENSION >& gfx )
         :
             gfx_( gfx ),
             location_( nb_locations ),
@@ -284,7 +286,9 @@ namespace RINGMesh {
         attributes_[cell_vertices].reset( new CellVertexAttributeGfx( *this ) );
     }
 
-    std::string AttributeGfxManager::location_name( Attribute_location location )
+    template< index_t DIMENSION >
+    std::string AttributeGfxManager< DIMENSION >::location_name(
+        Attribute_location location )
     {
         if( location == nb_locations ) {
             return "location";
@@ -293,28 +297,32 @@ namespace RINGMesh {
         }
     }
 
-    void AttributeGfxManager::compute_range()
+    template< index_t DIMENSION >
+    void AttributeGfxManager< DIMENSION >::compute_range()
     {
         if( location() < nb_locations ) {
             attributes_[location()]->compute_range();
         }
     }
 
-    void AttributeGfxManager::bind_attribute()
+    template< index_t DIMENSION >
+    void AttributeGfxManager< DIMENSION >::bind_attribute()
     {
         if( location() < nb_locations ) {
             attributes_[location()]->bind_attribute();
         }
     }
 
-    void AttributeGfxManager::unbind_attribute()
+    template< index_t DIMENSION >
+    void AttributeGfxManager< DIMENSION >::unbind_attribute()
     {
         if( location() < nb_locations ) {
             attributes_[location()]->unbind_attribute();
         }
     }
 
-    index_t AttributeGfxManager::nb_coordinates() const
+    template< index_t DIMENSION >
+    index_t AttributeGfxManager< DIMENSION >::nb_coordinates() const
     {
         if( location() < nb_locations ) {
             return attributes_[location()]->nb_coordinates();
@@ -322,11 +330,12 @@ namespace RINGMesh {
         return 0;
     }
 
-    std::unique_ptr< PointSetMeshGfx > PointSetMeshGfx::create_gfx(
-        const PointSetMesh< 3 >& mesh )
+    template< index_t DIMENSION >
+    std::unique_ptr< PointSetMeshGfx< DIMENSION > > PointSetMeshGfx< DIMENSION >::create_gfx(
+        const PointSetMesh< DIMENSION >& mesh )
     {
-        PointSetMeshGfx* gfx = PointSetMeshGfxFactory::create_object(
-            mesh.type_name() );
+        PointSetMeshGfx< DIMENSION >* gfx =
+            PointSetMeshGfxFactory< DIMENSION >::create_object( mesh.type_name() );
         if( !gfx ) {
             Logger::warn( "PointSetMeshGfx",
                 "Could not create mesh data structure: ", mesh.type_name() );
@@ -336,13 +345,15 @@ namespace RINGMesh {
             gfx = new GeogramPointSetMeshGfx;
         }
         gfx->set_mesh( mesh );
-        return std::unique_ptr< PointSetMeshGfx >( gfx );
+        return std::unique_ptr< PointSetMeshGfx< DIMENSION > >( gfx );
     }
 
-    std::unique_ptr< LineMeshGfx > LineMeshGfx::create_gfx(
-        const LineMesh< 3 >& mesh )
+    template< index_t DIMENSION >
+    std::unique_ptr< LineMeshGfx< DIMENSION > > LineMeshGfx< DIMENSION >::create_gfx(
+        const LineMesh< DIMENSION >& mesh )
     {
-        LineMeshGfx* gfx = LineMeshGfxFactory::create_object( mesh.type_name() );
+        LineMeshGfx< DIMENSION > *gfx =
+            LineMeshGfxFactory< DIMENSION >::create_object( mesh.type_name() );
         if( !gfx ) {
             Logger::warn( "LineMeshGfx", "Could not create mesh data structure: ",
                 mesh.type_name() );
@@ -352,14 +363,15 @@ namespace RINGMesh {
             gfx = new GeogramLineMeshGfx;
         }
         gfx->set_mesh( mesh );
-        return std::unique_ptr< LineMeshGfx >( gfx );
+        return std::unique_ptr< LineMeshGfx< DIMENSION > >( gfx );
     }
 
-    std::unique_ptr< SurfaceMeshGfx > SurfaceMeshGfx::create_gfx(
-        const SurfaceMesh< 3 >& mesh )
+    template< index_t DIMENSION >
+    std::unique_ptr< SurfaceMeshGfx< DIMENSION > > SurfaceMeshGfx< DIMENSION >::create_gfx(
+        const SurfaceMesh< DIMENSION >& mesh )
     {
-        SurfaceMeshGfx* gfx = SurfaceMeshGfxFactory::create_object(
-            mesh.type_name() );
+        SurfaceMeshGfx< DIMENSION >* gfx =
+            SurfaceMeshGfxFactory< DIMENSION >::create_object( mesh.type_name() );
         if( !gfx ) {
             Logger::warn( "SurfaceMeshGfx", "Could not create mesh data structure: ",
                 mesh.type_name() );
@@ -369,13 +381,15 @@ namespace RINGMesh {
             gfx = new GeogramSurfaceMeshGfx;
         }
         gfx->set_mesh( mesh );
-        return std::unique_ptr< SurfaceMeshGfx >( gfx );
+        return std::unique_ptr< SurfaceMeshGfx< DIMENSION > >( gfx );
     }
 
-    std::unique_ptr< VolumeMeshGfx > VolumeMeshGfx::create_gfx(
-        const VolumeMesh< 3 >& mesh )
+    template< index_t DIMENSION >
+    std::unique_ptr< VolumeMeshGfx< DIMENSION > > VolumeMeshGfx< DIMENSION >::create_gfx(
+        const VolumeMesh< DIMENSION >& mesh )
     {
-        VolumeMeshGfx* gfx = VolumeMeshGfxFactory::create_object( mesh.type_name() );
+        VolumeMeshGfx< DIMENSION > *gfx =
+            VolumeMeshGfxFactory< DIMENSION >::create_object( mesh.type_name() );
         if( !gfx ) {
             Logger::warn( "VolumeMeshGfx", "Could not create mesh data structure: ",
                 mesh.type_name() );
@@ -385,8 +399,27 @@ namespace RINGMesh {
             gfx = new GeogramVolumeMeshGfx;
         }
         gfx->set_mesh( mesh );
-        return std::unique_ptr< VolumeMeshGfx >( gfx );
+        return std::unique_ptr< VolumeMeshGfx< DIMENSION > >( gfx );
     }
+
+//    template std::unique_ptr< PointSetMeshGfx< 2 > > RINGMESH_API PointSetMeshGfx< 2 >::create_gfx(
+//        const PointSetMesh< 2 >& );
+    //    template std::unique_ptr< LineMeshGfx< 2 > > RINGMESH_API LineMeshGfx< 2 >::create_gfx(
+    //        const LineMesh< 2 >& );
+    //    template std::unique_ptr< SurfaceMeshGfx< 2 > > RINGMESH_API SurfaceMeshGfx< 2 >::create_gfx(
+    //        const SurfaceMesh< 2 >& );
+//    template class RINGMESH_API AttributeGfxManager< 2 >;
+
+    template std::unique_ptr< PointSetMeshGfx< 3 > > RINGMESH_API PointSetMeshGfx< 3 >::create_gfx(
+        const PointSetMesh< 3 >& );
+    template std::unique_ptr< LineMeshGfx< 3 > > RINGMESH_API LineMeshGfx< 3 >::create_gfx(
+        const LineMesh< 3 >& );
+    template std::unique_ptr< SurfaceMeshGfx< 3 > > RINGMESH_API SurfaceMeshGfx< 3 >::create_gfx(
+        const SurfaceMesh< 3 >& );
+    template std::unique_ptr< VolumeMeshGfx< 3 > > RINGMESH_API VolumeMeshGfx< 3 >::create_gfx(
+        const VolumeMesh< 3 >& );
+    template class RINGMESH_API AttributeGfxManager< 3 >;
+
 }
 
 #endif
