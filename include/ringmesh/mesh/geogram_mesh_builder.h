@@ -255,6 +255,10 @@ namespace RINGMesh {
             GEO::remove_small_connected_components( *mesh_->mesh_, min_area,
                 min_polygons );
         }
+        virtual void invert_normals()
+        {
+            GEO::invert_normals( *( mesh_->mesh_ ) ) ;
+        }
 
         virtual void triangulate( const SurfaceMesh& surface_in ) override
         {
