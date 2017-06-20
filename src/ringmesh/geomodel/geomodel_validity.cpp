@@ -882,6 +882,21 @@ namespace {
         }
 
     private:
+        void check_topology_base( std::vector< std::thread >& threads )
+        {
+            threads.emplace_back(
+                &GeoModelValidityCheck::test_geomodel_mesh_entities_validity, this );
+            threads.emplace_back( &GeoModelValidityCheck::test_non_manifold_edges,
+                this );
+        }
+
+        void check_geometry_base( std::vector< std::thread >& threads )
+        {
+            threads.emplace_back(
+                &GeoModelValidityCheck::test_geomodel_connectivity_validity, this );
+            threads.emplace_back( &GeoModelValidityCheck::test_finite_extension,
+                this );
+        }
         void do_check_validity( ValidityCheckMode mode )
         {
             std::vector< std::thread > threads;
@@ -892,15 +907,6 @@ namespace {
                     &GeoModelValidityCheck::test_polygon_intersections, this );
             }
             if( mode != ValidityCheckMode::TOPOLOGY ) {
-                // Add geometrical validity check
-                threads.emplace_back(
-                    &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
-                    this );
-                threads.emplace_back(
-                    &GeoModelValidityCheck::test_region_surface_mesh_conformity,
-                    this );
-                threads.emplace_back(
-                    &GeoModelValidityCheck::test_non_manifold_edges, this );
 
             }
             if( mode != ValidityCheckMode::GEOMETRY ) {
@@ -913,10 +919,6 @@ namespace {
                 threads.emplace_back(
                     &GeoModelValidityCheck::test_surface_line_mesh_conformity,
                     this );
-                /// TODO: find a way to add this test for Model3d. See BC.
-//                threads.emplace_back(
-//                    &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
-//                    this );
             }
 
             // Geological validity must always be checked
@@ -1137,6 +1139,60 @@ namespace {
         ValidityCheckMode mode_;
     };
 
+    template< >
+    void GeoModelValidityCheck< 2 >::do_check_validity( ValidityCheckMode mode )
+    {
+        std::vector< std::thread > threads;
+        threads.reserve( 8 );
+        if( mode == ValidityCheckMode::GEOMETRY || mode == ValidityCheckMode::ALL ) {
+
+        }
+        if( mode != ValidityCheckMode::TOPOLOGY ) {
+            check_topology_base( threads );
+        }
+        if( mode != ValidityCheckMode::GEOMETRY ) {
+            check_geometry_base( threads );
+        }
+
+        // Geological validity must always be checked
+        threads.emplace_back(
+            &GeoModelValidityCheck::test_geomodel_geological_validity, this );
+
+        for( index_t i = 0; i < threads.size(); i++ ) {
+            threads[i].join();
+        }
+    }
+
+    template< >
+    void GeoModelValidityCheck< 3 >::do_check_validity( ValidityCheckMode mode )
+    {
+        std::vector< std::thread > threads;
+        threads.reserve( 8 );
+        if( mode == ValidityCheckMode::GEOMETRY || mode == ValidityCheckMode::ALL ) {
+            threads.emplace_back( &GeoModelValidityCheck::test_polygon_intersections,
+                this );
+        }
+        if( mode != ValidityCheckMode::TOPOLOGY ) {
+            check_topology_base( threads );
+            threads.emplace_back(
+                &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
+
+        }
+        if( mode != ValidityCheckMode::GEOMETRY ) {
+            check_geometry_base( threads );
+            threads.emplace_back(
+                &GeoModelValidityCheck::test_surface_line_mesh_conformity, this );
+        }
+
+        // Geological validity must always be checked
+        threads.emplace_back(
+            &GeoModelValidityCheck::test_geomodel_geological_validity, this );
+
+        for( index_t i = 0; i < threads.size(); i++ ) {
+            threads[i].join();
+        }
+    }
+
 }
 // anonymous namespace
 
@@ -1282,17 +1338,17 @@ namespace RINGMesh {
         return valid;
     }
 
-//    template bool RINGMESH_API is_geomodel_valid< 2 >(
-//        const GeoModel< 2 >&,
-//        ValidityCheckMode );
-//    template bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
-//        const GeoModel< 2 >& );
-//    template bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
-//        const GeoModel< 2 >& );
-//    template bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
-//        const GeoModel< 2 >& );
-//    template bool RINGMESH_API are_geomodel_geological_entities_valid(
-//        const GeoModel< 2 >& );
+    template bool RINGMESH_API is_geomodel_valid< 2 >(
+        const GeoModel< 2 >&,
+        ValidityCheckMode );
+    template bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
+        const GeoModel< 2 >& );
+    template bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
+        const GeoModel< 2 >& );
+    template bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
+        const GeoModel< 2 >& );
+    template bool RINGMESH_API are_geomodel_geological_entities_valid(
+        const GeoModel< 2 >& );
 
     template bool RINGMESH_API is_geomodel_valid< 3 >(
         const GeoModel< 3 >&,
