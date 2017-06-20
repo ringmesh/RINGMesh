@@ -134,12 +134,12 @@ namespace {
 
             index_t nb_families = 0;
             index_t nb_interfaces = gm.nb_geological_entities(
-                Interface< 3 >::type_name_static() );
+                Interface < 3 > ::type_name_static() );
             std::vector< index_t > nb_triangle_interface( nb_interfaces, 0 );
             std::vector< index_t > nb_quad_interface( nb_interfaces, 0 );
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 const GeoModelGeologicalEntity< 3 >& interf = gm.geological_entity(
-                    Interface< 3 >::type_name_static(), i );
+                    Interface < 3 > ::type_name_static(), i );
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_gmme( s ).index();
                     nb_triangle_interface[i] += polygons.nb_triangle( s_id );
@@ -298,10 +298,10 @@ namespace {
                 }
             }
 
-            index_t nb_plist = 3 * polygons.nb_triangle()
-                + 4 * polygons.nb_quad() + 4 * mesh.cells.nb_tet()
-                + 5 * mesh.cells.nb_pyramid() + 6 * mesh.cells.nb_prism()
-                + 8 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges();
+            index_t nb_plist = 3 * polygons.nb_triangle() + 4 * polygons.nb_quad()
+                + 4 * mesh.cells.nb_tet() + 5 * mesh.cells.nb_pyramid()
+                + 6 * mesh.cells.nb_prism() + 8 * mesh.cells.nb_hex()
+                + 2 * mesh.edges.nb_edges();
             data << nb_plist << " # PLIST" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
@@ -321,14 +321,12 @@ namespace {
             }
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 const GeoModelGeologicalEntity< 3 >& interf = gm.geological_entity(
-                    Interface< 3 >::type_name_static(), i );
+                    Interface < 3 > ::type_name_static(), i );
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_gmme( s ).index();
-                    for( index_t el = 0; el < polygons.nb_triangle( s_id );
-                        el++ ) {
+                    for( index_t el = 0; el < polygons.nb_triangle( s_id ); el++ ) {
                         index_t tri = polygons.triangle( s_id, el );
-                        for( index_t p = 0; p < polygons.nb_vertices( tri );
-                            p++ ) {
+                        for( index_t p = 0; p < polygons.nb_vertices( tri ); p++ ) {
                             index_t vertex_id = polygons.vertex( tri, p );
                             data << " " << std::setw( 7 ) << vertex_id;
                             new_line( count, 10, data );
@@ -336,8 +334,7 @@ namespace {
                     }
                     for( index_t el = 0; el < polygons.nb_quad( s_id ); el++ ) {
                         index_t quad = polygons.quad( s_id, el );
-                        for( index_t p = 0; p < polygons.nb_vertices( quad );
-                            p++ ) {
+                        for( index_t p = 0; p < polygons.nb_vertices( quad ); p++ ) {
                             index_t vertex_id = polygons.vertex( quad, p );
                             data << " " << std::setw( 7 ) << vertex_id;
                             new_line( count, 10, data );
@@ -356,10 +353,10 @@ namespace {
             }
             reset_line( count, data );
 
-            index_t nb_polygons = 3 * polygons.nb_triangle()
-                + 4 * polygons.nb_quad() + 4 * mesh.cells.nb_tet()
-                + 5 * mesh.cells.nb_pyramid() + 5 * mesh.cells.nb_prism()
-                + 6 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges();
+            index_t nb_polygons = 3 * polygons.nb_triangle() + 4 * polygons.nb_quad()
+                + 4 * mesh.cells.nb_tet() + 5 * mesh.cells.nb_pyramid()
+                + 5 * mesh.cells.nb_prism() + 6 * mesh.cells.nb_hex()
+                + 2 * mesh.edges.nb_edges();
             data << nb_polygons << " # PFVERTS" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
@@ -383,14 +380,12 @@ namespace {
             }
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 const GeoModelGeologicalEntity< 3 >& interf = gm.geological_entity(
-                    Interface< 3 >::type_name_static(), i );
+                    Interface < 3 > ::type_name_static(), i );
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_gmme( s ).index();
-                    for( index_t el = 0; el < polygons.nb_triangle( s_id );
-                        el++ ) {
+                    for( index_t el = 0; el < polygons.nb_triangle( s_id ); el++ ) {
                         index_t tri = polygons.triangle( s_id, el );
-                        for( index_t e = 0; e < polygons.nb_vertices( tri );
-                            e++ ) {
+                        for( index_t e = 0; e < polygons.nb_vertices( tri ); e++ ) {
                             index_t adj = polygons.adjacent( tri, e );
                             if( adj == GEO::NO_FACET ) {
                                 data << " " << std::setw( 7 ) << -28;
@@ -402,8 +397,7 @@ namespace {
                     }
                     for( index_t el = 0; el < polygons.nb_quad( s_id ); el++ ) {
                         index_t quad = polygons.quad( s_id, el );
-                        for( index_t e = 0; e < polygons.nb_vertices( quad );
-                            e++ ) {
+                        for( index_t e = 0; e < polygons.nb_vertices( quad ); e++ ) {
                             index_t adj = polygons.adjacent( quad, e );
                             if( adj == GEO::NO_FACET ) {
                                 data << " " << std::setw( 7 ) << -28;
@@ -505,9 +499,10 @@ namespace {
                         for( index_t i = 0;
                             i
                                 < geomodel.nb_geological_entities(
-                                    Interface< 3 >::type_name_static() ); i++ ) {
+                                    Interface < 3 > ::type_name_static() ); i++ ) {
                             if( geomodel.geological_entity(
-                                Interface< 3 >::type_name_static(), i ).name() == name ) {
+                                Interface < 3 > ::type_name_static(), i ).name()
+                                == name ) {
                                 interface_id = i;
                                 break;
                             }
@@ -657,7 +652,9 @@ namespace {
                 }
             }
         }
-        std::string interface_csmp_name( index_t i, const GeoModel< 3 >& geomodel ) const
+        std::string interface_csmp_name(
+            index_t i,
+            const GeoModel< 3 >& geomodel ) const
         {
             if( box_model_ ) {
                 if( i == back_ ) {
@@ -674,7 +671,8 @@ namespace {
                     return "RIGHT";
                 }
             }
-            return geomodel.geological_entity( Interface< 3 >::type_name_static(), i ).name();
+            return geomodel.geological_entity( Interface < 3 > ::type_name_static(),
+                i ).name();
         }
         signed_index_t point_boundary( index_t p ) const
         {

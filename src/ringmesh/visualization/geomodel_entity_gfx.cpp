@@ -85,7 +85,9 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelGfxEntity::set_vertex_visibility( index_t entity_id, bool is_visible )
+    void GeoModelGfxEntity::set_vertex_visibility(
+        index_t entity_id,
+        bool is_visible )
     {
         entities_[entity_id]->set_vertex_visible( is_visible );
     }
@@ -97,7 +99,11 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelGfxEntity::set_vertex_color( index_t entity_id, float red, float green, float blue )
+    void GeoModelGfxEntity::set_vertex_color(
+        index_t entity_id,
+        float red,
+        float green,
+        float blue )
     {
         entities_[entity_id]->set_vertex_color( red, green, blue );
     }
@@ -188,7 +194,11 @@ namespace RINGMesh {
         }
     }
 
-    void LineGfxEntity::set_line_color( index_t line_id, float red, float green, float blue )
+    void LineGfxEntity::set_line_color(
+        index_t line_id,
+        float red,
+        float green,
+        float blue )
     {
         line( line_id ).set_edge_color( red, green, blue );
     }
@@ -257,12 +267,19 @@ namespace RINGMesh {
         }
     }
 
-    void SurfaceGfxEntity::set_surface_color( index_t surface_id, float red, float green, float blue )
+    void SurfaceGfxEntity::set_surface_color(
+        index_t surface_id,
+        float red,
+        float green,
+        float blue )
     {
         surface( surface_id ).set_surface_color( red, green, blue );
     }
 
-    void SurfaceGfxEntity::set_backface_surface_color( float red, float green, float blue )
+    void SurfaceGfxEntity::set_backface_surface_color(
+        float red,
+        float green,
+        float blue )
     {
         for( index_t s = 0; s < entities_.size(); s++ ) {
             set_backface_surface_color( s, red, green, blue );
@@ -285,7 +302,9 @@ namespace RINGMesh {
         }
     }
 
-    void SurfaceGfxEntity::set_surface_visibility( index_t surface_id, bool is_visible )
+    void SurfaceGfxEntity::set_surface_visibility(
+        index_t surface_id,
+        bool is_visible )
     {
         surface( surface_id ).set_surface_visible( is_visible );
     }
@@ -297,7 +316,11 @@ namespace RINGMesh {
         }
     }
 
-    void SurfaceGfxEntity::set_mesh_color( index_t surface_id, float red, float green, float blue )
+    void SurfaceGfxEntity::set_mesh_color(
+        index_t surface_id,
+        float red,
+        float green,
+        float blue )
     {
         surface( surface_id ).set_mesh_color( red, green, blue );
     }
@@ -367,7 +390,11 @@ namespace RINGMesh {
         }
     }
 
-    void RegionGfxEntity::set_mesh_color( index_t region_id, float red, float green, float blue )
+    void RegionGfxEntity::set_mesh_color(
+        index_t region_id,
+        float red,
+        float green,
+        float blue )
     {
         region( region_id ).set_mesh_color( red, green, blue );
     }
@@ -386,7 +413,10 @@ namespace RINGMesh {
         }
     }
 
-    void RegionGfxEntity::set_draw_cells( index_t region_id, GEO::MeshCellType type, bool x )
+    void RegionGfxEntity::set_draw_cells(
+        index_t region_id,
+        GEO::MeshCellType type,
+        bool x )
     {
         region( region_id ).set_draw_cells( type, x );
     }
@@ -427,7 +457,11 @@ namespace RINGMesh {
         }
     }
 
-    void RegionGfxEntity::set_region_color( index_t region_id, float red, float green, float blue )
+    void RegionGfxEntity::set_region_color(
+        index_t region_id,
+        float red,
+        float green,
+        float blue )
     {
         region( region_id ).set_cells_color( red, green, blue );
     }
@@ -444,7 +478,9 @@ namespace RINGMesh {
         region( region_id ).set_region_visible( is_visible );
     }
 
-    void RegionGfxEntity::set_cell_type_visibility( GEO::MeshCellType t, bool is_visible )
+    void RegionGfxEntity::set_cell_type_visibility(
+        GEO::MeshCellType t,
+        bool is_visible )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_cell_type_visibility( r, t, is_visible );

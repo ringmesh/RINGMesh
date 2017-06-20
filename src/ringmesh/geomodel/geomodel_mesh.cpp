@@ -255,7 +255,7 @@ namespace RINGMesh {
     void GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::bind_all_mesh_entity_vertex_maps()
     {
         const std::vector< MeshEntityType >& all_mesh_entity_types =
-            MeshEntityTypeManager< 3 >::mesh_entity_types();
+            geomodel_.entity_type_manager().mesh_entity_manager.mesh_entity_types();
         for( const MeshEntityType& cur_entity_type : all_mesh_entity_types ) {
             index_t nb_cur_type_entities = geomodel_.nb_mesh_entities(
                 cur_entity_type );
@@ -290,7 +290,7 @@ namespace RINGMesh {
         const std::vector< index_t >& old2new )
     {
         const std::vector< MeshEntityType >& all_mesh_entity_types =
-            MeshEntityTypeManager< 3 >::mesh_entity_types();
+            geomodel_.entity_type_manager().mesh_entity_manager.mesh_entity_types();
         for( const MeshEntityType& cur_entity_type : all_mesh_entity_types ) {
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_entity_type );
                 e++ ) {
@@ -364,10 +364,9 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::clear_all_mesh_entity_vertex_map()
     {
-        for( index_t t = 0; t < MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
-            t++ ) {
-            const MeshEntityType& cur_type =
-                MeshEntityTypeManager< 3 >::mesh_entity_types()[t];
+        const MeshEntityTypeManager< DIMENSION >& manager =
+            geomodel_.entity_type_manager().mesh_entity_manager;
+        for( const MeshEntityType& cur_type : manager.mesh_entity_types() ) {
             for( index_t e = 0; e < vertex_maps_[cur_type]->size(); e++ ) {
                 vertex_maps_[cur_type]->unbind( e );
             }
@@ -2155,11 +2154,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    GeoModelMeshEdges< DIMENSION >::~GeoModelMeshEdges()
-    {
-    }
-
-    template< index_t DIMENSION >
     index_t GeoModelMeshEdges< DIMENSION >::nb_wells() const
     {
         test_and_initialize();
@@ -2464,11 +2458,11 @@ namespace RINGMesh {
         }
     }
 
-//    template class RINGMESH_API GeoModelMeshBase< 2 > ;
-//    template class RINGMESH_API GeoModelMesh< 2 > ;
-//    template class RINGMESH_API GeoModelMeshVerticesBase< 2 > ;
-//    template class RINGMESH_API GeoModelMeshEdges< 2 > ;
-//    template class RINGMESH_API GeoModelMeshPolygonsBase< 2 > ;
+    template class RINGMESH_API GeoModelMeshBase< 2 > ;
+    template class RINGMESH_API GeoModelMesh< 2 > ;
+    template class RINGMESH_API GeoModelMeshVerticesBase< 2 > ;
+    template class RINGMESH_API GeoModelMeshEdges< 2 > ;
+    template class RINGMESH_API GeoModelMeshPolygonsBase< 2 > ;
 
     template class RINGMESH_API GeoModelMeshBase< 3 > ;
     template class RINGMESH_API GeoModelMesh< 3 > ;

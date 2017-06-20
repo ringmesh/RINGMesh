@@ -398,7 +398,8 @@ namespace RINGMesh {
         virtual void remove_small_connected_components(
             double min_area,
             index_t min_polygons ) = 0;
-        virtual void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) = 0;
+        virtual void triangulate(
+            const SurfaceMeshBase< DIMENSION >& surface_in ) = 0;
         /*!@}
          */
         /*!

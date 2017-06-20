@@ -101,13 +101,13 @@ namespace {
         const double tetra_circum_radius = vec3( tetra_circum_center - v0 ).length();
         ringmesh_assert(
             std::abs( tetra_circum_radius - ( tetra_circum_center - v1 ).length() )
-            < global_epsilon );
+                < global_epsilon );
         ringmesh_assert(
             std::abs( tetra_circum_radius - ( tetra_circum_center - v2 ).length() )
-            < global_epsilon );
+                < global_epsilon );
         ringmesh_assert(
             std::abs( tetra_circum_radius - ( tetra_circum_center - v3 ).length() )
-            < global_epsilon );
+                < global_epsilon );
 
         // insphere computation
         double in_radius = tetra_insphere_radius( v0, v1, v2, v3 );
@@ -364,8 +364,8 @@ namespace {
             default:
                 ringmesh_assert_not_reached;
         }
-        ringmesh_assert( quality > -1 * global_epsilon
-            && quality < 1 + global_epsilon );
+        ringmesh_assert(
+            quality > -1 * global_epsilon && quality < 1 + global_epsilon );
         return quality;
     }
 }

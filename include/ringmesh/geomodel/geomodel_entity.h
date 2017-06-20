@@ -48,8 +48,9 @@
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class UniverseAccess;
+    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
     template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderRemoval;
+    template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
 }
 
 namespace RINGMesh {
@@ -61,9 +62,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelEntity );
     public:
 
-        virtual ~GeoModelEntity()
-        {
-        }
+        virtual ~GeoModelEntity() = default;
 
         virtual bool is_on_voi() const = 0;
         virtual bool is_valid() const = 0;
@@ -91,7 +90,7 @@ namespace RINGMesh {
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */
-        GeoModelEntity (
+        GeoModelEntity(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
             const std::string& name = "Unnamed" )
@@ -128,9 +127,7 @@ namespace RINGMesh {
             return UniverseType();
         }
 
-        virtual ~Universe()
-        {
-        }
+        virtual ~Universe() = default;
 
         virtual bool is_valid() const override;
         virtual bool is_on_voi() const override
@@ -184,8 +181,9 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class UniverseAccess {
     ringmesh_disable_copy( UniverseAccess );
-        friend class GeoModelBuilderTopology< DIMENSION >;
-        friend class GeoModelBuilderRemoval< DIMENSION >;
+        friend class GeoModelBuilderTopologyBase< DIMENSION > ;
+        friend class GeoModelBuilderTopology< DIMENSION > ;
+        friend class GeoModelBuilderRemovalBase< DIMENSION > ;
 
     private:
         UniverseAccess( Universe< DIMENSION >& universe )
@@ -193,9 +191,7 @@ namespace RINGMesh {
         {
         }
 
-        ~UniverseAccess()
-        {
-        }
+        ~UniverseAccess() = default;
 
         std::vector< gmme_id >& modifiable_boundaries()
         {

@@ -63,13 +63,17 @@ namespace RINGMesh {
     template< index_t DIMENSION > class Region;
     template< index_t DIMENSION > class GeoModelAccess;
     template< index_t DIMENSION > class EntityTypeManager;
+    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
     template< index_t DIMENSION > class GeoModelBuilderTopology;
+    template< index_t DIMENSION > class GeoModelBuilderGeometryBase;
     template< index_t DIMENSION > class GeoModelBuilderGeometry;
     template< index_t DIMENSION > class GeoModelBuilderGeology;
+    template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
     template< index_t DIMENSION > class GeoModelBuilderRemoval;
     template< index_t DIMENSION > class GeoModelBuilderRepair;
     template< index_t DIMENSION > class GeoModelBuilderCopy;
     template< index_t DIMENSION > class GeoModelBuilderInfo;
+    template< index_t DIMENSION > class GeoModelBuilderBase;
     template< index_t DIMENSION > class GeoModelBuilder;
 }
 
@@ -79,16 +83,13 @@ namespace RINGMesh {
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     template< index_t DIMENSION >
-    class GeoModel {
-    ringmesh_disable_copy( GeoModel );
+    class GeoModelBase {
+    ringmesh_disable_copy( GeoModelBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelAccess< DIMENSION > ;
 
     public:
-        /*!
-         * @brief Constructs an empty GeoModel
-         */
-        GeoModel();
+        virtual ~GeoModelBase() = default;
 
         /*!
          * @brief Gets the name of the GeoModel
@@ -111,7 +112,7 @@ namespace RINGMesh {
          * @details Default value is 0
          * @param[in] type the mesh entity type
          */
-        index_t nb_mesh_entities( const MeshEntityType& type ) const;
+        virtual index_t nb_mesh_entities( const MeshEntityType& type ) const;
 
         /*!
          * @brief Returns the number of geological entities of the given type
@@ -160,7 +161,8 @@ namespace RINGMesh {
          * @brief Generic access to a meshed entity
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION
          */
-        const GeoModelMeshEntity< DIMENSION >& mesh_entity( gmme_id id ) const;
+        virtual const GeoModelMeshEntity< DIMENSION >& mesh_entity(
+            gmme_id id ) const;
         /*!
          * Convenient overload of mesh_entity( gmme_id id )
          */
@@ -170,6 +172,7 @@ namespace RINGMesh {
         {
             return mesh_entity( gmme_id( entity_type, entity_index ) );
         }
+
         /*! @}
          * \name Specialized accessors.
          * @{
@@ -186,16 +189,10 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( surfaces_.size() );
         }
-        index_t nb_regions() const
-        {
-            ringmesh_template_assert_3d( DIMENSION );
-            return static_cast< index_t >( regions_.size() );
-        }
 
         const Corner< DIMENSION >& corner( index_t index ) const;
         const Line< DIMENSION >& line( index_t index ) const;
         const Surface< DIMENSION >& surface( index_t index ) const;
-        const Region< DIMENSION >& region( index_t index ) const;
         const Universe< DIMENSION >& universe() const
         {
             return universe_;
@@ -206,12 +203,6 @@ namespace RINGMesh {
         double epsilon2() const
         {
             return epsilon() * epsilon();
-        }
-
-        double epsilon3() const
-        {
-            ringmesh_template_assert_3d( DIMENSION );
-            return epsilon2() * epsilon();
         }
 
         /*!
@@ -232,7 +223,11 @@ namespace RINGMesh {
     public:
         GeoModelMesh< DIMENSION > mesh;
 
-    private:
+    protected:
+        /*!
+         * @brief Constructs an empty GeoModel
+         */
+        GeoModelBase( GeoModel< DIMENSION >& geomodel );
         /*!
          * Access to the position of the entity of that type in storage.
          */
@@ -245,7 +240,7 @@ namespace RINGMesh {
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type
          */
-        const std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& mesh_entities(
+        virtual const std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& mesh_entities(
             const MeshEntityType& type ) const;
 
         /*!
@@ -265,7 +260,7 @@ namespace RINGMesh {
             return geological_entities_[geological_entity_type_index];
         }
 
-    private:
+    protected:
         std::string geomodel_name_;
         mutable double epsilon_;
 
@@ -278,7 +273,6 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > corners_;
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > lines_;
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > surfaces_;
-        std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > regions_;
 
         /*!
          * The Universe defines the extension of the GeoModel
@@ -303,18 +297,67 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
+    class GeoModel final: public GeoModelBase< DIMENSION > {
+        friend class GeoModelAccess< DIMENSION > ;
+    public:
+        GeoModel();
+    };
+
+    template< >
+    class GeoModel< 3 > final: public GeoModelBase< 3 > {
+        friend class GeoModelAccess< 3 > ;
+    public:
+        GeoModel();
+
+        index_t nb_regions() const
+        {
+            return static_cast< index_t >( regions_.size() );
+        }
+
+        const Region< 3 >& region( index_t index ) const;
+
+        const GeoModelMeshEntity< 3 >& mesh_entity(
+            const MeshEntityType& entity_type,
+            index_t entity_index ) const
+        {
+            return GeoModelBase< 3 >::mesh_entity( entity_type, entity_index );
+        }
+
+        virtual const GeoModelMeshEntity< 3 >& mesh_entity( gmme_id id ) const
+            override;
+
+        virtual index_t nb_mesh_entities( const MeshEntityType& type ) const
+            override;
+
+        double epsilon3() const
+        {
+            return epsilon2() * epsilon();
+        }
+    private:
+        virtual const std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& mesh_entities(
+            const MeshEntityType& type ) const override;
+
+    private:
+        std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > > regions_;
+    };
+
+    template< index_t DIMENSION >
     class GeoModelAccess {
     ringmesh_disable_copy( GeoModelAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilder< DIMENSION >;
+        friend class GeoModelBuilderBase< DIMENSION > ;
+        friend class GeoModelBuilder< DIMENSION > ;
         friend class GeoModelBuilderGM;
-        friend class GeoModelBuilderTopology< DIMENSION >;
-        friend class GeoModelBuilderGeometry< DIMENSION >;
-        friend class GeoModelBuilderGeology< DIMENSION >;
-        friend class GeoModelBuilderRemoval< DIMENSION >;
-        friend class GeoModelBuilderRepair< DIMENSION >;
-        friend class GeoModelBuilderCopy< DIMENSION >;
-        friend class GeoModelBuilderInfo< DIMENSION >;
+        friend class GeoModelBuilderTopologyBase< DIMENSION > ;
+        friend class GeoModelBuilderTopology< DIMENSION > ;
+        friend class GeoModelBuilderGeometryBase< DIMENSION > ;
+        friend class GeoModelBuilderGeometry< DIMENSION > ;
+        friend class GeoModelBuilderGeology< DIMENSION > ;
+        friend class GeoModelBuilderRemovalBase< DIMENSION > ;
+        friend class GeoModelBuilderRemoval< DIMENSION > ;
+        friend class GeoModelBuilderRepair< DIMENSION > ;
+        friend class GeoModelBuilderCopy< DIMENSION > ;
+        friend class GeoModelBuilderInfo< DIMENSION > ;
 
     private:
         GeoModelAccess( GeoModel< DIMENSION >& geomodel )

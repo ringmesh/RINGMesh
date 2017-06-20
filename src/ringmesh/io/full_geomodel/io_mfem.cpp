@@ -65,7 +65,9 @@ namespace {
                 "Loading of a GeoModel from MFEM not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             const GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
             index_t nb_cells = geomodel_mesh.cells.nb();
@@ -89,7 +91,9 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_header( const GeoModelMesh< 3 >& geomodel_mesh, std::ofstream& out ) const
+        void write_header(
+            const GeoModelMesh< 3 >& geomodel_mesh,
+            std::ofstream& out ) const
         {
             // MFEM mesh version
             out << "MFEM mesh v1.0" << std::endl;
@@ -111,7 +115,9 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_cells( const GeoModelMesh< 3 >& geomodel_mesh, std::ofstream& out ) const
+        void write_cells(
+            const GeoModelMesh< 3 >& geomodel_mesh,
+            std::ofstream& out ) const
         {
             index_t nb_cells = geomodel_mesh.cells.nb();
             out << "elements" << std::endl;
@@ -137,7 +143,9 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_polygons( const GeoModelMesh< 3 >& geomodel_mesh, std::ofstream& out ) const
+        void write_polygons(
+            const GeoModelMesh< 3 >& geomodel_mesh,
+            std::ofstream& out ) const
         {
             const GeoModelMeshPolygons< 3 >& polygons = geomodel_mesh.polygons;
             out << "boundary" << std::endl;
@@ -161,7 +169,9 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_vertices( const GeoModelMesh< 3 >& geomodel_mesh, std::ofstream& out ) const
+        void write_vertices(
+            const GeoModelMesh< 3 >& geomodel_mesh,
+            std::ofstream& out ) const
         {
             out << "vertices" << std::endl;
             out << geomodel_mesh.vertices.nb() << std::endl;

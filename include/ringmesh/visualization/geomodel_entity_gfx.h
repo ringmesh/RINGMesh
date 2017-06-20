@@ -89,7 +89,11 @@ namespace RINGMesh {
          * @param[in] green the green component of the color in [0.0, 1.0]
          * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_vertex_color( index_t entity_id, float red, float green, float blue );
+        void set_vertex_color(
+            index_t entity_id,
+            float red,
+            float green,
+            float blue );
         /*!
          * Sets the vertex entity visibility to all the entities
          * @param[in] is_visible the visibility
@@ -208,7 +212,11 @@ namespace RINGMesh {
          * @param[in] green the green component of the color in [0.0, 1.0]
          * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_surface_color( index_t surface_id, float red, float green, float blue );
+        void set_surface_color(
+            index_t surface_id,
+            float red,
+            float green,
+            float blue );
         /*!
          * Sets the surface visibility
          * @param[in] is_visible the visibility
@@ -253,7 +261,11 @@ namespace RINGMesh {
          * @param[in] green the green component of the color in [0.0, 1.0]
          * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( index_t surface_id, float red, float green, float blue );
+        void set_mesh_color(
+            index_t surface_id,
+            float red,
+            float green,
+            float blue );
         /*!
          * Sets the mesh surface visibility to all the elements
          * @param[in] is_visible the visibility
@@ -304,7 +316,11 @@ namespace RINGMesh {
          * @param[in] green the green component of the color in [0.0, 1.0]
          * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_region_color( index_t region_id, float red, float green, float blue );
+        void set_region_color(
+            index_t region_id,
+            float red,
+            float green,
+            float blue );
         /*!
          * Sets the region visibility to all the regions
          * @param[in] is_visible the visibility

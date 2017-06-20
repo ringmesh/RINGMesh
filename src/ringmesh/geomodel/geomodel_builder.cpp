@@ -765,37 +765,24 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    GeoModelBuilder< DIMENSION >::GeoModelBuilder( GeoModel< DIMENSION >& geomodel )
+    GeoModelBuilderBase< DIMENSION >::GeoModelBuilderBase(
+        GeoModelBuilder< DIMENSION >& builder,
+        GeoModel< DIMENSION >& geomodel )
         :
-            topology( *this, geomodel ),
-            geometry( *this, geomodel ),
-            geology( *this, geomodel ),
-            removal( *this, geomodel ),
-            repair( *this, geomodel ),
-            copy( *this, geomodel ),
-            info( *this, geomodel ),
+            topology( builder, geomodel ),
+            geometry( builder, geomodel ),
+            geology( builder, geomodel ),
+            removal( builder, geomodel ),
+            repair( builder, geomodel ),
+            copy( builder, geomodel ),
+            info( builder, geomodel ),
             geomodel_( geomodel ),
             geomodel_access_( geomodel )
     {
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilder< DIMENSION >::end_geomodel()
-    {
-        if( geomodel_.name().empty() ) {
-            info.set_geomodel_name( "model_default_name" );
-        }
-
-        geometry.cut_surfaces_by_internal_lines();
-        geometry.cut_regions_by_internal_surfaces();
-        topology.compute_universe();
-
-        // Deliberate clear of the geomodel vertices used for geomodel building
-        geomodel_.mesh.vertices.clear();
-    }
-
-    template< index_t DIMENSION >
-    void GeoModelBuilder< DIMENSION >::build_lines_and_corners_from_surfaces()
+    void GeoModelBuilderBase< DIMENSION >::build_lines_and_corners_from_surfaces()
     {
         LineGeometryFromGeoModelSurfaces< DIMENSION > line_computer( geomodel_ );
 
@@ -842,7 +829,43 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilder< DIMENSION >::build_regions_from_lines_and_surfaces()
+    void GeoModelBuilderBase< DIMENSION >::end_geomodel()
+    {
+        if( geomodel_.name().empty() ) {
+            info.set_geomodel_name( "model_default_name" );
+        }
+
+        cut_geomodel_on_internal_boundaries();
+        topology.compute_universe();
+
+        // Deliberate clear of the geomodel vertices used for geomodel building
+        geometry.clear_geomodel_mesh();
+    }
+
+    GeoModelBuilder< 2 >::GeoModelBuilder( GeoModel< 2 >& geomodel )
+        : GeoModelBuilderBase< 2 >( *this, geomodel )
+    {
+    }
+
+    template< >
+    void GeoModelBuilderBase< 2 >::cut_geomodel_on_internal_boundaries()
+    {
+        geometry.cut_surfaces_by_internal_lines();
+    }
+
+    GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel< 3 >& geomodel )
+        : GeoModelBuilderBase< 3 >( *this, geomodel )
+    {
+    }
+
+    template< >
+    void GeoModelBuilderBase< 3 >::cut_geomodel_on_internal_boundaries()
+    {
+        geometry.cut_surfaces_by_internal_lines();
+        geometry.cut_regions_by_internal_surfaces();
+    }
+
+    void GeoModelBuilder< 3 >::build_regions_from_lines_and_surfaces()
     {
         RegionTopologyFromGeoModelSurfaces region_computer( geomodel_ );
         region_computer.compute_region_info();
@@ -871,10 +894,9 @@ namespace RINGMesh {
                 continue;
             }
             // Create a new region
-            gmme_id cur_region_id( Region< DIMENSION >::type_name_static(),
+            gmme_id cur_region_id( Region< 3 >::type_name_static(),
                 geomodel_.nb_regions() );
-            topology.create_mesh_entities( Region< DIMENSION >::type_name_static(),
-                1 );
+            topology.create_mesh_entities( Region< 3 >::type_name_static(), 1 );
             // Get all oriented surfaces defining this region
             std::stack< std::pair< index_t, bool > > SR;
             SR.push( cur );
@@ -888,8 +910,7 @@ namespace RINGMesh {
                 }
                 // Add the surface to the current region
                 topology.add_mesh_entity_boundary_relation( cur_region_id,
-                    gmme_id( Surface< DIMENSION >::type_name_static(), s.first ),
-                    s.second );
+                    gmme_id( Surface< 3 >::type_name_static(), s.first ), s.second );
                 surf_2_region[s_id] = cur_region_id.index();
 
                 // Check the other side of the surface and push it in S
@@ -898,7 +919,7 @@ namespace RINGMesh {
                     S.emplace( s.first, !s.second );
                 }
                 // For each contact, push the next oriented surface that is in the same region
-                const Surface< DIMENSION >& surface = geomodel_.surface( s.first );
+                const Surface< 3 >& surface = geomodel_.surface( s.first );
                 for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
                     const std::pair< index_t, bool >& n =
                         region_info[surface.boundary_gmme( i ).index()].next( s );
@@ -933,7 +954,7 @@ namespace RINGMesh {
                 universe_id = i;
             }
         }
-        const Region< DIMENSION >& cur_region = geomodel_.region( universe_id );
+        const Region< 3 >& cur_region = geomodel_.region( universe_id );
         for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
             // Fill the Universe region boundaries
             // They are supposed to be empty
@@ -945,10 +966,12 @@ namespace RINGMesh {
         removal.remove_mesh_entities( to_erase );
     }
 
-    //    template class RINGMESH_API GeoModelBuilder< 2 > ;
-    //    template class RINGMESH_API GeoModelBuilderInfo< 2 > ;
-    //    template class RINGMESH_API GeoModelBuilderCopy< 2 > ;
+    template class RINGMESH_API GeoModelBuilderBase< 2 > ;
+    template class RINGMESH_API GeoModelBuilder< 2 > ;
+    template class RINGMESH_API GeoModelBuilderInfo< 2 > ;
+    template class RINGMESH_API GeoModelBuilderCopy< 2 > ;
 
+    template class RINGMESH_API GeoModelBuilderBase< 3 > ;
     template class RINGMESH_API GeoModelBuilder< 3 > ;
     template class RINGMESH_API GeoModelBuilderInfo< 3 > ;
     template class RINGMESH_API GeoModelBuilderCopy< 3 > ;

@@ -301,14 +301,16 @@ namespace RINGMesh {
     index_t GeoModelBuilderGeology< DIMENSION >::create_geological_entity_type(
         const GeologicalEntityType& type )
     {
-        ringmesh_assert( GeoModelGeologicalEntityFactory3D::has_creator( type ) );
+        ringmesh_assert(
+            GeoModelGeologicalEntityFactory< DIMENSION >::has_creator( type ) );
 
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type );
         geomodel_access_.modifiable_geological_entities().push_back(
             std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >() );
         std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > E(
-            GeoModelGeologicalEntityFactory3D::create_object( type, geomodel_ ) );
+            GeoModelGeologicalEntityFactory< DIMENSION >::create_object( type,
+                geomodel_ ) );
 
         const MeshEntityType child_type = E->child_type_name();
         RelationshipManager& parentage =
@@ -391,8 +393,8 @@ namespace RINGMesh {
             geomodel_access_.modifiable_geological_entity( gmge_id ) );
         gmge_access.modifiable_geol_feature() = geol_feature;
     }
-    //    template class RINGMESH_API GeoModelBuilderGeology< 2 > ;
 
+    template class RINGMESH_API GeoModelBuilderGeology< 2 > ;
     template class RINGMESH_API GeoModelBuilderGeology< 3 > ;
 
 } // namespace

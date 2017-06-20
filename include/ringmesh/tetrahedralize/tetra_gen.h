@@ -84,9 +84,8 @@ namespace RINGMesh {
          * @param[in] region The Region of the GeoModel to mesh
          * @param[in] wells the wells to be conformal to
          */
-        void set_boundaries(
-            const Region< 3 >& region,
-            const WellGroup< 3 >* wells = nullptr );
+        void set_boundaries( const Region< 3 >& region, const WellGroup< 3 >* wells =
+            nullptr );
 
         /*!
          * Set additional points to be in the output tetrahedral mesh

@@ -421,7 +421,9 @@ namespace {
             return is_valid;
         }
 
-        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
 
             std::ofstream out( filename.c_str() );
