@@ -598,7 +598,7 @@ int main()
         builder.end_geomodel();
 
         // We save the builded model
-        geomodel_save( geomodel, "builded_model.gm" );
+//        geomodel_save( geomodel, "builded_model.gm" );
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
