@@ -113,7 +113,8 @@ namespace RINGMesh {
         static bool is_fault( GEOL_FEATURE feature );
         static bool is_stratigraphic_limit( GEOL_FEATURE feature )
         {
-            return feature == GEOL_FEATURE::STRATI || feature == GEOL_FEATURE::UNCONFORMITY;
+            return feature == GEOL_FEATURE::STRATI
+                || feature == GEOL_FEATURE::UNCONFORMITY;
         }
 
         bool has_geological_feature() const
