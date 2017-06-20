@@ -51,7 +51,8 @@ namespace RINGMesh {
         GeoModel< DIMENSION >& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
-        nb_mesh_entity_types_ = MeshEntityTypeManager< 3 >::nb_mesh_entity_types();
+        nb_mesh_entity_types_ =
+            geomodel_.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types();
         nb_geological_entity_types_ = geomodel_.nb_geological_entity_types();
         nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_;
     }
@@ -185,11 +186,11 @@ namespace RINGMesh {
     void GeoModelBuilderRemoval< DIMENSION >::update_mesh_entity_incident_entity(
         GeoModelMeshEntity< DIMENSION >& E )
     {
-        const MeshEntityType& incident_entity_type =
-            MeshEntityTypeManager< DIMENSION >::incident_entity_type(
-                E.mesh_entity_type() );
-        bool valid_type = MeshEntityTypeManager< DIMENSION >::is_valid_type(
-            incident_entity_type );
+        const MeshEntityTypeManager< DIMENSION >& manager =
+            geomodel_.entity_type_manager().mesh_entity_manager;
+        const MeshEntityType& incident_entity_type = manager.incident_entity_type(
+            E.mesh_entity_type() );
+        bool valid_type = manager.is_valid_type( incident_entity_type );
         if( !valid_type ) {
             return;
         }

@@ -65,7 +65,8 @@ namespace RINGMesh {
      * "Surface" is boundary of "Region"
      */
     template< index_t DIMENSION >
-    struct MeshEntityTypeBoundaryMapBase {
+    struct MeshEntityTypeBoundaryMap {
+        MeshEntityTypeBoundaryMap();
         void register_boundary(
             const MeshEntityType& type,
             const MeshEntityType& boundary )
@@ -73,18 +74,9 @@ namespace RINGMesh {
             map.emplace( type, boundary );
         }
         MeshEntityTypeMap map;
-    protected:
-        MeshEntityTypeBoundaryMapBase();
-    };
 
-    template< index_t DIMENSION >
-    struct MeshEntityTypeBoundaryMap: public MeshEntityTypeBoundaryMapBase< DIMENSION > {
-        MeshEntityTypeBoundaryMap< DIMENSION >() = default ;
-    };
-
-    template< >
-    struct MeshEntityTypeBoundaryMap< 3 > : public MeshEntityTypeBoundaryMapBase< 3 > {
-        MeshEntityTypeBoundaryMap< 3 >();
+    private:
+        void initialize_base();
     };
 
     /*!
@@ -95,7 +87,8 @@ namespace RINGMesh {
      * "Region" is incident of "Surface"
      */
     template< index_t DIMENSION >
-    struct MeshEntityTypeIncidentEntityMapBase {
+    struct MeshEntityTypeIncidentEntityMap {
+        MeshEntityTypeIncidentEntityMap();
         void register_incident_entity(
             const MeshEntityType& type,
             const MeshEntityType& incident_entity )
@@ -103,31 +96,16 @@ namespace RINGMesh {
             map.emplace( type, incident_entity );
         }
         MeshEntityTypeMap map;
-    protected:
-        MeshEntityTypeIncidentEntityMapBase();
+
+    private:
+        void initialize_base();
     };
 
     template< index_t DIMENSION >
-    struct MeshEntityTypeIncidentEntityMap: public MeshEntityTypeIncidentEntityMapBase<
-        DIMENSION > {
-        MeshEntityTypeIncidentEntityMap< DIMENSION >() = default;
-    };
-
-    template< >
-    struct MeshEntityTypeIncidentEntityMap< 3 > : public MeshEntityTypeIncidentEntityMapBase<
-        3 > {
-        MeshEntityTypeIncidentEntityMap< 3 >();
-    };
-
-    template< >
-    struct MeshEntityTypeIncidentEntityMap< 2 > : public MeshEntityTypeIncidentEntityMapBase<
-        2 > {
-        MeshEntityTypeIncidentEntityMap< 2 >();
-    };
-
-    template< index_t DIMENSION >
-    class MeshEntityTypesBase {
+    class MeshEntityTypes {
     public:
+        MeshEntityTypes();
+
         index_t size() const
         {
             return static_cast< index_t >( mesh_entity_types_.size() );
@@ -136,65 +114,54 @@ namespace RINGMesh {
         {
             return mesh_entity_types_;
         }
-    protected:
+
+    private:
+        void initialize_base();
+
+    private:
         std::vector< MeshEntityType > mesh_entity_types_;
-    protected:
-        MeshEntityTypesBase();
-        ;
-    };
-    template< index_t DIMENSION >
-    class MeshEntityTypes: public MeshEntityTypesBase< DIMENSION > {
-
     };
 
-    template< >
-    struct MeshEntityTypes< 3 > : public MeshEntityTypesBase< 3 > {
-        MeshEntityTypes< 3 >();
-    };
     /*!
      * @brief this class contains only static methods to manage the type of the
      * GeoModelMeshEntity. It gives access to the number of meshed entities of each
      * type and also their (in) boundary
      */
     template< index_t DIMENSION >
-    class RINGMESH_API MeshEntityTypeManager {
+    class MeshEntityTypeManagerBase {
     public:
-        MeshEntityTypeManager() = default;
 
-        static bool is_corner( const MeshEntityType& type )
+        bool is_corner( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[0];
-            return false;
         }
-        static bool is_line( const MeshEntityType& type )
+
+        bool is_line( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[1];
         }
-        static bool is_surface( const MeshEntityType& type )
+
+        bool is_surface( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[2];
         }
-        static bool is_region( const MeshEntityType& type )
-        {
-            ringmesh_template_assert_3d( DIMENSION );
-            return type == mesh_entity_types_.container()[3];
 
-        }
-        static bool is_valid_type( const MeshEntityType& type )
+        bool is_valid_type( const MeshEntityType& type ) const
         {
             return find( mesh_entity_types_.container(), type ) != NO_ID;
         }
 
-        static const MeshEntityType& boundary_type(
-            const MeshEntityType& mesh_entity_type )
+        const MeshEntityType& boundary_type(
+            const MeshEntityType& mesh_entity_type ) const
         {
             MeshEntityTypeMap::const_iterator itr = boundary_relationships_.map.find(
                 mesh_entity_type );
             ringmesh_assert( itr != boundary_relationships_.map.end() );
             return itr->second;
         }
-        static const MeshEntityType& incident_entity_type(
-            const MeshEntityType& mesh_entity_type )
+
+        const MeshEntityType& incident_entity_type(
+            const MeshEntityType& mesh_entity_type ) const
         {
             MeshEntityTypeMap::const_iterator itr =
                 incident_entity_relationships_.map.find( mesh_entity_type );
@@ -202,21 +169,42 @@ namespace RINGMesh {
             return itr->second;
         }
 
-        static const std::vector< MeshEntityType >& mesh_entity_types()
+        const std::vector< MeshEntityType >& mesh_entity_types() const
         {
             return mesh_entity_types_.container();
 
         }
-        static index_t nb_mesh_entity_types()
+        index_t nb_mesh_entity_types() const
         {
             return static_cast< index_t >( mesh_entity_types_.size() );
         }
-    private:
-        static MeshEntityTypeBoundaryMap< DIMENSION > boundary_relationships_;
-        static MeshEntityTypeIncidentEntityMap< DIMENSION > incident_entity_relationships_;
-        static MeshEntityTypes< DIMENSION > mesh_entity_types_;
 
+    protected:
+        MeshEntityTypeManagerBase() = default;
+
+    protected:
+        MeshEntityTypeBoundaryMap< DIMENSION > boundary_relationships_;
+        MeshEntityTypeIncidentEntityMap< DIMENSION > incident_entity_relationships_;
+        MeshEntityTypes< DIMENSION > mesh_entity_types_;
     };
+
+    template< index_t DIMENSION >
+    class MeshEntityTypeManager: public MeshEntityTypeManagerBase< DIMENSION > {
+    public:
+        MeshEntityTypeManager() = default;
+    };
+
+    template< >
+    class MeshEntityTypeManager< 3 > : public MeshEntityTypeManagerBase< 3 > {
+    public:
+        MeshEntityTypeManager() = default;
+
+        bool is_region( const MeshEntityType& type ) const
+        {
+            return type == mesh_entity_types_.container()[3];
+        }
+    };
+
     /*!
      * @brief this class contains methods to manage the type of the
      * GeoModelGeologicalEntity. It gives access to the number of geological entities of each
@@ -224,7 +212,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeologicalTypeManager {
 //        friend class GeoModelBuilderGeology< 2 >;
-        friend class GeoModelBuilderGeology< 3 >;
+        friend class GeoModelBuilderGeology< 3 > ;
     public:
         GeologicalTypeManager() = default;
         index_t nb_geological_entity_types() const;
@@ -257,8 +245,8 @@ namespace RINGMesh {
     class RINGMESH_API RelationshipManager {
 //        friend class GeoModelBuilderGeology< 2 >;
 //        friend class GeoModelBuilderTopology< 2 >;
-        friend class GeoModelBuilderGeology< 3 >;
-        friend class GeoModelBuilderTopology< 3 >;
+        friend class GeoModelBuilderGeology< 3 > ;
+        friend class GeoModelBuilderTopology< 3 > ;
     public:
         using GeologicalEntityToChild = std::map< GeologicalEntityType, MeshEntityType >;
         using MeshEntityToParents = std::map< MeshEntityType, std::set< GeologicalEntityType > >;
@@ -429,9 +417,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API EntityTypeManager {
     public:
-        EntityTypeManager()
-        {
-        }
+        EntityTypeManager() = default;
+
         MeshEntityTypeManager< DIMENSION > mesh_entity_manager;
         GeologicalTypeManager geological_entity_manager;
         RelationshipManager relationship_manager;
