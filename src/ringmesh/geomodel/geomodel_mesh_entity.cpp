@@ -984,8 +984,8 @@ namespace RINGMesh {
         return dynamic_cast< Region< 3 >& >( gmme_ ).sides_;
     }
 
-    template class GeoModelMeshEntity< 2 > ;
-    template class GeoModelMeshEntityAccess< 2 > ;
+    template class RINGMESH_API GeoModelMeshEntity< 2 > ;
+    template class RINGMESH_API GeoModelMeshEntityAccess< 2 > ;
     template class RINGMESH_API Corner< 2 > ;
     template class RINGMESH_API Line< 2 > ;
     template class RINGMESH_API SurfaceBase< 2 > ;
