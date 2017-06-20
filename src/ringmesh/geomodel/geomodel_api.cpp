@@ -70,7 +70,17 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    index_t count_geomodel_cells( const GeoModel< DIMENSION >& geomodel )
+    index_t count_geomodel_cells( const GeoModel< DIMENSION >& geomodel );
+
+    template< >
+    index_t count_geomodel_cells( const GeoModel< 2 >& geomodel )
+    {
+        ringmesh_unused( geomodel );
+        return 0;
+    }
+
+    template< >
+    index_t count_geomodel_cells( const GeoModel< 3 >& geomodel )
     {
         index_t nb_cells = 0;
         for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
@@ -161,6 +171,32 @@ namespace {
             static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 ),
             "%)" );
     }
+
+    template< index_t DIMENSION >
+    void print_geomodel_base_mesh_stats( const GeoModel< DIMENSION >& geomodel )
+    {
+        Logger::out( "GeoModel", "Model ", geomodel.name(), " is made of\n",
+            std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
+            std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
+
+        index_t nb_triangles = geomodel.mesh.polygons.nb_triangle();
+        index_t nb_quads = geomodel.mesh.polygons.nb_quad();
+        index_t nb_unclassified_polygons =
+            geomodel.mesh.polygons.nb_unclassified_polygon();
+        index_t nb_polygons = geomodel.mesh.polygons.nb_polygons();
+        Logger::out( "GeoModel", std::setw( 10 ), std::left, nb_polygons,
+            " polygons" );
+        if( nb_triangles > 0 ) {
+            print_one_cell_stat( nb_triangles, nb_polygons, "triangles" );
+        }
+        if( nb_quads > 0 ) {
+            print_one_cell_stat( nb_quads, nb_polygons, "quads" );
+        }
+        if( nb_unclassified_polygons > 0 ) {
+            print_one_cell_stat( nb_unclassified_polygons, nb_polygons,
+                "unclassified polygons" );
+        }
+    }
 }
 
 namespace RINGMesh {
@@ -214,30 +250,16 @@ namespace RINGMesh {
         }
     }
 
-    template< index_t DIMENSION >
-    void print_geomodel_mesh_stats( const GeoModel< DIMENSION >& geomodel )
+    template< >
+    void print_geomodel_mesh_stats( const GeoModel< 2 >& geomodel )
     {
-        Logger::out( "GeoModel", "Model ", geomodel.name(), " is made of\n",
-            std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
-            std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
+        print_geomodel_base_mesh_stats( geomodel );
+    }
 
-        index_t nb_triangles = geomodel.mesh.polygons.nb_triangle();
-        index_t nb_quads = geomodel.mesh.polygons.nb_quad();
-        index_t nb_unclassified_polygons =
-            geomodel.mesh.polygons.nb_unclassified_polygon();
-        index_t nb_polygons = geomodel.mesh.polygons.nb_polygons();
-        Logger::out( "GeoModel", std::setw( 10 ), std::left, nb_polygons,
-            " polygons" );
-        if( nb_triangles > 0 ) {
-            print_one_cell_stat( nb_triangles, nb_polygons, "triangles" );
-        }
-        if( nb_quads > 0 ) {
-            print_one_cell_stat( nb_quads, nb_polygons, "quads" );
-        }
-        if( nb_unclassified_polygons > 0 ) {
-            print_one_cell_stat( nb_unclassified_polygons, nb_polygons,
-                "unclassified polygons" );
-        }
+    template< >
+    void print_geomodel_mesh_stats( const GeoModel< 3 >& geomodel )
+    {
+        print_geomodel_base_mesh_stats( geomodel );
 
         index_t nb_tet = geomodel.mesh.cells.nb_tet();
         index_t nb_pyramids = geomodel.mesh.cells.nb_pyramid();
@@ -291,28 +313,6 @@ namespace RINGMesh {
             print_one_cell_volume_stat( poly_volume, volume, "polyhedron" );
         }
         Logger::out( "GeoModel" );
-    }
-
-    template< index_t DIMENSION >
-    bool are_geomodel_surface_meshes_simplicial(
-        const GeoModel< DIMENSION >& geomodel )
-    {
-        for( index_t i = 0; i != geomodel.nb_surfaces(); ++i ) {
-            if( !geomodel.surface( i ).is_simplicial() ) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    bool are_geomodel_region_meshes_simplicial( const GeoModel< 3 >& geomodel )
-    {
-        for( index_t i = 0; i != geomodel.nb_regions(); ++i ) {
-            if( !geomodel.region( i ).is_simplicial() ) {
-                return false;
-            }
-        }
-        return true;
     }
 
     template< index_t DIMENSION >
@@ -465,28 +465,20 @@ namespace RINGMesh {
     }
 #endif
 
-//    template void RINGMESH_API print_geomodel( const GeoModel< 2 >& );
-//    template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel< 2 >& );
-//    template bool RINGMESH_API are_geomodel_surface_meshes_simplicial(
-//        const GeoModel< 2 >& );
-//    template index_t RINGMESH_API find_mesh_entity_id_from_name(
-//        const GeoModel< 2 >&,
-//        const MeshEntityType&,
-//        const std::string& );
-//    template index_t RINGMESH_API find_geological_entity_id_from_name(
-//        const RINGMesh::GeoModel< 2 >&,
-//        const RINGMesh::GeologicalEntityType&,
-//        const std::string& );
-//    template void RINGMESH_API translate( GeoModel< 2 >&, const vec2& );
+    template void RINGMESH_API print_geomodel( const GeoModel< 2 >& );
+    template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel< 2 >& );
+    template index_t RINGMESH_API find_mesh_entity_id_from_name(
+        const GeoModel< 2 >&,
+        const MeshEntityType&,
+        const std::string& );
+    template index_t RINGMESH_API find_geological_entity_id_from_name(
+        const RINGMesh::GeoModel< 2 >&,
+        const RINGMesh::GeologicalEntityType&,
+        const std::string& );
+    template void RINGMESH_API translate( GeoModel< 2 >&, const vec2& );
 
     template void RINGMESH_API print_geomodel( const GeoModel< 3 >& );
     template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel< 3 >& );
-    template bool RINGMESH_API are_geomodel_surface_meshes_simplicial(
-        const GeoModel< 3 >& );
-//    template void RINGMESH_API print_geomodel_mesh_cell_volumes(
-//        const GeoModel< 3 >& );
-//    template bool RINGMESH_API are_geomodel_region_meshes_simplicial(
-//        const GeoModel< 3 >& );
     template index_t RINGMESH_API find_mesh_entity_id_from_name(
         const GeoModel< 3 >&,
         const MeshEntityType&,
