@@ -117,8 +117,9 @@ namespace RINGMesh {
     bool GeoModelGeologicalEntity< DIMENSION >::is_fault(
         typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE feature )
     {
-        return feature == FAULT || feature == REVERSE_FAULT
-            || feature == NORMAL_FAULT;
+        return feature == GEOL_FEATURE::FAULT
+            || feature == GEOL_FEATURE::REVERSE_FAULT
+            || feature == GEOL_FEATURE::NORMAL_FAULT;
     }
 
     template< index_t DIMENSION >
