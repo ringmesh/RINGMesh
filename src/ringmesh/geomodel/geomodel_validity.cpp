@@ -895,6 +895,8 @@ namespace {
                 &GeoModelValidityCheck::test_geomodel_connectivity_validity, this );
             threads.emplace_back( &GeoModelValidityCheck::test_finite_extension,
                 this );
+            threads.emplace_back(
+                        &GeoModelValidityCheck::test_surface_line_mesh_conformity, this );
         }
 
         void do_check_geometry( std::vector< std::thread >& threads );
@@ -1162,8 +1164,6 @@ namespace {
         std::vector< std::thread >& threads )
     {
         do_check_topology_base( threads );
-        threads.emplace_back(
-            &GeoModelValidityCheck::test_surface_line_mesh_conformity, this );
         threads.emplace_back(
             &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
     }
