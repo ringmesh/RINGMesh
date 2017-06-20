@@ -882,22 +882,47 @@ namespace {
         }
 
     private:
-        void check_topology_base( std::vector< std::thread >& threads )
+        void do_check_geometry_base( std::vector< std::thread >& threads )
         {
             threads.emplace_back(
                 &GeoModelValidityCheck::test_geomodel_mesh_entities_validity, this );
             threads.emplace_back( &GeoModelValidityCheck::test_non_manifold_edges,
                 this );
         }
-
-        void check_geometry_base( std::vector< std::thread >& threads )
+        void do_check_topology_base( std::vector< std::thread >& threads )
         {
             threads.emplace_back(
                 &GeoModelValidityCheck::test_geomodel_connectivity_validity, this );
             threads.emplace_back( &GeoModelValidityCheck::test_finite_extension,
                 this );
         }
-        void do_check_validity( ValidityCheckMode mode ) ;
+
+        void do_check_geometry( std::vector< std::thread >& threads );
+        void do_check_topology( std::vector< std::thread >& threads );
+
+        void do_check_validity( ValidityCheckMode mode )
+        {
+            std::vector< std::thread > threads;
+            threads.reserve( 8 );
+            if( mode == ValidityCheckMode::ALL ) {
+                do_check_geometry( threads );
+                do_check_topology( threads );
+            }
+            if( mode == ValidityCheckMode::TOPOLOGY ) {
+                do_check_topology( threads );
+            }
+            if( mode != ValidityCheckMode::GEOMETRY ) {
+                do_check_geometry( threads );
+            }
+
+            // Geological validity must always be checked
+            threads.emplace_back(
+                &GeoModelValidityCheck::test_geomodel_geological_validity, this );
+
+            for( index_t i = 0; i < threads.size(); i++ ) {
+                threads[i].join();
+            }
+        }
 
         /*! 
          * @brief Verify the validity of all GeoModelMeshEntities
@@ -1109,57 +1134,38 @@ namespace {
     };
 
     template< >
-    void GeoModelValidityCheck< 2 >::do_check_validity( ValidityCheckMode mode )
+    void GeoModelValidityCheck< 2 >::do_check_geometry(
+        std::vector< std::thread >& threads )
     {
-        std::vector< std::thread > threads;
-        threads.reserve( 8 );
-        if( mode == ValidityCheckMode::GEOMETRY || mode == ValidityCheckMode::ALL ) {
-
-        }
-        if( mode != ValidityCheckMode::TOPOLOGY ) {
-            check_topology_base( threads );
-        }
-        if( mode != ValidityCheckMode::GEOMETRY ) {
-            check_geometry_base( threads );
-        }
-
-        // Geological validity must always be checked
-        threads.emplace_back(
-            &GeoModelValidityCheck::test_geomodel_geological_validity, this );
-
-        for( index_t i = 0; i < threads.size(); i++ ) {
-            threads[i].join();
-        }
+        do_check_geometry_base( threads );
     }
 
     template< >
-    void GeoModelValidityCheck< 3 >::do_check_validity( ValidityCheckMode mode )
+    void GeoModelValidityCheck< 3 >::do_check_geometry(
+        std::vector< std::thread >& threads )
     {
-        std::vector< std::thread > threads;
-        threads.reserve( 8 );
-        if( mode == ValidityCheckMode::GEOMETRY || mode == ValidityCheckMode::ALL ) {
-            threads.emplace_back( &GeoModelValidityCheck::test_polygon_intersections,
-                this );
-        }
-        if( mode != ValidityCheckMode::TOPOLOGY ) {
-            check_topology_base( threads );
-            threads.emplace_back(
-                &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
+        do_check_geometry_base( threads );
+        threads.emplace_back( &GeoModelValidityCheck::test_polygon_intersections,
+            this );
 
-        }
-        if( mode != ValidityCheckMode::GEOMETRY ) {
-            check_geometry_base( threads );
-            threads.emplace_back(
-                &GeoModelValidityCheck::test_surface_line_mesh_conformity, this );
-        }
+    }
 
-        // Geological validity must always be checked
+    template< >
+    void GeoModelValidityCheck< 2 >::do_check_topology(
+        std::vector< std::thread >& threads )
+    {
+        do_check_topology_base( threads );
+    }
+
+    template< >
+    void GeoModelValidityCheck< 3 >::do_check_topology(
+        std::vector< std::thread >& threads )
+    {
+        do_check_topology_base( threads );
         threads.emplace_back(
-            &GeoModelValidityCheck::test_geomodel_geological_validity, this );
-
-        for( index_t i = 0; i < threads.size(); i++ ) {
-            threads[i].join();
-        }
+            &GeoModelValidityCheck::test_surface_line_mesh_conformity, this );
+        threads.emplace_back(
+            &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
     }
 
 }
