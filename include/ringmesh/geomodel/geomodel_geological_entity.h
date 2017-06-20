@@ -61,7 +61,7 @@ namespace RINGMesh {
         /*!
          * @brief Geological feature types for GeoModelEntity
          */
-        enum GEOL_FEATURE {
+        enum struct GEOL_FEATURE {
             /// All geological features
             ALL_GEOL,
             /// Default value - No geological feature defined
@@ -104,16 +104,17 @@ namespace RINGMesh {
         static std::string geol_name( GEOL_FEATURE );
         static bool is_fault( GEOL_FEATURE T )
         {
-            return T == FAULT || T == REVERSE_FAULT || T == NORMAL_FAULT;
+            return T == GEOL_FEATURE::FAULT || T == GEOL_FEATURE::REVERSE_FAULT
+                || T == GEOL_FEATURE::NORMAL_FAULT;
         }
         static bool is_stratigraphic_limit( GEOL_FEATURE T )
         {
-            return T == STRATI || T == UNCONFORMITY;
+            return T == GEOL_FEATURE::STRATI || T == GEOL_FEATURE::UNCONFORMITY;
         }
 
         bool has_geological_feature() const
         {
-            return geological_feature() != NO_GEOL;
+            return geological_feature() != GEOL_FEATURE::NO_GEOL;
         }
 
         GEOL_FEATURE geological_feature() const
@@ -161,7 +162,7 @@ namespace RINGMesh {
             const GeoModel& geomodel,
             index_t id = NO_ID,
             const std::string& name = "unnamed",
-            GEOL_FEATURE geological_feature = NO_GEOL )
+            GEOL_FEATURE geological_feature = GEOL_FEATURE::NO_GEOL )
             :
                 GeoModelEntity( geomodel, id, name ),
                 geol_feature_( geological_feature )
