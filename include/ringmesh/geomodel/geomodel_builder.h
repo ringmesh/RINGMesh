@@ -142,7 +142,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelBuilderBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~GeoModelBuilderBase();
+        virtual ~GeoModelBuilderBase() = default;
 
         /*!
          * @brief Finish up geomodel building and complete missing information.
@@ -156,7 +156,7 @@ namespace RINGMesh {
             GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
-        void cut_geomodel_on_boundaries();
+        void cut_geomodel_on_internal_boundaries();
 
     public:
         GeoModelBuilderTopology< DIMENSION > topology;
@@ -180,14 +180,14 @@ namespace RINGMesh {
     class GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 > {
     public:
         GeoModelBuilder( GeoModel< 2 >& geomodel );
-        virtual ~GeoModelBuilder();
+        virtual ~GeoModelBuilder() = default;
     };
 
     template< >
     class GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 > {
     public:
         GeoModelBuilder( GeoModel< 3 >& geomodel );
-        virtual ~GeoModelBuilder();
+        virtual ~GeoModelBuilder() = default;
 
         void build_regions_from_lines_and_surfaces();
     };

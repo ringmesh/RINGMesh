@@ -62,7 +62,7 @@ namespace RINGMesh {
     public:
 
         GeoModelGfx();
-        ~GeoModelGfx();
+        ~GeoModelGfx() = default;
 
         /*!
          * Sets the GeoModel associated to the graphics

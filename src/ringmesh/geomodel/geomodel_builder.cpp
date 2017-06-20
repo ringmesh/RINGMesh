@@ -782,11 +782,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    GeoModelBuilderBase< DIMENSION >::~GeoModelBuilderBase()
-    {
-    }
-
-    template< index_t DIMENSION >
     void GeoModelBuilderBase< DIMENSION >::build_lines_and_corners_from_surfaces()
     {
         LineGeometryFromGeoModelSurfaces< DIMENSION > line_computer( geomodel_ );
@@ -840,7 +835,7 @@ namespace RINGMesh {
             info.set_geomodel_name( "model_default_name" );
         }
 
-        cut_geomodel_on_boundaries();
+        cut_geomodel_on_internal_boundaries();
         topology.compute_universe();
 
         // Deliberate clear of the geomodel vertices used for geomodel building
@@ -852,12 +847,8 @@ namespace RINGMesh {
     {
     }
 
-    GeoModelBuilder< 2 >::~GeoModelBuilder()
-    {
-    }
-
     template< >
-    void GeoModelBuilderBase< 2 >::cut_geomodel_on_boundaries()
+    void GeoModelBuilderBase< 2 >::cut_geomodel_on_internal_boundaries()
     {
         geometry.cut_surfaces_by_internal_lines();
     }
@@ -867,12 +858,8 @@ namespace RINGMesh {
     {
     }
 
-    GeoModelBuilder< 3 >::~GeoModelBuilder()
-    {
-    }
-
     template< >
-    void GeoModelBuilderBase< 3 >::cut_geomodel_on_boundaries()
+    void GeoModelBuilderBase< 3 >::cut_geomodel_on_internal_boundaries()
     {
         geometry.cut_surfaces_by_internal_lines();
         geometry.cut_regions_by_internal_surfaces();

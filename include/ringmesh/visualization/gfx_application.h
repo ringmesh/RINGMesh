@@ -61,7 +61,7 @@ namespace RINGMesh {
         };
 
         RINGMeshApplication( int argc, char** argv );
-        virtual ~RINGMeshApplication();
+        virtual ~RINGMeshApplication() = default;
 
         virtual void quit();
 
