@@ -35,9 +35,11 @@
 
 #include <ringmesh/io/io.h>
 
+#include <cfenv>
 #include <cstring>
 
 #include <geogram/basic/file_system.h>
+#include <geogram/basic/line_stream.h>
 
 /*!
  * @file Please add a file description
@@ -55,23 +57,30 @@ namespace RINGMesh {
      */
     bool compare_files( const std::string& f1, const std::string& f2 )
     {
-        const unsigned int MAX_LINE_LEN = 65535;
+        GEO::LineInput lFile( f1 );
+        GEO::LineInput rFile( f2 );
 
-        std::ifstream lFile( f1.c_str() );
-        std::ifstream rFile( f2.c_str() );
-
-        std::unique_ptr< char[] > lBuffer( new char[MAX_LINE_LEN]() );
-        std::unique_ptr< char[] > rBuffer( new char[MAX_LINE_LEN]() );
-
-        do {
-            lFile.read( lBuffer.get(), MAX_LINE_LEN );
-            rFile.read( rBuffer.get(), MAX_LINE_LEN );
-            size_t numberOfRead = static_cast< size_t >( lFile.gcount() );
-
-            if( std::memcmp( lBuffer.get(), rBuffer.get(), numberOfRead ) != 0 ) {
+        while( !lFile.eof() && lFile.get_line() && !rFile.eof() && rFile.get_line() ) {
+            lFile.get_fields();
+            rFile.get_fields();
+            if( lFile.nb_fields() != rFile.nb_fields() ) {
+                DEBUG( lFile.nb_fields() );
+                DEBUG( rFile.nb_fields() );
+                DEBUG( lFile.current_line() );
+                DEBUG( rFile.current_line() );
+                DEBUG( lFile.line_number() );
                 return false;
+            } else {
+                for( index_t i = 0; i < lFile.nb_fields(); i++ ) {
+                    if( std::strcmp( lFile.field( i ), rFile.field( i ) ) != 0 ) {
+                        DEBUG( lFile.field( i ) );
+                        DEBUG( rFile.field( i ) );
+                        DEBUG( lFile.line_number() );
+                        return false;
+                    }
+                }
             }
-        } while( lFile.good() || rFile.good() );
+        }
         return true;
     }
 
@@ -80,6 +89,15 @@ namespace RINGMesh {
         GeoModelIOHandler::initialize_full_geomodel_output();
         GeoModelIOHandler::initialize_boundary_geomodel_output();
         WellGroupIOHandler::initialize();
+    }
+
+    void enable_truncated_floating_point()
+    {
+        std::fesetround( FE_DOWNWARD );
+    }
+    void desable_truncated_floating_point()
+    {
+        std::fesetround( FE_TONEAREST );
     }
 
     /***************************************************************************/

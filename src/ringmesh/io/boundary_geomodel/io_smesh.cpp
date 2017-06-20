@@ -55,7 +55,7 @@ namespace {
                     filename.c_str() );
                 return;
             }
-            out.precision( 16 );
+            out.precision( PRECISION );
 
             /// 1. Write the unique vertices
             out << "# Node list" << std::endl;

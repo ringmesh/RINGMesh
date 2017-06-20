@@ -51,6 +51,7 @@
 const std::string TAB = "\t";
 const std::string SPACE = " ";
 const std::string COMMA = ",";
+const std::streamsize PRECISION = 10;
 
 /*!
  * @file Global input - output functions of RINGMesh
@@ -161,6 +162,9 @@ namespace RINGMesh {
         unzFile uz,
         const char filename[MAX_FILENAME] );
 
+    void RINGMESH_API enable_truncated_floating_point();
+    void RINGMESH_API desable_truncated_floating_point();
+    
     /*********************************************************************************************/
     class RINGMESH_API StratigraphicColumnIOHandler: public GEO::Counted {
     public:

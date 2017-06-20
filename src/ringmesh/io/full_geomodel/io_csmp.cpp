@@ -98,7 +98,7 @@ namespace {
             std::ostringstream oss_ascii;
             oss_ascii << directory << "/" << file << ".asc";
             std::ofstream ascii( oss_ascii.str().c_str() );
-            ascii.precision( 16 );
+            ascii.precision( PRECISION );
 
             ascii << gm.name() << std::endl;
             ascii << "Model generated from RINGMesh" << std::endl;
@@ -106,7 +106,7 @@ namespace {
             std::ostringstream oss_data;
             oss_data << directory << "/" << file << ".dat";
             std::ofstream data( oss_data.str().c_str() );
-            data.precision( 16 );
+            data.precision( PRECISION );
 
             std::ostringstream oss_regions;
             oss_regions << directory << "/" << file << "-regions.txt";

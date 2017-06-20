@@ -197,7 +197,7 @@ namespace RINGMesh {
         {
             ringmesh_assert(
                 gocad_vertices2region_vertices_.size()
-                == gocad_vertices2region_id_.size() );
+                    == gocad_vertices2region_id_.size() );
             return static_cast< index_t >( gocad_vertices2region_vertices_.size() );
         }
 

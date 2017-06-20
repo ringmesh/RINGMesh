@@ -152,7 +152,7 @@ namespace {
             }
 
             std::ofstream out( filename.c_str() );
-            out.precision( 16 );
+            out.precision( 17 );
             save_header( out, GEO::FileSystem::base_name( filename ) );
             std::vector< std::string > att_v_double_names;
             std::vector< index_t > vertex_attr_dims;

@@ -13,6 +13,7 @@ New Features:
  * New version of the .gm file format which not contains the GEOL_FEATURE on Mesh Entities anymore.
  * Export to gmsh file format (V2).
  * Add MeshSet, a mesh composed from all the other mesh types (PointSet, Line, Surface and Volume).
+ * Automatic non-regression input/output file testing
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
@@ -33,7 +34,7 @@ Improvements:
  * Remove MeshAllD and inherited classes, user should only use Mesh0D, Mesh1D, Mesh2D or Mesh3D.
       The GeoModelMesh has been modified according this modification.
  * Improve some designs by using the NRVO/RVO (Named Return Value Optimization)
- * Use C++11 smartpointers for all the pointers allocated on the heap
+ * Use C++11 smartpointers for all the pointers allocated on the hea
  * Remove complex inheritance design of the GeogramMesh and GeogramMeshBuilder classes 
  * Add naming distinction between a facet (a boundary polygon of a cell) and a polygon (a surface mesh element)
  * Mesh Entities have no longer a GEOL_FEATURE.

@@ -75,7 +75,7 @@ namespace {
                     "Export to MFEM format works only with full tet or full hex format" );
             }
             std::ofstream out( filename.c_str() );
-            out.precision( 16 );
+            out.precision( PRECISION );
 
             write_header( geomodel_mesh, out );
             write_cells( geomodel_mesh, out );
