@@ -116,7 +116,7 @@ namespace {
      *   endloop
      * endfacet
      */
-    class STLIOHandler final: public GeoModelIOHandler {
+    class STLIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {

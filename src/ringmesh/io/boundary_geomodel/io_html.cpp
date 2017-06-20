@@ -37,7 +37,7 @@
 
 namespace {
 
-    class HTMLIOHandler final: public GeoModelIOHandler {
+    class HTMLIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {

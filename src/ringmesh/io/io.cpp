@@ -77,8 +77,12 @@ namespace RINGMesh {
 
     void mesh_initialize()
     {
-        GeoModelIOHandler::initialize_full_geomodel_output();
-        GeoModelIOHandler::initialize_boundary_geomodel_output();
+        GeoModelIOHandler< 2 >::initialize_full_geomodel_output();
+        GeoModelIOHandler< 3 >::initialize_full_geomodel_output();
+
+        GeoModelIOHandler< 2 >::initialize_boundary_geomodel_output();
+        GeoModelIOHandler< 3 >::initialize_boundary_geomodel_output();
+
         WellGroupIOHandler::initialize();
     }
 
@@ -138,13 +142,15 @@ namespace RINGMesh {
 
     /***************************************************************************/
 
-    GeoModelIOHandler* GeoModelIOHandler::create( const std::string& format )
+    template< index_t DIMENSION >
+    GeoModelIOHandler< DIMENSION >* GeoModelIOHandler< DIMENSION >::create(
+        const std::string& format )
     {
-        GeoModelIOHandler* handler = GeoModelIOHandlerFactory::create_object(
-            format );
+        GeoModelIOHandler< DIMENSION >* handler =
+            GeoModelIOHandlerFactory< DIMENSION >::create_object( format );
         if( !handler ) {
             std::vector< std::string > names;
-            GeoModelIOHandlerFactory::list_creators( names );
+            GeoModelIOHandlerFactory< DIMENSION >::list_creators( names );
             Logger::err( "I/O", "Currently supported file formats are: " );
             for( index_t i = 0; i < names.size(); i++ ) {
                 Logger::err( "I/O", " ", names[i] );
@@ -155,11 +161,24 @@ namespace RINGMesh {
         return handler;
     }
 
-    std::unique_ptr< GeoModelIOHandler > GeoModelIOHandler::get_handler(
+    template< index_t DIMENSION >
+    std::unique_ptr< GeoModelIOHandler< DIMENSION > > GeoModelIOHandler< DIMENSION >::get_handler(
         const std::string& filename )
     {
         std::string ext = GEO::FileSystem::extension( filename );
-        return std::unique_ptr< GeoModelIOHandler >( create( ext ) );
+        return std::unique_ptr< GeoModelIOHandler< DIMENSION > >( create( ext ) );
     }
+
+    template std::unique_ptr< GeoModelIOHandler< 2 > > RINGMESH_API GeoModelIOHandler<
+        2 >::get_handler( const std::string& );
+    template void RINGMESH_API GeoModelIOHandler< 2 >::initialize_full_geomodel_output();
+    template void RINGMESH_API GeoModelIOHandler< 2 >::initialize_boundary_geomodel_output();
+    template class RINGMESH_API GeoModelIOHandler< 2 > ;
+
+    template std::unique_ptr< GeoModelIOHandler< 3 > > RINGMESH_API GeoModelIOHandler<
+        3 >::get_handler( const std::string& );
+    template void RINGMESH_API GeoModelIOHandler< 3 >::initialize_full_geomodel_output();
+    template void RINGMESH_API GeoModelIOHandler< 3 >::initialize_boundary_geomodel_output();
+    template class RINGMESH_API GeoModelIOHandler< 3 > ;
 
 }
