@@ -76,13 +76,6 @@ namespace RINGMesh {
     void RINGMESH_API print_geomodel_mesh_cell_volumes(
         const GeoModel< 3 >& geomodel );
 
-    template< index_t DIMENSION >
-    bool are_geomodel_surface_meshes_simplicial(
-        const GeoModel< DIMENSION >& geomodel );
-
-    bool RINGMESH_API are_geomodel_region_meshes_simplicial(
-        const GeoModel< 3 >& geomodel );
-
     /*!
      * @return the index of the mesh entity \param gme_type named as \param name
      * in the GeoModel \param geomodel.
