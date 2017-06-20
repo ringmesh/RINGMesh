@@ -1017,7 +1017,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class MeshSetBase {
     ringmesh_disable_copy( MeshSetBase );
-    ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         void create_point_set_mesh( const MeshType type );
         void create_line_mesh( const MeshType type );
@@ -1038,9 +1038,8 @@ namespace RINGMesh {
         MeshSet() = default;
     };
 
-
     template< >
-    class MeshSet< 3 >: public MeshSetBase< 3 > {
+    class MeshSet< 3 > : public MeshSetBase< 3 > {
     public:
         MeshSet();
 

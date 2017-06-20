@@ -124,11 +124,13 @@ namespace {
                 "Geological model loading of a from STL mesh not yet implemented" );
         }
 
-        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             check_stl_validity( geomodel );
             std::ofstream out( filename.c_str() );
-            out.precision( 17 ) ;
+            out.precision( 17 );
             save_header( geomodel, out );
             save_triangles( geomodel, out );
             save_footer( geomodel, out );

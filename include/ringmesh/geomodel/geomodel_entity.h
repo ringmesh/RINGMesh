@@ -90,7 +90,7 @@ namespace RINGMesh {
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */
-        GeoModelEntity (
+        GeoModelEntity(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
             const std::string& name = "Unnamed" )
@@ -181,9 +181,9 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class UniverseAccess {
     ringmesh_disable_copy( UniverseAccess );
-        friend class GeoModelBuilderTopologyBase< DIMENSION >;
-        friend class GeoModelBuilderTopology< DIMENSION >;
-        friend class GeoModelBuilderRemovalBase< DIMENSION >;
+        friend class GeoModelBuilderTopologyBase< DIMENSION > ;
+        friend class GeoModelBuilderTopology< DIMENSION > ;
+        friend class GeoModelBuilderRemovalBase< DIMENSION > ;
 
     private:
         UniverseAccess( Universe< DIMENSION >& universe )

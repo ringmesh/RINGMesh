@@ -258,7 +258,10 @@ namespace RINGMesh {
          * @param[in] corner_info the corner_info_t corresponding to the corner to create
          * @return the id of the created corner
          */
-        index_t create_corner( const vecn< DIMENSION >& vertex, bool is_on_surface, index_t id )
+        index_t create_corner(
+            const vecn< DIMENSION >& vertex,
+            bool is_on_surface,
+            index_t id )
         {
             index_t corner_id = static_cast< index_t >( corners_.size() );
             corners_.emplace_back(

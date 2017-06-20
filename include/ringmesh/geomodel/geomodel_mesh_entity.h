@@ -827,7 +827,6 @@ namespace RINGMesh {
     class Surface final: public SurfaceBase< DIMENSION > {
     };
 
-
     template< >
     class Surface< 2 > final: public SurfaceBase< 2 > {
         friend class GeoModelMeshEntityAccess< 2 > ;

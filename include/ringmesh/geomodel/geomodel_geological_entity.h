@@ -267,10 +267,10 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelGeologicalEntityAccess {
     ringmesh_disable_copy( GeoModelGeologicalEntityAccess );
-        friend class GeoModelBuilderTopology< DIMENSION >;
-        friend class GeoModelBuilderGeology< DIMENSION >;
-        friend class GeoModelBuilderInfo< DIMENSION>;
-        friend class GeoModelBuilderRemovalBase< DIMENSION >;
+        friend class GeoModelBuilderTopology< DIMENSION > ;
+        friend class GeoModelBuilderGeology< DIMENSION > ;
+        friend class GeoModelBuilderInfo< DIMENSION > ;
+        friend class GeoModelBuilderRemovalBase< DIMENSION > ;
 
     private:
         GeoModelGeologicalEntityAccess( GeoModelGeologicalEntity< DIMENSION >& gmge )

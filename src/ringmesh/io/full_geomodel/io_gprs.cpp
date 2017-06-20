@@ -50,7 +50,9 @@ namespace {
                 "Loading of a GeoModel from GPRS not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             std::string path = GEO::FileSystem::dir_name( filename );
             std::string directory = GEO::FileSystem::base_name( filename );
@@ -111,7 +113,7 @@ namespace {
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
                 }
             }
-            NNSearch< 3 > nn_search( edge_vertices, false );
+            NNSearch < 3 > nn_search( edge_vertices, false );
 
             const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
             for( index_t p = 0; p < polygons.nb(); p++ ) {

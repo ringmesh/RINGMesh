@@ -241,7 +241,7 @@ namespace RINGMesh {
         std::vector< index_t > mapping_morton_;
     };
 
-    template< index_t DIMENSION>
+    template< index_t DIMENSION >
     class BoxAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -395,10 +395,14 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    double inner_point_box_distance( const vecn< DIMENSION >& p, const Box< DIMENSION >& B );
+    double inner_point_box_distance(
+        const vecn< DIMENSION >& p,
+        const Box< DIMENSION >& B );
 
     template< index_t DIMENSION >
-    double point_box_signed_distance( const vecn< DIMENSION >& p, const Box< DIMENSION >& B );
+    double point_box_signed_distance(
+        const vecn< DIMENSION >& p,
+        const Box< DIMENSION >& B );
 
     template< index_t DIMENSION >
     template< typename ACTION >
@@ -441,21 +445,25 @@ namespace RINGMesh {
         // to prune the traversal of the other child.
         if( distance_left < distance_right ) {
             if( distance_left < distance ) {
-                closest_element_box_recursive < ACTION
-                    > ( query, nearest_box, nearest_point, distance, child_left, box_begin, box_middle, action );
+                closest_element_box_recursive< ACTION >( query, nearest_box,
+                    nearest_point, distance, child_left, box_begin, box_middle,
+                    action );
             }
             if( distance_right < distance ) {
-                closest_element_box_recursive < ACTION
-                    > ( query, nearest_box, nearest_point, distance, child_right, box_middle, box_end, action );
+                closest_element_box_recursive< ACTION >( query, nearest_box,
+                    nearest_point, distance, child_right, box_middle, box_end,
+                    action );
             }
         } else {
             if( distance_right < distance ) {
-                closest_element_box_recursive < ACTION
-                    > ( query, nearest_box, nearest_point, distance, child_right, box_middle, box_end, action );
+                closest_element_box_recursive< ACTION >( query, nearest_box,
+                    nearest_point, distance, child_right, box_middle, box_end,
+                    action );
             }
             if( distance_left < distance ) {
-                closest_element_box_recursive < ACTION
-                    > ( query, nearest_box, nearest_point, distance, child_left, box_begin, box_middle, action );
+                closest_element_box_recursive< ACTION >( query, nearest_box,
+                    nearest_point, distance, child_left, box_begin, box_middle,
+                    action );
             }
         }
     }
@@ -488,10 +496,10 @@ namespace RINGMesh {
         get_recursive_iterators( node_index, element_begin, element_end, box_middle,
             child_left, child_right );
 
-        bbox_intersect_recursive < ACTION
-            > ( box, child_left, element_begin, box_middle, action );
-        bbox_intersect_recursive < ACTION
-            > ( box, child_right, box_middle, element_end, action );
+        bbox_intersect_recursive< ACTION >( box, child_left, element_begin,
+            box_middle, action );
+        bbox_intersect_recursive< ACTION >( box, child_right, box_middle,
+            element_end, action );
     }
 
     template< index_t DIMENSION >
@@ -537,18 +545,18 @@ namespace RINGMesh {
             index_t middle_box2, child_left2, child_right2;
             get_recursive_iterators( node_index2, element_begin2, element_end2,
                 middle_box2, child_left2, child_right2 );
-            self_intersect_recursive < ACTION
-                > ( node_index1, element_begin1, element_end1, child_left2, element_begin2, middle_box2, action );
-            self_intersect_recursive < ACTION
-                > ( node_index1, element_begin1, element_end1, child_right2, middle_box2, element_end2, action );
+            self_intersect_recursive< ACTION >( node_index1, element_begin1,
+                element_end1, child_left2, element_begin2, middle_box2, action );
+            self_intersect_recursive< ACTION >( node_index1, element_begin1,
+                element_end1, child_right2, middle_box2, element_end2, action );
         } else {
             index_t middle_box1, child_left1, child_right1;
             get_recursive_iterators( node_index1, element_begin1, element_end1,
                 middle_box1, child_left1, child_right1 );
-            self_intersect_recursive < ACTION
-                > ( child_left1, element_begin1, middle_box1, node_index2, element_begin2, element_end2, action );
-            self_intersect_recursive < ACTION
-                > ( child_right1, middle_box1, element_end1, node_index2, element_begin2, element_end2, action );
+            self_intersect_recursive< ACTION >( child_left1, element_begin1,
+                middle_box1, node_index2, element_begin2, element_end2, action );
+            self_intersect_recursive< ACTION >( child_right1, middle_box1,
+                element_end1, node_index2, element_begin2, element_end2, action );
         }
     }
 }

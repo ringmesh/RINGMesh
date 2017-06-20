@@ -52,7 +52,7 @@
  */
 
 namespace RINGMesh {
-    template < index_t DIMENSION > class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
 }
 
 namespace RINGMesh {

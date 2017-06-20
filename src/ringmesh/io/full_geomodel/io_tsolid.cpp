@@ -62,7 +62,9 @@ namespace {
                 return false;
             }
         }
-        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -170,10 +172,12 @@ namespace {
             out << "MODEL" << std::endl;
             int tface_count = 1;
             for( index_t i = 0;
-                i < geomodel.nb_geological_entities( Interface< 3 >::type_name_static() );
-                i++ ) {
+                i
+                    < geomodel.nb_geological_entities(
+                        Interface < 3 > ::type_name_static() ); i++ ) {
                 const RINGMesh::GeoModelGeologicalEntity< 3 >& interf =
-                    geomodel.geological_entity( Interface< 3 >::type_name_static(), i );
+                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
+                        i );
                 out << "SURFACE " << interf.name() << std::endl;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     out << "TFACE " << tface_count++ << std::endl;
