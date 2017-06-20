@@ -42,8 +42,8 @@
 #include <ringmesh/basic/algorithm.h>
 
 namespace RINGMesh {
-    template <index_t DIMENSION > class GeoModelMeshEntityAccess;
-    template <index_t DIMENSION > class GeoModelGeologicalEntityAccess;
+    template< index_t DIMENSION > class GeoModelMeshEntityAccess;
+    template< index_t DIMENSION > class GeoModelGeologicalEntityAccess;
 }
 
 namespace RINGMesh {
@@ -189,10 +189,10 @@ namespace RINGMesh {
      */
     template< class Entity_type_template >
     struct gme_id {
-        friend GeoModelMeshEntityAccess< 2 >;
-        friend GeoModelGeologicalEntityAccess< 2 >;
-        friend GeoModelMeshEntityAccess< 3 >;
-        friend GeoModelGeologicalEntityAccess< 3 >;
+        friend GeoModelMeshEntityAccess< 2 > ;
+        friend GeoModelGeologicalEntityAccess< 2 > ;
+        friend GeoModelMeshEntityAccess< 3 > ;
+        friend GeoModelGeologicalEntityAccess< 3 > ;
     public:
         index_t index() const
         {

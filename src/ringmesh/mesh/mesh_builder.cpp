@@ -240,21 +240,21 @@ namespace RINGMesh {
         return std::unique_ptr< VolumeMeshBuilder< DIMENSION > >( builder );
     }
 
-    template std::unique_ptr< MeshBaseBuilder< 2 > > RINGMESH_API MeshBaseBuilder<
-        2 >::create_builder( MeshBase< 2 >& );
+    template std::unique_ptr< MeshBaseBuilder< 2 > > RINGMESH_API MeshBaseBuilder< 2 >::create_builder(
+        MeshBase< 2 >& );
     template std::unique_ptr< PointSetMeshBuilder< 2 > > RINGMESH_API PointSetMeshBuilder<
         2 >::create_builder( PointSetMesh< 2 >& );
-    template std::unique_ptr< LineMeshBuilder< 2 > > RINGMESH_API LineMeshBuilder<
-        2 >::create_builder( LineMesh< 2 >& );
+    template std::unique_ptr< LineMeshBuilder< 2 > > RINGMESH_API LineMeshBuilder< 2 >::create_builder(
+        LineMesh< 2 >& );
     template std::unique_ptr< SurfaceMeshBuilder< 2 > > RINGMESH_API SurfaceMeshBuilder<
         2 >::create_builder( SurfaceMeshBase< 2 >& );
 
-    template std::unique_ptr< MeshBaseBuilder< 3 > > RINGMESH_API MeshBaseBuilder<
-        3 >::create_builder( MeshBase< 3 >& );
+    template std::unique_ptr< MeshBaseBuilder< 3 > > RINGMESH_API MeshBaseBuilder< 3 >::create_builder(
+        MeshBase< 3 >& );
     template std::unique_ptr< PointSetMeshBuilder< 3 > > RINGMESH_API PointSetMeshBuilder<
         3 >::create_builder( PointSetMesh< 3 >& );
-    template std::unique_ptr< LineMeshBuilder< 3 > > RINGMESH_API LineMeshBuilder<
-        3 >::create_builder( LineMesh< 3 >& );
+    template std::unique_ptr< LineMeshBuilder< 3 > > RINGMESH_API LineMeshBuilder< 3 >::create_builder(
+        LineMesh< 3 >& );
     template std::unique_ptr< SurfaceMeshBuilder< 3 > > RINGMESH_API SurfaceMeshBuilder<
         3 >::create_builder( SurfaceMeshBase< 3 >& );
     template std::unique_ptr< VolumeMeshBuilder< 3 > > RINGMESH_API VolumeMeshBuilder<

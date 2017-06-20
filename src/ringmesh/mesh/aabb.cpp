@@ -137,14 +137,14 @@ namespace {
         const_vector_itr m6 = split( m4, m8, Morton_cmp< 3 >( bboxes, COORDY ) );
         const_vector_itr m5 = split( m4, m6, Morton_cmp< 3 >( bboxes, COORDZ ) );
         const_vector_itr m7 = split( m6, m8, Morton_cmp< 3 >( bboxes, COORDZ ) );
-        sort < COORDZ > ( bboxes, m0, m1 );
-        sort < COORDY > ( bboxes, m1, m2 );
-        sort < COORDY > ( bboxes, m2, m3 );
-        sort < COORDX > ( bboxes, m3, m4 );
-        sort < COORDX > ( bboxes, m4, m5 );
-        sort < COORDY > ( bboxes, m5, m6 );
-        sort < COORDY > ( bboxes, m6, m7 );
-        sort < COORDZ > ( bboxes, m7, m8 );
+        sort< COORDZ >( bboxes, m0, m1 );
+        sort< COORDY >( bboxes, m1, m2 );
+        sort< COORDY >( bboxes, m2, m3 );
+        sort< COORDX >( bboxes, m3, m4 );
+        sort< COORDX >( bboxes, m4, m5 );
+        sort< COORDY >( bboxes, m5, m6 );
+        sort< COORDY >( bboxes, m6, m7 );
+        sort< COORDZ >( bboxes, m7, m8 );
     }
 
     template< >
@@ -163,10 +163,10 @@ namespace {
         const_vector_itr m2 = split( m0, m4, Morton_cmp< 2 >( bboxes, COORDX ) );
         const_vector_itr m1 = split( m0, m2, Morton_cmp< 2 >( bboxes, COORDY ) );
         const_vector_itr m3 = split( m2, m4, Morton_cmp< 2 >( bboxes, COORDY ) );
-        sort < COORDY > ( bboxes, m0, m1 );
-        sort < COORDX > ( bboxes, m1, m2 );
-        sort < COORDX > ( bboxes, m2, m3 );
-        sort < COORDY > ( bboxes, m3, m4 );
+        sort< COORDY >( bboxes, m0, m1 );
+        sort< COORDX >( bboxes, m1, m2 );
+        sort< COORDX >( bboxes, m2, m3 );
+        sort< COORDY >( bboxes, m3, m4 );
     }
 
     template< index_t DIMENSION >

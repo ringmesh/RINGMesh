@@ -70,7 +70,7 @@ namespace RINGMesh {
     using GEO::signed_index_t;
     // This is an array template of doubles
     template< index_t DIMENSION >
-    using vecn = GEO::vecng< DIMENSION, double > ;
+    using vecn = GEO::vecng< DIMENSION, double >;
     // This is an array of 3 doubles
     using vec3 = vecn< 3 >;
     // This is an array of 3 doubles
