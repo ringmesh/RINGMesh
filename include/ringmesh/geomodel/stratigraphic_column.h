@@ -48,8 +48,8 @@
  */
 
 namespace RINGMesh {
-    template < index_t DIMENSION > class Interface;
-    template < index_t DIMENSION > class Layer;
+    template< index_t DIMENSION > class Interface;
+    template< index_t DIMENSION > class Layer;
 
     // @todo To develop
     enum struct ROCKTYPE {

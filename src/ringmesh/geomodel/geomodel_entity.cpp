@@ -57,12 +57,12 @@ namespace RINGMesh {
         return true;
     }
 
-    template class RINGMESH_API GeoModelEntity< 2 >;
-    template class RINGMESH_API Universe< 2 >;
-    template class RINGMESH_API UniverseAccess< 2 >;
+    template class RINGMESH_API GeoModelEntity< 2 > ;
+    template class RINGMESH_API Universe< 2 > ;
+    template class RINGMESH_API UniverseAccess< 2 > ;
 
-    template class RINGMESH_API GeoModelEntity< 3 >;
-    template class RINGMESH_API Universe< 3 >;
-    template class RINGMESH_API UniverseAccess< 3 >;
+    template class RINGMESH_API GeoModelEntity< 3 > ;
+    template class RINGMESH_API Universe< 3 > ;
+    template class RINGMESH_API UniverseAccess< 3 > ;
 
 }

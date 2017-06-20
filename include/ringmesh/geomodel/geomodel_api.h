@@ -71,7 +71,8 @@ namespace RINGMesh {
      * Output the volume of the geomodel and the volume per cell type.
      * @param[in] geomodel the geomodel to compute the statistics on
      */
-    void RINGMESH_API print_geomodel_mesh_cell_volumes( const GeoModel< 3 >& geomodel );
+    void RINGMESH_API print_geomodel_mesh_cell_volumes(
+        const GeoModel< 3 >& geomodel );
 
     bool RINGMESH_API are_geomodel_surface_meshes_simplicial(
         const GeoModel< 3 >& geomodel );
@@ -110,8 +111,11 @@ namespace RINGMesh {
      * @param[in] region_id Region to mesh. By default it set to NO_ID and all regions are meshed.
      * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
      */
-    void RINGMESH_API tetrahedralize( GeoModel< 3 >& geomodel, const std::string& method =
-        "TetGen", index_t region_id = NO_ID, bool add_steiner_points = true );
+    void RINGMESH_API tetrahedralize(
+        GeoModel< 3 >& geomodel,
+        const std::string& method = "TetGen",
+        index_t region_id = NO_ID,
+        bool add_steiner_points = true );
 
     /*!
      * Compute the tetrahedral mesh of the input structural geomodel

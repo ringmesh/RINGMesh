@@ -140,8 +140,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) override
         {
@@ -159,8 +158,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
         virtual void set_mesh( LineMesh< DIMENSION >& mesh ) override
@@ -253,10 +251,8 @@ namespace RINGMesh {
     using GeogramLineMesh3DBuilder = GeogramLineMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
-    class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder<
-        DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+    class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder< DIMENSION > {
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
         virtual void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override
@@ -420,8 +416,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );
-        ringmesh_template_assert_3d( DIMENSION );
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );ringmesh_template_assert_3d( DIMENSION );
     public:
 
         virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) override

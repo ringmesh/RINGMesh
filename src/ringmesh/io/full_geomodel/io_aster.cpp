@@ -72,7 +72,9 @@ namespace {
                 "Loading of a GeoModel from Code_Aster mesh not implemented yet" );
             return false;
         }
-        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -130,17 +132,20 @@ namespace {
             }
         }
 
-        void write_polygons( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void write_polygons(
+            const GeoModel< 3 >& geomodel,
+            std::ofstream& out ) const
         {
             const GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
                 // -1 because polygons doesn' t exist in aster
-                for( index_t pt = 0; pt < GeoModelMeshPolygons< 3 >::ALL - 1; pt++ ) {
+                for( index_t pt = 0; pt < GeoModelMeshPolygons < 3 > ::ALL - 1;
+                    pt++ ) {
                     if( geomodel_mesh.polygons.nb_polygons( s,
-                        GeoModelMeshPolygons< 3 >::PolygonType( pt ) ) > 0 ) {
+                        GeoModelMeshPolygons < 3 > ::PolygonType( pt ) ) > 0 ) {
                         write_polygons_in_interface(
-                            GeoModelMeshPolygons< 3 >::PolygonType( pt ), s, geomodel_mesh,
-                            out );
+                            GeoModelMeshPolygons < 3 > ::PolygonType( pt ), s,
+                            geomodel_mesh, out );
                     }
                 }
             }
@@ -171,9 +176,10 @@ namespace {
             std::ofstream& out ) const
         {
             out << *polygon_name_in_aster_mail_file[polygon_type] << std::endl;
-            for( index_t p = 0; p < mesh.polygons.nb_polygons( surface, polygon_type );
-                p++ ) {
-                index_t global_id = mesh.polygons.polygon( surface, p, polygon_type );
+            for( index_t p = 0;
+                p < mesh.polygons.nb_polygons( surface, polygon_type ); p++ ) {
+                index_t global_id = mesh.polygons.polygon( surface, p,
+                    polygon_type );
                 out << "F" << global_id << " ";
                 for( index_t v = 0; v < mesh.polygons.nb_vertices( p ); v++ ) {
                     out << "V" << mesh.polygons.vertex( global_id, v ) << " ";
@@ -198,14 +204,16 @@ namespace {
             }
         }
 
-        void write_interfaces( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void write_interfaces(
+            const GeoModel< 3 >& geomodel,
+            std::ofstream& out ) const
         {
             for( index_t inter = 0;
                 inter
                     < geomodel.nb_geological_entities(
-                        Interface< 3 >::type_name_static() ); inter++ ) {
+                        Interface < 3 > ::type_name_static() ); inter++ ) {
                 const GeoModelGeologicalEntity< 3 >& cur_interface =
-                    geomodel.geological_entity( Interface< 3 >::type_name_static(),
+                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
                         inter );
                 for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
                     index_t surface_id = cur_interface.child( s ).index();

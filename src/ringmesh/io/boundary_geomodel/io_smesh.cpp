@@ -47,7 +47,9 @@ namespace {
                 "Geological model loading of a from UCD mesh not yet implemented" );
         }
 
-        virtual void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             if( out.bad() ) {

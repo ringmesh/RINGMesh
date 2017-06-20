@@ -798,7 +798,7 @@ namespace RINGMesh {
             GeoModelMesh< DIMENSION >& gmm,
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< LineMesh< DIMENSION > >& mesh );
-        ~GeoModelMeshEdges();
+        ~GeoModelMeshEdges() = default;
 
         GEO::AttributesManager& attribute_manager() const
         {

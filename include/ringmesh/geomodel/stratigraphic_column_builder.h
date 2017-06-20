@@ -49,7 +49,9 @@ namespace RINGMesh {
     class RINGMESH_API StratigraphicColumnBuilder {
     ringmesh_disable_copy(StratigraphicColumnBuilder);
     public:
-        StratigraphicColumnBuilder( StratigraphicColumn& column, GeoModel< 3 >& model );
+        StratigraphicColumnBuilder(
+            StratigraphicColumn& column,
+            GeoModel< 3 >& model );
         virtual ~StratigraphicColumnBuilder()
         {
         }

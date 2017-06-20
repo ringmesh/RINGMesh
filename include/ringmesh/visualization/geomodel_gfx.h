@@ -52,7 +52,7 @@
  */
 
 namespace RINGMesh {
-    template < index_t DIMENSION > class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
 }
 
 namespace RINGMesh {
@@ -62,7 +62,7 @@ namespace RINGMesh {
     public:
 
         GeoModelGfx();
-        ~GeoModelGfx();
+        ~GeoModelGfx() = default;
 
         /*!
          * Sets the GeoModel associated to the graphics

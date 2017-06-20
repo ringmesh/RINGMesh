@@ -203,31 +203,56 @@ namespace RINGMesh {
         return check_has_children( *this );
     }
 
-    template< index_t DIMENSION >
-    void GeoModelGeologicalEntity< DIMENSION >::initialize()
+    template< >
+    void GeoModelGeologicalEntity< 2 >::initialize()
     {
-        ringmesh_register_GeoModelGeologicalEntity3D_creator( Contact< DIMENSION > );
-        ringmesh_register_GeoModelGeologicalEntity3D_creator(
-            Interface< DIMENSION > );
-        ringmesh_register_GeoModelGeologicalEntity3D_creator( Layer< DIMENSION > );
+        ringmesh_register_GeoModelGeologicalEntity2D_creator( Contact< 2 > );
+        ringmesh_register_GeoModelGeologicalEntity2D_creator( Interface< 2 > );
+        ringmesh_register_GeoModelGeologicalEntity2D_creator( Layer< 2 > );
     }
 
-    template< index_t DIMENSION >
-    MeshEntityType Contact< DIMENSION >::child_type_name() const
+    template< >
+    void GeoModelGeologicalEntity< 3 >::initialize()
     {
-        return Line< DIMENSION >::type_name_static();
+        ringmesh_register_GeoModelGeologicalEntity3D_creator( Contact< 3 > );
+        ringmesh_register_GeoModelGeologicalEntity3D_creator( Interface< 3 > );
+        ringmesh_register_GeoModelGeologicalEntity3D_creator( Layer< 3 > );
     }
 
-    template< index_t DIMENSION >
-    MeshEntityType Interface< DIMENSION >::child_type_name() const
+    template< >
+    MeshEntityType Contact< 2 >::child_type_name() const
     {
-        return Surface< DIMENSION >::type_name_static();
+        return Corner< 2 >::type_name_static();
     }
 
-    template< index_t DIMENSION >
-    MeshEntityType Layer< DIMENSION >::child_type_name() const
+    template< >
+    MeshEntityType Interface< 2 >::child_type_name() const
     {
-        return Region< DIMENSION >::type_name_static();
+        return Line< 2 >::type_name_static();
+    }
+
+    template< >
+    MeshEntityType Layer< 2 >::child_type_name() const
+    {
+        return Surface< 2 >::type_name_static();
+    }
+
+    template< >
+    MeshEntityType Contact< 3 >::child_type_name() const
+    {
+        return Line< 3 >::type_name_static();
+    }
+
+    template< >
+    MeshEntityType Interface< 3 >::child_type_name() const
+    {
+        return Surface< 3 >::type_name_static();
+    }
+
+    template< >
+    MeshEntityType Layer< 3 >::child_type_name() const
+    {
+        return Region< 3 >::type_name_static();
     }
 
     template< index_t DIMENSION >
@@ -238,15 +263,16 @@ namespace RINGMesh {
         index_t index_in_geomodel )
     {
         GeoModelGeologicalEntity< DIMENSION >* GMGE =
-            GeoModelGeologicalEntityFactory3D::create_object( type, geomodel );
+            GeoModelGeologicalEntityFactory< DIMENSION >::create_object( type,
+                geomodel );
         GMGE->id_ = index_in_geomodel;
         return std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > >( GMGE );
     }
 
-//    template class GeoModelGeologicalEntity< 2 > ;
-//    template class GeoModelGeologicalEntityAccess< 2 > ;
+    template class RINGMESH_API GeoModelGeologicalEntity< 2 > ;
+    template class RINGMESH_API GeoModelGeologicalEntityAccess< 2 > ;
 
     template class RINGMESH_API GeoModelGeologicalEntity< 3 > ;
-    template class GeoModelGeologicalEntityAccess< 3 > ;
+    template class RINGMESH_API GeoModelGeologicalEntityAccess< 3 > ;
 
 }

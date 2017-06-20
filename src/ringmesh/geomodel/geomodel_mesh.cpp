@@ -2154,11 +2154,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    GeoModelMeshEdges< DIMENSION >::~GeoModelMeshEdges()
-    {
-    }
-
-    template< index_t DIMENSION >
     index_t GeoModelMeshEdges< DIMENSION >::nb_wells() const
     {
         test_and_initialize();
@@ -2463,11 +2458,11 @@ namespace RINGMesh {
         }
     }
 
-//    template class RINGMESH_API GeoModelMeshBase< 2 > ;
-//    template class RINGMESH_API GeoModelMesh< 2 > ;
-//    template class RINGMESH_API GeoModelMeshVerticesBase< 2 > ;
-//    template class RINGMESH_API GeoModelMeshEdges< 2 > ;
-//    template class RINGMESH_API GeoModelMeshPolygonsBase< 2 > ;
+    template class RINGMESH_API GeoModelMeshBase< 2 > ;
+    template class RINGMESH_API GeoModelMesh< 2 > ;
+    template class RINGMESH_API GeoModelMeshVerticesBase< 2 > ;
+    template class RINGMESH_API GeoModelMeshEdges< 2 > ;
+    template class RINGMESH_API GeoModelMeshPolygonsBase< 2 > ;
 
     template class RINGMESH_API GeoModelMeshBase< 3 > ;
     template class RINGMESH_API GeoModelMesh< 3 > ;

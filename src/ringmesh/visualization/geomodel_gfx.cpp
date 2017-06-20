@@ -60,10 +60,6 @@ namespace RINGMesh {
     {
     }
 
-    GeoModelGfx::~GeoModelGfx()
-    {
-    }
-
     void GeoModelGfx::set_geomodel( const GeoModel< 3 >& geomodel )
     {
         geomodel_ = &geomodel;
