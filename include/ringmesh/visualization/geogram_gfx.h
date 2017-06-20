@@ -85,7 +85,7 @@ namespace RINGMesh {
     private:                                                                    \
         GEO::MeshGfx mesh_gfx_
 
-    class RINGMESH_API GeogramPointSetMeshGfx: public PointSetMeshGfx {
+    class RINGMESH_API GeogramPointSetMeshGfx: public PointSetMeshGfx< 3 > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
         GeogramPointSetMeshGfx()
@@ -98,12 +98,11 @@ namespace RINGMesh {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramPointSetMesh< 3 >& >( mesh ).gfx_mesh() );
         }
-
     };
 
     using GeogramPointSetMesh3DGfx = GeogramPointSetMeshGfx;
 
-    class RINGMESH_API GeogramLineMeshGfx: public LineMeshGfx {
+    class RINGMESH_API GeogramLineMeshGfx: public LineMeshGfx< 3 > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
         GeogramLineMeshGfx()
@@ -135,7 +134,7 @@ namespace RINGMesh {
 
     using GeogramLineMesh3DGfx = GeogramLineMeshGfx;
 
-    class RINGMESH_API GeogramSurfaceMeshGfx: public SurfaceMeshGfx {
+    class RINGMESH_API GeogramSurfaceMeshGfx: public SurfaceMeshGfx< 3 > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
         GeogramSurfaceMeshGfx() = default;
@@ -174,7 +173,7 @@ namespace RINGMesh {
 
     using GeogramSurfaceMesh3DGfx = GeogramSurfaceMeshGfx;
 
-    class RINGMESH_API GeogramVolumeMeshGfx: public VolumeMeshGfx {
+    class RINGMESH_API GeogramVolumeMeshGfx: public VolumeMeshGfx< 3 > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
         GeogramVolumeMeshGfx() = default;

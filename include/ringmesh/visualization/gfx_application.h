@@ -104,6 +104,7 @@ namespace RINGMesh {
             double z = 0 );
 
     private:
+        template< index_t DIMENSION >
         class GeoModelViewer {
         ringmesh_disable_copy( GeoModelViewer );
         public:
@@ -166,9 +167,9 @@ namespace RINGMesh {
         public:
             RINGMeshApplication& app_;
             bool is_visible_;
-            GeoModel< 3 > GM_;
-            GeoModelGfx GM_gfx_;
-            Box< 3 > bbox_;
+            GeoModel< DIMENSION > GM_;
+            GeoModelGfx< DIMENSION > GM_gfx_;
+            Box< DIMENSION > bbox_;
             std::vector< std::string > entity_types_;
             int selected_entity_type_;
             int selected_entity_id_;
@@ -246,7 +247,8 @@ namespace RINGMesh {
         };
 
     private:
-        std::vector< std::unique_ptr< GeoModelViewer > > geomodels_;
+        std::vector< std::unique_ptr< GeoModelViewer< 3 > > > geomodels3d_;
+//        std::vector< std::unique_ptr< GeoModelViewer< 2 > > > geomodels2d_;
         std::vector< std::unique_ptr< MeshViewer > > meshes_;
         std::string ringmesh_file_extensions_;
         std::string geogram_file_extensions_;
