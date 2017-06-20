@@ -2154,11 +2154,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    GeoModelMeshEdges< DIMENSION >::~GeoModelMeshEdges()
-    {
-    }
-
-    template< index_t DIMENSION >
     index_t GeoModelMeshEdges< DIMENSION >::nb_wells() const
     {
         test_and_initialize();

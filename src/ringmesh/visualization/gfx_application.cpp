@@ -1128,10 +1128,6 @@ namespace RINGMesh {
         Logger::out( "", "Welcome to RINGMesh-View !" );
     }
 
-    RINGMeshApplication::~RINGMeshApplication()
-    {
-    }
-
     void RINGMeshApplication::quit()
     {
         glup_viewer_exit_main_loop();

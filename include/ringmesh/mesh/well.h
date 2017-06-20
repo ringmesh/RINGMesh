@@ -383,7 +383,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( WellGroup );
     public:
         WellGroup();
-        virtual ~WellGroup();
+        virtual ~WellGroup() = default;
 
         /*!
          * Gets all the edges contained in a region
