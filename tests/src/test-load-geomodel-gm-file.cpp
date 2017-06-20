@@ -48,7 +48,8 @@
 namespace {
     using namespace RINGMesh;
 
-    void load_geomodel( GeoModel< 3 >& in, const std::string& filename )
+    template< index_t DIMENSION >
+    void load_geomodel( GeoModel< DIMENSION >& in, const std::string& filename )
     {
         std::string input_model_file_name( ringmesh_test_data_path );
         input_model_file_name += filename;
@@ -62,13 +63,14 @@ namespace {
         }
     }
 
-    void save_and_compare_geomodels( const GeoModel< 3 >& in )
+    template< index_t DIMENSION >
+    void save_and_compare_geomodels( const GeoModel< DIMENSION >& in )
     {
         std::string output_model_file_name( ringmesh_test_output_path );
         output_model_file_name += "modelA1_saved_out.gm";
         geomodel_save( in, output_model_file_name );
 
-        GeoModel< 3 > in2;
+        GeoModel< DIMENSION > in2;
         bool reloaded_model_is_valid = geomodel_load( in2, output_model_file_name );
 
         if( !reloaded_model_is_valid ) {
@@ -86,9 +88,10 @@ namespace {
         }
     }
 
+    template< index_t DIMENSION >
     void test_file( const std::string& filename )
     {
-        GeoModel< 3 > in;
+        GeoModel< DIMENSION > in;
         load_geomodel( in, filename );
         save_and_compare_geomodels( in );
     }
@@ -103,9 +106,9 @@ int main()
 
         Logger::out( "TEST", "Test IO for a GeoModel in .gm" );
 
-        test_file( "modelA1_version0.gm" );
-        test_file( "modelA1_version1.gm" );
-        test_file( "modelA1_version2.gm" );
+        test_file< 3 >( "modelA1_version0.gm" );
+        test_file< 3 >( "modelA1_version1.gm" );
+        test_file< 3 >( "modelA1_version2.gm" );
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
