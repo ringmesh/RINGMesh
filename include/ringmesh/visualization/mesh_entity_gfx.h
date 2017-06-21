@@ -122,7 +122,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     using PointSetMeshGfxFactory = GEO::Factory0< PointSetMeshGfx< DIMENSION> >;
 
-//    using PointSetMeshGfxFactory2D = PointSetMeshGfxFactory< 2 >;
+    using PointSetMeshGfxFactory2D = PointSetMeshGfxFactory< 2 >;
     using PointSetMeshGfxFactory3D = PointSetMeshGfxFactory< 3 >;
 
 #define ringmesh_register_point_set_gfx_2d(type) \
@@ -168,7 +168,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     using LineMeshGfxFactory = GEO::Factory0< LineMeshGfx< DIMENSION > >;
 
-    //    using LineMeshGfxFactory2D = LineMeshGfxFactory< 2 >;
+    using LineMeshGfxFactory2D = LineMeshGfxFactory< 2 >;
     using LineMeshGfxFactory3D = LineMeshGfxFactory< 3 >;
 
 #define ringmesh_register_line_gfx_2d(type) \
@@ -219,7 +219,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     using SurfaceMeshGfxFactory = GEO::Factory0< SurfaceMeshGfx< DIMENSION > >;
 
-    //    using SurfaceMeshGfxFactory2D = SurfaceMeshGfxFactory< 2 >;
+    using SurfaceMeshGfxFactory2D = SurfaceMeshGfxFactory< 2 >;
     using SurfaceMeshGfxFactory3D = SurfaceMeshGfxFactory< 3 >;
 
 #define ringmesh_register_surface_gfx_2d(type) \
@@ -270,7 +270,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     using VolumeMeshGfxFactory = GEO::Factory0< VolumeMeshGfx< DIMENSION > >;
 
-    //    using VolumeMeshGfxFactory2D = VolumeMeshGfxFactory< 2 >;
+    using VolumeMeshGfxFactory2D = VolumeMeshGfxFactory< 2 >;
     using VolumeMeshGfxFactory3D = VolumeMeshGfxFactory< 3 >;
 
 #define ringmesh_register_volume_gfx_2d(type) \
