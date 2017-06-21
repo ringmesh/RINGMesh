@@ -111,13 +111,18 @@ namespace RINGMesh {
 
         virtual index_t nb_coordinates() override
         {
-            const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
             GEO::AttributeStore* store =
-                geomodel->region( 0 ).cell_attribute_manager().find_attribute_store(
+                get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
             if( store == nullptr ) return 0;
             return store->dimension();
+        }
+
+        virtual GEO::AttributesManager& get_attribute_manager() override
+        {
+            const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
+            return geomodel->region( 0 ).cell_attribute_manager();
         }
 
     private:
@@ -167,13 +172,18 @@ namespace RINGMesh {
 
         virtual index_t nb_coordinates() override
         {
-            const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
             GEO::AttributeStore* store =
-                geomodel->region( 0 ).vertex_attribute_manager().find_attribute_store(
+                get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
             if( store == nullptr ) return 0;
             return store->dimension();
+        }
+
+        virtual GEO::AttributesManager& get_attribute_manager() override
+        {
+            const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
+            return geomodel->region( 0 ).vertex_attribute_manager();
         }
 
     private:
@@ -224,13 +234,18 @@ namespace RINGMesh {
 
         virtual index_t nb_coordinates() override
         {
-            const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
             GEO::AttributeStore* store =
-                geomodel->surface( 0 ).polygon_attribute_manager().find_attribute_store(
+                get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
             if( store == nullptr ) return 0;
             return store->dimension();
+        }
+
+        virtual GEO::AttributesManager& get_attribute_manager() override
+        {
+            const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
+            return geomodel->surface( 0 ).polygon_attribute_manager();
         }
 
     private:
@@ -278,14 +293,20 @@ namespace RINGMesh {
         }
         virtual index_t nb_coordinates() override
         {
-            const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
             GEO::AttributeStore* store =
-                geomodel->surface( 0 ).vertex_attribute_manager().find_attribute_store(
+                get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
             if( store == nullptr ) return 0;
             return store->dimension();
         }
+
+        virtual GEO::AttributesManager& get_attribute_manager() override
+        {
+            const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
+            return geomodel->surface( 0 ).vertex_attribute_manager();
+        }
+
     private:
         virtual void do_compute_range( double& attribute_min, double& attribute_max ) override
         {
@@ -339,6 +360,15 @@ namespace RINGMesh {
         if( attribute_ ) {
             attribute_->bind_attribute();
         }
+    }
+
+    template< index_t DIMENSION >
+    std::vector< std::string > AttributeGfxManagerBase< DIMENSION >::get_attribute_names()
+    {
+        if( attribute_ ) {
+            return attribute_->get_attribute_names();
+        }
+        return std::vector< std::string >();
     }
 
     template< index_t DIMENSION >
