@@ -146,7 +146,7 @@ namespace RINGMesh {
             void toggle_colored_layers();
 
             void reset_attribute_name();
-            void set_attribute_names( const GEO::AttributesManager& attributes );
+            void set_attribute_names( const std::vector< std::string >& names );
             void autorange();
             void draw_entity_style_editor(
                 const std::string& label,

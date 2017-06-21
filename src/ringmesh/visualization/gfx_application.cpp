@@ -434,20 +434,14 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void RINGMeshApplication::GeoModelViewer< DIMENSION >::set_attribute_names(
-        const GEO::AttributesManager& attributes )
+        const std::vector< std::string >& names )
     {
-        GEO::vector< std::string > attribute_names;
-        attributes.list_attribute_names( attribute_names );
-        for( const std::string& name : attribute_names ) {
-            const GEO::AttributeStore* store = attributes.find_attribute_store(
-                name );
-            if( GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to( store ) ) {
-                if( ImGui::Button( name.c_str() ) ) {
-                    GM_gfx_.attribute.set_name( name );
-                    GM_gfx_.attribute.set_coordinate( 0 );
-                    autorange();
-                    ImGui::CloseCurrentPopup();
-                }
+        for( const std::string& name : names ) {
+            if( ImGui::Button( name.c_str() ) ) {
+                GM_gfx_.attribute.set_name( name );
+                GM_gfx_.attribute.set_coordinate( 0 );
+                autorange();
+                ImGui::CloseCurrentPopup();
             }
         }
     }
@@ -625,19 +619,7 @@ namespace RINGMesh {
                 ImGui::OpenPopup( "##Attributes" );
             }
             if( ImGui::BeginPopup( "##Attributes" ) ) {
-                std::string location = GM_gfx_.attribute.location_name();
-                if( location == "polygons" ) {
-                    set_attribute_names(
-                        GM_.surface( 0 ).polygon_attribute_manager() );
-                } else if( location == "polygon_vertices" ) {
-                    set_attribute_names(
-                        GM_.surface( 0 ).vertex_attribute_manager() );
-                } else if( location == "cells" ) {
-                    set_attribute_names( GM_.region( 0 ).cell_attribute_manager() );
-                } else if( location == "cell_vertices" ) {
-                    set_attribute_names(
-                        GM_.region( 0 ).vertex_attribute_manager() );
-                }
+                set_attribute_names( GM_gfx_.attribute.get_attribute_names() );
                 ImGui::EndPopup();
             }
             if( GM_gfx_.attribute.location_name() != "location"

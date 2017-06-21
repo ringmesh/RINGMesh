@@ -284,6 +284,8 @@ namespace RINGMesh {
     class AttributeGfxManagerBase {
     ringmesh_disable_copy( AttributeGfxManagerBase );
     public:
+        virtual ~AttributeGfxManagerBase() = default;
+
         GeoModelGfx< DIMENSION >& gfx()
         {
             return gfx_;
@@ -374,6 +376,8 @@ namespace RINGMesh {
             return locations;
         }
 
+        std::vector< std::string > get_attribute_names();
+
     protected:
         AttributeGfxManagerBase( GeoModelGfx< DIMENSION >& gfx );
 
@@ -399,12 +403,16 @@ namespace RINGMesh {
             : AttributeGfxManagerBase< DIMENSION >( gfx )
         {
         }
+
+        virtual ~AttributeGfxManager() = default;
     };
 
     template< >
     class AttributeGfxManager< 3 > final: public AttributeGfxManagerBase< 3 > {
     public:
         AttributeGfxManager( GeoModelGfx< 3 >& gfx );
+
+        virtual ~AttributeGfxManager() = default;
     };
 
     template< index_t DIMENSION >
@@ -431,6 +439,22 @@ namespace RINGMesh {
             manager_->set_minimum( attribute_min );
             manager_->set_maximum( attribute_max );
         }
+        std::vector< std::string > get_attribute_names()
+        {
+            const GEO::AttributesManager& attributes = get_attribute_manager();
+            GEO::vector< std::string > attribute_names;
+            attributes.list_attribute_names( attribute_names );
+            std::vector< std::string > names;
+            for( const std::string& name : attribute_names ) {
+                const GEO::AttributeStore* store = attributes.find_attribute_store(
+                    name );
+                if( GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to( store ) ) {
+                    names.push_back( name );
+                }
+            }
+            return names;
+        }
+        virtual GEO::AttributesManager& get_attribute_manager() = 0;
         virtual void bind_attribute() = 0;
         virtual void unbind_attribute() = 0;
         virtual index_t nb_coordinates() = 0;
