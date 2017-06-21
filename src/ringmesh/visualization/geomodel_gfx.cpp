@@ -100,8 +100,8 @@ namespace RINGMesh {
         regions.initialize();
     }
 
-//    template class RINGMESH_API GeoModelGfxBase< 2 >;
-    //    template class RINGMESH_API GeoModelGfx< 2 >;
+    template class RINGMESH_API GeoModelGfxBase< 2 > ;
+    template class RINGMESH_API GeoModelGfx< 2 > ;
 
     template class RINGMESH_API GeoModelGfxBase< 3 > ;
     template class RINGMESH_API GeoModelGfx< 3 > ;

@@ -606,10 +606,9 @@ namespace RINGMesh {
     }
 
     template class RINGMESH_API GeoModelGfxEntity< 2 > ;
-//    template class RINGMESH_API CornerGfxEntity< 2 > ;
-//    template class RINGMESH_API LineGfxEntity< 2 > ;
-//    template class RINGMESH_API SurfaceGfxEntity< 2 > ;
-//    template class RINGMESH_API RegionGfxEntity< 2 >;
+    template class RINGMESH_API CornerGfxEntity< 2 > ;
+    template class RINGMESH_API LineGfxEntity< 2 > ;
+    template class RINGMESH_API SurfaceGfxEntity< 2 > ;
 
     template class RINGMESH_API GeoModelGfxEntity< 3 > ;
     template class RINGMESH_API CornerGfxEntity< 3 > ;
