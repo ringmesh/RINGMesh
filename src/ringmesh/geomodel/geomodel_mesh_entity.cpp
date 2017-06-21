@@ -84,9 +84,7 @@ namespace {
         const SurfaceBase< DIMENSION >& surface )
     {
         const index_t NO_COMPONENT = index_t( -1 );
-        GEO::Attribute< index_t > component( surface.polygon_attribute_manager(),
-            "component" );
-        component.fill( NO_COMPONENT );
+        std::vector< index_t > component( surface.nb_mesh_elements(), NO_COMPONENT );
         index_t nb_components = 0;
         for( index_t polygon = 0; polygon < surface.nb_mesh_elements(); polygon++ ) {
             if( component[polygon] == NO_COMPONENT ) {
@@ -111,9 +109,6 @@ namespace {
                 nb_components++;
             }
         }
-#ifndef RINGMESH_DEBUG
-        component.destroy();
-#endif
         return nb_components;
     }
 
@@ -123,14 +118,13 @@ namespace {
      * an Attribute on region cells.
      */
     template< index_t DIMENSION >
-    index_t compute_nb_volume_connected_components( const Region< DIMENSION >& M )
+    index_t compute_nb_volume_connected_components(
+        const Region< DIMENSION >& region )
     {
         const index_t NO_COMPONENT = index_t( -1 );
-        GEO::Attribute< index_t > component( M.cell_attribute_manager(),
-            "component" );
-        component.fill( NO_COMPONENT );
+        std::vector< index_t > component( region.nb_mesh_elements(), NO_COMPONENT );
         index_t nb_components = 0;
-        for( index_t cell = 0; cell < M.nb_mesh_elements(); cell++ ) {
+        for( index_t cell = 0; cell < region.nb_mesh_elements(); cell++ ) {
             if( component[cell] == NO_COMPONENT ) {
                 std::stack< index_t > S;
                 S.push( cell );
@@ -138,9 +132,10 @@ namespace {
                 do {
                     index_t cur_cell = S.top();
                     S.pop();
-                    for( index_t facet = 0; facet < M.nb_cell_facets( cur_cell );
-                        facet++ ) {
-                        index_t adj_cell = M.cell_adjacent_index( cur_cell, facet );
+                    for( index_t facet = 0;
+                        facet < region.nb_cell_facets( cur_cell ); facet++ ) {
+                        index_t adj_cell = region.cell_adjacent_index( cur_cell,
+                            facet );
                         if( adj_cell != NO_ID
                             && component[adj_cell] == NO_COMPONENT ) {
                             S.push( adj_cell );
@@ -151,9 +146,6 @@ namespace {
                 nb_components++;
             }
         }
-#ifndef RINGMESH_DEBUG
-        component.destroy();
-#endif
         return nb_components;
     }
 

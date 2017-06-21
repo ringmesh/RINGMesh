@@ -404,10 +404,20 @@ namespace {
         save_mesh_locating_geomodel_inconsistencies( point_mesh, file );
     }
 
+    template< index_t DIMENSION >
     std::map< MeshEntityType, std::vector< index_t > > get_entities(
-        const std::vector< GMEVertex >& bmes )
+        const GeoModel< DIMENSION >& geomodel,
+        index_t i )
     {
         std::map< MeshEntityType, std::vector< index_t > > entities;
+        const std::vector< MeshEntityType >& types =
+            geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
+        for( const MeshEntityType& type : types ) {
+            entities[type];
+        }
+
+        const std::vector< GMEVertex >& bmes = geomodel.mesh.vertices.gme_vertices(
+            i );
         for( const GMEVertex& vertex : bmes ) {
             const MeshEntityType& T = vertex.gmme.type();
             index_t id = vertex.gmme.index();
@@ -614,7 +624,7 @@ namespace {
     {
         // Get the mesh entities in which this vertex is
         std::map< MeshEntityType, std::vector< index_t > > entities = get_entities(
-            geomodel.mesh.vertices.gme_vertices( i ) );
+            geomodel, i );
 
         if( !is_geomodel_vertex_valid_base( geomodel, entities ) ) {
             return false;
@@ -631,7 +641,7 @@ namespace {
     {
         // Get the mesh entities in which this vertex is
         std::map< MeshEntityType, std::vector< index_t > > entities = get_entities(
-            geomodel.mesh.vertices.gme_vertices( i ) );
+            geomodel, i );
 
         return is_geomodel_vertex_valid_base( geomodel, entities );
     }
