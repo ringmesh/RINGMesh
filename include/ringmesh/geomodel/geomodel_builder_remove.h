@@ -379,7 +379,7 @@ namespace RINGMesh {
 
         index_t boundary_type_index( const MeshEntityType& type ) const
         {
-            const MeshEntityType& b_type = boundary_type( type );
+            const MeshEntityType& b_type = boundary_entity_type( type );
             if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
                 b_type ) ) {
                 return NO_ID;
@@ -388,11 +388,11 @@ namespace RINGMesh {
             }
         }
 
-        const MeshEntityType& boundary_type( const MeshEntityType& type ) const
+        const MeshEntityType& boundary_entity_type( const MeshEntityType& type ) const
         {
             const MeshEntityTypeManager< DIMENSION >& family =
                 geomodel_.entity_type_manager().mesh_entity_manager;
-            return family.boundary_type( type );
+            return family.boundary_entity_type( type );
         }
 
         /// TODO unused function. To handle during removal refactoring BC.
@@ -494,7 +494,7 @@ namespace RINGMesh {
 
         void delete_invalid_boundaries( GeoModelMeshEntity< DIMENSION >& E )
         {
-            const MeshEntityType& b_type = boundary_type( E.mesh_entity_type() );
+            const MeshEntityType& b_type = boundary_entity_type( E.mesh_entity_type() );
             gmme_id invalid( b_type, NO_ID );
             if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
                 b_type ) ) {
@@ -636,7 +636,7 @@ namespace RINGMesh {
 
         void update_region_boundary_signs( Region< 3 >& R )
         {
-            const MeshEntityType& surface_type = boundary_type(
+            const MeshEntityType& surface_type = boundary_entity_type(
                 R.mesh_entity_type() );
             gmme_id invalid_value( surface_type, NO_ID );
 

@@ -353,7 +353,7 @@ namespace RINGMesh {
         const MeshEntityTypeManager< DIMENSION >& family =
             this->geomodel().entity_type_manager().mesh_entity_manager;
         const MeshEntityType entity_type = type_name();
-        const MeshEntityType& boundary_type = family.boundary_type( entity_type );
+        const MeshEntityType& boundary_type = family.boundary_entity_type( entity_type );
 
         bool valid = true;
         gmme_id id = gmme();
