@@ -416,12 +416,197 @@ namespace {
         return entities;
     }
 
+    void print_error(
+        const std::vector< index_t >& entities,
+        const std::string& entity_name )
+    {
+        std::ostringstream oss;
+        oss << " Vertex is in " << entities.size() << " " << entity_name << ": ";
+        for( index_t entity : entities ) {
+            oss << entity << " ; ";
+        }
+        Logger::warn( "GeoModel", oss.str() );
+    }
+
+    template< template< index_t > class ENTITY, index_t DIMENSION >
+    bool is_vertex_valid(
+        const GeoModel< DIMENSION >& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities )
+    {
+        MeshEntityType type = ENTITY< DIMENSION >::type_name_static();
+        MeshEntityType incident_type =
+            geomodel.entity_type_manager().mesh_entity_manager.incident_entity_type(
+                type );
+        const std::vector< index_t >& type_entities = entities.find( type )->second;
+        if( entities.find( incident_type )->second.empty() ) {
+            if( type_entities.size() != 1 ) {
+                print_error( type_entities,
+                    static_cast< std::string >( type ) + "s" );
+                Logger::warn( "GeoModel", "It should be in only one ",
+                    incident_type );
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if( type_entities.empty() ) {
+                Logger::warn( "GeoModel", " Vertex is in a Line but in no ", type );
+                return false;
+            } else {
+                const std::vector< index_t >& incident_entities = entities.find(
+                    incident_type )->second;
+                // Check that one point is no more than twice in a SURFACE
+                for( index_t entity : type_entities ) {
+                    index_t nb = static_cast< index_t >( std::count(
+                        type_entities.begin(), type_entities.end(), entity ) );
+                    if( nb > 2 ) {
+                        Logger::warn( "GeoModel", " Vertex is ", nb, " times in ",
+                            geomodel.mesh_entity( type, entity ).gmme() );
+                        return false;
+                    } else if( nb == 2 ) {
+                        // If a point is twice in a SURFACE, it must be
+                        // on an internal boundary Line.
+                        bool internal_boundary = false;
+                        for( index_t line : incident_entities ) {
+                            if( geomodel.mesh_entity( incident_type, line ).is_inside_border(
+                                geomodel.mesh_entity( type, entity ) ) ) {
+                                internal_boundary = true;
+                                break;
+                            }
+                        }
+                        if( !internal_boundary ) {
+                            Logger::warn( "GeoModel", " Vertex appears ", nb,
+                                " times in ",
+                                geomodel.mesh_entity( type, entity ).gmme() );
+                            return false;
+                        }
+                    }
+                }
+                // Check that all the surfaces are in incident_entity of all the lines
+                for( index_t entity : type_entities ) {
+                    gmme_id entity_id( type, entity );
+                    for( index_t incident : incident_entities ) {
+                        gmme_id incident_id( incident_type, incident );
+                        if( !is_in_incident_entity( geomodel, entity_id,
+                            incident_id ) ) {
+                            Logger::warn( "GeoModel", " Inconsistent ",
+                                incident_type, "-", type, " connectivity ",
+                                " Vertex shows that ", entity_id,
+                                " must be in the boundary of ", incident_id );
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
+    template< index_t DIMENSION >
+    bool is_region_vertex_valid(
+        const GeoModel< DIMENSION >& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities )
+    {
+        return is_vertex_valid< Region >( geomodel, entities );
+    }
+
+    template< index_t DIMENSION >
+    bool is_surface_vertex_valid(
+        const GeoModel< DIMENSION >& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities )
+    {
+        return is_vertex_valid< Surface >( geomodel, entities );
+    }
+
+    template< index_t DIMENSION >
+    bool is_line_vertex_valid(
+        const GeoModel< DIMENSION >& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities )
+    {
+        const std::vector< index_t >& lines = entities.find(
+            Line< DIMENSION >::type_name_static() )->second;
+        if( entities.find( Corner< DIMENSION >::type_name_static() )->second.empty() ) {
+            if( lines.size() != 1 ) {
+                print_error( lines, "Lines" );
+                Logger::warn( "GeoModel", "It should be in only one Line" );
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if( lines.size() < 2 ) {
+                print_error( lines, "Lines" );
+                Logger::warn( "GeoModel", "It should be in at least 2 Lines" );
+                return false;
+            } else {
+                for( index_t line : lines ) {
+                    index_t nb = static_cast< index_t >( std::count( lines.begin(),
+                        lines.end(), line ) );
+                    if( nb == 2 ) {
+                        if( !geomodel.line( line ).is_closed() ) {
+                            Logger::warn( "GeoModel", " Vertex"
+                                " is twice in Line ", line );
+                            return false;
+                        }
+                    } else if( nb > 2 ) {
+                        Logger::warn( "GeoModel", " Vertex appears ", nb,
+                            " times in Line ", line );
+                        return false;
+                    }
+                }
+                // Check that all the lines are in incident_entity of this corner
+                gmme_id corner_id( Corner< DIMENSION >::type_name_static(),
+                    entities.find( Corner< DIMENSION >::type_name_static() )->second.front() );
+                for( index_t line : lines ) {
+                    gmme_id line_id( Line< DIMENSION >::type_name_static(), line );
+                    if( !is_in_incident_entity( geomodel, line_id, corner_id ) ) {
+                        Logger::warn( "GeoModel",
+                            " Inconsistent Line-Corner connectivity ",
+                            " vertex shows that ", line_id,
+                            " must be in the boundary of ", corner_id );
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+    }
+
+    template< index_t DIMENSION >
+    bool is_corner_valid(
+        const std::map< MeshEntityType, std::vector< index_t > >& entities )
+    {
+        const std::vector< index_t >& corners = entities.find(
+            Corner< DIMENSION >::type_name_static() )->second;
+        if( corners.size() > 1 ) {
+            print_error( corners, "Corners" );
+            Logger::warn( "GeoModel", "It should be in only one Corner" );
+            return false;
+        }
+        return true;
+    }
+
     template< index_t DIMENSION >
     bool is_geomodel_vertex_valid( const GeoModel< DIMENSION >& geomodel, index_t i )
     {
         // Get the mesh entities in which this vertex is
         std::map< MeshEntityType, std::vector< index_t > > entities = get_entities(
             geomodel.mesh.vertices.gme_vertices( i ) );
+
+        if( !is_corner_valid< DIMENSION >( entities ) ) {
+            return false;
+        }
+        if( !is_line_vertex_valid< DIMENSION >( geomodel, entities ) ) {
+            return false;
+        }
+        if( !is_surface_vertex_valid< DIMENSION >( geomodel, entities ) ) {
+            return false;
+        }
+        if( !is_region_vertex_valid< DIMENSION >( geomodel, entities ) ) {
+            return false;
+        }
+
+        return true;
     }
 
     /*!
@@ -442,193 +627,9 @@ namespace {
         std::vector< bool > valid( geomodel.mesh.vertices.nb(), true );
         for( index_t i = 0; i < geomodel.mesh.vertices.nb(); ++i ) {
             valid[i] = is_geomodel_vertex_valid( geomodel, i );
-            bool valid_vertex = true;
-
-            // Get the mesh entities in which this vertex is            
-            std::map< MeshEntityType, std::vector< index_t > > entities =
-                get_entities( geomodel.mesh.vertices.gme_vertices( i ) );
-
-            index_t corner = NO_ID;
-            std::vector< index_t > lines;
-            std::vector< index_t > surfaces;
-            std::vector< index_t > regions;
-
-            const std::vector< GMEVertex >& bmes =
-                geomodel.mesh.vertices.gme_vertices( i );
-
-            for( const GMEVertex& vertex : bmes ) {
-                const MeshEntityType& T = vertex.gmme.type();
-                index_t id = vertex.gmme.index();
-                entities[T].push_back( id );
-                if( T == Region< DIMENSION >::type_name_static() ) {
-                    regions.push_back( id );
-                } else if( T == Surface< DIMENSION >::type_name_static() ) {
-                    surfaces.push_back( id );
-                } else if( T == Line< DIMENSION >::type_name_static() ) {
-                    lines.push_back( id );
-                } else if( T == Corner< DIMENSION >::type_name_static() ) {
-                    if( corner != NO_ID ) {
-                        Logger::warn( "GeoModel", " Vertex ", i,
-                            " is in at least 2 Corners" );
-                        valid_vertex = false;
-                    } else {
-                        corner = id;
-                    }
-                } else {
-                    Logger::warn( "GeoModel", " Vertex ", i,
-                        " is in no Entity of the Model" );
-                    valid_vertex = false;
-                    break;
-                }
+            if( !valid[i] ) {
+                Logger::warn( "GeoModel", " Vertex ", i, " is not valid" );
             }
-
-            if( valid_vertex ) {
-                if( surfaces.empty() ) {
-                    if( regions.size() != 1 ) {
-                        std::ostringstream oss;
-                        oss << " Vertex " << i << " is in " << regions.size()
-                            << " Regions: ";
-                        for( index_t region : regions ) {
-                            oss << region << " ; ";
-                        }
-                        Logger::warn( "GeoModel", oss.str() );
-                        valid_vertex = false;
-                    } /// @todo Implement the other conditions for Region point validity
-                } else if( corner == NO_ID && lines.empty() ) {
-                    // This is a point on one SURFACE and only one
-                    if( surfaces.size() != 1 ) {
-                        std::ostringstream oss;
-                        oss << " Vertex " << i << " is in " << surfaces.size()
-                            << " Surfaces: ";
-                        for( index_t surface : surfaces ) {
-                            oss << surface << " ; ";
-                        }
-                        Logger::warn( "GeoModel", oss.str() );
-                        valid_vertex = false;
-                    }
-                } else if( corner == NO_ID && !lines.empty() ) {
-                    // This is a point on one LINE 
-                    if( lines.size() != 1 ) {
-                        std::ostringstream oss;
-                        oss << " Vertex " << i << " is in " << lines.size()
-                            << " Lines ";
-                        for( index_t line : lines ) {
-                            oss << line << " ; ";
-                        }
-                        Logger::warn( "GeoModel", oss.str() );
-                        valid_vertex = false;
-                    } else {
-                        // This point must also be in at least one SURFACE
-                        if( surfaces.empty() ) {
-                            Logger::warn( "GeoModel", " Vertex ", i,
-                                " is in a Line but in no Surface " );
-                            valid_vertex = false;
-                        }
-                        // Check that one point is no more than twice in a SURFACE
-                        for( index_t surface : surfaces ) {
-                            index_t nb = static_cast< index_t >( std::count(
-                                surfaces.begin(), surfaces.end(), surface ) );
-                            if( nb > 2 ) {
-                                Logger::warn( "GeoModel", " Vertex ", i, " is ", nb,
-                                    " times in Surface ",
-                                    geomodel.surface( surface ).gmme() );
-                                valid_vertex = false;
-                            } else if( nb == 2 ) {
-                                // If a point is twice in a SURFACE, it must be
-                                // on an internal boundary Line.
-                                bool internal_boundary = false;
-                                for( index_t line : lines ) {
-                                    if( geomodel.line( line ).is_inside_border(
-                                        geomodel.surface( surface ) ) ) {
-                                        internal_boundary = true;
-                                        break;
-                                    }
-                                }
-                                if( !internal_boundary ) {
-                                    Logger::warn( "GeoModel", " Vertex ", i,
-                                        " appears ", nb, " times in Surface ",
-                                        geomodel.surface( surface ).gmme() );
-                                    valid_vertex = false;
-                                }
-                            }
-                        }
-                        // Check that all the surfaces are in incident_entity of all
-                        // the lines 
-                        for( index_t surface : surfaces ) {
-                            for( index_t line : lines ) {
-                                gmme_id s_id(
-                                    Surface< DIMENSION >::type_name_static(),
-                                    surface );
-                                gmme_id l_id( Line< DIMENSION >::type_name_static(),
-                                    line );
-                                if( !is_in_incident_entity( geomodel, s_id,
-                                    l_id ) ) {
-                                    Logger::warn( "GeoModel",
-                                        " Inconsistent Line-Surface connectivity ",
-                                        " Vertex ", i, " shows that ", s_id,
-                                        " must be in the boundary of ", l_id );
-                                    valid_vertex = false;
-                                }
-                            }
-                        }
-                    }
-                } else if( corner != NO_ID ) {
-                    // This is one point at a CORNER
-                    // It must be in at least one LINE
-                    if( lines.empty() ) {
-                        Logger::warn( "GeoModel", " Vertex ", i,
-                            " is at a Corner but in no Line " );
-                        valid_vertex = false;
-                    } else {
-                        if( lines.size() < 2 ) {
-                            Logger::warn( "GeoModel", " Vertex ", i,
-                                " is in at a Corner but in one Line only: ",
-                                lines.front() );
-                            valid_vertex = false;
-                        }
-                        // Check that a point is no more than twice in a LINE
-                        for( index_t line : lines ) {
-                            index_t nb = static_cast< index_t >( std::count(
-                                lines.begin(), lines.end(), line ) );
-                            if( nb == 2 ) {
-                                // The line must be closed
-                                if( !geomodel.line( line ).is_closed() ) {
-                                    Logger::warn( "GeoModel", " Vertex ", i,
-                                        " is twice in Line ", line );
-                                    valid_vertex = false;
-                                }
-                            }
-                            if( nb > 2 ) {
-                                Logger::warn( "GeoModel", " Vertex ", i, " appears ",
-                                    nb, " times in Line ", line );
-                                valid_vertex = false;
-                                break;
-                            }
-                        }
-                        // Check that all the lines are in incident_entity of this corner
-                        for( index_t line : lines ) {
-                            gmme_id l_id( Line< DIMENSION >::type_name_static(),
-                                line );
-                            gmme_id c_id( Corner< DIMENSION >::type_name_static(),
-                                corner );
-                            if( !is_in_incident_entity( geomodel, l_id, c_id ) ) {
-                                Logger::warn( "GeoModel",
-                                    " Inconsistent Line-Corner connectivity ",
-                                    " vertex ", i, " shows that ", l_id,
-                                    " must be in the boundary of ", c_id );
-                                valid_vertex = false;
-                            }
-                        }
-                    }
-                    // It must also be in a least one surface ? perhaps 2
-                    if( surfaces.empty() ) {
-                        Logger::warn( "GeoModel", " Vertex ", i,
-                            " is at a Corner but in no Surface " );
-                        valid_vertex = false;
-                    }
-                }
-            }
-            valid[i] = valid_vertex;
         }
         index_t nb_invalid = static_cast< index_t >( std::count( valid.begin(),
             valid.end(), false ) );
