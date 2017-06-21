@@ -75,7 +75,7 @@ namespace {
                                                               &prism_descriptor,
                                                               &pyramid_descriptor };
 
-    class CSMPIOHandler final: public GeoModelIOHandler {
+    class CSMPIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         CSMPIOHandler()
         {

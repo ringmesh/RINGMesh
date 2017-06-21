@@ -88,7 +88,7 @@ namespace {
      * http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format
      * NB : Mesh entities are also exported
      */
-    class MSHIOHandler final: public GeoModelIOHandler {
+    class MSHIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {

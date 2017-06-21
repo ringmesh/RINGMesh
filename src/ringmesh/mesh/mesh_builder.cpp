@@ -260,4 +260,4 @@ namespace RINGMesh {
     template std::unique_ptr< VolumeMeshBuilder< 3 > > RINGMESH_API VolumeMeshBuilder<
         3 >::create_builder( VolumeMesh< 3 >& );
 
-} // namespace
+}
