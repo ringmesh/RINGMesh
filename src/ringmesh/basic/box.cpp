@@ -69,7 +69,7 @@ namespace RINGMesh {
     {
         bool inside = true;
         double result = 0.0;
-        for( index_t c = 0; c < 3; c++ ) {
+        for( index_t c = 0; c < DIMENSION; c++ ) {
             if( p[c] < min()[c] ) {
                 inside = false;
                 result += sqr( p[c] - min()[c] );
@@ -81,7 +81,7 @@ namespace RINGMesh {
         if( inside ) {
             result = sqr( p[0] - min()[0] );
             result = std::min( result, sqr( p[0] - max()[0] ) );
-            for( index_t c = 1; c < 3; ++c ) {
+            for( index_t c = 1; c < DIMENSION; ++c ) {
                 result = std::min( result, sqr( p[c] - min()[c] ) );
                 result = std::min( result, sqr( p[c] - max()[c] ) );
             }
@@ -94,7 +94,7 @@ namespace RINGMesh {
     double Box< DIMENSION >::distance_to_center( const vecn< DIMENSION >& p ) const
     {
         double result = 0.0;
-        for( index_t c = 0; c < 3; ++c ) {
+        for( index_t c = 0; c < DIMENSION; ++c ) {
             double d = p[c] - 0.5 * ( min()[c] + max()[c] );
             result += sqr( d );
         }

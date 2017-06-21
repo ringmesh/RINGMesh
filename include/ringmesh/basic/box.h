@@ -84,7 +84,7 @@ namespace RINGMesh {
 
         void add_point( const vecn< DIMENSION >& p );
 
-        void add_box( const Box& b )
+        void add_box( const Box< DIMENSION >& b )
         {
             if( b.initialized() ) {
                 add_point( b.min() );
@@ -92,9 +92,9 @@ namespace RINGMesh {
             }
         }
 
-        inline bool bboxes_overlap( const Box& B ) const
+        inline bool bboxes_overlap( const Box< DIMENSION >& B ) const
         {
-            for( index_t c = 0; c < 3; ++c ) {
+            for( index_t c = 0; c < DIMENSION; ++c ) {
                 if( max()[c] < B.min()[c] ) {
                     return false;
                 }
@@ -105,9 +105,9 @@ namespace RINGMesh {
             return true;
         }
 
-        inline Box bbox_union( const Box& B ) const
+        inline Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const
         {
-            Box result = *this;
+            Box< DIMENSION > result = *this;
             result.add_box( B );
             return result;
         }
