@@ -100,6 +100,8 @@ namespace RINGMesh {
         handler->save( geomodel, filename );
     }
 
+    /************************************************************************/
+
     template bool RINGMESH_API geomodel_load(
         GeoModel< 2 >& geomodel,
         const std::string& filename );
@@ -114,7 +116,11 @@ namespace RINGMesh {
         const GeoModel< 3 >& geomodel,
         const std::string& filename );
 
-    /************************************************************************/
+    template< >
+    void GeoModelIOHandler< 2 >::initialize_full_geomodel_output()
+    {
+        ringmesh_register_GeoModelIOHandler2D_creator( GeoModelHandlerGM< 2 >, "gm" );
+    }
 
     /*
      * Initializes the possible handler for IO files
@@ -134,12 +140,6 @@ namespace RINGMesh {
         ringmesh_register_GeoModelIOHandler3D_creator( AbaqusIOHandler, "inp" );
         ringmesh_register_GeoModelIOHandler3D_creator( AdeliIOHandler, "adeli" );
         ringmesh_register_GeoModelIOHandler3D_creator( FeflowIOHandler, "fem" );
-    }
-
-    template< >
-    void GeoModelIOHandler< 2 >::initialize_full_geomodel_output()
-    {
-        ringmesh_register_GeoModelIOHandler2D_creator( GeoModelHandlerGM< 2 >, "gm" );
     }
 
 }

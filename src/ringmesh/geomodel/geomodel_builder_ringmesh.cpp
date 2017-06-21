@@ -110,10 +110,6 @@ namespace RINGMesh {
                 file_line.field_as_uint( 1 ) );
             this->builder_.info.set_mesh_entity_name( cur_gmme,
                 file_line.field( 2 ) );
-//            GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE not_used =
-//                GeoModelGeologicalEntity< DIMENSION >::determine_geological_type(
-//                    file_line.field( 3 ) );
-//            ringmesh_unused( not_used );
             return cur_gmme;
         }
         void read_second_line( GEO::LineInput& file_line, const gmme_id& entity );
@@ -164,7 +160,7 @@ namespace RINGMesh {
         if( manager.is_surface( entity.type() ) ) {
             add_relation_for_entities_with_sides< Line >( entity, file_line );
         } else {
-            add_relation_for_entities_with_no_side(entity,file_line) ;
+            add_relation_for_entities_with_no_side( entity, file_line );
         }
     }
 
@@ -180,7 +176,7 @@ namespace RINGMesh {
         if( manager.is_region( entity.type() ) ) {
             add_relation_for_entities_with_sides< Surface >( entity, file_line );
         } else {
-            add_relation_for_entities_with_no_side(entity,file_line) ;
+            add_relation_for_entities_with_no_side( entity, file_line );
         }
     }
 
@@ -406,27 +402,40 @@ namespace RINGMesh {
         }
     }
 
+    template< index_t DIMENSION >
+    bool GeoModelBuilderGM< DIMENSION >::load_mesh_entity_base(
+        const std::string& entity_type,
+        const std::string& file_name,
+        index_t id )
+    {
+        const MeshEntityTypeManager< DIMENSION >& manager =
+            this->geomodel_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_corner( entity_type ) ) {
+            std::unique_ptr< PointSetMeshBuilder< DIMENSION > > builder =
+                this->geometry.create_corner_builder( id );
+            builder->load_mesh( file_name );
+            return true;
+        } else if( manager.is_line( entity_type ) ) {
+            std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
+                this->geometry.create_line_builder( id );
+            builder->load_mesh( file_name );
+            return true;
+        } else if( manager.is_surface( entity_type ) ) {
+            std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+                this->geometry.create_surface_builder( id );
+            builder->load_mesh( file_name );
+            return true;
+        }
+        return false;
+    }
+
     template< >
     void GeoModelBuilderGM< 2 >::load_mesh_entity(
         const std::string& entity_type,
         const std::string& file_name,
         index_t id )
     {
-        const MeshEntityTypeManager< 2 >& manager =
-            this->geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_corner( entity_type ) ) {
-            std::unique_ptr< PointSetMeshBuilder< 2 > > builder =
-                this->geometry.create_corner_builder( id );
-            builder->load_mesh( file_name );
-        } else if( manager.is_line( entity_type ) ) {
-            std::unique_ptr< LineMeshBuilder< 2 > > builder =
-                this->geometry.create_line_builder( id );
-            builder->load_mesh( file_name );
-        } else if( manager.is_surface( entity_type ) ) {
-            std::unique_ptr< SurfaceMeshBuilder< 2 > > builder =
-                this->geometry.create_surface_builder( id );
-            builder->load_mesh( file_name );
-        }
+        load_mesh_entity_base( entity_type, file_name, id );
     }
 
     template< >
@@ -435,24 +444,14 @@ namespace RINGMesh {
         const std::string& file_name,
         index_t id )
     {
-        const MeshEntityTypeManager< 3 >& manager =
-            this->geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_corner( entity_type ) ) {
-            std::unique_ptr< PointSetMeshBuilder< 3 > > builder =
-                this->geometry.create_corner_builder( id );
-            builder->load_mesh( file_name );
-        } else if( manager.is_line( entity_type ) ) {
-            std::unique_ptr< LineMeshBuilder< 3 > > builder =
-                this->geometry.create_line_builder( id );
-            builder->load_mesh( file_name );
-        } else if( manager.is_surface( entity_type ) ) {
-            std::unique_ptr< SurfaceMeshBuilder< 3 > > builder =
-                this->geometry.create_surface_builder( id );
-            builder->load_mesh( file_name );
-        } else if( manager.is_region( entity_type ) ) {
-            std::unique_ptr< VolumeMeshBuilder< 3 > > builder =
-                geometry.create_region_builder( id );
-            builder->load_mesh( file_name );
+        if( !load_mesh_entity_base( entity_type, file_name, id ) ) {
+            const MeshEntityTypeManager< 3 >& manager =
+                this->geomodel_.entity_type_manager().mesh_entity_manager;
+            if( manager.is_region( entity_type ) ) {
+                std::unique_ptr< VolumeMeshBuilder< 3 > > builder =
+                    geometry.create_region_builder( id );
+                builder->load_mesh( file_name );
+            }
         }
     }
 

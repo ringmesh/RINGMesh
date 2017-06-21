@@ -160,7 +160,7 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         std::ofstream& out );
 
-    template< index_t DIMENSION, template< index_t > class ENTITY >
+    template< template< index_t > class ENTITY, index_t DIMENSION >
     void save_mesh_entities_topology_and_sides_impl(
         const GeoModel< DIMENSION >& geomodel,
         std::ofstream& out )
@@ -192,7 +192,7 @@ namespace {
         const GeoModel< 2 >& geomodel,
         std::ofstream& out )
     {
-        save_mesh_entities_topology_and_sides_impl< 2, Surface >( geomodel, out );
+        save_mesh_entities_topology_and_sides_impl< Surface >( geomodel, out );
     }
 
     template< >
@@ -200,7 +200,7 @@ namespace {
         const GeoModel< 3 >& geomodel,
         std::ofstream& out )
     {
-        save_mesh_entities_topology_and_sides_impl< 3, Region >( geomodel, out );
+        save_mesh_entities_topology_and_sides_impl< Region >( geomodel, out );
 
     }
 
