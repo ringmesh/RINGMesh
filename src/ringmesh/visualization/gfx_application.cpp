@@ -603,19 +603,16 @@ namespace RINGMesh {
         ImGui::Separator();
         ImGui::Checkbox( "Attributes", &show_attributes_ );
         if( show_attributes_ ) {
-            if( ImGui::Button(
-                GM_gfx_.attribute.location_name( GM_gfx_.attribute.location() ).c_str(),
+            if( ImGui::Button( GM_gfx_.attribute.location_name().c_str(),
                 ImVec2( -1, 0 ) ) ) {
                 ImGui::OpenPopup( "##Locations" );
             }
             if( ImGui::BeginPopup( "##Locations" ) ) {
-                for( index_t i = 0;
-                    i < AttributeGfxManager< DIMENSION >::nb_locations; i++ ) {
-                    typename AttributeGfxManager< DIMENSION >::Attribute_location l =
-                        static_cast< typename AttributeGfxManager< DIMENSION >::Attribute_location >( i );
-                    if( ImGui::Button(
-                        GM_gfx_.attribute.location_name( l ).c_str() ) ) {
-                        GM_gfx_.attribute.set_location( l );
+                std::vector< std::string > locations =
+                    GM_gfx_.attribute.registered_locations();
+                for( const std::string& location : locations ) {
+                    if( ImGui::Button( location.c_str() ) ) {
+                        GM_gfx_.attribute.set_location( location );
                         reset_attribute_name();
                         ImGui::CloseCurrentPopup();
                     }
@@ -628,29 +625,22 @@ namespace RINGMesh {
                 ImGui::OpenPopup( "##Attributes" );
             }
             if( ImGui::BeginPopup( "##Attributes" ) ) {
-                switch( GM_gfx_.attribute.location() ) {
-                    case AttributeGfxManager< DIMENSION >::polygons:
-                        set_attribute_names(
-                            GM_.surface( 0 ).polygon_attribute_manager() );
-                        break;
-                    case AttributeGfxManager< DIMENSION >::polygon_vertices:
-                        set_attribute_names(
-                            GM_.surface( 0 ).vertex_attribute_manager() );
-                        break;
-                    case AttributeGfxManager< DIMENSION >::cells:
-                        set_attribute_names(
-                            GM_.region( 0 ).cell_attribute_manager() );
-                        break;
-                    case AttributeGfxManager< DIMENSION >::cell_vertices:
-                        set_attribute_names(
-                            GM_.region( 0 ).vertex_attribute_manager() );
-                        break;
-                    default:
-                        break;
+                std::string location = GM_gfx_.attribute.location_name();
+                if( location == "polygons" ) {
+                    set_attribute_names(
+                        GM_.surface( 0 ).polygon_attribute_manager() );
+                } else if( location == "polygon_vertices" ) {
+                    set_attribute_names(
+                        GM_.surface( 0 ).vertex_attribute_manager() );
+                } else if( location == "cells" ) {
+                    set_attribute_names( GM_.region( 0 ).cell_attribute_manager() );
+                } else if( location == "cell_vertices" ) {
+                    set_attribute_names(
+                        GM_.region( 0 ).vertex_attribute_manager() );
                 }
                 ImGui::EndPopup();
             }
-            if( GM_gfx_.attribute.location() != AttributeGfxManager< DIMENSION >::nb_locations
+            if( GM_gfx_.attribute.location_name() != "location"
                 && GM_gfx_.attribute.nb_coordinates() > 1 ) {
                 if( ImGui::Button(
                     GEO::String::to_string( GM_gfx_.attribute.coordinate() ).c_str(),
