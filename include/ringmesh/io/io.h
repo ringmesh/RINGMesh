@@ -82,7 +82,7 @@ namespace RINGMesh {
      * @param[in] filename the file to load
      */
     template< index_t DIMENSION >
-    bool RINGMESH_API geomodel_load(
+    bool geomodel_load(
         GeoModel< DIMENSION >& geomodel,
         const std::string& filename );
     /*!
@@ -91,7 +91,7 @@ namespace RINGMesh {
      * @param[in] filename the file to save
      */
     template< index_t DIMENSION >
-    void RINGMESH_API geomodel_save(
+    void geomodel_save(
         const GeoModel< DIMENSION >& geomodel,
         const std::string& filename );
     /*!
@@ -104,7 +104,7 @@ namespace RINGMesh {
         WellGroup< 3 >& wells );
 
     template< index_t DIMENSION >
-    class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
+    class GeoModelIOHandler: public GEO::Counted {
     public:
         static void initialize_full_geomodel_output();
 
