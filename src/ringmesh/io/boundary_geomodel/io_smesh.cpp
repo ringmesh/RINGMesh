@@ -39,7 +39,7 @@ namespace {
      * @brief Save the geomodel in smesh format
      * @details No attributes and no boundary marker are transferred
      */
-    class SMESHIOHandler final: public GeoModelIOHandler {
+    class SMESHIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {

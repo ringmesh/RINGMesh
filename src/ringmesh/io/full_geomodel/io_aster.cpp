@@ -64,7 +64,7 @@ namespace {
      * @warning It supposes you have the mesh duplicate around the
      * faults if you want to use friction laws in aster
      */
-    class AsterIOHandler final: public GeoModelIOHandler {
+    class AsterIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
