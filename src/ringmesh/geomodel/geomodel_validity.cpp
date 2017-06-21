@@ -587,12 +587,10 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    bool is_geomodel_vertex_valid( const GeoModel< DIMENSION >& geomodel, index_t i )
+    bool is_geomodel_vertex_valid_base(
+        const GeoModel< DIMENSION >& geomodel,
+        std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
-        // Get the mesh entities in which this vertex is
-        std::map< MeshEntityType, std::vector< index_t > > entities = get_entities(
-            geomodel.mesh.vertices.gme_vertices( i ) );
-
         if( !is_corner_valid< DIMENSION >( entities ) ) {
             return false;
         }
@@ -602,11 +600,40 @@ namespace {
         if( !is_surface_vertex_valid< DIMENSION >( geomodel, entities ) ) {
             return false;
         }
-        if( !is_region_vertex_valid< DIMENSION >( geomodel, entities ) ) {
+
+        return true;
+    }
+
+    template< index_t DIMENSION >
+    bool is_geomodel_vertex_valid(
+        const GeoModel< DIMENSION >& geomodel,
+        index_t i );
+
+    template< >
+    bool is_geomodel_vertex_valid( const GeoModel< 3 >& geomodel, index_t i )
+    {
+        // Get the mesh entities in which this vertex is
+        std::map< MeshEntityType, std::vector< index_t > > entities = get_entities(
+            geomodel.mesh.vertices.gme_vertices( i ) );
+
+        if( !is_geomodel_vertex_valid_base( geomodel, entities ) ) {
+            return false;
+        }
+        if( !is_region_vertex_valid< 3 >( geomodel, entities ) ) {
             return false;
         }
 
         return true;
+    }
+
+    template< >
+    bool is_geomodel_vertex_valid( const GeoModel< 2 >& geomodel, index_t i )
+    {
+        // Get the mesh entities in which this vertex is
+        std::map< MeshEntityType, std::vector< index_t > > entities = get_entities(
+            geomodel.mesh.vertices.gme_vertices( i ) );
+
+        return is_geomodel_vertex_valid_base( geomodel, entities );
     }
 
     /*!
