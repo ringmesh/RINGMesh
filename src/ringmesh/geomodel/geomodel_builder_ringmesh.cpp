@@ -118,7 +118,38 @@ namespace RINGMesh {
         }
         void read_second_line( GEO::LineInput& file_line, const gmme_id& entity );
     private:
+        template< template< index_t > class ENTITY >
+        void add_relation_for_entities_with_sides(
+            const gmme_id& entity,
+            GEO::LineInput& file_line )
+        {
+            for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
+                bool side = false;
+                if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
+                    side = true;
+                }
+                index_t s = NO_ID;
+                GEO::String::from_string( &file_line.field( c )[1], s );
 
+                this->builder_.topology.add_mesh_entity_boundary_relation( entity,
+                    gmme_id( ENTITY< DIMENSION >::type_name_static(), s ), side );
+            }
+        }
+
+        void add_relation_for_entities_with_no_side(
+            const gmme_id& entity,
+            GEO::LineInput& file_line )
+        {
+            const MeshEntityTypeManager< DIMENSION >& manager =
+                this->geomodel_.entity_type_manager().mesh_entity_manager;
+            MeshEntityType type = manager.boundary_entity_type( entity.type() );
+            // Second line : indices of boundaries
+            for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
+                gmme_id boundary( type, file_line.field_as_uint( c ) );
+                this->builder_.topology.add_mesh_entity_boundary_relation( entity,
+                    boundary );
+            }
+        }
     };
 
     template< >
@@ -131,26 +162,9 @@ namespace RINGMesh {
         const MeshEntityTypeManager< 2 >& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_surface( entity.type() ) ) {
-            // Second line : signed indices of boundaries
-            for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
-                bool side = false;
-                if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
-                    side = true;
-                }
-                index_t s = NO_ID;
-                GEO::String::from_string( &file_line.field( c )[1], s );
-
-                this->builder_.topology.add_mesh_entity_boundary_relation( entity,
-                    gmme_id( Surface< 2 >::type_name_static(), s ), side );
-            }
+            add_relation_for_entities_with_sides< Line >( entity, file_line );
         } else {
-            MeshEntityType type = manager.boundary_type( entity.type() );
-            // Second line : indices of boundaries
-            for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
-                gmme_id boundary( type, file_line.field_as_uint( c ) );
-                this->builder_.topology.add_mesh_entity_boundary_relation( entity,
-                    boundary );
-            }
+            add_relation_for_entities_with_no_side(entity,file_line) ;
         }
     }
 
@@ -163,27 +177,10 @@ namespace RINGMesh {
         file_line.get_fields();
         const MeshEntityTypeManager< 3 >& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_surface( entity.type() ) ) {
-            // Second line : signed indices of boundaries
-            for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
-                bool side = false;
-                if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
-                    side = true;
-                }
-                index_t s = NO_ID;
-                GEO::String::from_string( &file_line.field( c )[1], s );
-
-                this->builder_.topology.add_mesh_entity_boundary_relation( entity,
-                    gmme_id( Surface< 3 >::type_name_static(), s ), side );
-            }
+        if( manager.is_region( entity.type() ) ) {
+            add_relation_for_entities_with_sides< Surface >( entity, file_line );
         } else {
-            MeshEntityType type = manager.boundary_type( entity.type() );
-            // Second line : indices of boundaries
-            for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
-                gmme_id boundary( type, file_line.field_as_uint( c ) );
-                this->builder_.topology.add_mesh_entity_boundary_relation( entity,
-                    boundary );
-            }
+            add_relation_for_entities_with_no_side(entity,file_line) ;
         }
     }
 
@@ -410,27 +407,55 @@ namespace RINGMesh {
     }
 
     template< >
-    void GeoModelBuilderGM< 3 >::load_region_if_entity_is_region(
+    void GeoModelBuilderGM< 2 >::load_mesh_entity(
         const std::string& entity_type,
-        index_t id,
         const std::string& file_name,
-        const MeshEntityTypeManager< 3 >& manager )
+        index_t id )
     {
-        if( manager.is_region( entity_type ) ) {
+        const MeshEntityTypeManager< 2 >& manager =
+            this->geomodel_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_corner( entity_type ) ) {
+            std::unique_ptr< PointSetMeshBuilder< 2 > > builder =
+                this->geometry.create_corner_builder( id );
+            builder->load_mesh( file_name );
+        } else if( manager.is_line( entity_type ) ) {
+            std::unique_ptr< LineMeshBuilder< 2 > > builder =
+                this->geometry.create_line_builder( id );
+            builder->load_mesh( file_name );
+        } else if( manager.is_surface( entity_type ) ) {
+            std::unique_ptr< SurfaceMeshBuilder< 2 > > builder =
+                this->geometry.create_surface_builder( id );
+            builder->load_mesh( file_name );
+        }
+    }
+
+    template< >
+    void GeoModelBuilderGM< 3 >::load_mesh_entity(
+        const std::string& entity_type,
+        const std::string& file_name,
+        index_t id )
+    {
+        const MeshEntityTypeManager< 3 >& manager =
+            this->geomodel_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_corner( entity_type ) ) {
+            std::unique_ptr< PointSetMeshBuilder< 3 > > builder =
+                this->geometry.create_corner_builder( id );
+            builder->load_mesh( file_name );
+        } else if( manager.is_line( entity_type ) ) {
+            std::unique_ptr< LineMeshBuilder< 3 > > builder =
+                this->geometry.create_line_builder( id );
+            builder->load_mesh( file_name );
+        } else if( manager.is_surface( entity_type ) ) {
+            std::unique_ptr< SurfaceMeshBuilder< 3 > > builder =
+                this->geometry.create_surface_builder( id );
+            builder->load_mesh( file_name );
+        } else if( manager.is_region( entity_type ) ) {
             std::unique_ptr< VolumeMeshBuilder< 3 > > builder =
                 geometry.create_region_builder( id );
             builder->load_mesh( file_name );
         }
     }
 
-    template< >
-    void GeoModelBuilderGM< 2 >::load_region_if_entity_is_region(
-        const std::string& entity_type,
-        index_t id,
-        const std::string& file_name,
-        const MeshEntityTypeManager< 2 >& manager )
-    {
-    }
     template< index_t DIMENSION >
     void GeoModelBuilderGM< DIMENSION >::load_meshes( unzFile& uz )
     {
@@ -464,22 +489,7 @@ namespace RINGMesh {
                 entity_id );
             index_t id = NO_ID;
             GEO::String::from_string( entity_id, id );
-            const MeshEntityTypeManager< DIMENSION >& manager =
-                this->geomodel_.entity_type_manager().mesh_entity_manager;
-            if( manager.is_corner( entity_type ) ) {
-                std::unique_ptr< PointSetMeshBuilder< DIMENSION > > builder =
-                    this->geometry.create_corner_builder( id );
-                builder->load_mesh( file_name );
-            } else if( manager.is_line( entity_type ) ) {
-                std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
-                    this->geometry.create_line_builder( id );
-                builder->load_mesh( file_name );
-            } else if( manager.is_surface( entity_type ) ) {
-                std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
-                    this->geometry.create_surface_builder( id );
-                builder->load_mesh( file_name );
-            }
-            load_region_if_entity_is_region( entity_type, id, file_name, manager );
+            load_mesh_entity( entity_type, file_name, id );
             GEO::FileSystem::delete_file( file_name );
         }
         Logger::instance()->set_minimal( false );
