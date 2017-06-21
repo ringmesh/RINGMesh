@@ -605,6 +605,46 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelBuilderTopology< 3 >::copy_all_mesh_entity_topology(
+        const GeoModel< 3 >& from )
+    {
+        GeoModelBuilderTopologyBase< 3 >::copy_all_mesh_entity_topology( from );
+        copy_mesh_entity_topology< Region >( from );
+    }
+
+    void GeoModelBuilderTopology< 2 >::set_mesh_entity_boundary(
+        const gmme_id& gmme,
+        index_t id,
+        index_t boundary_id,
+        bool side )
+    {
+        GeoModelBuilderTopologyBase< 2 >::set_mesh_entity_boundary( gmme, id,
+            boundary_id );
+
+        GeoModelMeshEntity< 2 >& mesh_entity =
+            geomodel_access_.modifiable_mesh_entity( gmme );
+        GeoModelMeshEntityAccess< 2 > gme_access( mesh_entity );
+        if( gmme.type() == Surface< 2 >::type_name_static() ) {
+            gme_access.modifiable_sides()[id] = side;
+        }
+    }
+
+    void GeoModelBuilderTopology< 2 >::add_mesh_entity_boundary_relation(
+        const gmme_id& incident_entity_id,
+        const gmme_id& boundary,
+        bool side )
+    {
+        GeoModelBuilderTopologyBase< 2 >::add_mesh_entity_boundary_relation(
+            incident_entity_id, boundary );
+
+        GeoModelMeshEntity< 2 >& incident_entity =
+            geomodel_access_.modifiable_mesh_entity( incident_entity_id );
+        GeoModelMeshEntityAccess< 2 > incident_entity_access( incident_entity );
+        if( incident_entity_id.type() == Surface< 2 >::type_name_static() ) {
+            incident_entity_access.modifiable_sides().push_back( side );
+        }
+    }
+
     void GeoModelBuilderTopology< 3 >::set_mesh_entity_boundary(
         const gmme_id& gmme,
         index_t id,
@@ -620,13 +660,6 @@ namespace RINGMesh {
         if( gmme.type() == Region< 3 >::type_name_static() ) {
             gme_access.modifiable_sides()[id] = side;
         }
-    }
-
-    void GeoModelBuilderTopology< 3 >::copy_all_mesh_entity_topology(
-        const GeoModel< 3 >& from )
-    {
-        GeoModelBuilderTopologyBase< 3 >::copy_all_mesh_entity_topology( from );
-        copy_mesh_entity_topology< Region >( from );
     }
 
     void GeoModelBuilderTopology< 3 >::add_mesh_entity_boundary_relation(

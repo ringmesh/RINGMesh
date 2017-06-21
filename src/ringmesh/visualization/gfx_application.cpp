@@ -1113,7 +1113,7 @@ namespace RINGMesh {
         configure_ringmesh();
 
         std::vector< std::string > ringmesh_extensions;
-        GeoModelIOHandlerFactory::list_creators( ringmesh_extensions );
+        GeoModelIOHandlerFactory< 3 >::list_creators( ringmesh_extensions );
         ringmesh_file_extensions_ = GEO::String::join_strings( ringmesh_extensions,
             ';' );
 

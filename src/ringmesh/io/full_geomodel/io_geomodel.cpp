@@ -37,13 +37,14 @@ namespace {
     /*!
      * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
      */
+    template< index_t DIMENSION >
     void save_geological_entity(
         std::ofstream& out,
-        const GeoModelGeologicalEntity< 3 >& E )
+        const GeoModelGeologicalEntity< DIMENSION >& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
         out << E.gmge() << " " << E.name() << " ";
-        out << GeoModelGeologicalEntity < 3
+        out << GeoModelGeologicalEntity < DIMENSION
             > ::geol_name( E.geological_feature() ) << std::endl;
 
         /// Second line:  IDS of children
@@ -58,8 +59,9 @@ namespace {
      * @param[in] M the GeoModel
      * @param[in] file_name path to the input file
      */
+    template< index_t DIMENSION >
     void save_geological_entities(
-        const GeoModel< 3 >& M,
+        const GeoModel< DIMENSION >& M,
         const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() );
@@ -88,8 +90,10 @@ namespace {
         }
     }
 
-    template< typename ENTITY >
-    void save_mesh_entities_of_type( const GeoModel< 3 >& M, std::ofstream& out )
+    template< typename ENTITY, index_t DIMENSION >
+    void save_mesh_entities_of_type(
+        const GeoModel< DIMENSION >& M,
+        std::ofstream& out )
     {
         const std::string& type = ENTITY::type_name_static();
         for( index_t e = 0; e < M.nb_mesh_entities( type ); e++ ) {
@@ -105,11 +109,76 @@ namespace {
         }
     }
 
+    template< index_t DIMENSION >
+    void save_version_and_name( const GeoModel< DIMENSION >& M, std::ofstream& out )
+    {
+        out << "Version 2" << std::endl;
+        out << "GeoModel name " << M.name() << std::endl;
+    }
+
+    template< index_t DIMENSION >
+    void save_number_of_mesh_entities_base(
+        const GeoModel< DIMENSION >& M,
+        std::ofstream& out )
+    {
+        // Numbers of the different types of mesh entities
+        out << "Nb " << Corner < DIMENSION
+            > ::type_name_static() << " " << M.nb_corners() << std::endl;
+        out << "Nb " << Line < DIMENSION
+            > ::type_name_static() << " " << M.nb_lines() << std::endl;
+        out << "Nb " << Surface < DIMENSION
+            > ::type_name_static() << " " << M.nb_surfaces() << std::endl;
+    }
+
+    template< index_t DIMENSION >
+    void save_mesh_entities_base(
+        const GeoModel< DIMENSION >& M,
+        std::ofstream& out )
+    {
+        save_mesh_entities_of_type< Corner< DIMENSION > >( M, out );
+        save_mesh_entities_of_type< Line< DIMENSION > >( M, out );
+        save_mesh_entities_of_type< Surface< DIMENSION > >( M, out );
+    }
     /*!
      * @brief Save the topology of a GeoModelin a file
      * @param[in] M the GeoModel
      * @param[in] file_name the output file name
      */
+    template< index_t DIMENSION >
+    void save_mesh_entities(
+        const GeoModel< DIMENSION >& M,
+        const std::string& file_name );
+
+    template< index_t DIMENSION >
+    void save_universe( const GeoModel< DIMENSION >& M, std::ofstream& out )
+    {
+        out << "Universe " << std::endl;
+        for( index_t j = 0; j < M.universe().nb_boundaries(); ++j ) {
+            if( M.universe().side( j ) ) {
+                out << "+";
+            } else {
+                out << "-";
+            }
+            out << M.universe().boundary_gmme( j ).index() << " ";
+        }
+        out << std::endl;
+    }
+
+    template< >
+    void save_mesh_entities( const GeoModel< 2 >& M, const std::string& file_name )
+    {
+        std::ofstream out( file_name.c_str() );
+        out.precision( 16 );
+        if( out.bad() ) {
+            throw RINGMeshException( "I/O",
+                "Error when opening the file: " + file_name );
+        }
+        save_version_and_name( M, out );
+        save_mesh_entities_base( M, out );
+        save_universe( M, out );
+    }
+
+    template< >
     void save_mesh_entities( const GeoModel< 3 >& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() );
@@ -118,24 +187,11 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Error when opening the file: " + file_name );
         }
-
-        out << "Version 2" << std::endl;
-        out << "GeoModel name " << M.name() << std::endl;
-
-        // Numbers of the different types of mesh entities
-        out << "Nb " << Corner < 3
-            > ::type_name_static() << " " << M.nb_corners() << std::endl;
-        out << "Nb " << Line < 3
-            > ::type_name_static() << " " << M.nb_lines() << std::endl;
-        out << "Nb " << Surface < 3
-            > ::type_name_static() << " " << M.nb_surfaces() << std::endl;
+        save_version_and_name( M, out );
+        save_number_of_mesh_entities_base( M, out );
         out << "Nb " << Region < 3
             > ::type_name_static() << " " << M.nb_regions() << std::endl;
-
-        save_mesh_entities_of_type< Corner< 3 > >( M, out );
-        save_mesh_entities_of_type< Line< 3 > >( M, out );
-        save_mesh_entities_of_type< Surface< 3 > >( M, out );
-
+        save_mesh_entities_base( M, out );
         // Regions
         for( index_t i = 0; i < M.nb_regions(); ++i ) {
             const Region< 3 >& E = M.region( i );
@@ -154,20 +210,15 @@ namespace {
             }
             out << std::endl;
         }
-
-        // Universe
-        out << "Universe " << std::endl;
-        for( index_t j = 0; j < M.universe().nb_boundaries(); ++j ) {
-            if( M.universe().side( j ) ) {
-                out << "+";
-            } else {
-                out << "-";
-            }
-            out << M.universe().boundary_gmme( j ).index() << " ";
-        }
-        out << std::endl;
+        save_universe( M, out );
     }
 
+    template< index_t DIMENSION >
+    bool save_mesh(
+        const GeoModelMeshEntity< DIMENSION >& geomodel_entity_mesh,
+        const std::string& name );
+
+    template< >
     bool save_mesh(
         const GeoModelMeshEntity< 3 >& geomodel_entity_mesh,
         const std::string& name )
@@ -180,6 +231,15 @@ namespace {
                 return false;
             }
         }
+        geomodel_entity_mesh.save( name );
+        return true;
+    }
+
+    template< >
+    bool save_mesh(
+        const GeoModelMeshEntity< 2 >& geomodel_entity_mesh,
+        const std::string& name )
+    {
         geomodel_entity_mesh.save( name );
         return true;
     }
@@ -222,33 +282,53 @@ namespace {
         }
     }
 
-    template< typename ENTITY >
+    template< template< index_t > class ENTITY, index_t DIMENSION >
     void save_geomodel_mesh_entities(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel< DIMENSION >& geomodel,
         std::vector< std::string >& filenames )
     {
-        const std::string& type = ENTITY::type_name_static();
+        const std::string& type = ENTITY< DIMENSION >::type_name_static();
         GEO::Logger* logger = Logger::instance();
         bool logger_status = logger->is_quiet();
         logger->set_quiet( true );
         RINGMESH_PARALLEL_LOOP_DYNAMIC
         for( index_t e = 0; e < geomodel.nb_mesh_entities( type ); e++ ) {
-            const ENTITY& entity =
-                dynamic_cast< const ENTITY& >( geomodel.mesh_entity( type, e ) );
-            save_geomodel_mesh_entity< ENTITY >( entity, filenames );
+            const ENTITY< DIMENSION >& entity =
+                dynamic_cast< const ENTITY< DIMENSION >& >( geomodel.mesh_entity(
+                    type, e ) );
+            save_geomodel_mesh_entity< ENTITY< DIMENSION > >( entity, filenames );
         }
         logger->set_quiet( logger_status );
     }
 
-    class GeoModelHandlerGM final: public GeoModelIOHandler {
+    template< index_t DIMENSION >
+    index_t nb_mesh_entities( const GeoModel< DIMENSION >& geomodel );
+
+    template< >
+    index_t nb_mesh_entities( const GeoModel< 2 >& geomodel )
+    {
+        return geomodel.nb_corners() + geomodel.nb_lines() + geomodel.nb_surfaces();
+    }
+
+    template< >
+    index_t nb_mesh_entities( const GeoModel< 3 >& geomodel )
+    {
+        return geomodel.nb_corners() + geomodel.nb_lines() + geomodel.nb_surfaces()
+            + geomodel.nb_regions();
+    }
+
+    template< index_t DIMENSION >
+    class GeoModelHandlerGM final : public GeoModelIOHandler< DIMENSION > {
     public:
-        virtual bool load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        virtual bool load(
+            const std::string& filename,
+            GeoModel< DIMENSION >& geomodel ) final
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) );
-            GeoModelBuilderGM builder( geomodel,
-                GEO::FileSystem::base_name( filename, false ) );
+            GeoModelBuilderGM < DIMENSION
+                > builder( geomodel, GEO::FileSystem::base_name( filename, false ) );
             builder.build_geomodel();
             Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from ",
                 filename );
@@ -259,7 +339,7 @@ namespace {
 
         }
         virtual void save(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
         {
             const std::string pwd = GEO::FileSystem::get_current_working_directory();
@@ -285,20 +365,40 @@ namespace {
             zip_file( zf, geological_entity_file );
             GEO::FileSystem::delete_file( geological_entity_file );
 
-            index_t nb_mesh_entites = geomodel.nb_corners() + geomodel.nb_lines()
-                + geomodel.nb_surfaces() + geomodel.nb_regions();
+            index_t nb_mesh_entites = nb_mesh_entities( geomodel );
             std::vector< std::string > filenames;
             filenames.reserve( nb_mesh_entites );
-            save_geomodel_mesh_entities< Corner< 3 > >( geomodel, filenames );
-            save_geomodel_mesh_entities< Line< 3 > >( geomodel, filenames );
-            save_geomodel_mesh_entities< Surface< 3 > >( geomodel, filenames );
-            save_geomodel_mesh_entities< Region< 3 > >( geomodel, filenames );
+            save_geomodel_mesh_entities< Corner, DIMENSION >( geomodel, filenames );
+            save_geomodel_mesh_entities< Line, DIMENSION >( geomodel, filenames );
+            save_geomodel_mesh_entities< Surface, DIMENSION >( geomodel, filenames );
+            save_geomodel_regions( geomodel, filenames );
             std::sort( filenames.begin(), filenames.end() );
             zip_files( filenames, zf );
 
             zipClose( zf, NULL );
             GEO::FileSystem::set_current_working_directory( pwd );
         }
+
+        virtual ~GeoModelHandlerGM() = default;
+    private:
+        void save_geomodel_regions(
+            const GeoModel< DIMENSION >& geomodel,
+            std::vector< std::string >& filenames );
     };
+
+    template< >
+    void GeoModelHandlerGM< 3 >::save_geomodel_regions(
+        const GeoModel< 3 >& geomodel,
+        std::vector< std::string >& filenames )
+    {
+        save_geomodel_mesh_entities< Region, 3 >( geomodel, filenames );
+    }
+
+    template< >
+    void GeoModelHandlerGM< 2 >::save_geomodel_regions(
+        const GeoModel< 2 >& geomodel,
+        std::vector< std::string >& filenames )
+    {
+    }
 
 }
