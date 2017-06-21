@@ -51,8 +51,9 @@
  */
 
 namespace RINGMesh {
-    class GeoModelGfx;
-    class AttributeGfx;
+    template< index_t DIMENSION > class GeoModelGfx;
+    template< index_t DIMENSION > class AttributeGfxManager;
+    template< index_t DIMENSION > class AttributeGfx;
 
     template< index_t DIMENSION > class PointSetMesh;
     template< index_t DIMENSION > class LineMesh;
@@ -62,8 +63,10 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    class RINGMESH_API MeshEntityGfx {
+    template< index_t DIMENSION >
+    class MeshEntityGfx {
     ringmesh_disable_copy( MeshEntityGfx );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         virtual ~MeshEntityGfx() = default;
 
@@ -99,30 +102,45 @@ namespace RINGMesh {
         bool vertex_visible_;
     };
 
-    class RINGMESH_API PointSetMeshGfx: public MeshEntityGfx {
+    template< index_t DIMENSION >
+    class PointSetMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual void set_mesh( const PointSetMesh< 3 >& mesh ) = 0;
+        virtual ~PointSetMeshGfx() = default;
 
-        static std::unique_ptr< PointSetMeshGfx > create_gfx(
-            const PointSetMesh< 3 >& mesh );
+        virtual void set_mesh( const PointSetMesh< DIMENSION >& mesh ) = 0;
+
+        static std::unique_ptr< PointSetMeshGfx< DIMENSION > > create_gfx(
+            const PointSetMesh< DIMENSION >& mesh );
 
     protected:
         PointSetMeshGfx()
         {
-            set_vertex_visible( true );
+            this->set_vertex_visible( true );
         }
 
     };
-    using PointSetMeshGfxFactory = GEO::Factory0< PointSetMeshGfx >;
-#define ringmesh_register_point_set_gfx(type) \
-    geo_register_creator(RINGMesh::PointSetMeshGfxFactory, type ## Gfx, type::type_name_static())
 
-    class RINGMESH_API LineMeshGfx: public MeshEntityGfx {
+    template< index_t DIMENSION >
+    using PointSetMeshGfxFactory = GEO::Factory0< PointSetMeshGfx< DIMENSION> >;
+
+    using PointSetMeshGfxFactory2D = PointSetMeshGfxFactory< 2 >;
+    using PointSetMeshGfxFactory3D = PointSetMeshGfxFactory< 3 >;
+
+#define ringmesh_register_point_set_gfx_2d(type) \
+    geo_register_creator(RINGMesh::PointSetMeshGfxFactory2D, type ## Gfx, type::type_name_static())
+
+#define ringmesh_register_point_set_gfx_3d(type) \
+    geo_register_creator(RINGMesh::PointSetMeshGfxFactory3D, type ## Gfx, type::type_name_static())
+
+    template< index_t DIMENSION >
+    class LineMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual void set_mesh( const LineMesh< 3 >& mesh ) = 0;
+        virtual ~LineMeshGfx() = default;
 
-        static std::unique_ptr< LineMeshGfx > create_gfx(
-            const LineMesh< 3 >& mesh );
+        virtual void set_mesh( const LineMesh< DIMENSION >& mesh ) = 0;
+
+        static std::unique_ptr< LineMeshGfx< DIMENSION > > create_gfx(
+            const LineMesh< DIMENSION >& mesh );
 
         void set_edge_visible( bool is_visible )
         {
@@ -140,23 +158,35 @@ namespace RINGMesh {
     protected:
         LineMeshGfx()
         {
-            set_vertex_visible( false );
+            this->set_vertex_visible( false );
             set_edge_visible( true );
         }
 
     private:
         bool edge_visible_;
     };
-    using LineMeshGfxFactory = GEO::Factory0< LineMeshGfx >;
-#define ringmesh_register_line_gfx(type) \
-    geo_register_creator(RINGMesh::LineMeshGfxFactory, type ## Gfx, type::type_name_static())
 
-    class RINGMESH_API SurfaceMeshGfx: public MeshEntityGfx {
+    template< index_t DIMENSION >
+    using LineMeshGfxFactory = GEO::Factory0< LineMeshGfx< DIMENSION > >;
+
+    using LineMeshGfxFactory2D = LineMeshGfxFactory< 2 >;
+    using LineMeshGfxFactory3D = LineMeshGfxFactory< 3 >;
+
+#define ringmesh_register_line_gfx_2d(type) \
+    geo_register_creator(RINGMesh::LineMeshGfxFactory2D, type ## Gfx, type::type_name_static())
+
+#define ringmesh_register_line_gfx_3d(type) \
+    geo_register_creator(RINGMesh::LineMeshGfxFactory3D, type ## Gfx, type::type_name_static())
+
+    template< index_t DIMENSION >
+    class SurfaceMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual void set_mesh( const SurfaceMesh< 3 >& mesh ) = 0;
+        virtual ~SurfaceMeshGfx() = default;
 
-        static std::unique_ptr< SurfaceMeshGfx > create_gfx(
-            const SurfaceMesh< 3 >& mesh );
+        virtual void set_mesh( const SurfaceMesh< DIMENSION >& mesh ) = 0;
+
+        static std::unique_ptr< SurfaceMeshGfx< DIMENSION > > create_gfx(
+            const SurfaceMesh< DIMENSION >& mesh );
 
         virtual void draw_surface() = 0;
         virtual void set_surface_color( float red, float green, float blue ) = 0;
@@ -180,22 +210,34 @@ namespace RINGMesh {
     protected:
         SurfaceMeshGfx()
         {
-            set_vertex_visible( false );
+            this->set_vertex_visible( false );
             set_surface_visible( true );
         }
     private:
         bool surface_visible_;
     };
-    using SurfaceMeshGfxFactory = GEO::Factory0< SurfaceMeshGfx >;
-#define ringmesh_register_surface_gfx(type) \
-    geo_register_creator(RINGMesh::SurfaceMeshGfxFactory, type ## Gfx, type::type_name_static())
 
-    class RINGMESH_API VolumeMeshGfx: public MeshEntityGfx {
+    template< index_t DIMENSION >
+    using SurfaceMeshGfxFactory = GEO::Factory0< SurfaceMeshGfx< DIMENSION > >;
+
+    using SurfaceMeshGfxFactory2D = SurfaceMeshGfxFactory< 2 >;
+    using SurfaceMeshGfxFactory3D = SurfaceMeshGfxFactory< 3 >;
+
+#define ringmesh_register_surface_gfx_2d(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshGfxFactory2D, type ## Gfx, type::type_name_static())
+
+#define ringmesh_register_surface_gfx_3d(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshGfxFactory3D, type ## Gfx, type::type_name_static())
+
+    template< index_t DIMENSION >
+    class VolumeMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual void set_mesh( const VolumeMesh< 3 >& mesh ) = 0;
+        virtual ~VolumeMeshGfx() = default;
 
-        static std::unique_ptr< VolumeMeshGfx > create_gfx(
-            const VolumeMesh< 3 >& mesh );
+        virtual void set_mesh( const VolumeMesh< DIMENSION >& mesh ) = 0;
+
+        static std::unique_ptr< VolumeMeshGfx< DIMENSION > > create_gfx(
+            const VolumeMesh< DIMENSION >& mesh );
 
         void set_region_visible( bool is_visible )
         {
@@ -218,26 +260,33 @@ namespace RINGMesh {
     protected:
         VolumeMeshGfx()
         {
-            set_vertex_visible( false );
+            this->set_vertex_visible( false );
             set_region_visible( true );
         }
 
     private:
         bool region_visible_;
     };
-    using VolumeMeshGfxFactory = GEO::Factory0< VolumeMeshGfx >;
-#define ringmesh_register_volume_gfx(type) \
-    geo_register_creator(RINGMesh::VolumeMeshGfxFactory, type ## Gfx, type::type_name_static())
 
-    class RINGMESH_API AttributeGfxManager {
-    ringmesh_disable_copy( AttributeGfxManager );
+    template< index_t DIMENSION >
+    using VolumeMeshGfxFactory = GEO::Factory0< VolumeMeshGfx< DIMENSION > >;
+
+    using VolumeMeshGfxFactory2D = VolumeMeshGfxFactory< 2 >;
+    using VolumeMeshGfxFactory3D = VolumeMeshGfxFactory< 3 >;
+
+#define ringmesh_register_volume_gfx_2d(type) \
+    geo_register_creator(RINGMesh::VolumeMeshGfxFactory2D, type ## Gfx, type::type_name_static())
+
+#define ringmesh_register_volume_gfx_3d(type) \
+    geo_register_creator(RINGMesh::VolumeMeshGfxFactory3D, type ## Gfx, type::type_name_static())
+
+    template< index_t DIMENSION >
+    class AttributeGfxManagerBase {
+    ringmesh_disable_copy( AttributeGfxManagerBase );
     public:
-        enum Attribute_location {
-            polygons, polygon_vertices, cells, cell_vertices, nb_locations
-        };
-        AttributeGfxManager( GeoModelGfx& gfx );
+        virtual ~AttributeGfxManagerBase() = default;
 
-        GeoModelGfx& gfx()
+        GeoModelGfx< DIMENSION >& gfx()
         {
             return gfx_;
         }
@@ -245,81 +294,141 @@ namespace RINGMesh {
         void compute_range();
 
         void unbind_attribute();
-        void bind_attribute();
 
-        std::string location_name( Attribute_location location );
+        void bind_attribute();
 
         void set_maximum( double max )
         {
             maximum_ = max;
         }
+
         double maximum() const
         {
             return maximum_;
         }
+
         void set_minimum( double min )
         {
             minimum_ = min;
         }
+
         double minimum() const
         {
             return minimum_;
         }
-        void set_location( Attribute_location location )
+
+        void set_location( const std::string& location )
         {
-            location_ = location;
+            const auto& it = factory_.find( location );
+            if( it != factory_.end() ) {
+                attribute_.reset( ( *it->second )() );
+                attribute_->set_manager( *this );
+            }
         }
-        Attribute_location location() const
-        {
-            return location_;
-        }
+
+        std::string location_name() const;
+
         index_t nb_coordinates() const;
+
         void set_coordinate( const index_t& coordinate )
         {
             coordinate_ = coordinate;
         }
+
         const index_t& coordinate() const
         {
             return coordinate_;
         }
+
         void set_name( const std::string& name )
         {
             name_ = name;
         }
+
         const std::string& name() const
         {
             return name_;
         }
+
         void set_colormap( GLuint colormap )
         {
             colormap_texture_ = colormap;
         }
+
         GLuint colormap() const
         {
             return colormap_texture_;
         }
 
-    private:
-        GeoModelGfx& gfx_;
+        template< template< index_t > class TYPE >
+        void register_attribute_location()
+        {
+            factory_.emplace( TYPE< DIMENSION >::location_name_static(),
+                FactoryCreator::template create< TYPE< DIMENSION > > );
+        }
+
+        std::vector< std::string > registered_locations() const
+        {
+            std::vector< std::string > locations;
+            for( const auto& location : factory_ ) {
+                locations.push_back( location.first );
+            }
+            return locations;
+        }
+
+        std::vector< std::string > get_attribute_names();
+
+    protected:
+        AttributeGfxManagerBase( GeoModelGfx< DIMENSION >& gfx );
+
+    protected:
+        GeoModelGfx< DIMENSION >& gfx_;
 
         std::string name_;
-        Attribute_location location_;
         index_t coordinate_;
         GLuint colormap_texture_;
         double minimum_;
         double maximum_;
 
-        std::unique_ptr< AttributeGfx > attributes_[nb_locations];
+        using FactoryCreator = GEO::FactoryCreator0< AttributeGfx< DIMENSION > >;
+        std::map< std::string, typename FactoryCreator::CreatorType > factory_;
+        std::unique_ptr< AttributeGfx< DIMENSION > > attribute_;
 
     };
 
-    class RINGMESH_API AttributeGfx {
+    template< index_t DIMENSION >
+    class AttributeGfxManager final: public AttributeGfxManagerBase< DIMENSION > {
     public:
-        AttributeGfx( AttributeGfxManager& manager )
-            : manager_( manager )
+        AttributeGfxManager( GeoModelGfx< DIMENSION >& gfx )
+            : AttributeGfxManagerBase< DIMENSION >( gfx )
         {
         }
+
+        virtual ~AttributeGfxManager() = default;
+    };
+
+    template< >
+    class AttributeGfxManager< 3 > final: public AttributeGfxManagerBase< 3 > {
+    public:
+        AttributeGfxManager( GeoModelGfx< 3 >& gfx );
+
+        virtual ~AttributeGfxManager() = default;
+    };
+
+    template< index_t DIMENSION >
+    class AttributeGfx {
+    public:
+        AttributeGfx()
+            : manager_( nullptr )
+        {
+        }
+
         virtual ~AttributeGfx() = default;
+
+        void set_manager( AttributeGfxManagerBase< DIMENSION >& manager )
+        {
+            manager_ = &manager;
+        }
 
         virtual std::string location_name() const = 0;
         void compute_range()
@@ -327,9 +436,25 @@ namespace RINGMesh {
             double attribute_min = max_float64();
             double attribute_max = min_float64();
             do_compute_range( attribute_min, attribute_max );
-            manager_.set_minimum( attribute_min );
-            manager_.set_maximum( attribute_max );
+            manager_->set_minimum( attribute_min );
+            manager_->set_maximum( attribute_max );
         }
+        std::vector< std::string > get_attribute_names()
+        {
+            const GEO::AttributesManager& attributes = get_attribute_manager();
+            GEO::vector< std::string > attribute_names;
+            attributes.list_attribute_names( attribute_names );
+            std::vector< std::string > names;
+            for( const std::string& name : attribute_names ) {
+                const GEO::AttributeStore* store = attributes.find_attribute_store(
+                    name );
+                if( GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to( store ) ) {
+                    names.push_back( name );
+                }
+            }
+            return names;
+        }
+        virtual GEO::AttributesManager& get_attribute_manager() = 0;
         virtual void bind_attribute() = 0;
         virtual void unbind_attribute() = 0;
         virtual index_t nb_coordinates() = 0;
@@ -340,7 +465,7 @@ namespace RINGMesh {
             double& attribute_max ) = 0;
 
     protected:
-        AttributeGfxManager& manager_;
+        AttributeGfxManagerBase< DIMENSION >* manager_;
     };
 }
 
