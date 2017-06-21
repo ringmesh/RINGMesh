@@ -137,7 +137,7 @@ namespace RINGMesh {
                         side );
                 }
             } else {
-                MeshEntityType type = manager.boundary_type( entity.type() );
+                MeshEntityType type = manager.boundary_entity_type( entity.type() );
                 // Second line : indices of boundaries
                 for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
                     gmme_id boundary( type, file_line.field_as_uint( c ) );

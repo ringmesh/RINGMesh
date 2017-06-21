@@ -374,14 +374,14 @@ namespace {
      *        incident_entity vector of entity @param in.
      */
     template< index_t DIMENSION >
-    bool is_in_incident_entity(
+    bool is_boundary_entity(
         const GeoModel< DIMENSION >& geomodel,
-        const gmme_id& is,
-        const gmme_id& in )
+        const gmme_id& entity,
+        const gmme_id& boundary )
     {
-        const GeoModelMeshEntity< DIMENSION >& E = geomodel.mesh_entity( in );
-        for( index_t i = 0; i < E.nb_incident_entities(); ++i ) {
-            if( E.incident_entity_gmme( i ) == is ) {
+        const GeoModelMeshEntity< DIMENSION >& E = geomodel.mesh_entity( entity );
+        for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
+            if( E.boundary_gmme( i ) == boundary ) {
                 return true;
             }
         }
@@ -444,27 +444,32 @@ namespace {
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
         MeshEntityType type = ENTITY< DIMENSION >::type_name_static();
-        MeshEntityType incident_type =
-            geomodel.entity_type_manager().mesh_entity_manager.incident_entity_type(
+        MeshEntityType boundary_type =
+            geomodel.entity_type_manager().mesh_entity_manager.boundary_entity_type(
                 type );
         const std::vector< index_t >& type_entities = entities.find( type )->second;
-        if( entities.find( incident_type )->second.empty() ) {
-            if( type_entities.size() != 1 ) {
-                print_error( type_entities,
-                    static_cast< std::string >( type ) + "s" );
-                Logger::warn( "GeoModel", "It should be in only one ",
-                    incident_type );
-                return false;
+        if( entities.find( boundary_type )->second.empty() ) {
+            if( !type_entities.empty() ) {
+                if( type_entities.size() != 1 ) {
+                    print_error( type_entities,
+                        static_cast< std::string >( type ) + "s" );
+                    Logger::warn( "GeoModel", "It should be in only one ",
+                        boundary_type );
+                    return false;
+                } else {
+                    return true;
+                }
             } else {
                 return true;
             }
         } else {
             if( type_entities.empty() ) {
-                Logger::warn( "GeoModel", " Vertex is in a Line but in no ", type );
+                Logger::warn( "GeoModel", " Vertex is in a ", boundary_type,
+                    " but in no ", type );
                 return false;
             } else {
-                const std::vector< index_t >& incident_entities = entities.find(
-                    incident_type )->second;
+                const std::vector< index_t >& boundary_entities = entities.find(
+                    boundary_type )->second;
                 // Check that one point is no more than twice in a SURFACE
                 for( index_t entity : type_entities ) {
                     index_t nb = static_cast< index_t >( std::count(
@@ -477,8 +482,8 @@ namespace {
                         // If a point is twice in a SURFACE, it must be
                         // on an internal boundary Line.
                         bool internal_boundary = false;
-                        for( index_t line : incident_entities ) {
-                            if( geomodel.mesh_entity( incident_type, line ).is_inside_border(
+                        for( index_t line : boundary_entities ) {
+                            if( geomodel.mesh_entity( boundary_type, line ).is_inside_border(
                                 geomodel.mesh_entity( type, entity ) ) ) {
                                 internal_boundary = true;
                                 break;
@@ -488,21 +493,6 @@ namespace {
                             Logger::warn( "GeoModel", " Vertex appears ", nb,
                                 " times in ",
                                 geomodel.mesh_entity( type, entity ).gmme() );
-                            return false;
-                        }
-                    }
-                }
-                // Check that all the surfaces are in incident_entity of all the lines
-                for( index_t entity : type_entities ) {
-                    gmme_id entity_id( type, entity );
-                    for( index_t incident : incident_entities ) {
-                        gmme_id incident_id( incident_type, incident );
-                        if( !is_in_incident_entity( geomodel, entity_id,
-                            incident_id ) ) {
-                            Logger::warn( "GeoModel", " Inconsistent ",
-                                incident_type, "-", type, " connectivity ",
-                                " Vertex shows that ", entity_id,
-                                " must be in the boundary of ", incident_id );
                             return false;
                         }
                     }
@@ -517,7 +507,10 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
-        return is_vertex_valid< Region >( geomodel, entities );
+        if( geomodel.region( 0 ).is_meshed() ) {
+            return is_vertex_valid< Region >( geomodel, entities );
+        }
+        return true;
     }
 
     template< index_t DIMENSION >
@@ -536,10 +529,14 @@ namespace {
         const std::vector< index_t >& lines = entities.find(
             Line< DIMENSION >::type_name_static() )->second;
         if( entities.find( Corner< DIMENSION >::type_name_static() )->second.empty() ) {
-            if( lines.size() != 1 ) {
-                print_error( lines, "Lines" );
-                Logger::warn( "GeoModel", "It should be in only one Line" );
-                return false;
+            if( !lines.empty() ) {
+                if( lines.size() != 1 ) {
+                    print_error( lines, "Lines" );
+                    Logger::warn( "GeoModel", "It should be in only one Line" );
+                    return false;
+                } else {
+                    return true;
+                }
             } else {
                 return true;
             }
@@ -569,7 +566,7 @@ namespace {
                     entities.find( Corner< DIMENSION >::type_name_static() )->second.front() );
                 for( index_t line : lines ) {
                     gmme_id line_id( Line< DIMENSION >::type_name_static(), line );
-                    if( !is_in_incident_entity( geomodel, line_id, corner_id ) ) {
+                    if( !is_boundary_entity( geomodel, line_id, corner_id ) ) {
                         Logger::warn( "GeoModel",
                             " Inconsistent Line-Corner connectivity ",
                             " vertex shows that ", line_id,
@@ -972,11 +969,9 @@ namespace {
             if( mode == ValidityCheckMode::ALL ) {
                 do_check_geometry( threads );
                 do_check_topology( threads );
-            }
-            if( mode == ValidityCheckMode::TOPOLOGY ) {
+            } else if( mode == ValidityCheckMode::TOPOLOGY ) {
                 do_check_topology( threads );
-            }
-            if( mode != ValidityCheckMode::GEOMETRY ) {
+            } else if( mode != ValidityCheckMode::GEOMETRY ) {
                 do_check_geometry( threads );
             }
 
@@ -1209,9 +1204,9 @@ namespace {
     void GeoModelValidityCheck< 3 >::do_check_geometry(
         std::vector< std::thread >& threads )
     {
-        do_check_geometry_base( threads );
         threads.emplace_back( &GeoModelValidityCheck::test_polygon_intersections,
             this );
+        do_check_geometry_base( threads );
 
     }
 
