@@ -167,6 +167,18 @@ namespace RINGMesh {
             child_right = 2 * node_index + 1;
         }
 
+        const Box< DIMENSION >& node( index_t i ) const
+        {
+            ringmesh_assert( i < tree_.size() );
+            return tree_[i];
+        }
+
+        Box< DIMENSION >& node( index_t i )
+        {
+            ringmesh_assert( i < tree_.size() );
+            return tree_[i];
+        }
+
     private:
         /*!
          * @brief Gets the number of nodes in the tree subset
@@ -437,9 +449,10 @@ namespace RINGMesh {
         get_recursive_iterators( node_index, box_begin, box_end, box_middle,
             child_left, child_right );
 
-        double distance_left = point_box_signed_distance( query, tree_[child_left] );
+        double distance_left = point_box_signed_distance( query,
+            node( child_left ) );
         double distance_right = point_box_signed_distance( query,
-            tree_[child_right] );
+            node( child_right ) );
 
         // Traverse the "nearest" child first, so that it has more chances
         // to prune the traversal of the other child.
@@ -481,7 +494,7 @@ namespace RINGMesh {
         ringmesh_assert( element_begin != element_end );
 
         // Prune sub-tree that does not have intersection
-        if( !box.bboxes_overlap( tree_[node_index] ) ) {
+        if( !box.bboxes_overlap( node( node_index ) ) ) {
             return;
         }
 
@@ -525,7 +538,7 @@ namespace RINGMesh {
         }
 
         // The acceleration is here:
-        if( !tree_[node_index1].bboxes_overlap( tree_[node_index2] ) ) {
+        if( !node( node_index1 ).bboxes_overlap( node( node_index2 ) ) ) {
             return;
         }
 

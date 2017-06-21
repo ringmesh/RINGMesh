@@ -399,7 +399,7 @@ namespace RINGMesh {
             throw RINGMeshException( "Entity", message.str() );
         }
         const MeshEntityType& boundary_type =
-            geomodel_.entity_type_manager().mesh_entity_manager.boundary_type(
+            geomodel_.entity_type_manager().mesh_entity_manager.boundary_entity_type(
                 incident_entity_id.type() );
         if( boundary.type() != boundary_type ) {
             std::ostringstream message;
@@ -439,7 +439,7 @@ namespace RINGMesh {
         GeoModelMeshEntity< DIMENSION > &mesh_entity =
             geomodel_access_.modifiable_mesh_entity( gmme );
         const MeshEntityType& b_type =
-            geomodel_.entity_type_manager().mesh_entity_manager.boundary_type(
+            geomodel_.entity_type_manager().mesh_entity_manager.boundary_entity_type(
                 gmme.type() );
         gmme_id boundary( b_type, boundary_id );
         GeoModelMeshEntityAccess< DIMENSION > gme_access( mesh_entity );
