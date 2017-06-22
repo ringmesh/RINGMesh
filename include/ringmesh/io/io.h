@@ -121,6 +121,11 @@ namespace RINGMesh {
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) = 0;
 
+        virtual index_t dimension( const std::string& filename ) const
+        {
+            return DIMENSION;
+        }
+
     protected:
         GeoModelIOHandler() = default;
 
@@ -139,7 +144,6 @@ namespace RINGMesh {
 
 #define ringmesh_register_GeoModelIOHandler3D_creator( type, name ) \
     geo_register_creator( GeoModelIOHandlerFactory3D, type, name )
-
 
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler: public GEO::Counted {

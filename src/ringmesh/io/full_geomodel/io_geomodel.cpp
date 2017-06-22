@@ -110,6 +110,12 @@ namespace {
     }
 
     template< index_t DIMENSION >
+    void save_dimension( const GeoModel< DIMENSION >& geomodel, std::ofstream& out )
+    {
+        out << "Dimension " << DIMENSION << std::endl;
+    }
+
+    template< index_t DIMENSION >
     void save_version_and_name(
         const GeoModel< DIMENSION >& geomodel,
         std::ofstream& out )
@@ -266,6 +272,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Error when opening the file: " + file_name );
         }
+        save_dimension( geomodel, out );
         save_version_and_name( geomodel, out );
         save_number_of_mesh_entities( geomodel, out );
         save_mesh_entities_topology( geomodel, out );
@@ -377,6 +384,20 @@ namespace {
             + geomodel.nb_regions();
     }
 
+    index_t find_dimension( const std::string& mesh_entities_filename )
+    {
+        GEO::LineInput file_line( mesh_entities_filename );
+        while( !file_line.eof() && file_line.get_line() ) {
+            if( file_line.nb_fields() == 2 ) {
+                file_line.get_fields();
+                if( file_line.field_matches( 0, "dimension" ) ) {
+                    return file_line.field_as_int( 1 );
+                }
+            }
+        }
+        return 3;
+    }
+
     template< index_t DIMENSION >
     class GeoModelHandlerGM final : public GeoModelIOHandler< DIMENSION > {
     public:
@@ -437,6 +458,22 @@ namespace {
 
             zipClose( zf, NULL );
             GEO::FileSystem::set_current_working_directory( pwd );
+        }
+
+        virtual index_t dimension( const std::string& filename ) const final
+        {
+            unzFile uz = unzOpen( filename.c_str() );
+            unz_global_info global_info;
+            if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
+                unzClose( uz );
+                throw RINGMeshException( "ZLIB", "Could not read file global info" );
+            }
+            const std::string mesh_entity_file( "mesh_entities.txt" );
+            unzip_file( uz, mesh_entity_file.c_str() );
+            index_t dimension = find_dimension( mesh_entity_file );
+            bool ok = GEO::FileSystem::delete_file( mesh_entity_file );
+            ringmesh_unused( ok );
+            return dimension;
         }
 
         virtual ~GeoModelHandlerGM() = default;
