@@ -68,7 +68,6 @@ namespace {
         if( attribute.is_bound() ) {
             for( index_t i = 0; i < attribute.size(); ++i ) {
                 double value = attribute[i];
-                DEBUG( value );
                 min = GEO::geo_min( min, value );
                 max = GEO::geo_max( max, value );
             }
