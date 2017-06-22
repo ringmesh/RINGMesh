@@ -74,9 +74,9 @@ set(TINYXML2_PATH ${PROJECT_SOURCE_DIR}/third_party/tinyxml2)
 if(WIN32)
     # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
-	set(TINYXML2_PATH_BIN  ${TINYXML2_PATH_BIN}/tinyxml2)
+	set(TINYXML2_PATH_BIN  ${GLOBAL_BINARY_DIR}/tinyxml2)
 elseif(UNIX)
-	set(TINYXML2_PATH_BIN  ${TINYXML2_PATH_BIN}/tinyxml2/${config})
+	set(TINYXML2_PATH_BIN  ${GLOBAL_BINARY_DIR}/tinyxml2/${config})
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
     
@@ -129,4 +129,59 @@ link_directories(${TINYXML2_PATH_BIN}/lib)
 #------------------------------------------------------------------------------------------------
 # zlib 
 # Set the path to zlib code
-#set(ZLIB_PATH ${PROJECT_SOURCE_DIR}/third_party/zlib)
+set(ZLIB_PATH ${PROJECT_SOURCE_DIR}/third_party/zlib)
+
+if(WIN32)
+    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
+    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
+	set(ZLIB_PATH_BIN  ${GLOBAL_BINARY_DIR}/zlib)
+elseif(UNIX)
+	set(ZLIB_PATH_BIN  ${GLOBAL_BINARY_DIR}/zlib/${config})
+    set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
+    
+    # Determine gcc version and activate additional warnings available in latest versions
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE G++_VERSION)
+
+    if(G++_VERSION VERSION_LESS 4.8 )
+        message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
+    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    add_compile_options(-Wsign-conversion)
+    add_compile_options(-Wdouble-promotion)
+else(WIN32)
+    # Nothing else really supported
+    message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    
+endif(WIN32)
+
+# Define tinyxml2 as an external project that we know how to
+# configure and compile
+ExternalProject_Add(zlib_ext
+  PREFIX ${ZLIB_PATH_BIN}
+
+  #--Configure step-------------
+  SOURCE_DIR ${ZLIB_PATH}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
+        -G ${CMAKE_GENERATOR} 
+  
+  #--Build step-----------------
+  BINARY_DIR ${ZLIB_PATH_BIN}
+  #-- Command to build geogram
+  BUILD_COMMAND ${CMAKE_COMMAND} --build ${ZLIB_PATH_BIN}
+
+)
+
+ExternalProject_Add_Step(tinyxml2_ext forcebuild
+    DEPENDERS build
+    ALWAYS 1
+  )
+
+# Add geogram include directories to the current ones
+include_directories(SYSTEM ${ZLIB_PATH})
+
+# Add geogram project libs to the libs with which RINGMesh will link
+set(EXTRA_LIBS ${EXTRA_LIBS} zlib)
+    
+# Add geogram bin directories to the current ones 
+# It would be preferable to set the imported library location [JP]
+link_directories(${ZLIB_PATH_BIN}/lib)

@@ -248,14 +248,14 @@ FOREACH(directory ${directories})
     ENDIF()
 ENDFOREACH()
 
-file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/third_party/zlib/*.c")
-file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/third_party/zlib/*.h")
+#file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/third_party/zlib/*.c")
+#file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/third_party/zlib/*.h")
 
 #------------------------------------------------------------------------------------------------
 # Group files of a project in directories
 # All the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
-source_group("Zlib" FILES ${zlib_src} ${zlib_include})
+#source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 
 #set(tinyxml2_src "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.cpp")
 #set(tinyxml2_include "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.h")
@@ -273,17 +273,17 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 # Add include directories of RINGMesh
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
+#include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
 
 
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED
     ${ringmesh_include} 
-    ${ringmesh_src} 
-    ${zlib_src}
-    ${zlib_include}
-    ${tinyxml2_src}
-    ${tinyxml2_include})
+    ${ringmesh_src})
+#    ${zlib_src}
+#    ${zlib_include}
+#    ${tinyxml2_src}
+#    ${tinyxml2_include})
     
 
 # RINGMesh depends on Geogram
