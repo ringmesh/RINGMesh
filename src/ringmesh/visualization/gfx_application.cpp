@@ -1143,7 +1143,8 @@ namespace RINGMesh {
         configure_ringmesh();
 
         std::vector< std::string > ringmesh_extensions;
-        GeoModelIOHandlerFactory::list_creators( ringmesh_extensions );
+        GeoModelIOHandlerFactory< 2 >::list_creators( ringmesh_extensions );
+        GeoModelIOHandlerFactory< 3 >::list_creators( ringmesh_extensions );
         ringmesh_file_extensions_ = GEO::String::join_strings( ringmesh_extensions,
             ';' );
 
@@ -1305,9 +1306,20 @@ namespace RINGMesh {
     bool RINGMeshApplication::load( const std::string& filename )
     {
         if( !filename.empty() ) {
-            geomodels3d_.emplace_back( new GeoModelViewer< 3 >( *this, filename ) );
-            current_viewer_ = static_cast< index_t >( geomodels3d_.size() - 1 );
-            current_viewer_type_ = GEOMODEL3D;
+            index_t dimension = find_geomodel_dimension( filename );
+            if( dimension == 2 ) {
+                geomodels2d_.emplace_back(
+                    new GeoModelViewer< 2 >( *this, filename ) );
+                current_viewer_ = static_cast< index_t >( geomodels2d_.size() - 1 );
+                current_viewer_type_ = GEOMODEL2D;
+            } else if( dimension == 3 ) {
+                geomodels3d_.emplace_back(
+                    new GeoModelViewer< 3 >( *this, filename ) );
+                current_viewer_ = static_cast< index_t >( geomodels3d_.size() - 1 );
+                current_viewer_type_ = GEOMODEL3D;
+            } else {
+                ringmesh_assert_not_reached;
+            }
         }
 
         update_region_of_interest();

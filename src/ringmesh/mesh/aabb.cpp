@@ -250,7 +250,7 @@ namespace RINGMesh {
         ringmesh_assert( node_index < tree_.size() );
         ringmesh_assert( box_begin != box_end );
         if( is_leaf( box_begin, box_end ) ) {
-            tree_[node_index] = bboxes[mapping_morton_[box_begin]];
+            node( node_index ) = bboxes[mapping_morton_[box_begin]];
             return;
         }
         index_t element_middle, child_left, child_right;
@@ -260,7 +260,7 @@ namespace RINGMesh {
         ringmesh_assert( child_right < tree_.size() );
         initialize_tree_recursive( bboxes, child_left, box_begin, element_middle );
         initialize_tree_recursive( bboxes, child_right, element_middle, box_end );
-        tree_[node_index] = tree_[child_left].bbox_union( tree_[child_right] );
+        node( node_index ) = node( child_left ).bbox_union( node( child_right ) );
     }
 
     template< index_t DIMENSION >
@@ -277,8 +277,8 @@ namespace RINGMesh {
             index_t box_middle, child_left, child_right;
             get_recursive_iterators( node_index, box_begin, box_end, box_middle,
                 child_left, child_right );
-            if( length2( tree_[child_left].center() - query )
-                < length2( tree_[child_right].center() - query ) ) {
+            if( length2( node( child_left ).center() - query )
+                < length2( node( child_right ).center() - query ) ) {
                 box_end = box_middle;
                 node_index = child_left;
             } else {
@@ -288,7 +288,7 @@ namespace RINGMesh {
         }
 
         nearest_box = mapping_morton_[box_begin];
-        nearest_point = get_point_hint_from_box( tree_[box_begin], nearest_box );
+        nearest_point = get_point_hint_from_box( node( box_begin ), nearest_box );
         distance = length( query - nearest_point );
     }
 
@@ -458,7 +458,7 @@ namespace RINGMesh {
         index_t box_begin,
         index_t box_end ) const
     {
-        if( !this->tree_[node_index].contains( query ) ) {
+        if( !this->node( node_index ).contains( query ) ) {
             return NO_ID;
         }
         if( box_end == box_begin + 1 ) {

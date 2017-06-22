@@ -152,7 +152,7 @@ namespace RINGMesh {
             return find( mesh_entity_types_.container(), type ) != NO_ID;
         }
 
-        const MeshEntityType& boundary_type(
+        const MeshEntityType& boundary_entity_type(
             const MeshEntityType& mesh_entity_type ) const
         {
             MeshEntityTypeMap::const_iterator itr = boundary_relationships_.map.find(
@@ -173,8 +173,8 @@ namespace RINGMesh {
         const std::vector< MeshEntityType >& mesh_entity_types() const
         {
             return mesh_entity_types_.container();
-
         }
+
         index_t nb_mesh_entity_types() const
         {
             return static_cast< index_t >( mesh_entity_types_.size() );

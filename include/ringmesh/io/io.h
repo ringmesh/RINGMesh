@@ -81,16 +81,18 @@ namespace RINGMesh {
      * @param[out] geomodel the geomodel to fill
      * @param[in] filename the file to load
      */
-    bool RINGMESH_API geomodel_load(
-        GeoModel< 3 >& geomodel,
+    template< index_t DIMENSION >
+    bool geomodel_load(
+        GeoModel< DIMENSION >& geomodel,
         const std::string& filename );
     /*!
      * Saves a GeoModel to a file
      * @param[in] geomodel the geomodel to save
      * @param[in] filename the file to save
      */
-    void RINGMESH_API geomodel_save(
-        const GeoModel< 3 >& geomodel,
+    template< index_t DIMENSION >
+    void geomodel_save(
+        const GeoModel< DIMENSION >& geomodel,
         const std::string& filename );
     /*!
      * Loads a WellGroup from a file
@@ -101,22 +103,33 @@ namespace RINGMesh {
         const std::string& filename,
         WellGroup< 3 >& wells );
 
-    class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
+    /*!
+     * Returns the dimension of the GeoModel in the \p filename
+     */
+    index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
+
+    template< index_t DIMENSION >
+    class GeoModelIOHandler: public GEO::Counted {
     public:
         static void initialize_full_geomodel_output();
 
         static void initialize_boundary_geomodel_output();
 
-        static std::unique_ptr< GeoModelIOHandler > get_handler(
+        static std::unique_ptr< GeoModelIOHandler< DIMENSION > > get_handler(
             const std::string& filename );
 
         virtual bool load(
             const std::string& filename,
-            GeoModel< 3 >& geomodel ) = 0;
+            GeoModel< DIMENSION >& geomodel ) = 0;
 
         virtual void save(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) = 0;
+
+        virtual index_t dimension( const std::string& filename ) const
+        {
+            return DIMENSION;
+        }
 
     protected:
         GeoModelIOHandler() = default;
@@ -125,10 +138,17 @@ namespace RINGMesh {
         static GeoModelIOHandler* create( const std::string& format );
     };
 
-    using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler >;
+    template< index_t DIMENSION >
+    using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler< DIMENSION > >;
 
-#define ringmesh_register_GeoModelIOHandler_creator( type, name ) \
-    geo_register_creator( GeoModelIOHandlerFactory, type, name )
+    using GeoModelIOHandlerFactory2D = GeoModelIOHandlerFactory< 2 >;
+    using GeoModelIOHandlerFactory3D = GeoModelIOHandlerFactory< 3 >;
+
+#define ringmesh_register_GeoModelIOHandler2D_creator( type, name ) \
+    geo_register_creator( GeoModelIOHandlerFactory2D, type, name )
+
+#define ringmesh_register_GeoModelIOHandler3D_creator( type, name ) \
+    geo_register_creator( GeoModelIOHandlerFactory3D, type, name )
 
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
