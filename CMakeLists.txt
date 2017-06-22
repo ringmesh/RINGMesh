@@ -287,7 +287,7 @@ add_library(RINGMesh SHARED
     
 
 # RINGMesh depends on Geogram
-add_dependencies(RINGMesh geogram_ext)
+add_dependencies(RINGMesh geogram_ext tinyxml2_ext zlib_ext)
 
 # Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})

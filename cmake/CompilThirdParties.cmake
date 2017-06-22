@@ -101,8 +101,7 @@ ExternalProject_Add(tinyxml2_ext
 
   #--Configure step-------------
   SOURCE_DIR ${TINYXML2_PATH}
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${TINYXML2_PATH}
-        -G ${CMAKE_GENERATOR} 
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${TINYXML2_PATH} 
   
   #--Build step-----------------
   BINARY_DIR ${TINYXML2_PATH_BIN}
