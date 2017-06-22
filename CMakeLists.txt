@@ -30,86 +30,43 @@
 #     2 Rue du Doyen Marcel Roubault - TSA 70605
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
-
+#------------------------------------------------------------------------------------------------
 # Root CMakeList of RINGMesh project
-cmake_minimum_required(VERSION 2.8)
+#------------------------------------------------------------------------------------------------
 
+cmake_minimum_required(VERSION 2.8)
+set(USER_CONFIG "${CMAKE_SOURCE_DIR}/cmake/UserConfig.cmake" CACHE PATH
+  "Path to optional user configuration file.")
+    
 #------------------------------------------------------------------------------------------------
 # Options of the RINGMesh project 
-# They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
+# They can be set
+# 1 - using CMake GUI, 
+# 2 - in command line: cmake -D<var>:<type>=<value> MyProjectFolder
+# 3 - by creating a UserConfig.cmake file in the cmake directory (see DefaultConfig.cmake)
 
-# Configuration modes - Debug and Release by default + RelWithDebInfo for Windows.
-# RelWithDebInfo is mandatory to debug some plugins in Windows in debug mode (e.g., a Gocad plugin) to
-# avoid issues in particular in the STL (e.g., bad transfer of std::string from Gocad to RINGMesh).
-set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
+# Load user settings before the defaults - this way the defaults will not
+# overwrite the user set options. If the user has not set all options, we still
+# have the defaults.
+message(STATUS "(optional) USER_CONFIG = ${USER_CONFIG}")
+include("${USER_CONFIG}" OPTIONAL)
+include("${CMAKE_SOURCE_DIR}/cmake/DefaultConfig.cmake")
 
-# If a path is specified RINGMesh will be compiled to work with - empty by default
-set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
-if(MG_TETRA)
-    set(USE_MG_TETRA ON)
-    message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
-endif(MG_TETRA)
-  
-
-# By default RINGMesh will be compiled with OpenMP flags
-option(USE_OPENMP "Use Open MP" ON)
-
-# By default RINGMesh is compiled with Tetgen  
-# Check Tetgen licences to ensure you have the right to use it freely
-option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
-
-# Optional components of RINGMesh - creation of specific targets
-option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
+#------------------------------------------------------------------------------------------------
+#ensure consistent choice in configuration options
 include(CMakeDependentOption)
 # Option to build ringmesh-view. Disable when RINGMESH_WITH_GRAPHICS
 # is OFF. The fist time RINGMESH_WITH_GRAPHICS is ON, this
 # option is ON.
 CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
     "RINGMESH_WITH_GRAPHICS" OFF)
-
-option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
-option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
-option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
-option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
-
 # Option to test ringmesh-view. Disable when BUILD_RINGMESH_VIEW
 # is OFF. The fist time BUILD_RINGMESH_VIEW is ON, this
 # option is ON.
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
     "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
-
-# Optional custom steps 
-option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
-
-# Optional custom configuration of data directories
-if(RINGMESH_WITH_TESTS)
-    set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
-    set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
-    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
-    # PROJECT_BINARY_DIR not defined at this point
-    set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
-    if(UNIX)    
-      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
-    endif()    
-endif()
-
-# Optional custom configuration of tutorials directories
-if(RINGMESH_WITH_TUTORIALS)
-    set(TUTORIALS_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/tutorials)
-    set(TUTORIALS_SOURCE_DIRECTORY ${TUTORIALS_DIRECTORY}/src)
-    set(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data")
-    # PROJECT_BINARY_DIR not defined at this point
-    set(TUTORIALS_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tutorials/output" CACHE PATH "Output data location")
-    if(UNIX)    
-      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
-    endif() 
-endif()
-
-if(RINGMESH_WITH_GEOLOGYJS)
-    set(GEOLOGY_JS_DIRECTORY "${CMAKE_SOURCE_DIR}/../geology.js/cpp" CACHE PATH "geology.js cpp directory location")
-    message(STATUS ${GEOLOGY_JS_DIRECTORY})
-endif(RINGMESH_WITH_GEOLOGYJS)
-
+	
+#------------------------------------------------------------------------------------------------
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
