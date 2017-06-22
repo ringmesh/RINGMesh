@@ -57,38 +57,59 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelGfx {
-    ringmesh_disable_copy( GeoModelGfx );
+    template< index_t DIMENSION >
+    class GeoModelGfxBase {
+    ringmesh_disable_copy( GeoModelGfxBase );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-
-        GeoModelGfx();
-        ~GeoModelGfx() = default;
+        virtual ~GeoModelGfxBase() = default;
 
         /*!
          * Sets the GeoModel associated to the graphics
          * @param[in] geomodel the GeoModel
          */
-        void set_geomodel( const GeoModel< 3 >& geomodel );
+        void set_geomodel( const GeoModel< DIMENSION >& geomodel );
         /*!
          * Gets the GeoModel associated to the graphics
          * @return the GeoModel
          */
-        const GeoModel< 3 >* geomodel() const;
+        const GeoModel< DIMENSION >* geomodel() const;
+
+    protected:
         /*!
          * Initializes the database according the GeoModel dimensions
          */
-        void initialize();
+        virtual void initialize();
+
+        GeoModelGfxBase( GeoModelGfx< DIMENSION >& gfx );
 
     private:
         /// The GeoModel associated to the graphics
-        const GeoModel< 3 >* geomodel_;
+        const GeoModel< DIMENSION >* geomodel_;
 
     public:
-        CornerGfxEntity corners;
-        LineGfxEntity lines;
-        SurfaceGfxEntity surfaces;
-        RegionGfxEntity regions;
-        AttributeGfxManager attribute;
+        CornerGfxEntity< DIMENSION > corners;
+        LineGfxEntity< DIMENSION > lines;
+        SurfaceGfxEntity< DIMENSION > surfaces;
+        AttributeGfxManager< DIMENSION > attribute;
+    };
+
+    template< index_t DIMENSION >
+    class GeoModelGfx final: public GeoModelGfxBase< DIMENSION > {
+    public:
+        GeoModelGfx();
+    };
+
+
+    template< >
+    class GeoModelGfx< 3 > final: public GeoModelGfxBase< 3 > {
+    public:
+        GeoModelGfx();
+
+        virtual void initialize();
+
+    public:
+        RegionGfxEntity< 3 > regions;
     };
 }
 
