@@ -418,9 +418,9 @@ namespace {
     {
         GEO::LineInput file_line( mesh_entities_filename );
         while( !file_line.eof() && file_line.get_line() ) {
+            file_line.get_fields();
             if( file_line.nb_fields() == 2 ) {
-                file_line.get_fields();
-                if( file_line.field_matches( 0, "dimension" ) ) {
+                if( file_line.field_matches( 0, "Dimension" ) ) {
                     return file_line.field_as_int( 1 );
                 }
             }
