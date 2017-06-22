@@ -35,7 +35,7 @@
 
 #include <ringmesh/geomodel/stratigraphic_column_builder.h>
 
-#include <tinyxml2/tinyxml2.h>
+#include <tinyxml2.h>
 
 #include <ringmesh/geomodel/geomodel_api.h>
 
