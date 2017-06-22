@@ -144,14 +144,13 @@ namespace RINGMesh {
 
     index_t find_geomodel_dimension( const std::string& filename )
     {
-        std::unique_ptr< GeoModelIOHandler< 2 > > handler2d =
-            GeoModelIOHandler< 2 >::get_handler( filename );
-        std::unique_ptr< GeoModelIOHandler< 3 > > handler3d =
-            GeoModelIOHandler< 3 >::get_handler( filename );
-        if( handler2d ) {
-            return handler2d->dimension( filename );
-        } else if( handler3d ) {
-            return handler3d->dimension( filename );
+        std::string ext = GEO::FileSystem::extension( filename );
+        if( GeoModelIOHandlerFactory2D::has_creator( ext ) ) {
+            return GeoModelIOHandler< 2 >::get_handler( filename )->dimension(
+                filename );
+        } else if( GeoModelIOHandlerFactory3D::has_creator( ext ) ) {
+            return GeoModelIOHandler< 3 >::get_handler( filename )->dimension(
+                filename );
         } else {
             ringmesh_assert_not_reached;
         }
