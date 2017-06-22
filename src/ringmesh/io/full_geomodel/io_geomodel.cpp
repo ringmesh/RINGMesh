@@ -367,6 +367,36 @@ namespace {
         }
         logger->set_quiet( logger_status );
     }
+    template< index_t DIMENSION >
+    void save_all_geomodel_mesh_entities_base(
+        const GeoModel< DIMENSION >& geomodel,
+        std::vector< std::string >& filenames )
+    {
+        save_geomodel_mesh_entities< Corner, DIMENSION >( geomodel, filenames );
+        save_geomodel_mesh_entities< Line, DIMENSION >( geomodel, filenames );
+        save_geomodel_mesh_entities< Surface, DIMENSION >( geomodel, filenames );
+    }
+
+    template< index_t DIMENSION >
+    void save_all_geomodel_mesh_entities(
+        const GeoModel< DIMENSION >& geomodel,
+        std::vector< std::string >& filenames );
+
+    template< >
+    void save_all_geomodel_mesh_entities(
+        const GeoModel< 2 >& geomodel,
+        std::vector< std::string >& filenames )
+    {
+        save_all_geomodel_mesh_entities_base( geomodel, filenames );
+    }
+    template< >
+    void save_all_geomodel_mesh_entities(
+        const GeoModel< 3 >& geomodel,
+        std::vector< std::string >& filenames )
+    {
+        save_all_geomodel_mesh_entities_base( geomodel, filenames );
+        save_geomodel_mesh_entities< Region, 3 >( geomodel, filenames );
+    }
 
     template< index_t DIMENSION >
     index_t nb_mesh_entities( const GeoModel< DIMENSION >& geomodel );
@@ -449,10 +479,7 @@ namespace {
             index_t nb_mesh_entites = nb_mesh_entities( geomodel );
             std::vector< std::string > filenames;
             filenames.reserve( nb_mesh_entites );
-            save_geomodel_mesh_entities< Corner, DIMENSION >( geomodel, filenames );
-            save_geomodel_mesh_entities< Line, DIMENSION >( geomodel, filenames );
-            save_geomodel_mesh_entities< Surface, DIMENSION >( geomodel, filenames );
-            save_geomodel_regions( geomodel, filenames );
+            save_all_geomodel_mesh_entities( geomodel, filenames );
             std::sort( filenames.begin(), filenames.end() );
             zip_files( filenames, zf );
 
@@ -482,20 +509,4 @@ namespace {
             const GeoModel< DIMENSION >& geomodel,
             std::vector< std::string >& filenames );
     };
-
-    template< >
-    void GeoModelHandlerGM< 3 >::save_geomodel_regions(
-        const GeoModel< 3 >& geomodel,
-        std::vector< std::string >& filenames )
-    {
-        save_geomodel_mesh_entities< Region, 3 >( geomodel, filenames );
-    }
-
-    template< >
-    void GeoModelHandlerGM< 2 >::save_geomodel_regions(
-        const GeoModel< 2 >& geomodel,
-        std::vector< std::string >& filenames )
-    {
-    }
-
 }
