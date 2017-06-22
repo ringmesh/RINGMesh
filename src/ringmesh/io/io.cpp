@@ -198,16 +198,7 @@ namespace RINGMesh {
         return std::unique_ptr< GeoModelIOHandler< DIMENSION > >( create( ext ) );
     }
 
-//    template std::unique_ptr< GeoModelIOHandler< 2 > > RINGMESH_API GeoModelIOHandler<
-//        2 >::get_handler( const std::string& );
-//    template void RINGMESH_API GeoModelIOHandler< 2 >::initialize_full_geomodel_output();
-//    template void RINGMESH_API GeoModelIOHandler< 2 >::initialize_boundary_geomodel_output();
     template class RINGMESH_API GeoModelIOHandler< 2 > ;
-
-//    template std::unique_ptr< GeoModelIOHandler< 3 > > RINGMESH_API GeoModelIOHandler<
-//        3 >::get_handler( const std::string& );
-//    template void RINGMESH_API GeoModelIOHandler< 3 >::initialize_full_geomodel_output();
-//    template void RINGMESH_API GeoModelIOHandler< 3 >::initialize_boundary_geomodel_output();
     template class RINGMESH_API GeoModelIOHandler< 3 > ;
 
     template bool RINGMESH_API geomodel_load( GeoModel< 2 >&, const std::string& );
