@@ -464,8 +464,22 @@ if(BUILD_DOCUMENTATION)
 endif()
 
 
-if (COVERALLS)
 set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
+
+# Uncrustify pre-build command
+    add_custom_command(TARGET RINGMesh PRE_BUILD 
+        COMMAND  ${PROJECT_SOURCE_DIR}/doc/uncrustify/build/uncrustify -q --no-backup -c ${PROJECT_SOURCE_DIR}/doc/uncrustify.cfg ${ringmesh_files}
+        COMMENT "Uncrustify formatting on RINGMesh files")
+
+#FOREACH(ringmesh_file ${ringmesh_files})
+    #MESSAGE(STATUS ${ringmesh_file})
+#    add_custom_command(TARGET RINGMesh PRE_BUILD 
+#        COMMAND  "${PROJECT_SOURCE_DIR}/doc/uncrustify/build/uncrustify" -q -f ${ringmesh_file} -c "${PROJECT_SOURCE_DIR}/doc/uncrustify.cfg" -o ${ringmesh_file}
+#        COMMENT "Uncrustify formatting on RINGMesh files")
+#ENDFOREACH()
+
+
+if (COVERALLS)
     coveralls_setup(
     "${ringmesh_files}" 
         ${COVERALLS_UPLOAD}                 
