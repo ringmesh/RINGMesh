@@ -103,6 +103,11 @@ namespace RINGMesh {
         const std::string& filename,
         WellGroup< 3 >& wells );
 
+    /*!
+     * Returns the dimension of the GeoModel in the \p filename
+     */
+    index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
+
     template< index_t DIMENSION >
     class GeoModelIOHandler: public GEO::Counted {
     public:
