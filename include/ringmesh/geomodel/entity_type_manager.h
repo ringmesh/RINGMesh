@@ -173,8 +173,8 @@ namespace RINGMesh {
         const std::vector< MeshEntityType >& mesh_entity_types() const
         {
             return mesh_entity_types_.container();
-
         }
+
         index_t nb_mesh_entity_types() const
         {
             return static_cast< index_t >( mesh_entity_types_.size() );
