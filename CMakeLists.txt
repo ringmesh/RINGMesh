@@ -75,8 +75,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #------------------------------------------------------------------------------------------------
 # Additional cmake modules
 include(ExternalProject)
-# build export macros
-include (GenerateExportHeader) 
+
 
 # Enable testing with CTest
 enable_testing()
@@ -189,81 +188,8 @@ else(WIN32)
 endif(WIN32)
 
 #------------------------------------------------------------------------------------------------
-# Configure a header file to pass on some of the CMake settings
-# to the source code
-set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
-set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/basic/ringmesh_config.h.in)
-configure_file(${input_configure_file} ${generated_configure_file})
-
-# We want to be able to include this file
-include_directories(${PROJECT_BINARY_DIR})
-
-#------------------------------------------------------------------------------------------------
-# GEOGRAM 
-# Set the path to Geogram code
-set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/third_party/geogram)
-
-# Geogram platform dependent settings
-if(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
-    set(geoplatform Win-vs-dynamic-generic)  
-    # Extra lib 
-    set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
-    # TODO check that it is really necessary [JP]
-    add_compile_options(-DGEO_DYNAMIC_LIBS) 
-else(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
-    set(geoplatform Linux64-gcc-dynamic)
-endif(WIN32)
-
-# Define Geogram as an external project that we know how to
-# configure and compile
-ExternalProject_Add(geogram_ext
-  PREFIX ${GEOGRAM_PATH_BIN}
-  
-  #--Download step--------------
-  DOWNLOAD_COMMAND ""
-  
-  #--Update/Patch step----------
-  UPDATE_COMMAND ""
-
-  #--Configure step-------------
-  SOURCE_DIR ${GEOGRAM_PATH}
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
-        -G ${CMAKE_GENERATOR} 
-        -DVORPALINE_PLATFORM:STRING=${geoplatform}
-        -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
-        -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
-        -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-  
-  #--Build step-----------------
-  BINARY_DIR ${GEOGRAM_PATH_BIN}
-  #-- Command to build geogram
-  BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN} ${COMPILATION_OPTION}
-
-  #--Install step---------------
-  INSTALL_COMMAND "" 
-)
-
-ExternalProject_Add_Step(geogram_ext forcebuild
-    DEPENDERS build
-    ALWAYS 1
-  )
-
-# Add geogram include directories to the current ones
-include_directories(SYSTEM ${GEOGRAM_PATH}/src/lib)
-
-# Add geogram project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
-if(RINGMESH_WITH_GRAPHICS)
-    include(${GEOGRAM_PATH}/cmake/opengl.cmake)
-    set(EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx ${OPENGL_LIBRARIES})
-endif(RINGMESH_WITH_GRAPHICS)
-    
-# Add geogram bin directories to the current ones 
-# It would be preferable to set the imported library location [JP]
-link_directories(${GEOGRAM_PATH_BIN}/lib)
+# Compil Third Parties
+include("${CMAKE_SOURCE_DIR}/cmake/CompilThirdParties.cmake")
 
 #------------------------------------------------------------------------------------------------    
 # Get MG-Tetra if a path is given
@@ -324,21 +250,20 @@ ENDFOREACH()
 
 file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/third_party/zlib/*.c")
 file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/third_party/zlib/*.h")
-# Add configure file to ringmesh includes
-set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 
+#------------------------------------------------------------------------------------------------
 # Group files of a project in directories
 # All the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
 source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 
-set(tinyxml2_src "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.cpp")
-set(tinyxml2_include "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.h")
+#set(tinyxml2_src "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.cpp")
+#set(tinyxml2_include "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.h")
 
 # Group files of a project in directories
 # All the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
-source_group("tinyxml2" FILES ${tinyxml2_src} ${tinyxml2_include})
+#source_group("tinyxml2" FILES ${tinyxml2_src} ${tinyxml2_include})
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
@@ -350,9 +275,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
 
-#add generated export file to include directories
-set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
-set(ringmesh_include ${ringmesh_include} ${generated_export_file})
 
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED
@@ -363,14 +285,33 @@ add_library(RINGMesh SHARED
     ${tinyxml2_src}
     ${tinyxml2_include})
     
-# Function for generation of export macros for libraries (dll)
-generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
 
 # RINGMesh depends on Geogram
 add_dependencies(RINGMesh geogram_ext)
 
 # Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
+
+#------------------------------------------------------------------------------------------------
+# file automatically generated by cmake
+
+# generate configure file to pass on some of the CMake settings
+# to the source code
+# Add configure file to ringmesh includes
+
+set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
+set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/basic/ringmesh_config.h.in)
+configure_file(${input_configure_file} ${generated_configure_file})
+set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
+
+#generate macros for API export and add itbto include directories
+include (GenerateExportHeader) 
+set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
+set(ringmesh_include ${ringmesh_include} ${generated_export_file})
+generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
+
+# We want to be able to include these file
+include_directories(${PROJECT_BINARY_DIR})
 
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
