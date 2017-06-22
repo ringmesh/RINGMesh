@@ -142,6 +142,22 @@ namespace RINGMesh {
 
     /***************************************************************************/
 
+    index_t find_geomodel_dimension( const std::string& filename )
+    {
+        std::unique_ptr< GeoModelIOHandler< 2 > > handler2d =
+            GeoModelIOHandler< 2 >::get_handler( filename );
+        std::unique_ptr< GeoModelIOHandler< 3 > > handler3d =
+            GeoModelIOHandler< 3 >::get_handler( filename );
+        if( handler2d ) {
+            return handler2d->dimension( filename );
+        } else if( handler3d ) {
+            return handler3d->dimension( filename );
+        } else {
+            ringmesh_assert_not_reached;
+        }
+        return 0;
+    }
+
     template< index_t DIMENSION >
     bool geomodel_load(
         GeoModel< DIMENSION >& geomodel,
