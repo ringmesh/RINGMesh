@@ -73,49 +73,6 @@ namespace {
 }
 namespace RINGMesh {
 
-    template< index_t DIMENSION >
-    bool geomodel_load(
-        GeoModel< DIMENSION >& geomodel,
-        const std::string& filename )
-    {
-        if( !GEO::FileSystem::is_file( filename ) ) {
-            throw RINGMeshException( "I/O", "File does not exist: " + filename );
-        }
-        Logger::out( "I/O", "Loading file ", filename, "..." );
-
-        std::unique_ptr< GeoModelIOHandler< DIMENSION > > handler(
-            GeoModelIOHandler< DIMENSION >::get_handler( filename ) );
-        return handler->load( filename, geomodel );
-    }
-
-    template< index_t DIMENSION >
-    void geomodel_save(
-        const GeoModel< DIMENSION >& geomodel,
-        const std::string& filename )
-    {
-        Logger::out( "I/O", "Saving file ", filename, "..." );
-
-        std::unique_ptr< GeoModelIOHandler< DIMENSION > > handler(
-            GeoModelIOHandler< DIMENSION >::get_handler( filename ) );
-        handler->save( geomodel, filename );
-    }
-
-    /************************************************************************/
-
-    template bool RINGMESH_API geomodel_load(
-        GeoModel< 2 >& geomodel,
-        const std::string& filename );
-    template void RINGMESH_API geomodel_save(
-        const GeoModel< 2 >& geomodel,
-        const std::string& filename );
-
-    template bool RINGMESH_API geomodel_load(
-        GeoModel< 3 >& geomodel,
-        const std::string& filename );
-    template void RINGMESH_API geomodel_save(
-        const GeoModel< 3 >& geomodel,
-        const std::string& filename );
-
     template< >
     void GeoModelIOHandler< 2 >::initialize_full_geomodel_output()
     {
