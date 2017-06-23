@@ -38,6 +38,8 @@
 #include <iomanip>
 #include <deque>
 
+#include <tinyxml2/tinyxml2.h>
+
 #include <geogram/basic/command_line.h>
 
 #include <ringmesh/geomodel/geomodel.h>
@@ -66,6 +68,7 @@ namespace {
 #include "full_geomodel/io_gprs.cpp"
 #include "full_geomodel/io_mfem.cpp"
 #include "full_geomodel/io_msh.cpp"
+#include "full_geomodel/io_svg.cpp"
 #include "full_geomodel/io_tetgen.cpp"
 #include "full_geomodel/io_tsolid.cpp"
 #include "full_geomodel/io_vtk.cpp"
@@ -77,6 +80,7 @@ namespace RINGMesh {
     void GeoModelIOHandler< 2 >::initialize_full_geomodel_output()
     {
         ringmesh_register_GeoModelIOHandler2D_creator( GeoModelHandlerGM< 2 >, "gm" );
+        ringmesh_register_GeoModelIOHandler2D_creator( SVGIOHandler, "svg" );
     }
 
     /*
