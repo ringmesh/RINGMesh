@@ -494,8 +494,6 @@ namespace RINGMesh {
         Logger::instance()->set_minimal( false );
     }
 
-    template class RINGMESH_API GeoModelBuilderGM< 2 > ;
-
-    template class RINGMESH_API GeoModelBuilderGM< 3 > ;
-
+    template class GeoModelBuilderGM< 2 > ;
+    template class GeoModelBuilderGM< 3 > ;
 }
