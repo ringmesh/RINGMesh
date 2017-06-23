@@ -702,11 +702,11 @@ namespace RINGMesh {
     template class RINGMESH_API WellCorner< 2 > ;
     template class RINGMESH_API WellPart< 2 > ;
     template class RINGMESH_API Well< 2 > ;
-    template class WellGroup< 2 > ;
+    template class RINGMESH_API WellGroup< 2 > ;
 
     template class RINGMESH_API WellEntity< 3 > ;
     template class RINGMESH_API WellCorner< 3 > ;
     template class RINGMESH_API WellPart< 3 > ;
-    template class Well< 3 > ;
-    template class WellGroup< 3 > ;
+    template class RINGMESH_API Well< 3 > ;
+    template class RINGMESH_API WellGroup< 3 > ;
 }
