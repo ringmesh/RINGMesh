@@ -210,6 +210,7 @@ elseif(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     add_compile_options(-Wsign-conversion)
     add_compile_options(-Wdouble-promotion)
+    add_compile_options(-Wno-attributes)
 
      if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
