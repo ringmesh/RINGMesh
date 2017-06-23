@@ -26,9 +26,10 @@ Model Annot
 	volume = {182},
 	issn = {0037-9409},
 	number = {3},
-	journal = {Bulletin de la Sociéte Géologique de France},
+	journal = {Bulletin de la Sociï¿½te Gï¿½ologique de France},
 	author = {Salles, L. and Ford, M. and Joseph, P. and De Veslud, C.L.C. and Le Solleuz, A.},
 	year = {2011},
 	pages = {199--220}
 }
 
+Skecth.svg modified from http://newscenter.lbl.gov/2012/01/05/otway-project

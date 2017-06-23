@@ -35,6 +35,7 @@
 
 #include <ringmesh/io/io.h>
 
+#include <cctype>
 #include <iomanip>
 #include <deque>
 
