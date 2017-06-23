@@ -41,7 +41,7 @@ namespace {
      */
     class SMESHIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual void load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from UCD mesh not yet implemented" );

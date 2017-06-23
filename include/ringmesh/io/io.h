@@ -108,14 +108,18 @@ namespace RINGMesh {
         static std::unique_ptr< GeoModelIOHandler > get_handler(
             const std::string& filename );
 
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) = 0;
+        bool load_geomodel( const std::string& filename, GeoModel& geomodel );
+
+        void save_geomodel( const GeoModel& geomodel, const std::string& filename );
+
+    protected:
+        GeoModelIOHandler() = default;
+
+        virtual void load( const std::string& filename, GeoModel& geomodel ) = 0;
 
         virtual void save(
             const GeoModel& geomodel,
             const std::string& filename ) = 0;
-
-    protected:
-        GeoModelIOHandler() = default;
 
     private:
         static GeoModelIOHandler* create( const std::string& format );
@@ -192,6 +196,6 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler_var;
     typedef GEO::Factory0< StratigraphicColumnIOHandler > StratigraphicColumnIOHandlerFactory;
 
-    #define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
+#define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
 		geo_register_creator( StratigraphicColumnIOHandlerFactory, type, name )
 }

@@ -1082,6 +1082,8 @@ namespace RINGMesh {
 
         // Deliberate clear of the geomodel vertices used for geomodel building
         geomodel_.mesh.vertices.clear();
+
+        print_geomodel( geomodel_ );
     }
 
     GeoModelBuilderGeology::GeoModelBuilderGeology(

@@ -396,22 +396,14 @@ namespace {
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
          */
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual void load( const std::string& filename, GeoModel& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
             if( !input ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename );
             }
             GeoModelBuilderML builder( geomodel, filename );
-
             builder.build_geomodel();
-            print_geomodel( geomodel );
-            // Check validity
-            bool is_valid = is_geomodel_valid( geomodel );
-
-            Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from ",
-                filename );
-            return is_valid;
         }
 
         virtual void save( const GeoModel& geomodel, const std::string& filename ) final
