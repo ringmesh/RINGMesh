@@ -411,8 +411,9 @@ namespace RINGMesh {
         GM_gfx_.lines.set_vertex_visibility( line_id,
             line_style_.visible_vertices_ );
         const Line< DIMENSION >& line = GM_.line( line_id );
-        toggle_corner_visibility( line.boundary_gmme( 0 ).index() );
-        toggle_corner_visibility( line.boundary_gmme( 1 ).index() );
+        for( index_t i = 0; i < line.nb_boundaries(); i++ ) {
+            toggle_corner_visibility( line.boundary_gmme( i ).index() );
+        }
     }
 
     template< index_t DIMENSION >
