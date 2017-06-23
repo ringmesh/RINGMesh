@@ -2460,15 +2460,15 @@ namespace RINGMesh {
 
     template class RINGMESH_API GeoModelMeshBase< 2 > ;
     template class RINGMESH_API GeoModelMesh< 2 > ;
-    template class RINGMESH_API GeoModelMeshVerticesBase< 2 > ;
-    template class RINGMESH_API GeoModelMeshEdges< 2 > ;
-    template class RINGMESH_API GeoModelMeshPolygonsBase< 2 > ;
+    template class GeoModelMeshVerticesBase< 2 > ;
+    template class GeoModelMeshEdges< 2 > ;
+    template class GeoModelMeshPolygonsBase< 2 > ;
 
-    template class RINGMESH_API GeoModelMeshBase< 3 > ;
-    template class RINGMESH_API GeoModelMesh< 3 > ;
-    template class RINGMESH_API GeoModelMeshVerticesBase< 3 > ;
-    template class RINGMESH_API GeoModelMeshEdges< 3 > ;
-    template class RINGMESH_API GeoModelMeshPolygonsBase< 3 > ;
-    template class RINGMESH_API GeoModelMeshCells< 3 > ;
+    template class GeoModelMeshBase< 3 > ;
+    template class GeoModelMesh< 3 > ;
+    template class GeoModelMeshVerticesBase< 3 > ;
+    template class GeoModelMeshEdges< 3 > ;
+    template class GeoModelMeshPolygonsBase< 3 > ;
+    template class GeoModelMeshCells< 3 > ;
 
 }
