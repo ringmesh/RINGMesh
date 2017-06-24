@@ -33,6 +33,11 @@
  *     FRANCE
  */
 
+/*!
+ * @brief Classes to load and build a GeoModel< 2 > from a .svg
+ * @author Arnaud Botella
+ */
+
 namespace {
 
     class GeoModelBuilderSVG final : public GeoModelBuilderFile< 2 > {
@@ -146,7 +151,7 @@ namespace {
                 std::string& token = tokens[i];
                 if( std::isalpha( token.front() ) ) {
                     ringmesh_assert( token.size() == 1 );
-                    is_absolute = read_command( token );
+                    is_absolute = is_command_absolute( token );
                 } else {
                     vec2 vertex;
                     GEO::String::from_string( token, vertex.x );
@@ -205,13 +210,9 @@ namespace {
             }
         }
 
-        bool read_command( const std::string& letter ) const
+        bool is_command_absolute( const std::string& letter ) const
         {
-            if( letter == "M" || letter == "L" ) {
-                return true;
-            } else {
-                return false;
-            }
+            return letter == "M" || letter == "L";
         }
 
     private:
