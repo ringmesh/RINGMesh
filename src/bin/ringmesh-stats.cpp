@@ -51,6 +51,8 @@
  */
 
 namespace {
+    using namespace RINGMesh;
+
     void import_arg_group_stats()
     {
         GEO::CmdLine::declare_arg_group( "stats", "Statistics options" );
@@ -59,6 +61,28 @@ namespace {
         GEO::CmdLine::declare_arg( "stats:nb", true,
             "Print statistics on the number of entities" );
     }
+
+    void print_geomodel2d_stats( const std::string& model_name )
+    {
+        GeoModel< 2 > geomodel;
+        geomodel_load( geomodel, model_name );
+        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
+            print_geomodel_mesh_stats( geomodel );
+        }
+    }
+
+    void print_geomodel3d_stats( const std::string& model_name )
+    {
+        GeoModel< 3 > geomodel;
+        geomodel_load( geomodel, model_name );
+        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
+            print_geomodel_mesh_stats( geomodel );
+        }
+        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
+            print_geomodel_mesh_cell_volumes( geomodel );
+        }
+    }
+
 }
 
 int main( int argc, char** argv )
@@ -93,15 +117,12 @@ int main( int argc, char** argv )
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel< 3 > geomodel;
-        geomodel_load( geomodel, model_name );
 
-        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
-            print_geomodel_mesh_stats( geomodel );
-        }
-
-        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-            print_geomodel_mesh_cell_volumes( geomodel );
+        index_t dimension = find_geomodel_dimension( model_name );
+        if( dimension == 2 ) {
+            print_geomodel2d_stats( model_name );
+        } else if( dimension == 3 ) {
+            print_geomodel3d_stats( model_name );
         }
 
     } catch( const RINGMeshException& e ) {
