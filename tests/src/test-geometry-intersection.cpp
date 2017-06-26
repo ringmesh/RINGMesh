@@ -438,6 +438,71 @@ void test_line_line_intersection()
     Logger::out( "TEST", " " );
 }
 
+void test_segment_segment_intersection()
+{
+    Logger::out( "TEST", "Test Segment-Segment intersections" );
+
+    // Two non-intersecting segments
+    vec2 p0_seg0( 0., 0. );
+    vec2 p1_seg0( 1.5, 1.5 );
+    vec2 p0_seg1( 2., 2. );
+    vec2 p1_seg1( 3., 2. );
+    vec2 no_result;
+    verdict(
+        !segment_segment_intersection( p0_seg0, p1_seg0, p0_seg1, p1_seg1,
+            no_result ), "Test non-intersecting segments" );
+
+    // Two times the same segment
+    vec2 p0_seg0_same( 0., 0. );
+    vec2 p1_seg0_same( 1.5, 1.5 );
+    vec2 result_same;
+    verdict(
+        !segment_segment_intersection( p0_seg0_same, p1_seg0_same, p0_seg0_same,
+            p1_seg0_same, result_same ), "Test same segment" );
+
+    // Two intersecting segments
+    vec2 p0_seg0_inter( 0., 0. );
+    vec2 p1_seg0_inter( 1.5, 1.5 );
+    vec2 p0_seg1_inter( 2., 0. );
+    vec2 p1_seg1_inter( 0., 2. );
+    vec2 result_inter;
+    vec2 result_answer( 1., 1. );
+    verdict(
+        segment_segment_intersection( p0_seg0_inter, p1_seg0_inter, p0_seg1_inter,
+            p1_seg1_inter, result_inter )
+            && are_almost_equal( result_inter, result_answer ),
+        "Test intersecting segments" );
+
+
+    // Two intersecting segments from same origin
+    vec2 p0_seg0_inter2( 0., 0. );
+    vec2 p1_seg0_inter2( 1.5, 1.5 );
+    vec2 p1_seg1_inter2( 2., 0. );
+    vec2 result_inter2;
+    vec2 result_answer2( 0., 0. );
+    verdict(
+        segment_segment_intersection( p0_seg0_inter2, p1_seg0_inter2, p0_seg0_inter2,
+            p1_seg1_inter2, result_inter2 )
+            && are_almost_equal( result_inter2, result_answer2 ),
+        "Test intersecting segments from same origin" );
+
+
+    // Two intersecting segments at extremity
+    vec2 p0_seg0_inter3( 0., 0. );
+    vec2 p1_seg0_inter3( 1., 1. );
+    vec2 p0_seg1_inter3( 2., 0. );
+    vec2 p1_seg1_inter3( 0., 2. );
+    vec2 result_inter3;
+    vec2 result_answer3( 1., 1. );
+    verdict(
+        segment_segment_intersection( p0_seg0_inter3, p1_seg0_inter3, p0_seg1_inter3,
+            p1_seg1_inter3, result_inter3 )
+            && are_almost_equal( result_inter3, result_answer3 ),
+        "Test intersecting segments at one extremity" );
+
+    Logger::out( "TEST", " " );
+}
+
 int main()
 {
     try {
@@ -453,6 +518,7 @@ int main()
         test_circle_triangle_intersection();
         test_plane_plane_intersection();
         test_line_line_intersection();
+        test_segment_segment_intersection();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
