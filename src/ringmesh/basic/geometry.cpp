@@ -726,6 +726,30 @@ namespace RINGMesh {
         return true;
     }
 
+    bool triangle_barycentric_coordinates(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        const vec2& p2,
+        double lambda[3] )
+    {
+        double total_area = std::fabs( triangle_signed_area( p0, p1, p2 ) );
+        if( total_area < global_epsilon_sq ) {
+            for( index_t i = 0; i < 3; i++ ) {
+                lambda[i] = 0;
+            }
+            return false;
+        }
+        double area0 = triangle_signed_area( p2, p1, p );
+        double area1 = triangle_signed_area( p0, p2, p );
+        double area2 = triangle_signed_area( p1, p0, p );
+
+        lambda[0] = area0 / total_area;
+        lambda[1] = area1 / total_area;
+        lambda[2] = area2 / total_area;
+        return true;
+    }
+
     bool line_plane_intersection(
         const vec3& O_line,
         const vec3& D_line,

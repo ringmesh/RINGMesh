@@ -505,6 +505,22 @@ namespace RINGMesh {
         double lambda[3] );
 
     /*!
+     * Computes barycentric coordinates of \p p
+     * @param[in] p the query point
+     * @param[in] p0 the first triangle vertex
+     * @param[in] p1 the second triangle vertex
+     * @param[in] p2 the third triangle vertex
+     * @param[out] lambda the parametric coordinates corresponding to points
+     * @return false if the computation failed because of too small triangle area
+     */
+    bool RINGMESH_API triangle_barycentric_coordinates(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        const vec2& p2,
+        double lambda[3] );
+
+    /*!
      * @brief Builds a rotational matrix about an arbitrary axis.
      *
      * Mathematical development: http://paulbourke.net/geometry/rotate/.
