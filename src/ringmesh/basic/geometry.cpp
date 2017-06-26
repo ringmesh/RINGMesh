@@ -663,9 +663,9 @@ namespace RINGMesh {
             line_intersection_result ) ) {
             // Test whether the line-line intersection is on the segments.
             if( length( line_intersection_result - O_seg0 )
-                <= D_seg0.length() / 2. + global_epsilon
+                <= 0.5 * D_seg0.length() + global_epsilon
                 && length( line_intersection_result - O_seg1 )
-                    <= D_seg1.length() / 2. + global_epsilon ) {
+                    <= 0.5 * D_seg1.length() + global_epsilon ) {
                 result = line_intersection_result;
                 return true;
             }
