@@ -59,6 +59,8 @@ namespace RINGMesh {
         return !( u == v );
     }
 
+    double RINGMESH_API dot_perp( const vec2& v0, const vec2& v1 );
+
     /* @warning Duplicate from Geogram/basic/numeric.h */
     enum Sign {
         NEGATIVE = -1, ZERO = 0, POSITIVE = 1

@@ -54,13 +54,14 @@ namespace {
         return value < global_epsilon && value > -global_epsilon;
     }
 
+}
+
+namespace RINGMesh {
+
     double dot_perp( const vec2& v0, const vec2& v1 )
     {
         return dot( v0, vec2( v1.y, -v1.x ) );
     }
-}
-
-namespace RINGMesh {
 
     double triangle_signed_area(
         const vec3& p0,
