@@ -449,7 +449,7 @@ namespace RINGMesh {
      * @return returns true if the projection is possible
      */
     template< index_t DIMENSION >
-    bool RINGMESH_API point_segment_projection(
+    bool point_segment_projection(
         const vecn< DIMENSION >& p,
         const vecn< DIMENSION >& p0,
         const vecn< DIMENSION >& p1,
