@@ -56,7 +56,8 @@ void verdict( bool condition, std::string test_name )
     }
 }
 
-bool are_almost_equal( const vec3& vec0, const vec3& vec1 )
+template< index_t DIMENSION >
+bool are_almost_equal( const vecn< DIMENSION >& vec0, const vecn< DIMENSION >& vec1 )
 {
     return ( vec0 - vec1 ).length2() < global_epsilon_sq;
 }
@@ -400,6 +401,43 @@ void test_plane_plane_intersection()
     Logger::out( "TEST", " " );
 }
 
+void test_line_line_intersection()
+{
+    Logger::out( "TEST", "Test Line-Line intersections" );
+
+    // Two parallel lines
+    vec2 O_L0_parallel( 0., 0. );
+    vec2 D_L0_parallel( 1.5, 1.5 );
+    vec2 O_L1_parallel( 1., 1. );
+    vec2 result_parallel;
+    verdict(
+        !line_line_intersection( O_L0_parallel, D_L0_parallel, O_L1_parallel,
+            D_L0_parallel, result_parallel ), "Test parallel lines" );
+
+    // Two times the same line
+    vec2 O_L0_same( 0., 0. );
+    vec2 D_L0_same( 1.5, 1.5 );
+    vec2 D_L1_same( -2.5, -2.5 );
+    vec2 result_same;
+    verdict(
+        !line_line_intersection( O_L0_same, D_L0_same, O_L0_same, D_L1_same,
+            result_same ), "Test same line" );
+
+    // Two intersecting lines
+    vec2 O_L0_inter( 0., 0. );
+    vec2 D_L0_inter( 1.5, 1.5 );
+    vec2 O_L1_inter( 2., 0. );
+    vec2 D_L1_inter( 2.5, -2.5 );
+    vec2 result_inter;
+    vec2 result_answer( 1., 1. );
+    verdict(
+        line_line_intersection( O_L0_inter, D_L0_inter, O_L1_inter, D_L1_inter,
+            result_inter ) && are_almost_equal( result_inter, result_answer ),
+        "Test intersecting lines" );
+
+    Logger::out( "TEST", " " );
+}
+
 int main()
 {
     try {
@@ -414,6 +452,7 @@ int main()
         test_disk_segment_intersection();
         test_circle_triangle_intersection();
         test_plane_plane_intersection();
+        test_line_line_intersection();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );

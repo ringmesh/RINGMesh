@@ -341,7 +341,7 @@ namespace RINGMesh {
     /*!
      * Computes the intersection between two planes
      * @param[in] O_P0 a point on the first plane
-     * @param[in] N_P0 the normal of the frst plane
+     * @param[in] N_P0 the normal of the first plane
      * @param[in] O_P1 a point on the second plane
      * @param[in] N_P1 the normal of the second plane
      * @param[out] O_inter a point on the intersected line
@@ -355,6 +355,22 @@ namespace RINGMesh {
         const vec3& N_P1,
         vec3& O_inter,
         vec3& N_inter );
+
+    /*!
+     * Computes the intersection between two lines
+     * @param[in] O_line0 a point on the first line
+     * @param[in] D_line0 the direction of the first line
+     * @param[in] O_line1 a point on the second line
+     * @param[in] D_line1 the direction of the second line
+     * @param[out] result the intersection
+     * @return true is there is an intersection between the lines
+     */
+    bool RINGMESH_API line_line_intersection(
+        const vec2& O_line0,
+        const vec2& D_line0,
+        const vec2& O_line1,
+        const vec2& D_line1,
+        vec2& result );
 
     /*!
      * @brief Tests if a point is inside a triangle

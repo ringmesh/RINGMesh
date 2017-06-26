@@ -53,6 +53,11 @@ namespace {
     {
         return value < global_epsilon && value > -global_epsilon;
     }
+
+    double dot_perp( const vec2& v0, const vec2& v1 )
+    {
+        return dot( v0, vec2( v1.y, -v1.x ) );
+    }
 }
 
 namespace RINGMesh {
@@ -608,6 +613,37 @@ namespace RINGMesh {
         double c1 = ( const_P1 - norm_d * const_P0 ) * invDet;
         O_inter = c0 * norm_N_P0 + c1 * norm_N_P1;
         D_inter = cross( norm_N_P0, norm_N_P1 );
+        return true;
+    }
+
+    bool line_line_intersection(
+        const vec2& O_line0,
+        const vec2& D_line0,
+        const vec2& O_line1,
+        const vec2& D_line1,
+        vec2& result )
+    {
+        // The intersection of two lines is a solution to P0 + s0*D0 = P1 + s1*D1.
+        // Rewrite this as s0*D0 - s1*D1 = P1 - P0 = Q.  If DotPerp(D0, D1)) = 0,
+        // the lines are parallel.  Additionally, if DotPerp(Q, D1)) = 0, the
+        // lines are the same.  If Dotperp(D0, D1)) is not zero, then
+        //   s0 = DotPerp(Q, D1))/DotPerp(D0, D1))
+        // produces the point of intersection.  Also,
+        //   s1 = DotPerp(Q, D0))/DotPerp(D0, D1))
+
+        vec2 norm_D_line0 = normalize( D_line0 );
+        vec2 norm_D_line1 = normalize( D_line1 );
+        vec2 diff = O_line1 - O_line0;
+        double D0DotPerpD1 = dot_perp( norm_D_line0, norm_D_line1 );
+        if( std::fabs( D0DotPerpD1 ) < global_epsilon ) {
+            // The lines are parallel.
+            return false;
+        }
+
+        double invD0DotPerpD1 = 1.0 / D0DotPerpD1;
+        double diffDotPerpD1 = dot_perp( diff, norm_D_line1 );
+        double s0 = diffDotPerpD1 * invD0DotPerpD1;
+        result = O_line0 + s0 * norm_D_line0;
         return true;
     }
 
