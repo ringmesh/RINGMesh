@@ -261,8 +261,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 add_library(RINGMesh SHARED
     ${ringmesh_include} 
     ${ringmesh_src})
-
-# RINGMesh depends on Geogram
+	
+# RINGMesh depends on Geogram Tinyxml2 and zlib
 add_dependencies(RINGMesh geogram_ext tinyxml2_ext zlib_ext)
 
 # Libraries to which RINGMesh should link
