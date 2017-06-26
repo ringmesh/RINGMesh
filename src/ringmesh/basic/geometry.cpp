@@ -1316,4 +1316,16 @@ namespace RINGMesh {
 
         return s1 == s2 && s2 == s3;
     }
+
+    template< index_t > bool RINGMESH_API point_segment_projection(
+        const vecn< 2 >&,
+        const vecn< 2 >&,
+        const vecn< 2 >&,
+        vecn< 2 >& );
+
+    template< index_t > bool RINGMESH_API point_segment_projection(
+        const vecn< 3 >&,
+        const vecn< 3 >&,
+        const vecn< 3 >&,
+        vecn< 3 >& );
 }
