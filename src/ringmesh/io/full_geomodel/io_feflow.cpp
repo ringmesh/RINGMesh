@@ -56,11 +56,10 @@ namespace {
     public:
         static const index_t STARTING_OFFSET = 1 ;
 
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Feflow not implemented yet" ) ;
-            return false ;
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename )
         {

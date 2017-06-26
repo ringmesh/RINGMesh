@@ -44,11 +44,10 @@ namespace {
             index_t v0;
             index_t v1;
         };
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual void load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" );
-            return false;
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {

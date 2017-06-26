@@ -82,7 +82,7 @@ namespace RINGMesh {
 
         std::unique_ptr< GeoModelIOHandler > handler(
             GeoModelIOHandler::get_handler( filename ) );
-        return handler->load( filename, geomodel );
+        return handler->load_geomodel( filename, geomodel );
     }
 
     void geomodel_save( const GeoModel& geomodel, const std::string& filename )
@@ -91,7 +91,7 @@ namespace RINGMesh {
 
         std::unique_ptr< GeoModelIOHandler > handler(
             GeoModelIOHandler::get_handler( filename ) );
-        handler->save( geomodel, filename );
+        handler->save_geomodel( geomodel, filename );
     }
 
     /************************************************************************/

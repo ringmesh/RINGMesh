@@ -39,6 +39,9 @@
 
 #include <geogram/basic/file_system.h>
 
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_validity.h>
+
 /*!
  * @file Please add a file description
  * @author Arnaud Botella
@@ -137,6 +140,23 @@ namespace RINGMesh {
     }
 
     /***************************************************************************/
+
+    bool GeoModelIOHandler::load_geomodel(
+        const std::string& filename,
+        GeoModel& geomodel )
+    {
+        load( filename, geomodel );
+        Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from ",
+            filename );
+        return is_geomodel_valid( geomodel );
+    }
+
+    void GeoModelIOHandler::save_geomodel(
+        const GeoModel& geomodel,
+        const std::string& filename )
+    {
+        save( geomodel, filename );
+    }
 
     GeoModelIOHandler* GeoModelIOHandler::create( const std::string& format )
     {
