@@ -36,31 +36,15 @@
 namespace {
     class TSolidIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual void load( const std::string& filename, GeoModel& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
-            if( input ) {
-                GeoModelBuilderTSolid builder( geomodel, filename );
-
-                time_t start_load, end_load;
-                time( &start_load );
-
-                builder.build_geomodel();
-                print_geomodel( geomodel );
-                // Check boundary geomodel validity
-                bool is_valid = is_geomodel_valid( geomodel );
-
-                time( &end_load );
-
-                Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from " );
-                Logger::out( "I/O", filename, " timing: ",
-                    difftime( end_load, start_load ), "sec" );
-                return is_valid;
-            } else {
+            if( !input ) {
                 throw RINGMeshException( "I/O",
                     "Failed loading geomodel from file " + filename );
-                return false;
             }
+            GeoModelBuilderTSolid builder( geomodel, filename );
+            builder.build_geomodel();
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
