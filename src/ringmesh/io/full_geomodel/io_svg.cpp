@@ -130,12 +130,18 @@ namespace {
             index_t index = 0;
             for( index_t l = 0; l < geomodel_.nb_lines(); l++ ) {
                 gmme_id line_id( Line < 2 > ::type_name_static(), l );
-                gmme_id corner0( Corner < 2 > ::type_name_static(),
-                    index_map[index++ ] );
-                gmme_id corner1( Corner < 2 > ::type_name_static(),
-                    index_map[index++ ] );
+                index_t point0 = index_map[index++ ];
+                gmme_id corner0( Corner < 2 > ::type_name_static(), point0 );
+                index_t point1 = index_map[index++ ];
+                gmme_id corner1( Corner < 2 > ::type_name_static(), point1 );
                 topology.add_mesh_entity_boundary_relation( line_id, corner0 );
                 topology.add_mesh_entity_boundary_relation( line_id, corner1 );
+
+                geometry.set_mesh_entity_vertex( line_id, 0, unique_points[point0],
+                    false );
+                geometry.set_mesh_entity_vertex( line_id,
+                    geomodel_.line( l ).nb_vertices() - 1, unique_points[point1],
+                    false );
             }
         }
 
@@ -227,7 +233,7 @@ namespace {
         {
             GeoModelBuilderSVG builder( geomodel, filename );
             builder.build_geomodel();
-            return false;
+            return is_geomodel_valid( geomodel );
         }
         virtual void save(
             const GeoModel< 2 >& geomodel,
