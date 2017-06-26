@@ -373,6 +373,22 @@ namespace RINGMesh {
         vec2& result );
 
     /*!
+     * Computes the intersection between two segments
+     * @param[in] p0_seg0 the first vertex of the segment
+     * @param[in] p1_seg0 the second vertex of the segment
+     * @param[in] p0_seg1 the first vertex of the segment
+     * @param[in] p1_seg1 the second vertex of the segment
+     * @param[out] result the intersection
+     * @return true is there is an intersection between the segments
+     */
+    bool RINGMESH_API segment_segment_intersection(
+        const vec2& p0_seg0,
+        const vec2& p1_seg0,
+        const vec2& p0_seg1,
+        const vec2& p1_seg1,
+        vec2& result );
+
+    /*!
      * @brief Tests if a point is inside a triangle
      * @details if it is inside a prism based on the triangle and its normal
      * @param[in] p the point to test
