@@ -53,9 +53,15 @@ namespace {
     {
         return value < global_epsilon && value > -global_epsilon;
     }
+
 }
 
 namespace RINGMesh {
+
+    double dot_perp( const vec2& v0, const vec2& v1 )
+    {
+        return dot( v0, vec2( v1.y, -v1.x ) );
+    }
 
     double triangle_signed_area(
         const vec3& p0,
@@ -611,6 +617,63 @@ namespace RINGMesh {
         return true;
     }
 
+    bool line_line_intersection(
+        const vec2& O_line0,
+        const vec2& D_line0,
+        const vec2& O_line1,
+        const vec2& D_line1,
+        vec2& result )
+    {
+        // The intersection of two lines is a solution to P0 + s0*D0 = P1 + s1*D1.
+        // Rewrite this as s0*D0 - s1*D1 = P1 - P0 = Q.  If DotPerp(D0, D1)) = 0,
+        // the lines are parallel.  Additionally, if DotPerp(Q, D1)) = 0, the
+        // lines are the same.  If Dotperp(D0, D1)) is not zero, then
+        //   s0 = DotPerp(Q, D1))/DotPerp(D0, D1))
+        // produces the point of intersection.  Also,
+        //   s1 = DotPerp(Q, D0))/DotPerp(D0, D1))
+
+        vec2 norm_D_line0 = normalize( D_line0 );
+        vec2 norm_D_line1 = normalize( D_line1 );
+        vec2 diff = O_line1 - O_line0;
+        double D0DotPerpD1 = dot_perp( norm_D_line0, norm_D_line1 );
+        if( std::fabs( D0DotPerpD1 ) < global_epsilon ) {
+            // The lines are parallel.
+            return false;
+        }
+
+        double invD0DotPerpD1 = 1.0 / D0DotPerpD1;
+        double diffDotPerpD1 = dot_perp( diff, norm_D_line1 );
+        double s0 = diffDotPerpD1 * invD0DotPerpD1;
+        result = O_line0 + s0 * norm_D_line0;
+        return true;
+    }
+
+    bool segment_segment_intersection(
+        const vec2& p0_seg0,
+        const vec2& p1_seg0,
+        const vec2& p0_seg1,
+        const vec2& p1_seg1,
+        vec2& result )
+    {
+        vec2 O_seg0( ( p0_seg0 + p1_seg0 ) / 2. );
+        vec2 D_seg0( p1_seg0 - p0_seg0 );
+        vec2 O_seg1( ( p0_seg1 + p1_seg1 ) / 2. );
+        vec2 D_seg1( p1_seg1 - p0_seg1 );
+        vec2 line_intersection_result;
+        if( line_line_intersection( O_seg0, D_seg0, O_seg1, D_seg1,
+            line_intersection_result ) ) {
+            // Test whether the line-line intersection is on the segments.
+            if( length( line_intersection_result - O_seg0 )
+                <= 0.5 * D_seg0.length() + global_epsilon
+                && length( line_intersection_result - O_seg1 )
+                    <= 0.5 * D_seg1.length() + global_epsilon ) {
+                result = line_intersection_result;
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
@@ -656,6 +719,30 @@ namespace RINGMesh {
         double area0 = triangle_signed_area( p2, p1, p, triangle_normal );
         double area1 = triangle_signed_area( p0, p2, p, triangle_normal );
         double area2 = triangle_signed_area( p1, p0, p, triangle_normal );
+
+        lambda[0] = area0 / total_area;
+        lambda[1] = area1 / total_area;
+        lambda[2] = area2 / total_area;
+        return true;
+    }
+
+    bool triangle_barycentric_coordinates(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        const vec2& p2,
+        double lambda[3] )
+    {
+        double total_area = std::fabs( triangle_signed_area( p0, p1, p2 ) );
+        if( total_area < global_epsilon_sq ) {
+            for( index_t i = 0; i < 3; i++ ) {
+                lambda[i] = 0;
+            }
+            return false;
+        }
+        double area0 = triangle_signed_area( p2, p1, p );
+        double area1 = triangle_signed_area( p0, p2, p );
+        double area2 = triangle_signed_area( p1, p0, p );
 
         lambda[0] = area0 / total_area;
         lambda[1] = area1 / total_area;
@@ -1254,4 +1341,16 @@ namespace RINGMesh {
 
         return s1 == s2 && s2 == s3;
     }
+
+    template bool RINGMESH_API point_segment_projection(
+        const vecn< 2 >&,
+        const vecn< 2 >&,
+        const vecn< 2 >&,
+        vecn< 2 >& );
+
+    template bool RINGMESH_API point_segment_projection(
+        const vecn< 3 >&,
+        const vecn< 3 >&,
+        const vecn< 3 >&,
+        vecn< 3 >& );
 }
