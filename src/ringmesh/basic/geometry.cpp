@@ -79,18 +79,7 @@ namespace RINGMesh {
 
     double triangle_signed_area( const vec2& A, const vec2& B, const vec2& C )
     {
-        vec2 AB = B - A;
-        vec2 AC = C - A;
-        double L_AB = length( AB );
-        if( L_AB < global_epsilon ) {
-            return 0.0;
-        }
-        vec2 projected = ( -AB / L_AB ) * ( dot( AC, AB ) / L_AB ) + A;
-        double area = L_AB * length( projected - C ) * 0.5;
-        if( AB.x * AC.y - AC.x * AB.y < 0 ) {
-            area = -area;
-        }
-        return area;
+        return GEO::Geom::triangle_signed_area( A, B, C );
     }
 
     bool operator==( const vec3& u, const vec3& v )
@@ -733,8 +722,8 @@ namespace RINGMesh {
         const vec2& p2,
         double lambda[3] )
     {
-        double total_area = std::fabs( triangle_signed_area( p0, p1, p2 ) );
-        if( total_area < global_epsilon_sq ) {
+        double total_area = triangle_signed_area( p2, p1, p0 );
+        if( std::fabs( total_area ) < global_epsilon_sq ) {
             for( index_t i = 0; i < 3; i++ ) {
                 lambda[i] = 0;
             }
