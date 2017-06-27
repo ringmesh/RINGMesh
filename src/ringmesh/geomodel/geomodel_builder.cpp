@@ -582,8 +582,8 @@ namespace {
 
             index_t t = get_next_border_polygon( cur_border_polygon_, backward );
             ringmesh_assert( t != NO_ID );
-            while( t != cur_border_polygon_ && !is_visited( t )
-                && equal_to_line_adjacent_surfaces( get_adjacent_surfaces( t ) ) ) {
+            while( t != cur_border_polygon_ || !is_visited( t )
+                || equal_to_line_adjacent_surfaces( get_adjacent_surfaces( t ) ) ) {
                 visit_border_polygons_on_same_edge( t );
                 add_border_polygon_vertices_to_line( t, backward );
                 t = get_next_border_polygon( t, backward );
