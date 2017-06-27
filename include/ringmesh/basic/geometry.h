@@ -78,11 +78,6 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& triangle_normal );
 
-    double RINGMESH_API triangle_signed_area(
-        const vec2& A,
-        const vec2& B,
-        const vec2& C );
-
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
