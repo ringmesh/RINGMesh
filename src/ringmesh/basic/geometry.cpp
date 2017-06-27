@@ -77,22 +77,6 @@ namespace RINGMesh {
         return area;
     }
 
-    double triangle_signed_area( const vec2& A, const vec2& B, const vec2& C )
-    {
-        vec2 AB = B - A;
-        vec2 AC = C - A;
-        double L_AB = length( AB );
-        if( L_AB < global_epsilon ) {
-            return 0.0;
-        }
-        vec2 projected = ( -AB / L_AB ) * ( dot( AC, AB ) / L_AB ) + A;
-        double area = L_AB * length( projected - C ) * 0.5;
-        if( AB.x * AC.y - AC.x * AB.y < 0 ) {
-            area = -area;
-        }
-        return area;
-    }
-
     bool operator==( const vec3& u, const vec3& v )
     {
         return u.x == v.x && u.y == v.y && u.z == v.z;
@@ -733,16 +717,16 @@ namespace RINGMesh {
         const vec2& p2,
         double lambda[3] )
     {
-        double total_area = std::fabs( triangle_signed_area( p0, p1, p2 ) );
-        if( total_area < global_epsilon_sq ) {
+        double total_area = GEO::Geom::triangle_signed_area( p2, p1, p0 );
+        if( std::fabs( total_area ) < global_epsilon_sq ) {
             for( index_t i = 0; i < 3; i++ ) {
                 lambda[i] = 0;
             }
             return false;
         }
-        double area0 = triangle_signed_area( p2, p1, p );
-        double area1 = triangle_signed_area( p0, p2, p );
-        double area2 = triangle_signed_area( p1, p0, p );
+        double area0 = GEO::Geom::triangle_signed_area( p2, p1, p );
+        double area1 = GEO::Geom::triangle_signed_area( p0, p2, p );
+        double area2 = GEO::Geom::triangle_signed_area( p1, p0, p );
 
         lambda[0] = area0 / total_area;
         lambda[1] = area1 / total_area;
@@ -1300,17 +1284,17 @@ namespace RINGMesh {
     {
         Sign s1, s2, s3;
         if( !exact_predicates ) {
-            double area1 = triangle_signed_area( p, p0, p1 );
+            double area1 = GEO::Geom::triangle_signed_area( p, p0, p1 );
             if( is_almost_zero( area1 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
             s1 = sign( area1 );
-            double area2 = triangle_signed_area( p, p1, p2 );
+            double area2 = GEO::Geom::triangle_signed_area( p, p1, p2 );
             if( is_almost_zero( area2 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
             s2 = sign( area2 );
-            double area3 = triangle_signed_area( p, p2, p0 );
+            double area3 = GEO::Geom::triangle_signed_area( p, p2, p0 );
             if( is_almost_zero( area3 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
