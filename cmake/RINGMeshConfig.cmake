@@ -104,7 +104,7 @@ else(WIN32)
 endif(WIN32)
 message(STATUS "Using RINGMesh directory = ${RINGMesh_HOME}")
 
-function(set_ringmesh_includes_and_libs)
+function(set_ringmesh_includes_and_libs extra_libs)
 if(RINGMesh_FOUND)
     MESSAGE(STATUS "RINGMesh is found!")
     MESSAGE(STATUS "RINGMesh include directory ${RINGMesh_INCLUDE_DIR}")
@@ -125,7 +125,7 @@ if(RINGMesh_FOUND)
     # Add RINGMesh include directories
     include_directories(${RINGMesh_INCLUDE_DIRS})
     # Add RINGMesh project libs to the libs with which RINGMecha will link
-    set(EXTRA_LIBS ${EXTRA_LIBS} ${RINGMesh_LIBRARIES})
+    set(${extra_libs} ${${extra_libs}} ${RINGMesh_LIBRARIES} PARENT_SCOPE)
 else(RINGMesh_FOUND)
     # In theory find_package with REQUIRED stops the cmake generation if the package is not found, so this else should never happen...
     MESSAGE(FATAL_ERROR "RINGMesh not found")
