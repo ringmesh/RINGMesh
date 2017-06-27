@@ -111,7 +111,7 @@ ExternalProject_Add_Step(tinyxml2_ext forcebuild
   )
 
 # Add tinyxml2 include directories to the current ones
-include_directories(SYSTEM ${TINYXML2_PATH})
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
 
 # Add tinyxml2 project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} tinyxml2)
@@ -164,7 +164,7 @@ ExternalProject_Add_Step(zlib_ext forcebuild
   )
 
 # Add zlib include directories to the current ones
-include_directories(SYSTEM ${ZLIB_PATH})
+# same as tinyxml2
 
 # Add tinyxml2 project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} zlib)
