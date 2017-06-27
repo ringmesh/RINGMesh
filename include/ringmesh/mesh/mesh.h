@@ -652,7 +652,7 @@ namespace RINGMesh {
             for( index_t i = 1; i + 1 < nb_polygon_vertices( polygon_id ); i++ ) {
                 const vec2& p2 = vertex( polygon_vertex( polygon_id, i ) );
                 const vec2& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
-                result += triangle_signed_area( p1, p2, p3 );
+                result += GEO::Geom::triangle_signed_area( p1, p2, p3 );
             }
             return std::fabs( result );
         }
