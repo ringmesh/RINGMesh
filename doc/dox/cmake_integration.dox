@@ -64,7 +64,7 @@ All this steps are defined in the cmake/RINGMeshConfig.cmake file.
 message(STATUS "Using RINGMesh directory = ${RINGMesh_HOME}")
 
 find_package(RINGMesh REQUIRED PATHS ${RINGMesh_HOME}/cmake)
-set_ringmesh_includes_and_libs()
+set_ringmesh_includes_and_libs(EXTRA_LIBS)
 
 \endcode
 
