@@ -65,9 +65,10 @@ namespace {
         GEO::mesh_save( mesh, mesh_out_name );
     }
 
+    template< index_t DIMENSION >
     void convert_geomodel( const std::string& geomodel_in_name )
     {
-        GeoModel geomodel;
+        GeoModel< DIMENSION > geomodel;
         geomodel_load( geomodel, geomodel_in_name );
         std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( geomodel_out_name.empty() ) {
@@ -134,7 +135,12 @@ int main( int argc, char** argv )
         if( geomodel_in_name.empty() ) {
             convert_mesh( mesh_in_name );
         } else {
-            convert_geomodel( geomodel_in_name );
+            index_t dimension = find_geomodel_dimension( geomodel_in_name );
+            if( dimension == 2 ) {
+                convert_geomodel < 2 > ( geomodel_in_name );
+            } else if( dimension == 3 ) {
+                convert_geomodel < 3 > ( geomodel_in_name );
+            }
         }
 
     } catch( const RINGMeshException& e ) {

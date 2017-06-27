@@ -36,11 +36,8 @@
 #include <ringmesh/basic/geometry.h>
 
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_geometry.h>
 
 #include <geogram/numerics/predicates.h>
-
-#include <ringmesh/geogram_extension/geogram_extension.h>
 
 /*!
  * @file Basic geometrical requests 
@@ -57,6 +54,15 @@ namespace {
         return value < global_epsilon && value > -global_epsilon;
     }
 
+}
+
+namespace RINGMesh {
+
+    double dot_perp( const vec2& v0, const vec2& v1 )
+    {
+        return dot( v0, vec2( v1.y, -v1.x ) );
+    }
+
     double triangle_signed_area(
         const vec3& p0,
         const vec3& p1,
@@ -70,9 +76,22 @@ namespace {
         }
         return area;
     }
-}
 
-namespace RINGMesh {
+    double triangle_signed_area( const vec2& A, const vec2& B, const vec2& C )
+    {
+        vec2 AB = B - A;
+        vec2 AC = C - A;
+        double L_AB = length( AB );
+        if( L_AB < global_epsilon ) {
+            return 0.0;
+        }
+        vec2 projected = ( -AB / L_AB ) * ( dot( AC, AB ) / L_AB ) + A;
+        double area = L_AB * length( projected - C ) * 0.5;
+        if( AB.x * AC.y - AC.x * AB.y < 0 ) {
+            area = -area;
+        }
+        return area;
+    }
 
     bool operator==( const vec3& u, const vec3& v )
     {
@@ -89,10 +108,7 @@ namespace RINGMesh {
         const vec3& V0,
         const vec3& V1,
         const vec3& V2,
-        vec3& closest_point,
-        double& lambda0,
-        double& lambda1,
-        double& lambda2 )
+        vec3& closest_point )
     {
         vec3 diff = V0 - point;
         vec3 edge0 = V1 - V0;
@@ -255,10 +271,78 @@ namespace RINGMesh {
         }
 
         closest_point = V0 + s * edge0 + t * edge1;
-        lambda0 = 1.0 - s - t;
-        lambda1 = s;
-        lambda2 = t;
-        return sqrt( sqrDistance );
+        return std::sqrt( sqrDistance );
+    }
+
+    double point_segment_distance(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        vec2& nearest_p )
+    {
+        // The direction vector is not unit length.  The normalization is deferred
+        // until it is needed.
+        vec2 direction = p1 - p0;
+        vec2 diff = p - p1;
+        double t = dot( direction, diff );
+        if( t >= global_epsilon ) {
+            nearest_p = p1;
+        } else {
+            diff = p - p0;
+            t = dot( direction, diff );
+            if( t <= global_epsilon ) {
+                nearest_p = p0;
+            } else {
+                double sqrLength = dot( direction, direction );
+                if( sqrLength > global_epsilon ) {
+                    t /= sqrLength;
+                    nearest_p = p0 + t * direction;
+                } else {
+                    nearest_p = p0;
+                }
+            }
+        }
+
+        diff = p - nearest_p;
+        return std::sqrt( dot( diff, diff ) );
+    }
+
+    double point_triangle_distance(
+        const vec2& point,
+        const vec2& V0,
+        const vec2& V1,
+        const vec2& V2,
+        vec2& closest_point )
+    {
+        double result = max_float64();
+        if( point_inside_triangle( point, V0, V1, V2 ) ) {
+            closest_point = point;
+            result = 0.0;
+        } else {
+            vec2 closest[3];
+            double distance[3];
+            distance[0] = point_segment_distance( point, V0, V1, closest[0] );
+            distance[1] = point_segment_distance( point, V1, V2, closest[1] );
+            distance[2] = point_segment_distance( point, V2, V0, closest[2] );
+            if( distance[0] < distance[1] ) {
+                if( distance[0] < distance[2] ) {
+                    result = distance[0];
+                    closest_point = closest[0];
+                } else {
+                    result = distance[2];
+                    closest_point = closest[2];
+                }
+            } else {
+                if( distance[1] < distance[2] ) {
+                    result = distance[1];
+                    closest_point = closest[1];
+                } else {
+                    result = distance[2];
+                    closest_point = closest[2];
+                }
+            }
+        }
+        return result;
     }
 
     double point_tetra_distance(
@@ -270,7 +354,6 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[4] = { p0, p1, p2, p3 };
-        double not_used0, not_used1, not_used2;
         double dist = max_float64();
         for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
             f++ ) {
@@ -280,7 +363,7 @@ namespace RINGMesh {
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]],
-                    cur_p, not_used0, not_used1, not_used2 );
+                    cur_p );
             if( distance < dist ) {
                 dist = distance;
                 nearest_p = cur_p;
@@ -299,7 +382,6 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 };
-        double not_used0, not_used1, not_used2;
         double dist = max_float64();
         for( index_t f = 0;
             f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
@@ -313,7 +395,7 @@ namespace RINGMesh {
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
-                        cur_p, not_used0, not_used1, not_used2 );
+                        cur_p );
             } else if( nb_vertices == 4 ) {
                 distance =
                     point_quad_distance( p,
@@ -344,8 +426,6 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 };
-        double not_used0, not_used1, not_used2;
-
         double dist = max_float64();
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
             f++ ) {
@@ -359,7 +439,7 @@ namespace RINGMesh {
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
-                        cur_p, not_used0, not_used1, not_used2 );
+                        cur_p );
             } else if( nb_vertices == 4 ) {
                 distance =
                     point_quad_distance( p,
@@ -537,6 +617,63 @@ namespace RINGMesh {
         return true;
     }
 
+    bool line_line_intersection(
+        const vec2& O_line0,
+        const vec2& D_line0,
+        const vec2& O_line1,
+        const vec2& D_line1,
+        vec2& result )
+    {
+        // The intersection of two lines is a solution to P0 + s0*D0 = P1 + s1*D1.
+        // Rewrite this as s0*D0 - s1*D1 = P1 - P0 = Q.  If DotPerp(D0, D1)) = 0,
+        // the lines are parallel.  Additionally, if DotPerp(Q, D1)) = 0, the
+        // lines are the same.  If Dotperp(D0, D1)) is not zero, then
+        //   s0 = DotPerp(Q, D1))/DotPerp(D0, D1))
+        // produces the point of intersection.  Also,
+        //   s1 = DotPerp(Q, D0))/DotPerp(D0, D1))
+
+        vec2 norm_D_line0 = normalize( D_line0 );
+        vec2 norm_D_line1 = normalize( D_line1 );
+        vec2 diff = O_line1 - O_line0;
+        double D0DotPerpD1 = dot_perp( norm_D_line0, norm_D_line1 );
+        if( std::fabs( D0DotPerpD1 ) < global_epsilon ) {
+            // The lines are parallel.
+            return false;
+        }
+
+        double invD0DotPerpD1 = 1.0 / D0DotPerpD1;
+        double diffDotPerpD1 = dot_perp( diff, norm_D_line1 );
+        double s0 = diffDotPerpD1 * invD0DotPerpD1;
+        result = O_line0 + s0 * norm_D_line0;
+        return true;
+    }
+
+    bool segment_segment_intersection(
+        const vec2& p0_seg0,
+        const vec2& p1_seg0,
+        const vec2& p0_seg1,
+        const vec2& p1_seg1,
+        vec2& result )
+    {
+        vec2 O_seg0( ( p0_seg0 + p1_seg0 ) / 2. );
+        vec2 D_seg0( p1_seg0 - p0_seg0 );
+        vec2 O_seg1( ( p0_seg1 + p1_seg1 ) / 2. );
+        vec2 D_seg1( p1_seg1 - p0_seg1 );
+        vec2 line_intersection_result;
+        if( line_line_intersection( O_seg0, D_seg0, O_seg1, D_seg1,
+            line_intersection_result ) ) {
+            // Test whether the line-line intersection is on the segments.
+            if( length( line_intersection_result - O_seg0 )
+                <= 0.5 * D_seg0.length() + global_epsilon
+                && length( line_intersection_result - O_seg1 )
+                    <= 0.5 * D_seg1.length() + global_epsilon ) {
+                result = line_intersection_result;
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
@@ -582,6 +719,30 @@ namespace RINGMesh {
         double area0 = triangle_signed_area( p2, p1, p, triangle_normal );
         double area1 = triangle_signed_area( p0, p2, p, triangle_normal );
         double area2 = triangle_signed_area( p1, p0, p, triangle_normal );
+
+        lambda[0] = area0 / total_area;
+        lambda[1] = area1 / total_area;
+        lambda[2] = area2 / total_area;
+        return true;
+    }
+
+    bool triangle_barycentric_coordinates(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        const vec2& p2,
+        double lambda[3] )
+    {
+        double total_area = std::fabs( triangle_signed_area( p0, p1, p2 ) );
+        if( total_area < global_epsilon_sq ) {
+            for( index_t i = 0; i < 3; i++ ) {
+                lambda[i] = 0;
+            }
+            return false;
+        }
+        double area0 = triangle_signed_area( p2, p1, p );
+        double area1 = triangle_signed_area( p0, p2, p );
+        double area2 = triangle_signed_area( p1, p0, p );
 
         lambda[0] = area0 / total_area;
         lambda[1] = area1 / total_area;
@@ -678,15 +839,16 @@ namespace RINGMesh {
         return !result.empty();
     }
 
+    template< index_t DIMENSION >
     bool point_segment_projection(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        vec3& new_p )
+        const vecn< DIMENSION >& p,
+        const vecn< DIMENSION >& p0,
+        const vecn< DIMENSION >& p1,
+        vecn< DIMENSION >& new_p )
     {
-        vec3 center = ( p0 + p1 ) * 0.5;
-        vec3 diff = p - center;
-        vec3 edge = p1 - p0;
+        vecn< DIMENSION > center = ( p0 + p1 ) * 0.5;
+        vecn< DIMENSION > diff = p - center;
+        vecn< DIMENSION > edge = p1 - p0;
         double extent = 0.5 * edge.length();
         edge = normalize( edge );
         double d = dot( edge, diff );
@@ -1110,17 +1272,17 @@ namespace RINGMesh {
             if( s1 == ZERO ) {
                 if( s2 == ZERO || s3 == ZERO ) {
                     //Case where p is exactly equal to one triangle vertex
-                    return true ;
+                    return true;
                 }
                 return s2 == s3;
             } else if( s2 == ZERO ) {
                 if( s1 == ZERO || s3 == ZERO ) {
-                    return true ;
+                    return true;
                 }
                 return s1 == s3;
             } else if( s3 == ZERO ) {
                 if( s1 == ZERO || s2 == ZERO ) {
-                    return true ;
+                    return true;
                 }
                 return s1 == s2;
             }
@@ -1129,234 +1291,66 @@ namespace RINGMesh {
         return s1 == s2 && s2 == s3;
     }
 
-    NNSearch::NNSearch(
-        const GEO::Mesh& mesh,
-        const MeshLocation& location,
-        bool copy )
-        : nn_points_( nullptr ), delete_points_( true )
+    bool point_inside_triangle(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        const vec2& p2,
+        bool exact_predicates )
     {
-        nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" );
-        switch( location ) {
-            case VERTICES: {
-                build_nn_search_vertices( mesh, copy );
-                break;
+        Sign s1, s2, s3;
+        if( !exact_predicates ) {
+            double area1 = triangle_signed_area( p, p0, p1 );
+            if( is_almost_zero( area1 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true );
             }
-            case EDGES: {
-                build_nn_search_edges( mesh );
-                break;
+            s1 = sign( area1 );
+            double area2 = triangle_signed_area( p, p1, p2 );
+            if( is_almost_zero( area2 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true );
             }
-            case FACETS: {
-                build_nn_search_polygons( mesh );
-                break;
+            s2 = sign( area2 );
+            double area3 = triangle_signed_area( p, p2, p0 );
+            if( is_almost_zero( area3 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true );
             }
-            case CELLS: {
-                build_nn_search_cells( mesh );
-                break;
-            }
-            case CELL_FACETS: {
-                build_nn_search_cell_facets( mesh );
-                break;
-            }
-            default:
-                ringmesh_assert_not_reached;
-                break;
-        }
-    }
-
-    NNSearch::NNSearch( const std::vector< vec3 >& vertices, bool copy )
-    {
-        index_t nb_vertices = static_cast< index_t >( vertices.size() );
-        nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" );
-        if( copy ) {
-            nn_points_ = new double[nb_vertices * 3];
-            delete_points_ = true;
-            GEO::Memory::copy( nn_points_, vertices.data()->data(),
-                3 * nb_vertices * sizeof(double) );
+            s3 = sign( area3 );
         } else {
-            nn_points_ = const_cast< double* >( vertices.data()->data() );
-            delete_points_ = false;
-        }
-        nn_tree_->set_points( nb_vertices, nn_points_ );
-    }
+            s1 = sign( GEO::PCK::orient_2d( p.data(), p0.data(), p1.data() ) );
+            s2 = sign( GEO::PCK::orient_2d( p.data(), p1.data(), p2.data() ) );
+            s3 = sign( GEO::PCK::orient_2d( p.data(), p2.data(), p0.data() ) );
 
-    index_t NNSearch::get_colocated_index_mapping(
-        double epsilon,
-        std::vector< index_t >& index_map ) const
-    {
-        index_map.resize( nn_tree_->nb_points() );
-        for( index_t i = 0; i < index_map.size(); i++ ) {
-            index_map[i] = i;
-        }
-        index_t nb_colocalised_vertices = 0;
-        for( index_t i = 0; i < index_map.size(); i++ ) {
-            std::vector< index_t > results = get_neighbors( point( i ), epsilon );
-            index_t id = *std::min_element( results.begin(), results.end() );
-            if( id < i ) {
-                index_map[i] = id;
-                nb_colocalised_vertices++;
-            }
-        }
-
-        return nb_colocalised_vertices;
-    }
-
-    index_t NNSearch::get_colocated_index_mapping(
-        double epsilon,
-        std::vector< index_t >& index_map,
-        std::vector< vec3 >& unique_points ) const
-    {
-        index_t nb_colocalised_vertices = get_colocated_index_mapping( epsilon,
-            index_map );
-        unique_points.reserve( nb_points() - nb_colocalised_vertices );
-        index_t offset = 0;
-        for( index_t p = 0; p < index_map.size(); p++ ) {
-            if( index_map[p] == p ) {
-                unique_points.push_back( point( p ) );
-                index_map[p] = p - offset;
-            } else {
-                offset++;
-                index_map[p] = index_map[index_map[p]];
-            }
-        }
-        ringmesh_assert( offset == nb_colocalised_vertices );
-        return offset;
-    }
-
-    std::vector< index_t > NNSearch::get_neighbors(
-        const vec3& v,
-        double threshold_distance ) const
-    {
-        std::vector< index_t > result;
-        index_t nb_points = nn_tree_->nb_points();
-        if( nb_points != 0 ) {
-            double threshold_distance_sq = threshold_distance * threshold_distance;
-            index_t nb_neighbors = std::min( index_t( 5 ), nb_points );
-            index_t cur_neighbor = 0;
-            index_t prev_neighbor = 0;
-            do {
-                prev_neighbor = cur_neighbor;
-                cur_neighbor += nb_neighbors;
-                result.reserve( cur_neighbor );
-                std::vector< index_t > neighbors = get_neighbors( v, cur_neighbor );
-                nb_neighbors = static_cast< index_t >( neighbors.size() );
-                for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                    if( length2( v - point( neighbors[i] ) )
-                        > threshold_distance_sq ) {
-                        break;
-                    }
-                    result.push_back( neighbors[i] );
+            if( s1 == ZERO ) {
+                if( s2 == ZERO || s3 == ZERO ) {
+                    //Case where p is exactly equal to one triangle vertex
+                    return true;
                 }
-            } while( result.size() == cur_neighbor && result.size() < nb_points );
-        }
-        return result;
-
-    }
-
-    std::vector< index_t > NNSearch::get_neighbors(
-        const vec3& v,
-        index_t nb_neighbors ) const
-    {
-        std::vector< index_t > result;
-        if( nn_tree_->nb_points() != 0 ) {
-            nb_neighbors = std::min( nb_neighbors, nn_tree_->nb_points() );
-            std::vector< double > distances( nb_neighbors );
-            result.resize( nb_neighbors );
-            nn_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
-                &distances[0] );
-        }
-        return result;
-    }
-
-    void NNSearch::build_nn_search_vertices( const GEO::Mesh& mesh, bool copy )
-    {
-        const GEO::MeshVertices& mesh_vertices = mesh.vertices;
-        index_t nb_vertices = mesh_vertices.nb();
-        if( nb_vertices == 0 ) {
-            return;
-        }
-        if( !copy ) {
-            nn_points_ = const_cast< double* >( mesh_vertices.point_ptr( 0 ) );
-            delete_points_ = false;
-        } else {
-            nn_points_ = new double[nb_vertices * 3];
-            GEO::Memory::copy( nn_points_, mesh_vertices.point_ptr( 0 ),
-                nb_vertices * 3 * sizeof(double) );
-        }
-        nn_tree_->set_points( nb_vertices, nn_points_ );
-    }
-
-    void NNSearch::build_nn_search_edges( const GEO::Mesh& mesh )
-    {
-        const GEO::MeshEdges& mesh_edges = mesh.edges;
-        index_t nb_edges = mesh_edges.nb();
-        if( nb_edges == 0 ) {
-            return;
-        }
-        nn_points_ = new double[nb_edges * 3];
-        for( index_t i = 0; i < nb_edges; i++ ) {
-            index_t first_vertex_id = mesh_edges.vertex( i, 0 );
-            const vec3& first_vertex_vec = mesh.vertices.point( first_vertex_id );
-            index_t second_vertex_id = mesh.edges.vertex( i, 1 );
-            const vec3& second_vertex_vec = mesh.vertices.point( second_vertex_id );
-
-            vec3 center = ( first_vertex_vec + second_vertex_vec ) / 2.;
-            index_t index_in_nn_search = 3 * i;
-            fill_nn_search_points( index_in_nn_search, center );
-        }
-        nn_tree_->set_points( nb_edges, nn_points_ );
-    }
-
-    void NNSearch::build_nn_search_polygons( const GEO::Mesh& mesh )
-    {
-        index_t nb_polygons = mesh.facets.nb();
-        if( nb_polygons == 0 ) {
-            return;
-        }
-        nn_points_ = new double[nb_polygons * 3];
-        for( index_t i = 0; i < nb_polygons; i++ ) {
-            vec3 center = GEO::Geom::mesh_facet_center( mesh, i );
-            index_t index_in_nn_search = 3 * i;
-            fill_nn_search_points( index_in_nn_search, center );
-        }
-        nn_tree_->set_points( nb_polygons, nn_points_ );
-    }
-
-    void NNSearch::build_nn_search_cell_facets( const GEO::Mesh& mesh )
-    {
-        index_t nb_cell_facets = mesh.cell_facets.nb();
-        nn_points_ = new double[nb_cell_facets * 3];
-        index_t index_in_nn_search = 0;
-        for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-            for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
-                vec3 center = mesh_cell_facet_barycenter( mesh, c, f );
-                fill_nn_search_points( index_in_nn_search, center );
-                index_in_nn_search += 3;
+                return s2 == s3;
+            } else if( s2 == ZERO ) {
+                if( s1 == ZERO || s3 == ZERO ) {
+                    return true;
+                }
+                return s1 == s3;
+            } else if( s3 == ZERO ) {
+                if( s1 == ZERO || s2 == ZERO ) {
+                    return true;
+                }
+                return s1 == s2;
             }
         }
-        nn_tree_->set_points( nb_cell_facets, nn_points_ );
+
+        return s1 == s2 && s2 == s3;
     }
 
-    void NNSearch::build_nn_search_cells( const GEO::Mesh& mesh )
-    {
-        index_t nb_cells = mesh.cells.nb();
-        if( nb_cells == 0 ) {
-            return;
-        }
-        nn_points_ = new double[nb_cells * 3];
-        for( index_t i = 0; i < nb_cells; i++ ) {
-            vec3 center = mesh_cell_barycenter( mesh, i );
-            index_t index_in_nn_search = 3 * i;
-            fill_nn_search_points( index_in_nn_search, center );
-        }
-        nn_tree_->set_points( nb_cells, nn_points_ );
-    }
+    template bool RINGMESH_API point_segment_projection(
+        const vecn< 2 >&,
+        const vecn< 2 >&,
+        const vecn< 2 >&,
+        vecn< 2 >& );
 
-    void NNSearch::fill_nn_search_points(
-        index_t index_in_nn_search,
-        const vec3& center )
-    {
-        nn_points_[index_in_nn_search] = center.x;
-        nn_points_[index_in_nn_search + 1] = center.y;
-        nn_points_[index_in_nn_search + 2] = center.z;
-    }
+    template bool RINGMESH_API point_segment_projection(
+        const vecn< 3 >&,
+        const vecn< 3 >&,
+        const vecn< 3 >&,
+        vecn< 3 >& );
 }

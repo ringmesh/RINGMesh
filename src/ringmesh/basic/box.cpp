@@ -33,71 +33,76 @@
  *     FRANCE
  */
 
-#include <ringmesh/io/io.h>
-
-#include <geogram/basic/file_system.h>
-#include <geogram/basic/line_stream.h>
-
-#include <ringmesh/geomodel/geomodel.h>
-
-#include <ringmesh/mesh/geogram_mesh.h>
-#include <ringmesh/mesh/mesh_builder.h>
-#include <ringmesh/mesh/well.h>
+#include <ringmesh/basic/box.h>
+#include <algorithm>
 
 /*!
- * @file Implements the input - output of WellGroup
+ * @file Implementation of multi-dimensional Box class
  * @author Arnaud Botella
  */
 
-namespace {
-    using namespace RINGMesh;
-
-#include "well_group/io_smesh.cpp"
-#include "well_group/io_wl.cpp"
-
-}
-
 namespace RINGMesh {
 
-    void well_load( const std::string& filename, WellGroup< 3 >& wells )
+    template< typename T >
+    inline T sqr( T x )
     {
-        Logger::out( "I/O", "Loading file ", filename, "..." );
-
-        std::unique_ptr< WellGroupIOHandler > handler =
-            WellGroupIOHandler::get_handler( filename );
-        handler->load( filename, wells );
+        return x * x;
     }
 
-    WellGroupIOHandler* WellGroupIOHandler::create( const std::string& format )
+    template< index_t DIMENSION >
+    void Box< DIMENSION >::add_point( const vecn< DIMENSION >& p )
     {
-        WellGroupIOHandler* handler = WellGroupIOHandlerFactory::create_object(
-            format );
-        if( !handler ) {
-            std::vector< std::string > names;
-            WellGroupIOHandlerFactory::list_creators( names );
-            Logger::err( "I/O", "Currently supported file formats are: " );
-            for( index_t i = 0; i < names.size(); i++ ) {
-                Logger::err( "I/O", " ", names[i] );
+        if( !initialized_ ) {
+            min_ = p;
+            max_ = p;
+            initialized_ = true;
+        } else {
+            for( index_t i = 0; i < DIMENSION; i++ ) {
+                min_[i] = std::min( min_[i], p[i] );
+                max_[i] = std::max( max_[i], p[i] );
             }
-
-            throw RINGMeshException( "I/O", "Unsupported file format: " + format );
         }
-        return handler;
     }
 
-    std::unique_ptr< WellGroupIOHandler > WellGroupIOHandler::get_handler(
-        const std::string& filename )
+    template< index_t DIMENSION >
+    double Box< DIMENSION >::signed_distance( const vecn< DIMENSION >& p ) const
     {
-        std::string ext = GEO::FileSystem::extension( filename );
-        return std::unique_ptr< WellGroupIOHandler >( create( ext ) );
+        bool inside = true;
+        double result = 0.0;
+        for( index_t c = 0; c < DIMENSION; c++ ) {
+            if( p[c] < min()[c] ) {
+                inside = false;
+                result += sqr( p[c] - min()[c] );
+            } else if( p[c] > max()[c] ) {
+                inside = false;
+                result += sqr( p[c] - max()[c] );
+            }
+        }
+        if( inside ) {
+            result = sqr( p[0] - min()[0] );
+            result = std::min( result, sqr( p[0] - max()[0] ) );
+            for( index_t c = 1; c < DIMENSION; ++c ) {
+                result = std::min( result, sqr( p[c] - min()[c] ) );
+                result = std::min( result, sqr( p[c] - max()[c] ) );
+            }
+            result = -result;
+        }
+        return result;
     }
 
-    /*
-     * Initializes the possible handler for IO files
-     */
-    void WellGroupIOHandler::initialize()
+    template< index_t DIMENSION >
+    double Box< DIMENSION >::distance_to_center( const vecn< DIMENSION >& p ) const
     {
-        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" );
-        ringmesh_register_WellGroupIOHandler_creator( SmeshIOHandler, "smesh" );
+        double result = 0.0;
+        for( index_t c = 0; c < DIMENSION; ++c ) {
+            double d = p[c] - 0.5 * ( min()[c] + max()[c] );
+            result += sqr( d );
+        }
+        return result;
     }
+
+    template class RINGMESH_API Box< 2 >;
+    template class RINGMESH_API Box< 3 >;
+
 }
+

@@ -43,7 +43,7 @@
 
 #include <zlib/unzip.h>
 
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_builder_file.h>
 
 /*!
  * @file ringmesh/geomodel_builder_ringmesh.h
@@ -52,15 +52,18 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilderGMImpl;
+    template< index_t DIMENSION > class GeoModelBuilderGMImpl;
 }
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile {
+    template< index_t DIMENSION >
+    class GeoModelBuilderGM final : public GeoModelBuilderFile< DIMENSION > {
     public:
         static const index_t NB_VERSION = 3;
-        GeoModelBuilderGM( GeoModel& geomodel, const std::string& filename );
+        GeoModelBuilderGM(
+            GeoModel< DIMENSION >& geomodel,
+            const std::string& filename );
         virtual ~GeoModelBuilderGM();
 
     private:
@@ -72,12 +75,27 @@ namespace RINGMesh {
          */
         void load_meshes( unzFile& uz );
 
+        void load_mesh_entity(
+            const std::string& entity_type,
+            const std::string& file_name,
+            index_t id );
+
+        bool load_mesh_entity_base(
+            const std::string& entity_type,
+            const std::string& file_name,
+            index_t id );
+
         virtual void load_file() final;
 
         void load_mesh_entities( const std::string& mesh_entity_file );
 
+        void load_region_if_entity_is_region(
+            const std::string& entity_type,
+            index_t id,
+            const std::string& file_name,
+            const MeshEntityTypeManager< DIMENSION >& manager );
     private:
         index_t file_version_;
-        std::unique_ptr< GeoModelBuilderGMImpl > version_impl_[NB_VERSION];
+        std::unique_ptr< GeoModelBuilderGMImpl< DIMENSION > > version_impl_[NB_VERSION];
     };
 }

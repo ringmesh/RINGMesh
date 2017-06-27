@@ -42,8 +42,8 @@
 #include <ringmesh/basic/algorithm.h>
 
 namespace RINGMesh {
-    class GeoModelMeshEntityAccess;
-    class GeoModelGeologicalEntityAccess;
+    template< index_t DIMENSION > class GeoModelMeshEntityAccess;
+    template< index_t DIMENSION > class GeoModelGeologicalEntityAccess;
 }
 
 namespace RINGMesh {
@@ -186,13 +186,13 @@ namespace RINGMesh {
      * @brief Unique identification of a GeoModelEntity in a GeoModel
      * It contains the EntityType and the index of the entity.
      * It is widely used in the code to easily access/modify/set a GeoModelEntity
-     * @todo Should we change this name? Looks like index_t but does not enforce
-     *       the programming guidelines [JP]
      */
     template< class Entity_type_template >
     struct gme_id {
-        friend GeoModelMeshEntityAccess;
-        friend GeoModelGeologicalEntityAccess;
+        friend GeoModelMeshEntityAccess< 2 > ;
+        friend GeoModelGeologicalEntityAccess< 2 > ;
+        friend GeoModelMeshEntityAccess< 3 > ;
+        friend GeoModelGeologicalEntityAccess< 3 > ;
     public:
         index_t index() const
         {
