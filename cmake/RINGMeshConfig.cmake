@@ -46,16 +46,16 @@ if(WIN32)
     find_library(RINGMesh_RELEASE_LIBRARY NAMES RINGMesh
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/lib/Release)
     find_library(GEOGRAM_DEBUG_LIBRARY NAMES geogram
-        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/geogram/lib/Debug)
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/lib/Debug)
     find_library(GEOGRAM_RELEASE_LIBRARY NAMES geogram
-        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/geogram/lib/Release)
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/lib/Release)
 else(WIN32)
     find_path(RINGMesh_CONFIG_INCLUDE_DIR NAMES ringmesh
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/${CMAKE_BUILD_TYPE})
     find_library(RINGMesh_LIBRARY NAMES RINGMesh
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/${CMAKE_BUILD_TYPE}/lib)
     find_library(GEOGRAM_LIBRARY NAMES geogram
-        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/geogram/${CMAKE_BUILD_TYPE}/lib)
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/${CMAKE_BUILD_TYPE}/lib)
 endif(WIN32)
 find_path(GEOGRAM_INCLUDE_DIR NAMES geogram
     PATHS ${RINGMESH_ROOT_DIRECTORY}/third_party/geogram/src/lib)
@@ -102,7 +102,6 @@ else(WIN32)
     mark_as_advanced(RINGMesh_DIR RINGMesh_INCLUDE_DIR RINGMesh_CONFIG_INCLUDE_DIR
         GEOGRAM_INCLUDE_DIR THIRD_PARTY_INCLUDE_DIR RINGMesh_LIBRARY GEOGRAM_LIBRARY)
 endif(WIN32)
-message(STATUS "Using RINGMesh directory = ${RINGMesh_HOME}")
 
 function(set_ringmesh_includes_and_libs extra_libs)
 if(RINGMesh_FOUND)
