@@ -706,10 +706,19 @@ namespace {
          */
         void visit_border_polygons_on_same_edge( index_t border_id )
         {
-            for( index_t i = 0; i < this->border_polygons_.size(); i++ ) {
-                if( this->have_border_polygons_same_boundary_edge( border_id, i ) ) {
-                    visited_[i] = true;
-                }
+            visited_[border_id] = true;
+            index_t j = border_id + 1;
+            while( j < this->border_polygons_.size()
+                && this->have_border_polygons_same_boundary_edge( border_id, j ) ) {
+                visited_[j] = true;
+                j++;
+            }
+
+            index_t k = border_id - 1;
+            while( k != NO_ID
+                && this->have_border_polygons_same_boundary_edge( border_id, k ) ) {
+                visited_[k] = true;
+                k--;
             }
         }
 
@@ -721,13 +730,24 @@ namespace {
         std::vector< index_t > get_adjacent_surfaces( index_t border_id ) const
         {
             std::vector< index_t > adjacent_surfaces;
-//            adjacent_surfaces.reserve( this->border_polygons_.size() );
-            for( index_t i = 0; i < this->border_polygons_.size(); i++ ) {
-                if( this->have_border_polygons_same_boundary_edge( border_id, i ) ) {
-                    adjacent_surfaces.push_back(
-                        this->border_polygons_[i].surface_ );
-                }
+            adjacent_surfaces.reserve( 10 );
+
+            adjacent_surfaces.push_back(
+                this->border_polygons_[border_id].surface_ );
+            index_t j = border_id + 1;
+            while( j < this->border_polygons_.size()
+                && this->have_border_polygons_same_boundary_edge( border_id, j ) ) {
+                adjacent_surfaces.push_back( this->border_polygons_[j].surface_ );
+                j++;
             }
+
+            index_t k = border_id - 1;
+            while( k != NO_ID
+                && this->have_border_polygons_same_boundary_edge( border_id, k ) ) {
+                adjacent_surfaces.push_back( this->border_polygons_[k].surface_ );
+                k--;
+            }
+
             std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() );
             return adjacent_surfaces;
         }
