@@ -102,4 +102,32 @@ else(WIN32)
     mark_as_advanced(RINGMesh_DIR RINGMesh_INCLUDE_DIR RINGMesh_CONFIG_INCLUDE_DIR
         GEOGRAM_INCLUDE_DIR THIRD_PARTY_INCLUDE_DIR RINGMesh_LIBRARY GEOGRAM_LIBRARY)
 endif(WIN32)
+message(STATUS "Using RINGMesh directory = ${RINGMesh_HOME}")
 
+function(set_ringmesh_includes_and_libs)
+if(RINGMesh_FOUND)
+    MESSAGE(STATUS "RINGMesh is found!")
+    MESSAGE(STATUS "RINGMesh include directory ${RINGMesh_INCLUDE_DIR}")
+    MESSAGE(STATUS "geogram include directory ${GEOGRAM_INCLUDE_DIR}")
+    MESSAGE(STATUS "third party include directory ${THIRD_PARTY_INCLUDE_DIR}")
+    MESSAGE(STATUS "RINGMesh include directories ${RINGMesh_INCLUDE_DIRS}")
+    IF(WIN32)
+        MESSAGE(STATUS "RINGMesh release library ${RINGMesh_RELEASE_LIBRARY}")
+        MESSAGE(STATUS "geogram release library ${GEOGRAM_RELEASE_LIBRARY}")
+        MESSAGE(STATUS "RINGMesh debug library ${RINGMesh_DEBUG_LIBRARY}")
+        MESSAGE(STATUS "geogram debug library ${GEOGRAM_DEBUG_LIBRARY}")
+    ELSE(WIN32)
+        MESSAGE(STATUS "RINGMesh library ${RINGMesh_LIBRARY}")
+        MESSAGE(STATUS "geogram library ${GEOGRAM_LIBRARY}")
+    ENDIF(WIN32)
+    MESSAGE(STATUS "RINGMesh libraries ${RINGMesh_LIBRARIES}")
+	
+    # Add RINGMesh include directories
+    include_directories(${RINGMesh_INCLUDE_DIRS})
+    # Add RINGMesh project libs to the libs with which RINGMecha will link
+    set(EXTRA_LIBS ${EXTRA_LIBS} ${RINGMesh_LIBRARIES})
+else(RINGMesh_FOUND)
+    # In theory find_package with REQUIRED stops the cmake generation if the package is not found, so this else should never happen...
+    MESSAGE(FATAL_ERROR "RINGMesh not found")
+endif(RINGMesh_FOUND)
+endfunction()
