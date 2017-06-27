@@ -5,14 +5,14 @@ set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/third_party/geogram)
 
 # Geogram platform dependent settings
 if(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
+    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram)
     set(geoplatform Win-vs-dynamic-generic)  
     # Extra lib 
     set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
     # TODO check that it is really necessary [JP]
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
+    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
     set(geoplatform Linux64-gcc-dynamic)
 endif(WIN32)
 
@@ -72,9 +72,9 @@ set(TINYXML2_PATH ${PROJECT_SOURCE_DIR}/third_party/tinyxml2)
 
 # tinyxml2 platform dependent settings
 if(WIN32)
-    set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/tinyxml2)
+    set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/tinyxml2)
 else(WIN32)
-    set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/tinyxml2/${CMAKE_BUILD_TYPE})
+    set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/tinyxml2/${CMAKE_BUILD_TYPE})
 endif(WIN32)
 
 # Define tinyxml2 as an external project that we know how to
@@ -127,9 +127,9 @@ set(ZLIB_PATH ${PROJECT_SOURCE_DIR}/third_party/zlib)
 
 # zib platform dependent settings
 if(WIN32)
-    set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/zlib)
+    set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib)
 else(WIN32)
-    set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/zlib/${CMAKE_BUILD_TYPE})
+    set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE})
 endif(WIN32)
 
 # Define zlib as an external project that we know how to
