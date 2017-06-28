@@ -52,7 +52,8 @@ int main()
     try {
         default_configure();
         //model filename to test
-        std::vector< std::string > input_model_file_name_list = { "CloudSpin.ml",
+        //TODO It appears that cloudspin is not valid
+        std::vector< std::string > input_model_file_name_list = { /*"CloudSpin.ml",*/
                                                                   "modelA6.ml" };
 
         // Set an output log file
