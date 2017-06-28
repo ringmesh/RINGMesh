@@ -55,14 +55,19 @@ namespace RINGMesh {
 namespace RINGMesh {
     /// Option to select what are checked.
     enum struct ValidityCheckMode {
-        TOPOLOGY,
-        GEOMETRY,
-        GEOMETRY_EXCEPT_FACET_INTERSECTION,
-        ALL,
-        ALL_EXCEPT_FACET_INTERSECTION,
-        UNDEFINED
+        FINITE_EXTENSION = 0,
+        GEOMODEL_CONNECTIVITY = 1,
+        GEOLOGICAL_ENTITIES = 2,
+        SURFACE_LINE_MESH_CONFORMITY = 4,
+        REGION_SURFACE_MESH_CONFORMITY = 8,
+        MESH_ENTITIES = 16,
+        NON_MANIFOLD_EDGES = 32,
+        POLYGON_INTERSECTIONS = 64,
+        TOPOLOGY = FINITE_EXTENSION | GEOMODEL_CONNECTIVITY | GEOLOGICAL_ENTITIES,
+        GEOMETRY = SURFACE_LINE_MESH_CONFORMITY | REGION_SURFACE_MESH_CONFORMITY
+            | MESH_ENTITIES | NON_MANIFOLD_EDGES | POLYGON_INTERSECTIONS,
+        ALL = TOPOLOGY | GEOMETRY
     };
-
     /*! 
      * @brief Set the global default directory to store invalid entities of 
      *  geomodels to be the current working directory

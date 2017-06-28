@@ -922,10 +922,6 @@ namespace {
             const ValidityCheckMode validity_check_mode )
             : geomodel_( geomodel ), valid_( true ), mode_( validity_check_mode )
         {
-            if( mode_ == ValidityCheckMode::UNDEFINED ) {
-                // If not defined, reset the check mode to the largest possible
-                mode_ = ValidityCheckMode::ALL;
-            }
             // Ensure that the geomodel vertices are computed and up-to-date
             // Without that we cannot do anything        
             geomodel_.mesh.vertices.test_and_initialize();
@@ -937,7 +933,7 @@ namespace {
          */
         bool is_geomodel_valid()
         {
-            do_check_validity( mode_ );
+            do_check_validity();
             return valid_;
         }
 
@@ -962,16 +958,14 @@ namespace {
         void do_check_geometry( std::vector< std::thread >& threads );
         void do_check_topology( std::vector< std::thread >& threads );
 
-        void do_check_validity( ValidityCheckMode mode )
+        void do_check_validity()
         {
             std::vector< std::thread > threads;
             threads.reserve( 8 );
-            if( mode == ValidityCheckMode::ALL ) {
-                do_check_geometry( threads );
+            if( mode_ & ValidityCheckMode::TOPOLOGY ) {
                 do_check_topology( threads );
-            } else if( mode == ValidityCheckMode::TOPOLOGY ) {
-                do_check_topology( threads );
-            } else if( mode != ValidityCheckMode::GEOMETRY ) {
+            }
+            if( mode_ & ValidityCheckMode::GEOMETRY ) {
                 do_check_geometry( threads );
             }
 
