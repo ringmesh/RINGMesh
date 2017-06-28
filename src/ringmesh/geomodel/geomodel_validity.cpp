@@ -992,7 +992,6 @@ namespace {
          */
         void test_geomodel_mesh_entities_validity()
         {
-            DEBUG( "MESH VAL" );
             if( !are_geomodel_mesh_entities_mesh_valid( geomodel_ ) ) {
                 set_invalid_model();
             }
@@ -1003,7 +1002,6 @@ namespace {
          */
         void test_geomodel_connectivity_validity()
         {
-            DEBUG( "CON" );
             if( !are_geomodel_mesh_entities_connectivity_valid( geomodel_ ) ) {
                 set_invalid_model();
             }
@@ -1014,7 +1012,6 @@ namespace {
          */
         void test_geomodel_geological_validity()
         {
-            DEBUG( "GEOL VAL" );
             if( !are_geomodel_geological_entities_valid( geomodel_ ) ) {
                 set_invalid_model();
             }
@@ -1030,7 +1027,6 @@ namespace {
          */
         void test_finite_extension()
         {
-            DEBUG( "FINITE EXTENSION" );
             if( !geomodel_.universe().is_valid() ) {
                 set_invalid_model();
             }
@@ -1043,7 +1039,6 @@ namespace {
          */
         void test_surface_line_mesh_conformity()
         {
-            DEBUG( "SURFACE LINE MESH CONF" );
             // Check relationships between GeoModelEntities
             // sharing the same point of the geomodel
             if( !check_model_points_validity( geomodel_ ) ) {
@@ -1059,7 +1054,6 @@ namespace {
 
         void test_region_surface_mesh_conformity()
         {
-            DEBUG( "SURFACE MESH CONFORMITY" );
             if( geomodel_.mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface polygons and Region cell facets
                 const NNSearch< DIMENSION >& nn_search =
@@ -1120,7 +1114,6 @@ namespace {
          */
         void test_non_manifold_edges()
         {
-            DEBUG( "MANIFOLD" );
             std::vector< index_t > edge_indices;
             compute_border_edges( geomodel_, edge_indices );
             std::vector< vecn< DIMENSION > > edge_barycenters;
@@ -1148,7 +1141,6 @@ namespace {
          */
         void test_polygon_intersections()
         {
-            DEBUG( "POLY" );
             if( geomodel_.mesh.polygons.nb()
                 == geomodel_.mesh.polygons.nb_triangle()
                     + geomodel_.mesh.polygons.nb_quad() ) {
@@ -1343,7 +1335,6 @@ namespace RINGMesh {
         if( !GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) {
             validity_check_mode = validity_check_mode
                 ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
-            DEBUG("FLAGOFF");
         }
 
         GeoModelValidityCheck< DIMENSION > validity_checker( geomodel,
