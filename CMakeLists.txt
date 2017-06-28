@@ -191,7 +191,7 @@ endif(WIN32)
 #------------------------------------------------------------------------------------------------
 # Compil Third Parties
 include("${CMAKE_SOURCE_DIR}/cmake/CompilThirdParties.cmake")
-        -DGEOGRAM_WITH_LUA:BOOL=OFF
+
 
 #------------------------------------------------------------------------------------------------    
 # Get MG-Tetra if a path is given
