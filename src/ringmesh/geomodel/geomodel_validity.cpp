@@ -507,7 +507,7 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
-        if( geomodel.region( 0 ).is_meshed() ) {
+        if( geomodel.nb_regions() > 0 && geomodel.region( 0 ).is_meshed() ) {
             return is_vertex_valid< Region >( geomodel, entities );
         }
         return true;
