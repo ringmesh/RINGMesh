@@ -938,40 +938,49 @@ namespace {
         }
 
     private:
-        void do_check_geometry_base( std::vector< std::thread >& threads )
+        void add_base_checks( std::vector< std::thread >& threads )
         {
-            threads.emplace_back(
-                &GeoModelValidityCheck::test_geomodel_mesh_entities_validity, this );
-            threads.emplace_back( &GeoModelValidityCheck::test_non_manifold_edges,
-                this );
-        }
-        void do_check_topology_base( std::vector< std::thread >& threads )
-        {
-            threads.emplace_back(
-                &GeoModelValidityCheck::test_geomodel_connectivity_validity, this );
-            threads.emplace_back( &GeoModelValidityCheck::test_finite_extension,
-                this );
-            threads.emplace_back(
-                &GeoModelValidityCheck::test_surface_line_mesh_conformity, this );
+            if( enum_contains( mode_, ValidityCheckMode::FINITE_EXTENSION ) ) {
+                threads.emplace_back( &GeoModelValidityCheck::test_finite_extension,
+                    this );
+            }
+            if( enum_contains( mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) ) {
+                threads.emplace_back(
+                    &GeoModelValidityCheck::test_geomodel_connectivity_validity,
+                    this );
+            }
+            if( enum_contains( mode_, ValidityCheckMode::GEOLOGICAL_ENTITIES ) ) {
+                threads.emplace_back(
+                    &GeoModelValidityCheck::test_geomodel_geological_validity,
+                    this );
+            }
+            if( enum_contains( mode_,
+                ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) ) {
+                threads.emplace_back(
+                    &GeoModelValidityCheck::test_surface_line_mesh_conformity,
+                    this );
+            }
+            if( enum_contains( mode_, ValidityCheckMode::MESH_ENTITIES ) ) {
+                threads.emplace_back(
+                    &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
+                    this );
+            }
+            if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) ) {
+                threads.emplace_back(
+                    &GeoModelValidityCheck::test_non_manifold_edges, this );
+            }
         }
 
-        void do_check_geometry( std::vector< std::thread >& threads );
-        void do_check_topology( std::vector< std::thread >& threads );
+        void add_checks( std::vector< std::thread >& threads )
+        {
+            add_base_checks( threads );
+        }
 
         void do_check_validity()
         {
             std::vector< std::thread > threads;
             threads.reserve( 8 );
-            if( mode_ & ValidityCheckMode::TOPOLOGY ) {
-                do_check_topology( threads );
-            }
-            if( mode_ & ValidityCheckMode::GEOMETRY ) {
-                do_check_geometry( threads );
-            }
-
-            // Geological validity must always be checked
-            threads.emplace_back(
-                &GeoModelValidityCheck::test_geomodel_geological_validity, this );
+            add_checks( threads );
 
             for( index_t i = 0; i < threads.size(); i++ ) {
                 threads[i].join();
@@ -1188,36 +1197,20 @@ namespace {
     };
 
     template< >
-    void GeoModelValidityCheck< 2 >::do_check_geometry(
+    void GeoModelValidityCheck< 3 >::add_checks(
         std::vector< std::thread >& threads )
     {
-        do_check_geometry_base( threads );
-    }
+        if( enum_contains( mode_, ValidityCheckMode::POLYGON_INTERSECTIONS ) ) {
+            threads.emplace_back( &GeoModelValidityCheck::test_polygon_intersections,
+                this );
+        }
+        if( enum_contains( mode_,
+            ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY ) ) {
+            threads.emplace_back(
+                &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
+        }
+        add_base_checks( threads );
 
-    template< >
-    void GeoModelValidityCheck< 3 >::do_check_geometry(
-        std::vector< std::thread >& threads )
-    {
-        threads.emplace_back( &GeoModelValidityCheck::test_polygon_intersections,
-            this );
-        do_check_geometry_base( threads );
-
-    }
-
-    template< >
-    void GeoModelValidityCheck< 2 >::do_check_topology(
-        std::vector< std::thread >& threads )
-    {
-        do_check_topology_base( threads );
-    }
-
-    template< >
-    void GeoModelValidityCheck< 3 >::do_check_topology(
-        std::vector< std::thread >& threads )
-    {
-        do_check_topology_base( threads );
-        threads.emplace_back(
-            &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
     }
 
 }
@@ -1339,13 +1332,9 @@ namespace RINGMesh {
         const GeoModel< DIMENSION >& geomodel,
         ValidityCheckMode validity_check_mode )
     {
-        if( validity_check_mode == ValidityCheckMode::GEOMETRY
-            && !GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) {
-            validity_check_mode =
-                ValidityCheckMode::GEOMETRY_EXCEPT_FACET_INTERSECTION;
-        } else if( validity_check_mode == ValidityCheckMode::ALL
-            && !GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) {
-            validity_check_mode = ValidityCheckMode::ALL_EXCEPT_FACET_INTERSECTION;
+        if( !GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) {
+            validity_check_mode = validity_check_mode
+                ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
         }
 
         GeoModelValidityCheck< DIMENSION > validity_checker( geomodel,
