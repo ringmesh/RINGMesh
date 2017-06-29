@@ -39,15 +39,17 @@ namespace {
      * @brief Save the geomodel in smesh format
      * @details No attributes and no boundary marker are transferred
      */
-    class SMESHIOHandler final: public GeoModelIOHandler {
+    class SMESHIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel ) final
+        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from UCD mesh not yet implemented" );
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             if( out.bad() ) {
@@ -75,7 +77,7 @@ namespace {
             out << nb_polygons( geomodel ) << "  0 " << std::endl;
 
             for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
-                const Surface& S = geomodel.surface( i );
+                const Surface< 3 >& S = geomodel.surface( i );
                 for( index_t p = 0; p < S.nb_mesh_elements(); p++ ) {
                     out << S.nb_mesh_element_vertices( p ) << " ";
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); v++ ) {

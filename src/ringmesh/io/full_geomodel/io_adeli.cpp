@@ -58,18 +58,20 @@ namespace {
      * Corners are written (with vertex), then Lines (with edges), then Surfaces
      * (with surfaces, then Regions (with tetrahedron)
      */
-    class AdeliIOHandler final: public GeoModelIOHandler {
+    class AdeliIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel ) final
+        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Adeli .msh mesh not implemented yet" );
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
-            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
+            const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
             if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
                 {
                     throw RINGMeshException( "I/O",
@@ -85,7 +87,9 @@ namespace {
         }
 
     private:
-        void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out ) const
+        void write_vertices(
+            const GeoModelMesh< 3 >& geomodel_mesh,
+            std::ofstream& out ) const
         {
             out << "$NOD" << std::endl;
             out << geomodel_mesh.vertices.nb() << std::endl;
@@ -97,14 +101,14 @@ namespace {
         }
 
         void write_corners(
-            const GeoModel& geomodel,
+            const GeoModel< 3 >& geomodel,
             std::ofstream& out,
             index_t& elt ) const
         {
             out << "$ELM" << std::endl;
             out << nb_total_elements( geomodel ) << std::endl;
             for( index_t corner = 0; corner < geomodel.nb_corners(); corner++ ) {
-                const Corner& cur_corner = geomodel.corner( corner );
+                const Corner< 3 >& cur_corner = geomodel.corner( corner );
                 out << elt++ << " " << adeli_cell_types[0] << " " << reg_phys << " "
                     << cur_corner.index() + id_offset_adeli << " "
                     << cur_corner.nb_vertices() << " "
@@ -114,23 +118,24 @@ namespace {
         }
 
         void write_mesh_elements(
-            const GeoModel& geomodel,
+            const GeoModel< 3 >& geomodel,
             std::ofstream& out,
             index_t& elt ) const
         {
+            const MeshEntityTypeManager< 3 >& manager =
+                geomodel.entity_type_manager().mesh_entity_manager;
             // Corners are already written so we start this loop at 1
             for( index_t geomodel_mesh_entities = 1;
-                geomodel_mesh_entities
-                    < MeshEntityTypeManager::nb_mesh_entity_types();
+                geomodel_mesh_entities < manager.nb_mesh_entity_types();
                 geomodel_mesh_entities++ ) {
                 for( index_t entity = 0;
                     entity
                         < geomodel.nb_mesh_entities(
-                            MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities] );
+                            manager.mesh_entity_types()[geomodel_mesh_entities] );
                     entity++ ) {
                     write_mesh_elements_for_a_mesh_entity(
                         geomodel.mesh_entity(
-                            MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities],
+                            manager.mesh_entity_types()[geomodel_mesh_entities],
                             entity ), adeli_cell_types[geomodel_mesh_entities], elt,
                         out );
                 }
@@ -138,24 +143,25 @@ namespace {
             out << "$ENDELM" << std::endl;
         }
 
-        index_t nb_total_elements( const GeoModel& geomodel ) const
+        index_t nb_total_elements( const GeoModel< 3 >& geomodel ) const
         {
+            const MeshEntityTypeManager< 3 >& manager =
+                geomodel.entity_type_manager().mesh_entity_manager;
             // Because corners does not have mesh elements, but are considered as elements
             // in adeli, we have to count the vertex of each corner in a different
             // way
             index_t nb_mesh_entities = geomodel.nb_corners();
             for( index_t geomodel_mesh_entities = 1;
-                geomodel_mesh_entities
-                    < MeshEntityTypeManager::nb_mesh_entity_types();
+                geomodel_mesh_entities < manager.nb_mesh_entity_types();
                 geomodel_mesh_entities++ ) {
                 for( index_t entity = 0;
                     entity
                         < geomodel.nb_mesh_entities(
-                            MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities] );
+                            manager.mesh_entity_types()[geomodel_mesh_entities] );
                     entity++ ) {
                     nb_mesh_entities +=
                         geomodel.mesh_entity(
-                            MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities],
+                            manager.mesh_entity_types()[geomodel_mesh_entities],
                             entity ).nb_mesh_elements();
                 }
             }
@@ -163,7 +169,7 @@ namespace {
         }
 
         void write_mesh_elements_for_a_mesh_entity(
-            const GeoModelMeshEntity& geomodel_mesh_entity,
+            const GeoModelMeshEntity< 3 >& geomodel_mesh_entity,
             index_t cell_descriptor,
             index_t& elt_id,
             std::ofstream& out ) const

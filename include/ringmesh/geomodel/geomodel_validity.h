@@ -48,8 +48,8 @@
  */
 
 namespace RINGMesh {
-    class GeoModel;
-    class GeoModelEntity;
+    template< index_t DIMENSION > class GeoModel;
+    template< index_t DIMENSION > class GeoModelEntity;
 }
 
 namespace RINGMesh {
@@ -83,8 +83,9 @@ namespace RINGMesh {
      * @param[in] validity_check_mode Mode to select what model feature should
      * be checked. Set by default to the most complete check option.
      */
-    bool RINGMESH_API is_geomodel_valid(
-        const GeoModel& geomodel,
+    template< index_t DIMENSION >
+    bool is_geomodel_valid(
+        const GeoModel< DIMENSION >& geomodel,
         ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL );
 
     /*!
@@ -92,18 +93,22 @@ namespace RINGMesh {
      * @details Check that the entities belong to this geomodel,
      *          call the check validity for each entity
      */
-    bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
-        const GeoModel& geomodel );
+    template< index_t DIMENSION >
+    bool are_geomodel_mesh_entities_mesh_valid(
+        const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * @brief Check the connectivity of mesh entities
      */
-    bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
-        const GeoModel& geomodel );
+    template< index_t DIMENSION >
+    bool are_geomodel_mesh_entities_connectivity_valid(
+        const GeoModel< DIMENSION >& geomodel );
 
-    bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
-        const GeoModel& geomodel );
+    template< index_t DIMENSION >
+    bool are_geomodel_mesh_entities_parent_valid(
+        const GeoModel< DIMENSION >& geomodel );
 
-    bool RINGMESH_API are_geomodel_geological_entities_valid(
-        const GeoModel& geomodel );
+    template< index_t DIMENSION >
+    bool are_geomodel_geological_entities_valid(
+        const GeoModel< DIMENSION >& geomodel );
 }

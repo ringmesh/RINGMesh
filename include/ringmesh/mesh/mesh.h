@@ -38,22 +38,25 @@
 #include <ringmesh/basic/common.h>
 
 #include <memory>
+#include <stack>
 
 #include <geogram/basic/attributes.h>
 
 #include <geogram/mesh/mesh.h>
 
+#include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
-
+#include <ringmesh/basic/nn_search.h>
 #include <ringmesh/mesh/aabb.h>
 
 namespace RINGMesh {
-    class GeoModel;
-    class MeshBaseBuilder;
-    class PointSetMeshBuilder;
-    class LineMeshBuilder;
-    class SurfaceMeshBuilder;
-    class VolumeMeshBuilder;
+    template< index_t DIMENSION > class GeoModel;
+    template< index_t DIMENSION > class MeshBaseBuilder;
+    template< index_t DIMENSION > class PointSetMeshBuilder;
+    template< index_t DIMENSION > class LineMeshBuilder;
+    template< index_t DIMENSION > class SurfaceMeshBuilder;
+    template< index_t DIMENSION > class VolumeMeshBuilder;
+    template< index_t DIMENSION > class SurfaceMesh;
 }
 
 namespace RINGMesh {
@@ -63,12 +66,14 @@ namespace RINGMesh {
     /*!
      * class base class for encapsulating Mesh structure
      * @brief encapsulate adimensional mesh functionalities in order to provide an API
-     * on which we base the RINGMesh algorithm
+     * on which we base the RINGMesh algorithms
      * @note For now, we encapsulate the GEO::Mesh class.
      */
-    class RINGMESH_API MeshBase: public GEO::Counted {
+    template< index_t DIMENSION >
+    class MeshBase: public GEO::Counted {
     ringmesh_disable_copy( MeshBase );
-        friend class MeshBaseBuilder;
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class MeshBaseBuilder< DIMENSION > ;
 
     public:
         virtual ~MeshBase() = default;
@@ -86,7 +91,7 @@ namespace RINGMesh {
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
          * @return const reference to the point that corresponds to the vertex.
          */
-        virtual const vec3& vertex( index_t v_id ) const = 0;
+        virtual const vecn< DIMENSION >& vertex( index_t v_id ) const = 0;
         /*
          * @brief Gets the number of vertices in the Mesh.
          */
@@ -96,16 +101,18 @@ namespace RINGMesh {
 
         /*!
          * @brief return the NNSearch at vertices
-         * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
+         * @warning the NNSearch is destroyed when calling the Mesh::polygons_aabb()
+         * and Mesh::cells_aabb()
          */
-        const NNSearch& vertices_nn_search() const
+        const NNSearch< DIMENSION >& vertices_nn_search() const
         {
             if( !vertices_nn_search_ ) {
-                std::vector< vec3 > vec_vertices( nb_vertices() );
+                std::vector< vecn< DIMENSION > > vec_vertices( nb_vertices() );
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v );
                 }
-                vertices_nn_search_.reset( new NNSearch( vec_vertices, true ) );
+                vertices_nn_search_.reset(
+                    new NNSearch< DIMENSION >( vec_vertices, true ) );
             }
             return *vertices_nn_search_.get();
         }
@@ -118,51 +125,53 @@ namespace RINGMesh {
          * @}
          */
     protected:
-        /*!
-         * @brief MeshBase constructor.
-         * @param[in] dimension dimension of the vertices.
-         * @param[in] single_precision if true, vertices are stored in single precision (float),
-         * else they are stored as double precision (double)..
-         */
         MeshBase() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > vertices_nn_search_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > vertices_nn_search_;
     };
 
     /*!
-     * class for encapsulating isolated vertices structure
+     * class for encapsulating mesh composed of points
      */
-    class RINGMESH_API PointSetMesh: public MeshBase {
+    template< index_t DIMENSION >
+    class PointSetMesh: public MeshBase< DIMENSION > {
     ringmesh_disable_copy( PointSetMesh );
-        friend class PointSetMeshBuilder;
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class PointSetMeshBuilder< DIMENSION > ;
 
     public:
         virtual ~PointSetMesh() = default;
 
-        static std::unique_ptr< PointSetMesh > create_mesh(
+        static std::unique_ptr< PointSetMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
     protected:
-        /*!
-         * @brief Mesh0D constructor.
-         */
         PointSetMesh() = default;
     };
-    using PointSetMeshFactory = GEO::Factory0< PointSetMesh >;
-#define ringmesh_register_point_mesh(type) \
-    geo_register_creator(RINGMesh::PointSetMeshFactory, type, type::type_name_static())
+
+    template< index_t DIMENSION >
+    using PointMeshFactory = GEO::Factory0< PointSetMesh< DIMENSION > >;
+
+    using PointMeshFactory3D = PointMeshFactory< 3 >;
+#define ringmesh_register_point_mesh_3d(type) \
+    geo_register_creator(RINGMesh::PointMeshFactory3D, type, type::type_name_static())
+
+    using PointMeshFactory2D = PointMeshFactory< 2 >;
+#define ringmesh_register_point_mesh_2d(type) \
+    geo_register_creator(RINGMesh::PointMeshFactory2D, type, type::type_name_static())
 
     /*!
-     * class for encapsulating line mesh component
+     * class for encapsulating line mesh (composed of edges)
      */
-    class RINGMESH_API LineMesh: public MeshBase {
+    template< index_t DIMENSION >
+    class LineMesh: public MeshBase< DIMENSION > {
     ringmesh_disable_copy( LineMesh );
-        friend class LineMeshBuilder;
-
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class LineMeshBuilder< DIMENSION > ;
     public:
         virtual ~LineMesh() = default;
 
-        static std::unique_ptr< LineMesh > create_mesh(
+        static std::unique_ptr< LineMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
 
         /*
@@ -183,40 +192,42 @@ namespace RINGMesh {
          */
         double edge_length( index_t edge_id ) const
         {
-            const vec3& e0 = vertex( edge_vertex( edge_id, 0 ) );
-            const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) );
+            const vecn< DIMENSION >& e0 = this->vertex( edge_vertex( edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = this->vertex( edge_vertex( edge_id, 1 ) );
             return ( e1 - e0 ).length();
         }
 
-        vec3 edge_barycenter( index_t edge_id ) const
+        vecn< DIMENSION > edge_barycenter( index_t edge_id ) const
         {
-            const vec3& e0 = vertex( edge_vertex( edge_id, 0 ) );
-            const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) );
+            const vecn< DIMENSION >& e0 = this->vertex( edge_vertex( edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = this->vertex( edge_vertex( edge_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
 
         /*!
          * @brief return the NNSearch at edges
-         * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
+         * @warning the NNSearch is destroyed when calling the Mesh::polygons_aabb()
+         * and Mesh::cells_aabb()
          */
-        const NNSearch& edges_nn_search() const
+        const NNSearch< DIMENSION >& edges_nn_search() const
         {
             if( !edges_nn_search_ ) {
-                std::vector< vec3 > edge_centers( nb_edges() );
+                std::vector< vecn< DIMENSION > > edge_centers( nb_edges() );
                 for( index_t e = 0; e < nb_edges(); ++e ) {
                     edge_centers[e] = edge_barycenter( e );
                 }
-                edges_nn_search_.reset( new NNSearch( edge_centers, true ) );
+                edges_nn_search_.reset(
+                    new NNSearch< DIMENSION >( edge_centers, true ) );
             }
             return *edges_nn_search_.get();
         }
         /*!
          * @brief Creates an AABB tree for a Mesh edges
          */
-        const LineAABBTree& edges_aabb() const
+        const LineAABBTree< DIMENSION >& edges_aabb() const
         {
             if( !edges_aabb_ ) {
-                edges_aabb_.reset( new LineAABBTree( *this ) );
+                edges_aabb_.reset( new LineAABBTree< DIMENSION >( *this ) );
             }
             return *edges_aabb_.get();
         }
@@ -226,24 +237,34 @@ namespace RINGMesh {
         LineMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > edges_nn_search_;
-        mutable std::unique_ptr< LineAABBTree > edges_aabb_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > edges_nn_search_;
+        mutable std::unique_ptr< LineAABBTree< DIMENSION > > edges_aabb_;
     };
-    using LineMeshFactory = GEO::Factory0< LineMesh >;
-#define ringmesh_register_line_mesh(type) \
-    geo_register_creator(RINGMesh::LineMeshFactory, type, type::type_name_static())
+
+    template< index_t DIMENSION >
+    using LineMeshFactory = GEO::Factory0< LineMesh< DIMENSION > >;
+
+    using LineMeshFactory3D = LineMeshFactory< 3 >;
+#define ringmesh_register_line_mesh_3d(type) \
+    geo_register_creator(RINGMesh::LineMeshFactory3D, type, type::type_name_static())
+
+    using LineMeshFactory2D = LineMeshFactory< 2 >;
+#define ringmesh_register_line_mesh_2d(type) \
+    geo_register_creator(RINGMesh::LineMeshFactory2D, type, type::type_name_static())
 
     /*!
      * class for encapsulating surface mesh component
      */
-    class RINGMESH_API SurfaceMesh: public MeshBase {
-    ringmesh_disable_copy( SurfaceMesh );
-        friend class SurfaceMeshBuilder;
+    template< index_t DIMENSION >
+    class SurfaceMeshBase: public MeshBase< DIMENSION > {
+    ringmesh_disable_copy( SurfaceMeshBase );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class SurfaceMeshBuilder< DIMENSION > ;
 
     public:
-        virtual ~SurfaceMesh() = default;
+        virtual ~SurfaceMeshBase() = default;
 
-        static std::unique_ptr< SurfaceMesh > create_mesh(
+        static std::unique_ptr< SurfaceMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
 
         /*!
@@ -332,7 +353,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Get the vertex index in a polygon @param polygon_index from its
-         * global index in the Mesh2D @param vertex_id
+         * global index in the SurfaceMesh @param vertex_id
          * @return NO_ID or index of the vertex in the polygon
          */
         index_t vertex_index_in_polygon(
@@ -347,7 +368,7 @@ namespace RINGMesh {
          */
         index_t closest_vertex_in_polygon(
             index_t polygon_index,
-            const vec3& query_point ) const;
+            const vecn< DIMENSION >& query_point ) const;
 
         /*!
          * @brief Get the first polygon of the surface that has an edge linking the two vertices (ids in the surface)
@@ -427,9 +448,9 @@ namespace RINGMesh {
          */
         double polygon_edge_length( index_t polygon_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex(
+            const vecn< DIMENSION >& e0 = this->vertex(
                 polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex(
+            const vecn< DIMENSION >& e1 = this->vertex(
                 polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 - e0 ).length();
         }
@@ -438,11 +459,13 @@ namespace RINGMesh {
          * @param[in] polygon_id index of the polygon
          * @param[in] vertex_id the edge starting vertex index
          */
-        vec3 polygon_edge_barycenter( index_t polygon_id, index_t vertex_id ) const
+        vecn< DIMENSION > polygon_edge_barycenter(
+            index_t polygon_id,
+            index_t vertex_id ) const
         {
-            const vec3& e0 = vertex(
+            const vecn< DIMENSION >& e0 = this->vertex(
                 polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
-            const vec3& e1 = vertex(
+            const vecn< DIMENSION >& e1 = this->vertex(
                 polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
@@ -468,15 +491,114 @@ namespace RINGMesh {
         }
 
         /*!
+         * Computes the Mesh polygon barycenter
+         * @param[in] polygon_id the polygon index
+         * @return the polygon center
+         */
+        vecn< DIMENSION > polygon_barycenter( index_t polygon_id ) const
+        {
+            vecn< DIMENSION > result;
+            for( index_t i = 0; i < DIMENSION; i++ ) {
+                result[i] = 0.0;
+            }
+            double count = 0.0;
+            ringmesh_assert( nb_polygon_vertices( polygon_id ) >= 1 );
+            for( index_t v = 0; v < nb_polygon_vertices( polygon_id ); ++v ) {
+                result += this->vertex( polygon_vertex( polygon_id, v ) );
+                count += 1.0;
+            }
+            return ( 1.0 / count ) * result;
+        }
+        /*!
+         * Computes the Mesh polygon area
+         * @param[in] polygon_id the polygon index
+         * @return the polygon area
+         */
+        virtual double polygon_area( index_t polygon_id ) const = 0;
+
+        /*!
+         * @brief return the NNSearch at polygons
+         */
+        const NNSearch< DIMENSION >& polygons_nn_search() const
+        {
+            if( !nn_search_ ) {
+                std::vector< vecn< DIMENSION > > polygon_centers( nb_polygons() );
+                for( index_t p = 0; p < nb_polygons(); ++p ) {
+                    polygon_centers[p] = polygon_barycenter( p );
+                }
+                nn_search_.reset(
+                    new NNSearch< DIMENSION >( polygon_centers, true ) );
+            }
+            return *nn_search_.get();
+        }
+        /*!
+         * @brief Creates an AABB tree for a Mesh polygons
+         */
+        const SurfaceAABBTree< DIMENSION >& polygons_aabb() const
+        {
+            if( !polygons_aabb_ ) {
+                polygons_aabb_.reset( new SurfaceAABBTree< DIMENSION >( *this ) );
+            }
+            return *polygons_aabb_;
+        }
+    protected:
+        SurfaceMeshBase() = default;
+
+    protected:
+        mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_;
+        mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygons_aabb_;
+    };
+
+    template< index_t DIMENSION >
+    class SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
+    };
+
+    template< index_t DIMENSION >
+    using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh< DIMENSION > >;
+
+    using SurfaceMeshFactory3D = SurfaceMeshFactory< 3 >;
+#define ringmesh_register_surface_mesh_3d(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshFactory3D, type, type::type_name_static())
+
+    using SurfaceMeshFactory2D = SurfaceMeshFactory< 2 >;
+#define ringmesh_register_surface_mesh_2d(type) \
+    geo_register_creator(RINGMesh::SurfaceMeshFactory2D, type, type::type_name_static())
+
+    template< >
+    class SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
+    public:
+
+        /*!
+         * Computes the Mesh polygon area
+         * @param[in] polygon_id the polygon index
+         * @return the polygon area
+         */
+        virtual double polygon_area( index_t polygon_id ) const override
+        {
+            double result = 0.0;
+            if( nb_polygon_vertices( polygon_id ) == 0 ) {
+                return result;
+            }
+            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+            for( index_t i = 1; i + 1 < nb_polygon_vertices( polygon_id ); i++ ) {
+                const vec3& p2 = vertex( polygon_vertex( polygon_id, i ) );
+                const vec3& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
+                result += triangle_signed_area( p1, p2, p3,
+                    polygon_normal( polygon_id ) );
+            }
+            return std::fabs( result );
+        }
+
+        /*!
          * Computes the Mesh polygon normal
          * @param[in] polygon_id the polygon index
          * @return the polygon normal
          */
         vec3 polygon_normal( index_t polygon_id ) const
         {
-            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
-            const vec3& p2 = vertex( polygon_vertex( polygon_id, 1 ) );
-            const vec3& p3 = vertex( polygon_vertex( polygon_id, 2 ) );
+            const vec3& p1 = this->vertex( this->polygon_vertex( polygon_id, 0 ) );
+            const vec3& p2 = this->vertex( this->polygon_vertex( polygon_id, 1 ) );
+            const vec3& p3 = this->vertex( this->polygon_vertex( polygon_id, 2 ) );
             vec3 norm = cross( p2 - p1, p3 - p1 );
             return normalize( norm );
         }
@@ -510,88 +632,45 @@ namespace RINGMesh {
             }
             return normalize( norm );
         }
+    };
 
-        /*!
-         * Computes the Mesh polygon barycenter
-         * @param[in] polygon_id the polygon index
-         * @return the polygon center
-         */
-        vec3 polygon_barycenter( index_t polygon_id ) const
-        {
-            vec3 result( 0.0, 0.0, 0.0 );
-            double count = 0.0;
-            for( index_t v = 0; v < nb_polygon_vertices( polygon_id ); ++v ) {
-                result += vertex( polygon_vertex( polygon_id, v ) );
-                count += 1.0;
-            }
-            return ( 1.0 / count ) * result;
-        }
+    template< >
+    class SurfaceMesh< 2 > : public SurfaceMeshBase< 2 > {
+    public:
         /*!
          * Computes the Mesh polygon area
          * @param[in] polygon_id the polygon index
          * @return the polygon area
          */
-        double polygon_area( index_t polygon_id ) const
+        virtual double polygon_area( index_t polygon_id ) const override
         {
             double result = 0.0;
             if( nb_polygon_vertices( polygon_id ) == 0 ) {
                 return result;
             }
-            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+            const vec2& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
             for( index_t i = 1; i + 1 < nb_polygon_vertices( polygon_id ); i++ ) {
-                const vec3& p2 = vertex( polygon_vertex( polygon_id, i ) );
-                const vec3& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
-                result += 0.5 * length( cross( p2 - p1, p3 - p1 ) );
+                const vec2& p2 = vertex( polygon_vertex( polygon_id, i ) );
+                const vec2& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
+                result += GEO::Geom::triangle_signed_area( p1, p2, p3 );
             }
-            return result;
+            return std::fabs( result );
         }
-
-        /*!
-         * @brief return the NNSearch at polygons
-         */
-        const NNSearch& polygons_nn_search() const
-        {
-            if( !nn_search_ ) {
-                std::vector< vec3 > polygon_centers( nb_polygons() );
-                for( index_t p = 0; p < nb_polygons(); ++p ) {
-                    polygon_centers[p] = polygon_barycenter( p );
-                }
-                nn_search_.reset( new NNSearch( polygon_centers, true ) );
-            }
-            return *nn_search_.get();
-        }
-        /*!
-         * @brief Creates an AABB tree for a Mesh polygons
-         */
-        const SurfaceAABBTree& polygons_aabb() const
-        {
-            if( !polygons_aabb_ ) {
-                polygons_aabb_.reset( new SurfaceAABBTree( *this ) );
-            }
-            return *polygons_aabb_;
-        }
-    protected:
-        SurfaceMesh() = default;
-
-    protected:
-        mutable std::unique_ptr< NNSearch > nn_search_;
-        mutable std::unique_ptr< SurfaceAABBTree > polygons_aabb_;
     };
-    using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh >;
-#define ringmesh_register_surface_mesh(type) \
-    geo_register_creator(RINGMesh::SurfaceMeshFactory, type, type::type_name_static())
 
     /*!
      * class for encapsulating volume mesh component
      */
-    class RINGMESH_API VolumeMesh: public MeshBase {
+    template< index_t DIMENSION >
+    class VolumeMesh: public MeshBase< DIMENSION > {
     ringmesh_disable_copy( VolumeMesh );
-        friend class VolumeMeshBuilder;
+        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
+        friend class VolumeMeshBuilder< DIMENSION > ;
 
     public:
         virtual ~VolumeMesh() = default;
 
-        static std::unique_ptr< VolumeMesh > create_mesh(
+        static std::unique_ptr< VolumeMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
 
         /*!
@@ -646,9 +725,68 @@ namespace RINGMesh {
          */
         double cell_edge_length( index_t cell_id, index_t edge_id ) const
         {
-            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
-            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
+            const vecn< DIMENSION >& e0 = this->vertex(
+                cell_edge_vertex( cell_id, edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = this->vertex(
+                cell_edge_vertex( cell_id, edge_id, 1 ) );
             return ( e1 - e0 ).length();
+        }
+
+        index_t cells_around_vertex(
+            index_t vertex_id,
+            std::vector< index_t >& result,
+            index_t cell_hint ) const
+        {
+            result.resize( 0 );
+
+            if( cell_hint == NO_ID ) {
+                return 0;
+            }
+
+            // Flag the visited cells
+            std::vector< index_t > visited;
+            visited.reserve( 10 );
+
+            // Stack of the adjacent cells
+            std::stack< index_t > S;
+            S.push( cell_hint );
+            visited.push_back( cell_hint );
+
+            do {
+                index_t c = S.top();
+                S.pop();
+
+                bool cell_includes_vertex = false;
+                for( index_t v = 0; v < nb_cell_vertices( c ); v++ ) {
+                    if( cell_vertex( c, v ) == vertex_id ) {
+                        result.push_back( c );
+                        cell_includes_vertex = true;
+                        break;
+                    }
+                }
+                if( !cell_includes_vertex ) {
+                    continue;
+                }
+
+                for( index_t f = 0; f < nb_cell_facets( c ); f++ ) {
+                    for( index_t v = 0; v < nb_cell_facet_vertices( c, f ); v++ ) {
+                        index_t vertex = cell_facet_vertex( c, f, v );
+                        if( vertex == vertex_id ) {
+                            index_t adj_P = cell_adjacent( c, f );
+
+                            if( adj_P != NO_ID ) {
+                                if( !contains( visited, adj_P ) ) {
+                                    S.push( adj_P );
+                                    visited.push_back( adj_P );
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            } while( !S.empty() );
+
+            return static_cast< index_t >( result.size() );
         }
 
         /*!
@@ -657,10 +795,14 @@ namespace RINGMesh {
          * @param[in] edge_id the edge index
          * @return the cell edge center
          */
-        vec3 cell_edge_barycenter( index_t cell_id, index_t edge_id ) const
+        vecn< DIMENSION > cell_edge_barycenter(
+            index_t cell_id,
+            index_t edge_id ) const
         {
-            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
-            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
+            const vecn< DIMENSION >& e0 = this->vertex(
+                cell_edge_vertex( cell_id, edge_id, 0 ) );
+            const vecn< DIMENSION >& e1 = this->vertex(
+                cell_edge_vertex( cell_id, edge_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
 
@@ -724,7 +866,8 @@ namespace RINGMesh {
         virtual GEO::MeshCellType cell_type( index_t cell_id ) const = 0;
 
         /*!
-         * @brief Tests whether all the cells are tetrahedra. when all the cells are tetrahedra, storage and access is optimized.
+         * @brief Tests whether all the cells are tetrahedra.
+         * When all the cells are tetrahedra, storage and access is optimized.
          * @return True if all cells are tetrahedra and False otherwise.
          */
         virtual bool cells_are_simplicies() const = 0;
@@ -735,12 +878,17 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index in the cell
          * @return the cell facet center
          */
-        vec3 cell_facet_barycenter( index_t cell_id, index_t facet_id ) const
+        vecn< DIMENSION > cell_facet_barycenter(
+            index_t cell_id,
+            index_t facet_id ) const
         {
-            vec3 result( 0., 0., 0. );
+            vecn< DIMENSION > result;
+            for( index_t i = 0; i < DIMENSION; i++ ) {
+                result[i] = 0.0;
+            }
             index_t nb_vertices = nb_cell_facet_vertices( cell_id, facet_id );
             for( index_t v = 0; v < nb_vertices; ++v ) {
-                result += vertex( cell_facet_vertex( cell_id, facet_id, v ) );
+                result += this->vertex( cell_facet_vertex( cell_id, facet_id, v ) );
             }
             ringmesh_assert( nb_vertices > 0 );
 
@@ -749,12 +897,16 @@ namespace RINGMesh {
         /*!
          * Compute the non weighted barycenter of the \param cell_id
          */
-        vec3 cell_barycenter( index_t cell_id ) const
+        vecn< DIMENSION > cell_barycenter( index_t cell_id ) const
         {
-            vec3 result( 0.0, 0.0, 0.0 );
+            vecn< DIMENSION > result;
+            for( index_t i = 0; i < DIMENSION; i++ ) {
+                result[i] = 0.0;
+            }
             double count = 0.0;
+            ringmesh_assert( nb_cell_vertices( cell_id ) >= 1 );
             for( index_t v = 0; v < nb_cell_vertices( cell_id ); ++v ) {
-                result += vertex( cell_vertex( cell_id, v ) );
+                result += this->vertex( cell_vertex( cell_id, v ) );
                 count += 1.0;
             }
             return ( 1.0 / count ) * result;
@@ -765,14 +917,19 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index in the cell
          * @return the cell facet normal
          */
-        vec3 cell_facet_normal( index_t cell_id, index_t facet_id ) const
+        vecn< DIMENSION > cell_facet_normal(
+            index_t cell_id,
+            index_t facet_id ) const
         {
             ringmesh_assert( cell_id < nb_cells() );
             ringmesh_assert( facet_id < nb_cell_facets( cell_id ) );
 
-            const vec3& p1 = vertex( cell_facet_vertex( cell_id, facet_id, 0 ) );
-            const vec3& p2 = vertex( cell_facet_vertex( cell_id, facet_id, 1 ) );
-            const vec3& p3 = vertex( cell_facet_vertex( cell_id, facet_id, 2 ) );
+            const vecn< DIMENSION >& p1 = this->vertex(
+                cell_facet_vertex( cell_id, facet_id, 0 ) );
+            const vecn< DIMENSION >& p2 = this->vertex(
+                cell_facet_vertex( cell_id, facet_id, 1 ) );
+            const vecn< DIMENSION >& p3 = this->vertex(
+                cell_facet_vertex( cell_id, facet_id, 2 ) );
 
             return cross( p2 - p1, p3 - p1 );
         }
@@ -794,12 +951,14 @@ namespace RINGMesh {
 
         /*!
          * @brief return the NNSearch at cell facets
-         * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         * @warning the NNSearch is destroyed when calling the Mesh::facets_aabb()
+         *  and Mesh::cells_aabb()
          */
-        const NNSearch& cell_facets_nn_search() const
+        const NNSearch< DIMENSION >& cell_facets_nn_search() const
         {
             if( !cell_facets_nn_search_ ) {
-                std::vector< vec3 > cell_facet_centers( nb_cell_facets() );
+                std::vector< vecn< DIMENSION > > cell_facet_centers(
+                    nb_cell_facets() );
                 index_t cf = 0;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     for( index_t f = 0; f < nb_cell_facets( c ); ++f ) {
@@ -808,31 +967,32 @@ namespace RINGMesh {
                     }
                 }
                 cell_facets_nn_search_.reset(
-                    new NNSearch( cell_facet_centers, true ) );
+                    new NNSearch< DIMENSION >( cell_facet_centers, true ) );
             }
             return *cell_facets_nn_search_.get();
         }
         /*!
          * @brief return the NNSearch at cells
          */
-        const NNSearch& cells_nn_search() const
+        const NNSearch< DIMENSION >& cells_nn_search() const
         {
             if( !cell_nn_search_ ) {
-                std::vector< vec3 > cell_centers( nb_cells() );
+                std::vector< vecn< DIMENSION > > cell_centers( nb_cells() );
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     cell_centers[c] = cell_barycenter( c );
                 }
-                cell_nn_search_.reset( new NNSearch( cell_centers, true ) );
+                cell_nn_search_.reset(
+                    new NNSearch< DIMENSION >( cell_centers, true ) );
             }
             return *cell_nn_search_.get();
         }
         /*!
          * @brief Creates an AABB tree for a Mesh cells
          */
-        const VolumeAABBTree& cells_aabb() const
+        const VolumeAABBTree< DIMENSION >& cells_aabb() const
         {
             if( !cell_aabb_ ) {
-                cell_aabb_.reset( new VolumeAABBTree( *this ) );
+                cell_aabb_.reset( new VolumeAABBTree< DIMENSION >( *this ) );
             }
             return *cell_aabb_.get();
         }
@@ -840,33 +1000,53 @@ namespace RINGMesh {
         VolumeMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > cell_facets_nn_search_;
-        mutable std::unique_ptr< NNSearch > cell_nn_search_;
-        mutable std::unique_ptr< VolumeAABBTree > cell_aabb_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > cell_facets_nn_search_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_;
+        mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_;
     };
-    using VolumeMeshFactory = GEO::Factory0< VolumeMesh >;
-#define ringmesh_register_volume_mesh(type) \
-    geo_register_creator(RINGMesh::VolumeMeshFactory, type, type::type_name_static())
+
+    template< index_t DIMENSION >
+    using VolumeMeshFactory = GEO::Factory0< VolumeMesh< DIMENSION > >;
+
+    using VolumeMeshFactory3D = VolumeMeshFactory< 3 >;
+#define ringmesh_register_volume_mesh_3d(type) \
+    geo_register_creator(RINGMesh::VolumeMeshFactory3D, type, type::type_name_static())
 
     /*!
      * class composed of meshes from all the dimensions
      */
-    class RINGMESH_API MeshSet {
-    ringmesh_disable_copy( MeshSet );
+    template< index_t DIMENSION >
+    class MeshSetBase {
+    ringmesh_disable_copy( MeshSetBase );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        MeshSet();
-
         void create_point_set_mesh( const MeshType type );
         void create_line_mesh( const MeshType type );
         void create_surface_mesh( const MeshType type );
+
+    protected:
+        MeshSetBase();
+
+    public:
+        std::unique_ptr< PointSetMesh< DIMENSION > > point_set_mesh;
+        std::unique_ptr< LineMesh< DIMENSION > > line_mesh;
+        std::unique_ptr< SurfaceMesh< DIMENSION > > surface_mesh;
+    };
+
+    template< index_t DIMENSION >
+    class MeshSet: public MeshSetBase< DIMENSION > {
+    public:
+        MeshSet() = default;
+    };
+
+    template< >
+    class MeshSet< 3 > : public MeshSetBase< 3 > {
+    public:
+        MeshSet();
+
         void create_volume_mesh( const MeshType type );
 
     public:
-        std::unique_ptr< PointSetMesh > point_set_mesh;
-        std::unique_ptr< LineMesh > line_mesh;
-        std::unique_ptr< SurfaceMesh > surface_mesh;
-        std::unique_ptr< VolumeMesh > volume_mesh;
-
+        std::unique_ptr< VolumeMesh< 3 > > volume_mesh;
     };
-
 }
