@@ -43,7 +43,7 @@
  *
  */
 
-#include <geogram/voronoi/RVD_polyhedron_callback.h>
+#include <geogram/voronoi/RVD_callback.h>
 #include <geogram/voronoi/RVD_mesh_builder.h>
 #include <geogram/voronoi/generic_RVD_cell.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -327,9 +327,50 @@ namespace {
 
 namespace GEO {
 
-    RVDPolyhedronCallback::RVDPolyhedronCallback() :
+    RVDCallback::RVDCallback() :
 	seed_(index_t(-1)),
-	tet_(index_t(-1)),
+	simplex_(index_t(-1)),
+	spinlocks_(nil) {
+    }
+
+    RVDCallback::~RVDCallback() {
+    }
+
+    void RVDCallback::begin() {
+	seed_ = index_t(-1);
+	simplex_ = index_t(-1);
+    }
+
+    void RVDCallback::end() {
+    }
+
+    /*********************************************************************/
+
+    RVDPolygonCallback::RVDPolygonCallback() {
+    }
+    
+    RVDPolygonCallback::~RVDPolygonCallback() {
+    }
+
+    void RVDPolygonCallback::operator() (
+	index_t v,
+	index_t t,
+	const GEOGen::Polygon& C
+    ) const {
+	const_cast<RVDPolygonCallback*>(this)->seed_ = v;
+	const_cast<RVDPolygonCallback*>(this)->simplex_ = t;
+	geo_argused(C);
+    }
+    
+    void RVDPolygonCallback::begin() {
+    }
+    
+    void RVDPolygonCallback::end() {
+    }
+    
+    /*********************************************************************/
+    
+    RVDPolyhedronCallback::RVDPolyhedronCallback() :
 	facet_seed_(index_t(-1)),
 	facet_tet_(index_t(-1)),
 	last_seed_(index_t(-1)),
@@ -339,8 +380,7 @@ namespace GEO {
 	simplify_boundary_facets_angle_threshold_(0.0),
 	use_mesh_(false),	
 	facet_is_skipped_(false),
-	vertex_map_(nil),
-	spinlocks_(nil)
+	vertex_map_(nil)
     {
     }
 
@@ -405,7 +445,7 @@ namespace GEO {
     ) {
 	last_seed_ = seed;
 	seed_ = seed;
-	tet_ = tetrahedron;
+	simplex_ = tetrahedron;
 	if(use_mesh_) {
 	    vertex_map_ = new RVDVertexMap;
 	} else {
@@ -476,7 +516,7 @@ namespace GEO {
 	    end_polyhedron();
 	}
 	seed_ = index_t(-1);
-	tet_ = index_t(-1);
+	simplex_ = index_t(-1);
     }
     
     /********************************************************************/
