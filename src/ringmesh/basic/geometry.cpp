@@ -670,7 +670,7 @@ namespace RINGMesh {
         vec2 line_intersection_result;
         if( line_line_intersection( O_seg, D_seg, O_line, D_line,
             line_intersection_result ) ) {
-            // Test whether the line-line intersection is on the segments.
+            // Test whether the line-line intersection is on the segment.
             if( length( line_intersection_result - O_seg )
                 <= 0.5 * D_seg.length() + global_epsilon ) {
                 result = line_intersection_result;
