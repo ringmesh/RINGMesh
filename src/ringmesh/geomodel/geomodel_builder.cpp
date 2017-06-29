@@ -707,18 +707,20 @@ namespace {
         void visit_border_polygons_on_same_edge( index_t border_id )
         {
             visited_[border_id] = true;
-            index_t j = border_id + 1;
-            while( j < this->border_polygons_.size()
-                && this->have_border_polygons_same_boundary_edge( border_id, j ) ) {
-                visited_[j] = true;
-                j++;
+            index_t next_border_id = border_id + 1;
+            while( next_border_id < this->border_polygons_.size()
+                && this->have_border_polygons_same_boundary_edge( border_id,
+                    next_border_id ) ) {
+                visited_[next_border_id] = true;
+                next_border_id++;
             }
 
-            index_t k = border_id - 1;
-            while( k != NO_ID
-                && this->have_border_polygons_same_boundary_edge( border_id, k ) ) {
-                visited_[k] = true;
-                k--;
+            index_t prev_border_id = border_id - 1;
+            while( prev_border_id != NO_ID
+                && this->have_border_polygons_same_boundary_edge( border_id,
+                    prev_border_id ) ) {
+                visited_[prev_border_id] = true;
+                prev_border_id--;
             }
         }
 
@@ -734,18 +736,22 @@ namespace {
 
             adjacent_surfaces.push_back(
                 this->border_polygons_[border_id].surface_ );
-            index_t j = border_id + 1;
-            while( j < this->border_polygons_.size()
-                && this->have_border_polygons_same_boundary_edge( border_id, j ) ) {
-                adjacent_surfaces.push_back( this->border_polygons_[j].surface_ );
-                j++;
+            index_t next_border_id = border_id + 1;
+            while( next_border_id < this->border_polygons_.size()
+                && this->have_border_polygons_same_boundary_edge( border_id,
+                    next_border_id ) ) {
+                adjacent_surfaces.push_back(
+                    this->border_polygons_[next_border_id].surface_ );
+                next_border_id++;
             }
 
-            index_t k = border_id - 1;
-            while( k != NO_ID
-                && this->have_border_polygons_same_boundary_edge( border_id, k ) ) {
-                adjacent_surfaces.push_back( this->border_polygons_[k].surface_ );
-                k--;
+            index_t prev_border_id = border_id - 1;
+            while( prev_border_id != NO_ID
+                && this->have_border_polygons_same_boundary_edge( border_id,
+                    prev_border_id ) ) {
+                adjacent_surfaces.push_back(
+                    this->border_polygons_[prev_border_id].surface_ );
+                prev_border_id--;
             }
 
             std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() );
