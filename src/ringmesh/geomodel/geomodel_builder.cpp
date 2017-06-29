@@ -582,8 +582,7 @@ namespace {
 
             index_t t = get_next_border_polygon( cur_border_polygon_, backward );
             ringmesh_assert( t != NO_ID );
-            while( t != cur_border_polygon_ && !is_visited( t )
-                && equal_to_line_adjacent_surfaces( get_adjacent_surfaces( t ) ) ) {
+            while( propagate( t ) ) {
                 visit_border_polygons_on_same_edge( t );
                 add_border_polygon_vertices_to_line( t, backward );
                 t = get_next_border_polygon( t, backward );
@@ -591,14 +590,20 @@ namespace {
             }
         }
 
+        bool propagate( index_t t ) const
+        {
+            return t != cur_border_polygon_ && !is_visited( t )
+                && equal_to_line_adjacent_surfaces( t );
+        }
+
         bool is_visited( index_t i ) const
         {
             return visited_[i];
         }
 
-        bool equal_to_line_adjacent_surfaces(
-            const std::vector< index_t >& input ) const
+        bool equal_to_line_adjacent_surfaces( index_t t ) const
         {
+            std::vector< index_t > input = get_adjacent_surfaces( t );
             if( input.size() != cur_line_.adjacent_surfaces_.size() ) {
                 return false;
             } else {
@@ -701,10 +706,19 @@ namespace {
          */
         void visit_border_polygons_on_same_edge( index_t border_id )
         {
-            for( index_t i = 0; i < this->border_polygons_.size(); i++ ) {
-                if( this->have_border_polygons_same_boundary_edge( border_id, i ) ) {
-                    visited_[i] = true;
-                }
+            visited_[border_id] = true;
+            for( index_t next_border_id = border_id + 1;
+                next_border_id < this->border_polygons_.size()
+                    && this->have_border_polygons_same_boundary_edge( border_id,
+                        next_border_id ); next_border_id++ ) {
+                visited_[next_border_id] = true;
+            }
+
+            for( index_t prev_border_id = border_id - 1;
+                prev_border_id != NO_ID
+                    && this->have_border_polygons_same_boundary_edge( border_id,
+                        prev_border_id ); prev_border_id-- ) {
+                visited_[prev_border_id] = true;
             }
         }
 
@@ -713,15 +727,29 @@ namespace {
          * @note When the surface appears twice (the line is an internal border)
          * both occurrences are kept.
          */
-        std::vector< index_t > get_adjacent_surfaces( index_t border_id )
+        std::vector< index_t > get_adjacent_surfaces( index_t border_id ) const
         {
             std::vector< index_t > adjacent_surfaces;
-            for( index_t i = 0; i < this->border_polygons_.size(); i++ ) {
-                if( this->have_border_polygons_same_boundary_edge( border_id, i ) ) {
-                    adjacent_surfaces.push_back(
-                        this->border_polygons_[i].surface_ );
-                }
+            adjacent_surfaces.reserve( 10 );
+            adjacent_surfaces.push_back(
+                this->border_polygons_[border_id].surface_ );
+
+            for( index_t next_border_id = border_id + 1;
+                next_border_id < this->border_polygons_.size()
+                    && this->have_border_polygons_same_boundary_edge( border_id,
+                        next_border_id ); next_border_id++ ) {
+                adjacent_surfaces.push_back(
+                    this->border_polygons_[next_border_id].surface_ );
             }
+
+            for( index_t prev_border_id = border_id - 1;
+                prev_border_id != NO_ID
+                    && this->have_border_polygons_same_boundary_edge( border_id,
+                        prev_border_id ); prev_border_id-- ) {
+                adjacent_surfaces.push_back(
+                    this->border_polygons_[prev_border_id].surface_ );
+            }
+
             std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() );
             return adjacent_surfaces;
         }
@@ -840,7 +868,7 @@ namespace RINGMesh {
 
         // Deliberate clear of the geomodel vertices used for geomodel building
         geometry.clear_geomodel_mesh();
-        
+
         print_geomodel( geomodel_ );
     }
 
