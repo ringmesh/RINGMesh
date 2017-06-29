@@ -52,11 +52,11 @@ namespace RINGMesh {
      */
     struct GMEVertex {
         GMEVertex( gmme_id t, index_t vertex_id_in )
-            : gmme( t ), v_index( vertex_id_in )
+            : gmme( std::move( t ) ), v_index( vertex_id_in )
         {
         }
         GMEVertex()
-            : gmme(), v_index( NO_ID )
+            : GMEVertex( gmme_id(), NO_ID )
         {
         }
         bool operator==( const GMEVertex& rhs ) const

@@ -44,8 +44,10 @@ namespace RINGMesh {
     StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(
         StratigraphicColumn& column,
         GeoModel< 3 >& model,
-        const std::string& filename )
-        : StratigraphicColumnBuilder( column, model ), filename_( filename )
+        std::string filename )
+        :
+            StratigraphicColumnBuilder( column, model ),
+            filename_( std::move( filename ) )
     {
     }
 

@@ -134,9 +134,9 @@ namespace RINGMesh {
     class RINGMESH_API RINGMeshException: public std::runtime_error {
     public:
         explicit RINGMeshException(
-            const std::string& category,
+            std::string category,
             const std::string& message )
-            : std::runtime_error( message ), category_( category )
+            : std::runtime_error( message ), category_( std::move( category ) )
         {
         }
         virtual ~RINGMeshException() throw()

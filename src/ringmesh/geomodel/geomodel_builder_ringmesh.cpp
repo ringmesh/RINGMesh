@@ -267,8 +267,10 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     GeoModelBuilderGM< DIMENSION >::GeoModelBuilderGM(
         GeoModel< DIMENSION >& geomodel,
-        const std::string& filename )
-        : GeoModelBuilderFile< DIMENSION >( geomodel, filename ), file_version_( 0 )
+        std::string filename )
+        :
+            GeoModelBuilderFile< DIMENSION >( geomodel, std::move( filename ) ),
+            file_version_( 0 )
     {
         version_impl_[0].reset(
             new GeoModelBuilderGMImpl_0< DIMENSION >( *this, geomodel ) );

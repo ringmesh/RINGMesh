@@ -111,6 +111,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelIOHandler: public GEO::Counted {
     public:
+        virtual ~GeoModelIOHandler() = default;
+
         static void initialize_full_geomodel_output();
 
         static void initialize_boundary_geomodel_output();
@@ -156,6 +158,8 @@ namespace RINGMesh {
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
     public:
+        virtual ~WellGroupIOHandler() = default;
+
         static void initialize();
 
         static std::unique_ptr< WellGroupIOHandler > get_handler(
@@ -193,6 +197,8 @@ namespace RINGMesh {
     /*********************************************************************************************/
     class RINGMESH_API StratigraphicColumnIOHandler: public GEO::Counted {
     public:
+        virtual ~StratigraphicColumnIOHandler() = default;
+
         static void initialize();
 
         static StratigraphicColumnIOHandler* create( const std::string& format );
@@ -210,13 +216,8 @@ namespace RINGMesh {
             const std::string& filename ) = 0;
 
     protected:
-        StratigraphicColumnIOHandler()
-        {
-        }
+        StratigraphicColumnIOHandler() = default;
 
-        virtual ~StratigraphicColumnIOHandler()
-        {
-        }
     };
     typedef GEO::SmartPointer< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler_var;
     typedef GEO::Factory0< StratigraphicColumnIOHandler > StratigraphicColumnIOHandlerFactory;
