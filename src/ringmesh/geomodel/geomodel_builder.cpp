@@ -708,14 +708,16 @@ namespace {
         {
             visited_[border_id] = true;
             for( index_t next_border_id = border_id + 1;
-                next_border_id < this->border_polygons_.size(), this->have_border_polygons_same_boundary_edge(
-                    border_id, next_border_id ); next_border_id++ ) {
+                next_border_id < this->border_polygons_.size()
+                    && this->have_border_polygons_same_boundary_edge( border_id,
+                        next_border_id ); next_border_id++ ) {
                 visited_[next_border_id] = true;
             }
 
             for( index_t prev_border_id = border_id - 1;
-                prev_border_id != NO_ID, this->have_border_polygons_same_boundary_edge(
-                    border_id, prev_border_id ); prev_border_id-- ) {
+                prev_border_id != NO_ID
+                    && this->have_border_polygons_same_boundary_edge( border_id,
+                        prev_border_id ); prev_border_id-- ) {
                 visited_[prev_border_id] = true;
             }
         }
@@ -733,15 +735,17 @@ namespace {
                 this->border_polygons_[border_id].surface_ );
 
             for( index_t next_border_id = border_id + 1;
-                next_border_id < this->border_polygons_.size(), this->have_border_polygons_same_boundary_edge(
-                    border_id, next_border_id ); next_border_id++ ) {
+                next_border_id < this->border_polygons_.size()
+                    && this->have_border_polygons_same_boundary_edge( border_id,
+                        next_border_id ); next_border_id++ ) {
                 adjacent_surfaces.push_back(
                     this->border_polygons_[next_border_id].surface_ );
             }
 
             for( index_t prev_border_id = border_id - 1;
-                prev_border_id != NO_ID, this->have_border_polygons_same_boundary_edge(
-                    border_id, prev_border_id ); prev_border_id-- ) {
+                prev_border_id != NO_ID
+                    && this->have_border_polygons_same_boundary_edge( border_id,
+                        prev_border_id ); prev_border_id-- ) {
                 adjacent_surfaces.push_back(
                     this->border_polygons_[prev_border_id].surface_ );
             }
