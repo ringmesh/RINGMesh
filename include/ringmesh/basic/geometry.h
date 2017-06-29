@@ -386,13 +386,13 @@ namespace RINGMesh {
         vec2& result );
 
     /*!
-     * Computes the intersection between two segments
+     * Computes the intersection between a segment and a line
      * @param[in] p0_seg the first vertex of the segment
      * @param[in] p1_seg the second vertex of the segment
      * @param[in] O_line a point on the line
      * @param[in] D_line the direction of the line
      * @param[out] result the intersection
-     * @return true is there is an intersection between the segments
+     * @return true is there is an intersection
      */
     bool RINGMESH_API segment_line_intersection(
         const vec2& p0_seg,
