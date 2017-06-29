@@ -40,7 +40,6 @@
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <memory>
-
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 /*!
@@ -358,11 +357,11 @@ namespace RINGMesh {
         /*!
          * Toggles the cell type to all the regions
          */
-        void set_draw_cells( GEO::MeshCellType type, bool x );
+        void set_draw_cells( CellType type, bool x );
         /*!
          * Toggles the cell type display
          */
-        void set_draw_cells( index_t region_id, GEO::MeshCellType type, bool x );
+        void set_draw_cells( index_t region_id, CellType type, bool x );
         /*!
          * Toggles the cell region color per cell type to all the regions
          */
@@ -372,10 +371,10 @@ namespace RINGMesh {
          * @param[in] region_id the region index
          */
         void set_cell_colors_by_type( index_t region_id );
-        void set_cell_type_visibility( GEO::MeshCellType t, bool is_visible );
+        void set_cell_type_visibility( CellType t, bool is_visible );
         void set_cell_type_visibility(
             index_t region_id,
-            GEO::MeshCellType t,
+            CellType t,
             bool is_visible );
         /*!
          * Sets the cell region shrink to all the regions

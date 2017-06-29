@@ -717,10 +717,10 @@ namespace RINGMesh {
             copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ );
         }
 
-        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1, 0 );
+        region_cell_ptr_.resize( gm_.nb_regions() * UNDEFINED_CELL + 1, 0 );
 
         // Total number of  cells
-        std::vector< index_t > nb_cells_per_type( GEO::MESH_NB_CELL_TYPES, 0 );
+        std::vector< index_t > nb_cells_per_type( UNDEFINED_CELL, 0 );
         index_t nb = 0;
 
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
@@ -736,32 +736,32 @@ namespace RINGMesh {
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r );
             for( index_t c = 0; c < gm_.region( r ).nb_mesh_elements(); ++c ) {
-                GEO::MeshCellType cur_cell_type = cur_region.cell_type( c );
+                CellType cur_cell_type = cur_region.cell_type( c );
                 switch( cur_cell_type ) {
-                    case GEO::MESH_TET:
-                        nb_cells_per_type[GEO::MESH_TET]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET
+                    case TETRAHEDRON:
+                        nb_cells_per_type[TETRAHEDRON]++;
+                        region_cell_ptr_[UNDEFINED_CELL * r + TETRAHEDRON
                             + 1]++;
                         break;
-                    case GEO::MESH_HEX:
-                        nb_cells_per_type[GEO::MESH_HEX]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX
+                    case HEXAHEDRON:
+                        nb_cells_per_type[HEXAHEDRON]++;
+                        region_cell_ptr_[UNDEFINED_CELL * r + HEXAHEDRON
                             + 1]++;
                         break;
-                    case GEO::MESH_PRISM:
-                        nb_cells_per_type[GEO::MESH_PRISM]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-                            + GEO::MESH_PRISM + 1]++;
+                    case PRISM:
+                        nb_cells_per_type[PRISM]++;
+                        region_cell_ptr_[UNDEFINED_CELL* r
+                            + PRISM + 1]++;
                         break;
-                    case GEO::MESH_PYRAMID:
-                        nb_cells_per_type[GEO::MESH_PYRAMID]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-                            + GEO::MESH_PYRAMID + 1]++;
+                    case PYRAMID:
+                        nb_cells_per_type[PYRAMID]++;
+                        region_cell_ptr_[UNDEFINED_CELL * r
+                            + PYRAMID + 1]++;
                         break;
-                    case GEO::MESH_CONNECTOR:
-                        nb_cells_per_type[GEO::MESH_CONNECTOR]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-                            + GEO::MESH_CONNECTOR + 1]++;
+                    case CONNECTOR:
+                        nb_cells_per_type[CONNECTOR]++;
+                        region_cell_ptr_[UNDEFINED_CELL * r
+                            + CONNECTOR + 1]++;
                         break;
                     default:
                         ringmesh_assert_not_reached;
@@ -771,8 +771,8 @@ namespace RINGMesh {
         }
 
         // Compute the cell offsets
-        std::vector< index_t > cells_offset_per_type( GEO::MESH_NB_CELL_TYPES, 0 );
-        for( index_t t = GEO::MESH_TET + 1; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
+        std::vector< index_t > cells_offset_per_type( UNDEFINED_CELL, 0 );
+        for( index_t t = TETRAHEDRON + 1; t < UNDEFINED_CELL; t++ ) {
             cells_offset_per_type[t] += cells_offset_per_type[t - 1];
             cells_offset_per_type[t] += nb_cells_per_type[t - 1];
         }
@@ -782,19 +782,19 @@ namespace RINGMesh {
         }
 
         // Create "empty" tet, hex, pyr and prism
-        for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
+        for( index_t i = 0; i < UNDEFINED_CELL; ++i ) {
             mesh_builder->create_cells( nb_cells_per_type[i],
-                GEO::MeshCellType( i ) );
+                CellType( i ) );
         }
 
         // Fill the cells with vertices
         bind_attribute();
-        std::vector< index_t > cur_cell_per_type( GEO::MESH_NB_CELL_TYPES, 0 );
+        std::vector< index_t > cur_cell_per_type( UNDEFINED_CELL, 0 );
         const GeoModelMeshVertices& geomodel_vertices = gmm_.vertices;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r );
             for( index_t c = 0; c < cur_region.nb_mesh_elements(); ++c ) {
-                GEO::MeshCellType cur_cell_type = cur_region.cell_type( c );
+                CellType cur_cell_type = cur_region.cell_type( c );
                 index_t cur_cell = cells_offset_per_type[cur_cell_type]
                     + cur_cell_per_type[cur_cell_type]++;
                 for( index_t v = 0; v < mesh_->nb_cell_vertices( cur_cell ); v++ ) {
@@ -822,11 +822,11 @@ namespace RINGMesh {
         mesh_builder->permute_cells( sorted_indices );
 
         // Cache some values
-        nb_tet_ = nb_cells_per_type[GEO::MESH_TET];
-        nb_hex_ = nb_cells_per_type[GEO::MESH_HEX];
-        nb_prism_ = nb_cells_per_type[GEO::MESH_PRISM];
-        nb_pyramid_ = nb_cells_per_type[GEO::MESH_PYRAMID];
-        nb_connector_ = nb_cells_per_type[GEO::MESH_CONNECTOR];
+        nb_tet_ = nb_cells_per_type[TETRAHEDRON];
+        nb_hex_ = nb_cells_per_type[HEXAHEDRON];
+        nb_prism_ = nb_cells_per_type[PRISM];
+        nb_pyramid_ = nb_cells_per_type[PYRAMID];
+        nb_connector_ = nb_cells_per_type[CONNECTOR];
     }
 
     void GeoModelMeshCells::bind_attribute()
@@ -935,28 +935,28 @@ namespace RINGMesh {
         return cell_id_[c];
     }
 
-    GEO::MeshCellType GeoModelMeshCells::type( index_t c ) const
+    CellType GeoModelMeshCells::type( index_t c ) const
     {
         test_and_initialize();
         ringmesh_assert( c < mesh_->nb_cells() );
         return mesh_->cell_type( c );
     }
 
-    index_t GeoModelMeshCells::nb_cells( GEO::MeshCellType type ) const
+    index_t GeoModelMeshCells::nb_cells( CellType type ) const
     {
         test_and_initialize();
         switch( type ) {
-            case GEO::MESH_TET:
+            case TETRAHEDRON:
                 return nb_tet();
-            case GEO::MESH_HEX:
+            case HEXAHEDRON:
                 return nb_hex();
-            case GEO::MESH_PRISM:
+            case PRISM:
                 return nb_prism();
-            case GEO::MESH_PYRAMID:
+            case PYRAMID:
                 return nb_pyramid();
-            case GEO::MESH_CONNECTOR:
+            case CONNECTOR:
                 return nb_connector();
-            case GEO::MESH_NB_CELL_TYPES:
+            case UNDEFINED_CELL:
                 return nb();
             default:
                 ringmesh_assert_not_reached;
@@ -964,27 +964,27 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelMeshCells::nb_cells( index_t r, GEO::MeshCellType type ) const
+    index_t GeoModelMeshCells::nb_cells( index_t r, CellType type ) const
     {
         test_and_initialize();
         switch( type ) {
-            case GEO::MESH_TET:
+            case TETRAHEDRON:
                 return nb_tet( r );
-            case GEO::MESH_HEX:
+            case HEXAHEDRON:
                 return nb_hex( r );
-            case GEO::MESH_PRISM:
+            case PRISM:
                 return nb_prism( r );
-            case GEO::MESH_PYRAMID:
+            case PYRAMID:
                 return nb_pyramid( r );
-            case GEO::MESH_CONNECTOR:
+            case CONNECTOR:
                 return nb_connector( r );
-            case GEO::MESH_NB_CELL_TYPES:
+            case UNDEFINED_CELL:
                 ringmesh_assert(
-                    region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
-                        - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r]
+                    region_cell_ptr_[UNDEFINED_CELL * ( r + 1 )]
+                        - region_cell_ptr_[UNDEFINED_CELL * r]
                         == gm_.region( r ).nb_mesh_elements() );
-                return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
-                    - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r];
+                return region_cell_ptr_[UNDEFINED_CELL * ( r + 1 )]
+                    - region_cell_ptr_[UNDEFINED_CELL * r];
             default:
                 ringmesh_assert_not_reached;
                 return 0;
@@ -994,22 +994,22 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::cell(
         index_t r,
         index_t c,
-        GEO::MeshCellType type ) const
+        CellType type ) const
     {
         test_and_initialize();
         switch( type ) {
-            case GEO::MESH_TET:
+            case TETRAHEDRON:
                 return tet( r, c );
-            case GEO::MESH_HEX:
+            case HEXAHEDRON:
                 return hex( r, c );
-            case GEO::MESH_PRISM:
+            case PRISM:
                 return prism( r, c );
-            case GEO::MESH_PYRAMID:
+            case PYRAMID:
                 return pyramid( r, c );
-            case GEO::MESH_CONNECTOR:
+            case CONNECTOR:
                 return connector( r, c );
-            case GEO::MESH_NB_CELL_TYPES:
-                return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] + c;
+            case UNDEFINED_CELL:
+                return region_cell_ptr_[UNDEFINED_CELL * r] + c;
             default:
                 ringmesh_assert_not_reached;
                 return 0;
@@ -1026,15 +1026,15 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_TET + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET];
+        return region_cell_ptr_[UNDEFINED_CELL * r + ( TETRAHEDRON + 1 )]
+            - region_cell_ptr_[UNDEFINED_CELL * r + TETRAHEDRON];
     }
 
     index_t GeoModelMeshCells::tet( index_t r, index_t t ) const
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET] + t;
+        return region_cell_ptr_[UNDEFINED_CELL * r + TETRAHEDRON] + t;
     }
 
     index_t GeoModelMeshCells::nb_hex() const
@@ -1047,15 +1047,15 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_HEX + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX];
+        return region_cell_ptr_[UNDEFINED_CELL * r + ( HEXAHEDRON + 1 )]
+            - region_cell_ptr_[UNDEFINED_CELL * r + HEXAHEDRON];
     }
 
     index_t GeoModelMeshCells::hex( index_t r, index_t h ) const
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX] + h;
+        return region_cell_ptr_[UNDEFINED_CELL * r + HEXAHEDRON] + h;
     }
 
     index_t GeoModelMeshCells::nb_prism() const
@@ -1068,15 +1068,15 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_PRISM + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PRISM];
+        return region_cell_ptr_[UNDEFINED_CELL * r + ( PRISM + 1 )]
+            - region_cell_ptr_[UNDEFINED_CELL * r + PRISM];
     }
 
     index_t GeoModelMeshCells::prism( index_t r, index_t p ) const
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PRISM] + p;
+        return region_cell_ptr_[UNDEFINED_CELL * r + PRISM] + p;
     }
 
     index_t GeoModelMeshCells::nb_pyramid() const
@@ -1089,16 +1089,16 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-            + ( GEO::MESH_PYRAMID + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PYRAMID];
+        return region_cell_ptr_[UNDEFINED_CELL * r
+            + ( PYRAMID + 1 )]
+            - region_cell_ptr_[UNDEFINED_CELL * r + PYRAMID];
     }
 
     index_t GeoModelMeshCells::pyramid( index_t r, index_t p ) const
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PYRAMID] + p;
+        return region_cell_ptr_[UNDEFINED_CELL * r + PYRAMID] + p;
     }
 
     index_t GeoModelMeshCells::nb_connector() const
@@ -1111,16 +1111,16 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-            + ( GEO::MESH_CONNECTOR + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_CONNECTOR];
+        return region_cell_ptr_[UNDEFINED_CELL * r
+            + ( CONNECTOR + 1 )]
+            - region_cell_ptr_[UNDEFINED_CELL * r + CONNECTOR];
     }
 
     index_t GeoModelMeshCells::connector( index_t r, index_t c ) const
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_CONNECTOR]
+        return region_cell_ptr_[UNDEFINED_CELL * r + CONNECTOR]
             + c;
     }
 

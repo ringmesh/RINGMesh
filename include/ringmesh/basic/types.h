@@ -74,4 +74,19 @@ namespace RINGMesh {
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
 
+    /* enum defining the type of cell in region */
+    enum CellType {
+        TETRAHEDRON = 0,
+        HEXAHEDRON = 1,
+        PRISM = 2,
+        PYRAMID = 3,
+        CONNECTOR = 4,
+        UNDEFINED_CELL = 5
+    };
+    /* enum defining the type of polygon in surface in region */
+    enum PolygonType {
+        TRIANGLE = 0,
+        QUAD = 1,
+        UNDEFINED_POLYGON = 2
+    };
 }

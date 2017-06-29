@@ -120,9 +120,9 @@ namespace {
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 // -1 Because connectors doesn't exist in aster
                 for( index_t ct = 0; ct < GEO::MESH_NB_CELL_TYPES - 1; ct++ ) {
-                    if( geomodel_mesh.cells.nb_cells( r, GEO::MeshCellType( ct ) )
+                    if( geomodel_mesh.cells.nb_cells( r, CellType( ct ) )
                         > 0 ) {
-                        write_cells_in_region( GEO::MeshCellType( ct ), r,
+                        write_cells_in_region( CellType( ct ), r,
                             geomodel_mesh, out );
                     }
                 }
@@ -145,7 +145,7 @@ namespace {
             }
         }
         void write_cells_in_region(
-            const GEO::MeshCellType& cell_type,
+            const CellType& cell_type,
             index_t region,
             const RINGMesh::GeoModelMesh& geomodel_mesh,
             std::ofstream& out ) const

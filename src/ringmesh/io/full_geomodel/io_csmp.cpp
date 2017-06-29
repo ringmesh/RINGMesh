@@ -163,9 +163,9 @@ namespace {
                 regions << region.name() << std::endl;
                 std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
                                                "PYRA_5" };
-                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                for( index_t type = TETRAHEDRON; type < CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
+                    CellType T = static_cast< CellType >( type );
                     if( mesh.cells.nb_cells( r, T ) > 0 ) {
                         ascii << region.name() << TAB << entity_type[type] << TAB
                             << 0 << TAB << mesh.cells.nb_cells( r, T ) << std::endl;
@@ -211,9 +211,9 @@ namespace {
             data << nb_total_entities << " # PELEMENT" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 index_t entity_type[4] = { 4, 6, 12, 18 };
-                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                for( index_t type = TETRAHEDRON; type < CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
+                    CellType T = static_cast< CellType >( type );
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
                         data << " " << std::setw( 3 ) << entity_type[type];
                         new_line( count, 20, data );
@@ -249,9 +249,9 @@ namespace {
                 const RINGMesh::GeoModelEntity& region = gm.region( r );
                 std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
                                                "PYRA_5" };
-                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                for( index_t type = TETRAHEDRON; type < CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
+                    CellType T = static_cast< CellType >( type );
                     if( mesh.cells.nb_cells( r, T ) > 0 ) {
                         ascii << region.name() << " " << entity_type[type] << " "
                             << mesh.cells.nb_cells( r, T ) << std::endl;
@@ -303,9 +303,9 @@ namespace {
                 + 8 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges();
             data << nb_plist << " # PLIST" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                for( index_t type = TETRAHEDRON; type < CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
+                    CellType T = static_cast< CellType >( type );
                     RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T];
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
                         index_t cell = mesh.cells.cell( r, el, T );
@@ -361,9 +361,9 @@ namespace {
                 + 6 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges();
             data << nb_polygons << " # PFVERTS" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                for( index_t type = TETRAHEDRON; type < CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
+                    CellType T = static_cast< CellType >( type );
                     RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T];
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
                         index_t cell = mesh.cells.cell( r, el );

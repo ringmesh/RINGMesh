@@ -408,9 +408,9 @@ namespace RINGMesh {
             set_geogram_mesh( dynamic_cast< GeogramVolumeMesh& >( mesh ) );
         }
 
-        virtual index_t create_cells( index_t nb_cells, GEO::MeshCellType type ) override
+        virtual index_t create_cells( index_t nb_cells, CellType type ) override
         {
-            return mesh_->mesh_->cells.create_cells( nb_cells, type );
+            return mesh_->mesh_->cells.create_cells( nb_cells, static_cast<GEO::MeshCellType>( type ) );
         }
 
         virtual void assign_cell_tet_mesh( const std::vector< index_t >& tets ) override

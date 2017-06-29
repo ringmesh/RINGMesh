@@ -112,7 +112,7 @@ void add_triangles( SurfaceMeshBuilder* builder, index_t size )
 void add_hexs( VolumeMeshBuilder* builder, index_t size )
 {
     builder->create_cells( ( size - 1 ) * ( size - 1 ) * ( size - 1 ),
-        GEO::MESH_HEX );
+        HEXAHEDRON );
     index_t id = 0;
     for( index_t i = 0; i < ( size - 1 ); i++ ) {
         for( index_t j = 0; j < ( size - 1 ); j++ ) {
@@ -222,7 +222,7 @@ void decompose_in_tet(
 {
     std::unique_ptr< VolumeMeshBuilder > builder = VolumeMeshBuilder::create_builder(
         tet_mesh );
-    builder->create_cells( hex_mesh.nb_cells() * 5, GEO::MESH_TET );
+    builder->create_cells( hex_mesh.nb_cells() * 5, TETRAHEDRON );
     add_vertices( builder.get(), size );
     for( index_t hex = 0; hex < hex_mesh.nb_cells(); hex++ ) {
         create_5_tets_from_hex( *builder, hex_mesh, hex );

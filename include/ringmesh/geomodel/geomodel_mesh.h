@@ -954,14 +954,14 @@ namespace RINGMesh {
          * of the corresponding type of \p c in the owing region
          * @return the type of the cell \p c
          */
-        GEO::MeshCellType type( index_t c ) const;
+        CellType type( index_t c ) const;
 
         /*!
          * Get the number of cells of the corresponding type
          * @param[in] type the corresponding type
          * @return the number of cells
          */
-        index_t nb_cells( GEO::MeshCellType type = GEO::MESH_NB_CELL_TYPES ) const;
+        index_t nb_cells( CellType type = UNDEFINED_CELL ) const;
         /*!
          * Get the number of cells of the corresponding type
          * in the given region of the GeoModel
@@ -971,7 +971,7 @@ namespace RINGMesh {
          */
         index_t nb_cells(
             index_t r,
-            GEO::MeshCellType type = GEO::MESH_NB_CELL_TYPES ) const;
+            CellType type = UNDEFINED_CELL ) const;
         /*!
          * Get the cell index in the GeoModelMesh
          * @param[in] r the region index owing the cell
@@ -984,14 +984,14 @@ namespace RINGMesh {
          * and a cell id of this region, you need to perform a search using
          * NNSearch and the barycenter of the cell for instance.
          * @param[in] type it can specify the cell type used. For example,
-         * if type = GEO::MESH_HEX then \p c represents the cth hex in the
+         * if type = HEXAEDRON then \p c represents the cth hex in the
          * region \p r and \p c can vary from 0 to nb_hex( r ).
-         * If \p type is GEO::MESH_NB_CELL_TYPES, all the cell types are
+         * If \p type is UNDEFINED_CELL, all the cell types are
          * taken into account.
          * @return the cell index
          */
-        index_t cell( index_t r, index_t c, GEO::MeshCellType type =
-            GEO::MESH_NB_CELL_TYPES ) const;
+        index_t cell( index_t r, index_t c, CellType type =
+            UNDEFINED_CELL ) const;
 
         /*!
          * Get the number of tets in the GeoModelMesh
@@ -1228,7 +1228,7 @@ namespace RINGMesh {
          * for a given region and a given cell type.
          * For example:
          *    the 2nd hex index of the region index R will be found here:
-         *    surface_polygon_ptr_[GEO::MESH_NB_CELL_TYPES*R + HEX] + 2
+         *    surface_polygon_ptr_[UNDEFINED_CELL*R + HEX] + 2
          */
         std::vector< index_t > region_cell_ptr_;
 

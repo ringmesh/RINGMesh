@@ -373,10 +373,10 @@ namespace RINGMesh {
                     volume_style_.vertex_color_.Value.y,
                     volume_style_.vertex_color_.Value.z );
             }
-            GM_gfx_.regions.set_draw_cells( GEO::MESH_HEX, show_hex_ );
-            GM_gfx_.regions.set_draw_cells( GEO::MESH_PRISM, show_prism_ );
-            GM_gfx_.regions.set_draw_cells( GEO::MESH_PYRAMID, show_pyramid_ );
-            GM_gfx_.regions.set_draw_cells( GEO::MESH_TET, show_tetra_ );
+            GM_gfx_.regions.set_draw_cells( HEXAHEDRON, show_hex_ );
+            GM_gfx_.regions.set_draw_cells( PRISM, show_prism_ );
+            GM_gfx_.regions.set_draw_cells( PYRAMID, show_pyramid_ );
+            GM_gfx_.regions.set_draw_cells( TETRAHEDRON, show_tetra_ );
             GM_gfx_.regions.set_shrink( shrink_ );
             GM_gfx_.regions.draw();
         }

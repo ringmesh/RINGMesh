@@ -233,6 +233,7 @@ namespace RINGMesh {
 #define ringmesh_register_line_mesh(type) \
     geo_register_creator(RINGMesh::LineMeshFactory, type, type::type_name_static())
 
+
     /*!
      * class for encapsulating surface mesh component
      */
@@ -397,6 +398,17 @@ namespace RINGMesh {
         bool is_triangle( index_t polygon_id ) const
         {
             return nb_polygon_vertices( polygon_id ) == 3;
+        }
+
+        PolygonType polygone_type( index_t polygon_id ) const
+        {
+            if( is_triangle( polygon_id ) ) {
+                return TRIANGLE;
+            } else if( nb_polygon_vertices( polygon_id ) == 4 ) {
+                return QUAD;
+            } else {
+                return UNDEFINED_POLYGON;
+            }
         }
 
         /*!
@@ -581,6 +593,7 @@ namespace RINGMesh {
 #define ringmesh_register_surface_mesh(type) \
     geo_register_creator(RINGMesh::SurfaceMeshFactory, type, type::type_name_static())
 
+
     /*!
      * class for encapsulating volume mesh component
      */
@@ -721,7 +734,7 @@ namespace RINGMesh {
          * @brief Gets the type of a cell.
          * @param[in] cell_id the cell index, in 0..nb()-1
          */
-        virtual GEO::MeshCellType cell_type( index_t cell_id ) const = 0;
+        virtual CellType cell_type( index_t cell_id ) const = 0;
 
         /*!
          * @brief Tests whether all the cells are tetrahedra. when all the cells are tetrahedra, storage and access is optimized.
