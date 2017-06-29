@@ -63,7 +63,7 @@ namespace RINGMesh {
         static const index_t NB_VERSION = 3;
         GeoModelBuilderGM(
             GeoModel< DIMENSION >& geomodel,
-            const std::string& filename );
+            std::string filename );
         virtual ~GeoModelBuilderGM();
 
     private:

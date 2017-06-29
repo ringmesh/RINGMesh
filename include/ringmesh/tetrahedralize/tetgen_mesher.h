@@ -56,32 +56,6 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     /*!
-     * @brief Utility class to set Tetgen switches and check their consistency
-     * @details Tetgen arguments are a mess and this class helps set the basic options
-     * @todo To implement! There are much more options than that.
-     *
-     * Q: quiet
-     * p: input data is surfacic
-     * q: desired quality
-     * O0: do not optimize mesh at all -> a lot of flat tets
-     * V: verbose - A LOT of information
-     * Y: prohibit steiner points on boundaries
-     * A: generate region tags for each shell.
-     *
-     * Meshing with incomplete quality value "Qpq%fYA"
-     */
-    class TetgenCommandLine {
-    public:
-        const std::string command_line() const
-        {
-            return command_line_;
-        }
-
-    private:
-        std::string command_line_;
-    };
-
-    /*!
      * @brief Tetgen wrapper
      * @author Jeanne Pellerin
      */

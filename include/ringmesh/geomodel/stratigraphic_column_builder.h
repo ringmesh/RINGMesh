@@ -65,7 +65,7 @@ namespace RINGMesh {
         StratigraphicColumnBuilderFile(
             StratigraphicColumn& column,
             GeoModel< 3 >& model,
-            const std::string& filename );
+            std::string filename );
         virtual ~StratigraphicColumnBuilderFile() = default;
         void build_column()
         {

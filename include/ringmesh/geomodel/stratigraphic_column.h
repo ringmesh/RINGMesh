@@ -66,16 +66,16 @@ namespace RINGMesh {
          * @param[in] name Name of the feature
          * @param[in] type Rocktype
          */
-        RockFeature( const std::string& name, ROCKTYPE type )
-            : name_( name ), type_( type )
+        RockFeature( std::string name, ROCKTYPE type )
+            : name_( std::move( name ) ), type_( type )
         {
         }
         /*!
          * @brief Simple constructor of RockFeature
          * @param[in] name Name of the feature
          */
-        RockFeature( const std::string& name )
-            : name_( name ), type_( ROCKTYPE::NONE )
+        RockFeature( std::string name )
+            : RockFeature( std::move( name ), ROCKTYPE::NONE )
         {
         }
 
@@ -137,7 +137,7 @@ namespace RINGMesh {
          * @param[in] min_thick Minimum thickness of the layer
          * @param[in] max_thick Maximum thickness of the layer
          */
-        StratigraphicUnit( const std::string& name, const RockFeature& rock );
+        StratigraphicUnit( std::string name, RockFeature rock );
 
         virtual ~StratigraphicUnit() = default;
 
@@ -185,13 +185,13 @@ namespace RINGMesh {
     public:
 
         UnsubdividedStratigraphicUnit(
-            const std::string& name,
+            std::string name,
             const Interface< 3 >& interface_base,
             const Interface< 3 >& interface_top,
             const Layer< 3 >& layer,
             RELATION relation_top,
             RELATION relation_base,
-            const RockFeature& rock,
+            RockFeature rock,
             double min_thick,
             double max_thick );
 
@@ -251,10 +251,12 @@ namespace RINGMesh {
     public:
 
         SubdividedStratigraphicUnit(
-            const std::string& name,
-            const RockFeature& rock,
+            std::string name,
+            RockFeature rock,
             const std::vector< const StratigraphicUnit* >& sub_units )
-            : StratigraphicUnit( name, rock ), units_( sub_units )
+            :
+                StratigraphicUnit( std::move( name ), std::move( rock ) ),
+                units_( sub_units )
         {
         }
 
@@ -329,10 +331,10 @@ namespace RINGMesh {
          * @param[in] type Chronostratigraphic, Lithostratigraphic or Biostratigraphic
          */
         StratigraphicColumn(
-            const std::string& name,
+            std::string name,
             const std::vector< const StratigraphicUnit* >& units,
             STRATIGRAPHIC_PARADIGM type )
-            : name_( name ), units_( units ), type_( type )
+            : name_( std::move( name ) ), units_( units ), type_( type )
         {
         }
 
@@ -340,10 +342,8 @@ namespace RINGMesh {
          * @brief Simple Constructor of StratigraphicColumn
          * @param[in] name Name of the unit
          */
-        StratigraphicColumn(
-            const std::string& name,
-            const STRATIGRAPHIC_PARADIGM type )
-            : name_( name ), units_(), type_( type )
+        StratigraphicColumn( std::string name, const STRATIGRAPHIC_PARADIGM type )
+            : StratigraphicColumn( std::move( name ), { }, type )
         {
         }
 

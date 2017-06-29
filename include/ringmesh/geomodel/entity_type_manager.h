@@ -338,10 +338,10 @@ namespace RINGMesh {
         }
 
         struct BoundaryRelationship {
-            BoundaryRelationship(
-                const gmme_id& incident_entity,
-                const gmme_id& boundary )
-                : incident_entity_id_( incident_entity ), boundary_id_( boundary )
+            BoundaryRelationship( gmme_id incident_entity, gmme_id boundary )
+                :
+                    incident_entity_id_( std::move( incident_entity ) ),
+                    boundary_id_( std::move( boundary ) )
             {
             }
             bool operator==( const BoundaryRelationship& rhs ) const
@@ -391,8 +391,8 @@ namespace RINGMesh {
         }
 
         struct ParentChildRelationship {
-            ParentChildRelationship( const gmge_id& parent, const gmme_id& child )
-                : parent_id_( parent ), child_id_( child )
+            ParentChildRelationship( gmge_id parent, gmme_id child )
+                : parent_id_( std::move( parent ) ), child_id_( std::move( child ) )
             {
             }
             bool operator==( const ParentChildRelationship& rhs ) const

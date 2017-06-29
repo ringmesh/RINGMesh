@@ -46,8 +46,10 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     GeoModelBuilderFile< DIMENSION >::GeoModelBuilderFile(
         GeoModel< DIMENSION >& geomodel,
-        const std::string& filename )
-        : GeoModelBuilder< DIMENSION >( geomodel ), filename_( filename )
+        std::string filename )
+        :
+            GeoModelBuilder< DIMENSION >( geomodel ),
+            filename_( std::move( filename ) )
     {
     }
 

@@ -379,7 +379,7 @@ namespace RINGMesh {
      * @todo Comment
      */
     template< index_t DIMENSION >
-    class RINGMESH_API WellGroup {
+    class WellGroup {
     ringmesh_disable_copy( WellGroup );
     public:
         WellGroup();

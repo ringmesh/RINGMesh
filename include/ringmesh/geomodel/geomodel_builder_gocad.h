@@ -58,8 +58,10 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile< 3 > {
     public:
-        GeoModelBuilderGocad( GeoModel< 3 >& geomodel, const std::string& filename )
-            : GeoModelBuilderFile( geomodel, filename ), file_line_( filename )
+        GeoModelBuilderGocad( GeoModel< 3 >& geomodel, std::string filename )
+            :
+                GeoModelBuilderFile( geomodel, std::move( filename ) ),
+                file_line_( filename )
         {
             /*! @todo Review: A constructor is not supposed to throw, the object is left in an
              * undefined state [JP] */
@@ -259,8 +261,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderTSolid final : public GeoModelBuilderGocad {
     public:
-        GeoModelBuilderTSolid( GeoModel< 3 >& geomodel, const std::string& filename )
-            : GeoModelBuilderGocad( geomodel, filename )
+        GeoModelBuilderTSolid( GeoModel< 3 >& geomodel, std::string filename )
+            : GeoModelBuilderGocad( geomodel, std::move( filename ) )
         {
         }
         virtual ~GeoModelBuilderTSolid() = default;
@@ -345,8 +347,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderML final : public GeoModelBuilderGocad {
     public:
-        GeoModelBuilderML( GeoModel< 3 >& geomodel, const std::string& filename )
-            : GeoModelBuilderGocad( geomodel, filename )
+        GeoModelBuilderML( GeoModel< 3 >& geomodel, std::string filename )
+            : GeoModelBuilderGocad( geomodel, std::move( filename ) )
         {
         }
         virtual ~GeoModelBuilderML() = default;

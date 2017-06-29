@@ -87,20 +87,20 @@ namespace RINGMesh {
         std::string type_;
     protected:
         EntityType( std::string type )
-            : type_( type )
+            : type_( std::move( type ) )
         {
         }
         EntityType()
-            : type_( default_entity_type_string() )
+            : EntityType( default_entity_type_string() )
         {
         }
 
         void set_type( std::string type )
         {
-            type_ = type;
+            type_ = std::move( type );
         }
     private:
-        const std::string default_entity_type_string()
+        std::string default_entity_type_string()
         {
             return "No_entity_type";
         }
@@ -117,7 +117,7 @@ namespace RINGMesh {
     class RINGMESH_API MeshEntityType: public EntityType {
     public:
         MeshEntityType( std::string type )
-            : EntityType( type )
+            : EntityType( std::move( type ) )
         {
         }
         MeshEntityType() = default;
@@ -134,7 +134,7 @@ namespace RINGMesh {
     class RINGMESH_API GeologicalEntityType: public EntityType {
     public:
         GeologicalEntityType( std::string type )
-            : EntityType( type )
+            : EntityType( std::move( type ) )
         {
         }
         GeologicalEntityType() = default;
@@ -237,11 +237,11 @@ namespace RINGMesh {
                 && index_ != NO_ID;
         }
         gme_id()
-            : type_( ForbiddenMeshEntityType::type_name_static() ), index_( NO_ID )
+            : gme_id( { ForbiddenMeshEntityType::type_name_static() }, NO_ID )
         {
         }
-        gme_id( const Entity_type_template entity_type, index_t index )
-            : type_( entity_type ), index_( index )
+        gme_id( Entity_type_template entity_type, index_t index )
+            : type_( std::move( entity_type ) ), index_( index )
         {
         }
         gme_id( const gme_id& from )
