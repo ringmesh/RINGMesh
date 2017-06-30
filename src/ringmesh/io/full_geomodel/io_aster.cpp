@@ -134,7 +134,7 @@ namespace {
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
                 // -1 because polygons doesn' t exist in aster
-                for( index_t pt = 0; pt < UNDEFINED_POLYGON - 1; pt++ ) {
+                for( index_t pt = 0; pt < PolygonType::UNDEFINED_POLYGON - 1; pt++ ) {
                     if( geomodel_mesh.polygons.nb_polygons( s,
                         PolygonType( pt ) ) > 0 ) {
                         write_polygons_in_interface(

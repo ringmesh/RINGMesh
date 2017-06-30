@@ -402,11 +402,11 @@ namespace RINGMesh {
         PolygonType polygone_type( index_t polygon_id ) const
         {
             if( is_triangle( polygon_id ) ) {
-                return TRIANGLE;
+                return PolygonType::TRIANGLE;
             } else if( nb_polygon_vertices( polygon_id ) == 4 ) {
-                return QUAD;
+                return PolygonType::QUAD;
             } else {
-                return UNDEFINED_POLYGON;
+                return PolygonType::UNDEFINED_POLYGON;
             }
         }
 
