@@ -97,4 +97,9 @@ namespace RINGMesh {
         UNCLASSIFIED_POLYGON = 2,
         UNDEFINED_POLYGON = 3
     };
+    template<typename E>
+    auto to_indext( E e ) -> typename std::underlying_type<E>::type
+    {
+        return static_cast<typename std::underlying_type<E>::type>( e );
+    }
 }
