@@ -75,16 +75,16 @@ namespace RINGMesh {
     static const index_t NO_ID = index_t( -1 );
 
     /*! enum defining the type of cell in region 
-     *  * UNCLASSIFIED_CELL may be either a connector or more complex cell that is not specified.
-     *  * UNDEFINED_CELL means that the cell is not defined and cannot be used.
+     *  * CellType::UNCLASSIFIED may be either a connector or more complex cell that is not specified.
+     *  * CellType::UNDEFINED means that the cell is not defined and cannot be used.
      */
-    enum CellType {
+    enum struct CellType : index_t {
         TETRAHEDRON = 0,
         HEXAHEDRON = 1,
         PRISM = 2,
         PYRAMID = 3,
-        UNCLASSIFIED_CELL = 4,
-        UNDEFINED_CELL = 5
+        UNCLASSIFIED = 4,
+        UNDEFINED = 5
     };
 
     /*! enum defining the type of polygon in surface.
@@ -94,11 +94,11 @@ namespace RINGMesh {
     enum struct PolygonType : index_t {
         TRIANGLE = 0,
         QUAD = 1,
-        UNCLASSIFIED_POLYGON = 2,
-        UNDEFINED_POLYGON = 3
+        UNCLASSIFIED = 2,
+        UNDEFINED = 3
     };
     template<typename E>
-    auto to_indext( E e ) -> typename std::underlying_type<E>::type
+    auto to_underlying_type( E e ) -> typename std::underlying_type<E>::type
     {
         return static_cast<typename std::underlying_type<E>::type>( e );
     }

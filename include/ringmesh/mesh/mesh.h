@@ -406,7 +406,7 @@ namespace RINGMesh {
             } else if( nb_polygon_vertices( polygon_id ) == 4 ) {
                 return PolygonType::QUAD;
             } else {
-                return PolygonType::UNDEFINED_POLYGON;
+                return PolygonType::UNDEFINED;
             }
         }
 

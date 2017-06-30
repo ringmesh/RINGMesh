@@ -134,7 +134,7 @@ namespace {
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
                 // -1 because polygons doesn' t exist in aster
-                for( index_t pt = 0; pt < to_indext( PolygonType::UNDEFINED_POLYGON) - 1; pt++ )
+                for( index_t pt = 0; pt < to_underlying_type( PolygonType::UNDEFINED ) - 1; pt++ )
                 {
                     if( geomodel_mesh.polygons.nb_polygons( s,
                         PolygonType( pt ) ) > 0 ) {
@@ -151,7 +151,7 @@ namespace {
             const RINGMesh::GeoModelMesh& geomodel_mesh,
             std::ofstream& out ) const
         {
-            out << *cell_name_in_aster_mail_file[cell_type] << std::endl;
+            out << *cell_name_in_aster_mail_file[to_underlying_type( cell_type)] << std::endl;
             for( index_t c = 0;
                 c < geomodel_mesh.cells.nb_cells( region, cell_type ); c++ ) {
                 index_t global_id = geomodel_mesh.cells.cell( region, c, cell_type );
@@ -170,7 +170,7 @@ namespace {
             const RINGMesh::GeoModelMesh& mesh,
             std::ofstream& out ) const
         {
-            out << *polygon_name_in_aster_mail_file[to_indext( polygon_type )] << std::endl;
+            out << *polygon_name_in_aster_mail_file[to_underlying_type( polygon_type )] << std::endl;
             for( index_t p = 0; p < mesh.polygons.nb_polygons( surface, polygon_type );
                 p++ ) {
                 index_t global_id = mesh.polygons.polygon( surface, p, polygon_type );

@@ -92,7 +92,7 @@ namespace {
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 out << mesh.cells.nb_vertices( c );
                 const RINGMesh2VTK& descriptor =
-                    *cell_type_to_cell_descriptor_vtk[mesh.cells.type( c )];
+                    *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
                 for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
                     index_t vertex_id = descriptor.vertices[v];
                     out << SPACE << mesh.cells.vertex( c, vertex_id );
@@ -103,7 +103,7 @@ namespace {
             out << "CELL_TYPES " << mesh.cells.nb() << std::endl;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 const RINGMesh2VTK& descriptor =
-                    *cell_type_to_cell_descriptor_vtk[mesh.cells.type( c )];
+                    *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
                 out << descriptor.entity_type << std::endl;
             }
             out << std::endl;
