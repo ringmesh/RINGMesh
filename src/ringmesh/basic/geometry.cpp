@@ -658,6 +658,28 @@ namespace RINGMesh {
         return false;
     }
 
+    bool segment_line_intersection(
+        const vec2& p0_seg,
+        const vec2& p1_seg,
+        const vec2& O_line,
+        const vec2& D_line,
+        vec2& result )
+    {
+        vec2 O_seg( ( p0_seg + p1_seg ) / 2. );
+        vec2 D_seg( p1_seg - p0_seg );
+        vec2 line_intersection_result;
+        if( line_line_intersection( O_seg, D_seg, O_line, D_line,
+            line_intersection_result ) ) {
+            // Test whether the line-line intersection is on the segment.
+            if( length( line_intersection_result - O_seg )
+                <= 0.5 * D_seg.length() + global_epsilon ) {
+                result = line_intersection_result;
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
