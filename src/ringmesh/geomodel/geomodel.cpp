@@ -91,7 +91,7 @@ namespace {
 namespace RINGMesh {
     template< index_t DIMENSION >
     GeoModelBase< DIMENSION >::GeoModelBase( GeoModel< DIMENSION >& geomodel )
-        : mesh( geomodel ), epsilon_( -1 ), universe_( geomodel ), wells_( nullptr )
+        : mesh( geomodel ), universe_( geomodel )
     {
     }
 

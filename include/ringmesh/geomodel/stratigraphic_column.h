@@ -103,7 +103,7 @@ namespace RINGMesh {
         }
     private:
         std::string name_;
-        ROCKTYPE type_;
+        ROCKTYPE type_ { ROCKTYPE::NONE };
 
     };
 
@@ -123,6 +123,7 @@ namespace RINGMesh {
      * a minimum thickness and a maximum thickness. A StratigraphicColumn can be a StratigraphicUnit.
      */
     class RINGMESH_API StratigraphicUnit {
+    ringmesh_disable_copy( StratigraphicUnit );
     public:
 
         /*!
@@ -176,14 +177,12 @@ namespace RINGMesh {
         StratigraphicUnit();
 
     protected:
-
         std::string name_;
         RockFeature rock_;
     };
 
     class RINGMESH_API UnsubdividedStratigraphicUnit: public StratigraphicUnit {
     public:
-
         UnsubdividedStratigraphicUnit(
             std::string name,
             const Interface< 3 >& interface_base,
@@ -249,7 +248,6 @@ namespace RINGMesh {
 
     class RINGMESH_API SubdividedStratigraphicUnit: public StratigraphicUnit {
     public:
-
         SubdividedStratigraphicUnit(
             std::string name,
             RockFeature rock,
@@ -312,7 +310,6 @@ namespace RINGMesh {
 
     private:
         std::vector< const StratigraphicUnit* > units_;
-
     };
 
     enum struct STRATIGRAPHIC_PARADIGM {
@@ -512,7 +509,7 @@ namespace RINGMesh {
 
         std::string name_;
         std::vector< const StratigraphicUnit* > units_;
-        STRATIGRAPHIC_PARADIGM type_;
+        STRATIGRAPHIC_PARADIGM type_ { STRATIGRAPHIC_PARADIGM::UNSPECIFIED };
 
     };
 }
