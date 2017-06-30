@@ -233,7 +233,6 @@ namespace RINGMesh {
 #define ringmesh_register_line_mesh(type) \
     geo_register_creator(RINGMesh::LineMeshFactory, type, type::type_name_static())
 
-
     /*!
      * class for encapsulating surface mesh component
      */
@@ -592,7 +591,6 @@ namespace RINGMesh {
     using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh >;
 #define ringmesh_register_surface_mesh(type) \
     geo_register_creator(RINGMesh::SurfaceMeshFactory, type, type::type_name_static())
-
 
     /*!
      * class for encapsulating volume mesh component
