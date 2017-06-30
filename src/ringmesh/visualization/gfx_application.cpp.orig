@@ -288,7 +288,7 @@ namespace RINGMesh {
                     surface_style_.vertex_color_.Value.z );
             }
             if( selected_entity_type_ == 0 ) {
-                for( index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
+                for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
                     if( GM_.surface( s ).is_on_voi() ) {
                         GM_gfx_.surfaces.set_surface_visibility( s, show_voi_ );
                     }
@@ -471,14 +471,14 @@ namespace RINGMesh {
             if( GM_gfx_.attribute.location_name() != "location"
                 && GM_gfx_.attribute.nb_coordinates() > 1 ) {
                 if( ImGui::Button(
-                    std::to_string( GM_gfx_.attribute.coordinate() ).c_str(),
+                    GEO::String::to_string( GM_gfx_.attribute.coordinate() ).c_str(),
                     ImVec2( -1, 0 ) ) ) {
                     ImGui::OpenPopup( "##Coordinates" );
                 }
                 if( ImGui::BeginPopup( "##Coordinates" ) ) {
                     for( index_t i = 0; i < GM_gfx_.attribute.nb_coordinates();
                         i++ ) {
-                        if( ImGui::Button( std::to_string( i ).c_str() ) ) {
+                        if( ImGui::Button( GEO::String::to_string( i ).c_str() ) ) {
                             GM_gfx_.attribute.set_coordinate( i );
                             autorange();
                             ImGui::CloseCurrentPopup();
@@ -646,14 +646,16 @@ namespace RINGMesh {
         const float font_height = 0.4f
             * float( glQuickText::getFontHeight( font_sz ) );
 
-        std::string min_value = std::to_string( GM_gfx_.attribute.minimum() );
+        std::string min_value = GEO::String::to_string(
+            GM_gfx_.attribute.minimum() );
         float nb_min_letter = static_cast< float >( min_value.size() );
         glQuickText::printfAt(
             static_cast< double >( x1 - w - font_height * nb_min_letter * 0.3f ),
             static_cast< double >( y1 - font_height ), static_cast< double >( z ),
             static_cast< double >( font_sz ), min_value.c_str() );
 
-        std::string max_value = std::to_string( GM_gfx_.attribute.maximum() );
+        std::string max_value = GEO::String::to_string(
+            GM_gfx_.attribute.maximum() );
         float nb_max_letter = static_cast< float >( max_value.size() );
         glQuickText::printfAt(
             static_cast< double >( x1 + w - font_height * nb_max_letter * 0.3f ),
@@ -708,7 +710,7 @@ namespace RINGMesh {
     {
         colored_cells_.new_status = false;
         show_colored_layers_.new_status = false;
-        for( index_t r = 0; r < GM_.nb_regions(); r++ ) {
+        for( GEO::index_t r = 0; r < GM_.nb_regions(); r++ ) {
             GM_gfx_.regions.set_region_color( r,
                 std::fmod( GEO::Numeric::random_float32(), 1.f ),
                 std::fmod( GEO::Numeric::random_float32(), 1.f ),
@@ -727,7 +729,7 @@ namespace RINGMesh {
         }
         colored_cells_.new_status = false;
         show_colored_regions_.new_status = false;
-        for( index_t l = 0;
+        for( GEO::index_t l = 0;
             l < GM_.nb_geological_entities( Layer< 3 >::type_name_static() ); l++ ) {
             float red = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float green = std::fmod( GEO::Numeric::random_float32(), 1.f );

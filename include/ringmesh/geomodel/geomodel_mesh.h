@@ -1437,7 +1437,8 @@ namespace RINGMesh {
 
     private:
         /// Optional duplication mode to compute the duplication of cells on surfaces
-        mutable GeoModelMeshCells< 3 >::DuplicateMode mode_;
+        mutable GeoModelMeshCells< 3 >::DuplicateMode mode_ {
+            GeoModelMeshCells< 3 >::NONE };
 
     public:
         GeoModelMeshCells< 3 > cells;

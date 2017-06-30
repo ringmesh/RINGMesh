@@ -2333,7 +2333,6 @@ namespace RINGMesh {
     GeoModelMesh< 3 >::GeoModelMesh( GeoModel< 3 >& geomodel )
         :
             GeoModelMeshBase< 3 >( *this, geomodel ),
-            mode_( GeoModelMeshCells< 3 >::NONE ),
             cells( *this, geomodel, mesh_set_.volume_mesh )
     {
     }

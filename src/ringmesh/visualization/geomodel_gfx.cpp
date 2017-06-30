@@ -52,7 +52,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     GeoModelGfxBase< DIMENSION >::GeoModelGfxBase( GeoModelGfx< DIMENSION >& gfx )
         :
-            geomodel_( nullptr ),
             corners( gfx ),
             lines( gfx ),
             surfaces( gfx ),

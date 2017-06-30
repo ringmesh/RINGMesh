@@ -431,15 +431,6 @@ namespace RINGMesh {
         return std::unique_ptr< TetraGen >( mesher );
     }
 
-    TetraGen::TetraGen()
-        :
-            builder_( nullptr ),
-            output_region_( NO_ID ),
-            region_( nullptr ),
-            wells_( nullptr )
-    {
-    }
-
     void TetraGen::set_boundaries(
         const Region< 3 >& region,
         const WellGroup< 3 >* wells )
