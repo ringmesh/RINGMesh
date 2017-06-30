@@ -282,13 +282,8 @@ namespace RINGMesh {
         }
 
     protected:
-        GeoModelMeshEntity(
-            const GeoModel< DIMENSION >& geomodel,
-            index_t id,
-            std::string name = "No_name" )
-            :
-                GeoModelEntity< DIMENSION >( geomodel, id, std::move( name ) ),
-                mesh_( nullptr )
+        GeoModelMeshEntity( const GeoModel< DIMENSION >& geomodel, index_t id )
+            : GeoModelEntity< DIMENSION >( geomodel, id )
         {
         }
 

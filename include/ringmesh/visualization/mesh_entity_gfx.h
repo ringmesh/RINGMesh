@@ -93,13 +93,10 @@ namespace RINGMesh {
         }
 
     protected:
-        MeshEntityGfx()
-        {
-            set_vertex_visible( false );
-        }
+        MeshEntityGfx() = default;
 
     private:
-        bool vertex_visible_;
+        bool vertex_visible_ { false };
     };
 
     template< index_t DIMENSION >
@@ -159,11 +156,10 @@ namespace RINGMesh {
         LineMeshGfx()
         {
             this->set_vertex_visible( false );
-            set_edge_visible( true );
         }
 
     private:
-        bool edge_visible_;
+        bool edge_visible_ { true };
     };
 
     template< index_t DIMENSION >
@@ -211,10 +207,9 @@ namespace RINGMesh {
         SurfaceMeshGfx()
         {
             this->set_vertex_visible( false );
-            set_surface_visible( true );
         }
     private:
-        bool surface_visible_;
+        bool surface_visible_ { true };
     };
 
     template< index_t DIMENSION >
@@ -261,11 +256,10 @@ namespace RINGMesh {
         VolumeMeshGfx()
         {
             this->set_vertex_visible( false );
-            set_region_visible( true );
         }
 
     private:
-        bool region_visible_;
+        bool region_visible_ { true };
     };
 
     template< index_t DIMENSION >
@@ -385,10 +379,10 @@ namespace RINGMesh {
         GeoModelGfx< DIMENSION >& gfx_;
 
         std::string name_;
-        index_t coordinate_;
-        GLuint colormap_texture_;
-        double minimum_;
-        double maximum_;
+        index_t coordinate_ { 0 };
+        GLuint colormap_texture_ { 0 };
+        double minimum_ { 0 };
+        double maximum_ { 0 };
 
         using FactoryCreator = GEO::FactoryCreator0< AttributeGfx< DIMENSION > >;
         std::map< std::string, typename FactoryCreator::CreatorType > factory_;
@@ -417,11 +411,9 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class AttributeGfx {
+    ringmesh_disable_copy( AttributeGfx );
     public:
-        AttributeGfx()
-            : manager_( nullptr )
-        {
-        }
+        AttributeGfx() = default;
 
         virtual ~AttributeGfx() = default;
 
@@ -465,7 +457,7 @@ namespace RINGMesh {
             double& attribute_max ) = 0;
 
     protected:
-        AttributeGfxManagerBase< DIMENSION >* manager_;
+        AttributeGfxManagerBase< DIMENSION >* manager_ { nullptr };
     };
 }
 

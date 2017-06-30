@@ -103,16 +103,16 @@ namespace RINGMesh {
         bool tetrahedralize( bool refine = true );
 
     protected:
-        TetraGen();
+        TetraGen() = default;
 
         virtual bool do_tetrahedralize( bool refine ) = 0;
 
     protected:
         std::unique_ptr< GeoModelBuilder< 3 > > builder_;
-        index_t output_region_;
+        index_t output_region_ { NO_ID };
         GEO::Mesh tetmesh_constraint_;
-        const Region< 3 >* region_;
-        const WellGroup< 3 >* wells_;
+        const Region< 3 >* region_ { nullptr };
+        const WellGroup< 3 >* wells_ { nullptr };
     };
 
     typedef GEO::Factory0< TetraGen > TetraGenFactory;

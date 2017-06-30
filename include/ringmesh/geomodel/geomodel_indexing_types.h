@@ -55,10 +55,6 @@ namespace RINGMesh {
             : gmme( std::move( t ) ), v_index( vertex_id_in )
         {
         }
-        GMEVertex()
-            : GMEVertex( gmme_id(), NO_ID )
-        {
-        }
         bool operator==( const GMEVertex& rhs ) const
         {
             return gmme == rhs.gmme && v_index == rhs.v_index;
@@ -70,6 +66,6 @@ namespace RINGMesh {
         /// GeoModelEntity index in the GeoModel that owns it
         gmme_id gmme;
         /// Index of the vertex in the GeoModelEntity
-        index_t v_index;
+        index_t v_index { NO_ID };
     };
 }

@@ -90,11 +90,8 @@ namespace RINGMesh {
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */
-        GeoModelEntity(
-            const GeoModel< DIMENSION >& geomodel,
-            index_t id,
-            std::string name = "Unnamed" )
-            : geomodel_( geomodel ), name_( std::move( name ) ), id_( id )
+        GeoModelEntity( const GeoModel< DIMENSION >& geomodel, index_t id )
+            : geomodel_( geomodel ), id_( id )
         {
         }
 
@@ -108,10 +105,10 @@ namespace RINGMesh {
         /// Reference to the GeoModel owning this entity
         const GeoModel< DIMENSION >& geomodel_;
         /// Name of the entity - default is "Unnamed"
-        std::string name_;
+        std::string name_ { "Unnamed" };
 
         /// Index of the entity
-        index_t id_;
+        index_t id_ { NO_ID };
     };
 
     template< index_t DIMENSION >

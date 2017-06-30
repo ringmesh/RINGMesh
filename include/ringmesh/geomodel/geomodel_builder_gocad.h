@@ -137,15 +137,15 @@ namespace RINGMesh {
         }
 
         // The orientation of positive Z
-        int z_sign_;
+        int z_sign_ { 1 };
 
         std::vector< vec3 > vertices_;
 
         // Current interface index
-        index_t cur_interface_;
+        index_t cur_interface_ { NO_ID };
 
         // Current surface index
-        index_t cur_surface_;
+        index_t cur_surface_ { NO_ID };
 
         // List of polygon corners for the current surface (gocad indices)
         std::vector< index_t > cur_surf_polygon_corners_gocad_id_;
@@ -177,8 +177,6 @@ namespace RINGMesh {
      * pair (region, index in region) in the RINGMesh::GeoModel
      */
     struct VertexMap {
-        VertexMap() = default;
-
         index_t local_id( index_t gocad_vertex_id ) const
         {
             return gocad_vertices2region_vertices_[gocad_vertex_id];
@@ -226,10 +224,8 @@ namespace RINGMesh {
      * @brief Structure used to load a GeoModel by GeoModelBuilderTSolid
      */
     struct TSolidLoadingStorage: public GocadLoadingStorage {
-        TSolidLoadingStorage();
-
         // Current region index
-        index_t cur_region_;
+        index_t cur_region_ { NO_ID };
 
         // Map between gocad and GeoModel vertex indices
         VertexMap vertex_map_;
@@ -319,10 +315,10 @@ namespace RINGMesh {
     struct MLLoadingStorage: public GocadLoadingStorage {
         MLLoadingStorage();
 
-        bool is_header_read_;
+        bool is_header_read_{ false };
 
         /// Offset to read in the tface vertices in the tsurf vertices
-        index_t tface_vertex_ptr_;
+        index_t tface_vertex_ptr_{ 0 };
     };
     class MLLineParser: public GocadBaseParser {
     ringmesh_disable_copy(MLLineParser);

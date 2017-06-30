@@ -324,12 +324,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     AttributeGfxManagerBase< DIMENSION >::AttributeGfxManagerBase(
         GeoModelGfx< DIMENSION >& gfx )
-        :
-            gfx_( gfx ),
-            coordinate_( 0 ),
-            colormap_texture_( 0 ),
-            minimum_( 0.0 ),
-            maximum_( 0.0 )
+        : gfx_( gfx )
     {
         register_attribute_location< PolygonVertexAttributeGfx >();
         register_attribute_location< PolygonAttributeGfx >();

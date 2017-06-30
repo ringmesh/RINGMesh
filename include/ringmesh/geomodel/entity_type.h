@@ -208,6 +208,7 @@ namespace RINGMesh {
         {
             return type_ != rhs.type_ || index_ != rhs.index_;
         }
+
         bool operator==( const gme_id& rhs ) const
         {
             return type_ == rhs.type_ && index_ == rhs.index_;
@@ -218,6 +219,7 @@ namespace RINGMesh {
             os << in.type_ << " " << in.index_;
             return os;
         }
+
         bool operator<( const gme_id& rhs ) const
         {
             if( type_ != rhs.type_ ) {
@@ -231,21 +233,11 @@ namespace RINGMesh {
             }
         }
 
-        bool is_defined() const
-        {
-            return type_ != ForbiddenMeshEntityType::type_name_static()
-                && index_ != NO_ID;
-        }
-        gme_id()
-            : gme_id( { ForbiddenMeshEntityType::type_name_static() }, NO_ID )
-        {
-        }
+    protected:
+        gme_id() = default;
+
         gme_id( Entity_type_template entity_type, index_t index )
             : type_( std::move( entity_type ) ), index_( index )
-        {
-        }
-        gme_id( const gme_id& from )
-            : gme_id( from.type_, from.index_ )
         {
         }
 
@@ -254,15 +246,49 @@ namespace RINGMesh {
         /*!
          * Index of the GeoModelEntity in the GeoModel
          */
-        index_t index_;
+        index_t index_ { NO_ID };
     };
 
     /*!
      * @brief This template is a specialization of a gme_id to the GeoModelGeologicalEntity
      */
-    using gmge_id = gme_id< GeologicalEntityType >;
+    struct gmge_id: public gme_id< GeologicalEntityType > {
+    public:
+        gmge_id()
+        {
+            type_ = ForbiddenGeologicalEntityType::type_name_static();
+        }
+
+        gmge_id( GeologicalEntityType entity_type, index_t index )
+            : gme_id< GeologicalEntityType >( std::move( entity_type ), index )
+        {
+        }
+
+        bool is_defined() const
+        {
+            return type_ != ForbiddenGeologicalEntityType::type_name_static()
+                && index_ != NO_ID;
+        }
+    };
     /*!
      * @brief This template is a specialization of a gme_id to the GeoModelMeshEntity
      */
-    using gmme_id = gme_id< MeshEntityType >;
+    struct gmme_id: public gme_id< MeshEntityType > {
+    public:
+        gmme_id()
+        {
+            type_ = ForbiddenMeshEntityType::type_name_static();
+        }
+
+        gmme_id( MeshEntityType entity_type, index_t index )
+            : gme_id< MeshEntityType >( std::move( entity_type ), index )
+        {
+        }
+
+        bool is_defined() const
+        {
+            return type_ != ForbiddenMeshEntityType::type_name_static()
+                && index_ != NO_ID;
+        }
+    };
 }

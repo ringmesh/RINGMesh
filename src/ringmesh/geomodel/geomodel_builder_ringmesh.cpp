@@ -268,9 +268,7 @@ namespace RINGMesh {
     GeoModelBuilderGM< DIMENSION >::GeoModelBuilderGM(
         GeoModel< DIMENSION >& geomodel,
         std::string filename )
-        :
-            GeoModelBuilderFile< DIMENSION >( geomodel, std::move( filename ) ),
-            file_version_( 0 )
+        : GeoModelBuilderFile< DIMENSION >( geomodel, std::move( filename ) )
     {
         version_impl_[0].reset(
             new GeoModelBuilderGMImpl_0< DIMENSION >( *this, geomodel ) );
