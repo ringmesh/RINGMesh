@@ -105,7 +105,7 @@ namespace RINGMesh {
         /// Reference to the GeoModel owning this entity
         const GeoModel< DIMENSION >& geomodel_;
         /// Name of the entity - default is "Unnamed"
-        std::string name_ { { "Unnamed" } };
+        std::string name_ = std::string { "Unnamed" };
 
         /// Index of the entity
         index_t id_ { NO_ID };
