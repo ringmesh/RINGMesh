@@ -74,19 +74,27 @@ namespace RINGMesh {
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
 
-    /* enum defining the type of cell in region */
+    /*! enum defining the type of cell in region 
+     *  * UNCLASSIFIED_CELL may be either a connector or more complex cell that is not specified.
+     *  * UNDEFINED_CELL means that the cell is not defined and cannot be used.
+     */
     enum CellType {
         TETRAHEDRON = 0,
         HEXAHEDRON = 1,
         PRISM = 2,
         PYRAMID = 3,
-        CONNECTOR = 4,
+        UNCLASSIFIED_CELL = 4,
         UNDEFINED_CELL = 5
     };
-    /* enum defining the type of polygon in surface in region */
+
+    /*! enum defining the type of polygon in surface.
+    *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon that is not specified.
+    *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be used.
+    */
     enum PolygonType {
         TRIANGLE = 0,
         QUAD = 1,
-        UNDEFINED_POLYGON = 2
+        UNCLASSIFIED_POLYGON = 2,
+        UNDEFINED_POLYGON = 3
     };
 }
