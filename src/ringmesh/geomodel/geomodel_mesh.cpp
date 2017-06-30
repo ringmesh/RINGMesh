@@ -1568,7 +1568,7 @@ namespace RINGMesh {
         return polygon_id_[p];
     }
 
-    GeoModelMeshPolygons::PolygonType GeoModelMeshPolygons::type(
+    PolygonType GeoModelMeshPolygons::type(
         index_t p,
         index_t& index ) const
     {
@@ -1576,7 +1576,7 @@ namespace RINGMesh {
         ringmesh_assert( p < mesh_->nb_polygons() );
         index_t polygon = index_in_surface( p );
         index_t s = surface( p );
-        for( index_t t = TRIANGLE; t < ALL; t++ ) {
+        for( index_t t = TRIANGLE; t < UNDEFINED_POLYGON; t++ ) {
             PolygonType T = static_cast< PolygonType >( t );
             if( polygon < nb_polygons( s, T ) ) {
                 index = polygon;
@@ -1586,7 +1586,7 @@ namespace RINGMesh {
         }
         index = NO_ID;
         ringmesh_assert_not_reached;
-        return NO_POLYGON;
+        return UNDEFINED_POLYGON;
     }
 
     index_t GeoModelMeshPolygons::nb_polygons( PolygonType type ) const
@@ -1599,7 +1599,7 @@ namespace RINGMesh {
                 return nb_quad();
             case UNCLASSIFIED_POLYGON:
                 return nb_unclassified_polygon();
-            case ALL:
+            case UNDEFINED_POLYGON:
                 return nb();
             default:
                 ringmesh_assert_not_reached;
@@ -1618,9 +1618,9 @@ namespace RINGMesh {
                 return nb_quad( s );
             case UNCLASSIFIED_POLYGON:
                 return nb_unclassified_polygon( s );
-            case ALL:
-                return surface_polygon_ptr_[ALL * ( s + 1 )]
-                    - surface_polygon_ptr_[ALL * s];
+            case UNDEFINED_POLYGON:
+                return surface_polygon_ptr_[UNDEFINED_POLYGON * ( s + 1 )]
+                    - surface_polygon_ptr_[UNDEFINED_POLYGON * s];
             default:
                 ringmesh_assert_not_reached;
                 return 0;
@@ -1641,8 +1641,8 @@ namespace RINGMesh {
                 return quad( s, p );
             case UNCLASSIFIED_POLYGON:
                 return unclassified_polygon( s, p );
-            case ALL:
-                return surface_polygon_ptr_[ALL * s] + p;
+            case UNDEFINED_POLYGON:
+                return surface_polygon_ptr_[UNDEFINED_POLYGON * s] + p;
             default:
                 ringmesh_assert_not_reached;
                 return 0;
@@ -1659,15 +1659,15 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + ( TRIANGLE + 1 )]
-            - surface_polygon_ptr_[ALL * s + TRIANGLE];
+        return surface_polygon_ptr_[UNDEFINED_POLYGON * s + ( TRIANGLE + 1 )]
+            - surface_polygon_ptr_[UNDEFINED_POLYGON * s + TRIANGLE];
     }
 
     index_t GeoModelMeshPolygons::triangle( index_t s, index_t t ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + TRIANGLE] + t;
+        return surface_polygon_ptr_[UNDEFINED_POLYGON * s + TRIANGLE] + t;
     }
 
     index_t GeoModelMeshPolygons::nb_quad() const
@@ -1680,15 +1680,15 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + ( QUAD + 1 )]
-            - surface_polygon_ptr_[ALL * s + QUAD];
+        return surface_polygon_ptr_[UNDEFINED_POLYGON * s + ( QUAD + 1 )]
+            - surface_polygon_ptr_[UNDEFINED_POLYGON * s + QUAD];
     }
 
     index_t GeoModelMeshPolygons::quad( index_t s, index_t q ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + QUAD] + q;
+        return surface_polygon_ptr_[UNDEFINED_POLYGON * s + QUAD] + q;
     }
 
     index_t GeoModelMeshPolygons::nb_unclassified_polygon() const
@@ -1701,15 +1701,15 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + ( UNCLASSIFIED_POLYGON + 1 )]
-            - surface_polygon_ptr_[ALL * s + UNCLASSIFIED_POLYGON];
+        return surface_polygon_ptr_[UNDEFINED_POLYGON * s + ( UNCLASSIFIED_POLYGON + 1 )]
+            - surface_polygon_ptr_[UNDEFINED_POLYGON * s + UNCLASSIFIED_POLYGON];
     }
 
     index_t GeoModelMeshPolygons::unclassified_polygon( index_t s, index_t p ) const
     {
         test_and_initialize();
         ringmesh_assert( s < gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + UNCLASSIFIED_POLYGON] + p;
+        return surface_polygon_ptr_[UNDEFINED_POLYGON * s + UNCLASSIFIED_POLYGON] + p;
     }
 
     void GeoModelMeshPolygons::clear()
@@ -1733,7 +1733,7 @@ namespace RINGMesh {
     {
         gmm_.vertices.test_and_initialize();
         clear();
-        surface_polygon_ptr_.resize( gm_.nb_surfaces() * ALL + 1, 0 );
+        surface_polygon_ptr_.resize( gm_.nb_surfaces() * UNDEFINED_POLYGON + 1, 0 );
         std::unique_ptr< SurfaceMeshBuilder > mesh_builder =
             SurfaceMeshBuilder::create_builder( *mesh_ );
         if( mesh_->nb_vertices() != gmm_.vertices.nb() ) {
@@ -1741,27 +1741,27 @@ namespace RINGMesh {
         }
 
         // Compute the total number of polygons per type and per surface
-        std::vector< index_t > nb_polygon_per_type( ALL, 0 );
+        std::vector< index_t > nb_polygon_per_type( UNDEFINED_POLYGON, 0 );
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s );
             if( surface.is_simplicial() ) {
                 nb_polygon_per_type[TRIANGLE] += surface.nb_mesh_elements();
-                surface_polygon_ptr_[ALL * s + TRIANGLE + 1] +=
+                surface_polygon_ptr_[UNDEFINED_POLYGON * s + TRIANGLE + 1] +=
                     surface.nb_mesh_elements();
             } else {
                 for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
                     switch( surface.nb_mesh_element_vertices( p ) ) {
                         case 3:
                             nb_polygon_per_type[TRIANGLE]++;
-                            surface_polygon_ptr_[ALL * s + TRIANGLE + 1]++;
+                            surface_polygon_ptr_[UNDEFINED_POLYGON * s + TRIANGLE + 1]++;
                             break;
                         case 4:
                             nb_polygon_per_type[QUAD]++;
-                            surface_polygon_ptr_[ALL * s + QUAD + 1]++;
+                            surface_polygon_ptr_[UNDEFINED_POLYGON * s + QUAD + 1]++;
                             break;
                         default:
                             nb_polygon_per_type[UNCLASSIFIED_POLYGON]++;
-                            surface_polygon_ptr_[ALL * s + UNCLASSIFIED_POLYGON + 1]++;
+                            surface_polygon_ptr_[UNDEFINED_POLYGON * s + UNCLASSIFIED_POLYGON + 1]++;
                             break;
                     }
                 }
@@ -1786,8 +1786,8 @@ namespace RINGMesh {
         }
 
         // Compute the polygon offset
-        std::vector< index_t > polygon_offset_per_type( ALL, 0 );
-        for( index_t t = TRIANGLE + 1; t < ALL; t++ ) {
+        std::vector< index_t > polygon_offset_per_type( UNDEFINED_POLYGON, 0 );
+        for( index_t t = TRIANGLE + 1; t < UNDEFINED_POLYGON; t++ ) {
             polygon_offset_per_type[t] += polygon_offset_per_type[t - 1];
             polygon_offset_per_type[t] += nb_polygon_per_type[t - 1];
         }
@@ -1799,7 +1799,7 @@ namespace RINGMesh {
         // Create and fill polygons
         bind_attribute();
         const GeoModelMeshVertices& geomodel_vertices = gmm_.vertices;
-        std::vector< index_t > cur_polygon_per_type( ALL, 0 );
+        std::vector< index_t > cur_polygon_per_type( UNDEFINED_POLYGON, 0 );
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s );
             gmme_id surface_id = surface.gmme();

@@ -134,11 +134,11 @@ namespace {
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
                 // -1 because polygons doesn' t exist in aster
-                for( index_t pt = 0; pt < GeoModelMeshPolygons::ALL - 1; pt++ ) {
+                for( index_t pt = 0; pt < UNDEFINED_POLYGON - 1; pt++ ) {
                     if( geomodel_mesh.polygons.nb_polygons( s,
-                        GeoModelMeshPolygons::PolygonType( pt ) ) > 0 ) {
+                        PolygonType( pt ) ) > 0 ) {
                         write_polygons_in_interface(
-                            GeoModelMeshPolygons::PolygonType( pt ), s, geomodel_mesh,
+                            PolygonType( pt ), s, geomodel_mesh,
                             out );
                     }
                 }
@@ -164,7 +164,7 @@ namespace {
         }
 
         void write_polygons_in_interface(
-            const GeoModelMeshPolygons::PolygonType& polygon_type,
+            const PolygonType& polygon_type,
             index_t surface,
             const RINGMesh::GeoModelMesh& mesh,
             std::ofstream& out ) const

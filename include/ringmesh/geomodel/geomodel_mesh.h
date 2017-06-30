@@ -481,10 +481,6 @@ namespace RINGMesh {
     public:
         friend class GeoModelMesh;
 
-        enum PolygonType {
-            TRIANGLE, QUAD, UNCLASSIFIED_POLYGON, ALL, NO_POLYGON
-        };
-
         GeoModelMeshPolygons(
             GeoModelMesh& gmm,
             GeoModel& gm,
@@ -558,7 +554,7 @@ namespace RINGMesh {
          * @param[in] type the corresponding type
          * @return the number of polygons
          */
-        index_t nb_polygons( PolygonType type = ALL ) const;
+        index_t nb_polygons( PolygonType type = UNDEFINED_POLYGON ) const;
         /*!
          * Get the number of polygons of the corresponding type
          * in the given surface of the GeoModel
@@ -566,7 +562,7 @@ namespace RINGMesh {
          * @param[in] type the corresponding type
          * @return the number of polygons
          */
-        index_t nb_polygons( index_t s, PolygonType type = ALL ) const;
+        index_t nb_polygons( index_t s, PolygonType type = UNDEFINED_POLYGON ) const;
         /*!
          * Get the polygon index in the GeoModelMesh
          * @param[in] s the surface index owing the polygon
@@ -586,7 +582,7 @@ namespace RINGMesh {
          * taken into account.
          * @return the polygon index
          */
-        index_t polygon( index_t s, index_t p, PolygonType type = ALL ) const;
+        index_t polygon( index_t s, index_t p, PolygonType type = UNDEFINED_POLYGON ) const;
 
         /*!
          * Get the number of triangles in the GeoModelMesh
