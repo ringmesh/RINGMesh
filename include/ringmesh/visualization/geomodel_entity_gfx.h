@@ -40,6 +40,7 @@
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <memory>
+
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 /*!
