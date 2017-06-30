@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef GEOGRAM_VORONOI_RVD_POLYHEDRON_CALLBACK
-#define GEOGRAM_VORONOI_RVD_POLYHEDRON_CALLBACK
+#ifndef GEOGRAM_VORONOI_RVD_CALLBACK
+#define GEOGRAM_VORONOI_RVD_CALLBACK
 
 #include <geogram/basic/common.h>
 #include <geogram/voronoi/generic_RVD_vertex.h>
@@ -53,6 +53,7 @@
 
 namespace GEOGen {
     class SymbolicVertex;
+    class Polygon;
     class ConvexCell;
 }
 
@@ -65,13 +66,137 @@ namespace GEO {
 }
 
 /**
- * \file geogram/voronoi/RVD_polyhedron_callback.h
+ * \file geogram/voronoi/RVD_callback.h
  * \brief Declaration of base types for implementing user-defined
  *  code that queries the cells of a restricted Voronoi diagram.
  */
 
 namespace GEO {
 
+    /***************************************************************/
+    
+    /**
+     * \brief Baseclass for user functions called for each
+     *  element (polygon or polyhedron) of a restricted Voronoi
+     *  diagram traversal.
+     */
+    class GEOGRAM_API RVDCallback {
+      public:
+
+	/**
+	 * \brief RVDCallback constructor.
+	 */
+	RVDCallback();
+
+	/**
+	 * \brief RVDCallback destructor.
+	 */
+	virtual ~RVDCallback();
+	
+	/**
+	 * \brief Called at the beginning of the RVD traversal.
+	 */
+	virtual void begin();
+
+	/**
+	 * \brief Called at the end of the RVD traversal.
+	 */
+	virtual void end();
+
+	/**
+	 * \brief Gets the index of the seed that corresponds to the current
+	 *  polygon/polyhedron.
+	 * \return The index of the seed that corresponds to the 
+	 *  current polygon/polyhedron.
+	 * \details The current polygon/polyhedron is the intersection between a Voronoi
+	 *  cell (associted with a seed) and a simplex. 
+	 */
+	index_t seed() const {
+	    return seed_;
+	}
+
+	/**
+	 * \brief Gets the index of the simplex that corresponds to the 
+	 *  current polygon/polyhedron.
+	 * \return The index of the simplex that corresponds to the 
+	 *  current polygon/polyhedron. Points to a simplex in the mesh that the
+	 *  Voronoi diagram is restricted to.
+	 * \details The current polygon/polyhedron is the intersection between a Voronoi
+	 *  cell and a simplex. 
+	 */
+	index_t simplex() const {
+	    return simplex_;
+	}
+
+	/**
+	 * \brief Sets the spinlocks array.
+	 * \details In multithreading mode, a spinlocks array can
+	 *  be used to manage concurrent accesses.
+	 * \param[in] spinlocks a pointer to the Process::SpinLockArray
+	 *  or nil if no spinlocks are used.
+	 */
+	void set_spinlocks(Process::SpinLockArray* spinlocks) {
+	    spinlocks_ = spinlocks;
+	}
+	
+      protected:
+	index_t seed_;
+	index_t simplex_;
+        Process::SpinLockArray* spinlocks_;
+    };
+
+    /***************************************************************/
+
+    /**
+     * \brief Baseclass for user functions called for each
+     *  polygon of a surfacic restricted Voronoi diagram.
+     * \details A surfacic restricted Voronoi diagram is the
+     *  intersection between Voronoi cells and the triangles of
+     *  a given triangulated mesh. The member functions of this
+     *  class are called for each intersection between a Voronoi
+     *  cell and a triangle.
+     */
+
+    class GEOGRAM_API RVDPolygonCallback : public RVDCallback {
+      public:
+
+	/**
+	 * \brief PolyhedronCallback constructor.
+	 */
+	RVDPolygonCallback();
+	
+	/**
+	 * \brief PolyhedronCallback destructor.
+	 */
+	virtual ~RVDPolygonCallback();
+
+	/**
+	 * \copydoc RVDCallback::begin()
+	 */
+	virtual void begin();
+
+	/**
+	 * \copydoc RVDCallback::end()
+	 */
+	virtual void end();
+
+	/**
+	 * \brief The default callback called for each polygon
+	 * \param[in] v index of current Delaunay seed
+	 * \param[in] t index of current mesh triangle
+	 * \param[in] C intersection between current mesh triangle
+	 *  and the Voronoi cell of \p v
+	 */
+	virtual void operator() (
+	    index_t v,
+	    index_t t,
+	    const GEOGen::Polygon& C
+	) const;
+
+    };
+    
+    /***************************************************************/    
+    
     /**
      * \brief Baseclass for user functions called for each
      *  polyhedron of a volumetric restricted Voronoi diagram.
@@ -81,7 +206,7 @@ namespace GEO {
      *  class are called for each intersection between a Voronoi
      *  cell and a tetrahedron.
      */
-    class GEOGRAM_API RVDPolyhedronCallback {
+    class GEOGRAM_API RVDPolyhedronCallback : public RVDCallback {
       public:
 
 	/**
@@ -95,12 +220,12 @@ namespace GEO {
 	virtual ~RVDPolyhedronCallback();
 
 	/**
-	 * \brief Called at the beginning of the RVD traversal.
+	 * \copydoc RVDCallback::begin()
 	 */
 	virtual void begin();
 
 	/**
-	 * \brief Called at the end of the RVD traversal.
+	 * \copydoc RVDCallback::end()
 	 */
 	virtual void end();
 
@@ -167,18 +292,6 @@ namespace GEO {
 	virtual void end_polyhedron();
 
 	/**
-	 * \brief Gets the index of the seed that corresponds to the current
-	 *  polyhedron.
-	 * \return The index of the seed that corresponds to the 
-	 *  current polyhedron.
-	 * \details The current polyhedron is the intersection between a Voronoi
-	 *  cell (associted with a seed) and a tetrahedron. 
-	 */
-	index_t seed() const {
-	    return seed_;
-	}
-
-	/**
 	 * \brief Gets the index of the tetrahedron that corresponds to the 
 	 *  current polyhedron.
 	 * \return The index of the tetrahedron that corresponds to the 
@@ -187,7 +300,7 @@ namespace GEO {
 	 *  cell and a tetrahedron. 
 	 */
 	index_t tet() const {
-	    return tet_;
+	    return simplex();
 	}
 
 	/**
@@ -295,17 +408,6 @@ namespace GEO {
 	    }
 	}
 
-	/**
-	 * \brief Sets the spinlocks array.
-	 * \details In multithreading mode, a spinlocks array can
-	 *  be used to manage concurrent accesses.
-	 * \param[in] spinlocks a pointer to the Process::SpinLockArray
-	 *  or nil if no spinlocks are used.
-	 */
-	void set_spinlocks(Process::SpinLockArray* spinlocks) {
-	    spinlocks_ = spinlocks;
-	}
-	
       protected:
 	/**
 	 * \brief Filters callbacks between operator() and client callbacks.
@@ -366,8 +468,7 @@ namespace GEO {
 	virtual void process_polyhedron_mesh();
 	
       protected:
-	index_t seed_;
-	index_t tet_;	
+	
 	index_t facet_seed_;
 	index_t facet_tet_;
 	index_t last_seed_;
@@ -386,8 +487,6 @@ namespace GEO {
 	Attribute<index_t> mesh_facet_tet_;
 	RVDVertexMap* vertex_map_;
 	vector<index_t> current_facet_;
-
-        Process::SpinLockArray* spinlocks_;
     };
 
 }
