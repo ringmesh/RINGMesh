@@ -111,7 +111,6 @@ int main()
         test_file< 3 >( "modelA1_version2.gm" );
         test_file< 2 >( "model_2d_version2.gm" );
 
-
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;

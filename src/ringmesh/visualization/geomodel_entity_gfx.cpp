@@ -271,7 +271,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    SurfaceMeshGfx< DIMENSION >& SurfaceGfxEntity< DIMENSION >::surface( index_t surface_id )
+    SurfaceMeshGfx< DIMENSION >& SurfaceGfxEntity< DIMENSION >::surface(
+        index_t surface_id )
     {
         ringmesh_assert( surface_id < this->entities_.size() );
         return static_cast< SurfaceMeshGfx< DIMENSION >& >( *this->entities_[surface_id] );
@@ -420,7 +421,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    VolumeMeshGfx< DIMENSION >& RegionGfxEntity< DIMENSION >::region( index_t region_id )
+    VolumeMeshGfx< DIMENSION >& RegionGfxEntity< DIMENSION >::region(
+        index_t region_id )
     {
         ringmesh_assert( region_id < entities_.size() );
         return static_cast< VolumeMeshGfx< DIMENSION >& >( *entities_[region_id] );

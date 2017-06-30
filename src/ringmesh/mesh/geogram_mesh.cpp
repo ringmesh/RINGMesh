@@ -42,20 +42,20 @@ namespace RINGMesh {
     void register_geogram_mesh()
     {
         ringmesh_register_point_mesh_2d( GeogramPointSetMesh2D );
-        ringmesh_register_point_mesh_builder_2d( GeogramPointSetMesh2D );
+        ringmesh_register_point_mesh_builder_2d (GeogramPointSetMesh2D);
         ringmesh_register_line_mesh_2d( GeogramLineMesh2D );
-        ringmesh_register_line_mesh_builder_2d( GeogramLineMesh2D );
+        ringmesh_register_line_mesh_builder_2d (GeogramLineMesh2D);
         ringmesh_register_surface_mesh_2d( GeogramSurfaceMesh2D );
-        ringmesh_register_surface_mesh_builder_2d( GeogramSurfaceMesh2D );
+        ringmesh_register_surface_mesh_builder_2d (GeogramSurfaceMesh2D);
 
         ringmesh_register_point_mesh_3d( GeogramPointSetMesh3D );
-        ringmesh_register_point_mesh_builder_3d( GeogramPointSetMesh3D );
+        ringmesh_register_point_mesh_builder_3d (GeogramPointSetMesh3D);
         ringmesh_register_line_mesh_3d( GeogramLineMesh3D );
-        ringmesh_register_line_mesh_builder_3d( GeogramLineMesh3D );
+        ringmesh_register_line_mesh_builder_3d (GeogramLineMesh3D);
         ringmesh_register_surface_mesh_3d( GeogramSurfaceMesh3D );
-        ringmesh_register_surface_mesh_builder_3d( GeogramSurfaceMesh3D );
+        ringmesh_register_surface_mesh_builder_3d (GeogramSurfaceMesh3D);
         ringmesh_register_volume_mesh_3d( GeogramVolumeMesh3D );
-        ringmesh_register_volume_mesh_builder_3d( GeogramVolumeMesh3D );
+        ringmesh_register_volume_mesh_builder_3d (GeogramVolumeMesh3D);
     }
 }
 

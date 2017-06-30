@@ -316,7 +316,7 @@ namespace {
     {
         const gmme_id& id = entity.gmme();
         std::string base_name = static_cast< std::string >( id.type() ) + "_"
-            + GEO::String::to_string( id.index() );
+            + std::to_string( id.index() );
         return base_name + "." + entity.low_level_mesh_storage().default_extension();
     }
 
@@ -443,7 +443,7 @@ namespace {
             builder.build_geomodel();
             GEO::FileSystem::set_current_working_directory( pwd );
         }
-        
+
         virtual void save(
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final

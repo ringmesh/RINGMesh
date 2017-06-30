@@ -137,9 +137,9 @@ int main( int argc, char** argv )
         } else {
             index_t dimension = find_geomodel_dimension( geomodel_in_name );
             if( dimension == 2 ) {
-                convert_geomodel < 2 > ( geomodel_in_name );
+                convert_geomodel< 2 >( geomodel_in_name );
             } else if( dimension == 3 ) {
-                convert_geomodel < 3 > ( geomodel_in_name );
+                convert_geomodel< 3 >( geomodel_in_name );
             }
         }
 

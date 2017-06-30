@@ -486,14 +486,14 @@ namespace RINGMesh {
             if( GM_gfx_.attribute.location_name() != "location"
                 && GM_gfx_.attribute.nb_coordinates() > 1 ) {
                 if( ImGui::Button(
-                    GEO::String::to_string( GM_gfx_.attribute.coordinate() ).c_str(),
+                    std::to_string( GM_gfx_.attribute.coordinate() ).c_str(),
                     ImVec2( -1, 0 ) ) ) {
                     ImGui::OpenPopup( "##Coordinates" );
                 }
                 if( ImGui::BeginPopup( "##Coordinates" ) ) {
                     for( index_t i = 0; i < GM_gfx_.attribute.nb_coordinates();
                         i++ ) {
-                        if( ImGui::Button( GEO::String::to_string( i ).c_str() ) ) {
+                        if( ImGui::Button( std::to_string( i ).c_str() ) ) {
                             GM_gfx_.attribute.set_coordinate( i );
                             autorange();
                             ImGui::CloseCurrentPopup();
@@ -661,16 +661,14 @@ namespace RINGMesh {
         const float font_height = 0.4f
             * float( glQuickText::getFontHeight( font_sz ) );
 
-        std::string min_value = GEO::String::to_string(
-            GM_gfx_.attribute.minimum() );
+        std::string min_value = std::to_string( GM_gfx_.attribute.minimum() );
         float nb_min_letter = static_cast< float >( min_value.size() );
         glQuickText::printfAt(
             static_cast< double >( x1 - w - font_height * nb_min_letter * 0.3f ),
             static_cast< double >( y1 - font_height ), static_cast< double >( z ),
             static_cast< double >( font_sz ), min_value.c_str() );
 
-        std::string max_value = GEO::String::to_string(
-            GM_gfx_.attribute.maximum() );
+        std::string max_value = std::to_string( GM_gfx_.attribute.maximum() );
         float nb_max_letter = static_cast< float >( max_value.size() );
         glQuickText::printfAt(
             static_cast< double >( x1 + w - font_height * nb_max_letter * 0.3f ),

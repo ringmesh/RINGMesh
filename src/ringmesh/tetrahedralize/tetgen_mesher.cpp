@@ -312,7 +312,7 @@ namespace RINGMesh {
 
     void TetgenMesher::add_points_to_match_quality( double quality )
     {
-        tetgen_command_line_ += "q" + GEO::String::to_string( quality );
+        tetgen_command_line_ += "q" + std::to_string( quality );
     }
 }
 

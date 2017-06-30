@@ -100,7 +100,6 @@ namespace RINGMesh {
         GeoModelGfx();
     };
 
-
     template< >
     class GeoModelGfx< 3 > final: public GeoModelGfxBase< 3 > {
     public:

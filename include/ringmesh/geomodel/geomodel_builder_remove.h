@@ -388,7 +388,8 @@ namespace RINGMesh {
             }
         }
 
-        const MeshEntityType& boundary_entity_type( const MeshEntityType& type ) const
+        const MeshEntityType& boundary_entity_type(
+            const MeshEntityType& type ) const
         {
             const MeshEntityTypeManager< DIMENSION >& family =
                 geomodel_.entity_type_manager().mesh_entity_manager;
@@ -494,7 +495,8 @@ namespace RINGMesh {
 
         void delete_invalid_boundaries( GeoModelMeshEntity< DIMENSION >& E )
         {
-            const MeshEntityType& b_type = boundary_entity_type( E.mesh_entity_type() );
+            const MeshEntityType& b_type = boundary_entity_type(
+                E.mesh_entity_type() );
             gmme_id invalid( b_type, NO_ID );
             if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
                 b_type ) ) {
