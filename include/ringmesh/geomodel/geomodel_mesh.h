@@ -1224,7 +1224,7 @@ namespace RINGMesh {
          * for a given region and a given cell type.
          * For example:
          *    the 2nd hex index of the region index R will be found here:
-         *    surface_polygon_ptr_[CellType::UNDEFINED*R + HEX] + 2
+         *    surface_polygon_ptr_[CellType::UNDEFINED*R + CellType::HEXAEDRON] + 2
          */
         std::vector< index_t > region_cell_ptr_;
 
