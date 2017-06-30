@@ -386,6 +386,22 @@ namespace RINGMesh {
         vec2& result );
 
     /*!
+     * Computes the intersection between a segment and a line
+     * @param[in] p0_seg the first vertex of the segment
+     * @param[in] p1_seg the second vertex of the segment
+     * @param[in] O_line a point on the line
+     * @param[in] D_line the direction of the line
+     * @param[out] result the intersection
+     * @return true is there is an intersection
+     */
+    bool RINGMESH_API segment_line_intersection(
+        const vec2& p0_seg,
+        const vec2& p1_seg,
+        const vec2& O_line,
+        const vec2& D_line,
+        vec2& result );
+
+    /*!
      * @brief Tests if a point is inside a triangle
      * @details if it is inside a prism based on the triangle and its normal
      * @param[in] p the point to test
