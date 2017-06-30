@@ -322,12 +322,12 @@ namespace {
         bool is_triangle( index_t p ) const
         {
             index_t index;
-            return polygons_.type( p, index ) == GeoModelMeshPolygons::TRIANGLE;
+            return polygons_.type( p, index ) == TRIANGLE;
         }
         bool is_quad( index_t p ) const
         {
             index_t index;
-            return polygons_.type( p, index ) == GeoModelMeshPolygons::QUAD;
+            return polygons_.type( p, index ) == QUAD;
         }
 
     private:
