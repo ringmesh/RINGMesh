@@ -144,7 +144,7 @@ namespace {
             for( index_t p = 0; p < polygons.nb(); p++ ) {
                 index_t not_used = 0;
                 out << polygons.surface( p ) + mfem_offset << " ";
-                out << polygon_type_mfem[polygons.type( p, not_used )] << " ";
+                out << polygon_type_mfem[to_indext( polygons.type( p, not_used ))] << " ";
                 for( index_t v = 0; v < polygons.nb_vertices( p ); v++ ) {
                     out << polygons.vertex( p, v ) << " ";
                 }
