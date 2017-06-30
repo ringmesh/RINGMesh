@@ -303,7 +303,7 @@ namespace RINGMesh {
                     surface_style_.vertex_color_.Value.z );
             }
             if( selected_entity_type_ == 0 ) {
-                for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
+                for( index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
                     if( GM_.surface( s ).is_on_voi() ) {
                         GM_gfx_.surfaces.set_surface_visibility( s, show_voi_ );
                     }
@@ -735,7 +735,7 @@ namespace RINGMesh {
     {
         colored_cells_.new_status = false;
         show_colored_layers_.new_status = false;
-        for( GEO::index_t r = 0; r < GM_.nb_regions(); r++ ) {
+        for( index_t r = 0; r < GM_.nb_regions(); r++ ) {
             GM_gfx_.regions.set_region_color( r,
                 std::fmod( GEO::Numeric::random_float32(), 1.f ),
                 std::fmod( GEO::Numeric::random_float32(), 1.f ),
@@ -754,7 +754,7 @@ namespace RINGMesh {
         }
         colored_cells_.new_status = false;
         show_colored_regions_.new_status = false;
-        for( GEO::index_t l = 0;
+        for( index_t l = 0;
             l < GM_.nb_geological_entities( Layer< 3 >::type_name_static() ); l++ ) {
             float red = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float green = std::fmod( GEO::Numeric::random_float32(), 1.f );
