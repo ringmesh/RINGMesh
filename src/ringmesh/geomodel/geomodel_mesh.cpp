@@ -1782,10 +1782,7 @@ namespace RINGMesh {
                 nb_polygon_per_type[PolygonType::TRIANGLE] +=
                     surface.nb_mesh_elements();
                 surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
-                    + to_underlying_type( PolygonType::TRIANGLE ) + 1] +=
-                    surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED )
-                        * s + to_underlying_type( PolygonType::TRIANGLE ) + 1] +=
-                        surface.nb_mesh_elements();
+                    + to_underlying_type( PolygonType::TRIANGLE ) + 1];
             } else {
                 for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
                     switch( surface.nb_mesh_element_vertices( p ) ) {
