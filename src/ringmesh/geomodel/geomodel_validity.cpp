@@ -322,12 +322,12 @@ namespace {
         bool is_triangle( index_t p ) const
         {
             index_t index;
-            return polygons_.type( p, index ) == TRIANGLE;
+            return polygons_.type( p, index ) == PolygonType::TRIANGLE;
         }
         bool is_quad( index_t p ) const
         {
             index_t index;
-            return polygons_.type( p, index ) == QUAD;
+            return polygons_.type( p, index ) == PolygonType::QUAD;
         }
 
     private:

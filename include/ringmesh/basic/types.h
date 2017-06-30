@@ -91,7 +91,7 @@ namespace RINGMesh {
     *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon that is not specified.
     *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be used.
     */
-    enum PolygonType {
+    enum struct PolygonType : index_t {
         TRIANGLE = 0,
         QUAD = 1,
         UNCLASSIFIED_POLYGON = 2,
