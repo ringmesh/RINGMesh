@@ -212,14 +212,12 @@ namespace RINGMesh {
             }
 
             this->read_second_line( file_line, entity );
-
         }
     private:
         const std::string& old_2_new_name( const std::string& old_name )
         {
-
             index_t new_name_pos = GEO::String::to_int(
-                std::to_string( old_name.at( old_name.length() - 2 ) ) );
+                GEO::String::to_string( old_name.at( old_name.length() - 2 ) ) );
             return new_names[new_name_pos];
         }
     private:
