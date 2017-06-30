@@ -93,8 +93,8 @@ namespace RINGMesh {
         GeoModelEntity(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const std::string& name = "Unnamed" )
-            : geomodel_( geomodel ), name_( name ), id_( id )
+            std::string name = "Unnamed" )
+            : geomodel_( geomodel ), name_( std::move( name ) ), id_( id )
         {
         }
 
