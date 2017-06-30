@@ -218,7 +218,7 @@ namespace RINGMesh {
 
             bool show_attributes_ { false };
             GLuint current_colormap_texture_ { 0 };
-            std::string attribute_ { "vertices.point_fp32[0]" };
+            std::string attribute_ = std::string{ "vertices.point_fp32[0]" };
             GEO::MeshElementsFlags attribute_subelements_ { GEO::MESH_VERTICES };
             std::string attribute_name_;
             float attribute_min_ { 0 };
