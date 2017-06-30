@@ -758,10 +758,10 @@ namespace RINGMesh {
                         region_cell_ptr_[UNDEFINED_CELL * r
                             + PYRAMID + 1]++;
                         break;
-                    case CONNECTOR:
-                        nb_cells_per_type[CONNECTOR]++;
+                    case UNCLASSIFIED_CELL:
+                        nb_cells_per_type[UNCLASSIFIED_CELL]++;
                         region_cell_ptr_[UNDEFINED_CELL * r
-                            + CONNECTOR + 1]++;
+                            + UNCLASSIFIED_CELL + 1]++;
                         break;
                     default:
                         ringmesh_assert_not_reached;
@@ -826,7 +826,7 @@ namespace RINGMesh {
         nb_hex_ = nb_cells_per_type[HEXAHEDRON];
         nb_prism_ = nb_cells_per_type[PRISM];
         nb_pyramid_ = nb_cells_per_type[PYRAMID];
-        nb_connector_ = nb_cells_per_type[CONNECTOR];
+        nb_connector_ = nb_cells_per_type[UNCLASSIFIED_CELL];
     }
 
     void GeoModelMeshCells::bind_attribute()
@@ -954,7 +954,7 @@ namespace RINGMesh {
                 return nb_prism();
             case PYRAMID:
                 return nb_pyramid();
-            case CONNECTOR:
+            case UNCLASSIFIED_CELL:
                 return nb_connector();
             case UNDEFINED_CELL:
                 return nb();
@@ -976,7 +976,7 @@ namespace RINGMesh {
                 return nb_prism( r );
             case PYRAMID:
                 return nb_pyramid( r );
-            case CONNECTOR:
+            case UNCLASSIFIED_CELL:
                 return nb_connector( r );
             case UNDEFINED_CELL:
                 ringmesh_assert(
@@ -1006,7 +1006,7 @@ namespace RINGMesh {
                 return prism( r, c );
             case PYRAMID:
                 return pyramid( r, c );
-            case CONNECTOR:
+            case UNCLASSIFIED_CELL:
                 return connector( r, c );
             case UNDEFINED_CELL:
                 return region_cell_ptr_[UNDEFINED_CELL * r] + c;
@@ -1112,15 +1112,15 @@ namespace RINGMesh {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
         return region_cell_ptr_[UNDEFINED_CELL * r
-            + ( CONNECTOR + 1 )]
-            - region_cell_ptr_[UNDEFINED_CELL * r + CONNECTOR];
+            + ( UNCLASSIFIED_CELL + 1 )]
+            - region_cell_ptr_[UNDEFINED_CELL * r + UNCLASSIFIED_CELL];
     }
 
     index_t GeoModelMeshCells::connector( index_t r, index_t c ) const
     {
         test_and_initialize();
         ringmesh_assert( r < gm_.nb_regions() );
-        return region_cell_ptr_[UNDEFINED_CELL * r + CONNECTOR]
+        return region_cell_ptr_[UNDEFINED_CELL * r + UNCLASSIFIED_CELL]
             + c;
     }
 
