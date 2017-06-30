@@ -80,8 +80,7 @@ int main()
             if( !geomodel.region( r ).is_meshed() ) {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when tetrahedralize model " + geomodel.name()
-                        + " Region " + GEO::String::to_string( r )
-                        + " is not meshed "
+                        + " Region " + std::to_string( r ) + " is not meshed "
                         + "maybe the MG Tetra Licence can not be reached" );
             }
         }

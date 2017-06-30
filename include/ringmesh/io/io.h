@@ -119,16 +119,20 @@ namespace RINGMesh {
 
         static std::unique_ptr< GeoModelIOHandler< DIMENSION > > get_handler(
             const std::string& filename );
-            
-        bool load_geomodel( const std::string& filename, GeoModel< DIMENSION >& geomodel );
 
-        void save_geomodel( const GeoModel< DIMENSION >& geomodel, const std::string& filename );
+        bool load_geomodel(
+            const std::string& filename,
+            GeoModel< DIMENSION >& geomodel );
+
+        void save_geomodel(
+            const GeoModel< DIMENSION >& geomodel,
+            const std::string& filename );
 
         virtual index_t dimension( const std::string& filename ) const
         {
             return DIMENSION;
         }
-        
+
     protected:
         GeoModelIOHandler() = default;
         virtual void load(

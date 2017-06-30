@@ -95,8 +95,7 @@ namespace RINGMesh {
             // First line : type - id - name - geol_feature
             if( file_line.nb_fields() < 4 ) {
                 throw RINGMeshException( "I/O",
-                    "Invalid line: "
-                        + GEO::String::to_string( file_line.line_number() )
+                    "Invalid line: " + std::to_string( file_line.line_number() )
                         + ", 4 fields are expected, the type, id, name, and geological feature" );
             }
             gmme_id entity = read_first_line( file_line );
@@ -197,8 +196,7 @@ namespace RINGMesh {
             // First line : type - id - name - geol_feature - mesh type
             if( file_line.nb_fields() < 5 ) {
                 throw RINGMeshException( "I/O",
-                    "Invalid line: "
-                        + GEO::String::to_string( file_line.line_number() )
+                    "Invalid line: " + std::to_string( file_line.line_number() )
                         + ", 5 fields are expected, the type, id, name, "
                         + "geological feature, and mesh type" );
             }
@@ -221,7 +219,7 @@ namespace RINGMesh {
         {
 
             index_t new_name_pos = GEO::String::to_int(
-                GEO::String::to_string( old_name.at( old_name.length() - 2 ) ) );
+                std::to_string( old_name.at( old_name.length() - 2 ) ) );
             return new_names[new_name_pos];
         }
     private:
@@ -250,8 +248,7 @@ namespace RINGMesh {
             // First line : type - id - name  - mesh type
             if( file_line.nb_fields() < 4 ) {
                 throw RINGMeshException( "I/O",
-                    "Invalid line: "
-                        + GEO::String::to_string( file_line.line_number() )
+                    "Invalid line: " + std::to_string( file_line.line_number() )
                         + ", 4 fields are expected, the type, id, name, "
                         + "geological feature, and mesh type" );
             }

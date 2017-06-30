@@ -133,7 +133,7 @@ namespace RINGMesh {
                 unzClose( uz );
                 fclose( out );
                 throw RINGMeshException( "ZLIB",
-                    "Invalid error: " + GEO::String::to_string( error ) );
+                    "Invalid error: " + std::to_string( error ) );
             }
             if( error > 0 ) {
                 fwrite( read_buffer, error, 1, out );

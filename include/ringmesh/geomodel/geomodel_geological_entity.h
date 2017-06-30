@@ -163,11 +163,9 @@ namespace RINGMesh {
         virtual bool is_identification_valid() const;
 
     protected:
-        GeoModelGeologicalEntity(
-            const GeoModel< DIMENSION >& geomodel,
-            index_t id = NO_ID,
-            std::string name = "unnamed",
-            GEOL_FEATURE geological_feature = GEOL_FEATURE::NO_GEOL )
+        GeoModelGeologicalEntity( const GeoModel< DIMENSION >& geomodel, index_t id =
+            NO_ID, std::string name = "unnamed", GEOL_FEATURE geological_feature =
+            GEOL_FEATURE::NO_GEOL )
             :
                 GeoModelEntity< DIMENSION >( geomodel, id, std::move( name ) ),
                 geol_feature_( geological_feature )

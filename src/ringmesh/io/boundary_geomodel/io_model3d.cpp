@@ -238,7 +238,7 @@ namespace {
             if( !parent_interface.is_defined() ) {
                 throw RINGMeshException( "I/O",
                     "Failed to save GeoModel" " in .ml Gocad format "
-                        "because Surface " + GEO::String::to_string( s )
+                        "because Surface " + std::to_string( s )
                         + " has no Interface parent)" );
             }
             const GeoModelGeologicalEntity< 3 >::GEOL_FEATURE& cur_geol_feature =
