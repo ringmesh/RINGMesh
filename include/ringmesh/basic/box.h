@@ -47,11 +47,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class Box {
     public:
-        Box()
-            : initialized_( false )
-        {
-        }
-
         bool initialized() const
         {
             return initialized_;
@@ -130,7 +125,7 @@ namespace RINGMesh {
         double signed_distance( const vecn< DIMENSION >& p ) const;
 
     private:
-        bool initialized_;
+        bool initialized_ { false };
         vecn< DIMENSION > min_;
         vecn< DIMENSION > max_;
 

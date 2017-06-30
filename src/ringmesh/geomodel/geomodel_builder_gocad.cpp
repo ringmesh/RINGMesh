@@ -1120,7 +1120,6 @@ namespace RINGMesh {
     }
 
     GocadLoadingStorage::GocadLoadingStorage()
-        : z_sign_( 1 ), cur_interface_( NO_ID ), cur_surface_( NO_ID )
     {
         cur_surf_polygon_ptr_.push_back( 0 );
     }
@@ -1137,11 +1136,6 @@ namespace RINGMesh {
             parser->set_geomodel( geomodel );
         }
         return parser;
-    }
-
-    TSolidLoadingStorage::TSolidLoadingStorage()
-        : GocadLoadingStorage(), cur_region_( NO_ID )
-    {
     }
 
     void GeoModelBuilderTSolid::load_file()
@@ -1262,7 +1256,6 @@ namespace RINGMesh {
     }
 
     MLLoadingStorage::MLLoadingStorage()
-        : is_header_read_( false ), tface_vertex_ptr_( 0 )
     {
         cur_surface_ = 0;
     }

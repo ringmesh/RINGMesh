@@ -57,7 +57,7 @@ namespace {
         const std::string& name,
         index_t coordinate )
     {
-        return name + "[" + std::to_string( coordinate ) + "]";
+        return name + "[" + GEO::String::to_string( coordinate ) + "]";
     }
 
     void compute_attribute_range(
