@@ -285,8 +285,10 @@ namespace RINGMesh {
         GeoModelMeshEntity(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const std::string& name = "No_name" )
-            : GeoModelEntity< DIMENSION >( geomodel, id, name ), mesh_( nullptr )
+            std::string name = "No_name" )
+            :
+                GeoModelEntity< DIMENSION >( geomodel, id, std::move( name ) ),
+                mesh_( nullptr )
         {
         }
 
