@@ -264,7 +264,7 @@ namespace RINGMesh {
 
     protected:
         std::string geomodel_name_;
-        mutable double epsilon_;
+        mutable double epsilon_ { -1 };
 
         EntityTypeManager< DIMENSION > entity_type_manager_;
 
@@ -295,7 +295,7 @@ namespace RINGMesh {
         /*! Optional WellGroup associated with the geomodel
          * @todo Move it out. It has nothing to do here. [JP]
          */
-        const WellGroup< DIMENSION >* wells_;
+        const WellGroup< DIMENSION >* wells_ { nullptr };
     };
 
     template< index_t DIMENSION >
@@ -349,7 +349,7 @@ namespace RINGMesh {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
-        friend class GeoModelBuilderGM< DIMENSION >;
+        friend class GeoModelBuilderGM< DIMENSION > ;
         friend class GeoModelBuilderTopologyBase< DIMENSION > ;
         friend class GeoModelBuilderTopology< DIMENSION > ;
         friend class GeoModelBuilderGeometryBase< DIMENSION > ;

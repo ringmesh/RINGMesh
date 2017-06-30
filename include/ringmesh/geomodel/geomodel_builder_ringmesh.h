@@ -61,9 +61,7 @@ namespace RINGMesh {
     class GeoModelBuilderGM final : public GeoModelBuilderFile< DIMENSION > {
     public:
         static const index_t NB_VERSION = 3;
-        GeoModelBuilderGM(
-            GeoModel< DIMENSION >& geomodel,
-            std::string filename );
+        GeoModelBuilderGM( GeoModel< DIMENSION >& geomodel, std::string filename );
         virtual ~GeoModelBuilderGM();
 
     private:
@@ -95,7 +93,7 @@ namespace RINGMesh {
             const std::string& file_name,
             const MeshEntityTypeManager< DIMENSION >& manager );
     private:
-        index_t file_version_;
+        index_t file_version_ { 0 };
         std::unique_ptr< GeoModelBuilderGMImpl< DIMENSION > > version_impl_[NB_VERSION];
     };
 }

@@ -85,7 +85,7 @@ namespace RINGMesh {
 
     private:
         /// The GeoModel associated to the graphics
-        const GeoModel< DIMENSION >* geomodel_;
+        const GeoModel< DIMENSION >* geomodel_ { nullptr };
 
     public:
         CornerGfxEntity< DIMENSION > corners;
@@ -99,7 +99,6 @@ namespace RINGMesh {
     public:
         GeoModelGfx();
     };
-
 
     template< >
     class GeoModelGfx< 3 > final: public GeoModelGfxBase< 3 > {

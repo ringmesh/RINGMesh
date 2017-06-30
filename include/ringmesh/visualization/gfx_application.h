@@ -56,7 +56,7 @@ namespace RINGMesh {
     class RINGMESH_API RINGMeshApplication: public GEO::Application {
     ringmesh_disable_copy( RINGMeshApplication );
     public:
-        enum ViewerType {
+        enum struct ViewerType {
             GEOMODEL2D, GEOMODEL3D, MESH, NONE
         };
 
@@ -109,8 +109,8 @@ namespace RINGMesh {
                 {
                     old_status = new_status;
                 }
-                bool old_status;
-                bool new_status;
+                bool old_status { false };
+                bool new_status { false };
             };
             struct EntityStyle {
                 ImColor color_;
@@ -154,28 +154,28 @@ namespace RINGMesh {
 
         public:
             RINGMeshApplication& app_;
-            bool is_visible_;
+            bool is_visible_ { true };
             GeoModel< DIMENSION > GM_;
             GeoModelGfx< DIMENSION > GM_gfx_;
             Box< DIMENSION > bbox_;
             std::vector< std::string > entity_types_;
-            int selected_entity_type_;
-            int selected_entity_id_;
+            int selected_entity_type_ { 0 };
+            int selected_entity_id_ { 0 };
 
-            bool show_corners_;
+            bool show_corners_ { true };
             EntityStyle corner_style_;
-            bool show_lines_;
+            bool show_lines_ { true };
             EntityStyle line_style_;
-            bool show_surface_;
+            bool show_surface_ { true };
             EntityStyle surface_style_;
-            bool show_voi_;
-            bool show_colormap_;
+            bool show_voi_ { false };
+            bool show_colormap_ { false };
 
-            bool mesh_visible_;
+            bool mesh_visible_ { true };
             ImColor mesh_color_;
-            bool show_attributes_;
-            float attribute_min_;
-            float attribute_max_;
+            bool show_attributes_ { false };
+            float attribute_min_ { 0 };
+            float attribute_max_ { 0 };
         };
 
         template< index_t DIMENSION >
@@ -196,33 +196,33 @@ namespace RINGMesh {
 
         public:
             RINGMeshApplication& app_;
-            bool is_visible_;
+            bool is_visible_ { true };
             GEO::Mesh mesh_;
             GEO::MeshGfx mesh_gfx_;
             Box< 3 > bbox_;
             std::string name_;
 
-            bool show_vertices_;
-            float vertices_size_;
+            bool show_vertices_ { false };
+            float vertices_size_ { 1 };
             ImColor vertices_color_;
 
-            bool show_surface_;
-            bool show_surface_colors_;
-            bool show_mesh_;
-            bool show_surface_borders_;
+            bool show_surface_ { true };
+            bool show_surface_colors_ { true };
+            bool show_mesh_ { true };
+            bool show_surface_borders_ { false };
 
-            bool show_volume_;
-            float cells_shrink_;
-            bool show_colored_cells_;
-            bool show_hexes_;
+            bool show_volume_ { false };
+            float cells_shrink_ { 0 };
+            bool show_colored_cells_ { false };
+            bool show_hexes_ { true };
 
-            bool show_attributes_;
-            GLuint current_colormap_texture_;
-            std::string attribute_;
-            GEO::MeshElementsFlags attribute_subelements_;
+            bool show_attributes_ { false };
+            GLuint current_colormap_texture_ { 0 };
+            std::string attribute_ { "vertices.point_fp32[0]" };
+            GEO::MeshElementsFlags attribute_subelements_ { GEO::MESH_VERTICES };
             std::string attribute_name_;
-            float attribute_min_;
-            float attribute_max_;
+            float attribute_min_ { 0 };
+            float attribute_max_ { 0 };
         };
 
         template< index_t DIMENSION >
@@ -235,8 +235,8 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< MeshViewer > > meshes_;
         std::string ringmesh_file_extensions_;
         std::string geogram_file_extensions_;
-        index_t current_viewer_;
-        ViewerType current_viewer_type_;
+        index_t current_viewer_ { NO_ID };
+        ViewerType current_viewer_type_ { ViewerType::NONE };
 
         static std::vector< std::vector< ImColor > > color_table_;
     };
@@ -249,7 +249,7 @@ namespace RINGMesh {
         virtual ~GeoModelViewer() = default;
         virtual ViewerType type() override
         {
-            return GEOMODEL2D;
+            return ViewerType::GEOMODEL2D;
         }
     };
 
@@ -261,7 +261,7 @@ namespace RINGMesh {
         virtual ~GeoModelViewer() = default;
         virtual ViewerType type() override
         {
-            return GEOMODEL3D;
+            return ViewerType::GEOMODEL3D;
         }
 
         virtual void draw_scene() override;
@@ -276,14 +276,14 @@ namespace RINGMesh {
             const gmme_id& entity_id ) override;
 
     public:
-        bool show_hex_;
-        bool show_prism_;
-        bool show_pyramid_;
-        bool show_tetra_;
+        bool show_hex_ { true };
+        bool show_prism_ { true };
+        bool show_pyramid_ { true };
+        bool show_tetra_ { true };
 
-        float shrink_;
-        bool meshed_regions_;
-        bool show_volume_;
+        float shrink_ { 0 };
+        bool meshed_regions_ { false };
+        bool show_volume_ { false };
         EntityStyle volume_style_;
 
         OldNewStatus colored_cells_;

@@ -191,15 +191,11 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class MeshEntityTypeManager: public MeshEntityTypeManagerBase< DIMENSION > {
-    public:
-        MeshEntityTypeManager() = default;
     };
 
     template< >
     class MeshEntityTypeManager< 3 > : public MeshEntityTypeManagerBase< 3 > {
     public:
-        MeshEntityTypeManager() = default;
-
         bool is_region( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[3];
@@ -215,7 +211,6 @@ namespace RINGMesh {
         friend class GeoModelBuilderGeology< 2 > ;
         friend class GeoModelBuilderGeology< 3 > ;
     public:
-        GeologicalTypeManager() = default;
         index_t nb_geological_entity_types() const;
         const std::vector< GeologicalEntityType >& geological_entity_types() const;
         const GeologicalEntityType& geological_entity_type( index_t index ) const;
@@ -416,10 +411,7 @@ namespace RINGMesh {
      * to give access to different manager to handle the entity types
      */
     template< index_t DIMENSION >
-    class RINGMESH_API EntityTypeManager {
-    public:
-        EntityTypeManager() = default;
-
+    struct EntityTypeManager {
         MeshEntityTypeManager< DIMENSION > mesh_entity_manager;
         GeologicalTypeManager geological_entity_manager;
         RelationshipManager relationship_manager;
