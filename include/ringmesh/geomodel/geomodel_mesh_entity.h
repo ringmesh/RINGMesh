@@ -1085,7 +1085,7 @@ namespace RINGMesh {
                 return mesh3d_->cell_type( cell_index );
             }
             ringmesh_assert_not_reached;
-            return UNDEFINED_CELL;
+            return CellType::UNDEFINED;
         }
 
         index_t nb_cell_edges( index_t cell_index ) const

@@ -404,7 +404,7 @@ namespace RINGMesh {
          * @brief Creates a contiguous chunk of cells of the same type.
          * @param[in] nb_cells number of cells to create
          * @param[in] type type of the cells to create, one of TETRAEDRON, HEXAEDRON,
-         * PRISM, PYRAMID, UNCLASSIFIED_CELL.
+         * CellType::PRISM, CellType::PYRAMID, CellType::UNCLASSIFIED.
          * @return the first created cell.
          */
         virtual index_t create_cells( index_t nb_cells, CellType type ) = 0;

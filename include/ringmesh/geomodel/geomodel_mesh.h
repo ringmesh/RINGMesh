@@ -554,7 +554,7 @@ namespace RINGMesh {
          * @param[in] type the corresponding type
          * @return the number of polygons
          */
-        index_t nb_polygons( PolygonType type = PolygonType::UNDEFINED_POLYGON ) const;
+        index_t nb_polygons( PolygonType type = PolygonType::UNDEFINED ) const;
         /*!
          * Get the number of polygons of the corresponding type
          * in the given surface of the GeoModel
@@ -562,7 +562,7 @@ namespace RINGMesh {
          * @param[in] type the corresponding type
          * @return the number of polygons
          */
-        index_t nb_polygons( index_t s, PolygonType type = PolygonType::UNDEFINED_POLYGON ) const;
+        index_t nb_polygons( index_t s, PolygonType type = PolygonType::UNDEFINED ) const;
         /*!
          * Get the polygon index in the GeoModelMesh
          * @param[in] s the surface index owing the polygon
@@ -582,7 +582,7 @@ namespace RINGMesh {
          * taken into account.
          * @return the polygon index
          */
-        index_t polygon( index_t s, index_t p, PolygonType type = PolygonType::UNDEFINED_POLYGON ) const;
+        index_t polygon( index_t s, index_t p, PolygonType type = PolygonType::UNDEFINED ) const;
 
         /*!
          * Get the number of triangles in the GeoModelMesh
@@ -957,7 +957,7 @@ namespace RINGMesh {
          * @param[in] type the corresponding type
          * @return the number of cells
          */
-        index_t nb_cells( CellType type = UNDEFINED_CELL ) const;
+        index_t nb_cells( CellType type = CellType::UNDEFINED ) const;
         /*!
          * Get the number of cells of the corresponding type
          * in the given region of the GeoModel
@@ -967,7 +967,7 @@ namespace RINGMesh {
          */
         index_t nb_cells(
             index_t r,
-            CellType type = UNDEFINED_CELL ) const;
+            CellType type = CellType::UNDEFINED ) const;
         /*!
          * Get the cell index in the GeoModelMesh
          * @param[in] r the region index owing the cell
@@ -982,12 +982,12 @@ namespace RINGMesh {
          * @param[in] type it can specify the cell type used. For example,
          * if type = HEXAEDRON then \p c represents the cth hex in the
          * region \p r and \p c can vary from 0 to nb_hex( r ).
-         * If \p type is UNDEFINED_CELL, all the cell types are
+         * If \p type is CellType::UNDEFINED, all the cell types are
          * taken into account.
          * @return the cell index
          */
         index_t cell( index_t r, index_t c, CellType type =
-            UNDEFINED_CELL ) const;
+            CellType::UNDEFINED ) const;
 
         /*!
          * Get the number of tets in the GeoModelMesh
@@ -1224,7 +1224,7 @@ namespace RINGMesh {
          * for a given region and a given cell type.
          * For example:
          *    the 2nd hex index of the region index R will be found here:
-         *    surface_polygon_ptr_[UNDEFINED_CELL*R + HEX] + 2
+         *    surface_polygon_ptr_[CellType::UNDEFINED*R + HEX] + 2
          */
         std::vector< index_t > region_cell_ptr_;
 
