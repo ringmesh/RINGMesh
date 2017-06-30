@@ -187,7 +187,7 @@ namespace {
     bool mesh_cell_contains_point( const VolumeMesh& M, index_t cell, const vec3& p )
     {
         switch( M.cell_type( cell ) ) {
-            case GEO::MESH_TET: {
+            case CellType::TETRAHEDRON: {
                 const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) );
                 const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) );
                 const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) );
