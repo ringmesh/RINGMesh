@@ -196,42 +196,42 @@ namespace RINGMesh {
 
         virtual ~UnsubdividedStratigraphicUnit() = default;
 
-        virtual bool is_conformable_base() const final
+        bool is_conformable_base() const final
         {
             return ( relation_base_ == RELATION::CONFORMABLE );
         }
 
-        virtual bool is_conformable_top() const final
+        bool is_conformable_top() const final
         {
             return ( relation_top_ == RELATION::CONFORMABLE );
         }
 
-        virtual RELATION get_relation_base() const final
+        RELATION get_relation_base() const final
         {
             return relation_base_;
         }
 
-        virtual RELATION get_relation_top() const final
+        RELATION get_relation_top() const final
         {
             return relation_top_;
         }
 
-        virtual const Interface< 3 >& get_interface_base() const final
+        const Interface< 3 >& get_interface_base() const final
         {
             return *interface_base_;
         }
 
-        virtual const Interface< 3 >& get_interface_top() const final
+        const Interface< 3 >& get_interface_top() const final
         {
             return *interface_top_;
         }
 
-        virtual double get_min_thick() const final
+        double get_min_thick() const final
         {
             return min_thick_;
         }
 
-        virtual double get_max_thick() const final
+        double get_max_thick() const final
         {
             return max_thick_;
         }
@@ -260,37 +260,37 @@ namespace RINGMesh {
 
         virtual ~SubdividedStratigraphicUnit() = default;
 
-        virtual bool is_conformable_base() const final
+        bool is_conformable_base() const final
         {
             return ( units_.back()->is_conformable_base() );
         }
 
-        virtual bool is_conformable_top() const final
+        bool is_conformable_top() const final
         {
             return ( units_.front()->is_conformable_top() );
         }
 
-        virtual RELATION get_relation_base() const final
+        RELATION get_relation_base() const final
         {
             return units_.back()->get_relation_base();
         }
 
-        virtual RELATION get_relation_top() const final
+        RELATION get_relation_top() const final
         {
             return units_.front()->get_relation_top();
         }
 
-        virtual const Interface< 3 >& get_interface_base() const final
+        const Interface< 3 >& get_interface_base() const final
         {
             return units_.back()->get_interface_base();
         }
 
-        virtual const Interface< 3 >& get_interface_top() const final
+        const Interface< 3 >& get_interface_top() const final
         {
             return units_.front()->get_interface_top();
         }
 
-        virtual double get_min_thick() const final
+        double get_min_thick() const final
         {
             double sum_min_thick = 0.;
             for( auto unit : units_ ) {
@@ -299,7 +299,7 @@ namespace RINGMesh {
             return sum_min_thick;
         }
 
-        virtual double get_max_thick() const final
+        double get_max_thick() const final
         {
             double sum_max_thick = 0.;
             for( auto unit : units_ ) {

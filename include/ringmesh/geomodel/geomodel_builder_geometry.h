@@ -432,7 +432,7 @@ namespace RINGMesh {
             return VolumeMeshBuilder< 3 >::create_builder( region_mesh );
         }
 
-        virtual void copy_meshes( const GeoModel< 3 >& geomodel ) override;
+        void copy_meshes( const GeoModel< 3 >& geomodel ) override;
 
         void set_region_element_geometry(
             index_t region_id,
@@ -489,8 +489,7 @@ namespace RINGMesh {
 
         void cut_region_by_surface( index_t region_id, index_t surface_id );
 
-        virtual void delete_mesh_entity_isolated_vertices( const gmme_id& E_id )
-            override;
+        void delete_mesh_entity_isolated_vertices( const gmme_id& E_id ) override;
 
     protected:
         GeoModelBuilderGeometry(

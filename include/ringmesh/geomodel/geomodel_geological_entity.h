@@ -212,11 +212,11 @@ namespace RINGMesh {
         {
             return GeologicalEntityType( "Contact" );
         }
-        virtual GeologicalEntityType type_name() const override
+        GeologicalEntityType type_name() const override
         {
             return type_name_static();
         }
-        virtual MeshEntityType child_type_name() const override;
+        MeshEntityType child_type_name() const override;
     };
 
     template< index_t DIMENSION >
@@ -232,11 +232,11 @@ namespace RINGMesh {
         {
             return GeologicalEntityType( "Interface" );
         }
-        virtual GeologicalEntityType type_name() const override
+        GeologicalEntityType type_name() const override
         {
             return type_name_static();
         }
-        virtual MeshEntityType child_type_name() const override;
+        MeshEntityType child_type_name() const override;
     };
 
     template< index_t DIMENSION >
@@ -252,11 +252,11 @@ namespace RINGMesh {
         {
             return GeologicalEntityType( "Layer" );
         }
-        virtual GeologicalEntityType type_name() const override
+        GeologicalEntityType type_name() const override
         {
             return type_name_static();
         }
-        virtual MeshEntityType child_type_name() const override;
+        MeshEntityType child_type_name() const override;
     };
 
     template< index_t DIMENSION >

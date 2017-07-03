@@ -83,7 +83,7 @@ namespace RINGMesh {
             const std::string& file_name,
             index_t id );
 
-        virtual void load_file() final;
+        void load_file() final;
 
         void load_mesh_entities( const std::string& mesh_entity_file );
 

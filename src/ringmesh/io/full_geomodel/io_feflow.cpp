@@ -52,18 +52,18 @@ namespace {
         &feflow_tet_descriptor, &feflow_hex_descriptor, &feflow_prism_descriptor,
         &feflow_pyramid_descriptor };
 
-    class FeflowIOHandler: public GeoModelIOHandler< 3 > {
+    class FeflowIOHandler final: public GeoModelIOHandler< 3 > {
     public:
         static const index_t STARTING_OFFSET = 1;
 
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel )
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Feflow not implemented yet" );
         }
-        virtual void save(
+        void save(
             const GeoModel< 3 >& geomodel,
-            const std::string& filename )
+            const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );

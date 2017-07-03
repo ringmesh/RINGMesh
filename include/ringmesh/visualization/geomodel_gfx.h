@@ -105,7 +105,7 @@ namespace RINGMesh {
     public:
         GeoModelGfx();
 
-        virtual void initialize();
+        void initialize() final;
 
     public:
         RegionGfxEntity< 3 > regions;

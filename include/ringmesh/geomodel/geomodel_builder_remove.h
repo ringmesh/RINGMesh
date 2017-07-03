@@ -623,7 +623,7 @@ namespace RINGMesh {
             GeoModel< 3 >& geomodel );
         virtual ~GeoModelBuilderRemoval() = default;
 
-        virtual void update_mesh_entity( GeoModelMeshEntity< 3 >& ME ) override;
+        void update_mesh_entity( GeoModelMeshEntity< 3 >& ME ) override;
 
         void set_boundary_side(
             Region< 3 >& R,
