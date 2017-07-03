@@ -352,11 +352,8 @@ namespace {
                         // corner and a border
                         int count = 0;
                         bool to_break = false;
-                        for( index_t iv0 = 0; iv0 < v0_surface_ids.size(); ++iv0 ) {
-                            index_t v0 = v0_surface_ids[iv0];
-                            for( index_t iv1 = 0; iv1 < v1_surface_ids.size();
-                                ++iv1 ) {
-                                index_t v1 = v1_surface_ids[iv1];
+                        for( index_t v0 : v0_surface_ids ) {
+                            for( index_t v1 : v1_surface_ids ) {
                                 if( has_surface_edge( S, v0, v1 ) ) {
                                     lineindices.insert(
                                         std::pair< index_t, index_t >( v0 + offset,

@@ -982,8 +982,8 @@ namespace {
             threads.reserve( 8 );
             add_checks( threads );
 
-            for( index_t i = 0; i < threads.size(); i++ ) {
-                threads[i].join();
+            for( std::thread& thread : threads ) {
+                thread.join();
             }
         }
 
