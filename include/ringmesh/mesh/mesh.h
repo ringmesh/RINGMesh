@@ -713,6 +713,10 @@ namespace RINGMesh {
          */
         virtual index_t cell_adjacent( index_t cell_id, index_t facet_id ) const = 0;
 
+        virtual std::vector< index_t > cells_around_vertex(
+            index_t vertex_id,
+            index_t cell_hint ) const = 0;
+
         virtual GEO::AttributesManager& cell_attribute_manager() const = 0;
 
         virtual GEO::AttributesManager& cell_facet_attribute_manager() const = 0;

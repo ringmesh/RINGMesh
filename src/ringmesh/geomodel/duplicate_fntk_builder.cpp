@@ -850,11 +850,16 @@ namespace RINGMesh {
             found_regions.push_back( gme_vertices_itr );
         }
         index_t v_id_in_reg1 = NO_ID;
+        /// Actually found_regions corresponds to the number of vertex of a region
+        /// colocated with v_id_in_surf.
         if( found_regions.size() == 1 ) {
+            /// To check but for me (03 july 2017) this case corresponds to the case
+            /// of voi horizon or voi boundary or voi fault which has no other side
+            /// (only a + or a - side).
             v_id_in_reg1 = gme_vertices[found_regions[0]].v_index;
         } else {
             // Configuration in which there is a fault which ends inside the geomodel.
-            // The current surface may be a voi boundary, a voi horizon or a fault.
+            // The current surface may be a voi boundary, a voi horizon or a fault. ((03 july 2017) not so sure about that).
             // No choice => use of ColocaterAnn on the current facet (more time
             // consuming).
             const vec3 facet_bary = cur_surface.mesh_element_barycenter(
@@ -862,7 +867,7 @@ namespace RINGMesh {
             std::vector< index_t > colocated_facets_reg1 =
                 reg_nn_searches_[reg1.index()]->get_neighbors( facet_bary,
                     geomodel_.epsilon() );
-            if( colocated_facets_reg1.size() == 1 ) {
+            if( colocated_facets_reg1.size() == 1 ) { /// (03 july 2017) Does this case really happen??? We are in a voi with only a vertex found...
                 // Case of a voi horizon or voi boundary
                 v_id_in_reg1 =
                     find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(

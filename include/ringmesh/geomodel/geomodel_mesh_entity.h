@@ -991,6 +991,11 @@ namespace RINGMesh {
             return mesh3d_->cells_aabb();
         }
 
+        const NNSearch& cell_facets_nn_search() const
+        {
+            return mesh3d_->cell_facets_nn_search();
+        }
+
         /*!
          * @brief Return the NNSearch for the cells of the region
          * @details The barycenter of the cells is used.
@@ -1227,11 +1232,12 @@ namespace RINGMesh {
             return vec3();
         }
 
-        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const;
-        index_t cells_around_vertex(
+        std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
-            std::vector< index_t >& result,
-            index_t cell_hint ) const;
+            index_t cell_hint ) const
+        {
+            return mesh3d_->cells_around_vertex( vertex_id, cell_hint );
+        }
 
         void compute_region_volumes_per_cell_type(
             double& tet_volume,

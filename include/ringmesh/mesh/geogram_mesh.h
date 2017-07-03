@@ -238,6 +238,9 @@ namespace RINGMesh {
         {
             return mesh_->cells.adjacent( cell_id, facet_id );
         }
+        virtual std::vector< index_t > cells_around_vertex(
+            index_t vertex_id,
+            index_t cell_hint ) const override;
         virtual GEO::AttributesManager& cell_attribute_manager() const override
         {
             return mesh_->cells.attributes();
@@ -259,6 +262,9 @@ namespace RINGMesh {
         {
             return RINGMesh::mesh_cell_volume( *mesh_, cell_id );
         }
+
+    private:
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const;
     };
 
     void register_geogram_mesh();
