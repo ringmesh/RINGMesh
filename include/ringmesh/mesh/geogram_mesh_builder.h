@@ -47,10 +47,6 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-    class GeoModel;
-}
-
-namespace RINGMesh {
 
 #define COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( Class )                                     \
     public:                                                                                     \
