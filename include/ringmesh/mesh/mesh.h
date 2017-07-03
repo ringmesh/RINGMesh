@@ -713,9 +713,9 @@ namespace RINGMesh {
          */
         virtual index_t cell_adjacent( index_t cell_id, index_t facet_id ) const = 0;
 
-        virtual std::vector< index_t > cells_around_vertex(
+        std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
-            index_t cell_hint ) const = 0;
+            index_t cell_hint ) const;
 
         virtual GEO::AttributesManager& cell_attribute_manager() const = 0;
 
@@ -842,6 +842,8 @@ namespace RINGMesh {
         }
     protected:
         VolumeMesh() = default;
+    private:
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const;
 
     protected:
         mutable std::unique_ptr< NNSearch > cell_facets_nn_search_;
