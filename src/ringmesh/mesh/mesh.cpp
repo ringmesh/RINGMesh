@@ -318,8 +318,6 @@ namespace RINGMesh {
         index_t vertex_id,
         index_t cell_hint ) const
     {
-        std::vector< index_t > result;
-
         if( cell_hint == NO_ID ) {
             cell_hint = find_first_cell_owing_vertex( vertex_id );
             if( cell_hint == NO_ID ) {
@@ -335,6 +333,9 @@ namespace RINGMesh {
         std::stack< index_t > S;
         S.push( cell_hint );
         visited.push_back( cell_hint );
+
+        std::vector< index_t > result;
+        result.reserve( 10 );
 
         do {
             index_t c = S.top();

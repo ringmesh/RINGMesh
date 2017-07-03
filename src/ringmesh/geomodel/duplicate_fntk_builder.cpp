@@ -2157,10 +2157,8 @@ namespace RINGMesh {
         ringmesh_assert( region_to_check_id < geomodel_.nb_regions() );
 
         const Region& region_to_check = geomodel_.region( region_to_check_id );
-        std::vector< index_t > cells_around;
-        cells_around.reserve( 10 );
-        region_to_check.cells_around_vertex( vertex_id_in_region, cells_around,
-            NO_ID );
+        std::vector< index_t > cells_around = region_to_check.cells_around_vertex(
+            vertex_id_in_region, NO_ID );
 //            false ) ;
         ringmesh_assert( !cells_around.empty() );
 
