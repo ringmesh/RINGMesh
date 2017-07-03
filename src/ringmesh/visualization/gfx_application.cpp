@@ -826,7 +826,8 @@ namespace RINGMesh {
         if( manager.is_region( entity_id.type() ) ) {
             toggle_region_and_boundaries_visibility( entity_id.index() );
         } else {
-            toggle_mesh_entity_and_boundaries_visibility( entity_id );
+            GeoModelViewerBase< 3 >::toggle_mesh_entity_and_boundaries_visibility(
+                entity_id );
         }
     }
 
