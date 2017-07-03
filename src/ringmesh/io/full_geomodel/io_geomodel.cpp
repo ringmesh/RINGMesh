@@ -238,7 +238,7 @@ namespace {
 
     class GeoModelHandlerGM final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual void load( const std::string& filename, GeoModel& geomodel ) final
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(
@@ -246,12 +246,7 @@ namespace {
             GeoModelBuilderGM builder( geomodel,
                 GEO::FileSystem::base_name( filename, false ) );
             builder.build_geomodel();
-            Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from ",
-                filename );
-            print_geomodel( geomodel );
-            bool is_valid = is_geomodel_valid( geomodel );
             GEO::FileSystem::set_current_working_directory( pwd );
-            return is_valid;
 
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename ) final

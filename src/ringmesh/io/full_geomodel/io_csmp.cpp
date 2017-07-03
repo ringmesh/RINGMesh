@@ -82,11 +82,10 @@ namespace {
             clear();
         }
 
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+        virtual void load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" );
-            return false;
         }
         virtual void save( const GeoModel& gm, const std::string& filename ) final
         {

@@ -140,7 +140,8 @@ namespace RINGMesh {
     public:
         virtual ~PointSetMesh() = default;
 
-        static std::unique_ptr< PointSetMesh > create_mesh( const MeshType type );
+        static std::unique_ptr< PointSetMesh > create_mesh(
+            const MeshType type = "" );
     protected:
         /*!
          * @brief Mesh0D constructor.
@@ -161,7 +162,8 @@ namespace RINGMesh {
     public:
         virtual ~LineMesh() = default;
 
-        static std::unique_ptr< LineMesh > create_mesh( const MeshType type );
+        static std::unique_ptr< LineMesh > create_mesh(
+            const MeshType type = "" );
 
         /*
          * @brief Gets the index of an edge vertex.
@@ -241,7 +243,8 @@ namespace RINGMesh {
     public:
         virtual ~SurfaceMesh() = default;
 
-        static std::unique_ptr< SurfaceMesh > create_mesh( const MeshType type );
+        static std::unique_ptr< SurfaceMesh > create_mesh(
+            const MeshType type = "" );
 
         /*!
          * @brief Gets the vertex index by polygon index and local vertex index.
@@ -588,7 +591,8 @@ namespace RINGMesh {
     public:
         virtual ~VolumeMesh() = default;
 
-        static std::unique_ptr< VolumeMesh > create_mesh( const MeshType type );
+        static std::unique_ptr< VolumeMesh > create_mesh(
+            const MeshType type = "" );
 
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
@@ -854,7 +858,7 @@ namespace RINGMesh {
      * class composed of meshes from all the dimensions
      */
     class RINGMESH_API MeshSet {
-        ringmesh_disable_copy( MeshSet );
+    ringmesh_disable_copy( MeshSet );
     public:
         MeshSet();
 

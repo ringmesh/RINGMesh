@@ -30,86 +30,43 @@
 #     2 Rue du Doyen Marcel Roubault - TSA 70605
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
-
+#------------------------------------------------------------------------------------------------
 # Root CMakeList of RINGMesh project
-cmake_minimum_required(VERSION 2.8)
+#------------------------------------------------------------------------------------------------
 
+cmake_minimum_required(VERSION 2.8)
+set(USER_CONFIG "${CMAKE_SOURCE_DIR}/cmake/UserConfig.cmake" CACHE PATH
+  "Path to optional user configuration file.")
+    
 #------------------------------------------------------------------------------------------------
 # Options of the RINGMesh project 
-# They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
+# They can be set
+# 1 - using CMake GUI, 
+# 2 - in command line: cmake -D<var>:<type>=<value> MyProjectFolder
+# 3 - by creating a UserConfig.cmake file in the cmake directory (see DefaultConfig.cmake)
 
-# Configuration modes - Debug and Release by default + RelWithDebInfo for Windows.
-# RelWithDebInfo is mandatory to debug some plugins in Windows in debug mode (e.g., a Gocad plugin) to
-# avoid issues in particular in the STL (e.g., bad transfer of std::string from Gocad to RINGMesh).
-set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
+# Load user settings before the defaults - this way the defaults will not
+# overwrite the user set options. If the user has not set all options, we still
+# have the defaults.
+message(STATUS "(optional) USER_CONFIG = ${USER_CONFIG}")
+include("${USER_CONFIG}" OPTIONAL)
+include("${CMAKE_SOURCE_DIR}/cmake/DefaultConfig.cmake")
 
-# If a path is specified RINGMesh will be compiled to work with - empty by default
-set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
-if(MG_TETRA)
-    set(USE_MG_TETRA ON)
-    message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
-endif(MG_TETRA)
-  
-
-# By default RINGMesh will be compiled with OpenMP flags
-option(USE_OPENMP "Use Open MP" ON)
-
-# By default RINGMesh is compiled with Tetgen  
-# Check Tetgen licences to ensure you have the right to use it freely
-option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
-
-# Optional components of RINGMesh - creation of specific targets
-option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
+#------------------------------------------------------------------------------------------------
+#ensure consistent choice in configuration options
 include(CMakeDependentOption)
 # Option to build ringmesh-view. Disable when RINGMESH_WITH_GRAPHICS
 # is OFF. The fist time RINGMESH_WITH_GRAPHICS is ON, this
 # option is ON.
 CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
     "RINGMESH_WITH_GRAPHICS" OFF)
-
-option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
-option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
-option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
-option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
-
 # Option to test ringmesh-view. Disable when BUILD_RINGMESH_VIEW
 # is OFF. The fist time BUILD_RINGMESH_VIEW is ON, this
 # option is ON.
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
     "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
-
-# Optional custom steps 
-option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
-
-# Optional custom configuration of data directories
-if(RINGMESH_WITH_TESTS)
-    set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
-    set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
-    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
-    # PROJECT_BINARY_DIR not defined at this point
-    set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
-    if(UNIX)    
-      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
-    endif()    
-endif()
-
-# Optional custom configuration of tutorials directories
-if(RINGMESH_WITH_TUTORIALS)
-    set(TUTORIALS_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/tutorials)
-    set(TUTORIALS_SOURCE_DIRECTORY ${TUTORIALS_DIRECTORY}/src)
-    set(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data")
-    # PROJECT_BINARY_DIR not defined at this point
-    set(TUTORIALS_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tutorials/output" CACHE PATH "Output data location")
-    if(UNIX)    
-      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
-    endif() 
-endif()
-
-if(RINGMESH_WITH_GEOLOGYJS)
-    set(GEOLOGY_JS_DIRECTORY "${CMAKE_SOURCE_DIR}/../geology.js/cpp" CACHE PATH "geology.js cpp directory location")
-    message(STATUS ${GEOLOGY_JS_DIRECTORY})
-endif(RINGMESH_WITH_GEOLOGYJS)
-
+	
+#------------------------------------------------------------------------------------------------
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
@@ -118,8 +75,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #------------------------------------------------------------------------------------------------
 # Additional cmake modules
 include(ExternalProject)
-# build export macros
-include (GenerateExportHeader) 
+
 
 # Enable testing with CTest
 enable_testing()
@@ -232,81 +188,8 @@ else(WIN32)
 endif(WIN32)
 
 #------------------------------------------------------------------------------------------------
-# Configure a header file to pass on some of the CMake settings
-# to the source code
-set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
-set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/basic/ringmesh_config.h.in)
-configure_file(${input_configure_file} ${generated_configure_file})
-
-# We want to be able to include this file
-include_directories(${PROJECT_BINARY_DIR})
-
-#------------------------------------------------------------------------------------------------
-# GEOGRAM 
-# Set the path to Geogram code
-set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/third_party/geogram)
-
-# Geogram platform dependent settings
-if(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
-    set(geoplatform Win-vs-dynamic-generic)  
-    # Extra lib 
-    set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
-    # TODO check that it is really necessary [JP]
-    add_compile_options(-DGEO_DYNAMIC_LIBS) 
-else(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
-    set(geoplatform Linux64-gcc-dynamic)
-endif(WIN32)
-
-# Define Geogram as an external project that we know how to
-# configure and compile
-ExternalProject_Add(geogram_ext
-  PREFIX ${GEOGRAM_PATH_BIN}
-  
-  #--Download step--------------
-  DOWNLOAD_COMMAND ""
-  
-  #--Update/Patch step----------
-  UPDATE_COMMAND ""
-
-  #--Configure step-------------
-  SOURCE_DIR ${GEOGRAM_PATH}
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
-        -G ${CMAKE_GENERATOR} 
-        -DVORPALINE_PLATFORM:STRING=${geoplatform}
-        -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
-        -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
-        -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-  
-  #--Build step-----------------
-  BINARY_DIR ${GEOGRAM_PATH_BIN}
-  #-- Command to build geogram
-  BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN} ${COMPILATION_OPTION}
-
-  #--Install step---------------
-  INSTALL_COMMAND "" 
-)
-
-ExternalProject_Add_Step(geogram_ext forcebuild
-    DEPENDERS build
-    ALWAYS 1
-  )
-
-# Add geogram include directories to the current ones
-include_directories(SYSTEM ${GEOGRAM_PATH}/src/lib)
-
-# Add geogram project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
-if(RINGMESH_WITH_GRAPHICS)
-    include(${GEOGRAM_PATH}/cmake/opengl.cmake)
-    set(EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx ${OPENGL_LIBRARIES})
-endif(RINGMESH_WITH_GRAPHICS)
-    
-# Add geogram bin directories to the current ones 
-# It would be preferable to set the imported library location [JP]
-link_directories(${GEOGRAM_PATH_BIN}/lib)
+# Compil Third Parties
+include("${CMAKE_SOURCE_DIR}/cmake/CompilThirdParties.cmake")
 
 #------------------------------------------------------------------------------------------------    
 # Get MG-Tetra if a path is given
@@ -365,24 +248,6 @@ FOREACH(directory ${directories})
     ENDIF()
 ENDFOREACH()
 
-file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/third_party/zlib/*.c")
-file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/third_party/zlib/*.h")
-# Add configure file to ringmesh includes
-set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
-
-# Group files of a project in directories
-# All the files should be added to the sources of the project
-# and the global property USE_FOLDERS must be ON
-source_group("Zlib" FILES ${zlib_src} ${zlib_include})
-
-set(tinyxml2_src "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.cpp")
-set(tinyxml2_include "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.h")
-
-# Group files of a project in directories
-# All the files should be added to the sources of the project
-# and the global property USE_FOLDERS must be ON
-source_group("tinyxml2" FILES ${tinyxml2_src} ${tinyxml2_include})
-
 #------------------------------------------------------------------------------------------------
 # Build configuration
 # Organize outputs in a Linux way
@@ -391,29 +256,38 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 # Add include directories of RINGMesh
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
-
-#add generated export file to include directories
-set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
-set(ringmesh_include ${ringmesh_include} ${generated_export_file})
 
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED
     ${ringmesh_include} 
-    ${ringmesh_src} 
-    ${zlib_src}
-    ${zlib_include}
-    ${tinyxml2_src}
-    ${tinyxml2_include})
-    
-# Function for generation of export macros for libraries (dll)
-generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
-
-# RINGMesh depends on Geogram
-add_dependencies(RINGMesh geogram_ext)
+    ${ringmesh_src})
+	
+# RINGMesh depends on Geogram Tinyxml2 and zlib
+add_dependencies(RINGMesh geogram_ext tinyxml2_ext zlib_ext)
 
 # Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
+
+#------------------------------------------------------------------------------------------------
+# file automatically generated by cmake
+
+# generate configure file to pass on some of the CMake settings
+# to the source code
+# Add configure file to ringmesh includes
+
+set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
+set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/basic/ringmesh_config.h.in)
+configure_file(${input_configure_file} ${generated_configure_file})
+set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
+
+#generate macros for API export and add itbto include directories
+include (GenerateExportHeader) 
+set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
+set(ringmesh_include ${ringmesh_include} ${generated_export_file})
+generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
+
+# We want to be able to include these file
+include_directories(${PROJECT_BINARY_DIR})
 
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
