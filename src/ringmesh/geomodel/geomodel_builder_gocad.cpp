@@ -203,10 +203,7 @@ namespace {
         std::vector< index_t >& cur_surf_polygons )
     {
         std::vector< index_t > gocad_vertices2cur_surf_points;
-        for( index_t co = 0;
-            co < load_storage.cur_surf_polygon_corners_gocad_id_.size(); ++co ) {
-            const index_t corner_gocad_id =
-                load_storage.cur_surf_polygon_corners_gocad_id_[co];
+        for( index_t corner_gocad_id : load_storage.cur_surf_polygon_corners_gocad_id_ ) {
             get_surface_point_and_polygon_from_gocad_index( corner_gocad_id,
                 geomodel, load_storage, gocad_vertices2cur_surf_points,
                 cur_surf_points, cur_surf_polygons );
