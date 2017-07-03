@@ -218,8 +218,8 @@ namespace RINGMesh {
             std::vector< std::string > names;
             GeoModelIOHandlerFactory< DIMENSION >::list_creators( names );
             Logger::err( "I/O", "Currently supported file formats are: " );
-            for( index_t i = 0; i < names.size(); i++ ) {
-                Logger::err( "I/O", " ", names[i] );
+            for( const std::string& name : names ) {
+                Logger::err( "I/O", " ", name );
             }
 
             throw RINGMeshException( "I/O", "Unsupported file format: " + format );
