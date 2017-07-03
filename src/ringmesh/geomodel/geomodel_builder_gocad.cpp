@@ -634,7 +634,7 @@ namespace {
 
     class LoadZSign final : public GocadLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) final
         {
@@ -650,7 +650,7 @@ namespace {
 
     class LoadTSurf final : public MLLineParser {
     private:
-        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             ringmesh_unused( load_storage );
             std::string interface_name = read_name_with_spaces( 1, line );
@@ -664,7 +664,7 @@ namespace {
 
     class LoadMLSurface final : public MLLineParser {
     private:
-        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             if( !load_storage.is_header_read_ ) {
                 /// Create Surface from the name of its parent Interface
@@ -700,7 +700,7 @@ namespace {
 
     class LoadLayer final : public MLLineParser {
     private:
-        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             ringmesh_unused( load_storage );
             /// Build the volumetric layers from their name and
@@ -732,7 +732,7 @@ namespace {
 
     class MLEndSection final : public MLLineParser {
     private:
-        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             ringmesh_unused( line );
             if( !load_storage.is_header_read_ ) {
@@ -747,7 +747,7 @@ namespace {
 
     class LoadCorner final : public MLLineParser {
     private:
-        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             index_t v_id = line.field_as_uint( 1 ) - GOCAD_OFFSET;
             if( !find_corner( geomodel(), load_storage.vertices_[v_id] ).is_defined() ) {
@@ -762,7 +762,7 @@ namespace {
 
     class LoadMLRegion final : public MLLineParser {
     private:
-        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             ringmesh_unused( load_storage );
             /// Read Region information and create them from their name,
@@ -819,7 +819,7 @@ namespace {
 
     class LoadRegion final: public TSolidLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -853,7 +853,7 @@ namespace {
 
     class LoadVertex final : public GocadLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) final
         {
@@ -864,7 +864,7 @@ namespace {
 
     class LoadMLAtom final : public MLLineParser {
     private:
-        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             index_t vertex_id = line.field_as_uint( 2 ) - GOCAD_OFFSET;
             const vec3& vertex = load_storage.vertices_[vertex_id];
@@ -874,7 +874,7 @@ namespace {
 
     class LoadTSolidVertex final: public TSolidLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -889,7 +889,7 @@ namespace {
 
     class LoadTSAtomic final : public TSolidLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -937,7 +937,7 @@ namespace {
 
     class LoadTetra final : public TSolidLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -975,7 +975,7 @@ namespace {
 
     class LoadName final : public GocadLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) final
         {
@@ -989,7 +989,7 @@ namespace {
 
     class LoadLastRegion final : public TSolidLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1005,7 +1005,7 @@ namespace {
 
     class LoadInterface final : public TSolidLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1019,7 +1019,7 @@ namespace {
 
     class LoadSurface final : public TSolidLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1039,7 +1039,7 @@ namespace {
 
     class LoadLastSurface final : public TSolidLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1053,7 +1053,7 @@ namespace {
 
     class LoadTriangle final : public GocadLineParser {
     private:
-        virtual void execute(
+        void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) final
         {

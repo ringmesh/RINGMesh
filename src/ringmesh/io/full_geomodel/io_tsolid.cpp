@@ -36,7 +36,7 @@
 namespace {
     class TSolidIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
             if( !input ) {
@@ -46,7 +46,7 @@ namespace {
             GeoModelBuilderTSolid builder( geomodel, filename );
             builder.build_geomodel();
         }
-        virtual void save(
+        void save(
             const GeoModel< 3 >& geomodel,
             const std::string& filename ) final
         {

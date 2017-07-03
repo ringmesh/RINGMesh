@@ -68,14 +68,14 @@ namespace RINGMesh {
     private:
         static RINGMeshApplication* instance();
 
-        virtual std::string supported_read_file_extensions() override;
+        std::string supported_read_file_extensions() override;
         std::string supported_geogram_read_file_extensions();
-        virtual void init_graphics() override;
-        virtual bool load( const std::string& filename ) override;
-        virtual void draw_scene() override;
-        virtual void draw_object_properties() override;
-        virtual void draw_viewer_properties() override;
-        virtual void draw_application_menus() override;
+        void init_graphics() override;
+        bool load( const std::string& filename ) override;
+        void draw_scene() override;
+        void draw_object_properties() override;
+        void draw_viewer_properties() override;
+        void draw_application_menus() override;
 
         bool load_geogram( const std::string& filename );
         bool can_load_geogram( const std::string& filename );
@@ -218,7 +218,7 @@ namespace RINGMesh {
 
             bool show_attributes_ { false };
             GLuint current_colormap_texture_ { 0 };
-            std::string attribute_ = std::string{ "vertices.point_fp32[0]" };
+            std::string attribute_ = std::string { "vertices.point_fp32[0]" };
             GEO::MeshElementsFlags attribute_subelements_ { GEO::MESH_VERTICES };
             std::string attribute_name_;
             float attribute_min_ { 0 };
@@ -247,7 +247,7 @@ namespace RINGMesh {
     public:
         GeoModelViewer( RINGMeshApplication& app, const std::string& filename );
         virtual ~GeoModelViewer() = default;
-        virtual ViewerType type() override
+        ViewerType type() override
         {
             return ViewerType::GEOMODEL2D;
         }
@@ -259,21 +259,21 @@ namespace RINGMesh {
     public:
         GeoModelViewer( RINGMeshApplication& app, const std::string& filename );
         virtual ~GeoModelViewer() = default;
-        virtual ViewerType type() override
+        ViewerType type() override
         {
             return ViewerType::GEOMODEL3D;
         }
 
-        virtual void draw_scene() override;
-        virtual void draw_object_properties() override;
-        virtual void update_all_entity_visibility( bool value ) override;
+        void draw_scene() override;
+        void draw_object_properties() override;
+        void update_all_entity_visibility( bool value ) override;
 
         void toggle_colored_cells();
         void toggle_colored_regions();
         void toggle_colored_layers();
         void toggle_region_and_boundaries_visibility( index_t region_id );
-        virtual void toggle_mesh_entity_and_boundaries_visibility(
-            const gmme_id& entity_id ) override;
+        void toggle_mesh_entity_and_boundaries_visibility( const gmme_id& entity_id )
+            override;
 
     public:
         bool show_hex_ { true };

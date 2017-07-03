@@ -507,9 +507,9 @@ namespace RINGMesh {
             GeoModel< 3 >& gm,
             std::unique_ptr< PointSetMesh< 3 > >& mesh );
 
-        virtual void clear() override;
-        virtual index_t nb_total_vertices() const override;
-        virtual index_t fill_vertices() override;
+        void clear() override;
+        index_t nb_total_vertices() const override;
+        index_t fill_vertices() override;
     };
 
     template< index_t DIMENSION >

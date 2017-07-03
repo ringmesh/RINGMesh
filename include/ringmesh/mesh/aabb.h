@@ -265,7 +265,7 @@ namespace RINGMesh {
          * @brief Gets an element point from its box
          * @details In this case, the point is the barycenter of the box
          */
-        virtual vecn< DIMENSION > get_point_hint_from_box(
+        vecn< DIMENSION > get_point_hint_from_box(
             const Box< DIMENSION >& box,
             index_t element_id ) const override;
     };
@@ -293,7 +293,7 @@ namespace RINGMesh {
          * @brief Gets an element point from its box
          * @details In this case, the point is the first vertex of the element
          */
-        virtual vecn< DIMENSION > get_point_hint_from_box(
+        vecn< DIMENSION > get_point_hint_from_box(
             const Box< DIMENSION >& box,
             index_t element_id ) const override;
         /*!
@@ -345,7 +345,7 @@ namespace RINGMesh {
          * @brief Gets an element point from its box
          * @details In this case, the point is the first vertex of the element
          */
-        virtual vecn< DIMENSION > get_point_hint_from_box(
+        vecn< DIMENSION > get_point_hint_from_box(
             const Box< DIMENSION >& box,
             index_t element_id ) const override;
         /*!
@@ -393,7 +393,7 @@ namespace RINGMesh {
          * @brief Gets an element point from its box
          * @details In this case, the point is the first vertex of the element
          */
-        virtual vecn< DIMENSION > get_point_hint_from_box(
+        vecn< DIMENSION > get_point_hint_from_box(
             const Box< DIMENSION >& box,
             index_t element_id ) const override;
         index_t containing_cell_recursive(
