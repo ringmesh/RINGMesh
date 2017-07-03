@@ -179,17 +179,21 @@ namespace RINGMesh {
         void link_surf_vertex_id_to_reg_vertex_id(
             index_t link_id_surf,
             index_t link_id_reg );
-        void fill_reg_nn_searches();
+        std::set< std::vector< index_t > > get_region_cell_facet_colocated_to_surface_facet_from_hints(
+            const Region& reg,
+            const Surface& cur_surface,
+            index_t surf_facet_itr,
+            const std::vector< index_t >& found_gmev_reg ) const;
         index_t find_region_vertex_id_from_surface_facet_among_colocated_points_in_one_region(
             const std::vector< GMEVertex >& gme_vertices,
-            std::vector< index_t > found_gmev_reg,
+            const std::vector< index_t >& found_gmev_reg,
             const Surface& cur_surface,
             index_t surf_facet_itr,
             const Region& reg,
             index_t surf_v_id_in_gmm ) const;
         index_t find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
             const Region& reg,
-            index_t reg_facet_id,
+            const std::vector<index_t>& reg_facet_cell,
             index_t surf_v_id_in_gmm ) const;
         void set_no_displacement_on_gme_sharing_vertex(
             index_t vertex_id_in_gmm,
@@ -252,7 +256,6 @@ namespace RINGMesh {
     private:
         bool all_meshed_;
         std::vector< GMEVertexLink* > gme_vertices_links_;
-        std::vector< const NNSearch* > reg_nn_searches_;
 
         /// TODO copy paste from removal of remove entity
         std::vector< EntityType > all_entity_types_;

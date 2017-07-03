@@ -814,7 +814,7 @@ namespace RINGMesh {
         std::vector< index_t > polygons_around_vertex(
             index_t surf_vertex_id,
             bool border_only,
-            index_t first_polygon = NO_ID ) const
+            index_t first_polygon = NO_ID ) const /// TODO [BC] keep the default NO_ID. Not put in Region::cells_around_vertex...
         {
             return mesh2d_->polygons_around_vertex( surf_vertex_id, border_only,
                 first_polygon );

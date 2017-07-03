@@ -169,14 +169,9 @@ namespace RINGMesh {
         "translation_attr_x";
 
     DuplicateInterfaceBuilder::DuplicateInterfaceBuilder( GeoModel& geomodel )
-        :
-            GeoModelBuilder( geomodel ),
-            all_meshed_( true ),
-            gme_vertices_links_(),
-            reg_nn_searches_()
+        : GeoModelBuilder( geomodel ), all_meshed_( true ), gme_vertices_links_()
     {
         fill_entity_type_to_index_map();
-        reg_nn_searches_.reserve( geomodel.nb_regions() );
     }
 
     DuplicateInterfaceBuilder::~DuplicateInterfaceBuilder()
@@ -184,9 +179,6 @@ namespace RINGMesh {
         for( GMEVertexLink*& gme_vertices_links_itr : gme_vertices_links_ ) {
             ringmesh_assert( gme_vertices_links_itr );
             delete gme_vertices_links_itr;
-        }
-        for( const NNSearch*& reg_nn_searches_itr : reg_nn_searches_ ) {
-            delete reg_nn_searches_itr;
         }
 
         /*for( index_t surface_itr = 0; surface_itr < geomodel_.nb_surfaces();
@@ -710,24 +702,8 @@ namespace RINGMesh {
     {
         DEBUG( "initialize_gme_vertices_links" );
         initialize_gme_vertices_links( to_erase_by_type );
-        fill_reg_nn_searches();
         DEBUG( "do_define_motion_relation" );
         do_define_motion_relation( to_erase_by_type );
-    }
-
-    void DuplicateInterfaceBuilder::fill_reg_nn_searches()
-    {
-        for( index_t reg_itr = 0; reg_itr < geomodel_.nb_regions(); ++reg_itr ) {
-            const Region& cur_region = geomodel_.region( reg_itr );
-            ringmesh_assert( cur_region.is_meshed() );
-
-            /// tmp to replace by colocater ann reg cell_facets ???
-            const_cast< GEO::MeshCells& >( cur_region.gfx_mesh().cells ).compute_borders();
-            /// tmp
-
-            reg_nn_searches_.push_back(
-                new NNSearch( cur_region.gfx_mesh(), NNSearch::FACETS ) ); /// @todo use CELL_FACETS instead ? in theory the region have facets...
-        }
     }
 
     /// @todo split this function into several smaller functions
@@ -795,9 +771,49 @@ namespace RINGMesh {
         link_surf_vertex_id_to_reg_vertex_id( link_id_surf, link_id_reg2 );
     }
 
+    std::set< std::vector< index_t > > DuplicateInterfaceBuilder::get_region_cell_facet_colocated_to_surface_facet_from_hints(
+        const Region& reg,
+        const Surface& cur_surface,
+        index_t surf_facet_itr,
+        const std::vector< index_t >& found_gmev_reg ) const
+    {
+        // set is necessary to avoid doublons on the surface border of the dead end fault.
+        std::set< std::vector< index_t > > found_cells_and_cell_facets;
+        /// TODO surface_facet_barycenter parameter of this method instead of cur_surface
+        /// and surf_facet_itr???
+        vec3 surface_facet_barycenter = cur_surface.mesh_element_barycenter(
+            surf_facet_itr );
+        for( index_t cur_found_gmev_reg : found_gmev_reg ) {
+            std::vector< index_t > cells_around = reg.cells_around_vertex(
+                cur_found_gmev_reg, NO_ID );
+            /// TODO if border_only option in reg.cells_around_vertex, put an assert,
+            /// else write a if and continue for loop if not in border...
+            for( index_t cur_cell : cells_around ) {
+                for( index_t cell_facet_i = 0;
+                    cell_facet_i < reg.nb_cell_facets( cur_cell ); ++cell_facet_i ) {
+                    if( !reg.is_cell_facet_on_border( cur_cell, cell_facet_i ) ) {
+                        continue;
+                    }
+                    vec3 cur_cell_facet_barycenter = reg.cell_facet_barycenter(
+                        cur_cell, cell_facet_i );
+                    vec3 diff = cur_cell_facet_barycenter - surface_facet_barycenter;
+                    if( std::abs( diff.x ) < geomodel_.epsilon()
+                        && std::abs( diff.y ) < geomodel_.epsilon()
+                        && std::abs( diff.z ) < geomodel_.epsilon() ) {
+                        std::vector< index_t > new_couple( 2 );
+                        new_couple[0] = cur_cell;
+                        new_couple[1] = cell_facet_i;
+                        found_cells_and_cell_facets.insert( new_couple );
+                    }
+                }
+            }
+        }
+        return found_cells_and_cell_facets;
+    }
+
     index_t DuplicateInterfaceBuilder::find_region_vertex_id_from_surface_facet_among_colocated_points_in_one_region(
         const std::vector< GMEVertex >& gme_vertices,
-        std::vector< index_t > found_gmev_reg,
+        const std::vector< index_t >& found_gmev_reg,
         const Surface& cur_surface,
         index_t surf_facet_itr,
         const Region& reg,
@@ -808,15 +824,19 @@ namespace RINGMesh {
             // the computational time.
             return gme_vertices[found_gmev_reg[0]].v_index;
         } else {
+            // Happens when the current horizon terminates on a fault which ends
+            // within Region reg...
             // No choice. Test of the facet colocated. More time consuming.
-            const vec3 facet_bary = cur_surface.mesh_element_barycenter(
-                surf_facet_itr );
-            std::vector< index_t > colocated_facets_reg =
-                reg_nn_searches_[reg.index()]->get_neighbors( facet_bary,
-                    geomodel_.epsilon() );
+            /*const vec3 facet_bary = cur_surface.mesh_element_barycenter(
+             surf_facet_itr );*/
+            std::set< std::vector< index_t > > colocated_facets_reg =
+                get_region_cell_facet_colocated_to_surface_facet_from_hints( reg,
+                    cur_surface, surf_facet_itr, found_gmev_reg );
+            /*reg_nn_searches_[reg.index()]->get_neighbors( facet_bary,
+             geomodel_.epsilon() );*/
             ringmesh_assert( colocated_facets_reg.size() == 1 );
             return find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
-                reg, colocated_facets_reg[0], surf_v_id_in_gmm );
+                reg, *colocated_facets_reg.begin(), surf_v_id_in_gmm );
         }
     }
 
@@ -862,16 +882,19 @@ namespace RINGMesh {
             // The current surface may be a voi boundary, a voi horizon or a fault. ((03 july 2017) not so sure about that).
             // No choice => use of ColocaterAnn on the current facet (more time
             // consuming).
-            const vec3 facet_bary = cur_surface.mesh_element_barycenter(
-                surf_facet_itr );
-            std::vector< index_t > colocated_facets_reg1 =
-                reg_nn_searches_[reg1.index()]->get_neighbors( facet_bary,
-                    geomodel_.epsilon() );
+            /*const vec3 facet_bary = cur_surface.mesh_element_barycenter(
+                surf_facet_itr );*/
+            /*std::vector< index_t > colocated_facets_reg1 =
+             reg_nn_searches_[reg1.index()]->get_neighbors( facet_bary,
+             geomodel_.epsilon() );*/
+            std::set< std::vector< index_t > > colocated_facets_reg1 =
+                get_region_cell_facet_colocated_to_surface_facet_from_hints( reg1,
+                    cur_surface, surf_facet_itr, found_regions );
             if( colocated_facets_reg1.size() == 1 ) { /// (03 july 2017) Does this case really happen??? We are in a voi with only a vertex found...
                 // Case of a voi horizon or voi boundary
                 v_id_in_reg1 =
                     find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
-                        reg1, colocated_facets_reg1[0], surf_v_id_in_gmm );
+                        reg1, *colocated_facets_reg1.begin(), surf_v_id_in_gmm );
             } else {
                 // Case of a fault ending inside the geomodel
                 ringmesh_assert( colocated_facets_reg1.size() == 2 );
@@ -883,7 +906,7 @@ namespace RINGMesh {
                 // Try to find which region facet is really on the surface.
                 v_id_in_reg1 =
                     find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
-                        reg1, colocated_facets_reg1[0], surf_v_id_in_gmm );
+                        reg1, *colocated_facets_reg1.begin(), surf_v_id_in_gmm );
                 ringmesh_assert( v_id_in_reg1 != NO_ID );
 
                 const vec3 local_translation_normal = get_local_translation_normal(
@@ -896,7 +919,7 @@ namespace RINGMesh {
                     v_id_in_reg1 = NO_ID;
                     v_id_in_reg1 =
                         find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
-                            reg1, colocated_facets_reg1[1], surf_v_id_in_gmm );
+                            reg1, *(++(colocated_facets_reg1.begin())), surf_v_id_in_gmm );
                     ringmesh_assert( v_id_in_reg1 != NO_ID );
                 }
             }
@@ -910,15 +933,16 @@ namespace RINGMesh {
 
     index_t DuplicateInterfaceBuilder::find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
         const Region& reg,
-        index_t reg_facet_id,
+        const std::vector< index_t >& reg_facet_cell,
         index_t surf_v_id_in_gmm ) const
     {
         const GeoModelMeshVertices& gmmv = geomodel_.mesh.vertices;
         for( index_t v_in_reg_itr = 0;
-            v_in_reg_itr < reg.gfx_mesh().facets.nb_vertices( reg_facet_id );
+            v_in_reg_itr
+                < reg.nb_cell_facet_vertices( reg_facet_cell[0], reg_facet_cell[1] );
             ++v_in_reg_itr ) {
-            index_t reg_v_id_in_gmme = reg.gfx_mesh().facets.vertex( reg_facet_id,
-                v_in_reg_itr );
+            index_t reg_v_id_in_gmme = reg.cell_facet_vertex_index(
+                reg_facet_cell[0], reg_facet_cell[1], v_in_reg_itr );
             if( gmmv.geomodel_vertex_id( reg.gmme(), reg_v_id_in_gmme )
                 == surf_v_id_in_gmm ) {
                 return reg_v_id_in_gmme;
