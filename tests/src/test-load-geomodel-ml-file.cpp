@@ -55,13 +55,6 @@ int main()
         //TODO It appears that cloudspin is not valid
         std::vector< std::string > input_model_file_name_list = { /*"CloudSpin.ml",*/
                                                                   "modelA6.ml" };
-
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path );
-        log_file += "log.txt";
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
-
         for( const std::string& input_model_name : input_model_file_name_list ) {
             std::string input_model_file_name = ringmesh_test_data_path
                 + input_model_name;

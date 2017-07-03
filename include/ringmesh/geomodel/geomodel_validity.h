@@ -57,17 +57,18 @@ namespace RINGMesh {
     enum struct ValidityCheckMode {
         EMPTY = 0,
         FINITE_EXTENSION = 1,
-        GEOMODEL_CONNECTIVITY = 2,
-        GEOLOGICAL_ENTITIES = 4,
-        SURFACE_LINE_MESH_CONFORMITY = 8,
-        REGION_SURFACE_MESH_CONFORMITY = 16,
-        MESH_ENTITIES = 32,
-        NON_MANIFOLD_EDGES = 64,
-        POLYGON_INTERSECTIONS = 128,
-        TOPOLOGY = FINITE_EXTENSION | GEOMODEL_CONNECTIVITY | GEOLOGICAL_ENTITIES,
+        GEOMODEL_CONNECTIVITY = 1 << 1,
+        GEOLOGICAL_ENTITIES = 1 << 2,
+        SURFACE_LINE_MESH_CONFORMITY = 1 << 3,
+        REGION_SURFACE_MESH_CONFORMITY = 1 << 4,
+        MESH_ENTITIES = 1 << 5,
+        NON_MANIFOLD_EDGES = 1 << 6,
+        POLYGON_INTERSECTIONS = 1 << 7,
+        GEOLOGY = GEOLOGICAL_ENTITIES,
+        TOPOLOGY = FINITE_EXTENSION | GEOMODEL_CONNECTIVITY,
         GEOMETRY = SURFACE_LINE_MESH_CONFORMITY | REGION_SURFACE_MESH_CONFORMITY
             | MESH_ENTITIES | NON_MANIFOLD_EDGES | POLYGON_INTERSECTIONS,
-        ALL = TOPOLOGY | GEOMETRY
+        ALL = TOPOLOGY | GEOMETRY | GEOLOGY
     };
     ENABLE_BITMASK_OPERATORS( ValidityCheckMode );
 
@@ -75,7 +76,7 @@ namespace RINGMesh {
      * @brief Set the global default directory to store invalid entities of 
      *  geomodels to be the current working directory
      */
-    static std::string validity_errors_directory =
+static    std::string validity_errors_directory =
         GEO::FileSystem::get_current_working_directory();
 
     /*!
