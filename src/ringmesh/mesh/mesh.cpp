@@ -313,6 +313,7 @@ namespace RINGMesh {
         return std::unique_ptr< VolumeMesh >( mesh );
     }
 
+    /// TODO border_only parameter [BC] and add a test
     std::vector< index_t > VolumeMesh::cells_around_vertex(
         index_t vertex_id,
         index_t cell_hint ) const
