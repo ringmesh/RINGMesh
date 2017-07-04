@@ -38,7 +38,7 @@ Improvements:
  * Add naming distinction between a facet (a boundary polygon of a cell) and a polygon (a surface mesh element)
  * Mesh Entities have no longer a GEOL_FEATURE.
  * Refactoring of the GeoModel graphics
- * Create RINGMesh enums for classifying cells (CellType) and ploygone (PolygonType).
+ * Create enums for classifying cells (CellType) and ploygons (PolygonType).
  
 Deprecated:
  * Remove support of .ogm
