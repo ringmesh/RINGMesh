@@ -165,7 +165,7 @@ namespace {
                 const Surface& surface = geomodel.surface( s );
                 vec3 nearest;
                 double distance;
-                index_t triangle = surface.polygons_aabb().closest_triangle(
+                index_t triangle = surface.polygon_aabb().closest_triangle(
                     start.intersection_, nearest, distance );
                 if( distance < best_distance ) {
                     best_distance = distance;
@@ -343,7 +343,7 @@ namespace RINGMesh {
 
     const NNSearch& WellPart::vertices_nn_search() const
     {
-        return mesh_->vertices_nn_search();
+        return mesh_->vertex_nn_search();
     }
 
     double WellPart::length() const
@@ -588,7 +588,7 @@ namespace RINGMesh {
                 const Surface& surface = geomodel()->surface( s );
                 EdgeConformerAction action( surface, from_vertex, to_vertex,
                     intersections );
-                surface.polygons_aabb().compute_bbox_element_bbox_intersections( box,
+                surface.polygon_aabb().compute_bbox_element_bbox_intersections( box,
                     action );
             }
 
