@@ -280,8 +280,7 @@ namespace {
                 out << "ESIZES";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " "
-                        << GEO::String::to_string( vertex_attr_dims[attr_dbl_itr] );
+                    out << " " << std::to_string( vertex_attr_dims[attr_dbl_itr] );
                 }
                 out << std::endl;
                 out << "UNITS";

@@ -33,67 +33,27 @@
  *     FRANCE
  */
 
-#pragma once
-
-#include <ringmesh/basic/common.h>
-
-#include <memory>
-
-#include <geogram/basic/line_stream.h>
-
-#include <zlib/unzip.h>
-
 #include <ringmesh/geomodel/geomodel_builder_file.h>
 
 /*!
- * @file ringmesh/geomodel_builder_ringmesh.h
- * @brief Classes to build GeoModel from various inputs
- * @author 
+ * @file ringmesh/geomodel/geomodel_builder_file.cpp
+ * @brief Implementation of the classes to build GeoModel from various inputs
+ * @author Jeanne Pellerin
  */
-
-namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelBuilderGMImpl;
-}
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class GeoModelBuilderGM final : public GeoModelBuilderFile< DIMENSION > {
-    public:
-        static const index_t NB_VERSION = 3;
-        GeoModelBuilderGM( GeoModel< DIMENSION >& geomodel, std::string filename );
-        virtual ~GeoModelBuilderGM();
+    GeoModelBuilderFile< DIMENSION >::GeoModelBuilderFile(
+        GeoModel< DIMENSION >& geomodel,
+        std::string filename )
+        :
+            GeoModelBuilder< DIMENSION >( geomodel ),
+            filename_( std::move( filename ) )
+    {
+    }
 
-    private:
-        void load_geological_entities( const std::string& geological_entity_file );
+    template class RINGMESH_API GeoModelBuilderFile< 2 > ;
+    template class RINGMESH_API GeoModelBuilderFile< 3 > ;
 
-        /*!
-         * @brief Load meshes of all the mesh entities from a zip file
-         * @param[in] uz the zip file
-         */
-        void load_meshes( unzFile& uz );
-
-        void load_mesh_entity(
-            const std::string& entity_type,
-            const std::string& file_name,
-            index_t id );
-
-        bool load_mesh_entity_base(
-            const std::string& entity_type,
-            const std::string& file_name,
-            index_t id );
-
-        virtual void load_file() final;
-
-        void load_mesh_entities( const std::string& mesh_entity_file );
-
-        void load_region_if_entity_is_region(
-            const std::string& entity_type,
-            index_t id,
-            const std::string& file_name,
-            const MeshEntityTypeManager< DIMENSION >& manager );
-    private:
-        index_t file_version_ { 0 };
-        std::unique_ptr< GeoModelBuilderGMImpl< DIMENSION > > version_impl_[NB_VERSION];
-    };
-}
+} // namespace

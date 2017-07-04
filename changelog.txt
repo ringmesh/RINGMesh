@@ -16,9 +16,10 @@ New Features:
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
- * Cannot delete Mesh in RINGMeshView
- * Fix crash on RINGMeshView exit (Logger was still register)
+ * Crash on RINGMeshView exit (Logger was still register)
  * RINGMesh now compiles when TetGen cmake option is set to off
+ * Cannot delete Mesh in RINGMeshView
+ * Error in computation of polygon area (for 3D concave polygons)
  * GeoModelMeshVertices was not cleared after a tetrahedralize step
 
 Improvements:

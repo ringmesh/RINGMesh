@@ -59,14 +59,16 @@ namespace {
         &tet_descriptor_vtk, &hex_descriptor_vtk, &prism_descriptor_vtk,
         &pyramid_descriptor_vtk };
 
-    class VTKIOHandler final: public GeoModelIOHandler {
+    class VTKIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel ) final
+        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from VTK not implemented yet" );
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        virtual void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -76,7 +78,7 @@ namespace {
             out << "ASCII" << std::endl;
             out << "DATASET UNSTRUCTURED_GRID" << std::endl;
 
-            const GeoModelMesh& mesh = geomodel.mesh;
+            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
             out << "POINTS " << mesh.vertices.nb() << " double" << std::endl;
             for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
                 out << mesh.vertices.vertex( v ) << std::endl;

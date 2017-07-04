@@ -55,9 +55,10 @@ namespace RINGMesh {
         {                                                                                       \
         }                                                                                       \
         virtual ~Class ## Builder() = default ;                                                 \
-        virtual void copy( const MeshBase& rhs, bool copy_attributes ) override                 \
+        virtual void copy( const MeshBase< DIMENSION>& rhs, bool copy_attributes ) override     \
         {                                                                                       \
-            const Class& geogrammesh = dynamic_cast< const Class& >( rhs );                     \
+            const Class< DIMENSION >& geogrammesh =                                             \
+                dynamic_cast< const Class< DIMENSION >& >( rhs );                               \
             mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes,                            \
                 GEO::MESH_ALL_ELEMENTS );                                                       \
             clear_vertex_linked_objects();                                                      \
@@ -78,9 +79,9 @@ namespace RINGMesh {
             GEO::mesh_repair( *mesh_->mesh_, mode, colocate_epsilon );                          \
             clear_vertex_linked_objects();                                                      \
         }                                                                                       \
-        virtual void set_vertex( index_t v_id, const vec3& vertex ) override                    \
+        virtual void set_vertex( index_t v_id, const vecn< DIMENSION >& vertex ) override       \
         {                                                                                       \
-            mesh_->mesh_->vertices.point( v_id ) = vertex;                                      \
+            mesh_->ref_vertex( v_id ) = vertex;                                                 \
             clear_vertex_linked_objects();                                                      \
         }                                                                                       \
         virtual index_t create_vertex() override                                                \
@@ -94,11 +95,11 @@ namespace RINGMesh {
             return mesh_->mesh_->vertices.create_vertices( nb );                                \
         }                                                                                       \
         virtual void assign_vertices(                                                           \
-            const std::vector< double >& points_xyz_coordinates ) override                      \
+            const std::vector< double >& point_coordinates ) override                           \
         {                                                                                       \
-            GEO::vector< double > points_xyz_coordinates_cp =                                   \
-                copy_std_vector_to_geo_vector( points_xyz_coordinates );                        \
-            mesh_->mesh_->vertices.assign_points( points_xyz_coordinates_cp, 3,                 \
+            GEO::vector< double > point_coordinates_cp =                                        \
+                copy_std_vector_to_geo_vector( point_coordinates );                             \
+            mesh_->mesh_->vertices.assign_points( point_coordinates_cp, DIMENSION,              \
                 false );                                                                        \
             clear_vertex_linked_objects();                                                      \
         }                                                                                       \
@@ -121,7 +122,7 @@ namespace RINGMesh {
             mesh_->mesh_->vertices.permute_elements( geo_vector_permutation );                  \
             clear_vertex_linked_objects();                                                      \
         }                                                                                       \
-        void set_geogram_mesh( Class& mesh )                                                    \
+        void set_geogram_mesh( Class< DIMENSION >& mesh )                                       \
         {                                                                                       \
             mesh_ = &mesh;                                                                      \
         }                                                                                       \
@@ -131,14 +132,16 @@ namespace RINGMesh {
             mesh_->vertices_nn_search_.reset();                                                 \
         }                                                                                       \
     private:                                                                                    \
-        Class* mesh_
+        Class< DIMENSION >* mesh_
 
-    class RINGMESH_API GeogramPointSetMeshBuilder: public PointSetMeshBuilder {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );
+    template< index_t DIMENSION >
+    class GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual void set_mesh( PointSetMesh& mesh ) override
+        virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) override
         {
-            set_geogram_mesh( dynamic_cast< GeogramPointSetMesh& >( mesh ) );
+            set_geogram_mesh(
+                dynamic_cast< GeogramPointSetMesh< DIMENSION > & >( mesh ) );
         }
         virtual void clear_vertex_linked_objects() override
         {
@@ -146,13 +149,18 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramLineMeshBuilder: public LineMeshBuilder {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );
+    using GeogramPointSetMesh2DBuilder = GeogramPointSetMeshBuilder< 2 >;
+    using GeogramPointSetMesh3DBuilder = GeogramPointSetMeshBuilder< 3 >;
+
+    template< index_t DIMENSION >
+    class GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
-        virtual void set_mesh( LineMesh& mesh ) override
+        virtual void set_mesh( LineMesh< DIMENSION >& mesh ) override
         {
-            set_geogram_mesh( dynamic_cast< GeogramLineMesh& >( mesh ) );
+            set_geogram_mesh(
+                dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) );
         }
 
         virtual void create_edge( index_t v1_id, index_t v2_id ) override
@@ -235,13 +243,18 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );
+    using GeogramLineMesh2DBuilder = GeogramLineMeshBuilder< 2 >;
+    using GeogramLineMesh3DBuilder = GeogramLineMeshBuilder< 3 >;
+
+    template< index_t DIMENSION >
+    class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder< DIMENSION > {
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
-        virtual void set_mesh( SurfaceMesh& mesh ) override
+        virtual void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override
         {
-            set_geogram_mesh( dynamic_cast< GeogramSurfaceMesh& >( mesh ) );
+            set_geogram_mesh(
+                dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) );
         }
 
         virtual void remove_small_connected_components(
@@ -252,11 +265,11 @@ namespace RINGMesh {
                 min_polygons );
         }
 
-        virtual void triangulate( const SurfaceMesh& surface_in ) override
+        virtual void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) override
         {
             Logger::instance()->set_minimal( true );
-            const GeogramSurfaceMesh& geogram_surf_in =
-                dynamic_cast< const GeogramSurfaceMesh& >( surface_in );
+            const GeogramSurfaceMesh< DIMENSION >& geogram_surf_in =
+                dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( surface_in );
             GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_.get(), 3,
                 GEO::CmdLine::get_arg( "algo:delaunay" ) );
             CVT.set_points( mesh_->nb_vertices(),
@@ -279,8 +292,7 @@ namespace RINGMesh {
             clear_polygon_linked_objects();
         }
 
-        virtual index_t create_polygon(
-            const std::vector< index_t >& vertices ) override
+        virtual index_t create_polygon( const std::vector< index_t >& vertices ) override
         {
             GEO::vector< index_t > polygon_vertices = copy_std_vector_to_geo_vector(
                 vertices );
@@ -305,7 +317,8 @@ namespace RINGMesh {
             index_t local_vertex_id,
             index_t vertex_id ) override
         {
-            mesh_->mesh_->facets.set_vertex( polygon_id, local_vertex_id, vertex_id );
+            mesh_->mesh_->facets.set_vertex( polygon_id, local_vertex_id,
+                vertex_id );
             clear_polygon_linked_objects();
         }
 
@@ -317,8 +330,7 @@ namespace RINGMesh {
             mesh_->mesh_->facets.set_adjacent( polygon_id, edge_id, specifies );
         }
 
-        virtual void assign_triangle_mesh(
-            const std::vector< index_t >& triangles ) override
+        virtual void assign_triangle_mesh( const std::vector< index_t >& triangles ) override
         {
             GEO::vector< index_t > geo_triangles = copy_std_vector_to_geo_vector(
                 triangles );
@@ -346,8 +358,8 @@ namespace RINGMesh {
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) override
         {
-            GEO::vector< index_t > polygons_to_delete = copy_std_vector_to_geo_vector<
-                bool, index_t >( to_delete );
+            GEO::vector< index_t > polygons_to_delete =
+                copy_std_vector_to_geo_vector< bool, index_t >( to_delete );
             mesh_->mesh_->facets.delete_elements( polygons_to_delete, false );
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices();
@@ -395,13 +407,18 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramVolumeMeshBuilder: public VolumeMeshBuilder {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );
+    using GeogramSurfaceMesh2DBuilder = GeogramSurfaceMeshBuilder< 2 >;
+    using GeogramSurfaceMesh3DBuilder = GeogramSurfaceMeshBuilder< 3 >;
+
+    template< index_t DIMENSION >
+    class GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {
+    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );ringmesh_template_assert_3d( DIMENSION );
     public:
 
-        virtual void set_mesh( VolumeMesh& mesh ) override
+        virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) override
         {
-            set_geogram_mesh( dynamic_cast< GeogramVolumeMesh& >( mesh ) );
+            set_geogram_mesh(
+                dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) );
         }
 
         virtual index_t create_cells( index_t nb_cells, CellType type ) override
@@ -515,5 +532,7 @@ namespace RINGMesh {
             mesh_->cell_aabb_.reset();
         }
     };
+
+    using GeogramVolumeMesh3DBuilder = GeogramVolumeMeshBuilder< 3 >;
 
 }

@@ -43,16 +43,21 @@
 #include <vector>
 
 namespace RINGMesh {
-    class GeoModel;
-    class GeoModelMeshEntity;
-    class Corner;
-    class Line;
-    class Surface;
-    class Region;
-    class EntityTypeManager;
+    template< index_t DIMENSION > class GeoModel;
+    template< index_t DIMENSION > class GeoModelMeshEntity;
+    template< index_t DIMENSION > class Corner;
+    template< index_t DIMENSION > class Line;
+    template< index_t DIMENSION > class Surface;
+    template< index_t DIMENSION > class Region;
+    template< index_t DIMENSION > class EntityTypeManager;
+    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
+    template< index_t DIMENSION > class GeoModelBuilderTopology;
+    template< index_t DIMENSION > class GeoModelBuilderGeology;
 }
 
 namespace RINGMesh {
+
+    using MeshEntityTypeMap = std::map< MeshEntityType, MeshEntityType >;
 
     /*!
      * @brief struct used to map the type of a Mesh Entity to the type of its boundary
@@ -60,7 +65,7 @@ namespace RINGMesh {
      * "Line" is boundary of "Surface"
      * "Surface" is boundary of "Region"
      */
-    using MeshEntityTypeMap = std::map< MeshEntityType, MeshEntityType >;
+    template< index_t DIMENSION >
     struct MeshEntityTypeBoundaryMap {
         MeshEntityTypeBoundaryMap();
         void register_boundary(
@@ -70,14 +75,19 @@ namespace RINGMesh {
             map.emplace( type, boundary );
         }
         MeshEntityTypeMap map;
+
+    private:
+        void initialize_base();
     };
 
     /*!
-     * @brief struct used to map the type of a Mesh Entity to the type of its incident entities
-     * "Line" is incident entity of "Corner"
-     * "Surface" is incident entity of "Line"
-     * "Region" is incident entity of "Surface"
+     * @brief struct used to map the type of a Mesh Entity to the type of
+     * its incident mesh entity
+     * "Line" is incident of "Corner"
+     * "Surface" is incident of "Line"
+     * "Region" is incident of "Surface"
      */
+    template< index_t DIMENSION >
     struct MeshEntityTypeIncidentEntityMap {
         MeshEntityTypeIncidentEntityMap();
         void register_incident_entity(
@@ -87,6 +97,30 @@ namespace RINGMesh {
             map.emplace( type, incident_entity );
         }
         MeshEntityTypeMap map;
+
+    private:
+        void initialize_base();
+    };
+
+    template< index_t DIMENSION >
+    class MeshEntityTypes {
+    public:
+        MeshEntityTypes();
+
+        index_t size() const
+        {
+            return static_cast< index_t >( mesh_entity_types_.size() );
+        }
+        const std::vector< MeshEntityType >& container() const
+        {
+            return mesh_entity_types_;
+        }
+
+    private:
+        void initialize_base();
+
+    private:
+        std::vector< MeshEntityType > mesh_entity_types_;
     };
 
     /*!
@@ -94,26 +128,78 @@ namespace RINGMesh {
      * GeoModelMeshEntity. It gives access to the number of meshed entities of each
      * type and also their (in) boundary
      */
-    class RINGMESH_API MeshEntityTypeManager {
+    template< index_t DIMENSION >
+    class MeshEntityTypeManagerBase {
     public:
-        MeshEntityTypeManager();
 
-        static bool is_corner( const MeshEntityType& type );
-        static bool is_line( const MeshEntityType& type );
-        static bool is_surface( const MeshEntityType& type );
-        static bool is_region( const MeshEntityType& type );
-        static bool is_valid_type( const MeshEntityType& type );
+        bool is_corner( const MeshEntityType& type ) const
+        {
+            return type == mesh_entity_types_.container()[0];
+        }
 
-        static const MeshEntityType& boundary_type( const MeshEntityType& type );
-        static const MeshEntityType& incident_entity_type( const MeshEntityType& type );
+        bool is_line( const MeshEntityType& type ) const
+        {
+            return type == mesh_entity_types_.container()[1];
+        }
 
-        static const std::vector< MeshEntityType >& mesh_entity_types();
-        static index_t nb_mesh_entity_types();
+        bool is_surface( const MeshEntityType& type ) const
+        {
+            return type == mesh_entity_types_.container()[2];
+        }
 
-    private:
-        static MeshEntityTypeBoundaryMap boundary_relationships_;
-        static MeshEntityTypeIncidentEntityMap incident_entity_relationships_;
+        bool is_valid_type( const MeshEntityType& type ) const
+        {
+            return find( mesh_entity_types_.container(), type ) != NO_ID;
+        }
 
+        const MeshEntityType& boundary_entity_type(
+            const MeshEntityType& mesh_entity_type ) const
+        {
+            MeshEntityTypeMap::const_iterator itr = boundary_relationships_.map.find(
+                mesh_entity_type );
+            ringmesh_assert( itr != boundary_relationships_.map.end() );
+            return itr->second;
+        }
+
+        const MeshEntityType& incident_entity_type(
+            const MeshEntityType& mesh_entity_type ) const
+        {
+            MeshEntityTypeMap::const_iterator itr =
+                incident_entity_relationships_.map.find( mesh_entity_type );
+            ringmesh_assert( itr != incident_entity_relationships_.map.end() );
+            return itr->second;
+        }
+
+        const std::vector< MeshEntityType >& mesh_entity_types() const
+        {
+            return mesh_entity_types_.container();
+        }
+
+        index_t nb_mesh_entity_types() const
+        {
+            return static_cast< index_t >( mesh_entity_types_.size() );
+        }
+
+    protected:
+        MeshEntityTypeManagerBase() = default;
+
+    protected:
+        MeshEntityTypeBoundaryMap< DIMENSION > boundary_relationships_;
+        MeshEntityTypeIncidentEntityMap< DIMENSION > incident_entity_relationships_;
+        MeshEntityTypes< DIMENSION > mesh_entity_types_;
+    };
+
+    template< index_t DIMENSION >
+    class MeshEntityTypeManager: public MeshEntityTypeManagerBase< DIMENSION > {
+    };
+
+    template< >
+    class MeshEntityTypeManager< 3 > : public MeshEntityTypeManagerBase< 3 > {
+    public:
+        bool is_region( const MeshEntityType& type ) const
+        {
+            return type == mesh_entity_types_.container()[3];
+        }
     };
 
     /*!
@@ -122,7 +208,8 @@ namespace RINGMesh {
      * type and also give the opportunity to create and manage new one.
      */
     class RINGMESH_API GeologicalTypeManager {
-        friend class GeoModelBuilderGeology;
+        friend class GeoModelBuilderGeology< 2 > ;
+        friend class GeoModelBuilderGeology< 3 > ;
     public:
         index_t nb_geological_entity_types() const;
         const std::vector< GeologicalEntityType >& geological_entity_types() const;
@@ -152,8 +239,10 @@ namespace RINGMesh {
      *
      */
     class RINGMESH_API RelationshipManager {
-        friend class GeoModelBuilderGeology;
-        friend class GeoModelBuilderTopology;
+        friend class GeoModelBuilderGeology< 2 > ;
+        friend class GeoModelBuilderTopologyBase< 2 > ;
+        friend class GeoModelBuilderGeology< 3 > ;
+        friend class GeoModelBuilderTopologyBase< 3 > ;
     public:
         using GeologicalEntityToChild = std::map< GeologicalEntityType, MeshEntityType >;
         using MeshEntityToParents = std::map< MeshEntityType, std::set< GeologicalEntityType > >;
@@ -237,17 +326,17 @@ namespace RINGMesh {
 
         void set_incident_entity_to_boundary_relationship(
 
-            index_t relationship_id,
-            const gmme_id& incident_entity )
+        index_t relationship_id, const gmme_id& incident_entity )
         {
-            boundary_relationships_[relationship_id].incident_entity_id_ = incident_entity;
+            boundary_relationships_[relationship_id].incident_entity_id_ =
+                incident_entity;
         }
 
         struct BoundaryRelationship {
-            BoundaryRelationship(
-                const gmme_id& incident_entity,
-                const gmme_id& boundary )
-                : incident_entity_id_( incident_entity ), boundary_id_( boundary )
+            BoundaryRelationship( gmme_id incident_entity, gmme_id boundary )
+                :
+                    incident_entity_id_( std::move( incident_entity ) ),
+                    boundary_id_( std::move( boundary ) )
             {
             }
             bool operator==( const BoundaryRelationship& rhs ) const
@@ -297,8 +386,8 @@ namespace RINGMesh {
         }
 
         struct ParentChildRelationship {
-            ParentChildRelationship( const gmge_id& parent, const gmme_id& child )
-                : parent_id_( parent ), child_id_( child )
+            ParentChildRelationship( gmge_id parent, gmme_id child )
+                : parent_id_( std::move( parent ) ), child_id_( std::move( child ) )
             {
             }
             bool operator==( const ParentChildRelationship& rhs ) const
@@ -318,12 +407,12 @@ namespace RINGMesh {
     };
 
     /*!
-     * @brief Global entity manager which coulb be associated to a geomodel
+     * @brief Global entity manager which could be associated to a geomodel
      * to give access to different manager to handle the entity types
      */
-    class RINGMESH_API EntityTypeManager {
-    public:
-        MeshEntityTypeManager mesh_entity_manager;
+    template< index_t DIMENSION >
+    struct EntityTypeManager {
+        MeshEntityTypeManager< DIMENSION > mesh_entity_manager;
         GeologicalTypeManager geological_entity_manager;
         RelationshipManager relationship_manager;
     };

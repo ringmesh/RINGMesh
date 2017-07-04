@@ -58,11 +58,15 @@
  */
 
 namespace RINGMesh {
-    class GeoModelMesh;
-    class GeoModelMeshVertices;
-    class GeoModel;
-    class GeoModelEntity;
-    class GeoModelMeshEntity;
+    template< index_t DIMENSION > class GeoModelMeshBase;
+    template< index_t DIMENSION > class GeoModelMesh;
+    template< index_t DIMENSION > class GeoModel;
+    template< index_t DIMENSION > class GeoModelEntity;
+    template< index_t DIMENSION > class GeoModelMeshEntity;
+    template< index_t DIMENSION > class GeoModelMeshEdges;
+    template< index_t DIMENSION > class GeoModelMeshPolygons;
+    template< index_t DIMENSION > class GeoModelMeshPolygonsBase;
+    template< index_t DIMENSION > class GeoModelMeshCells;
 }
 
 namespace RINGMesh {
@@ -73,11 +77,16 @@ namespace RINGMesh {
     static const std::string cell_region_att_name = "cell_region";
     static const std::string polygon_surface_att_name = "polygon_surface";
 
-    class RINGMESH_API GeoModelMeshBase {
+    template< index_t DIMENSION >
+    class GeoModelMeshCommon {
+    ringmesh_disable_copy( GeoModelMeshCommon );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     protected:
-        GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm );
+        GeoModelMeshCommon(
+            GeoModelMesh< DIMENSION >& gmm,
+            GeoModel< DIMENSION >& gm );
 
-        void set_mesh( MeshBase* mesh )
+        void set_mesh( MeshBase< DIMENSION >* mesh )
         {
             mesh_base_ = mesh;
         }
@@ -88,26 +97,23 @@ namespace RINGMesh {
         }
     protected:
         /// Attached GeoModelMesh
-        GeoModelMesh& gmm_;
+        GeoModelMesh< DIMENSION >& gmm_;
         /// Attached GeoModel
-        GeoModel& gm_;
+        GeoModel< DIMENSION >& gm_;
         /// Attached MeshBase
-        MeshBase* mesh_base_;
+        MeshBase< DIMENSION >* mesh_base_;
     };
 
-    class RINGMESH_API GeoModelMeshVertices final: public GeoModelMeshBase {
-    ringmesh_disable_copy( GeoModelMeshVertices );
+    template< index_t DIMENSION >
+    class GeoModelMeshVerticesBase: public GeoModelMeshCommon< DIMENSION > {
+    ringmesh_disable_copy( GeoModelMeshVerticesBase );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEdges;
-        friend class GeoModelMeshPolygons;
-        friend class GeoModelMeshCells;
+        friend class GeoModelMeshEdges< DIMENSION > ;
+        friend class GeoModelMeshPolygonsBase< DIMENSION > ;
+        friend class GeoModelMeshCells< DIMENSION > ;
 
-        GeoModelMeshVertices(
-            GeoModelMesh& gmm,
-            GeoModel& gm,
-            std::unique_ptr< PointSetMesh >& mesh );
-
-        ~GeoModelMeshVertices();
+        virtual ~GeoModelMeshVerticesBase() = default;
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -133,7 +139,7 @@ namespace RINGMesh {
          * @brief Coordinates of a vertex of the GeoModel
          * @pre v < nb()
          */
-        const vec3& vertex( index_t v ) const;
+        const vecn< DIMENSION >& vertex( index_t v ) const;
 
         /*!
          * @brief Returns the index of the given vertex in the geomodel
@@ -141,7 +147,7 @@ namespace RINGMesh {
          * @return index of the vertex in the geomodel if found
          * (distance < epsilon), otherwise NO_ID
          */
-        index_t index( const vec3& p ) const;
+        index_t index( const vecn< DIMENSION >& p ) const;
 
         /*!
          * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its
@@ -198,8 +204,8 @@ namespace RINGMesh {
          * @warning The client is responsible for setting the mapping between the points
          * of the GeoModelEntity and the unique vertex
          */
-        index_t add_vertex( const vec3& point );
-        index_t add_vertices( const std::vector< vec3 >& points );
+        index_t add_vertex( const vecn< DIMENSION >& point );
+        index_t add_vertices( const std::vector< vecn< DIMENSION > >& points );
 
         /*!
          * @brief Set the point coordinates of all the vertices that
@@ -207,7 +213,7 @@ namespace RINGMesh {
          * @param[in] v Index of the vertex
          * @param[in] point New coordinates
          */
-        void update_point( index_t v, const vec3& point );
+        void update_point( index_t v, const vecn< DIMENSION >& point );
 
         void update_vertex_mapping(
             const gmme_id& entity_id,
@@ -219,13 +225,13 @@ namespace RINGMesh {
          *        clear global vertex information in the all BMME
          * @warning Not stable - crashes if attributes are still bound
          */
-        void clear();
+        virtual void clear();
 
         void unbind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
         void bind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
-        const NNSearch& nn_search() const
+        const NNSearch< DIMENSION >& nn_search() const
         {
             test_and_initialize();
             return mesh_->vertices_nn_search();
@@ -250,11 +256,6 @@ namespace RINGMesh {
         void erase_vertices( std::vector< index_t >& to_delete );
 
     private:
-        void fill_vertices(
-            const GeoModel& M,
-            const MeshEntityType& entity_type,
-            index_t& count );
-
         /*!
          * @brief Initialize the vertices from the vertices
          *        of the GeoModel Corners, Lines, Surfaces and Regions
@@ -263,17 +264,30 @@ namespace RINGMesh {
          */
         void initialize();
 
+    protected:
+        GeoModelMeshVerticesBase(
+            GeoModelMesh< DIMENSION >& gmm,
+            GeoModel< DIMENSION >& gm,
+            std::unique_ptr< PointSetMesh< DIMENSION > >& mesh );
+
+        virtual index_t nb_total_vertices() const;
+        virtual index_t fill_vertices();
+        void fill_vertices_for_entity_type(
+            const GeoModel< DIMENSION >& M,
+            const MeshEntityType& entity_type,
+            index_t& count );
+
     private:
         /*!
          * Class which manages the mapping informations between vertices
-         * of GeoModelMeshEntites (entity_index) and GeoModelMeshVertices (global index)
+         * of GeoModelMeshEntites (entity_index) and GeoModelMeshVerticesBase (global index)
          */
-        class RINGMESH_API GeoModelVertexMapper {
+        class GeoModelVertexMapper {
         ringmesh_disable_copy( GeoModelVertexMapper );
         public:
             GeoModelVertexMapper(
-                GeoModelMeshVertices& geomodel_vertices,
-                const GeoModel& geomodel );
+                GeoModelMeshVerticesBase& geomodel_vertices,
+                const GeoModel< DIMENSION >& geomodel );
 
             /*!
              * \name Query
@@ -455,8 +469,8 @@ namespace RINGMesh {
                 const gmme_id& mesh_entity_id ) const;
 
         private:
-            GeoModelMeshVertices& geomodel_vertices_;
-            const GeoModel& geomodel_;
+            GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices_;
+            const GeoModel< DIMENSION >& geomodel_;
 
             /// Vertex maps
             AttributeVector< index_t > corner_vertex_maps_;
@@ -469,23 +483,44 @@ namespace RINGMesh {
             std::vector< std::vector< GMEVertex > > gme_vertices_;
         };
 
-    private:
+    protected:
         /// Attached Mesh
-        std::unique_ptr< PointSetMesh >& mesh_;
+        std::unique_ptr< PointSetMesh< DIMENSION > >& mesh_;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_;
     };
 
-    class RINGMESH_API GeoModelMeshPolygons final: public GeoModelMeshBase {
-    ringmesh_disable_copy( GeoModelMeshPolygons );
+    template< index_t DIMENSION >
+    class GeoModelMeshVertices final: public GeoModelMeshVerticesBase< DIMENSION > {
     public:
-        friend class GeoModelMesh;
+        GeoModelMeshVertices(
+            GeoModelMesh< DIMENSION >& gmm,
+            GeoModel< DIMENSION >& gm,
+            std::unique_ptr< PointSetMesh< DIMENSION > >& mesh );
+    };
 
-        GeoModelMeshPolygons(
-            GeoModelMesh& gmm,
-            GeoModel& gm,
-            std::unique_ptr< SurfaceMesh >& mesh );
-        ~GeoModelMeshPolygons();
+    template< >
+    class GeoModelMeshVertices< 3 > final: public GeoModelMeshVerticesBase< 3 > {
+    public:
+        GeoModelMeshVertices(
+            GeoModelMesh< 3 >& gmm,
+            GeoModel< 3 >& gm,
+            std::unique_ptr< PointSetMesh< 3 > >& mesh );
+
+        virtual void clear() override;
+        virtual index_t nb_total_vertices() const override;
+        virtual index_t fill_vertices() override;
+    };
+
+    template< index_t DIMENSION >
+    class GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
+    ringmesh_disable_copy( GeoModelMeshPolygonsBase );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+    public:
+        friend class GeoModelMeshBase< DIMENSION > ;
+        friend class GeoModelMesh< DIMENSION > ;
+
+        virtual ~GeoModelMeshPolygonsBase();
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -653,19 +688,14 @@ namespace RINGMesh {
          * Get the center of the given polygon
          * @param[in] p the polygon index
          */
-        vec3 center( index_t p ) const;
+        vecn< DIMENSION > center( index_t p ) const;
         /*!
          * Get the area of the polygon
          * @param[in] p the polygon index
          */
         double area( index_t p ) const;
-        /*!
-         * Get the normal of the polygon
-         * @param[in] p the polygon index
-         */
-        vec3 normal( index_t p ) const;
 
-        const NNSearch& nn_search() const
+        const NNSearch< DIMENSION >& nn_search() const
         {
             test_and_initialize();
             return mesh_->polygons_nn_search();
@@ -674,7 +704,7 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the polygons of the mesh
          */
-        const SurfaceAABBTree& aabb() const;
+        const SurfaceAABBTree< DIMENSION >& aabb() const;
 
     private:
         /*!
@@ -699,9 +729,15 @@ namespace RINGMesh {
          */
         void disconnect_along_lines();
 
-    private:
+    protected:
+        GeoModelMeshPolygonsBase(
+            GeoModelMesh< DIMENSION >& gmm,
+            GeoModel< DIMENSION >& gm,
+            std::unique_ptr< SurfaceMesh< DIMENSION > >& mesh );
+
+    protected:
         /// Attached Mesh
-        std::unique_ptr< SurfaceMesh >& mesh_;
+        std::unique_ptr< SurfaceMesh< DIMENSION > >& mesh_;
 
         /// Attribute storing the surface index per polygon
         GEO::Attribute< index_t > surface_id_;
@@ -725,14 +761,40 @@ namespace RINGMesh {
         index_t nb_unclassified_polygon_;
     };
 
-    class RINGMESH_API GeoModelMeshEdges final: public GeoModelMeshBase {
+    template< index_t DIMENSION >
+    class GeoModelMeshPolygons final: public GeoModelMeshPolygonsBase< DIMENSION > {
+    public:
+        GeoModelMeshPolygons(
+            GeoModelMesh< DIMENSION >& gmm,
+            GeoModel< DIMENSION >& gm,
+            std::unique_ptr< SurfaceMesh< DIMENSION > >& mesh );
+    };
+
+    template< >
+    class GeoModelMeshPolygons< 3 > final: public GeoModelMeshPolygonsBase< 3 > {
+    public:
+        GeoModelMeshPolygons(
+            GeoModelMesh< 3 >& gmm,
+            GeoModel< 3 >& gm,
+            std::unique_ptr< SurfaceMesh< 3 > >& mesh );
+
+        /*!
+         * Get the normal of the polygon
+         * @param[in] p the polygon index
+         */
+        vec3 normal( index_t p ) const;
+    };
+
+    template< index_t DIMENSION >
+    class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshEdges );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         GeoModelMeshEdges(
-            GeoModelMesh& gmm,
-            GeoModel& gm,
-            std::unique_ptr< LineMesh >& mesh );
-        ~GeoModelMeshEdges();
+            GeoModelMesh< DIMENSION >& gmm,
+            GeoModel< DIMENSION >& gm,
+            std::unique_ptr< LineMesh< DIMENSION > >& mesh );
+        ~GeoModelMeshEdges() = default;
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -785,11 +847,11 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the edges of the mesh
          */
-        const LineAABBTree& aabb() const;
+        const LineAABBTree< DIMENSION >& aabb() const;
 
     private:
         /// Attached Mesh
-        std::unique_ptr< LineMesh >& mesh_;
+        std::unique_ptr< LineMesh< DIMENSION > >& mesh_;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -798,10 +860,13 @@ namespace RINGMesh {
         std::vector< index_t > well_ptr_;
     };
 
-    class RINGMESH_API GeoModelMeshCells final: public GeoModelMeshBase {
+    template< index_t DIMENSION >
+    class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshCells );
+        ringmesh_template_assert_3d( DIMENSION );
     public:
-        friend class GeoModelMesh;
+        friend class GeoModelMeshBase< DIMENSION > ;
+        friend class GeoModelMesh< DIMENSION > ;
 
         /*!
          * Several modes for vertex duplication algorithm:
@@ -815,9 +880,9 @@ namespace RINGMesh {
         };
 
         GeoModelMeshCells(
-            GeoModelMesh& gmm,
-            GeoModel& gm,
-            std::unique_ptr< VolumeMesh >& mesh );
+            GeoModelMesh< DIMENSION >& gmm,
+            GeoModel< DIMENSION >& gm,
+            std::unique_ptr< VolumeMesh< DIMENSION > >& mesh );
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -1125,12 +1190,12 @@ namespace RINGMesh {
          */
         double volume( index_t c ) const;
 
-        const NNSearch& cell_nn_search() const
+        const NNSearch< DIMENSION >& cell_nn_search() const
         {
             test_and_initialize();
             return mesh_->cells_nn_search();
         }
-        const NNSearch& cell_facet_nn_search() const
+        const NNSearch< DIMENSION >& cell_facet_nn_search() const
         {
             test_and_initialize();
             return mesh_->cell_facets_nn_search();
@@ -1139,7 +1204,7 @@ namespace RINGMesh {
         /*!
          * @brief return the AABB tree for the cells of the mesh
          */
-        const VolumeAABBTree& aabb() const;
+        const VolumeAABBTree< DIMENSION >& aabb() const;
 
     private:
         /// enum to characterize the action to do concerning a surface
@@ -1212,7 +1277,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        std::unique_ptr< VolumeMesh >& mesh_;
+        std::unique_ptr< VolumeMesh< DIMENSION > >& mesh_;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_;
@@ -1256,51 +1321,16 @@ namespace RINGMesh {
         GEO::Attribute< index_t > polygon_id_;
     };
 
-    class RINGMESH_API GeoModelMesh {
-    ringmesh_disable_copy( GeoModelMesh );
+    template< index_t DIMENSION >
+    class GeoModelMeshBase {
+    ringmesh_disable_copy( GeoModelMeshBase );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        GeoModelMesh( GeoModel& geomodel );
-        ~GeoModelMesh();
+        virtual ~GeoModelMeshBase();
 
-        const GeoModel& geomodel() const
+        const GeoModel< DIMENSION >& geomodel() const
         {
             return geomodel_;
-        }
-
-        /*!
-         * @brief Transfer attributes from the GeoModelMesh to the
-         * GeoModel
-         */
-        void transfer_attributes() const;
-
-        /*!
-         * @brief Transfer attributes from the GeoModelMeshCell to the
-         * GeoModel
-         */
-        void transfer_cell_attributes() const;
-        /*!
-         * @brief Transfer attributes from the GeoModelMeshVertices to the
-         * GeoModel
-         */
-        void transfer_vertex_attributes() const;
-
-        /*!
-         * Access the DuplicateMode
-         * @return the current DuplicateMode
-         */
-        GeoModelMeshCells::DuplicateMode duplicate_mode() const
-        {
-            return mode_;
-        }
-        /*!
-         * Set a new DuplicateMode
-         * @param[in] mode the new DuplicateMode for the GeoModelMesh
-         */
-        void set_duplicate_mode( const GeoModelMeshCells::DuplicateMode& mode ) const
-        {
-            if( mode_ == mode ) return;
-            mode_ = mode;
-            const_cast< GeoModelMesh* >( this )->cells.clear_duplication();
         }
 
         /*!
@@ -1327,27 +1357,87 @@ namespace RINGMesh {
          */
         void erase_invalid_vertices();
 
-
         void change_point_set_mesh_data_structure( const MeshType& type );
         void change_line_mesh_data_structure( const MeshType& type );
         void change_surface_mesh_data_structure( const MeshType& type );
+
+    protected:
+        /*! Attached GeoModel */
+        const GeoModel< DIMENSION >& geomodel_;
+
+        /// Mesh storing all the elements
+        MeshSet< DIMENSION > mesh_set_;
+
+    protected:
+        GeoModelMeshBase(
+            GeoModelMesh< DIMENSION >& gmm,
+            GeoModel< DIMENSION >& geomodel );
+
+    public:
+        GeoModelMeshVertices< DIMENSION > vertices;
+        GeoModelMeshEdges< DIMENSION > edges;
+        GeoModelMeshPolygons< DIMENSION > polygons;
+    };
+
+    template< index_t DIMENSION >
+    class GeoModelMesh final: public GeoModelMeshBase< DIMENSION > {
+    public:
+        GeoModelMesh( GeoModel< DIMENSION >& geomodel );
+    };
+
+    template< >
+    class GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
+    public:
+        GeoModelMesh( GeoModel< 3 >& geomodel );
+        virtual ~GeoModelMesh();
+
+        /*!
+         * @brief Transfer attributes from the GeoModelMesh to the
+         * GeoModel
+         */
+        void transfer_attributes() const;
+
+        /*!
+         * @brief Transfer attributes from the GeoModelMeshVertices to the
+         * GeoModel
+         */
+        void transfer_vertex_attributes() const;
+
+        /*!
+         * @brief Transfer attributes from the GeoModelMeshCell to the
+         * GeoModel
+         */
+        void transfer_cell_attributes() const;
+
+        /*!
+         * Access the DuplicateMode
+         * @return the current DuplicateMode
+         */
+        GeoModelMeshCells< 3 >::DuplicateMode duplicate_mode() const
+        {
+            return mode_;
+        }
+        /*!
+         * Set a new DuplicateMode
+         * @param[in] mode the new DuplicateMode for the GeoModelMesh
+         */
+        void set_duplicate_mode(
+            const GeoModelMeshCells< 3 >::DuplicateMode& mode ) const
+        {
+            if( mode_ == mode ) return;
+            mode_ = mode;
+            const_cast< GeoModelMesh< 3 >* >( this )->cells.clear_duplication();
+        }
+
         void change_volume_mesh_data_structure( const MeshType& type );
 
     private:
-        /*! Attached GeoModel */
-        const GeoModel& geomodel_;
-
         /// Optional duplication mode to compute the duplication of cells on surfaces
-        mutable GeoModelMeshCells::DuplicateMode mode_;
-
-        /// Mesh storing all the elements
-        MeshSet mesh_set_;
+        mutable GeoModelMeshCells< 3 >::DuplicateMode mode_ {
+            GeoModelMeshCells< 3 >::NONE };
 
     public:
-        GeoModelMeshVertices vertices;
-        GeoModelMeshEdges edges;
-        GeoModelMeshPolygons polygons;
-        GeoModelMeshCells cells;
+        GeoModelMeshCells< 3 > cells;
     };
 
 }

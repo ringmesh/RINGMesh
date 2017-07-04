@@ -85,23 +85,28 @@ namespace RINGMesh {
     private:                                                                    \
         GEO::MeshGfx mesh_gfx_
 
-    class RINGMESH_API GeogramPointSetMeshGfx: public PointSetMeshGfx {
+    template< index_t DIMENSION >
+    class GeogramPointSetMeshGfx: public PointSetMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
         GeogramPointSetMeshGfx()
         {
             set_vertex_color( 1, 0, 0 );
         }
+        virtual ~GeogramPointSetMeshGfx() = default;
 
-        virtual void set_mesh( const PointSetMesh& mesh ) override
+        virtual void set_mesh( const PointSetMesh< DIMENSION >& mesh ) override
         {
             mesh_gfx_.set_mesh(
-                &dynamic_cast< const GeogramPointSetMesh& >( mesh ).gfx_mesh() );
+                &dynamic_cast< const GeogramPointSetMesh< DIMENSION >& >( mesh ).gfx_mesh() );
         }
-
     };
 
-    class RINGMESH_API GeogramLineMeshGfx: public LineMeshGfx {
+    using GeogramPointSetMesh3DGfx = GeogramPointSetMeshGfx< 3 >;
+    using GeogramPointSetMesh2DGfx = GeogramPointSetMeshGfx< 2 >;
+
+    template< index_t DIMENSION >
+    class GeogramLineMeshGfx: public LineMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
         GeogramLineMeshGfx()
@@ -109,11 +114,12 @@ namespace RINGMesh {
             set_vertex_color( 1, 1, 1 );
             set_edge_color( 1, 1, 1 );
         }
+        virtual ~GeogramLineMeshGfx() = default;
 
-        virtual void set_mesh( const LineMesh& mesh ) override
+        virtual void set_mesh( const LineMesh< DIMENSION >& mesh ) override
         {
             mesh_gfx_.set_mesh(
-                &dynamic_cast< const GeogramLineMesh& >( mesh ).gfx_mesh() );
+                &dynamic_cast< const GeogramLineMesh< DIMENSION >& >( mesh ).gfx_mesh() );
         }
 
         virtual void draw_edges() override
@@ -131,15 +137,21 @@ namespace RINGMesh {
 
     };
 
-    class RINGMESH_API GeogramSurfaceMeshGfx: public SurfaceMeshGfx {
+    using GeogramLineMesh3DGfx = GeogramLineMeshGfx< 3 >;
+    using GeogramLineMesh2DGfx = GeogramLineMeshGfx< 2 >;
+
+    template< index_t DIMENSION >
+    class GeogramSurfaceMeshGfx: public SurfaceMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
         GeogramSurfaceMeshGfx() = default;
 
-        virtual void set_mesh( const SurfaceMesh& mesh ) override
+        virtual ~GeogramSurfaceMeshGfx() = default;
+
+        virtual void set_mesh( const SurfaceMesh< DIMENSION >& mesh ) override
         {
             mesh_gfx_.set_mesh(
-                &dynamic_cast< const GeogramSurfaceMesh& >( mesh ).gfx_mesh() );
+                &dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( mesh ).gfx_mesh() );
         }
 
         virtual void draw_surface() override
@@ -168,15 +180,21 @@ namespace RINGMesh {
         }
     };
 
-    class RINGMESH_API GeogramVolumeMeshGfx: public VolumeMeshGfx {
+    using GeogramSurfaceMesh3DGfx = GeogramSurfaceMeshGfx< 3 >;
+    using GeogramSurfaceMesh2DGfx = GeogramSurfaceMeshGfx< 2 >;
+
+    template< index_t DIMENSION >
+    class GeogramVolumeMeshGfx: public VolumeMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION;
     public:
         GeogramVolumeMeshGfx() = default;
 
-        virtual void set_mesh( const VolumeMesh& mesh ) override
+        virtual ~GeogramVolumeMeshGfx() = default;
+
+        virtual void set_mesh( const VolumeMesh< DIMENSION >& mesh ) override
         {
             mesh_gfx_.set_mesh(
-                &dynamic_cast< const GeogramVolumeMesh& >( mesh ).gfx_mesh() );
+                &dynamic_cast< const GeogramVolumeMesh< DIMENSION >& >( mesh ).gfx_mesh() );
         }
 
         virtual void draw_volume() override
@@ -212,6 +230,8 @@ namespace RINGMesh {
             mesh_gfx_.set_shrink( s );
         }
     };
+
+    using GeogramVolumeMesh3DGfx = GeogramVolumeMeshGfx< 3 >;
 
     void register_geogram_mesh_gfx();
 }

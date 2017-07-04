@@ -39,7 +39,7 @@ namespace {
         virtual void load(
             const std::string& filename,
             StratigraphicColumn& column,
-            GeoModel& geomodel ) final
+            GeoModel< 3 >& geomodel ) final
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(

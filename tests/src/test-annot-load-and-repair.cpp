@@ -56,7 +56,7 @@ int main()
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
         Logger::instance()->register_client( file_logger );
 
-        GeoModel M;
+        GeoModel< 3 > M;
         std::string file_name( ringmesh_test_data_path );
         file_name += "annot.ml";
 
@@ -77,8 +77,8 @@ int main()
         Logger::out( "RINGMesh Test", "Repairing" );
         // Repair the model
 
-        GeoModelBuilder model_builder( M );
-        model_builder.repair.repair( GeoModelBuilderRepair::ALL );
+        GeoModelBuilder< 3 > model_builder( M );
+        model_builder.repair.repair( GeoModelBuilderRepair< 3 >::ALL );
 
         // Test the validity again
         if( is_geomodel_valid( M ) ) {

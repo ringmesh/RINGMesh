@@ -48,8 +48,8 @@
  */
 
 namespace RINGMesh {
-    class Interface;
-    class Layer;
+    template< index_t DIMENSION > class Interface;
+    template< index_t DIMENSION > class Layer;
 
     // @todo To develop
     enum struct ROCKTYPE {
@@ -66,16 +66,16 @@ namespace RINGMesh {
          * @param[in] name Name of the feature
          * @param[in] type Rocktype
          */
-        RockFeature( const std::string& name, ROCKTYPE type )
-            : name_( name ), type_( type )
+        RockFeature( std::string name, ROCKTYPE type )
+            : name_( std::move( name ) ), type_( type )
         {
         }
         /*!
          * @brief Simple constructor of RockFeature
          * @param[in] name Name of the feature
          */
-        RockFeature( const std::string& name )
-            : name_( name ), type_( ROCKTYPE::NONE )
+        RockFeature( std::string name )
+            : RockFeature( std::move( name ), ROCKTYPE::NONE )
         {
         }
 
@@ -103,7 +103,7 @@ namespace RINGMesh {
         }
     private:
         std::string name_;
-        ROCKTYPE type_;
+        ROCKTYPE type_ { ROCKTYPE::NONE };
 
     };
 
@@ -123,6 +123,7 @@ namespace RINGMesh {
      * a minimum thickness and a maximum thickness. A StratigraphicColumn can be a StratigraphicUnit.
      */
     class RINGMESH_API StratigraphicUnit {
+    ringmesh_disable_copy( StratigraphicUnit );
     public:
 
         /*!
@@ -137,7 +138,7 @@ namespace RINGMesh {
          * @param[in] min_thick Minimum thickness of the layer
          * @param[in] max_thick Maximum thickness of the layer
          */
-        StratigraphicUnit( const std::string& name, const RockFeature& rock );
+        StratigraphicUnit( std::string name, RockFeature rock );
 
         virtual ~StratigraphicUnit() = default;
 
@@ -164,8 +165,8 @@ namespace RINGMesh {
         virtual bool is_conformable_top() const = 0;
         virtual RELATION get_relation_base() const = 0;
         virtual RELATION get_relation_top() const = 0;
-        virtual const Interface& get_interface_base() const = 0;
-        virtual const Interface& get_interface_top() const = 0;
+        virtual const Interface< 3 >& get_interface_base() const = 0;
+        virtual const Interface< 3 >& get_interface_top() const = 0;
         virtual double get_min_thick() const = 0;
         virtual double get_max_thick() const = 0;
 
@@ -176,22 +177,20 @@ namespace RINGMesh {
         StratigraphicUnit();
 
     protected:
-
         std::string name_;
         RockFeature rock_;
     };
 
     class RINGMESH_API UnsubdividedStratigraphicUnit: public StratigraphicUnit {
     public:
-
         UnsubdividedStratigraphicUnit(
-            const std::string& name,
-            const Interface& interface_base,
-            const Interface& interface_top,
-            const Layer& layer,
+            std::string name,
+            const Interface< 3 >& interface_base,
+            const Interface< 3 >& interface_top,
+            const Layer< 3 >& layer,
             RELATION relation_top,
             RELATION relation_base,
-            const RockFeature& rock,
+            RockFeature rock,
             double min_thick,
             double max_thick );
 
@@ -217,12 +216,12 @@ namespace RINGMesh {
             return relation_top_;
         }
 
-        virtual const Interface& get_interface_base() const final
+        virtual const Interface< 3 >& get_interface_base() const final
         {
             return *interface_base_;
         }
 
-        virtual const Interface& get_interface_top() const final
+        virtual const Interface< 3 >& get_interface_top() const final
         {
             return *interface_top_;
         }
@@ -238,9 +237,9 @@ namespace RINGMesh {
         }
 
     private:
-        const Interface* interface_top_;
-        const Interface* interface_base_;
-        const Layer* layer_;
+        const Interface< 3 >* interface_top_;
+        const Interface< 3 >* interface_base_;
+        const Layer< 3 >* layer_;
         RELATION relation_top_;
         RELATION relation_base_;
         double min_thick_;
@@ -249,12 +248,13 @@ namespace RINGMesh {
 
     class RINGMESH_API SubdividedStratigraphicUnit: public StratigraphicUnit {
     public:
-
         SubdividedStratigraphicUnit(
-            const std::string& name,
-            const RockFeature& rock,
+            std::string name,
+            RockFeature rock,
             const std::vector< const StratigraphicUnit* >& sub_units )
-            : StratigraphicUnit( name, rock ), units_( sub_units )
+            :
+                StratigraphicUnit( std::move( name ), std::move( rock ) ),
+                units_( sub_units )
         {
         }
 
@@ -280,12 +280,12 @@ namespace RINGMesh {
             return units_.front()->get_relation_top();
         }
 
-        virtual const Interface& get_interface_base() const final
+        virtual const Interface< 3 >& get_interface_base() const final
         {
             return units_.back()->get_interface_base();
         }
 
-        virtual const Interface& get_interface_top() const final
+        virtual const Interface< 3 >& get_interface_top() const final
         {
             return units_.front()->get_interface_top();
         }
@@ -310,7 +310,6 @@ namespace RINGMesh {
 
     private:
         std::vector< const StratigraphicUnit* > units_;
-
     };
 
     enum struct STRATIGRAPHIC_PARADIGM {
@@ -329,10 +328,10 @@ namespace RINGMesh {
          * @param[in] type Chronostratigraphic, Lithostratigraphic or Biostratigraphic
          */
         StratigraphicColumn(
-            const std::string& name,
+            std::string name,
             const std::vector< const StratigraphicUnit* >& units,
             STRATIGRAPHIC_PARADIGM type )
-            : name_( name ), units_( units ), type_( type )
+            : name_( std::move( name ) ), units_( units ), type_( type )
         {
         }
 
@@ -340,10 +339,8 @@ namespace RINGMesh {
          * @brief Simple Constructor of StratigraphicColumn
          * @param[in] name Name of the unit
          */
-        StratigraphicColumn(
-            const std::string& name,
-            const STRATIGRAPHIC_PARADIGM type )
-            : name_( name ), units_(), type_( type )
+        StratigraphicColumn( std::string name, const STRATIGRAPHIC_PARADIGM type )
+            : StratigraphicColumn( std::move( name ), { }, type )
         {
         }
 
@@ -471,7 +468,7 @@ namespace RINGMesh {
          * @brief get_interface_base for the Stratigraphic Column
          * @return the base interface of the last unit in the Stratigraphic Column
          */
-        const Interface& get_interface_base() const
+        const Interface< 3 >& get_interface_base() const
         {
             return ( units_.back()->get_interface_base() );
         }
@@ -479,7 +476,7 @@ namespace RINGMesh {
          * @brief get_interface_top for the Stratigraphic Column
          * @return the top interface of the first unit in the Stratigraphic Column
          */
-        const Interface& get_interface_top() const
+        const Interface< 3 >& get_interface_top() const
         {
             return ( units_.front()->get_interface_top() );
         }
@@ -512,7 +509,7 @@ namespace RINGMesh {
 
         std::string name_;
         std::vector< const StratigraphicUnit* > units_;
-        STRATIGRAPHIC_PARADIGM type_;
+        STRATIGRAPHIC_PARADIGM type_ { STRATIGRAPHIC_PARADIGM::UNSPECIFIED };
 
     };
 }

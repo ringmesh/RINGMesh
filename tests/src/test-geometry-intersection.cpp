@@ -56,7 +56,8 @@ void verdict( bool condition, std::string test_name )
     }
 }
 
-bool are_almost_equal( const vec3& vec0, const vec3& vec1 )
+template< index_t DIMENSION >
+bool are_almost_equal( const vecn< DIMENSION >& vec0, const vecn< DIMENSION >& vec1 )
 {
     return ( vec0 - vec1 ).length2() < global_epsilon_sq;
 }
@@ -400,6 +401,169 @@ void test_plane_plane_intersection()
     Logger::out( "TEST", " " );
 }
 
+void test_line_line_intersection()
+{
+    Logger::out( "TEST", "Test Line-Line intersections" );
+
+    // Two parallel lines
+    vec2 O_L0_parallel( 0., 0. );
+    vec2 D_L0_parallel( 1.5, 1.5 );
+    vec2 O_L1_parallel( 1., 1. );
+    vec2 result_parallel;
+    verdict(
+        !line_line_intersection( O_L0_parallel, D_L0_parallel, O_L1_parallel,
+            D_L0_parallel, result_parallel ), "Test parallel lines" );
+
+    // Two times the same line
+    vec2 O_L0_same( 0., 0. );
+    vec2 D_L0_same( 1.5, 1.5 );
+    vec2 D_L1_same( -2.5, -2.5 );
+    vec2 result_same;
+    verdict(
+        !line_line_intersection( O_L0_same, D_L0_same, O_L0_same, D_L1_same,
+            result_same ), "Test same line" );
+
+    // Two intersecting lines
+    vec2 O_L0_inter( 0., 0. );
+    vec2 D_L0_inter( 1.5, 1.5 );
+    vec2 O_L1_inter( 2., 0. );
+    vec2 D_L1_inter( 2.5, -2.5 );
+    vec2 result_inter;
+    vec2 result_answer( 1., 1. );
+    verdict(
+        line_line_intersection( O_L0_inter, D_L0_inter, O_L1_inter, D_L1_inter,
+            result_inter ) && are_almost_equal( result_inter, result_answer ),
+        "Test intersecting lines" );
+
+    Logger::out( "TEST", " " );
+}
+
+void test_segment_segment_intersection()
+{
+    Logger::out( "TEST", "Test Segment-Segment intersections" );
+
+    // Two non-intersecting segments
+    vec2 p0_seg0( 0., 0. );
+    vec2 p1_seg0( 1.5, 1.5 );
+    vec2 p0_seg1( 2., 2. );
+    vec2 p1_seg1( 3., 2. );
+    vec2 no_result;
+    verdict(
+        !segment_segment_intersection( p0_seg0, p1_seg0, p0_seg1, p1_seg1,
+            no_result ), "Test non-intersecting segments" );
+
+    // Two times the same segment
+    vec2 p0_seg0_same( 0., 0. );
+    vec2 p1_seg0_same( 1.5, 1.5 );
+    vec2 result_same;
+    verdict(
+        !segment_segment_intersection( p0_seg0_same, p1_seg0_same, p0_seg0_same,
+            p1_seg0_same, result_same ), "Test same segment" );
+
+    // Two intersecting segments
+    vec2 p0_seg0_inter( 0., 0. );
+    vec2 p1_seg0_inter( 1.5, 1.5 );
+    vec2 p0_seg1_inter( 2., 0. );
+    vec2 p1_seg1_inter( 0., 2. );
+    vec2 result_inter;
+    vec2 result_answer( 1., 1. );
+    verdict(
+        segment_segment_intersection( p0_seg0_inter, p1_seg0_inter, p0_seg1_inter,
+            p1_seg1_inter, result_inter )
+            && are_almost_equal( result_inter, result_answer ),
+        "Test intersecting segments" );
+
+    // Two intersecting segments from same origin
+    vec2 p0_seg0_inter2( 0., 0. );
+    vec2 p1_seg0_inter2( 1.5, 1.5 );
+    vec2 p1_seg1_inter2( 2., 0. );
+    vec2 result_inter2;
+    vec2 result_answer2( 0., 0. );
+    verdict(
+        segment_segment_intersection( p0_seg0_inter2, p1_seg0_inter2, p0_seg0_inter2,
+            p1_seg1_inter2, result_inter2 )
+            && are_almost_equal( result_inter2, result_answer2 ),
+        "Test intersecting segments from same origin" );
+
+    // Two intersecting segments at extremity
+    vec2 p0_seg0_inter3( 0., 0. );
+    vec2 p1_seg0_inter3( 1., 1. );
+    vec2 p0_seg1_inter3( 2., 0. );
+    vec2 p1_seg1_inter3( 0., 2. );
+    vec2 result_inter3;
+    vec2 result_answer3( 1., 1. );
+    verdict(
+        segment_segment_intersection( p0_seg0_inter3, p1_seg0_inter3, p0_seg1_inter3,
+            p1_seg1_inter3, result_inter3 )
+            && are_almost_equal( result_inter3, result_answer3 ),
+        "Test intersecting segments at one extremity" );
+
+    Logger::out( "TEST", " " );
+}
+
+void test_segment_line_intersection()
+{
+    Logger::out( "TEST", "Test Segment-Line intersections" );
+
+    // non-intersecting
+    vec2 p0_seg( 0., 0. );
+    vec2 p1_seg( 1.5, 1.5 );
+    vec2 O_line( 2., 2. );
+    vec2 D_line( 0., 2. );
+    vec2 no_result;
+    verdict( !segment_line_intersection( p0_seg, p1_seg, O_line, D_line, no_result ),
+        "Test non-intersecting" );
+
+    // Segment is on the line
+    vec2 p0_seg0_same( 0., 0. );
+    vec2 p1_seg0_same( 1.5, 1.5 );
+    vec2 D_line_same( -1., -1. );
+    vec2 result_same;
+    verdict(
+        !segment_line_intersection( p0_seg0_same, p1_seg0_same, p0_seg0_same,
+            D_line_same, result_same ), "Test segment on line" );
+
+    // intersecting
+    vec2 p0_seg0_inter( 0., 0. );
+    vec2 p1_seg0_inter( 2., 2. );
+    vec2 O_line_inter( 2., 0. );
+    vec2 D_line_inter( -0.5, 0.5 );
+    vec2 result_inter;
+    vec2 result_answer( 1., 1. );
+    verdict(
+        segment_line_intersection( p0_seg0_inter, p1_seg0_inter, O_line_inter,
+            D_line_inter, result_inter )
+            && are_almost_equal( result_inter, result_answer ),
+        "Test intersecting" );
+
+    // intersecting from same origin
+    vec2 p0_seg0_inter2( 0., 0. );
+    vec2 p1_seg0_inter2( 1.5, 1.5 );
+    vec2 D_line_inter2( 0., 1. );
+    vec2 result_inter2;
+    vec2 result_answer2( 0., 0. );
+    verdict(
+        segment_line_intersection( p0_seg0_inter2, p1_seg0_inter2, p0_seg0_inter2,
+            D_line_inter2, result_inter2 )
+            && are_almost_equal( result_inter2, result_answer2 ),
+        "Test intersecting from same origin" );
+
+    // intersecting segments at extremity
+    vec2 p0_seg0_inter3( 0., 0. );
+    vec2 p1_seg0_inter3( 1., 1. );
+    vec2 p0_seg1_inter3( 0., 2. );
+    vec2 D_line_inter3( -0.5, 0.5 );
+    vec2 result_inter3;
+    vec2 result_answer3( 1., 1. );
+    verdict(
+        segment_line_intersection( p0_seg0_inter3, p1_seg0_inter3, p0_seg1_inter3,
+            D_line_inter3, result_inter3 )
+            && are_almost_equal( result_inter3, result_answer3 ),
+        "Test intersecting segments at one extremity" );
+
+    Logger::out( "TEST", " " );
+}
+
 int main()
 {
     try {
@@ -414,6 +578,9 @@ int main()
         test_disk_segment_intersection();
         test_circle_triangle_intersection();
         test_plane_plane_intersection();
+        test_line_line_intersection();
+        test_segment_segment_intersection();
+        test_segment_line_intersection();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
