@@ -403,11 +403,11 @@ namespace RINGMesh {
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
          * @param[in] nb_cells number of cells to create
-         * @param[in] type type of the cells to create, one of GEO::MESH_TET, GEO::MESH_HEX,
-         * GEO::MESH_PRISM, GEO::MESH_PYRAMID, GEO::MESH_CONNECTOR.
+         * @param[in] type type of the cells to create, one of TETRAEDRON, HEXAEDRON,
+         * CellType::PRISM, CellType::PYRAMID, CellType::UNCLASSIFIED.
          * @return the first created cell.
          */
-        virtual index_t create_cells( index_t nb_cells, GEO::MeshCellType type ) = 0;
+        virtual index_t create_cells( index_t nb_cells, CellType type ) = 0;
         /*
          * \brief Copies a tets mesh into this Mesh.
          * \details Cells adjacence are not computed.
