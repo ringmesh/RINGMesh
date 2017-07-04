@@ -129,6 +129,13 @@ namespace {
             builder->set_vertex( v, mesh.vertex( v ) );
         }
     }
+
+    bool is_attribute_a_double(
+        GEO::AttributesManager& att_manager,
+        const std::string& att_name )
+    {
+        return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
+    }
 }
 
 namespace RINGMesh {
@@ -2066,13 +2073,19 @@ namespace RINGMesh {
     {
     }
 
-    void GeoModelMesh::transfer_attributes() const
+    void GeoModelMesh::transfer_attributes_from_gmm_to_gm_regions() const
     {
-        transfer_vertex_attributes();
-        transfer_cell_attributes();
+        transfer_vertex_attributes_from_gmm_to_gm_regions();
+        transfer_cell_attributes_from_gmm_to_gm_regions();
     }
 
-    void GeoModelMesh::transfer_vertex_attributes() const
+    void GeoModelMesh::transfer_attributes_from_gm_regions_to_gmm() const
+    {
+        transfer_vertex_attributes_from_gm_regions_to_gmm() ;
+        transfer_cell_attributes_from_gm_regions_to_gmm() ;
+    }
+
+    void GeoModelMesh::transfer_vertex_attributes_from_gmm_to_gm_regions() const
     {
         GEO::vector< std::string > att_v_names;
         std::vector< std::string > att_v_double_names;
@@ -2128,7 +2141,51 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh::transfer_cell_attributes() const
+    void GeoModelMesh::transfer_vertex_attributes_from_gm_regions_to_gmm() const
+    {
+        for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
+            GEO::vector< std::string > att_v_names ;
+            const Region& cur_reg = geomodel().region( reg_itr ) ;
+            GEO::AttributesManager& reg_vertex_attr_mgr =
+                cur_reg.vertex_attribute_manager() ;
+            reg_vertex_attr_mgr.list_attribute_names( att_v_names ) ;
+            for( index_t att_v = 0; att_v < reg_vertex_attr_mgr.nb(); att_v++ ) {
+
+                // It is not necessary to copy the coordinates. There are already there.
+                if( att_v_names[att_v] == "point" ) {
+                    continue ;
+                }
+
+                if( !is_attribute_a_double( reg_vertex_attr_mgr,
+                    att_v_names[att_v] ) ) {
+                    continue ;
+                }
+                index_t dim = reg_vertex_attr_mgr.find_attribute_store(
+                    att_v_names[att_v] )->dimension() ;
+                GEO::Attribute< double > cur_v_att ;
+                if( !vertices.attribute_manager().is_defined( att_v_names[att_v] ) ) {
+                    cur_v_att.create_vector_attribute( vertices.attribute_manager(),
+                        att_v_names[att_v], dim ) ;
+                } else {
+                    cur_v_att.bind( vertices.attribute_manager(),
+                        att_v_names[att_v] ) ;
+                }
+                GEO::Attribute< double > cur_v_att_in_reg(
+                    reg_vertex_attr_mgr, att_v_names[att_v] ) ;
+                for( index_t v_in_reg_itr = 0; v_in_reg_itr < cur_reg.nb_vertices();
+                    ++v_in_reg_itr ) {
+                    index_t v_id_in_gmm = vertices.geomodel_vertex_id( cur_reg.gmme(),
+                        v_in_reg_itr ) ;
+                    for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
+                        cur_v_att[v_id_in_gmm * dim + dim_itr] =
+                            cur_v_att_in_reg[v_in_reg_itr * dim + dim_itr] ;
+                    }
+                }
+            }
+        }
+    }
+
+    void GeoModelMesh::transfer_cell_attributes_from_gmm_to_gm_regions() const
     {
 
         GEO::vector< std::string > att_c_names;
@@ -2167,6 +2224,49 @@ namespace RINGMesh {
                         cur_att_on_geomodel_mesh_entity[c * att_dim + att_e] =
                             cur_att_on_geomodel_mesh[c_in_geom_model_mesh[0]
                                 * att_dim + att_e];
+                    }
+                }
+            }
+        }
+    }
+
+    void GeoModelMesh::transfer_cell_attributes_from_gm_regions_to_gmm() const
+    {
+        const NNSearch& nn_search = cells.cell_nn_search();
+        for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
+            GEO::vector< std::string > att_c_names;
+            const Region& cur_reg = geomodel().region( reg_itr );
+            GEO::AttributesManager& reg_cell_attr_mgr =
+                cur_reg.cell_attribute_manager();
+            reg_cell_attr_mgr.list_attribute_names( att_c_names );
+            for( index_t att_c = 0; att_c < reg_cell_attr_mgr.nb(); att_c++ ) {
+
+                if( !is_attribute_a_double( reg_cell_attr_mgr,
+                    att_c_names[att_c] ) ) {
+                    continue;
+                }
+                index_t dim = reg_cell_attr_mgr.find_attribute_store(
+                    att_c_names[att_c] )->dimension();
+                GEO::Attribute< double > cur_c_att;
+                if( !cells.attribute_manager().is_defined( att_c_names[att_c] ) ) {
+                    cur_c_att.create_vector_attribute( cells.attribute_manager(),
+                        att_c_names[att_c], dim );
+                } else {
+                    cur_c_att.bind( cells.attribute_manager(), att_c_names[att_c] );
+                }
+                GEO::Attribute< double > cur_c_att_in_reg( reg_cell_attr_mgr,
+                    att_c_names[att_c] );
+                for( index_t c_in_reg_itr = 0;
+                    c_in_reg_itr < cur_reg.nb_mesh_elements(); ++c_in_reg_itr ) {
+                    vec3 center =
+                        geomodel_.region( reg_itr ).mesh_element_barycenter(
+                            c_in_reg_itr );
+                    std::vector< index_t > c_in_geom_model_mesh =
+                        nn_search.get_neighbors( center, geomodel_.epsilon() );
+                    ringmesh_assert( c_in_geom_model_mesh.size() == 1 );
+                    for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
+                        cur_c_att[c_in_geom_model_mesh[0] * dim + dim_itr] =
+                            cur_c_att_in_reg[c_in_reg_itr * dim + dim_itr];
                     }
                 }
             }

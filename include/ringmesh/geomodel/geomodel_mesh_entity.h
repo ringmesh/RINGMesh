@@ -1253,10 +1253,11 @@ namespace RINGMesh {
             return vec3();
         }
 
-        index_t cells_around_vertex(
+        std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
-            std::vector< index_t >& result,
-            index_t cell_hint ) const;
+            index_t cell_hint ) const {
+            return mesh3d_->cells_around_vertex( vertex_id, cell_hint );
+        }
 
         void compute_region_volumes_per_cell_type(
             double& tet_volume,
