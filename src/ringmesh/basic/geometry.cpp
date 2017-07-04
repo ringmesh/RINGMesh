@@ -514,7 +514,7 @@ namespace RINGMesh {
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
     }
 
-    bool circle_plane_intersection(
+    bool Intersection::circle_plane(
         const vec3& O_plane,
         const vec3& N_plane,
         const vec3& O_circle,
@@ -525,8 +525,8 @@ namespace RINGMesh {
         vec3 O_inter, D_inter;
         vec3 norm_N_plane = normalize( N_plane );
         vec3 norm_N_circle = normalize( N_circle );
-        if( !plane_plane_intersection( O_plane, norm_N_plane, O_circle,
-            norm_N_circle, O_inter, D_inter ) ) {
+        if( !plane_plane( O_plane, norm_N_plane, O_circle, norm_N_circle, O_inter,
+            D_inter ) ) {
             return false;
         }
 
@@ -559,7 +559,7 @@ namespace RINGMesh {
         return true;
     }
 
-    bool plane_plane_intersection(
+    bool Intersection::plane_plane(
         const vec3& O_P0,
         const vec3& N_P0,
         const vec3& O_P1,
@@ -601,7 +601,7 @@ namespace RINGMesh {
         return true;
     }
 
-    bool line_line_intersection(
+    bool Intersection::line_line(
         const vec2& O_line0,
         const vec2& D_line0,
         const vec2& O_line1,
@@ -632,7 +632,7 @@ namespace RINGMesh {
         return true;
     }
 
-    bool segment_segment_intersection(
+    bool Intersection::segment_segment(
         const vec2& p0_seg0,
         const vec2& p1_seg0,
         const vec2& p0_seg1,
@@ -644,8 +644,7 @@ namespace RINGMesh {
         vec2 O_seg1( ( p0_seg1 + p1_seg1 ) / 2. );
         vec2 D_seg1( p1_seg1 - p0_seg1 );
         vec2 line_intersection_result;
-        if( line_line_intersection( O_seg0, D_seg0, O_seg1, D_seg1,
-            line_intersection_result ) ) {
+        if( line_line( O_seg0, D_seg0, O_seg1, D_seg1, line_intersection_result ) ) {
             // Test whether the line-line intersection is on the segments.
             if( length( line_intersection_result - O_seg0 )
                 <= 0.5 * D_seg0.length() + global_epsilon
@@ -658,7 +657,7 @@ namespace RINGMesh {
         return false;
     }
 
-    bool segment_line_intersection(
+    bool Intersection::segment_line(
         const vec2& p0_seg,
         const vec2& p1_seg,
         const vec2& O_line,
@@ -668,8 +667,7 @@ namespace RINGMesh {
         vec2 O_seg( ( p0_seg + p1_seg ) / 2. );
         vec2 D_seg( p1_seg - p0_seg );
         vec2 line_intersection_result;
-        if( line_line_intersection( O_seg, D_seg, O_line, D_line,
-            line_intersection_result ) ) {
+        if( line_line( O_seg, D_seg, O_line, D_line, line_intersection_result ) ) {
             // Test whether the line-line intersection is on the segment.
             if( length( line_intersection_result - O_seg )
                 <= 0.5 * D_seg.length() + global_epsilon ) {
@@ -756,7 +754,7 @@ namespace RINGMesh {
         return true;
     }
 
-    bool line_plane_intersection(
+    bool Intersection::line_plane(
         const vec3& O_line,
         const vec3& D_line,
         const vec3& O_plane,
@@ -778,7 +776,7 @@ namespace RINGMesh {
         }
     }
 
-    bool segment_plane_intersection(
+    bool Intersection::segment_plane(
         const vec3& seg0,
         const vec3& seg1,
         const vec3& O_plane,
@@ -788,8 +786,8 @@ namespace RINGMesh {
         vec3 segment_direction = normalize( seg1 - seg0 );
         vec3 segment_barycenter = 0.5 * ( seg0 + seg1 );
         vec3 line_plane_result;
-        if( line_plane_intersection( segment_barycenter, segment_direction, O_plane,
-            N_plane, line_plane_result ) ) {
+        if( line_plane( segment_barycenter, segment_direction, O_plane, N_plane,
+            line_plane_result ) ) {
             if( ( line_plane_result - segment_barycenter ).length2()
                 > ( seg0 - segment_barycenter ).length2() + global_epsilon ) {
                 // result outside the segment
@@ -803,7 +801,7 @@ namespace RINGMesh {
         }
     }
 
-    bool disk_segment_intersection(
+    bool Intersection::disk_segment(
         const vec3& p0,
         const vec3& p1,
         const vec3& O_circle,
@@ -812,8 +810,7 @@ namespace RINGMesh {
         vec3& result )
     {
         vec3 segment_plane_result;
-        if( segment_plane_intersection( p0, p1, O_circle, N_circle,
-            segment_plane_result ) ) {
+        if( segment_plane( p0, p1, O_circle, N_circle, segment_plane_result ) ) {
             if( ( segment_plane_result - O_circle ).length() <= r ) {
                 result = segment_plane_result;
                 return true;
@@ -822,7 +819,7 @@ namespace RINGMesh {
         return false;
     }
 
-    bool circle_triangle_intersection(
+    bool Intersection::circle_triangle(
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
@@ -834,7 +831,7 @@ namespace RINGMesh {
         vec3 N_triangle = normalize( cross( p1 - p0, p2 - p0 ) );
         vec3 barycenter = ( p0 + p1 + p2 ) / 3;
         std::vector< vec3 > inter_circle_plane;
-        if( circle_plane_intersection( barycenter, N_triangle, O_circle, N_circle, r,
+        if( circle_plane( barycenter, N_triangle, O_circle, N_circle, r,
             inter_circle_plane ) ) {
             for( const vec3& p : inter_circle_plane ) {
                 if( point_inside_triangle( p, p0, p1, p2 ) ) {
@@ -947,7 +944,7 @@ namespace RINGMesh {
         return distance;
     }
 
-    bool segment_triangle_intersection(
+    bool Intersection::segment_triangle(
         const vec3& seg0,
         const vec3& seg1,
         const vec3& trgl0,
