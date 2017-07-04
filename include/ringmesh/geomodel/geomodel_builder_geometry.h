@@ -323,7 +323,7 @@ namespace RINGMesh {
 
         index_t create_region_cell(
             index_t region_id,
-            GEO::MeshCellType type,
+            CellType type,
             const std::vector< index_t >& vertex_indices );
 
         /*!
@@ -335,7 +335,7 @@ namespace RINGMesh {
          */
         index_t create_region_cells(
             index_t region_id,
-            GEO::MeshCellType type,
+            CellType type,
             index_t nb_cells );
 
         /*! @}

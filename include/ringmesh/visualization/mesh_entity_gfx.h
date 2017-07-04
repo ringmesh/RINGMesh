@@ -202,7 +202,7 @@ namespace RINGMesh {
         }
 
         virtual void draw_volume() = 0;
-        virtual void set_draw_cells( GEO::MeshCellType type, bool x ) = 0;
+        virtual void set_draw_cells( CellType type, bool x ) = 0;
         virtual void set_cell_colors_by_type() = 0;
         virtual void set_cells_color( float red, float green, float blue ) = 0;
         virtual void set_mesh_color( float red, float green, float blue ) = 0;

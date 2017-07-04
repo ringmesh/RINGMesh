@@ -120,9 +120,9 @@ namespace {
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 // -1 Because connectors doesn't exist in aster
                 for( index_t ct = 0; ct < GEO::MESH_NB_CELL_TYPES - 1; ct++ ) {
-                    if( geomodel_mesh.cells.nb_cells( r, GEO::MeshCellType( ct ) )
+                    if( geomodel_mesh.cells.nb_cells( r, CellType( ct ) )
                         > 0 ) {
-                        write_cells_in_region( GEO::MeshCellType( ct ), r,
+                        write_cells_in_region( CellType( ct ), r,
                             geomodel_mesh, out );
                     }
                 }
@@ -134,23 +134,24 @@ namespace {
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
                 // -1 because polygons doesn' t exist in aster
-                for( index_t pt = 0; pt < GeoModelMeshPolygons::ALL - 1; pt++ ) {
+                for( index_t pt = 0; pt < to_underlying_type( PolygonType::UNDEFINED ) - 1; pt++ )
+                {
                     if( geomodel_mesh.polygons.nb_polygons( s,
-                        GeoModelMeshPolygons::PolygonType( pt ) ) > 0 ) {
+                        PolygonType( pt ) ) > 0 ) {
                         write_polygons_in_interface(
-                            GeoModelMeshPolygons::PolygonType( pt ), s, geomodel_mesh,
+                            PolygonType( pt ), s, geomodel_mesh,
                             out );
                     }
                 }
             }
         }
         void write_cells_in_region(
-            const GEO::MeshCellType& cell_type,
+            const CellType& cell_type,
             index_t region,
             const RINGMesh::GeoModelMesh& geomodel_mesh,
             std::ofstream& out ) const
         {
-            out << *cell_name_in_aster_mail_file[cell_type] << std::endl;
+            out << *cell_name_in_aster_mail_file[to_underlying_type( cell_type)] << std::endl;
             for( index_t c = 0;
                 c < geomodel_mesh.cells.nb_cells( region, cell_type ); c++ ) {
                 index_t global_id = geomodel_mesh.cells.cell( region, c, cell_type );
@@ -164,12 +165,12 @@ namespace {
         }
 
         void write_polygons_in_interface(
-            const GeoModelMeshPolygons::PolygonType& polygon_type,
+            const PolygonType& polygon_type,
             index_t surface,
             const RINGMesh::GeoModelMesh& mesh,
             std::ofstream& out ) const
         {
-            out << *polygon_name_in_aster_mail_file[polygon_type] << std::endl;
+            out << *polygon_name_in_aster_mail_file[to_underlying_type( polygon_type )] << std::endl;
             for( index_t p = 0; p < mesh.polygons.nb_polygons( surface, polygon_type );
                 p++ ) {
                 index_t global_id = mesh.polygons.polygon( surface, p, polygon_type );
