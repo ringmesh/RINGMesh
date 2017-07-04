@@ -123,7 +123,7 @@ namespace {
             out << nb_cells << std::endl;
             for( index_t c = 0; c < nb_cells; c++ ) {
                 out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
-                out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " ";
+                out << cell_type_mfem[to_underlying_type( geomodel_mesh.cells.type( c ))] << " ";
                 for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
                     out << geomodel_mesh.cells.vertex( c, cell2mfem[v] ) << " ";
                 }
@@ -152,7 +152,7 @@ namespace {
             for( index_t p = 0; p < polygons.nb(); p++ ) {
                 index_t not_used = 0;
                 out << polygons.surface( p ) + mfem_offset << " ";
-                out << polygon_type_mfem[polygons.type( p, not_used )] << " ";
+                out << polygon_type_mfem[to_underlying_type( polygons.type( p, not_used ) )] << " ";
                 for( index_t v = 0; v < polygons.nb_vertices( p ); v++ ) {
                     out << polygons.vertex( p, v ) << " ";
                 }

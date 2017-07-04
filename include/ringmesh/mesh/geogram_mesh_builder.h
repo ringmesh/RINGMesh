@@ -47,10 +47,6 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-}
-
-namespace RINGMesh {
 
 #define COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( Class )                                     \
     public:                                                                                     \
@@ -425,9 +421,9 @@ namespace RINGMesh {
                 dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) );
         }
 
-        virtual index_t create_cells( index_t nb_cells, GEO::MeshCellType type ) override
+        virtual index_t create_cells( index_t nb_cells, CellType type ) override
         {
-            return mesh_->mesh_->cells.create_cells( nb_cells, type );
+            return mesh_->mesh_->cells.create_cells( nb_cells, static_cast<GEO::MeshCellType>( type ) );
         }
 
         virtual void assign_cell_tet_mesh( const std::vector< index_t >& tets ) override

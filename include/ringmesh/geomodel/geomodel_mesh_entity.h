@@ -970,14 +970,14 @@ namespace RINGMesh {
          * Get the type of a given cell.
          * @pre The Region must be meshed
          */
-        GEO::MeshCellType cell_type( index_t cell_index ) const
+        CellType cell_type( index_t cell_index ) const
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 return volume_mesh_->cell_type( cell_index );
             }
             ringmesh_assert_not_reached;
-            return GEO::MESH_NB_CELL_TYPES;
+            return CellType::UNDEFINED;
         }
 
         index_t nb_cell_edges( index_t cell_index ) const

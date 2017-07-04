@@ -37,8 +37,6 @@
 
 #include <geogram/mesh/mesh_io.h>
 
-#include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/mesh/mesh.h>
 
 /// Copied and adapted from Geogram
@@ -188,7 +186,7 @@ namespace {
         const vecn< DIMENSION >& p )
     {
         switch( M.cell_type( cell ) ) {
-            case GEO::MESH_TET: {
+            case CellType::TETRAHEDRON: {
                 const vecn< DIMENSION >& p0 = M.vertex( M.cell_vertex( cell, 0 ) );
                 const vecn< DIMENSION >& p1 = M.vertex( M.cell_vertex( cell, 1 ) );
                 const vecn< DIMENSION >& p2 = M.vertex( M.cell_vertex( cell, 2 ) );
