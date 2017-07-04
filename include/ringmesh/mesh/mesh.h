@@ -75,6 +75,10 @@ namespace RINGMesh {
 
         virtual void save_mesh( const std::string& filename ) const = 0;
 
+        virtual index_t nb_connected_components() const = 0;
+        virtual index_t get_connected_components(
+            GEO::vector< index_t >& component ) const = 0;
+
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         virtual void print_mesh_bounded_attributes() const = 0;
         /*!
@@ -254,7 +258,6 @@ namespace RINGMesh {
         virtual index_t polygon_vertex(
             index_t polygon_id,
             index_t vertex_id ) const = 0;
-
         /*!
          * @brief Gets the number of all polygons in the whole Mesh.
          */
@@ -310,7 +313,6 @@ namespace RINGMesh {
                 return nb_polygon_vertices( polygon_id ) - 1;
             }
         }
-
         /*!
          * @brief Get the previous edge on the border
          * @details The returned border edge is the previous in the way of polygon edges
@@ -384,7 +386,6 @@ namespace RINGMesh {
         virtual index_t polygon_adjacent(
             index_t polygon_id,
             index_t edge_id ) const = 0;
-
         virtual GEO::AttributesManager& polygon_attribute_manager() const = 0;
         /*!
          * @brief Tests whether all the polygons are triangles. when all the polygons are triangles, storage and access is optimized.
@@ -648,7 +649,6 @@ namespace RINGMesh {
          * @return the global facet index.
          */
         virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0;
-
         /*!
          * Computes the Mesh cell edge length
          * @param[in] cell_id the facet index
@@ -723,6 +723,10 @@ namespace RINGMesh {
          * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
          */
         virtual index_t cell_adjacent( index_t cell_id, index_t facet_id ) const = 0;
+
+        std::vector< index_t > cells_around_vertex(
+            index_t vertex_id,
+            index_t cell_hint ) const;
 
         virtual GEO::AttributesManager& cell_attribute_manager() const = 0;
 
@@ -849,6 +853,8 @@ namespace RINGMesh {
         }
     protected:
         VolumeMesh() = default;
+    private:
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const;
 
     protected:
         mutable std::unique_ptr< NNSearch > cell_facets_nn_search_;

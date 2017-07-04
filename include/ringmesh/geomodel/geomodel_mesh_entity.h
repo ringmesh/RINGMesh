@@ -75,6 +75,7 @@ namespace RINGMesh {
         {
             return gmme_id( type_name(), id_ );
         }
+
         MeshEntityType mesh_entity_type() const
         {
             return gmme().type();
@@ -136,7 +137,6 @@ namespace RINGMesh {
         {
             return nb_parents() != 0;
         }
-
         /*!
          * @brief Check if the entity has a parent of the given type
          */
@@ -144,14 +144,11 @@ namespace RINGMesh {
         {
             return could_be_undefined_parent_gmge( parent_type ).is_defined();
         }
-
         index_t nb_parents() const
         {
             return static_cast< index_t >( parents_.size() );
         }
-
         const gmge_id& parent_gmge( index_t id ) const;
-
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
          * @pre The code assumes that this entity has a parent of the given type
@@ -189,7 +186,6 @@ namespace RINGMesh {
          * \name Local access to the GeoModelMeshEntity geometry
          * @{
          */
-
         index_t nb_vertices() const
         {
             return mesh_->nb_vertices();
@@ -242,7 +238,6 @@ namespace RINGMesh {
          * \name Geometrical request on Entity
          * @{
          */
-
         virtual double mesh_element_size( index_t mesh_element_index ) const = 0;
         virtual vec3 mesh_element_barycenter( index_t mesh_element_index ) const = 0;
         virtual vec3 entity_barycenter() const
@@ -254,7 +249,6 @@ namespace RINGMesh {
             ringmesh_assert( nb_vertices() > 0 );
             return result / static_cast< double >( nb_vertices() );
         }
-
         virtual double size() const
         {
             double size = 0.0;
@@ -279,7 +273,6 @@ namespace RINGMesh {
             : GeoModelEntity( geomodel, id, name ), mesh_( nullptr )
         {
         }
-
         virtual void copy_mesh_entity( const GeoModelMeshEntity& from )
         {
             copy_name( from );
@@ -288,7 +281,6 @@ namespace RINGMesh {
             incident_entities_ = from.incident_entities_;
             parents_ = from.parents_;
         }
-
         virtual bool is_index_valid() const final;
         virtual bool is_mesh_valid() const
         {
@@ -323,14 +315,12 @@ namespace RINGMesh {
         void bind_vertex_mapping_attribute() const;
 
         virtual void change_mesh_data_structure( const MeshType type ) = 0;
-
     private:
         gmge_id defined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
 
         gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
-
     protected:
 
         /// Boundary relations of this entity
@@ -341,7 +331,6 @@ namespace RINGMesh {
 
         /// Parents relations of this entity
         std::vector< index_t > parents_;
-
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
         std::shared_ptr< MeshBase > mesh_;
@@ -384,7 +373,6 @@ namespace RINGMesh {
         {
             return 0;
         }
-
         /*!
          * @return the number of vertices of the Corner
          */
@@ -395,7 +383,6 @@ namespace RINGMesh {
             ringmesh_assert( nb_vertices < 2 );
             return nb_vertices;
         }
-
         const Line& incident_entity( index_t x ) const;
 
         /*! @}
@@ -407,12 +394,10 @@ namespace RINGMesh {
             ringmesh_unused( mesh_element );
             return 0.0;
         }
-
         virtual double size() const
         {
             return 0.0;
         }
-
         virtual vec3 mesh_element_barycenter( index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element );
@@ -428,14 +413,12 @@ namespace RINGMesh {
         {
             return *mesh0d_;
         }
-
     protected:
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
          */
         Corner( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
-
         {
             update_mesh_storage_type( PointSetMesh::create_mesh( type ) );
         }
@@ -465,7 +448,6 @@ namespace RINGMesh {
             mesh0d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh0d_ );
         }
-
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
     private:
@@ -502,7 +484,6 @@ namespace RINGMesh {
         const Corner& boundary( index_t x ) const;
 
         const Surface& incident_entity( index_t x ) const;
-
         virtual bool is_connectivity_valid() const final;
 
         const LineAABBTree& edges_aabb() const
@@ -588,7 +569,6 @@ namespace RINGMesh {
         {
             return *mesh1d_;
         }
-
     protected:
         Line( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
@@ -616,7 +596,6 @@ namespace RINGMesh {
             mesh1d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh1d_ );
         }
-
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
     private:
@@ -649,7 +628,6 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const final;
-
         const Line& boundary( index_t x ) const;
 
         const Region& incident_entity( index_t x ) const;
@@ -811,7 +789,6 @@ namespace RINGMesh {
             return mesh2d_->vertex_index_in_polygon( polygon_index,
                 surface_vertex_index );
         }
-
         /*!
          * @brief Get the first polygon of the surface that has an edge linking the two vertices (ids in the surface)
          *
@@ -827,17 +804,17 @@ namespace RINGMesh {
         /*!
          * @brief Determines the polygons around a vertex
          * @param[in] surf_vertex_id Index of the vertex in the surface
-         * @param[in] border_only If true only polygons on the border are considered
-         * @param[in] first_polygon (Optional) Index of one polygon containing the vertex @param P
-         * @return Indices of the polygons containing @param P
-         * @note If a polygon containing the vertex is given, polygons around this
-         * vertex is search by propagation. Else, a first polygon is found by brute
+         * @param[in] border_only If true only facets on the border are considered
+         * @param[in] f0 (Optional) Index of one facet containing the vertex @p surf_vertex_id
+         * @return Indices of the facets containing @param surf_vertex_id
+         * @note If a facet containing the vertex is given, facets around this
+         * vertex is search by propagation. Else, a first facet is found by brute
          * force algorithm, and then the other by propagation
          */
         std::vector< index_t > polygons_around_vertex(
             index_t surf_vertex_id,
             bool border_only,
-            index_t first_polygon = NO_ID ) const
+            index_t first_polygon = NO_ID ) const /// TODO [BC] keep the default NO_ID. Not put in Region::cells_around_vertex...
         {
             return mesh2d_->polygons_around_vertex( surf_vertex_id, border_only,
                 first_polygon );
@@ -855,6 +832,7 @@ namespace RINGMesh {
             ringmesh_assert( polygon_index < nb_mesh_elements() );
             return mesh2d_->polygon_normal( polygon_index );
         }
+
         /*!
          * @brief Computes the normal of the surface at the vertex location
          * it computes the average value of polygon normal neighbors
@@ -925,7 +903,6 @@ namespace RINGMesh {
         {
             return *mesh2d_;
         }
-
     protected:
         Surface( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
@@ -962,9 +939,7 @@ namespace RINGMesh {
             mesh2d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh2d_ );
         }
-
         virtual void change_mesh_data_structure( const MeshType type ) override;
-
     private:
         std::shared_ptr< SurfaceMesh > mesh2d_;
     };
@@ -997,7 +972,6 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const final;
-
         const Surface& boundary( index_t x ) const;
 
         virtual bool is_connectivity_valid() const final;
@@ -1015,6 +989,11 @@ namespace RINGMesh {
         const VolumeAABBTree& cells_aabb() const
         {
             return mesh3d_->cells_aabb();
+        }
+
+        const NNSearch& cell_facets_nn_search() const
+        {
+            return mesh3d_->cell_facets_nn_search();
         }
 
         /*!
@@ -1253,10 +1232,12 @@ namespace RINGMesh {
             return vec3();
         }
 
-        index_t cells_around_vertex(
+        std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
-            std::vector< index_t >& result,
-            index_t cell_hint ) const;
+            index_t cell_hint ) const
+        {
+            return mesh3d_->cells_around_vertex( vertex_id, cell_hint );
+        }
 
         void compute_region_volumes_per_cell_type(
             double& tet_volume,
@@ -1296,7 +1277,6 @@ namespace RINGMesh {
             mesh3d_ = std::move( mesh );
             GeoModelMeshEntity::set_mesh( mesh3d_ );
         }
-
         virtual void change_mesh_data_structure( const MeshType type ) override;
 
         virtual void copy_mesh_entity( const GeoModelMeshEntity& from ) final
@@ -1305,14 +1285,12 @@ namespace RINGMesh {
             GeoModelMeshEntity::copy_mesh_entity( from );
             sides_ = region_from.sides_;
         }
-
     protected:
         /*! Additional information to store oriented boundary Surfaces
          * Side: + (true) or - (false)
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_;
-
     private:
         std::shared_ptr< VolumeMesh > mesh3d_;
     };
@@ -1342,7 +1320,6 @@ namespace RINGMesh {
         {
             return gmme_.boundaries_;
         }
-
     private:
         const GeoModelMeshEntity& gmme_;
     };
@@ -1401,7 +1378,6 @@ namespace RINGMesh {
         {
             gmme_.copy_mesh_entity( from );
         }
-
         void change_mesh_data_structure( const MeshType type );
 
         template< typename ENTITY >
