@@ -519,7 +519,7 @@ namespace RINGMesh {
 
     index_t GeoModelBuilderGeometry::create_region_cells(
         index_t region_id,
-        GEO::MeshCellType type,
+        CellType type,
         index_t nb_cells )
     {
         std::unique_ptr< VolumeMeshBuilder > builder = create_region_builder(
@@ -529,7 +529,7 @@ namespace RINGMesh {
 
     index_t GeoModelBuilderGeometry::create_region_cell(
         index_t region_id,
-        GEO::MeshCellType type,
+        CellType type,
         const std::vector< index_t >& vertex_indices )
     {
         index_t cell_id = create_region_cells( region_id, type, 1 );

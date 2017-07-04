@@ -246,9 +246,9 @@ namespace RINGMesh {
             return mesh_->cell_facets.attributes();
         }
 
-        virtual GEO::MeshCellType cell_type( index_t cell_id ) const override
+        virtual CellType cell_type( index_t cell_id ) const override
         {
-            return mesh_->cells.type( cell_id );
+            return static_cast<CellType>( mesh_->cells.type( cell_id ) );
         }
 
         virtual bool cells_are_simplicies() const override
