@@ -36,6 +36,7 @@
 #include <ringmesh/mesh/well.h>
 
 #include <cmath>
+#include <numeric>
 #include <stack>
 
 #include <geogram/mesh/mesh.h>
@@ -567,9 +568,9 @@ namespace RINGMesh {
             }
 
             std::vector< index_t > indices( intersections.size() );
+            std::iota( indices.begin(), indices.end(), 0 );
             std::vector< double > distances( intersections.size() );
             for( index_t i = 0; i < intersections.size(); i++ ) {
-                indices[i] = i;
                 distances[i] = length(
                     from_vertex - intersections[i].intersection_ );
             }

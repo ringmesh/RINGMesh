@@ -478,16 +478,10 @@ namespace RINGMesh {
         // Add the well vertices
         if( wells ) {
             wells->get_region_edges( region.index(), well_edges );
-            // Copy result of porting. Stupid, I know, but because of the interface
-            // of MakeUnique. This Edge class is a pain [JP]
             for( const auto& edges : well_edges ) {
-                std::vector< std::pair< vec3, vec3 > > wells_copy( edges.size() );
-
-                for( index_t i = 0; i < wells_copy.size(); ++i ) {
-                    region_surfaces_and_wells_vertices.push_back(
-                        edges[i].vertex( 0 ) );
-                    region_surfaces_and_wells_vertices.push_back(
-                        edges[i].vertex( 1 ) );
+                for( const auto& edge : edges ) {
+                    region_surfaces_and_wells_vertices.push_back( edge.vertex( 0 ) );
+                    region_surfaces_and_wells_vertices.push_back( edge.vertex( 1 ) );
                 }
             }
         }
