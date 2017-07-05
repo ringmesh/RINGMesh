@@ -135,8 +135,8 @@ namespace RINGMesh {
         /*!
          * Draws the corners
          */
-        virtual void draw() override;
-        virtual void initialize() override;
+        void draw() override;
+        void initialize() override;
     };
 
     template< index_t DIMENSION >
@@ -150,8 +150,8 @@ namespace RINGMesh {
         /*!
          * Draws the lines
          */
-        virtual void draw() override;
-        virtual void initialize() override;
+        void draw() override;
+        void initialize() override;
 
         /*!
          * Sets the line color
@@ -204,8 +204,8 @@ namespace RINGMesh {
         /*!
          * Draws the surfaces
          */
-        virtual void draw() override;
-        virtual void initialize() override;
+        void draw() override;
+        void initialize() override;
         /*!
          * Sets the surfaces color
          * @param[in] red the red component of the color in [0.0, 1.0]
@@ -309,8 +309,8 @@ namespace RINGMesh {
         /*!
          * Draws the Regions
          */
-        virtual void draw() override;
-        virtual void initialize() override;
+        void draw() override;
+        void initialize() override;
 
         /*!
          * Sets the region color

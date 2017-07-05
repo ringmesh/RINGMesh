@@ -118,13 +118,13 @@ namespace {
      */
     class STLIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from STL mesh not yet implemented" );
         }
 
-        virtual void save(
+        void save(
             const GeoModel< 3 >& geomodel,
             const std::string& filename ) final
         {

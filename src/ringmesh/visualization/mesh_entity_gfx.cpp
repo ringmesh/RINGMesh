@@ -89,12 +89,12 @@ namespace RINGMesh {
             return "cells";
         }
 
-        virtual std::string location_name() const override
+        std::string location_name() const override
         {
             return location_name_static();
         }
 
-        virtual void bind_attribute() override
+        void bind_attribute() override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
@@ -103,12 +103,12 @@ namespace RINGMesh {
                 this->manager_->colormap() );
         }
 
-        virtual void unbind_attribute() override
+        void unbind_attribute() override
         {
             this->manager_->gfx().regions.unset_scalar_attribute();
         }
 
-        virtual index_t nb_coordinates() override
+        index_t nb_coordinates() override
         {
             GEO::AttributeStore* store =
                 get_attribute_manager().find_attribute_store(
@@ -118,14 +118,14 @@ namespace RINGMesh {
             return store->dimension();
         }
 
-        virtual GEO::AttributesManager& get_attribute_manager() override
+        GEO::AttributesManager& get_attribute_manager() override
         {
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
             return geomodel->region( 0 ).cell_attribute_manager();
         }
 
     private:
-        virtual void do_compute_range( double& attribute_min, double& attribute_max ) override
+        void do_compute_range( double& attribute_min, double& attribute_max ) override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
@@ -150,12 +150,12 @@ namespace RINGMesh {
             return "cell_vertices";
         }
 
-        virtual std::string location_name() const override
+        std::string location_name() const override
         {
             return location_name_static();
         }
 
-        virtual void bind_attribute() override
+        void bind_attribute() override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
@@ -164,12 +164,12 @@ namespace RINGMesh {
                 this->manager_->colormap() );
         }
 
-        virtual void unbind_attribute() override
+        void unbind_attribute() override
         {
             this->manager_->gfx().regions.unset_scalar_attribute();
         }
 
-        virtual index_t nb_coordinates() override
+        index_t nb_coordinates() override
         {
             GEO::AttributeStore* store =
                 get_attribute_manager().find_attribute_store(
@@ -179,14 +179,14 @@ namespace RINGMesh {
             return store->dimension();
         }
 
-        virtual GEO::AttributesManager& get_attribute_manager() override
+        GEO::AttributesManager& get_attribute_manager() override
         {
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
             return geomodel->region( 0 ).vertex_attribute_manager();
         }
 
     private:
-        virtual void do_compute_range( double& attribute_min, double& attribute_max ) override
+        void do_compute_range( double& attribute_min, double& attribute_max ) override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
@@ -212,12 +212,12 @@ namespace RINGMesh {
             return "polygon";
         }
 
-        virtual std::string location_name() const override
+        std::string location_name() const override
         {
             return location_name_static();
         }
 
-        virtual void bind_attribute() override
+        void bind_attribute() override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
@@ -226,12 +226,12 @@ namespace RINGMesh {
                 this->manager_->colormap() );
         }
 
-        virtual void unbind_attribute() override
+        void unbind_attribute() override
         {
             this->manager_->gfx().surfaces.unset_scalar_attribute();
         }
 
-        virtual index_t nb_coordinates() override
+        index_t nb_coordinates() override
         {
             GEO::AttributeStore* store =
                 get_attribute_manager().find_attribute_store(
@@ -241,14 +241,14 @@ namespace RINGMesh {
             return store->dimension();
         }
 
-        virtual GEO::AttributesManager& get_attribute_manager() override
+        GEO::AttributesManager& get_attribute_manager() override
         {
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
             return geomodel->surface( 0 ).polygon_attribute_manager();
         }
 
     private:
-        virtual void do_compute_range( double& attribute_min, double& attribute_max ) override
+        void do_compute_range( double& attribute_min, double& attribute_max ) override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
@@ -274,11 +274,11 @@ namespace RINGMesh {
             return "polygon_vertices";
         }
 
-        virtual std::string location_name() const override
+        std::string location_name() const override
         {
             return location_name_static();
         }
-        virtual void bind_attribute() override
+        void bind_attribute() override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
@@ -286,11 +286,11 @@ namespace RINGMesh {
                 attribute_name, this->manager_->minimum(), this->manager_->maximum(),
                 this->manager_->colormap() );
         }
-        virtual void unbind_attribute() override
+        void unbind_attribute() override
         {
             this->manager_->gfx().surfaces.unset_scalar_attribute();
         }
-        virtual index_t nb_coordinates() override
+        index_t nb_coordinates() override
         {
             GEO::AttributeStore* store =
                 get_attribute_manager().find_attribute_store(
@@ -300,14 +300,14 @@ namespace RINGMesh {
             return store->dimension();
         }
 
-        virtual GEO::AttributesManager& get_attribute_manager() override
+        GEO::AttributesManager& get_attribute_manager() override
         {
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
             return geomodel->surface( 0 ).vertex_attribute_manager();
         }
 
     private:
-        virtual void do_compute_range( double& attribute_min, double& attribute_max ) override
+        void do_compute_range( double& attribute_min, double& attribute_max ) override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );

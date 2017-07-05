@@ -430,7 +430,7 @@ namespace {
     template< index_t DIMENSION >
     class GeoModelHandlerGM final : public GeoModelIOHandler< DIMENSION > {
     public:
-        virtual void load(
+        void load(
             const std::string& filename,
             GeoModel< DIMENSION >& geomodel ) final
         {
@@ -443,7 +443,7 @@ namespace {
             GEO::FileSystem::set_current_working_directory( pwd );
         }
 
-        virtual void save(
+        void save(
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
         {
@@ -481,7 +481,7 @@ namespace {
             GEO::FileSystem::set_current_working_directory( pwd );
         }
 
-        virtual index_t dimension( const std::string& filename ) const final
+        index_t dimension( const std::string& filename ) const final
         {
             unzFile uz = unzOpen( filename.c_str() );
             unz_global_info global_info;
