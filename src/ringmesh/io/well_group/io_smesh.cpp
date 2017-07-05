@@ -37,7 +37,7 @@ namespace {
     void merge_colocated_vertices( double epsilon, LineMesh& mesh )
     {
         std::vector< index_t > old2new;
-        index_t nb_colocated = mesh.vertices_nn_search().get_colocated_index_mapping(
+        index_t nb_colocated = mesh.vertex_nn_search().get_colocated_index_mapping(
             epsilon, old2new );
         if( nb_colocated > 0 ) {
             std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(

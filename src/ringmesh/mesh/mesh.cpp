@@ -375,7 +375,7 @@ namespace RINGMesh {
     index_t VolumeMesh::find_first_cell_owing_vertex( index_t vertex_id_in_mesh ) const
     {
         ringmesh_assert( nb_cells() != 0 );
-        const NNSearch& ann_cells = cells_nn_search();
+        const NNSearch& ann_cells = cell_nn_search();
         const vec3& vertex_pos = vertex( vertex_id_in_mesh );
 
         index_t nb_neighbors = std::min( index_t( 5 ), nb_cells() );
