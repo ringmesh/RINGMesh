@@ -125,8 +125,8 @@ namespace RINGMesh {
     double StratigraphicColumn::get_column_min_thick() const
     {
         double sum = 0;
-        for( index_t i = 0; i < units_.size(); ++i ) {
-            sum += units_[i]->get_min_thick();
+        for( const StratigraphicUnit* unit : units_ ) {
+            sum += unit->get_min_thick();
         }
         return sum;
     }
@@ -134,8 +134,8 @@ namespace RINGMesh {
     double StratigraphicColumn::get_column_max_thick() const
     {
         double sum = 0;
-        for( index_t i = 0; i < units_.size(); ++i ) {
-            sum += units_[i]->get_max_thick();
+        for( const StratigraphicUnit* unit : units_ ) {
+            sum += unit->get_max_thick();
         }
         return sum;
     }

@@ -842,10 +842,12 @@ namespace RINGMesh {
         }
 
         region_cell_ptr_.resize(
-            this->gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1, 0 );
+            this->gm_.nb_regions() * to_underlying_type( CellType::UNDEFINED ) + 1,
+            0 );
 
         // Total number of  cells
-        std::vector< index_t > nb_cells_per_type( GEO::MESH_NB_CELL_TYPES, 0 );
+        std::vector< index_t > nb_cells_per_type(
+            to_underlying_type( CellType::UNDEFINED ), 0 );
         index_t nb = 0;
 
         for( index_t r = 0; r < this->gm_.nb_regions(); ++r ) {
@@ -861,32 +863,33 @@ namespace RINGMesh {
         for( index_t r = 0; r < this->gm_.nb_regions(); ++r ) {
             const Region< DIMENSION >& cur_region = this->gm_.region( r );
             for( index_t c = 0; c < this->gm_.region( r ).nb_mesh_elements(); ++c ) {
-                GEO::MeshCellType cur_cell_type = cur_region.cell_type( c );
+                CellType cur_cell_type = cur_region.cell_type( c );
                 switch( cur_cell_type ) {
-                    case GEO::MESH_TET:
-                        nb_cells_per_type[GEO::MESH_TET]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET
-                            + 1]++;
+                    case CellType::TETRAHEDRON:
+                        nb_cells_per_type[to_underlying_type( CellType::TETRAHEDRON )]++;
+                        region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
+                            * r + to_underlying_type( CellType::TETRAHEDRON ) + 1]++;
                         break;
-                    case GEO::MESH_HEX:
-                        nb_cells_per_type[GEO::MESH_HEX]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX
-                            + 1]++;
+                    case CellType::HEXAHEDRON:
+                        nb_cells_per_type[to_underlying_type( CellType::HEXAHEDRON )]++;
+                        region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
+                            * r + to_underlying_type( CellType::HEXAHEDRON ) + 1]++;
                         break;
-                    case GEO::MESH_PRISM:
-                        nb_cells_per_type[GEO::MESH_PRISM]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-                            + GEO::MESH_PRISM + 1]++;
+                    case CellType::PRISM:
+                        nb_cells_per_type[to_underlying_type( CellType::PRISM )]++;
+                        region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
+                            * r + to_underlying_type( CellType::PRISM ) + 1]++;
                         break;
-                    case GEO::MESH_PYRAMID:
-                        nb_cells_per_type[GEO::MESH_PYRAMID]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-                            + GEO::MESH_PYRAMID + 1]++;
+                    case CellType::PYRAMID:
+                        nb_cells_per_type[to_underlying_type( CellType::PYRAMID )]++;
+                        region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
+                            * r + to_underlying_type( CellType::PYRAMID ) + 1]++;
                         break;
-                    case GEO::MESH_CONNECTOR:
-                        nb_cells_per_type[GEO::MESH_CONNECTOR]++;
-                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-                            + GEO::MESH_CONNECTOR + 1]++;
+                    case CellType::UNCLASSIFIED:
+                        nb_cells_per_type[to_underlying_type(
+                            CellType::UNCLASSIFIED )]++;
+                        region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
+                            * r + to_underlying_type( CellType::UNCLASSIFIED ) + 1]++;
                         break;
                     default:
                         ringmesh_assert_not_reached;
@@ -896,8 +899,10 @@ namespace RINGMesh {
         }
 
         // Compute the cell offsets
-        std::vector< index_t > cells_offset_per_type( GEO::MESH_NB_CELL_TYPES, 0 );
-        for( index_t t = GEO::MESH_TET + 1; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
+        std::vector< index_t > cells_offset_per_type(
+            to_underlying_type( CellType::UNDEFINED ), 0 );
+        for( index_t t = to_underlying_type( CellType::TETRAHEDRON ) + 1;
+            t < to_underlying_type( CellType::UNDEFINED ); t++ ) {
             cells_offset_per_type[t] += cells_offset_per_type[t - 1];
             cells_offset_per_type[t] += nb_cells_per_type[t - 1];
         }
@@ -907,22 +912,23 @@ namespace RINGMesh {
         }
 
         // Create "empty" tet, hex, pyr and prism
-        for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
-            mesh_builder->create_cells( nb_cells_per_type[i],
-                GEO::MeshCellType( i ) );
+        for( index_t i = 0; i < to_underlying_type( CellType::UNDEFINED ); ++i ) {
+            mesh_builder->create_cells( nb_cells_per_type[i], CellType( i ) );
         }
 
         // Fill the cells with vertices
         bind_attribute();
-        std::vector< index_t > cur_cell_per_type( GEO::MESH_NB_CELL_TYPES, 0 );
+        std::vector< index_t > cur_cell_per_type(
+            to_underlying_type( CellType::UNDEFINED ), 0 );
         const GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices =
             this->gmm_.vertices;
         for( index_t r = 0; r < this->gm_.nb_regions(); ++r ) {
             const Region< DIMENSION >& cur_region = this->gm_.region( r );
             for( index_t c = 0; c < cur_region.nb_mesh_elements(); ++c ) {
-                GEO::MeshCellType cur_cell_type = cur_region.cell_type( c );
-                index_t cur_cell = cells_offset_per_type[cur_cell_type]
-                    + cur_cell_per_type[cur_cell_type]++;
+                CellType cur_cell_type = cur_region.cell_type( c );
+                index_t cur_cell = cells_offset_per_type[to_underlying_type(
+                    cur_cell_type )]
+                    + cur_cell_per_type[to_underlying_type( cur_cell_type )]++;
                 for( index_t v = 0; v < mesh_->nb_cell_vertices( cur_cell ); v++ ) {
                     index_t region_vertex_index =
                         cur_region.mesh_element_vertex_index( c, v );
@@ -948,11 +954,12 @@ namespace RINGMesh {
         mesh_builder->permute_cells( sorted_indices );
 
         // Cache some values
-        nb_tet_ = nb_cells_per_type[GEO::MESH_TET];
-        nb_hex_ = nb_cells_per_type[GEO::MESH_HEX];
-        nb_prism_ = nb_cells_per_type[GEO::MESH_PRISM];
-        nb_pyramid_ = nb_cells_per_type[GEO::MESH_PYRAMID];
-        nb_connector_ = nb_cells_per_type[GEO::MESH_CONNECTOR];
+        nb_tet_ = nb_cells_per_type[to_underlying_type( CellType::TETRAHEDRON )];
+        nb_hex_ = nb_cells_per_type[to_underlying_type( CellType::HEXAHEDRON )];
+        nb_prism_ = nb_cells_per_type[to_underlying_type( CellType::PRISM )];
+        nb_pyramid_ = nb_cells_per_type[to_underlying_type( CellType::PYRAMID )];
+        nb_connector_ = nb_cells_per_type[to_underlying_type(
+            CellType::UNCLASSIFIED )];
     }
 
     template< index_t DIMENSION >
@@ -1080,7 +1087,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    GEO::MeshCellType GeoModelMeshCells< DIMENSION >::type( index_t c ) const
+    CellType GeoModelMeshCells< DIMENSION >::type( index_t c ) const
     {
         test_and_initialize();
         ringmesh_assert( c < mesh_->nb_cells() );
@@ -1088,21 +1095,21 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshCells< DIMENSION >::nb_cells( GEO::MeshCellType type ) const
+    index_t GeoModelMeshCells< DIMENSION >::nb_cells( CellType type ) const
     {
         test_and_initialize();
         switch( type ) {
-            case GEO::MESH_TET:
+            case CellType::TETRAHEDRON:
                 return nb_tet();
-            case GEO::MESH_HEX:
+            case CellType::HEXAHEDRON:
                 return nb_hex();
-            case GEO::MESH_PRISM:
+            case CellType::PRISM:
                 return nb_prism();
-            case GEO::MESH_PYRAMID:
+            case CellType::PYRAMID:
                 return nb_pyramid();
-            case GEO::MESH_CONNECTOR:
+            case CellType::UNCLASSIFIED:
                 return nb_connector();
-            case GEO::MESH_NB_CELL_TYPES:
+            case CellType::UNDEFINED:
                 return nb();
             default:
                 ringmesh_assert_not_reached;
@@ -1113,27 +1120,29 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     index_t GeoModelMeshCells< DIMENSION >::nb_cells(
         index_t r,
-        GEO::MeshCellType type ) const
+        CellType type ) const
     {
         test_and_initialize();
         switch( type ) {
-            case GEO::MESH_TET:
+            case CellType::TETRAHEDRON:
                 return nb_tet( r );
-            case GEO::MESH_HEX:
+            case CellType::HEXAHEDRON:
                 return nb_hex( r );
-            case GEO::MESH_PRISM:
+            case CellType::PRISM:
                 return nb_prism( r );
-            case GEO::MESH_PYRAMID:
+            case CellType::PYRAMID:
                 return nb_pyramid( r );
-            case GEO::MESH_CONNECTOR:
+            case CellType::UNCLASSIFIED:
                 return nb_connector( r );
-            case GEO::MESH_NB_CELL_TYPES:
+            case CellType::UNDEFINED:
                 ringmesh_assert(
-                    region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
-                        - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r]
-                        == this->gm_.region( r ).nb_mesh_elements() );
-                return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
-                    - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r];
+                    region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
+                        * ( r + 1 )]
+                        - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
+                            * r] == this->gm_.region( r ).nb_mesh_elements() );
+                return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
+                    * ( r + 1 )]
+                    - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r];
             default:
                 ringmesh_assert_not_reached;
                 return 0;
@@ -1144,22 +1153,23 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::cell(
         index_t r,
         index_t c,
-        GEO::MeshCellType type ) const
+        CellType type ) const
     {
         test_and_initialize();
         switch( type ) {
-            case GEO::MESH_TET:
+            case CellType::TETRAHEDRON:
                 return tet( r, c );
-            case GEO::MESH_HEX:
+            case CellType::HEXAHEDRON:
                 return hex( r, c );
-            case GEO::MESH_PRISM:
+            case CellType::PRISM:
                 return prism( r, c );
-            case GEO::MESH_PYRAMID:
+            case CellType::PYRAMID:
                 return pyramid( r, c );
-            case GEO::MESH_CONNECTOR:
+            case CellType::UNCLASSIFIED:
                 return connector( r, c );
-            case GEO::MESH_NB_CELL_TYPES:
-                return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] + c;
+            case CellType::UNDEFINED:
+                return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r]
+                    + c;
             default:
                 ringmesh_assert_not_reached;
                 return 0;
@@ -1178,8 +1188,10 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_TET + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET];
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + ( to_underlying_type( CellType::TETRAHEDRON ) + 1 )]
+            - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+                + to_underlying_type( CellType::TETRAHEDRON )];
     }
 
     template< index_t DIMENSION >
@@ -1187,7 +1199,8 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET] + t;
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + to_underlying_type( CellType::TETRAHEDRON )] + t;
     }
 
     template< index_t DIMENSION >
@@ -1202,8 +1215,10 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_HEX + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX];
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + ( to_underlying_type( CellType::HEXAHEDRON ) + 1 )]
+            - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+                + to_underlying_type( CellType::HEXAHEDRON )];
     }
 
     template< index_t DIMENSION >
@@ -1211,7 +1226,8 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX] + h;
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + to_underlying_type( CellType::HEXAHEDRON )] + h;
     }
 
     template< index_t DIMENSION >
@@ -1226,8 +1242,10 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_PRISM + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PRISM];
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + ( to_underlying_type( CellType::PRISM ) + 1 )]
+            - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+                + to_underlying_type( CellType::PRISM )];
     }
 
     template< index_t DIMENSION >
@@ -1235,7 +1253,8 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PRISM] + p;
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + to_underlying_type( CellType::PRISM )] + p;
     }
 
     template< index_t DIMENSION >
@@ -1250,9 +1269,10 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-            + ( GEO::MESH_PYRAMID + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PYRAMID];
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + ( to_underlying_type( CellType::PYRAMID ) + 1 )]
+            - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+                + to_underlying_type( CellType::PYRAMID )];
     }
 
     template< index_t DIMENSION >
@@ -1260,7 +1280,8 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PYRAMID] + p;
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + to_underlying_type( CellType::PYRAMID )] + p;
     }
 
     template< index_t DIMENSION >
@@ -1275,9 +1296,10 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
-            + ( GEO::MESH_CONNECTOR + 1 )]
-            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_CONNECTOR];
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + ( to_underlying_type( CellType::UNCLASSIFIED ) + 1 )]
+            - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+                + to_underlying_type( CellType::UNCLASSIFIED )];
     }
 
     template< index_t DIMENSION >
@@ -1285,8 +1307,8 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( r < this->gm_.nb_regions() );
-        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_CONNECTOR]
-            + c;
+        return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
+            + to_underlying_type( CellType::UNCLASSIFIED )] + c;
     }
 
     template< index_t DIMENSION >
@@ -1769,14 +1791,16 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    typename GeoModelMeshPolygonsBase< DIMENSION >::PolygonType GeoModelMeshPolygonsBase<
-        DIMENSION >::type( index_t p, index_t& index ) const
+    PolygonType GeoModelMeshPolygonsBase< DIMENSION >::type(
+        index_t p,
+        index_t& index ) const
     {
         test_and_initialize();
         ringmesh_assert( p < mesh_->nb_polygons() );
         index_t polygon = index_in_surface( p );
         index_t s = surface( p );
-        for( index_t t = TRIANGLE; t < ALL; t++ ) {
+        for( index_t t = to_underlying_type( PolygonType::TRIANGLE );
+            t < to_underlying_type( PolygonType::UNDEFINED ); t++ ) {
             PolygonType T = static_cast< PolygonType >( t );
             if( polygon < nb_polygons( s, T ) ) {
                 index = polygon;
@@ -1786,7 +1810,7 @@ namespace RINGMesh {
         }
         index = NO_ID;
         ringmesh_assert_not_reached;
-        return NO_POLYGON;
+        return PolygonType::UNDEFINED;
     }
 
     template< index_t DIMENSION >
@@ -1795,13 +1819,13 @@ namespace RINGMesh {
     {
         test_and_initialize();
         switch( type ) {
-            case TRIANGLE:
+            case PolygonType::TRIANGLE:
                 return nb_triangle();
-            case QUAD:
+            case PolygonType::QUAD:
                 return nb_quad();
-            case UNCLASSIFIED_POLYGON:
+            case PolygonType::UNCLASSIFIED:
                 return nb_unclassified_polygon();
-            case ALL:
+            case PolygonType::UNDEFINED:
                 return nb();
             default:
                 ringmesh_assert_not_reached;
@@ -1817,15 +1841,17 @@ namespace RINGMesh {
         test_and_initialize();
         ringmesh_assert( s < this->gm_.nb_surfaces() );
         switch( type ) {
-            case TRIANGLE:
+            case PolygonType::TRIANGLE:
                 return nb_triangle( s );
-            case QUAD:
+            case PolygonType::QUAD:
                 return nb_quad( s );
-            case UNCLASSIFIED_POLYGON:
+            case PolygonType::UNCLASSIFIED:
                 return nb_unclassified_polygon( s );
-            case ALL:
-                return surface_polygon_ptr_[ALL * ( s + 1 )]
-                    - surface_polygon_ptr_[ALL * s];
+            case PolygonType::UNDEFINED:
+                return surface_polygon_ptr_[to_underlying_type(
+                    PolygonType::UNDEFINED ) * ( s + 1 )]
+                    - surface_polygon_ptr_[to_underlying_type(
+                        PolygonType::UNDEFINED ) * s];
             default:
                 ringmesh_assert_not_reached;
                 return 0;
@@ -1841,14 +1867,15 @@ namespace RINGMesh {
         test_and_initialize();
         ringmesh_assert( s < this->gm_.nb_surfaces() );
         switch( type ) {
-            case TRIANGLE:
+            case PolygonType::TRIANGLE:
                 return triangle( s, p );
-            case QUAD:
+            case PolygonType::QUAD:
                 return quad( s, p );
-            case UNCLASSIFIED_POLYGON:
+            case PolygonType::UNCLASSIFIED:
                 return unclassified_polygon( s, p );
-            case ALL:
-                return surface_polygon_ptr_[ALL * s] + p;
+            case PolygonType::UNDEFINED:
+                return surface_polygon_ptr_[to_underlying_type(
+                    PolygonType::UNDEFINED ) * s] + p;
             default:
                 ringmesh_assert_not_reached;
                 return 0;
@@ -1867,8 +1894,10 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( s < this->gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + ( TRIANGLE + 1 )]
-            - surface_polygon_ptr_[ALL * s + TRIANGLE];
+        return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+            + ( to_underlying_type( PolygonType::TRIANGLE ) + 1 )]
+            - surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+                + to_underlying_type( PolygonType::TRIANGLE )];
     }
 
     template< index_t DIMENSION >
@@ -1878,7 +1907,8 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( s < this->gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + TRIANGLE] + t;
+        return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+            + to_underlying_type( PolygonType::TRIANGLE )] + t;
     }
 
     template< index_t DIMENSION >
@@ -1893,8 +1923,10 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( s < this->gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + ( QUAD + 1 )]
-            - surface_polygon_ptr_[ALL * s + QUAD];
+        return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+            + ( to_underlying_type( PolygonType::QUAD ) + 1 )]
+            - surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+                + to_underlying_type( PolygonType::QUAD )];
     }
 
     template< index_t DIMENSION >
@@ -1902,7 +1934,8 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( s < this->gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + QUAD] + q;
+        return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+            + to_underlying_type( PolygonType::QUAD )] + q;
     }
 
     template< index_t DIMENSION >
@@ -1918,8 +1951,10 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( s < this->gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + ( UNCLASSIFIED_POLYGON + 1 )]
-            - surface_polygon_ptr_[ALL * s + UNCLASSIFIED_POLYGON];
+        return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+            + ( to_underlying_type( PolygonType::UNCLASSIFIED ) + 1 )]
+            - surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+                + to_underlying_type( PolygonType::UNCLASSIFIED )];
     }
 
     template< index_t DIMENSION >
@@ -1929,7 +1964,8 @@ namespace RINGMesh {
     {
         test_and_initialize();
         ringmesh_assert( s < this->gm_.nb_surfaces() );
-        return surface_polygon_ptr_[ALL * s + UNCLASSIFIED_POLYGON] + p;
+        return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+            + to_underlying_type( PolygonType::UNCLASSIFIED )] + p;
     }
 
     template< index_t DIMENSION >
@@ -1956,7 +1992,9 @@ namespace RINGMesh {
     {
         this->gmm_.vertices.test_and_initialize();
         clear();
-        surface_polygon_ptr_.resize( this->gm_.nb_surfaces() * ALL + 1, 0 );
+        surface_polygon_ptr_.resize(
+            this->gm_.nb_surfaces() * to_underlying_type( PolygonType::UNDEFINED )
+                + 1, 0 );
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > mesh_builder =
             SurfaceMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         if( mesh_->nb_vertices() != this->gmm_.vertices.nb() ) {
@@ -1964,27 +2002,37 @@ namespace RINGMesh {
         }
 
         // Compute the total number of polygons per type and per surface
-        std::vector< index_t > nb_polygon_per_type( ALL, 0 );
+        std::map< PolygonType, index_t > nb_polygon_per_type = {
+            { PolygonType::TRIANGLE, 0 }, { PolygonType::QUAD, 0 }, {
+                PolygonType::UNCLASSIFIED, 0 } };
         for( index_t s = 0; s < this->gm_.nb_surfaces(); s++ ) {
             const Surface< DIMENSION >& surface = this->gm_.surface( s );
             if( surface.is_simplicial() ) {
-                nb_polygon_per_type[TRIANGLE] += surface.nb_mesh_elements();
-                surface_polygon_ptr_[ALL * s + TRIANGLE + 1] +=
+                nb_polygon_per_type[PolygonType::TRIANGLE] +=
+                    surface.nb_mesh_elements();
+                surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
+                    + to_underlying_type( PolygonType::TRIANGLE ) + 1] +=
                     surface.nb_mesh_elements();
             } else {
                 for( index_t p = 0; p < surface.nb_mesh_elements(); p++ ) {
                     switch( surface.nb_mesh_element_vertices( p ) ) {
                         case 3:
-                            nb_polygon_per_type[TRIANGLE]++;
-                            surface_polygon_ptr_[ALL * s + TRIANGLE + 1]++;
+                            nb_polygon_per_type[PolygonType::TRIANGLE]++;
+                            surface_polygon_ptr_[to_underlying_type(
+                                PolygonType::UNDEFINED ) * s
+                                + to_underlying_type( PolygonType::TRIANGLE ) + 1]++;
                             break;
                         case 4:
-                            nb_polygon_per_type[QUAD]++;
-                            surface_polygon_ptr_[ALL * s + QUAD + 1]++;
+                            nb_polygon_per_type[PolygonType::QUAD]++;
+                            surface_polygon_ptr_[to_underlying_type(
+                                PolygonType::UNDEFINED ) * s
+                                + to_underlying_type( PolygonType::QUAD ) + 1]++;
                             break;
                         default:
-                            nb_polygon_per_type[UNCLASSIFIED_POLYGON]++;
-                            surface_polygon_ptr_[ALL * s + UNCLASSIFIED_POLYGON + 1]++;
+                            nb_polygon_per_type[PolygonType::UNCLASSIFIED]++;
+                            surface_polygon_ptr_[to_underlying_type(
+                                PolygonType::UNDEFINED ) * s
+                                + to_underlying_type( PolygonType::UNCLASSIFIED ) + 1]++;
                             break;
                     }
                 }
@@ -1992,28 +2040,33 @@ namespace RINGMesh {
         }
 
         // Get out if no polygons
-        index_t nb_total_polygons = 0;
-        for( index_t nb_polygon : nb_polygon_per_type ) {
-            nb_total_polygons += nb_polygon;
-        }
+        index_t nb_total_polygons = nb_polygon_per_type[PolygonType::TRIANGLE]
+            + nb_polygon_per_type[PolygonType::QUAD]
+            + nb_polygon_per_type[PolygonType::UNCLASSIFIED];
+
         if( nb_total_polygons == 0 ) {
             return;
         }
 
         // Create triangles and quads, the polygons will be handle later
-        if( nb_polygon_per_type[TRIANGLE] ) {
-            mesh_builder->create_triangles( nb_polygon_per_type[TRIANGLE] );
+        if( nb_polygon_per_type[PolygonType::TRIANGLE] ) {
+            mesh_builder->create_triangles(
+                nb_polygon_per_type[PolygonType::TRIANGLE] );
         }
-        if( nb_polygon_per_type[QUAD] ) {
-            mesh_builder->create_quads( nb_polygon_per_type[QUAD] );
+        if( nb_polygon_per_type[PolygonType::QUAD] ) {
+            mesh_builder->create_quads( nb_polygon_per_type[PolygonType::QUAD] );
         }
 
         // Compute the polygon offset
-        std::vector< index_t > polygon_offset_per_type( ALL, 0 );
-        for( index_t t = TRIANGLE + 1; t < ALL; t++ ) {
-            polygon_offset_per_type[t] += polygon_offset_per_type[t - 1];
-            polygon_offset_per_type[t] += nb_polygon_per_type[t - 1];
-        }
+        std::map< PolygonType, index_t > polygon_offset_per_type = {
+            { PolygonType::TRIANGLE, 0 }, { PolygonType::QUAD, 0 }, {
+                PolygonType::UNCLASSIFIED, 0 } };
+        polygon_offset_per_type[PolygonType::QUAD] =
+            nb_polygon_per_type[PolygonType::TRIANGLE];
+        polygon_offset_per_type[PolygonType::UNCLASSIFIED] =
+            nb_polygon_per_type[PolygonType::TRIANGLE]
+                + nb_polygon_per_type[PolygonType::QUAD];
+
         for( index_t i = 1; i < surface_polygon_ptr_.size() - 1; i++ ) {
             surface_polygon_ptr_[i + 1] += surface_polygon_ptr_[i];
         }
@@ -2023,7 +2076,8 @@ namespace RINGMesh {
         bind_attribute();
         const GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices =
             this->gmm_.vertices;
-        std::vector< index_t > cur_polygon_per_type( ALL, 0 );
+        std::vector< index_t > cur_polygon_per_type(
+            to_underlying_type( PolygonType::UNDEFINED ), 0 );
         for( index_t s = 0; s < this->gm_.nb_surfaces(); s++ ) {
             const Surface< DIMENSION >& surface = this->gm_.surface( s );
             gmme_id surface_id = surface.gmme();
@@ -2033,7 +2087,7 @@ namespace RINGMesh {
                 if( nb_vertices < 5 ) {
                     PolygonType T = static_cast< PolygonType >( nb_vertices - 3 );
                     cur_polygon = polygon_offset_per_type[T]
-                        + cur_polygon_per_type[T]++;
+                        + cur_polygon_per_type[to_underlying_type( T )]++;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         index_t v_id = geomodel_vertices.geomodel_vertex_id(
                             surface_id, p, v );
@@ -2070,9 +2124,9 @@ namespace RINGMesh {
         disconnect_along_lines();
 
         // Cache some values
-        nb_triangle_ = nb_polygon_per_type[TRIANGLE];
-        nb_quad_ = nb_polygon_per_type[QUAD];
-        nb_unclassified_polygon_ = nb_polygon_per_type[UNCLASSIFIED_POLYGON];
+        nb_triangle_ = nb_polygon_per_type[PolygonType::TRIANGLE];
+        nb_quad_ = nb_polygon_per_type[PolygonType::QUAD];
+        nb_unclassified_polygon_ = nb_polygon_per_type[PolygonType::UNCLASSIFIED];
     }
 
     template< index_t DIMENSION >

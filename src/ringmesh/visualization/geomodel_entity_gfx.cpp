@@ -482,7 +482,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_draw_cells(
-        GEO::MeshCellType type,
+        CellType type,
         bool x )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
@@ -493,7 +493,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_draw_cells(
         index_t region_id,
-        GEO::MeshCellType type,
+        CellType type,
         bool x )
     {
         region( region_id ).set_draw_cells( type, x );
@@ -576,7 +576,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_cell_type_visibility(
-        GEO::MeshCellType t,
+        CellType t,
         bool is_visible )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
@@ -587,7 +587,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_cell_type_visibility(
         index_t region_id,
-        GEO::MeshCellType t,
+        CellType t,
         bool is_visible )
     {
         region( region_id ).set_draw_cells( t, is_visible );

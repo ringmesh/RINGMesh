@@ -342,14 +342,12 @@ namespace {
         bool is_triangle( index_t p ) const
         {
             index_t index;
-            return polygons_.type( p, index )
-                == GeoModelMeshPolygons< DIMENSION >::TRIANGLE;
+            return polygons_.type( p, index ) == PolygonType::TRIANGLE;
         }
         bool is_quad( index_t p ) const
         {
             index_t index;
-            return polygons_.type( p, index )
-                == GeoModelMeshPolygons< DIMENSION >::QUAD;
+            return polygons_.type( p, index ) == PolygonType::QUAD;
         }
 
     private:
@@ -982,8 +980,8 @@ namespace {
             threads.reserve( 8 );
             add_checks( threads );
 
-            for( index_t i = 0; i < threads.size(); i++ ) {
-                threads[i].join();
+            for( std::thread& thread : threads ) {
+                thread.join();
             }
         }
 

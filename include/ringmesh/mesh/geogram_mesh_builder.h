@@ -47,10 +47,6 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-}
-
-namespace RINGMesh {
 
 #define COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( Class )                             \
     public:                                                                             \
@@ -161,24 +157,24 @@ namespace RINGMesh {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
-         void set_mesh( LineMesh< DIMENSION >& mesh ) override
+        void set_mesh( LineMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
                 dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) );
         }
 
-         void create_edge( index_t v1_id, index_t v2_id ) override
+        void create_edge( index_t v1_id, index_t v2_id ) override
         {
             mesh_->mesh_->edges.create_edge( v1_id, v2_id );
             clear_edge_linked_objects();
         }
 
-         index_t create_edges( index_t nb_edges ) override
+        index_t create_edges( index_t nb_edges ) override
         {
             return mesh_->mesh_->edges.create_edges( nb_edges );
         }
 
-         void set_edge_vertex(
+        void set_edge_vertex(
             index_t edge_id,
             index_t local_vertex_id,
             index_t vertex_id ) override
@@ -187,7 +183,7 @@ namespace RINGMesh {
             clear_edge_linked_objects();
         }
 
-         void delete_edges(
+        void delete_edges(
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) override
         {
@@ -200,13 +196,13 @@ namespace RINGMesh {
             clear_edge_linked_objects();
         }
 
-         void clear_edges( bool keep_attributes, bool keep_memory ) override
+        void clear_edges( bool keep_attributes, bool keep_memory ) override
         {
             mesh_->mesh_->edges.clear( keep_attributes, keep_memory );
             clear_edge_linked_objects();
         }
 
-         void remove_isolated_vertices() override
+        void remove_isolated_vertices() override
         {
             std::vector< bool > to_delete( mesh_->nb_vertices(), true );
 
@@ -220,19 +216,20 @@ namespace RINGMesh {
 
         }
 
-         void permute_edges( const std::vector< index_t >& permutation ) override
+        void permute_edges( const std::vector< index_t >& permutation ) override
         {
             GEO::vector< index_t > geo_vector_permutation =
                 copy_std_vector_to_geo_vector( permutation );
             mesh_->mesh_->edges.permute_elements( geo_vector_permutation );
         }
 
-         void clear_vertex_linked_objects() override
+        void clear_vertex_linked_objects() override
         {
             delete_vertex_nn_search();
             clear_edge_linked_objects();
         }
-         void clear_edge_linked_objects() override
+        
+        void clear_edge_linked_objects() override
         {
             delete_edge_nn_search();
         }
@@ -255,13 +252,13 @@ namespace RINGMesh {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
-         void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override
+        void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
                 dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) );
         }
 
-         void remove_small_connected_components(
+        void remove_small_connected_components(
             double min_area,
             index_t min_polygons ) override
         {
@@ -269,7 +266,7 @@ namespace RINGMesh {
                 min_polygons );
         }
 
-         void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) override
+        void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) override
         {
             Logger::instance()->set_minimal( true );
             const GeogramSurfaceMesh< DIMENSION >& geogram_surf_in =
@@ -282,7 +279,7 @@ namespace RINGMesh {
             Logger::instance()->set_minimal( false );
         }
 
-         void create_polygons(
+        void create_polygons(
             const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr ) override
         {
@@ -296,7 +293,7 @@ namespace RINGMesh {
             clear_polygon_linked_objects();
         }
 
-         index_t create_polygon( const std::vector< index_t >& vertices ) override
+        index_t create_polygon( const std::vector< index_t >& vertices ) override
         {
             GEO::vector< index_t > polygon_vertices = copy_std_vector_to_geo_vector(
                 vertices );
@@ -305,18 +302,18 @@ namespace RINGMesh {
             return index;
         }
 
-         index_t create_triangles( index_t nb_triangles ) override
+        index_t create_triangles( index_t nb_triangles ) override
         {
             return mesh_->mesh_->facets.create_triangles( nb_triangles );
 
         }
 
-         index_t create_quads( index_t nb_quads ) override
+        index_t create_quads( index_t nb_quads ) override
         {
             return mesh_->mesh_->facets.create_quads( nb_quads );
         }
 
-         void set_polygon_vertex(
+        void set_polygon_vertex(
             index_t polygon_id,
             index_t local_vertex_id,
             index_t vertex_id ) override
@@ -326,7 +323,7 @@ namespace RINGMesh {
             clear_polygon_linked_objects();
         }
 
-         void set_polygon_adjacent(
+        void set_polygon_adjacent(
             index_t polygon_id,
             index_t edge_id,
             index_t specifies ) override
@@ -334,7 +331,7 @@ namespace RINGMesh {
             mesh_->mesh_->facets.set_adjacent( polygon_id, edge_id, specifies );
         }
 
-         void assign_triangle_mesh( const std::vector< index_t >& triangles ) override
+        void assign_triangle_mesh( const std::vector< index_t >& triangles ) override
         {
             GEO::vector< index_t > geo_triangles = copy_std_vector_to_geo_vector(
                 triangles );
@@ -342,23 +339,24 @@ namespace RINGMesh {
             clear_polygon_linked_objects();
         }
 
-         void clear_polygons( bool keep_attributes, bool keep_memory ) override
+        void clear_polygons( bool keep_attributes, bool keep_memory ) override
         {
             mesh_->mesh_->facets.clear( keep_attributes, keep_memory );
         }
 
-         void connect_polygons() override
+        void connect_polygons() override
         {
             mesh_->mesh_->facets.connect();
         }
-         void permute_polygons( const std::vector< index_t >& permutation ) override
+        
+        void permute_polygons( const std::vector< index_t >& permutation ) override
         {
             GEO::vector< index_t > geo_vector_permutation =
                 copy_std_vector_to_geo_vector( permutation );
             mesh_->mesh_->facets.permute_elements( geo_vector_permutation );
         }
 
-         void delete_polygons(
+        void delete_polygons(
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) override
         {
@@ -371,7 +369,7 @@ namespace RINGMesh {
             clear_polygon_linked_objects();
         }
 
-         void remove_isolated_vertices() override
+        void remove_isolated_vertices() override
         {
             std::vector< bool > to_delete( mesh_->nb_vertices(), true );
 
@@ -384,12 +382,14 @@ namespace RINGMesh {
 
             delete_vertices( to_delete );
         }
-         void clear_vertex_linked_objects() override
+        
+        void clear_vertex_linked_objects() override
         {
             delete_vertex_nn_search();
             clear_polygon_linked_objects();
         }
-         void clear_polygon_linked_objects() override
+        
+        void clear_polygon_linked_objects() override
         {
             delete_polygon_aabb();
             delete_polygon_nn_search();
@@ -419,25 +419,25 @@ namespace RINGMesh {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );ringmesh_template_assert_3d( DIMENSION );
     public:
 
-         void set_mesh( VolumeMesh< DIMENSION >& mesh ) override
+        void set_mesh( VolumeMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
                 dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) );
         }
 
-         index_t create_cells( index_t nb_cells, GEO::MeshCellType type ) override
+        index_t create_cells( index_t nb_cells, GEO::MeshCellType type ) override
         {
-            return mesh_->mesh_->cells.create_cells( nb_cells, type );
+            return mesh_->mesh_->cells.create_cells( nb_cells, static_cast<GEO::MeshCellType>( type ) );
         }
 
-         void assign_cell_tet_mesh( const std::vector< index_t >& tets ) override
+        void assign_cell_tet_mesh( const std::vector< index_t >& tets ) override
         {
             GEO::vector< index_t > copy = copy_std_vector_to_geo_vector( tets );
             mesh_->mesh_->cells.assign_tet_mesh( copy, false );
             clear_cell_linked_objects();
         }
 
-         void set_cell_vertex(
+        void set_cell_vertex(
             index_t cell_id,
             index_t local_vertex_id,
             index_t vertex_id ) override
@@ -446,7 +446,7 @@ namespace RINGMesh {
             clear_cell_linked_objects();
         }
 
-         void set_cell_corner_vertex_index(
+        void set_cell_corner_vertex_index(
             index_t corner_index,
             index_t vertex_index ) override
         {
@@ -454,7 +454,7 @@ namespace RINGMesh {
             clear_cell_linked_objects();
         }
 
-         void set_cell_adjacent(
+        void set_cell_adjacent(
             index_t cell_index,
             index_t facet_index,
             index_t cell_adjacent ) override
@@ -463,24 +463,24 @@ namespace RINGMesh {
                 cell_adjacent );
         }
 
-         void connect_cells() override
+        void connect_cells() override
         {
             mesh_->mesh_->cells.connect();
         }
 
-         void clear_cells( bool keep_attributes, bool keep_memory ) override
+        void clear_cells( bool keep_attributes, bool keep_memory ) override
         {
             mesh_->mesh_->cells.clear( keep_attributes, keep_memory );
         }
 
-         void permute_cells( const std::vector< index_t >& permutation ) override
+        void permute_cells( const std::vector< index_t >& permutation ) override
         {
             GEO::vector< index_t > geo_vector_permutation =
                 copy_std_vector_to_geo_vector( permutation );
             mesh_->mesh_->cells.permute_elements( geo_vector_permutation );
         }
 
-         void delete_cells(
+        void delete_cells(
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) override
         {
@@ -493,7 +493,7 @@ namespace RINGMesh {
             clear_cell_linked_objects();
         }
 
-         void remove_isolated_vertices() override
+        void remove_isolated_vertices() override
         {
             std::vector< bool > to_delete( mesh_->nb_vertices(), true );
 
@@ -507,13 +507,13 @@ namespace RINGMesh {
             delete_vertices( to_delete );
         }
 
-         void clear_vertex_linked_objects() override
+        void clear_vertex_linked_objects() override
         {
             delete_vertex_nn_search();
             clear_cell_linked_objects();
         }
 
-         void clear_cell_linked_objects() override
+        void clear_cell_linked_objects() override
         {
             delete_cell_aabb();
             delete_cell_nn_search();

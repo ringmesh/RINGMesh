@@ -57,19 +57,19 @@ namespace RINGMesh {
 #define COMMON_GEOGRAM_GFX_IMPLEMENTATION( Class )                              \
     public:                                                                     \
     virtual ~Class() = default;                                                 \
-     void draw_vertices() override                                              \
+    void draw_vertices() override                                               \
     {                                                                           \
         mesh_gfx_.draw_vertices();                                              \
     }                                                                           \
-     void set_vertex_color( float r, float g, float b ) override                \
+    void set_vertex_color( float r, float g, float b ) override                 \
     {                                                                           \
         mesh_gfx_.set_points_color( r, g, b );                                  \
     }                                                                           \
-     void set_vertex_size( index_t s ) override                                 \
+    void set_vertex_size( index_t s ) override                                  \
     {                                                                           \
         mesh_gfx_.set_points_size( static_cast< float >( s ) );                 \
     }                                                                           \
-     void set_scalar_attribute(                                                 \
+    void set_scalar_attribute(                                                  \
         GEO::MeshElementsFlags subelements,                                     \
         const std::string& name,                                                \
         double attr_min,                                                        \
@@ -79,7 +79,7 @@ namespace RINGMesh {
         mesh_gfx_.set_scalar_attribute( subelements, name, attr_min, attr_max,  \
             colormap_texture );                                                 \
     }                                                                           \
-     void unset_scalar_attribute() override                                     \
+    void unset_scalar_attribute() override                                      \
     {                                                                           \
         mesh_gfx_.unset_scalar_attribute();                                     \
     }                                                                           \
@@ -95,7 +95,7 @@ namespace RINGMesh {
             set_vertex_color( 1, 0, 0 );
         }
 
-         void set_mesh( const PointSetMesh< DIMENSION >& mesh ) override
+        void set_mesh( const PointSetMesh< DIMENSION >& mesh ) override
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramPointSetMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -115,21 +115,23 @@ namespace RINGMesh {
             set_edge_color( 1, 1, 1 );
         }
 
-         void set_mesh( const LineMesh< DIMENSION >& mesh ) override
+        void set_mesh( const LineMesh< DIMENSION >& mesh ) override
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramLineMesh< DIMENSION >& >( mesh ).gfx_mesh() );
         }
 
-         void draw_edges() override
+        void draw_edges() override
         {
             mesh_gfx_.draw_edges();
         }
-         void set_edge_color( float r, float g, float b ) override
+        
+        void set_edge_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_mesh_color( r, g, b );
         }
-         void set_edge_width( index_t s ) override
+        
+        void set_edge_width( index_t s ) override
         {
             mesh_gfx_.set_mesh_width( s );
         }
@@ -145,33 +147,38 @@ namespace RINGMesh {
     public:
         GeogramSurfaceMeshGfx() = default;
 
-         void set_mesh( const SurfaceMesh< DIMENSION >& mesh ) override
+        void set_mesh( const SurfaceMesh< DIMENSION >& mesh ) override
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( mesh ).gfx_mesh() );
         }
 
-         void draw_surface() override
+        void draw_surface() override
         {
             mesh_gfx_.draw_surface();
         }
-         void set_surface_color( float r, float g, float b ) override
+        
+        void set_surface_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_surface_color( r, g, b );
         }
-         void set_backface_surface_color( float r, float g, float b ) override
+        
+        void set_backface_surface_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_backface_surface_color( r, g, b );
         }
-         void set_mesh_color( float r, float g, float b ) override
+        
+        void set_mesh_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_mesh_color( r, g, b );
         }
-         void set_mesh_visibility( bool b ) override
+        
+        void set_mesh_visibility( bool b ) override
         {
             mesh_gfx_.set_show_mesh( b );
         }
-         void set_mesh_width( index_t s ) override
+        
+        void set_mesh_width( index_t s ) override
         {
             mesh_gfx_.set_mesh_width( s );
         }
@@ -186,41 +193,48 @@ namespace RINGMesh {
     public:
         GeogramVolumeMeshGfx() = default;
 
-         void set_mesh( const VolumeMesh< DIMENSION >& mesh ) override
+        void set_mesh( const VolumeMesh< DIMENSION >& mesh ) override
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramVolumeMesh< DIMENSION >& >( mesh ).gfx_mesh() );
         }
 
-         void draw_volume() override
+        void draw_volume() override
         {
             mesh_gfx_.draw_volume();
         }
-         void set_draw_cells( GEO::MeshCellType type, bool x ) override
+        
+        void set_draw_cells( CellType type, bool x ) override
         {
-            mesh_gfx_.set_draw_cells( type, x );
+            mesh_gfx_.set_draw_cells( static_cast< CellType >( type ), x );
         }
-         void set_cell_colors_by_type() override
+        
+        void set_cell_colors_by_type() override
         {
             mesh_gfx_.set_cells_colors_by_type();
         }
-         void set_cells_color( float r, float g, float b ) override
+        
+        void set_cells_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_cells_color( r, g, b );
         }
-         void set_mesh_color( float r, float g, float b ) override
+        
+        void set_mesh_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_mesh_color( r, g, b );
         }
-         void set_mesh_visibility( bool b ) override
+        
+        void set_mesh_visibility( bool b ) override
         {
             mesh_gfx_.set_show_mesh( b );
         }
-         void set_mesh_width( index_t s ) override
+        
+        void set_mesh_width( index_t s ) override
         {
             mesh_gfx_.set_mesh_width( s );
         }
-         void set_shrink( double s ) override
+        
+        void set_shrink( double s ) override
         {
             mesh_gfx_.set_shrink( s );
         }

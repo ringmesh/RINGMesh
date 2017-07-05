@@ -520,10 +520,6 @@ namespace RINGMesh {
         friend class GeoModelMeshBase< DIMENSION > ;
         friend class GeoModelMesh< DIMENSION > ;
 
-        enum PolygonType {
-            TRIANGLE, QUAD, UNCLASSIFIED_POLYGON, ALL, NO_POLYGON
-        };
-
         virtual ~GeoModelMeshPolygonsBase();
 
         GEO::AttributesManager& attribute_manager() const
@@ -593,7 +589,7 @@ namespace RINGMesh {
          * @param[in] type the corresponding type
          * @return the number of polygons
          */
-        index_t nb_polygons( PolygonType type = ALL ) const;
+        index_t nb_polygons( PolygonType type = PolygonType::UNDEFINED ) const;
         /*!
          * Get the number of polygons of the corresponding type
          * in the given surface of the GeoModel
@@ -601,7 +597,7 @@ namespace RINGMesh {
          * @param[in] type the corresponding type
          * @return the number of polygons
          */
-        index_t nb_polygons( index_t s, PolygonType type = ALL ) const;
+        index_t nb_polygons( index_t s, PolygonType type = PolygonType::UNDEFINED ) const;
         /*!
          * Get the polygon index in the GeoModelMesh
          * @param[in] s the surface index owing the polygon
@@ -621,7 +617,7 @@ namespace RINGMesh {
          * taken into account.
          * @return the polygon index
          */
-        index_t polygon( index_t s, index_t p, PolygonType type = ALL ) const;
+        index_t polygon( index_t s, index_t p, PolygonType type = PolygonType::UNDEFINED ) const;
 
         /*!
          * Get the number of triangles in the GeoModelMesh
@@ -1019,14 +1015,14 @@ namespace RINGMesh {
          * of the corresponding type of \p c in the owing region
          * @return the type of the cell \p c
          */
-        GEO::MeshCellType type( index_t c ) const;
+        CellType type( index_t c ) const;
 
         /*!
          * Get the number of cells of the corresponding type
          * @param[in] type the corresponding type
          * @return the number of cells
          */
-        index_t nb_cells( GEO::MeshCellType type = GEO::MESH_NB_CELL_TYPES ) const;
+        index_t nb_cells( CellType type = CellType::UNDEFINED ) const;
         /*!
          * Get the number of cells of the corresponding type
          * in the given region of the GeoModel
@@ -1036,7 +1032,7 @@ namespace RINGMesh {
          */
         index_t nb_cells(
             index_t r,
-            GEO::MeshCellType type = GEO::MESH_NB_CELL_TYPES ) const;
+            CellType type = CellType::UNDEFINED ) const;
         /*!
          * Get the cell index in the GeoModelMesh
          * @param[in] r the region index owing the cell
@@ -1049,14 +1045,14 @@ namespace RINGMesh {
          * and a cell id of this region, you need to perform a search using
          * NNSearch and the barycenter of the cell for instance.
          * @param[in] type it can specify the cell type used. For example,
-         * if type = GEO::MESH_HEX then \p c represents the cth hex in the
+         * if type = HEXAEDRON then \p c represents the cth hex in the
          * region \p r and \p c can vary from 0 to nb_hex( r ).
-         * If \p type is GEO::MESH_NB_CELL_TYPES, all the cell types are
+         * If \p type is CellType::UNDEFINED, all the cell types are
          * taken into account.
          * @return the cell index
          */
-        index_t cell( index_t r, index_t c, GEO::MeshCellType type =
-            GEO::MESH_NB_CELL_TYPES ) const;
+        index_t cell( index_t r, index_t c, CellType type =
+            CellType::UNDEFINED ) const;
 
         /*!
          * Get the number of tets in the GeoModelMesh
@@ -1293,7 +1289,7 @@ namespace RINGMesh {
          * for a given region and a given cell type.
          * For example:
          *    the 2nd hex index of the region index R will be found here:
-         *    surface_polygon_ptr_[GEO::MESH_NB_CELL_TYPES*R + HEX] + 2
+         *    surface_polygon_ptr_[CellType::UNDEFINED*R + CellType::HEXAEDRON] + 2
          */
         std::vector< index_t > region_cell_ptr_;
 
