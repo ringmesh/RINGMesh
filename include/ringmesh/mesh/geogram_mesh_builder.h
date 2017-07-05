@@ -425,7 +425,7 @@ namespace RINGMesh {
                 dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) );
         }
 
-        index_t create_cells( index_t nb_cells, GEO::MeshCellType type ) override
+        index_t create_cells( index_t nb_cells, CellType type ) override
         {
             return mesh_->mesh_->cells.create_cells( nb_cells, static_cast<GEO::MeshCellType>( type ) );
         }
