@@ -13,6 +13,8 @@ New Features:
  * New version of the .gm file format which not contains the GEOL_FEATURE on Mesh Entities anymore.
  * Export to gmsh file format (V2).
  * Add MeshSet, a mesh composed from all the other mesh types (PointSet, Line, Surface and Volume).
+ * Add import of SVG file. 
+       We only read pathes and they should be flat. There is a command to flatten pathes in Inkscape.
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
