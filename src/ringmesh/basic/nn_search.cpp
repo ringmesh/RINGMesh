@@ -42,6 +42,8 @@
 
 #include <ringmesh/basic/nn_search.h>
 
+#include <algorithm>
+
 namespace RINGMesh {
 
     template< index_t DIMENSION >
