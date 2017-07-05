@@ -35,7 +35,7 @@
 
 #include <ringmesh/mesh/aabb.h>
 
-#include <algorithm>
+#include <numeric>
 
 #include <geogram/mesh/mesh_io.h>
 
