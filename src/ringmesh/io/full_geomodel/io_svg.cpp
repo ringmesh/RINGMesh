@@ -137,6 +137,7 @@ namespace {
                 topology.add_mesh_entity_boundary_relation( line_id, corner0 );
                 topology.add_mesh_entity_boundary_relation( line_id, corner1 );
 
+                // Update line vertex extremities with corner coordinates
                 geometry.set_mesh_entity_vertex( line_id, 0, unique_points[point0],
                     false );
                 geometry.set_mesh_entity_vertex( line_id,
@@ -195,24 +196,24 @@ namespace {
             std::string letters( "MmLl" );
             for( char letter : letters ) {
                 std::string string_letter = GEO::String::to_string( letter );
-                replaceAll( data, string_letter, " " + string_letter + " " );
+                replace_all_string_occurens( data, string_letter, " " + string_letter + " " );
             }
             std::vector< std::string > tokens;
             GEO::String::split_string( data, ' ', tokens );
             return tokens;
         }
 
-        void replaceAll(
+        void replace_all_string_occurens(
             std::string& context,
-            const std::string& from,
-            const std::string& to ) const
+            const std::string& to_replace,
+            const std::string& replacement ) const
         {
-            std::size_t lookHere = 0;
-            std::size_t foundHere;
-            while( ( foundHere = context.find( from, lookHere ) )
+            std::size_t look_here = 0;
+            std::size_t found_here;
+            while( ( found_here = context.find( to_replace, look_here ) )
                 != std::string::npos ) {
-                context.replace( foundHere, from.size(), to );
-                lookHere = foundHere + to.size();
+                context.replace( found_here, to_replace.size(), replacement );
+                look_here = found_here + replacement.size();
             }
         }
 
