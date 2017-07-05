@@ -35,8 +35,8 @@
 
 #include <ringmesh/mesh/well.h>
 
-#include <algorithm>
 #include <cmath>
+#include <numeric>
 #include <stack>
 
 #include <geogram/mesh/mesh.h>

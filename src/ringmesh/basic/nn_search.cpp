@@ -42,7 +42,7 @@
 
 #include <ringmesh/basic/nn_search.h>
 
-#include <algorithm>
+#include <numeric>
 
 namespace RINGMesh {
 
