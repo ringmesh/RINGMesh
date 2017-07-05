@@ -78,328 +78,332 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& triangle_normal );
 
-    /*!
-     * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
-     */
-    double RINGMESH_API point_segment_distance(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        vec3& nearest_p );
+    namespace Distance {
+        /*!
+         * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
+         */
+        double RINGMESH_API point_to_segment(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            vec3& nearest_p );
 
-    double RINGMESH_API point_segment_distance(
-        const vec2& p,
-        const vec2& p0,
-        const vec2& p1,
-        vec2& nearest_p );
+        double RINGMESH_API point_to_segment(
+            const vec2& p,
+            const vec2& p0,
+            const vec2& p1,
+            vec2& nearest_p );
 
-    /*!
-     * Computes the smallest distance between a point and a triangle
-     * @param[in] point the point to test
-     * @param[in] V0 the first vertex of the triangle
-     * @param[in] V1 the second vertex of the triangle
-     * @param[in] V2 the third vertex of the triangle
-     * @param[out] closest_point the closest point on the triangle
-     * @return the smallest distance
-     */
-    double RINGMESH_API point_triangle_distance(
-        const vec3& point,
-        const vec3& V0,
-        const vec3& V1,
-        const vec3& V2,
-        vec3& closest_point );
+        /*!
+         * Computes the smallest distance between a point and a triangle
+         * @param[in] point the point to test
+         * @param[in] V0 the first vertex of the triangle
+         * @param[in] V1 the second vertex of the triangle
+         * @param[in] V2 the third vertex of the triangle
+         * @param[out] closest_point the closest point on the triangle
+         * @return the smallest distance
+         */
+        double RINGMESH_API point_to_triangle(
+            const vec3& point,
+            const vec3& V0,
+            const vec3& V1,
+            const vec3& V2,
+            vec3& closest_point );
 
-    /*!
-     * Computes the smallest distance between a point and a triangle
-     * @param[in] point the point to test
-     * @param[in] V0 the first vertex of the triangle
-     * @param[in] V1 the second vertex of the triangle
-     * @param[in] V2 the third vertex of the triangle
-     * @param[out] closest_point the closest point on the triangle
-     * @return the smallest distance
-     */
-    double RINGMESH_API point_triangle_distance(
-        const vec2& point,
-        const vec2& V0,
-        const vec2& V1,
-        const vec2& V2,
-        vec2& closest_point );
+        /*!
+         * Computes the smallest distance between a point and a triangle
+         * @param[in] point the point to test
+         * @param[in] V0 the first vertex of the triangle
+         * @param[in] V1 the second vertex of the triangle
+         * @param[in] V2 the third vertex of the triangle
+         * @param[out] closest_point the closest point on the triangle
+         * @return the smallest distance
+         */
+        double RINGMESH_API point_to_triangle(
+            const vec2& point,
+            const vec2& V0,
+            const vec2& V1,
+            const vec2& V2,
+            vec2& closest_point );
 
-    /*!
-     * Computes the smallest distance between a point and a quad
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the quad
-     * @param[in] p1 the second vertex of the quad
-     * @param[in] p2 the third vertex of the quad
-     * @param[in] p3 the fourth vertex of the quad
-     * @param[out] nearest_p the closest point on the quad
-     * @return the smallest distance
-     */
-    double RINGMESH_API point_quad_distance(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        vec3& nearest_p );
+        /*!
+         * Computes the smallest distance between a point and a quad
+         * @param[in] p the point to test
+         * @param[in] p0 the first vertex of the quad
+         * @param[in] p1 the second vertex of the quad
+         * @param[in] p2 the third vertex of the quad
+         * @param[in] p3 the fourth vertex of the quad
+         * @param[out] nearest_p the closest point on the quad
+         * @return the smallest distance
+         */
+        double RINGMESH_API point_to_quad(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            vec3& nearest_p );
 
-    /*!
-     * Computes the distance between a point and a tetrahedron
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the tetrahedron
-     * @param[in] p1 the second vertex of the tetrahedron
-     * @param[in] p2 the third vertex of the tetrahedron
-     * @param[in] p3 the fourth vertex of the tetrahedron
-     * @param[out] nearest_p the nearest point on the tetrahedron
-     * @return the distance between the point and the tetrahedron facets
-     */
-    double RINGMESH_API point_tetra_distance(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        vec3& nearest_p );
+        /*!
+         * Computes the distance between a point and a tetrahedron
+         * @param[in] p the point
+         * @param[in] p0 the first vertex of the tetrahedron
+         * @param[in] p1 the second vertex of the tetrahedron
+         * @param[in] p2 the third vertex of the tetrahedron
+         * @param[in] p3 the fourth vertex of the tetrahedron
+         * @param[out] nearest_p the nearest point on the tetrahedron
+         * @return the distance between the point and the tetrahedron facets
+         */
+        double RINGMESH_API point_to_tetra(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            vec3& nearest_p );
 
-    /*!
-     * Computes the distance between a point and a pyramid
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the pyramid
-     * @param[in] p1 the second vertex of the pyramid
-     * @param[in] p2 the third vertex of the pyramid
-     * @param[in] p3 the fourth vertex of the pyramid
-     * @param[in] p4 the fifth vertex of the pyramid
-     * @param[out] nearest_p the nearest point on the pyramid
-     * @return the distance between the point and the pyramid facets
-     */
-    double RINGMESH_API point_pyramid_distance(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        vec3& nearest_p );
+        /*!
+         * Computes the distance between a point and a pyramid
+         * @param[in] p the point
+         * @param[in] p0 the first vertex of the pyramid
+         * @param[in] p1 the second vertex of the pyramid
+         * @param[in] p2 the third vertex of the pyramid
+         * @param[in] p3 the fourth vertex of the pyramid
+         * @param[in] p4 the fifth vertex of the pyramid
+         * @param[out] nearest_p the nearest point on the pyramid
+         * @return the distance between the point and the pyramid facets
+         */
+        double RINGMESH_API point_to_pyramid(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            const vec3& p4,
+            vec3& nearest_p );
 
-    /*!
-     * Computes the distance between a point and a prism
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the prism
-     * @param[in] p1 the second vertex of the prism
-     * @param[in] p2 the third vertex of the prism
-     * @param[in] p3 the fourth vertex of the prism
-     * @param[in] p4 the fifth vertex of the prism
-     * @param[in] p5 the sixth vertex of the prism
-     * @param[out] nearest_p the nearest point on the prism
-     * @return the distance between the point and the prism facets
-     */
-    double RINGMESH_API point_prism_distance(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        const vec3& p5,
-        vec3& nearest_p );
+        /*!
+         * Computes the distance between a point and a prism
+         * @param[in] p the point
+         * @param[in] p0 the first vertex of the prism
+         * @param[in] p1 the second vertex of the prism
+         * @param[in] p2 the third vertex of the prism
+         * @param[in] p3 the fourth vertex of the prism
+         * @param[in] p4 the fifth vertex of the prism
+         * @param[in] p5 the sixth vertex of the prism
+         * @param[out] nearest_p the nearest point on the prism
+         * @return the distance between the point and the prism facets
+         */
+        double RINGMESH_API point_to_prism(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            const vec3& p4,
+            const vec3& p5,
+            vec3& nearest_p );
 
-    /*!
-     * Computes the distance between a point and a hexahedron
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the hexahedron
-     * @param[in] p1 the second vertex of the hexahedron
-     * @param[in] p2 the third vertex of the hexahedron
-     * @param[in] p3 the fourth vertex of the hexahedron
-     * @param[in] p4 the fifth vertex of the hexahedron
-     * @param[in] p5 the sixth vertex of the hexahedron
-     * @param[in] p6 the seventh vertex of the hexahedron
-     * @param[in] p7 the heith vertex of the hexahedron
-     * @param[out] nearest_p the nearest point on the hexahedron
-     * @return the distance between the point and the hexahedron facets
-     */
-    double RINGMESH_API point_hexa_distance(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        const vec3& p5,
-        const vec3& p6,
-        const vec3& p7,
-        vec3& nearest_p );
+        /*!
+         * Computes the distance between a point and a hexahedron
+         * @param[in] p the point
+         * @param[in] p0 the first vertex of the hexahedron
+         * @param[in] p1 the second vertex of the hexahedron
+         * @param[in] p2 the third vertex of the hexahedron
+         * @param[in] p3 the fourth vertex of the hexahedron
+         * @param[in] p4 the fifth vertex of the hexahedron
+         * @param[in] p5 the sixth vertex of the hexahedron
+         * @param[in] p6 the seventh vertex of the hexahedron
+         * @param[in] p7 the heith vertex of the hexahedron
+         * @param[out] nearest_p the nearest point on the hexahedron
+         * @return the distance between the point and the hexahedron facets
+         */
+        double RINGMESH_API point_to_hexa(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            const vec3& p4,
+            const vec3& p5,
+            const vec3& p6,
+            const vec3& p7,
+            vec3& nearest_p );
+    }
 
-    /*!
-     * Computes the intersection between a plane and a line
-     * @param[in] O_line a point on the line
-     * @param[in] D_line the direction of the plane
-     * @param[in] O_plane a point on the plane
-     * @param[in] N_plane the normal of the plane
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
-     */
-    bool RINGMESH_API line_plane_intersection(
-        const vec3& O_line,
-        const vec3& D_line,
-        const vec3& O_plane,
-        const vec3& N_plane,
-        vec3& result );
+    namespace Intersection {
+        /*!
+         * Computes the intersection between a plane and a line
+         * @param[in] O_line a point on the line
+         * @param[in] D_line the direction of the plane
+         * @param[in] O_plane a point on the plane
+         * @param[in] N_plane the normal of the plane
+         * @param[out] result the intersected point
+         * @return returns true if there is an intersection
+         */
+        bool RINGMESH_API line_plane(
+            const vec3& O_line,
+            const vec3& D_line,
+            const vec3& O_plane,
+            const vec3& N_plane,
+            vec3& result );
 
-    /*!
-     * Computes the intersection between a plane and a segment
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @param[in] O_plane a point on the plane
-     * @param[in] N_plane the normal of the plane
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
-     */
-    bool RINGMESH_API segment_plane_intersection(
-        const vec3& seg0,
-        const vec3& seg1,
-        const vec3& O_plane,
-        const vec3& N_plane,
-        vec3& result );
+        /*!
+         * Computes the intersection between a plane and a segment
+         * @param[in] p0 the first vertex of the segment
+         * @param[in] p1 the second vertex of the segment
+         * @param[in] O_plane a point on the plane
+         * @param[in] N_plane the normal of the plane
+         * @param[out] result the intersected point
+         * @return returns true if there is an intersection
+         */
+        bool RINGMESH_API segment_plane(
+            const vec3& seg0,
+            const vec3& seg1,
+            const vec3& O_plane,
+            const vec3& N_plane,
+            vec3& result );
 
-    /*!
-     * Computes the intersection of a segment and a triangle
-     * @param[in] seg0 the first vertex of the segment
-     * @param[in] seg1 the second vertex of the segment
-     * @param[in] trgl0 the first vertex of the triangle
-     * @param[in] trgl1 the second vertex of the triangle
-     * @param[in] trgl2 the third vertex of the triangle
-     * @param[out] result the intersected point
-     * @return true is there is an intersection
-     */
-    bool RINGMESH_API segment_triangle_intersection(
-        const vec3& seg0,
-        const vec3& seg1,
-        const vec3& trgl0,
-        const vec3& trgl1,
-        const vec3& trgl2,
-        vec3& result );
+        /*!
+         * Computes the intersection of a segment and a triangle
+         * @param[in] seg0 the first vertex of the segment
+         * @param[in] seg1 the second vertex of the segment
+         * @param[in] trgl0 the first vertex of the triangle
+         * @param[in] trgl1 the second vertex of the triangle
+         * @param[in] trgl2 the third vertex of the triangle
+         * @param[out] result the intersected point
+         * @return true is there is an intersection
+         */
+        bool RINGMESH_API segment_triangle(
+            const vec3& seg0,
+            const vec3& seg1,
+            const vec3& trgl0,
+            const vec3& trgl1,
+            const vec3& trgl2,
+            vec3& result );
 
-    /*!
-     * Computes the intersection(s) between a circle and a plane
-     * @param[in] O_plane a point on the plane
-     * @param[in] N_plane the normal of the plane
-     * @param[in] O_circle the center of the circle
-     * @param[in] N_circle the normal of the plane supporting the circle
-     * @param[in] r the radius of the circle
-     * @param[out] result the intersected points
-     * @return returns true if there is at least one intersection
-     */
-    bool RINGMESH_API circle_plane_intersection(
-        const vec3& O_plane,
-        const vec3& N_plane,
-        const vec3& O_circle,
-        const vec3& N_circle,
-        double r,
-        std::vector< vec3 >& result );
+        /*!
+         * Computes the intersection(s) between a circle and a plane
+         * @param[in] O_plane a point on the plane
+         * @param[in] N_plane the normal of the plane
+         * @param[in] O_circle the center of the circle
+         * @param[in] N_circle the normal of the plane supporting the circle
+         * @param[in] r the radius of the circle
+         * @param[out] result the intersected points
+         * @return returns true if there is at least one intersection
+         */
+        bool RINGMESH_API circle_plane(
+            const vec3& O_plane,
+            const vec3& N_plane,
+            const vec3& O_circle,
+            const vec3& N_circle,
+            double r,
+            std::vector< vec3 >& result );
 
-    /*!
-     * Computes the intersection between a disk and a segment
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @param[in] O_disk the center of the disk
-     * @param[in] N_disk the normal of the plane supporting the disk
-     * @param[in] r the radius of the disk
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
-     */
-    bool RINGMESH_API disk_segment_intersection(
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& O_disk,
-        const vec3& N_disk,
-        double r,
-        vec3& result );
+        /*!
+         * Computes the intersection between a disk and a segment
+         * @param[in] p0 the first vertex of the segment
+         * @param[in] p1 the second vertex of the segment
+         * @param[in] O_disk the center of the disk
+         * @param[in] N_disk the normal of the plane supporting the disk
+         * @param[in] r the radius of the disk
+         * @param[out] result the intersected point
+         * @return returns true if there is an intersection
+         */
+        bool RINGMESH_API disk_segment(
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& O_disk,
+            const vec3& N_disk,
+            double r,
+            vec3& result );
 
-    /*!
-     * Computes the intersection(s) between a circle and a triangle
-     * @param[in] p0 the first vertex of the triangle
-     * @param[in] p1 the second vertex of the triangle
-     * @param[in] p2 the third vertex of the triangle
-     * @param[in] O_circle the center of the circle
-     * @param[in] N_circle the normal of the plane supporting the circle
-     * @param[in] r the radius of the circle
-     * @param[out] result the intersected points
-     * @return returns true if there is at least one intersection
-     */
-    bool RINGMESH_API circle_triangle_intersection(
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& O_circle,
-        const vec3& N_circle,
-        double r,
-        std::vector< vec3 >& result );
+        /*!
+         * Computes the intersection(s) between a circle and a triangle
+         * @param[in] p0 the first vertex of the triangle
+         * @param[in] p1 the second vertex of the triangle
+         * @param[in] p2 the third vertex of the triangle
+         * @param[in] O_circle the center of the circle
+         * @param[in] N_circle the normal of the plane supporting the circle
+         * @param[in] r the radius of the circle
+         * @param[out] result the intersected points
+         * @return returns true if there is at least one intersection
+         */
+        bool RINGMESH_API circle_triangle(
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& O_circle,
+            const vec3& N_circle,
+            double r,
+            std::vector< vec3 >& result );
 
-    /*!
-     * Computes the intersection between two planes
-     * @param[in] O_P0 a point on the first plane
-     * @param[in] N_P0 the normal of the first plane
-     * @param[in] O_P1 a point on the second plane
-     * @param[in] N_P1 the normal of the second plane
-     * @param[out] O_inter a point on the intersected line
-     * @param[out] D_inter the direction of the intersected line
-     * @return true is there is an intersection between the planes
-     */
-    bool RINGMESH_API plane_plane_intersection(
-        const vec3& O_P0,
-        const vec3& N_P0,
-        const vec3& O_P1,
-        const vec3& N_P1,
-        vec3& O_inter,
-        vec3& N_inter );
+        /*!
+         * Computes the intersection between two planes
+         * @param[in] O_P0 a point on the first plane
+         * @param[in] N_P0 the normal of the first plane
+         * @param[in] O_P1 a point on the second plane
+         * @param[in] N_P1 the normal of the second plane
+         * @param[out] O_inter a point on the intersected line
+         * @param[out] D_inter the direction of the intersected line
+         * @return true is there is an intersection between the planes
+         */
+        bool RINGMESH_API plane_plane(
+            const vec3& O_P0,
+            const vec3& N_P0,
+            const vec3& O_P1,
+            const vec3& N_P1,
+            vec3& O_inter,
+            vec3& N_inter );
 
-    /*!
-     * Computes the intersection between two lines
-     * @param[in] O_line0 a point on the first line
-     * @param[in] D_line0 the direction of the first line
-     * @param[in] O_line1 a point on the second line
-     * @param[in] D_line1 the direction of the second line
-     * @param[out] result the intersection
-     * @return true is there is an intersection between the lines
-     */
-    bool RINGMESH_API line_line_intersection(
-        const vec2& O_line0,
-        const vec2& D_line0,
-        const vec2& O_line1,
-        const vec2& D_line1,
-        vec2& result );
+        /*!
+         * Computes the intersection between two lines
+         * @param[in] O_line0 a point on the first line
+         * @param[in] D_line0 the direction of the first line
+         * @param[in] O_line1 a point on the second line
+         * @param[in] D_line1 the direction of the second line
+         * @param[out] result the intersection
+         * @return true is there is an intersection between the lines
+         */
+        bool RINGMESH_API line_line(
+            const vec2& O_line0,
+            const vec2& D_line0,
+            const vec2& O_line1,
+            const vec2& D_line1,
+            vec2& result );
 
-    /*!
-     * Computes the intersection between two segments
-     * @param[in] p0_seg0 the first vertex of the segment
-     * @param[in] p1_seg0 the second vertex of the segment
-     * @param[in] p0_seg1 the first vertex of the segment
-     * @param[in] p1_seg1 the second vertex of the segment
-     * @param[out] result the intersection
-     * @return true is there is an intersection between the segments
-     */
-    bool RINGMESH_API segment_segment_intersection(
-        const vec2& p0_seg0,
-        const vec2& p1_seg0,
-        const vec2& p0_seg1,
-        const vec2& p1_seg1,
-        vec2& result );
+        /*!
+         * Computes the intersection between two segments
+         * @param[in] p0_seg0 the first vertex of the segment
+         * @param[in] p1_seg0 the second vertex of the segment
+         * @param[in] p0_seg1 the first vertex of the segment
+         * @param[in] p1_seg1 the second vertex of the segment
+         * @param[out] result the intersection
+         * @return true is there is an intersection between the segments
+         */
+        bool RINGMESH_API segment_segment(
+            const vec2& p0_seg0,
+            const vec2& p1_seg0,
+            const vec2& p0_seg1,
+            const vec2& p1_seg1,
+            vec2& result );
 
-    /*!
-     * Computes the intersection between a segment and a line
-     * @param[in] p0_seg the first vertex of the segment
-     * @param[in] p1_seg the second vertex of the segment
-     * @param[in] O_line a point on the line
-     * @param[in] D_line the direction of the line
-     * @param[out] result the intersection
-     * @return true is there is an intersection
-     */
-    bool RINGMESH_API segment_line_intersection(
-        const vec2& p0_seg,
-        const vec2& p1_seg,
-        const vec2& O_line,
-        const vec2& D_line,
-        vec2& result );
+        /*!
+         * Computes the intersection between a segment and a line
+         * @param[in] p0_seg the first vertex of the segment
+         * @param[in] p1_seg the second vertex of the segment
+         * @param[in] O_line a point on the line
+         * @param[in] D_line the direction of the line
+         * @param[out] result the intersection
+         * @return true is there is an intersection
+         */
+        bool RINGMESH_API segment_line(
+            const vec2& p0_seg,
+            const vec2& p1_seg,
+            const vec2& O_line,
+            const vec2& D_line,
+            vec2& result );
+    }
 
     /*!
      * @brief Tests if a point is inside a triangle

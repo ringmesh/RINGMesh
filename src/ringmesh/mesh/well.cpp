@@ -231,7 +231,7 @@ namespace {
         void operator()( index_t trgl )
         {
             vec3 result;
-            if( segment_triangle_intersection( v_from_, v_to_,
+            if( Intersection::segment_triangle( v_from_, v_to_,
                 surface_.mesh_element_vertex( trgl, 0 ),
                 surface_.mesh_element_vertex( trgl, 1 ),
                 surface_.mesh_element_vertex( trgl, 2 ), result ) ) {

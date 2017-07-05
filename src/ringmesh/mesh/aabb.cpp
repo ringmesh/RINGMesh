@@ -347,7 +347,7 @@ namespace RINGMesh {
             mesh_.edge_vertex( cur_box, 0 ) );
         const vecn< DIMENSION >& v1 = mesh_.vertex(
             mesh_.edge_vertex( cur_box, 1 ) );
-        distance = point_segment_distance( query, v0, v1, nearest_point );
+        distance = Distance::point_to_segment( query, v0, v1, nearest_point );
     }
 
     template< index_t DIMENSION >
@@ -401,7 +401,7 @@ namespace RINGMesh {
             mesh_.polygon_vertex( cur_box, 1 ) );
         const vecn< DIMENSION >& v2 = mesh_.vertex(
             mesh_.polygon_vertex( cur_box, 2 ) );
-        distance = point_triangle_distance( query, v0, v1, v2, nearest_point );
+        distance = Distance::point_to_triangle( query, v0, v1, v2, nearest_point );
     }
 
     template< index_t DIMENSION >
