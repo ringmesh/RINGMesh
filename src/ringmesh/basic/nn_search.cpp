@@ -69,9 +69,7 @@ namespace RINGMesh {
         std::vector< index_t >& index_map ) const
     {
         index_map.resize( nn_tree_->nb_points() );
-        for( index_t i = 0; i < index_map.size(); i++ ) {
-            index_map[i] = i;
-        }
+        std::iota( index_map.begin(), index_map.end(), 0 );
         index_t nb_threads = static_cast< index_t >( omp_get_max_threads() );
         std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 );
         for( index_t i = 0; i < index_map.size(); i++ ) {

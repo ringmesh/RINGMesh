@@ -173,9 +173,7 @@ namespace {
         std::vector< index_t >& mapping_morton )
     {
         mapping_morton.resize( bboxes.size() );
-        for( index_t i = 0; i < bboxes.size(); i++ ) {
-            mapping_morton[i] = i;
-        }
+        std::iota( mapping_morton.begin(), mapping_morton.end(), 0 );
         MortonSort< DIMENSION >( bboxes, mapping_morton );
     }
 
