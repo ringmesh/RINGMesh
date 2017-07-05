@@ -351,7 +351,8 @@ namespace RINGMesh {
     {
         const vec3& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) );
         const vec3& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) );
-        distance = point_segment_distance( query, v0, v1, nearest_point );
+        std::tie( distance, nearest_point ) = point_segment_distance( query, v0,
+            v1 );
     }
 
     vec3 LineAABBTree::get_point_hint_from_box(
@@ -397,9 +398,8 @@ namespace RINGMesh {
         const vec3& v0 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 0 ) );
         const vec3& v1 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 1 ) );
         const vec3& v2 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 2 ) );
-        double lambda0, lambda1, lambda2;
-        distance = point_triangle_distance( query, v0, v1, v2, nearest_point,
-            lambda0, lambda1, lambda2 );
+        std::tie( distance, nearest_point, std::ignore, std::ignore, std::ignore ) =
+            point_triangle_distance( query, v0, v1, v2 );
     }
 
     vec3 SurfaceAABBTree::get_point_hint_from_box(

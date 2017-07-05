@@ -180,7 +180,8 @@ namespace RINGMesh {
     {
         std::vector< index_t > colocated;
         const NNSearch& nn_search = S.vertex_nn_search();
-        nn_search.get_colocated_index_mapping( geomodel_.epsilon(), colocated );
+        std::tie( std::ignore, colocated ) = nn_search.get_colocated_index_mapping(
+            geomodel_.epsilon() );
 
         std::vector< index_t > degenerate;
         surface_detect_degenerate_polygons( S, degenerate, colocated );
@@ -203,7 +204,8 @@ namespace RINGMesh {
     {
         std::vector< index_t > colocated;
         const NNSearch& nn_search = line.vertex_nn_search();
-        nn_search.get_colocated_index_mapping( geomodel_.epsilon(), colocated );
+        std::tie( std::ignore, colocated ) = nn_search.get_colocated_index_mapping(
+            geomodel_.epsilon() );
 
         std::vector< bool > degenerate;
         line_detect_degenerate_edges( line, degenerate, colocated );
@@ -327,7 +329,8 @@ namespace RINGMesh {
 
                 const NNSearch& kdtree = E.vertex_nn_search();
                 std::vector< index_t > colocated;
-                kdtree.get_colocated_index_mapping( geomodel_.epsilon(), colocated );
+                std::tie( std::ignore, colocated ) =
+                    kdtree.get_colocated_index_mapping( geomodel_.epsilon() );
 
                 // Get the vertices to delete
                 std::set< index_t > inside_border;

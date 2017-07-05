@@ -620,9 +620,9 @@ namespace RINGMesh {
         }
         // Identify and invalidate colocated vertices
         std::vector< index_t > old2new;
-        index_t nb_colocalised_vertices =
-            mesh_->vertex_nn_search().get_colocated_index_mapping( gm_.epsilon(),
-                old2new );
+        index_t nb_colocalised_vertices = NO_ID;
+        std::tie( nb_colocalised_vertices, old2new ) =
+            mesh_->vertex_nn_search().get_colocated_index_mapping( gm_.epsilon() );
         if( nb_colocalised_vertices > 0 ) {
             erase_vertices( old2new );
         }

@@ -222,11 +222,14 @@ namespace {
 
         void operator()( index_t trgl )
         {
+            bool does_seg_intersect_triangle = false;
             vec3 result;
-            if( segment_triangle_intersection( v_from_, v_to_,
-                surface_.mesh_element_vertex( trgl, 0 ),
-                surface_.mesh_element_vertex( trgl, 1 ),
-                surface_.mesh_element_vertex( trgl, 2 ), result ) ) {
+            std::tie( does_seg_intersect_triangle, result ) =
+                segment_triangle_intersection( v_from_, v_to_,
+                    surface_.mesh_element_vertex( trgl, 0 ),
+                    surface_.mesh_element_vertex( trgl, 1 ),
+                    surface_.mesh_element_vertex( trgl, 2 ) );
+            if( does_seg_intersect_triangle ) {
                 intersections_.push_back(
                     LineInstersection( result, surface_.index(), trgl ) );
             }

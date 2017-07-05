@@ -363,9 +363,8 @@ namespace RINGMesh {
                 "Rotation around an epsilon length axis is impossible" );
             return;
         }
-        GEO::Matrix< 4, double > rot_mat;
-        rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
-            rot_mat );
+        GEO::Matrix< 4, double > rot_mat = rotation_matrix_about_arbitrary_axis(
+            origin, axis, theta, degrees );
 
         for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
             const vec3& p = M.mesh.vertices.vertex( v );
