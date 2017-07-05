@@ -228,7 +228,7 @@ namespace RINGMesh {
         const NNSearch& nn_search() const
         {
             test_and_initialize();
-            return mesh_->vertices_nn_search();
+            return mesh_->vertex_nn_search();
         }
 
         /*!
@@ -668,7 +668,7 @@ namespace RINGMesh {
         const NNSearch& nn_search() const
         {
             test_and_initialize();
-            return mesh_->polygons_nn_search();
+            return mesh_->polygon_nn_search();
         }
 
         /*!
@@ -1128,12 +1128,12 @@ namespace RINGMesh {
         const NNSearch& cell_nn_search() const
         {
             test_and_initialize();
-            return mesh_->cells_nn_search();
+            return mesh_->cell_nn_search();
         }
         const NNSearch& cell_facet_nn_search() const
         {
             test_and_initialize();
-            return mesh_->cell_facets_nn_search();
+            return mesh_->cell_facet_nn_search();
         }
 
         /*!
