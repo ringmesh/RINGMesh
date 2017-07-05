@@ -78,6 +78,36 @@ namespace RINGMesh {
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
+    
+    /*! enum defining the type of cell in region 
+     *  * CellType::UNCLASSIFIED may be either a connector or more complex cell that is not specified.
+     *  * CellType::UNDEFINED means that the cell is not defined and cannot be used.
+     */
+    enum struct CellType : index_t {
+        TETRAHEDRON = 0,
+        HEXAHEDRON = 1,
+        PRISM = 2,
+        PYRAMID = 3,
+        UNCLASSIFIED = 4,
+        UNDEFINED = 5
+    };
+
+    /*! enum defining the type of polygon in surface.
+    *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon that is not specified.
+    *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be used.
+    */
+    enum struct PolygonType : index_t {
+        TRIANGLE = 0,
+        QUAD = 1,
+        UNCLASSIFIED = 2,
+        UNDEFINED = 3
+    };
+    
+    template< typename Enum >
+    auto to_underlying_type( Enum e ) -> typename std::underlying_type< Enum >::type
+    {
+        return static_cast< typename std::underlying_type< Enum >::type >( e );
+    }
 
     template< typename Enum >
     struct EnableBitMaskOperators {

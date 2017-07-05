@@ -37,8 +37,6 @@
 
 #include <geogram/mesh/mesh_io.h>
 
-#include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/mesh/mesh.h>
 
 /// Copied and adapted from Geogram
@@ -188,7 +186,7 @@ namespace {
         const vecn< DIMENSION >& p )
     {
         switch( M.cell_type( cell ) ) {
-            case GEO::MESH_TET: {
+            case CellType::TETRAHEDRON: {
                 const vecn< DIMENSION >& p0 = M.vertex( M.cell_vertex( cell, 0 ) );
                 const vecn< DIMENSION >& p1 = M.vertex( M.cell_vertex( cell, 1 ) );
                 const vecn< DIMENSION >& p2 = M.vertex( M.cell_vertex( cell, 2 ) );
@@ -349,7 +347,7 @@ namespace RINGMesh {
             mesh_.edge_vertex( cur_box, 0 ) );
         const vecn< DIMENSION >& v1 = mesh_.vertex(
             mesh_.edge_vertex( cur_box, 1 ) );
-        distance = point_segment_distance( query, v0, v1, nearest_point );
+        distance = Distance::point_to_segment( query, v0, v1, nearest_point );
     }
 
     template< index_t DIMENSION >
@@ -403,7 +401,7 @@ namespace RINGMesh {
             mesh_.polygon_vertex( cur_box, 1 ) );
         const vecn< DIMENSION >& v2 = mesh_.vertex(
             mesh_.polygon_vertex( cur_box, 2 ) );
-        distance = point_triangle_distance( query, v0, v1, v2, nearest_point );
+        distance = Distance::point_to_triangle( query, v0, v1, v2, nearest_point );
     }
 
     template< index_t DIMENSION >

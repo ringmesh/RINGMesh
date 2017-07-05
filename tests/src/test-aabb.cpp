@@ -135,7 +135,7 @@ template< index_t DIMENSION >
 void add_hexs( VolumeMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_cells( ( size - 1 ) * ( size - 1 ) * ( size - 1 ),
-        GEO::MESH_HEX );
+        CellType::HEXAHEDRON );
     index_t id = 0;
     for( index_t i = 0; i < ( size - 1 ); i++ ) {
         for( index_t j = 0; j < ( size - 1 ); j++ ) {
@@ -250,7 +250,7 @@ void decompose_in_tet(
 {
     std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder<
         DIMENSION >::create_builder( tet_mesh );
-    builder->create_cells( hex_mesh.nb_cells() * 5, GEO::MESH_TET );
+    builder->create_cells( hex_mesh.nb_cells() * 5, CellType::TETRAHEDRON );
     add_vertices( builder.get(), size );
     for( index_t hex = 0; hex < hex_mesh.nb_cells(); hex++ ) {
         create_5_tets_from_hex( *builder, hex_mesh, hex );

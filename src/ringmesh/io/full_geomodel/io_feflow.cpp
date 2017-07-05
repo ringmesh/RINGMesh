@@ -135,7 +135,7 @@ namespace {
 
             for( index_t c = 0; c < cells.nb(); c++ ) {
                 const RINGMesh2Feflow& descriptor =
-                    *cell_type_to_feflow_cell_descriptor[cells.type( c )];
+                    *cell_type_to_feflow_cell_descriptor[to_underlying_type( cells.type( c ) )];
                 out << SPACE << descriptor.entity_type;
                 for( index_t v = 0; v < cells.nb_vertices( c ); v++ ) {
                     out << SPACE

@@ -67,7 +67,7 @@ namespace RINGMesh {
         {                                                                    \
             return #Class;                                                   \
         }                                                                    \
-         void save_mesh( const std::string& filename ) const override        \
+        void save_mesh( const std::string& filename ) const override         \
         {                                                                    \
             GEO::mesh_save( *mesh_, filename, GEO::MeshIOFlags() );          \
         }                                                                    \
@@ -75,15 +75,15 @@ namespace RINGMesh {
         {                                                                    \
             return *mesh_;                                                   \
         }                                                                    \
-         void print_mesh_bounded_attributes() const override                 \
+        void print_mesh_bounded_attributes() const override                  \
         {                                                                    \
             print_bounded_attributes( *mesh_ );                              \
         }                                                                    \
-         GEO::AttributesManager& vertex_attribute_manager() const override   \
+        GEO::AttributesManager& vertex_attribute_manager() const override    \
         {                                                                    \
             return mesh_->vertices.attributes();                             \
         }                                                                    \
-         MeshType type_name() const override                                 \
+        MeshType type_name() const override                                  \
         {                                                                    \
             return type_name_static();                                       \
         }                                                                    \
@@ -91,17 +91,17 @@ namespace RINGMesh {
         {                                                                    \
             return "geogram";                                                \
         }                                                                    \
-         std::string default_extension() const override                      \
+        std::string default_extension() const override                       \
         {                                                                    \
             return default_extension_static();                               \
         }                                                                    \
-         const vecn< DIMENSION >& vertex( index_t v_id ) const override      \
+        const vecn< DIMENSION >& vertex( index_t v_id ) const override       \
         {                                                                    \
             ringmesh_assert( v_id < nb_vertices() );                         \
             double* vertex_ptr = mesh_->vertices.point_ptr( v_id );          \
             return *( vecn< DIMENSION >* )( vertex_ptr );                    \
         }                                                                    \
-         index_t nb_vertices() const override                                \
+        index_t nb_vertices() const override                                 \
         {                                                                    \
             return mesh_->vertices.nb();                                     \
         }                                                                    \
@@ -127,17 +127,17 @@ namespace RINGMesh {
     class GeogramLineMesh: public LineMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
     public:
-         index_t edge_vertex( index_t edge_id, index_t vertex_id ) const override
+        index_t edge_vertex( index_t edge_id, index_t vertex_id ) const override
         {
             return mesh_->edges.vertex( edge_id, vertex_id );
         }
 
-         index_t nb_edges() const override
+        index_t nb_edges() const override
         {
             return mesh_->edges.nb();
         }
 
-         GEO::AttributesManager& edge_attribute_manager() const override
+        GEO::AttributesManager& edge_attribute_manager() const override
         {
             return mesh_->edges.attributes();
         }
@@ -150,31 +150,32 @@ namespace RINGMesh {
     class GeogramSurfaceMesh: public SurfaceMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
     public:
-         index_t polygon_vertex( index_t polygon_id, index_t vertex_id ) const override
+        index_t polygon_vertex( index_t polygon_id, index_t vertex_id ) const override
         {
             return mesh_->facets.vertex( polygon_id, vertex_id );
         }
 
-         index_t nb_polygons() const override
+        index_t nb_polygons() const override
         {
             return mesh_->facets.nb();
         }
 
-         index_t nb_polygon_vertices( index_t polygon_id ) const override
+        index_t nb_polygon_vertices( index_t polygon_id ) const override
         {
             return mesh_->facets.nb_vertices( polygon_id );
         }
 
-         index_t polygon_adjacent( index_t polygon_id, index_t edge_id ) const override
+        index_t polygon_adjacent( index_t polygon_id, index_t edge_id ) const override
         {
             return mesh_->facets.adjacent( polygon_id, edge_id );
         }
-         GEO::AttributesManager& polygon_attribute_manager() const override
+
+        GEO::AttributesManager& polygon_attribute_manager() const override
         {
             return mesh_->facets.attributes();
         }
 
-         bool polygons_are_simplicies() const override
+        bool polygons_are_simplicies() const override
         {
             return mesh_->facets.are_simplices();
         }
@@ -187,12 +188,12 @@ namespace RINGMesh {
     class GeogramVolumeMesh: public VolumeMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramVolumeMesh );
     public:
-         index_t cell_vertex( index_t cell_id, index_t vertex_id ) const override
+        index_t cell_vertex( index_t cell_id, index_t vertex_id ) const override
         {
             return mesh_->cells.vertex( cell_id, vertex_id );
         }
 
-         index_t cell_edge_vertex(
+        index_t cell_edge_vertex(
             index_t cell_id,
             index_t edge_id,
             index_t vertex_id ) const override
@@ -200,7 +201,7 @@ namespace RINGMesh {
             return mesh_->cells.edge_vertex( cell_id, edge_id, vertex_id );
         }
 
-         index_t cell_facet_vertex(
+        index_t cell_facet_vertex(
             index_t cell_id,
             index_t facet_id,
             index_t vertex_id ) const override
@@ -208,76 +209,79 @@ namespace RINGMesh {
             return mesh_->cells.facet_vertex( cell_id, facet_id, vertex_id );
         }
 
-         index_t cell_facet( index_t cell_id, index_t facet_id ) const override
+        index_t cell_facet( index_t cell_id, index_t facet_id ) const override
         {
             return mesh_->cells.facet( cell_id, facet_id );
         }
 
-         index_t nb_cell_facets( index_t cell_id ) const override
+        index_t nb_cell_facets( index_t cell_id ) const override
         {
             return mesh_->cells.nb_facets( cell_id );
         }
 
-         index_t nb_cell_facets() const override
+        index_t nb_cell_facets() const override
         {
             return mesh_->cell_facets.nb();
         }
 
-         index_t nb_cell_edges( index_t cell_id ) const override
+        index_t nb_cell_edges( index_t cell_id ) const override
         {
             return mesh_->cells.nb_edges( cell_id );
         }
 
-         index_t nb_cell_facet_vertices(
+        index_t nb_cell_facet_vertices(
             index_t cell_id,
             index_t facet_id ) const override
         {
             return mesh_->cells.facet_nb_vertices( cell_id, facet_id );
         }
 
-         index_t nb_cell_vertices( index_t cell_id ) const override
+        index_t nb_cell_vertices( index_t cell_id ) const override
         {
             return mesh_->cells.nb_vertices( cell_id );
         }
 
-         index_t nb_cells() const override
+        index_t nb_cells() const override
         {
             return mesh_->cells.nb();
         }
 
-         index_t cell_begin( index_t cell_id ) const override
+        index_t cell_begin( index_t cell_id ) const override
         {
             return mesh_->cells.corners_begin( cell_id );
         }
-         index_t cell_end( index_t cell_id ) const override
+
+        index_t cell_end( index_t cell_id ) const override
         {
             return mesh_->cells.corners_end( cell_id );
         }
 
-         index_t cell_adjacent( index_t cell_id, index_t facet_id ) const override
+        index_t cell_adjacent( index_t cell_id, index_t facet_id ) const override
         {
             return mesh_->cells.adjacent( cell_id, facet_id );
         }
-         GEO::AttributesManager& cell_attribute_manager() const override
+
+        GEO::AttributesManager& cell_attribute_manager() const override
         {
             return mesh_->cells.attributes();
         }
-         GEO::AttributesManager& cell_facet_attribute_manager() const override
+
+        GEO::AttributesManager& cell_facet_attribute_manager() const override
         {
             return mesh_->cell_facets.attributes();
         }
 
-         GEO::MeshCellType cell_type( index_t cell_id ) const override
+        CellType cell_type( index_t cell_id ) const override
         {
-            return mesh_->cells.type( cell_id );
+            return static_cast<CellType>( mesh_->cells.type( cell_id ) );
         }
 
-         bool cells_are_simplicies() const override
+        bool cells_are_simplicies() const override
         {
             return mesh_->cells.are_simplices();
         }
 
-         double cell_volume( index_t cell_id ) const override
+        double cell_volume( index_t cell_id ) const override
         {
             return RINGMesh::mesh_cell_volume( *mesh_, cell_id );
         }

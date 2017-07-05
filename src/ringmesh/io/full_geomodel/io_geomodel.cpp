@@ -342,8 +342,7 @@ namespace {
 
     void zip_files( const std::vector< std::string >& filenames, zipFile& zf )
     {
-        for( index_t i = 0; i < filenames.size(); i++ ) {
-            const std::string& name = filenames[i];
+        for( const std::string& name : filenames ) {
             zip_file( zf, name );
             GEO::FileSystem::delete_file( name );
         }

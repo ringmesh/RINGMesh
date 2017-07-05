@@ -139,16 +139,14 @@ namespace {
             }
 
             index_t nb_pipes = pipes.size();
-            for( index_t e = 0; e < edges.size(); e++ ) {
-                nb_pipes += binomial_coef( edges[e].size() );
+            for( const std::vector< index_t >& vertices : edges ) {
+                nb_pipes += binomial_coef( vertices.size() );
             }
             out_pipes << nb_pipes << std::endl;
-            for( index_t p = 0; p < pipes.size(); p++ ) {
-                const Pipe& pipe = pipes[p];
+            for( const Pipe& pipe : pipes ) {
                 out_pipes << pipe.v0 << SPACE << pipe.v1 << std::endl;
             }
-            for( index_t e = 0; e < edges.size(); e++ ) {
-                const std::vector< index_t > vertices = edges[e];
+            for( const std::vector< index_t >& vertices : edges ) {
                 for( index_t v0 = 0; v0 < vertices.size() - 1; v0++ ) {
                     for( index_t v1 = v0 + 1; v1 < vertices.size(); v1++ ) {
                         out_pipes << vertices[v0] << SPACE << vertices[v1]
