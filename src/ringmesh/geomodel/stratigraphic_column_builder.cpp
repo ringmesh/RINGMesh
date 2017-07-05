@@ -113,7 +113,7 @@ namespace RINGMesh {
 
         std::vector< const StratigraphicUnit* > units_vec_construction;
         for( index_t i = 0; i < unitList.size(); i += 3 ) {
-            std::string name_of_unit = unitList[i];
+            const std::string& name_of_unit = unitList[i];
             if( name_of_unit != "none" ) {
                 index_t layer_id = find_geological_entity_id_from_name( model_,
                     GeologicalEntityType( "Layer" ), name_of_unit );
