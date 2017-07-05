@@ -511,7 +511,7 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::index( const vec3& p ) const
     {
         test_and_initialize();
-        const NNSearch& colocator = mesh_->vertices_nn_search();
+        const NNSearch& colocator = mesh_->vertex_nn_search();
         std::vector< index_t > vertices = colocator.get_neighbors( p,
             gm_.epsilon() );
         if( vertices.empty() ) {
@@ -628,7 +628,7 @@ namespace RINGMesh {
         // Identify and invalidate colocated vertices
         std::vector< index_t > old2new;
         index_t nb_colocalised_vertices =
-            mesh_->vertices_nn_search().get_colocated_index_mapping( gm_.epsilon(),
+            mesh_->vertex_nn_search().get_colocated_index_mapping( gm_.epsilon(),
                 old2new );
         if( nb_colocalised_vertices > 0 ) {
             erase_vertices( old2new );
@@ -1500,7 +1500,7 @@ namespace RINGMesh {
     const VolumeAABBTree& GeoModelMeshCells::aabb() const
     {
         test_and_initialize();
-        return mesh_->cells_aabb();
+        return mesh_->cell_aabb();
     }
 
     /*******************************************************************************/
@@ -1947,7 +1947,7 @@ namespace RINGMesh {
     const SurfaceAABBTree& GeoModelMeshPolygons::aabb() const
     {
         test_and_initialize();
-        return mesh_->polygons_aabb();
+        return mesh_->polygon_aabb();
     }
     /*******************************************************************************/
 
@@ -2057,7 +2057,7 @@ namespace RINGMesh {
     const LineAABBTree& GeoModelMeshEdges::aabb() const
     {
         test_and_initialize();
-        return mesh_->edges_aabb();
+        return mesh_->edge_aabb();
     }
 
     /*******************************************************************************/
