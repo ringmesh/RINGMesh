@@ -206,7 +206,7 @@ namespace RINGMesh {
         
         void set_draw_cells( CellType type, bool x ) override
         {
-            mesh_gfx_.set_draw_cells( static_cast< CellType >( type ), x );
+            mesh_gfx_.set_draw_cells( static_cast< GEO::MeshCellType >( type ), x );
         }
         
         void set_cell_colors_by_type() override
