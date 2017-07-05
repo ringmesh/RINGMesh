@@ -98,16 +98,16 @@ namespace RINGMesh {
          * @brief return the NNSearch at vertices
          * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
          */
-        const NNSearch& vertices_nn_search() const
+        const NNSearch& vertex_nn_search() const
         {
-            if( !vertices_nn_search_ ) {
+            if( !vertex_nn_search_ ) {
                 std::vector< vec3 > vec_vertices( nb_vertices() );
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v );
                 }
-                vertices_nn_search_.reset( new NNSearch( vec_vertices, true ) );
+                vertex_nn_search_.reset( new NNSearch( vec_vertices, true ) );
             }
-            return *vertices_nn_search_.get();
+            return *vertex_nn_search_.get();
         }
 
         virtual MeshType type_name() const = 0;
@@ -127,7 +127,7 @@ namespace RINGMesh {
         MeshBase() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > vertices_nn_search_;
+        mutable std::unique_ptr< NNSearch > vertex_nn_search_;
     };
 
     /*!
@@ -199,26 +199,26 @@ namespace RINGMesh {
          * @brief return the NNSearch at edges
          * @warning the NNSearch is destroy when calling the Mesh::polygons_aabb() and Mesh::cells_aabb()
          */
-        const NNSearch& edges_nn_search() const
+        const NNSearch& edge_nn_search() const
         {
-            if( !edges_nn_search_ ) {
+            if( !edge_nn_search_ ) {
                 std::vector< vec3 > edge_centers( nb_edges() );
                 for( index_t e = 0; e < nb_edges(); ++e ) {
                     edge_centers[e] = edge_barycenter( e );
                 }
-                edges_nn_search_.reset( new NNSearch( edge_centers, true ) );
+                edge_nn_search_.reset( new NNSearch( edge_centers, true ) );
             }
-            return *edges_nn_search_.get();
+            return *edge_nn_search_.get();
         }
         /*!
          * @brief Creates an AABB tree for a Mesh edges
          */
-        const LineAABBTree& edges_aabb() const
+        const LineAABBTree& edge_aabb() const
         {
-            if( !edges_aabb_ ) {
-                edges_aabb_.reset( new LineAABBTree( *this ) );
+            if( !edge_aabb_ ) {
+                edge_aabb_.reset( new LineAABBTree( *this ) );
             }
-            return *edges_aabb_.get();
+            return *edge_aabb_.get();
         }
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
@@ -226,8 +226,8 @@ namespace RINGMesh {
         LineMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > edges_nn_search_;
-        mutable std::unique_ptr< LineAABBTree > edges_aabb_;
+        mutable std::unique_ptr< NNSearch > edge_nn_search_;
+        mutable std::unique_ptr< LineAABBTree > edge_aabb_;
     };
     using LineMeshFactory = GEO::Factory0< LineMesh >;
 #define ringmesh_register_line_mesh(type) \
@@ -560,7 +560,7 @@ namespace RINGMesh {
         /*!
          * @brief return the NNSearch at polygons
          */
-        const NNSearch& polygons_nn_search() const
+        const NNSearch& polygon_nn_search() const
         {
             if( !nn_search_ ) {
                 std::vector< vec3 > polygon_centers( nb_polygons() );
@@ -574,19 +574,19 @@ namespace RINGMesh {
         /*!
          * @brief Creates an AABB tree for a Mesh polygons
          */
-        const SurfaceAABBTree& polygons_aabb() const
+        const SurfaceAABBTree& polygon_aabb() const
         {
-            if( !polygons_aabb_ ) {
-                polygons_aabb_.reset( new SurfaceAABBTree( *this ) );
+            if( !polygon_aabb_ ) {
+                polygon_aabb_.reset( new SurfaceAABBTree( *this ) );
             }
-            return *polygons_aabb_;
+            return *polygon_aabb_;
         }
     protected:
         SurfaceMesh() = default;
 
     protected:
         mutable std::unique_ptr< NNSearch > nn_search_;
-        mutable std::unique_ptr< SurfaceAABBTree > polygons_aabb_;
+        mutable std::unique_ptr< SurfaceAABBTree > polygon_aabb_;
     };
     using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh >;
 #define ringmesh_register_surface_mesh(type) \
@@ -807,9 +807,9 @@ namespace RINGMesh {
          * @brief return the NNSearch at cell facets
          * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const NNSearch& cell_facets_nn_search() const
+        const NNSearch& cell_facet_nn_search() const
         {
-            if( !cell_facets_nn_search_ ) {
+            if( !cell_facet_nn_search_ ) {
                 std::vector< vec3 > cell_facet_centers( nb_cell_facets() );
                 index_t cf = 0;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
@@ -818,15 +818,15 @@ namespace RINGMesh {
                         ++cf;
                     }
                 }
-                cell_facets_nn_search_.reset(
+                cell_facet_nn_search_.reset(
                     new NNSearch( cell_facet_centers, true ) );
             }
-            return *cell_facets_nn_search_.get();
+            return *cell_facet_nn_search_.get();
         }
         /*!
          * @brief return the NNSearch at cells
          */
-        const NNSearch& cells_nn_search() const
+        const NNSearch& cell_nn_search() const
         {
             if( !cell_nn_search_ ) {
                 std::vector< vec3 > cell_centers( nb_cells() );
@@ -840,7 +840,7 @@ namespace RINGMesh {
         /*!
          * @brief Creates an AABB tree for a Mesh cells
          */
-        const VolumeAABBTree& cells_aabb() const
+        const VolumeAABBTree& cell_aabb() const
         {
             if( !cell_aabb_ ) {
                 cell_aabb_.reset( new VolumeAABBTree( *this ) );
@@ -851,7 +851,7 @@ namespace RINGMesh {
         VolumeMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch > cell_facets_nn_search_;
+        mutable std::unique_ptr< NNSearch > cell_facet_nn_search_;
         mutable std::unique_ptr< NNSearch > cell_nn_search_;
         mutable std::unique_ptr< VolumeAABBTree > cell_aabb_;
     };
