@@ -179,7 +179,7 @@ namespace RINGMesh {
 
         const NNSearch& vertex_nn_search() const
         {
-            return mesh_->vertices_nn_search();
+            return mesh_->vertex_nn_search();
         }
 
         /*!
@@ -486,9 +486,9 @@ namespace RINGMesh {
         const Surface& incident_entity( index_t x ) const;
         virtual bool is_connectivity_valid() const final;
 
-        const LineAABBTree& edges_aabb() const
+        const LineAABBTree& edge_aabb() const
         {
-            return mesh1d_->edges_aabb();
+            return mesh1d_->edge_aabb();
         }
 
         /*!
@@ -497,7 +497,7 @@ namespace RINGMesh {
          */
         const NNSearch& edge_nn_search() const
         {
-            return mesh1d_->edges_nn_search();
+            return mesh1d_->edge_nn_search();
         }
 
         /*!
@@ -637,9 +637,9 @@ namespace RINGMesh {
             return mesh2d_->polygons_are_simplicies();
         }
 
-        const SurfaceAABBTree& polygons_aabb() const
+        const SurfaceAABBTree& polygon_aabb() const
         {
-            return mesh2d_->polygons_aabb();
+            return mesh2d_->polygon_aabb();
         }
 
         /*!
@@ -648,7 +648,7 @@ namespace RINGMesh {
          */
         const NNSearch& polygon_nn_search() const
         {
-            return mesh2d_->polygons_nn_search();
+            return mesh2d_->polygon_nn_search();
         }
 
         GEO::AttributesManager& polygon_attribute_manager() const
@@ -986,14 +986,14 @@ namespace RINGMesh {
             return mesh3d_->cells_are_simplicies();
         }
 
-        const VolumeAABBTree& cells_aabb() const
+        const VolumeAABBTree& cell_aabb() const
         {
-            return mesh3d_->cells_aabb();
+            return mesh3d_->cell_aabb();
         }
 
         const NNSearch& cell_facets_nn_search() const
         {
-            return mesh3d_->cell_facets_nn_search();
+            return mesh3d_->cell_facet_nn_search();
         }
 
         /*!
@@ -1002,7 +1002,7 @@ namespace RINGMesh {
          */
         const NNSearch& cell_nn_search() const
         {
-            return mesh3d_->cells_nn_search();
+            return mesh3d_->cell_nn_search();
         }
 
         GEO::AttributesManager& cell_attribute_manager() const

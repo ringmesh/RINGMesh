@@ -128,7 +128,7 @@ namespace RINGMesh {
     protected:                                                                                  \
         void delete_vertex_nn_search()                                                          \
         {                                                                                       \
-            mesh_->vertices_nn_search_.reset();                                                 \
+            mesh_->vertex_nn_search_.reset();                                                   \
         }                                                                                       \
     private:                                                                                    \
         Class* mesh_
@@ -231,7 +231,7 @@ namespace RINGMesh {
          */
         void delete_edge_nn_search()
         {
-            mesh_->edges_nn_search_.reset();
+            mesh_->edge_nn_search_.reset();
         }
     };
 
@@ -395,7 +395,7 @@ namespace RINGMesh {
          */
         void delete_polygon_aabb()
         {
-            mesh_->polygons_aabb_.reset();
+            mesh_->polygon_aabb_.reset();
         }
     };
 
@@ -509,7 +509,7 @@ namespace RINGMesh {
         void delete_cell_nn_search()
         {
             mesh_->cell_nn_search_.reset();
-            mesh_->cell_facets_nn_search_.reset();
+            mesh_->cell_facet_nn_search_.reset();
         }
         /*!
          * @brief Deletes the AABB on cells
