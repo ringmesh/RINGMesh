@@ -230,13 +230,12 @@ namespace {
     public:
         virtual ~SVGIOHandler() = default;
 
-        virtual bool load( const std::string& filename, GeoModel< 2 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 2 >& geomodel ) final
         {
             GeoModelBuilderSVG builder( geomodel, filename );
             builder.build_geomodel();
-            return is_geomodel_valid( geomodel );
         }
-        virtual void save(
+        void save(
             const GeoModel< 2 >& geomodel,
             const std::string& filename ) final
         {
