@@ -584,7 +584,7 @@ namespace RINGMesh {
          * @param[in] polygon_id the polygon index
          * @return the polygon area
          */
-        virtual double polygon_area( index_t polygon_id ) const override
+        double polygon_area( index_t polygon_id ) const override
         {
             double result = 0.0;
             if( nb_polygon_vertices( polygon_id ) == 0 ) {
@@ -653,7 +653,7 @@ namespace RINGMesh {
          * @param[in] polygon_id the polygon index
          * @return the polygon area
          */
-        virtual double polygon_area( index_t polygon_id ) const override
+        double polygon_area( index_t polygon_id ) const override
         {
             double result = 0.0;
             if( nb_polygon_vertices( polygon_id ) == 0 ) {
