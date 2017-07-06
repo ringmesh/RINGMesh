@@ -270,14 +270,14 @@ namespace RINGMesh {
                         static_cast< GEO::MeshRepairMode >( 2 );
                     std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
                         builder_.geometry.create_surface_builder( i );
-                    builder->mesh_repair( mode, 0.0 );
+                    builder->repair( mode, 0.0 );
 
                     // This might create some small components - remove them
                     builder->remove_small_connected_components( epsilon_sq, 3 );
 
                     // Alright, this is a bit of an overkill [JP]
                     if( surface.nb_vertices() > 0 ) {
-                        builder->mesh_repair( mode, 0.0 );
+                        builder->repair( mode, 0.0 );
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
