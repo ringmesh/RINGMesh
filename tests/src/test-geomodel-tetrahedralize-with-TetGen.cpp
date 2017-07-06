@@ -75,7 +75,7 @@ int main()
 
         // Tetrahedralize the GeoModel
         tetrahedralize( geomodel, "TetGen", NO_ID, false );
-        for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+        for( index_t r : range( geomodel.nb_regions() ) ) {
             if( !geomodel.region( r ).is_meshed() ) {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when tetrahedralize model " + geomodel.name()

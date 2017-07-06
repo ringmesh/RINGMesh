@@ -53,9 +53,9 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         const vecn< DIMENSION >& point )
     {
-        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
-            if( geomodel.corner( i ).vertex( 0 ) == point ) {
-                return gmme_id( Corner< DIMENSION >::type_name_static(), i );
+        for( index_t c : range( geomodel.nb_corners() ) ) {
+            if( geomodel.corner( c ).vertex( 0 ) == point ) {
+                return gmme_id( Corner< DIMENSION >::type_name_static(), c );
             }
         }
         return gmme_id();
@@ -86,15 +86,15 @@ namespace {
      */
     template< index_t DIMENSION >
     bool line_equal(
-        const Line< DIMENSION >& L,
+        const Line< DIMENSION >& line,
         const std::vector< vecn< DIMENSION > >& rhs_vertices )
     {
-        if( L.nb_vertices() != rhs_vertices.size() ) {
+        if( line.nb_vertices() != rhs_vertices.size() ) {
             return false;
         }
         bool equal = true;
-        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != L.vertex( i ) ) {
+        for( index_t v : range( line.nb_vertices() ) ) {
+            if( rhs_vertices[v] != line.vertex( v ) ) {
                 equal = false;
                 break;
             }
@@ -102,8 +102,8 @@ namespace {
         if( equal ) return true;
 
         equal = true;
-        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != L.vertex( L.nb_vertices() - i - 1 ) ) {
+        for( index_t v : range( line.nb_vertices() ) ) {
+            if( rhs_vertices[v] != line.vertex( line.nb_vertices() - v - 1 ) ) {
                 equal = false;
                 break;
             }
@@ -118,7 +118,7 @@ namespace {
     {
         index_t nb = E.nb_incident_entities();
         incident_surfaces.resize( nb );
-        for( index_t i = 0; i < nb; ++i ) {
+        for( index_t i : range( nb ) ) {
             incident_surfaces[i] = E.incident_entity_gmme( i ).index();
         }
         std::sort( incident_surfaces.begin(), incident_surfaces.end() );
@@ -170,23 +170,23 @@ namespace RINGMesh {
         for( const gmge_id& cur : geological_entities ) {
             const GeoModelGeologicalEntity< DIMENSION >& E =
                 geomodel_.geological_entity( cur );
-            for( index_t j = 0; j < E.nb_children(); ++j ) {
+            for( index_t j : range( E.nb_children() ) ) {
                 mesh_entities.insert( E.child_gmme( j ) );
             }
         }
         // Add geological entities which have no child
         index_t nb_geological_entity_types =
             geomodel_.entity_type_manager().geological_entity_manager.nb_geological_entity_types();
-        for( index_t i = 0; i < nb_geological_entity_types; ++i ) {
+        for( index_t i : range( nb_geological_entity_types ) ) {
             const GeologicalEntityType& type =
                 geomodel_.entity_type_manager().geological_entity_manager.geological_entity_type(
                     i );
 
-            for( index_t j = 0; j < geomodel_.nb_geological_entities( type ); ++j ) {
+            for( index_t j : range( geomodel_.nb_geological_entities( type ) ) ) {
                 bool no_child = true;
                 const GeoModelGeologicalEntity< DIMENSION >& E =
                     geomodel_.geological_entity( type, j );
-                for( index_t k = 0; k < E.nb_children(); ++k ) {
+                for( index_t k : range( E.nb_children() ) ) {
                     if( mesh_entities.count( E.child_gmme( k ) ) == 0 ) {
                         no_child = false;
                         break;
@@ -200,13 +200,13 @@ namespace RINGMesh {
         // Add mesh entities that are in the boundary of no mesh entity
         const MeshEntityTypeManager< DIMENSION >& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
-        for( index_t i = 0; i < manager.nb_mesh_entity_types(); ++i ) {
+        for( index_t i : range( manager.nb_mesh_entity_types() ) ) {
             const MeshEntityType& type = manager.mesh_entity_types()[i];
-            for( index_t j = 0; j < geomodel_.nb_mesh_entities( type ); ++j ) {
+            for( index_t j : range( geomodel_.nb_mesh_entities( type ) ) ) {
                 bool no_incident = true;
                 const GeoModelMeshEntity< DIMENSION >& E = geomodel_.mesh_entity(
                     type, j );
-                for( index_t k = 0; k < E.nb_incident_entities(); ++k ) {
+                for( index_t k : range( E.nb_incident_entities() ) ) {
                     if( mesh_entities.count( E.incident_entity_gmme( k ) ) == 0 ) {
                         no_incident = false;
                         break;
@@ -269,7 +269,7 @@ namespace RINGMesh {
         const std::vector< vecn< DIMENSION > >& vertices )
     {
         gmme_id result;
-        for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
+        for( index_t i : range( geomodel_.nb_lines() ) ) {
             if( line_equal( geomodel_.line( i ), vertices ) ) {
                 result = geomodel_.line( i ).gmme();
             }
@@ -294,7 +294,7 @@ namespace RINGMesh {
         const gmme_id& first_corner,
         const gmme_id& second_corner )
     {
-        for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
+        for( index_t i : range( geomodel_.nb_lines() ) ) {
             const Line< DIMENSION >& line = geomodel_.line( i );
             gmme_id c0 = line.boundary_gmme( 0 );
             gmme_id c1 = line.boundary_gmme( 1 );
@@ -355,7 +355,7 @@ namespace RINGMesh {
         index_t old_size = static_cast< index_t >( store.size() );
         index_t new_size = old_size + nb_additionnal_entities;
         store.reserve( new_size );
-        for( index_t i = old_size; i < new_size; i++ ) {
+        for( index_t i : range( old_size, new_size ) ) {
             store.emplace_back(
                 GeoModelMeshEntityAccess< DIMENSION >::template create_entity< ENTITY >(
                     geomodel_, i, type ) );
@@ -370,8 +370,8 @@ namespace RINGMesh {
     {
         const GeoModelMeshEntity< DIMENSION >& incident_entity_mesh_entity =
             geomodel_.mesh_entity( incident_entity );
-        for( index_t in_ent = 0;
-            in_ent < incident_entity_mesh_entity.nb_incident_entities(); in_ent++ ) {
+        for( index_t in_ent : range(
+            incident_entity_mesh_entity.nb_incident_entities() ) ) {
             if( incident_entity_mesh_entity.incident_entity_gmme( in_ent )
                 == boundary ) {
                 GeoModelMeshEntityConstAccess< DIMENSION > entity_access(
@@ -552,9 +552,9 @@ namespace RINGMesh {
         if( geomodel_.universe().nb_boundaries() != 0 ) return;
         std::vector< bool > is_line_universe_boundary( geomodel_.nb_lines(), false );
         std::vector< bool > line_side( geomodel_.nb_lines() );
-        for( index_t s = 0; s < geomodel_.nb_surfaces(); s++ ) {
+        for( index_t s : range( geomodel_.nb_surfaces() ) ) {
             const Surface< 2 >& surface = geomodel_.surface( s );
-            for( index_t l = 0; l < surface.nb_boundaries(); l++ ) {
+            for( index_t l : range( surface.nb_boundaries() ) ) {
                 index_t line_id = surface.boundary_gmme( l ).index();
                 is_line_universe_boundary[line_id] =
                     !is_line_universe_boundary[line_id];
@@ -562,7 +562,7 @@ namespace RINGMesh {
             }
         }
 
-        for( index_t l = 0; l < geomodel_.nb_lines(); l++ ) {
+        for( index_t l : range( geomodel_.nb_lines() ) ) {
             if( !is_line_universe_boundary[l] ) continue;
             add_universe_boundary( l, line_side[l] );
         }
@@ -574,9 +574,9 @@ namespace RINGMesh {
         std::vector< bool > is_surface_universe_boundary( geomodel_.nb_surfaces(),
             false );
         std::vector< bool > surface_side( geomodel_.nb_surfaces() );
-        for( index_t r = 0; r < geomodel_.nb_regions(); r++ ) {
+        for( index_t r : range( geomodel_.nb_regions() ) ) {
             const Region< 3 >& region = geomodel_.region( r );
-            for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
+            for( index_t s : range( region.nb_boundaries() ) ) {
                 index_t surface_id = region.boundary_gmme( s ).index();
                 is_surface_universe_boundary[surface_id] =
                     !is_surface_universe_boundary[surface_id];
@@ -584,7 +584,7 @@ namespace RINGMesh {
             }
         }
 
-        for( index_t s = 0; s < geomodel_.nb_surfaces(); s++ ) {
+        for( index_t s : range( geomodel_.nb_surfaces() ) ) {
             if( !is_surface_universe_boundary[s] ) continue;
             add_universe_boundary( s, surface_side[s] );
         }

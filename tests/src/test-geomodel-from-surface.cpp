@@ -101,18 +101,17 @@ int main()
         // Compute mesh with duplicated points to compares number
         // of mesh elements and mesh entities
         GEO::Mesh surface_meshes;
-        for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+        for( index_t s : range( model.nb_surfaces() ) ) {
             const Surface< 3 >& surface = model.surface( s );
             index_t vertex_it = surface_meshes.vertices.create_vertices(
                 surface.nb_vertices() );
-            for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+            for( index_t v : range( surface.nb_vertices() ) ) {
                 surface_meshes.vertices.point( vertex_it + v ) = surface.vertex( v );
             }
             index_t facet_it = surface_meshes.facets.create_triangles(
                 surface.nb_mesh_elements() );
-            for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-                for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
-                    v++ ) {
+            for( index_t f : range( surface.nb_mesh_elements() ) ) {
+                for( index_t v : range( surface.nb_mesh_element_vertices( f ) ) ) {
                     surface_meshes.facets.set_vertex( facet_it + f, v,
                         vertex_it + surface.mesh_element_vertex_index( f, v ) );
                 }

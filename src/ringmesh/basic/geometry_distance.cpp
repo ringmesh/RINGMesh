@@ -299,8 +299,8 @@ namespace RINGMesh {
         {
             vec3 vertices[4] = { p0, p1, p2, p3 };
             double dist = max_float64();
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
+            for( index_t f : range(
+                GEO::MeshCellDescriptors::tet_descriptor.nb_facets ) ) {
                 vec3 cur_p;
                 double distance =
                     point_to_triangle( p,
