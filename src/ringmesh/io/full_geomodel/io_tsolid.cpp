@@ -80,8 +80,8 @@ namespace {
                 for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
                     index_t cell = mesh.cells.cell( r, c );
                     for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-                        index_t atom_id;
-                        if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
+                        index_t atom_id = mesh.cells.duplicated_corner_index( cell, v );
+                        if( atom_id == NO_ID ) {
                             index_t vertex_id = mesh.cells.vertex( cell, v );
                             if( vertex_exported[vertex_id] ) continue;
                             vertex_exported[vertex_id] = true;
@@ -124,8 +124,8 @@ namespace {
                     out << "TETRA";
                     index_t cell = mesh.cells.cell( r, c );
                     for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-                        index_t atom_id;
-                        if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
+                        index_t atom_id = mesh.cells.duplicated_corner_index( cell, v );
+                        if( atom_id == NO_ID ) {
                             index_t vertex_id = mesh.cells.vertex( cell, v );
                             out << " " << vertex_exported_id[vertex_id];
                         } else {

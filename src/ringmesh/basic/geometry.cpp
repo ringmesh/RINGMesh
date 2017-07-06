@@ -52,7 +52,7 @@
 namespace {
     using namespace RINGMesh;
 
-    bool is_almost_zero( const double& value )
+    bool is_almost_zero( double value )
     {
         return value < global_epsilon && value > -global_epsilon;
     }
@@ -84,15 +84,11 @@ namespace RINGMesh {
         return u.x != v.x || u.y != v.y || u.z != v.z;
     }
 
-    double point_triangle_distance(
+    std::tuple< double, vec3, double, double, double > point_triangle_distance(
         const vec3& point,
         const vec3& V0,
         const vec3& V1,
-        const vec3& V2,
-        vec3& closest_point,
-        double& lambda0,
-        double& lambda1,
-        double& lambda2 )
+        const vec3& V2 )
     {
         vec3 diff = V0 - point;
         vec3 edge0 = V1 - V0;
@@ -254,53 +250,52 @@ namespace RINGMesh {
             sqrDistance = 0.0;
         }
 
-        closest_point = V0 + s * edge0 + t * edge1;
-        lambda0 = 1.0 - s - t;
-        lambda1 = s;
-        lambda2 = t;
-        return sqrt( sqrDistance );
+        vec3 closest_point = V0 + s * edge0 + t * edge1;
+        double lambda0 = 1.0 - s - t;
+        double lambda1 = s;
+        double lambda2 = t;
+        return std::make_tuple( sqrt( sqrDistance ), closest_point, lambda0, lambda1,
+            lambda2 );
     }
 
-    double point_tetra_distance(
+    std::tuple< double, vec3 > point_tetra_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3,
-        vec3& nearest_p )
+        const vec3& p3 )
     {
         vec3 vertices[4] = { p0, p1, p2, p3 };
-        double not_used0, not_used1, not_used2;
         double dist = max_float64();
+        vec3 nearest_p;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
             f++ ) {
+            double distance = max_float64();
             vec3 cur_p;
-            double distance =
+            std::tie( distance, cur_p, std::ignore, std::ignore, std::ignore ) =
                 point_triangle_distance( p,
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
-                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]],
-                    cur_p, not_used0, not_used1, not_used2 );
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] );
             if( distance < dist ) {
                 dist = distance;
                 nearest_p = cur_p;
             }
         }
-        return dist;
+        return std::make_tuple( dist, nearest_p );
     }
 
-    double point_pyramid_distance(
+    std::tuple< double, vec3 > point_pyramid_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        const vec3& p4,
-        vec3& nearest_p )
+        const vec3& p4 )
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 };
-        double not_used0, not_used1, not_used2;
         double dist = max_float64();
+        vec3 nearest_p;
         for( index_t f = 0;
             f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p;
@@ -308,20 +303,18 @@ namespace RINGMesh {
             index_t nb_vertices =
                 GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f];
             if( nb_vertices == 3 ) {
-                distance =
+                std::tie( distance, cur_p, std::ignore, std::ignore, std::ignore ) =
                     point_triangle_distance( p,
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
-                        cur_p, not_used0, not_used1, not_used2 );
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]] );
             } else if( nb_vertices == 4 ) {
-                distance =
+                std::tie( distance, cur_p ) =
                     point_quad_distance( p,
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
-                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]],
-                        cur_p );
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]] );
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -330,23 +323,22 @@ namespace RINGMesh {
                 nearest_p = cur_p;
             }
         }
-        return dist;
+        return std::make_tuple( dist, nearest_p );
     }
 
-    double point_prism_distance(
+    std::tuple< double, vec3 > point_prism_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
         const vec3& p4,
-        const vec3& p5,
-        vec3& nearest_p )
+        const vec3& p5 )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 };
-        double not_used0, not_used1, not_used2;
 
         double dist = max_float64();
+        vec3 nearest_p;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
             f++ ) {
             vec3 cur_p;
@@ -354,20 +346,18 @@ namespace RINGMesh {
             index_t nb_vertices =
                 GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f];
             if( nb_vertices == 3 ) {
-                distance =
+                std::tie( distance, cur_p, std::ignore, std::ignore, std::ignore ) =
                     point_triangle_distance( p,
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
-                        cur_p, not_used0, not_used1, not_used2 );
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]] );
             } else if( nb_vertices == 4 ) {
-                distance =
+                std::tie( distance, cur_p ) =
                     point_quad_distance( p,
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
-                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]],
-                        cur_p );
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]] );
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -376,10 +366,10 @@ namespace RINGMesh {
                 nearest_p = cur_p;
             }
         }
-        return dist;
+        return std::make_tuple( dist, nearest_p );
     }
 
-    double point_hexa_distance(
+    std::tuple< double, vec3 > point_hexa_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -388,28 +378,28 @@ namespace RINGMesh {
         const vec3& p4,
         const vec3& p5,
         const vec3& p6,
-        const vec3& p7,
-        vec3& nearest_p )
+        const vec3& p7 )
     {
         /// Review: Why not input an array ?
         vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 };
         double dist = max_float64();
+        vec3 nearest_p;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets;
             f++ ) {
             vec3 cur_p;
-            double distance =
+            double distance = max_float64();
+            std::tie( distance, cur_p ) =
                 point_quad_distance( p,
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]],
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]],
-                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]],
-                    cur_p );
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]] );
             if( distance < dist ) {
                 dist = distance;
                 nearest_p = cur_p;
             }
         }
-        return dist;
+        return std::make_tuple( dist, nearest_p );
     }
 
     bool point_inside_tetra(
@@ -450,20 +440,22 @@ namespace RINGMesh {
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
     }
 
-    bool circle_plane_intersection(
+    std::tuple< bool, std::vector< vec3 > > circle_plane_intersection(
         const vec3& O_plane,
         const vec3& N_plane,
         const vec3& O_circle,
         const vec3& N_circle,
-        double r,
-        std::vector< vec3 >& result )
+        double r )
     {
-        vec3 O_inter, D_inter;
         vec3 norm_N_plane = normalize( N_plane );
         vec3 norm_N_circle = normalize( N_circle );
-        if( !plane_plane_intersection( O_plane, norm_N_plane, O_circle,
-            norm_N_circle, O_inter, D_inter ) ) {
-            return false;
+        bool does_plane_intersect_plane = false;
+        vec3 O_inter, D_inter;
+        std::tie( does_plane_intersect_plane, O_inter, D_inter ) =
+            plane_plane_intersection( O_plane, norm_N_plane, O_circle,
+                norm_N_circle );
+        if( !does_plane_intersect_plane ) {
+            return std::make_tuple( false, std::vector< vec3 >() );
         }
 
         // http://www.geometrictools.com/LibMathematics/Intersection/Intersection.html
@@ -478,13 +470,15 @@ namespace RINGMesh {
 
         double discr = a1 * a1 - a0 * a2;
         if( discr < 0.0 ) {
-            return false;
+            return std::make_tuple( false, std::vector< vec3 >() );
         }
 
         if( std::fabs( a2 ) < global_epsilon ) {
-            return false;
+            return std::make_tuple( false, std::vector< vec3 >() );
         }
+        ringmesh_assert( std::abs( a2 ) > global_epsilon );
         double inv = 1.0 / a2;
+        std::vector< vec3 > result;
         if( discr < global_epsilon ) {
             result.emplace_back( O_inter - ( a1 * inv ) * D_inter );
         } else {
@@ -492,16 +486,14 @@ namespace RINGMesh {
             result.emplace_back( O_inter - ( ( a1 + root ) * inv ) * D_inter );
             result.emplace_back( O_inter - ( ( a1 - root ) * inv ) * D_inter );
         }
-        return true;
+        return std::make_tuple( true, result );
     }
 
-    bool plane_plane_intersection(
+    std::tuple< bool, vec3, vec3 > plane_plane_intersection(
         const vec3& O_P0,
         const vec3& N_P0,
         const vec3& O_P1,
-        const vec3& N_P1,
-        vec3& O_inter,
-        vec3& D_inter )
+        const vec3& N_P1 )
     {
         // http://www.geometrictools.com/LibMathematics/Intersection/Intersection.html
         // If N0 and N1 are parallel, either the planes are parallel and separated
@@ -524,7 +516,7 @@ namespace RINGMesh {
 
         // Planes are parallel
         if( std::fabs( std::fabs( norm_d ) - 1 ) < global_epsilon ) {
-            return false;
+            return std::make_tuple( false, vec3(), vec3() );
         }
 
         double invDet = 1.0 / ( 1.0 - norm_d * norm_d );
@@ -532,69 +524,61 @@ namespace RINGMesh {
         double const_P1 = dot( norm_N_P1, O_P1 );
         double c0 = ( const_P0 - norm_d * const_P1 ) * invDet;
         double c1 = ( const_P1 - norm_d * const_P0 ) * invDet;
-        O_inter = c0 * norm_N_P0 + c1 * norm_N_P1;
-        D_inter = cross( norm_N_P0, norm_N_P1 );
-        return true;
+
+        vec3 O_inter = c0 * norm_N_P0 + c1 * norm_N_P1;
+        vec3 D_inter = cross( norm_N_P0, norm_N_P1 );
+        return std::make_tuple( true, O_inter, D_inter );
     }
 
-    bool tetra_barycentric_coordinates(
+    std::tuple< bool, double, double, double, double > tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3,
-        double lambda[4] )
+        const vec3& p3 )
     {
         double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 );
         if( total_volume < global_epsilon_3 ) {
-            for( index_t i = 0; i < 4; i++ ) {
-                lambda[i] = 0;
-            }
-            return false;
+            return std::make_tuple( false, 0., 0., 0., 0. );
         }
         double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p );
         double volume1 = GEO::Geom::tetra_signed_volume( p0, p2, p3, p );
         double volume2 = GEO::Geom::tetra_signed_volume( p0, p3, p1, p );
         double volume3 = GEO::Geom::tetra_signed_volume( p0, p1, p2, p );
 
-        lambda[0] = volume0 / total_volume;
-        lambda[1] = volume1 / total_volume;
-        lambda[2] = volume2 / total_volume;
-        lambda[3] = volume3 / total_volume;
-        return true;
+        double lambda0 = volume0 / total_volume;
+        double lambda1 = volume1 / total_volume;
+        double lambda2 = volume2 / total_volume;
+        double lambda3 = volume3 / total_volume;
+        return std::make_tuple( true, lambda0, lambda1, lambda2, lambda3 );
     }
 
-    bool triangle_barycentric_coordinates(
+    std::tuple< bool, double, double, double > triangle_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
-        const vec3& p2,
-        double lambda[3] )
+        const vec3& p2 )
     {
         double total_area = GEO::Geom::triangle_area( p0, p1, p2 );
         if( total_area < global_epsilon_sq ) {
-            for( index_t i = 0; i < 3; i++ ) {
-                lambda[i] = 0;
-            }
-            return false;
+            return std::make_tuple( false, 0., 0., 0. );
         }
         vec3 triangle_normal = cross( p2 - p0, p1 - p0 );
         double area0 = triangle_signed_area( p2, p1, p, triangle_normal );
         double area1 = triangle_signed_area( p0, p2, p, triangle_normal );
         double area2 = triangle_signed_area( p1, p0, p, triangle_normal );
 
-        lambda[0] = area0 / total_area;
-        lambda[1] = area1 / total_area;
-        lambda[2] = area2 / total_area;
-        return true;
+        double lambda0 = area0 / total_area;
+        double lambda1 = area1 / total_area;
+        double lambda2 = area2 / total_area;
+        return std::make_tuple( true, lambda0, lambda1, lambda2 );
     }
 
-    bool line_plane_intersection(
+    std::tuple< bool, vec3 > line_plane_intersection(
         const vec3& O_line,
         const vec3& D_line,
         const vec3& O_plane,
-        const vec3& N_plane,
-        vec3& result )
+        const vec3& N_plane )
     {
         double dot_directions = dot( D_line, N_plane );
         if( std::fabs( dot_directions ) > global_epsilon ) {
@@ -603,86 +587,90 @@ namespace RINGMesh {
                 plane_constant += O_plane[i] * N_plane[i];
             }
             double signed_distance = dot( N_plane, O_line ) - plane_constant;
-            result = O_line - signed_distance * D_line / dot_directions;
-            return true;
+            ringmesh_assert( std::abs( dot_directions ) > global_epsilon );
+            vec3 result = O_line - signed_distance * D_line / dot_directions;
+            return std::make_tuple( true, result );
         } else {
             // line is parallel to the plane
-            return false;
+            return std::make_tuple( false, vec3() );
         }
     }
 
-    bool segment_plane_intersection(
+    std::tuple< bool, vec3 > segment_plane_intersection(
         const vec3& seg0,
         const vec3& seg1,
         const vec3& O_plane,
-        const vec3& N_plane,
-        vec3& result )
+        const vec3& N_plane )
     {
         vec3 segment_direction = normalize( seg1 - seg0 );
         vec3 segment_barycenter = 0.5 * ( seg0 + seg1 );
+        bool does_line_intersect_plane = false;
         vec3 line_plane_result;
-        if( line_plane_intersection( segment_barycenter, segment_direction, O_plane,
-            N_plane, line_plane_result ) ) {
+        std::tie( does_line_intersect_plane, line_plane_result ) =
+            line_plane_intersection( segment_barycenter, segment_direction, O_plane,
+                N_plane );
+        if( does_line_intersect_plane ) {
             if( ( line_plane_result - segment_barycenter ).length2()
                 > ( seg0 - segment_barycenter ).length2() + global_epsilon ) {
                 // result outside the segment
-                return false;
+                return std::make_tuple( false, vec3() );
             } else {
-                result = line_plane_result;
-                return true;
+                return std::make_tuple( true, line_plane_result );
             }
         } else {
-            return false;
+            return std::make_tuple( false, vec3() );
         }
     }
 
-    bool disk_segment_intersection(
+    std::tuple< bool, vec3 > disk_segment_intersection(
         const vec3& p0,
         const vec3& p1,
         const vec3& O_circle,
         const vec3& N_circle,
-        double r,
-        vec3& result )
+        double r )
     {
+        bool does_segment_intersect_plane = false;
         vec3 segment_plane_result;
-        if( segment_plane_intersection( p0, p1, O_circle, N_circle,
-            segment_plane_result ) ) {
+        std::tie( does_segment_intersect_plane, segment_plane_result ) =
+            segment_plane_intersection( p0, p1, O_circle, N_circle );
+        if( does_segment_intersect_plane ) {
             if( ( segment_plane_result - O_circle ).length() <= r ) {
-                result = segment_plane_result;
-                return true;
+                return std::make_tuple( true, segment_plane_result );
             }
         }
-        return false;
+        return std::make_tuple( false, vec3() );
     }
 
-    bool circle_triangle_intersection(
+    std::tuple< bool, std::vector< vec3 > > circle_triangle_intersection(
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& O_circle,
         const vec3& N_circle,
-        double r,
-        std::vector< vec3 >& result )
+        double r )
     {
+        std::vector< vec3 > result;
         vec3 N_triangle = normalize( cross( p1 - p0, p2 - p0 ) );
         vec3 barycenter = ( p0 + p1 + p2 ) / 3;
+        bool does_circle_inter_plane = false;
         std::vector< vec3 > inter_circle_plane;
-        if( circle_plane_intersection( barycenter, N_triangle, O_circle, N_circle, r,
-            inter_circle_plane ) ) {
+        std::tie( does_circle_inter_plane, inter_circle_plane ) =
+            circle_plane_intersection( barycenter, N_triangle, O_circle, N_circle,
+                r );
+        if( does_circle_inter_plane ) {
             for( const vec3& p : inter_circle_plane ) {
                 if( point_inside_triangle( p, p0, p1, p2 ) ) {
                     result.push_back( p );
                 }
             }
         }
-        return !result.empty();
+        return std::make_tuple( !result.empty(), result );
     }
 
-    bool point_segment_projection(
+    std::tuple< bool, vec3 > point_segment_projection(
         const vec3& p,
         const vec3& p0,
-        const vec3& p1,
-        vec3& new_p )
+        const vec3& p1 )
     {
         vec3 center = ( p0 + p1 ) * 0.5;
         vec3 diff = p - center;
@@ -692,52 +680,54 @@ namespace RINGMesh {
         double d = dot( edge, diff );
 
         if( std::fabs( d ) <= extent ) {
-            new_p = center + d * edge;
-            return true;
+            vec3 new_p = center + d * edge;
+            return std::make_tuple( true, new_p );
         }
-        return false;
+        return std::make_tuple( false, vec3() );
     }
 
-    void point_plane_projection(
+    vec3 point_plane_projection(
         const vec3& p,
         const vec3& N_plane,
-        const vec3& O_plane,
-        vec3& projected_p )
+        const vec3& O_plane )
     {
         vec3 N_unit_plane = normalize( N_plane );
         vec3 v( p - O_plane );
         double distance = dot( v, N_unit_plane );
-        projected_p = p - distance * N_unit_plane;
+        vec3 projected_p = p - distance * N_unit_plane;
+        return projected_p;
     }
 
-    double point_segment_distance(
+    std::tuple< double, vec3 > point_segment_distance(
         const vec3& p,
         const vec3& p0,
-        const vec3& p1,
-        vec3& nearest_p )
+        const vec3& p1 )
     {
-        if( point_segment_projection( p, p0, p1, nearest_p ) ) {
-            return length( nearest_p - p );
+        bool is_point_segment_projection_possible = false;
+        vec3 nearest_p;
+        std::tie( is_point_segment_projection_possible, nearest_p ) =
+            point_segment_projection( p, p0, p1 );
+        if( is_point_segment_projection_possible ) {
+            return std::make_tuple( length( nearest_p - p ), nearest_p );
         } else {
             double p0_distance_sq = length2( p0 - p );
             double p1_distance_sq = length2( p1 - p );
             if( p0_distance_sq < p1_distance_sq ) {
                 nearest_p = p0;
-                return std::sqrt( p0_distance_sq );
+                return std::make_tuple( std::sqrt( p0_distance_sq ), nearest_p );
             } else {
                 nearest_p = p1;
-                return std::sqrt( p1_distance_sq );
+                return std::make_tuple( std::sqrt( p1_distance_sq ), nearest_p );
             }
         }
     }
 
-    double point_quad_distance(
+    std::tuple< double, vec3 > point_quad_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3,
-        vec3& nearest_p )
+        const vec3& p3 )
     {
         const vec3 center( ( p0 + p1 + p2 + p3 ) * 0.25 );
         vec3 edge0( p1 - p0 );
@@ -772,20 +762,19 @@ namespace RINGMesh {
         }
 
         double distance = std::sqrt( sqrDistance );
-        nearest_p = center;
+        vec3 nearest_p = center;
         nearest_p += s0 * axis[0];
         nearest_p += s1 * axis[1];
 
-        return distance;
+        return std::make_tuple( distance, nearest_p );
     }
 
-    bool segment_triangle_intersection(
+    std::tuple< bool, vec3 > segment_triangle_intersection(
         const vec3& seg0,
         const vec3& seg1,
         const vec3& trgl0,
         const vec3& trgl1,
-        const vec3& trgl2,
-        vec3& result )
+        const vec3& trgl2 )
     {
         // http://www.geometrictools.com/LibMathematics/Intersection/Intersection.html
         // Compute the offset origin, edges, and normal.
@@ -811,7 +800,7 @@ namespace RINGMesh {
         } else {
             // Segment and triangle are parallel, call it a "no intersection"
             // even if the segment does intersect.
-            return false;
+            return std::make_tuple( false, vec3() );
         }
 
         double DdQxE2 = sign * dot( D, cross( diff, edge2 ) );
@@ -827,8 +816,8 @@ namespace RINGMesh {
                         double inv = 1. / DdN;
                         double seg_parameter = QdN * inv;
 
-                        result = seg_center + seg_parameter * D;
-                        return true;
+                        vec3 result = seg_center + seg_parameter * D;
+                        return std::make_tuple( true, result );
                     }
                     // else: |t| > extent, no intersection
                 }
@@ -837,22 +826,20 @@ namespace RINGMesh {
             // else: b2 < 0, no intersection
         }
         // else: b1 < 0, no intersection
-        return false;
+        return std::make_tuple( false, vec3() );
     }
 
-    void rotation_matrix_about_arbitrary_axis(
+    GEO::Matrix< 4, double > rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
         double theta,
-        bool degrees,
-        GEO::Matrix< 4, double >& rot_mat )
+        bool degrees )
     {
         // Note: Rotation is impossible about an axis with null length.
         ringmesh_assert( axis != vec3() );
 
         if( degrees ) {
-            double pi = 3.141592653589793;
-            theta = theta * pi / 180.;
+            theta = theta * M_PI / 180.;
         }
 
         double axis_length = axis.length();
@@ -1068,7 +1055,9 @@ namespace RINGMesh {
         Rz( 3, 2 ) = 0.;
         Rz( 3, 3 ) = 1.;
 
-        rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T;
+        GEO::Matrix< 4, double > rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx
+            * T;
+        return rot_mat;
     }
 
     bool point_inside_triangle(
@@ -1179,11 +1168,10 @@ namespace RINGMesh {
         nn_tree_->set_points( nb_vertices, nn_points_ );
     }
 
-    index_t NNSearch::get_colocated_index_mapping(
-        double epsilon,
-        std::vector< index_t >& index_map ) const
+    std::tuple< index_t, std::vector< index_t > > NNSearch::get_colocated_index_mapping(
+        double epsilon ) const
     {
-        index_map.resize( nn_tree_->nb_points() );
+        std::vector< index_t > index_map( nn_tree_->nb_points() );
         for( index_t i = 0; i < index_map.size(); i++ ) {
             index_map[i] = i;
         }
@@ -1197,16 +1185,17 @@ namespace RINGMesh {
             }
         }
 
-        return nb_colocalised_vertices;
+        return std::make_tuple( nb_colocalised_vertices, index_map );
     }
 
-    index_t NNSearch::get_colocated_index_mapping(
-        double epsilon,
-        std::vector< index_t >& index_map,
-        std::vector< vec3 >& unique_points ) const
+    std::tuple< index_t, std::vector< index_t >, std::vector< vec3 > > NNSearch::get_colocated_index_mapping_and_unique_points(
+        double epsilon ) const
     {
-        index_t nb_colocalised_vertices = get_colocated_index_mapping( epsilon,
-            index_map );
+        index_t nb_colocalised_vertices = NO_ID;
+        std::vector< index_t > index_map;
+        std::tie( nb_colocalised_vertices, index_map ) = get_colocated_index_mapping(
+            epsilon );
+        std::vector< vec3 > unique_points;
         unique_points.reserve( nb_points() - nb_colocalised_vertices );
         index_t offset = 0;
         for( index_t p = 0; p < index_map.size(); p++ ) {
@@ -1219,7 +1208,7 @@ namespace RINGMesh {
             }
         }
         ringmesh_assert( offset == nb_colocalised_vertices );
-        return offset;
+        return std::make_tuple( offset, index_map, unique_points );
     }
 
     std::vector< index_t > NNSearch::get_neighbors(

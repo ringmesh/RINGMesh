@@ -81,8 +81,8 @@ void test_nn_search_ringmesh()
     NNSearch nn_search( vertices );
     std::vector< vec3 > unique_vertices;
     std::vector< index_t > index_map;
-    nn_search.get_colocated_index_mapping( global_epsilon, index_map,
-        unique_vertices );
+    std::tie( std::ignore, index_map, unique_vertices ) =
+        nn_search.get_colocated_index_mapping_and_unique_points( global_epsilon );
     for( index_t i = 0; i < index_map.size(); i++ ) {
         if( index_map[i] != hardcoded_index_map[i] ) {
             throw RINGMeshException( "TEST", "Index map found is wrong" );

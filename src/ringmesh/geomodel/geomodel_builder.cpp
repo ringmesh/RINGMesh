@@ -715,11 +715,13 @@ namespace RINGMesh {
             index_t next_f_v1 = NO_ID;
 
             if( !backward ) {
-                S.next_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
+                std::tie( next_f, next_f_v0 ) = S.next_on_border( p,
+                    v0_id_in_polygon );
                 ringmesh_assert( next_f_v0 != NO_ID );
                 next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
             } else {
-                S.prev_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
+                std::tie( next_f, next_f_v0 ) = S.prev_on_border( p,
+                    v0_id_in_polygon );
                 ringmesh_assert( next_f_v0 != NO_ID );
                 next_f_v1 = S.next_polygon_vertex_index( next_f, next_f_v0 );
             }

@@ -67,11 +67,10 @@ namespace RINGMesh {
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
-    double RINGMESH_API point_segment_distance(
+    std::tuple< double, vec3 > RINGMESH_API point_segment_distance(
         const vec3& p,
         const vec3& p0,
-        const vec3& p1,
-        vec3& nearest_p );
+        const vec3& p1 );
 
     /*!
      * Computes the smallest distance between a point and a triangle
@@ -79,21 +78,18 @@ namespace RINGMesh {
      * @param[in] V0 the first vertex of the triangle
      * @param[in] V1 the second vertex of the triangle
      * @param[in] V2 the third vertex of the triangle
-     * @param[out] closest_point the closest point on the triangle
-     * @param[out] lambda0 barycentric coordinate from \p V0
-     * @param[out] lambda1 barycentric coordinate from \p V1
-     * @param[out] lambda2 barycentric coordinate from \p V2
-     * @return the smallest distance
+     * @return a tuple containing the following elements (in this order):
+     * - the smallest distance
+     * - the closest point on the triangle
+     * - barycentric coordinate from \p V0
+     * - barycentric coordinate from \p V1
+     * - barycentric coordinate from \p V2
      */
-    double RINGMESH_API point_triangle_distance(
+    std::tuple< double, vec3, double, double, double > RINGMESH_API point_triangle_distance(
         const vec3& point,
         const vec3& V0,
         const vec3& V1,
-        const vec3& V2,
-        vec3& closest_point,
-        double& lambda0,
-        double& lambda1,
-        double& lambda2 );
+        const vec3& V2 );
 
     /*!
      * Computes the smallest distance between a point and a quad
@@ -102,16 +98,15 @@ namespace RINGMesh {
      * @param[in] p1 the second vertex of the quad
      * @param[in] p2 the third vertex of the quad
      * @param[in] p3 the fourth vertex of the quad
-     * @param[out] nearest_p the closest point on the quad
-     * @return the smallest distance
+     * @return a tuple containing the smallest distance
+     * and the closest point on the quad.
      */
-    double RINGMESH_API point_quad_distance(
+    std::tuple< double, vec3 > RINGMESH_API point_quad_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3,
-        vec3& nearest_p );
+        const vec3& p3 );
 
     /*!
      * Computes the distance between a point and a tetrahedron
@@ -120,16 +115,16 @@ namespace RINGMesh {
      * @param[in] p1 the second vertex of the tetrahedron
      * @param[in] p2 the third vertex of the tetrahedron
      * @param[in] p3 the fourth vertex of the tetrahedron
-     * @param[out] nearest_p the nearest point on the tetrahedron
-     * @return the distance between the point and the tetrahedron facets
+     * @return a tuple containing:
+     * - the distance between the point and the tetrahedron facets.
+     * - the nearest point on the tetrahedron.
      */
-    double RINGMESH_API point_tetra_distance(
+    std::tuple< double, vec3 > RINGMESH_API point_tetra_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3,
-        vec3& nearest_p );
+        const vec3& p3 );
 
     /*!
      * Computes the distance between a point and a pyramid
@@ -139,17 +134,17 @@ namespace RINGMesh {
      * @param[in] p2 the third vertex of the pyramid
      * @param[in] p3 the fourth vertex of the pyramid
      * @param[in] p4 the fifth vertex of the pyramid
-     * @param[out] nearest_p the nearest point on the pyramid
-     * @return the distance between the point and the pyramid facets
+     * @return a tuple containing:
+     * - the distance between the point and the pyramid facets.
+     * - the nearest point on the pyramid.
      */
-    double RINGMESH_API point_pyramid_distance(
+    std::tuple< double, vec3 > RINGMESH_API point_pyramid_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        const vec3& p4,
-        vec3& nearest_p );
+        const vec3& p4 );
 
     /*!
      * Computes the distance between a point and a prism
@@ -160,18 +155,19 @@ namespace RINGMesh {
      * @param[in] p3 the fourth vertex of the prism
      * @param[in] p4 the fifth vertex of the prism
      * @param[in] p5 the sixth vertex of the prism
-     * @param[out] nearest_p the nearest point on the prism
-     * @return the distance between the point and the prism facets
+     * @param[out] nearest_p
+     * @return a tuple containing:
+     * - the distance between the point and the prism facets.
+     * - the nearest point on the prism.
      */
-    double RINGMESH_API point_prism_distance(
+    std::tuple< double, vec3 > RINGMESH_API point_prism_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
         const vec3& p4,
-        const vec3& p5,
-        vec3& nearest_p );
+        const vec3& p5 );
 
     /*!
      * Computes the distance between a point and a hexahedron
@@ -183,11 +179,12 @@ namespace RINGMesh {
      * @param[in] p4 the fifth vertex of the hexahedron
      * @param[in] p5 the sixth vertex of the hexahedron
      * @param[in] p6 the seventh vertex of the hexahedron
-     * @param[in] p7 the heith vertex of the hexahedron
-     * @param[out] nearest_p the nearest point on the hexahedron
-     * @return the distance between the point and the hexahedron facets
+     * @param[in] p7 the eighth vertex of the hexahedron
+     * @return a tuple containing:
+     * - the distance between the point and the hexahedron facets.
+     * - the nearest point on the hexahedron.
      */
-    double RINGMESH_API point_hexa_distance(
+    std::tuple< double, vec3 > RINGMESH_API point_hexa_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -196,8 +193,7 @@ namespace RINGMesh {
         const vec3& p4,
         const vec3& p5,
         const vec3& p6,
-        const vec3& p7,
-        vec3& nearest_p );
+        const vec3& p7 );
 
     /*!
      * Computes the intersection between a plane and a line
@@ -205,15 +201,14 @@ namespace RINGMesh {
      * @param[in] D_line the direction of the plane
      * @param[in] O_plane a point on the plane
      * @param[in] N_plane the normal of the plane
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
+     * @return returns a tuple containing a boolean (true if there is an intersection)
+     * and the intersected point if any.
      */
-    bool RINGMESH_API line_plane_intersection(
+    std::tuple< bool, vec3 > RINGMESH_API line_plane_intersection(
         const vec3& O_line,
         const vec3& D_line,
         const vec3& O_plane,
-        const vec3& N_plane,
-        vec3& result );
+        const vec3& N_plane );
 
     /*!
      * Computes the intersection between a plane and a segment
@@ -221,15 +216,14 @@ namespace RINGMesh {
      * @param[in] p1 the second vertex of the segment
      * @param[in] O_plane a point on the plane
      * @param[in] N_plane the normal of the plane
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
+     * @return returns a tuple containing a boolean (true if there is an intersection)
+     * and the intersected point if any.
      */
-    bool RINGMESH_API segment_plane_intersection(
+    std::tuple< bool, vec3 > RINGMESH_API segment_plane_intersection(
         const vec3& seg0,
         const vec3& seg1,
         const vec3& O_plane,
-        const vec3& N_plane,
-        vec3& result );
+        const vec3& N_plane );
 
     /*!
      * Computes the intersection of a segment and a triangle
@@ -238,16 +232,15 @@ namespace RINGMesh {
      * @param[in] trgl0 the first vertex of the triangle
      * @param[in] trgl1 the second vertex of the triangle
      * @param[in] trgl2 the third vertex of the triangle
-     * @param[out] result the intersected point
-     * @return true is there is an intersection
+     * @return a tuple containing a boolean (true is there is an intersection)
+     * and the intersected point if any.
      */
-    bool RINGMESH_API segment_triangle_intersection(
+    std::tuple< bool, vec3 > RINGMESH_API segment_triangle_intersection(
         const vec3& seg0,
         const vec3& seg1,
         const vec3& trgl0,
         const vec3& trgl1,
-        const vec3& trgl2,
-        vec3& result );
+        const vec3& trgl2 );
 
     /*!
      * Computes the intersection(s) between a circle and a plane
@@ -256,16 +249,15 @@ namespace RINGMesh {
      * @param[in] O_circle the center of the circle
      * @param[in] N_circle the normal of the plane supporting the circle
      * @param[in] r the radius of the circle
-     * @param[out] result the intersected points
-     * @return returns true if there is at least one intersection
+     * @return returns a tuple containing a boolean (true if there is at least one intersection)
+     * and the intersected points if any.
      */
-    bool RINGMESH_API circle_plane_intersection(
+    std::tuple< bool, std::vector< vec3 > > RINGMESH_API circle_plane_intersection(
         const vec3& O_plane,
         const vec3& N_plane,
         const vec3& O_circle,
         const vec3& N_circle,
-        double r,
-        std::vector< vec3 >& result );
+        double r );
 
     /*!
      * Computes the intersection between a disk and a segment
@@ -274,16 +266,15 @@ namespace RINGMesh {
      * @param[in] O_disk the center of the disk
      * @param[in] N_disk the normal of the plane supporting the disk
      * @param[in] r the radius of the disk
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
+     * @return returns a tuple containing a boolean (true if there is an intersection)
+     * and the intersected point if any.
      */
-    bool RINGMESH_API disk_segment_intersection(
+    std::tuple< bool, vec3 > RINGMESH_API disk_segment_intersection(
         const vec3& p0,
         const vec3& p1,
         const vec3& O_disk,
         const vec3& N_disk,
-        double r,
-        vec3& result );
+        double r );
 
     /*!
      * Computes the intersection(s) between a circle and a triangle
@@ -293,17 +284,16 @@ namespace RINGMesh {
      * @param[in] O_circle the center of the circle
      * @param[in] N_circle the normal of the plane supporting the circle
      * @param[in] r the radius of the circle
-     * @param[out] result the intersected points
-     * @return returns true if there is at least one intersection
+     * @return returns a tuple containing a boolean (true if there is at least one intersection)
+     * and the intersected points if any.
      */
-    bool RINGMESH_API circle_triangle_intersection(
+    std::tuple< bool, std::vector< vec3 > > RINGMESH_API circle_triangle_intersection(
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& O_circle,
         const vec3& N_circle,
-        double r,
-        std::vector< vec3 >& result );
+        double r );
 
     /*!
      * Computes the intersection between two planes
@@ -311,17 +301,16 @@ namespace RINGMesh {
      * @param[in] N_P0 the normal of the frst plane
      * @param[in] O_P1 a point on the second plane
      * @param[in] N_P1 the normal of the second plane
-     * @param[out] O_inter a point on the intersected line
-     * @param[out] D_inter the direction of the intersected line
-     * @return true is there is an intersection between the planes
+     * @return a tuple containing:
+     * - a boolean: true is there is an intersection between the planes.
+     * - a point on the intersected line if any.
+     * - the direction of the intersected line if any.
      */
-    bool RINGMESH_API plane_plane_intersection(
+    std::tuple< bool, vec3, vec3 > RINGMESH_API plane_plane_intersection(
         const vec3& O_P0,
         const vec3& N_P0,
         const vec3& O_P1,
-        const vec3& N_P1,
-        vec3& O_inter,
-        vec3& N_inter );
+        const vec3& N_P1 );
 
     /*!
      * Tests if a point is inside a triangle, more precisely if it is inside
@@ -363,27 +352,25 @@ namespace RINGMesh {
      * @param[in] p the point to project
      * @param[in] p0 the first vertex of the segment
      * @param[in] p1 the second vertex of the segment
-     * @param[out] new_p the projected point
-     * @return returns true if the projection is possible
+     * @return returns a tuple containing a boolean (true if the projection is possible)
+     * and the projected point if any.
      */
-    bool RINGMESH_API point_segment_projection(
+    std::tuple< bool, vec3 > RINGMESH_API point_segment_projection(
         const vec3& p,
         const vec3& p0,
-        const vec3& p1,
-        vec3& new_p );
+        const vec3& p1 );
 
     /*!
      * Computes the orthogonal projection of a point on a plane
      * @param[in] p the point to project
      * @param[in] N_plane the normal of the plane
      * @param[in] O_plane a point of the plane
-     * @param[out] projected_p the projected point
+     * @return the projected point
      */
-    void RINGMESH_API point_plane_projection(
+    vec3 RINGMESH_API point_plane_projection(
         const vec3& p,
         const vec3& N_plane,
-        const vec3& O_plane,
-        vec3& projected_p );
+        const vec3& O_plane );
 
     /*!
      * Computes barycentric coordinates of \p p
@@ -392,16 +379,16 @@ namespace RINGMesh {
      * @param[in] p1 the second tetra vertex
      * @param[in] p2 the third tetra vertex
      * @param[in] p3 the fourth tetra vertex
-     * @param[out] lambda the parametric coordinates corresponding to points
-     * @return false if the computation failed because of too small tetrahedron volume
+     * @return a tuple containing:
+     * - a boolean (false if the computation failed because of too small tetrahedron volume).
+     * - the parametric coordinates corresponding to points
      */
-    bool RINGMESH_API tetra_barycentric_coordinates(
+    std::tuple< bool, double, double, double, double > RINGMESH_API tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3,
-        double lambda[4] );
+        const vec3& p3 );
 
     /*!
      * Computes barycentric coordinates of \p p
@@ -409,42 +396,36 @@ namespace RINGMesh {
      * @param[in] p0 the first triangle vertex
      * @param[in] p1 the second triangle vertex
      * @param[in] p2 the third triangle vertex
-     * @param[out] lambda the parametric coordinates corresponding to points
-     * @return false if the computation failed because of too small triangle area
+     * @return a tuple containing:
+     * - a boolean (false if the computation failed because of too small triangle area).
+     * - the parametric coordinates corresponding to points.
      */
-    bool RINGMESH_API triangle_barycentric_coordinates(
+    std::tuple< bool, double, double, double > RINGMESH_API triangle_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
-        const vec3& p2,
-        double lambda[3] );
+        const vec3& p2 );
 
     /*!
      * @brief Builds a rotational matrix about an arbitrary axis.
      *
      * Mathematical development: http://paulbourke.net/geometry/rotate/.
-     *
      * @param[in] origin point in which passes the rotation axis.
-     *
      * @param[in] axis vector which defines the rotation axis.
-     *
      * @param[in] theta rotation angle (in radians or degrees).
-     *
      * @param[in] degrees true is \p theta is in degrees, false
      * if in radians.
-     *
-     * @param[out] rot_mat the matrix which defines the rotation
+     * @return the matrix which defines the rotation
      * of a point around the axis defined by point \p origin
      * and vector \p axis by an angle \p theta.
      * New coordinates of a point (x,y,z) are:
      * (x',y',z') = rot_mat*(x,y,z)
      */
-    void RINGMESH_API rotation_matrix_about_arbitrary_axis(
+    GEO::Matrix< 4, double > RINGMESH_API rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
         double theta,
-        bool degrees,
-        GEO::Matrix< 4, double >& rot_mat );
+        bool degrees );
 
     class RINGMESH_API NNSearch {
     ringmesh_disable_copy( NNSearch );
@@ -464,29 +445,28 @@ namespace RINGMesh {
         /*!
          * @brief Gets the \p index_map that link all the duplicated points
          * to their first occurancy
-         * @return the number of colocated vertices
+         * @return a tuple containing:
+         * - the number of colocated vertices.
+         * - the map of the colocated vertices.
          * Example:
          *     vertices = [P1, P2, P1, P3, P2, P4]
-         *     index_map = [0, 1, 0, 3, 1, 5]
-         *     return 2
+         *     return 2 and [0, 1, 0, 3, 1, 5]
          */
-        index_t get_colocated_index_mapping(
-            double epsilon,
-            std::vector< index_t >& index_map ) const;
+        std::tuple< index_t, std::vector< index_t > > get_colocated_index_mapping(
+            double epsilon ) const;
         /*!
          * @brief Gets the \p index_map that link all the points
          * to a no duplicated list of index in the list of \p unique_points.
-         * @return the number of colocated vertices
+         * @return a tuple containing:
+         * - the number of colocated vertices.
+         * - the map of the colocated vertices.
+         * - a vector of the unique points.
          * Example:
          *     vertices = [P1, P2, P1, P3, P2, P4]
-         *     unique_points = [P1, P2, P3, P4]
-         *     index_map = [0, 1, 0, 2, 1, 3]
-         *     return 2
+         *     return 2 and [0, 1, 0, 2, 1, 3] and [P1, P2, P3, P4]
          */
-        index_t get_colocated_index_mapping(
-            double epsilon,
-            std::vector< index_t >& index_map,
-            std::vector< vec3 >& unique_points ) const;
+        std::tuple< index_t, std::vector< index_t >, std::vector< vec3 > > get_colocated_index_mapping_and_unique_points(
+            double epsilon ) const;
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test

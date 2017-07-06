@@ -157,15 +157,14 @@ namespace {
      * @brief Count the number of times each vertex is in an edge or polygon
      *
      * @param[in] gmme The GeoModelMeshEntity
-     * @param[out] nb Resized to the number of vertices of the mesh.
+     * @return Resized to the number of vertices of the mesh.
      *      Number of times one vertex appear in an mesh_element collection of 
      *      the GeoModelMeshEntity edge or polygon of the mesh.
      */
-    void count_vertex_occurences(
-        const GeoModelMeshEntity& E,
-        std::vector< index_t >& nb )
+    std::vector< index_t > count_vertex_occurences(
+        const GeoModelMeshEntity& E )
     {
-        nb.resize( E.nb_vertices(), 0 );
+        std::vector< index_t > nb( E.nb_vertices(), 0 );
         for( index_t mesh_element_index = 0;
             mesh_element_index < E.nb_mesh_elements(); ++mesh_element_index ) {
             for( index_t vertex = 0;
@@ -174,12 +173,12 @@ namespace {
                 ++nb[E.mesh_element_vertex_index( mesh_element_index, vertex )];
             }
         }
+        return nb;
     }
 
     index_t count_nb_isolated_vertices( const GeoModelMeshEntity& mesh )
     {
-        std::vector< index_t > nb;
-        count_vertex_occurences( mesh, nb );
+        std::vector< index_t > nb = count_vertex_occurences( mesh );
         return static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) );
     }
 
@@ -582,8 +581,7 @@ namespace RINGMesh {
 
         if( nb_vertices() > 1 ) {
             // Count the number of edges in which each vertex is
-            std::vector< index_t > nb;
-            count_vertex_occurences( *this, nb );
+            std::vector< index_t > nb = count_vertex_occurences( *this );
             index_t nb0 = 0;
             index_t nb1 = 0;
             index_t nb2 = 0;
@@ -845,13 +843,14 @@ namespace RINGMesh {
         }
     }
 
-    void Region::compute_region_volumes_per_cell_type(
-        double& tet_volume,
-        double& pyramid_volume,
-        double& prism_volume,
-        double& hex_volume,
-        double& poly_volume ) const
+    std::tuple< double, double, double, double, double >
+        Region::compute_region_volumes_per_cell_type() const
     {
+        double tet_volume;
+        double pyramid_volume;
+        double prism_volume;
+        double hex_volume;
+        double poly_volume;
         for( index_t c = 0; c < nb_mesh_elements(); c++ ) {
             index_t nb_vertices = nb_mesh_element_vertices( c );
             double volume = mesh3d_->cell_volume( c );
@@ -873,17 +872,19 @@ namespace RINGMesh {
                     break;
             }
         }
+
+        return std::make_tuple( tet_volume, pyramid_volume, prism_volume, hex_volume,
+            poly_volume );
     }
 
-    index_t Region::cells_around_vertex(
+    std::vector< index_t > Region::cells_around_vertex(
         index_t vertex_id,
-        std::vector< index_t >& result,
         index_t cell_hint ) const
     {
-        result.resize( 0 );
+        std::vector< index_t > result;
 
         if( cell_hint == NO_ID ) {
-            return 0;
+            return result;
         }
 
         // Flag the visited cells
@@ -916,7 +917,6 @@ namespace RINGMesh {
                     index_t vertex = cell_facet_vertex_index( c, f, v );
                     if( vertex == vertex_id ) {
                         index_t adj_P = cell_adjacent_index( c, f );
-
                         if( adj_P != NO_ID ) {
                             if( !contains( visited, adj_P ) ) {
                                 S.push( adj_P );
@@ -929,10 +929,10 @@ namespace RINGMesh {
             }
         } while( !S.empty() );
 
-        return static_cast< index_t >( result.size() );
+        return result ;
     }
 
-    void GeoModelMeshEntityAccess::change_mesh_data_structure( const MeshType type )
+    void GeoModelMeshEntityAccess::change_mesh_data_structure( const MeshType& type )
     {
         if( gmme_.mesh_->type_name() != type ) {
             gmme_.unbind_vertex_mapping_attribute();
@@ -941,7 +941,7 @@ namespace RINGMesh {
         }
     }
 
-    void Corner::change_mesh_data_structure( const MeshType type )
+    void Corner::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< PointSetMesh > new_mesh = PointSetMesh::create_mesh( type );
         std::unique_ptr< PointSetMeshBuilder > builder =
@@ -950,7 +950,7 @@ namespace RINGMesh {
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
-    void Line::change_mesh_data_structure( const MeshType type )
+    void Line::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< LineMesh > new_mesh = LineMesh::create_mesh( type );
         std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
@@ -959,7 +959,7 @@ namespace RINGMesh {
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
-    void Surface::change_mesh_data_structure( const MeshType type )
+    void Surface::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< SurfaceMesh > new_mesh = SurfaceMesh::create_mesh( type );
         std::unique_ptr< SurfaceMeshBuilder > builder =
@@ -968,7 +968,7 @@ namespace RINGMesh {
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
-    void Region::change_mesh_data_structure( const MeshType type )
+    void Region::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< VolumeMesh > new_mesh = VolumeMesh::create_mesh( type );
         std::unique_ptr< VolumeMeshBuilder > builder =

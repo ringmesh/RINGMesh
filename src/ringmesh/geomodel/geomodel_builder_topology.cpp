@@ -99,16 +99,17 @@ namespace {
         return equal;
     }
 
-    void get_sorted_incident_surfaces(
-        const GeoModelMeshEntity& E,
-        std::vector< index_t >& incident_surfaces )
+    std::vector< index_t > get_sorted_incident_surfaces(
+        const GeoModelMeshEntity& E )
     {
+        std::vector< index_t > incident_surfaces;
         index_t nb = E.nb_incident_entities();
         incident_surfaces.resize( nb );
         for( index_t i = 0; i < nb; ++i ) {
             incident_surfaces[i] = E.incident_entity_gmme( i ).index();
         }
         std::sort( incident_surfaces.begin(), incident_surfaces.end() );
+        return incident_surfaces;
     }
 }
 
@@ -257,8 +258,8 @@ namespace RINGMesh {
 
             if( ( c0 == first_corner && c1 == second_corner )
                 || ( c0 == second_corner && c1 == first_corner ) ) {
-                std::vector< index_t > cur_adjacent_surfaces;
-                get_sorted_incident_surfaces( line, cur_adjacent_surfaces );
+                std::vector< index_t > cur_adjacent_surfaces =
+                    get_sorted_incident_surfaces( line );
                 if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size()
                     && std::equal( cur_adjacent_surfaces.begin(),
                         cur_adjacent_surfaces.end(),

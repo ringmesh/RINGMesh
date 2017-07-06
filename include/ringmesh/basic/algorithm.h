@@ -148,15 +148,15 @@ namespace RINGMesh {
      * @brief Determines unique occurences of values in input vector
      * and fill a mapping to the first occurence of each unique value
      * @param[in] input values  example: 1 4 6 0 4 1 5 6
-     * @param[out] unique_value_indices example: 0 1 2 3 1 0 6 2
-     * Maps each index to the index of the first occurence of the value in the vector.
-     * @return Number of unique values in input
+     * @return A tuple containing: (1) the number of unique values in input and
+     * (2) a vector of indices toward unique values.
+     * Maps each index to the index of the first occurence of the value in the vector
+     * (example: 0 1 2 3 1 0 6 2).
      * @note Tricky algorithm, used over and over in Geogram
      */
     template< typename T >
-    inline index_t determine_unique_values_indices(
-        const std::vector< T >& input_values,
-        std::vector< index_t >& unique_value_indices )
+    inline std::tuple< index_t, std::vector< index_t > > determine_unique_values_indices(
+        const std::vector< T >& input_values )
     {
         index_t nb_values = static_cast< index_t >( input_values.size() );
         std::vector< index_t > sorted_indices( nb_values );
@@ -167,7 +167,7 @@ namespace RINGMesh {
         // Sort the indices according to the values token in the input vector
         std::sort( sorted_indices.begin(), sorted_indices.end(), comparator );
 
-        unique_value_indices.resize( nb_values, NO_ID );
+        std::vector< index_t > unique_value_indices( nb_values, NO_ID );
         index_t nb_unique_values = 0;
         index_t i = 0;
         while( i != nb_values ) {
@@ -181,7 +181,7 @@ namespace RINGMesh {
             }
             i = j;
         }
-        return nb_unique_values;
+        return std::make_tuple( nb_unique_values, unique_value_indices );
     }
 
     /*!
@@ -192,18 +192,17 @@ namespace RINGMesh {
      *          input2unique_values = 0 1 2 3 1 3
      */
     template< typename T >
-    inline void get_unique_input_values_and_mapping(
-        const std::vector< T >& input_values,
-        std::vector< T >& unique_values,
-        std::vector< index_t >& input2unique_values )
+    inline std::tuple< std::vector< T >, std::vector< index_t > > get_unique_input_values_and_mapping(
+        const std::vector< T >& input_values )
     {
-        unique_values.resize( 0 );
+        std::vector< T > unique_values;
         index_t nb_values = static_cast< index_t >( input_values.size() );
-        input2unique_values.resize( nb_values, NO_ID );
+        std::vector< index_t > input2unique_values( nb_values, NO_ID );
 
+        index_t nb_unique_values = NO_ID;
         std::vector< index_t > unique_value_indices;
-        index_t nb_unique_values = determine_unique_values_indices( input_values,
-            unique_value_indices );
+        std::tie( nb_unique_values, unique_value_indices ) =
+            determine_unique_values_indices( input_values );
         unique_values.reserve( nb_unique_values );
 
         for( index_t i = 0; i < nb_values; ++i ) {
@@ -216,6 +215,8 @@ namespace RINGMesh {
                     input2unique_values[unique_value_indices[i]];
             }
         }
+
+        return std::make_tuple( unique_values, input2unique_values );
     }
 
     /*!
