@@ -1,3 +1,5 @@
+#### Release: 4.1.0 ####
+
 New Features:
  * New thread safe logger
       Each call to Logger::XXX will output consistently in the console in multithreading environment
