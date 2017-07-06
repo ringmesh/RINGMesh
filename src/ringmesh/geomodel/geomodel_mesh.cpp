@@ -35,6 +35,7 @@
 
 #include <ringmesh/geomodel/geomodel_mesh.h>
 
+#include <numeric>
 #include <stack>
 
 #include <geogram/basic/algorithm.h>
