@@ -53,7 +53,7 @@ namespace {
         const GeoModelMeshEntity< DIMENSION >& entity,
         Box< DIMENSION >& bbox )
     {
-        for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
+        for( index_t v : range( entity.nb_vertices() ) ) {
             bbox.add_point( entity.vertex( v ) );
         }
     }
@@ -64,22 +64,22 @@ namespace {
         Box< DIMENSION > bbox;
         if( gm.universe().nb_boundaries() > 0 ) {
             const Universe< DIMENSION >& universe = gm.universe();
-            for( index_t b = 0; b < universe.nb_boundaries(); b++ ) {
+            for( index_t b : range( universe.nb_boundaries() ) ) {
                 compute_mesh_entity_bbox(
                     gm.mesh_entity( universe.boundary_gmme( b ) ), bbox );
             }
         } else {
             if( gm.nb_surfaces() > 0 ) {
-                for( index_t s = 0; s < gm.nb_surfaces(); s++ ) {
+                for( index_t s : range( gm.nb_surfaces() ) ) {
                     compute_mesh_entity_bbox( gm.surface( s ), bbox );
                 }
             } else if( gm.nb_lines() > 0 ) {
-                for( index_t l = 0; l < gm.nb_lines(); l++ ) {
+                for( index_t l : range( gm.nb_lines() ) ) {
                     compute_mesh_entity_bbox( gm.line( l ), bbox );
                 }
             } else {
                 ringmesh_assert( gm.nb_corners() > 0 );
-                for( index_t c = 0; c < gm.nb_corners(); c++ ) {
+                for( index_t c : range( gm.nb_corners() ) ) {
                     bbox.add_point( gm.corner( c ).vertex( 0 ) );
                 }
             }

@@ -170,8 +170,8 @@ void check_matrices(
     const GEO::Matrix< 4, double >& lhs,
     const GEO::Matrix< 4, double >& rhs )
 {
-    for( index_t mat_i = 0; mat_i < 4; ++mat_i ) {
-        for( index_t mat_j = 0; mat_j < 4; ++mat_j ) {
+    for( index_t mat_i : range( 4 ) ) {
+        for( index_t mat_j : range( 4 ) ) {
             double diff = lhs( mat_i, mat_j ) - rhs( mat_i, mat_j );
             if( std::fabs( diff ) > global_epsilon ) {
                 throw RINGMeshException( "Test", "Error in rotation matrix" );

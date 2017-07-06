@@ -118,7 +118,7 @@ namespace RINGMesh {
             const gmme_id& entity,
             GEO::LineInput& file_line )
         {
-            for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
+            for( index_t c : range( file_line.nb_fields() ) ) {
                 bool side = false;
                 if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                     side = true;
@@ -139,7 +139,7 @@ namespace RINGMesh {
                 this->geomodel_.entity_type_manager().mesh_entity_manager;
             MeshEntityType type = manager.boundary_entity_type( entity.type() );
             // Second line : indices of boundaries
-            for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
+            for( index_t c : range( 1, file_line.nb_fields() ) ) {
                 gmme_id boundary( type, file_line.field_as_uint( c ) );
                 this->builder_.topology.add_mesh_entity_boundary_relation( entity,
                     boundary );
@@ -313,7 +313,7 @@ namespace RINGMesh {
                     // Second line: signed indices of boundaries
                     file_line.get_line();
                     file_line.get_fields();
-                    for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
+                    for( index_t c : range( file_line.nb_fields() ) ) {
                         bool side = false;
                         if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                             side = true;
@@ -386,11 +386,11 @@ namespace RINGMesh {
                             file_line.field( 3 ) ) );
                     file_line.get_line();
                     file_line.get_fields();
-                    for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {
+                    for( index_t in_b : range( file_line.nb_fields() ) ) {
                         this->geology.add_parent_children_relation( entity,
-                            gmme_id(
-                                this->geomodel_.entity_type_manager().relationship_manager.child_type(
-                                    type ), file_line.field_as_uint( in_b ) ) );
+                            { this->geomodel_.entity_type_manager().relationship_manager.child_type(
+                                  type ),
+                              file_line.field_as_uint( in_b ) } );
                     }
                 }
             }

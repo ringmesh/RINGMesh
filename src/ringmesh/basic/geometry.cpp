@@ -98,8 +98,7 @@ namespace RINGMesh {
         vec3 vertices[4] = { p0, p1, p2, p3 };
         Sign signs[4];
         if( !exact_predicates ) {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
+            for( index_t f : range( 4 ) ) {
                 double volume =
                     GEO::Geom::tetra_signed_volume( p,
                         vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
@@ -111,8 +110,7 @@ namespace RINGMesh {
                 signs[f] = sign( volume );
             }
         } else {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
+            for( index_t f : range( 4 ) ) {
                 signs[f] =
                     sign(
                         GEO::PCK::orient_3d( p.data(),
@@ -134,10 +132,8 @@ namespace RINGMesh {
         double lambda[4] )
     {
         double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 );
-        if( total_volume < global_epsilon_3 ) {
-            for( index_t i = 0; i < 4; i++ ) {
-                lambda[i] = 0;
-            }
+        if( std::fabs( total_volume ) < global_epsilon_3 ) {
+            std::fill( lambda, lambda + 4, 0. );
             return false;
         }
         double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p );
@@ -160,10 +156,8 @@ namespace RINGMesh {
         double lambda[3] )
     {
         double total_area = GEO::Geom::triangle_area( p0, p1, p2 );
-        if( total_area < global_epsilon_sq ) {
-            for( index_t i = 0; i < 3; i++ ) {
-                lambda[i] = 0;
-            }
+        if( std::fabs( total_area ) < global_epsilon_sq ) {
+            std::fill( lambda, lambda + 3, 0. );
             return false;
         }
         vec3 triangle_normal = cross( p2 - p0, p1 - p0 );
@@ -186,9 +180,7 @@ namespace RINGMesh {
     {
         double total_area = GEO::Geom::triangle_signed_area( p2, p1, p0 );
         if( std::fabs( total_area ) < global_epsilon_sq ) {
-            for( index_t i = 0; i < 3; i++ ) {
-                lambda[i] = 0;
-            }
+            std::fill( lambda, lambda + 3, 0. );
             return false;
         }
         double area0 = GEO::Geom::triangle_signed_area( p2, p1, p );

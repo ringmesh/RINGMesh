@@ -51,7 +51,7 @@ namespace RINGMesh {
             NO_ID );
 
         std::vector< bool > visited( mesh_.facets.nb(), false );
-        for( index_t i = 0; i < mesh_.facets.nb(); i++ ) {
+        for( index_t i : range( mesh_.facets.nb() ) ) {
             if( !visited[i] ) {
                 std::vector< index_t > cc_corners;
                 std::vector< index_t > cc_facets_ptr;
@@ -73,8 +73,8 @@ namespace RINGMesh {
                     S.pop();
                     visited[f] = true;
 
-                    for( index_t c = mesh_.facets.corners_begin( f );
-                        c < mesh_.facets.corners_end( f ); ++c ) {
+                    for( index_t c : range( mesh_.facets.corners_begin( f ),
+                        mesh_.facets.corners_end( f ) ) ) {
                         index_t v = mesh_.facet_corners.vertex( c );
                         if( global_vertex_id_to_id_in_cc[v] == NO_ID ) {
                             index_t index =

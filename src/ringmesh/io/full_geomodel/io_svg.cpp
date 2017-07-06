@@ -110,7 +110,7 @@ namespace {
         {
             std::vector< vec2 > point_extremities;
             point_extremities.reserve( geomodel_.nb_lines() * 2 );
-            for( index_t l = 0; l < geomodel_.nb_lines(); l++ ) {
+            for( index_t l : range( geomodel_.nb_lines() ) ) {
                 const Line< 2 >& line = geomodel_.line( l );
                 point_extremities.push_back( line.vertex( 0 ) );
                 point_extremities.push_back( line.vertex( line.nb_vertices() - 1 ) );
@@ -124,11 +124,11 @@ namespace {
 
             topology.create_mesh_entities( Corner < 2 > ::type_name_static(),
                 unique_points.size() );
-            for( index_t c = 0; c < geomodel_.nb_corners(); c++ ) {
+            for( index_t c : range( geomodel_.nb_corners() ) ) {
                 geometry.set_corner( c, unique_points[c] );
             }
             index_t index = 0;
-            for( index_t l = 0; l < geomodel_.nb_lines(); l++ ) {
+            for( index_t l : range( geomodel_.nb_lines() ) ) {
                 gmme_id line_id( Line < 2 > ::type_name_static(), l );
                 index_t point0 = index_map[index++ ];
                 gmme_id corner0( Corner < 2 > ::type_name_static(), point0 );
