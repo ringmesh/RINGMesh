@@ -142,9 +142,10 @@ namespace {
             out << "boundary" << std::endl;
             out << polygons.nb() << std::endl;
             for( index_t p = 0; p < polygons.nb(); p++ ) {
-                index_t not_used = 0;
                 out << polygons.surface( p ) + mfem_offset << " ";
-                out << polygon_type_mfem[to_underlying_type( polygons.type( p, not_used ) )] << " ";
+                PolygonType polygon_type;
+                std::tie( polygon_type, std::ignore ) = polygons.type( p );
+                out << polygon_type_mfem[to_underlying_type( polygon_type )] << " ";
                 for( index_t v = 0; v < polygons.nb_vertices( p ); v++ ) {
                     out << polygons.vertex( p, v ) << " ";
                 }

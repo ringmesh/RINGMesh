@@ -274,11 +274,8 @@ namespace RINGMesh {
         }
     }
 
-    void AABBTree::get_nearest_element_box_hint(
-        const vec3& query,
-        index_t& nearest_box,
-        vec3& nearest_point,
-        double& distance ) const
+    std::tuple< index_t, vec3, double > AABBTree::get_nearest_element_box_hint(
+        const vec3& query ) const
     {
         index_t box_begin = 0;
         index_t box_end = nb_bboxes();
@@ -297,9 +294,10 @@ namespace RINGMesh {
             }
         }
 
-        nearest_box = mapping_morton_[box_begin];
-        nearest_point = get_point_hint_from_box( tree_[box_begin], nearest_box );
-        distance = length( query - nearest_point );
+        index_t nearest_box = mapping_morton_[box_begin];
+        vec3 nearest_point = get_point_hint_from_box( tree_[box_begin], nearest_box );
+        double distance = length( query - nearest_point );
+        return std::make_tuple( nearest_box, nearest_point, distance );
     }
 
     /****************************************************************************/
@@ -333,14 +331,11 @@ namespace RINGMesh {
         initialize_tree( bboxes );
     }
 
-    index_t LineAABBTree::closest_edge(
-        const vec3& query,
-        vec3& nearest_point,
-        double& distance ) const
+    std::tuple< index_t, vec3, double > LineAABBTree::closest_edge(
+        const vec3& query ) const
     {
         DistanceToEdge action( mesh_ );
-        return closest_element_box< DistanceToEdge >( query, nearest_point, distance,
-            action );
+        return closest_element_box< DistanceToEdge >( query, action );
     }
 
     void LineAABBTree::DistanceToEdge::operator()(
@@ -379,14 +374,11 @@ namespace RINGMesh {
         initialize_tree( bboxes );
     }
 
-    index_t SurfaceAABBTree::closest_triangle(
-        const vec3& query,
-        vec3& nearest_point,
-        double& distance ) const
+    std::tuple< index_t, vec3, double > SurfaceAABBTree::closest_triangle(
+        const vec3& query ) const
     {
         DistanceToTriangle action( mesh_ );
-        return closest_element_box< DistanceToTriangle >( query, nearest_point,
-            distance, action );
+        return closest_element_box< DistanceToTriangle >( query, action );
     }
 
     void SurfaceAABBTree::DistanceToTriangle::operator()(

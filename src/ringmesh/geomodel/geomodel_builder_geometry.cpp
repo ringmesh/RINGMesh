@@ -40,16 +40,17 @@
 namespace {
     using namespace RINGMesh;
 
-    void get_internal_borders(
-        const GeoModelMeshEntity& entity,
-        std::set< index_t >& internal_borders )
+    std::set< index_t > get_internal_borders(
+        const GeoModelMeshEntity& entity )
     {
+        std::set< index_t > internal_borders;
         for( index_t i = 0; i < entity.nb_boundaries(); ++i ) {
             const GeoModelMeshEntity& border = entity.boundary( i );
             if( border.is_inside_border( entity ) ) {
                 internal_borders.insert( border.index() );
             }
         }
+        return internal_borders;
     }
 
     bool inexact_equal( const vec3& v1, const vec3& v2, double epsilon )
@@ -67,13 +68,13 @@ namespace {
      * @param[out] e the found edge index
      * @return True if the polygon and the edge indices are found
      */
-    bool find_polygon_from_edge_vertices(
+    std::tuple< bool, index_t, index_t > find_polygon_from_edge_vertices(
         const Surface& surface,
         const vec3& v0,
-        const vec3& v1,
-        index_t& p,
-        index_t& e )
+        const vec3& v1 )
     {
+        index_t p;
+        index_t e;
         vec3 v_bary = 0.5 * ( v0 + v1 );
         index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() );
         index_t cur_neighbor = 0;
@@ -95,16 +96,14 @@ namespace {
                         if( inexact_equal( surface.mesh_element_vertex( p, j_next ),
                             v1, surface.geomodel().epsilon() ) ) {
                             e = j;
-                            return true;
+                            return std::make_tuple( true, p, e );
                         }
                     }
                 }
             }
         } while( surface.nb_mesh_elements() != cur_neighbor );
 
-        p = NO_ID;
-        e = NO_ID;
-        return false;
+        return std::make_tuple( false, NO_ID, NO_ID );
     }
 
     bool are_cell_facet_and_polygon_equal(
@@ -127,13 +126,13 @@ namespace {
             region.geomodel().epsilon() );
     }
 
-    bool find_cell_facet_from_polygon(
+    std::tuple< bool, index_t, index_t > find_cell_facet_from_polygon(
         const Region& region,
         const Surface& surface,
-        index_t polygon,
-        index_t& cell,
-        index_t& cell_facet )
+        index_t polygon )
     {
+        index_t cell;
+        index_t cell_facet;
         vec3 v_bary = surface.mesh_element_barycenter( polygon );
         index_t nb_neighbors = std::min( index_t( 5 ), region.nb_mesh_elements() );
         index_t cur_neighbor = 0;
@@ -151,15 +150,13 @@ namespace {
                     cell_facet++ ) {
                     if( are_cell_facet_and_polygon_equal( region, cell, cell_facet,
                         surface, polygon ) ) {
-                        return true;
+                        return std::make_tuple( true, cell, cell_facet );
                     }
                 }
             }
         } while( region.nb_mesh_elements() != cur_neighbor );
 
-        cell = NO_ID;
-        cell_facet = NO_ID;
-        return false;
+        return std::make_tuple( false, NO_ID, NO_ID );
     }
 
     bool find_polygon_from_vertex(
@@ -676,8 +673,7 @@ namespace RINGMesh {
             Surface& surface =
                 dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
                     gmme_id( Surface::type_name_static(), s ) ) );
-            std::set< index_t > cutting_lines;
-            get_internal_borders( surface, cutting_lines );
+            std::set< index_t > cutting_lines = get_internal_borders( surface );
             for( index_t line_id : cutting_lines ) {
                 cut_surface_by_line( s, line_id );
             }
@@ -696,8 +692,7 @@ namespace RINGMesh {
                 dynamic_cast< Region& >( geomodel_access_.modifiable_mesh_entity(
                     gmme_id( Region::type_name_static(), r ) ) );
             if( region.nb_mesh_elements() == 0 ) continue;
-            std::set< index_t > cutting_surfaces;
-            get_internal_borders( region, cutting_surfaces );
+            std::set< index_t > cutting_surfaces = get_internal_borders( region );
             for( index_t surface_id : cutting_surfaces ) {
                 cut_region_by_surface( r, surface_id );
             }
@@ -808,8 +803,8 @@ namespace RINGMesh {
             const index_t& cell = cell_vertices[v].element_;
             const index_t& cell_vertex = cell_vertices[v].vertex_;
 
-            std::vector< index_t > cells;
-            region.cells_around_vertex( cell_vertex, cells, cell );
+            std::vector< index_t > cells = region.cells_around_vertex( cell_vertex,
+                cell );
             update_cell_vertex( region_id, cells, cell_vertex, vertex_id );
             region_mesh_builder->set_vertex( vertex_id, p );
             vertex_id++;
@@ -832,9 +827,11 @@ namespace RINGMesh {
             const vec3& p0 = line.vertex( i );
             const vec3& p1 = line.vertex( i + 1 );
 
+            bool found = false;
             index_t p = NO_ID;
             index_t e = NO_ID;
-            bool found = find_polygon_from_edge_vertices( surface, p0, p1, p, e );
+            std::tie( found, p, e ) = find_polygon_from_edge_vertices( surface, p0,
+                p1 );
             ringmesh_unused( found );
             ringmesh_assert( found && p != NO_ID && e != NO_ID );
 
@@ -863,10 +860,11 @@ namespace RINGMesh {
             region_id );
         index_t nb_disconnected_polygons = 0;
         for( index_t polygon = 0; polygon < surface.nb_mesh_elements(); ++polygon ) {
+            bool found = false;
             index_t cell = NO_ID;
             index_t cell_facet = NO_ID;
-            bool found = find_cell_facet_from_polygon( region, surface, polygon,
-                cell, cell_facet );
+            std::tie( found, cell, cell_facet ) = find_cell_facet_from_polygon(
+                region, surface, polygon );
             ringmesh_unused( found );
             ringmesh_assert( found && cell != NO_ID && cell_facet != NO_ID );
 

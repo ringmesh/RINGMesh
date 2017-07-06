@@ -79,12 +79,13 @@ namespace RINGMesh {
         /*!
          * @brief Gets the closest element box to a point
          * @param[in] query the point to test
-         * @param[out] nearest_point the nearest point on the element box
-         * @param[out] distance the distance between the \p query
-         * and \p nearest_point
          * @param[in] action the functor to compute the distance between
          * the \p query and the tree element boxes
-         * @return the index of the closest element box
+         * @return a tuple containing:
+         * - the index of the closest element box.
+         * - the nearest point on the element box.
+         * - the distance between the \p query.
+         * and \p nearest_point.
          * @tparam EvalDistance this functor should have an operator() defined like this:
          *  void operator()(
          *      const vec3& query,
@@ -96,19 +97,19 @@ namespace RINGMesh {
          * and distance are the value computed using the element in the \p cur_box.
          */
         template< typename EvalDistance >
-        index_t closest_element_box(
+        std::tuple< index_t, vec3, double > closest_element_box(
             const vec3& query,
-            vec3& nearest_point,
-            double& distance,
             const EvalDistance& action ) const
         {
             index_t nearest_box = NO_ID;
-            get_nearest_element_box_hint( query, nearest_box, nearest_point,
-                distance );
+            vec3 nearest_point;
+            double distance;
+            std::tie( nearest_box, nearest_point, distance ) =
+                get_nearest_element_box_hint( query );
             closest_element_box_recursive< EvalDistance >( query, nearest_box,
                 nearest_point, distance, ROOT_INDEX, 0, nb_bboxes(), action );
             ringmesh_assert( nearest_box != NO_ID );
-            return nearest_box;
+            return std::make_tuple( nearest_box, nearest_point, distance );
         }
         /*
          * @brief Computes the intersections between a given
@@ -229,11 +230,8 @@ namespace RINGMesh {
          * the distance computation between \p query and the real elements
          * inside the bboxes
          */
-        void get_nearest_element_box_hint(
-            const vec3& query,
-            index_t& nearest_box,
-            vec3& nearest_point,
-            double& distance ) const;
+        std::tuple< index_t, vec3, double > get_nearest_element_box_hint(
+            const vec3& query ) const;
         /*!
          * @brief Gets an element point from its box
          * @details This function is used to get a result from the selected hint box
@@ -270,14 +268,12 @@ namespace RINGMesh {
         /*!
          * @brief Gets the closest edge to a given point
          * @param[in] query the point to use
-         * @param[out] nearest_point the nearest point on the closest edge
-         * @param[out] distance the distance between \p query and \p nearest_point
-         * @return the closest edge index
+         * @return a tuple containing:
+         * - the closest edge index.
+         * - nearest_point the nearest point on the closest edge.
+         * - distance the distance between \p query and \p nearest_point.
          */
-        index_t closest_edge(
-            const vec3& query,
-            vec3& nearest_point,
-            double& distance ) const;
+        std::tuple< index_t, vec3, double > closest_edge( const vec3& query ) const;
     private:
         /*!
          * @brief Gets an element point from its box
@@ -320,14 +316,13 @@ namespace RINGMesh {
          * @brief Gets the closest triangle to a given point
          * @pre The mesh needs to be triangulated
          * @param[in] query the point to use
-         * @param[out] nearest_point the nearest point on the closest triangle
-         * @param[out] distance the distance between \p query and \p nearest_point
-         * @return the closest triangle index
+         * @return a tuple containing:
+         * - the closest triangle index.
+         * - the nearest point on the closest triangle.
+         * - the distance between \p query and \p nearest_point.
          */
-        index_t closest_triangle(
-            const vec3& query,
-            vec3& nearest_point,
-            double& distance ) const;
+        std::tuple< index_t, vec3, double > closest_triangle(
+            const vec3& query ) const;
     private:
         /*!
          * @brief Gets an element point from its box

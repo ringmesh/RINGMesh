@@ -193,8 +193,8 @@ namespace RINGMesh {
         }
 
         index_t check_if_boundary_incident_entity_relation_already_exists(
-                const gmme_id& incident_entity,
-                const gmme_id& boundary ) ;
+            const gmme_id& incident_entity,
+            const gmme_id& boundary ) ;
 
     private:
         GeoModelBuilder& builder_;

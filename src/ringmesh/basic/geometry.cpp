@@ -52,7 +52,7 @@
 namespace {
     using namespace RINGMesh;
 
-    bool is_almost_zero( const double& value )
+    bool is_almost_zero( double value )
     {
         return value < global_epsilon && value > -global_epsilon;
     }

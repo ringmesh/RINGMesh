@@ -104,12 +104,12 @@ namespace {
         return "model_vertex_map";
     }
 
-    void cell_facets_around_vertex(
+    std::vector< index_t > cell_facets_around_vertex(
         const VolumeMesh& mesh,
         index_t cell,
-        index_t vertex_id,
-        std::vector< index_t >& facets )
+        index_t vertex_id )
     {
+        std::vector< index_t > facets;
         facets.reserve( mesh.nb_cell_facets( cell ) );
         for( index_t f = 0; f < mesh.nb_cell_facets( cell ); f++ ) {
             for( index_t v = 0; v < mesh.nb_cell_facet_vertices( cell, f ); v++ ) {
@@ -119,6 +119,7 @@ namespace {
                 }
             }
         }
+        return facets;
     }
 
     void copy_vertices( MeshBaseBuilder* builder, const MeshBase& mesh )
@@ -1239,8 +1240,7 @@ namespace RINGMesh {
                     corner_used.push_back( cur_co );
 
                     // Find the cell facets including the vertex
-                    std::vector< index_t > facets;
-                    cell_facets_around_vertex( *mesh_, cur_c, vertex_id, facets );
+                    std::vector< index_t > facets = cell_facets_around_vertex( *mesh_, cur_c, vertex_id );
                     for( index_t cur_f = 0; cur_f < facets.size(); cur_f++ ) {
                         // Find if the facet is on a surface or inside the domain
                         index_t polygon = NO_ID;
@@ -1390,20 +1390,18 @@ namespace RINGMesh {
         return nb_duplicated_vertices() + mesh_->nb_vertices();
     }
 
-    bool GeoModelMeshCells::is_corner_duplicated(
+    index_t GeoModelMeshCells::duplicated_corner_index(
         index_t c,
-        index_t v,
-        index_t& duplicate_vertex_index ) const
+        index_t v ) const
     {
         test_and_initialize_duplication();
         ringmesh_assert( c < mesh_->nb_cells() );
         ringmesh_assert( v < mesh_->nb_cell_vertices( c ) );
         index_t corner_value = mesh_->cell_vertex( c, v );
         if( corner_value < mesh_->nb_vertices() ) {
-            return false;
+            return NO_ID;
         } else {
-            duplicate_vertex_index = corner_value - mesh_->nb_vertices();
-            return true;
+            return corner_value - mesh_->nb_vertices();
         }
     }
 
@@ -1438,8 +1436,8 @@ namespace RINGMesh {
             VolumeMeshBuilder::create_builder( *mesh_ );
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
-                index_t index = NO_ID;
-                if( is_corner_duplicated( c, v, index ) ) {
+                index_t index = duplicated_corner_index( c, v );
+                if( index != NO_ID ) {
                     mesh_builder->set_cell_corner_vertex_index( c,
                         duplicated_vertex( index ) );
                 }
@@ -1587,7 +1585,7 @@ namespace RINGMesh {
         return polygon_id_[p];
     }
 
-    PolygonType GeoModelMeshPolygons::type( index_t p, index_t& index ) const
+    std::tuple< PolygonType, index_t > GeoModelMeshPolygons::type( index_t p ) const
     {
         test_and_initialize();
         ringmesh_assert( p < mesh_->nb_polygons() );
@@ -1597,14 +1595,12 @@ namespace RINGMesh {
             t < to_underlying_type( PolygonType::UNDEFINED ); t++ ) {
             PolygonType T = static_cast< PolygonType >( t );
             if( polygon < nb_polygons( s, T ) ) {
-                index = polygon;
-                return T;
+                return std::make_tuple( T, polygon );
             }
             polygon -= nb_polygons( s, T );
         }
-        index = NO_ID;
         ringmesh_assert_not_reached;
-        return PolygonType::UNDEFINED;
+        return std::make_tuple( PolygonType::UNDEFINED, NO_ID );
     }
 
     index_t GeoModelMeshPolygons::nb_polygons( PolygonType type ) const

@@ -165,15 +165,15 @@ namespace RINGMesh {
         return v1 == v2 || v2 == v3 || v3 == v1;
     }
 
-    void GeoModelBuilderRepair::surface_detect_degenerate_polygons(
+    std::vector< index_t > GeoModelBuilderRepair::surface_detect_degenerate_polygons(
         const Surface& S,
-        std::vector< index_t >& f_is_degenerate,
         std::vector< index_t >& colocated_vertices )
     {
-        f_is_degenerate.resize( S.nb_mesh_elements() );
+        std::vector< index_t > f_is_degenerate( S.nb_mesh_elements() );
         for( index_t p = 0; p < S.nb_mesh_elements(); ++p ) {
             f_is_degenerate[p] = polygon_is_degenerate( S, p, colocated_vertices );
         }
+        return f_is_degenerate;
     }
 
     index_t GeoModelBuilderRepair::detect_degenerate_polygons( const Surface& S )
@@ -183,21 +183,21 @@ namespace RINGMesh {
         std::tie( std::ignore, colocated ) = nn_search.get_colocated_index_mapping(
             geomodel_.epsilon() );
 
-        std::vector< index_t > degenerate;
-        surface_detect_degenerate_polygons( S, degenerate, colocated );
+        std::vector< index_t > degenerate = surface_detect_degenerate_polygons( S,
+            colocated );
         return static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) );
     }
 
-    void GeoModelBuilderRepair::line_detect_degenerate_edges(
+    std::vector< bool > GeoModelBuilderRepair::line_detect_degenerate_edges(
         const Line& L,
-        std::vector< bool >& e_is_degenerate,
         std::vector< index_t >& colocated_vertices )
     {
-        e_is_degenerate.resize( L.nb_mesh_elements() );
+        std::vector< bool > e_is_degenerate( L.nb_mesh_elements() );
         for( index_t e = 0; e < L.nb_mesh_elements(); ++e ) {
             e_is_degenerate[e] = edge_is_degenerate( L, e, colocated_vertices );
         }
+        return e_is_degenerate;
     }
 
     index_t GeoModelBuilderRepair::repair_line_mesh( const Line& line )
@@ -207,8 +207,8 @@ namespace RINGMesh {
         std::tie( std::ignore, colocated ) = nn_search.get_colocated_index_mapping(
             geomodel_.epsilon() );
 
-        std::vector< bool > degenerate;
-        line_detect_degenerate_edges( line, degenerate, colocated );
+        std::vector< bool > degenerate = line_detect_degenerate_edges( line,
+            colocated );
         index_t nb = static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) );
         /// We have a problem if some vertices are left isolated
@@ -268,20 +268,19 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRepair::vertices_on_inside_boundary(
-        const gmme_id& E_id,
-        std::set< index_t >& vertices )
+    std::set< index_t > GeoModelBuilderRepair::vertices_on_inside_boundary(
+        const gmme_id& E_id )
     {
-        vertices.clear();
+        std::set< index_t > vertices;
         if( E_id.type() == Corner::type_name_static() ) {
-            return;
+            return vertices;
         }
         const GeoModelMeshEntity& E = geomodel_.mesh_entity( E_id );
         if( E_id.type() == Line::type_name_static() ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
                 vertices.insert( E.nb_vertices() - 1 );
             }
-            return;
+            return vertices;
         }
         std::vector< const GeoModelMeshEntity* > inside_border;
         for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
@@ -311,6 +310,7 @@ namespace RINGMesh {
                 }
             }
         }
+        return vertices;
     }
 
     void GeoModelBuilderRepair::remove_colocated_entity_vertices(
@@ -333,8 +333,8 @@ namespace RINGMesh {
                     kdtree.get_colocated_index_mapping( geomodel_.epsilon() );
 
                 // Get the vertices to delete
-                std::set< index_t > inside_border;
-                vertices_on_inside_boundary( entity_id, inside_border );
+                std::set< index_t > inside_border = vertices_on_inside_boundary(
+                    entity_id );
 
                 std::vector< bool > to_delete( colocated.size(), false );
                 index_t nb_todelete = 0;

@@ -543,11 +543,11 @@ namespace RINGMesh {
          * Get the polygon index in the GeoModelMesh restricted to
          * the surface owing the polygon and its type
          * @param[in] p the polygon index
-         * @param[out] index the polygon index varying from 0 to nb_polygons
-         * of the corresponding type of \p p in the owing surface
          * @return the type of the polygon \p p
+         * and the polygon index varying from 0 to nb_polygons
+         * of the corresponding type of \p p in the owing surface.
          */
-        PolygonType type( index_t p, index_t& index ) const;
+        std::tuple< PolygonType, index_t > type( index_t p ) const;
 
         /*!
          * Get the number of polygons of the corresponding type
@@ -857,13 +857,12 @@ namespace RINGMesh {
          * if so give the duplicated vertex index
          * @param[in] c the cell index in the GeoModelMesh
          * @param[in] v the local vertex index in the cell \p c (0 to nb_vertices( c ))
-         * @param[out] duplicate_vertex_index the duplicated vertex index (0 to nb_duplicated_vertices())
-         * @return true if the corner is duplicated
+         * @return the duplicated vertex index (0 to nb_duplicated_vertices())
+         * if the corner is duplicated, else NO_ID.
          */
-        bool is_corner_duplicated(
+        index_t duplicated_corner_index(
             index_t c,
-            index_t v,
-            index_t& duplicate_vertex_index ) const;
+            index_t v ) const;
         /*!
          * Get the vertex index in the GeoModelMesh corresponding
          * to the given duplicated vertex index
