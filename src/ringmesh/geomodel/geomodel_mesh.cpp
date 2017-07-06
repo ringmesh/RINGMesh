@@ -2144,42 +2144,51 @@ namespace RINGMesh {
     void GeoModelMesh::transfer_vertex_attributes_from_gm_regions_to_gmm() const
     {
         for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
-            GEO::vector< std::string > att_v_names ;
-            const Region& cur_reg = geomodel().region( reg_itr ) ;
+            GEO::vector< std::string > att_v_names;
+            const Region& cur_reg = geomodel().region( reg_itr );
             GEO::AttributesManager& reg_vertex_attr_mgr =
-                cur_reg.vertex_attribute_manager() ;
-            reg_vertex_attr_mgr.list_attribute_names( att_v_names ) ;
-            for( index_t att_v = 0; att_v < reg_vertex_attr_mgr.nb(); att_v++ ) {
+                cur_reg.vertex_attribute_manager();
+            reg_vertex_attr_mgr.list_attribute_names( att_v_names );
+            for( const std::string& cur_attr_name : att_v_names ) {
 
                 // It is not necessary to copy the coordinates. There are already there.
-                if( att_v_names[att_v] == "point" ) {
-                    continue ;
+                if( cur_attr_name == "point" ) {
+                    continue;
                 }
 
-                if( !is_attribute_a_double( reg_vertex_attr_mgr,
-                    att_v_names[att_v] ) ) {
-                    continue ;
-                }
-                index_t dim = reg_vertex_attr_mgr.find_attribute_store(
-                    att_v_names[att_v] )->dimension() ;
-                GEO::Attribute< double > cur_v_att ;
-                if( !vertices.attribute_manager().is_defined( att_v_names[att_v] ) ) {
-                    cur_v_att.create_vector_attribute( vertices.attribute_manager(),
-                        att_v_names[att_v], dim ) ;
+                const GEO::AttributeStore* cur_v_att_store_in_reg =
+                    reg_vertex_attr_mgr.find_attribute_store( cur_attr_name );
+                ringmesh_assert( cur_v_att_store_in_reg != nullptr );
+                index_t dim = cur_v_att_store_in_reg->dimension();
+                GEO::AttributeStore* cur_v_att_store = nullptr;
+                if( !vertices.attribute_manager().is_defined( cur_attr_name ) ) {
+                    const std::string cur_type_name =
+                        GEO::AttributeStore::element_type_name_by_element_typeid_name(
+                            cur_v_att_store_in_reg->element_typeid_name() );
+                    ringmesh_assert(
+                        GEO::AttributeStore::element_type_name_is_known(
+                            cur_type_name ) );
+                    cur_v_att_store =
+                        GEO::AttributeStore::create_attribute_store_by_element_type_name(
+                            cur_type_name, dim );
+                    vertices.attribute_manager().bind_attribute_store( cur_attr_name,
+                        cur_v_att_store );
                 } else {
-                    cur_v_att.bind( vertices.attribute_manager(),
-                        att_v_names[att_v] ) ;
+                    cur_v_att_store =
+                        vertices.attribute_manager().find_attribute_store(
+                            cur_attr_name );
                 }
-                GEO::Attribute< double > cur_v_att_in_reg(
-                    reg_vertex_attr_mgr, att_v_names[att_v] ) ;
+                ringmesh_assert( cur_v_att_store != nullptr );
                 for( index_t v_in_reg_itr = 0; v_in_reg_itr < cur_reg.nb_vertices();
                     ++v_in_reg_itr ) {
-                    index_t v_id_in_gmm = vertices.geomodel_vertex_id( cur_reg.gmme(),
-                        v_in_reg_itr ) ;
-                    for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
-                        cur_v_att[v_id_in_gmm * dim + dim_itr] =
-                            cur_v_att_in_reg[v_in_reg_itr * dim + dim_itr] ;
-                    }
+                    index_t v_id_in_gmm = vertices.geomodel_vertex_id(
+                        cur_reg.gmme(), v_in_reg_itr );
+                    GEO::Memory::copy( cur_v_att_store->data() + v_id_in_gmm * dim,
+                        cur_v_att_store_in_reg->data() + v_in_reg_itr * dim, dim );
+                    /*for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
+                     cur_v_att[v_id_in_gmm * dim + dim_itr] =
+                     cur_v_att_in_reg[v_in_reg_itr * dim + dim_itr] ;
+                     }*/
                 }
             }
         }
