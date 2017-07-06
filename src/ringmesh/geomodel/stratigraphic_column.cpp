@@ -42,25 +42,23 @@ namespace RINGMesh {
     {
     }
 
-    StratigraphicUnit::StratigraphicUnit(
-        const std::string& name,
-        const RockFeature& rock )
-        : name_( name ), rock_( rock )
+    StratigraphicUnit::StratigraphicUnit( std::string name, RockFeature rock )
+        : name_( std::move( name ) ), rock_( std::move( rock ) )
     {
     }
 
     UnsubdividedStratigraphicUnit::UnsubdividedStratigraphicUnit(
-        const std::string& name,
-        const Interface& interface_base,
-        const Interface& interface_top,
-        const Layer& layer,
+        std::string name,
+        const Interface< 3 >& interface_base,
+        const Interface< 3 >& interface_top,
+        const Layer< 3 >& layer,
         RELATION relation_top,
         RELATION relation_base,
-        const RockFeature& rock,
+        RockFeature rock,
         double min_thick,
         double max_thick )
         :
-            StratigraphicUnit( name, rock ),
+            StratigraphicUnit( std::move( name ), std::move( rock ) ),
             interface_top_( &interface_top ),
             interface_base_( &interface_base ),
             layer_( &layer ),
@@ -127,8 +125,8 @@ namespace RINGMesh {
     double StratigraphicColumn::get_column_min_thick() const
     {
         double sum = 0;
-        for( index_t i = 0; i < units_.size(); ++i ) {
-            sum += units_[i]->get_min_thick();
+        for( const StratigraphicUnit* unit : units_ ) {
+            sum += unit->get_min_thick();
         }
         return sum;
     }
@@ -136,8 +134,8 @@ namespace RINGMesh {
     double StratigraphicColumn::get_column_max_thick() const
     {
         double sum = 0;
-        for( index_t i = 0; i < units_.size(); ++i ) {
-            sum += units_[i]->get_max_thick();
+        for( const StratigraphicUnit* unit : units_ ) {
+            sum += unit->get_max_thick();
         }
         return sum;
     }

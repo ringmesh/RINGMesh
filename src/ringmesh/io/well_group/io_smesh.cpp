@@ -34,14 +34,14 @@
  */
 
 namespace {
-    void merge_colocated_vertices( double epsilon, LineMesh& mesh )
+    void merge_colocated_vertices( double epsilon, LineMesh< 3 >& mesh )
     {
         std::vector< index_t > old2new;
         index_t nb_colocated = mesh.vertex_nn_search().get_colocated_index_mapping(
             epsilon, old2new );
         if( nb_colocated > 0 ) {
-            std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
-                mesh );
+            std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
+                > ::create_builder( mesh );
             for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
                 for( index_t i = 0; i < 2; i++ ) {
                     index_t v = mesh.edge_vertex( e, i );
@@ -60,17 +60,17 @@ namespace {
 
     class SmeshIOHandler final: public WellGroupIOHandler {
     public:
-        virtual void load( const std::string& filename, WellGroup& wells ) override
+        void load( const std::string& filename, WellGroup< 3 >& wells ) final
         {
             GEO::LineInput in( filename );
             if( !in.OK() ) {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr< LineMesh > mesh = LineMesh::create_mesh(
-                GeogramLineMesh::type_name_static() );
-            std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
-                *mesh );
+            std::unique_ptr< LineMesh< 3 > > mesh = LineMesh < 3
+                > ::create_mesh( GeogramLineMesh < 3 > ::type_name_static() );
+            std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
+                > ::create_builder( *mesh );
             std::string name = GEO::FileSystem::base_name( filename );
 
             bool is_first_part = true;
@@ -85,7 +85,7 @@ namespace {
                 if( is_first_part ) {
                     index_t nb_vertices = in.field_as_uint( 0 );
                     builder->create_vertices( nb_vertices );
-                    Box3d box;
+                    Box < 3 > box;
 
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         do {
@@ -117,7 +117,7 @@ namespace {
                 }
             }
         }
-        virtual void save( const WellGroup& wells, const std::string& filename ) override
+        void save( const WellGroup< 3 >& wells, const std::string& filename ) final
         {
             ringmesh_unused( wells );
             ringmesh_unused( filename );

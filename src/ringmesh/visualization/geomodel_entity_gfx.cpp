@@ -53,223 +53,288 @@
 
 namespace RINGMesh {
 
-    GeoModelGfxEntity::GeoModelGfxEntity( GeoModelGfx& gfx )
+    template< index_t DIMENSION >
+    GeoModelGfxEntity< DIMENSION >::GeoModelGfxEntity(
+        GeoModelGfx< DIMENSION >& gfx )
         : gfx_( gfx )
     {
     }
 
-    void GeoModelGfxEntity::set_scalar_attribute(
+    template< index_t DIMENSION >
+    void GeoModelGfxEntity< DIMENSION >::set_scalar_attribute(
         GEO::MeshElementsFlags subelements,
         const std::string& name,
         double attr_min,
         double attr_max,
         GLuint colormap_texture )
     {
-        for( std::unique_ptr< MeshEntityGfx >& e : entities_ ) {
+        for( std::unique_ptr< MeshEntityGfx< DIMENSION > >& e : entities_ ) {
             e->set_scalar_attribute( subelements, name, attr_min, attr_max,
                 colormap_texture );
         }
     }
 
-    void GeoModelGfxEntity::unset_scalar_attribute()
+    template< index_t DIMENSION >
+    void GeoModelGfxEntity< DIMENSION >::unset_scalar_attribute()
     {
-        for( std::unique_ptr< MeshEntityGfx >& e : entities_ ) {
+        for( std::unique_ptr< MeshEntityGfx< DIMENSION > >& e : entities_ ) {
             e->unset_scalar_attribute();
         }
     }
 
-    void GeoModelGfxEntity::set_vertex_visibility( bool is_visible )
+    template< index_t DIMENSION >
+    void GeoModelGfxEntity< DIMENSION >::set_vertex_visibility( bool is_visible )
     {
         for( index_t e = 0; e < entities_.size(); e++ ) {
             set_vertex_visibility( e, is_visible );
         }
     }
 
-    void GeoModelGfxEntity::set_vertex_visibility( index_t entity_id, bool is_visible )
+    template< index_t DIMENSION >
+    void GeoModelGfxEntity< DIMENSION >::set_vertex_visibility(
+        index_t entity_id,
+        bool is_visible )
     {
         entities_[entity_id]->set_vertex_visible( is_visible );
     }
 
-    void GeoModelGfxEntity::set_vertex_color( float red, float green, float blue )
+    template< index_t DIMENSION >
+    void GeoModelGfxEntity< DIMENSION >::set_vertex_color(
+        float red,
+        float green,
+        float blue )
     {
         for( index_t e = 0; e < entities_.size(); e++ ) {
             set_vertex_color( e, red, green, blue );
         }
     }
 
-    void GeoModelGfxEntity::set_vertex_color( index_t entity_id, float red, float green, float blue )
+    template< index_t DIMENSION >
+    void GeoModelGfxEntity< DIMENSION >::set_vertex_color(
+        index_t entity_id,
+        float red,
+        float green,
+        float blue )
     {
         entities_[entity_id]->set_vertex_color( red, green, blue );
     }
 
-    void GeoModelGfxEntity::set_vertex_size( index_t s )
+    template< index_t DIMENSION >
+    void GeoModelGfxEntity< DIMENSION >::set_vertex_size( index_t s )
     {
         for( index_t e = 0; e < entities_.size(); e++ ) {
             set_vertex_size( e, s );
         }
     }
 
-    void GeoModelGfxEntity::set_vertex_size( index_t entity_id, index_t s )
+    template< index_t DIMENSION >
+    void GeoModelGfxEntity< DIMENSION >::set_vertex_size(
+        index_t entity_id,
+        index_t s )
     {
         entities_[entity_id]->set_vertex_size( s );
     }
 
     /*****************************************************************/
 
-    CornerGfxEntity::CornerGfxEntity( GeoModelGfx& gfx )
-        : GeoModelGfxEntity( gfx )
+    template< index_t DIMENSION >
+    CornerGfxEntity< DIMENSION >::CornerGfxEntity( GeoModelGfx< DIMENSION >& gfx )
+        : GeoModelGfxEntity< DIMENSION >( gfx )
     {
     }
 
-    PointSetMeshGfx& CornerGfxEntity::corner( index_t corner_id )
+    template< index_t DIMENSION >
+    PointSetMeshGfx< DIMENSION >& CornerGfxEntity< DIMENSION >::corner(
+        index_t corner_id )
     {
-        ringmesh_assert( corner_id < entities_.size() );
-        return static_cast< PointSetMeshGfx& >( *entities_[corner_id] );
+        ringmesh_assert( corner_id < this->entities_.size() );
+        return static_cast< PointSetMeshGfx< DIMENSION >& >( *this->entities_[corner_id] );
     }
 
-    void CornerGfxEntity::initialize()
+    template< index_t DIMENSION >
+    void CornerGfxEntity< DIMENSION >::initialize()
     {
-        if( entities_.empty() ) {
-            entities_.reserve( gfx_.geomodel()->nb_corners() );
-            for( index_t e = 0; e < gfx_.geomodel()->nb_corners(); e++ ) {
-                entities_.push_back(
-                    PointSetMeshGfx::create_gfx(
-                        gfx_.geomodel()->corner( e ).low_level_mesh_storage() ) );
+        if( this->entities_.empty() ) {
+            this->entities_.reserve( this->gfx_.geomodel()->nb_corners() );
+            for( index_t e = 0; e < this->gfx_.geomodel()->nb_corners(); e++ ) {
+                this->entities_.push_back(
+                    PointSetMeshGfx< DIMENSION >::create_gfx(
+                        this->gfx_.geomodel()->corner( e ).low_level_mesh_storage() ) );
             }
         }
     }
 
-    void CornerGfxEntity::draw()
+    template< index_t DIMENSION >
+    void CornerGfxEntity< DIMENSION >::draw()
     {
-        for( index_t c = 0; c < entities_.size(); c++ ) {
-            PointSetMeshGfx& pointset = corner( c );
+        for( index_t c = 0; c < this->entities_.size(); c++ ) {
+            PointSetMeshGfx< DIMENSION >& pointset = corner( c );
             if( pointset.get_vertex_visible() ) pointset.draw_vertices();
         }
     }
 
     /*****************************************************************/
 
-    LineGfxEntity::LineGfxEntity( GeoModelGfx& gfx )
-        : GeoModelGfxEntity( gfx )
+    template< index_t DIMENSION >
+    LineGfxEntity< DIMENSION >::LineGfxEntity( GeoModelGfx< DIMENSION >& gfx )
+        : GeoModelGfxEntity< DIMENSION >( gfx )
     {
     }
 
-    LineMeshGfx& LineGfxEntity::line( index_t line_id )
+    template< index_t DIMENSION >
+    LineMeshGfx< DIMENSION >& LineGfxEntity< DIMENSION >::line( index_t line_id )
     {
-        ringmesh_assert( line_id < entities_.size() );
-        return static_cast< LineMeshGfx& >( *entities_[line_id] );
+        ringmesh_assert( line_id < this->entities_.size() );
+        return static_cast< LineMeshGfx< DIMENSION >& >( *this->entities_[line_id] );
     }
 
-    void LineGfxEntity::initialize()
+    template< index_t DIMENSION >
+    void LineGfxEntity< DIMENSION >::initialize()
     {
-        if( entities_.empty() ) {
-            entities_.reserve( gfx_.geomodel()->nb_lines() );
-            for( index_t e = 0; e < gfx_.geomodel()->nb_lines(); e++ ) {
-                entities_.push_back(
-                    LineMeshGfx::create_gfx(
-                        gfx_.geomodel()->line( e ).low_level_mesh_storage() ) );
+        if( this->entities_.empty() ) {
+            this->entities_.reserve( this->gfx_.geomodel()->nb_lines() );
+            for( index_t e = 0; e < this->gfx_.geomodel()->nb_lines(); e++ ) {
+                this->entities_.push_back(
+                    LineMeshGfx< DIMENSION >::create_gfx(
+                        this->gfx_.geomodel()->line( e ).low_level_mesh_storage() ) );
             }
         }
     }
 
-    void LineGfxEntity::draw()
+    template< index_t DIMENSION >
+    void LineGfxEntity< DIMENSION >::draw()
     {
-        for( index_t l = 0; l < entities_.size(); l++ ) {
-            LineMeshGfx& line = this->line( l );
+        for( index_t l = 0; l < this->entities_.size(); l++ ) {
+            LineMeshGfx< DIMENSION >& line = this->line( l );
             if( line.get_vertex_visible() ) line.draw_vertices();
             if( line.get_edge_visible() ) line.draw_edges();
         }
     }
 
-    void LineGfxEntity::set_line_color( float red, float green, float blue )
+    template< index_t DIMENSION >
+    void LineGfxEntity< DIMENSION >::set_line_color(
+        float red,
+        float green,
+        float blue )
     {
-        for( index_t l = 0; l < entities_.size(); l++ ) {
+        for( index_t l = 0; l < this->entities_.size(); l++ ) {
             set_line_color( l, red, green, blue );
         }
     }
 
-    void LineGfxEntity::set_line_color( index_t line_id, float red, float green, float blue )
+    template< index_t DIMENSION >
+    void LineGfxEntity< DIMENSION >::set_line_color(
+        index_t line_id,
+        float red,
+        float green,
+        float blue )
     {
         line( line_id ).set_edge_color( red, green, blue );
     }
 
-    void LineGfxEntity::set_line_visibility( bool is_visible )
+    template< index_t DIMENSION >
+    void LineGfxEntity< DIMENSION >::set_line_visibility( bool is_visible )
     {
-        for( index_t l = 0; l < entities_.size(); l++ ) {
+        for( index_t l = 0; l < this->entities_.size(); l++ ) {
             set_line_visibility( l, is_visible );
         }
     }
 
-    void LineGfxEntity::set_line_visibility( index_t line_id, bool is_visible )
+    template< index_t DIMENSION >
+    void LineGfxEntity< DIMENSION >::set_line_visibility(
+        index_t line_id,
+        bool is_visible )
     {
         line( line_id ).set_edge_visible( is_visible );
     }
 
-    void LineGfxEntity::set_line_size( index_t size )
+    template< index_t DIMENSION >
+    void LineGfxEntity< DIMENSION >::set_line_size( index_t size )
     {
-        for( index_t l = 0; l < entities_.size(); l++ ) {
+        for( index_t l = 0; l < this->entities_.size(); l++ ) {
             set_line_size( l, size );
         }
     }
-    void LineGfxEntity::set_line_size( index_t line_id, index_t size )
+
+    template< index_t DIMENSION >
+    void LineGfxEntity< DIMENSION >::set_line_size( index_t line_id, index_t size )
     {
         line( line_id ).set_edge_width( size );
     }
 
     /*****************************************************************/
 
-    SurfaceGfxEntity::SurfaceGfxEntity( GeoModelGfx& gfx )
-        : GeoModelGfxEntity( gfx )
+    template< index_t DIMENSION >
+    SurfaceGfxEntity< DIMENSION >::SurfaceGfxEntity( GeoModelGfx< DIMENSION >& gfx )
+        : GeoModelGfxEntity< DIMENSION >( gfx )
     {
     }
 
-    SurfaceMeshGfx& SurfaceGfxEntity::surface( index_t surface_id )
+    template< index_t DIMENSION >
+    SurfaceMeshGfx< DIMENSION >& SurfaceGfxEntity< DIMENSION >::surface(
+        index_t surface_id )
     {
-        ringmesh_assert( surface_id < entities_.size() );
-        return static_cast< SurfaceMeshGfx& >( *entities_[surface_id] );
+        ringmesh_assert( surface_id < this->entities_.size() );
+        return static_cast< SurfaceMeshGfx< DIMENSION >& >( *this->entities_[surface_id] );
     }
 
-    void SurfaceGfxEntity::initialize()
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::initialize()
     {
-        if( entities_.empty() ) {
-            entities_.reserve( gfx_.geomodel()->nb_surfaces() );
-            for( index_t e = 0; e < gfx_.geomodel()->nb_surfaces(); e++ ) {
-                entities_.push_back(
-                    SurfaceMeshGfx::create_gfx(
-                        gfx_.geomodel()->surface( e ).low_level_mesh_storage() ) );
+        if( this->entities_.empty() ) {
+            this->entities_.reserve( this->gfx_.geomodel()->nb_surfaces() );
+            for( index_t e = 0; e < this->gfx_.geomodel()->nb_surfaces(); e++ ) {
+                this->entities_.push_back(
+                    SurfaceMeshGfx< DIMENSION >::create_gfx(
+                        this->gfx_.geomodel()->surface( e ).low_level_mesh_storage() ) );
             }
         }
     }
 
-    void SurfaceGfxEntity::draw()
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::draw()
     {
-        for( index_t s = 0; s < entities_.size(); s++ ) {
-            SurfaceMeshGfx& surface = this->surface( s );
+        for( index_t s = 0; s < this->entities_.size(); s++ ) {
+            SurfaceMeshGfx< DIMENSION >& surface = this->surface( s );
             if( surface.get_vertex_visible() ) surface.draw_vertices();
             if( surface.get_surface_visible() ) surface.draw_surface();
         }
     }
 
-    void SurfaceGfxEntity::set_surface_color( float red, float green, float blue )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_surface_color(
+        float red,
+        float green,
+        float blue )
     {
-        for( index_t s = 0; s < entities_.size(); s++ ) {
+        for( index_t s = 0; s < this->entities_.size(); s++ ) {
             set_surface_color( s, red, green, blue );
         }
     }
 
-    void SurfaceGfxEntity::set_surface_color( index_t surface_id, float red, float green, float blue )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_surface_color(
+        index_t surface_id,
+        float red,
+        float green,
+        float blue )
     {
         surface( surface_id ).set_surface_color( red, green, blue );
     }
 
-    void SurfaceGfxEntity::set_backface_surface_color( float red, float green, float blue )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_backface_surface_color(
+        float red,
+        float green,
+        float blue )
     {
-        for( index_t s = 0; s < entities_.size(); s++ ) {
+        for( index_t s = 0; s < this->entities_.size(); s++ ) {
             set_backface_surface_color( s, red, green, blue );
         }
     }
 
-    void SurfaceGfxEntity::set_backface_surface_color(
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_backface_surface_color(
         index_t surface_id,
         float red,
         float green,
@@ -278,180 +343,249 @@ namespace RINGMesh {
         surface( surface_id ).set_backface_surface_color( red, green, blue );
     }
 
-    void SurfaceGfxEntity::set_surface_visibility( bool is_visible )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_surface_visibility( bool is_visible )
     {
-        for( index_t s = 0; s < entities_.size(); s++ ) {
+        for( index_t s = 0; s < this->entities_.size(); s++ ) {
             set_surface_visibility( s, is_visible );
         }
     }
 
-    void SurfaceGfxEntity::set_surface_visibility( index_t surface_id, bool is_visible )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_surface_visibility(
+        index_t surface_id,
+        bool is_visible )
     {
         surface( surface_id ).set_surface_visible( is_visible );
     }
 
-    void SurfaceGfxEntity::set_mesh_color( float red, float green, float blue )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_mesh_color(
+        float red,
+        float green,
+        float blue )
     {
-        for( index_t s = 0; s < entities_.size(); s++ ) {
+        for( index_t s = 0; s < this->entities_.size(); s++ ) {
             set_mesh_color( s, red, green, blue );
         }
     }
 
-    void SurfaceGfxEntity::set_mesh_color( index_t surface_id, float red, float green, float blue )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_mesh_color(
+        index_t surface_id,
+        float red,
+        float green,
+        float blue )
     {
         surface( surface_id ).set_mesh_color( red, green, blue );
     }
 
-    void SurfaceGfxEntity::set_mesh_visibility( bool is_visible )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_mesh_visibility( bool is_visible )
     {
-        for( index_t s = 0; s < entities_.size(); s++ ) {
+        for( index_t s = 0; s < this->entities_.size(); s++ ) {
             set_mesh_visibility( s, is_visible );
         }
     }
 
-    void SurfaceGfxEntity::set_mesh_visibility( index_t surface_id, bool is_visible )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_mesh_visibility(
+        index_t surface_id,
+        bool is_visible )
     {
         surface( surface_id ).set_mesh_visibility( is_visible );
     }
 
-    void SurfaceGfxEntity::set_mesh_size( index_t size )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_mesh_size( index_t size )
     {
-        for( index_t s = 0; s < entities_.size(); s++ ) {
+        for( index_t s = 0; s < this->entities_.size(); s++ ) {
             set_mesh_size( s, size );
         }
     }
 
-    void SurfaceGfxEntity::set_mesh_size( index_t surface_id, index_t size )
+    template< index_t DIMENSION >
+    void SurfaceGfxEntity< DIMENSION >::set_mesh_size(
+        index_t surface_id,
+        index_t size )
     {
         surface( surface_id ).set_mesh_width( size );
     }
 
     /*****************************************************************/
 
-    RegionGfxEntity::RegionGfxEntity( GeoModelGfx& gfx )
-        : GeoModelGfxEntity( gfx )
+    template< index_t DIMENSION >
+    RegionGfxEntity< DIMENSION >::RegionGfxEntity( GeoModelGfx< 3 >& gfx )
+        : GeoModelGfxEntity< DIMENSION >( gfx )
     {
     }
 
-    VolumeMeshGfx& RegionGfxEntity::region( index_t region_id )
+    template< index_t DIMENSION >
+    VolumeMeshGfx< DIMENSION >& RegionGfxEntity< DIMENSION >::region(
+        index_t region_id )
     {
         ringmesh_assert( region_id < entities_.size() );
-        return static_cast< VolumeMeshGfx& >( *entities_[region_id] );
+        return static_cast< VolumeMeshGfx< DIMENSION >& >( *entities_[region_id] );
     }
 
-    void RegionGfxEntity::initialize()
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::initialize()
     {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_regions() );
             for( index_t e = 0; e < gfx_.geomodel()->nb_regions(); e++ ) {
                 entities_.push_back(
-                    VolumeMeshGfx::create_gfx(
+                    VolumeMeshGfx< DIMENSION >::create_gfx(
                         gfx_.geomodel()->region( e ).low_level_mesh_storage() ) );
             }
         }
     }
 
-    void RegionGfxEntity::draw()
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::draw()
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
-            VolumeMeshGfx& region = this->region( r );
+            VolumeMeshGfx< DIMENSION >& region = this->region( r );
             if( region.get_vertex_visible() ) region.draw_vertices();
             if( region.get_region_visible() ) region.draw_volume();
         }
     }
 
-    void RegionGfxEntity::set_mesh_color( float red, float green, float blue )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_mesh_color(
+        float red,
+        float green,
+        float blue )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_mesh_color( r, red, green, blue );
         }
     }
 
-    void RegionGfxEntity::set_mesh_color( index_t region_id, float red, float green, float blue )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_mesh_color(
+        index_t region_id,
+        float red,
+        float green,
+        float blue )
     {
         region( region_id ).set_mesh_color( red, green, blue );
     }
 
-    void RegionGfxEntity::set_cell_colors_by_type()
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_cell_colors_by_type()
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_cell_colors_by_type( r );
         }
     }
 
-    void RegionGfxEntity::set_draw_cells( CellType type, bool x )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_draw_cells(
+        CellType type,
+        bool x )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_draw_cells( r, type, x );
         }
     }
 
-    void RegionGfxEntity::set_draw_cells( index_t region_id, CellType type, bool x )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_draw_cells(
+        index_t region_id,
+        CellType type,
+        bool x )
     {
         region( region_id ).set_draw_cells( type, x );
     }
 
-    void RegionGfxEntity::set_cell_colors_by_type( index_t region_id )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_cell_colors_by_type( index_t region_id )
     {
         region( region_id ).set_cell_colors_by_type();
     }
 
-    void RegionGfxEntity::set_mesh_visibility( bool is_visible )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_mesh_visibility( bool is_visible )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_mesh_visibility( r, is_visible );
         }
     }
 
-    void RegionGfxEntity::set_mesh_visibility( index_t region_id, bool is_visible )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_mesh_visibility(
+        index_t region_id,
+        bool is_visible )
     {
         region( region_id ).set_mesh_visibility( is_visible );
     }
 
-    void RegionGfxEntity::set_mesh_size( index_t size )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_mesh_size( index_t size )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_mesh_size( r, size );
         }
     }
 
-    void RegionGfxEntity::set_mesh_size( index_t region_id, index_t size )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_mesh_size(
+        index_t region_id,
+        index_t size )
     {
         region( region_id ).set_mesh_width( size );
     }
 
-    void RegionGfxEntity::set_region_color( float red, float green, float blue )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_region_color(
+        float red,
+        float green,
+        float blue )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_region_color( r, red, green, blue );
         }
     }
 
-    void RegionGfxEntity::set_region_color( index_t region_id, float red, float green, float blue )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_region_color(
+        index_t region_id,
+        float red,
+        float green,
+        float blue )
     {
         region( region_id ).set_cells_color( red, green, blue );
     }
 
-    void RegionGfxEntity::set_region_visibility( bool is_visible )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_region_visibility( bool is_visible )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_region_visibility( r, is_visible );
         }
     }
 
-    void RegionGfxEntity::set_region_visibility( index_t region_id, bool is_visible )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_region_visibility(
+        index_t region_id,
+        bool is_visible )
     {
         region( region_id ).set_region_visible( is_visible );
     }
 
-    void RegionGfxEntity::set_cell_type_visibility( CellType t, bool is_visible )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_cell_type_visibility(
+        CellType t,
+        bool is_visible )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_cell_type_visibility( r, t, is_visible );
         }
     }
 
-    void RegionGfxEntity::set_cell_type_visibility(
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_cell_type_visibility(
         index_t region_id,
         CellType t,
         bool is_visible )
@@ -459,17 +593,30 @@ namespace RINGMesh {
         region( region_id ).set_draw_cells( t, is_visible );
     }
 
-    void RegionGfxEntity::set_shrink( double shrink )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_shrink( double shrink )
     {
         for( index_t r = 0; r < entities_.size(); r++ ) {
             set_shrink( r, shrink );
         }
     }
 
-    void RegionGfxEntity::set_shrink( index_t region_id, double shrink )
+    template< index_t DIMENSION >
+    void RegionGfxEntity< DIMENSION >::set_shrink( index_t region_id, double shrink )
     {
         region( region_id ).set_shrink( shrink );
     }
+
+    template class RINGMESH_API GeoModelGfxEntity< 2 > ;
+    template class RINGMESH_API CornerGfxEntity< 2 > ;
+    template class RINGMESH_API LineGfxEntity< 2 > ;
+    template class RINGMESH_API SurfaceGfxEntity< 2 > ;
+
+    template class RINGMESH_API GeoModelGfxEntity< 3 > ;
+    template class RINGMESH_API CornerGfxEntity< 3 > ;
+    template class RINGMESH_API LineGfxEntity< 3 > ;
+    template class RINGMESH_API SurfaceGfxEntity< 3 > ;
+    template class RINGMESH_API RegionGfxEntity< 3 > ;
 }
 
 #endif

@@ -62,9 +62,9 @@ namespace RINGMesh {
         }
         virtual ~TetraGen_TetGen() = default;
 
-        virtual bool do_tetrahedralize( bool refine ) final
+        bool do_tetrahedralize( bool refine ) final
         {
-            std::unique_ptr< VolumeMeshBuilder > mesh3D_builder =
+            std::unique_ptr< VolumeMeshBuilder< 3 > > mesh3D_builder =
                 builder_->geometry.create_region_builder( output_region_ );
             tetrahedralize_mesh_tetgen( *mesh3D_builder.get(), tetmesh_constraint_,
                 refine, 1.0 );
@@ -139,7 +139,7 @@ namespace RINGMesh {
             stop_redirect( pos_err, stderr, fd_err );
         }
 
-        virtual bool do_tetrahedralize( bool refine ) final
+        bool do_tetrahedralize( bool refine ) final
         {
             fpos_t pos;
             int fd = 0;
@@ -344,7 +344,7 @@ namespace RINGMesh {
 
         }
 
-        virtual void write_vertices_in_ringmesh_data_structure() final
+        void write_vertices_in_ringmesh_data_structure() final
         {
             RINGMESH_PARALLEL_LOOP
             for( index_t v = 0; v < region_->nb_vertices(); v++ ) {
@@ -355,7 +355,7 @@ namespace RINGMesh {
             }
         }
 
-        virtual void write_tet_in_ringmesh_data_structure() final
+        void write_tet_in_ringmesh_data_structure() final
         {
             RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < region_->nb_mesh_elements(); t++ ) {
@@ -403,7 +403,7 @@ namespace RINGMesh {
 #endif
 
     std::unique_ptr< TetraGen > TetraGen::create(
-        GeoModel& M,
+        GeoModel< 3 >& M,
         index_t region_id,
         const std::string& algo_name )
     {
@@ -426,31 +426,24 @@ namespace RINGMesh {
 #endif
         }
 
-        mesher->builder_.reset( new GeoModelBuilder( M ) );
+        mesher->builder_.reset( new GeoModelBuilder< 3 >( M ) );
         mesher->output_region_ = region_id;
         return std::unique_ptr< TetraGen >( mesher );
     }
 
-    TetraGen::TetraGen()
-        :
-            builder_( nullptr ),
-            output_region_( NO_ID ),
-            region_( nullptr ),
-            wells_( nullptr )
-    {
-    }
-
-    void TetraGen::set_boundaries( const Region& region, const WellGroup* wells )
+    void TetraGen::set_boundaries(
+        const Region< 3 >& region,
+        const WellGroup< 3 >* wells )
     {
         region_ = &region;
         index_t nb_surfaces = region_->nb_boundaries();
-        std::vector< const GeoModelMeshEntity* > unique_surfaces;
+        std::vector< const GeoModelMeshEntity< 3 >* > unique_surfaces;
         unique_surfaces.reserve( nb_surfaces );
         std::vector< index_t > surface_id;
         surface_id.reserve( nb_surfaces );
         index_t nb_surface_vertices = 0, nb_polygons = 0;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
-            const Surface& surface = region_->boundary( s );
+            const Surface< 3 >& surface = region_->boundary( s );
             if( contains( surface_id, surface.index() ) ) continue;
             nb_surface_vertices += surface.nb_vertices();
             nb_polygons += surface.nb_mesh_elements();
@@ -459,7 +452,7 @@ namespace RINGMesh {
         }
 
         std::vector< vec3 > region_surfaces_and_wells_vertices;
-        std::vector< std::vector< Edge > > well_edges;
+        std::vector< std::vector< Edge< 3 > > > well_edges;
         index_t nb_region_vertices = region.nb_vertices();
         index_t nb_well_vertices = 0;
         if( wells ) {
@@ -471,7 +464,7 @@ namespace RINGMesh {
             nb_surface_vertices + nb_region_vertices + nb_well_vertices );
 
         // Add the surfaces vertices
-        for( const GeoModelMeshEntity*& surface : unique_surfaces ) {
+        for( const GeoModelMeshEntity< 3 >*& surface : unique_surfaces ) {
             for( index_t v = 0; v < surface->nb_vertices(); v++ ) {
                 region_surfaces_and_wells_vertices.push_back( surface->vertex( v ) );
             }
@@ -485,21 +478,15 @@ namespace RINGMesh {
         // Add the well vertices
         if( wells ) {
             wells->get_region_edges( region.index(), well_edges );
-            // Copy result of porting. Stupid, I know, but because of the interface
-            // of MakeUnique. This Edge class is a pain [JP]
             for( const auto& edges : well_edges ) {
-                std::vector< std::pair< vec3, vec3 > > wells_copy( edges.size() );
-
-                for( index_t i = 0; i < wells_copy.size(); ++i ) {
-                    region_surfaces_and_wells_vertices.push_back(
-                        edges[i].vertex( 0 ) );
-                    region_surfaces_and_wells_vertices.push_back(
-                        edges[i].vertex( 1 ) );
+                for( const auto& edge : edges ) {
+                    region_surfaces_and_wells_vertices.push_back( edge.vertex( 0 ) );
+                    region_surfaces_and_wells_vertices.push_back( edge.vertex( 1 ) );
                 }
             }
         }
 
-        NNSearch nn_search( region_surfaces_and_wells_vertices );
+        NNSearch< 3 > nn_search( region_surfaces_and_wells_vertices );
         std::vector< index_t > unique_indices;
         std::vector< vec3 > unique_points;
         nn_search.get_colocated_index_mapping( region.geomodel().epsilon(),
@@ -536,7 +523,7 @@ namespace RINGMesh {
         tetmesh_constraint_.facets.create_triangles( nb_polygons );
         GEO::Attribute< index_t > surface_region(
             tetmesh_constraint_.facets.attributes(), surface_att_name );
-        for( const GeoModelMeshEntity*& surface : unique_surfaces ) {
+        for( const GeoModelMeshEntity< 3 >*& surface : unique_surfaces ) {
 //            RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < surface->nb_mesh_elements(); t++ ) {
                 ringmesh_assert( surface->nb_mesh_element_vertices( t ) == 3 );

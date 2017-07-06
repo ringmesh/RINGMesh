@@ -34,9 +34,9 @@
  */
 
 namespace {
-    class TSolidIOHandler final: public GeoModelIOHandler {
+    class TSolidIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
             if( !input ) {
@@ -46,7 +46,9 @@ namespace {
             GeoModelBuilderTSolid builder( geomodel, filename );
             builder.build_geomodel();
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        void save(
+            const GeoModel< 3 >& geomodel,
+            const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -61,8 +63,8 @@ namespace {
                 << "ZPOSITIVE Elevation" << std::endl
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
 
-            const GeoModelMesh& mesh = geomodel.mesh;
-            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
+            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
+            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false );
@@ -73,7 +75,7 @@ namespace {
                 mesh.cells.nb_duplicated_vertices(), NO_ID );
             index_t nb_vertices_exported = 1;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                const RINGMesh::Region& region = geomodel.region( r );
+                const RINGMesh::Region< 3 >& region = geomodel.region( r );
                 out << "TVOLUME " << region.name() << std::endl;
 
                 // Export not duplicated vertices
@@ -154,10 +156,12 @@ namespace {
             out << "MODEL" << std::endl;
             int tface_count = 1;
             for( index_t i = 0;
-                i < geomodel.nb_geological_entities( Interface::type_name_static() );
-                i++ ) {
-                const RINGMesh::GeoModelGeologicalEntity& interf =
-                    geomodel.geological_entity( Interface::type_name_static(), i );
+                i
+                    < geomodel.nb_geological_entities(
+                        Interface < 3 > ::type_name_static() ); i++ ) {
+                const RINGMesh::GeoModelGeologicalEntity< 3 >& interf =
+                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
+                        i );
                 out << "SURFACE " << interf.name() << std::endl;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     out << "TFACE " << tface_count++ << std::endl;
@@ -187,7 +191,7 @@ namespace {
             }
 
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                const RINGMesh::Region& region = geomodel.region( r );
+                const RINGMesh::Region< 3 >& region = geomodel.region( r );
                 out << "MODEL_REGION " << region.name() << " ";
                 region.side( 0 ) ? out << "+" : out << "-";
                 out << region.boundary_gmme( 0 ).index() + 1 << std::endl;

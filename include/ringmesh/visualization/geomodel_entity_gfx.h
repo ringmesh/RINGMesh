@@ -49,20 +49,22 @@
  */
 
 namespace RINGMesh {
-    class GeoModelGfx;
-    class PointSetMeshGfx;
-    class LineMeshGfx;
-    class SurfaceMeshGfx;
-    class VolumeMeshGfx;
-    class MeshEntityGfx;
+    template< index_t DIMENSION > class GeoModelGfx;
+    template< index_t DIMENSION > class PointSetMeshGfx;
+    template< index_t DIMENSION > class LineMeshGfx;
+    template< index_t DIMENSION > class SurfaceMeshGfx;
+    template< index_t DIMENSION > class VolumeMeshGfx;
+    template< index_t DIMENSION > class MeshEntityGfx;
 }
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelGfxEntity {
+    template< index_t DIMENSION >
+    class GeoModelGfxEntity {
     ringmesh_disable_copy( GeoModelGfxEntity );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        GeoModelGfxEntity( GeoModelGfx& gfx );
+        GeoModelGfxEntity( GeoModelGfx< DIMENSION >& gfx );
         virtual ~GeoModelGfxEntity() = default;
 
         virtual void draw() = 0;
@@ -89,7 +91,11 @@ namespace RINGMesh {
          * @param[in] green the green component of the color in [0.0, 1.0]
          * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_vertex_color( index_t entity_id, float red, float green, float blue );
+        void set_vertex_color(
+            index_t entity_id,
+            float red,
+            float green,
+            float blue );
         /*!
          * Sets the vertex entity visibility to all the entities
          * @param[in] is_visible the visibility
@@ -114,34 +120,38 @@ namespace RINGMesh {
         void set_vertex_size( index_t entity_id, index_t size );
 
     protected:
-        GeoModelGfx& gfx_;
-        std::vector< std::unique_ptr< MeshEntityGfx > > entities_;
+        GeoModelGfx< DIMENSION >& gfx_;
+        std::vector< std::unique_ptr< MeshEntityGfx< DIMENSION > > > entities_;
     };
 
-    class RINGMESH_API CornerGfxEntity final: public GeoModelGfxEntity {
+    template< index_t DIMENSION >
+    class CornerGfxEntity final: public GeoModelGfxEntity< DIMENSION > {
     public:
-        CornerGfxEntity( GeoModelGfx& gfx );
+        CornerGfxEntity( GeoModelGfx< DIMENSION >& gfx );
+        virtual ~CornerGfxEntity() = default;
 
-        PointSetMeshGfx& corner( index_t corner_id );
+        PointSetMeshGfx< DIMENSION >& corner( index_t corner_id );
 
         /*!
          * Draws the corners
          */
-        virtual void draw() override;
-        virtual void initialize() override;
+        void draw() override;
+        void initialize() override;
     };
 
-    class RINGMESH_API LineGfxEntity final: public GeoModelGfxEntity {
+    template< index_t DIMENSION >
+    class LineGfxEntity final: public GeoModelGfxEntity< DIMENSION > {
     public:
-        LineGfxEntity( GeoModelGfx& gfx );
+        LineGfxEntity( GeoModelGfx< DIMENSION >& gfx );
+        virtual ~LineGfxEntity() = default;
 
-        LineMeshGfx& line( index_t line_id );
+        LineMeshGfx< DIMENSION >& line( index_t line_id );
 
         /*!
          * Draws the lines
          */
-        virtual void draw() override;
-        virtual void initialize() override;
+        void draw() override;
+        void initialize() override;
 
         /*!
          * Sets the line color
@@ -183,17 +193,19 @@ namespace RINGMesh {
 
     };
 
-    class RINGMESH_API SurfaceGfxEntity final: public GeoModelGfxEntity {
+    template< index_t DIMENSION >
+    class SurfaceGfxEntity final: public GeoModelGfxEntity< DIMENSION > {
     public:
-        SurfaceGfxEntity( GeoModelGfx& gfx );
+        SurfaceGfxEntity( GeoModelGfx< DIMENSION >& gfx );
+        virtual ~SurfaceGfxEntity() = default;
 
-        SurfaceMeshGfx& surface( index_t surface_id );
+        SurfaceMeshGfx< DIMENSION >& surface( index_t surface_id );
 
         /*!
          * Draws the surfaces
          */
-        virtual void draw() override;
-        virtual void initialize() override;
+        void draw() override;
+        void initialize() override;
         /*!
          * Sets the surfaces color
          * @param[in] red the red component of the color in [0.0, 1.0]
@@ -208,7 +220,11 @@ namespace RINGMesh {
          * @param[in] green the green component of the color in [0.0, 1.0]
          * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_surface_color( index_t surface_id, float red, float green, float blue );
+        void set_surface_color(
+            index_t surface_id,
+            float red,
+            float green,
+            float blue );
         /*!
          * Sets the surface visibility
          * @param[in] is_visible the visibility
@@ -253,7 +269,11 @@ namespace RINGMesh {
          * @param[in] green the green component of the color in [0.0, 1.0]
          * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_mesh_color( index_t surface_id, float red, float green, float blue );
+        void set_mesh_color(
+            index_t surface_id,
+            float red,
+            float green,
+            float blue );
         /*!
          * Sets the mesh surface visibility to all the elements
          * @param[in] is_visible the visibility
@@ -278,17 +298,19 @@ namespace RINGMesh {
         void set_mesh_size( index_t surface_id, index_t size );
     };
 
-    class RINGMESH_API RegionGfxEntity final: public GeoModelGfxEntity {
+    template< index_t DIMENSION >
+    class RegionGfxEntity final: public GeoModelGfxEntity< 3 > {
     public:
-        RegionGfxEntity( GeoModelGfx& gfx );
+        RegionGfxEntity( GeoModelGfx< 3 >& gfx );
+        virtual ~RegionGfxEntity() = default;
 
-        VolumeMeshGfx& region( index_t region_id );
+        VolumeMeshGfx< DIMENSION >& region( index_t region_id );
 
         /*!
          * Draws the Regions
          */
-        virtual void draw() override;
-        virtual void initialize() override;
+        void draw() override;
+        void initialize() override;
 
         /*!
          * Sets the region color
@@ -304,7 +326,11 @@ namespace RINGMesh {
          * @param[in] green the green component of the color in [0.0, 1.0]
          * @param[in] blue the blue component of the color in [0.0, 1.0]
          */
-        void set_region_color( index_t region_id, float red, float green, float blue );
+        void set_region_color(
+            index_t region_id,
+            float red,
+            float green,
+            float blue );
         /*!
          * Sets the region visibility to all the regions
          * @param[in] is_visible the visibility

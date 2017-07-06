@@ -38,7 +38,7 @@
 #include <stack>
 
 /*!
- * @file ringmesh/geomodel/geomodel_builder.cpp
+ * @file ringmesh/geomodel/geomodel_builder_from_mesh.cpp
  * @brief Implementation of the classes to build GeoModel from various meshes
  * @author Jeanne Pellerin
  */

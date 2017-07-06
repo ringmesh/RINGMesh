@@ -80,7 +80,7 @@ namespace RINGMesh {
 
     void TetgenMesher::tetrahedralize(
         const GEO::Mesh& input_mesh,
-        VolumeMeshBuilder& output_mesh_builder )
+        VolumeMeshBuilder< 3 >& output_mesh_builder )
     {
         initialize();
         copy_mesh_to_tetgen_input( input_mesh );
@@ -220,7 +220,7 @@ namespace RINGMesh {
     }
 
     void TetgenMesher::assign_result_tetmesh_to_mesh(
-        VolumeMeshBuilder& output_mesh_builder ) const
+        VolumeMeshBuilder< 3 >& output_mesh_builder ) const
     {
         output_mesh_builder.assign_vertices( get_result_tetmesh_points() );
         output_mesh_builder.assign_cell_tet_mesh( get_result_tetmesh_tets() );
@@ -295,7 +295,7 @@ namespace RINGMesh {
     }
 
     void tetrahedralize_mesh_tetgen(
-        VolumeMeshBuilder& out_tet_mesh,
+        VolumeMeshBuilder< 3 >& out_tet_mesh,
         const GEO::Mesh& in_mesh,
         bool refine,
         double quality )
@@ -312,7 +312,7 @@ namespace RINGMesh {
 
     void TetgenMesher::add_points_to_match_quality( double quality )
     {
-        tetgen_command_line_ += "q" + GEO::String::to_string( quality );
+        tetgen_command_line_ += "q" + std::to_string( quality );
     }
 }
 

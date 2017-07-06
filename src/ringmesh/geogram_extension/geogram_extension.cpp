@@ -115,7 +115,7 @@ namespace {
          * @param mesh to which vertices and facets will be assigned
          * @param flags Not used for now.
          */
-        virtual bool load(
+        bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
@@ -140,7 +140,7 @@ namespace {
         /*!
          * @brief Save a Mesh in .ts format
          */
-        virtual bool save(
+        bool save(
             const GEO::Mesh& mesh,
             const std::string& filename,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
@@ -280,8 +280,7 @@ namespace {
                 out << "ESIZES";
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    out << " "
-                        << GEO::String::to_string( vertex_attr_dims[attr_dbl_itr] );
+                    out << " " << std::to_string( vertex_attr_dims[attr_dbl_itr] );
                 }
                 out << std::endl;
                 out << "UNITS";
@@ -503,7 +502,7 @@ namespace {
 
     class LINMeshIOHandler final : public GEO::MeshIOHandler {
     public:
-        virtual bool load(
+        bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
@@ -526,7 +525,7 @@ namespace {
             return true;
 
         }
-        virtual bool save(
+        bool save(
             const GEO::Mesh& M,
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() ) final
