@@ -97,10 +97,10 @@ namespace RINGMesh {
         if( input.size() < 2 ) {
             return;
         }
-        for( index_t it1 = 0; it1 + 1 < input.size(); it1++ ) {
+        for( index_t it1 : range( input.size() - 1) ) {
             index_t ref_index = it1;
             T1 ref_value = input[it1];
-            for( index_t it2 = it1 + 1; it2 < input.size(); it2++ ) {
+            for( index_t it2 : range( it1 + 1, input.size() ) ) {
                 index_t new_index = it2;
                 T1 new_value = input[it2];
                 if( ref_value > new_value ) {
@@ -160,9 +160,7 @@ namespace RINGMesh {
     {
         index_t nb_values = static_cast< index_t >( input_values.size() );
         std::vector< index_t > sorted_indices( nb_values );
-        for( index_t i = 0; i < nb_values; ++i ) {
-            sorted_indices[i] = i;
-        }
+        std::iota( sorted_indices.begin(), sorted_indices.end(), 0 );
         CompareIndexFromValue< T > comparator( input_values );
         // Sort the indices according to the values token in the input vector
         std::sort( sorted_indices.begin(), sorted_indices.end(), comparator );
@@ -206,7 +204,7 @@ namespace RINGMesh {
             unique_value_indices );
         unique_values.reserve( nb_unique_values );
 
-        for( index_t i = 0; i < nb_values; ++i ) {
+        for( index_t i : range( nb_values ) ) {
             if( unique_value_indices[i] == i ) {
                 input2unique_values[i] =
                     static_cast< index_t >( unique_values.size() );
