@@ -158,6 +158,19 @@ namespace RINGMesh {
             MeshBase< DIMENSION >& mesh );
     protected:
         MeshBaseBuilder() = default;
+
+        void configure_base_builder( MeshBase< DIMENSION >& mesh )
+        {
+            mesh_base_ = &mesh;
+        }
+
+        void delete_vertex_nn_search()
+        {
+            mesh_base_->vertex_nn_search_.reset();
+        }
+
+    protected:
+        MeshBase< DIMENSION >* mesh_base_ { nullptr };
     };
 
     template< index_t DIMENSION >
@@ -169,7 +182,12 @@ namespace RINGMesh {
         {
         }
 
-        virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) = 0;
+        void configure_builder( PointSetMesh< DIMENSION >& mesh )
+        {
+            this->configure_base_builder( mesh );
+            pointset_mesh_ = &mesh;
+            set_mesh( mesh );
+        }
 
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > > create_builder(
             PointSetMesh< DIMENSION >& mesh );
@@ -184,6 +202,11 @@ namespace RINGMesh {
             : MeshBaseBuilder< DIMENSION >()
         {
         }
+
+        virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) = 0;
+
+    protected:
+        PointSetMesh< DIMENSION >* pointset_mesh_ { nullptr };
     };
 
     template< index_t DIMENSION >
@@ -206,7 +229,12 @@ namespace RINGMesh {
         {
         }
 
-        virtual void set_mesh( LineMesh< DIMENSION >& mesh ) = 0;
+        void configure_builder( LineMesh< DIMENSION >& mesh )
+        {
+            this->configure_base_builder( mesh );
+            line_mesh_ = &mesh;
+            set_mesh( mesh );
+        }
 
         static std::unique_ptr< LineMeshBuilder > create_builder(
             LineMesh< DIMENSION >& mesh );
@@ -265,6 +293,11 @@ namespace RINGMesh {
             : MeshBaseBuilder< DIMENSION >()
         {
         }
+
+        virtual void set_mesh( LineMesh< DIMENSION >& mesh ) = 0;
+
+    protected:
+        LineMesh< DIMENSION >* line_mesh_ { nullptr };
     };
 
     template< index_t DIMENSION >
@@ -287,7 +320,12 @@ namespace RINGMesh {
         {
         }
 
-        virtual void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) = 0;
+        void configure_builder( SurfaceMeshBase< DIMENSION >& mesh )
+        {
+            this->configure_base_builder( mesh );
+            surface_mesh_ = &mesh;
+            set_mesh( mesh );
+        }
 
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > create_builder(
             SurfaceMeshBase< DIMENSION >& mesh );
@@ -368,7 +406,9 @@ namespace RINGMesh {
         /*!
          * @brief Retrieve the adjacencies of polygons
          */
-        virtual void connect_polygons() = 0;
+        void connect_polygons();
+        void connect_polygons( const std::vector< index_t >& polygons_to_connect );
+
         virtual void permute_polygons(
             const std::vector< index_t >& permutation ) = 0;
         /*!
@@ -382,7 +422,18 @@ namespace RINGMesh {
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) = 0;
 
-        virtual void clear_polygon_linked_objects() = 0;
+        void clear_vertex_linked_objects() override
+        {
+            this->delete_vertex_nn_search();
+            clear_polygon_linked_objects();
+        }
+
+        void clear_polygon_linked_objects()
+        {
+            delete_polygon_aabb();
+            delete_polygon_nn_search();
+        }
+
         /*!@}
          * \name SurfaceMesh algorithms
          * @{
@@ -405,12 +456,43 @@ namespace RINGMesh {
         /*!
          * @brief Remove vertices not connected to any mesh element
          */
-        virtual void remove_isolated_vertices() = 0;
+        void remove_isolated_vertices()
+        {
+            std::vector< bool > to_delete( surface_mesh_->nb_vertices(), true );
+            for( index_t p = 0; p < surface_mesh_->nb_polygons(); p++ ) {
+                for( index_t v = 0; v < surface_mesh_->nb_polygon_vertices( p );
+                    v++ ) {
+                    index_t vertex_id = surface_mesh_->polygon_vertex( p, v );
+                    to_delete[vertex_id] = false;
+                }
+            }
+            this->delete_vertices( to_delete );
+        }
     protected:
         SurfaceMeshBuilder()
             : MeshBaseBuilder< DIMENSION >()
         {
         }
+
+        virtual void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) = 0;
+
+        /*!
+         * @brief Deletes the NNSearch on polygons
+         */
+        void delete_polygon_nn_search()
+        {
+            surface_mesh_->nn_search_.reset();
+        }
+
+        /*!
+         * @brief Deletes the AABB on polygons
+         */
+        void delete_polygon_aabb()
+        {
+            surface_mesh_->polygon_aabb_.reset();
+        }
+    protected:
+        SurfaceMeshBase< DIMENSION >* surface_mesh_ { nullptr };
     };
 
     template< index_t DIMENSION >
@@ -433,7 +515,12 @@ namespace RINGMesh {
         {
         }
 
-        virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) = 0;
+        void configure_builder( VolumeMesh< DIMENSION >& mesh )
+        {
+            this->configure_base_builder( mesh );
+            volume_mesh_ = &mesh;
+            set_mesh( mesh );
+        }
 
         static std::unique_ptr< VolumeMeshBuilder< DIMENSION > > create_builder(
             VolumeMesh< DIMENSION >& mesh );
@@ -533,6 +620,11 @@ namespace RINGMesh {
             : MeshBaseBuilder< DIMENSION >()
         {
         }
+
+        virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) = 0;
+
+    protected:
+        VolumeMesh< DIMENSION >* volume_mesh_ { nullptr };
     };
 
     template< index_t DIMENSION >
