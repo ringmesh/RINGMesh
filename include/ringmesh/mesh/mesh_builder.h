@@ -438,8 +438,8 @@ namespace RINGMesh {
         void remove_isolated_vertices()
         {
             std::vector< bool > to_delete( line_mesh_->nb_vertices(), true );
-            for( index_t e = 0; e < line_mesh_->nb_edges(); e++ ) {
-                for( index_t v = 0; v < 2; v++ ) {
+            for( index_t e : range( line_mesh_->nb_edges() ) ) {
+                for( index_t v : rnage( 2 ) ) {
                     index_t vertex_id = line_mesh_->edge_vertex( e, v );
                     to_delete[vertex_id] = false;
                 }
@@ -697,9 +697,8 @@ namespace RINGMesh {
         void remove_isolated_vertices()
         {
             std::vector< bool > to_delete( surface_mesh_->nb_vertices(), true );
-            for( index_t p = 0; p < surface_mesh_->nb_polygons(); p++ ) {
-                for( index_t v = 0; v < surface_mesh_->nb_polygon_vertices( p );
-                    v++ ) {
+            for( index_t p : range( surface_mesh_->nb_polygons() ) ) {
+                for( index_t v : range( surface_mesh_->nb_polygon_vertices( p ) ) ) {
                     index_t vertex_id = surface_mesh_->polygon_vertex( p, v );
                     to_delete[vertex_id] = false;
                 }

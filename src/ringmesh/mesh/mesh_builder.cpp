@@ -152,8 +152,7 @@ namespace RINGMesh {
         std::vector< PolygonLocalVertex > polygon_vertices;
         polygon_vertices.reserve( nb_local_vertices );
         for( index_t polygon : polygons_to_connect ) {
-            for( index_t v = 0; v < surface_mesh_->nb_polygon_vertices( polygon );
-                v++ ) {
+            for( index_t v : range( surface_mesh_->nb_polygon_vertices( polygon ) ) ) {
                 polygon_vertices.emplace_back( polygon, v );
             }
         }
