@@ -62,7 +62,7 @@ namespace {
             E.geomodel().mesh.vertices;
         /// Check that the stored geomodel vertex indices are in a valid range
         gmme_id id = E.gmme();
-        for( index_t i = 0; i < E.nb_vertices(); ++i ) {
+        for( index_t i : range( E.nb_vertices() ) ) {
             if( geomodel_vertices.geomodel_vertex_id( id, i ) == NO_ID
                 && geomodel_vertices.geomodel_vertex_id( id, i )
                     >= E.geomodel().mesh.vertices.nb() ) {
@@ -86,7 +86,7 @@ namespace {
         const index_t NO_COMPONENT = index_t( -1 );
         std::vector< index_t > component( surface.nb_mesh_elements(), NO_COMPONENT );
         index_t nb_components = 0;
-        for( index_t polygon = 0; polygon < surface.nb_mesh_elements(); polygon++ ) {
+        for( index_t polygon : range( surface.nb_mesh_elements() ) ) {
             if( component[polygon] == NO_COMPONENT ) {
                 std::stack< index_t > S;
                 S.push( polygon );
@@ -94,9 +94,8 @@ namespace {
                 do {
                     index_t cur_polygon = S.top();
                     S.pop();
-                    for( index_t edge = 0;
-                        edge < surface.nb_mesh_element_vertices( cur_polygon );
-                        edge++ ) {
+                    for( index_t edge : range(
+                        surface.nb_mesh_element_vertices( cur_polygon ) ) ) {
                         index_t adj_polygon = surface.polygon_adjacent_index(
                             cur_polygon, edge );
                         if( adj_polygon != NO_ID
@@ -124,7 +123,7 @@ namespace {
         const index_t NO_COMPONENT = index_t( -1 );
         std::vector< index_t > component( region.nb_mesh_elements(), NO_COMPONENT );
         index_t nb_components = 0;
-        for( index_t cell = 0; cell < region.nb_mesh_elements(); cell++ ) {
+        for( index_t cell : range( region.nb_mesh_elements() ) ) {
             if( component[cell] == NO_COMPONENT ) {
                 std::stack< index_t > S;
                 S.push( cell );
@@ -132,8 +131,7 @@ namespace {
                 do {
                     index_t cur_cell = S.top();
                     S.pop();
-                    for( index_t facet = 0;
-                        facet < region.nb_cell_facets( cur_cell ); facet++ ) {
+                    for( index_t facet : range( region.nb_cell_facets( cur_cell ) ) ) {
                         index_t adj_cell = region.cell_adjacent_index( cur_cell,
                             facet );
                         if( adj_cell != NO_ID
@@ -163,11 +161,9 @@ namespace {
         std::vector< index_t >& nb )
     {
         nb.resize( E.nb_vertices(), 0 );
-        for( index_t mesh_element_index = 0;
-            mesh_element_index < E.nb_mesh_elements(); ++mesh_element_index ) {
-            for( index_t vertex = 0;
-                vertex < E.nb_mesh_element_vertices( mesh_element_index );
-                ++vertex ) {
+        for( index_t mesh_element_index : range( E.nb_mesh_elements() ) ) {
+            for( index_t vertex : range(
+                E.nb_mesh_element_vertices( mesh_element_index ) ) ) {
                 ++nb[E.mesh_element_vertex_index( mesh_element_index, vertex )];
             }
         }
@@ -219,7 +215,7 @@ namespace {
         index_t v = 0;
         const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             S.geomodel().mesh.vertices;
-        for( index_t c = 0; c < S.nb_mesh_element_vertices( p ); ++c ) {
+        for( index_t c : range( S.nb_mesh_element_vertices( p ) ) ) {
             index_t polygon_vertex_index = S.mesh_element_vertex_index( p, c );
             corners[v] = polygon_vertex_index;
             corners_global[v] = geomodel_vertices.geomodel_vertex_id( id, p, v );
@@ -243,7 +239,7 @@ namespace {
         gmme_id id = region.gmme();
         const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             region.geomodel().mesh.vertices;
-        for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
+        for( index_t v : range( nb_vertices_in_cell ) ) {
             vertices[v] = region.mesh_element_vertex_index( cell_index, v );
             vertices_global[v] = geomodel_vertices.geomodel_vertex_id( id,
                 cell_index, v );
@@ -271,7 +267,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::has_inside_border() const
     {
-        for( index_t i = 0; i < nb_boundaries(); ++i ) {
+        for( index_t i : range( nb_boundaries() ) ) {
             if( boundary( i ).is_inside_border( *this ) ) {
                 return true;
             }
@@ -314,7 +310,7 @@ namespace RINGMesh {
         const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             this->geomodel().mesh.vertices;
         gmme_id id = gmme();
-        for( index_t v = 0; v < nb_vertices(); ++v ) {
+        for( index_t v : range( nb_vertices() ) ) {
             index_t geomodel_v = geomodel_vertices.geomodel_vertex_id( id, v );
 
             if( geomodel_v == NO_ID ) {
@@ -359,7 +355,7 @@ namespace RINGMesh {
         bool valid = true;
         gmme_id id = gmme();
         if( family.is_valid_type( boundary_type ) ) {
-            for( index_t i = 0; i < nb_boundaries(); ++i ) {
+            for( index_t i : range( nb_boundaries() ) ) {
                 const GeoModelMeshEntity& E = boundary( i );
                 bool found = false;
                 index_t j = 0;
@@ -397,7 +393,7 @@ namespace RINGMesh {
                     " is in the boundary of no entity " );
                 valid = false;
             }
-            for( index_t i = 0; i < nb_incident_entities(); ++i ) {
+            for( index_t i : range( nb_incident_entities() ) ) {
                 const GeoModelMeshEntity< DIMENSION >& E = incident_entity( i );
                 bool found = false;
                 index_t j = 0;
@@ -438,7 +434,7 @@ namespace RINGMesh {
                 // There must be one and only one parent of that type in this entity
                 // And this parent must have this entity in its children
                 index_t nb_found_parents = 0;
-                for( index_t i = 0; i < nb_parents(); ++i ) {
+                for( index_t i : range( nb_parents() ) ) {
                     const GeoModelGeologicalEntity< DIMENSION >& E = parent( i );
                     if( E.type_name() == parent_type ) {
                         nb_found_parents++;
@@ -508,7 +504,7 @@ namespace RINGMesh {
     gmge_id GeoModelMeshEntity< DIMENSION >::could_be_undefined_parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
-        for( index_t i = 0; i < nb_parents(); ++i ) {
+        for( index_t i : range( nb_parents() ) ) {
             if( parent_gmge( i ).type() == parent_type_name ) {
                 return parent_gmge( i );
             }
@@ -571,7 +567,7 @@ namespace RINGMesh {
     bool Corner< DIMENSION >::is_on_voi() const
     {
         // True if one of the incident surface define the universe
-        for( index_t i = 0; i < this->nb_incident_entities(); ++i ) {
+        for( index_t i : range( this->nb_incident_entities() ) ) {
             if( incident_entity( i ).is_on_voi() ) {
                 return true;
             }
@@ -666,7 +662,7 @@ namespace RINGMesh {
 
         // No zero edge length
         index_t nb_degenerated = 0;
-        for( index_t e = 0; e < nb_mesh_elements(); ++e ) {
+        for( index_t e : range( nb_mesh_elements() ) ) {
             double l = length(
                 this->mesh_element_vertex( e, 1 )
                     - this->mesh_element_vertex( e, 0 ) );
@@ -718,7 +714,7 @@ namespace RINGMesh {
     bool Line< DIMENSION >::is_on_voi() const
     {
         // True if one of the incident surface define the universe
-        for( index_t i = 0; i < this->nb_incident_entities(); ++i ) {
+        for( index_t i : range( this->nb_incident_entities() ) ) {
             if( incident_entity( i ).is_on_voi() ) {
                 return true;
             }
@@ -769,7 +765,7 @@ namespace RINGMesh {
         // No zero area polygon
         // No polygon incident to the same vertex check local and global indices
         index_t nb_degenerate = 0;
-        for( index_t p = 0; p < surface_mesh_->nb_polygons(); p++ ) {
+        for( index_t p : range( surface_mesh_->nb_polygons() ) ) {
             if( polygon_is_degenerate( *this, id, p ) ) {
                 nb_degenerate++;
             }
@@ -784,7 +780,7 @@ namespace RINGMesh {
         GEO::vector< index_t > colocated;
         // GEO::mesh_detect_duplicated_facets( mesh_, colocated ) ; // not implemented yet 
         index_t nb_duplicated_p = 0;
-        for( index_t p = 0; p < colocated.size(); ++p ) {
+        for( index_t p : range( colocated.size() ) ) {
             if( colocated[p] != p ) {
                 nb_duplicated_p++;
             }
@@ -808,7 +804,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool SurfaceBase< DIMENSION >::is_on_voi() const
     {
-        for( index_t i = 0; i < this->geomodel().universe().nb_boundaries(); ++i ) {
+        for( index_t i : range( this->geomodel().universe().nb_boundaries() ) ) {
             if( this->geomodel().universe().boundary_gmme( i ) == this->gmme() ) {
                 return true;
             }
@@ -886,7 +882,7 @@ namespace RINGMesh {
             // No cell with negative volume
             // No cell incident to the same vertex check local and global indices
             index_t nb_degenerate = 0;
-            for( index_t c = 0; c < volume_mesh_->nb_cells(); c++ ) {
+            for( index_t c : range( volume_mesh_->nb_cells() ) ) {
                 if( cell_is_degenerate( *this, c ) ) {
                     nb_degenerate++;
                 }

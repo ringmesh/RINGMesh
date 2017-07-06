@@ -47,7 +47,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
     {
-        for( index_t i = 0; i < DIMENSION; i++ ) {
+        for( index_t i : range( DIMENSION ) ) {
             if( u[i] != v[i] ) return false;
         }
         return true;

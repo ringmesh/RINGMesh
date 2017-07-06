@@ -134,7 +134,7 @@ namespace {
         const GeoModelMeshEntity< DIMENSION >& entity,
         Box< DIMENSION >& bbox )
     {
-        for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
+        for( index_t v : range( entity.nb_vertices() ) ) {
             bbox.add_point( entity.vertex( v ) );
         }
     }
@@ -173,15 +173,15 @@ namespace RINGMesh {
         // Computation of the BBox is set with surface vertices
         // or with those of lines and corners if the model has no surface
         if( GM_.nb_surfaces() > 0 ) {
-            for( index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
+            for( index_t s : range( GM_.nb_surfaces() ) ) {
                 compute_mesh_entity_bbox( GM_.surface( s ), bbox_ );
             }
         } else if( GM_.nb_lines() > 0 ) {
-            for( index_t l = 0; l < GM_.nb_lines(); l++ ) {
+            for( index_t l : range( GM_.nb_lines() ) ) {
                 compute_mesh_entity_bbox( GM_.line( l ), bbox_ );
             }
         } else {
-            for( index_t c = 0; c < GM_.nb_corners(); c++ ) {
+            for( index_t c : range( GM_.nb_corners() ) ) {
                 compute_mesh_entity_bbox( GM_.corner( c ), bbox_ );
             }
         }
@@ -193,7 +193,7 @@ namespace RINGMesh {
         for( const MeshEntityType& type : types ) {
             entity_types_.emplace_back( type );
         }
-        for( index_t i = 0; i < GM_.nb_geological_entity_types(); i++ ) {
+        for( index_t i : range( GM_.nb_geological_entity_types() ) ) {
             entity_types_.emplace_back( GM_.geological_entity_type( i ) );
         }
         GM_gfx_.set_geomodel( GM_ );
@@ -288,7 +288,7 @@ namespace RINGMesh {
                     surface_style_.vertex_color_.Value.z );
             }
             if( selected_entity_type_ == 0 ) {
-                for( index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
+                for( index_t s : range( GM_.nb_surfaces() ) ) {
                     if( GM_.surface( s ).is_on_voi() ) {
                         GM_gfx_.surfaces.set_surface_visibility( s, show_voi_ );
                     }
@@ -396,7 +396,7 @@ namespace RINGMesh {
         GM_gfx_.lines.set_vertex_visibility( line_id,
             line_style_.visible_vertices_ );
         const Line< DIMENSION >& line = GM_.line( line_id );
-        for( index_t i = 0; i < line.nb_boundaries(); i++ ) {
+        for( index_t i : range( line.nb_boundaries() ) ) {
             toggle_corner_visibility( line.boundary_gmme( i ).index() );
         }
     }
@@ -409,7 +409,7 @@ namespace RINGMesh {
         GM_gfx_.surfaces.set_vertex_visibility( surface_id,
             surface_style_.visible_vertices_ );
         const Surface< DIMENSION >& surface = GM_.surface( surface_id );
-        for( index_t i = 0; i < surface.nb_boundaries(); i++ ) {
+        for( index_t i : range( surface.nb_boundaries() ) ) {
             toggle_line_and_boundaries_visibility(
                 surface.boundary_gmme( i ).index() );
         }
@@ -421,7 +421,7 @@ namespace RINGMesh {
     {
         const GeoModelGeologicalEntity< DIMENSION >& entity = GM_.geological_entity(
             entity_id );
-        for( index_t i = 0; i < entity.nb_children(); i++ ) {
+        for( index_t i : range( entity.nb_children() ) ) {
             const gmme_id& child_id = entity.child_gmme( i );
             toggle_mesh_entity_and_boundaries_visibility( child_id );
         }
@@ -477,8 +477,7 @@ namespace RINGMesh {
                     ImGui::OpenPopup( "##Coordinates" );
                 }
                 if( ImGui::BeginPopup( "##Coordinates" ) ) {
-                    for( index_t i = 0; i < GM_gfx_.attribute.nb_coordinates();
-                        i++ ) {
+                    for( index_t i : range( GM_gfx_.attribute.nb_coordinates() ) ) {
                         if( ImGui::Button( std::to_string( i ).c_str() ) ) {
                             GM_gfx_.attribute.set_coordinate( i );
                             autorange();
@@ -709,7 +708,7 @@ namespace RINGMesh {
     {
         colored_cells_.new_status = false;
         show_colored_layers_.new_status = false;
-        for( index_t r = 0; r < GM_.nb_regions(); r++ ) {
+        for( index_t r : range( GM_.nb_regions() ) ) {
             GM_gfx_.regions.set_region_color( r,
                 std::fmod( GEO::Numeric::random_float32(), 1.f ),
                 std::fmod( GEO::Numeric::random_float32(), 1.f ),
@@ -728,14 +727,14 @@ namespace RINGMesh {
         }
         colored_cells_.new_status = false;
         show_colored_regions_.new_status = false;
-        for( index_t l = 0;
-            l < GM_.nb_geological_entities( Layer< 3 >::type_name_static() ); l++ ) {
+        for( index_t l : range(
+            GM_.nb_geological_entities( Layer< 3 >::type_name_static() ) ) ) {
             float red = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float green = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float blue = std::fmod( GEO::Numeric::random_float32(), 1.f );
             const GeoModelGeologicalEntity< 3 >& cur_layer = GM_.geological_entity(
                 Layer< 3 >::type_name_static(), l );
-            for( index_t r = 0; r < cur_layer.nb_children(); ++r )
+            for( index_t r : range( cur_layer.nb_children() ) )
                 GM_gfx_.regions.set_region_color( cur_layer.child( r ).index(), red,
                     green, blue );
         }
@@ -813,7 +812,7 @@ namespace RINGMesh {
         GM_gfx_.regions.set_vertex_visibility( region_id,
             volume_style_.visible_vertices_ );
         const Region< 3 >& region = GM_.region( region_id );
-        for( index_t i = 0; i < region.nb_boundaries(); i++ ) {
+        for( index_t i : range( region.nb_boundaries() ) ) {
             toggle_surface_and_boundaries_visibility(
                 region.boundary_gmme( i ).index() );
         }
@@ -877,7 +876,7 @@ namespace RINGMesh {
         }
         mesh_gfx_.set_mesh( &mesh_ );
 
-        for( index_t v = 0; v < mesh_.vertices.nb(); v++ ) {
+        for( index_t v : range( mesh_.vertices.nb() ) ) {
             bbox_.add_point( mesh_.vertices.point( v ) );
         }
     }
@@ -1052,7 +1051,7 @@ namespace RINGMesh {
             if( attribute.is_bound() ) {
                 attribute_min_ = GEO::Numeric::max_float32();
                 attribute_max_ = GEO::Numeric::min_float32();
-                for( index_t i = 0; i < subelements.nb(); ++i ) {
+                for( index_t i : range( subelements.nb() ) ) {
                     attribute_min_ = GEO::geo_min( attribute_min_,
                         float( attribute[i] ) );
                     attribute_max_ = GEO::geo_max( attribute_max_,
@@ -1234,7 +1233,7 @@ namespace RINGMesh {
     {
         int id = 0;
         for( const auto& colors : color_table_ ) {
-            for( index_t j = 0; j < colors.size(); j++ ) {
+            for( index_t j : range( static_cast< index_t >( colors.size() ) ) ) {
                 if( j > 0 ) {
                     ImGui::SameLine();
                 }
@@ -1354,7 +1353,7 @@ namespace RINGMesh {
             std::ostringstream oss;
             oss << "GeoModel" << DIMENSION << "D";
             ImGui::Text( oss.str().c_str() );
-            for( index_t i = 0; i < geomodels.size(); i++ ) {
+            for( index_t i : range( geomodels.size() ) ) {
                 GeoModelViewer< DIMENSION >& viewer = *geomodels[i];
                 ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.GM_.name().c_str(),
@@ -1390,7 +1389,7 @@ namespace RINGMesh {
         if( !meshes_.empty() ) {
             ImGui::Separator();
             ImGui::Text( "Mesh" );
-            for( index_t i = 0; i < meshes_.size(); i++ ) {
+            for( index_t i : range( static_cast< index_t >( meshes_.size() ) ) ) {
                 MeshViewer& viewer = *meshes_[i];
                 ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.name_.c_str(), &viewer.is_visible_ ) ) {

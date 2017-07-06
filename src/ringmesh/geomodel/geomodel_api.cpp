@@ -63,7 +63,7 @@ namespace {
     index_t count_geomodel_polygons( const GeoModel< DIMENSION >& geomodel )
     {
         index_t result = 0;
-        for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
+        for( index_t i : range( geomodel.nb_surfaces() ) ) {
             result += geomodel.surface( i ).nb_mesh_elements();
         }
         return result;
@@ -83,7 +83,7 @@ namespace {
     index_t count_geomodel_cells( const GeoModel< 3 >& geomodel )
     {
         index_t nb_cells = 0;
-        for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
+        for( index_t i : range( geomodel.nb_regions() ) ) {
             nb_cells += geomodel.region( i ).nb_mesh_elements();
         }
         return nb_cells;
@@ -93,7 +93,7 @@ namespace {
     index_t count_geomodel_edges( const GeoModel< DIMENSION >& geomodel )
     {
         index_t nb_edges = 0;
-        for( index_t i = 0; i < geomodel.nb_lines(); ++i ) {
+        for( index_t i : range( geomodel.nb_lines() ) ) {
             nb_edges += geomodel.line( i ).nb_mesh_elements();
         }
         return nb_edges;
@@ -108,7 +108,7 @@ namespace {
         double& hex_volume,
         double& poly_volume )
     {
-        for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+        for( index_t c : range( region.nb_mesh_elements() ) ) {
             index_t nb_vertices = region.nb_mesh_element_vertices( c );
             double volume = region.low_level_mesh_storage().cell_volume( c );
             switch( nb_vertices ) {
@@ -145,7 +145,7 @@ namespace {
         prism_volume = 0;
         hex_volume = 0;
         poly_volume = 0;
-        for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+        for( index_t r : range( geomodel.nb_regions() ) ) {
             const Region< DIMENSION >& region = geomodel.region( r );
             compute_region_volumes_per_cell_type( region, tet_volume, pyramid_volume,
                 prism_volume, hex_volume, poly_volume );
@@ -322,8 +322,7 @@ namespace RINGMesh {
         const std::string& name )
     {
         index_t mesh_entity_id = NO_ID;
-        for( index_t elt_i = 0; elt_i < geomodel.nb_mesh_entities( gmme_type );
-            elt_i++ ) {
+        for( index_t elt_i : range( geomodel.nb_mesh_entities( gmme_type ) ) ) {
             const RINGMesh::GeoModelMeshEntity< DIMENSION >& cur_gme =
                 geomodel.mesh_entity( gmme_type, elt_i );
             if( cur_gme.name() == name ) {
@@ -350,8 +349,7 @@ namespace RINGMesh {
         const std::string& name )
     {
         index_t geological_entity_id = NO_ID;
-        for( index_t elt_i = 0; elt_i < geomodel.nb_geological_entities( gmge_type );
-            elt_i++ ) {
+        for( index_t elt_i : range( geomodel.nb_geological_entities( gmge_type ) ) ) {
             const RINGMesh::GeoModelGeologicalEntity< DIMENSION >& cur_gme =
                 geomodel.geological_entity( gmge_type, elt_i );
             if( cur_gme.name() == name ) {
@@ -378,7 +376,7 @@ namespace RINGMesh {
         GeoModel< DIMENSION >& geomodel,
         const vecn< DIMENSION >& translation_vector )
     {
-        for( index_t v = 0; v < geomodel.mesh.vertices.nb(); ++v ) {
+        for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
             // Coordinates are not directly modified to
             // update the matching vertices in geomodel entities
             const vecn< DIMENSION >& p = geomodel.mesh.vertices.vertex( v );
@@ -402,7 +400,7 @@ namespace RINGMesh {
         rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
             rot_mat );
 
-        for( index_t v = 0; v < geomodel.mesh.vertices.nb(); ++v ) {
+        for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
             const vec3& p = geomodel.mesh.vertices.vertex( v );
             double old[4] = { p[0], p[1], p[2], 1. };
             double new_p[4] = { 0, 0, 0, 1. };
@@ -442,7 +440,7 @@ namespace RINGMesh {
         if( region_id == NO_ID ) {
             Logger::out( "Info", "Using ", method );
             GEO::ProgressTask progress( "Compute", geomodel.nb_regions() );
-            for( index_t i = 0; i < geomodel.nb_regions(); i++ ) {
+            for( index_t i : range( geomodel.nb_regions() ) ) {
                 tetrahedralize( geomodel, method, i, add_steiner_points,
                     internal_vertices );
                 progress.next();

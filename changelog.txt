@@ -10,6 +10,8 @@ New Features:
 Bug fix:
  * Error in computation of polygon area (for 3D concave polygons)
 
+Improvements:
+ * One can use range() to iterate over integer loops
 
 #### Release: 4.1.0 ####
 
