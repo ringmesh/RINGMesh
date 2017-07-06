@@ -116,7 +116,6 @@ namespace {
             const GeoModel& geomodel,
             std::ofstream& out ) const
         {
-            index_t elt = write_corners( geomodel, out );
             // Corners are already written so we start this loop at 1
             for( index_t geomodel_mesh_entities = 1;
                 geomodel_mesh_entities
@@ -127,12 +126,11 @@ namespace {
                         < geomodel.nb_mesh_entities(
                             MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities] );
                     entity++ ) {
-                    elt =
-                        write_mesh_elements_for_a_mesh_entity(
-                            geomodel.mesh_entity(
-                                MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities],
-                                entity ), adeli_cell_types[geomodel_mesh_entities],
-                            out );
+                    write_mesh_elements_for_a_mesh_entity(
+                        geomodel.mesh_entity(
+                            MeshEntityTypeManager::mesh_entity_types()[geomodel_mesh_entities],
+                            entity ), adeli_cell_types[geomodel_mesh_entities],
+                        out );
                 }
             }
             out << "$ENDELM" << std::endl;
@@ -162,12 +160,12 @@ namespace {
             return nb_mesh_entities;
         }
 
-        index_t write_mesh_elements_for_a_mesh_entity(
+        void write_mesh_elements_for_a_mesh_entity(
             const GeoModelMeshEntity& geomodel_mesh_entity,
             index_t cell_descriptor,
             std::ofstream& out ) const
         {
-            index_t elt_id = NO_ID; /// To handle
+            index_t elt_id = 0;
             for( index_t elt = 0; elt < geomodel_mesh_entity.nb_mesh_elements();
                 elt++ ) {
                 out << elt_id++ << " " << cell_descriptor << " " << reg_phys << " "
@@ -182,7 +180,6 @@ namespace {
                 }
                 out << std::endl;
             }
-            return elt_id;
         }
     };
 }
