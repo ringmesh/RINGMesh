@@ -322,7 +322,7 @@ namespace RINGMesh {
         void unbind_vertex_mapping_attribute() const;
         void bind_vertex_mapping_attribute() const;
 
-        virtual void change_mesh_data_structure( const MeshType type ) = 0;
+        virtual void change_mesh_data_structure( const MeshType& type ) = 0;
 
     private:
         gmge_id defined_parent_gmge(
@@ -433,7 +433,7 @@ namespace RINGMesh {
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
          */
-        Corner( const GeoModel& geomodel, index_t id, const MeshType type )
+        Corner( const GeoModel& geomodel, index_t id, const MeshType& type )
             : GeoModelMeshEntity( geomodel, id )
 
         {
@@ -466,7 +466,7 @@ namespace RINGMesh {
             GeoModelMeshEntity::set_mesh( mesh0d_ );
         }
 
-        virtual void change_mesh_data_structure( const MeshType type ) override;
+        virtual void change_mesh_data_structure( const MeshType& type ) override;
 
     private:
         std::shared_ptr< PointSetMesh > mesh0d_;
@@ -590,7 +590,7 @@ namespace RINGMesh {
         }
 
     protected:
-        Line( const GeoModel& geomodel, index_t id, const MeshType type )
+        Line( const GeoModel& geomodel, index_t id, const MeshType& type )
             : GeoModelMeshEntity( geomodel, id )
         {
             update_mesh_storage_type( LineMesh::create_mesh( type ) );
@@ -617,7 +617,7 @@ namespace RINGMesh {
             GeoModelMeshEntity::set_mesh( mesh1d_ );
         }
 
-        virtual void change_mesh_data_structure( const MeshType type ) override;
+        virtual void change_mesh_data_structure( const MeshType& type ) override;
 
     private:
         std::shared_ptr< LineMesh > mesh1d_;
@@ -762,20 +762,18 @@ namespace RINGMesh {
          * orientation.
          * @param[in] p Input polygon index
          * @param[in] e Edge index in the polygon
-         * @param[out] prev_p Previous polygon index
-         * @param[out] prev_e Previous edge index in the polygon
+         * @return the previous polygon index
+         * and the previous edge index in the polygon
          *
          * @pre the surface must be correctly oriented and
          * the given polygon edge must be on border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
-        void prev_on_border(
+        std::tuple< index_t, index_t > prev_on_border(
             index_t p,
-            index_t e,
-            index_t& prev_p,
-            index_t& prev_e ) const
+            index_t e ) const
         {
-            return mesh2d_->prev_on_border( p, e, prev_p, prev_e );
+            return mesh2d_->prev_on_border( p, e );
         }
 
         /*!
@@ -784,19 +782,17 @@ namespace RINGMesh {
          * orientation.
          * @param[in] p Input polygon index
          * @param[in] e Edge index in the polygon
-         * @param[out] next_p Next polygon index
-         * @param[out] next_e Next edge index in the polygon
+         * @return the next polygon index
+         * and the next edge index in the polygon
          *
          * @pre the given polygon edge must be on border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
-        void next_on_border(
+        std::tuple< index_t, index_t > next_on_border(
             index_t p,
-            index_t e,
-            index_t& next_p,
-            index_t& next_e ) const
+            index_t e ) const
         {
-            return mesh2d_->next_on_border( p, e, next_p, next_e );
+            return mesh2d_->next_on_border( p, e );
         }
 
         /*!
@@ -963,7 +959,7 @@ namespace RINGMesh {
             GeoModelMeshEntity::set_mesh( mesh2d_ );
         }
 
-        virtual void change_mesh_data_structure( const MeshType type ) override;
+        virtual void change_mesh_data_structure( const MeshType& type ) override;
 
     private:
         std::shared_ptr< SurfaceMesh > mesh2d_;
@@ -1253,17 +1249,12 @@ namespace RINGMesh {
             return vec3();
         }
 
-        index_t cells_around_vertex(
+        std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
-            std::vector< index_t >& result,
             index_t cell_hint ) const;
 
-        void compute_region_volumes_per_cell_type(
-            double& tet_volume,
-            double& pyramid_volume,
-            double& prism_volume,
-            double& hex_volume,
-            double& poly_volume ) const;
+        std::tuple< double, double, double, double, double >
+            compute_region_volumes_per_cell_type() const;
 
         bool side( index_t i ) const
         {
@@ -1297,7 +1288,7 @@ namespace RINGMesh {
             GeoModelMeshEntity::set_mesh( mesh3d_ );
         }
 
-        virtual void change_mesh_data_structure( const MeshType type ) override;
+        virtual void change_mesh_data_structure( const MeshType& type ) override;
 
         virtual void copy_mesh_entity( const GeoModelMeshEntity& from ) final
         {
@@ -1402,7 +1393,7 @@ namespace RINGMesh {
             gmme_.copy_mesh_entity( from );
         }
 
-        void change_mesh_data_structure( const MeshType type );
+        void change_mesh_data_structure( const MeshType& type );
 
         template< typename ENTITY >
         static std::unique_ptr< ENTITY > create_entity(

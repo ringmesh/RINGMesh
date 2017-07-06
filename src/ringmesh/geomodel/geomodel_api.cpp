@@ -86,38 +86,30 @@ namespace {
         return nb_edges;
     }
 
-    void compute_region_volumes_per_cell_type(
-        const Region& region,
-        double& tet_volume,
-        double& pyramid_volume,
-        double& prism_volume,
-        double& hex_volume,
-        double& poly_volume )
+    std::tuple< double, double, double, double, double > compute_region_volumes_per_cell_type(
+        const Region& region )
     {
-        region.compute_region_volumes_per_cell_type( tet_volume, pyramid_volume,
-            prism_volume, hex_volume, poly_volume );
+        return region.compute_region_volumes_per_cell_type();
 
     }
 
-    double compute_geomodel_volumes_per_cell_type(
-        const GeoModel& geomodel,
-        double& tet_volume,
-        double& pyramid_volume,
-        double& prism_volume,
-        double& hex_volume,
-        double& poly_volume )
+    std::tuple< double, double, double, double, double, double >
+        compute_geomodel_volumes_per_cell_type(
+        const GeoModel& geomodel )
     {
-        tet_volume = 0;
-        pyramid_volume = 0;
-        prism_volume = 0;
-        hex_volume = 0;
-        poly_volume = 0;
+        double tet_volume = 0;
+        double pyramid_volume = 0;
+        double prism_volume = 0;
+        double hex_volume = 0;
+        double poly_volume = 0;
         for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
             const Region& region = geomodel.region( r );
-            compute_region_volumes_per_cell_type( region, tet_volume, pyramid_volume,
-                prism_volume, hex_volume, poly_volume );
+            std::tie( tet_volume, pyramid_volume, prism_volume, hex_volume,
+                poly_volume ) = compute_region_volumes_per_cell_type( region );
         }
-        return tet_volume + pyramid_volume + prism_volume + hex_volume + poly_volume;
+        double total = tet_volume + pyramid_volume + prism_volume + hex_volume + poly_volume;
+        return std::make_tuple( total, tet_volume, pyramid_volume, prism_volume,
+            hex_volume, poly_volume );
     }
 
     void print_one_cell_stat(
@@ -238,13 +230,14 @@ namespace RINGMesh {
 
     void print_geomodel_mesh_cell_volumes( const GeoModel& geomodel )
     {
+        double volume = 0;
         double tet_volume = 0;
         double pyramid_volume = 0;
         double prism_volume = 0;
         double hex_volume = 0;
         double poly_volume = 0;
-        double volume = compute_geomodel_volumes_per_cell_type( geomodel, tet_volume,
-            pyramid_volume, prism_volume, hex_volume, poly_volume );
+        std::tie( volume, tet_volume, pyramid_volume, prism_volume, hex_volume,
+            poly_volume ) = compute_geomodel_volumes_per_cell_type( geomodel );
         Logger::out( "GeoModel", "Model ", geomodel.name(), " has a volume of ",
             volume );
         if( tet_volume > 0 ) {

@@ -141,10 +141,10 @@ void check_tree( const SurfaceAABBTree& tree, index_t size )
     for( index_t i = 0; i < size - 1; i++ ) {
         for( index_t j = 0; j < size - 1; j++ ) {
             vec3 query1( i + offset, j + offset, 0 );
+            index_t triangle1 = NO_ID;
             vec3 nearest_point1;
-            double distance1;
-            index_t triangle1 = tree.closest_triangle( query1, nearest_point1,
-                distance1 );
+            std::tie( triangle1, nearest_point1, std::ignore ) =
+                tree.closest_triangle( query1 );
             if( triangle1 != id++ ) {
                 throw RINGMeshException( "TEST", "Not the correct triangle found" );
             }
@@ -154,10 +154,10 @@ void check_tree( const SurfaceAABBTree& tree, index_t size )
             }
 
             vec3 query2( i + 1 - offset, j + 1 - offset, offset );
+            index_t triangle2 = NO_ID;
             vec3 nearest_point2;
-            double distance2;
-            index_t triangle2 = tree.closest_triangle( query2, nearest_point2,
-                distance2 );
+            std::tie( triangle2, nearest_point2, std::ignore ) =
+                tree.closest_triangle( query2 );
             if( triangle2 != id++ ) {
                 throw RINGMeshException( "TEST", "Not the correct triangle found" );
             }
@@ -169,9 +169,9 @@ void check_tree( const SurfaceAABBTree& tree, index_t size )
     }
 
     vec3 query( 0, 0, 0 );
+    index_t triangle = NO_ID;
     vec3 nearest_point;
-    double distance;
-    index_t triangle = tree.closest_triangle( query, nearest_point, distance );
+    std::tie( triangle, nearest_point, std::ignore ) = tree.closest_triangle( query );
     if( triangle != 0 ) {
         throw RINGMeshException( "TEST", "Not the correct triangle found" );
     }
@@ -277,13 +277,12 @@ void test_AABB3D()
 
 void test_locate_edge_on_1D_mesh( const GeogramLineMesh& mesh )
 {
-    double distance;
-    vec3 nearest_point;
     for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
         vec3 barycenter = mesh.edge_barycenter( e );
         const LineAABBTree& aabb1D = mesh.edge_aabb();
-        index_t closest_edge = aabb1D.closest_edge( barycenter, nearest_point,
-            distance );
+        index_t closest_edge = NO_ID;
+        std::tie( closest_edge, std::ignore, std::ignore ) = aabb1D.closest_edge(
+            barycenter );
         if( closest_edge != e ) {
             throw RINGMeshException( "TEST", "Not the correct edge found" );
         }

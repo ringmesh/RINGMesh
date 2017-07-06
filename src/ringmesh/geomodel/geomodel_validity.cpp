@@ -321,13 +321,15 @@ namespace {
 
         bool is_triangle( index_t p ) const
         {
-            index_t index;
-            return polygons_.type( p, index ) == PolygonType::TRIANGLE;
+            PolygonType type;
+            std::tie( type, std::ignore ) = polygons_.type( p );
+            return type == PolygonType::TRIANGLE;
         }
         bool is_quad( index_t p ) const
         {
-            index_t index;
-            return polygons_.type( p, index ) == PolygonType::QUAD;
+            PolygonType type;
+            std::tie( type, std::ignore ) = polygons_.type( p );
+            return type == PolygonType::QUAD;
         }
 
     private:
@@ -741,10 +743,10 @@ namespace {
         }
     }
 
-    void compute_border_edges(
-        const GeoModel& geomodel,
-        std::vector< index_t >& edge_indices )
+    std::vector< index_t > compute_border_edges(
+        const GeoModel& geomodel )
     {
+        std::vector< index_t > edge_indices;
         const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
         for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
             for( index_t p = 0; p < polygons.nb_polygons( s ); p++ ) {
@@ -761,29 +763,30 @@ namespace {
                 }
             }
         }
+        return edge_indices;
     }
 
-    void compute_border_edge_barycenters(
+    std::vector< vec3 > compute_border_edge_barycenters(
         const GeoModel& geomodel,
-        const std::vector< index_t >& edge_indices,
-        std::vector< vec3 >& edge_barycenters )
+        const std::vector< index_t >& edge_indices )
     {
         const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
         index_t nb_edges = static_cast< index_t >( edge_indices.size() / 2 );
+        std::vector< vec3 > edge_barycenters;
         edge_barycenters.reserve( nb_edges );
         for( index_t e = 0; e < edge_indices.size(); e += 2 ) {
             const vec3& v0 = vertices.vertex( edge_indices[e] );
             const vec3& v1 = vertices.vertex( edge_indices[e + 1] );
             edge_barycenters.push_back( ( v0 + v1 ) * 0.5 );
         }
+        return edge_barycenters;
     }
 
-    void compute_edge_on_lines(
+    std::vector< bool > compute_edge_on_lines(
         const GeoModel& geomodel,
-        const std::vector< vec3 >& edge_barycenters,
-        std::vector< bool >& edge_on_lines )
+        const std::vector< vec3 >& edge_barycenters )
     {
-        edge_on_lines.resize( edge_barycenters.size(), false );
+        std::vector< bool > edge_on_lines( edge_barycenters.size(), false );
         NNSearch nn( edge_barycenters );
         for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
             const Line& line = geomodel.line( l );
@@ -796,17 +799,19 @@ namespace {
                 }
             }
         }
+        return edge_on_lines;
     }
 
-    void compute_non_manifold_edges(
-        const std::vector< bool >& edge_on_lines,
-        std::vector< index_t >& non_manifold_edges )
+    std::vector< index_t > compute_non_manifold_edges(
+        const std::vector< bool >& edge_on_lines  )
     {
+        std::vector< index_t > non_manifold_edges;
         for( index_t e = 0; e < edge_on_lines.size(); e++ ) {
             if( !edge_on_lines[e] ) {
                 non_manifold_edges.push_back( e );
             }
         }
+        return non_manifold_edges;
     }
 
     /*!
@@ -1011,15 +1016,13 @@ namespace {
          */
         void test_non_manifold_edges()
         {
-            std::vector< index_t > edge_indices;
-            compute_border_edges( geomodel_, edge_indices );
-            std::vector< vec3 > edge_barycenters;
-            compute_border_edge_barycenters( geomodel_, edge_indices,
+            std::vector< index_t > edge_indices = compute_border_edges( geomodel_ );
+            std::vector< vec3 > edge_barycenters = compute_border_edge_barycenters(
+                geomodel_, edge_indices );
+            std::vector< bool > edge_on_lines = compute_edge_on_lines( geomodel_,
                 edge_barycenters );
-            std::vector< bool > edge_on_lines;
-            compute_edge_on_lines( geomodel_, edge_barycenters, edge_on_lines );
-            std::vector< index_t > non_manifold_edges;
-            compute_non_manifold_edges( edge_on_lines, non_manifold_edges );
+            std::vector< index_t > non_manifold_edges = compute_non_manifold_edges(
+                edge_on_lines );
 
             if( !non_manifold_edges.empty() ) {
                 Logger::warn( "GeoModel", non_manifold_edges.size(),
