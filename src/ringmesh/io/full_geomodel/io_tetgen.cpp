@@ -41,9 +41,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from TetGen not implemented yet" );
         }
-        void save(
-            const GeoModel< 3 >& geomodel,
-            const std::string& filename ) final
+        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             std::string directory = GEO::FileSystem::dir_name( filename );
             std::string file = GEO::FileSystem::base_name( filename );
@@ -55,7 +53,7 @@ namespace {
 
             const GeoModelMesh< 3 >& mesh = geomodel.mesh;
             node << mesh.vertices.nb() << " 3 0 0" << std::endl;
-            for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
+            for( index_t v : range( mesh.vertices.nb() ) ) {
                 node << v << SPACE << mesh.vertices.vertex( v ) << std::endl;
             }
 
@@ -69,8 +67,8 @@ namespace {
             ele << mesh.cells.nb() << " 4 1" << std::endl;
             neigh << mesh.cells.nb() << " 4" << std::endl;
             index_t nb_tet_exported = 0;
-            for( index_t m = 0; m < geomodel.nb_regions(); m++ ) {
-                for( index_t tet = 0; tet < mesh.cells.nb_tet( m ); tet++ ) {
+            for( index_t m : range( geomodel.nb_regions() ) ) {
+                for( index_t tet : range( mesh.cells.nb_tet( m ) ) ) {
                     index_t cell = mesh.cells.tet( m, tet );
                     ele << nb_tet_exported << SPACE << mesh.cells.vertex( cell, 0 )
                         << SPACE << mesh.cells.vertex( cell, 1 ) << SPACE
@@ -78,7 +76,7 @@ namespace {
                         << mesh.cells.vertex( cell, 3 ) << SPACE << m + 1
                         << std::endl;
                     neigh << nb_tet_exported;
-                    for( index_t f = 0; f < mesh.cells.nb_facets( tet ); f++ ) {
+                    for( index_t f : range( mesh.cells.nb_facets( tet ) ) ) {
                         neigh << SPACE;
                         index_t adj = mesh.cells.adjacent( cell, f );
                         if( adj == GEO::NO_CELL ) {

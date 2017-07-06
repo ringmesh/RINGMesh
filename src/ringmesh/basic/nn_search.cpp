@@ -72,21 +72,14 @@ namespace RINGMesh {
     {
         index_map.resize( nn_tree_->nb_points() );
         std::iota( index_map.begin(), index_map.end(), 0 );
-        index_t nb_threads = static_cast< index_t >( omp_get_max_threads() );
-        std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 );
-        for( index_t i = 0; i < index_map.size(); i++ ) {
+        index_t nb_colocalised_vertices = 0;
+        for( index_t i : range( index_map.size() ) ) {
             std::vector< index_t > results = get_neighbors( point( i ), epsilon );
             index_t id = *std::min_element( results.begin(), results.end() );
             if( id < i ) {
                 index_map[i] = id;
-                index_t thread_id = static_cast< index_t >( omp_get_thread_num() );
-                nb_colocalised_per_thread[thread_id]++;
+                nb_colocalised_vertices++;
             }
-        }
-
-        index_t nb_colocalised_vertices = 0;
-        for( index_t nb_colocalised : nb_colocalised_per_thread ) {
-            nb_colocalised_vertices += nb_colocalised;
         }
         return nb_colocalised_vertices;
     }
@@ -101,7 +94,7 @@ namespace RINGMesh {
             index_map );
         unique_points.reserve( nb_points() - nb_colocalised_vertices );
         index_t offset = 0;
-        for( index_t p = 0; p < index_map.size(); p++ ) {
+        for( index_t p : range( index_map.size() ) ) {
             if( index_map[p] == p ) {
                 unique_points.push_back( point( p ) );
                 index_map[p] = p - offset;
@@ -145,7 +138,7 @@ namespace RINGMesh {
         index_t index_in_nn_search,
         const vecn< DIMENSION >& center )
     {
-        for( index_t i = 0; i < DIMENSION; i++ ) {
+        for( index_t i : range( DIMENSION ) ) {
             nn_points_[index_in_nn_search + i] = center[i];
         }
     }
