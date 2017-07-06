@@ -151,6 +151,19 @@ namespace RINGMesh {
         std::string category_;
     };
 
+    /*!
+     * This class can be used to iterate over integer loop.
+     * Example:
+     *              = C++98 loop =
+     *    for( index_t i = 0; i < n; i++ ) {
+     *      // do something
+     *    }
+     *
+     *            = C++11-like loop =
+     *    for( index_t i : range( n ) ) {
+     *      // do something
+     *    }
+     */
     class RINGMESH_API range {
     public:
         range( index_t begin, index_t end )
