@@ -793,6 +793,10 @@ namespace RINGMesh {
          */
         virtual double cell_volume( index_t cell_id ) const = 0;
 
+        std::vector< index_t > cells_around_vertex(
+            index_t vertex_id,
+            index_t cell_hint ) const;
+
         index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const
         {
             for( index_t v = 0; v < nb_cell_vertices( cell_id ); ++v ) {
@@ -849,6 +853,8 @@ namespace RINGMesh {
         }
     protected:
         VolumeMesh() = default;
+    private:
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_mesh ) const;
 
     protected:
         mutable std::unique_ptr< NNSearch > cell_facet_nn_search_;
