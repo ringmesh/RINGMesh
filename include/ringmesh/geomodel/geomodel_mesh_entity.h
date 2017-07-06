@@ -259,7 +259,7 @@ namespace RINGMesh {
         vecn< DIMENSION > entity_barycenter() const
         {
             vecn< DIMENSION > result;
-            for( index_t v = 0; v < nb_vertices(); v++ ) {
+            for( index_t v : range( nb_vertices() ) ) {
                 result += vertex( v );
             }
             ringmesh_assert( nb_vertices() > 0 );
@@ -268,7 +268,7 @@ namespace RINGMesh {
         virtual double size() const
         {
             double size = 0.0;
-            for( index_t i = 0; i < nb_mesh_elements(); ++i ) {
+            for( index_t i : range( nb_mesh_elements() ) ) {
                 size += mesh_element_size( i );
             }
             return size;
@@ -1080,13 +1080,13 @@ namespace RINGMesh {
         double size() const final
         {
             double result = 0.;
-            for( index_t i = 0; i < this->nb_boundaries(); i++ ) {
+            for( index_t i : range( this->nb_boundaries() ) ) {
                 const Surface< DIMENSION >& surface = boundary( i );
-                for( index_t t = 0; t < surface.nb_mesh_elements(); t++ ) {
+                for( index_t t : range( surface.nb_mesh_elements() ) ) {
                     const vecn< DIMENSION >& p0 = surface.mesh_element_vertex( t,
                         0 );
-                    for( index_t v = 1;
-                        v + 1 < surface.nb_mesh_element_vertices( t ); ++v ) {
+                    for( index_t v : range( 1,
+                        surface.nb_mesh_element_vertices( t ) - 1 ) ) {
                         double cur_volume = ( dot( p0,
                             cross( surface.mesh_element_vertex( t, v ),
                                 surface.mesh_element_vertex( t, v + 1 ) ) ) ) / 6.;
@@ -1094,7 +1094,7 @@ namespace RINGMesh {
                     }
                 }
             }
-            return fabs( result );
+            return std::fabs( result );
         }
         /*!
          * @brief Get the center of the cell \param cell_index
