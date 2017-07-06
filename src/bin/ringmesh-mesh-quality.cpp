@@ -77,7 +77,7 @@ namespace {
             throw RINGMeshException( "I/O", "Input geomodel has no region." );
         }
 
-        for( index_t reg_itr = 0; reg_itr < geomodel.nb_regions(); ++reg_itr ) {
+        for( index_t reg_itr : range( geomodel.nb_regions() ) ) {
             if( !geomodel.region( reg_itr ).is_meshed() ) {
                 throw RINGMeshException( "I/O",
                     "Region " + std::to_string( reg_itr ) + " is not meshed." );
