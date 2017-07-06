@@ -50,9 +50,9 @@ template< index_t DIMENSION >
 void test_nn_search()
 {
     std::vector< vecn< DIMENSION > > hardcoded_unique_vertices( 4 );
-    for( index_t p = 0; p < hardcoded_unique_vertices.size(); p++ ) {
+    for( index_t p : range( hardcoded_unique_vertices.size() ) ) {
         vecn< DIMENSION >& point = hardcoded_unique_vertices[p];
-        for( index_t i = 0; i < DIMENSION; i++ ) {
+        for( index_t i : range( DIMENSION ) ) {
             point[i] = p;
         }
     }
@@ -80,13 +80,13 @@ void test_nn_search()
     std::vector< index_t > index_map;
     nn_search.get_colocated_index_mapping( global_epsilon, index_map,
         unique_vertices );
-    for( index_t i = 0; i < index_map.size(); i++ ) {
+    for( index_t i : range( index_map.size() ) ) {
         if( index_map[i] != hardcoded_index_map[i] ) {
             throw RINGMeshException( "TEST", "Index map found is wrong" );
         }
     }
 
-    for( index_t v = 0; v < unique_vertices.size(); v++ ) {
+    for( index_t v : range( unique_vertices.size() ) ) {
         if( unique_vertices[v] != hardcoded_unique_vertices[v] ) {
             throw RINGMeshException( "TEST", "Unique vertices found are wrong" );
         }

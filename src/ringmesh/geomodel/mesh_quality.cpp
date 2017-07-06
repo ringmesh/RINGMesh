@@ -376,15 +376,14 @@ namespace RINGMesh {
         const GeoModel< 3 >& geomodel )
     {
         ringmesh_assert( geomodel.nb_regions() != 0 );
-        for( index_t reg_itr = 0; reg_itr < geomodel.nb_regions(); ++reg_itr ) {
+        for( index_t reg_itr : range( geomodel.nb_regions() ) ) {
             const Region< 3 >& cur_reg = geomodel.region( reg_itr );
             ringmesh_assert( cur_reg.is_meshed() );
             ringmesh_assert( cur_reg.is_simplicial() );
             GEO::AttributesManager& reg_attr_mgr = cur_reg.cell_attribute_manager();
             GEO::Attribute< double > attr( reg_attr_mgr,
                 mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
-            for( index_t cell_itr = 0; cell_itr < cur_reg.nb_mesh_elements();
-                ++cell_itr ) {
+            for( index_t cell_itr : range( cur_reg.nb_mesh_elements() ) ) {
                 attr[cell_itr] = get_tet_quality(
                     cur_reg.mesh_element_vertex( cell_itr, 0 ),
                     cur_reg.mesh_element_vertex( cell_itr, 1 ),

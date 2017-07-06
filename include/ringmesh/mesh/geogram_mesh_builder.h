@@ -205,15 +205,13 @@ namespace RINGMesh {
         void remove_isolated_vertices() override
         {
             std::vector< bool > to_delete( mesh_->nb_vertices(), true );
-
-            for( index_t e = 0; e < mesh_->nb_edges(); e++ ) {
-                for( index_t v = 0; v < 2; v++ ) {
+            for( index_t e : range( mesh_->nb_edges() ) ) {
+                for( index_t v : range( 2 ) ) {
                     index_t vertex_id = mesh_->edge_vertex( e, v );
                     to_delete[vertex_id] = false;
                 }
             }
             delete_vertices( to_delete );
-
         }
 
         void permute_edges( const std::vector< index_t >& permutation ) override
@@ -228,7 +226,7 @@ namespace RINGMesh {
             delete_vertex_nn_search();
             clear_edge_linked_objects();
         }
-        
+
         void clear_edge_linked_objects() override
         {
             delete_edge_nn_search();
@@ -283,7 +281,7 @@ namespace RINGMesh {
             const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr ) override
         {
-            for( index_t p = 0; p + 1 < polygon_ptr.size(); p++ ) {
+            for( index_t p : range( polygon_ptr.size() - 1 ) ) {
                 index_t start = polygon_ptr[p];
                 index_t end = polygon_ptr[p + 1];
                 GEO::vector< index_t > polygon_vertices =
@@ -305,7 +303,6 @@ namespace RINGMesh {
         index_t create_triangles( index_t nb_triangles ) override
         {
             return mesh_->mesh_->facets.create_triangles( nb_triangles );
-
         }
 
         index_t create_quads( index_t nb_quads ) override
@@ -348,7 +345,7 @@ namespace RINGMesh {
         {
             mesh_->mesh_->facets.connect();
         }
-        
+
         void permute_polygons( const std::vector< index_t >& permutation ) override
         {
             GEO::vector< index_t > geo_vector_permutation =
@@ -373,8 +370,8 @@ namespace RINGMesh {
         {
             std::vector< bool > to_delete( mesh_->nb_vertices(), true );
 
-            for( index_t p = 0; p < mesh_->nb_polygons(); p++ ) {
-                for( index_t v = 0; v < mesh_->nb_polygon_vertices( p ); v++ ) {
+            for( index_t p : range( mesh_->nb_polygons() ) ) {
+                for( index_t v : range( mesh_->nb_polygon_vertices( p ) ) ) {
                     index_t vertex_id = mesh_->polygon_vertex( p, v );
                     to_delete[vertex_id] = false;
                 }
@@ -382,13 +379,13 @@ namespace RINGMesh {
 
             delete_vertices( to_delete );
         }
-        
+
         void clear_vertex_linked_objects() override
         {
             delete_vertex_nn_search();
             clear_polygon_linked_objects();
         }
-        
+
         void clear_polygon_linked_objects() override
         {
             delete_polygon_aabb();
@@ -427,7 +424,8 @@ namespace RINGMesh {
 
         index_t create_cells( index_t nb_cells, CellType type ) override
         {
-            return mesh_->mesh_->cells.create_cells( nb_cells, static_cast<GEO::MeshCellType>( type ) );
+            return mesh_->mesh_->cells.create_cells( nb_cells,
+                static_cast< GEO::MeshCellType >( type ) );
         }
 
         void assign_cell_tet_mesh( const std::vector< index_t >& tets ) override
@@ -496,14 +494,12 @@ namespace RINGMesh {
         void remove_isolated_vertices() override
         {
             std::vector< bool > to_delete( mesh_->nb_vertices(), true );
-
-            for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
-                for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
+            for( index_t c : range( mesh_->nb_cells() ) ) {
+                for( index_t v : range( mesh_->nb_cell_vertices( c ) ) ) {
                     index_t vertex_id = mesh_->cell_vertex( c, v );
                     to_delete[vertex_id] = false;
                 }
             }
-
             delete_vertices( to_delete );
         }
 

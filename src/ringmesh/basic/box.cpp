@@ -41,13 +41,16 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh {
+namespace {
 
     template< typename T >
     inline T sqr( T x )
     {
         return x * x;
     }
+}
+
+namespace RINGMesh {
 
     template< index_t DIMENSION >
     void Box< DIMENSION >::add_point( const vecn< DIMENSION >& p )
@@ -57,7 +60,7 @@ namespace RINGMesh {
             max_ = p;
             initialized_ = true;
         } else {
-            for( index_t i = 0; i < DIMENSION; i++ ) {
+            for( index_t i : range( DIMENSION ) ) {
                 min_[i] = std::min( min_[i], p[i] );
                 max_[i] = std::max( max_[i], p[i] );
             }
@@ -69,7 +72,7 @@ namespace RINGMesh {
     {
         bool inside = true;
         double result = 0.0;
-        for( index_t c = 0; c < DIMENSION; c++ ) {
+        for( index_t c : range( DIMENSION ) ) {
             if( p[c] < min()[c] ) {
                 inside = false;
                 result += sqr( p[c] - min()[c] );
@@ -81,7 +84,7 @@ namespace RINGMesh {
         if( inside ) {
             result = sqr( p[0] - min()[0] );
             result = std::min( result, sqr( p[0] - max()[0] ) );
-            for( index_t c = 1; c < DIMENSION; ++c ) {
+            for( index_t c : range( 1, DIMENSION ) ) {
                 result = std::min( result, sqr( p[c] - min()[c] ) );
                 result = std::min( result, sqr( p[c] - max()[c] ) );
             }
@@ -94,7 +97,7 @@ namespace RINGMesh {
     double Box< DIMENSION >::distance_to_center( const vecn< DIMENSION >& p ) const
     {
         double result = 0.0;
-        for( index_t c = 0; c < DIMENSION; ++c ) {
+        for( index_t c : range( DIMENSION ) ) {
             double d = p[c] - 0.5 * ( min()[c] + max()[c] );
             result += sqr( d );
         }

@@ -83,10 +83,9 @@ namespace {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() );
         gmme_id cur_surface( Surface< 3 >::type_name_static(), surface_part_id );
         const Surface< 3 >& surface = geomodel.surface( surface_part_id );
-        for( index_t r = 0; r < surface.nb_incident_entities(); r++ ) {
-            const Region< 3 >& cur_region =
-                dynamic_cast< const Region< 3 >& >( surface.incident_entity( r ) );
-            for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
+        for( index_t r : range( surface.nb_incident_entities() ) ) {
+            const Region< 3 >& cur_region = surface.incident_entity( r );
+            for( index_t s : range( cur_region.nb_boundaries() ) ) {
                 if( cur_region.side( s ) == side
                     && cur_region.boundary_gmme( s ) == cur_surface ) {
                     return r;
@@ -168,7 +167,7 @@ namespace {
             index_t best_surface = NO_ID;
             vec3 best_nearest;
             index_t best_triangle = NO_ID;
-            for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
+            for( index_t s : range( geomodel.nb_surfaces() ) ) {
                 const Surface< 3 >& surface = geomodel.surface( s );
                 vec3 nearest;
                 double distance;
@@ -329,13 +328,13 @@ namespace RINGMesh {
         std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = LineMeshBuilder<
             DIMENSION >::create_builder( *mesh_ );
         builder->create_vertices( nb_points );
-        for( index_t p = 0; p < nb_points; p++ ) {
+        for( index_t p : range( nb_points ) ) {
             builder->set_vertex( p, points[p] );
         }
 
         index_t nb_edges = nb_points - 1;
         builder->create_edges( nb_edges );
-        for( index_t e = 0; e < nb_edges; e++ ) {
+        for( index_t e : range( nb_edges ) ) {
             builder->set_edge_vertex( e, 0, e );
             builder->set_edge_vertex( e, 1, e + 1 );
         }
@@ -377,7 +376,7 @@ namespace RINGMesh {
     double WellPart< DIMENSION >::length() const
     {
         double l = 0.0;
-        for( index_t e = 0; e < nb_edges(); e++ ) {
+        for( index_t e : range( nb_edges() ) ) {
             l += ( vertex( e + 1 ) - vertex( e ) ).length();
         }
         return l;
@@ -408,7 +407,7 @@ namespace RINGMesh {
         const vecn< DIMENSION >& vertex,
         double epsilon ) const
     {
-        for( index_t c = 0; c < nb_corners(); c++ ) {
+        for( index_t c : range( nb_corners() ) ) {
             if( inexact_equal( vertex, corner( c ).point(), epsilon ) ) {
                 return c;
             }
@@ -424,13 +423,13 @@ namespace RINGMesh {
         well.part_region_id_ = part_region_id_;
 
         well.corners_.reserve( nb_corners() );
-        for( index_t c = 0; c < nb_corners(); c++ ) {
+        for( index_t c : range( nb_corners() ) ) {
             well.create_corner( corners_[c]->point(), corners_[c]->is_on_surface(),
                 corners_[c]->id() );
         }
 
         well.parts_.reserve( nb_parts() );
-        for( index_t part_id = 0; part_id < nb_parts(); part_id++ ) {
+        for( index_t part_id : range( nb_parts() ) ) {
             well.create_part( part_region_id( part_id ) );
             const WellPart< DIMENSION >& from_part = part( part_id );
             WellPart< DIMENSION >& cur_part = well.part( part_id );
@@ -444,7 +443,7 @@ namespace RINGMesh {
     {
         if( nb_edges_ == NO_ID ) {
             index_t nb_edges = 0;
-            for( index_t part_id = 0; part_id < nb_parts(); part_id++ ) {
+            for( index_t part_id : range( nb_parts() ) ) {
                 nb_edges += part( part_id ).nb_edges();
             }
             const_cast< Well< DIMENSION >* >( this )->nb_edges_ = nb_edges;
@@ -458,7 +457,7 @@ namespace RINGMesh {
         std::vector< Edge< DIMENSION > >& edges ) const
     {
         const WellPart< DIMENSION >& well_part = part( part_id );
-        for( index_t e = 0; e < well_part.nb_edges(); e++ ) {
+        for( index_t e : range( well_part.nb_edges() ) ) {
             edges.emplace_back( well_part.vertex( e ), well_part.vertex( e + 1 ) );
         }
     }
@@ -468,7 +467,7 @@ namespace RINGMesh {
         index_t region,
         std::vector< Edge< DIMENSION > >& edges ) const
     {
-        for( index_t part_id = 0; part_id < nb_parts(); part_id++ ) {
+        for( index_t part_id : range( nb_parts() ) ) {
             if( part_region_id( part_id ) == region ) {
                 get_part_edges( part_id, edges );
             }
@@ -488,9 +487,9 @@ namespace RINGMesh {
         index_t region,
         std::vector< Edge< DIMENSION > >& edges ) const
     {
-        for( index_t w = 0; w < nb_wells(); w++ ) {
+        for( index_t w : range( nb_wells() ) ) {
             const Well< DIMENSION >& cur_well = well( w );
-            for( index_t part_id = 0; part_id < cur_well.nb_parts(); part_id++ ) {
+            for( index_t part_id : range( cur_well.nb_parts() ) ) {
                 if( cur_well.part_region_id( part_id ) == region ) {
                     cur_well.get_part_edges( part_id, edges );
                 }
@@ -505,7 +504,7 @@ namespace RINGMesh {
     {
         edges.clear();
         edges.resize( nb_wells() );
-        for( index_t w = 0; w < nb_wells(); w++ ) {
+        for( index_t w : range( nb_wells() ) ) {
             const Well< DIMENSION >& cur_well = well( w );
             cur_well.get_region_edges( region, edges[w] );
         }
@@ -515,7 +514,7 @@ namespace RINGMesh {
     void WellGroup< DIMENSION >::create_wells( index_t nb )
     {
         wells_.resize( nb, nullptr );
-        for( index_t w = 0; w < nb_wells(); w++ ) {
+        for( index_t w : range( nb_wells() ) ) {
             wells_[w] = new Well< DIMENSION >;
         }
     }
@@ -543,13 +542,13 @@ namespace RINGMesh {
         GEO::Attribute< LineInstersection > vertex_info(
             out.vertex_attribute_manager(), "info" );
         builder->create_vertices( in.nb_vertices() );
-        for( index_t v = 0; v < in.nb_vertices(); v++ ) {
+        for( index_t v : range( in.nb_vertices() ) ) {
             const vec3& vertex = in.vertex( v );
             builder->set_vertex( v, vertex );
             vertex_info[v] = LineInstersection( vertex );
         }
 
-        for( index_t e = 0; e < in.nb_edges(); e++ ) {
+        for( index_t e : range( in.nb_edges() ) ) {
             index_t from_id = in.edge_vertex( e, 0 );
             const vec3& from_vertex = in.vertex( from_id );
             index_t to_id = in.edge_vertex( e, 1 );
@@ -559,7 +558,7 @@ namespace RINGMesh {
             box.add_point( from_vertex );
             box.add_point( to_vertex );
             std::vector< LineInstersection > intersections;
-            for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
+            for( index_t s : range( geomodel()->nb_surfaces() ) ) {
                 const Surface< 3 >& surface = geomodel()->surface( s );
                 EdgeConformerAction action( surface, from_vertex, to_vertex,
                     intersections );
@@ -570,14 +569,14 @@ namespace RINGMesh {
             std::vector< index_t > indices( intersections.size() );
             std::iota( indices.begin(), indices.end(), 0 );
             std::vector< double > distances( intersections.size() );
-            for( index_t i = 0; i < intersections.size(); i++ ) {
+            for( index_t i : range( static_cast< index_t >( intersections.size() ) ) ) {
                 distances[i] = length(
                     from_vertex - intersections[i].intersection_ );
             }
             indirect_sort( distances, indices );
             double edge_length = length( from_vertex - to_vertex );
             index_t last_vertex = from_id;
-            for( index_t i = 0; i < intersections.size(); i++ ) {
+            for( index_t i : range( static_cast< index_t >( intersections.size() ) ) ) {
                 if( distances[indices[i]] < epsilon ) {
                     vertex_info[from_id] = intersections[i];
                 } else if( std::fabs( distances[indices[i]] - edge_length )
@@ -621,15 +620,15 @@ namespace RINGMesh {
 
         std::vector< std::vector< index_t > > edges_around_vertices(
             conformal_mesh.nb_vertices() );
-        for( index_t e = 0; e < conformal_mesh.nb_edges(); e++ ) {
-            for( index_t i = 0; i < 2; i++ ) {
+        for( index_t e : range( conformal_mesh.nb_edges() ) ) {
+            for( index_t i : range( 2 ) ) {
                 index_t v = conformal_mesh.edge_vertex( e, i );
                 edges_around_vertices[v].push_back( e );
             }
         }
 
         std::stack< OrientedEdge > S;
-        for( index_t v = 0; v < conformal_mesh.nb_vertices(); v++ ) {
+        for( index_t v : range( conformal_mesh.nb_vertices() ) ) {
             const std::vector< index_t >& edges = edges_around_vertices[v];
             if( edges.size() == 1 ) {
                 S.emplace( conformal_mesh, edges.front(), v );
@@ -691,7 +690,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     index_t WellGroup< DIMENSION >::find_well( const std::string& name ) const
     {
-        for( index_t w = 0; w < nb_wells(); w++ ) {
+        for( index_t w : range( nb_wells() ) ) {
             if( well( w ).name() == name ) {
                 return w;
             }
