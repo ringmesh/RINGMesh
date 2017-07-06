@@ -305,15 +305,16 @@ namespace RINGMesh {
             // All vertices are isolated in a Mesh0D
         }
 
+    protected:
+        PointSetMeshBuilder() = default;
+
+    private:
+        virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) = 0;
+
         void clear_vertex_linked_objects() final
         {
             this->delete_vertex_nn_search();
         }
-
-    protected:
-        PointSetMeshBuilder() = default;
-
-        virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) = 0;
 
     protected:
         PointSetMesh< DIMENSION >* pointset_mesh_ { nullptr };
@@ -421,17 +422,6 @@ namespace RINGMesh {
             clear_edge_linked_objects();
         }
 
-        void clear_vertex_linked_objects() override
-        {
-            this->delete_vertex_nn_search();
-            clear_edge_linked_objects();
-        }
-
-        void clear_edge_linked_objects()
-        {
-            delete_edge_nn_search();
-        }
-
         /*!
          * @brief Remove vertices not connected to any mesh element
          */
@@ -439,7 +429,7 @@ namespace RINGMesh {
         {
             std::vector< bool > to_delete( line_mesh_->nb_vertices(), true );
             for( index_t e : range( line_mesh_->nb_edges() ) ) {
-                for( index_t v : rnage( 2 ) ) {
+                for( index_t v : range( 2 ) ) {
                     index_t vertex_id = line_mesh_->edge_vertex( e, v );
                     to_delete[vertex_id] = false;
                 }
@@ -450,6 +440,7 @@ namespace RINGMesh {
     protected:
         LineMeshBuilder() = default;
 
+    private:
         virtual void set_mesh( LineMesh< DIMENSION >& mesh ) = 0;
 
         /*!
@@ -460,7 +451,16 @@ namespace RINGMesh {
             line_mesh_->edge_nn_search_.reset();
         }
 
-    private:
+        void clear_vertex_linked_objects() override
+        {
+            this->delete_vertex_nn_search();
+            clear_edge_linked_objects();
+        }
+
+        void clear_edge_linked_objects()
+        {
+            delete_edge_nn_search();
+        }
 
         /*!
          * @brief Create a new edge.
@@ -660,18 +660,6 @@ namespace RINGMesh {
             clear_polygon_linked_objects();
         }
 
-        void clear_vertex_linked_objects() override
-        {
-            this->delete_vertex_nn_search();
-            clear_polygon_linked_objects();
-        }
-
-        void clear_polygon_linked_objects()
-        {
-            delete_polygon_aabb();
-            delete_polygon_nn_search();
-        }
-
         /*!@}
          * \name SurfaceMesh algorithms
          * @{
@@ -708,6 +696,7 @@ namespace RINGMesh {
     protected:
         SurfaceMeshBuilder() = default;
 
+    private:
         virtual void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) = 0;
 
         /*!
@@ -726,7 +715,17 @@ namespace RINGMesh {
             surface_mesh_->polygon_aabb_.reset();
         }
 
-    private:
+        void clear_vertex_linked_objects() override
+        {
+            this->delete_vertex_nn_search();
+            clear_polygon_linked_objects();
+        }
+
+        void clear_polygon_linked_objects()
+        {
+            delete_polygon_aabb();
+            delete_polygon_nn_search();
+        }
         /*!
          * brief create polygons
          * @param[in] polygons is the vector of vertex index for each polygon
@@ -950,23 +949,11 @@ namespace RINGMesh {
             clear_cell_linked_objects();
         }
 
-        void clear_vertex_linked_objects() override
-        {
-            this->delete_vertex_nn_search();
-            clear_cell_linked_objects();
-        }
-
-        void clear_cell_linked_objects()
-        {
-            delete_cell_aabb();
-            delete_cell_nn_search();
-        }
-
         void remove_isolated_vertices()
         {
             std::vector< bool > to_delete( volume_mesh_->nb_vertices(), true );
-            for( index_t c = 0; c < volume_mesh_->nb_cells(); c++ ) {
-                for( index_t v = 0; v < volume_mesh_->nb_cell_vertices( c ); v++ ) {
+            for( index_t c : range( volume_mesh_->nb_cells() ) ) {
+                for( index_t v : range( volume_mesh_->nb_cell_vertices( c ) ) ) {
                     index_t vertex_id = volume_mesh_->cell_vertex( c, v );
                     to_delete[vertex_id] = false;
                 }
@@ -976,6 +963,7 @@ namespace RINGMesh {
     protected:
         VolumeMeshBuilder() = default;
 
+    private:
         virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) = 0;
 
         /*!
@@ -995,7 +983,18 @@ namespace RINGMesh {
             volume_mesh_->cell_aabb_.reset();
         }
 
-    private:
+        void clear_vertex_linked_objects() override
+        {
+            this->delete_vertex_nn_search();
+            clear_cell_linked_objects();
+        }
+
+        void clear_cell_linked_objects()
+        {
+            delete_cell_aabb();
+            delete_cell_nn_search();
+        }
+
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
          * @param[in] nb_cells number of cells to create
