@@ -199,10 +199,10 @@ namespace RINGMesh {
         // are neighbors in polygons_ and check that they are in the same polygon
 
         // Check if the edge is in one of the polygon
-        for( index_t poly = 0; poly < nb_polygons(); ++poly ) {
+        for( index_t poly : range( nb_polygons() ) ) {
             bool found = false;
             index_t prev = polygon_vertex( poly, nb_polygon_vertices( poly ) - 1 );
-            for( index_t v = 0; v < nb_polygon_vertices( poly ); ++v ) {
+            for( index_t v : range( nb_polygon_vertices( poly ) ) ) {
                 index_t p = polygon_vertex( poly, v );
                 if( ( prev == in0 && p == in1 ) || ( prev == in1 && p == in0 ) ) {
                     found = true;
@@ -223,7 +223,7 @@ namespace RINGMesh {
         index_t vertex_id ) const
     {
         ringmesh_assert( polygon_index < nb_polygons() );
-        for( index_t v = 0; v < nb_polygon_vertices( polygon_index ); v++ ) {
+        for( index_t v : range( nb_polygon_vertices( polygon_index ) ) ) {
             if( polygon_vertex( polygon_index, v ) == vertex_id ) {
                 return v;
             }
@@ -238,7 +238,7 @@ namespace RINGMesh {
     {
         index_t result = 0;
         double dist = DBL_MAX;
-        for( index_t v_id = 0; v_id < nb_polygon_vertices( p ); v_id++ ) {
+        for( index_t v_id : range( nb_polygon_vertices( p ) ) ) {
             double distance = length2(
                 v - this->vertex( polygon_vertex( p, v_id ) ) );
             if( dist > distance ) {
@@ -257,7 +257,7 @@ namespace RINGMesh {
     {
         index_t cur_p = 0;
         while( p0 == NO_ID && cur_p < nb_polygons() ) {
-            for( index_t lv = 0; lv < nb_polygon_vertices( cur_p ); lv++ ) {
+            for( index_t lv : range( nb_polygon_vertices( cur_p ) ) ) {
                 if( polygon_vertex( cur_p, lv ) == surf_vertex_id ) {
                     p0 = cur_p;
                     break;
@@ -282,7 +282,7 @@ namespace RINGMesh {
             index_t p = S.top();
             S.pop();
 
-            for( index_t v = 0; v < nb_polygon_vertices( p ); ++v ) {
+            for( index_t v : range( nb_polygon_vertices( p ) ) ) {
                 if( polygon_vertex( p, v ) == surf_vertex_id ) {
                     index_t adj_P = polygon_adjacent( p, v );
                     index_t prev = prev_polygon_vertex( p, v );

@@ -48,7 +48,7 @@ namespace {
             > ::geol_name( E.geological_feature() ) << std::endl;
 
         /// Second line:  IDS of children
-        for( index_t j = 0; j < E.nb_children(); ++j ) {
+        for( index_t j : range( E.nb_children() ) ) {
             out << E.child_gmme( j ).index() << " ";
         }
         out << std::endl;
@@ -76,15 +76,15 @@ namespace {
             out << "No geological entity in the geomodel" << std::endl;
             return;
         }
-        for( index_t i = 0; i < geomodel.nb_geological_entity_types(); i++ ) {
+        for( index_t i : range( geomodel.nb_geological_entity_types() ) ) {
             const std::string& type = geomodel.geological_entity_type( i );
             index_t nb = geomodel.nb_geological_entities( type );
             out << "Nb " << type << " " << nb << std::endl;
         }
-        for( index_t i = 0; i < geomodel.nb_geological_entity_types(); i++ ) {
+        for( index_t i : range( geomodel.nb_geological_entity_types() ) ) {
             const std::string& type = geomodel.geological_entity_type( i );
             index_t nb = geomodel.nb_geological_entities( type );
-            for( index_t j = 0; j < nb; ++j ) {
+            for( index_t j : range( nb ) ) {
                 save_geological_entity( out, geomodel.geological_entity( type, j ) );
             }
         }
@@ -96,13 +96,13 @@ namespace {
         std::ofstream& out )
     {
         const std::string& type = ENTITY::type_name_static();
-        for( index_t e = 0; e < geomodel.nb_mesh_entities( type ); e++ ) {
+        for( index_t e : range( geomodel.nb_mesh_entities( type ) ) ) {
             const ENTITY& cur_mesh_entity =
                 dynamic_cast< const ENTITY& >( geomodel.mesh_entity( type, e ) );
             out << type << " " << e << " " << cur_mesh_entity.name() << " "
                 << cur_mesh_entity.low_level_mesh_storage().type_name() << std::endl;
             out << "boundary ";
-            for( index_t b = 0; b < cur_mesh_entity.nb_boundaries(); b++ ) {
+            for( index_t b : range( cur_mesh_entity.nb_boundaries() ) ) {
                 out << cur_mesh_entity.boundary_gmme( b ).index() << " ";
             }
             out << std::endl;
@@ -171,9 +171,8 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         std::ofstream& out )
     {
-        for( index_t i = 0;
-            i < geomodel.nb_mesh_entities( ENTITY< DIMENSION >::type_name_static() );
-            ++i ) {
+        for( index_t i : range(
+            geomodel.nb_mesh_entities( ENTITY< DIMENSION >::type_name_static() ) ) ) {
             const ENTITY< DIMENSION >& E =
                 static_cast< const ENTITY< DIMENSION >& >( geomodel.mesh_entity(
                     ENTITY< DIMENSION >::type_name_static(), i ) );
@@ -181,7 +180,7 @@ namespace {
             out << E.gmme() << " " << E.name() << " "
                 << E.low_level_mesh_storage().type_name() << std::endl;
             // Second line Signed ids of boundary surfaces
-            for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
+            for( index_t j : range( E.nb_boundaries() ) ) {
                 if( E.side( j ) ) {
                     out << "+";
                 } else {
@@ -245,7 +244,7 @@ namespace {
     void save_universe( const GeoModel< DIMENSION >& M, std::ofstream& out )
     {
         out << "Universe " << std::endl;
-        for( index_t j = 0; j < M.universe().nb_boundaries(); ++j ) {
+        for( index_t j : range( M.universe().nb_boundaries() ) ) {
             if( M.universe().side( j ) ) {
                 out << "+";
             } else {
@@ -430,9 +429,7 @@ namespace {
     template< index_t DIMENSION >
     class GeoModelHandlerGM final : public GeoModelIOHandler< DIMENSION > {
     public:
-        void load(
-            const std::string& filename,
-            GeoModel< DIMENSION >& geomodel ) final
+        void load( const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(

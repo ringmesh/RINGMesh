@@ -133,11 +133,11 @@ namespace {
             out << SPACE << min_nb_vertices_per_element << SPACE
                 << max_nb_vertices_per_element << "\n";
 
-            for( index_t c = 0; c < cells.nb(); c++ ) {
+            for( index_t c : range( cells.nb() ) ) {
                 const RINGMesh2Feflow& descriptor =
                     *cell_type_to_feflow_cell_descriptor[to_underlying_type( cells.type( c ) )];
                 out << SPACE << descriptor.entity_type;
-                for( index_t v = 0; v < cells.nb_vertices( c ); v++ ) {
+                for( index_t v : range( cells.nb_vertices( c ) ) ) {
                     out << SPACE
                         << cells.vertex( c, descriptor.vertices[v] )
                             + STARTING_OFFSET;
@@ -151,10 +151,10 @@ namespace {
         {
             const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
             out << "XYZCOOR\n" << std::scientific;
-            for( index_t v = 0; v < vertices.nb(); v++ ) {
+            for( index_t v : range( vertices.nb() ) ) {
                 const vec3& point = vertices.vertex( v );
                 std::string sep = "";
-                for( index_t i = 0; i < 3; i++ ) {
+                for( index_t i : range( 3 ) ) {
                     out << sep << SPACE << point[i];
                     sep = ",";
                 }
@@ -166,7 +166,7 @@ namespace {
         {
             out << "ELEMENTALSETS\n";
             index_t offset = 0;
-            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+            for( index_t r : range( geomodel.nb_regions() ) ) {
                 const Region< 3 >& region = geomodel.region( r );
                 out << SPACE << region.name() << SPACE << offset + STARTING_OFFSET;
                 offset += region.nb_mesh_elements();
@@ -196,8 +196,8 @@ namespace {
             const GeoModelMeshEdges< 3 >& edges = geomodel.mesh.edges;
             out << " <nop count=\"" << edges.nb_edges() << "\">\n";
             out << " <![CDATA[";
-            for( index_t w = 0; w < edges.nb_wells(); w++ ) {
-                for( index_t e = 0; e < edges.nb_edges( w ); e++ ) {
+            for( index_t w : range( edges.nb_wells() ) ) {
+                for( index_t e : range( edges.nb_edges( w ) ) ) {
                     out << "\n 0, 2, " << edges.vertex( w, e, 0 ) + STARTING_OFFSET
                         << ", " << edges.vertex( w, e, 1 ) + STARTING_OFFSET;
                 }
@@ -213,7 +213,7 @@ namespace {
             const WellGroup< 3 >* wells = geomodel.wells();
             index_t offset = 0;
             out << " <groups count=\"" << edges.nb_wells() << "\">\n";
-            for( index_t w = 0; w < edges.nb_wells(); w++ ) {
+            for( index_t w : range( edges.nb_wells() ) ) {
                 out << " <group name=\"" << wells->well( w ).name()
                     << "\" mode=\"unstructured\">\n";
                 out << " <elements count=\"" << edges.nb_edges( w ) << "\">\n";

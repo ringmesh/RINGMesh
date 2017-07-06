@@ -66,7 +66,7 @@ namespace {
         double& max )
     {
         if( attribute.is_bound() ) {
-            for( index_t i = 0; i < attribute.size(); ++i ) {
+            for( index_t i : range( attribute.size() ) ) {
                 double value = attribute[i];
                 min = GEO::geo_min( min, value );
                 max = GEO::geo_max( max, value );
@@ -130,7 +130,7 @@ namespace RINGMesh {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
-            for( index_t r = 0; r < geomodel->nb_regions(); r++ ) {
+            for( index_t r : range( geomodel->nb_regions() ) ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     geomodel->region( r ).cell_attribute_manager(), attribute_name );
                 compute_attribute_range( attribute, attribute_min, attribute_max );
@@ -191,7 +191,7 @@ namespace RINGMesh {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
-            for( index_t r = 0; r < geomodel->nb_regions(); r++ ) {
+            for( index_t r : range( geomodel->nb_regions() ) ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     geomodel->region( r ).vertex_attribute_manager(),
                     attribute_name );
@@ -253,7 +253,7 @@ namespace RINGMesh {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
-            for( index_t s = 0; s < geomodel->nb_surfaces(); s++ ) {
+            for( index_t s : range( geomodel->nb_surfaces() ) ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     geomodel->surface( s ).polygon_attribute_manager(),
                     attribute_name );
@@ -312,7 +312,7 @@ namespace RINGMesh {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
-            for( index_t s = 0; s < geomodel->nb_surfaces(); s++ ) {
+            for( index_t s : range( geomodel->nb_surfaces() ) ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     geomodel->surface( s ).vertex_attribute_manager(),
                     attribute_name );

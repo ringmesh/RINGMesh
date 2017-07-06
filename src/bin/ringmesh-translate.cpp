@@ -85,8 +85,7 @@ namespace {
                     + std::to_string( DIMENSION ) + " components" );
         }
         vecn< DIMENSION > coords_vec;
-        for( index_t split_coords_itr = 0; split_coords_itr < DIMENSION;
-            ++split_coords_itr ) {
+        for( index_t split_coords_itr : range( DIMENSION ) ) {
             coords_vec[split_coords_itr] = GEO::String::to_double(
                 split_coords[split_coords_itr] );
         }

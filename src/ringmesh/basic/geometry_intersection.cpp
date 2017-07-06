@@ -221,7 +221,7 @@ namespace RINGMesh {
             double dot_directions = dot( D_line, N_plane );
             if( std::fabs( dot_directions ) > global_epsilon ) {
                 double plane_constant = 0.0;
-                for( index_t i = 0; i < 3; i++ ) {
+                for( index_t i : range( 3 ) ) {
                     plane_constant += O_plane[i] * N_plane[i];
                 }
                 double signed_distance = dot( N_plane, O_line ) - plane_constant;

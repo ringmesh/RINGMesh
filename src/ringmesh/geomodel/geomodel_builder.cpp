@@ -82,7 +82,7 @@ namespace {
         const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             line.geomodel().mesh.vertices;
         bool equal = true;
-        for( index_t i = 0; i < line.nb_vertices(); i++ ) {
+        for( index_t i : range( line.nb_vertices() ) ) {
             if( rhs_vertices[i]
                 != geomodel_vertices.geomodel_vertex_id( line.gmme(), i ) ) {
                 equal = false;
@@ -94,7 +94,7 @@ namespace {
         }
         // If the order is the other one
         equal = true;
-        for( index_t i = 0; i < line.nb_vertices(); i++ ) {
+        for( index_t i : range( line.nb_vertices() ) ) {
             if( rhs_vertices[i]
                 != geomodel_vertices.geomodel_vertex_id( line.gmme(),
                     line.nb_vertices() - i - 1 ) ) {
@@ -117,7 +117,7 @@ namespace {
         if( geomodel.nb_corners() == 0 || line_vertices.empty() ) {
             return;
         }
-        for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
+        for( index_t i : range( 1, line_vertices.size() - 1 ) ) {
             gmme_id corner = find_corner( geomodel, line_vertices[i] );
             if( corner.is_defined() ) {
                 line_vertices.pop_back();
@@ -180,12 +180,12 @@ namespace {
         {
             const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
                 geomodel_.mesh.vertices;
-            for( index_t s = 0; s < geomodel_.nb_surfaces(); s++ ) {
+            for( index_t s : range( geomodel_.nb_surfaces() ) ) {
                 const Surface< DIMENSION >& S = geomodel_.surface( s );
                 const SurfaceMesh< DIMENSION >& mesh = S.low_level_mesh_storage();
                 gmme_id S_id = S.gmme();
-                for( index_t p = 0; p < S.nb_mesh_elements(); p++ ) {
-                    for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); ++v ) {
+                for( index_t p : range( S.nb_mesh_elements() ) ) {
+                    for( index_t v : range( S.nb_mesh_element_vertices( p ) ) ) {
                         if( mesh.is_edge_on_border( p, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
                                 S_id, p, v );
@@ -346,7 +346,7 @@ namespace {
             polygons_[0].angle_ = 2 * M_PI;
             polygons_[0].side_ = false;
 
-            for( index_t i = 1; i < polygons_.size(); ++i ) {
+            for( index_t i : range( 1, static_cast< index_t >( polygons_.size() ) ) ) {
                 PolygonToSort& cur = polygons_[i];
                 // Computes the angle RADIANS between the reference and the current
                 // polygon
@@ -401,7 +401,8 @@ namespace {
         const std::pair< index_t, bool >& next(
             const std::pair< index_t, bool >& in ) const
         {
-            for( index_t i = 0; i < sorted_polygons_.size(); ++i ) {
+            for( index_t i : range(
+                static_cast< index_t >( sorted_polygons_.size() ) ) ) {
                 if( sorted_polygons_[i] == in ) {
                     if( i == sorted_polygons_.size() - 1 )
                         return sorted_polygons_[sorted_polygons_.size() - 2];
@@ -453,8 +454,7 @@ namespace {
         void compute_region_info()
         {
             const GeoModelMeshVertices< 3 >& vertices = this->geomodel_.mesh.vertices;
-            for( index_t line_id = 0; line_id < this->geomodel_.nb_lines();
-                line_id++ ) {
+            for( index_t line_id : range( this->geomodel_.nb_lines() ) ) {
                 const Line< 3 >& line = this->geomodel_.line( line_id );
                 BorderPolygon line_border( NO_ID, NO_ID,
                     vertices.geomodel_vertex_id( line.gmme(), 0 ),
@@ -950,7 +950,7 @@ namespace RINGMesh {
                 }
                 // For each contact, push the next oriented surface that is in the same region
                 const Surface< 3 >& surface = geomodel_.surface( s.first );
-                for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
+                for( index_t i : range( surface.nb_boundaries() ) ) {
                     const std::pair< index_t, bool >& n =
                         region_info[surface.boundary_gmme( i ).index()].next( s );
                     index_t n_id = n.second == true ? 2 * n.first : 2 * n.first + 1;
@@ -977,7 +977,7 @@ namespace RINGMesh {
         // to the universe_, the one with the biggest volume
         double max_volume = -1.;
         index_t universe_id = NO_ID;
-        for( index_t i = 0; i < geomodel_.nb_regions(); ++i ) {
+        for( index_t i : range( geomodel_.nb_regions() ) ) {
             double cur_volume = geomodel_.region( i ).size();
             if( cur_volume > max_volume ) {
                 max_volume = cur_volume;
@@ -985,7 +985,7 @@ namespace RINGMesh {
             }
         }
         const Region< 3 >& cur_region = geomodel_.region( universe_id );
-        for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
+        for( index_t i : range( cur_region.nb_boundaries() ) ) {
             // Fill the Universe region boundaries
             // They are supposed to be empty
             topology.add_universe_boundary( cur_region.boundary( i ).index(),
