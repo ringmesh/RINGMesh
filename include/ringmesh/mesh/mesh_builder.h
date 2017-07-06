@@ -634,8 +634,89 @@ namespace RINGMesh {
         /*!
          * @brief Retrieve the adjacencies of polygons
          */
-        void connect_polygons();
-        void connect_polygons( const std::vector< index_t >& polygons_to_connect );
+        void connect_polygons()
+        {
+            std::vector< index_t > polygons_to_connect(
+                surface_mesh_->nb_polygons() );
+            std::iota( polygons_to_connect.begin(), polygons_to_connect.end(), 0 );
+            connect_polygons( polygons_to_connect );
+        }
+        void connect_polygons( const std::vector< index_t >& polygons_to_connect )
+        {
+            struct PolygonLocalVertex {
+                PolygonLocalVertex( index_t polygon, index_t local_vertex )
+                    : polygon_( polygon ), local_vertex_( local_vertex )
+                {
+                }
+                index_t polygon_ { NO_ID };
+                index_t local_vertex_ { NO_ID };
+            };
+
+            index_t nb_local_vertices = 0;
+            for( index_t polygon : polygons_to_connect ) {
+                nb_local_vertices += surface_mesh_->nb_polygon_vertices( polygon );
+            }
+
+            std::vector< PolygonLocalVertex > polygon_vertices;
+            polygon_vertices.reserve( nb_local_vertices );
+            for( index_t polygon : polygons_to_connect ) {
+                for( index_t v : range(
+                    surface_mesh_->nb_polygon_vertices( polygon ) ) ) {
+                    polygon_vertices.emplace_back( polygon, v );
+                }
+            }
+
+            std::vector< index_t > next_local_vertex_around_vertex(
+                nb_local_vertices, NO_ID );
+            std::vector< index_t > vertex2polygon_local_vertex(
+                surface_mesh_->nb_vertices(), NO_ID );
+            index_t local_vertex_count = 0;
+            for( index_t polygon : polygons_to_connect ) {
+                for( index_t v = 0;
+                    v < surface_mesh_->nb_polygon_vertices( polygon );
+                    v++, local_vertex_count++ ) {
+                    index_t vertex = surface_mesh_->polygon_vertex( polygon, v );
+                    next_local_vertex_around_vertex[local_vertex_count] =
+                        vertex2polygon_local_vertex[vertex];
+                    vertex2polygon_local_vertex[vertex] = local_vertex_count;
+                }
+            }
+
+            local_vertex_count = 0;
+            for( index_t polygon : polygons_to_connect ) {
+                for( index_t v = 0;
+                    v < surface_mesh_->nb_polygon_vertices( polygon );
+                    v++, local_vertex_count++ ) {
+                    if( !surface_mesh_->is_edge_on_border( polygon, v ) ) {
+                        continue;
+                    }
+                    index_t vertex = surface_mesh_->polygon_vertex( polygon, v );
+                    index_t next_vertex = surface_mesh_->polygon_vertex( polygon,
+                        surface_mesh_->next_polygon_vertex( polygon, v ) );
+                    for( index_t local_vertex =
+                        vertex2polygon_local_vertex[next_vertex];
+                        local_vertex != NO_ID; local_vertex =
+                            next_local_vertex_around_vertex[local_vertex] ) {
+                        if( local_vertex == local_vertex_count ) {
+                            continue;
+                        }
+                        index_t adj_polygon = polygon_vertices[local_vertex].polygon_;
+                        index_t adj_local_vertex =
+                            polygon_vertices[local_vertex].local_vertex_;
+                        index_t adj_next_vertex = surface_mesh_->polygon_vertex(
+                            polygon,
+                            surface_mesh_->next_polygon_vertex( polygon,
+                                adj_local_vertex ) );
+                        if( adj_next_vertex == vertex ) {
+                            set_polygon_adjacent( polygon, v, adj_polygon );
+                            set_polygon_adjacent( adj_polygon, adj_local_vertex,
+                                polygon );
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         void permute_polygons( const std::vector< index_t >& permutation )
         {
