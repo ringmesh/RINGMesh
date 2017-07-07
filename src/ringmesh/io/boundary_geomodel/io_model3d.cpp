@@ -38,7 +38,7 @@ namespace {
     /*!
      * @brief Total number of polygons in the Surfaces of a GM
      */
-    inline index_t nb_polygons( const GeoModel& GM )
+    index_t nb_polygons( const GeoModel& GM )
     {
         index_t result = 0;
         for( index_t i = 0; i < GM.nb_surfaces(); ++i ) {

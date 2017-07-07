@@ -77,7 +77,7 @@ namespace {
      *  the two halves
      */
     template< class CMP >
-    inline const_vector_itr split(
+    const_vector_itr split(
         const_vector_itr& begin,
         const_vector_itr& end,
         CMP cmp )

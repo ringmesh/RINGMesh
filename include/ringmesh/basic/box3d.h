@@ -106,7 +106,7 @@ namespace RINGMesh {
             }
         }
 
-        inline bool bboxes_overlap( const Box3d& B ) const
+        bool bboxes_overlap( const Box3d& B ) const
         {
             for( index_t c = 0; c < 3; ++c ) {
                 if( max()[c] < B.min()[c] ) {
@@ -119,7 +119,7 @@ namespace RINGMesh {
             return true;
         }
 
-        inline Box3d bbox_union( const Box3d& B ) const
+        Box3d bbox_union( const Box3d& B ) const
         {
             Box3d result = *this;
             result.add_box( B );

@@ -59,7 +59,7 @@ namespace RINGMesh {
     };
     /* @warning Duplicate from Geogram/basic/numeric.h */
     template< typename T >
-    inline Sign sign( T x )
+    Sign sign( T x )
     {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
