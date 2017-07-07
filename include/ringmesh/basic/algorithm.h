@@ -52,7 +52,7 @@ namespace RINGMesh {
      * in the container, NO_ID if not found.
      */
     template< typename T, typename container >
-    inline index_t find( const container& in, const T& value )
+    index_t find( const container& in, const T& value )
     {
         auto it = std::find( in.begin(), in.end(), value );
         if( it == in.end() ) {
@@ -67,7 +67,7 @@ namespace RINGMesh {
      * in a sorted container, NO_ID if not found.
      */
     template< typename T, typename container >
-    inline index_t find_sorted( const container& in, const T& value )
+    index_t find_sorted( const container& in, const T& value )
     {
         auto low = std::lower_bound( in.begin(), in.end(), value );
         if( low == in.end() || value < *low ) {
@@ -78,7 +78,7 @@ namespace RINGMesh {
     }
 
     template< typename T, typename container >
-    inline bool contains( const container& in, const T& value, bool sorted = false )
+    bool contains( const container& in, const T& value, bool sorted = false )
     {
         if( sorted ) {
             return find_sorted( in, value ) != NO_ID;
@@ -92,7 +92,7 @@ namespace RINGMesh {
      * @note Not efficient.
      */
     template< typename T1, typename T2 >
-    inline void indirect_sort( std::vector< T1 >& input, std::vector< T2 >& output )
+    void indirect_sort( std::vector< T1 >& input, std::vector< T2 >& output )
     {
         if( input.size() < 2 ) {
             return;
@@ -119,7 +119,7 @@ namespace RINGMesh {
      * @param[in] cmp a comparator function
      */
     template< typename CONTAINER, typename CMP >
-    inline void sort_unique( CONTAINER& container, const CMP& cmp )
+    void sort_unique( CONTAINER& container, const CMP& cmp )
     {
         std::sort( container.begin(), container.end(), cmp );
         container.erase( std::unique( container.begin(), container.end(), cmp ),
@@ -131,7 +131,7 @@ namespace RINGMesh {
      * @param[in,out] container the container to sort
      */
     template< typename CONTAINER >
-    inline void sort_unique( CONTAINER& container )
+    void sort_unique( CONTAINER& container )
     {
         std::sort( container.begin(), container.end() );
         container.erase( std::unique( container.begin(), container.end() ),

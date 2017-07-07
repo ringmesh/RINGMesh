@@ -82,7 +82,7 @@
     Class& operator=( const Class& ) = delete
 
 // To avoid unused argument warning in function definition
-template< typename T > inline void ringmesh_unused( T const& )
+template< typename T > void ringmesh_unused( T const& )
 {
 }
 
