@@ -179,8 +179,7 @@ namespace {
                 // properties are not read by Gocad if it is VRTX.
                 out << "PVRTX " << v + starting_index_ << " "
                     << mesh.vertices.point( v );
-                for( index_t attr_dbl_itr : range(
-                    static_cast< index_t >( att_v_double_names.size() ) ) ) {
+                for( index_t attr_dbl_itr : range( att_v_double_names.size() ) ) {
                     GEO::Attribute< double > cur_attr( mesh.vertices.attributes(),
                         att_v_double_names[attr_dbl_itr] );
                     index_t nb_dimensions = vertex_attr_dims[attr_dbl_itr];

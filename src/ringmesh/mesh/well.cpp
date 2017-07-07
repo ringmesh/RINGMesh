@@ -569,14 +569,14 @@ namespace RINGMesh {
             std::vector< index_t > indices( intersections.size() );
             std::iota( indices.begin(), indices.end(), 0 );
             std::vector< double > distances( intersections.size() );
-            for( index_t i : range( static_cast< index_t >( intersections.size() ) ) ) {
+            for( index_t i : range( intersections.size() ) ) {
                 distances[i] = length(
                     from_vertex - intersections[i].intersection_ );
             }
             indirect_sort( distances, indices );
             double edge_length = length( from_vertex - to_vertex );
             index_t last_vertex = from_id;
-            for( index_t i : range( static_cast< index_t >( intersections.size() ) ) ) {
+            for( index_t i : range( intersections.size() ) ) {
                 if( distances[indices[i]] < epsilon ) {
                     vertex_info[from_id] = intersections[i];
                 } else if( std::fabs( distances[indices[i]] - edge_length )
