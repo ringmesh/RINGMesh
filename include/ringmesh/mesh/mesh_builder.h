@@ -713,9 +713,9 @@ namespace RINGMesh {
                                 this->surface_mesh_->next_polygon_vertex( polygon,
                                     adj_local_vertex ) );
                         if( adj_next_vertex == vertex ) {
-                            set_polygon_adjacent( polygon, v, adj_polygon );
-                            set_polygon_adjacent( adj_polygon, adj_local_vertex,
-                                polygon );
+                            this->set_polygon_adjacent( polygon, v, adj_polygon );
+                            this->set_polygon_adjacent( adj_polygon,
+                                adj_local_vertex, polygon );
                             break;
                         }
                     }
