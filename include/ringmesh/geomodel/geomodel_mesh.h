@@ -61,6 +61,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelMeshBase;
     template< index_t DIMENSION > class GeoModelMesh;
     template< index_t DIMENSION > class GeoModel;
+    CLASS_DIMENSION_ALIASES( GeoModel );
     template< index_t DIMENSION > class GeoModelEntity;
     template< index_t DIMENSION > class GeoModelMeshEntity;
     template< index_t DIMENSION > class GeoModelMeshEdges;
@@ -504,7 +505,7 @@ namespace RINGMesh {
     public:
         GeoModelMeshVertices(
             GeoModelMesh< 3 >& gmm,
-            GeoModel< 3 >& gm,
+            GeoModel3D& gm,
             std::unique_ptr< PointSetMesh< 3 > >& mesh );
 
         void clear() override;
@@ -775,7 +776,7 @@ namespace RINGMesh {
     public:
         GeoModelMeshPolygons(
             GeoModelMesh< 3 >& gmm,
-            GeoModel< 3 >& gm,
+            GeoModel3D& gm,
             std::unique_ptr< SurfaceMesh< 3 > >& mesh );
 
         /*!
@@ -1388,7 +1389,7 @@ namespace RINGMesh {
     template< >
     class GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
     public:
-        GeoModelMesh( GeoModel< 3 >& geomodel );
+        GeoModelMesh( GeoModel3D& geomodel );
         virtual ~GeoModelMesh();
 
         /*!

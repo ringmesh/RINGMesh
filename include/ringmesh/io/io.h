@@ -61,6 +61,7 @@ namespace RINGMesh {
     class StratigraphicColumn;
     template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class WellGroup;
+    CLASS_DIMENSION_ALIASES( GeoModel );
 }
 
 namespace GEO {
@@ -213,7 +214,7 @@ namespace RINGMesh {
         virtual void load(
             const std::string& filename,
             StratigraphicColumn& column,
-            GeoModel< 3 >& geomodel ) = 0;
+            GeoModel3D& geomodel ) = 0;
 
         virtual void save(
             const StratigraphicColumn& column,

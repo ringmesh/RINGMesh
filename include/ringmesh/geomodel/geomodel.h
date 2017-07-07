@@ -87,7 +87,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelBase {
     ringmesh_disable_copy( GeoModelBase );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelAccess< DIMENSION > ;
 
     public:
@@ -341,10 +341,13 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > > regions_;
     };
 
+    using GeoModel2D = GeoModel< 2 >;
+    using GeoModel3D = GeoModel< 3 >;
+
     template< index_t DIMENSION >
     class GeoModelAccess {
     ringmesh_disable_copy( GeoModelAccess );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
         friend class GeoModelBuilderGM< DIMENSION > ;
