@@ -1153,8 +1153,7 @@ namespace {
 
                 if( nb_intersections > 0 ) {
                     GEO::Mesh mesh;
-                    for( index_t p : range(
-                        static_cast< index_t >( has_intersection.size() ) ) ) {
+                    for( index_t p : range( has_intersection.size() ) ) {
                         if( !has_intersection[p] ) continue;
                         GEO::vector< index_t > vertices;
                         vertices.reserve( geomodel_.mesh.polygons.nb_vertices( p ) );

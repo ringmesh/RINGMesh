@@ -346,7 +346,7 @@ namespace {
             polygons_[0].angle_ = 2 * M_PI;
             polygons_[0].side_ = false;
 
-            for( index_t i : range( 1, static_cast< index_t >( polygons_.size() ) ) ) {
+            for( index_t i : range( 1, polygons_.size() ) ) {
                 PolygonToSort& cur = polygons_[i];
                 // Computes the angle RADIANS between the reference and the current
                 // polygon
@@ -401,8 +401,7 @@ namespace {
         const std::pair< index_t, bool >& next(
             const std::pair< index_t, bool >& in ) const
         {
-            for( index_t i : range(
-                static_cast< index_t >( sorted_polygons_.size() ) ) ) {
+            for( index_t i : range( sorted_polygons_.size() ) ) {
                 if( sorted_polygons_[i] == in ) {
                     if( i == sorted_polygons_.size() - 1 )
                         return sorted_polygons_[sorted_polygons_.size() - 2];
