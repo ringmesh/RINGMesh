@@ -390,7 +390,7 @@ namespace RINGMesh {
         const vec3& v0 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 0 ) );
         const vec3& v1 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 1 ) );
         const vec3& v2 = mesh_.vertex( mesh_.polygon_vertex( cur_box, 2 ) );
-        std::tie( distance, nearest_point, std::ignore, std::ignore, std::ignore ) =
+        std::tie( distance, nearest_point, std::ignore ) =
             point_triangle_distance( query, v0, v1, v2 );
     }
 

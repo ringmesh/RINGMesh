@@ -144,58 +144,58 @@ namespace RINGMesh {
     }
 
     bool GeoModelBuilderRepair::polygon_is_degenerate(
-        const Surface& S,
-        index_t p,
+        const Surface& surface,
+        index_t polygon,
         std::vector< index_t >& colocated_vertices )
     {
-        index_t nb_vertices = S.nb_mesh_element_vertices( p );
+        index_t nb_vertices = surface.nb_mesh_element_vertices( polygon );
         if( nb_vertices != 3 ) {
             index_t* vertices = (index_t*) alloca( nb_vertices * sizeof(index_t) );
             for( index_t lv = 0; lv < nb_vertices; ++lv ) {
-                vertices[lv] = colocated_vertices[S.mesh_element_vertex_index( p,
+                vertices[lv] = colocated_vertices[surface.mesh_element_vertex_index( polygon,
                     lv )];
             }
             std::sort( vertices, vertices + nb_vertices );
             return std::unique( vertices, vertices + nb_vertices )
                 != vertices + nb_vertices;
         }
-        index_t v1 = colocated_vertices[S.mesh_element_vertex_index( p, 0 )];
-        index_t v2 = colocated_vertices[S.mesh_element_vertex_index( p, 1 )];
-        index_t v3 = colocated_vertices[S.mesh_element_vertex_index( p, 2 )];
+        index_t v1 = colocated_vertices[surface.mesh_element_vertex_index( polygon, 0 )];
+        index_t v2 = colocated_vertices[surface.mesh_element_vertex_index( polygon, 1 )];
+        index_t v3 = colocated_vertices[surface.mesh_element_vertex_index( polygon, 2 )];
         return v1 == v2 || v2 == v3 || v3 == v1;
     }
 
     std::vector< index_t > GeoModelBuilderRepair::surface_detect_degenerate_polygons(
-        const Surface& S,
+        const Surface& surface,
         std::vector< index_t >& colocated_vertices )
     {
-        std::vector< index_t > f_is_degenerate( S.nb_mesh_elements() );
-        for( index_t p = 0; p < S.nb_mesh_elements(); ++p ) {
-            f_is_degenerate[p] = polygon_is_degenerate( S, p, colocated_vertices );
+        std::vector< index_t > f_is_degenerate( surface.nb_mesh_elements() );
+        for( index_t p = 0; p < surface.nb_mesh_elements(); ++p ) {
+            f_is_degenerate[p] = polygon_is_degenerate( surface, p, colocated_vertices );
         }
         return f_is_degenerate;
     }
 
-    index_t GeoModelBuilderRepair::detect_degenerate_polygons( const Surface& S )
+    index_t GeoModelBuilderRepair::detect_degenerate_polygons( const Surface& surface )
     {
         std::vector< index_t > colocated;
-        const NNSearch& nn_search = S.vertex_nn_search();
+        const NNSearch& nn_search = surface.vertex_nn_search();
         std::tie( std::ignore, colocated ) = nn_search.get_colocated_index_mapping(
             geomodel_.epsilon() );
 
-        std::vector< index_t > degenerate = surface_detect_degenerate_polygons( S,
+        std::vector< index_t > degenerate = surface_detect_degenerate_polygons( surface,
             colocated );
         return static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) );
     }
 
     std::vector< bool > GeoModelBuilderRepair::line_detect_degenerate_edges(
-        const Line& L,
+        const Line& line,
         std::vector< index_t >& colocated_vertices )
     {
-        std::vector< bool > e_is_degenerate( L.nb_mesh_elements() );
-        for( index_t e = 0; e < L.nb_mesh_elements(); ++e ) {
-            e_is_degenerate[e] = edge_is_degenerate( L, e, colocated_vertices );
+        std::vector< bool > e_is_degenerate( line.nb_mesh_elements() );
+        for( index_t e = 0; e < line.nb_mesh_elements(); ++e ) {
+            e_is_degenerate[e] = edge_is_degenerate( line, e, colocated_vertices );
         }
         return e_is_degenerate;
     }
@@ -397,12 +397,12 @@ namespace RINGMesh {
     }
 
     bool GeoModelBuilderRepair::edge_is_degenerate(
-        const Line& L,
-        index_t e,
+        const Line& line,
+        index_t edge,
         const std::vector< index_t >& colocated_vertices )
     {
-        index_t v1 = colocated_vertices[L.mesh_element_vertex_index( e, 0 )];
-        index_t v2 = colocated_vertices[L.mesh_element_vertex_index( e, 1 )];
+        index_t v1 = colocated_vertices[line.mesh_element_vertex_index( edge, 0 )];
+        index_t v2 = colocated_vertices[line.mesh_element_vertex_index( edge, 1 )];
         return v1 == v2;
     }
 
