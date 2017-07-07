@@ -709,8 +709,8 @@ namespace RINGMesh {
                         index_t adj_local_vertex =
                             polygon_vertices[local_vertex].local_vertex_;
                         index_t adj_next_vertex =
-                            this->surface_mesh_->polygon_vertex( polygon,
-                                this->surface_mesh_->next_polygon_vertex( polygon,
+                            this->surface_mesh_->polygon_vertex( adj_polygon,
+                                this->surface_mesh_->next_polygon_vertex( adj_polygon,
                                     adj_local_vertex ) );
                         if( adj_next_vertex == vertex ) {
                             this->set_polygon_adjacent( polygon, v, adj_polygon );
