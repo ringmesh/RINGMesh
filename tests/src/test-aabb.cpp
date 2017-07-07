@@ -117,7 +117,7 @@ void add_triangles( SurfaceMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_triangles( ( size - 1 ) * ( size - 1 ) * 2 );
     index_t id = 0;
-    for( index_t i : range( size - 1) ) {
+    for( index_t i : range( size - 1 ) ) {
         for( index_t j : range( size - 1 ) ) {
             builder->set_polygon_vertex( id, 0, i * size + j );
             builder->set_polygon_vertex( id, 1, i * size + j + 1 );
@@ -137,8 +137,8 @@ void add_hexs( VolumeMeshBuilder< DIMENSION >* builder, index_t size )
     builder->create_cells( ( size - 1 ) * ( size - 1 ) * ( size - 1 ),
         CellType::HEXAHEDRON );
     index_t id = 0;
-    for( index_t i : range( size - 1) ) {
-        for( index_t j : range( size - 1) ) {
+    for( index_t i : range( size - 1 ) ) {
+        for( index_t j : range( size - 1 ) ) {
             for( index_t k : range( size - 1 ) ) {
                 index_t corner = i + j * size + k * size * size;
                 builder->set_cell_vertex( id, 0, corner );

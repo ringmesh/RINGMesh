@@ -513,6 +513,8 @@ namespace RINGMesh {
         index_t fill_vertices() override;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelMeshVertices );
+
     template< index_t DIMENSION >
     class GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshPolygonsBase );

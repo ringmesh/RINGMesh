@@ -191,4 +191,6 @@ namespace RINGMesh {
 
         void build_regions_from_lines_and_surfaces();
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelBuilder );
 }

@@ -62,7 +62,7 @@ int main()
         file_name += "modelA6.ml";
 
         // Loading the GeoModel
-        GeoModel< 3 > geomodel;
+        GeoModel3D geomodel;
         bool loaded_model_is_valid = geomodel_load( geomodel, file_name );
 
         if( !loaded_model_is_valid ) {

@@ -341,8 +341,7 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > > regions_;
     };
 
-    using GeoModel2D = GeoModel< 2 >;
-    using GeoModel3D = GeoModel< 3 >;
+    CLASS_DIMENSION_ALIASES( GeoModel );
 
     template< index_t DIMENSION >
     class GeoModelAccess {
