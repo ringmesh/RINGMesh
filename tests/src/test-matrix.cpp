@@ -44,48 +44,47 @@
 
 using namespace RINGMesh;
 
-void set_get_test( SparseMatrix< double, light >& mat )
+void set_get_test( SparseMatrix< double, light >& matrix )
 {
-    mat.set_element( 0, 0, 1. );
-    mat.set_element( 1, 1, 1. );
-    mat.set_element( 2, 2, 1. );
-    double elt;
-    for( index_t i = 0; i < mat.ni(); ++i ) {
-        if( !mat.get_element( i, i, elt )
+    matrix.set_element( 0, 0, 1. );
+    matrix.set_element( 1, 1, 1. );
+    matrix.set_element( 2, 2, 1. );
+    for( index_t i = 0; i < matrix.ni(); ++i ) {
+        double elt;
+        if( !matrix.get_element( i, i, elt )
             || std::abs( elt - 1. ) > global_epsilon ) {
             throw RINGMeshException( "TEST",
-                "Matrix element at (" + GEO::String::to_string( i ) + ","
-                    + GEO::String::to_string( i )
-                    + ") should exist and be correct!" );
+                "Matrix element at (" + std::to_string( i ) + ","
+                    + std::to_string( i ) + ") should exist and be correct!" );
         }
-        for( index_t j = 0; j < mat.nj(); ++j ) {
+        for( index_t j = 0; j < matrix.nj(); ++j ) {
             if( i != j ) {
-                if( mat.get_element( i, j, elt ) ) {
+                if( matrix.get_element( i, j, elt ) ) {
                     throw RINGMeshException( "TEST",
-                        "Matrix element at (" + GEO::String::to_string( i ) + ","
-                            + GEO::String::to_string( i ) + ") should not exist!" );
+                        "Matrix element at (" + std::to_string( i ) + ","
+                            + std::to_string( i ) + ") should not exist!" );
                 }
             }
         }
     }
 }
 
-void symmetry_test( SparseMatrix< double, light >& mat )
+void symmetry_test( SparseMatrix< double, light >& matrix )
 {
-    mat.set_element( 0, 1, 3. );
+    matrix.set_element( 0, 1, 3. );
     double elt;
-    if( !mat.get_element( 0, 1, elt ) || std::abs( elt - 3. ) > global_epsilon ) {
+    if( !matrix.get_element( 0, 1, elt ) || std::abs( elt - 3. ) > global_epsilon ) {
         throw RINGMeshException( "TEST",
             "Matrix element at (0,1) should not exist and be correct!" );
     }
-    if( mat.is_symmetrical() ) {
-        if( !mat.get_element( 1, 0, elt )
+    if( matrix.is_symmetrical() ) {
+        if( !matrix.get_element( 1, 0, elt )
             || std::abs( elt - 3. ) > global_epsilon ) {
             throw RINGMeshException( "TEST",
                 "Matrix element at (1,0) should exist and be correct!" );
         }
     } else {
-        if( mat.get_element( 1, 0, elt ) && std::abs( elt - 3. ) < global_epsilon ) {
+        if( matrix.get_element( 1, 0, elt ) && std::abs( elt - 3. ) < global_epsilon ) {
             throw RINGMeshException( "TEST",
                 "Matrix element at (1,0) should not exist and the matrix should not be symmetrical!" );
         }
@@ -93,14 +92,11 @@ void symmetry_test( SparseMatrix< double, light >& mat )
 }
 
 void product_by_vector_test(
-    SparseMatrix< double, light >& mat,
+    SparseMatrix< double, light >& matrix,
     const std::vector< double >& product_result )
 {
-    std::vector< double > vect_to_multiply( 3 );
-    vect_to_multiply[0] = 5.;
-    vect_to_multiply[1] = 2.;
-    vect_to_multiply[2] = 9.;
-    std::vector< double > result = product_matrix_by_vector< double >( mat,
+    std::vector< double > vect_to_multiply = { 5., 2., 9. };
+    std::vector< double > result = product_matrix_by_vector< double >( matrix,
         vect_to_multiply );
     if( std::abs( result[0] - product_result[0] ) > global_epsilon
         || std::abs( result[1] - product_result[1] ) > global_epsilon
@@ -109,28 +105,25 @@ void product_by_vector_test(
     }
 }
 
-void one_test_seq(
-    SparseMatrix< double, light >& mat,
+void one_test_sequence(
+    SparseMatrix< double, light >& matrix,
     const std::vector< double >& product_result )
 {
-    mat.build_matrix( 3, 3 );
-    set_get_test( mat );
-    symmetry_test( mat );
-    product_by_vector_test( mat, product_result );
+    matrix.build_matrix( 3, 3 );
+    set_get_test( matrix );
+    symmetry_test( matrix );
+    product_by_vector_test( matrix, product_result );
 }
 
 void run_tests()
 {
-    SparseMatrix< double, light > sym_mat( true );
-    std::vector< double > product_result( 3 );
-    product_result[0] = 11.;
-    product_result[1] = 17.;
-    product_result[2] = 9.;
-    one_test_seq( sym_mat, product_result );
+    SparseMatrix< double, light > symmetrical_matrix( true );
+    std::vector< double > product_result = { 11., 17., 9. };
+    one_test_sequence( symmetrical_matrix, product_result );
 
-    SparseMatrix< double, light > asym_mat( false );
+    SparseMatrix< double, light > asymmetrical_matrix( false );
     product_result[1] = 2.;
-    one_test_seq( asym_mat, product_result );
+    one_test_sequence( asymmetrical_matrix, product_result );
 
 }
 
