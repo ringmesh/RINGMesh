@@ -902,7 +902,7 @@ namespace {
         const std::vector< bool >& edge_on_lines,
         std::vector< index_t >& non_manifold_edges )
     {
-        for( index_t e : range( static_cast< index_t >( edge_on_lines.size() ) ) ) {
+        for( index_t e : range( edge_on_lines.size() ) ) {
             if( !edge_on_lines[e] ) {
                 non_manifold_edges.push_back( e );
             }
