@@ -613,7 +613,7 @@ namespace RINGMesh {
     private:
         GeoModelBuilderRemoval(
             GeoModelBuilder< 3 >& builder,
-            GeoModel< 3 >& geomodel );
+            GeoModel3D& geomodel );
         virtual ~GeoModelBuilderRemoval() = default;
 
         void update_mesh_entity( GeoModelMeshEntity< 3 >& ME ) override;

@@ -239,12 +239,12 @@ namespace RINGMesh {
     private:
         GeoModelBuilderTopology(
             GeoModelBuilder< 3 >& builder,
-            GeoModel< 3 >& geomodel )
+            GeoModel3D& geomodel )
             : GeoModelBuilderTopologyBase< 3 >( builder, geomodel )
         {
         }
 
-        void copy_all_mesh_entity_topology( const GeoModel< 3 >& from ) override;
+        void copy_all_mesh_entity_topology( const GeoModel3D& from ) override;
     };
 
 }

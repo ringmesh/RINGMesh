@@ -62,6 +62,7 @@ extern "C" {
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
+    CLASS_DIMENSION_ALIASES( GeoModel );
     template< index_t DIMENSION > class Region;
     class TetraGen;
     template< index_t DIMENSION > class WellGroup;
@@ -74,7 +75,7 @@ namespace RINGMesh {
     public:
         virtual ~TetraGen() = default;
         static std::unique_ptr< TetraGen > create(
-            GeoModel< 3 >& M,
+            GeoModel3D& M,
             index_t region_id,
             const std::string& algo_name );
         static void initialize();
