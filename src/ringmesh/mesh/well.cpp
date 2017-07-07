@@ -76,7 +76,7 @@ namespace {
      * @return The region index or NO_ID if none found.
      */
     index_t find_region(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         index_t surface_part_id,
         bool side )
     {
@@ -149,7 +149,7 @@ namespace {
     }
 
     index_t find_region_from_corners(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         const std::vector< vec3 > vertices,
         const LineInstersection& start,
         const LineInstersection& end )
@@ -188,7 +188,7 @@ namespace {
 
     template< index_t DIMENSION >
     void create_well_part_and_corners(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         Well< DIMENSION >& well,
         const std::vector< vec3 > vertices,
         const LineInstersection& start,

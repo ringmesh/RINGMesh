@@ -443,7 +443,7 @@ namespace {
     class RegionTopologyFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces<
         3 > {
     public:
-        RegionTopologyFromGeoModelSurfaces( const GeoModel< 3 >& geomodel )
+        RegionTopologyFromGeoModelSurfaces( const GeoModel3D& geomodel )
             :
                 CommonDataFromGeoModelSurfaces< 3 >( geomodel ),
                 region_info_( geomodel.nb_lines() )
@@ -871,7 +871,7 @@ namespace RINGMesh {
         print_geomodel( geomodel_ );
     }
 
-    GeoModelBuilder< 2 >::GeoModelBuilder( GeoModel< 2 >& geomodel )
+    GeoModelBuilder< 2 >::GeoModelBuilder( GeoModel2D& geomodel )
         : GeoModelBuilderBase< 2 >( *this, geomodel )
     {
     }
@@ -882,7 +882,7 @@ namespace RINGMesh {
         geometry.cut_surfaces_by_internal_lines();
     }
 
-    GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel< 3 >& geomodel )
+    GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel3D& geomodel )
         : GeoModelBuilderBase< 3 >( *this, geomodel )
     {
     }

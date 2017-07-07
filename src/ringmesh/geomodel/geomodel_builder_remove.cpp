@@ -279,7 +279,7 @@ namespace RINGMesh {
 
     GeoModelBuilderRemoval< 3 >::GeoModelBuilderRemoval(
         GeoModelBuilder< 3 >& builder,
-        GeoModel< 3 >& geomodel )
+        GeoModel3D& geomodel )
         : GeoModelBuilderRemovalBase< 3 >( builder, geomodel )
     {
     }

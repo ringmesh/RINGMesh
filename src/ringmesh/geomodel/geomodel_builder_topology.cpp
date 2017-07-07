@@ -606,7 +606,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTopology< 3 >::copy_all_mesh_entity_topology(
-        const GeoModel< 3 >& from )
+        const GeoModel3D& from )
     {
         GeoModelBuilderTopologyBase< 3 >::copy_all_mesh_entity_topology( from );
         copy_mesh_entity_topology< Region >( from );

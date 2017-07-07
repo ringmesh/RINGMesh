@@ -755,7 +755,7 @@ namespace RINGMesh {
 
     GeoModelMeshVertices< 3 >::GeoModelMeshVertices(
         GeoModelMesh< 3 >& gmm,
-        GeoModel< 3 >& gm,
+        GeoModel3D& gm,
         std::unique_ptr< PointSetMesh< 3 > >& mesh )
         : GeoModelMeshVerticesBase< 3 >( gmm, gm, mesh )
     {
@@ -785,7 +785,7 @@ namespace RINGMesh {
     template< >
     GeoModelMeshVerticesBase< 3 >::GeoModelVertexMapper::GeoModelVertexMapper(
         GeoModelMeshVerticesBase& geomodel_vertices,
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
         : geomodel_vertices_( geomodel_vertices ), geomodel_( geomodel )
     {
         vertex_maps_[Corner< 3 >::type_name_static()] = &corner_vertex_maps_;
@@ -2175,7 +2175,7 @@ namespace RINGMesh {
 
     GeoModelMeshPolygons< 3 >::GeoModelMeshPolygons(
         GeoModelMesh< 3 >& gmm,
-        GeoModel< 3 >& gm,
+        GeoModel3D& gm,
         std::unique_ptr< SurfaceMesh< 3 > >& mesh )
         : GeoModelMeshPolygonsBase< 3 >( gmm, gm, mesh )
     {
@@ -2376,7 +2376,7 @@ namespace RINGMesh {
     {
     }
 
-    GeoModelMesh< 3 >::GeoModelMesh( GeoModel< 3 >& geomodel )
+    GeoModelMesh< 3 >::GeoModelMesh( GeoModel3D& geomodel )
         :
             GeoModelMeshBase< 3 >( *this, geomodel ),
             cells( *this, geomodel, mesh_set_.volume_mesh )
