@@ -238,14 +238,14 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelIOHandler< 2 > ;
     template class RINGMESH_API GeoModelIOHandler< 3 > ;
 
-    template bool RINGMESH_API geomodel_load( GeoModel< 2 >&, const std::string& );
+    template bool RINGMESH_API geomodel_load( GeoModel2D&, const std::string& );
     template void RINGMESH_API geomodel_save(
-        const GeoModel< 2 >&,
+        const GeoModel2D&,
         const std::string& );
 
-    template bool RINGMESH_API geomodel_load( GeoModel< 3 >&, const std::string& );
+    template bool RINGMESH_API geomodel_load( GeoModel3D&, const std::string& );
     template void RINGMESH_API geomodel_save(
-        const GeoModel< 3 >&,
+        const GeoModel3D&,
         const std::string& );
 
 }

@@ -995,7 +995,7 @@ namespace RINGMesh {
         return cell_id;
     }
 
-    void GeoModelBuilderGeometry< 3 >::copy_meshes( const GeoModel< 3 >& geomodel )
+    void GeoModelBuilderGeometry< 3 >::copy_meshes( const GeoModel3D& geomodel )
     {
         GeoModelBuilderGeometryBase< 3 >::copy_meshes( geomodel );
         GeoModelBuilderGeometryBase< 3 >::copy_meshes( geomodel,
