@@ -352,6 +352,8 @@ namespace RINGMesh {
         std::shared_ptr< MeshBase< DIMENSION > > mesh_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelMeshEntity );
+
     /*!
      * @brief A GeoModelEntity of type CORNER
      * @details It is a unique point.
@@ -480,6 +482,8 @@ namespace RINGMesh {
     private:
         std::shared_ptr< PointSetMesh< DIMENSION > > point_set_mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( Corner );
 
     /*!
      * @brief A GeoModelEntity of type LINE
@@ -634,6 +638,8 @@ namespace RINGMesh {
     private:
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( Line );
 
     /*!
      * @brief A GeoModelEntity of type SURFACE
@@ -857,6 +863,8 @@ namespace RINGMesh {
     public:
         const Region< 3 >& incident_entity( index_t x ) const;
     };
+
+    CLASS_DIMENSION_ALIASES( Surface );
 
     /*!
      * @brief A GeoModelEntity of type REGION
@@ -1162,6 +1170,8 @@ namespace RINGMesh {
     private:
         std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_;
     };
+
+    using Region3D = Region< 3 >;
 
     template< index_t DIMENSION >
     class GeoModelMeshEntityConstAccess {

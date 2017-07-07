@@ -190,8 +190,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     using GeoModelGeologicalEntityFactory = GEO::Factory1< GeoModelGeologicalEntity< DIMENSION >, GeoModel < DIMENSION > >;
 
-    using GeoModelGeologicalEntityFactory2D = GeoModelGeologicalEntityFactory< 2 >;
-    using GeoModelGeologicalEntityFactory3D = GeoModelGeologicalEntityFactory< 3 >;
+    CLASS_DIMENSION_ALIASES( GeoModelGeologicalEntityFactory );
 
 #define ringmesh_register_GeoModelGeologicalEntity2D_creator( type ) \
     geo_register_creator( GeoModelGeologicalEntityFactory2D, type, type::type_name_static() )
@@ -219,6 +218,8 @@ namespace RINGMesh {
         MeshEntityType child_type_name() const override;
     };
 
+    CLASS_DIMENSION_ALIASES( Contact );
+
     template< index_t DIMENSION >
     class Interface: public GeoModelGeologicalEntity< DIMENSION > {
     public:
@@ -239,6 +240,8 @@ namespace RINGMesh {
         MeshEntityType child_type_name() const override;
     };
 
+    CLASS_DIMENSION_ALIASES( Interface );
+
     template< index_t DIMENSION >
     class Layer: public GeoModelGeologicalEntity< DIMENSION > {
     public:
@@ -258,6 +261,8 @@ namespace RINGMesh {
         }
         MeshEntityType child_type_name() const override;
     };
+
+    using Layer3D = Layer< 3 >;
 
     template< index_t DIMENSION >
     class GeoModelGeologicalEntityAccess {

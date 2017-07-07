@@ -54,7 +54,7 @@ int main()
         Logger::out( "TEST", "Geomodel input test. Loading file ",
             input_model_file_name );
 
-        GeoModel< 2 > in;
+        GeoModel2D in;
         /*bool loaded_model_is_valid =*/geomodel_load( in, input_model_file_name );
 
 //        if( !loaded_model_is_valid ) {
@@ -67,7 +67,7 @@ int main()
         output_model_file_name += in.name() + "_saved_out.gm";
         geomodel_save( in, output_model_file_name );
 
-        GeoModel< 2 > in2;
+        GeoModel2D in2;
         /*bool reloaded_model_is_valid =*/geomodel_load( in2,
             output_model_file_name );
 

@@ -71,7 +71,7 @@ int main()
 
         GEO::Mesh in;
         GEO::mesh_load( file_name, in );
-        GeoModel< 3 > model;
+        GeoModel3D model;
 
         GeoModelBuilderSurfaceMesh builder( model, in );
         builder.build_polygonal_surfaces_from_connected_components();
@@ -102,7 +102,7 @@ int main()
         // of mesh elements and mesh entities
         GEO::Mesh surface_meshes;
         for( index_t s : range( model.nb_surfaces() ) ) {
-            const Surface< 3 >& surface = model.surface( s );
+            const Surface3D& surface = model.surface( s );
             index_t vertex_it = surface_meshes.vertices.create_vertices(
                 surface.nb_vertices() );
             for( index_t v : range( surface.nb_vertices() ) ) {
@@ -124,7 +124,7 @@ int main()
         output_file2 += "saved_modelA6_dupl_points.mesh";
         GEO::mesh_save( surface_meshes, output_file2 );
 
-        GeoModel< 3 > reloaded_model;
+        GeoModel3D reloaded_model;
 
         GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes );
         builder2.build_polygonal_surfaces_from_connected_components();
