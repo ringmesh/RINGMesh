@@ -422,7 +422,7 @@ namespace RINGMesh {
          */
         T get_element( index_t i, index_t j ) const
         {
-            bool value_exists = false;
+            bool value_exists{ false };
             index_t value_id;
             std::tie( value_exists, value_id ) = this->rows_[i].get_element( j );
             if( !value_exists ) {

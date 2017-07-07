@@ -84,7 +84,7 @@ namespace RINGMesh {
         return u.x != v.x || u.y != v.y || u.z != v.z;
     }
 
-    std::tuple< double, vec3, double, double, double > point_triangle_distance(
+    std::tuple< double, vec3, std::array< double, 3 > > point_triangle_distance(
         const vec3& point,
         const vec3& V0,
         const vec3& V1,
@@ -254,8 +254,8 @@ namespace RINGMesh {
         double lambda0 = 1.0 - s - t;
         double lambda1 = s;
         double lambda2 = t;
-        return std::make_tuple( sqrt( sqrDistance ), closest_point, lambda0, lambda1,
-            lambda2 );
+        std::array< double, 3 > lambdas = { lambda0, lambda1, lambda2 };
+        return std::make_tuple( sqrt( sqrDistance ), closest_point, lambdas );
     }
 
     std::tuple< double, vec3 > point_tetra_distance(
@@ -272,7 +272,7 @@ namespace RINGMesh {
             f++ ) {
             double distance = max_float64();
             vec3 cur_p;
-            std::tie( distance, cur_p, std::ignore, std::ignore, std::ignore ) =
+            std::tie( distance, cur_p, std::ignore ) =
                 point_triangle_distance( p,
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
@@ -303,7 +303,7 @@ namespace RINGMesh {
             index_t nb_vertices =
                 GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f];
             if( nb_vertices == 3 ) {
-                std::tie( distance, cur_p, std::ignore, std::ignore, std::ignore ) =
+                std::tie( distance, cur_p, std::ignore ) =
                     point_triangle_distance( p,
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
@@ -346,7 +346,7 @@ namespace RINGMesh {
             index_t nb_vertices =
                 GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f];
             if( nb_vertices == 3 ) {
-                std::tie( distance, cur_p, std::ignore, std::ignore, std::ignore ) =
+                std::tie( distance, cur_p, std::ignore ) =
                     point_triangle_distance( p,
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
@@ -530,7 +530,7 @@ namespace RINGMesh {
         return std::make_tuple( true, O_inter, D_inter );
     }
 
-    std::tuple< bool, double, double, double, double > tetra_barycentric_coordinates(
+    std::tuple< bool, std::array< double, 4 > > tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -539,7 +539,8 @@ namespace RINGMesh {
     {
         double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 );
         if( total_volume < global_epsilon_3 ) {
-            return std::make_tuple( false, 0., 0., 0., 0. );
+            std::array< double, 4 > lambdas = { 0., 0., 0., 0. };
+            return std::make_tuple( false, lambdas );
         }
         double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p );
         double volume1 = GEO::Geom::tetra_signed_volume( p0, p2, p3, p );
@@ -550,10 +551,11 @@ namespace RINGMesh {
         double lambda1 = volume1 / total_volume;
         double lambda2 = volume2 / total_volume;
         double lambda3 = volume3 / total_volume;
-        return std::make_tuple( true, lambda0, lambda1, lambda2, lambda3 );
+        std::array< double, 4 > lambdas = { lambda0, lambda1, lambda2, lambda3 };
+        return std::make_tuple( true, lambdas );
     }
 
-    std::tuple< bool, double, double, double > triangle_barycentric_coordinates(
+    std::tuple< bool, std::array< double, 3 > > triangle_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -561,7 +563,8 @@ namespace RINGMesh {
     {
         double total_area = GEO::Geom::triangle_area( p0, p1, p2 );
         if( total_area < global_epsilon_sq ) {
-            return std::make_tuple( false, 0., 0., 0. );
+            std::array< double, 3 > lambdas = { 0., 0., 0. };
+            return std::make_tuple( false, lambdas );
         }
         vec3 triangle_normal = cross( p2 - p0, p1 - p0 );
         double area0 = triangle_signed_area( p2, p1, p, triangle_normal );
@@ -571,7 +574,8 @@ namespace RINGMesh {
         double lambda0 = area0 / total_area;
         double lambda1 = area1 / total_area;
         double lambda2 = area2 / total_area;
-        return std::make_tuple( true, lambda0, lambda1, lambda2 );
+        std::array< double, 3 > lambdas = { lambda0, lambda1, lambda2 };
+        return std::make_tuple( true, lambdas );
     }
 
     std::tuple< bool, vec3 > line_plane_intersection(

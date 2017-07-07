@@ -146,7 +146,7 @@ F.17: For "in-out" parameters, pass by reference to non-const
 F.18: For "consume" parameters, pass by X&& and std::move the parameter
 F.19: For "forward" parameters, pass by TP&& and only std::forward the parameter
 F.20: For "out" output values, prefer return values to output parameters
-F.21: To return multiple "out" values, prefer returning a tuple or struct
+F.21: To return multiple "out" values, prefer returning a tuple or struct (https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rf-out-multi)
 F.22: Use T* or owner<T*> or a smart pointer to designate a single object
 F.23: Use a not_null<T> to indicate "null" is not a valid value
 F.24: Use a span<T> or a span_p<T> to designate a half-open sequence

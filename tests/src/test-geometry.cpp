@@ -50,24 +50,22 @@ void test_triangle_barycentric_coordinates()
     vec3 p1( 1, 0, 0 );
     vec3 p2( 0, 1, 0 );
 
-    double lambda0;
-    double lambda1;
-    double lambda2;
-    std::tie( std::ignore, lambda0, lambda1, lambda2 ) =
-        triangle_barycentric_coordinates( vec3( 0.25, 0.25, 0 ), p0, p1, p2 );
-    if( lambda0 != 0.5 || lambda1 != 0.25 || lambda2 != 0.25 ) {
+    std::array< double, 3 > lambdas;
+    std::tie( std::ignore, lambdas ) = triangle_barycentric_coordinates(
+        vec3( 0.25, 0.25, 0 ), p0, p1, p2 );
+    if( lambdas[0] != 0.5 || lambdas[1] != 0.25 || lambdas[2] != 0.25 ) {
         throw RINGMeshException( "TEST",
             "Error in triangle barycentric coordinates" );
     }
-    std::tie( std::ignore, lambda0, lambda1, lambda2 ) =
-        triangle_barycentric_coordinates( vec3( 0.5, 0.5, 0 ), p0, p1, p2 );
-    if( lambda0 != 0 || lambda1 != 0.5 || lambda2 != 0.5 ) {
+    std::tie( std::ignore, lambdas ) = triangle_barycentric_coordinates(
+        vec3( 0.5, 0.5, 0 ), p0, p1, p2 );
+    if( lambdas[0] != 0 || lambdas[1] != 0.5 || lambdas[2] != 0.5 ) {
         throw RINGMeshException( "TEST",
             "Error in triangle barycentric coordinates" );
     }
-    std::tie( std::ignore, lambda0, lambda1, lambda2 ) =
-        triangle_barycentric_coordinates( vec3( 1, 1, 0 ), p0, p1, p2 );
-    if( lambda0 != -1 || lambda1 != 1 || lambda2 != 1 ) {
+    std::tie( std::ignore, lambdas ) = triangle_barycentric_coordinates(
+        vec3( 1, 1, 0 ), p0, p1, p2 );
+    if( lambdas[0] != -1 || lambdas[1] != 1 || lambdas[2] != 1 ) {
         throw RINGMeshException( "TEST",
             "Error in triangle barycentric coordinates" );
     }

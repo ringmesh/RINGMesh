@@ -81,11 +81,12 @@ namespace RINGMesh {
      * @return a tuple containing the following elements (in this order):
      * - the smallest distance
      * - the closest point on the triangle
-     * - barycentric coordinate from \p V0
-     * - barycentric coordinate from \p V1
-     * - barycentric coordinate from \p V2
+     * - an array of the triangle barycentric coordinates:
+     *     - barycentric coordinate from \p V0
+     *     - barycentric coordinate from \p V1
+     *     - barycentric coordinate from \p V2
      */
-    std::tuple< double, vec3, double, double, double > RINGMESH_API point_triangle_distance(
+    std::tuple< double, vec3, std::array< double, 3 > > RINGMESH_API point_triangle_distance(
         const vec3& point,
         const vec3& V0,
         const vec3& V1,
@@ -383,7 +384,7 @@ namespace RINGMesh {
      * - a boolean (false if the computation failed because of too small tetrahedron volume).
      * - the parametric coordinates corresponding to points
      */
-    std::tuple< bool, double, double, double, double > RINGMESH_API tetra_barycentric_coordinates(
+    std::tuple< bool, std::array< double, 4 > > RINGMESH_API tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -400,7 +401,7 @@ namespace RINGMesh {
      * - a boolean (false if the computation failed because of too small triangle area).
      * - the parametric coordinates corresponding to points.
      */
-    std::tuple< bool, double, double, double > RINGMESH_API triangle_barycentric_coordinates(
+    std::tuple< bool, std::array< double, 3 > > RINGMESH_API triangle_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
