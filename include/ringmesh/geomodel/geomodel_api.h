@@ -46,6 +46,7 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
+    CLASS_DIMENSION_ALIASES( GeoModel );
     class MeshEntityType;
     class GeologicalEntityType;
 }
@@ -74,7 +75,7 @@ namespace RINGMesh {
      * @param[in] geomodel the geomodel to compute the statistics on
      */
     void RINGMESH_API print_geomodel_mesh_cell_volumes(
-        const GeoModel< 3 >& geomodel );
+        const GeoModel3D& geomodel );
 
     /*!
      * @return the index of the mesh entity \param gme_type named as \param name
@@ -110,7 +111,7 @@ namespace RINGMesh {
      * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
      */
     void RINGMESH_API tetrahedralize(
-        GeoModel< 3 >& geomodel,
+        GeoModel3D& geomodel,
         const std::string& method = "TetGen",
         index_t region_id = NO_ID,
         bool add_steiner_points = true );
@@ -125,7 +126,7 @@ namespace RINGMesh {
      * There is one vector per region.
      */
     void RINGMESH_API tetrahedralize(
-        GeoModel< 3 >& geomodel,
+        GeoModel3D& geomodel,
         const std::string& method,
         index_t region_id,
         bool add_steiner_points,
@@ -165,7 +166,7 @@ namespace RINGMesh {
      * if in radians.
      */
     void RINGMESH_API rotate(
-        GeoModel< 3 >& geomodel,
+        GeoModel3D& geomodel,
         const vec3& origin,
         const vec3& axis,
         double angle,

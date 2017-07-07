@@ -51,6 +51,7 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
+    CLASS_DIMENSION_ALIASES( GeoModel );
     template< index_t DIMENSION > class GeoModelGeologicalEntity;
     template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
     template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
@@ -826,7 +827,7 @@ namespace RINGMesh {
     class Surface< 2 > final: public SurfaceBase< 2 > {
         friend class GeoModelMeshEntityAccess< 2 > ;
     private:
-        Surface( const GeoModel< 2 >& geomodel, index_t id, const MeshType type )
+        Surface( const GeoModel2D& geomodel, index_t id, const MeshType type )
             : SurfaceBase< 2 >( geomodel, id, type )
         {
         }
@@ -848,7 +849,7 @@ namespace RINGMesh {
     class Surface< 3 > final: public SurfaceBase< 3 > {
         friend class GeoModelMeshEntityAccess< 3 > ;
     private:
-        Surface( const GeoModel< 3 >& geomodel, index_t id, const MeshType type )
+        Surface( const GeoModel3D& geomodel, index_t id, const MeshType type )
             : SurfaceBase< 3 >( geomodel, id, type )
         {
         }

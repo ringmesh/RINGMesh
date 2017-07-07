@@ -432,7 +432,7 @@ namespace RINGMesh {
             return VolumeMeshBuilder< 3 >::create_builder( region_mesh );
         }
 
-        void copy_meshes( const GeoModel< 3 >& geomodel ) override;
+        void copy_meshes( const GeoModel3D& geomodel ) override;
 
         void set_region_element_geometry(
             index_t region_id,
@@ -494,7 +494,7 @@ namespace RINGMesh {
     protected:
         GeoModelBuilderGeometry(
             GeoModelBuilder< 3 >& builder,
-            GeoModel< 3 >& geomodel )
+            GeoModel3D& geomodel )
             : GeoModelBuilderGeometryBase< 3 >( builder, geomodel )
         {
         }
