@@ -38,7 +38,6 @@
 #include <stack>
 
 #include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!
@@ -262,7 +261,6 @@ namespace RINGMesh {
         std::remove_if( parents.begin(), parents.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeology< DIMENSION >::delete_geological_entity(
         const GeologicalEntityType& type,
@@ -384,7 +382,6 @@ namespace RINGMesh {
             add_parent_children_relation( contact_id, line.gmme() );
         }
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeology< DIMENSION >::set_geological_entity_geol_feature(
         const gmge_id& gmge_id,

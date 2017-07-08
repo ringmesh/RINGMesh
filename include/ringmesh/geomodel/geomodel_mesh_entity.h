@@ -253,6 +253,7 @@ namespace RINGMesh {
          * \name Geometrical request on Entity
          * @{
          */
+
         virtual double mesh_element_size( index_t mesh_element_index ) const = 0;
         virtual vecn< DIMENSION > mesh_element_barycenter(
             index_t mesh_element_index ) const = 0;
@@ -265,6 +266,7 @@ namespace RINGMesh {
             ringmesh_assert( nb_vertices() > 0 );
             return result / static_cast< double >( nb_vertices() );
         }
+
         virtual double size() const
         {
             double size = 0.0;
@@ -295,6 +297,7 @@ namespace RINGMesh {
             incident_entities_ = from.incident_entities_;
             parents_ = from.parents_;
         }
+
         virtual bool is_index_valid() const final;
         virtual bool is_mesh_valid() const
         {
@@ -328,13 +331,14 @@ namespace RINGMesh {
         void unbind_vertex_mapping_attribute() const;
         void bind_vertex_mapping_attribute() const;
 
-        virtual void change_mesh_data_structure( const MeshType type ) = 0;
+        virtual void change_mesh_data_structure( const MeshType& type ) = 0;
 
     private:
         gmge_id defined_parent_gmge( const GeologicalEntityType& parent_type ) const;
 
         gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
+
     protected:
 
         /// Boundary relations of this entity
@@ -440,7 +444,7 @@ namespace RINGMesh {
         Corner(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const MeshType type )
+            const MeshType& type )
             : GeoModelMeshEntity< DIMENSION >( geomodel, id )
 
         {
@@ -460,6 +464,7 @@ namespace RINGMesh {
             ringmesh_unused( vertex_index );
             return 0;
         }
+
         /*!
          * @brief Check that the Corner mesh is a unique point
          */
@@ -474,7 +479,7 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >::set_mesh( point_set_mesh_ );
         }
 
-        void change_mesh_data_structure( const MeshType type ) final;
+        void change_mesh_data_structure( const MeshType& type ) final;
 
     private:
         std::shared_ptr< PointSetMesh< DIMENSION > > point_set_mesh_;
@@ -596,11 +601,12 @@ namespace RINGMesh {
         {
             return *line_mesh_;
         }
+
     protected:
         Line(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const MeshType type )
+            const MeshType& type )
             : GeoModelMeshEntity< DIMENSION >( geomodel, id )
         {
             update_mesh_storage_type( LineMesh< DIMENSION >::create_mesh( type ) );
@@ -628,7 +634,7 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >::set_mesh( line_mesh_ );
         }
 
-        void change_mesh_data_structure( const MeshType type ) final;
+        void change_mesh_data_structure( const MeshType& type ) final;
 
     private:
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_;
@@ -771,6 +777,7 @@ namespace RINGMesh {
         {
             return *surface_mesh_;
         }
+
     protected:
         SurfaceBase(
             const GeoModel< DIMENSION >& geomodel,
@@ -813,7 +820,7 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >::set_mesh( surface_mesh_ );
         }
 
-        void change_mesh_data_structure( const MeshType type ) final;
+        void change_mesh_data_structure( const MeshType& type ) final;
     private:
         std::shared_ptr< SurfaceMesh< DIMENSION > > surface_mesh_;
     };
@@ -1142,7 +1149,7 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >::set_mesh( volume_mesh_ );
         }
 
-        void change_mesh_data_structure( const MeshType type ) final;
+        void change_mesh_data_structure( const MeshType& type ) final;
 
         void copy_mesh_entity( const GeoModelMeshEntity< DIMENSION >& from ) final
         {
@@ -1158,6 +1165,7 @@ namespace RINGMesh {
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_;
+
     private:
         std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_;
     };
@@ -1258,7 +1266,7 @@ namespace RINGMesh {
         static std::unique_ptr< ENTITY< DIMENSION > > create_entity(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const MeshType type )
+            const MeshType& type )
         {
             return std::unique_ptr< ENTITY< DIMENSION > >(
                 new ENTITY< DIMENSION >( geomodel, id, type ) );

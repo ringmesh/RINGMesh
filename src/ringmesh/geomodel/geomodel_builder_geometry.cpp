@@ -41,16 +41,17 @@ namespace {
     using namespace RINGMesh;
 
     template< index_t DIMENSION >
-    void get_internal_borders(
-        const GeoModelMeshEntity< DIMENSION >& entity,
-        std::set< index_t >& internal_borders )
+    std::set< index_t > get_internal_borders(
+        const GeoModelMeshEntity< DIMENSION >& entity )
     {
+        std::set< index_t > internal_borders;
         for( index_t i : range( entity.nb_boundaries() ) ) {
             const GeoModelMeshEntity< DIMENSION >& border = entity.boundary( i );
             if( border.is_inside_border( entity ) ) {
                 internal_borders.insert( border.index() );
             }
         }
+        return internal_borders;
     }
 
     template< index_t DIMENSION >
@@ -73,13 +74,13 @@ namespace {
      * @return True if the polygon and the edge indices are found
      */
     template< index_t DIMENSION >
-    bool find_polygon_from_edge_vertices(
+    std::tuple< bool, index_t, index_t > find_polygon_from_edge_vertices(
         const Surface< DIMENSION >& surface,
         const vecn< DIMENSION >& v0,
-        const vecn< DIMENSION >& v1,
-        index_t& polygon,
-        index_t& edge )
+        const vecn< DIMENSION >& v1 )
     {
+        index_t p;
+        index_t e;
         vecn< DIMENSION > v_bary = 0.5 * ( v0 + v1 );
         bool result = false;
         surface.polygon_nn_search().get_neighbors( v_bary,
@@ -94,12 +95,11 @@ namespace {
                             edge = j;
                             polygon = i;
                             result = true;
-                            break;
+                            break;/// TODO return
                         }
                     }
                 }
-                return result;} );
-        return result;
+        return std::make_tuple( result, p, e );///TODO return empty
     }
 
     template< index_t DIMENSION >
@@ -125,13 +125,13 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    bool find_cell_facet_from_polygon(
+    std::tuple< bool, index_t, index_t > find_cell_facet_from_polygon(
         const Region< DIMENSION >& region,
         const Surface< DIMENSION >& surface,
-        index_t polygon,
-        index_t& cell,
-        index_t& cell_facet )
+        index_t polygon )
     {
+        index_t cell;
+        index_t cell_facet;
         vec3 v_bary = surface.mesh_element_barycenter( polygon );
         bool result = false;
         region.cell_nn_search().get_neighbors( v_bary,
@@ -142,11 +142,10 @@ namespace {
                         cell_facet = cell_facet_i;
                         cell = i;
                         result = true;
-                        break;
+                        break;/// TODO return
                     }
                 }
-                return result;} );
-        return result;
+        return result;/// TODO return empty
     }
 
     template< index_t DIMENSION >
@@ -555,7 +554,6 @@ namespace RINGMesh {
         to_delete.push_back( true );
         delete_mesh_entity_vertices( corner, to_delete );
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::delete_line_edges(
         index_t line_id,
@@ -566,7 +564,6 @@ namespace RINGMesh {
             create_line_builder( line_id );
         builder->delete_edges( to_delete, remove_isolated_vertices );
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::delete_surface_polygons(
         index_t surface_id,
@@ -707,9 +704,11 @@ namespace RINGMesh {
             const vecn< DIMENSION >& p0 = line.vertex( i );
             const vecn< DIMENSION >& p1 = line.vertex( i + 1 );
 
+            bool found = false;
             index_t p = NO_ID;
             index_t e = NO_ID;
-            bool found = find_polygon_from_edge_vertices( surface, p0, p1, p, e );
+            std::tie( found, p, e ) = find_polygon_from_edge_vertices( surface, p0,
+                p1 );
             ringmesh_unused( found );
             ringmesh_assert( found && p != NO_ID && e != NO_ID );
 
@@ -725,7 +724,6 @@ namespace RINGMesh {
         }
         return nb_disconnected_edges;
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::update_polygon_vertex(
         index_t surface_id,
@@ -820,10 +818,11 @@ namespace RINGMesh {
             region_id );
         index_t nb_disconnected_polygons = 0;
         for( index_t polygon : range( surface.nb_mesh_elements() ) ) {
+            bool found = false;
             index_t cell = NO_ID;
             index_t cell_facet = NO_ID;
-            bool found = find_cell_facet_from_polygon( region, surface, polygon,
-                cell, cell_facet );
+            std::tie( found, cell, cell_facet ) = find_cell_facet_from_polygon(
+                region, surface, polygon );
             ringmesh_unused( found );
             ringmesh_assert( found && cell != NO_ID && cell_facet != NO_ID );
 
@@ -929,7 +928,6 @@ namespace RINGMesh {
         const Region< 3 >& region = geomodel_.region( region_id );
         std::unique_ptr< VolumeMeshBuilder< 3 > > builder = create_region_builder(
             region_id );
-
         if( recompute_adjacency ) {
             for( index_t c : range( region.nb_mesh_elements() ) ) {
                 for( index_t f : range( region.nb_cell_facets( c ) ) ) {

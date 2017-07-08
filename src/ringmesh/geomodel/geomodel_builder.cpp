@@ -38,7 +38,6 @@
 #include <stack>
 
 #include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!
@@ -211,7 +210,6 @@ namespace {
         // All the polygons on a boundary of all the Surfaces of the GeoModel
         std::vector< BorderPolygon > border_polygons_;
     };
-
     /*!
      * @brief Utility class to sort a set of oriented polygons around a common edge
      */
@@ -242,6 +240,7 @@ namespace {
                     side_( false )
             {
                 ringmesh_assert( p0 != p1 );
+
                 vec3 e1 = normalize( p1 - p0 );
                 B_A_ = normalize( cross( e1, N_ ) );
             }
@@ -253,12 +252,16 @@ namespace {
 
             /// Index in GeoModelRegionFromSurfaces
             index_t index_;
+
             /// Global index of the surface owning this polygon
             index_t surface_index_;
+
             /// Normal to the polygon - normalized vector
             vec3 N_;
+
             /// Normal to the edge p0p1 in the plane defined by the polygon - normalized
             vec3 B_A_;
+
             // Values filled by sorting function in GeoModelRegionFromSurfaces
             double angle_;
             bool side_;
@@ -553,6 +556,7 @@ namespace {
         }
 
     private:
+
         void compute_line_geometry()
         {
             visit_border_polygons_on_same_edge( cur_border_polygon_ );
@@ -677,11 +681,13 @@ namespace {
             index_t next_f_v1 = NO_ID;
 
             if( !backward ) {
-                mesh.next_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
+                std::tie( next_f, next_f_v0 ) = mesh.next_on_border( p,
+                    v0_id_in_polygon );
                 ringmesh_assert( next_f_v0 != NO_ID );
                 next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
             } else {
-                mesh.prev_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
+                std::tie( next_f, next_f_v0 ) = mesh.prev_on_border( p,
+                    v0_id_in_polygon );
                 ringmesh_assert( next_f_v0 != NO_ID );
                 next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
             }
@@ -712,7 +718,6 @@ namespace {
                         next_border_id ); next_border_id++ ) {
                 visited_[next_border_id] = true;
             }
-
             for( index_t prev_border_id = border_id - 1;
                 prev_border_id != NO_ID
                     && this->have_border_polygons_same_boundary_edge( border_id,
@@ -748,7 +753,6 @@ namespace {
                 adjacent_surfaces.push_back(
                     this->border_polygons_[prev_border_id].surface_ );
             }
-
             std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() );
             return adjacent_surfaces;
         }
@@ -994,7 +998,6 @@ namespace RINGMesh {
         to_erase.insert( cur_region.gmme() );
         removal.remove_mesh_entities( to_erase );
     }
-
     template class RINGMESH_API GeoModelBuilderBase< 2 > ;
     template class RINGMESH_API GeoModelBuilder< 2 > ;
     template class RINGMESH_API GeoModelBuilderInfo< 2 > ;

@@ -38,7 +38,7 @@ namespace {
     /*!
      * @brief Total number of polygons in the Surfaces of a geomodel
      */
-    inline index_t nb_polygons( const GeoModel< 3 >& geomodel )
+    index_t nb_polygons( const GeoModel< 3 >& geomodel )
     {
         index_t result = 0;
         for( index_t i : range( geomodel.nb_surfaces() ) ) {
@@ -234,6 +234,7 @@ namespace {
         }
 
         index_t count = 1;
+
         // Gocad::TFace = RINGMesh::Surface
         for( index_t s : range( geomodel.nb_surfaces() ) ) {
             const Surface< 3 >& cur_surface = geomodel.surface( s );

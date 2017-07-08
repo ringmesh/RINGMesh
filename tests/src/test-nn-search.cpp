@@ -67,6 +67,7 @@ void test_nn_search()
     vertices[6] = hardcoded_unique_vertices[0];
 
     std::vector< index_t > hardcoded_index_map( 7 );
+
     hardcoded_index_map[0] = 0;
     hardcoded_index_map[1] = 1;
     hardcoded_index_map[2] = 0;
@@ -78,8 +79,8 @@ void test_nn_search()
     NNSearch< DIMENSION > nn_search( vertices );
     std::vector< vecn< DIMENSION > > unique_vertices;
     std::vector< index_t > index_map;
-    nn_search.get_colocated_index_mapping( global_epsilon, index_map,
-        unique_vertices );
+    std::tie( std::ignore, index_map, unique_vertices ) =
+        nn_search.get_colocated_index_mapping_and_unique_points( global_epsilon );
     for( index_t i : range( index_map.size() ) ) {
         if( index_map[i] != hardcoded_index_map[i] ) {
             throw RINGMeshException( "TEST", "Index map found is wrong" );

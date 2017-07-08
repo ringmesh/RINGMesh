@@ -171,8 +171,8 @@ namespace {
                 const Surface< 3 >& surface = geomodel.surface( s );
                 vec3 nearest;
                 double distance;
-                index_t triangle = surface.polygon_aabb().closest_triangle(
-                    start.intersection_, nearest, distance );
+                std::tie( triangle, nearest, distance ) =
+                    surface.polygon_aabb().closest_triangle( start.intersection_ );
                 if( distance < best_distance ) {
                     best_distance = distance;
                     best_nearest = nearest;
@@ -229,11 +229,14 @@ namespace {
 
         void operator()( index_t trgl )
         {
+            bool does_seg_intersect_triangle = false;
             vec3 result;
-            if( Intersection::segment_triangle( v_from_, v_to_,
-                surface_.mesh_element_vertex( trgl, 0 ),
-                surface_.mesh_element_vertex( trgl, 1 ),
-                surface_.mesh_element_vertex( trgl, 2 ), result ) ) {
+            std::tie( does_seg_intersect_triangle, result ) =
+                segment_triangle_intersection( v_from_, v_to_,
+                    surface_.mesh_element_vertex( trgl, 0 ),
+                    surface_.mesh_element_vertex( trgl, 1 ),
+                    surface_.mesh_element_vertex( trgl, 2 ) );
+            if( does_seg_intersect_triangle ) {
                 intersections_.push_back(
                     LineInstersection( result, surface_.index(), trgl ) );
             }
@@ -387,7 +390,6 @@ namespace RINGMesh {
     {
         return mesh_->vertex_attribute_manager();
     }
-
     template< index_t DIMENSION >
     GEO::AttributesManager& WellPart< DIMENSION >::edge_attribute_manager() const
     {
@@ -697,7 +699,6 @@ namespace RINGMesh {
         }
         return NO_ID;
     }
-
     template class RINGMESH_API WellEntity< 2 > ;
     template class RINGMESH_API WellCorner< 2 > ;
     template class RINGMESH_API WellPart< 2 > ;

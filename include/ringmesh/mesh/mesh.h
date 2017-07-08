@@ -306,16 +306,14 @@ namespace RINGMesh {
          * orientation.
          * @param[in] p Input polygon index
          * @param[in] e Edge index in the polygon
-         * @param[out] next_p Next polygon index
-         * @param[out] next_e Next edge index in the polygon
+         * @return the next polygon index
+         * and the next edge index in the polygon
          *
          * @pre the given polygon edge must be on border
          */
-        void next_on_border(
+        std::tuple< index_t, index_t> next_on_border(
             index_t p,
-            index_t e,
-            index_t& next_p,
-            index_t& next_e ) const;
+            index_t e ) const;
 
         /*!
          * @brief Gets the previous vertex index in the polygon \param polygon_id.
@@ -338,18 +336,16 @@ namespace RINGMesh {
          * orientation.
          * @param[in] p Input polygon index
          * @param[in] e Edge index in the polygon
-         * @param[out] prev_p Previous polygon index
-         * @param[out] prev_e Previous edge index in the polygon
+         * @return the previous polygon index
+         * and the previous edge index in the polygon (tuple).
          *
          * @pre the surface must be correctly oriented and
          * the given polygon edge must be on border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
-        void prev_on_border(
+        std::tuple< index_t, index_t > prev_on_border(
             index_t p,
-            index_t e,
-            index_t& prev_p,
-            index_t& prev_e ) const;
+            index_t e ) const;
 
         /*!
          * @brief Get the vertex index in a polygon @param polygon_index from its
