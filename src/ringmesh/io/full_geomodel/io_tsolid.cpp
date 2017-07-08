@@ -34,9 +34,9 @@
  */
 
 namespace {
-    class TSolidIOHandler final: public GeoModelIOHandler {
+    class TSolidIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
             if( !input ) {
@@ -46,7 +46,7 @@ namespace {
             GeoModelBuilderTSolid builder( geomodel, filename );
             builder.build_geomodel();
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -61,8 +61,8 @@ namespace {
                 << "ZPOSITIVE Elevation" << std::endl
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
 
-            const GeoModelMesh& mesh = geomodel.mesh;
-            const GeoModelMeshPolygons& polygons = geomodel.mesh.polygons;
+            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
+            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false );
@@ -72,14 +72,14 @@ namespace {
             std::vector< index_t > atom_exported_id(
                 mesh.cells.nb_duplicated_vertices(), NO_ID );
             index_t nb_vertices_exported = 1;
-            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                const RINGMesh::Region& region = geomodel.region( r );
+            for( index_t r : range( geomodel.nb_regions() ) ) {
+                const RINGMesh::Region< 3 >& region = geomodel.region( r );
                 out << "TVOLUME " << region.name() << std::endl;
 
                 // Export not duplicated vertices
-                for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+                for( index_t c : range( region.nb_mesh_elements() ) ) {
                     index_t cell = mesh.cells.cell( r, c );
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
+                    for( index_t v : range( mesh.cells.nb_vertices( cell ) ) ) {
                         index_t atom_id = mesh.cells.duplicated_corner_index( cell, v );
                         if( atom_id == NO_ID ) {
                             index_t vertex_id = mesh.cells.vertex( cell, v );
@@ -112,7 +112,7 @@ namespace {
 
                 // Mark if a boundary is ending in the region
                 std::map< index_t, index_t > sides;
-                for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
+                for( index_t s : range( region.nb_boundaries() ) ) {
                     if( sides.count( region.boundary_gmme( s ).index() ) > 0 )
                         // a surface is encountered twice, it is ending in the region
                         sides[region.boundary_gmme( s ).index()] = 2;
@@ -120,10 +120,10 @@ namespace {
                         sides[region.boundary_gmme( s ).index()] = region.side( s );
                 }
 
-                for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+                for( index_t c : range( region.nb_mesh_elements() ) ) {
                     out << "TETRA";
                     index_t cell = mesh.cells.cell( r, c );
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
+                    for( index_t v : range( mesh.cells.nb_vertices( cell ) ) ) {
                         index_t atom_id = mesh.cells.duplicated_corner_index( cell, v );
                         if( atom_id == NO_ID ) {
                             index_t vertex_id = mesh.cells.vertex( cell, v );
@@ -134,7 +134,7 @@ namespace {
                     }
                     out << std::endl;
                     out << "# CTETRA " << region.name();
-                    for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+                    for( index_t f : range( mesh.cells.nb_facets( c ) ) ) {
                         out << " ";
                         index_t polygon = NO_ID;
                         bool side;
@@ -153,30 +153,28 @@ namespace {
 
             out << "MODEL" << std::endl;
             int tface_count = 1;
-            for( index_t i = 0;
-                i < geomodel.nb_geological_entities( Interface::type_name_static() );
-                i++ ) {
-                const RINGMesh::GeoModelGeologicalEntity& interf =
-                    geomodel.geological_entity( Interface::type_name_static(), i );
+            for( index_t i : range(
+                geomodel.nb_geological_entities(
+                    Interface < 3 > ::type_name_static() ) ) ) {
+                const RINGMesh::GeoModelGeologicalEntity< 3 >& interf =
+                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
+                        i );
                 out << "SURFACE " << interf.name() << std::endl;
-                for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                for( index_t s : range( interf.nb_children() ) ) {
                     out << "TFACE " << tface_count++ << std::endl;
                     index_t surface_id = interf.child_gmme( s ).index();
                     out << "KEYVERTICES";
                     index_t key_polygon_id = polygons.polygon( surface_id, 0 );
-                    for( index_t v = 0; v < polygons.nb_vertices( key_polygon_id );
-                        v++ ) {
+                    for( index_t v : range( polygons.nb_vertices( key_polygon_id ) ) ) {
                         out << " "
                             << vertex_exported_id[polygons.vertex( key_polygon_id,
                                 v )];
                     }
                     out << std::endl;
-                    for( index_t p = 0; p < polygons.nb_polygons( surface_id );
-                        p++ ) {
+                    for( index_t p : range( polygons.nb_polygons( surface_id ) ) ) {
                         index_t polygon_id = polygons.polygon( surface_id, p );
                         out << "TRGL";
-                        for( index_t v = 0; v < polygons.nb_vertices( polygon_id );
-                            v++ ) {
+                        for( index_t v : range( polygons.nb_vertices( polygon_id ) ) ) {
                             out << " "
                                 << vertex_exported_id[polygons.vertex( polygon_id,
                                     v )];
@@ -186,8 +184,8 @@ namespace {
                 }
             }
 
-            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                const RINGMesh::Region& region = geomodel.region( r );
+            for( index_t r : range( geomodel.nb_regions() ) ) {
+                const RINGMesh::Region< 3 >& region = geomodel.region( r );
                 out << "MODEL_REGION " << region.name() << " ";
                 region.side( 0 ) ? out << "+" : out << "-";
                 out << region.boundary_gmme( 0 ).index() + 1 << std::endl;

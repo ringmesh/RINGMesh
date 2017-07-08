@@ -72,22 +72,45 @@ namespace {
         import_arg_group_translation();
     }
 
-    vec3 extract_coords_from_string( const std::string& coords_in_string )
+    template< index_t DIMENSION >
+    vecn< DIMENSION > extract_coords_from_string(
+        const std::string& coords_in_string )
     {
         std::vector< std::string > split_coords;
-        split_coords.reserve( 3 );
+        split_coords.reserve( DIMENSION );
         GEO::String::split_string( coords_in_string, ' ', split_coords, true );
-        if( split_coords.size() != 3 ) {
+        if( split_coords.size() != DIMENSION ) {
             throw RINGMeshException( "I/O",
-                "Vector (" + coords_in_string + ") has not exactly 3 components" );
+                "Vector (" + coords_in_string + ") has not exactly "
+                    + std::to_string( DIMENSION ) + " components" );
         }
-        vec3 coords_vec;
-        for( index_t split_coords_itr = 0; split_coords_itr < 3;
-            ++split_coords_itr ) {
+        vecn< DIMENSION > coords_vec;
+        for( index_t split_coords_itr : range( DIMENSION ) ) {
             coords_vec[split_coords_itr] = GEO::String::to_double(
                 split_coords[split_coords_itr] );
         }
         return coords_vec;
+    }
+
+    template< index_t DIMENSION >
+    void translate_geomodel( const std::string& input_geomodel_name )
+    {
+        GeoModel< DIMENSION > geomodel;
+        geomodel_load( geomodel, input_geomodel_name );
+
+        std::string translation_vector_string = GEO::CmdLine::get_arg(
+            "translation:vector" );
+        vecn< DIMENSION > translation_vector =
+            extract_coords_from_string< DIMENSION >( translation_vector_string );
+
+        translate( geomodel, translation_vector );
+
+        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" );
+        if( output_geomodel_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in out:geomodel" );
+        }
+        geomodel_save( geomodel, output_geomodel_name );
     }
 
     void run()
@@ -99,22 +122,13 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel geomodel;
-        geomodel_load( geomodel, input_geomodel_name );
 
-        std::string translation_vector_string = GEO::CmdLine::get_arg(
-            "translation:vector" );
-        vec3 translation_vector = extract_coords_from_string(
-            translation_vector_string );
-
-        translate( geomodel, translation_vector );
-
-        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" );
-        if( output_geomodel_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in out:geomodel" );
+        index_t dimension = find_geomodel_dimension( input_geomodel_name );
+        if( dimension == 2 ) {
+            translate_geomodel< 2 >( input_geomodel_name );
+        } else if( dimension == 3 ) {
+            translate_geomodel< 3 >( input_geomodel_name );
         }
-        geomodel_save( geomodel, output_geomodel_name );
     }
 }
 

@@ -86,8 +86,7 @@ namespace {
                 "Vector" + coords_in_string + "has not exactly 3 components" );
         }
         vec3 coords_vec;
-        for( index_t split_coords_itr = 0; split_coords_itr < 3;
-            ++split_coords_itr ) {
+        for( index_t split_coords_itr : range( 3 ) ) {
             coords_vec[split_coords_itr] = GEO::String::to_double(
                 split_coords[split_coords_itr] );
         }
@@ -103,7 +102,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
         geomodel_load( geomodel, input_geomodel_name );
 
         std::string rotation_origin_string = GEO::CmdLine::get_arg(

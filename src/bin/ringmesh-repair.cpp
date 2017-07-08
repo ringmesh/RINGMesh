@@ -71,6 +71,26 @@ namespace {
         import_arg_group_repair();
     }
 
+    template< index_t DIMENSION >
+    void repair_geomodel( const std::string& in_model_file_name )
+    {
+
+        GeoModel< DIMENSION > geomodel;
+        geomodel_load( geomodel, in_model_file_name );
+
+        index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" );
+        GeoModelBuilder< DIMENSION > builder( geomodel );
+        builder.repair.repair(
+            static_cast< typename GeoModelBuilderRepair< DIMENSION >::RepairMode >( repair_mode ) );
+
+        std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" );
+        if( out_model_file_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in out:geomodel" );
+        }
+        geomodel_save( geomodel, out_model_file_name );
+    }
+
     void run()
     {
         GEO::Stopwatch total( "Total time" );
@@ -80,20 +100,13 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel geomodel;
-        geomodel_load( geomodel, in_model_file_name );
 
-        index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" );
-        GeoModelBuilder builder( geomodel );
-        builder.repair.repair(
-            static_cast< GeoModelBuilderRepair::RepairMode >( repair_mode ) );
-
-        std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" );
-        if( out_model_file_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in out:geomodel" );
+        index_t dimension = find_geomodel_dimension( in_model_file_name );
+        if( dimension == 2 ) {
+            repair_geomodel< 2 >( in_model_file_name );
+        } else if( dimension == 3 ) {
+            repair_geomodel< 3 >( in_model_file_name );
         }
-        geomodel_save( geomodel, out_model_file_name );
     }
 }
 

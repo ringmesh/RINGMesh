@@ -1,3 +1,18 @@
+Major change:
+ * Add support of 2D GeoModel:
+     * User can use GeoModel< 2 > or GeoModel< 3 >, they follow the same boundary reprsentation design as before
+     * Meshes can be defined using only 2 coordinates
+
+New Features:
+ * Add import of SVG file. 
+       We only read pathes and they should be flat. There is a command to flatten pathes in Inkscape.
+
+Bug fix:
+ * Error in computation of polygon area (for 3D concave polygons)
+
+Improvements:
+ * One can use range() to iterate over integer loops
+
 #### Release: 4.1.0 ####
 
 New Features:

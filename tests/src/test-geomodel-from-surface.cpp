@@ -71,11 +71,13 @@ int main()
 
         GEO::Mesh in;
         GEO::mesh_load( file_name, in );
-        GeoModel model;
+        GeoModel< 3 > model;
 
         GeoModelBuilderSurfaceMesh builder( model, in );
         builder.build_polygonal_surfaces_from_connected_components();
-        builder.from_surfaces.build();
+        builder.build_lines_and_corners_from_surfaces();
+        builder.build_regions_from_lines_and_surfaces();
+        builder.end_geomodel();
         print_geomodel( model );
 
         //Checking the validity of loaded model
@@ -99,18 +101,17 @@ int main()
         // Compute mesh with duplicated points to compares number
         // of mesh elements and mesh entities
         GEO::Mesh surface_meshes;
-        for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-            const Surface& surface = model.surface( s );
+        for( index_t s : range( model.nb_surfaces() ) ) {
+            const Surface< 3 >& surface = model.surface( s );
             index_t vertex_it = surface_meshes.vertices.create_vertices(
                 surface.nb_vertices() );
-            for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+            for( index_t v : range( surface.nb_vertices() ) ) {
                 surface_meshes.vertices.point( vertex_it + v ) = surface.vertex( v );
             }
             index_t facet_it = surface_meshes.facets.create_triangles(
                 surface.nb_mesh_elements() );
-            for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-                for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
-                    v++ ) {
+            for( index_t f : range( surface.nb_mesh_elements() ) ) {
+                for( index_t v : range( surface.nb_mesh_element_vertices( f ) ) ) {
                     surface_meshes.facets.set_vertex( facet_it + f, v,
                         vertex_it + surface.mesh_element_vertex_index( f, v ) );
                 }
@@ -123,11 +124,13 @@ int main()
         output_file2 += "saved_modelA6_dupl_points.mesh";
         GEO::mesh_save( surface_meshes, output_file2 );
 
-        GeoModel reloaded_model;
+        GeoModel< 3 > reloaded_model;
 
         GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes );
         builder2.build_polygonal_surfaces_from_connected_components();
-        builder2.from_surfaces.build();
+        builder2.build_lines_and_corners_from_surfaces();
+        builder2.build_regions_from_lines_and_surfaces();
+        builder2.end_geomodel();
         print_geomodel( reloaded_model );
 
         // Checking if building has been successfully done

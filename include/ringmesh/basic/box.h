@@ -38,19 +38,15 @@
 #include <ringmesh/basic/common.h>
 
 /*!
- * @file Box3D class declaration
+ * @file Box class declaration
  * @author Arnaud Botella
  */
 
 namespace RINGMesh {
 
-    class RINGMESH_API Box3d {
+    template< index_t DIMENSION >
+    class Box {
     public:
-        Box3d()
-            : initialized_( false )
-        {
-        }
-
         bool initialized() const
         {
             return initialized_;
@@ -61,44 +57,29 @@ namespace RINGMesh {
             initialized_ = false;
         }
 
-        double width() const
-        {
-            return max_[0] - min_[0];
-        }
-
-        double height() const
-        {
-            return max_[1] - min_[1];
-        }
-
-        double depth() const
-        {
-            return max_[2] - min_[2];
-        }
-
-        const vec3& min() const
+        const vecn< DIMENSION >& min() const
         {
             return min_;
         }
 
-        const vec3& max() const
+        const vecn< DIMENSION >& max() const
         {
             return max_;
         }
 
-        vec3 center() const
+        vecn< DIMENSION > center() const
         {
             return 0.5 * ( min() + max() );
         }
 
-        vec3 diagonal() const
+        vecn< DIMENSION > diagonal() const
         {
             return max() - min();
         }
 
-        void add_point( const vec3& p );
+        void add_point( const vecn< DIMENSION >& p );
 
-        void add_box( const Box3d& b )
+        void add_box( const Box< DIMENSION >& b )
         {
             if( b.initialized() ) {
                 add_point( b.min() );
@@ -106,9 +87,9 @@ namespace RINGMesh {
             }
         }
 
-        bool bboxes_overlap( const Box3d& B ) const
+        inline bool bboxes_overlap( const Box< DIMENSION >& B ) const
         {
-            for( index_t c = 0; c < 3; ++c ) {
+            for( index_t c : range( DIMENSION ) ) {
                 if( max()[c] < B.min()[c] ) {
                     return false;
                 }
@@ -119,16 +100,16 @@ namespace RINGMesh {
             return true;
         }
 
-        Box3d bbox_union( const Box3d& B ) const
+        inline Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const
         {
-            Box3d result = *this;
+            Box< DIMENSION > result = *this;
             result.add_box( B );
             return result;
         }
 
-        bool contains( const vec3& b ) const
+        bool contains( const vecn< DIMENSION >& b ) const
         {
-            for( index_t c = 0; c < 3; ++c ) {
+            for( index_t c : range( DIMENSION ) ) {
                 if( b[c] < min()[c] ) {
                     return false;
                 }
@@ -139,14 +120,14 @@ namespace RINGMesh {
             return true;
         }
 
-        double distance_to_center( const vec3& p ) const;
+        double distance_to_center( const vecn< DIMENSION >& p ) const;
 
-        double signed_distance( const vec3& p ) const;
+        double signed_distance( const vecn< DIMENSION >& p ) const;
 
     private:
-        bool initialized_;
-        vec3 min_;
-        vec3 max_;
+        bool initialized_ { false };
+        vecn< DIMENSION > min_;
+        vecn< DIMENSION > max_;
 
     };
 

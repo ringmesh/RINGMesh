@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 
@@ -44,9 +46,9 @@
 
 using namespace RINGMesh;
 
-void build_geomodel( GeoModel& geomodel )
+void build_geomodel( GeoModel< 3 >& geomodel )
 {
-    GeoModelBuilder builder( geomodel );
+    GeoModelBuilder< 3 > builder( geomodel );
 
     vec3 v0( 0, 0, 0 );
     vec3 v1( 1, 0, 0 );
@@ -129,13 +131,13 @@ void check_vertex( const vec3& in, const vec3& result )
     }
 }
 
-void test_translate( GeoModel& geomodel )
+void test_translate( GeoModel< 3 >& geomodel )
 {
     Logger::out( "TEST", "Test translation" );
     vec3 translation_vector( 1., 2.5, -3.5 );
     translate( geomodel, translation_vector );
 
-    const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+    const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
     check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) );
     check_vertex( vertices.vertex( 1 ), vec3( 2., 2.5, -3.5 ) );
     check_vertex( vertices.vertex( 2 ), vec3( 2., 3.5, -3.5 ) );
@@ -146,14 +148,14 @@ void test_translate( GeoModel& geomodel )
     check_vertex( vertices.vertex( 7 ), vec3( 1., 3.5, -2.5 ) );
 }
 
-void test_rotation( GeoModel& geomodel )
+void test_rotation( GeoModel< 3 >& geomodel )
 {
     Logger::out( "TEST", "Test rotation" );
     vec3 origin( 1., 2.5, -3.5 );
     vec3 axis( 0, 0, 1 );
     rotate( geomodel, origin, axis, 90, true );
 
-    const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+    const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
     check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) );
     check_vertex( vertices.vertex( 1 ), vec3( 1., 3.5, -3.5 ) );
     check_vertex( vertices.vertex( 2 ), vec3( 0., 3.5, -3.5 ) );
@@ -168,8 +170,8 @@ void check_matrices(
     const GEO::Matrix< 4, double >& lhs,
     const GEO::Matrix< 4, double >& rhs )
 {
-    for( index_t mat_i = 0; mat_i < 4; ++mat_i ) {
-        for( index_t mat_j = 0; mat_j < 4; ++mat_j ) {
+    for( index_t mat_i : range( 4 ) ) {
+        for( index_t mat_j : range( 4 ) ) {
             double diff = lhs( mat_i, mat_j ) - rhs( mat_i, mat_j );
             if( std::fabs( diff ) > global_epsilon ) {
                 throw RINGMeshException( "Test", "Error in rotation matrix" );
@@ -275,7 +277,7 @@ int main()
     try {
         default_configure();
 
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
         build_geomodel( geomodel );
         test_translate( geomodel );
         test_rotation_matrix();
