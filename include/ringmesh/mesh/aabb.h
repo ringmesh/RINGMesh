@@ -81,14 +81,13 @@ namespace RINGMesh {
          * - the distance between the \p query.
          * and \p nearest_point.
          * @tparam EvalDistance this functor should have an operator() defined like this:
-         *  void operator()(
+         *  std::tuple< double, vecn< DIMENSION > > operator()(
          *      const vecn< DIMENSION >& query,
-         *      index_t cur_box,
-         *      vecn< DIMENSION >& nearest_point,
-         *      double& distance ) const ;
+         *      index_t cur_box ) const ;
          * where query is the same than \p query, cur_box is the element box index
-         * (e.g. in the case of SurfaceAABBTree, this index is a polygon index) and nearest_point
-         * and distance are the value computed using the element in the \p cur_box.
+         * (e.g. in the case of SurfaceAABBTree, this index is a polygon index).
+         * The returned tuple contains the distance of the nearest point and the
+         * nearest point computed using the element in the \p cur_box.
          */
         template< typename EvalDistance >
         std::tuple< index_t, vecn< DIMENSION >, double > closest_element_box(
@@ -302,11 +301,9 @@ namespace RINGMesh {
             {
             }
 
-            void operator()(
+            std::tuple< double, vecn< DIMENSION > > operator()(
                 const vecn< DIMENSION >& query,
-                index_t cur_box,
-                vecn< DIMENSION >& nearest_point,
-                double& distance ) const;
+                index_t cur_box ) const;
 
         private:
             const LineMesh< DIMENSION >& mesh_;
@@ -353,11 +350,9 @@ namespace RINGMesh {
             {
             }
 
-            void operator()(
+            std::tuple< double, vecn< DIMENSION > > operator()(
                 const vecn< DIMENSION >& query,
-                index_t cur_box,
-                vecn< DIMENSION >& nearest_point,
-                double& distance ) const;
+                index_t cur_box ) const;
 
         private:
             const SurfaceMeshBase< DIMENSION >& mesh_;
@@ -431,7 +426,7 @@ namespace RINGMesh {
             index_t cur_box = mapping_morton_[box_begin];
             vecn< DIMENSION > cur_nearest_point;
             double cur_distance;
-            action( query, cur_box, cur_nearest_point, cur_distance );
+            std::tie( cur_distance, cur_nearest_point ) = action( query, cur_box );
             if( cur_distance < distance ) {
                 nearest_box = cur_box;
                 nearest_point = cur_nearest_point;
