@@ -117,11 +117,19 @@ namespace RINGMesh {
          * @return the number of degenerate edges that have been removed from the line.
          */
         index_t repair_line_mesh( const Line< DIMENSION >& line );
+        /*!
+         * @return a vector of boolean. Element i of this vector corresponds
+         * to the edge i of the line. If the element is true, the edge is
+         * degenerated.
+         */
         std::vector< bool > line_detect_degenerate_edges(
             const Line< DIMENSION >& line,
             std::vector< index_t >& colocated_vertices );
         /*!
-         * \note Copied and modified from geogram\mesh\mesh_repair.cpp
+         * \note Copied and modified from geogram\mesh\mesh_repair.cpp.
+         * @return a vector of boolean. Element i of this vector corresponds
+         * to the facet i of the surface. If the element is true, the facet is
+         * degenerated.
          */
         std::vector< index_t > surface_detect_degenerate_polygons(
             const Surface< DIMENSION >& surface,

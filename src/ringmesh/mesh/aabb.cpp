@@ -261,7 +261,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, vec3, double > AABBTree< DIMENSION >::get_nearest_element_box_hint(
+    std::tuple< index_t, vecn< DIMENSION >, double > AABBTree< DIMENSION >::get_nearest_element_box_hint(
         const vecn< DIMENSION >& query ) const
     {
         index_t box_begin = 0;
@@ -282,7 +282,7 @@ namespace RINGMesh {
         }
 
         index_t nearest_box = mapping_morton_[box_begin];
-        vec3 nearest_point = get_point_hint_from_box( tree_[box_begin], nearest_box );
+        vecn< DIMENSION > nearest_point = get_point_hint_from_box( tree_[box_begin], nearest_box );
         double distance = length( query - nearest_point );
         return std::make_tuple( nearest_box, nearest_point, distance );
     }
@@ -322,7 +322,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, vec3, double > LineAABBTree< DIMENSION >::closest_edge(
+    std::tuple< index_t, vecn< DIMENSION >, double > LineAABBTree< DIMENSION >::closest_edge(
         const vecn< DIMENSION >& query ) const
     {
         DistanceToEdge action( mesh_ );
@@ -336,8 +336,8 @@ namespace RINGMesh {
         vecn< DIMENSION >& nearest_point,
         double& distance ) const
     {
-        const vec3& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) );
-        const vec3& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) );
+        const vecn< DIMENSION >& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) );
+        const vecn< DIMENSION >& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) );
         std::tie( distance, nearest_point ) = Distance::point_to_segment( query, v0,
             v1 );
     }
@@ -390,7 +390,7 @@ namespace RINGMesh {
         const vecn< DIMENSION >& v2 = mesh_.vertex(
             mesh_.polygon_vertex( cur_box, 2 ) );
         std::tie( distance, nearest_point, std::ignore ) =
-            point_triangle_distance( query, v0, v1, v2 );
+            point_to_triangle( query, v0, v1, v2 );
     }
 
     template< index_t DIMENSION >

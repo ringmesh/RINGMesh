@@ -866,7 +866,7 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    std::vector< vec3 > compute_border_edge_barycenters(
+    std::vector< vecn< DIMENSION > > compute_border_edge_barycenters(
         const GeoModel< DIMENSION >& geomodel,
         const std::vector< index_t >& edge_indices )
     {

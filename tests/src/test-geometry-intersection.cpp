@@ -73,19 +73,17 @@ void test_line_plane_intersection()
     vec3 D_line1( -2., 4., 1. );
     bool does_line1_intersect_plane = false;
     vec3 result1;
-    std::tie( does_line1_intersect_plane, result1 ) = line_plane_intersection(
+    std::tie( does_line1_intersect_plane, result1 ) = Intersection::line_plane(
         O_line1, D_line1, O_plane, N_plane );
     vec3 answer1 = O_line1;
-    verdict(
-        Intersection::line_plane( O_line1, D_line1, O_plane, N_plane, result1 )
-            && result1 == answer1, "True intersection1" );
+    verdict( does_line1_intersect_plane && result1 == answer1, "True intersection1" );
 
     // Intersection is a point
     vec3 O_line2( -41., 7., -28. );
     vec3 D_line2( -2., 4., 1. );
     bool does_line2_intersect_plane = false;
     vec3 result2;
-    std::tie( does_line2_intersect_plane, result2 ) = Intersection::line_plane_intersection(
+    std::tie( does_line2_intersect_plane, result2 ) = Intersection::line_plane(
         O_line2, D_line2, O_plane, N_plane );
     vec3 answer2( 1., -77., -49. );
     verdict( does_line2_intersect_plane && result2 == answer2,
@@ -95,7 +93,7 @@ void test_line_plane_intersection()
     vec3 O_line3( 0., 1., 8. );
     vec3 D_line3( 0., 2., 1. );
     bool does_line3_intersect_plane = false;
-    std::tie( does_line3_intersect_plane, std::ignore ) = Intersection::line_plane_intersection(
+    std::tie( does_line3_intersect_plane, std::ignore ) = Intersection::line_plane(
         O_line3, D_line3, O_plane, N_plane );
     verdict( !does_line3_intersect_plane, "Line parallel to the plane" );
 
@@ -103,7 +101,7 @@ void test_line_plane_intersection()
     vec3 O_line4( 1., 1., 8. );
     vec3 D_line4( 0., 2., 1. );
     bool does_line4_intersect_plane = false;
-    std::tie( does_line4_intersect_plane, std::ignore ) = Intersection::line_plane_intersection(
+    std::tie( does_line4_intersect_plane, std::ignore ) = Intersection::line_plane(
         O_line4, D_line4, O_plane, N_plane );
     verdict( !does_line4_intersect_plane, "Line included into the plane" );
 
@@ -121,7 +119,7 @@ void test_segment_plane_intersection()
     vec3 seg11( -3., -10., -8.25 );
     bool does_seg1_intersect_plane = false;
     vec3 result1;
-    std::tie( does_seg1_intersect_plane, result1 ) = segment_plane_intersection(
+    std::tie( does_seg1_intersect_plane, result1 ) = Intersection::segment_plane(
         seg10, seg11, O_plane, N_plane );
     vec3 answer1( 1., -4., 1.75 );
     verdict( does_seg1_intersect_plane && result1 == answer1, "True intersection" );
@@ -208,7 +206,7 @@ void test_segment_triangle_intersection()
     bool does_seg4_intersect_triangle = false;
     vec3 result4;
     std::tie( does_seg4_intersect_triangle, result4 ) =
-        segment_triangle_intersection( seg40, seg41, trgl0, trgl1, trgl2 );
+        Intersection::segment_triangle( seg40, seg41, trgl0, trgl1, trgl2 );
     vec3 answer4( 2.5, 0., 0. );
     verdict( does_seg4_intersect_triangle && result4 == answer4, "Test4" );
 
@@ -261,7 +259,7 @@ void test_circle_plane_intersection()
     double r2 = 5.;
     bool does_circle2_intersect_plane = false;
     std::vector< vec3 > results2;
-    std::tie( does_circle2_intersect_plane, results2 ) = Intersection::circle_plane_intersection(
+    std::tie( does_circle2_intersect_plane, results2 ) = Intersection::circle_plane(
         O_plane, N_plane, O_circle2, N_circle2, r2 );
     vec3 answer2( 2., 3., -1. );
     verdict( does_circle2_intersect_plane && results2.size() == 1,
@@ -275,7 +273,7 @@ void test_circle_plane_intersection()
     double r3 = 2.;
     bool does_circle3_intersect_plane = false;
     std::vector< vec3 > results3;
-    std::tie( does_circle3_intersect_plane, results3 ) = Intersection::circle_plane_intersection(
+    std::tie( does_circle3_intersect_plane, results3 ) = Intersection::circle_plane(
         O_plane, N_plane, O_circle3, N_circle3, r3 );
     vec3 answer31 = O_circle3
         + vec3( std::sqrt( 2 ) * std::cos( M_PI / 6 ),

@@ -91,7 +91,7 @@ namespace RINGMesh {
          * and distance are the value computed using the element in the \p cur_box.
          */
         template< typename EvalDistance >
-        std::tuple< index_t, vec3, double > closest_element_box(
+        std::tuple< index_t, vecn< DIMENSION >, double > closest_element_box(
             const vecn< DIMENSION >& query,
             const EvalDistance& action ) const
         {

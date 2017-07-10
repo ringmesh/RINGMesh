@@ -192,7 +192,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     index_t GeoModelBuilderRepair< DIMENSION >::detect_degenerate_polygons(
-        const Surface< DIMENSION >& S )
+        const Surface< DIMENSION >& surface )
     {
         std::vector< index_t > colocated;
         const NNSearch< DIMENSION >& nn_search = surface.vertex_nn_search();
