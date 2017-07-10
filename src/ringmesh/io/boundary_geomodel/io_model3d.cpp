@@ -192,9 +192,12 @@ namespace {
     {
         for( index_t i : range( surface.nb_mesh_elements() ) ) {
             for( index_t j : range( surface.nb_mesh_element_vertices( i ) ) ) {
-                index_t v0 = surface.mesh_element_vertex_index( i, j );
-                index_t v1 = surface.mesh_element_vertex_index( i,
-                    surface.low_level_mesh_storage().next_polygon_vertex( i, j ) );
+                index_t v0 = surface.mesh_element_vertex_index(
+                    ElementLocalVertex( i, j ) );
+                index_t v1 = surface.mesh_element_vertex_index(
+                    ElementLocalVertex( i,
+                        surface.low_level_mesh_storage().next_polygon_vertex(
+                            ElementLocalVertex( i, j ) ) ) );
                 if( ( v0 == v0_in && v1 == v1_in )
                     || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true;
@@ -257,9 +260,15 @@ namespace {
 
             // Print the key polygon which is the first three
             // vertices of the first polygon
-            out << "  " << cur_surface.mesh_element_vertex( 0, 0 ) << std::endl;
-            out << "  " << cur_surface.mesh_element_vertex( 0, 1 ) << std::endl;
-            out << "  " << cur_surface.mesh_element_vertex( 0, 2 ) << std::endl;
+            out << "  "
+                << cur_surface.mesh_element_vertex( ElementLocalVertex( 0, 0 ) )
+                << std::endl;
+            out << "  "
+                << cur_surface.mesh_element_vertex( ElementLocalVertex( 0, 1 ) )
+                << std::endl;
+            out << "  "
+                << cur_surface.mesh_element_vertex( ElementLocalVertex( 0, 2 ) )
+                << std::endl;
 
             ++count;
         }
@@ -326,10 +335,12 @@ namespace {
                 }
                 for( index_t k : range( surface.nb_mesh_elements() ) ) {
                     out << "TRGL "
-                        << surface.mesh_element_vertex_index( k, 0 ) + offset << " "
-                        << surface.mesh_element_vertex_index( k, 1 ) + offset << " "
-                        << surface.mesh_element_vertex_index( k, 2 ) + offset
-                        << std::endl;
+                        << surface.mesh_element_vertex_index(
+                            ElementLocalVertex( k, 0 ) ) + offset << " "
+                        << surface.mesh_element_vertex_index(
+                            ElementLocalVertex( k, 1 ) ) + offset << " "
+                        << surface.mesh_element_vertex_index(
+                            ElementLocalVertex( k, 2 ) ) + offset << std::endl;
                 }
                 for( index_t k : range( surface.nb_boundaries() ) ) {
                     const Line< 3 >& line = surface.boundary( k );

@@ -722,7 +722,8 @@ namespace {
             vertices.reserve( nb_vertices_in_polygon );
             for( index_t v : range( nb_vertices_in_polygon ) ) {
                 index_t new_vertex = mesh.vertices.create_vertex(
-                    surface.mesh_element_vertex( cur_polygon, v ).data() );
+                    surface.mesh_element_vertex(
+                        ElementLocalVertex( cur_polygon, v ) ).data() );
                 vertices.push_back( new_vertex );
             }
             mesh.facets.create_polygon( vertices );
@@ -749,14 +750,14 @@ namespace {
                     && !is_edge_on_line( surface.geomodel(),
                         geomodel_vertices.geomodel_vertex_id( S_id, p, v ),
                         geomodel_vertices.geomodel_vertex_id( S_id, p,
-                            surface.low_level_mesh_storage().next_polygon_vertex( p,
-                                v ) ) ) ) {
+                            surface.low_level_mesh_storage().next_polygon_vertex(
+                                ElementLocalVertex( p, v ) ) ) ) ) {
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id, p, v ) );
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id, p,
-                            surface.low_level_mesh_storage().next_polygon_vertex( p,
-                                v ) ) );
+                            surface.low_level_mesh_storage().next_polygon_vertex(
+                                ElementLocalVertex( p, v ) ) ) );
                 }
             }
         }

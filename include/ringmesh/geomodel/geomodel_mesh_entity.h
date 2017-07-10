@@ -64,6 +64,7 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
+
     /*!
      * @brief Abstract base class for GeoModelMeshEntity.
      * @details The GeoModelMeshEntity geometrical representation
@@ -232,8 +233,7 @@ namespace RINGMesh {
          * @return the global index of the vertex in the GeoModelMeshEntity
          */
         virtual index_t mesh_element_vertex_index(
-            index_t mesh_element_index,
-            index_t vertex_local_index ) const = 0;
+            const ElementLocalVertex& element_local_vertex ) const = 0;
         /*!
          * @brief Coordinates of a vertex of a mesh element.
          * @param[in] mesh_element_index Index of a constitutive element of the mesh
@@ -242,11 +242,9 @@ namespace RINGMesh {
          * @return the vertex coordinates in the GeoModelMeshEntity
          */
         const vecn< DIMENSION > & mesh_element_vertex(
-            index_t mesh_element_index,
-            index_t vertex_local_index ) const
+            const ElementLocalVertex& element_local_vertex ) const
         {
-            return vertex(
-                mesh_element_vertex_index( mesh_element_index, vertex_local_index ) );
+            return vertex( mesh_element_vertex_index( element_local_vertex ) );
         }
 
         /*! @}
@@ -456,12 +454,10 @@ namespace RINGMesh {
          * @brief Get the index of the unique vertex constituting of the Corner.
          * @return 0.
          */
-        index_t mesh_element_vertex_index(
-            index_t mesh_element = 0,
-            index_t vertex_index = 0 ) const final
+        index_t mesh_element_vertex_index( const ElementLocalVertex& element_local_vertex =
+            ElementLocalVertex( 0, 0 ) ) const final
         {
-            ringmesh_unused( mesh_element );
-            ringmesh_unused( vertex_index );
+            ringmesh_unused( element_local_vertex );
             return 0;
         }
 
@@ -556,12 +552,11 @@ namespace RINGMesh {
          * @param vertex_index in a given edge @param edge_index.
          */
         index_t mesh_element_vertex_index(
-            index_t edge_index,
-            index_t vertex_index ) const final
+            const ElementLocalVertex& element_local_vertex ) const final
         {
-            ringmesh_assert( edge_index < nb_mesh_elements() );
-            ringmesh_assert( vertex_index < 2 );
-            return line_mesh_->edge_vertex( edge_index, vertex_index );
+            ringmesh_assert( element_local_vertex.element_id_ < nb_mesh_elements() );
+            ringmesh_assert( element_local_vertex.local_vertex_id_ < 2 );
+            return line_mesh_->edge_vertex( element_local_vertex );
         }
 
         /*!
@@ -723,13 +718,12 @@ namespace RINGMesh {
          * from its index in a polygon of the mesh.
          */
         index_t mesh_element_vertex_index(
-            index_t polygon_index,
-            index_t vertex_index ) const final
+            const ElementLocalVertex& element_local_vertex ) const final
         {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            ringmesh_assert( element_local_vertex.element_id_ < nb_mesh_elements() );
             ringmesh_assert(
-                vertex_index < nb_mesh_element_vertices( polygon_index ) );
-            return surface_mesh_->polygon_vertex( polygon_index, vertex_index );
+                element_local_vertex.local_vertex_id_ < nb_mesh_element_vertices( element_local_vertex.element_id_ ) );
+            return surface_mesh_->polygon_vertex( element_local_vertex );
         }
 
         /*!
@@ -958,14 +952,16 @@ namespace RINGMesh {
          * @brief Index of a vertex in the Region from its index in a cell
          */
         index_t mesh_element_vertex_index(
-            index_t cell_index,
-            index_t vertex_index ) const final
+            const ElementLocalVertex& element_local_vertex ) const final
         {
             if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert(
-                    vertex_index < nb_mesh_element_vertices( cell_index ) );
-                return volume_mesh_->cell_vertex( cell_index, vertex_index );
+                    element_local_vertex.element_id_ < nb_mesh_elements() );
+                ringmesh_assert(
+                    element_local_vertex.local_vertex_id_
+                        < nb_mesh_element_vertices(
+                            element_local_vertex.element_id_ ) );
+                return volume_mesh_->cell_vertex( element_local_vertex );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1012,8 +1008,9 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return volume_mesh_->nb_cell_facet_vertices( cell_index,
-                    facet_index );
+                return volume_mesh_->nb_cell_facet_vertices(
+                    VolumeMesh< DIMENSION >::CellLocalFacet( cell_index,
+                        facet_index ) );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1046,8 +1043,9 @@ namespace RINGMesh {
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
                 ringmesh_assert(
                     vertex_index < nb_mesh_element_vertices( cell_index ) );
-                return volume_mesh_->cell_facet_vertex( cell_index, facet_index,
-                    vertex_index );
+                return volume_mesh_->cell_facet_vertex(
+                    VolumeMesh< DIMENSION >::CellLocalFacet( cell_index, facet_index,
+                        vertex_index ) );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1058,7 +1056,9 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return volume_mesh_->cell_adjacent( cell_index, facet_index );
+                return volume_mesh_->cell_adjacent(
+                    VolumeMesh< DIMENSION >::CellLocalFacet( cell_index,
+                        facet_index ) );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1090,13 +1090,16 @@ namespace RINGMesh {
             for( index_t i : range( this->nb_boundaries() ) ) {
                 const Surface< DIMENSION >& surface = boundary( i );
                 for( index_t t : range( surface.nb_mesh_elements() ) ) {
-                    const vecn< DIMENSION >& p0 = surface.mesh_element_vertex( t,
-                        0 );
+                    const vecn< DIMENSION >& p0 = surface.mesh_element_vertex(
+                        ElementLocalVertex( t, 0 ) );
                     for( index_t v : range( 1,
                         surface.nb_mesh_element_vertices( t ) - 1 ) ) {
                         double cur_volume = ( dot( p0,
-                            cross( surface.mesh_element_vertex( t, v ),
-                                surface.mesh_element_vertex( t, v + 1 ) ) ) ) / 6.;
+                            cross(
+                                surface.mesh_element_vertex(
+                                    ElementLocalVertex( t, v ) ),
+                                surface.mesh_element_vertex(
+                                    ElementLocalVertex( t, v + 1 ) ) ) ) ) / 6.;
                         side( i ) ? result -= cur_volume : result += cur_volume;
                     }
                 }

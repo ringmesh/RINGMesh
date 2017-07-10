@@ -207,7 +207,8 @@ namespace RINGMesh {
             std::vector< bool > to_delete( mesh_->nb_vertices(), true );
             for( index_t e : range( mesh_->nb_edges() ) ) {
                 for( index_t v : range( 2 ) ) {
-                    index_t vertex_id = mesh_->edge_vertex( e, v );
+                    index_t vertex_id = mesh_->edge_vertex(
+                        ElementLocalVertex( e, v ) );
                     to_delete[vertex_id] = false;
                 }
             }

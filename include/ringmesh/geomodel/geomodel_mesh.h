@@ -926,8 +926,7 @@ namespace RINGMesh {
          * if the corner is duplicated, else NO_ID.
          */
         index_t duplicated_corner_index(
-            index_t c,
-            index_t v ) const;
+            const ElementLocalVertex& cell_local_vertex ) const;
         /*!
          * Get the vertex index in the GeoModelMesh corresponding
          * to the given duplicated vertex index
@@ -949,7 +948,7 @@ namespace RINGMesh {
          * @param[in] v the local vertex index [0, nb_vertices_in_cell[
          * @return the vertex index
          */
-        index_t vertex( index_t c, index_t v ) const;
+        index_t vertex( const ElementLocalVertex& cell_local_vertex ) const;
         /*!
          * Get the number of edges in the cell
          * @param[in] c the cell index
@@ -965,7 +964,8 @@ namespace RINGMesh {
          * @param[in] c the cell index
          * @param[in] lf the cell facet index
          */
-        index_t nb_facet_vertices( index_t c, index_t lf ) const;
+        index_t nb_facet_vertices(
+            const VolumeMesh< DIMENSION >::CellLocalFacet& cell_local_facet ) const;
         /*!
          * \brief Gets a cell vertex by local facet index and local
          *  vertex index in the edge
@@ -974,7 +974,9 @@ namespace RINGMesh {
          * \param[in] lv the local index in the cell facet
          * \return vertex \p lv of facet \p lf in cell \p c
          */
-        index_t facet_vertex( index_t c, index_t lf, index_t lv ) const;
+        index_t facet_vertex(
+            const VolumeMesh< DIMENSION >::CellLocalFacet& cell_local_facet,
+            index_t lv ) const;
         /*!
          * \brief Gets a cell vertex by local edge index and local
          *  vertex index in the edge

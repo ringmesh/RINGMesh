@@ -127,9 +127,10 @@ namespace RINGMesh {
     class GeogramLineMesh: public LineMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
     public:
-        index_t edge_vertex( index_t edge_id, index_t vertex_id ) const override
+        index_t edge_vertex( const ElementLocalVertex& edge_local_vertex ) const override
         {
-            return mesh_->edges.vertex( edge_id, vertex_id );
+            return mesh_->edges.vertex(
+                edge_local_vertex.element_id_, edge_local_vertex.local_vertex_id_ );
         }
 
         index_t nb_edges() const override
@@ -150,9 +151,10 @@ namespace RINGMesh {
     class GeogramSurfaceMesh: public SurfaceMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
     public:
-        index_t polygon_vertex( index_t polygon_id, index_t vertex_id ) const override
+        index_t polygon_vertex( const ElementLocalVertex& polygon_local_vertex ) const override
         {
-            return mesh_->facets.vertex( polygon_id, vertex_id );
+            return mesh_->facets.vertex(
+                polygon_local_vertex.element_id_, polygon_local_vertex.local_vertex_id_ );
         }
 
         index_t nb_polygons() const override
@@ -165,9 +167,10 @@ namespace RINGMesh {
             return mesh_->facets.nb_vertices( polygon_id );
         }
 
-        index_t polygon_adjacent( index_t polygon_id, index_t edge_id ) const override
+        index_t polygon_adjacent( const PolygonLocalEdge& polygon_local_edge ) const override
         {
-            return mesh_->facets.adjacent( polygon_id, edge_id );
+            return mesh_->facets.adjacent(
+                polygon_local_edge.polygon_id_, polygon_local_edge.local_edge_id_ );
         }
 
         GEO::AttributesManager& polygon_attribute_manager() const override
@@ -188,9 +191,9 @@ namespace RINGMesh {
     class GeogramVolumeMesh: public VolumeMesh< DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramVolumeMesh );
     public:
-        index_t cell_vertex( index_t cell_id, index_t vertex_id ) const override
+        index_t cell_vertex( const ElementLocalVertex& cell_local_vertex ) const override
         {
-            return mesh_->cells.vertex( cell_id, vertex_id );
+            return mesh_->cells.vertex( cell_local_vertex.element_id_, cell_local_vertex.local_vertex_id_ );
         }
 
         index_t cell_edge_vertex(
@@ -202,16 +205,17 @@ namespace RINGMesh {
         }
 
         index_t cell_facet_vertex(
-            index_t cell_id,
-            index_t facet_id,
+            const CellLocalFacet& cell_local_facet,
             index_t vertex_id ) const override
         {
-            return mesh_->cells.facet_vertex( cell_id, facet_id, vertex_id );
+            return mesh_->cells.facet_vertex(
+                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_, vertex_id );
         }
 
-        index_t cell_facet( index_t cell_id, index_t facet_id ) const override
+        index_t cell_facet( const CellLocalFacet& cell_local_facet ) const override
         {
-            return mesh_->cells.facet( cell_id, facet_id );
+            return mesh_->cells.facet(
+                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
         }
 
         index_t nb_cell_facets( index_t cell_id ) const override
@@ -230,10 +234,10 @@ namespace RINGMesh {
         }
 
         index_t nb_cell_facet_vertices(
-            index_t cell_id,
-            index_t facet_id ) const override
+            const CellLocalFacet& cell_local_facet ) const override
         {
-            return mesh_->cells.facet_nb_vertices( cell_id, facet_id );
+            return mesh_->cells.facet_nb_vertices(
+                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
         }
 
         index_t nb_cell_vertices( index_t cell_id ) const override
@@ -256,9 +260,10 @@ namespace RINGMesh {
             return mesh_->cells.corners_end( cell_id );
         }
 
-        index_t cell_adjacent( index_t cell_id, index_t facet_id ) const override
+        index_t cell_adjacent( const CellLocalFacet& cell_local_facet ) const override
         {
-            return mesh_->cells.adjacent( cell_id, facet_id );
+            return mesh_->cells.adjacent(
+                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
         }
 
         GEO::AttributesManager& cell_attribute_manager() const override

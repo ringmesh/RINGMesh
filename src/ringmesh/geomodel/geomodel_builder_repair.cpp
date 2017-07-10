@@ -163,17 +163,17 @@ namespace RINGMesh {
             std::vector< index_t > vertices( nb_vertices );
             for( index_t v : range( nb_vertices ) ) {
                 vertices[v] = colocated_vertices[surface.mesh_element_vertex_index(
-                    polygon_id, v )];
+                    ElementLocalVertex( polygon_id, v ) )];
             }
             GEO::sort_unique( vertices );
             return vertices.size() != nb_vertices;
         }
         index_t v1 = colocated_vertices[surface.mesh_element_vertex_index(
-            polygon_id, 0 )];
+            ElementLocalVertex( polygon_id, 0 ) )];
         index_t v2 = colocated_vertices[surface.mesh_element_vertex_index(
-            polygon_id, 1 )];
+            ElementLocalVertex( polygon_id, 1 ) )];
         index_t v3 = colocated_vertices[surface.mesh_element_vertex_index(
-            polygon_id, 2 )];
+            ElementLocalVertex( polygon_id, 2 ) )];
         return v1 == v2 || v2 == v3 || v3 == v1;
     }
 
@@ -388,8 +388,8 @@ namespace RINGMesh {
                             for( index_t fpv_itr : range(
                                 E.nb_mesh_element_vertices( p_itr ) ) ) {
                                 builder->set_polygon_vertex( p_itr, fpv_itr,
-                                    colocated[E.mesh_element_vertex_index( p_itr,
-                                        fpv_itr )] );
+                                    colocated[E.mesh_element_vertex_index(
+                                        ElementLocalVertex( p_itr, fpv_itr ) )] );
                             }
                         }
                         builder->delete_vertices( to_delete );
@@ -401,9 +401,11 @@ namespace RINGMesh {
                             builder_.geometry.create_line_builder( e );
                         for( index_t e_itr : range( E.nb_mesh_elements() ) ) {
                             builder->set_edge_vertex( e_itr, 0,
-                                colocated[E.mesh_element_vertex_index( e_itr, 0 )] );
+                                colocated[E.mesh_element_vertex_index(
+                                    ElementLocalVertex( e_itr, 0 ) )] );
                             builder->set_edge_vertex( e_itr, 1,
-                                colocated[E.mesh_element_vertex_index( e_itr, 1 )] );
+                                colocated[E.mesh_element_vertex_index(
+                                    ElementLocalVertex( e_itr, 1 ) )] );
                         }
                         builder->delete_vertices( to_delete );
                         Logger::out( "Repair", nb_todelete,
@@ -422,8 +424,10 @@ namespace RINGMesh {
         index_t edge,
         const std::vector< index_t >& colocated_vertices )
     {
-        index_t v1 = colocated_vertices[line.mesh_element_vertex_index( edge, 0 )];
-        index_t v2 = colocated_vertices[line.mesh_element_vertex_index( edge, 1 )];
+        index_t v1 = colocated_vertices[line.mesh_element_vertex_index(
+            ElementLocalVertex( edge, 0 ) )];
+        index_t v2 = colocated_vertices[line.mesh_element_vertex_index(
+            ElementLocalVertex( edge, 1 ) )];
         return v1 == v2;
     }
 
