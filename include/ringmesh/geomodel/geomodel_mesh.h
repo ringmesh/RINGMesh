@@ -84,7 +84,7 @@ namespace RINGMesh {
     protected:
         GeoModelMeshCommon(
             GeoModelMesh< DIMENSION >& gmm,
-            GeoModel< DIMENSION >& gm );
+            GeoModel< DIMENSION >& geomodel );
 
         void set_mesh( MeshBase< DIMENSION >* mesh )
         {
@@ -99,7 +99,7 @@ namespace RINGMesh {
         /// Attached GeoModelMesh
         GeoModelMesh< DIMENSION >& gmm_;
         /// Attached GeoModel
-        GeoModel< DIMENSION >& gm_;
+        GeoModel< DIMENSION >& geomodel_;
         /// Attached MeshBase
         MeshBase< DIMENSION >* mesh_base_;
     };

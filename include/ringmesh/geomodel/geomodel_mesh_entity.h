@@ -1260,7 +1260,7 @@ namespace RINGMesh {
             gmme_.copy_mesh_entity( from );
         }
 
-        void change_mesh_data_structure( const MeshType type );
+        void change_mesh_data_structure( const MeshType& type );
 
         template< template< index_t > class ENTITY >
         static std::unique_ptr< ENTITY< DIMENSION > > create_entity(

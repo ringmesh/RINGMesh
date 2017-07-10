@@ -261,10 +261,10 @@ namespace {
      * @param[in] geomodel GeoModel to consider
      * @return Pointers to the NNSearchs of regions
      */
-    std::vector< std::unique_ptr< NNSearch > > compute_cell_facet_centers_region_nn_searchs(
+    std::vector< std::unique_ptr< NNSearch<3> > > compute_cell_facet_centers_region_nn_searchs(
         const GeoModel< 3 >& geomodel )
     {
-        std::vector< std::unique_ptr< NNSearch > > region_nn_searchs(
+        std::vector< std::unique_ptr< NNSearch<3> > > region_nn_searchs(
             geomodel.nb_regions() );
         for( index_t r : range( geomodel.nb_regions() ) ) {
             std::vector< vec3 > cell_facet_centers;
@@ -465,9 +465,8 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder,
         const GeoModel< 3 >& geomodel )
     {
-        std::vector< std::unique_ptr< NNSearch< 3 > > > reg_nn_searchs(
-            geomodel.nb_regions() );
-        compute_cell_facet_centers_region_nn_searchs( geomodel, reg_nn_searchs );
+        std::vector< std::unique_ptr< NNSearch< 3 > > > reg_nn_searchs =
+            compute_cell_facet_centers_region_nn_searchs( geomodel );
         for( index_t s : range( geomodel.nb_surfaces() ) ) {
             add_surface_to_region_boundaries( s, reg_nn_searchs, geomodel,
                 geomodel_builder );

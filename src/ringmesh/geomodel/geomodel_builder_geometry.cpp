@@ -79,8 +79,8 @@ namespace {
         const vecn< DIMENSION >& v0,
         const vecn< DIMENSION >& v1 )
     {
-        index_t p;
-        index_t e;
+        index_t polygon;
+        index_t edge;
         vecn< DIMENSION > v_bary = 0.5 * ( v0 + v1 );
         bool result = false;
         surface.polygon_nn_search().get_neighbors( v_bary,
@@ -99,7 +99,8 @@ namespace {
                         }
                     }
                 }
-        return std::make_tuple( result, p, e );///TODO return empty
+                return result;} );
+        return std::make_tuple( result, polygon, edge );///TODO return empty
     }
 
     template< index_t DIMENSION >
@@ -145,7 +146,8 @@ namespace {
                         break;/// TODO return
                     }
                 }
-        return result;/// TODO return empty
+                return result;} );
+        return std::make_tuple( result, cell,cell_facet );/// TODO return empty
     }
 
     template< index_t DIMENSION >
@@ -615,8 +617,7 @@ namespace RINGMesh {
             Surface< DIMENSION >& surface =
                 dynamic_cast< Surface< DIMENSION >& >( geomodel_access_.modifiable_mesh_entity(
                     gmme_id( Surface< DIMENSION >::type_name_static(), s ) ) );
-            std::set< index_t > cutting_lines;
-            get_internal_borders( surface, cutting_lines );
+            std::set< index_t > cutting_lines = get_internal_borders( surface );
             for( index_t line_id : cutting_lines ) {
                 cut_surface_by_line( s, line_id );
             }
@@ -898,8 +899,7 @@ namespace RINGMesh {
                 dynamic_cast< Region< 3 >& >( geomodel_access_.modifiable_mesh_entity(
                     gmme_id( Region< 3 >::type_name_static(), r ) ) );
             if( region.nb_mesh_elements() == 0 ) continue;
-            std::set< index_t > cutting_surfaces;
-            get_internal_borders( region, cutting_surfaces );
+            std::set< index_t > cutting_surfaces = get_internal_borders( region );
             for( index_t surface_id : cutting_surfaces ) {
                 cut_region_by_surface( r, surface_id );
             }

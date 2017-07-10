@@ -169,8 +169,9 @@ namespace {
             index_t best_triangle = NO_ID;
             for( index_t s : range( geomodel.nb_surfaces() ) ) {
                 const Surface< 3 >& surface = geomodel.surface( s );
+                index_t triangle = NO_ID;
                 vec3 nearest;
-                double distance;
+                double distance = max_float64();
                 std::tie( triangle, nearest, distance ) =
                     surface.polygon_aabb().closest_triangle( start.intersection_ );
                 if( distance < best_distance ) {
@@ -232,7 +233,7 @@ namespace {
             bool does_seg_intersect_triangle = false;
             vec3 result;
             std::tie( does_seg_intersect_triangle, result ) =
-                segment_triangle_intersection( v_from_, v_to_,
+                Intersection::segment_triangle( v_from_, v_to_,
                     surface_.mesh_element_vertex( trgl, 0 ),
                     surface_.mesh_element_vertex( trgl, 1 ),
                     surface_.mesh_element_vertex( trgl, 2 ) );

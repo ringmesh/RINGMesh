@@ -114,8 +114,9 @@ namespace RINGMesh {
          * @param[in] V0 the first vertex of the triangle
          * @param[in] V1 the second vertex of the triangle
          * @param[in] V2 the third vertex of the triangle
-         * @param[out] closest_point the closest point on the triangle
-         * @return the smallest distance
+         * @return a tuple containing:
+         * - the smallest distance.
+         * - the closest_point the closest point on the triangle.
          */
         std::tuple< double, vec2 > RINGMESH_API point_to_triangle(
             const vec2& point,
@@ -183,7 +184,7 @@ namespace RINGMesh {
          * @return a tuple containing a boolean (true is there is an intersection)
          * and the intersected point if any.
          */
-        std::tuple< bool, vec3 > RINGMESH_API segment_triangle_intersection(
+        std::tuple< bool, vec3 > RINGMESH_API segment_triangle(
             const vec3& seg0,
             const vec3& seg1,
             const vec3& trgl0,
@@ -266,15 +267,15 @@ namespace RINGMesh {
          * @param[in] D_line0 the direction of the first line
          * @param[in] O_line1 a point on the second line
          * @param[in] D_line1 the direction of the second line
-         * @param[out] result the intersection
-         * @return true is there is an intersection between the lines
+         * @return a tuple containing:
+         * - a boolean: true if there is an intersection.
+         * - the intersected point if any.
          */
-        bool RINGMESH_API line_line(
+        std::tuple< bool, vec2 > RINGMESH_API line_line(
             const vec2& O_line0,
             const vec2& D_line0,
             const vec2& O_line1,
-            const vec2& D_line1,
-            vec2& result );
+            const vec2& D_line1 );
 
         /*!
          * Computes the intersection between two segments
@@ -282,15 +283,15 @@ namespace RINGMesh {
          * @param[in] p1_seg0 the second vertex of the segment
          * @param[in] p0_seg1 the first vertex of the segment
          * @param[in] p1_seg1 the second vertex of the segment
-         * @param[out] result the intersection
-         * @return true is there is an intersection between the segments
+         * @return a tuple containing:
+         * - a boolean: true if there is an intersection.
+         * - the intersected point if any.
          */
-        bool RINGMESH_API segment_segment(
+        std::tuple< bool, vec2 > RINGMESH_API segment_segment(
             const vec2& p0_seg0,
             const vec2& p1_seg0,
             const vec2& p0_seg1,
-            const vec2& p1_seg1,
-            vec2& result );
+            const vec2& p1_seg1 );
 
         /*!
          * Computes the intersection between a segment and a line
@@ -298,15 +299,15 @@ namespace RINGMesh {
          * @param[in] p1_seg the second vertex of the segment
          * @param[in] O_line a point on the line
          * @param[in] D_line the direction of the line
-         * @param[out] result the intersection
-         * @return true is there is an intersection
+         * @return a tuple containing:
+         * - a boolean: true if there is an intersection.
+         * - the intersected point if any.
          */
-        bool RINGMESH_API segment_line(
+        std::tuple< bool, vec2 > RINGMESH_API segment_line(
             const vec2& p0_seg,
             const vec2& p1_seg,
             const vec2& O_line,
-            const vec2& D_line,
-            vec2& result );
+            const vec2& D_line );
     }
 
     /*!
