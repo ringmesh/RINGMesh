@@ -69,9 +69,8 @@ namespace RINGMesh {
          *     index_map = [0, 1, 0, 3, 1, 5]
          *     return 2
          */
-        index_t get_colocated_index_mapping(
-            double epsilon,
-            std::vector< index_t >& index_map ) const;
+        std::tuple< index_t, std::vector< index_t > > get_colocated_index_mapping(
+            double epsilon ) const;
         /*!
          * @brief Gets the \p index_map that link all the points
          * to a no duplicated list of index in the list of \p unique_points.
@@ -82,10 +81,8 @@ namespace RINGMesh {
          *     index_map = [0, 1, 0, 2, 1, 3]
          *     return 2
          */
-        index_t get_colocated_index_mapping(
-            double epsilon,
-            std::vector< index_t >& index_map,
-            std::vector< vecn< DIMENSION > >& unique_points ) const;
+        std::tuple< index_t, std::vector< index_t >, std::vector< vecn< DIMENSION > > >
+            get_colocated_index_mapping_and_unique_points( double epsilon ) const;
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test

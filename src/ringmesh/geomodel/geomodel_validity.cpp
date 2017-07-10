@@ -872,7 +872,7 @@ namespace {
     {
         const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
         index_t nb_edges = static_cast< index_t >( edge_indices.size() / 2 );
-        std::vector< vec3 > edge_barycenters;
+        std::vector< vecn< DIMENSION > > edge_barycenters;
         edge_barycenters.reserve( nb_edges );
         for( index_t e = 0; e < edge_indices.size(); e += 2 ) {
             const vecn< DIMENSION >& v0 = vertices.vertex( edge_indices[e] );

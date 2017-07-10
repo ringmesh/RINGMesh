@@ -103,6 +103,11 @@ namespace {
     std::tuple< double, double, double, double, double > compute_region_volumes_per_cell_type(
         const Region< DIMENSION >& region )
     {
+        double tet_volume = 0.;
+        double pyramid_volume = 0.;
+        double prism_volume = 0.;
+        double hex_volume = 0.;
+        double poly_volume = 0.;
         for( index_t c : range( region.nb_mesh_elements() ) ) {
             index_t nb_vertices = region.nb_mesh_element_vertices( c );
             double volume = region.low_level_mesh_storage().cell_volume( c );
@@ -124,7 +129,8 @@ namespace {
                     break;
             }
         }
-
+        return std::make_tuple( tet_volume, pyramid_volume, prism_volume, hex_volume,
+            poly_volume );
     }
 
     template< index_t DIMENSION >

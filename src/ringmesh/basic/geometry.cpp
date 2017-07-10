@@ -170,27 +170,6 @@ namespace RINGMesh {
         return std::make_tuple( true, lambdas );
     }
 
-    std::tuple< bool, vec3 > line_plane_intersection(
-        const vec3& O_line,
-        const vec3& D_line,
-        const vec3& O_plane,
-        const vec3& N_plane )
-    {
-        double total_area = GEO::Geom::triangle_signed_area( p2, p1, p0 );
-        if( std::fabs( total_area ) < global_epsilon_sq ) {
-            std::fill( lambda, lambda + 3, 0. );
-            return false;
-        }
-        double area0 = GEO::Geom::triangle_signed_area( p2, p1, p );
-        double area1 = GEO::Geom::triangle_signed_area( p0, p2, p );
-        double area2 = GEO::Geom::triangle_signed_area( p1, p0, p );
-
-        lambda[0] = area0 / total_area;
-        lambda[1] = area1 / total_area;
-        lambda[2] = area2 / total_area;
-        return true;
-    }
-
     template< index_t DIMENSION >
     std::tuple< bool, vecn< DIMENSION > > point_segment_projection(
         const vecn< DIMENSION >& p,
@@ -208,7 +187,8 @@ namespace RINGMesh {
             vecn< DIMENSION > new_p = center + d * edge;
             return std::make_tuple( true, new_p );
         }
-        return std::make_tuple( false, vecn< DIMENSION >() );
+        vecn< DIMENSION > empty_point;
+        return std::make_tuple( false, empty_point );
     }
 
     vec3 point_plane_projection(
@@ -587,15 +567,13 @@ namespace RINGMesh {
         return s1 == s2 && s2 == s3;
     }
 
-    template bool RINGMESH_API point_segment_projection(
+    template std::tuple< bool, vecn< 2 > > RINGMESH_API point_segment_projection(
         const vecn< 2 >&,
         const vecn< 2 >&,
-        const vecn< 2 >&,
-        vecn< 2 >& );
+        const vecn< 2 >& );
 
-    template bool RINGMESH_API point_segment_projection(
+    template std::tuple< bool, vecn< 3 > > RINGMESH_API point_segment_projection(
         const vecn< 3 >&,
         const vecn< 3 >&,
-        const vecn< 3 >&,
-        vecn< 3 >& );
+        const vecn< 3 >& );
 }

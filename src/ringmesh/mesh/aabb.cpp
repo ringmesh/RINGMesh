@@ -326,7 +326,7 @@ namespace RINGMesh {
         const vecn< DIMENSION >& query ) const
     {
         DistanceToEdge action( mesh_ );
-        return closest_element_box< DistanceToEdge >( query, action );
+        return this->closest_element_box( query, action );
     }
 
     template< index_t DIMENSION >
@@ -369,11 +369,11 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, vecn< DIMENSION, double > SurfaceAABBTree< DIMENSION >::closest_triangle(
+    std::tuple< index_t, vecn< DIMENSION >, double > SurfaceAABBTree< DIMENSION >::closest_triangle(
         const vecn< DIMENSION >& query ) const
     {
         DistanceToTriangle action( mesh_ );
-        return closest_element_box< DistanceToTriangle >( query, action );
+        return this->closest_element_box( query, action );
     }
 
     template< index_t DIMENSION >
@@ -389,8 +389,8 @@ namespace RINGMesh {
             mesh_.polygon_vertex( cur_box, 1 ) );
         const vecn< DIMENSION >& v2 = mesh_.vertex(
             mesh_.polygon_vertex( cur_box, 2 ) );
-        std::tie( distance, nearest_point, std::ignore ) =
-            point_to_triangle( query, v0, v1, v2 );
+        std::tie( distance, nearest_point ) =
+            Distance::point_to_triangle( query, v0, v1, v2 );
     }
 
     template< index_t DIMENSION >
