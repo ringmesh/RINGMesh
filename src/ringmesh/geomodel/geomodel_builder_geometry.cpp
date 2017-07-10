@@ -788,8 +788,8 @@ namespace RINGMesh {
             region_id );
         for( index_t cur_c : cells ) {
             for( index_t cur_v : range( region.nb_mesh_element_vertices( cur_c ) ) ) {
-                if( region.mesh_element_vertex_index( cur_c, cur_v )
-                    == old_vertex ) {
+                if( region.mesh_element_vertex_index(
+                    ElementLocalVertex( cur_c, cur_v ) ) == old_vertex ) {
                     builder->set_cell_vertex( cur_c, cur_v, new_vertex );
                 }
             }

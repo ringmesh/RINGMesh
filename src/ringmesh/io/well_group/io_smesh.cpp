@@ -45,7 +45,7 @@ namespace {
                 > ::create_builder( mesh );
             for( index_t e : range( mesh.nb_edges() ) ) {
                 for( index_t i : range( 2 ) ) {
-                    index_t v = mesh.edge_vertex( e, i );
+                    index_t v = mesh.edge_vertex( ElementLocalVertex( e, i ) );
                     builder->set_edge_vertex( e, i, old2new[v] );
                 }
             }

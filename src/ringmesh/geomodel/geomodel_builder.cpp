@@ -190,7 +190,8 @@ namespace {
                                 S_id, p, v );
                             index_t next_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S_id, p,
-                                    mesh.next_polygon_vertex( p, v ) );
+                                    mesh.next_polygon_vertex(
+                                        ElementLocalVertex( p, v ) ) );
                             border_polygons_.emplace_back( s, p, vertex,
                                 next_vertex );
                         }
@@ -684,12 +685,14 @@ namespace {
                 std::tie( next_f, next_f_v0 ) = mesh.next_on_border( p,
                     v0_id_in_polygon );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
+                next_f_v1 = mesh.next_polygon_vertex(
+                    ElementLocalVertex( next_f, next_f_v0 ) );
             } else {
                 std::tie( next_f, next_f_v0 ) = mesh.prev_on_border( p,
                     v0_id_in_polygon );
                 ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
+                next_f_v1 = mesh.next_polygon_vertex(
+                    ElementLocalVertex( next_f, next_f_v0 ) );
             }
 
             // Finds the BorderPolygon that is corresponding to this

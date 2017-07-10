@@ -659,8 +659,8 @@ namespace RINGMesh {
         index_t nb_degenerated = 0;
         for( index_t e : range( nb_mesh_elements() ) ) {
             double l = length(
-                this->mesh_element_vertex( e, 1 )
-                    - this->mesh_element_vertex( e, 0 ) );
+                this->mesh_element_vertex( ElementLocalVertex( e, 1 ) )
+                    - this->mesh_element_vertex( ElementLocalVertex( e, 0 ) ) );
             if( l < this->geomodel().epsilon() ) {
                 nb_degenerated++;
             }

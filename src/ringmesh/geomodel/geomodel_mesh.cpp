@@ -116,8 +116,12 @@ namespace {
         std::vector< index_t > facets;
         facets.reserve( mesh.nb_cell_facets( cell ) );
         for( index_t f : range( mesh.nb_cell_facets( cell ) ) ) {
-            for( index_t v : range( mesh.nb_cell_facet_vertices( cell, f ) ) ) {
-                if( mesh.cell_facet_vertex( cell, f, v ) == vertex_id ) {
+            for( index_t v : range(
+                mesh.nb_cell_facet_vertices(
+                    VolumeMesh< DIMENSION >::CellLocalFacet( cell, f ) ) ) ) {
+                if( mesh.cell_facet_vertex(
+                    VolumeMesh< DIMENSION >::CellLocalFacet( cell, f ), v )
+                    == vertex_id ) {
                     facets.push_back( f );
                     break;
                 }
@@ -585,7 +589,8 @@ namespace RINGMesh {
     {
         index_t entity_vertex_index =
             this->geomodel_.mesh_entity( mesh_entity ).mesh_element_vertex_index(
-                entity_mesh_element_index, vertex_local_index );
+                ElementLocalVertex( entity_mesh_element_index,
+                    vertex_local_index ) );
         return geomodel_vertex_id( mesh_entity, entity_vertex_index );
     }
 
@@ -928,7 +933,8 @@ namespace RINGMesh {
                     + cur_cell_per_type[to_underlying_type( cur_cell_type )]++;
                 for( index_t v : range( mesh_->nb_cell_vertices( cur_cell ) ) ) {
                     index_t region_vertex_index =
-                        cur_region.mesh_element_vertex_index( c, v );
+                        cur_region.mesh_element_vertex_index(
+                            ElementLocalVertex( c, v ) );
                     index_t global_vertex_id = geomodel_vertices.geomodel_vertex_id(
                         cur_region.gmme(), region_vertex_index );
                     mesh_builder->set_cell_vertex( cur_cell, v, global_vertex_id );
@@ -998,12 +1004,15 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshCells< DIMENSION >::vertex( index_t c, index_t v ) const
+    index_t GeoModelMeshCells< DIMENSION >::vertex(
+        const ElementLocalVertex& cell_local_vertex ) const
     {
         test_and_initialize();
-        ringmesh_assert( c < mesh_->nb_cells() );
-        ringmesh_assert( v < mesh_->nb_cell_vertices( c ) );
-        return mesh_->cell_vertex( c, v );
+        ringmesh_assert( cell_local_vertex.element_id_ < mesh_->nb_cells() );
+        ringmesh_assert(
+            cell_local_vertex.local_vertex_id_
+                < mesh_->nb_cell_vertices( cell_local_vertex.element_id_ ) );
+        return mesh_->cell_vertex( cell_local_vertex );
     }
 
     template< index_t DIMENSION >
@@ -1024,25 +1033,23 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     index_t GeoModelMeshCells< DIMENSION >::nb_facet_vertices(
-        index_t c,
-        index_t lf ) const
+        const VolumeMesh< DIMENSION >::CellLocalFacet& cell_local_facet ) const
     {
         test_and_initialize();
-        ringmesh_assert( c < mesh_->nb_cells() );
+        ringmesh_assert( cell_local_facet.cell_id_ < mesh_->nb_cells() );
         ringmesh_assert( lf < mesh_->nb_cell_facets( c ) );
-        return mesh_->nb_cell_facet_vertices( c, lf );
+        return mesh_->nb_cell_facet_vertices( cell_local_facet );
     }
 
     template< index_t DIMENSION >
     index_t GeoModelMeshCells< DIMENSION >::facet_vertex(
-        index_t c,
-        index_t lf,
+        const VolumeMesh< DIMENSION >::CellLocalFacet& cell_local_facet,
         index_t lv ) const
     {
         test_and_initialize();
         ringmesh_assert( c < mesh_->nb_cells() );
         ringmesh_assert( lf < mesh_->nb_cell_facets( c ) );
-        return mesh_->cell_facet_vertex( c, lf, lv );
+        return mesh_->cell_facet_vertex( cell_local_facet, lv );
     }
 
     template< index_t DIMENSION >
@@ -1062,7 +1069,8 @@ namespace RINGMesh {
         test_and_initialize();
         ringmesh_assert( c < mesh_->nb_cells() );
         ringmesh_assert( f < mesh_->nb_cell_facets( c ) );
-        return mesh_->cell_adjacent( c, f );
+        return mesh_->cell_adjacent(
+            VolumeMesh< DIMENSION >::CellLocalFacet( c, f ) );
     }
 
     template< index_t DIMENSION >
@@ -1333,7 +1341,7 @@ namespace RINGMesh {
             index_t begin = mesh_->cell_begin( c );
             for( index_t v : range( mesh_->nb_cell_vertices( c ) ) ) {
                 corner_vertices[begin + v] = mesh_->vertex(
-                    mesh_->cell_vertex( c, v ) );
+                    mesh_->cell_vertex( ElementLocalVertex( c, v ) ) );
             }
         }
 
@@ -1378,7 +1386,7 @@ namespace RINGMesh {
 
                 // Propagate on the cells around the corresponding vertex.
                 // The propagation process cannot cross any surface.
-                index_t vertex_id = mesh_->cell_vertex( c, v );
+                index_t vertex_id = mesh_->cell_vertex( ElementLocalVertex( c, v ) );
 
                 // all the cell corners resulting of the propagation
                 std::vector< index_t > corner_used;
@@ -1422,7 +1430,9 @@ namespace RINGMesh {
                             // The cell facet is not on a surface.
                             // Add the adjacent cell to the stack if it exists
                             // and has not already been processed or added into the stack
-                            index_t cur_adj = mesh_->cell_adjacent( cur_c, cur_f );
+                            index_t cur_adj = mesh_->cell_adjacent(
+                                VolumeMesh< DIMENSION >::CellLocalFacet( cur_c,
+                                    cur_f ) );
                             if( cur_adj != GEO::NO_CELL
                                 && !contains( cell_added, cur_adj ) ) {
                                 cell_added.push_back( cur_adj );
@@ -1471,10 +1481,12 @@ namespace RINGMesh {
         bool& side ) const
     {
         test_and_initialize_cell_facet();
-        polygon = polygon_id_[mesh_->cell_facet( c, f )];
+        polygon = polygon_id_[mesh_->cell_facet(
+            VolumeMesh< DIMENSION >::CellLocalFacet( c, f ) )];
         if( polygon != NO_ID ) {
             vec3 facet_normal = this->gmm_.polygons.normal( polygon );
-            vec3 cell_facet_normal = mesh_->cell_facet_normal( c, f );
+            vec3 cell_facet_normal = mesh_->cell_facet_normal(
+                VolumeMesh< DIMENSION >::CellLocalFacet( c, f ) );
             side = dot( facet_normal, cell_facet_normal ) > 0;
         }
         return polygon != NO_ID;
@@ -1565,13 +1577,14 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     index_t GeoModelMeshCells< DIMENSION >::duplicated_corner_index(
-        index_t c,
-        index_t v ) const
+        const ElementLocalVertex& cell_local_vertex ) const
     {
         test_and_initialize_duplication();
-        ringmesh_assert( c < mesh_->nb_cells() );
-        ringmesh_assert( v < mesh_->nb_cell_vertices( c ) );
-        index_t corner_value = mesh_->cell_vertex( c, v );
+        ringmesh_assert( cell_local_vertex.element_id_ < mesh_->nb_cells() );
+        ringmesh_assert(
+            cell_local_vertex.local_vertex_id_
+                < mesh_->nb_cell_vertices( cell_local_vertex.element_id_ ) );
+        index_t corner_value = mesh_->cell_vertex( cell_local_vertex );
         if( corner_value < mesh_->nb_vertices() ) {
             return NO_ID;
         } else {
@@ -1644,9 +1657,13 @@ namespace RINGMesh {
         for( index_t c : range( mesh_->nb_cells() ) ) {
             for( index_t f : range( mesh_->nb_cell_facets( c ) ) ) {
                 std::vector< index_t > result = nn_search.get_neighbors(
-                    mesh_->cell_facet_barycenter( c, f ), this->geomodel_.epsilon() );
+                    mesh_->cell_facet_barycenter(
+                        VolumeMesh< DIMENSION >::CellLocalFacet( c, f ) ),
+                    this->geomodel_.epsilon() );
                 if( !result.empty() ) {
-                    polygon_id_[mesh_->cell_facet( c, f )] = result[0];
+                    polygon_id_[mesh_->cell_facet(
+                        VolumeMesh< DIMENSION >::CellLocalFacet( c, f ) )] =
+                        result[0];
                     // If there are more than 1 matching facet, this is WRONG
                     // and the vertex indices should be checked too [Jeanne]
                     ringmesh_assert( result.size() == 1 );
@@ -1752,7 +1769,7 @@ namespace RINGMesh {
         test_and_initialize();
         ringmesh_assert( p < mesh_->nb_polygons() );
         ringmesh_assert( v < mesh_->nb_polygon_vertices( p ) );
-        return mesh_->polygon_vertex( p, v );
+        return mesh_->polygon_vertex( ElementLocalVertex( p, v ) );
     }
 
     template< index_t DIMENSION >
@@ -2222,7 +2239,7 @@ namespace RINGMesh {
         index_t v ) const
     {
         test_and_initialize();
-        return mesh_->edge_vertex( well_ptr_[w] + e, v );
+        return mesh_->edge_vertex( ElementLocalVertex( well_ptr_[w] + e, v ) );
     }
 
     template< index_t DIMENSION >
