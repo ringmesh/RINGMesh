@@ -95,12 +95,12 @@ namespace {
                             edge = j;
                             polygon = i;
                             result = true;
-                            break;/// TODO return
+                            break;
                         }
                     }
                 }
                 return result;} );
-        return std::make_tuple( result, polygon, edge );///TODO return empty
+        return std::make_tuple( result, polygon, edge );
     }
 
     template< index_t DIMENSION >
@@ -143,11 +143,11 @@ namespace {
                         cell_facet = cell_facet_i;
                         cell = i;
                         result = true;
-                        break;/// TODO return
+                        break;
                     }
                 }
                 return result;} );
-        return std::make_tuple( result, cell,cell_facet );/// TODO return empty
+        return std::make_tuple( result, cell,cell_facet );
     }
 
     template< index_t DIMENSION >

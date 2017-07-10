@@ -330,16 +330,13 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
+    std::tuple< double, vecn< DIMENSION > > LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
         const vecn< DIMENSION >& query,
-        index_t cur_box,
-        vecn< DIMENSION >& nearest_point,
-        double& distance ) const
+        index_t cur_box ) const
     {
         const vecn< DIMENSION >& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) );
         const vecn< DIMENSION >& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) );
-        std::tie( distance, nearest_point ) = Distance::point_to_segment( query, v0,
-            v1 );
+        return Distance::point_to_segment( query, v0, v1 );
     }
 
     template< index_t DIMENSION >
@@ -377,11 +374,9 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
+    std::tuple< double, vecn< DIMENSION > > SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
         const vecn< DIMENSION >& query,
-        index_t cur_box,
-        vecn< DIMENSION >& nearest_point,
-        double& distance ) const
+        index_t cur_box ) const
     {
         const vecn< DIMENSION >& v0 = mesh_.vertex(
             mesh_.polygon_vertex( cur_box, 0 ) );
@@ -389,8 +384,7 @@ namespace RINGMesh {
             mesh_.polygon_vertex( cur_box, 1 ) );
         const vecn< DIMENSION >& v2 = mesh_.vertex(
             mesh_.polygon_vertex( cur_box, 2 ) );
-        std::tie( distance, nearest_point ) =
-            Distance::point_to_triangle( query, v0, v1, v2 );
+        return Distance::point_to_triangle( query, v0, v1, v2 );
     }
 
     template< index_t DIMENSION >

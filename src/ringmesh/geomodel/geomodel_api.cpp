@@ -143,7 +143,6 @@ namespace {
         double prism_volume = 0;
         double hex_volume = 0;
         double poly_volume = 0;
-///TODO instead recover the tuple and merge with another...
         for( index_t r : range( geomodel.nb_regions() ) ) {
             const Region< DIMENSION >& region = geomodel.region( r );
             std::tie( tet_volume, pyramid_volume, prism_volume, hex_volume,
