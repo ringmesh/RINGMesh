@@ -2274,6 +2274,10 @@ namespace RINGMesh {
                         cur_attr_name );
                 }
                 ringmesh_assert( cur_c_att_store != nullptr );
+                ringmesh_assert(
+                    cur_c_att_store->element_size()
+                        == cur_c_att_store_in_reg->element_size() );
+                /// TODO put other assert
 
                 for( index_t c_in_reg_itr = 0;
                     c_in_reg_itr < cur_reg.nb_mesh_elements(); ++c_in_reg_itr ) {
@@ -2286,9 +2290,12 @@ namespace RINGMesh {
                     for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
                         GEO::Memory::copy(
                             (GEO::Memory::pointer) cur_c_att_store->data()
-                                + c_in_geom_model_mesh[0] * dim,
+                                + c_in_geom_model_mesh[0] * dim
+                                    * cur_c_att_store->element_size(),
                             (GEO::Memory::pointer) cur_c_att_store_in_reg->data()
-                                + c_in_reg_itr * dim, dim );
+                                + c_in_reg_itr * dim
+                                    * cur_c_att_store_in_reg->element_size(),
+                            dim * cur_c_att_store->element_size() );
                         /*cur_c_att[c_in_geom_model_mesh[0] * dim + dim_itr] =
                          cur_c_att_in_reg[c_in_reg_itr * dim + dim_itr];*/
                     }
