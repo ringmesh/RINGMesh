@@ -2179,12 +2179,21 @@ namespace RINGMesh {
                             cur_attr_name );
                 }
                 ringmesh_assert( cur_v_att_store != nullptr );
+                ringmesh_assert(
+                    cur_v_att_store->element_size()
+                        == cur_v_att_store_in_reg->element_size() );
+                /// TODO put other assert
                 for( index_t v_in_reg_itr = 0; v_in_reg_itr < cur_reg.nb_vertices();
                     ++v_in_reg_itr ) {
                     index_t v_id_in_gmm = vertices.geomodel_vertex_id(
                         cur_reg.gmme(), v_in_reg_itr );
-                    GEO::Memory::copy( (GEO::Memory::pointer) cur_v_att_store->data() + v_id_in_gmm * dim,
-                        (GEO::Memory::pointer) cur_v_att_store_in_reg->data() + v_in_reg_itr * dim, dim);
+                    GEO::Memory::copy(
+                        (GEO::Memory::pointer) cur_v_att_store->data()
+                            + v_id_in_gmm * dim * cur_v_att_store->element_size(),
+                        (GEO::Memory::pointer) cur_v_att_store_in_reg->data()
+                            + v_in_reg_itr * dim
+                                * cur_v_att_store_in_reg->element_size(),
+                        dim * cur_v_att_store->element_size() );
                     /*for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
                      cur_v_att[v_id_in_gmm * dim + dim_itr] =
                      cur_v_att_in_reg[v_in_reg_itr * dim + dim_itr] ;
