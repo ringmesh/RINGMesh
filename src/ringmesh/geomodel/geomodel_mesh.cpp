@@ -2127,7 +2127,6 @@ namespace RINGMesh {
                     ringmesh_assert(
                         cur_v_att_store_in_reg->element_size()
                             == cur_v_att_store_in_gmm->element_size() );
-                    /// TODO put other assert
 
                     GEO::Memory::copy(
                         (GEO::Memory::pointer) cur_v_att_store_in_reg->data()
@@ -2182,7 +2181,7 @@ namespace RINGMesh {
                 ringmesh_assert(
                     cur_v_att_store->element_size()
                         == cur_v_att_store_in_reg->element_size() );
-                /// TODO put other assert
+
                 for( index_t v_in_reg_itr = 0; v_in_reg_itr < cur_reg.nb_vertices();
                     ++v_in_reg_itr ) {
                     index_t v_id_in_gmm = vertices.geomodel_vertex_id(
@@ -2239,7 +2238,6 @@ namespace RINGMesh {
                 ringmesh_assert(
                     cur_c_att_store_in_reg->element_size()
                         == cur_c_att_store_in_gmm->element_size() );
-                /// TODO put other assert
 
                 for( index_t c = 0; c < cur_region.nb_mesh_elements(); c++ ) {
                     vec3 center = cur_region.mesh_element_barycenter( c );
@@ -2261,7 +2259,6 @@ namespace RINGMesh {
 
     void GeoModelMesh::transfer_cell_attributes_from_gm_regions_to_gmm() const
     {
-        cells.test_and_initialize(); /// TODO to keep?
         const NNSearch& nn_search = cells.cell_nn_search();
         for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
             GEO::vector< std::string > att_c_names;
@@ -2271,7 +2268,6 @@ namespace RINGMesh {
             reg_cell_attr_mgr.list_attribute_names( att_c_names );
             for( const std::string& cur_attr_name : att_c_names ) {
 
-                /// TODO code tres similaire que pour les vertices... to merge ?
                 const GEO::AttributeStore* cur_c_att_store_in_reg =
                     reg_cell_attr_mgr.find_attribute_store( cur_attr_name );
                 ringmesh_assert( cur_c_att_store_in_reg != nullptr );
@@ -2297,7 +2293,6 @@ namespace RINGMesh {
                 ringmesh_assert(
                     cur_c_att_store->element_size()
                         == cur_c_att_store_in_reg->element_size() );
-                /// TODO put other assert
 
                 for( index_t c_in_reg_itr = 0;
                     c_in_reg_itr < cur_reg.nb_mesh_elements(); ++c_in_reg_itr ) {
