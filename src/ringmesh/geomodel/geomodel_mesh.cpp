@@ -2241,6 +2241,7 @@ namespace RINGMesh {
 
     void GeoModelMesh::transfer_cell_attributes_from_gm_regions_to_gmm() const
     {
+        cells.test_and_initialize(); /// TODO to keep?
         const NNSearch& nn_search = cells.cell_nn_search();
         for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
             GEO::vector< std::string > att_c_names;
@@ -2248,23 +2249,32 @@ namespace RINGMesh {
             GEO::AttributesManager& reg_cell_attr_mgr =
                 cur_reg.cell_attribute_manager();
             reg_cell_attr_mgr.list_attribute_names( att_c_names );
-            for( index_t att_c = 0; att_c < reg_cell_attr_mgr.nb(); att_c++ ) {
+            for( const std::string& cur_attr_name : att_c_names ) {
 
-                if( !is_attribute_a_double( reg_cell_attr_mgr,
-                    att_c_names[att_c] ) ) {
-                    continue;
-                }
-                index_t dim = reg_cell_attr_mgr.find_attribute_store(
-                    att_c_names[att_c] )->dimension();
-                GEO::Attribute< double > cur_c_att;
-                if( !cells.attribute_manager().is_defined( att_c_names[att_c] ) ) {
-                    cur_c_att.create_vector_attribute( cells.attribute_manager(),
-                        att_c_names[att_c], dim );
+                /// TODO code tres similaire que pour les vertices... to merge ?
+                const GEO::AttributeStore* cur_c_att_store_in_reg =
+                    reg_cell_attr_mgr.find_attribute_store( cur_attr_name );
+                ringmesh_assert( cur_c_att_store_in_reg != nullptr );
+                index_t dim = cur_c_att_store_in_reg->dimension();
+                GEO::AttributeStore* cur_c_att_store = nullptr;
+                if( !cells.attribute_manager().is_defined( cur_attr_name ) ) {
+                    const std::string cur_type_name =
+                        GEO::AttributeStore::element_type_name_by_element_typeid_name(
+                            cur_c_att_store_in_reg->element_typeid_name() );
+                    ringmesh_assert(
+                        GEO::AttributeStore::element_type_name_is_known(
+                            cur_type_name ) );
+                    cur_c_att_store =
+                        GEO::AttributeStore::create_attribute_store_by_element_type_name(
+                            cur_type_name, dim );
+                    cells.attribute_manager().bind_attribute_store( cur_attr_name,
+                        cur_c_att_store );
                 } else {
-                    cur_c_att.bind( cells.attribute_manager(), att_c_names[att_c] );
+                    cur_c_att_store = cells.attribute_manager().find_attribute_store(
+                        cur_attr_name );
                 }
-                GEO::Attribute< double > cur_c_att_in_reg( reg_cell_attr_mgr,
-                    att_c_names[att_c] );
+                ringmesh_assert( cur_c_att_store != nullptr );
+
                 for( index_t c_in_reg_itr = 0;
                     c_in_reg_itr < cur_reg.nb_mesh_elements(); ++c_in_reg_itr ) {
                     vec3 center =
@@ -2274,8 +2284,13 @@ namespace RINGMesh {
                         nn_search.get_neighbors( center, geomodel_.epsilon() );
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 );
                     for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
-                        cur_c_att[c_in_geom_model_mesh[0] * dim + dim_itr] =
-                            cur_c_att_in_reg[c_in_reg_itr * dim + dim_itr];
+                        GEO::Memory::copy(
+                            (GEO::Memory::pointer) cur_c_att_store->data()
+                                + c_in_geom_model_mesh[0] * dim,
+                            (GEO::Memory::pointer) cur_c_att_store_in_reg->data()
+                                + c_in_reg_itr * dim, dim );
+                        /*cur_c_att[c_in_geom_model_mesh[0] * dim + dim_itr] =
+                         cur_c_att_in_reg[c_in_reg_itr * dim + dim_itr];*/
                     }
                 }
             }

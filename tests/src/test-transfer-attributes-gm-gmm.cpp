@@ -63,7 +63,68 @@ namespace {
     void run_tests()
     {
         GeoModel in;
-//        load_geomodel( in,  );
+        load_geomodel( in, "modelA1_volume_meshed.gm" );
+
+        // test cell from gm to gmm
+        for( index_t reg_i = 0; reg_i < in.nb_regions(); ++reg_i ) {
+            const Region& cur_reg = in.region( reg_i );
+            GEO::Attribute< double > cell_double_attr(
+                cur_reg.cell_attribute_manager(), "cell_double_attr" );
+            GEO::Attribute< vec3 > cell_vec3_attr( cur_reg.cell_attribute_manager(),
+                "cell_vec3_attr" );
+            /*GEO::Attribute< const char* > cell_string_attr(
+                cur_reg.cell_attribute_manager(), "cell_string_attr" );*/
+            for( index_t cell_i = 0; cell_i < cur_reg.nb_mesh_elements();
+                ++cell_i ) {
+                cell_double_attr[cell_i] = cur_reg.mesh_element_size( cell_i );
+                cell_vec3_attr[cell_i] = cur_reg.mesh_element_barycenter( cell_i );
+                /*cell_string_attr[cell_i] =
+                    std::to_string( cell_double_attr[cell_i] ).data()*/;
+            }
+        }
+
+        const GeoModelMesh& gmm = in.mesh;
+        gmm.transfer_cell_attributes_from_gm_regions_to_gmm();
+
+        const GeoModelMeshCells& gmmc = gmm.cells;
+        GEO::AttributesManager& gmmc_attr_mgr = gmmc.attribute_manager();
+
+        /// TODO store attribute in string to avoid to write them several times...
+        if( !gmmc_attr_mgr.is_defined( "cell_double_attr" ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Problem of transfer from the GeoModel regions and the GeoModelMesh for cell_double_attr" );
+        }
+        if( !gmmc_attr_mgr.is_defined( "cell_vec3_attr" ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Problem of transfer from the GeoModel regions and the GeoModelMesh for cell_vec3_attr" );
+        }
+        /*if( !gmmc_attr_mgr.is_defined( "cell_string_attr" ) ) {
+            /// TODO put a better message, attr not defined in gmm...
+            throw RINGMeshException( "RINGMesh Test",
+                "Problem of transfer from the GeoModel regions and the GeoModelMesh for cell_string_attr" );
+        }*/
+        GEO::Attribute< double > cell_double_attr( gmmc_attr_mgr,
+            "cell_double_attr" );
+        GEO::Attribute< vec3 > cell_vec3_attr( gmmc_attr_mgr, "cell_vec3_attr" );
+        /*GEO::Attribute< const char* > cell_string_attr( gmmc_attr_mgr,
+            "cell_string_attr" );*/
+        for( index_t cell_i = 0; cell_i < gmmc.nb_cells(); ++cell_i ) {
+            double cell_volume = gmmc.volume( cell_i );
+            if( std::abs( cell_volume - cell_double_attr[cell_i] )
+                > in.epsilon3() ) {
+                throw RINGMeshException( "RINGMesh Test", "Bad transfer" ); //TODO improve message
+            }
+            vec3 diff = gmmc.barycenter( cell_i ) - cell_vec3_attr[cell_i];
+            if( std::abs( diff.x ) > in.epsilon()
+                || std::abs( diff.y ) > in.epsilon()
+                || std::abs( diff.z ) > in.epsilon() ) {
+                throw RINGMeshException( "RINGMesh Test", "Bad transfer" ); //TODO improve message
+            }
+            /*std::string volume_in_string = std::to_string( cell_volume );
+            if( volume_in_string != std::string( cell_string_attr[cell_i] ) ) {
+                throw RINGMeshException( "RINGMesh Test", "Bad transfer" ); //TODO improve message
+            }*/
+        }
     }
 }
 
