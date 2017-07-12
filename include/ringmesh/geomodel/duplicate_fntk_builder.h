@@ -39,7 +39,7 @@
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
- * @file ringmesh/duplicate_interface_builder.h
+ * @file ringmesh/geomodel/duplicate_interface_builder.h
  * @brief Class to duplicate GeoModel Interface to
  * enable sliding along them (faults) and unconformal
  * mesh generation.

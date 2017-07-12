@@ -44,7 +44,7 @@
 #include <geogram/mesh/mesh_topology.h>
 
 /*!
- * @file ringmesh/duplicate_fntk_builder.cpp
+ * @file ringmesh/geomodel/duplicate_fntk_builder.cpp
  * @brief Class to duplicate GeoModel Interface to
  * enable sliding along them (faults) and unconformal
  * mesh generation.
