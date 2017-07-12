@@ -165,8 +165,11 @@ namespace {
 
 namespace RINGMesh {
 
+    /// TODO should we check if these attributes already exist?
     const std::string DuplicateInterfaceBuilder::translation_attribute_name_ =
         "translation_vector_for_fault_duplication";
+    const std::string DuplicateInterfaceBuilder::normal_attribute_name_ =
+        "normal_at_vertex";
 
     DuplicateInterfaceBuilder::DuplicateInterfaceBuilder( GeoModel& geomodel )
         : GeoModelBuilder( geomodel ), all_meshed_( true ), gme_vertices_links_()
@@ -180,21 +183,7 @@ namespace RINGMesh {
             ringmesh_assert( gme_vertices_links_itr );
             delete gme_vertices_links_itr;
         }
-
-        /*for( index_t surface_itr = 0; surface_itr < geomodel_.nb_surfaces();
-         ++surface_itr ) {
-         const Surface& surface = geomodel_.surface( surface_itr ) ;
-         GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager() ;
-         ringmesh_assert( att_mgr.is_defined("normal_attr_x") ) ; /// TODO assert or if ???
-         ringmesh_assert( att_mgr.is_defined("normal_attr_y") ) ; /// TODO assert or if ???
-         ringmesh_assert( att_mgr.is_defined("normal_attr_z") ) ; /// TODO assert or if ???
-         GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
-         normal_att_x.destroy() ;
-         GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
-         normal_att_y.destroy() ;
-         GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
-         normal_att_z.destroy() ;
-         }*/
+        /// TODO delete the created attributes?
     }
 
     void DuplicateInterfaceBuilder::duplicate_fault_network( bool gap )
@@ -509,25 +498,18 @@ namespace RINGMesh {
     {
         ringmesh_assert( vertex_id_on_surface < surface.nb_vertices() );
         GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager();
-        GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" );
-        GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" );
-        GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" );
-        return vec3( normal_att_x[vertex_id_on_surface],
-            normal_att_y[vertex_id_on_surface], normal_att_z[vertex_id_on_surface] );
+        GEO::Attribute< vec3 > normal_attr( att_mgr, normal_attribute_name_ );
+        return normal_attr[vertex_id_on_surface];
     }
 
     void DuplicateInterfaceBuilder::inverse_normal_attribute_one_surface(
         const Surface& surface ) const
     {
         GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager();
-        GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" );
-        GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" );
-        GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" );
+        GEO::Attribute< double > normal_attr( att_mgr, normal_attribute_name_ );
         for( index_t vertex_id_on_surface = 0;
             vertex_id_on_surface < surface.nb_vertices(); ++vertex_id_on_surface ) {
-            normal_att_x[vertex_id_on_surface] *= -1;
-            normal_att_y[vertex_id_on_surface] *= -1;
-            normal_att_z[vertex_id_on_surface] *= -1;
+            normal_attr[vertex_id_on_surface] *= -1;
         }
     }
 
@@ -1768,7 +1750,7 @@ namespace RINGMesh {
             if( !cutting_lines.empty() ) {
                 /// TODO TO READD. COMMENTED TO COMPILE BUT WE MUST HANDLE THAT!
                 /*const_cast< GEO::MeshVertices& >( geomodel_.surface(
-                    new_new_surf.index() ).gfx_mesh().vertices ).remove_isolated();*/
+                 new_new_surf.index() ).gfx_mesh().vertices ).remove_isolated();*/
             }
         }
     }
@@ -1836,38 +1818,11 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::save_normal_on_one_surface(
         const Surface& surface ) const
     {
-        // GEO::compute_normals cannot be used because the dimension
-        // of the vertices from 3 to 6 and that provokes a problem
-        // of copying in GeoModelMeshVertices::initialize
-        // with GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
-        // E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
-        // 3 means vertices of dimension 3 and not another dimension.
         GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager();
-        GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" );
-        GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" );
-        GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" );
-        normal_att_x.fill( 0. );
-        normal_att_y.fill( 0. );
-        normal_att_z.fill( 0. );
-        // begin copy paste from GEO::compute_normals
-        for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-            vec3 N = surface.polygon_normal( f );
-            for( index_t corner = 0; corner < surface.nb_mesh_element_vertices( f );
-                corner++ ) {
-                index_t v = surface.mesh_element_vertex_index( f, corner );
-                normal_att_x[v] += N.x;
-                normal_att_y[v] += N.y;
-                normal_att_z[v] += N.z;
-            }
+        GEO::Attribute< vec3 > normal_attr( att_mgr, normal_attribute_name_ );
+        for( index_t v_i = 0; v_i < surface.nb_vertices(); ++v_i ) {
+            normal_attr[v_i] = surface.normal_at_vertex( v_i );
         }
-        for( index_t i = 0; i < surface.nb_vertices(); i++ ) {
-            vec3 cur_normal( normal_att_x[i], normal_att_y[i], normal_att_z[i] );
-            cur_normal = normalize( cur_normal );
-            normal_att_x[i] = cur_normal.x;
-            normal_att_y[i] = cur_normal.y;
-            normal_att_z[i] = cur_normal.z;
-        }
-        // end copy paste from GEO::compute_normals
     }
 
     vec3 DuplicateInterfaceBuilder::get_local_translation_normal(
@@ -1883,11 +1838,8 @@ namespace RINGMesh {
         bool side = cur_reg.side( local_surf_id );
 
         GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager();
-        GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" );
-        GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" );
-        GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" );
-        vec3 normal( normal_att_x[vertex_id_in_surface],
-            normal_att_y[vertex_id_in_surface], normal_att_z[vertex_id_in_surface] );
+        GEO::Attribute< vec3 > normal_attr( att_mgr, normal_attribute_name_ );
+        vec3 normal = normal_attr[vertex_id_in_surface];
 
         ringmesh_assert( std::abs( normal.length() - 1. ) < global_epsilon );
         if( !side ) {
