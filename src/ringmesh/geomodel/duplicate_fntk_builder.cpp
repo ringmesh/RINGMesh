@@ -1641,7 +1641,8 @@ namespace RINGMesh {
                 geometry.cut_surface_by_line( new_surface_id, *it );
             }
             if( !cutting_lines.empty() ) {
-                const_cast< GEO::MeshVertices& >( geomodel_.surface( new_surface_id ).gfx_mesh().vertices ).remove_isolated();
+                /// TODO TO READD. COMMENTED TO COMPILE BUT WE MUST HANDLE THAT!
+                //const_cast< GEO::MeshVertices& >( geomodel_.surface( new_surface_id ).gfx_mesh().vertices ).remove_isolated();
             }
             return;
         }
@@ -1765,8 +1766,9 @@ namespace RINGMesh {
                  }*/
             }
             if( !cutting_lines.empty() ) {
-                const_cast< GEO::MeshVertices& >( geomodel_.surface(
-                    new_new_surf.index() ).gfx_mesh().vertices ).remove_isolated();
+                /// TODO TO READD. COMMENTED TO COMPILE BUT WE MUST HANDLE THAT!
+                /*const_cast< GEO::MeshVertices& >( geomodel_.surface(
+                    new_new_surf.index() ).gfx_mesh().vertices ).remove_isolated();*/
             }
         }
     }
