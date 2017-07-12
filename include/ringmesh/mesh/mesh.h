@@ -75,6 +75,8 @@ namespace RINGMesh {
 
         virtual void save_mesh( const std::string& filename ) const = 0;
 
+        virtual std::tuple< index_t, std::vector< index_t > > get_connected_components() const = 0;
+
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         virtual void print_mesh_bounded_attributes() const = 0;
         /*!

@@ -187,10 +187,6 @@ namespace RINGMesh {
         const Line& line( index_t index ) const;
         const Surface& surface( index_t index ) const;
         const Region& region( index_t index ) const;
-        const Universe& universe() const
-        {
-            return universe_;
-        }
 
         double epsilon() const;
 
@@ -218,6 +214,8 @@ namespace RINGMesh {
         {
             return wells_;
         }
+
+        std::tuple< std::vector< index_t >, std::vector< bool > > get_voi_surfaces() const;
 
     public:
         GeoModelMesh mesh;
@@ -269,11 +267,6 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< GeoModelMeshEntity > > lines_;
         std::vector< std::unique_ptr< GeoModelMeshEntity > > surfaces_;
         std::vector< std::unique_ptr< GeoModelMeshEntity > > regions_;
-
-        /*!
-         * The Universe defines the extension of the GeoModel
-         */
-        Universe universe_;
 
         /*!
          * @brief Geological entities. They are optional.
@@ -348,11 +341,6 @@ namespace RINGMesh {
         GeoModelGeologicalEntity& modifiable_geological_entity( const gmge_id& id )
         {
             return *modifiable_geological_entities( id.type() )[id.index()];
-        }
-
-        Universe& modifiable_universe()
-        {
-            return geomodel_.universe_;
         }
 
         double& modifiable_epsilon()

@@ -119,10 +119,6 @@ namespace RINGMesh {
             index_t boundary_id,
             bool side = false );
 
-        void add_universe_boundary( index_t boundary_id, bool side );
-
-        void set_universe_boundary( index_t id, index_t boundary_id, bool side );
-
         void set_mesh_entity_incident_entity(
             const gmme_id& gme_id,
             index_t id,
@@ -152,8 +148,6 @@ namespace RINGMesh {
             const std::vector< index_t >& incident_surfaces,
             const gmme_id& first_corner,
             const gmme_id& second_corner );
-
-        void compute_universe();
 
     private:
         GeoModelBuilderTopology( GeoModelBuilder& builder, GeoModel& geomodel );

@@ -57,7 +57,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelEntity );
     public:
 
-        virtual ~GeoModelEntity();
+        virtual ~GeoModelEntity(){}
 
         virtual bool is_on_voi() const = 0;
         virtual bool is_valid() const = 0;
@@ -107,99 +107,6 @@ namespace RINGMesh {
 
         /// Index of the entity
         index_t id_;
-    };
-
-    class RINGMESH_API Universe: public GeoModelEntity {
-    ringmesh_disable_copy( Universe );
-    public:
-        friend class UniverseAccess;
-
-        Universe( const GeoModel& geomodel );
-
-        static const UniverseType universe_type_name()
-        {
-            return UniverseType();
-        }
-
-        virtual ~Universe() = default;
-
-        virtual bool is_valid() const override;
-        virtual bool is_on_voi() const override
-        {
-            return true;
-        }
-        const UniverseType type_name() const
-        {
-            return universe_type_name();
-        }
-
-        index_t nb_boundaries() const
-        {
-            return static_cast< index_t >( boundary_surfaces_.size() );
-        }
-        gmme_id boundary_gmme( index_t i ) const
-        {
-            ringmesh_assert( i < nb_boundaries() );
-            return boundary_surfaces_[i];
-        }
-        bool side( index_t i ) const
-        {
-            ringmesh_assert( i < nb_boundaries() );
-            return boundary_surface_sides_[i];
-        }
-
-        virtual bool is_identification_valid() const
-        {
-            return true;
-        }
-
-    protected:
-        virtual bool is_index_valid() const override
-        {
-            return true;
-        }
-
-    private:
-        void copy_universe( const Universe& from )
-        {
-            boundary_surfaces_ = from.boundary_surfaces_;
-            boundary_surface_sides_ = from.boundary_surface_sides_;
-        }
-
-    private:
-        std::vector< gmme_id > boundary_surfaces_;
-        std::vector< bool > boundary_surface_sides_;
-
-    };
-
-    class UniverseAccess {
-    ringmesh_disable_copy( UniverseAccess );
-        friend class GeoModelBuilderTopology;
-        friend class GeoModelBuilderRemoval;
-
-    private:
-        UniverseAccess( Universe& universe )
-            : universe_( universe )
-        {
-        }
-
-        std::vector< gmme_id >& modifiable_boundaries()
-        {
-            return universe_.boundary_surfaces_;
-        }
-
-        std::vector< bool >& modifiable_sides()
-        {
-            return universe_.boundary_surface_sides_;
-        }
-
-        void copy( const Universe& from )
-        {
-            universe_.copy_universe( from );
-        }
-
-    private:
-        Universe& universe_;
     };
 
 } // namespace
