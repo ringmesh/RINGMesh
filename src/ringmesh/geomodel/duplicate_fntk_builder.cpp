@@ -1341,11 +1341,6 @@ namespace RINGMesh {
                 }
             }
 
-            /*MakeUnique make_unique_surf( all_points ) ;
-             make_unique_surf.unique( geomodel_.epsilon() ) ;
-             std::vector< vec3 > facet_points ;
-             make_unique_surf.unique_points( facet_points ) ;
-             const std::vector< index_t >& unique_id = make_unique_surf.indices() ;*/
             NNSearch make_unique_surf( all_points );
             std::vector< index_t > unique_id;
             std::vector< vec3 > facet_points;
@@ -1679,11 +1674,6 @@ namespace RINGMesh {
         const GeoModelMeshVertices& gmmv = geomodel_.mesh.vertices;
         for( index_t all_points_itr = 0; all_points_itr < all_points.size();
             ++all_points_itr ) {
-            /*MakeUnique make_unique_surf( all_points[all_points_itr] ) ;
-             make_unique_surf.unique( geomodel_.epsilon() ) ;
-             std::vector< vec3 > facet_points ;
-             make_unique_surf.unique_points( facet_points ) ;
-             const std::vector< index_t >& unique_id = make_unique_surf.indices() ;*/
             NNSearch make_unique_surf( all_points[all_points_itr] );
             std::vector< index_t > unique_id;
             std::vector< vec3 > facet_points;
@@ -1830,6 +1820,8 @@ namespace RINGMesh {
         }
     }
 
+    /// TODO that should not be necessary anymore since there is a new functionality
+    /// to compute normals.... to see.
     void DuplicateInterfaceBuilder::save_normals_on_one_new_interface(
         const std::vector< std::vector< index_t > >& to_erase_by_type,
         index_t interface_id ) const
