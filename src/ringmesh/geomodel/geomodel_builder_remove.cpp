@@ -66,7 +66,7 @@ namespace RINGMesh {
             geomodel_.mesh.vertices.clear();
             update_mesh_entity_connectivity();
             flag_geological_entities_without_children();
-            do_delete_flagged_geological_entities();
+            do_delete_flagged_geological_entities();// for me we delete other entities only in remove and dependency...
             update_geological_entity_connectivity();
             update_universe();
         }
