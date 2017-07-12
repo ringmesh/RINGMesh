@@ -166,7 +166,7 @@ namespace {
 namespace RINGMesh {
 
     const std::string DuplicateInterfaceBuilder::translation_attribute_name_ =
-        "translation_attr_x";
+        "translation_vector_for_fault_duplication";
 
     DuplicateInterfaceBuilder::DuplicateInterfaceBuilder( GeoModel& geomodel )
         : GeoModelBuilder( geomodel ), all_meshed_( true ), gme_vertices_links_()
@@ -883,7 +883,7 @@ namespace RINGMesh {
             // No choice => use of ColocaterAnn on the current facet (more time
             // consuming).
             /*const vec3 facet_bary = cur_surface.mesh_element_barycenter(
-                surf_facet_itr );*/
+             surf_facet_itr );*/
             /*std::vector< index_t > colocated_facets_reg1 =
              reg_nn_searches_[reg1.index()]->get_neighbors( facet_bary,
              geomodel_.epsilon() );*/
@@ -919,7 +919,8 @@ namespace RINGMesh {
                     v_id_in_reg1 = NO_ID;
                     v_id_in_reg1 =
                         find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
-                            reg1, *(++(colocated_facets_reg1.begin())), surf_v_id_in_gmm );
+                            reg1, *( ++( colocated_facets_reg1.begin() ) ),
+                            surf_v_id_in_gmm );
                     ringmesh_assert( v_id_in_reg1 != NO_ID );
                 }
             }
@@ -1167,12 +1168,9 @@ namespace RINGMesh {
 
         GEO::AttributesManager& att_mgr =
             geomodel_.mesh_entity( gme_vertex_.gmme ).vertex_attribute_manager();
-        GEO::Attribute< double > translation_att_x( att_mgr, "translation_attr_x" );
-        translation_att_x[gme_vertex_.v_index] += displacement_vector.x;
-        GEO::Attribute< double > translation_att_y( att_mgr, "translation_attr_y" );
-        translation_att_y[gme_vertex_.v_index] += displacement_vector.y;
-        GEO::Attribute< double > translation_att_z( att_mgr, "translation_attr_z" );
-        translation_att_z[gme_vertex_.v_index] += displacement_vector.z;
+        GEO::Attribute< vec3 > translation_attr( att_mgr,
+            translation_attribute_name_ );
+        translation_attr[gme_vertex_.v_index] += displacement_vector;
 
         for( index_t link_itr = 0; link_itr < linked_gme_vertices_.size();
             ++link_itr ) {
@@ -1788,15 +1786,9 @@ namespace RINGMesh {
                 to_erase_by_type[entity_type_to_index( Region::type_name_static() )][reg_itr]
                     == 0 );
             GEO::AttributesManager& att_mgr = reg.vertex_attribute_manager();
-            GEO::Attribute< double > translation_att_x( att_mgr,
-                "translation_attr_x" );
-            translation_att_x.fill( 0. );
-            GEO::Attribute< double > translation_att_y( att_mgr,
-                "translation_attr_y" );
-            translation_att_y.fill( 0. );
-            GEO::Attribute< double > translation_att_z( att_mgr,
-                "translation_attr_z" );
-            translation_att_z.fill( 0. );
+            GEO::Attribute< vec3 > translation_attr( att_mgr,
+                translation_attribute_name_ );
+            translation_attr.fill( vec3( 0., 0., 0. ) );
         }
 
         for( index_t surf_itr = 0; surf_itr < geomodel_.nb_surfaces(); ++surf_itr ) {
@@ -1808,15 +1800,9 @@ namespace RINGMesh {
             }
 
             GEO::AttributesManager& att_mgr = surf.vertex_attribute_manager();
-            GEO::Attribute< double > translation_att_x( att_mgr,
-                "translation_attr_x" );
-            translation_att_x.fill( 0. );
-            GEO::Attribute< double > translation_att_y( att_mgr,
-                "translation_attr_y" );
-            translation_att_y.fill( 0. );
-            GEO::Attribute< double > translation_att_z( att_mgr,
-                "translation_attr_z" );
-            translation_att_z.fill( 0. );
+            GEO::Attribute< vec3 > translation_attr( att_mgr,
+                translation_attribute_name_ );
+            translation_attr.fill( vec3( 0., 0., 0. ) );
         }
     }
 
@@ -2247,12 +2233,9 @@ namespace RINGMesh {
         const vec3& translation ) const
     {
         GEO::AttributesManager& att_mgr = gmme.vertex_attribute_manager();
-        GEO::Attribute< double > translation_att_x( att_mgr, "translation_attr_x" );
-        translation_att_x[vertex_id_in_gmme] += translation.x;
-        GEO::Attribute< double > translation_att_y( att_mgr, "translation_attr_y" );
-        translation_att_y[vertex_id_in_gmme] += translation.y;
-        GEO::Attribute< double > translation_att_z( att_mgr, "translation_attr_z" );
-        translation_att_z[vertex_id_in_gmme] += translation.z;
+        GEO::Attribute< vec3 > translation_attr( att_mgr,
+            translation_attribute_name_ );
+        translation_attr[vertex_id_in_gmme] += translation;
     }
 
     void DuplicateInterfaceBuilder::translate_duplicated_fault_network(
@@ -2270,19 +2253,13 @@ namespace RINGMesh {
                 to_erase_by_type[entity_type_to_index( Region::type_name_static() )][reg_itr]
                     == 0 );
             GEO::AttributesManager& att_mgr = reg.vertex_attribute_manager();
-            GEO::Attribute< double > translation_att_x( att_mgr,
-                "translation_attr_x" );
-            GEO::Attribute< double > translation_att_y( att_mgr,
-                "translation_attr_y" );
-            GEO::Attribute< double > translation_att_z( att_mgr,
-                "translation_attr_z" );
+            GEO::Attribute< vec3 > translation_attr( att_mgr,
+                translation_attribute_name_ );
             for( index_t vertex_itr = 0; vertex_itr < reg.nb_vertices();
                 ++vertex_itr ) {
 
                 vec3 new_vertex_coords = reg.vertex( vertex_itr );
-                new_vertex_coords.x += translation_att_x[vertex_itr];
-                new_vertex_coords.y += translation_att_y[vertex_itr];
-                new_vertex_coords.z += translation_att_z[vertex_itr];
+                new_vertex_coords += translation_attr[vertex_itr];
                 geometry.set_mesh_entity_vertex( reg.gmme(), vertex_itr,
                     new_vertex_coords, false );
             }
@@ -2297,19 +2274,13 @@ namespace RINGMesh {
             }
 
             GEO::AttributesManager& att_mgr = surf.vertex_attribute_manager();
-            GEO::Attribute< double > translation_att_x( att_mgr,
-                "translation_attr_x" );
-            GEO::Attribute< double > translation_att_y( att_mgr,
-                "translation_attr_y" );
-            GEO::Attribute< double > translation_att_z( att_mgr,
-                "translation_attr_z" );
+            GEO::Attribute< vec3 > translation_attr( att_mgr,
+                translation_attribute_name_ );
             for( index_t vertex_itr = 0; vertex_itr < surf.nb_vertices();
                 ++vertex_itr ) {
 
                 vec3 new_vertex_coords = surf.vertex( vertex_itr );
-                new_vertex_coords.x += translation_att_x[vertex_itr];
-                new_vertex_coords.y += translation_att_y[vertex_itr];
-                new_vertex_coords.z += translation_att_z[vertex_itr];
+                new_vertex_coords += translation_attr[vertex_itr];
                 geometry.set_mesh_entity_vertex( surf.gmme(), vertex_itr,
                     new_vertex_coords, false );
             }
@@ -2433,15 +2404,9 @@ namespace RINGMesh {
             const GeoModelMeshEntity& gmme = geomodel_.mesh_entity(
                 cur_gme_vertex.gmme );
             GEO::AttributesManager& att_mgr = gmme.vertex_attribute_manager();
-            GEO::Attribute< double > translation_att_x( att_mgr,
-                "translation_attr_x" );
-            translation_att_x[cur_gme_vertex.v_index] = 0;
-            GEO::Attribute< double > translation_att_y( att_mgr,
-                "translation_attr_y" );
-            translation_att_y[cur_gme_vertex.v_index] = 0;
-            GEO::Attribute< double > translation_att_z( att_mgr,
-                "translation_attr_z" );
-            translation_att_z[cur_gme_vertex.v_index] = 0;
+            GEO::Attribute< vec3 > translation_attr( att_mgr,
+                translation_attribute_name_ );
+            translation_attr[cur_gme_vertex.v_index] = vec3( 0, 0, 0 );
         }
     }
 
