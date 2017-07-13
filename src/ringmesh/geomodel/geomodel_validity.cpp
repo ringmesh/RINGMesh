@@ -924,57 +924,13 @@ namespace {
          */
         void test_finite_extension()
         {
-            const GeoModel::SurfaceSide surface_side = geomodel_.get_voi_surfaces();
-
-            index_t nb_points_all_voi_surfaces = 0;
-            for( index_t voi_surface_id : surface_side.surfaces_ ) {
-                const Surface& cur_surface = geomodel_.surface( voi_surface_id );
-                nb_points_all_voi_surfaces += cur_surface.nb_vertices();
-            }
+            const GeoModelMesh& geomodelmesh = geomodel_.mesh;
+            const GeoModelMeshVertices& geomodelmesh_vertices = geomodelmesh.vertices;
 
             std::vector< vec3 > all_points;
-            all_points.reserve( nb_points_all_voi_surfaces );
-
-            for( index_t voi_surface_id : surface_side.surfaces_ ) {
-                const Surface& cur_surface = geomodel_.surface( voi_surface_id );
-                for( index_t v_i = 0; v_i < cur_surface.nb_vertices(); ++v_i ) {
-                    all_points.push_back( cur_surface.vertex( v_i ) );
-                }
-            }
-
-            NNSearch make_unique_surf( all_points );
-            std::vector< index_t > unique_id;
-            std::vector< vec3 > facet_points;
-            make_unique_surf.get_colocated_index_mapping( geomodel_.epsilon(),
-                unique_id, facet_points );
-
-            index_t offset_vertices = 0;
-            std::vector< index_t > facet_indices;
-            std::vector< index_t > facet_ptr;
-            index_t count_facet_vertices = 0;
-            facet_ptr.push_back( count_facet_vertices );
-            for( index_t voi_surface_id : surface_side.surfaces_ ) {
-
-                const Surface& cur_surf = geomodel_.surface( voi_surface_id );
-
-                for( index_t facet_itr = 0; facet_itr < cur_surf.nb_mesh_elements();
-                    ++facet_itr ) {
-                    for( index_t point_i = 0;
-                        point_i < cur_surf.nb_mesh_element_vertices( facet_itr );
-                        ++point_i ) {
-
-                        index_t index = cur_surf.mesh_element_vertex_index(
-                            facet_itr, point_i );
-                        facet_indices.push_back(
-                            unique_id[index + offset_vertices] );
-
-                    }
-                    count_facet_vertices += cur_surf.nb_mesh_element_vertices(
-                        facet_itr );
-                    facet_ptr.push_back( count_facet_vertices );
-                }
-
-                offset_vertices += cur_surf.nb_vertices();
+            all_points.reserve( geomodelmesh_vertices.nb() );
+            for( index_t v_i = 0; v_i < geomodelmesh_vertices.nb(); ++v_i ) {
+                all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
             }
 
             std::unique_ptr< SurfaceMesh > surface = SurfaceMesh::create_mesh();
@@ -983,17 +939,28 @@ namespace {
                 SurfaceMeshBuilder::create_builder( *surface );
             ringmesh_assert( builder != nullptr );
             index_t start = builder->create_vertices(
-                static_cast< index_t >( facet_points.size() ) );
+                static_cast< index_t >( all_points.size() ) );
             ringmesh_unused( start );
             ringmesh_assert( start == 0 );
-            for( index_t v_i = 0; v_i < facet_points.size(); ++v_i ) {
-                builder->set_vertex( v_i, facet_points[v_i] );
+            for( index_t v_i = 0; v_i < all_points.size(); ++v_i ) {
+                builder->set_vertex( v_i, all_points[v_i] );
             }
-            builder->create_polygons( facet_indices, facet_ptr );
+
+            const GeoModelMeshPolygons& geomodelmesh_polygons = geomodelmesh.polygons;
+            for( index_t polygon_i = 0; polygon_i < geomodelmesh_polygons.nb();
+                ++polygon_i ) {
+                std::vector< index_t > polygon_vertices(
+                    geomodelmesh_polygons.nb_vertices( polygon_i ) );
+                for( index_t v_i = 0;
+                    v_i < geomodelmesh_polygons.nb_vertices( polygon_i ); ++v_i ) {
+                    polygon_vertices[v_i] = geomodelmesh_polygons.vertex( polygon_i,
+                        v_i );
+                }
+                builder->create_polygon( polygon_vertices );
+            }
 
             for( index_t p = 0; p < surface->nb_polygons(); p++ ) {
-                for( index_t v = 0; v < surface->nb_polygon_vertices( p );
-                    v++ ) {
+                for( index_t v = 0; v < surface->nb_polygon_vertices( p ); v++ ) {
                     builder->set_polygon_adjacent( p, v, NO_ID );
                 }
             }
@@ -1003,7 +970,6 @@ namespace {
             std::tie( nb_connected_components, std::ignore ) =
                 surface->get_connected_components();
 
-            DEBUG(surface_side.surfaces_.size());
             DEBUG(nb_connected_components);
             surface->save_mesh("toto.geogram");
             if( nb_connected_components != 1 ) {
