@@ -177,8 +177,8 @@ namespace RINGMesh {
                 compute_mesh_entity_bbox( GM_.surface( s ), bbox_ );
             }
         } else if( GM_.nb_lines() > 0 ) {
-            for( index_t l : range( GM_.nb_lines() ) ) {
-                compute_mesh_entity_bbox( GM_.line( l ), bbox_ );
+            for( const auto& line : line_range< DIMENSION >( GM_ ) ) {
+                compute_mesh_entity_bbox( line, bbox_ );
             }
         } else {
             for( const auto& corner : corner_range< DIMENSION >( GM_ ) ) {

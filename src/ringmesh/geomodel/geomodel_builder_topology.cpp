@@ -269,9 +269,9 @@ namespace RINGMesh {
         const std::vector< vecn< DIMENSION > >& vertices )
     {
         gmme_id result;
-        for( index_t i : range( geomodel_.nb_lines() ) ) {
-            if( line_equal( geomodel_.line( i ), vertices ) ) {
-                result = geomodel_.line( i ).gmme();
+        for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
+            if( line_equal( line, vertices ) ) {
+                result = line.gmme();
             }
         }
         if( !result.is_defined() ) {
@@ -294,8 +294,7 @@ namespace RINGMesh {
         const gmme_id& first_corner,
         const gmme_id& second_corner )
     {
-        for( index_t i : range( geomodel_.nb_lines() ) ) {
-            const Line< DIMENSION >& line = geomodel_.line( i );
+        for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
             gmme_id c0 = line.boundary_gmme( 0 );
             gmme_id c1 = line.boundary_gmme( 1 );
 
@@ -562,9 +561,10 @@ namespace RINGMesh {
             }
         }
 
-        for( index_t l : range( geomodel_.nb_lines() ) ) {
-            if( !is_line_universe_boundary[l] ) continue;
-            add_universe_boundary( l, line_side[l] );
+        for( const auto& line : line_range< 2 >( geomodel_ ) ) {
+            if( is_line_universe_boundary[line.index()] ) {
+                add_universe_boundary( line.index(), line_side[line.index()] );
+            }
         }
     }
 

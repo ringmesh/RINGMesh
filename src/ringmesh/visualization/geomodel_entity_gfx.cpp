@@ -194,10 +194,10 @@ namespace RINGMesh {
     {
         if( this->entities_.empty() ) {
             this->entities_.reserve( this->gfx_.geomodel()->nb_lines() );
-            for( index_t e : range( this->gfx_.geomodel()->nb_lines() ) ) {
+            for( const auto& line : line_range< DIMENSION >( *this->gfx_.geomodel() ) ) {
                 this->entities_.push_back(
                     LineMeshGfx< DIMENSION >::create_gfx(
-                        this->gfx_.geomodel()->line( e ).low_level_mesh_storage() ) );
+                        line.low_level_mesh_storage() ) );
             }
         }
     }

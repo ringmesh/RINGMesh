@@ -885,8 +885,7 @@ namespace {
     {
         edge_on_lines.resize( edge_barycenters.size(), false );
         NNSearch< DIMENSION > nn( edge_barycenters );
-        for( index_t l : range( geomodel.nb_lines() ) ) {
-            const Line< DIMENSION >& line = geomodel.line( l );
+        for( const auto& line : line_range< DIMENSION >( geomodel ) ) {
             for( index_t e : range( line.nb_mesh_elements() ) ) {
                 const vecn< DIMENSION > query = line.mesh_element_barycenter( e );
                 std::vector< index_t > results = nn.get_neighbors( query,
@@ -1071,20 +1070,18 @@ namespace {
                 Interface< DIMENSION >::type_name_static() ) ) {
                 return;
             }
-            for( index_t line_i : range( geomodel_.nb_lines() ) ) {
-                const Line< DIMENSION >& cur_line = geomodel_.line( line_i );
-                if( cur_line.nb_incident_entities() == 1 ) {
+            for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
+                if( line.nb_incident_entities() == 1 ) {
                     continue;
                 }
 
                 const index_t first_interface_id =
-                    cur_line.incident_entity( 0 ).parent_gmge(
+                    line.incident_entity( 0 ).parent_gmge(
                         Interface< DIMENSION >::type_name_static() ).index();
                 ringmesh_assert( first_interface_id != NO_ID );
                 bool at_least_two_different_interfaces = false;
-                for( index_t in_boundary_i : range( 1,
-                    cur_line.nb_incident_entities() ) ) {
-                    const index_t cur_interface_id = cur_line.incident_entity(
+                for( index_t in_boundary_i : range( 1, line.nb_incident_entities() ) ) {
+                    const index_t cur_interface_id = line.incident_entity(
                         in_boundary_i ).parent_gmge(
                         Interface< DIMENSION >::type_name_static() ).index();
                     ringmesh_assert( cur_interface_id != NO_ID );
@@ -1096,7 +1093,7 @@ namespace {
 
                 if( !at_least_two_different_interfaces ) {
                     Logger::warn( "GeoModel",
-                        "All in boundaries (surfaces) of line ", line_i,
+                        "All in boundaries (surfaces) of line ", line.index(),
                         " are children of a same interface." );
                     set_invalid_model();
                 }

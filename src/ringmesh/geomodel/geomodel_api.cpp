@@ -93,8 +93,8 @@ namespace {
     index_t count_geomodel_edges( const GeoModel< DIMENSION >& geomodel )
     {
         index_t nb_edges = 0;
-        for( index_t i : range( geomodel.nb_lines() ) ) {
-            nb_edges += geomodel.line( i ).nb_mesh_elements();
+        for( const auto& line : line_range< DIMENSION >( geomodel ) ) {
+            nb_edges += line.nb_mesh_elements();
         }
         return nb_edges;
     }
