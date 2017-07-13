@@ -573,8 +573,7 @@ namespace RINGMesh {
         std::vector< bool > is_surface_universe_boundary( geomodel_.nb_surfaces(),
             false );
         std::vector< bool > surface_side( geomodel_.nb_surfaces() );
-        for( index_t r : range( geomodel_.nb_regions() ) ) {
-            const Region< 3 >& region = geomodel_.region( r );
+        for( const auto& region : region_range< 3 >( geomodel_ ) ) {
             for( index_t s : range( region.nb_boundaries() ) ) {
                 index_t surface_id = region.boundary_gmme( s ).index();
                 is_surface_universe_boundary[surface_id] =

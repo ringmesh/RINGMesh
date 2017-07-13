@@ -974,11 +974,11 @@ namespace RINGMesh {
         // to the universe_, the one with the biggest volume
         double max_volume = -1.;
         index_t universe_id = NO_ID;
-        for( index_t i : range( geomodel_.nb_regions() ) ) {
-            double cur_volume = geomodel_.region( i ).size();
+        for( const auto& region : region_range< 3 >( geomodel_ ) ) {
+            double cur_volume = region.size();
             if( cur_volume > max_volume ) {
                 max_volume = cur_volume;
-                universe_id = i;
+                universe_id = region.index();
             }
         }
         const Region< 3 >& cur_region = geomodel_.region( universe_id );

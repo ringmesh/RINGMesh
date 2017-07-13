@@ -158,8 +158,7 @@ namespace {
             ascii << nb_families << " # Number of families" << std::endl;
             ascii << "# Object name" << TAB << "Entity type" << TAB << "Material-ID"
                 << TAB << "Number of entities" << std::endl;
-            for( index_t r : range( gm.nb_regions() ) ) {
-                const RINGMesh::GeoModelEntity< 3 >& region = gm.region( r );
+            for( const auto& region : region_range< 3 >( gm ) ) {
                 regions << region.name() << std::endl;
                 std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
                                                "PYRA_5" };
@@ -167,9 +166,9 @@ namespace {
                     to_underlying_type( CellType::TETRAHEDRON ),
                     to_underlying_type( CellType::UNCLASSIFIED ) ) ) {
                     CellType T = static_cast< CellType >( type );
-                    if( mesh.cells.nb_cells( r, T ) > 0 ) {
+                    if( mesh.cells.nb_cells( region.index(), T ) > 0 ) {
                         ascii << region.name() << TAB << entity_type[type] << TAB
-                            << 0 << TAB << mesh.cells.nb_cells( r, T ) << std::endl;
+                            << 0 << TAB << mesh.cells.nb_cells( region.index(), T ) << std::endl;
                     }
                 }
             }

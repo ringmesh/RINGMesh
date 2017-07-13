@@ -435,10 +435,10 @@ namespace RINGMesh {
     {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_regions() );
-            for( index_t e : range( gfx_.geomodel()->nb_regions() ) ) {
+            for( const auto& region : region_range< DIMENSION >( *gfx_.geomodel() ) ) {
                 entities_.push_back(
                     VolumeMeshGfx< DIMENSION >::create_gfx(
-                        gfx_.geomodel()->region( e ).low_level_mesh_storage() ) );
+                        region.low_level_mesh_storage() ) );
             }
         }
     }

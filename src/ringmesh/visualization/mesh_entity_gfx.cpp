@@ -130,9 +130,9 @@ namespace RINGMesh {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
-            for( index_t r : range( geomodel->nb_regions() ) ) {
+            for( const auto& region : region_range< DIMENSION >( *geomodel ) ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->region( r ).cell_attribute_manager(), attribute_name );
+                    region.cell_attribute_manager(), attribute_name );
                 compute_attribute_range( attribute, attribute_min, attribute_max );
             }
         }
@@ -191,10 +191,9 @@ namespace RINGMesh {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
-            for( index_t r : range( geomodel->nb_regions() ) ) {
+            for( const auto& region : region_range< DIMENSION >( *geomodel ) ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->region( r ).vertex_attribute_manager(),
-                    attribute_name );
+                    region.vertex_attribute_manager(), attribute_name );
                 compute_attribute_range( attribute, attribute_min, attribute_max );
             }
         }

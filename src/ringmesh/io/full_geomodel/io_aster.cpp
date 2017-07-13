@@ -189,12 +189,14 @@ namespace {
 
         void write_regions( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            for( index_t r : range( geomodel.nb_regions() ) ) {
-                if( geomodel.region( r ).is_meshed() ) {
+            for( const auto& region : region_range < 3 > ( geomodel ) ) {
+                if( region.is_meshed() ) {
                     out << "GROUP_MA" << std::endl;
-                    out << geomodel.region( r ).name() << std::endl;
-                    for( index_t c : range( geomodel.mesh.cells.nb_cells( r ) ) ) {
-                        out << "C" << geomodel.mesh.cells.cell( r, c ) << std::endl;
+                    out << region.name() << std::endl;
+                    for( index_t c : range(
+                        geomodel.mesh.cells.nb_cells( region.index() ) ) ) {
+                        out << "C" << geomodel.mesh.cells.cell( region.index(), c )
+                            << std::endl;
                     }
                     out << "FINSF" << std::endl;
                 }

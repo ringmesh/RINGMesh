@@ -506,13 +506,13 @@ namespace {
         const GeoModel< 3 >& geomodel,
         std::vector< bool >& surface_sides )
     {
-        for( index_t r : range( geomodel.nb_regions() ) ) {
-            for( index_t s : range( geomodel.region( r ).nb_boundaries() ) ) {
-                if( geomodel.region( r ).side( s ) ) {
-                    surface_sides[2 * geomodel.region( r ).boundary( s ).index() + 1] =
+        for( const auto& region : region_range< 3 >( geomodel ) ) {
+            for( index_t s : range( region.nb_boundaries() ) ) {
+                if( region.side( s ) ) {
+                    surface_sides[2 * region.boundary( s ).index() + 1] =
                         true;
-                } else if( !geomodel.region( r ).side( s ) ) {
-                    surface_sides[2 * geomodel.region( r ).boundary( s ).index()] =
+                } else if( !region.side( s ) ) {
+                    surface_sides[2 * region.boundary( s ).index()] =
                         true;
                 } else {
                     ringmesh_assert_not_reached;
