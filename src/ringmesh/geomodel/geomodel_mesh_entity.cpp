@@ -43,7 +43,6 @@
 #include <stack>
 
 #include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
@@ -151,29 +150,28 @@ namespace {
      * @brief Count the number of times each vertex is in an edge or polygon
      *
      * @param[in] gmme The GeoModelMeshEntity
-     * @param[out] nb Resized to the number of vertices of the mesh.
+     * @return Resized to the number of vertices of the mesh.
      *      Number of times one vertex appear in an mesh_element collection of 
      *      the GeoModelMeshEntity edge or polygon of the mesh.
      */
     template< index_t DIMENSION >
-    void count_vertex_occurences(
-        const GeoModelMeshEntity< DIMENSION >& E,
-        std::vector< index_t >& nb )
+    std::vector< index_t > count_vertex_occurences(
+        const GeoModelMeshEntity< DIMENSION >& E )
     {
-        nb.resize( E.nb_vertices(), 0 );
+        std::vector< index_t > nb( E.nb_vertices(), 0 );
         for( index_t mesh_element_index : range( E.nb_mesh_elements() ) ) {
             for( index_t vertex : range(
                 E.nb_mesh_element_vertices( mesh_element_index ) ) ) {
                 ++nb[E.mesh_element_vertex_index( mesh_element_index, vertex )];
             }
         }
+        return nb;
     }
 
     template< index_t DIMENSION >
     index_t count_nb_isolated_vertices( const GeoModelMeshEntity< DIMENSION >& mesh )
     {
-        std::vector< index_t > nb;
-        count_vertex_occurences( mesh, nb );
+        std::vector< index_t > nb = count_vertex_occurences( mesh );
         return static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) );
     }
 
@@ -489,7 +487,6 @@ namespace RINGMesh {
     {
         gmge_id id = parent_gmge( parent_type_name );
         ringmesh_assert( id.is_defined() );
-
         return this->geomodel().geological_entity( id );
     }
 
@@ -560,7 +557,6 @@ namespace RINGMesh {
         return this->geomodel().entity_type_manager().relationship_manager.parent_of_gmme(
             parents_[id] );
     }
-
     /**************************************************************/
 
     template< index_t DIMENSION >
@@ -619,8 +615,7 @@ namespace RINGMesh {
 
         if( this->nb_vertices() > 1 ) {
             // Count the number of edges in which each vertex is
-            std::vector< index_t > nb;
-            count_vertex_occurences( *this, nb );
+            std::vector< index_t > nb = count_vertex_occurences( *this );
             index_t nb0 = 0;
             index_t nb1 = 0;
             index_t nb2 = 0;
@@ -664,8 +659,8 @@ namespace RINGMesh {
         index_t nb_degenerated = 0;
         for( index_t e : range( nb_mesh_elements() ) ) {
             double l = length(
-                this->mesh_element_vertex( e, 1 )
-                    - this->mesh_element_vertex( e, 0 ) );
+                this->mesh_element_vertex( ElementLocalVertex( e, 1 ) )
+                    - this->mesh_element_vertex( ElementLocalVertex( e, 0 ) ) );
             if( l < this->geomodel().epsilon() ) {
                 nb_degenerated++;
             }
@@ -906,7 +901,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void GeoModelMeshEntityAccess< DIMENSION >::change_mesh_data_structure(
-        const MeshType type )
+        const MeshType& type )
     {
         if( gmme_.mesh_->type_name() != type ) {
             gmme_.unbind_vertex_mapping_attribute();
@@ -916,7 +911,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void Corner< DIMENSION >::change_mesh_data_structure( const MeshType type )
+    void Corner< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< PointSetMesh< DIMENSION > > new_mesh = PointSetMesh<
             DIMENSION >::create_mesh( type );
@@ -927,7 +922,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void Line< DIMENSION >::change_mesh_data_structure( const MeshType type )
+    void Line< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< LineMesh< DIMENSION > > new_mesh =
             LineMesh< DIMENSION >::create_mesh( type );
@@ -938,7 +933,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void SurfaceBase< DIMENSION >::change_mesh_data_structure( const MeshType type )
+    void SurfaceBase< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< SurfaceMesh< DIMENSION > > new_mesh =
             SurfaceMesh< DIMENSION >::create_mesh( type );
@@ -949,7 +944,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void Region< DIMENSION >::change_mesh_data_structure( const MeshType type )
+    void Region< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< VolumeMesh< DIMENSION > > new_mesh =
             VolumeMesh< DIMENSION >::create_mesh( type );
@@ -958,7 +953,6 @@ namespace RINGMesh {
         builder->copy( *volume_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
-
     template< >
     std::vector< bool >& GeoModelMeshEntityAccess< 2 >::modifiable_sides()
     {

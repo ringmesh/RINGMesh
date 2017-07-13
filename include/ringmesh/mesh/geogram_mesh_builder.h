@@ -137,6 +137,7 @@ namespace RINGMesh {
     class GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
+
         void set_mesh( LineMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
@@ -188,6 +189,7 @@ namespace RINGMesh {
     class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
+
         void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(

@@ -341,13 +341,15 @@ namespace {
 
         bool is_triangle( index_t p ) const
         {
-            index_t index;
-            return polygons_.type( p, index ) == PolygonType::TRIANGLE;
+            PolygonType type;
+            std::tie( type, std::ignore ) = polygons_.type( p );
+            return type == PolygonType::TRIANGLE;
         }
         bool is_quad( index_t p ) const
         {
-            index_t index;
-            return polygons_.type( p, index ) == PolygonType::QUAD;
+            PolygonType type;
+            std::tie( type, std::ignore ) = polygons_.type( p );
+            return type == PolygonType::QUAD;
         }
 
     private:
@@ -460,6 +462,7 @@ namespace {
             } else {
                 return true;
             }
+
         } else {
             if( type_entities.empty() ) {
                 Logger::warn( "GeoModel", " Vertex is in a ", boundary_type,
@@ -719,7 +722,8 @@ namespace {
             vertices.reserve( nb_vertices_in_polygon );
             for( index_t v : range( nb_vertices_in_polygon ) ) {
                 index_t new_vertex = mesh.vertices.create_vertex(
-                    surface.mesh_element_vertex( cur_polygon, v ).data() );
+                    surface.mesh_element_vertex(
+                        ElementLocalVertex( cur_polygon, v ) ).data() );
                 vertices.push_back( new_vertex );
             }
             mesh.facets.create_polygon( vertices );
@@ -746,14 +750,14 @@ namespace {
                     && !is_edge_on_line( surface.geomodel(),
                         geomodel_vertices.geomodel_vertex_id( S_id, p, v ),
                         geomodel_vertices.geomodel_vertex_id( S_id, p,
-                            surface.low_level_mesh_storage().next_polygon_vertex( p,
-                                v ) ) ) ) {
+                            surface.low_level_mesh_storage().next_polygon_vertex(
+                                ElementLocalVertex( p, v ) ) ) ) ) {
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id, p, v ) );
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id, p,
-                            surface.low_level_mesh_storage().next_polygon_vertex( p,
-                                v ) ) );
+                            surface.low_level_mesh_storage().next_polygon_vertex(
+                                ElementLocalVertex( p, v ) ) ) );
                 }
             }
         }
@@ -839,10 +843,10 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    void compute_border_edges(
-        const GeoModel< DIMENSION >& geomodel,
-        std::vector< index_t >& edge_indices )
+    std::vector< index_t > compute_border_edges(
+        const GeoModel< DIMENSION >& geomodel )
     {
+        std::vector< index_t > edge_indices;
         const GeoModelMeshPolygons< DIMENSION >& polygons = geomodel.mesh.polygons;
         for( index_t s : range( geomodel.nb_surfaces() ) ) {
             for( index_t p : range( polygons.nb_polygons( s ) ) ) {
@@ -859,31 +863,32 @@ namespace {
                 }
             }
         }
+        return edge_indices;
     }
 
     template< index_t DIMENSION >
-    void compute_border_edge_barycenters(
+    std::vector< vecn< DIMENSION > > compute_border_edge_barycenters(
         const GeoModel< DIMENSION >& geomodel,
-        const std::vector< index_t >& edge_indices,
-        std::vector< vecn< DIMENSION > >& edge_barycenters )
+        const std::vector< index_t >& edge_indices )
     {
         const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
         index_t nb_edges = static_cast< index_t >( edge_indices.size() / 2 );
+        std::vector< vecn< DIMENSION > > edge_barycenters;
         edge_barycenters.reserve( nb_edges );
         for( index_t e = 0; e < edge_indices.size(); e += 2 ) {
             const vecn< DIMENSION >& v0 = vertices.vertex( edge_indices[e] );
             const vecn< DIMENSION >& v1 = vertices.vertex( edge_indices[e + 1] );
             edge_barycenters.push_back( ( v0 + v1 ) * 0.5 );
         }
+        return edge_barycenters;
     }
 
     template< index_t DIMENSION >
-    void compute_edge_on_lines(
+    std::vector< bool > compute_edge_on_lines(
         const GeoModel< DIMENSION >& geomodel,
-        const std::vector< vecn< DIMENSION > >& edge_barycenters,
-        std::vector< bool >& edge_on_lines )
+        const std::vector< vecn< DIMENSION > >& edge_barycenters )
     {
-        edge_on_lines.resize( edge_barycenters.size(), false );
+        std::vector< bool > edge_on_lines( edge_barycenters.size(), false );
         NNSearch< DIMENSION > nn( edge_barycenters );
         for( index_t l : range( geomodel.nb_lines() ) ) {
             const Line< DIMENSION >& line = geomodel.line( l );
@@ -896,17 +901,19 @@ namespace {
                 }
             }
         }
+        return edge_on_lines;
     }
 
-    void compute_non_manifold_edges(
-        const std::vector< bool >& edge_on_lines,
-        std::vector< index_t >& non_manifold_edges )
+    std::vector< index_t > compute_non_manifold_edges(
+        const std::vector< bool >& edge_on_lines  )
     {
+        std::vector< index_t > non_manifold_edges;
         for( index_t e : range( edge_on_lines.size() ) ) {
             if( !edge_on_lines[e] ) {
                 non_manifold_edges.push_back( e );
             }
         }
+        return non_manifold_edges;
     }
 
     /*!
@@ -951,6 +958,7 @@ namespace {
                 threads.emplace_back(
                     &GeoModelValidityCheck::test_geomodel_geological_validity,
                     this );
+
             }
             if( enum_contains( mode_,
                 ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) ) {
@@ -962,6 +970,10 @@ namespace {
                 threads.emplace_back(
                     &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
                     this );
+                /// TODO: find a way to add this test for Model3d. See BC.
+//                threads.emplace_back(
+//                    &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
+//                    this );
             }
             if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) ) {
                 threads.emplace_back(
@@ -1111,15 +1123,13 @@ namespace {
          */
         void test_non_manifold_edges()
         {
-            std::vector< index_t > edge_indices;
-            compute_border_edges( geomodel_, edge_indices );
-            std::vector< vecn< DIMENSION > > edge_barycenters;
-            compute_border_edge_barycenters( geomodel_, edge_indices,
+            std::vector< index_t > edge_indices = compute_border_edges( geomodel_ );
+            std::vector< vecn< DIMENSION > > edge_barycenters = compute_border_edge_barycenters(
+                geomodel_, edge_indices );
+            std::vector< bool > edge_on_lines = compute_edge_on_lines( geomodel_,
                 edge_barycenters );
-            std::vector< bool > edge_on_lines;
-            compute_edge_on_lines( geomodel_, edge_barycenters, edge_on_lines );
-            std::vector< index_t > non_manifold_edges;
-            compute_non_manifold_edges( edge_on_lines, non_manifold_edges );
+            std::vector< index_t > non_manifold_edges = compute_non_manifold_edges(
+                edge_on_lines );
 
             if( !non_manifold_edges.empty() ) {
                 Logger::warn( "GeoModel", non_manifold_edges.size(),
@@ -1192,7 +1202,6 @@ namespace {
         bool valid_;
         ValidityCheckMode mode_;
     };
-
     template< >
     void GeoModelValidityCheck< 3 >::add_checks(
         std::vector< std::thread >& threads )

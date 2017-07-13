@@ -100,14 +100,14 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    void compute_region_volumes_per_cell_type(
-        const Region< DIMENSION >& region,
-        double& tet_volume,
-        double& pyramid_volume,
-        double& prism_volume,
-        double& hex_volume,
-        double& poly_volume )
+    std::tuple< double, double, double, double, double > compute_region_volumes_per_cell_type(
+        const Region< DIMENSION >& region )
     {
+        double tet_volume = 0.;
+        double pyramid_volume = 0.;
+        double prism_volume = 0.;
+        double hex_volume = 0.;
+        double poly_volume = 0.;
         for( index_t c : range( region.nb_mesh_elements() ) ) {
             index_t nb_vertices = region.nb_mesh_element_vertices( c );
             double volume = region.low_level_mesh_storage().cell_volume( c );
@@ -129,28 +129,28 @@ namespace {
                     break;
             }
         }
+        return std::make_tuple( tet_volume, pyramid_volume, prism_volume, hex_volume,
+            poly_volume );
     }
 
     template< index_t DIMENSION >
-    double compute_geomodel_volumes_per_cell_type(
-        const GeoModel< DIMENSION >& geomodel,
-        double& tet_volume,
-        double& pyramid_volume,
-        double& prism_volume,
-        double& hex_volume,
-        double& poly_volume )
+    std::tuple< double, double, double, double, double, double >
+        compute_geomodel_volumes_per_cell_type(
+        const GeoModel< DIMENSION >& geomodel )
     {
-        tet_volume = 0;
-        pyramid_volume = 0;
-        prism_volume = 0;
-        hex_volume = 0;
-        poly_volume = 0;
+        double tet_volume = 0;
+        double pyramid_volume = 0;
+        double prism_volume = 0;
+        double hex_volume = 0;
+        double poly_volume = 0;
         for( index_t r : range( geomodel.nb_regions() ) ) {
             const Region< DIMENSION >& region = geomodel.region( r );
-            compute_region_volumes_per_cell_type( region, tet_volume, pyramid_volume,
-                prism_volume, hex_volume, poly_volume );
+            std::tie( tet_volume, pyramid_volume, prism_volume, hex_volume,
+                poly_volume ) = compute_region_volumes_per_cell_type( region );
         }
-        return tet_volume + pyramid_volume + prism_volume + hex_volume + poly_volume;
+        double total = tet_volume + pyramid_volume + prism_volume + hex_volume + poly_volume;
+        return std::make_tuple( total, tet_volume, pyramid_volume, prism_volume,
+            hex_volume, poly_volume );
     }
 
     void print_one_cell_stat(
@@ -171,7 +171,6 @@ namespace {
             static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 ),
             "%)" );
     }
-
     template< index_t DIMENSION >
     void print_geomodel_base_mesh_stats( const GeoModel< DIMENSION >& geomodel )
     {
@@ -288,13 +287,14 @@ namespace RINGMesh {
 
     void print_geomodel_mesh_cell_volumes( const GeoModel< 3 >& geomodel )
     {
+        double volume = 0;
         double tet_volume = 0;
         double pyramid_volume = 0;
         double prism_volume = 0;
         double hex_volume = 0;
         double poly_volume = 0;
-        double volume = compute_geomodel_volumes_per_cell_type( geomodel, tet_volume,
-            pyramid_volume, prism_volume, hex_volume, poly_volume );
+        std::tie( volume, tet_volume, pyramid_volume, prism_volume, hex_volume,
+            poly_volume ) = compute_geomodel_volumes_per_cell_type( geomodel );
         Logger::out( "GeoModel", "Model ", geomodel.name(), " has a volume of ",
             volume );
         if( tet_volume > 0 ) {
@@ -316,6 +316,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
+
     index_t find_mesh_entity_id_from_name(
         const GeoModel< DIMENSION >& geomodel,
         const MeshEntityType& gmme_type,
@@ -396,9 +397,8 @@ namespace RINGMesh {
                 "Rotation around an epsilon length axis is impossible" );
             return;
         }
-        GEO::Matrix< 4, double > rot_mat;
-        rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
-            rot_mat );
+        GEO::Matrix< 4, double > rot_mat = rotation_matrix_about_arbitrary_axis(
+            origin, axis, theta, degrees );
 
         for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
             const vec3& p = geomodel.mesh.vertices.vertex( v );
@@ -462,7 +462,6 @@ namespace RINGMesh {
         geomodel.mesh.vertices.clear();
     }
 #endif
-
     template void RINGMESH_API print_geomodel( const GeoModel< 2 >& );
     template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel< 2 >& );
     template index_t RINGMESH_API find_mesh_entity_id_from_name(

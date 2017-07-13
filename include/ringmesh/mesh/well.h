@@ -238,7 +238,7 @@ namespace RINGMesh {
         /*!
          * Gets the edges of a part
          * @param[in] part_id the part id
-         * @param[out] edges the edges of the part
+         * @param[in,out] edges the edges of the part
          */
         void get_part_edges(
             index_t part_id,
@@ -246,7 +246,7 @@ namespace RINGMesh {
         /*!
          * Gets all the edges of a corresponding region
          * @param[in] region the region id
-         * @param[out] edges the corresponding edges
+         * @param[in,out] edges the corresponding edges
          */
         void get_region_edges(
             index_t part_id,
@@ -388,7 +388,7 @@ namespace RINGMesh {
         /*!
          * Gets all the edges contained in a region
          * @param[in] region the region id
-         * @param[out] edges the edges of the region
+         * @param[in,out] edges the edges of the region
          */
         void get_region_edges(
             index_t region,
@@ -397,7 +397,7 @@ namespace RINGMesh {
         /*!
          * Gets all the edges contained in a region
          * @param[in] region the region id
-         * @param[out] edges the edges of the region, one vector per well
+         * @param[in,out] edges the edges of the region, one vector per well
          */
         void get_region_edges(
             index_t region,

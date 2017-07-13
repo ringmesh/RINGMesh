@@ -489,8 +489,9 @@ namespace RINGMesh {
         NNSearch< 3 > nn_search( region_surfaces_and_wells_vertices );
         std::vector< index_t > unique_indices;
         std::vector< vec3 > unique_points;
-        nn_search.get_colocated_index_mapping( region.geomodel().epsilon(),
-            unique_indices, unique_points );
+        std::tie( std::ignore, unique_indices, unique_points ) =
+            nn_search.get_colocated_index_mapping_and_unique_points(
+                region.geomodel().epsilon() );
 
         index_t starting_index = tetmesh_constraint_.vertices.create_vertices(
             unique_points.size() );

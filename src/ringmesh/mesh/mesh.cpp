@@ -107,11 +107,9 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void SurfaceMeshBase< DIMENSION >::next_on_border(
+    std::tuple< index_t, index_t> SurfaceMeshBase< DIMENSION >::next_on_border(
         index_t p,
-        index_t e,
-        index_t& next_p,
-        index_t& next_e ) const
+        index_t e ) const
     {
         ringmesh_assert( e < nb_polygon_vertices( p ) );
         ringmesh_assert( is_edge_on_border( p, e ) );
@@ -127,7 +125,8 @@ namespace RINGMesh {
             static_cast< index_t >( polygons_around_next_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
-        next_p = polygons_around_next_v_id[0];
+        index_t next_p = polygons_around_next_v_id[0];
+        index_t next_e;
 
         if( nb_around == 2 ) {
             if( next_p == p ) {
@@ -144,14 +143,14 @@ namespace RINGMesh {
             next_e = vertex_index_in_polygon( next_p, next_v_id );
             ringmesh_assert( is_edge_on_border( next_p, next_e ) );
         }
+
+        return std::make_tuple( next_p, next_e );
     }
 
     template< index_t DIMENSION >
-    void SurfaceMeshBase< DIMENSION >::prev_on_border(
+    std::tuple< index_t, index_t > SurfaceMeshBase< DIMENSION >::prev_on_border(
         index_t p,
-        index_t e,
-        index_t& prev_p,
-        index_t& prev_e ) const
+        index_t e ) const
     {
         ringmesh_assert( e < nb_polygon_vertices( p ) );
         ringmesh_assert( is_edge_on_border( p, e ) );
@@ -166,7 +165,8 @@ namespace RINGMesh {
         index_t nb_around = static_cast< index_t >( polygons_around_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
-        prev_p = polygons_around_v_id[0];
+        index_t prev_p = polygons_around_v_id[0];
+        index_t prev_e;
 
         if( nb_around == 2 ) {
             if( prev_p == p ) {
@@ -186,6 +186,8 @@ namespace RINGMesh {
             prev_e = prev_polygon_vertex( prev_p, v_in_next_polygon );
             ringmesh_assert( is_edge_on_border( prev_p, prev_e ) );
         }
+
+        return std::make_tuple( prev_p, prev_e );
     }
 
     template< index_t DIMENSION >
