@@ -46,22 +46,65 @@
 
 using namespace RINGMesh;
 
-void run_tests( GeoModel& geomodel )
+template< class GME >
+void check_element_of_a_set_are_in_another_set(
+    const std::set< GME >& to_compare,
+    const std::set< GME >& with,
+    const std::string& set_name )
 {
-    GeoModelBuilder model_builder( geomodel );
+    for( const GME& cur_gme_id : to_compare ) {
+        if( std::find( with.begin(), with.end(), cur_gme_id ) == with.end() ) {
+            throw RINGMeshException( "RINGMesh Test",
+                std::string( cur_gme_id.type() ) + " "
+                    + std::to_string( cur_gme_id.index() ) + " is not in the "
+                    + set_name + "." );
+        }
+    }
+}
 
+void test_template(
+    GeoModel& geomodel,
+    const std::set< gmme_id >& solution_gmme_id,
+    const std::set< gmge_id >& solution_gmge_id,
+    const std::string& to_insert_type,
+    index_t to_insert_id )
+{
+    const GeoModelBuilder model_builder( geomodel );
     std::set< gmme_id > in_mesh_entities;
-    in_mesh_entities.insert( gmme_id( Region::type_name_static(), 4 ) );
     std::set< gmge_id > in_geological_entities;
-    model_builder.topology.get_dependent_entities( in_mesh_entities,
-        in_geological_entities );
 
+    const MeshEntityType mesh_type( to_insert_type );
+    if( MeshEntityTypeManager::is_valid_type( mesh_type ) ) {
+        in_mesh_entities.insert( gmme_id( mesh_type, to_insert_id ) );
+    } else {
+        const GeologicalEntityType geological_type( to_insert_type );
+        ringmesh_assert(
+            geomodel.entity_type_manager().geological_entity_manager.is_valid_type(
+                geological_type ) );
+        in_geological_entities.insert( gmge_id( geological_type, to_insert_id ) );
+    }
+
+    const GeoModelBuilder geomodel_builder( geomodel );
+    geomodel_builder.topology.get_dependent_entities( in_mesh_entities,
+        in_geological_entities );
+    check_element_of_a_set_are_in_another_set< gmme_id >( in_mesh_entities,
+        solution_gmme_id, "solution" );
+    check_element_of_a_set_are_in_another_set< gmge_id >( in_geological_entities,
+        solution_gmge_id, "solution" );
+    check_element_of_a_set_are_in_another_set< gmme_id >( solution_gmme_id,
+        in_mesh_entities, "output" );
+    check_element_of_a_set_are_in_another_set< gmge_id >( solution_gmge_id,
+        in_geological_entities, "output" );
+}
+
+void test_on_top_region( GeoModel& geomodel )
+{
     // Solution:
     // Corners: 31, 33, 54, 55, 56, 57, 58, 93, 118, 128, 129.
     // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 131, 135, 144, 177, 182, 203, 205, 207, 210, 233, 234, 238.
     // Surfaces: 11, 37, 40, 60, 85, 91, 99, 110, 114.
     // Region: 4.
-    std::vector< gmme_id > solution_gmme_id = { gmme_id( Corner::type_name_static(), 31 ),
+    std::set< gmme_id > solution_gmme_id = { gmme_id( Corner::type_name_static(), 31 ),
                                                 gmme_id( Corner::type_name_static(), 33 ),
                                                 gmme_id( Corner::type_name_static(), 54 ),
                                                 gmme_id( Corner::type_name_static(), 55 ),
@@ -103,10 +146,12 @@ void run_tests( GeoModel& geomodel )
                                                 gmme_id( Surface::type_name_static(), 114 ),
                                                 gmme_id( Region::type_name_static(), 4 )
     };
+
+    // Solution:
     // Contacts: 26, 27, 28, 78, 79, 83.
     // Interface: 21.
     // Layer: 0.
-    std::vector< gmge_id > solution_gmge_id = { gmge_id( Contact::type_name_static(), 26 ),
+    std::set< gmge_id > solution_gmge_id = { gmge_id( Contact::type_name_static(), 26 ),
                                                 gmge_id( Contact::type_name_static(), 27 ),
                                                 gmge_id( Contact::type_name_static(), 28 ),
                                                 gmge_id( Contact::type_name_static(), 78 ),
@@ -116,45 +161,13 @@ void run_tests( GeoModel& geomodel )
                                                 gmge_id( Layer::type_name_static(), 0 ),
     };
 
-    for( const gmme_id& cur_gmme_id : in_mesh_entities ) {
-        if( std::find( solution_gmme_id.begin(), solution_gmme_id.end(),
-            cur_gmme_id ) == solution_gmme_id.end() ) {
-            throw RINGMeshException( "RINGMesh Test",
-                std::string( cur_gmme_id.type() ) + " "
-                    + std::to_string( cur_gmme_id.index() )
-                    + " is not in the solution." );
-        }
-    }
+    test_template( geomodel, solution_gmme_id, solution_gmge_id,
+        std::string( Region::type_name_static() ), 4 );
+}
 
-    for( const gmge_id& cur_gmge_id : in_geological_entities ) {
-        if( std::find( solution_gmge_id.begin(), solution_gmge_id.end(),
-            cur_gmge_id ) == solution_gmge_id.end() ) {
-            throw RINGMeshException( "RINGMesh Test",
-                std::string( cur_gmge_id.type() ) + " "
-                    + std::to_string( cur_gmge_id.index() )
-                    + " is not in the solution." );
-        }
-    }
-
-    for( const gmme_id& cur_gmme_id : solution_gmme_id ) {
-        if( std::find( in_mesh_entities.begin(), in_mesh_entities.end(),
-            cur_gmme_id ) == in_mesh_entities.end() ) {
-            throw RINGMeshException( "RINGMesh Test",
-                std::string( cur_gmme_id.type() ) + " "
-                    + std::to_string( cur_gmme_id.index() )
-                    + " is not in the output." );
-        }
-    }
-
-    for( const gmge_id& cur_gmge_id : solution_gmge_id ) {
-        if( std::find( in_geological_entities.begin(), in_geological_entities.end(),
-            cur_gmge_id ) == in_geological_entities.end() ) {
-            throw RINGMeshException( "RINGMesh Test",
-                std::string( cur_gmge_id.type() ) + " "
-                    + std::to_string( cur_gmge_id.index() )
-                    + " is not in the output." );
-        }
-    }
+void run_tests( GeoModel& geomodel )
+{
+    test_on_top_region( geomodel );
 }
 
 void load_geomodel( GeoModel& geomodel )
