@@ -74,8 +74,7 @@ namespace {
             out << "# facet count, no boundary marker" << std::endl;
             out << nb_polygons( geomodel ) << "  0 " << std::endl;
 
-            for( index_t i : range( geomodel.nb_surfaces() ) ) {
-                const Surface< 3 >& surface = geomodel.surface( i );
+            for( const auto& surface : surface_range< 3 >( geomodel ) ) {
                 for( index_t p : range( surface.nb_mesh_elements() ) ) {
                     out << surface.nb_mesh_element_vertices( p ) << " ";
                     for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {

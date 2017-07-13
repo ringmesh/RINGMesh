@@ -253,10 +253,9 @@ namespace RINGMesh {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
-            for( index_t s : range( geomodel->nb_surfaces() ) ) {
+            for( const auto& surface : surface_range< DIMENSION >( *geomodel ) ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->surface( s ).polygon_attribute_manager(),
-                    attribute_name );
+                    surface.polygon_attribute_manager(), attribute_name );
                 compute_attribute_range( attribute, attribute_min, attribute_max );
             }
         }
@@ -312,10 +311,9 @@ namespace RINGMesh {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             const GeoModel< DIMENSION >* geomodel = this->manager_->gfx().geomodel();
-            for( index_t s : range( geomodel->nb_surfaces() ) ) {
+            for( const auto& surface : surface_range< DIMENSION >( *geomodel ) ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->surface( s ).vertex_attribute_manager(),
-                    attribute_name );
+                    surface.vertex_attribute_manager(), attribute_name );
                 compute_attribute_range( attribute, attribute_min, attribute_max );
             }
         }

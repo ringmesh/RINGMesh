@@ -173,8 +173,8 @@ namespace RINGMesh {
         // Computation of the BBox is set with surface vertices
         // or with those of lines and corners if the model has no surface
         if( GM_.nb_surfaces() > 0 ) {
-            for( index_t s : range( GM_.nb_surfaces() ) ) {
-                compute_mesh_entity_bbox( GM_.surface( s ), bbox_ );
+            for( const auto& surface : surface_range< DIMENSION >( GM_ ) ) {
+                compute_mesh_entity_bbox( surface, bbox_ );
             }
         } else if( GM_.nb_lines() > 0 ) {
             for( const auto& line : line_range< DIMENSION >( GM_ ) ) {
@@ -288,9 +288,10 @@ namespace RINGMesh {
                     surface_style_.vertex_color_.Value.z );
             }
             if( selected_entity_type_ == 0 ) {
-                for( index_t s : range( GM_.nb_surfaces() ) ) {
-                    if( GM_.surface( s ).is_on_voi() ) {
-                        GM_gfx_.surfaces.set_surface_visibility( s, show_voi_ );
+                for( const auto& surface : surface_range< DIMENSION >( GM_ ) ) {
+                    if( surface.is_on_voi() ) {
+                        GM_gfx_.surfaces.set_surface_visibility( surface.index(),
+                            show_voi_ );
                     }
                 }
             }

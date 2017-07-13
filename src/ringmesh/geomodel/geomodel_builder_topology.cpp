@@ -551,8 +551,7 @@ namespace RINGMesh {
         if( geomodel_.universe().nb_boundaries() != 0 ) return;
         std::vector< bool > is_line_universe_boundary( geomodel_.nb_lines(), false );
         std::vector< bool > line_side( geomodel_.nb_lines() );
-        for( index_t s : range( geomodel_.nb_surfaces() ) ) {
-            const Surface< 2 >& surface = geomodel_.surface( s );
+        for( const auto& surface : surface_range< 2 >( geomodel_ ) ) {
             for( index_t l : range( surface.nb_boundaries() ) ) {
                 index_t line_id = surface.boundary_gmme( l ).index();
                 is_line_universe_boundary[line_id] =
@@ -584,9 +583,11 @@ namespace RINGMesh {
             }
         }
 
-        for( index_t s : range( geomodel_.nb_surfaces() ) ) {
-            if( !is_surface_universe_boundary[s] ) continue;
-            add_universe_boundary( s, surface_side[s] );
+        for( const auto& surface : surface_range< 3 >( geomodel_ ) ) {
+            if( is_surface_universe_boundary[surface.index()] ) {
+                add_universe_boundary( surface.index(),
+                    surface_side[surface.index()] );
+            }
         }
     }
 

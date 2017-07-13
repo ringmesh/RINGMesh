@@ -603,18 +603,15 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::cut_surfaces_by_internal_lines()
     {
-        for( index_t s : range( geomodel_.nb_surfaces() ) ) {
-            Surface< DIMENSION >& surface =
-                dynamic_cast< Surface< DIMENSION >& >( geomodel_access_.modifiable_mesh_entity(
-                    gmme_id( Surface< DIMENSION >::type_name_static(), s ) ) );
+        for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
             std::set< index_t > cutting_lines;
             get_internal_borders( surface, cutting_lines );
             for( index_t line_id : cutting_lines ) {
-                cut_surface_by_line( s, line_id );
+                cut_surface_by_line( surface.index(), line_id );
             }
             if( !cutting_lines.empty() ) {
                 std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > surface_mesh_builder =
-                    create_surface_builder( s );
+                    create_surface_builder( surface.index() );
                 surface_mesh_builder->remove_isolated_vertices();
             }
         }
