@@ -50,9 +50,9 @@ namespace {
 
     gmme_id find_corner( const GeoModel< 3 >& geomodel, const vec3& point )
     {
-        for( index_t i : range( geomodel.nb_corners() ) ) {
-            if( geomodel.corner( i ).vertex( 0 ) == point ) {
-                return gmme_id( Corner< 3 >::type_name_static(), i );
+        for( const auto& corner : corner_range< 3 >( geomodel ) ) {
+            if( corner.vertex( 0 ) == point ) {
+                return corner.gmme();
             }
         }
         return gmme_id();
