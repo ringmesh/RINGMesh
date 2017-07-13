@@ -79,22 +79,20 @@ namespace {
 
     void save_universe( index_t count, const GeoModel& GM, std::ostream& out )
     {
-        std::vector< index_t > voi_surfaces;
-        std::vector< bool > voi_surface_region_side;
-        std::tie( voi_surfaces, voi_surface_region_side ) = GM.get_voi_surfaces();
+        const GeoModel::SurfaceSide surface_region_sides = GM.get_voi_surfaces();
 
         out << "REGION " << count << "  Universe "
             << std::endl;
         index_t it = 0;
 
-        for( index_t i = 0; i < voi_surfaces.size(); ++i ) {
+        for( index_t i = 0; i < surface_region_sides.surfaces_.size(); ++i ) {
             out << "  ";
-            if( voi_surface_region_side[ i ] ) {
+            if( surface_region_sides.sides_[ i ] ) {
                 out << "+";
             } else {
                 out << "-";
             }
-            out << voi_surfaces[ i ] + 1;
+            out << surface_region_sides.surfaces_[ i ] + 1;
             it++;
             if( it == 5 ) {
                 out << std::endl;

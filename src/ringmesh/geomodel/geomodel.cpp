@@ -158,11 +158,12 @@ namespace RINGMesh {
         return epsilon_;
     }
 
-    std::tuple< std::vector< index_t >, std::vector< bool > > GeoModel::get_voi_surfaces() const
+    GeoModel::SurfaceSide GeoModel::get_voi_surfaces() const
     {
-        std::vector< index_t > voi_surfaces;
+        SurfaceSide surface_side;
+        std::vector< index_t >& voi_surfaces = surface_side.surfaces_;
         voi_surfaces.reserve( nb_surfaces() );
-        std::vector< bool > voi_surface_region_side;
+        std::vector< bool >& voi_surface_region_side = surface_side.sides_;
         voi_surface_region_side.reserve( nb_surfaces() );
 
         for( index_t surface_i = 0; surface_i < nb_surfaces(); ++surface_i ) {
@@ -189,7 +190,7 @@ namespace RINGMesh {
             }
         }
 
-        return std::make_tuple( voi_surfaces, voi_surface_region_side );
+        return surface_side;
     }
 
 } // namespace

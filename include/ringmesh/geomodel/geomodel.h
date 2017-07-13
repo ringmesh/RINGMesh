@@ -77,6 +77,17 @@ namespace RINGMesh {
         friend class GeoModelAccess;
 
     public:
+        struct SurfaceSide {
+        public:
+            SurfaceSide()
+                : surfaces_(), sides_()
+            {
+            }
+        public:
+            std::vector< index_t > surfaces_;
+            std::vector< bool > sides_;
+        };
+    public:
         /*!
          * @brief Constructs an empty GeoModel
          */
@@ -215,7 +226,7 @@ namespace RINGMesh {
             return wells_;
         }
 
-        std::tuple< std::vector< index_t >, std::vector< bool > > get_voi_surfaces() const;
+        SurfaceSide get_voi_surfaces() const;
 
     public:
         GeoModelMesh mesh;

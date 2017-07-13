@@ -924,11 +924,10 @@ namespace {
          */
         void test_finite_extension()
         {
-            std::vector< index_t > voi_surfaces;
-            std::tie( voi_surfaces, std::ignore ) = geomodel_.get_voi_surfaces();
+            const GeoModel::SurfaceSide surface_side = geomodel_.get_voi_surfaces();
 
             index_t nb_points_all_voi_surfaces = 0;
-            for( index_t voi_surface_id : voi_surfaces ) {
+            for( index_t voi_surface_id : surface_side.surfaces_ ) {
                 const Surface& cur_surface = geomodel_.surface( voi_surface_id );
                 nb_points_all_voi_surfaces += cur_surface.nb_vertices();
             }
@@ -936,7 +935,7 @@ namespace {
             std::vector< vec3 > all_points;
             all_points.reserve( nb_points_all_voi_surfaces );
 
-            for( index_t voi_surface_id : voi_surfaces ) {
+            for( index_t voi_surface_id : surface_side.surfaces_ ) {
                 const Surface& cur_surface = geomodel_.surface( voi_surface_id );
                 for( index_t v_i = 0; v_i < cur_surface.nb_vertices(); ++v_i ) {
                     all_points.push_back( cur_surface.vertex( v_i ) );
@@ -954,7 +953,7 @@ namespace {
             std::vector< index_t > facet_ptr;
             index_t count_facet_vertices = 0;
             facet_ptr.push_back( count_facet_vertices );
-            for( index_t voi_surface_id : voi_surfaces ) {
+            for( index_t voi_surface_id : surface_side.surfaces_ ) {
 
                 const Surface& cur_surf = geomodel_.surface( voi_surface_id );
 
@@ -1004,7 +1003,7 @@ namespace {
             std::tie( nb_connected_components, std::ignore ) =
                 surface->get_connected_components();
 
-            DEBUG(voi_surfaces.size());
+            DEBUG(surface_side.surfaces_.size());
             DEBUG(nb_connected_components);
             surface->save_mesh("toto.geogram");
             if( nb_connected_components != 1 ) {
