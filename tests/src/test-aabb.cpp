@@ -42,8 +42,6 @@
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 
-#include <ringmesh/basic/matrix.h>
-
 /*!
  * @author Arnaud Botella
  */
