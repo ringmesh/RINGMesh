@@ -1252,7 +1252,7 @@ namespace RINGMesh {
 
     bool RINGMeshApplication::load( const std::string& filename )
     {
-        if( !filename.empty() ) {
+        if( !filename.empty() && GEO::FileSystem::is_file( filename ) ) {
             index_t dimension = find_geomodel_dimension( filename );
             if( dimension == 2 ) {
                 geomodels2d_.emplace_back(

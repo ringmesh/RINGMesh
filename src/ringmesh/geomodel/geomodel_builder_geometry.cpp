@@ -433,17 +433,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilderGeometryBase< DIMENSION >::set_surface_geometry(
-        index_t surface_id,
-        const std::vector< index_t >& triangle_vertices )
-    {
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
-            create_surface_builder( surface_id );
-        builder->assign_triangle_mesh( triangle_vertices );
-        compute_surface_adjacencies( surface_id );
-    }
-
-    template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::set_corner(
         index_t corner_id,
         index_t geomodel_vertex_id )
