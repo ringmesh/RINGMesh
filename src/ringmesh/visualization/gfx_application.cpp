@@ -181,8 +181,8 @@ namespace RINGMesh {
                 compute_mesh_entity_bbox( GM_.line( l ), bbox_ );
             }
         } else {
-            for( index_t c : range( GM_.nb_corners() ) ) {
-                compute_mesh_entity_bbox( GM_.corner( c ), bbox_ );
+            for( const auto& corner : corner_range< DIMENSION >( GM_ ) ) {
+                compute_mesh_entity_bbox( corner, bbox_ );
             }
         }
 

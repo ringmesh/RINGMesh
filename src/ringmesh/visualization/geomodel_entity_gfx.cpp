@@ -156,10 +156,11 @@ namespace RINGMesh {
     {
         if( this->entities_.empty() ) {
             this->entities_.reserve( this->gfx_.geomodel()->nb_corners() );
-            for( index_t e : range( this->gfx_.geomodel()->nb_corners() ) ) {
+            for( const auto& corner : corner_range< DIMENSION >(
+                *this->gfx_.geomodel() ) ) {
                 this->entities_.push_back(
                     PointSetMeshGfx< DIMENSION >::create_gfx(
-                        this->gfx_.geomodel()->corner( e ).low_level_mesh_storage() ) );
+                        corner.low_level_mesh_storage() ) );
             }
         }
     }
@@ -481,9 +482,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void RegionGfxEntity< DIMENSION >::set_draw_cells(
-        CellType type,
-        bool x )
+    void RegionGfxEntity< DIMENSION >::set_draw_cells( CellType type, bool x )
     {
         for( index_t r : range( entities_.size() ) ) {
             set_draw_cells( r, type, x );
