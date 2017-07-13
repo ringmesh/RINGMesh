@@ -880,19 +880,16 @@ namespace RINGMesh {
 
     void GeoModelBuilderGeometry< 3 >::cut_regions_by_internal_surfaces()
     {
-        for( index_t r = 0; r < geomodel_.nb_regions(); r++ ) {
-            Region< 3 >& region =
-                dynamic_cast< Region< 3 >& >( geomodel_access_.modifiable_mesh_entity(
-                    gmme_id( Region< 3 >::type_name_static(), r ) ) );
+        for( const auto& region : region_range< 3 >( geomodel_ ) ) {
             if( region.nb_mesh_elements() == 0 ) continue;
             std::set< index_t > cutting_surfaces;
             get_internal_borders( region, cutting_surfaces );
             for( index_t surface_id : cutting_surfaces ) {
-                cut_region_by_surface( r, surface_id );
+                cut_region_by_surface( region.index(), surface_id );
             }
             if( !cutting_surfaces.empty() ) {
                 std::unique_ptr< VolumeMeshBuilder< 3 > > region_mesh_builder =
-                    create_region_builder( r );
+                    create_region_builder( region.index() );
                 region_mesh_builder->remove_isolated_vertices();
             }
         }

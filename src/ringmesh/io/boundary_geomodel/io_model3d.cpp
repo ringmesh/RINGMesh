@@ -265,8 +265,8 @@ namespace {
         save_universe( count, geomodel.universe(), out );
         ++count;
         // Regions
-        for( index_t i : range( geomodel.nb_regions() ) ) {
-            save_region( count, geomodel.region( i ), out );
+        for( const auto& region : region_range< 3 >( geomodel ) ) {
+            save_region( count, region, out );
             ++count;
         }
         // Layers
