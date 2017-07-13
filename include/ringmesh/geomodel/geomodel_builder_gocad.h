@@ -263,14 +263,12 @@ namespace RINGMesh {
 		}
 
 		void get_tetra_corners_with_this_region_id( index_t region_id,
-			std::vector< index_t >& region_tetra_corners_local,
-			std::vector< index_t >& region_tetra_corners_gocad ){
+			std::vector< index_t >& region_tetra_corners_local ){
 
 			unsigned int counter = 0;
 			for( index_t tetra_region_id : vertices_region_id_ ) {
 				if( tetra_region_id == region_id ){
 					index_t local_i = local_id( vertices_gocad_id_[counter] );
-					region_tetra_corners_gocad.push_back( vertices_gocad_id_[counter] );
 					region_tetra_corners_local.push_back( local_i );
 				}
 				counter++;
@@ -336,12 +334,6 @@ namespace RINGMesh {
 			size_t lighttsolid_vertices_nb = nb_vertices();
 			size_t lighttsolid_region_nb = nb_regions();
 
-			Logger::out( "I/O", gocad_vertex_nb, " gocad_vertex_nb" );
-			Logger::out( "I/O", lighttsolid_vertices_nb, " lighttsolid_vertices_nb" );
-			Logger::out( "I/O", lighttsolid_region_nb, " lighttsolid_region_nb" );
-
-
-
 			// Anne-Laure : there are maybe some duplicate I should get rid of
 			// For every region ...
 			local_ids_.reserve( lighttsolid_region_nb );
@@ -371,11 +363,6 @@ namespace RINGMesh {
 					}
 				}
 			}
-
-			Logger::out( "I/O", gocad_vertex_nb, " gocad_vertex_nb - END" );
-			Logger::out( "I/O", lighttsolid_vertices_nb, " lighttsolid_vertices_nb - END" );
-			Logger::out( "I/O", lighttsolid_region_nb, " lighttsolid_region_nb - END" );
-
 		}
 
 	public:
@@ -476,7 +463,7 @@ namespace RINGMesh {
 	private:
 		void read_type();
 		void load_file() final;
-		void read_file() final;
+		void read_file();
 
         /*!
          * @brief Reads the first word of the current line (keyword)

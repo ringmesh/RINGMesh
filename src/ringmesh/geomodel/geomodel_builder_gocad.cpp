@@ -977,15 +977,6 @@ namespace {
 			GEO::LineInput& line,
 			TSolidLoadingStorage& load_storage ) final
 		{
-			std::vector< index_t > corners( 4 );
-			ringmesh_assert( corners.size() == 4 );
-			corners[0] = line.field_as_uint( 1 ) - GOCAD_OFFSET;
-			corners[1] = line.field_as_uint( 2 ) - GOCAD_OFFSET;
-			corners[2] = line.field_as_uint( 3 ) - GOCAD_OFFSET;
-			corners[3] = line.field_as_uint( 4 ) - GOCAD_OFFSET;
-			load_storage.tetra_corners_.insert( load_storage.tetra_corners_.end(),
-				corners.begin(), corners.end() );
-
 			load_storage.cur_gocad_vrtx_id1_ = line.field_as_uint( 1 ) - GOCAD_OFFSET;
 			load_storage.cur_gocad_vrtx_id2_ = line.field_as_uint( 2 ) - GOCAD_OFFSET;
 			load_storage.cur_gocad_vrtx_id3_ = line.field_as_uint( 3 ) - GOCAD_OFFSET;
@@ -1070,80 +1061,28 @@ namespace {
 					( load_storage.lighttsolid_atom_map_ );
 
 				std::vector< index_t > region_tetra_corners_local;
-				std::vector< index_t > region_tetra_corners_gocad;
 				std::vector< vec3 > region_vertices;
 				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
-					Logger::out( "I/O", region_id, " region ID" );
 					ringmesh_assert( !load_storage.vertices_.empty() );
-					ringmesh_assert( !load_storage.tetra_corners_.empty() ); // Anne-Laure : Yes ?
 
 					/// Fill the region_tetra_corners and region_vertices
 					load_storage.vertex_map_.get_tetra_corners_with_this_region_id(
-						region_id, region_tetra_corners_local, region_tetra_corners_gocad );
+						region_id, region_tetra_corners_local );
 					load_storage.vertex_map_.get_vertices_list_from_gocad_ids(
 						load_storage.vertices_,
 						load_storage.vertex_map_.local_ids_[region_id],
 						load_storage.lighttsolid_atom_map_,
 						region_vertices );
 
-					Logger::out( "I/O", "  " );
-					for( vec3 region_vertex : region_vertices ){
-						Logger::out( "I/O", "region_vertex.x ", region_vertex.x );
-					}
-					Logger::out( "I/O", "  " );
-					for( index_t region_tetra_corner : region_tetra_corners_local ){
-						Logger::out( "I/O", "region_tetra_corner_local ", region_tetra_corner );
-					}
-					Logger::out( "I/O", "  " );
-					for( index_t region_tetra_corner : region_tetra_corners_gocad ){
-						Logger::out( "I/O", "region_tetra_corner_gocad ", region_tetra_corner );
-					}
-					Logger::out( "I/O", "  " );
-
 					builder().geometry.set_region_geometry( region_id,
 						region_vertices, region_tetra_corners_local );
 
-					Logger::out( "I/O", geomodel().region( region_id ).nb_vertices(), " nb vertices" );
 					region_tetra_corners_local.clear();
-					region_tetra_corners_gocad.clear();
 					region_vertices.clear();
 				}
 
-				///// Take into account the atom dependencies
-				//for( std::pair< index_t, index_t > pair : load_storage.lighttsolid_atom_map_ ){
-
-				//	index_t current_region = load_storage.vertex_map_.region( pair.first );
-				//	//Logger::out( "I/O", current_region, " current_region" );
-				//	if( current_region == region_id ){
-
-				//		index_t referred_vertex_region_id = load_storage.vertex_map_.region( pair.second );
-				//		index_t referred_vertex_local_id = load_storage.vertex_map_.local_id( pair.second );
-
-				//		if( referred_vertex_region_id < current_region ){
-
-				//			// Anne-Laure : code from LoadTSAtomic
-				//			load_storage.vertex_map_.add_vertex( pair.first, load_storage.cur_region_ );
-
-				//			//Region< 3 > test = geomodel().region( referred_vertex_region_id );
-
-				//			load_storage.vertices_.push_back(
-				//				geomodel().region( referred_vertex_region_id ).vertex(
-				//				referred_vertex_local_id ) );
-				//		}
-				//		else {
-				//			load_storage.vertex_map_.insert_vertex( pair.first,
-				//				load_storage.vertex_map_.local_id( pair.second ),
-				//				load_storage.vertex_map_.region( pair.second ) );
-				//		}
-				//	}
-				//}
-
 				load_storage.tetra_corners_.clear();
 				load_storage.vertices_.clear();
-
-				// Bis because of what we added
-				load_storage.vertex_map_.fill_with_lighttsolid_regions
-					( load_storage.lighttsolid_atom_map_ );
 
 				// This way, doesn't enter the loop again
 				load_storage.lighttsolid_atom_map_.clear();
