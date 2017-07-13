@@ -205,6 +205,4 @@ namespace RINGMesh {
         index_t iter_ { 0 };
         index_t last_ { 0 };
     };
-
-
 }

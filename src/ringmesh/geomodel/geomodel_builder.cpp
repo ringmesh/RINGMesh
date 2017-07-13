@@ -453,21 +453,20 @@ namespace {
         void compute_region_info()
         {
             const GeoModelMeshVertices< 3 >& vertices = this->geomodel_.mesh.vertices;
-            for( index_t line_id : range( this->geomodel_.nb_lines() ) ) {
-                const Line< 3 >& line = this->geomodel_.line( line_id );
+            for( const auto& line : line_range< 3 >( geomodel_ ) ) {
                 BorderPolygon line_border( NO_ID, NO_ID,
                     vertices.geomodel_vertex_id( line.gmme(), 0 ),
                     vertices.geomodel_vertex_id( line.gmme(), 1 ) );
                 for( const BorderPolygon& border : this->border_polygons_ ) {
                     if( line_border.same_edge( border ) ) {
                         index_t surface_id = border.surface_;
-                        region_info_[line_id].add_polygon_edge( surface_id,
+                        region_info_[line.index()].add_polygon_edge( surface_id,
                             this->geomodel_.surface( surface_id ).low_level_mesh_storage().polygon_normal(
                                 border.polygon_ ), vertices.vertex( border.v0_ ),
                             vertices.vertex( border.v1_ ) );
                     }
                 }
-                region_info_[line_id].sort();
+                region_info_[line.index()].sort();
             }
         }
 

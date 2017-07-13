@@ -97,16 +97,15 @@ namespace {
             }
 
             index_t nb_edges = 0;
-            for( index_t l : range( geomodel.nb_lines() ) ) {
-                nb_edges += geomodel.line( l ).nb_mesh_elements();
+            for( const auto& line : line_range< 3 >( geomodel ) ) {
+                nb_edges += line.nb_mesh_elements();
             }
             std::vector< index_t > temp;
             temp.reserve( 3 );
             std::vector< std::vector< index_t > > edges( nb_edges, temp );
             std::vector< vec3 > edge_vertices( nb_edges );
             index_t count_edge = 0;
-            for( index_t l : range( geomodel.nb_lines() ) ) {
-                const Line< 3 >& line = geomodel.line( l );
+            for( const auto& line : line_range< 3 >( geomodel ) ) {
                 for( index_t e : range( line.nb_mesh_elements() ) ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
