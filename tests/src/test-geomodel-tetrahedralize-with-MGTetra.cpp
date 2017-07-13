@@ -62,7 +62,7 @@ int main()
         file_name += "modelA6.ml";
 
         // Loading the GeoModel
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
         bool loaded_model_is_valid = geomodel_load( geomodel, file_name );
 
         if( !loaded_model_is_valid ) {
@@ -76,12 +76,11 @@ int main()
         // Tetrahedralize the GeoModel
         tetrahedralize( geomodel, "MG_Tetra", NO_ID, false );
 
-        for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+        for( index_t r : range( geomodel.nb_regions() ) ) {
             if( !geomodel.region( r ).is_meshed() ) {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when tetrahedralize model " + geomodel.name()
-                        + " Region " + GEO::String::to_string( r )
-                        + " is not meshed "
+                        + " Region " + std::to_string( r ) + " is not meshed "
                         + "maybe the MG Tetra Licence can not be reached" );
             }
         }

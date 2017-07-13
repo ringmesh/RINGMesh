@@ -65,7 +65,7 @@ namespace RINGMesh {
         ringmesh_assert( from < to );
         index_t nb_to_copy( to - from );
         GEO::vector< U > out( nb_to_copy );
-        for( index_t i = 0; i < nb_to_copy; i++ ) {
+        for( index_t i : range( nb_to_copy ) ) {
             out[i] = in[from + i];
         }
         return out;
@@ -182,7 +182,7 @@ namespace RINGMesh {
 
         ~AttributeVector()
         {
-            for( index_t i = 0; i < base_class::size(); i++ ) {
+            for( index_t i : range( base_class::size() ) ) {
                 unbind( i );
             }
         }

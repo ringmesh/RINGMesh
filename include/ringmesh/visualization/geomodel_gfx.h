@@ -52,43 +52,63 @@
  */
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
 }
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelGfx {
-    ringmesh_disable_copy( GeoModelGfx );
+    template< index_t DIMENSION >
+    class GeoModelGfxBase {
+    ringmesh_disable_copy( GeoModelGfxBase );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-
-        GeoModelGfx();
-        ~GeoModelGfx();
+        virtual ~GeoModelGfxBase() = default;
 
         /*!
          * Sets the GeoModel associated to the graphics
          * @param[in] geomodel the GeoModel
          */
-        void set_geomodel( const GeoModel& geomodel );
+        void set_geomodel( const GeoModel< DIMENSION >& geomodel );
         /*!
          * Gets the GeoModel associated to the graphics
          * @return the GeoModel
          */
-        const GeoModel* geomodel() const;
+        const GeoModel< DIMENSION >* geomodel() const;
+
+    protected:
         /*!
          * Initializes the database according the GeoModel dimensions
          */
-        void initialize();
+        virtual void initialize();
+
+        GeoModelGfxBase( GeoModelGfx< DIMENSION >& gfx );
 
     private:
         /// The GeoModel associated to the graphics
-        const GeoModel* geomodel_;
+        const GeoModel< DIMENSION >* geomodel_ { nullptr };
 
     public:
-        CornerGfxEntity corners;
-        LineGfxEntity lines;
-        SurfaceGfxEntity surfaces;
-        RegionGfxEntity regions;
-        AttributeGfxManager attribute;
+        CornerGfxEntity< DIMENSION > corners;
+        LineGfxEntity< DIMENSION > lines;
+        SurfaceGfxEntity< DIMENSION > surfaces;
+        AttributeGfxManager< DIMENSION > attribute;
+    };
+
+    template< index_t DIMENSION >
+    class GeoModelGfx final: public GeoModelGfxBase< DIMENSION > {
+    public:
+        GeoModelGfx();
+    };
+
+    template< >
+    class GeoModelGfx< 3 > final: public GeoModelGfxBase< 3 > {
+    public:
+        GeoModelGfx();
+
+        void initialize() final;
+
+    public:
+        RegionGfxEntity< 3 > regions;
     };
 }
 

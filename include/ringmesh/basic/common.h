@@ -81,6 +81,12 @@
     Class( const Class & ) = delete ; \
     Class& operator=( const Class& ) = delete
 
+#define ringmesh_template_assert_2d_or_3d( type ) \
+    static_assert( type == 2 || type == 3, #type " template should be 2 or 3" )
+
+#define ringmesh_template_assert_3d( type ) \
+    static_assert( type == 3, #type " template should be 3" )
+
 // To avoid unused argument warning in function definition
 template< typename T > inline void ringmesh_unused( T const& )
 {
@@ -128,9 +134,9 @@ namespace RINGMesh {
     class RINGMESH_API RINGMeshException: public std::runtime_error {
     public:
         explicit RINGMeshException(
-            const std::string& category,
+            std::string category,
             const std::string& message )
-            : std::runtime_error( message ), category_( category )
+            : std::runtime_error( message ), category_( std::move( category ) )
         {
         }
         virtual ~RINGMeshException() throw()
@@ -143,5 +149,60 @@ namespace RINGMesh {
         }
     protected:
         std::string category_;
+    };
+
+    /*!
+     * This class can be used to iterate over integer loop.
+     * Example:
+     *              = C++98 loop =
+     *    for( index_t i = 0; i < n; i++ ) {
+     *      // do something
+     *    }
+     *
+     *            = C++11-like loop =
+     *    for( index_t i : range( n ) ) {
+     *      // do something
+     *    }
+     */
+    class RINGMESH_API range {
+    public:
+        template< typename T1, typename T2 >
+        range( T1 begin, T2 end )
+            :
+                iter_( static_cast< index_t >( begin ) ),
+                last_( static_cast< index_t >( end ) )
+        {
+        }
+        template< typename T >
+        range( T end )
+            : last_( static_cast< index_t >( end ) )
+        {
+        }
+        // Iterable functions
+        const range& begin() const
+        {
+            return *this;
+        }
+        const range& end() const
+        {
+            return *this;
+        }
+        // Iterator functions
+        bool operator!=( const range& ) const
+        {
+            return iter_ < last_;
+        }
+        void operator++()
+        {
+            ++iter_;
+        }
+        index_t operator*() const
+        {
+            return iter_;
+        }
+
+    private:
+        index_t iter_ { 0 };
+        index_t last_ { 0 };
     };
 }

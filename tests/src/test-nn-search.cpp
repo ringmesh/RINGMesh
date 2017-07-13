@@ -38,6 +38,7 @@
 #include <vector>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/nn_search.h>
 
 /*!
  * @author Arnaud Botella
@@ -45,26 +46,27 @@
 
 using namespace RINGMesh;
 
-void test_nn_search_ringmesh()
+template< index_t DIMENSION >
+void test_nn_search()
 {
-    Logger::out( "TEST", "Test NNsearch RINGMesh" );
-    vec3 p1( 0, 0, 0 );
-    vec3 p2( 1, 1, 1 );
-    vec3 p3( 2, 2, 2 );
-    vec3 p4( 3, 3, 3 );
+    std::vector< vecn< DIMENSION > > hardcoded_unique_vertices( 4 );
+    for( index_t p : range( hardcoded_unique_vertices.size() ) ) {
+        vecn< DIMENSION >& point = hardcoded_unique_vertices[p];
+        for( index_t i : range( DIMENSION ) ) {
+            point[i] = p;
+        }
+    }
 
-    std::vector< vec3 > vertices( 7 );
-    vertices[0] = p1;
-    vertices[1] = p2;
-    vertices[2] = p1;
-    vertices[3] = p3;
-    vertices[4] = p2;
-    vertices[5] = p4;
-    vertices[6] = p1;
+    std::vector< vecn< DIMENSION > > vertices( 7 );
+    vertices[0] = hardcoded_unique_vertices[0];
+    vertices[1] = hardcoded_unique_vertices[1];
+    vertices[2] = hardcoded_unique_vertices[0];
+    vertices[3] = hardcoded_unique_vertices[2];
+    vertices[4] = hardcoded_unique_vertices[1];
+    vertices[5] = hardcoded_unique_vertices[3];
+    vertices[6] = hardcoded_unique_vertices[0];
 
-    GEO::vector< vec3 > hardcoded_unique_vertices( 4 );
-    GEO::vector< index_t > hardcoded_index_map( 7 );
-
+    std::vector< index_t > hardcoded_index_map( 7 );
     hardcoded_index_map[0] = 0;
     hardcoded_index_map[1] = 1;
     hardcoded_index_map[2] = 0;
@@ -73,25 +75,20 @@ void test_nn_search_ringmesh()
     hardcoded_index_map[5] = 3;
     hardcoded_index_map[6] = 0;
 
-    hardcoded_unique_vertices[0] = p1;
-    hardcoded_unique_vertices[1] = p2;
-    hardcoded_unique_vertices[2] = p3;
-    hardcoded_unique_vertices[3] = p4;
-
-    NNSearch nn_search( vertices );
-    std::vector< vec3 > unique_vertices;
+    NNSearch< DIMENSION > nn_search( vertices );
+    std::vector< vecn< DIMENSION > > unique_vertices;
     std::vector< index_t > index_map;
     nn_search.get_colocated_index_mapping( global_epsilon, index_map,
         unique_vertices );
-    for( index_t i = 0; i < index_map.size(); i++ ) {
+    for( index_t i : range( index_map.size() ) ) {
         if( index_map[i] != hardcoded_index_map[i] ) {
             throw RINGMeshException( "TEST", "Index map found is wrong" );
         }
     }
 
-    for( index_t v = 0; v < unique_vertices.size(); v++ ) {
+    for( index_t v : range( unique_vertices.size() ) ) {
         if( unique_vertices[v] != hardcoded_unique_vertices[v] ) {
-            throw RINGMeshException( "TEST", "unique vertices found are wrong" );
+            throw RINGMeshException( "TEST", "Unique vertices found are wrong" );
         }
     }
 }
@@ -101,7 +98,10 @@ int main()
     try {
         default_configure();
 
-        test_nn_search_ringmesh();
+        Logger::out( "TEST", "Test NNsearch 2D" );
+        test_nn_search< 2 >();
+        Logger::out( "TEST", "Test NNsearch 3D" );
+        test_nn_search< 3 >();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );

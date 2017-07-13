@@ -37,16 +37,16 @@
 
 namespace {
 
-    class HTMLIOHandler final: public GeoModelIOHandler {
+    class HTMLIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel ) final
+        void load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from HTML mesh not yet implemented" );
             return false;
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             GEOLOGYJS::JSWriter js( filename );
             js.build_js_gui_ = true;
@@ -70,10 +70,10 @@ namespace {
         {
             std::vector< std::vector< double > > xyz;
             xyz.resize( geomodel.nb_lines() );
-            for( index_t line_itr = 0; line_itr < geomodel.nb_lines(); ++line_itr ) {
+            for( index_t line_itr : range( geomodel.nb_lines() ) ) {
                 const Line& cur_line = geomodel.line( line_itr );
                 xyz[line_itr].reserve( 3 * cur_line.nb_vertices() );
-                for( index_t v_itr = 0; v_itr < cur_line.nb_vertices(); ++v_itr ) {
+                for( index_t v_itr : range( cur_line.nb_vertices() ) ) {
                     xyz[line_itr].push_back( cur_line.vertex( v_itr ).x );
                     xyz[line_itr].push_back( cur_line.vertex( v_itr ).y );
                     xyz[line_itr].push_back( cur_line.vertex( v_itr ).z );
@@ -87,10 +87,8 @@ namespace {
             const GeoModel& geomodel,
             GEOLOGYJS::JSWriter& js ) const
         {
-            for( index_t interface_itr = 0;
-                interface_itr
-                    < geomodel.nb_geological_entities(
-                        Interface::type_name_static() ); ++interface_itr ) {
+            for( index_t interface_itr : range(
+                geomodel.nb_geological_entities( Interface::type_name_static() ) ) ) {
                 const GeoModelGeologicalEntity& cur_interface =
                     geomodel.geological_entity( Interface::type_name_static(),
                         interface_itr );
@@ -103,8 +101,7 @@ namespace {
 
                 index_t nb_vertices = 0;
                 index_t nb_triangles = 0;
-                for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
-                    ++surf_itr ) {
+                for( index_t surf_itr : range( cur_interface.nb_children() ) ) {
                     const Surface& cur_surface = geomodel.surface(
                         cur_interface.child( surf_itr ).index() );
                     nb_vertices += cur_surface.nb_vertices();
@@ -117,21 +114,18 @@ namespace {
                 indices.reserve( 3 * nb_triangles );
 
                 index_t vertex_count = 0;
-                for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
-                    ++surf_itr ) {
+                for( index_t surf_itr : range( cur_interface.nb_children() ) ) {
                     const Surface& cur_surface = geomodel.surface(
                         cur_interface.child( surf_itr ).index() );
 
-                    for( index_t v_itr = 0; v_itr < cur_surface.nb_vertices();
-                        ++v_itr ) {
+                    for( index_t v_itr : range( cur_surface.nb_vertices() ) ) {
                         xyz.push_back( cur_surface.vertex( v_itr ).x );
                         xyz.push_back( cur_surface.vertex( v_itr ).y );
                         xyz.push_back( cur_surface.vertex( v_itr ).z );
                     }
 
-                    for( index_t p_itr = 0; p_itr < cur_surface.nb_mesh_elements();
-                        ++p_itr ) {
-                        for( index_t v_itr = 0; v_itr < 3; ++v_itr ) {
+                    for( index_t p_itr : range( cur_surface.nb_mesh_elements() ) ) {
+                        for( index_t v_itr : range( 3 ) ) {
                             indices.push_back(
                                 vertex_count
                                     + cur_surface.mesh_element_vertex_index( p_itr,

@@ -43,15 +43,17 @@ namespace RINGMesh {
 
     StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(
         StratigraphicColumn& column,
-        GeoModel& model,
-        const std::string& filename )
-        : StratigraphicColumnBuilder( column, model ), filename_( filename )
+        GeoModel< 3 >& model,
+        std::string filename )
+        :
+            StratigraphicColumnBuilder( column, model ),
+            filename_( std::move( filename ) )
     {
     }
 
     StratigraphicColumnBuilder::StratigraphicColumnBuilder(
         StratigraphicColumn& column,
-        GeoModel& model )
+        GeoModel< 3 >& model )
         : column_( column ), model_( model )
     {
         if( model_.nb_geological_entities( GeologicalEntityType( "Layer" ) ) == 0 ) {
@@ -111,16 +113,16 @@ namespace RINGMesh {
 
         std::vector< const StratigraphicUnit* > units_vec_construction;
         for( index_t i = 0; i < unitList.size(); i += 3 ) {
-            std::string name_of_unit = unitList[i];
+            const std::string& name_of_unit = unitList[i];
             if( name_of_unit != "none" ) {
                 index_t layer_id = find_geological_entity_id_from_name( model_,
                     GeologicalEntityType( "Layer" ), name_of_unit );
-                const Layer* layer =
-                    dynamic_cast< const Layer* >( &( model_.geological_entity(
+                const Layer< 3 >* layer =
+                    dynamic_cast< const Layer< 3 >* >( &( model_.geological_entity(
                         GeologicalEntityType( "Layer" ), layer_id ) ) );
                 ringmesh_assert( layer != nullptr );
-                const Interface* top_interface = nil;
-                const Interface* base_interface = nil;
+                const Interface< 3 >* top_interface = nil;
+                const Interface< 3 >* base_interface = nil;
                 RockFeature rock( name_of_unit );
                 if( unitList[i + 1] != "none" ) {
                     std::string name_of_interface_top = unitList[i + 1];
@@ -128,7 +130,7 @@ namespace RINGMesh {
                         model_, GeologicalEntityType( "Interface" ),
                         name_of_interface_top );
                     top_interface =
-                        dynamic_cast< const Interface* >( &( model_.geological_entity(
+                        dynamic_cast< const Interface< 3 >* >( &( model_.geological_entity(
                             GeologicalEntityType( "Interface" ), top_interface_id ) ) );
                     ringmesh_assert( layer != nullptr );
                 }
@@ -138,7 +140,7 @@ namespace RINGMesh {
                         model_, GeologicalEntityType( "Interface" ),
                         name_of_interface_base );
                     base_interface =
-                        dynamic_cast< const Interface* >( &( model_.geological_entity(
+                        dynamic_cast< const Interface< 3 >* >( &( model_.geological_entity(
                             GeologicalEntityType( "Interface" ), base_interface_id ) ) );
                     ringmesh_assert( layer != nullptr );
                 }

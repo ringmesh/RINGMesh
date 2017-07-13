@@ -62,7 +62,7 @@ int main()
         std::string file_name( ringmesh_test_data_path );
         file_name += "modelA4.so";
 
-        GeoModel model;
+        GeoModel< 3 > model;
         bool loaded_model_is_valid = geomodel_load( model, file_name );
 
         if( !loaded_model_is_valid ) {
@@ -74,8 +74,9 @@ int main()
         // Check number of entities of the imported GeoModel (from TSolid file)
         if( model.nb_corners() != 52 || model.nb_lines() != 98
             || model.nb_surfaces() != 55 || model.nb_regions() != 8
-            || model.nb_geological_entities( Interface::type_name_static() ) != 11
-            || model.nb_geological_entities( Contact::type_name_static() ) != 38
+            || model.nb_geological_entities( Interface< 3 >::type_name_static() )
+                != 11
+            || model.nb_geological_entities( Contact< 3 >::type_name_static() ) != 38
             || model.mesh.vertices.nb() != 6691 || model.mesh.polygons.nb() != 10049
             || model.mesh.cells.nb() != 34540 ) {
             throw RINGMeshException( "RINGMesh Test",

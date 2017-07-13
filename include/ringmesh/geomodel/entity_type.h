@@ -42,8 +42,8 @@
 #include <ringmesh/basic/algorithm.h>
 
 namespace RINGMesh {
-    class GeoModelMeshEntityAccess;
-    class GeoModelGeologicalEntityAccess;
+    template< index_t DIMENSION > class GeoModelMeshEntityAccess;
+    template< index_t DIMENSION > class GeoModelGeologicalEntityAccess;
 }
 
 namespace RINGMesh {
@@ -87,20 +87,20 @@ namespace RINGMesh {
         std::string type_;
     protected:
         EntityType( std::string type )
-            : type_( type )
+            : type_( std::move( type ) )
         {
         }
         EntityType()
-            : type_( default_entity_type_string() )
+            : EntityType( default_entity_type_string() )
         {
         }
 
         void set_type( std::string type )
         {
-            type_ = type;
+            type_ = std::move( type );
         }
     private:
-        const std::string default_entity_type_string()
+        std::string default_entity_type_string()
         {
             return "No_entity_type";
         }
@@ -117,7 +117,7 @@ namespace RINGMesh {
     class RINGMESH_API MeshEntityType: public EntityType {
     public:
         MeshEntityType( std::string type )
-            : EntityType( type )
+            : EntityType( std::move( type ) )
         {
         }
         MeshEntityType() = default;
@@ -134,7 +134,7 @@ namespace RINGMesh {
     class RINGMESH_API GeologicalEntityType: public EntityType {
     public:
         GeologicalEntityType( std::string type )
-            : EntityType( type )
+            : EntityType( std::move( type ) )
         {
         }
         GeologicalEntityType() = default;
@@ -186,13 +186,13 @@ namespace RINGMesh {
      * @brief Unique identification of a GeoModelEntity in a GeoModel
      * It contains the EntityType and the index of the entity.
      * It is widely used in the code to easily access/modify/set a GeoModelEntity
-     * @todo Should we change this name? Looks like index_t but does not enforce
-     *       the programming guidelines [JP]
      */
     template< class Entity_type_template >
     struct gme_id {
-        friend GeoModelMeshEntityAccess;
-        friend GeoModelGeologicalEntityAccess;
+        friend GeoModelMeshEntityAccess< 2 > ;
+        friend GeoModelGeologicalEntityAccess< 2 > ;
+        friend GeoModelMeshEntityAccess< 3 > ;
+        friend GeoModelGeologicalEntityAccess< 3 > ;
     public:
         index_t index() const
         {
@@ -208,6 +208,7 @@ namespace RINGMesh {
         {
             return type_ != rhs.type_ || index_ != rhs.index_;
         }
+
         bool operator==( const gme_id& rhs ) const
         {
             return type_ == rhs.type_ && index_ == rhs.index_;
@@ -218,6 +219,7 @@ namespace RINGMesh {
             os << in.type_ << " " << in.index_;
             return os;
         }
+
         bool operator<( const gme_id& rhs ) const
         {
             if( type_ != rhs.type_ ) {
@@ -231,21 +233,11 @@ namespace RINGMesh {
             }
         }
 
-        bool is_defined() const
-        {
-            return type_ != ForbiddenMeshEntityType::type_name_static()
-                && index_ != NO_ID;
-        }
-        gme_id()
-            : type_( ForbiddenMeshEntityType::type_name_static() ), index_( NO_ID )
-        {
-        }
-        gme_id( const Entity_type_template entity_type, index_t index )
-            : type_( entity_type ), index_( index )
-        {
-        }
-        gme_id( const gme_id& from )
-            : gme_id( from.type_, from.index_ )
+    protected:
+        gme_id() = default;
+
+        gme_id( Entity_type_template entity_type, index_t index )
+            : type_( std::move( entity_type ) ), index_( index )
         {
         }
 
@@ -254,15 +246,49 @@ namespace RINGMesh {
         /*!
          * Index of the GeoModelEntity in the GeoModel
          */
-        index_t index_;
+        index_t index_ { NO_ID };
     };
 
     /*!
      * @brief This template is a specialization of a gme_id to the GeoModelGeologicalEntity
      */
-    using gmge_id = gme_id< GeologicalEntityType >;
+    struct gmge_id: public gme_id< GeologicalEntityType > {
+    public:
+        gmge_id()
+        {
+            type_ = ForbiddenGeologicalEntityType::type_name_static();
+        }
+
+        gmge_id( GeologicalEntityType entity_type, index_t index )
+            : gme_id< GeologicalEntityType >( std::move( entity_type ), index )
+        {
+        }
+
+        bool is_defined() const
+        {
+            return type_ != ForbiddenGeologicalEntityType::type_name_static()
+                && index_ != NO_ID;
+        }
+    };
     /*!
      * @brief This template is a specialization of a gme_id to the GeoModelMeshEntity
      */
-    using gmme_id = gme_id< MeshEntityType >;
+    struct gmme_id: public gme_id< MeshEntityType > {
+    public:
+        gmme_id()
+        {
+            type_ = ForbiddenMeshEntityType::type_name_static();
+        }
+
+        gmme_id( MeshEntityType entity_type, index_t index )
+            : gme_id< MeshEntityType >( std::move( entity_type ), index )
+        {
+        }
+
+        bool is_defined() const
+        {
+            return type_ != ForbiddenMeshEntityType::type_name_static()
+                && index_ != NO_ID;
+        }
+    };
 }
