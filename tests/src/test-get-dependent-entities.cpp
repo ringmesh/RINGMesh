@@ -57,9 +57,9 @@ void run_tests( GeoModel& geomodel )
         in_geological_entities );
 
     // Solution:
-    // Corners: 31, 33, 54, 55, 56, 57, 58, 118, 128, 129.
-    // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 144, 177, 182, 203, 205, 207, 210, 233, 234, 238.
-    // Surfaces: 11, 40, 60, 85, 91, 99, 110, 114.
+    // Corners: 31, 33, 54, 55, 56, 57, 58, 93, 118, 128, 129.
+    // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 131, 135, 144, 177, 182, 203, 205, 207, 210, 233, 234, 238.
+    // Surfaces: 11, 37, 40, 60, 85, 91, 99, 110, 114.
     // Region: 4.
     std::vector< gmme_id > solution_gmme_id = { gmme_id( Corner::type_name_static(), 31 ),
                                                 gmme_id( Corner::type_name_static(), 33 ),
@@ -68,6 +68,7 @@ void run_tests( GeoModel& geomodel )
                                                 gmme_id( Corner::type_name_static(), 56 ),
                                                 gmme_id( Corner::type_name_static(), 57 ),
                                                 gmme_id( Corner::type_name_static(), 58 ),
+                                                gmme_id( Corner::type_name_static(), 93 ),
                                                 gmme_id( Corner::type_name_static(), 118 ),
                                                 gmme_id( Corner::type_name_static(), 128 ),
                                                 gmme_id( Corner::type_name_static(), 129 ),
@@ -79,6 +80,8 @@ void run_tests( GeoModel& geomodel )
                                                 gmme_id( Line::type_name_static(), 71 ),
                                                 gmme_id( Line::type_name_static(), 72 ),
                                                 gmme_id( Line::type_name_static(), 73 ),
+                                                gmme_id( Line::type_name_static(), 131 ),
+                                                gmme_id( Line::type_name_static(), 135 ),
                                                 gmme_id( Line::type_name_static(), 144 ),
                                                 gmme_id( Line::type_name_static(), 177 ),
                                                 gmme_id( Line::type_name_static(), 182 ),
@@ -90,6 +93,7 @@ void run_tests( GeoModel& geomodel )
                                                 gmme_id( Line::type_name_static(), 234 ),
                                                 gmme_id( Line::type_name_static(), 238 ),
                                                 gmme_id( Surface::type_name_static(), 11 ),
+                                                gmme_id( Surface::type_name_static(), 37 ),
                                                 gmme_id( Surface::type_name_static(), 40 ),
                                                 gmme_id( Surface::type_name_static(), 60 ),
                                                 gmme_id( Surface::type_name_static(), 85 ),
@@ -101,7 +105,7 @@ void run_tests( GeoModel& geomodel )
     };
     // Contacts: 26, 27, 28, 78, 79, 83.
     // Interface: 21.
-    // Layer: 1.
+    // Layer: 0.
     std::vector< gmge_id > solution_gmge_id = { gmge_id( Contact::type_name_static(), 26 ),
                                                 gmge_id( Contact::type_name_static(), 27 ),
                                                 gmge_id( Contact::type_name_static(), 28 ),
@@ -109,19 +113,18 @@ void run_tests( GeoModel& geomodel )
                                                 gmge_id( Contact::type_name_static(), 79 ),
                                                 gmge_id( Contact::type_name_static(), 83 ),
                                                 gmge_id( Interface::type_name_static(), 21 ),
-                                                gmge_id( Layer::type_name_static(), 1 ),
+                                                gmge_id( Layer::type_name_static(), 0 ),
     };
 
     for( const gmme_id& cur_gmme_id : in_mesh_entities ) {
-        std::cout<<std::string(cur_gmme_id.type()) + " " + std::to_string( cur_gmme_id.index() )<<std::endl;
-        /*if( std::find( solution_gmme_id.begin(), solution_gmme_id.end(),
+        //std::cout<<std::string(cur_gmme_id.type()) + " " + std::to_string( cur_gmme_id.index() )<<std::endl;
+        if( std::find( solution_gmme_id.begin(), solution_gmme_id.end(),
             cur_gmme_id ) == solution_gmme_id.end() ) {
             throw RINGMeshException( "RINGMesh Test",
                 std::string(cur_gmme_id.type()) + " " + std::to_string( cur_gmme_id.index() )
                     + " is not in the solution." );
-        }*/
+        }
     }
-    exit(0);
 
     for( const gmge_id& cur_gmge_id : in_geological_entities ) {
         if( std::find( solution_gmge_id.begin(), solution_gmge_id.end(),
