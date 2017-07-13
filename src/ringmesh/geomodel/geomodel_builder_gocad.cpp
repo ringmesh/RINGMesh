@@ -1056,7 +1056,7 @@ namespace {
 			TSolidLoadingStorage& load_storage ) final
 		{
 			if( !load_storage.lighttsolid_atom_map_.empty() ){
-				// Anne-Laure : Do everything to fill the maps and vectors with the correct values
+
 				load_storage.vertex_map_.fill_with_lighttsolid_regions
 					( load_storage.lighttsolid_atom_map_ );
 
@@ -1253,12 +1253,10 @@ namespace RINGMesh {
         geology.build_contacts();
     }
 
-
-
 	void GeoModelBuilderTSolid::read_type()
 	{
-		while( !file_line_.eof() && file_line_.get_line() ) { // Anne-Laure :
-			//// Without this While, a LightTSolid is read as a TSolid!!!???
+		while( !file_line_.eof() && file_line_.get_line() ) {
+			//// Anne-Laure : Without this While, a LightTSolid is read as a TSolid!!!???
 			file_line_.get_fields();
 			if( file_line_.nb_fields() > 0 ) {
 				if( file_line_.field_matches( 0, "GOCAD" ) ) {
@@ -1266,8 +1264,9 @@ namespace RINGMesh {
 						file_type_ = 0;
 					}
 					else {
+						ringmesh_assert( strcmp( file_line_.field( 1 ), "LightTSolid" ) == 0 );
 						file_type_ = 1;
-					} // Anne-Laure : Assert "LightTSolid" ?
+					}
 					break;
 				}
 			}

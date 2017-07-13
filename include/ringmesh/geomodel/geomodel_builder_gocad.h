@@ -190,12 +190,6 @@ namespace RINGMesh {
 			return vertices_region_id_[id];
 		}
 
-		std::string region_name( index_t id ) const
-		{
-			ringmesh_assert( id < region_name_.size() );
-			return region_name_[id];
-		}
-
 		void add_new_region( index_t region_id,
 			std::string region_name )
 		{
@@ -207,12 +201,6 @@ namespace RINGMesh {
 		{
 			vertices_gocad_id_.push_back( gocad_vertex_id );
 			vertices_region_id_.push_back( region_id );
-		}
-
-		index_t nb_vertices() const
-		{
-			ringmesh_assert( vertices_gocad_id_.size() == vertices_region_id_.size() );
-			return static_cast< index_t >( vertices_gocad_id_.size() );
 		}
 
 		index_t nb_regions() const
@@ -231,16 +219,6 @@ namespace RINGMesh {
 		{
 			regions_.reserve( capacity );
 			region_name_.reserve( capacity );
-		}
-
-		bool find_if_vertex_already_recorded( index_t gocad_vertex_id )
-		{
-			for( index_t vertex_id : vertices_gocad_id_ ){
-				if( vertex_id == gocad_vertex_id ){
-					return true;
-				}
-			}
-			return false;
 		}
 
 		bool find_region_id_from_name( const std::string& region_name,
@@ -288,12 +266,6 @@ namespace RINGMesh {
 					index_t corresponding_region_gocad_id = lighttsolid_atom_map.find( region_gocad_id )->second;
 					region_tetra_vertices.push_back( stored_vertices[corresponding_region_gocad_id] );
 				}
-
-				//if( region_gocad_id >= stored_vertices.size() ){
-				//	Logger::out( "I/O", region_gocad_id, " region_gocad_id" );
-				//	Logger::out( "I/O", stored_vertices.size(), " stored_vertices.size()" );
-				//}
-				//ringmesh_assert( region_gocad_id < stored_vertices.size() );
 			}
 		}
 
@@ -313,14 +285,6 @@ namespace RINGMesh {
 			gocad_vertices2region_id_.push_back( region_id );
 		}
 
-		index_t nb_vertex() const
-		{
-			ringmesh_assert(
-				gocad_vertices2region_vertices_.size()
-				== gocad_vertices2region_id_.size() );
-			return static_cast< index_t >( gocad_vertices2region_vertices_.size() );
-		}
-
 		void reserve( index_t capacity )
 		{
 			gocad_vertices2region_vertices_.reserve( capacity );
@@ -331,10 +295,10 @@ namespace RINGMesh {
 			const std::map< index_t, index_t >& lighttsolid_atom_map )
 		{
 			size_t gocad_vertex_nb = gocad_vertices2region_vertices_.size();
-			size_t lighttsolid_vertices_nb = nb_vertices();
+			ringmesh_assert( vertices_gocad_id_.size() == vertices_region_id_.size() );
+			size_t lighttsolid_vertices_nb = vertices_gocad_id_.size();
 			size_t lighttsolid_region_nb = nb_regions();
 
-			// Anne-Laure : there are maybe some duplicate I should get rid of
 			// For every region ...
 			local_ids_.reserve( lighttsolid_region_nb );
 			for( index_t rgion_id = 0; rgion_id < lighttsolid_region_nb; rgion_id++ ) {
