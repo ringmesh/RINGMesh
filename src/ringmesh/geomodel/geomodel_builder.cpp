@@ -180,20 +180,19 @@ namespace {
         {
             const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
                 geomodel_.mesh.vertices;
-            for( index_t s : range( geomodel_.nb_surfaces() ) ) {
-                const Surface< DIMENSION >& S = geomodel_.surface( s );
-                const SurfaceMesh< DIMENSION >& mesh = S.low_level_mesh_storage();
-                gmme_id S_id = S.gmme();
-                for( index_t p : range( S.nb_mesh_elements() ) ) {
-                    for( index_t v : range( S.nb_mesh_element_vertices( p ) ) ) {
+            for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
+                const auto& mesh = surface.low_level_mesh_storage();
+                gmme_id S_id = surface.gmme();
+                for( index_t p : range( surface.nb_mesh_elements() ) ) {
+                    for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
                         if( mesh.is_edge_on_border( p, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
                                 S_id, p, v );
                             index_t next_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S_id, p,
                                     mesh.next_polygon_vertex( p, v ) );
-                            border_polygons_.emplace_back( s, p, vertex,
-                                next_vertex );
+                            border_polygons_.emplace_back( surface.index(), p,
+                                vertex, next_vertex );
                         }
                     }
                 }

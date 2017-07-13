@@ -253,8 +253,7 @@ namespace RINGMesh {
         // The builder might be needed
 
         double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon();
-        for( index_t i : range( geomodel_.nb_surfaces() ) ) {
-            const Surface< DIMENSION >& surface = geomodel_.surface( i );
+        for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
             index_t nb = detect_degenerate_polygons( surface );
             /// @todo Check if that cannot be simplified
             if( nb > 0 ) {
@@ -267,7 +266,7 @@ namespace RINGMesh {
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 );
                     std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
-                        builder_.geometry.create_surface_builder( i );
+                        builder_.geometry.create_surface_builder( surface.index() );
                     builder->repair( mode, 0.0 );
 
                     // This might create some small components - remove them
@@ -279,7 +278,7 @@ namespace RINGMesh {
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel_.surface( i ).gmme() );
+                    to_remove.insert( surface.gmme() );
                 }
             }
         }

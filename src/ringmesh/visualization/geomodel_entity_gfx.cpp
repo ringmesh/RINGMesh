@@ -284,10 +284,11 @@ namespace RINGMesh {
     {
         if( this->entities_.empty() ) {
             this->entities_.reserve( this->gfx_.geomodel()->nb_surfaces() );
-            for( index_t e : range( this->gfx_.geomodel()->nb_surfaces() ) ) {
+            for( const auto& surface : surface_range< DIMENSION >(
+                *this->gfx_.geomodel() ) ) {
                 this->entities_.push_back(
                     SurfaceMeshGfx< DIMENSION >::create_gfx(
-                        this->gfx_.geomodel()->surface( e ).low_level_mesh_storage() ) );
+                        surface.low_level_mesh_storage() ) );
             }
         }
     }

@@ -844,9 +844,9 @@ namespace {
         std::vector< index_t >& edge_indices )
     {
         const GeoModelMeshPolygons< DIMENSION >& polygons = geomodel.mesh.polygons;
-        for( index_t s : range( geomodel.nb_surfaces() ) ) {
-            for( index_t p : range( polygons.nb_polygons( s ) ) ) {
-                index_t polygon_id = polygons.polygon( s, p );
+        for( const auto& surface : surface_range< DIMENSION >( geomodel ) ) {
+            for( index_t p : range( polygons.nb_polygons( surface.index() ) ) ) {
+                index_t polygon_id = polygons.polygon( surface.index(), p );
                 for( index_t v : range( polygons.nb_vertices( polygon_id ) ) ) {
                     index_t adj = polygons.adjacent( polygon_id, v );
                     if( adj == NO_ID ) {
@@ -1042,8 +1042,8 @@ namespace {
                 set_invalid_model();
             }
             // Check on that Surface edges are in a Line
-            for( index_t i : range( geomodel_.nb_surfaces() ) ) {
-                if( !surface_boundary_valid( geomodel_.surface( i ) ) ) {
+            for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
+                if( !surface_boundary_valid( surface ) ) {
                     set_invalid_model();
                 }
             }
@@ -1055,9 +1055,8 @@ namespace {
                 // Check the consistency between Surface polygons and Region cell facets
                 const NNSearch< DIMENSION >& nn_search =
                     geomodel_.mesh.cells.cell_facet_nn_search();
-                for( index_t i : range( geomodel_.nb_surfaces() ) ) {
-                    if( !is_surface_conformal_to_volume( geomodel_.surface( i ),
-                        nn_search ) ) {
+                for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
+                    if( !is_surface_conformal_to_volume( surface, nn_search ) ) {
                         set_invalid_model();
                     }
                 }

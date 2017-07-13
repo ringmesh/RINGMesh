@@ -651,11 +651,10 @@ namespace {
             }
 
             point_boundaries_.resize( gm.mesh.vertices.nb() );
-            for( index_t s : range( geomodel.nb_surfaces() ) ) {
-                index_t interface_id =
-                    geomodel.surface( s ).parent_gmge( 0 ).index();
-                for( index_t p : range( gm.mesh.polygons.nb_polygons( s ) ) ) {
-                    index_t p_id = gm.mesh.polygons.polygon( s, p );
+            for( const auto& surface : surface_range < 3 > ( gm ) ) {
+                index_t interface_id = surface.parent_gmge( 0 ).index();
+                for( index_t p : range( gm.mesh.polygons.nb_polygons( surface.index() ) ) ) {
+                    index_t p_id = gm.mesh.polygons.polygon( surface.index(), p );
                     for( index_t v : range( gm.mesh.polygons.nb_vertices( p_id ) ) ) {
                         index_t vertex_id = gm.mesh.polygons.vertex( p_id, v );
                         point_boundaries_[vertex_id].insert( interface_id );

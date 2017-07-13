@@ -133,14 +133,14 @@ namespace {
             std::ofstream& out ) const
         {
             const GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
-            for( index_t s : range( geomodel.nb_surfaces() ) ) {
+            for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
                 // -1 because polygons doesn' t exist in aster
                 for( index_t pt : range(
                     to_underlying_type( PolygonType::UNDEFINED ) - 1 ) ) {
-                    if( geomodel_mesh.polygons.nb_polygons( s, PolygonType( pt ) )
-                        > 0 ) {
-                        write_polygons_in_interface( PolygonType( pt ), s,
-                            geomodel_mesh, out );
+                    if( geomodel_mesh.polygons.nb_polygons( surface.index(),
+                        PolygonType( pt ) ) > 0 ) {
+                        write_polygons_in_interface( PolygonType( pt ),
+                            surface.index(), geomodel_mesh, out );
                     }
                 }
             }

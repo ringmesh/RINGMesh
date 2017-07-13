@@ -1342,10 +1342,9 @@ namespace RINGMesh {
         std::vector< bool > is_vertex_to_duplicate( corner_vertices.size(), false );
         {
             NNSearch< DIMENSION > nn_search( corner_vertices, false );
-            for( index_t s : range( this->gm_.nb_surfaces() ) ) {
-                if( !is_surface_to_duplicate( s ) ) continue;
-                actions_on_surfaces[s] = TO_PROCESS;
-                const Surface< DIMENSION >& surface = this->gm_.surface( s );
+            for( const auto& surface : surface_range< DIMENSION >( this->gm_ ) ) {
+                if( !is_surface_to_duplicate( surface.index() ) ) continue;
+                actions_on_surfaces[surface.index()] = TO_PROCESS;
                 for( index_t v : range( surface.nb_vertices() ) ) {
                     std::vector< index_t > colocated_corners =
                         nn_search.get_neighbors( surface.vertex( v ),

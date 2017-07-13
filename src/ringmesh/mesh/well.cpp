@@ -167,8 +167,7 @@ namespace {
             index_t best_surface = NO_ID;
             vec3 best_nearest;
             index_t best_triangle = NO_ID;
-            for( index_t s : range( geomodel.nb_surfaces() ) ) {
-                const Surface< 3 >& surface = geomodel.surface( s );
+            for( const auto& surface : surface_range< 3 >( geomodel ) ) {
                 vec3 nearest;
                 double distance;
                 index_t triangle = surface.polygon_aabb().closest_triangle(
@@ -176,7 +175,7 @@ namespace {
                 if( distance < best_distance ) {
                     best_distance = distance;
                     best_nearest = nearest;
-                    best_surface = s;
+                    best_surface = surface.index();
                     best_triangle = triangle;
                 }
             }
@@ -558,8 +557,7 @@ namespace RINGMesh {
             box.add_point( from_vertex );
             box.add_point( to_vertex );
             std::vector< LineInstersection > intersections;
-            for( index_t s : range( geomodel()->nb_surfaces() ) ) {
-                const Surface< 3 >& surface = geomodel()->surface( s );
+            for( const auto& surface : surface_range< 3 >( *geomodel_ ) ) {
                 EdgeConformerAction action( surface, from_vertex, to_vertex,
                     intersections );
                 surface.polygon_aabb().compute_bbox_element_bbox_intersections( box,

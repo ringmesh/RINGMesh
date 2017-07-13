@@ -63,8 +63,8 @@ namespace {
     index_t count_geomodel_polygons( const GeoModel< DIMENSION >& geomodel )
     {
         index_t result = 0;
-        for( index_t i : range( geomodel.nb_surfaces() ) ) {
-            result += geomodel.surface( i ).nb_mesh_elements();
+        for( const auto& surface : surface_range< DIMENSION >( geomodel ) ) {
+            result += surface.nb_mesh_elements();
         }
         return result;
     }
