@@ -59,17 +59,9 @@ namespace {
     double compute_percentage_bbox_diagonal( const GeoModel& gm )
     {
         Box3d bbox;
-        if( gm.universe().nb_boundaries() > 0 ) {
-            const Universe& universe = gm.universe();
-            for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {
-                compute_surface_bbox( gm, universe.boundary_gmme( s ).index(),
-                    bbox );
-            }
-        } else {
-            ringmesh_assert( gm.nb_surfaces() > 0 );
-            for( index_t s = 0; s < gm.nb_surfaces(); s++ ) {
-                compute_surface_bbox( gm, s, bbox );
-            }
+        ringmesh_assert( gm.nb_surfaces() > 0 );
+        for( index_t s = 0; s < gm.nb_surfaces(); s++ ) {
+            compute_surface_bbox( gm, s, bbox );
         }
         return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" );
     }
@@ -78,7 +70,7 @@ namespace {
 namespace RINGMesh {
 
     GeoModel::GeoModel()
-        : mesh( *this ), epsilon_( -1 ), universe_( *this ), wells_( nullptr )
+        : mesh( *this ), epsilon_( -1 ), wells_( nullptr )
     {
     }
 
@@ -164,6 +156,40 @@ namespace RINGMesh {
             epsilon_ = compute_percentage_bbox_diagonal( *this );
         }
         return epsilon_;
+    }
+
+    std::tuple< std::vector< index_t >, std::vector< bool > > GeoModel::get_voi_surfaces() const
+    {
+        std::vector< index_t > voi_surfaces;
+        voi_surfaces.reserve( nb_surfaces() );
+        std::vector< bool > voi_surface_region_side;
+        voi_surface_region_side.reserve( nb_surfaces() );
+
+        for( index_t surface_i = 0; surface_i < nb_surfaces(); ++surface_i ) {
+            const Surface& cur_surface = surface( surface_i );
+            if( cur_surface.is_on_voi() ) {
+                ringmesh_assert( cur_surface.nb_incident_entities() == 1 );
+                voi_surfaces.push_back( surface_i );
+                const Region& incident_region = cur_surface.incident_entity( 0 );
+
+                index_t local_boundary_id = NO_ID;
+                for( index_t region_boundary_i = 0;
+                    region_boundary_i < incident_region.nb_boundaries();
+                    ++region_boundary_i ) {
+                    if( incident_region.boundary_gmme( region_boundary_i ).index()
+                        == surface_i ) {
+                        local_boundary_id = region_boundary_i;
+                        break;
+                    }
+                }
+                ringmesh_assert( local_boundary_id != NO_ID );
+
+                voi_surface_region_side.push_back(
+                    incident_region.side( local_boundary_id ) );
+            }
+        }
+
+        return std::make_tuple( voi_surfaces, voi_surface_region_side );
     }
 
 } // namespace

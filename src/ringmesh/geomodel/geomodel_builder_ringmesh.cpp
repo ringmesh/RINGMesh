@@ -258,22 +258,6 @@ namespace RINGMesh {
                     MeshEntityType( file_line.field( 0 ) ) ) ) {
                     version_impl_[file_version_]->read_mesh_entity_line( file_line );
                 }
-                // Universe
-                else if( file_line.field_matches( 0, "Universe" ) ) {
-                    // Second line: signed indices of boundaries
-                    file_line.get_line();
-                    file_line.get_fields();
-                    for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
-                        bool side = false;
-                        if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
-                            side = true;
-                        }
-                        index_t s = NO_ID;
-                        GEO::String::from_string( &file_line.field( c )[1], s );
-
-                        topology.add_universe_boundary( s, side );
-                    }
-                }
             }
         }
     }

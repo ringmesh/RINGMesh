@@ -151,16 +151,6 @@ namespace {
             out << std::endl;
         }
 
-        // Universe
-        out << "Universe " << std::endl;
-        for( index_t j = 0; j < M.universe().nb_boundaries(); ++j ) {
-            if( M.universe().side( j ) ) {
-                out << "+";
-            } else {
-                out << "-";
-            }
-            out << M.universe().boundary_gmme( j ).index() << " ";
-        }
         out << std::endl;
     }
 

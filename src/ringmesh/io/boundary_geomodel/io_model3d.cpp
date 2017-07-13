@@ -77,20 +77,24 @@ namespace {
         out << "  0" << std::endl;
     }
 
-    void save_universe( index_t count, const Universe& universe, std::ostream& out )
+    void save_universe( index_t count, const GeoModel& GM, std::ostream& out )
     {
-        out << "REGION " << count << "  " << universe.type_name() << " "
+        std::vector< index_t > voi_surfaces;
+        std::vector< bool > voi_surface_region_side;
+        std::tie( voi_surfaces, voi_surface_region_side ) = GM.get_voi_surfaces();
+
+        out << "REGION " << count << "  Universe "
             << std::endl;
         index_t it = 0;
 
-        for( index_t i = 0; i < universe.nb_boundaries(); ++i ) {
+        for( index_t i = 0; i < voi_surfaces.size(); ++i ) {
             out << "  ";
-            if( universe.side( i ) ) {
+            if( voi_surface_region_side[ i ] ) {
                 out << "+";
             } else {
                 out << "-";
             }
-            out << universe.boundary_gmme( i ).index() + 1;
+            out << voi_surfaces[ i ] + 1;
             it++;
             if( it == 5 ) {
                 out << std::endl;
@@ -256,7 +260,7 @@ namespace {
         }
         // Universe
         index_t offset_layer = count;
-        save_universe( count, M.universe(), out );
+        save_universe( count, M, out );
         ++count;
         // Regions
         for( index_t i = 0; i < M.nb_regions(); ++i ) {

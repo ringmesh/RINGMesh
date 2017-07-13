@@ -41,6 +41,7 @@
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_topology.h>
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
@@ -103,6 +104,18 @@ namespace RINGMesh {
         virtual index_t nb_vertices() const override                                \
         {                                                                           \
             return mesh_->vertices.nb();                                            \
+        }                                                                           \
+        std::tuple< index_t, std::vector< index_t > >                               \
+            get_connected_components() const final                                  \
+        {                                                                           \
+            GEO::vector< index_t > geo_components;                                  \
+            index_t nb = GEO::get_connected_components( *mesh_, geo_components );   \
+            std::vector< index_t > std_components;                                  \
+            std_components.reserve(geo_components.size());                          \
+            for(index_t i : geo_components) {                                       \
+                std_components.push_back(i);                                        \
+            }                                                                       \
+            return std::make_tuple( nb, std_components );                           \
         }                                                                           \
     protected:                                                                      \
         std::unique_ptr< GEO::Mesh > mesh_

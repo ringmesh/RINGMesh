@@ -263,13 +263,6 @@ namespace RINGMesh {
             }
         }
 
-        void update_universe()
-        {
-            Universe& U = geomodel_access_.modifiable_universe();
-            update_universe_sided_boundaries( U );
-            delete_invalid_universe_sided_boundaries( U );
-        }
-
         //        void remove_dependencies()
         //        {
         //            std::set< gme_id > new_gmme_to_remove ;
@@ -461,7 +454,6 @@ namespace RINGMesh {
         void update_mesh_entity_incident_entity( GeoModelMeshEntity& E );
         void update_mesh_entity_parents( GeoModelMeshEntity& E );
         void update_geological_entity_children( GeoModelGeologicalEntity& E );
-        void update_universe_sided_boundaries( Universe& U );
 
         // --- Deletion of some values the GeoModel storage
         template< typename TEST, typename THINGS_TO_DELETE >
@@ -538,18 +530,6 @@ namespace RINGMesh {
             GeoModelMeshEntityAccess region_access(
                 geomodel_access_.modifiable_mesh_entity( R.gmme() ) );
             region_access.modifiable_sides().resize( R.nb_boundaries() );
-        }
-
-        void delete_invalid_universe_sided_boundaries( Universe& U )
-        {
-            const MeshEntityType& b_type = Surface::type_name_static();
-            gmme_id invalid( b_type, NO_ID );
-            UniverseAccess universe_access( U );
-            const RelationshipManager& manager =
-                U.geomodel().entity_type_manager().relationship_manager;
-            remove_invalid_values( universe_access.modifiable_boundaries(),
-                [&invalid, &manager](const gmme_id& id) {return id == invalid;} );
-            universe_access.modifiable_sides().resize( U.nb_boundaries() );
         }
 
         index_t mesh_entity_type_to_index( const MeshEntityType& type ) const

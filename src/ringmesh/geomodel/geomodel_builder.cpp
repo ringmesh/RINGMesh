@@ -910,8 +910,6 @@ namespace RINGMesh {
                 builder_.topology.add_mesh_entity_boundary_relation( region_id,
                     surface_id, inside );
 
-                // Set universe boundary
-                builder_.topology.add_universe_boundary( 0, !inside );
             }
         } else {
             // Each side of each Surface is in one Region( +side is first )
@@ -983,7 +981,6 @@ namespace RINGMesh {
                 ringmesh_assert( false );
             }
 
-            builder_.topology.compute_universe();
             // We need to remove from the regions_ the one corresponding
             // to the universe_, the one with the biggest volume
             double max_volume = -1.;
@@ -996,12 +993,6 @@ namespace RINGMesh {
                 }
             }
             const Region& cur_region = geomodel_.region( universe_id );
-            for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
-                // Fill the Universe region boundaries
-                // They are supposed to be empty
-                builder_.topology.add_universe_boundary(
-                    cur_region.boundary( i ).index(), cur_region.side( i ) );
-            }
             std::set< gmme_id > to_erase;
             to_erase.insert( cur_region.gmme() );
             builder_.removal.remove_mesh_entities( to_erase );
@@ -1078,7 +1069,6 @@ namespace RINGMesh {
 
         geometry.cut_surfaces_by_internal_lines();
         geometry.cut_regions_by_internal_surfaces();
-        topology.compute_universe();
 
         // Deliberate clear of the geomodel vertices used for geomodel building
         geomodel_.mesh.vertices.clear();

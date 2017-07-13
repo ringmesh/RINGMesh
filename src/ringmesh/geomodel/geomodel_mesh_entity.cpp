@@ -754,12 +754,9 @@ namespace RINGMesh {
 
     bool Surface::is_on_voi() const
     {
-        for( index_t i = 0; i < geomodel().universe().nb_boundaries(); ++i ) {
-            if( geomodel().universe().boundary_gmme( i ) == gmme() ) {
-                return true;
-            }
-        }
-        return false;
+        ringmesh_assert(
+            nb_incident_entities() == 1 || nb_incident_entities() == 2 );
+        return nb_incident_entities() == 1 ;
     }
 
     const Line& Surface::boundary( index_t x ) const

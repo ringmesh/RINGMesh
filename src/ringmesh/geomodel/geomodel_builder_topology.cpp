@@ -129,8 +129,6 @@ namespace RINGMesh {
         copy_mesh_entity_topology< Surface >( from );
         copy_mesh_entity_topology< Region >( from );
 
-        UniverseAccess universe_access( geomodel_access_.modifiable_universe() );
-        universe_access.copy( from.universe() );
         geomodel_access_.modifiable_epsilon() = from.epsilon();
         geomodel_access_.modifiable_entity_type_manager().relationship_manager =
             from.entity_type_manager().relationship_manager;
@@ -270,7 +268,7 @@ namespace RINGMesh {
         return create_mesh_entity< Line >();
     }
 
-    void GeoModelBuilderTopology::compute_universe()
+    /*void GeoModelBuilderTopology::compute_universe()
     {
         if( geomodel_.universe().nb_boundaries() != 0 ) return;
         std::vector< bool > is_surface_universe_boundary( geomodel_.nb_surfaces(),
@@ -290,7 +288,7 @@ namespace RINGMesh {
             if( !is_surface_universe_boundary[s] ) continue;
             add_universe_boundary( s, surface_side[s] );
         }
-    }
+    }*/
 
     void GeoModelBuilderTopology::remove_mesh_entity_boundary_relation(
         const gmme_id& incident_entity,
@@ -402,28 +400,6 @@ namespace RINGMesh {
         if( gmme.type() == Region::type_name_static() ) {
             gme_access.modifiable_sides()[id] = side;
         }
-    }
-
-    void GeoModelBuilderTopology::add_universe_boundary(
-        index_t boundary_id,
-        bool side )
-    {
-        gmme_id boundary( Surface::type_name_static(), boundary_id );
-        UniverseAccess universe_access( geomodel_access_.modifiable_universe() );
-        universe_access.modifiable_boundaries().push_back( boundary );
-        universe_access.modifiable_sides().push_back( side );
-    }
-
-    void GeoModelBuilderTopology::set_universe_boundary(
-        index_t id,
-        index_t boundary_id,
-        bool side )
-    {
-        ringmesh_assert( id < geomodel_.universe().nb_boundaries() );
-        gmme_id boundary( Surface::type_name_static(), boundary_id );
-        UniverseAccess universe_access( geomodel_access_.modifiable_universe() );
-        universe_access.modifiable_boundaries()[id] = boundary;
-        universe_access.modifiable_sides()[id] = side;
     }
 
     void GeoModelBuilderTopology::set_mesh_entity_incident_entity(
