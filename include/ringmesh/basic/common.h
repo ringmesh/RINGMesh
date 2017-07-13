@@ -166,12 +166,16 @@ namespace RINGMesh {
      */
     class RINGMESH_API range {
     public:
-        range( index_t begin, index_t end )
-            : iter_( begin ), last_( end )
+        template< typename T1, typename T2 >
+        range( T1 begin, T2 end )
+            :
+                iter_( static_cast< index_t >( begin ) ),
+                last_( static_cast< index_t >( end ) )
         {
         }
-        range( index_t end )
-            : last_( end )
+        template< typename T >
+        range( T end )
+            : last_( static_cast< index_t >( end ) )
         {
         }
         // Iterable functions

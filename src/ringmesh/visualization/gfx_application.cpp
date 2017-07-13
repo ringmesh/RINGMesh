@@ -1233,7 +1233,7 @@ namespace RINGMesh {
     {
         int id = 0;
         for( const auto& colors : color_table_ ) {
-            for( index_t j : range( static_cast< index_t >( colors.size() ) ) ) {
+            for( index_t j : range( colors.size() ) ) {
                 if( j > 0 ) {
                     ImGui::SameLine();
                 }
@@ -1389,7 +1389,7 @@ namespace RINGMesh {
         if( !meshes_.empty() ) {
             ImGui::Separator();
             ImGui::Text( "Mesh" );
-            for( index_t i : range( static_cast< index_t >( meshes_.size() ) ) ) {
+            for( index_t i : range( meshes_.size() ) ) {
                 MeshViewer& viewer = *meshes_[i];
                 ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.name_.c_str(), &viewer.is_visible_ ) ) {

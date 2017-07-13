@@ -956,7 +956,7 @@ namespace RINGMesh {
     {
         std::unique_ptr< VolumeMeshBuilder< 3 > > builder = create_region_builder(
             region_id );
-        for( index_t cell_vertex : range( static_cast< index_t >( corners.size() ) ) ) {
+        for( index_t cell_vertex : range( corners.size() ) ) {
             builder->set_cell_vertex( cell_id, cell_vertex, corners[cell_vertex] );
         }
     }
