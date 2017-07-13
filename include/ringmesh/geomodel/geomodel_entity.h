@@ -57,7 +57,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelEntity );
     public:
 
-        virtual ~GeoModelEntity(){}
+        virtual ~GeoModelEntity() = default;
 
         virtual bool is_on_voi() const = 0;
         virtual bool is_valid() const = 0;
