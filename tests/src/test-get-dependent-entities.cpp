@@ -117,11 +117,11 @@ void run_tests( GeoModel& geomodel )
     };
 
     for( const gmme_id& cur_gmme_id : in_mesh_entities ) {
-        //std::cout<<std::string(cur_gmme_id.type()) + " " + std::to_string( cur_gmme_id.index() )<<std::endl;
         if( std::find( solution_gmme_id.begin(), solution_gmme_id.end(),
             cur_gmme_id ) == solution_gmme_id.end() ) {
             throw RINGMeshException( "RINGMesh Test",
-                std::string(cur_gmme_id.type()) + " " + std::to_string( cur_gmme_id.index() )
+                std::string( cur_gmme_id.type() ) + " "
+                    + std::to_string( cur_gmme_id.index() )
                     + " is not in the solution." );
         }
     }
@@ -130,7 +130,8 @@ void run_tests( GeoModel& geomodel )
         if( std::find( solution_gmge_id.begin(), solution_gmge_id.end(),
             cur_gmge_id ) == solution_gmge_id.end() ) {
             throw RINGMeshException( "RINGMesh Test",
-                std::string(cur_gmge_id.type()) + " " + std::to_string( cur_gmge_id.index() )
+                std::string( cur_gmge_id.type() ) + " "
+                    + std::to_string( cur_gmge_id.index() )
                     + " is not in the solution." );
         }
     }
@@ -139,7 +140,8 @@ void run_tests( GeoModel& geomodel )
         if( std::find( in_mesh_entities.begin(), in_mesh_entities.end(),
             cur_gmme_id ) == in_mesh_entities.end() ) {
             throw RINGMeshException( "RINGMesh Test",
-                std::string(cur_gmme_id.type()) + " " + std::to_string( cur_gmme_id.index() )
+                std::string( cur_gmme_id.type() ) + " "
+                    + std::to_string( cur_gmme_id.index() )
                     + " is not in the output." );
         }
     }
@@ -148,7 +150,8 @@ void run_tests( GeoModel& geomodel )
         if( std::find( in_geological_entities.begin(), in_geological_entities.end(),
             cur_gmge_id ) == in_geological_entities.end() ) {
             throw RINGMeshException( "RINGMesh Test",
-                std::string(cur_gmge_id.type()) + " " + std::to_string( cur_gmge_id.index() )
+                std::string( cur_gmge_id.type() ) + " "
+                    + std::to_string( cur_gmge_id.index() )
                     + " is not in the output." );
         }
     }
