@@ -1347,7 +1347,7 @@ namespace RINGMesh {
 
     bool RINGMeshApplication::load( const std::string& filename )
     {
-        if( !filename.empty() ) {
+        if( !filename.empty() && GEO::FileSystem::is_file( filename ) ) {
             geomodels_.emplace_back( new GeoModelViewer( *this, filename ) );
             current_viewer_ = static_cast< index_t >( geomodels_.size() - 1 );
             current_viewer_type_ = GEOMODEL;
