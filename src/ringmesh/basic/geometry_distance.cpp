@@ -299,134 +299,14 @@ namespace RINGMesh {
         {
             vec3 vertices[4] = { p0, p1, p2, p3 };
             double dist = max_float64();
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
+            for( index_t f : range(
+                GEO::MeshCellDescriptors::tet_descriptor.nb_facets ) ) {
                 vec3 cur_p;
                 double distance =
                     point_to_triangle( p,
                         vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]],
-                        cur_p );
-                if( distance < dist ) {
-                    dist = distance;
-                    nearest_p = cur_p;
-                }
-            }
-            return dist;
-        }
-
-        double point_to_pyramid(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3,
-            const vec3& p4,
-            vec3& nearest_p )
-        {
-            vec3 vertices[5] = { p0, p1, p2, p3, p4 };
-            double dist = max_float64();
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
-                vec3 cur_p;
-                double distance = max_float64();
-                index_t nb_vertices =
-                    GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f];
-                if( nb_vertices == 3 ) {
-                    distance =
-                        point_to_triangle( p,
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
-                            cur_p );
-                } else if( nb_vertices == 4 ) {
-                    distance =
-                        point_to_quad( p,
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]],
-                            cur_p );
-                } else {
-                    ringmesh_assert_not_reached;
-                }
-                if( distance < dist ) {
-                    dist = distance;
-                    nearest_p = cur_p;
-                }
-            }
-            return dist;
-        }
-
-        double point_to_prism(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3,
-            const vec3& p4,
-            const vec3& p5,
-            vec3& nearest_p )
-        {
-            vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 };
-            double dist = max_float64();
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
-                vec3 cur_p;
-                double distance = max_float64();
-                index_t nb_vertices =
-                    GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f];
-                if( nb_vertices == 3 ) {
-                    distance =
-                        point_to_triangle( p,
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
-                            cur_p );
-                } else if( nb_vertices == 4 ) {
-                    distance =
-                        point_to_quad( p,
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]],
-                            cur_p );
-                } else {
-                    ringmesh_assert_not_reached;
-                }
-                if( distance < dist ) {
-                    dist = distance;
-                    nearest_p = cur_p;
-                }
-            }
-            return dist;
-        }
-
-        double point_to_hexa(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3,
-            const vec3& p4,
-            const vec3& p5,
-            const vec3& p6,
-            const vec3& p7,
-            vec3& nearest_p )
-        {
-            /// Review: Why not input an array ?
-            vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 };
-            double dist = max_float64();
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
-                vec3 cur_p;
-                double distance =
-                    point_to_quad( p,
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]],
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]],
                         cur_p );
                 if( distance < dist ) {
                     dist = distance;
@@ -455,54 +335,6 @@ namespace RINGMesh {
                     return std::sqrt( p1_sq );
                 }
             }
-        }
-
-        double point_to_quad(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3,
-            vec3& nearest_p )
-        {
-            const vec3 center( ( p0 + p1 + p2 + p3 ) * 0.25 );
-            vec3 edge0( p1 - p0 );
-            vec3 edge1( p3 - p0 );
-            vec3 axis[2] = { normalize( edge0 ), normalize( edge1 ) };
-            double extent[2] = { 0.5 * edge0.length(), 0.5 * edge1.length() };
-
-            vec3 diff = center - p;
-            double b0 = dot( diff, axis[0] );
-            double b1 = dot( diff, axis[1] );
-            double s0 = -b0;
-            double s1 = -b1;
-            double sqrDistance = dot( diff, diff );
-
-            if( s0 < -extent[0] ) {
-                s0 = -extent[0];
-            } else if( s0 > extent[0] ) {
-                s0 = extent[0];
-            }
-            sqrDistance += s0 * ( s0 + 2. * b0 );
-
-            if( s1 < -extent[1] ) {
-                s1 = -extent[1];
-            } else if( s1 > extent[1] ) {
-                s1 = extent[1];
-            }
-            sqrDistance += s1 * ( s1 + 2. * b1 );
-
-            // Account for numerical round-off error.
-            if( sqrDistance < 0 ) {
-                sqrDistance = 0;
-            }
-
-            double distance = std::sqrt( sqrDistance );
-            nearest_p = center;
-            nearest_p += s0 * axis[0];
-            nearest_p += s1 * axis[1];
-
-            return distance;
         }
     }
 }

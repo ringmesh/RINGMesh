@@ -59,12 +59,12 @@ namespace {
      */
     class MFEMIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from MFEM not implemented yet" );
         }
-        virtual void save(
+        void save(
             const GeoModel< 3 >& geomodel,
             const std::string& filename ) final
         {
@@ -121,10 +121,10 @@ namespace {
             index_t nb_cells = geomodel_mesh.cells.nb();
             out << "elements" << std::endl;
             out << nb_cells << std::endl;
-            for( index_t c = 0; c < nb_cells; c++ ) {
+            for( index_t c : range( nb_cells ) ) {
                 out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
                 out << cell_type_mfem[to_underlying_type( geomodel_mesh.cells.type( c ))] << " ";
-                for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
+                for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
                     out << geomodel_mesh.cells.vertex( c, cell2mfem[v] ) << " ";
                 }
                 out << std::endl;
@@ -149,11 +149,11 @@ namespace {
             const GeoModelMeshPolygons< 3 >& polygons = geomodel_mesh.polygons;
             out << "boundary" << std::endl;
             out << polygons.nb() << std::endl;
-            for( index_t p = 0; p < polygons.nb(); p++ ) {
+            for( index_t p : range( polygons.nb() ) ) {
                 index_t not_used = 0;
                 out << polygons.surface( p ) + mfem_offset << " ";
                 out << polygon_type_mfem[to_underlying_type( polygons.type( p, not_used ) )] << " ";
-                for( index_t v = 0; v < polygons.nb_vertices( p ); v++ ) {
+                for( index_t v : range( polygons.nb_vertices( p ) ) ) {
                     out << polygons.vertex( p, v ) << " ";
                 }
                 out << std::endl;
@@ -175,7 +175,7 @@ namespace {
             out << "vertices" << std::endl;
             out << geomodel_mesh.vertices.nb() << std::endl;
             out << dimension << std::endl;
-            for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
+            for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
                 out << geomodel_mesh.vertices.vertex( v ) << std::endl;
             }
         }

@@ -37,19 +37,19 @@ namespace {
     void merge_colocated_vertices( double epsilon, LineMesh< 3 >& mesh )
     {
         std::vector< index_t > old2new;
-        index_t nb_colocated = mesh.vertices_nn_search().get_colocated_index_mapping(
+        index_t nb_colocated = mesh.vertex_nn_search().get_colocated_index_mapping(
             epsilon, old2new );
         if( nb_colocated > 0 ) {
             std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
                 > ::create_builder( mesh );
-            for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
-                for( index_t i = 0; i < 2; i++ ) {
+            for( index_t e : range( mesh.nb_edges() ) ) {
+                for( index_t i : range( 2 ) ) {
                     index_t v = mesh.edge_vertex( e, i );
                     builder->set_edge_vertex( e, i, old2new[v] );
                 }
             }
             std::vector< bool > delete_vertices( mesh.nb_vertices(), false );
-            for( index_t v = 0; v < mesh.nb_vertices(); v++ ) {
+            for( index_t v : range( mesh.nb_vertices() ) ) {
                 if( old2new[v] != v ) {
                     delete_vertices[v] = true;
                 }
@@ -60,7 +60,7 @@ namespace {
 
     class SmeshIOHandler final: public WellGroupIOHandler {
     public:
-        virtual void load( const std::string& filename, WellGroup< 3 >& wells ) override
+        void load( const std::string& filename, WellGroup< 3 >& wells ) final
         {
             GEO::LineInput in( filename );
             if( !in.OK() ) {
@@ -87,7 +87,7 @@ namespace {
                     builder->create_vertices( nb_vertices );
                     Box < 3 > box;
 
-                    for( index_t v = 0; v < nb_vertices; v++ ) {
+                    for( index_t v : range( nb_vertices ) ) {
                         do {
                             in.get_line();
                             in.get_fields();
@@ -103,7 +103,7 @@ namespace {
                 } else {
                     index_t nb_edges = in.field_as_uint( 0 );
                     builder->create_edges( nb_edges );
-                    for( index_t e = 0; e < nb_edges; e++ ) {
+                    for( index_t e : range( nb_edges ) ) {
                         do {
                             in.get_line();
                             in.get_fields();
@@ -117,7 +117,7 @@ namespace {
                 }
             }
         }
-        virtual void save( const WellGroup< 3 >& wells, const std::string& filename ) override
+        void save( const WellGroup< 3 >& wells, const std::string& filename ) final
         {
             ringmesh_unused( wells );
             ringmesh_unused( filename );

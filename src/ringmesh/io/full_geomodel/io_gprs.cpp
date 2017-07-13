@@ -44,12 +44,12 @@ namespace {
             index_t v0;
             index_t v1;
         };
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" );
         }
-        virtual void save(
+        void save(
             const GeoModel< 3 >& geomodel,
             const std::string& filename ) final
         {
@@ -80,8 +80,8 @@ namespace {
             const GeoModelMesh< 3 >& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
-            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+            for( index_t c :range( mesh.cells.nb() ) ) {
+                for( index_t f : range( mesh.cells.nb_facets( c ) ) ) {
                     index_t facet = NO_ID;
                     bool not_used;
                     if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
@@ -97,7 +97,7 @@ namespace {
             }
 
             index_t nb_edges = 0;
-            for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
+            for( index_t l : range( geomodel.nb_lines() ) ) {
                 nb_edges += geomodel.line( l ).nb_mesh_elements();
             }
             std::vector< index_t > temp;
@@ -105,9 +105,9 @@ namespace {
             std::vector< std::vector< index_t > > edges( nb_edges, temp );
             std::vector< vec3 > edge_vertices( nb_edges );
             index_t count_edge = 0;
-            for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
+            for( index_t l : range( geomodel.nb_lines() ) ) {
                 const Line< 3 >& line = geomodel.line( l );
-                for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
+                for( index_t e : range( line.nb_mesh_elements() ) ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
                 }
@@ -115,8 +115,8 @@ namespace {
             NNSearch < 3 > nn_search( edge_vertices, false );
 
             const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
-            for( index_t p = 0; p < polygons.nb(); p++ ) {
-                for( index_t e = 0; e < polygons.nb_vertices( p ); e++ ) {
+            for( index_t p : range( polygons.nb() ) ) {
+                for( index_t e : range( polygons.nb_vertices( p ) ) ) {
                     index_t adj = polygons.adjacent( p, e );
                     if( adj != GEO::NO_CELL && adj < p ) {
                         pipes.emplace_back( p + cell_offset, adj + cell_offset );
@@ -147,8 +147,8 @@ namespace {
                 out_pipes << pipe.v0 << SPACE << pipe.v1 << std::endl;
             }
             for( const std::vector< index_t >& vertices : edges ) {
-                for( index_t v0 = 0; v0 < vertices.size() - 1; v0++ ) {
-                    for( index_t v1 = v0 + 1; v1 < vertices.size(); v1++ ) {
+                for( index_t v0 : range( vertices.size() - 1 ) ) {
+                    for( index_t v1 : range( v0 + 1, vertices.size() ) ) {
                         out_pipes << vertices[v0] << SPACE << vertices[v1]
                             << std::endl;
                     }
@@ -158,11 +158,11 @@ namespace {
             out_xyz
                 << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
                 << std::endl;
-            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+            for( index_t c : range( mesh.cells.nb() ) ) {
                 out_xyz << mesh.cells.barycenter( c ) << std::endl;
                 out_vol << mesh.cells.volume( c ) << std::endl;
             }
-            for( index_t p = 0; p < polygons.nb(); p++ ) {
+            for( index_t p : range( polygons.nb() ) ) {
                 out_xyz << polygons.center( p ) << std::endl;
                 out_vol << polygons.area( p ) << std::endl;
             }

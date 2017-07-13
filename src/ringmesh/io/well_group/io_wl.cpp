@@ -37,7 +37,7 @@ namespace {
 
     class WLIOHandler final: public WellGroupIOHandler {
     public:
-        virtual void load( const std::string& filename, WellGroup< 3 >& wells ) override
+        void load( const std::string& filename, WellGroup< 3 >& wells ) final
         {
             GEO::LineInput in( filename );
             if( !in.OK() ) {
@@ -84,7 +84,7 @@ namespace {
                 }
             }
         }
-        virtual void save( const WellGroup< 3 >& wells, const std::string& filename ) override
+        void save( const WellGroup< 3 >& wells, const std::string& filename ) final
         {
             ringmesh_unused( wells );
             ringmesh_unused( filename );

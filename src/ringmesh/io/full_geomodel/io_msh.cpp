@@ -90,14 +90,12 @@ namespace {
      */
     class MSHIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GMSH not implemented yet" );
         }
-        virtual void save(
-            const GeoModel< 3 >& geomodel,
-            const std::string& filename ) final
+        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -108,7 +106,7 @@ namespace {
 
             out << "$Nodes" << std::endl;
             out << geomodel.mesh.vertices.nb() << std::endl;
-            for( index_t v = 0; v < geomodel.mesh.vertices.nb(); v++ ) {
+            for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
                 out << v + gmsh_offset << SPACE << geomodel.mesh.vertices.vertex( v )
                     << std::endl;
             }
@@ -120,22 +118,17 @@ namespace {
                 geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
 
             index_t element_index = 1;
-            for( index_t gmme_type_index = 0;
-                gmme_type_index
-                    < geomodel.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types();
-                gmme_type_index++ ) {
+            for( index_t gmme_type_index : range(
+                geomodel.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types() ) ) {
                 MeshEntityType cur_mesh_entity_type = gmme_types[gmme_type_index];
-                for( index_t index_of_gmme_of_the_current_type = 0;
-                    index_of_gmme_of_the_current_type
-                        < geomodel.nb_mesh_entities( cur_mesh_entity_type );
-                    index_of_gmme_of_the_current_type++ ) {
+                for( index_t index_of_gmme_of_the_current_type : range(
+                    geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) ) {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
                         index_of_gmme_of_the_current_type );
                     const GeoModelMeshEntity< 3 >& cur_gmme = geomodel.mesh_entity(
                         cur_gmme_id );
-                    for( index_t elem_in_cur_gmme = 0;
-                        elem_in_cur_gmme < cur_gmme.nb_mesh_elements();
-                        elem_in_cur_gmme++ ) {
+                    for( index_t elem_in_cur_gmme : range(
+                        cur_gmme.nb_mesh_elements() ) ) {
                         index_t nb_vertices_in_cur_element =
                             cur_gmme.nb_mesh_element_vertices( elem_in_cur_gmme );
                         index_t gmsh_element_type = find_gmsh_element_type(
@@ -144,9 +137,8 @@ namespace {
                             << nb_of_tags << SPACE << physical_id << SPACE
                             << index_of_gmme_of_the_current_type + gmsh_offset
                             << SPACE /*<< nb_vertices_in_cur_element << SPACE*/;
-                        for( index_t v_index_in_cur_element = 0;
-                            v_index_in_cur_element < nb_vertices_in_cur_element;
-                            v_index_in_cur_element++ ) {
+                        for( index_t v_index_in_cur_element : range(
+                            nb_vertices_in_cur_element ) ) {
                             out
                                 << geomodel.mesh.vertices.geomodel_vertex_id(
                                     cur_gmme_id,
@@ -209,10 +201,8 @@ namespace {
             const std::vector< MeshEntityType >& gmme_types =
                 geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
             for( MeshEntityType cur_mesh_entity_type : gmme_types ) {
-                for( index_t index_of_gmme_of_the_current_type = 0;
-                    index_of_gmme_of_the_current_type
-                        < geomodel.nb_mesh_entities( cur_mesh_entity_type );
-                    index_of_gmme_of_the_current_type++ ) {
+                for( index_t index_of_gmme_of_the_current_type : range(
+                    geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) ) {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
                         index_of_gmme_of_the_current_type );
                     const GeoModelMeshEntity< 3 >& cur_gmme = geomodel.mesh_entity(

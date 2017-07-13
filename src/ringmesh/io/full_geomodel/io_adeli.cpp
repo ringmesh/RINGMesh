@@ -60,14 +60,12 @@ namespace {
      */
     class AdeliIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Adeli .msh mesh not implemented yet" );
         }
-        virtual void save(
-            const GeoModel< 3 >& geomodel,
-            const std::string& filename ) final
+        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -93,7 +91,7 @@ namespace {
         {
             out << "$NOD" << std::endl;
             out << geomodel_mesh.vertices.nb() << std::endl;
-            for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
+            for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
                 out << v + id_offset_adeli << " "
                     << geomodel_mesh.vertices.vertex( v ) << std::endl;
             }
@@ -107,7 +105,7 @@ namespace {
         {
             out << "$ELM" << std::endl;
             out << nb_total_elements( geomodel ) << std::endl;
-            for( index_t corner = 0; corner < geomodel.nb_corners(); corner++ ) {
+            for( index_t corner : range( geomodel.nb_corners() ) ) {
                 const Corner< 3 >& cur_corner = geomodel.corner( corner );
                 out << elt++ << " " << adeli_cell_types[0] << " " << reg_phys << " "
                     << cur_corner.index() + id_offset_adeli << " "
@@ -124,20 +122,18 @@ namespace {
         {
             const MeshEntityTypeManager< 3 >& manager =
                 geomodel.entity_type_manager().mesh_entity_manager;
+            const std::vector< MeshEntityType >& mesh_entity_types =
+                manager.mesh_entity_types();
             // Corners are already written so we start this loop at 1
-            for( index_t geomodel_mesh_entities = 1;
-                geomodel_mesh_entities < manager.nb_mesh_entity_types();
-                geomodel_mesh_entities++ ) {
-                for( index_t entity = 0;
-                    entity
-                        < geomodel.nb_mesh_entities(
-                            manager.mesh_entity_types()[geomodel_mesh_entities] );
-                    entity++ ) {
+            for( index_t geomodel_mesh_entities : range( 1,
+                manager.nb_mesh_entity_types() ) ) {
+                for( index_t entity : range(
+                    geomodel.nb_mesh_entities(
+                        mesh_entity_types[geomodel_mesh_entities] ) ) ) {
                     write_mesh_elements_for_a_mesh_entity(
                         geomodel.mesh_entity(
-                            manager.mesh_entity_types()[geomodel_mesh_entities],
-                            entity ), adeli_cell_types[geomodel_mesh_entities], elt,
-                        out );
+                            mesh_entity_types[geomodel_mesh_entities], entity ),
+                        adeli_cell_types[geomodel_mesh_entities], elt, out );
                 }
             }
             out << "$ENDELM" << std::endl;
@@ -147,22 +143,20 @@ namespace {
         {
             const MeshEntityTypeManager< 3 >& manager =
                 geomodel.entity_type_manager().mesh_entity_manager;
+            const std::vector< MeshEntityType >& mesh_entity_types =
+                manager.mesh_entity_types();
             // Because corners does not have mesh elements, but are considered as elements
             // in adeli, we have to count the vertex of each corner in a different
             // way
             index_t nb_mesh_entities = geomodel.nb_corners();
-            for( index_t geomodel_mesh_entities = 1;
-                geomodel_mesh_entities < manager.nb_mesh_entity_types();
-                geomodel_mesh_entities++ ) {
-                for( index_t entity = 0;
-                    entity
-                        < geomodel.nb_mesh_entities(
-                            manager.mesh_entity_types()[geomodel_mesh_entities] );
-                    entity++ ) {
+            for( index_t geomodel_mesh_entities : range( 1,
+                manager.nb_mesh_entity_types() ) ) {
+                for( index_t entity : range(
+                    geomodel.nb_mesh_entities(
+                        mesh_entity_types[geomodel_mesh_entities] ) ) ) {
                     nb_mesh_entities +=
                         geomodel.mesh_entity(
-                            manager.mesh_entity_types()[geomodel_mesh_entities],
-                            entity ).nb_mesh_elements();
+                            mesh_entity_types[geomodel_mesh_entities], entity ).nb_mesh_elements();
                 }
             }
             return nb_mesh_entities;
@@ -174,13 +168,12 @@ namespace {
             index_t& elt_id,
             std::ofstream& out ) const
         {
-            for( index_t elt = 0; elt < geomodel_mesh_entity.nb_mesh_elements();
-                elt++ ) {
+            for( index_t elt : range( geomodel_mesh_entity.nb_mesh_elements() ) ) {
                 out << elt_id++ << " " << cell_descriptor << " " << reg_phys << " "
                     << geomodel_mesh_entity.index() + id_offset_adeli << " "
                     << geomodel_mesh_entity.nb_mesh_element_vertices( elt ) << " ";
-                for( index_t v = 0;
-                    v < geomodel_mesh_entity.nb_mesh_element_vertices( elt ); v++ ) {
+                for( index_t v : range(
+                    geomodel_mesh_entity.nb_mesh_element_vertices( elt ) ) ) {
                     out
                         << geomodel_mesh_entity.geomodel().mesh.vertices.geomodel_vertex_id(
                             geomodel_mesh_entity.gmme(), elt, v ) + id_offset_adeli

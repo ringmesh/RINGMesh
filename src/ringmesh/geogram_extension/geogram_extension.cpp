@@ -115,7 +115,7 @@ namespace {
          * @param mesh to which vertices and facets will be assigned
          * @param flags Not used for now.
          */
-        virtual bool load(
+        bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
@@ -140,7 +140,7 @@ namespace {
         /*!
          * @brief Save a Mesh in .ts format
          */
-        virtual bool save(
+        bool save(
             const GEO::Mesh& mesh,
             const std::string& filename,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
@@ -174,19 +174,17 @@ namespace {
             const std::vector< std::string >& att_v_double_names,
             const std::vector< index_t >& vertex_attr_dims )
         {
-            for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
+            for( index_t v : range( mesh.vertices.nb() ) ) {
                 // PVRTX must be used instead of VRTX because
                 // properties are not read by Gocad if it is VRTX.
                 out << "PVRTX " << v + starting_index_ << " "
                     << mesh.vertices.point( v );
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( att_v_double_names.size() ) ) {
                     GEO::Attribute< double > cur_attr( mesh.vertices.attributes(),
                         att_v_double_names[attr_dbl_itr] );
-                    for( index_t dim_itr = 0;
-                        dim_itr < vertex_attr_dims[attr_dbl_itr]; ++dim_itr ) {
-                        out << " "
-                            << cur_attr[v * vertex_attr_dims[attr_dbl_itr] + dim_itr];
+                    index_t nb_dimensions = vertex_attr_dims[attr_dbl_itr];
+                    for( index_t dim_itr : range( nb_dimensions ) ) {
+                        out << " " << cur_attr[v * nb_dimensions + dim_itr];
                     }
                 }
                 out << std::endl;
@@ -194,9 +192,9 @@ namespace {
         }
         void save_triangles( std::ofstream& out, const GEO::Mesh& mesh )
         {
-            for( index_t t = 0; t < mesh.facets.nb(); t++ ) {
+            for( index_t t : range( mesh.facets.nb() ) ) {
                 out << "TRGL";
-                for( index_t v = 0; v < 3; v++ ) {
+                for( index_t v : range( 3 ) ) {
                     out << " " << mesh.facets.vertex( t, v ) + starting_index_;
                 }
                 out << std::endl;
@@ -218,8 +216,7 @@ namespace {
             GEO::vector< std::string > att_v_names;
             GEO::AttributesManager& mesh_vertex_mgr = mesh.vertices.attributes();
             mesh_vertex_mgr.list_attribute_names( att_v_names );
-            for( index_t att_v = 0; att_v < mesh_vertex_mgr.nb(); att_v++ ) {
-
+            for( index_t att_v : range( mesh_vertex_mgr.nb() ) ) {
                 if( att_v_names[att_v] == "point" ) {
                     continue;
                 }
@@ -235,39 +232,39 @@ namespace {
             }
 
             if( !att_v_double_names.empty() ) {
+                index_t nb_attributes =
+                    static_cast< index_t >( att_v_double_names.size() );
                 out << "PROPERTIES";
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( nb_attributes ) ) {
                     out << " " << att_v_double_names[attr_dbl_itr];
                 }
                 out << std::endl;
                 out << "PROP_LEGAL_RANGES";
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( nb_attributes ) ) {
+                    ringmesh_unused( attr_dbl_itr );
                     out << " **none**  **none**";
                 }
                 out << std::endl;
                 out << "NO_DATA_VALUES";
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( nb_attributes ) ) {
+                    ringmesh_unused( attr_dbl_itr );
                     out << " -99999";
                 }
                 out << std::endl;
                 out << "READ_ONLY";
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( nb_attributes ) ) {
+                    ringmesh_unused( attr_dbl_itr );
                     out << " 1";
                 }
                 out << std::endl;
                 out << "PROPERTY_CLASSES";
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( nb_attributes ) ) {
                     out << " " << att_v_double_names[attr_dbl_itr];
                 }
                 out << std::endl;
                 out << "PROPERTY_KINDS";
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( nb_attributes ) ) {
+                    ringmesh_unused( attr_dbl_itr );
                     out << " \"Real Number\"";
                 }
                 out << std::endl;
@@ -278,19 +275,17 @@ namespace {
                 }
                 out << std::endl;
                 out << "ESIZES";
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( nb_attributes ) ) {
                     out << " " << std::to_string( vertex_attr_dims[attr_dbl_itr] );
                 }
                 out << std::endl;
                 out << "UNITS";
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( nb_attributes ) ) {
+                    ringmesh_unused( attr_dbl_itr );
                     out << " unitless";
                 }
                 out << std::endl;
-                for( index_t attr_dbl_itr = 0;
-                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                for( index_t attr_dbl_itr : range( nb_attributes ) ) {
                     out << "PROPERTY_CLASS_HEADER "
                         << att_v_double_names[attr_dbl_itr] << " {" << std::endl;
                     out << "kind: Real Number" << std::endl;
@@ -341,13 +336,10 @@ namespace {
                             * z_sign_;
                         if( in.field_matches( 0, "PVRTX" ) ) {
                             index_t offset = 5;
-                            for( index_t prop_name_itr = 0;
-                                prop_name_itr < vertex_property_names_.size();
-                                ++prop_name_itr ) {
-                                for( index_t v_attr_dim_itr = 0;
-                                    v_attr_dim_itr
-                                        < vertex_attribute_dims_[prop_name_itr];
-                                    ++v_attr_dim_itr ) {
+                            for( index_t prop_name_itr : range(
+                                vertex_property_names_.size() ) ) {
+                                for( index_t v_attr_dim_itr : range(
+                                    vertex_attribute_dims_[prop_name_itr] ) ) {
                                     vertex_attributes_[prop_name_itr][v][v_attr_dim_itr] =
                                         in.field_as_double( offset );
                                     ++offset;
@@ -388,8 +380,7 @@ namespace {
                         continue;
                     }
                     vertex_property_names_.reserve( in.nb_fields() - 1 );
-                    for( index_t prop_name_itr = 1; prop_name_itr < in.nb_fields();
-                        ++prop_name_itr ) {
+                    for( index_t prop_name_itr : range( 1, in.nb_fields() ) ) {
                         vertex_property_names_.push_back(
                             in.field( prop_name_itr ) );
                     }
@@ -408,8 +399,7 @@ namespace {
                         continue;
                     }
                     vertex_property_names_.reserve( in.nb_fields() - 1 );
-                    for( index_t prop_size_itr = 1; prop_size_itr < in.nb_fields();
-                        ++prop_size_itr ) {
+                    for( index_t prop_size_itr : range( 1, in.nb_fields() ) ) {
                         vertex_attribute_dims_.push_back(
                             in.field_as_uint( prop_size_itr ) );
                     }
@@ -434,18 +424,14 @@ namespace {
 
         void assign_tsurf_properties_to_geogram_mesh( GEO::Mesh& mesh )
         {
-            for( index_t prop_name_itr = 0;
-                prop_name_itr < vertex_property_names_.size(); ++prop_name_itr ) {
+            for( index_t prop_name_itr : range( vertex_property_names_.size() ) ) {
+                index_t nb_dimensions = vertex_attribute_dims_[prop_name_itr];
                 GEO::Attribute< double > attr;
                 attr.create_vector_attribute( mesh.vertices.attributes(),
-                    vertex_property_names_[prop_name_itr],
-                    vertex_attribute_dims_[prop_name_itr] );
-                for( index_t v_itr = 0; v_itr < nb_vertices_; ++v_itr ) {
-                    for( index_t prop_dim_itr = 0;
-                        prop_dim_itr < vertex_attribute_dims_[prop_name_itr];
-                        ++prop_dim_itr ) {
-                        attr[v_itr * vertex_attribute_dims_[prop_name_itr]
-                            + prop_dim_itr] =
+                    vertex_property_names_[prop_name_itr], nb_dimensions );
+                for( index_t v_itr : range( nb_vertices_ ) ) {
+                    for( index_t prop_dim_itr : range( nb_dimensions ) ) {
+                        attr[v_itr * nb_dimensions + prop_dim_itr] =
                             vertex_attributes_[prop_name_itr][v_itr][prop_dim_itr];
                     }
                 }
@@ -474,12 +460,9 @@ namespace {
         void allocate_vertex_properties()
         {
             vertex_attributes_.resize( vertex_property_names_.size() );
-            for( index_t vertex_attributes_itr = 0;
-                vertex_attributes_itr < vertex_attributes_.size();
-                ++vertex_attributes_itr ) {
+            for( index_t vertex_attributes_itr : range( vertex_attributes_.size() ) ) {
                 vertex_attributes_[vertex_attributes_itr].resize( nb_vertices_ );
-                for( index_t vertex_itr = 0; vertex_itr < nb_vertices_;
-                    ++vertex_itr ) {
+                for( index_t vertex_itr : range( nb_vertices_ ) ) {
                     vertex_attributes_[vertex_attributes_itr][vertex_itr].resize(
                         vertex_attribute_dims_[vertex_attributes_itr], 0 );
                 }
@@ -502,7 +485,7 @@ namespace {
 
     class LINMeshIOHandler final : public GEO::MeshIOHandler {
     public:
-        virtual bool load(
+        bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
@@ -525,7 +508,7 @@ namespace {
             return true;
 
         }
-        virtual bool save(
+        bool save(
             const GEO::Mesh& M,
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() ) final
@@ -587,7 +570,7 @@ namespace RINGMesh {
             case GEO::MESH_PRISM:
             case GEO::MESH_HEX: {
                 vec3 ori( 0, 0, 0 );
-                for( index_t f = 0; f < M.cells.nb_facets( c ); f++ ) {
+                for( index_t f : range( M.cells.nb_facets( c ) ) ) {
                     switch( M.cells.facet_nb_vertices( c, f ) ) {
                         case 3:
                             volume += GEO::Geom::tetra_signed_volume(
@@ -636,7 +619,7 @@ namespace RINGMesh {
     {
         vec3 result( 0., 0., 0. );
         index_t nb_vertices = M.cells.facet_nb_vertices( cell, f );
-        for( index_t v = 0; v < nb_vertices; ++v ) {
+        for( index_t v : range( nb_vertices ) ) {
             result += GEO::Geom::mesh_vertex( M,
                 M.cells.facet_vertex( cell, f, v ) );
         }
@@ -648,12 +631,10 @@ namespace RINGMesh {
     vec3 mesh_cell_barycenter( const GEO::Mesh& M, index_t cell )
     {
         vec3 result( 0.0, 0.0, 0.0 );
-        double count = 0.0;
-        for( index_t v = 0; v < M.cells.nb_vertices( cell ); ++v ) {
+        for( index_t v : range( M.cells.nb_vertices( cell ) ) ) {
             result += GEO::Geom::mesh_vertex( M, M.cells.vertex( cell, v ) );
-            count += 1.0;
         }
-        return ( 1.0 / count ) * result;
+        return ( 1.0 / M.cells.nb_vertices( cell ) ) * result;
     }
 
     void print_bounded_attributes( const GEO::Mesh& M )

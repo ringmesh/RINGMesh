@@ -47,7 +47,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
     {
-        for( index_t i = 0; i < DIMENSION; i++ ) {
+        for( index_t i : range( DIMENSION ) ) {
             if( u[i] != v[i] ) return false;
         }
         return true;
@@ -127,24 +127,6 @@ namespace RINGMesh {
             vec2& closest_point );
 
         /*!
-         * Computes the smallest distance between a point and a quad
-         * @param[in] p the point to test
-         * @param[in] p0 the first vertex of the quad
-         * @param[in] p1 the second vertex of the quad
-         * @param[in] p2 the third vertex of the quad
-         * @param[in] p3 the fourth vertex of the quad
-         * @param[out] nearest_p the closest point on the quad
-         * @return the smallest distance
-         */
-        double RINGMESH_API point_to_quad(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3,
-            vec3& nearest_p );
-
-        /*!
          * Computes the distance between a point and a tetrahedron
          * @param[in] p the point
          * @param[in] p0 the first vertex of the tetrahedron
@@ -160,74 +142,6 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& p2,
             const vec3& p3,
-            vec3& nearest_p );
-
-        /*!
-         * Computes the distance between a point and a pyramid
-         * @param[in] p the point
-         * @param[in] p0 the first vertex of the pyramid
-         * @param[in] p1 the second vertex of the pyramid
-         * @param[in] p2 the third vertex of the pyramid
-         * @param[in] p3 the fourth vertex of the pyramid
-         * @param[in] p4 the fifth vertex of the pyramid
-         * @param[out] nearest_p the nearest point on the pyramid
-         * @return the distance between the point and the pyramid facets
-         */
-        double RINGMESH_API point_to_pyramid(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3,
-            const vec3& p4,
-            vec3& nearest_p );
-
-        /*!
-         * Computes the distance between a point and a prism
-         * @param[in] p the point
-         * @param[in] p0 the first vertex of the prism
-         * @param[in] p1 the second vertex of the prism
-         * @param[in] p2 the third vertex of the prism
-         * @param[in] p3 the fourth vertex of the prism
-         * @param[in] p4 the fifth vertex of the prism
-         * @param[in] p5 the sixth vertex of the prism
-         * @param[out] nearest_p the nearest point on the prism
-         * @return the distance between the point and the prism facets
-         */
-        double RINGMESH_API point_to_prism(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3,
-            const vec3& p4,
-            const vec3& p5,
-            vec3& nearest_p );
-
-        /*!
-         * Computes the distance between a point and a hexahedron
-         * @param[in] p the point
-         * @param[in] p0 the first vertex of the hexahedron
-         * @param[in] p1 the second vertex of the hexahedron
-         * @param[in] p2 the third vertex of the hexahedron
-         * @param[in] p3 the fourth vertex of the hexahedron
-         * @param[in] p4 the fifth vertex of the hexahedron
-         * @param[in] p5 the sixth vertex of the hexahedron
-         * @param[in] p6 the seventh vertex of the hexahedron
-         * @param[in] p7 the heith vertex of the hexahedron
-         * @param[out] nearest_p the nearest point on the hexahedron
-         * @return the distance between the point and the hexahedron facets
-         */
-        double RINGMESH_API point_to_hexa(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3,
-            const vec3& p4,
-            const vec3& p5,
-            const vec3& p6,
-            const vec3& p7,
             vec3& nearest_p );
     }
 

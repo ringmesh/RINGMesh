@@ -36,7 +36,7 @@
 namespace {
     class XMLStratigraphicColumnIOHandler: public StratigraphicColumnIOHandler {
     public:
-        virtual void load(
+        void load(
             const std::string& filename,
             StratigraphicColumn& column,
             GeoModel< 3 >& geomodel ) final
@@ -52,7 +52,7 @@ namespace {
             GEO::FileSystem::set_current_working_directory( pwd );
         }
 
-        virtual void save(
+        void save(
             const StratigraphicColumn& column,
             const std::string& filename ) final
         {

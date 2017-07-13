@@ -1,4 +1,19 @@
-#### Current changeset ####
+Major change:
+ * Add support of 2D GeoModel:
+     * User can use GeoModel< 2 > or GeoModel< 3 >, they follow the same boundary reprsentation design as before
+     * Meshes can be defined using only 2 coordinates
+
+New Features:
+ * Add import of SVG file. 
+       We only read pathes and they should be flat. There is a command to flatten pathes in Inkscape.
+
+Bug fix:
+ * Error in computation of polygon area (for 3D concave polygons)
+
+Improvements:
+ * One can use range() to iterate over integer loops
+
+#### Release: 4.1.0 ####
 
 New Features:
  * New thread safe logger
@@ -16,10 +31,9 @@ New Features:
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
- * Crash on RINGMeshView exit (Logger was still register)
- * RINGMesh now compiles when TetGen cmake option is set to off
  * Cannot delete Mesh in RINGMeshView
- * Error in computation of polygon area (for 3D concave polygons)
+ * Fix crash on RINGMeshView exit (Logger was still register)
+ * RINGMesh now compiles when TetGen cmake option is set to off
  * GeoModelMeshVertices was not cleared after a tetrahedralize step
 
 Improvements:

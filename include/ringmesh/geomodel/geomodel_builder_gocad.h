@@ -475,15 +475,15 @@ namespace RINGMesh {
 
 	private:
 		void read_type();
-		virtual void load_file() final;
-		virtual void read_file() final;
+		void load_file() final;
+		void read_file() final;
 
         /*!
          * @brief Reads the first word of the current line (keyword)
          * and executes the good action with the information of the line
          * @details Uses the TsolidLineParser factory
          */
-        virtual void read_line() final;
+        void read_line() final;
 
         /*!
          * @brief Computes internal borders of a given surface
@@ -518,10 +518,6 @@ namespace RINGMesh {
          * @param[in] geomodel GeoModel to consider
          */
         void compute_surfaces_internal_borders();
-
-    //private:
-    //    TSolidLoadingStorage tsolid_load_storage_;
-    //    friend class RINGMesh::GocadLineParser;
 
 	protected:
 		TSolidLoadingStorage tsolid_load_storage_;
@@ -669,14 +665,14 @@ namespace RINGMesh {
          * are ignored and the Lines and Corners of the GeoModel are deduced from the
          * connectivity of its Surfaces. By default set to false.
          */
-        virtual void load_file() final;
+        void load_file() final;
 
         /*!
          * @brief Reads the first word of the current line (keyword)
          * and executes the good action with the information of the line
          * @details Uses the MLLineParser factory
          */
-        virtual void read_line() final;
+        void read_line() final;
 
     private:
         MLLoadingStorage ml_load_storage_;

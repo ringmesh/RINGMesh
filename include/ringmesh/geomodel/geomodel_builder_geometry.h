@@ -276,10 +276,6 @@ namespace RINGMesh {
             const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr );
 
-        void set_surface_geometry(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_vertices );
-
         void set_surface_element_geometry(
             index_t surface_id,
             index_t polygon_id,
@@ -432,7 +428,7 @@ namespace RINGMesh {
             return VolumeMeshBuilder< 3 >::create_builder( region_mesh );
         }
 
-        virtual void copy_meshes( const GeoModel< 3 >& geomodel ) override;
+        void copy_meshes( const GeoModel< 3 >& geomodel ) override;
 
         void set_region_element_geometry(
             index_t region_id,
@@ -489,8 +485,7 @@ namespace RINGMesh {
 
         void cut_region_by_surface( index_t region_id, index_t surface_id );
 
-        virtual void delete_mesh_entity_isolated_vertices( const gmme_id& E_id )
-            override;
+        void delete_mesh_entity_isolated_vertices( const gmme_id& E_id ) override;
 
     protected:
         GeoModelBuilderGeometry(

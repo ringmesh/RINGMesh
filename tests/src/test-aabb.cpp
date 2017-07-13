@@ -71,7 +71,7 @@ template< index_t DIMENSION >
 void add_vertices( LineMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_vertices( size );
-    for( index_t i = 0; i < size; i++ ) {
+    for( index_t i : range( size ) ) {
         builder->set_vertex( i, create_vertex< DIMENSION >( i, i + 1 ) );
     }
 }
@@ -81,8 +81,8 @@ void add_vertices( SurfaceMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_vertices( size * size );
     index_t id = 0;
-    for( index_t i = 0; i < size; i++ ) {
-        for( index_t j = 0; j < size; j++ ) {
+    for( index_t i : range( size ) ) {
+        for( index_t j : range( size ) ) {
             builder->set_vertex( id++, create_vertex< DIMENSION >( i, j ) );
         }
     }
@@ -93,9 +93,9 @@ void add_vertices( VolumeMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_vertices( size * size * size );
     index_t id = 0;
-    for( index_t i = 0; i < size; i++ ) {
-        for( index_t j = 0; j < size; j++ ) {
-            for( index_t k = 0; k < size; k++ ) {
+    for( index_t i : range( size ) ) {
+        for( index_t j : range( size ) ) {
+            for( index_t k : range( size ) ) {
                 builder->set_vertex( id++, vecn< DIMENSION >( i, j, k ) );
             }
         }
@@ -106,7 +106,7 @@ template< index_t DIMENSION >
 void add_edges( LineMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_edges( size - 1 );
-    for( index_t i = 0; i < size - 1; i++ ) {
+    for( index_t i : range( size - 1 ) ) {
         builder->set_edge_vertex( i, 0, i );
         builder->set_edge_vertex( i, 1, i + 1 );
     }
@@ -117,8 +117,8 @@ void add_triangles( SurfaceMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_triangles( ( size - 1 ) * ( size - 1 ) * 2 );
     index_t id = 0;
-    for( index_t i = 0; i < size - 1; i++ ) {
-        for( index_t j = 0; j < size - 1; j++ ) {
+    for( index_t i : range( size - 1) ) {
+        for( index_t j : range( size - 1 ) ) {
             builder->set_polygon_vertex( id, 0, i * size + j );
             builder->set_polygon_vertex( id, 1, i * size + j + 1 );
             builder->set_polygon_vertex( id, 2, ( i + 1 ) * size + j );
@@ -137,9 +137,9 @@ void add_hexs( VolumeMeshBuilder< DIMENSION >* builder, index_t size )
     builder->create_cells( ( size - 1 ) * ( size - 1 ) * ( size - 1 ),
         CellType::HEXAHEDRON );
     index_t id = 0;
-    for( index_t i = 0; i < ( size - 1 ); i++ ) {
-        for( index_t j = 0; j < ( size - 1 ); j++ ) {
-            for( index_t k = 0; k < ( size - 1 ); k++ ) {
+    for( index_t i : range( size - 1) ) {
+        for( index_t j : range( size - 1) ) {
+            for( index_t k : range( size - 1 ) ) {
                 index_t corner = i + j * size + k * size * size;
                 builder->set_cell_vertex( id, 0, corner );
                 builder->set_cell_vertex( id, 4, corner + size * size );
@@ -162,8 +162,8 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
 {
     double offset = 0.2;
     index_t id = 0;
-    for( index_t i = 0; i < size - 1; i++ ) {
-        for( index_t j = 0; j < size - 1; j++ ) {
+    for( index_t i : range( size - 1 ) ) {
+        for( index_t j : range( size - 1 ) ) {
             vecn< DIMENSION > query1 = create_vertex< DIMENSION >( i + offset,
                 j + offset );
             vecn< DIMENSION > nearest_point1;
@@ -213,7 +213,7 @@ void create_5_tets_from_hex(
     index_t hex )
 {
     std::vector< index_t > vertices_in_hex( 8 );
-    for( index_t v = 0; v < 8; v++ ) {
+    for( index_t v : range( 8 ) ) {
         vertices_in_hex[v] = mesh_hex.cell_vertex( hex, v );
     }
     builder.set_cell_vertex( 5 * hex, 0, vertices_in_hex[0] );
@@ -252,7 +252,7 @@ void decompose_in_tet(
         DIMENSION >::create_builder( tet_mesh );
     builder->create_cells( hex_mesh.nb_cells() * 5, CellType::TETRAHEDRON );
     add_vertices( builder.get(), size );
-    for( index_t hex = 0; hex < hex_mesh.nb_cells(); hex++ ) {
+    for( index_t hex : range( hex_mesh.nb_cells() ) ) {
         create_5_tets_from_hex( *builder, hex_mesh, hex );
     }
 
@@ -278,9 +278,9 @@ void test_SurfaceAABB()
 template< index_t DIMENSION >
 void test_locate_cell_on_3D_mesh( const GeogramVolumeMesh< DIMENSION >& mesh )
 {
-    for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+    for( index_t c : range( mesh.nb_cells() ) ) {
         vecn< DIMENSION > barycenter = mesh.cell_barycenter( c );
-        const VolumeAABBTree< DIMENSION >& aabb3D = mesh.cells_aabb();
+        const VolumeAABBTree< DIMENSION >& aabb3D = mesh.cell_aabb();
         index_t containing_cell = aabb3D.containing_cell( barycenter );
         if( containing_cell != c ) {
             throw RINGMeshException( "TEST", "Not the correct cell found" );
@@ -310,9 +310,9 @@ void test_locate_edge_on_1D_mesh( const GeogramLineMesh< DIMENSION >& mesh )
 {
     double distance;
     vecn< DIMENSION > nearest_point;
-    for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
+    for( index_t e : range( mesh.nb_edges() ) ) {
         vecn< DIMENSION > barycenter = mesh.edge_barycenter( e );
-        const LineAABBTree< DIMENSION >& aabb1D = mesh.edges_aabb();
+        const LineAABBTree< DIMENSION >& aabb1D = mesh.edge_aabb();
         index_t closest_edge = aabb1D.closest_edge( barycenter, nearest_point,
             distance );
         if( closest_edge != e ) {

@@ -87,7 +87,7 @@ project(RINGMesh)
 # Define version number 
 # It is then exported to the configuration file
 set (RINGMesh_VERSION_MAJOR 4)
-set (RINGMesh_VERSION_MINOR 0)
+set (RINGMesh_VERSION_MINOR 1)
 set (RINGMesh_VERSION_PATCH 0)
 set (RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RINGMesh_VERSION_PATCH})
 

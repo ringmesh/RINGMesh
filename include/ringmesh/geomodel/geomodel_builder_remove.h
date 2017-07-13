@@ -126,14 +126,13 @@ namespace RINGMesh {
         }
         void do_delete_flagged_mesh_entities()
         {
-            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
-                for( index_t j = 0; j < nb_initial_mesh_entities_[i]; ++j ) {
+            for( index_t i : range( nb_mesh_entity_types_ ) ) {
+                for( index_t j : range( nb_initial_mesh_entities_[i] ) ) {
                     if( mesh_entity_to_erase_[i][j] ) {
                         const MeshEntityType& type_name = index_to_mesh_entity_type(
                             i );
-                        for( index_t p = 0;
-                            p < geomodel_.mesh_entity( type_name, j ).nb_parents();
-                            p++ ) {
+                        for( index_t p : range(
+                            geomodel_.mesh_entity( type_name, j ).nb_parents() ) ) {
                             gmge_id parent =
                                 geomodel_.mesh_entity( type_name, j ).parent_gmge(
                                     p );
@@ -169,20 +168,18 @@ namespace RINGMesh {
             old_2_new_mesh_entity_.resize( nb_mesh_entity_types_ );
             old_2_new_geological_entity_.resize( nb_geological_entity_types_ );
             nb_childs_.resize( nb_geological_entity_types_ );
-            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+            for( index_t i : range( nb_mesh_entity_types_ ) ) {
                 index_t size = geomodel_.nb_mesh_entities(
                     index_to_mesh_entity_type( i ) );
                 mesh_entity_to_erase_[i].resize( size, false );
                 old_2_new_mesh_entity_[i].resize( size, 0 );
             }
 
-            for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
+            for( index_t i : range( nb_geological_entity_types_ ) ) {
                 index_t size = geomodel_.nb_geological_entities(
                     index_to_geological_entity_type( i ) );
                 old_2_new_geological_entity_[i].resize( size, 0 );
-
                 nb_childs_[i].resize( size, 0 );
-
             }
 
         }
@@ -225,11 +222,9 @@ namespace RINGMesh {
         }
         void update_mesh_entity_connectivity()
         {
-            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+            for( index_t i : range( nb_mesh_entity_types_ ) ) {
                 const MeshEntityType& entity_type = index_to_mesh_entity_type( i );
-
-                for( index_t j = 0; j < geomodel_.nb_mesh_entities( entity_type );
-                    ++j ) {
+                for( index_t j : range( geomodel_.nb_mesh_entities( entity_type ) ) ) {
                     gmme_id new_id( entity_type, j );
                     GeoModelMeshEntity< DIMENSION >& ME =
                         geomodel_access_.modifiable_mesh_entity( new_id );
@@ -241,11 +236,11 @@ namespace RINGMesh {
         void update_geological_entity_connectivity()
         {
 
-            for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
+            for( index_t i : range( nb_geological_entity_types_ ) ) {
                 const GeologicalEntityType& entity_type =
                     index_to_geological_entity_type( i );
-                for( index_t j = 0;
-                    j < geomodel_.nb_geological_entities( entity_type ); ++j ) {
+                for( index_t j : range(
+                    geomodel_.nb_geological_entities( entity_type ) ) ) {
                     gmge_id new_id( entity_type, j );
                     GeoModelGeologicalEntity< DIMENSION >& GE =
                         geomodel_access_.modifiable_geological_entity( new_id );
@@ -255,11 +250,9 @@ namespace RINGMesh {
                 }
             }
 
-            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+            for( index_t i : range( nb_mesh_entity_types_ ) ) {
                 const MeshEntityType& entity_type = index_to_mesh_entity_type( i );
-
-                for( index_t j = 0; j < geomodel_.nb_mesh_entities( entity_type );
-                    ++j ) {
+                for( index_t j : range( geomodel_.nb_mesh_entities( entity_type ) ) ) {
                     gmme_id new_id( entity_type, j );
                     GeoModelMeshEntity< DIMENSION >& ME =
                         geomodel_access_.modifiable_mesh_entity( new_id );
@@ -298,8 +291,8 @@ namespace RINGMesh {
         //------  Initialization -------
         void fill_removed_entities_and_mapping()
         {
-            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
-                for( index_t j = 0; j < nb_initial_mesh_entities_[i]; ++j ) {
+            for( index_t i : range( nb_mesh_entity_types_ ) ) {
+                for( index_t j : range( nb_initial_mesh_entities_[i] ) ) {
                     if( mesh_entity_to_erase_[i][j] ) {
                         nb_removed_mesh_entities_[i]++;
                         old_2_new_mesh_entity_[i][j] = NO_ID;
@@ -324,13 +317,13 @@ namespace RINGMesh {
         void fill_nb_initial_entities()
         {
             nb_initial_mesh_entities_.resize( nb_mesh_entity_types_, 0 );
-            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+            for( index_t i : range( nb_mesh_entity_types_ ) ) {
                 const MeshEntityType& type = index_to_mesh_entity_type( i );
                 nb_initial_mesh_entities_[i] = geomodel_.nb_mesh_entities( type );
             }
 
             nb_initial_geological_entities_.resize( nb_geological_entity_types_, 0 );
-            for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
+            for( index_t i : range( nb_geological_entity_types_ ) ) {
                 const GeologicalEntityType& type = index_to_geological_entity_type(
                     i );
                 nb_initial_geological_entities_[i] =
@@ -430,8 +423,8 @@ namespace RINGMesh {
 
         void flag_geological_entities_without_children()
         {
-            for( index_t i = 0; i < nb_childs_.size(); i++ ) {
-                for( index_t j = 0; j < nb_childs_[i].size(); j++ ) {
+            for( index_t i : range( nb_childs_.size() ) ) {
+                for( index_t j : range( nb_childs_[i].size() ) ) {
                     if( nb_childs_[i][j] == 0 ) {
                         nb_removed_geological_entities_[i]++;
                         old_2_new_geological_entity_[i][j] = NO_ID;
@@ -623,7 +616,7 @@ namespace RINGMesh {
             GeoModel< 3 >& geomodel );
         virtual ~GeoModelBuilderRemoval() = default;
 
-        virtual void update_mesh_entity( GeoModelMeshEntity< 3 >& ME ) override;
+        void update_mesh_entity( GeoModelMeshEntity< 3 >& ME ) override;
 
         void set_boundary_side(
             Region< 3 >& R,

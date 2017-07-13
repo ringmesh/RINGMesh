@@ -83,7 +83,7 @@ namespace {
     {
         save_normal( geomodel, triangle_id, out );
         begin_triangle( out );
-        for( index_t vertex = 0; vertex < 3; vertex++ ) {
+        for( index_t vertex : range( 3 ) ) {
             save_triangle_vertex( geomodel, triangle_id, vertex, out );
         }
         end_triangle( out );
@@ -91,8 +91,7 @@ namespace {
 
     void save_triangles( const GeoModel< 3 >& geomodel, std::ostream& out )
     {
-        for( index_t triangle = 0; triangle < geomodel.mesh.polygons.nb_triangle();
-            triangle++ ) {
+        for( index_t triangle : range( geomodel.mesh.polygons.nb_triangle() ) ) {
             save_triangle( geomodel, triangle, out );
         }
     }
@@ -118,13 +117,13 @@ namespace {
      */
     class STLIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from STL mesh not yet implemented" );
         }
 
-        virtual void save(
+        void save(
             const GeoModel< 3 >& geomodel,
             const std::string& filename ) final
         {

@@ -41,15 +41,13 @@ namespace {
      */
     class SMESHIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from UCD mesh not yet implemented" );
         }
 
-        virtual void save(
-            const GeoModel< 3 >& geomodel,
-            const std::string& filename ) final
+        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             if( out.bad() ) {
@@ -65,7 +63,7 @@ namespace {
                 << std::endl;
             out << geomodel.mesh.vertices.nb() << " 3 0 0" << std::endl;
             out << "# node index, node coordinates " << std::endl;
-            for( index_t p = 0; p < geomodel.mesh.vertices.nb(); p++ ) {
+            for( index_t p : range( geomodel.mesh.vertices.nb() ) ) {
                 const vec3& V = geomodel.mesh.vertices.vertex( p );
                 out << p << " " << " " << V.x << " " << V.y << " " << V.z
                     << std::endl;
@@ -76,14 +74,14 @@ namespace {
             out << "# facet count, no boundary marker" << std::endl;
             out << nb_polygons( geomodel ) << "  0 " << std::endl;
 
-            for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
-                const Surface< 3 >& S = geomodel.surface( i );
-                for( index_t p = 0; p < S.nb_mesh_elements(); p++ ) {
-                    out << S.nb_mesh_element_vertices( p ) << " ";
-                    for( index_t v = 0; v < S.nb_mesh_element_vertices( p ); v++ ) {
+            for( index_t i : range( geomodel.nb_surfaces() ) ) {
+                const Surface< 3 >& surface = geomodel.surface( i );
+                for( index_t p : range( surface.nb_mesh_elements() ) ) {
+                    out << surface.nb_mesh_element_vertices( p ) << " ";
+                    for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
                         out
-                            << geomodel.mesh.vertices.geomodel_vertex_id( S.gmme(),
-                                p, v ) << " ";
+                            << geomodel.mesh.vertices.geomodel_vertex_id(
+                                surface.gmme(), p, v ) << " ";
                     }
                     out << std::endl;
                 }

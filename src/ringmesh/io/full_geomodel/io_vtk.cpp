@@ -61,12 +61,12 @@ namespace {
 
     class VTKIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from VTK not implemented yet" );
         }
-        virtual void save(
+        void save(
             const GeoModel< 3 >& geomodel,
             const std::string& filename ) final
         {
@@ -80,7 +80,7 @@ namespace {
 
             const GeoModelMesh< 3 >& mesh = geomodel.mesh;
             out << "POINTS " << mesh.vertices.nb() << " double" << std::endl;
-            for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
+            for( index_t v : range( mesh.vertices.nb() ) ) {
                 out << mesh.vertices.vertex( v ) << std::endl;
             }
             out << std::endl;
@@ -91,11 +91,11 @@ namespace {
                 + ( 8 + 1 ) * mesh.cells.nb_hex();
             out << "CELLS " << mesh.cells.nb_cells() << SPACE << total_corners
                 << std::endl;
-            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+            for( index_t c : range( mesh.cells.nb() ) ) {
                 out << mesh.cells.nb_vertices( c );
                 const RINGMesh2VTK& descriptor =
                     *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
-                for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                for( index_t v : range( mesh.cells.nb_vertices( c ) ) ) {
                     index_t vertex_id = descriptor.vertices[v];
                     out << SPACE << mesh.cells.vertex( c, vertex_id );
                 }
@@ -103,7 +103,7 @@ namespace {
             }
 
             out << "CELL_TYPES " << mesh.cells.nb() << std::endl;
-            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+            for( index_t c : range( mesh.cells.nb() ) ) {
                 const RINGMesh2VTK& descriptor =
                     *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
                 out << descriptor.entity_type << std::endl;
@@ -113,7 +113,7 @@ namespace {
             out << "CELL_DATA " << mesh.cells.nb() << std::endl;
             out << "SCALARS region int 1" << std::endl;
             out << "LOOKUP_TABLE default" << std::endl;
-            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+            for( index_t c : range( mesh.cells.nb() ) ) {
                 out << mesh.cells.region( c ) << std::endl;
             }
             out << std::endl;

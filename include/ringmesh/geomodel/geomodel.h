@@ -325,18 +325,16 @@ namespace RINGMesh {
             return GeoModelBase< 3 >::mesh_entity( entity_type, entity_index );
         }
 
-        virtual const GeoModelMeshEntity< 3 >& mesh_entity( gmme_id id ) const
-            override;
+        const GeoModelMeshEntity< 3 >& mesh_entity( gmme_id id ) const override;
 
-        virtual index_t nb_mesh_entities( const MeshEntityType& type ) const
-            override;
+        index_t nb_mesh_entities( const MeshEntityType& type ) const override;
 
         double epsilon3() const
         {
             return epsilon2() * epsilon();
         }
     private:
-        virtual const std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& mesh_entities(
+        const std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& mesh_entities(
             const MeshEntityType& type ) const override;
 
     private:

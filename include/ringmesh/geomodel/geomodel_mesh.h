@@ -234,7 +234,7 @@ namespace RINGMesh {
         const NNSearch< DIMENSION >& nn_search() const
         {
             test_and_initialize();
-            return mesh_->vertices_nn_search();
+            return mesh_->vertex_nn_search();
         }
 
         /*!
@@ -507,9 +507,9 @@ namespace RINGMesh {
             GeoModel< 3 >& gm,
             std::unique_ptr< PointSetMesh< 3 > >& mesh );
 
-        virtual void clear() override;
-        virtual index_t nb_total_vertices() const override;
-        virtual index_t fill_vertices() override;
+        void clear() override;
+        index_t nb_total_vertices() const override;
+        index_t fill_vertices() override;
     };
 
     template< index_t DIMENSION >
@@ -698,7 +698,7 @@ namespace RINGMesh {
         const NNSearch< DIMENSION >& nn_search() const
         {
             test_and_initialize();
-            return mesh_->polygons_nn_search();
+            return mesh_->polygon_nn_search();
         }
 
         /*!
@@ -1193,12 +1193,12 @@ namespace RINGMesh {
         const NNSearch< DIMENSION >& cell_nn_search() const
         {
             test_and_initialize();
-            return mesh_->cells_nn_search();
+            return mesh_->cell_nn_search();
         }
         const NNSearch< DIMENSION >& cell_facet_nn_search() const
         {
             test_and_initialize();
-            return mesh_->cell_facets_nn_search();
+            return mesh_->cell_facet_nn_search();
         }
 
         /*!
