@@ -946,17 +946,26 @@ namespace {
                 builder->set_vertex( v_i, all_points[v_i] );
             }
 
+            GeoModel::SurfaceSide voi_surfaces = geomodel_.get_voi_surfaces();
             const GeoModelMeshPolygons& geomodelmesh_polygons = geomodelmesh.polygons;
             for( index_t polygon_i = 0; polygon_i < geomodelmesh_polygons.nb();
                 ++polygon_i ) {
-                std::vector< index_t > polygon_vertices(
-                    geomodelmesh_polygons.nb_vertices( polygon_i ) );
-                for( index_t v_i = 0;
-                    v_i < geomodelmesh_polygons.nb_vertices( polygon_i ); ++v_i ) {
-                    polygon_vertices[v_i] = geomodelmesh_polygons.vertex( polygon_i,
-                        v_i );
+
+                const index_t cur_surface_id = geomodelmesh_polygons.surface(
+                    polygon_i );
+                if( std::find( voi_surfaces.surfaces_.begin(),
+                    voi_surfaces.surfaces_.end(), cur_surface_id )
+                    != voi_surfaces.surfaces_.end() ) {
+                    std::vector< index_t > polygon_vertices(
+                        geomodelmesh_polygons.nb_vertices( polygon_i ) );
+                    for( index_t v_i = 0;
+                        v_i < geomodelmesh_polygons.nb_vertices( polygon_i );
+                        ++v_i ) {
+                        polygon_vertices[v_i] = geomodelmesh_polygons.vertex(
+                            polygon_i, v_i );
+                    }
+                    builder->create_polygon( polygon_vertices );
                 }
-                builder->create_polygon( polygon_vertices );
             }
 
             for( index_t p = 0; p < surface->nb_polygons(); p++ ) {

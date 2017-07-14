@@ -79,10 +79,7 @@ namespace RINGMesh {
     public:
         struct SurfaceSide {
         public:
-            SurfaceSide()
-                : surfaces_(), sides_()
-            {
-            }
+            SurfaceSide() = default;
         public:
             std::vector< index_t > surfaces_;
             std::vector< bool > sides_;
