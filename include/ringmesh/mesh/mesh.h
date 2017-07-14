@@ -144,6 +144,7 @@ namespace RINGMesh {
 
         static std::unique_ptr< PointSetMesh > create_mesh(
             const MeshType type = "" );
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         /*!
          * @brief Mesh0D constructor.
@@ -224,6 +225,7 @@ namespace RINGMesh {
         }
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         LineMesh() = default;
 
@@ -583,6 +585,8 @@ namespace RINGMesh {
             }
             return *polygon_aabb_;
         }
+
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         SurfaceMesh() = default;
 
@@ -849,6 +853,8 @@ namespace RINGMesh {
             }
             return *cell_aabb_.get();
         }
+
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         VolumeMesh() = default;
 

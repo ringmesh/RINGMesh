@@ -75,82 +75,24 @@ namespace {
 
     /*!
      * @brief Computes and returns the surface connected components
-     * @details In Debug mode, the connected components are saved into 
-     * an Attribute on surface polygons.
      */
     index_t compute_nb_surface_connected_components( const Surface& surface )
     {
-        const index_t NO_COMPONENT = index_t( -1 );
-        GEO::Attribute< index_t > component( surface.polygon_attribute_manager(),
-            "component" );
-        component.fill( NO_COMPONENT );
-        index_t nb_components = 0;
-        for( index_t polygon = 0; polygon < surface.nb_mesh_elements(); polygon++ ) {
-            if( component[polygon] == NO_COMPONENT ) {
-                std::stack< index_t > S;
-                S.push( polygon );
-                component[polygon] = nb_components;
-                do {
-                    index_t cur_polygon = S.top();
-                    S.pop();
-                    for( index_t edge = 0;
-                        edge < surface.nb_mesh_element_vertices( cur_polygon );
-                        edge++ ) {
-                        index_t adj_polygon = surface.polygon_adjacent_index(
-                            cur_polygon, edge );
-                        if( adj_polygon != NO_ID
-                            && component[adj_polygon] == NO_COMPONENT ) {
-                            S.push( adj_polygon );
-                            component[adj_polygon] = nb_components;
-                        }
-                    }
-                } while( !S.empty() );
-                nb_components++;
-            }
-        }
-#ifndef RINGMESH_DEBUG
-        component.destroy();
-#endif
-        return nb_components;
+        index_t nb_connected_components = NO_ID;
+        std::tie( nb_connected_components, std::ignore ) =
+            surface.low_level_mesh_storage().get_connected_components();
+        return nb_connected_components;
     }
 
     /*!
      * @brief Computes and returns the region connected components
-     * @details In Debug mode, the connected components are saved into 
-     * an Attribute on region cells.
      */
-    index_t compute_nb_volume_connected_components( const Region& M )
+    index_t compute_nb_volume_connected_components( const Region& region )
     {
-        const index_t NO_COMPONENT = index_t( -1 );
-        GEO::Attribute< index_t > component( M.cell_attribute_manager(),
-            "component" );
-        component.fill( NO_COMPONENT );
-        index_t nb_components = 0;
-        for( index_t cell = 0; cell < M.nb_mesh_elements(); cell++ ) {
-            if( component[cell] == NO_COMPONENT ) {
-                std::stack< index_t > S;
-                S.push( cell );
-                component[cell] = nb_components;
-                do {
-                    index_t cur_cell = S.top();
-                    S.pop();
-                    for( index_t facet = 0; facet < M.nb_cell_facets( cur_cell );
-                        facet++ ) {
-                        index_t adj_cell = M.cell_adjacent_index( cur_cell, facet );
-                        if( adj_cell != NO_ID
-                            && component[adj_cell] == NO_COMPONENT ) {
-                            S.push( adj_cell );
-                            component[adj_cell] = nb_components;
-                        }
-                    }
-                } while( !S.empty() );
-                nb_components++;
-            }
-        }
-#ifndef RINGMESH_DEBUG
-        component.destroy();
-#endif
-        return nb_components;
+        index_t nb_connected_components = NO_ID;
+        std::tie( nb_connected_components, std::ignore ) =
+            region.low_level_mesh_storage().get_connected_components();
+        return nb_connected_components;
     }
 
     /*!

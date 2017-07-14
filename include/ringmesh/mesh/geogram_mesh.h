@@ -105,18 +105,6 @@ namespace RINGMesh {
         {                                                                           \
             return mesh_->vertices.nb();                                            \
         }                                                                           \
-        std::tuple< index_t, std::vector< index_t > >                               \
-            get_connected_components() const final                                  \
-        {                                                                           \
-            GEO::vector< index_t > geo_components;                                  \
-            index_t nb = GEO::get_connected_components( *mesh_, geo_components );   \
-            std::vector< index_t > std_components;                                  \
-            std_components.reserve(geo_components.size());                          \
-            for(index_t i : geo_components) {                                       \
-                std_components.push_back(i);                                        \
-            }                                                                       \
-            return std::make_tuple( nb, std_components );                           \
-        }                                                                           \
     protected:                                                                      \
         std::unique_ptr< GEO::Mesh > mesh_
 
