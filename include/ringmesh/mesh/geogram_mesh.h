@@ -41,7 +41,6 @@
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_topology.h>
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
