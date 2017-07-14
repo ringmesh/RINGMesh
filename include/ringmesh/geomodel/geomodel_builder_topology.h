@@ -69,6 +69,10 @@ namespace RINGMesh {
          * @brief Add to the vector the entities which cannot exist if
          *        an entity in the set does not exist.
          * @return True if at least one entity was added.
+         * @todo I do not think that it work for only else than region and layer
+         * because if you remove something else, for instance a corner or a line
+         * or a surface, the incident boundaries may still exist but you removed
+         * one of its boundaries... to handle in the future [BC].
          */
         bool get_dependent_entities(
             std::set< gmme_id >& in_mesh_entities,
