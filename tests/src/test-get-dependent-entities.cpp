@@ -165,9 +165,33 @@ void test_on_top_region( GeoModel& geomodel )
         std::string( Region::type_name_static() ), 4 );
 }
 
+void test_on_surface_within_bottom_region_partially_connected_to_voi( GeoModel& geomodel )
+{
+    // Solution:
+    // Corners: none.
+    // Lines: 98.
+    // Surface: 24.
+    // Region: none.
+    std::set< gmme_id > solution_gmme_id = { gmme_id( Line::type_name_static(), 98 ),
+                                                gmme_id( Surface::type_name_static(), 24 )
+    };
+
+    // Solution:
+    // Contacts: 36.
+    // Interface: 3.
+    // Layer: none.
+    std::set< gmge_id > solution_gmge_id = { gmge_id( Contact::type_name_static(), 36 ),
+                                                gmge_id( Interface::type_name_static(), 3 )
+    };
+
+    test_template( geomodel, solution_gmme_id, solution_gmge_id,
+        std::string( Surface::type_name_static() ), 24 );
+}
+
 void run_tests( GeoModel& geomodel )
 {
     test_on_top_region( geomodel );
+    test_on_surface_within_bottom_region_partially_connected_to_voi( geomodel );
 }
 
 void load_geomodel( GeoModel& geomodel )
