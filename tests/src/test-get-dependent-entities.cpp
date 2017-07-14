@@ -168,8 +168,8 @@ void test_on_top_region( GeoModel& geomodel )
 void test_on_surface_within_bottom_region_partially_connected_to_voi( GeoModel& geomodel )
 {
     // Solution:
-    // Corners: none.
-    // Lines: 98.
+    // Corner: none.
+    // Line: 98.
     // Surface: 24.
     // Region: none.
     std::set< gmme_id > solution_gmme_id = { gmme_id( Line::type_name_static(), 98 ),
@@ -177,7 +177,7 @@ void test_on_surface_within_bottom_region_partially_connected_to_voi( GeoModel& 
     };
 
     // Solution:
-    // Contacts: 36.
+    // Contact: 36.
     // Interface: 3.
     // Layer: none.
     std::set< gmge_id > solution_gmge_id = { gmge_id( Contact::type_name_static(), 36 ),
@@ -219,11 +219,32 @@ void test_on_fault_not_connected_to_any_surface( GeoModel& geomodel )
         std::string( Interface::type_name_static() ), 8 );
 }
 
+void test_on_corner_on_botom_corner_voi( GeoModel& geomodel )
+{
+    // Solution:
+    // Corner: 135.
+    // Line: none.
+    // Surface: none.
+    // Region: none.
+    std::set< gmme_id > solution_gmme_id = { gmme_id( Corner::type_name_static(), 135 )
+    };
+
+    // Solution:
+    // Contact: none.
+    // Interface: none.
+    // Layer: none.
+    std::set< gmge_id > solution_gmge_id = {};
+
+    test_template( geomodel, solution_gmme_id, solution_gmge_id,
+        std::string( Corner::type_name_static() ), 135 );
+}
+
 void run_tests( GeoModel& geomodel )
 {
-    //test_on_top_region( geomodel );
-    //test_on_surface_within_bottom_region_partially_connected_to_voi( geomodel );
+    test_on_top_region( geomodel );
+    test_on_surface_within_bottom_region_partially_connected_to_voi( geomodel );
     test_on_fault_not_connected_to_any_surface( geomodel );
+    test_on_corner_on_botom_corner_voi( geomodel );
 }
 
 void load_geomodel( GeoModel& geomodel )
