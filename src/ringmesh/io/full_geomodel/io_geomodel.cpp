@@ -306,6 +306,15 @@ namespace {
         const GeoModelMeshEntity< 2 >& geomodel_entity_mesh,
         const std::string& name )
     {
+        if( geomodel_entity_mesh.type_name()
+            == Surface < 2 > ::type_name_static() ) {
+            const Surface< 2 >& surface = geomodel_entity_mesh.geomodel().surface(
+                geomodel_entity_mesh.index() );
+            if( !surface.is_meshed() ) {
+                // a region is not necessary meshed.
+                return false;
+            }
+        }
         geomodel_entity_mesh.save( name );
         return true;
     }

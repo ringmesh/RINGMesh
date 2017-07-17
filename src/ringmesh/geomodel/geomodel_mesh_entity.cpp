@@ -739,7 +739,7 @@ namespace RINGMesh {
     /********************************************************************/
 
     template< index_t DIMENSION >
-    bool SurfaceBase< DIMENSION >::is_mesh_valid() const
+    bool SurfaceBase< DIMENSION >::check_mesh_validity() const
     {
         bool valid = true;
         gmme_id id = this->gmme();
@@ -747,10 +747,6 @@ namespace RINGMesh {
         // at least 3 vertices and one polygon.
         if( this->nb_vertices() < 3 ) {
             Logger::warn( "GeoModelEntity", id, " has less than 3 vertices " );
-            valid = false;
-        }
-        if( surface_mesh_->nb_polygons() == 0 ) {
-            Logger::warn( "GeoModelEntity", id, " has no polygons " );
             valid = false;
         }
 
@@ -778,7 +774,7 @@ namespace RINGMesh {
 
         // No duplicated polygon
         GEO::vector< index_t > colocated;
-        // GEO::mesh_detect_duplicated_facets( mesh_, colocated ) ; // not implemented yet 
+        // GEO::mesh_detect_duplicated_facets( mesh_, colocated ) ; // not implemented yet
         index_t nb_duplicated_p = 0;
         for( index_t p : range( colocated.size() ) ) {
             if( colocated[p] != p ) {
@@ -791,7 +787,7 @@ namespace RINGMesh {
             valid = false;
         }
 
-        // One connected component  
+        // One connected component
         index_t cc = compute_nb_surface_connected_components( *this );
         if( cc != 1 ) {
             Logger::warn( "GeoModelEntity", id, " mesh has ", cc,
@@ -810,6 +806,23 @@ namespace RINGMesh {
             }
         }
         return false;
+    }
+
+    bool Surface< 2 >::is_mesh_valid() const
+    {
+        if( !is_meshed() ) {
+            return true;
+        } else {
+            return SurfaceBase< 2 >::check_mesh_validity();
+        }
+    }
+    bool Surface< 3 >::is_mesh_valid() const
+    {
+        if( this->surface_mesh_->nb_polygons() == 0 ) {
+            Logger::warn( "GeoModelEntity", this->gmme(), " has no polygons " );
+            return false;
+        }
+        return SurfaceBase< 3 >::check_mesh_validity();
     }
 
     template< index_t DIMENSION >

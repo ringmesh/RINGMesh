@@ -151,6 +151,8 @@ namespace RINGMesh {
 
         void build_lines_and_corners_from_surfaces();
 
+        void build_corners_from_lines();
+
     protected:
         GeoModelBuilderBase(
             GeoModelBuilder< DIMENSION >& builder,
