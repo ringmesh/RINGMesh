@@ -69,12 +69,12 @@ namespace {
 #include "full_geomodel/io_gprs.cpp"
 #include "full_geomodel/io_mfem.cpp"
 #include "full_geomodel/io_msh.cpp"
+#include "full_geomodel/io_stradivarius.cpp"
 #include "full_geomodel/io_svg.cpp"
 #include "full_geomodel/io_tetgen.cpp"
 #include "full_geomodel/io_tsolid.cpp"
 #include "full_geomodel/io_vtk.cpp"
 #include "full_geomodel/io_stradivarius.cpp"
-
 
 }
 namespace RINGMesh {
@@ -84,6 +84,8 @@ namespace RINGMesh {
     {
         ringmesh_register_GeoModelIOHandler2D_creator( GeoModelHandlerGM< 2 >, "gm" );
         ringmesh_register_GeoModelIOHandler2D_creator( SVGIOHandler, "svg" );
+        ringmesh_register_GeoModelIOHandler2D_creator( StradivariusIOHandler,
+            "model" );
     }
 
     /*

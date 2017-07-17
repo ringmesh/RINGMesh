@@ -803,7 +803,7 @@ namespace RINGMesh {
          *
          * @todo Check that there is no duplicated polygon
          */
-        bool is_mesh_valid() const final;
+        bool check_mesh_validity() const;
 
     private:
         void update_mesh_storage_type(
@@ -814,7 +814,7 @@ namespace RINGMesh {
         }
 
         void change_mesh_data_structure( const MeshType type ) final;
-    private:
+    protected:
         std::shared_ptr< SurfaceMesh< DIMENSION > > surface_mesh_;
     };
 
@@ -831,7 +831,14 @@ namespace RINGMesh {
         {
         }
 
+        bool is_mesh_valid() const final;
+
     public:
+        bool is_meshed() const
+        {
+            return surface_mesh_->nb_polygons() > 0;
+        }
+
         bool side( index_t i ) const
         {
             return sides_[i];
@@ -852,6 +859,8 @@ namespace RINGMesh {
             : SurfaceBase< 3 >( geomodel, id, type )
         {
         }
+
+        bool is_mesh_valid() const final;
 
     public:
         const Region< 3 >& incident_entity( index_t x ) const;

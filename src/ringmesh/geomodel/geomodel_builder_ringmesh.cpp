@@ -473,7 +473,7 @@ namespace RINGMesh {
         } while( unzGoToNextFile( uz ) == UNZ_OK );
 
         Logger::instance()->set_minimal( true );
-        RINGMESH_PARALLEL_LOOP_DYNAMIC
+//        RINGMESH_PARALLEL_LOOP_DYNAMIC
         for( index_t i = 0; i < filenames.size(); i++ ) {
             const std::string& file_name = filenames[i];
             std::string file_without_extension = GEO::FileSystem::base_name(
