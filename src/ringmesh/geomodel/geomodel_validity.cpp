@@ -844,7 +844,7 @@ namespace {
         std::vector< index_t >& edge_indices )
     {
         const GeoModelMeshPolygons< DIMENSION >& polygons = geomodel.mesh.polygons;
-        for( const auto& surface : surface_range< DIMENSION >( geomodel ) ) {
+        for( const auto& surface : geomodel.surfaces() ) {
             for( index_t p : range( polygons.nb_polygons( surface.index() ) ) ) {
                 index_t polygon_id = polygons.polygon( surface.index(), p );
                 for( index_t v : range( polygons.nb_vertices( polygon_id ) ) ) {
@@ -885,7 +885,7 @@ namespace {
     {
         edge_on_lines.resize( edge_barycenters.size(), false );
         NNSearch< DIMENSION > nn( edge_barycenters );
-        for( const auto& line : line_range< DIMENSION >( geomodel ) ) {
+        for( const auto& line : geomodel.lines() ) {
             for( index_t e : range( line.nb_mesh_elements() ) ) {
                 const vecn< DIMENSION > query = line.mesh_element_barycenter( e );
                 std::vector< index_t > results = nn.get_neighbors( query,
@@ -1042,7 +1042,7 @@ namespace {
                 set_invalid_model();
             }
             // Check on that Surface edges are in a Line
-            for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
+            for( const auto& surface : geomodel_.surfaces() ) {
                 if( !surface_boundary_valid( surface ) ) {
                     set_invalid_model();
                 }
@@ -1055,7 +1055,7 @@ namespace {
                 // Check the consistency between Surface polygons and Region cell facets
                 const NNSearch< DIMENSION >& nn_search =
                     geomodel_.mesh.cells.cell_facet_nn_search();
-                for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
+                for( const auto& surface : geomodel_.surfaces() ) {
                     if( !is_surface_conformal_to_volume( surface, nn_search ) ) {
                         set_invalid_model();
                     }
@@ -1069,7 +1069,7 @@ namespace {
                 Interface< DIMENSION >::type_name_static() ) ) {
                 return;
             }
-            for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
+            for( const auto& line : geomodel_.lines() ) {
                 if( line.nb_incident_entities() == 1 ) {
                     continue;
                 }

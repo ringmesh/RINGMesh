@@ -72,7 +72,7 @@ namespace {
             std::vector< index_t > atom_exported_id(
                 mesh.cells.nb_duplicated_vertices(), NO_ID );
             index_t nb_vertices_exported = 1;
-            for( const auto& region : region_range< 3 >( geomodel ) ) {
+            for( const auto& region : geomodel.regions() ) {
                 out << "TVOLUME " << region.name() << std::endl;
 
                 // Export not duplicated vertices
@@ -183,7 +183,7 @@ namespace {
                 }
             }
 
-            for( const auto& region : region_range< 3 >( geomodel ) ) {
+            for( const auto& region : geomodel.regions() ) {
                 out << "MODEL_REGION " << region.name() << " ";
                 region.side( 0 ) ? out << "+" : out << "-";
                 out << region.boundary_gmme( 0 ).index() + 1 << std::endl;

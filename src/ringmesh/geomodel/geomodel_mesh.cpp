@@ -846,7 +846,7 @@ namespace RINGMesh {
         std::vector< index_t > nb_cells_per_type(
             to_underlying_type( CellType::UNDEFINED ), 0 );
         index_t nb = 0;
-        for( const auto& region : region_range< DIMENSION >( this->gm_ ) ) {
+        for( const auto& region : this->gm_.regions() ) {
             nb += region.nb_mesh_elements();
         }
 
@@ -856,7 +856,7 @@ namespace RINGMesh {
         }
 
         // Compute the number of cell per type and per region
-        for( const auto& region : region_range< DIMENSION >( this->gm_ ) ) {
+        for( const auto& region : this->gm_.regions() ) {
             index_t r = region.index();
             for( index_t c : range( region.nb_mesh_elements() ) ) {
                 CellType cur_cell_type = region.cell_type( c );
@@ -918,7 +918,7 @@ namespace RINGMesh {
             to_underlying_type( CellType::UNDEFINED ), 0 );
         const GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices =
             this->gmm_.vertices;
-        for( const auto& region : region_range< DIMENSION >( this->gm_ ) ) {
+        for( const auto& region : this->gm_.regions() ) {
             for( index_t c : range( region.nb_mesh_elements() ) ) {
                 CellType cur_cell_type = region.cell_type( c );
                 index_t cur_cell = cells_offset_per_type[to_underlying_type(
@@ -1341,7 +1341,7 @@ namespace RINGMesh {
         std::vector< bool > is_vertex_to_duplicate( corner_vertices.size(), false );
         {
             NNSearch< DIMENSION > nn_search( corner_vertices, false );
-            for( const auto& surface : surface_range< DIMENSION >( this->gm_ ) ) {
+            for( const auto& surface : this->gm_.surfaces() ) {
                 if( !is_surface_to_duplicate( surface.index() ) ) continue;
                 actions_on_surfaces[surface.index()] = TO_PROCESS;
                 for( index_t v : range( surface.nb_vertices() ) ) {
@@ -2417,7 +2417,7 @@ namespace RINGMesh {
                 cells.attribute_manager(), att_c );
             index_t att_dim = cur_att_on_geomodel_mesh.dimension();
 
-            for( const auto& region : region_range< 3 >( geomodel_ ) ) {
+            for( const auto& region : geomodel_.regions() ) {
                 if( region.cell_attribute_manager().is_defined( att_c ) ) {
                     Logger::warn( "Transfer attribute", "The attribute ", att_c,
                         " already exists on the ", region.gmme() );
@@ -2452,7 +2452,7 @@ namespace RINGMesh {
                 continue;
             }
             att_v_double_names.push_back( att_v_names[att_v] );
-            for( const auto& region : region_range< 3 >( geomodel_ ) ) {
+            for( const auto& region : geomodel_.regions() ) {
                 if( region.vertex_attribute_manager().is_defined(
                     att_v_names[att_v] ) ) {
                     Logger::warn( "Transfer attribute", "The attribute ",
@@ -2474,7 +2474,7 @@ namespace RINGMesh {
 
             AttributeVector< double > att_on_regions( geomodel_.nb_regions() );
 
-            for( const auto& region : region_range< 3 >( geomodel_ ) ) {
+            for( const auto& region : geomodel_.regions() ) {
                 att_on_regions.bind_one_attribute( region.index(),
                     region.vertex_attribute_manager(), att_v );
             }

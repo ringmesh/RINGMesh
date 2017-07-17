@@ -234,7 +234,7 @@ namespace {
 
         index_t count = 1;
         // Gocad::TFace = RINGMesh::Surface
-        for( const auto& surface : surface_range< 3 >( geomodel ) ) {
+        for( const auto& surface : geomodel.surfaces() ) {
             const gmge_id& parent_interface = surface.parent_gmge(
                 Interface < 3 > ::type_name_static() );
             if( !parent_interface.is_defined() ) {
@@ -265,7 +265,7 @@ namespace {
         save_universe( count, geomodel.universe(), out );
         ++count;
         // Regions
-        for( const auto& region : region_range< 3 >( geomodel ) ) {
+        for( const auto& region : geomodel.regions() ) {
             save_region( count, region, out );
             ++count;
         }

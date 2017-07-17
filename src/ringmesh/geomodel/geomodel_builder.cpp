@@ -180,7 +180,7 @@ namespace {
         {
             const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
                 geomodel_.mesh.vertices;
-            for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
+            for( const auto& surface : geomodel_.surfaces() ) {
                 const auto& mesh = surface.low_level_mesh_storage();
                 gmme_id S_id = surface.gmme();
                 for( index_t p : range( surface.nb_mesh_elements() ) ) {
@@ -452,7 +452,7 @@ namespace {
         void compute_region_info()
         {
             const GeoModelMeshVertices< 3 >& vertices = this->geomodel_.mesh.vertices;
-            for( const auto& line : line_range< 3 >( geomodel_ ) ) {
+            for( const auto& line : geomodel_.lines() ) {
                 BorderPolygon line_border( NO_ID, NO_ID,
                     vertices.geomodel_vertex_id( line.gmme(), 0 ),
                     vertices.geomodel_vertex_id( line.gmme(), 1 ) );
@@ -974,7 +974,7 @@ namespace RINGMesh {
         // to the universe_, the one with the biggest volume
         double max_volume = -1.;
         index_t universe_id = NO_ID;
-        for( const auto& region : region_range< 3 >( geomodel_ ) ) {
+        for( const auto& region : geomodel_.regions() ) {
             double cur_volume = region.size();
             if( cur_volume > max_volume ) {
                 max_volume = cur_volume;
