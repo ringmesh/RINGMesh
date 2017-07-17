@@ -156,8 +156,7 @@ namespace RINGMesh {
     {
         if( this->entities_.empty() ) {
             this->entities_.reserve( this->gfx_.geomodel()->nb_corners() );
-            for( const auto& corner : corner_range< DIMENSION >(
-                *this->gfx_.geomodel() ) ) {
+            for( const auto& corner : this->gfx_.geomodel()->corners() ) {
                 this->entities_.push_back(
                     PointSetMeshGfx< DIMENSION >::create_gfx(
                         corner.low_level_mesh_storage() ) );
@@ -194,7 +193,7 @@ namespace RINGMesh {
     {
         if( this->entities_.empty() ) {
             this->entities_.reserve( this->gfx_.geomodel()->nb_lines() );
-            for( const auto& line : line_range< DIMENSION >( *this->gfx_.geomodel() ) ) {
+            for( const auto& line : this->gfx_.geomodel()->lines() ) {
                 this->entities_.push_back(
                     LineMeshGfx< DIMENSION >::create_gfx(
                         line.low_level_mesh_storage() ) );
@@ -284,8 +283,7 @@ namespace RINGMesh {
     {
         if( this->entities_.empty() ) {
             this->entities_.reserve( this->gfx_.geomodel()->nb_surfaces() );
-            for( const auto& surface : surface_range< DIMENSION >(
-                *this->gfx_.geomodel() ) ) {
+            for( const auto& surface : this->gfx_.geomodel()->surfaces() ) {
                 this->entities_.push_back(
                     SurfaceMeshGfx< DIMENSION >::create_gfx(
                         surface.low_level_mesh_storage() ) );
@@ -435,7 +433,7 @@ namespace RINGMesh {
     {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_regions() );
-            for( const auto& region : region_range< DIMENSION >( *gfx_.geomodel() ) ) {
+            for( const auto& region : gfx_.geomodel()->regions() ) {
                 entities_.push_back(
                     VolumeMeshGfx< DIMENSION >::create_gfx(
                         region.low_level_mesh_storage() ) );

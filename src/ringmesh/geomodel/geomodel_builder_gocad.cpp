@@ -50,7 +50,7 @@ namespace {
 
     gmme_id find_corner( const GeoModel< 3 >& geomodel, const vec3& point )
     {
-        for( const auto& corner : corner_range< 3 >( geomodel ) ) {
+        for( const auto& corner : geomodel.corners() ) {
             if( corner.vertex( 0 ) == point ) {
                 return corner.gmme();
             }
@@ -465,7 +465,7 @@ namespace {
     {
         std::vector< std::unique_ptr< NNSearch< 3 > > > reg_nn_searchs =
             compute_cell_facet_centers_region_nn_searchs( geomodel );
-        for( const auto& surface : surface_range< 3 >( geomodel ) ) {
+        for( const auto& surface : geomodel.surfaces() ) {
             add_surface_to_region_boundaries( surface.index(), reg_nn_searchs,
                 geomodel, geomodel_builder );
         }
@@ -506,7 +506,7 @@ namespace {
         const GeoModel< 3 >& geomodel,
         std::vector< bool >& surface_sides )
     {
-        for( const auto& region : region_range< 3 >( geomodel ) ) {
+        for( const auto& region : geomodel.regions() ) {
             for( index_t s : range( region.nb_boundaries() ) ) {
                 if( region.side( s ) ) {
                     surface_sides[2 * region.boundary( s ).index() + 1] =
@@ -1169,7 +1169,7 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
         std::vector< Box< 3 > >& surface_boxes )
     {
-        for( const auto& surface : surface_range< 3 >( geomodel_ ) ) {
+        for( const auto& surface : geomodel_.surfaces() ) {
             for( index_t v : range( surface.nb_vertices() ) ) {
                 surface_boxes[surface.index()].add_point( surface.vertex( v ) );
             }
@@ -1187,7 +1187,7 @@ namespace RINGMesh {
             geomodel_.nb_surfaces() );
         std::vector< Box< 3 > > boxes( geomodel_.nb_surfaces() );
         compute_polygon_edge_centers_nn_and_surface_boxes( nn_searchs, boxes );
-        for( const auto& surface : surface_range< 3 >( geomodel_ ) ) {
+        for( const auto& surface : geomodel_.surfaces() ) {
             compute_surface_internal_borders( surface.index(), nn_searchs, boxes );
         }
     }

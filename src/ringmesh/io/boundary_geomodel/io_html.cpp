@@ -70,7 +70,7 @@ namespace {
         {
             std::vector< std::vector< double > > xyz;
             xyz.resize( geomodel.nb_lines() );
-            for( const auto& line : line_range< 3 >( geomodel ) ) {
+            for( const auto& line : geomodel.lines() ) {
                 index_t line_id = line.index();
                 xyz[line_id].reserve( 3 * line.nb_vertices() );
                 for( index_t v_itr : range( line.nb_vertices() ) ) {

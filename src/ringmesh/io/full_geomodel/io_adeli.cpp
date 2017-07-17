@@ -105,7 +105,7 @@ namespace {
         {
             out << "$ELM" << std::endl;
             out << nb_total_elements( geomodel ) << std::endl;
-            for( const auto& corner : corner_range< 3 >( geomodel ) ) {
+            for( const auto& corner : geomodel.corners() ) {
                 out << elt++ << " " << adeli_cell_types[0] << " " << reg_phys << " "
                     << corner.index() + id_offset_adeli << " "
                     << corner.nb_vertices() << " "

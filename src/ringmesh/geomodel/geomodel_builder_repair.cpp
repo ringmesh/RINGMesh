@@ -141,7 +141,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderRepair< DIMENSION >::repair_line_boundary_vertex_order()
     {
-        for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
+        for( const auto& line : geomodel_.lines() ) {
             if( !line.is_first_corner_first_vertex() ) {
                 const index_t first_boundary_index = line.boundary( 0 ).index();
                 builder_.topology.set_mesh_entity_boundary( line.gmme(), 0,
@@ -239,7 +239,7 @@ namespace RINGMesh {
         std::set< gmme_id >& to_remove )
     {
         to_remove.clear();
-        for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
+        for( const auto& line : geomodel_.lines() ) {
             index_t nb = repair_line_mesh( line );
             if( nb > 0 ) {
                 Logger::out( "GeoModel", nb, " degenerated edges removed in LINE ",
@@ -253,7 +253,7 @@ namespace RINGMesh {
         // The builder might be needed
 
         double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon();
-        for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
+        for( const auto& surface : geomodel_.surfaces() ) {
             index_t nb = detect_degenerate_polygons( surface );
             /// @todo Check if that cannot be simplified
             if( nb > 0 ) {

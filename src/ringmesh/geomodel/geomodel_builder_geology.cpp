@@ -348,7 +348,7 @@ namespace RINGMesh {
         }
 
         std::vector< std::set< gmge_id > > interfaces;
-        for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
+        for( const auto& line : geomodel_.lines() ) {
             std::set< gmge_id > cur_interfaces;
             for( index_t j : range( line.nb_incident_entities() ) ) {
                 const GeoModelMeshEntity< DIMENSION >& surface =

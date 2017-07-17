@@ -125,6 +125,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( geological_entities( type ).size() );
         }
+
         /*!
          * @brief Returns the index of the geological entity type storage
          * @details Default value is NO_ID
@@ -140,6 +141,7 @@ namespace RINGMesh {
             return entity_type_manager_.geological_entity_manager.geological_entity_type(
                 index );
         }
+
         /*!
          * @brief Returns a const reference the identified GeoModelGeologicalEntity
          * @param[in] id Type and index of the entity.
@@ -150,6 +152,7 @@ namespace RINGMesh {
         {
             return *geological_entities( id.type() )[id.index()];
         }
+
         /*!
          * Convenient overload of entity( gmge_id id )
          */
@@ -159,12 +162,14 @@ namespace RINGMesh {
         {
             return geological_entity( gmge_id( entity_type, entity_index ) );
         }
+
         /*!
          * @brief Generic access to a meshed entity
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION
          */
         virtual const GeoModelMeshEntity< DIMENSION >& mesh_entity(
             gmme_id id ) const;
+
         /*!
          * Convenient overload of mesh_entity( gmme_id id )
          */
@@ -303,6 +308,19 @@ namespace RINGMesh {
         friend class GeoModelAccess< DIMENSION > ;
     public:
         GeoModel();
+
+        corner_range< DIMENSION > corners() const
+        {
+            return corner_range< DIMENSION >( *this );
+        }
+        line_range< DIMENSION > lines() const
+        {
+            return line_range< DIMENSION >( *this );
+        }
+        surface_range< DIMENSION > surfaces() const
+        {
+            return surface_range< DIMENSION >( *this );
+        }
     };
 
     template< >
@@ -310,6 +328,23 @@ namespace RINGMesh {
         friend class GeoModelAccess< 3 > ;
     public:
         GeoModel();
+
+        corner_range< 3 > corners() const
+        {
+            return corner_range< 3 >( *this );
+        }
+        line_range< 3 > lines() const
+        {
+            return line_range< 3 >( *this );
+        }
+        surface_range< 3 > surfaces() const
+        {
+            return surface_range< 3 >( *this );
+        }
+        region_range< 3 > regions() const
+        {
+            return region_range< 3 >( *this );
+        }
 
         index_t nb_regions() const
         {

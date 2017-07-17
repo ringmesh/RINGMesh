@@ -603,7 +603,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::cut_surfaces_by_internal_lines()
     {
-        for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
+        for( const auto& surface : geomodel_.surfaces() ) {
             std::set< index_t > cutting_lines;
             get_internal_borders( surface, cutting_lines );
             for( index_t line_id : cutting_lines ) {
@@ -880,7 +880,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderGeometry< 3 >::cut_regions_by_internal_surfaces()
     {
-        for( const auto& region : region_range< 3 >( geomodel_ ) ) {
+        for( const auto& region : geomodel_.regions() ) {
             if( region.nb_mesh_elements() == 0 ) continue;
             std::set< index_t > cutting_surfaces;
             get_internal_borders( region, cutting_surfaces );

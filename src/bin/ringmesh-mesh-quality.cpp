@@ -77,7 +77,7 @@ namespace {
             throw RINGMeshException( "I/O", "Input geomodel has no region." );
         }
 
-        for( const auto& region : region_range< 3 >( geomodel ) ) {
+        for( const auto& region : geomodel.regions() ) {
             if( !region.is_meshed() ) {
                 throw RINGMeshException( "I/O",
                     "Region " + std::to_string( region.index() )
