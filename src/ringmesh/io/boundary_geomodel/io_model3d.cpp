@@ -41,8 +41,8 @@ namespace {
     inline index_t nb_polygons( const GeoModel< 3 >& geomodel )
     {
         index_t result = 0;
-        for( index_t i : range( geomodel.nb_surfaces() ) ) {
-            result += geomodel.surface( i ).nb_mesh_elements();
+        for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
+            result += surface.nb_mesh_elements();
         }
         return result;
     }
@@ -169,15 +169,14 @@ namespace {
                 return false;
             }
         }
-        for( index_t s : range( geomodel.nb_surfaces() ) ) {
-            const Surface< 3 >& S = geomodel.surface( s );
-            if( !S.has_parent() ) {
-                Logger::err( "", S.gmme(),
+        for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
+            if( !surface.has_parent() ) {
+                Logger::err( "", surface.gmme(),
                     " does not belong to any Interface of the geomodel" );
                 return false;
             }
-            if( !S.is_simplicial() ) {
-                Logger::err( "", S.gmme(), " is not triangulated " );
+            if( !surface.is_simplicial() ) {
+                Logger::err( "", surface.gmme(), " is not triangulated " );
                 return false;
             }
         }
@@ -235,14 +234,13 @@ namespace {
 
         index_t count = 1;
         // Gocad::TFace = RINGMesh::Surface
-        for( index_t s : range( geomodel.nb_surfaces() ) ) {
-            const Surface< 3 >& cur_surface = geomodel.surface( s );
-            const gmge_id& parent_interface = cur_surface.parent_gmge(
+        for( const auto& surface : surface_range< 3 >( geomodel ) ) {
+            const gmge_id& parent_interface = surface.parent_gmge(
                 Interface < 3 > ::type_name_static() );
             if( !parent_interface.is_defined() ) {
                 throw RINGMeshException( "I/O",
                     "Failed to save GeoModel" " in .ml Gocad format "
-                        "because Surface " + std::to_string( s )
+                        "because Surface " + std::to_string( surface.index() )
                         + " has no Interface parent)" );
             }
             const GeoModelGeologicalEntity< 3 >::GEOL_FEATURE& cur_geol_feature =
@@ -251,14 +249,14 @@ namespace {
             out << "TFACE " << count << "  ";
             out << GeoModelGeologicalEntity < 3 > ::geol_name( cur_geol_feature );
             out << " "
-                << cur_surface.parent( Interface < 3 > ::type_name_static() ).name()
+                << surface.parent( Interface < 3 > ::type_name_static() ).name()
                 << std::endl;
 
             // Print the key polygon which is the first three
             // vertices of the first polygon
-            out << "  " << cur_surface.mesh_element_vertex( 0, 0 ) << std::endl;
-            out << "  " << cur_surface.mesh_element_vertex( 0, 1 ) << std::endl;
-            out << "  " << cur_surface.mesh_element_vertex( 0, 2 ) << std::endl;
+            out << "  " << surface.mesh_element_vertex( 0, 0 ) << std::endl;
+            out << "  " << surface.mesh_element_vertex( 0, 1 ) << std::endl;
+            out << "  " << surface.mesh_element_vertex( 0, 2 ) << std::endl;
 
             ++count;
         }
@@ -267,8 +265,8 @@ namespace {
         save_universe( count, geomodel.universe(), out );
         ++count;
         // Regions
-        for( index_t i : range( geomodel.nb_regions() ) ) {
-            save_region( count, geomodel.region( i ), out );
+        for( const auto& region : region_range< 3 >( geomodel ) ) {
+            save_region( count, region, out );
             ++count;
         }
         // Layers
