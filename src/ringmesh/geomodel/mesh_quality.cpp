@@ -376,19 +376,18 @@ namespace RINGMesh {
         const GeoModel< 3 >& geomodel )
     {
         ringmesh_assert( geomodel.nb_regions() != 0 );
-        for( index_t reg_itr : range( geomodel.nb_regions() ) ) {
-            const Region< 3 >& cur_reg = geomodel.region( reg_itr );
-            ringmesh_assert( cur_reg.is_meshed() );
-            ringmesh_assert( cur_reg.is_simplicial() );
-            GEO::AttributesManager& reg_attr_mgr = cur_reg.cell_attribute_manager();
+        for( const auto& region : region_range< 3 >( geomodel ) ) {
+            ringmesh_assert( region.is_meshed() );
+            ringmesh_assert( region.is_simplicial() );
+            GEO::AttributesManager& reg_attr_mgr = region.cell_attribute_manager();
             GEO::Attribute< double > attr( reg_attr_mgr,
                 mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
-            for( index_t cell_itr : range( cur_reg.nb_mesh_elements() ) ) {
+            for( index_t cell_itr : range( region.nb_mesh_elements() ) ) {
                 attr[cell_itr] = get_tet_quality(
-                    cur_reg.mesh_element_vertex( cell_itr, 0 ),
-                    cur_reg.mesh_element_vertex( cell_itr, 1 ),
-                    cur_reg.mesh_element_vertex( cell_itr, 2 ),
-                    cur_reg.mesh_element_vertex( cell_itr, 3 ), mesh_qual_mode );
+                    region.mesh_element_vertex( cell_itr, 0 ),
+                    region.mesh_element_vertex( cell_itr, 1 ),
+                    region.mesh_element_vertex( cell_itr, 2 ),
+                    region.mesh_element_vertex( cell_itr, 3 ), mesh_qual_mode );
             }
         }
     }
