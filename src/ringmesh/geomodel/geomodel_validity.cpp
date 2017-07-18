@@ -786,7 +786,7 @@ namespace {
     {
         GeogramLineMesh< DIMENSION > mesh;
         GeogramLineMeshBuilder< DIMENSION > builder;
-        builder.set_mesh( mesh );
+        builder.configure_builder( mesh );
         index_t nb_edges = static_cast< index_t >( non_manifold_edges.size() );
         builder.create_vertices( 2 * nb_edges );
         builder.create_edges( nb_edges );
