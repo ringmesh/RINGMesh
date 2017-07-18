@@ -253,76 +253,98 @@ namespace RINGMesh {
 			}
 		}
 
-		void get_vertices_list_from_gocad_ids( const std::vector< vec3 >& stored_vertices,
-			const std::vector< index_t >& region_gocad_ids,
-			std::map< index_t, index_t > lighttsolid_atom_map,
-			std::vector< vec3 >& region_tetra_vertices ){
+		void get_vertices_list_and_local_ids_from_gocad_ids( const std::vector< vec3 >& stored_vertices,
+			index_t region_id,
+			const std::map< index_t, index_t >& lighttsolid_atom_map,
+			std::vector< vec3 >& region_tetra_vertices,
+			std::vector< index_t >& local_ids ){
 
-			for( index_t region_gocad_id : region_gocad_ids ) {
-				if( lighttsolid_atom_map.find( region_gocad_id ) == lighttsolid_atom_map.end() ){
-					region_tetra_vertices.push_back( stored_vertices[region_gocad_id] );
+			local_ids.clear();
+
+			index_t gocad_id = 0;
+			for( vec3 vertex : stored_vertices ){
+				if( gocad_ids2region_ids_[gocad_id] == region_id ){
+					if( lighttsolid_atom_map.find( gocad_id ) == lighttsolid_atom_map.end() ){
+						region_tetra_vertices.push_back( stored_vertices[gocad_id] );
+						local_ids.push_back( gocad_id );
+					}
+					else {
+						index_t corresponding_gocad_id = lighttsolid_atom_map.find( gocad_id )->second;
+						if( region( corresponding_gocad_id ) != region( gocad_id ) ){
+							region_tetra_vertices.push_back( stored_vertices[corresponding_gocad_id] );
+						}
+					}
 				}
-				else {
-					index_t corresponding_region_gocad_id = lighttsolid_atom_map.find( region_gocad_id )->second;
-					region_tetra_vertices.push_back( stored_vertices[corresponding_region_gocad_id] );
-				}
+				gocad_id++;
 			}
 		}
 
 		index_t local_id( index_t gocad_vertex_id ) const
 		{
-			return gocad_vertices2region_vertices_[gocad_vertex_id];
+			return gocad_ids2local_ids_[gocad_vertex_id];
 		}
 
 		index_t region( index_t gocad_vertex_id ) const
 		{
-			return gocad_vertices2region_id_[gocad_vertex_id];
+			return gocad_ids2region_ids_[gocad_vertex_id];
 		}
 
 		void add_vertex( index_t local_vertex_id, index_t region_id )
 		{
-			gocad_vertices2region_vertices_.push_back( local_vertex_id );
-			gocad_vertices2region_id_.push_back( region_id );
+			gocad_ids2local_ids_.push_back( local_vertex_id );
+			gocad_ids2region_ids_.push_back( region_id );
 		}
 
 		void reserve( index_t capacity )
 		{
-			gocad_vertices2region_vertices_.reserve( capacity );
-			gocad_vertices2region_id_.reserve( capacity );
+			gocad_ids2local_ids_.reserve( capacity );
+			gocad_ids2region_ids_.reserve( capacity );
 		}
 
-		void fill_with_lighttsolid_regions(
-			const std::map< index_t, index_t >& lighttsolid_atom_map )
+		void fill_with_lighttsolid_region_ids()
 		{
-			size_t gocad_vertex_nb = gocad_vertices2region_vertices_.size();
 			ringmesh_assert( vertices_gocad_id_.size() == vertices_region_id_.size() );
 			size_t lighttsolid_vertices_nb = vertices_gocad_id_.size();
 			size_t lighttsolid_region_nb = nb_regions();
 
 			// For every region ...
-			local_ids_.reserve( lighttsolid_region_nb );
 			for( index_t rgion_id = 0; rgion_id < lighttsolid_region_nb; rgion_id++ ) {
-				local_ids_.push_back( std::vector< index_t >() );
-				// we want to record the local ids of the LightTSolid vertices ...
-				index_t local_vertex_id = 0;
+				// we want to record the region ids of the LightTSolid vertices ...
 				for( index_t lighttsolid_vertices_id = 0; 
 					lighttsolid_vertices_id < lighttsolid_vertices_nb; lighttsolid_vertices_id++ ) {
 					// that are in this region.
 					if( region_id( lighttsolid_vertices_id ) == rgion_id ) {
-						index_t gocad_vertex_i = gocad_vertex_id(
-							lighttsolid_vertices_id );
+						index_t gocad_vertex_i = gocad_vertex_id( lighttsolid_vertices_id );
 
-						// We make sure the vertex is not already recorded
-						if( std::find( local_ids_[rgion_id].begin(),
-							local_ids_[rgion_id].end(), gocad_vertex_i )
-							== local_ids_[rgion_id].end() ){
-							local_ids_[rgion_id].push_back( gocad_vertex_i );
+						gocad_ids2region_ids_[gocad_vertex_i] 
+							= region_id( lighttsolid_vertices_id );
+					}
+				}
+			}
+		}
 
-							gocad_vertices2region_vertices_[gocad_vertex_i]
-								= local_vertex_id;
-							gocad_vertices2region_id_[gocad_vertex_i]
-								= region_id( lighttsolid_vertices_id );
-							local_vertex_id++;
+		void fill_with_lighttsolid_local_ids()
+		{
+			ringmesh_assert( vertices_gocad_id_.size() == vertices_region_id_.size() );
+			size_t lighttsolid_vertices_nb = vertices_gocad_id_.size();
+			size_t lighttsolid_region_nb = nb_regions();
+
+			// For every region ...
+			for( index_t rgion_id = 0; rgion_id < lighttsolid_region_nb; rgion_id++ ) {
+				// we want to record the local ids of the LightTSolid vertices ...
+				std::vector< index_t > local_ids = local_ids_[rgion_id];
+				for( index_t lighttsolid_vertices_id = 0;
+					lighttsolid_vertices_id < lighttsolid_vertices_nb; lighttsolid_vertices_id++ ) {
+					// that are in this region.
+					if( region_id( lighttsolid_vertices_id ) == rgion_id ) {
+
+						index_t gocad_vertex_i = gocad_vertex_id( lighttsolid_vertices_id );
+						for( index_t local_id = 0; local_id < local_ids.size(); local_id++ ){
+							index_t gocad_id = local_ids[local_id];
+							if( gocad_id == gocad_vertex_i ){
+								gocad_ids2local_ids_[gocad_vertex_i]
+									= local_id;
+							}
 						}
 					}
 				}
@@ -346,12 +368,12 @@ namespace RINGMesh {
          * Mapping the indices of vertices from Gocad .so file
          * to the local (in region) indices of vertices
          */
-        std::vector< index_t > gocad_vertices2region_vertices_;
+        std::vector< index_t > gocad_ids2local_ids_;
         /*!
          * Mapping the indices of vertices from Gocad .so file
          * to the region containing them
          */
-        std::vector< index_t > gocad_vertices2region_id_;
+        std::vector< index_t > gocad_ids2region_ids_;
     };
 
     /*!
