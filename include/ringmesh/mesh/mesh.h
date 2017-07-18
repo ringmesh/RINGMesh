@@ -57,6 +57,9 @@ namespace RINGMesh {
     template< index_t DIMENSION > class SurfaceMeshBuilder;
     template< index_t DIMENSION > class VolumeMeshBuilder;
     template< index_t DIMENSION > class SurfaceMesh;
+    struct EdgeLocalVertex;
+    struct PolygonLocalEdge;
+    struct CellLocalFacet;
 }
 
 namespace RINGMesh {
@@ -73,6 +76,9 @@ namespace RINGMesh {
             : element_id_( element_id ), local_vertex_id_( local_vertex_id )
         {
         }
+        ElementLocalVertex( const EdgeLocalVertex& edge_local_vertex );
+        ElementLocalVertex( const PolygonLocalEdge& polygon_local_edge );
+        ElementLocalVertex( const CellLocalFacet& cell_local_facet );
     public:
         index_t element_id_;
         index_t local_vertex_id_;
@@ -88,6 +94,12 @@ namespace RINGMesh {
             : edge_id_( edge_id ), local_vertex_id_( local_vertex_id )
         {
         }
+        EdgeLocalVertex( const ElementLocalVertex& edge_local_vertex )
+            :
+                edge_id_( edge_local_vertex.element_id_ ),
+                local_vertex_id_( edge_local_vertex.local_vertex_id_ )
+        {
+        }
     public:
         index_t edge_id_;
         index_t local_vertex_id_;
@@ -101,6 +113,12 @@ namespace RINGMesh {
         }
         PolygonLocalEdge( index_t polygon_id, index_t local_edge_id )
             : polygon_id_( polygon_id ), local_edge_id_( local_edge_id )
+        {
+        }
+        PolygonLocalEdge( const ElementLocalVertex& polygon_local_vertex )
+            :
+                polygon_id_( polygon_local_vertex.element_id_ ),
+                local_edge_id_( polygon_local_vertex.local_vertex_id_ )
         {
         }
     public:
@@ -236,9 +254,9 @@ namespace RINGMesh {
 
         /*
          * @brief Gets the index of an edge vertex.
-         * @param[in] edge_id index of the edge.
-         * @param[in] vertex_id local index of the vertex, in {0,1}
-         * @return the global index of vertex \param vertex_id in edge \param edge_id.
+         * @param[in] edge_local_vertex index of the edge and of the
+         * local index of the vertex, in {0,1}
+         * @return the global index of vertex in \p edge_local_vertex.
          */
         virtual index_t edge_vertex(
             const ElementLocalVertex& edge_local_vertex ) const = 0;
@@ -334,8 +352,8 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets the vertex index by polygon index and local vertex index.
-         * @param[in] polygon_id the polygon index.
-         * @param[in] vertex_id the local edge index in \param polygon_id.
+         * @param[in] polygon_local_vertex the polygon index and
+         * the local edge index in the polygon.
          */
         virtual index_t polygon_vertex(
             const ElementLocalVertex& polygon_local_vertex ) const = 0;
@@ -350,9 +368,10 @@ namespace RINGMesh {
          */
         virtual index_t nb_polygon_vertices( index_t polygon_id ) const = 0;
         /*!
-         * @brief Gets the next vertex index in the polygon \param polygon_id.
-         * @param[in] polygon_id polygon index
-         * @param[in] vertex_id current index
+         * @brief Gets the next vertex index in the polygon vertex
+         * \param polygon_local_vertex.
+         * @param[in] polygon_local_vertex polygon index and the current
+         * local vertex index.
          */
         ElementLocalVertex next_polygon_vertex(
             const ElementLocalVertex& polygon_local_vertex ) const
@@ -374,20 +393,20 @@ namespace RINGMesh {
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          * @details The returned border edge is the next in the way of polygon edges
          * orientation.
-         * @param[in] p Input polygon index
-         * @param[in] e Edge index in the polygon
+         * @param[in] polygon_local_edge input polygon index and its local
+         * edge index in the polygon
          * @return the next polygon index
          * and the next edge index in the polygon
          *
          * @pre the given polygon edge must be on border
          */
-        std::tuple< index_t, index_t > next_on_border(
+        PolygonLocalEdge next_on_border(
             const PolygonLocalEdge& polygon_local_edge ) const;
 
         /*!
          * @brief Gets the previous vertex index in the polygon \param polygon_id.
-         * @param[in] polygon_id polygon index
-         * @param[in] vertex_id current index
+         * @param[in] polygon_local_vertex polygon index and its current
+         * local vertex index
          */
         ElementLocalVertex prev_polygon_vertex(
             const ElementLocalVertex& polygon_local_vertex ) const
@@ -417,7 +436,7 @@ namespace RINGMesh {
          * the given polygon edge must be on border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
-        std::tuple< index_t, index_t > prev_on_border(
+        PolygonLocalEdge prev_on_border(
             const PolygonLocalEdge& polygon_local_edge ) const;
 
         /*!
@@ -522,8 +541,8 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets the length of the edge starting at a given vertex
-         * @param[in] polygon_id index of the polygon
-         * @param[in] vertex_id the edge starting vertex index
+         * @param[in] polygon_local_edge index of the polygon and its
+         * local edge starting vertex index
          */
         double polygon_edge_length(
             const PolygonLocalEdge& polygon_local_edge ) const
@@ -536,8 +555,8 @@ namespace RINGMesh {
         }
         /*!
          * @brief Gets the barycenter of the edge starting at a given vertex
-         * @param[in] polygon_id index of the polygon
-         * @param[in] vertex_id the edge starting vertex index
+         * @param[in] polygon_local_edge index of the polygon and
+         * the local edge starting vertex index
          */
         vecn< DIMENSION > polygon_edge_barycenter(
             const PolygonLocalEdge& polygon_local_edge ) const
@@ -550,8 +569,8 @@ namespace RINGMesh {
         }
         /*!
          * @brief Gets the vertex index on the polygon edge
-         * @param[in] polygon_id index of the polygon
-         * @param[in] edge_id index of the edge in the polygon \param polygon_id
+         * @param[in] polygon_local_edge index of the polygon and
+         * the local index of the edge in the polygon
          * @param[in] vertex_id index of the local vertex in the edge \param edge_id (0 or 1)
          * @return the vertex index
          */
@@ -786,8 +805,8 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets a vertex by cell facet and local vertex index.
-         * @param[in] cell_id index of the cell
-         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] cell_local_facet index of the cell and
+         * the local index of the facet in the cell
          * @param[in] vertex_id index of the vertex in the facet \param facet_id
          * @return the global vertex index.
          * @precondition vertex_id < number of vertices in the facet \param facet_id
@@ -799,8 +818,8 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets a facet index by cell and local facet index.
-         * @param[in] cell_id index of the cell
-         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] cell_local_facet index of the cell and
+         * the local index of the facet in the cell
          * @return the global facet index.
          */
         virtual index_t cell_facet(
@@ -917,8 +936,8 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets the number of vertices of a facet in a cell
-         * @param[in] cell_id index of the cell
-         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] cell_local_facet index of the cell and
+         * the local index of the facet in the cell
          * @return the number of vertices in the facet \param facet_id in the cell \param cell_id
          */
         virtual index_t nb_cell_facet_vertices(
@@ -941,7 +960,7 @@ namespace RINGMesh {
         virtual index_t cell_end( index_t cell_id ) const = 0;
 
         /*!
-         * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
+         * @return the index of the adjacent cell of \param cell_local_facet
          */
         virtual index_t cell_adjacent(
             const CellLocalFacet& cell_local_facet ) const = 0;
@@ -965,8 +984,8 @@ namespace RINGMesh {
 
         /*!
          * Computes the Mesh cell facet barycenter
-         * @param[in] cell_id the cell index
-         * @param[in] facet_id the facet index in the cell
+         * @param[in] cell_local_facet the cell index and
+         * the local facet index in the cell
          * @return the cell facet center
          */
         vecn< DIMENSION > cell_facet_barycenter(
@@ -996,8 +1015,8 @@ namespace RINGMesh {
         }
         /*!
          * Computes the Mesh cell facet normal
-         * @param[in] cell_id the cell index
-         * @param[in] facet_id the facet index in the cell
+         * @param[in] cell_local_facet the cell index and
+         * the local facet index in the cell
          * @return the cell facet normal
          */
         vecn< DIMENSION > cell_facet_normal(

@@ -43,6 +43,29 @@
 
 namespace RINGMesh {
 
+    ElementLocalVertex::ElementLocalVertex(
+        const EdgeLocalVertex& edge_local_vertex )
+        :
+            element_id_( edge_local_vertex.edge_id_ ),
+            local_vertex_id_( edge_local_vertex.local_vertex_id_ )
+    {
+    }
+
+    ElementLocalVertex::ElementLocalVertex(
+        const PolygonLocalEdge& polygon_local_edge )
+        :
+            element_id_( polygon_local_edge.polygon_id_ ),
+            local_vertex_id_( polygon_local_edge.local_edge_id_ )
+    {
+    }
+
+    ElementLocalVertex::ElementLocalVertex( const CellLocalFacet& cell_local_facet )
+        :
+            element_id_( cell_local_facet.cell_id_ ),
+            local_vertex_id_( cell_local_facet.local_facet_id_ )
+    {
+    }
+
     template< index_t DIMENSION >
     std::unique_ptr< PointSetMesh< DIMENSION > > PointSetMesh< DIMENSION >::create_mesh(
         const MeshType type )
@@ -107,7 +130,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, index_t > SurfaceMeshBase< DIMENSION >::next_on_border(
+    PolygonLocalEdge SurfaceMeshBase< DIMENSION >::next_on_border(
         const PolygonLocalEdge& polygon_local_edge ) const
     {
         ringmesh_assert(
@@ -129,8 +152,10 @@ namespace RINGMesh {
             static_cast< index_t >( polygons_around_next_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
-        index_t next_p = polygons_around_next_v_id[0];
-        index_t next_e;
+        PolygonLocalEdge next_polygon_local_edge( NO_ID, NO_ID );
+        index_t& next_p = next_polygon_local_edge.polygon_id_;
+        next_p = polygons_around_next_v_id[0];
+        index_t& next_e = next_polygon_local_edge.local_edge_id_;
 
         if( nb_around == 2 ) {
             if( next_p == polygon_local_edge.polygon_id_ ) {
@@ -141,20 +166,18 @@ namespace RINGMesh {
 
             // Local index of next vertex in the next polygon
             next_e = vertex_index_in_polygon( next_p, next_v_id );
-            ringmesh_assert(
-                is_edge_on_border( PolygonLocalEdge( next_p, next_e ) ) );
+            ringmesh_assert( is_edge_on_border( next_polygon_local_edge ) );
         } else if( nb_around == 1 ) {
             // next_v_id must be in two border edges of polygon p
             next_e = vertex_index_in_polygon( next_p, next_v_id );
-            ringmesh_assert(
-                is_edge_on_border( PolygonLocalEdge( next_p, next_e ) ) );
+            ringmesh_assert( is_edge_on_border( next_polygon_local_edge ) );
         }
 
-        return std::make_tuple( next_p, next_e );
+        return next_polygon_local_edge;
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, index_t > SurfaceMeshBase< DIMENSION >::prev_on_border(
+    PolygonLocalEdge SurfaceMeshBase< DIMENSION >::prev_on_border(
         const PolygonLocalEdge& polygon_local_edge ) const
     {
         ringmesh_assert(
@@ -174,8 +197,10 @@ namespace RINGMesh {
         index_t nb_around = static_cast< index_t >( polygons_around_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
-        index_t prev_p = polygons_around_v_id[0];
-        index_t prev_e;
+        PolygonLocalEdge prev_polygon_local_edge( NO_ID, NO_ID );
+        index_t& prev_p = prev_polygon_local_edge.polygon_id_;
+        prev_p = polygons_around_v_id[0];
+        index_t& prev_e = prev_polygon_local_edge.local_edge_id_;
 
         if( nb_around == 2 ) {
             if( prev_p == polygon_local_edge.polygon_id_ ) {
@@ -189,17 +214,17 @@ namespace RINGMesh {
             // Local index of previous vertex in the prev polygon
             prev_e =
                 prev_polygon_vertex( ElementLocalVertex( prev_p, v_in_prev_f ) ).local_vertex_id_;
-            ringmesh_assert( is_edge_on_border( PolygonLocalEdge( prev_p, prev_e ) ) );
+            ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         } else if( nb_around == 1 ) {
             // v_id must be in two border edges of polygon p
             index_t v_in_next_polygon = vertex_index_in_polygon( prev_p, v_id );
             prev_e =
                 prev_polygon_vertex(
                 ElementLocalVertex( prev_p, v_in_next_polygon ) ).local_vertex_id_;
-            ringmesh_assert( is_edge_on_border( PolygonLocalEdge( prev_p, prev_e ) ) );
+            ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         }
 
-        return std::make_tuple( prev_p, prev_e );
+        return prev_polygon_local_edge;
     }
 
     template< index_t DIMENSION >

@@ -675,31 +675,33 @@ namespace {
             index_t v0_id_in_polygon = mesh.vertex_index_in_polygon( p, v0_id );
             ringmesh_assert( v0_id_in_polygon != NO_ID );
 
-            index_t next_f = NO_ID;
-            index_t next_f_v0 = NO_ID;
-            index_t next_f_v1 = NO_ID;
+            const PolygonLocalEdge cur_polygon_local_edge( p, v0_id_in_polygon );
+            PolygonLocalEdge next_polygon_local_edge0_on_border =
+                backward ?
+                    next_polygon_local_edge0_on_border = mesh.prev_on_border(
+                        cur_polygon_local_edge ) :
+                    next_polygon_local_edge0_on_border = mesh.next_on_border(
+                        cur_polygon_local_edge );
+            ringmesh_assert(
+                next_polygon_local_edge0_on_border.polygon_id_ != NO_ID );
+            ringmesh_assert(
+                next_polygon_local_edge0_on_border.local_edge_id_ != NO_ID );
 
-            if( !backward ) {
-                std::tie( next_f, next_f_v0 ) = mesh.next_on_border(
-                    PolygonLocalEdge( p, v0_id_in_polygon ) );
-                ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = mesh.next_polygon_vertex(
-                    ElementLocalVertex( next_f, next_f_v0 ) ).local_vertex_id_;
-            } else {
-                std::tie( next_f, next_f_v0 ) = mesh.prev_on_border(
-                    PolygonLocalEdge( p, v0_id_in_polygon ) );
-                ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = mesh.next_polygon_vertex(
-                    ElementLocalVertex( next_f, next_f_v0 ) ).local_vertex_id_;
-            }
+            PolygonLocalEdge next_polygon_local_edge1_on_border =
+                mesh.next_polygon_vertex( next_polygon_local_edge0_on_border );
+            ringmesh_assert(
+                next_polygon_local_edge1_on_border.polygon_id_ != NO_ID );
+            ringmesh_assert(
+                next_polygon_local_edge1_on_border.local_edge_id_ != NO_ID );
 
             // Finds the BorderPolygon that is corresponding to this
             // It must exist and there is only one
-            BorderPolygon bait( border_polygon.surface_, next_f,
+            BorderPolygon bait( border_polygon.surface_,
+                next_polygon_local_edge0_on_border.polygon_id_,
                 geomodel_vertices.geomodel_vertex_id( surface_id,
-                    ElementLocalVertex( next_f, next_f_v0 ) ),
+                    next_polygon_local_edge0_on_border ),
                 geomodel_vertices.geomodel_vertex_id( surface_id,
-                    ElementLocalVertex( next_f, next_f_v1 ) ) );
+                    next_polygon_local_edge1_on_border ) );
             index_t result = find_sorted( this->border_polygons_, bait );
 
             ringmesh_assert( result != NO_ID );
