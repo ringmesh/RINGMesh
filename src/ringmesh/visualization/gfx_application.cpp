@@ -139,6 +139,40 @@ namespace {
         }
     }
 
+    void compute_geomodel_bbox( const GeoModel< 2 >& geomodel, Box< 2 >& bbox )
+    {
+        if( geomodel.nb_surfaces() > 0 && geomodel.surface( 0 ).is_meshed() ) {
+            for( const auto& surface : geomodel.surfaces() ) {
+                compute_mesh_entity_bbox( surface, bbox );
+            }
+        } else if( geomodel.nb_lines() > 0 ) {
+            for( const auto& line : geomodel.lines() ) {
+                compute_mesh_entity_bbox( line, bbox );
+            }
+        } else {
+            for( const auto& corner : geomodel.corners() ) {
+                compute_mesh_entity_bbox( corner, bbox );
+            }
+        }
+    }
+
+    void compute_geomodel_bbox( const GeoModel< 3 >& geomodel, Box< 3 >& bbox )
+    {
+        if( geomodel.nb_surfaces() > 0 ) {
+            for( const auto& surface : geomodel.surfaces() ) {
+                compute_mesh_entity_bbox( surface, bbox );
+            }
+        } else if( geomodel.nb_lines() > 0 ) {
+            for( const auto& line : geomodel.lines() ) {
+                compute_mesh_entity_bbox( line, bbox );
+            }
+        } else {
+            for( const auto& corner : geomodel.corners() ) {
+                compute_mesh_entity_bbox( corner, bbox );
+            }
+        }
+    }
+
 }
 namespace RINGMesh {
 
@@ -172,19 +206,7 @@ namespace RINGMesh {
         geomodel_load( GM_, filename );
         // Computation of the BBox is set with surface vertices
         // or with those of lines and corners if the model has no surface
-        if( GM_.nb_surfaces() > 0 ) {
-            for( const auto& surface : GM_.surfaces() ) {
-                compute_mesh_entity_bbox( surface, bbox_ );
-            }
-        } else if( GM_.nb_lines() > 0 ) {
-            for( const auto& line : GM_.lines() ) {
-                compute_mesh_entity_bbox( line, bbox_ );
-            }
-        } else {
-            for( const auto& corner : GM_.corners() ) {
-                compute_mesh_entity_bbox( corner, bbox_ );
-            }
-        }
+        compute_geomodel_bbox( GM_, bbox_ );
 
         const std::vector< MeshEntityType >& types =
             GM_.entity_type_manager().mesh_entity_manager.mesh_entity_types();

@@ -47,7 +47,6 @@ namespace {
             GEO::LineInput file( filename_ );
             while( !file.eof() && file.get_line() ) {
                 file.get_fields();
-                DEBUG( file.current_line() );
                 if( file.field_matches( 0, "//" ) ) {
                     continue;
                 } else if( file.field_matches( 0, "liste" ) ) {
@@ -55,10 +54,8 @@ namespace {
                         continue;
                     }
                     if( file.field_matches( 2, "milieux" ) ) {
-                        DEBUG( "MILIEU" );
                         load_surfaces( file );
                     } else if( file.field_matches( 2, "horizons" ) ) {
-                        DEBUG( "HORIZON" );
                         load_lines( file );
                     } else if( file.field_matches( 2, "points" ) ) {
                         load_points( file );
@@ -178,7 +175,6 @@ namespace {
         {
             index_t nb_surfaces = create_surfaces( file );
             for( index_t s : range( nb_surfaces ) ) {
-                DEBUG( s );
                 import_surface( file, s );
             }
         }
@@ -220,7 +216,6 @@ namespace {
         std::vector< index_t > line_mapping_;
         std::vector< std::vector< index_t > > lines_vertices_;
         std::vector< vec2 > points_;
-
     };
 
     /*!
@@ -234,12 +229,6 @@ namespace {
         {
             StradivariusBuilder builder( geomodel, filename );
             builder.build_geomodel();
-
-            DEBUG( geomodel.mesh.vertices.nb() );
-
-            for( index_t v = 0; v < geomodel.mesh.vertices.nb(); v++ ) {
-                DEBUG( geomodel.mesh.vertices.vertex( v ) );
-            }
         }
         void save( const GeoModel< 2 >& geomodel, const std::string& filename ) final
         {
