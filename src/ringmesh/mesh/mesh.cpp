@@ -140,9 +140,7 @@ namespace RINGMesh {
 
         // Global indices in the surfaces
         index_t next_v_id = polygon_vertex(
-            next_polygon_vertex(
-                ElementLocalVertex( polygon_local_edge.polygon_id_,
-                    polygon_local_edge.local_edge_id_ ) ) );
+            next_polygon_vertex( polygon_local_edge ) );
 
         // Get the polygons around the shared vertex (next_v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
@@ -186,9 +184,7 @@ namespace RINGMesh {
         ringmesh_assert( is_edge_on_border( polygon_local_edge ) );
 
         // Global indices in the surfaces
-        index_t v_id = polygon_vertex(
-            ElementLocalVertex( polygon_local_edge.polygon_id_,
-                polygon_local_edge.local_edge_id_ ) );
+        index_t v_id = polygon_vertex( ElementLocalVertex( polygon_local_edge ) );
 
         // Get the polygons around the shared vertex (v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
