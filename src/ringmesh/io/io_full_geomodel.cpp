@@ -74,6 +74,7 @@ namespace {
 #include "full_geomodel/io_tetgen.cpp"
 #include "full_geomodel/io_tsolid.cpp"
 #include "full_geomodel/io_vtk.cpp"
+#include "full_geomodel/io_stradivarius.cpp"
 
 }
 namespace RINGMesh {

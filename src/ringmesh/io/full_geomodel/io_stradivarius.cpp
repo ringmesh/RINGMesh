@@ -230,67 +230,240 @@ namespace {
             StradivariusBuilder builder( geomodel, filename );
             builder.build_geomodel();
         }
-        void save( const GeoModel< 2 >& geomodel, const std::string& filename ) final
+       void save( const GeoModel< 2 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
+            check_stradivarius_validity( geomodel );
+            save_header( out );
+            save_milieux( out, geomodel );
+            save_horizons( out, geomodel );
 
         }
 
     private:
-        /*!
-         * @brief Find the gmsh type on an element using
-         * the number of vertices and the mesh entity index
-         * in which the element belong
-         */
-        index_t find_gmsh_element_type(
-            index_t nb_vertices,
-            index_t mesh_entity_type_index )
+        void check_stradivarius_validity( const GeoModel< 2 >& geomodel )
         {
-            return element_type[nb_vertices + mesh_entity_type_index];
+            for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
+                model_box_.add_point( geomodel.mesh.vertices.vertex( v ) );
+            }
+        }
+        void save_header( std::ofstream& out )
+        {
+            out << "// File wrote with RINGMesh" << std::endl;
+        }
+
+        void save_milieux( std::ofstream& out, const GeoModel< 2 >& geomodel )
+        {
+            out << "liste des milieux" << std::endl;
+            out << geomodel.nb_surfaces() << std::endl;
+            for( const auto& surface : geomodel.surfaces() ) {
+                save_milieu( out, surface );
+            }
+        }
+
+        void save_milieu( std::ofstream& out, const Surface< 2 >& surface )
+        {
+            save_milieu_index( out, surface );
+            save_milieu_boundaries( out, surface );
+        }
+
+        void save_milieu_index( std::ofstream& out, const Surface< 2 >& surface )
+        {
+            out << surface.index() + shift_for_seabed << " "
+                << surface.nb_boundaries() << std::endl;
+        }
+
+        void save_milieu_boundaries(
+            std::ofstream& out,
+            const Surface< 2 >& surface )
+        {
+            for( index_t boundary : range( surface.nb_boundaries() ) ) {
+                out << surface.boundary( boundary ).index();
+            }
         }
 
         /*!
-         * @brief Find the gmsh local vertex index of an element using
-         * the number of vertices and the mesh entity index
-         * in which the element belong
+         * @brief Here horizons is in term of stradivarius nomenclature
          */
-        index_t find_gmsh_element_local_vertex_id(
-            index_t nb_vertices,
-            index_t mesh_entity_type_index,
-            index_t local_vertex_index )
+        void save_horizons( std::ofstream& out, const GeoModel< 2 >& geomodel )
         {
-            return vertices_in_elements[nb_vertices + mesh_entity_type_index][local_vertex_index];
+            out << geomodel.nb_lines() + nb_horizons_for_seabed << " "
+                << "// milG milD nbrePoint   numeroHorizon   nom d'horizon"
+                << std::endl;
+            std::vector< vec2 > additional_points_for_seabed;
+            ringmesh_assert( additional_points_for_seabed.size() == 2 );
+            for( const auto& line : geomodel.lines() ) {
+                save_horizon( out, line );
+            }
+            save_seabed( out, geomodel, additional_points_for_seabed );
+
+        }
+        void save_horizon( std::ofstream& out, const Line< 2 >& line )
+        {
+            if( line.nb_incident_entities() == 2 ) {
+                save_classical_horizon( out, line );
+
+            } else if( line.nb_incident_entities() == 1 ) {
+                save_horizon_as_boundary( out, line );
+            } else {
+                ringmesh_assert_not_reached;
+            }
         }
 
-        /*!
-         * @brief Count all the elements in GMSH
-         * an Element can be :
-         * - A Corner
-         * - An Edge
-         * - A Triangle
-         * - A Quad
-         * - A Tetrahedron
-         * - A Pyramid
-         * - A Prism
-         * - An Hexaedron
-         */
-        index_t count_elements( const GeoModel< 2 >& geomodel )
+        void save_classical_horizon( std::ofstream& out, const Line< 2 >& line )
         {
-            index_t nb_elements = 0;
-            const std::vector< MeshEntityType >& gmme_types =
-                geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
-            for( MeshEntityType cur_mesh_entity_type : gmme_types ) {
-                for( index_t index_of_gmme_of_the_current_type : range(
-                    geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) ) {
-                    gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
-                        index_of_gmme_of_the_current_type );
-                    const GeoModelMeshEntity< 2 >& cur_gmme = geomodel.mesh_entity(
-                        cur_gmme_id );
-                    nb_elements += cur_gmme.nb_mesh_elements();
+
+        }
+
+        void save_horizon_as_boundary( std::ofstream& out, const Line< 2 >& line )
+        {
+            vec2 v0 = line.vertex( 0 );
+            vec2 v1 = line.vertex( 1 );
+            if( v0.x == v1.x ) {
+                if( v0.y < v1.y ) {
+                    if( v0.x == model_box_.min().x ) {
+                        //left boundary
+                        left_is_outside( out, line );
+                    } else if( v0.x == model_box_.max().x ) {
+                        // right boundary
+                        right_is_outside( out, line );
+                    }
+                } else {
+                    if( v0.x == model_box_.min().x ) {
+                        //left boundary
+                        right_is_outside( out, line );
+                    } else if( v0.x == model_box_.max().x ) {
+                        // right boundary
+                        left_is_outside( out, line );
+                    }
+                }
+            } else if( v0.y == v1.y && v0.y == model_box_.min().y ) {
+                // bottom boundary
+                if( v0.x > v1.x ) {
+                    left_is_outside( out, line );
+                } else {
+                    right_is_outside( out, line );
+                }
+            } else {
+                //top surface
+                if( v0.x > v1.x ) {
+                    right_is_outside( out, line );
+                } else {
+                    left_is_outside( out, line );
                 }
             }
-            return nb_elements;
+            save_horizons_points( out, line );
         }
+
+        void left_is_outside( std::ofstream& out, const Line< 2 >& line )
+        {
+            out << outside_region << " "
+                << line.incident_entity( 0 ).index() + shift_for_seabed << " "
+                << nb_points_for_seabed_boundaries << " " << line.index() << "Line_"
+                << line.index() << std::endl;
+        }
+
+        void right_is_outside( std::ofstream& out, const Line< 2 >& line )
+        {
+            out << line.incident_entity( 0 ).index() + shift_for_seabed << " "
+                << outside_region << " " << nb_points_for_seabed_boundaries << " "
+                << line.index() << "Line_" << line.index() << std::endl;
+        }
+
+        void save_horizons_points( std::ofstream& out, const Line< 2 >& line )
+        {
+            for( index_t vertex : range( line.nb_vertices() ) ) {
+                out
+                    << line.geomodel().mesh.vertices.geomodel_vertex_id( line.gmme(),
+                        vertex ) << std::endl;
+            }
+        }
+
+        void save_seabed(
+            std::ofstream& out,
+            const GeoModel< 2 >& geomodel,
+            std::vector< vec2 >& additional_points_for_seabed )
+        {
+            // goal : find the maximum z of the model, add +200
+            // to have the seabed
+            for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
+                model_box_.add_point( geomodel.mesh.vertices.vertex( v ) );
+            }
+            vec2 right_up_point( model_box_.min()[0],
+                model_box_.max()[1] + default_sea_depth );
+            vec2 left_up_point( model_box_.max()[0],
+                model_box_.max()[1] + default_sea_depth );
+            additional_points_for_seabed.resize( 2 );
+            additional_points_for_seabed[0] = right_up_point;
+            additional_points_for_seabed[1] = left_up_point;
+
+            index_t nb_lines = geomodel.nb_lines();
+            index_t nb_points = geomodel.mesh.vertices.nb();
+
+            index_t right_up_point_of_the_model_wo_seabed =
+                vertex_id_of_the_max_height_corner_at_constant_x( right_up_point.x,
+                    model_box_.min().y, geomodel );
+
+            index_t left_up_point_of_the_model_wo_seabed =
+                vertex_id_of_the_max_height_corner_at_constant_x( left_up_point.x,
+                    model_box_.min().y, geomodel );
+
+            // Top of the seabed
+            out << outside_region << " " << seabed_region << " "
+                << nb_points_for_seabed_boundaries << " " << nb_lines + 0 << "SB_TOP"
+                << std::endl;
+            out << nb_points << std::endl;
+            out << nb_points + 1 << std::endl;
+
+            // Left side of the seabed
+            out << outside_region << " " << seabed_region << " "
+                << nb_points_for_seabed_boundaries << " " << nb_lines + 1
+                << "SB_LEFT" << std::endl;
+            out << left_up_point_of_the_model_wo_seabed << std::endl;
+            out << nb_points << std::endl;
+
+            // Right side of the seabed
+            out << outside_region << " " << seabed_region << " "
+                << nb_points_for_seabed_boundaries << " " << nb_lines + 2
+                << "SB_RIGHT" << std::endl;
+            out << nb_points << std::endl;
+            out << right_up_point_of_the_model_wo_seabed + 1 << std::endl;
+        }
+
+        index_t vertex_id_of_the_max_height_corner_at_constant_x(
+            double x,
+            double min_y,
+            const GeoModel< 2 >& geomodel )
+        {
+            index_t vertex_index = NO_ID;
+            double cur_y = min_y;
+            for( const auto& corner : geomodel.corners() ) {
+                vec2 corner_vertex = corner.vertex( 0 );
+                if( corner_vertex.x == x ) {
+                    if( corner_vertex.y > cur_y ) {
+                        cur_y = corner_vertex.y;
+                        vertex_index = geomodel.mesh.vertices.geomodel_vertex_id(
+                            corner.gmme(), 0 );
+                    }
+                }
+            }
+            ringmesh_assert( vertex_index != NO_ID );
+            return vertex_index;
+        }
+
+    private:
+        static const index_t nb_horizons_for_seabed = 3;
+        static constexpr double default_sea_depth = 200;
+        /// Sea milieu index is 0
+        static const index_t seabed_region = 0;
+        static const index_t nb_points_for_seabed_boundaries = 2;
+
+        static const index_t shift_for_seabed = 1;
+
+        static const int outside_region = -1;
+
+        Box< 2 > model_box_;
+
     };
 }
