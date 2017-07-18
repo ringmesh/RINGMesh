@@ -37,7 +37,11 @@ namespace {
 
     class StradivariusBuilder final: public GeoModelBuilderFile< 2 > {
     public:
-        using GeoModelBuilderFile< 2 >::GeoModelBuilderFile;
+        StradivariusBuilder( GeoModel< 2 >& geomodel, std::string filename )
+            : GeoModelBuilderFile< 2 >( geomodel, std::move( filename ) )
+        {
+
+        }
         static const index_t SHIFT = 1;
         static const index_t SEABED = 0;
 
@@ -143,7 +147,7 @@ namespace {
                     true );
             }
             index_t right_surface = index_t( file.field_as_int( 1 ) );
-            if( right_surface != NO_ID && right_surface != SEABED  ) {
+            if( right_surface != NO_ID && right_surface != SEABED ) {
                 topology.add_mesh_entity_boundary_relation(
                     {   Surface < 2 > ::type_name_static(), right_surface - SHIFT}, line,
                     true );
@@ -230,7 +234,7 @@ namespace {
             StradivariusBuilder builder( geomodel, filename );
             builder.build_geomodel();
         }
-       void save( const GeoModel< 2 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel< 2 >& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -453,15 +457,15 @@ namespace {
         }
 
     private:
-        static constexpr index_t nb_horizons_for_seabed = 3;
+        static const index_t nb_horizons_for_seabed = 3;
         static constexpr double default_sea_depth = 200;
         /// Sea milieu index is 0
-        static constexpr index_t seabed_region = 0;
-        static constexpr index_t nb_points_for_seabed_boundaries = 2;
+        static const index_t seabed_region = 0;
+        static const index_t nb_points_for_seabed_boundaries = 2;
 
-        static constexpr index_t shift_for_seabed = 1;
+        static const index_t shift_for_seabed = 1;
 
-        static constexpr int outside_region = -1;
+        static const int outside_region = -1;
 
         Box< 2 > model_box_;
 
