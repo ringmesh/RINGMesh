@@ -140,13 +140,12 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderRepair< DIMENSION >::repair_line_boundary_vertex_order()
     {
-        for( index_t line_itr : range( geomodel_.nb_lines() ) ) {
-            const Line< DIMENSION >& cur_line = geomodel_.line( line_itr );
-            if( !cur_line.is_first_corner_first_vertex() ) {
-                const index_t first_boundary_index = cur_line.boundary( 0 ).index();
-                builder_.topology.set_mesh_entity_boundary( cur_line.gmme(), 0,
-                    cur_line.boundary_gmme( 1 ).index() );
-                builder_.topology.set_mesh_entity_boundary( cur_line.gmme(), 1,
+        for( const auto& line : geomodel_.lines() ) {
+            if( !line.is_first_corner_first_vertex() ) {
+                const index_t first_boundary_index = line.boundary( 0 ).index();
+                builder_.topology.set_mesh_entity_boundary( line.gmme(), 0,
+                    line.boundary_gmme( 1 ).index() );
+                builder_.topology.set_mesh_entity_boundary( line.gmme(), 1,
                     first_boundary_index );
             }
         }
@@ -241,23 +240,21 @@ namespace RINGMesh {
         std::set< gmme_id >& to_remove )
     {
         to_remove.clear();
-        for( index_t i : range( geomodel_.nb_lines() ) ) {
-            const Line< DIMENSION >& line = geomodel_.line( i );
+        for( const auto& line : geomodel_.lines() ) {
             index_t nb = repair_line_mesh( line );
             if( nb > 0 ) {
                 Logger::out( "GeoModel", nb, " degenerated edges removed in LINE ",
-                    i );
+                    line.index() );
                 // If the Line is set it to remove
-                if( geomodel_.line( i ).nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel_.line( i ).gmme() );
+                if( line.nb_mesh_elements() == 0 ) {
+                    to_remove.insert( line.gmme() );
                 }
             }
         }
         // The builder might be needed
 
         double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon();
-        for( index_t i : range( geomodel_.nb_surfaces() ) ) {
-            const Surface< DIMENSION >& surface = geomodel_.surface( i );
+        for( const auto& surface : geomodel_.surfaces() ) {
             index_t nb = detect_degenerate_polygons( surface );
             /// @todo Check if that cannot be simplified
             if( nb > 0 ) {
@@ -270,7 +267,7 @@ namespace RINGMesh {
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 );
                     std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
-                        builder_.geometry.create_surface_builder( i );
+                        builder_.geometry.create_surface_builder( surface.index() );
                     builder->repair( mode, 0.0 );
 
                     // This might create some small components - remove them
@@ -282,7 +279,7 @@ namespace RINGMesh {
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel_.surface( i ).gmme() );
+                    to_remove.insert( surface.gmme() );
                 }
             }
         }

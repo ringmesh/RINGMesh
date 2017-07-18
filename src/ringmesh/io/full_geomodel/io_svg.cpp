@@ -110,8 +110,7 @@ namespace {
         {
             std::vector< vec2 > point_extremities;
             point_extremities.reserve( geomodel_.nb_lines() * 2 );
-            for( index_t l : range( geomodel_.nb_lines() ) ) {
-                const Line< 2 >& line = geomodel_.line( l );
+            for( const auto& line : line_range < 2 > ( geomodel_ ) ) {
                 point_extremities.push_back( line.vertex( 0 ) );
                 point_extremities.push_back( line.vertex( line.nb_vertices() - 1 ) );
             }
@@ -129,8 +128,8 @@ namespace {
                 geometry.set_corner( c, unique_points[c] );
             }
             index_t index = 0;
-            for( index_t l : range( geomodel_.nb_lines() ) ) {
-                gmme_id line_id( Line < 2 > ::type_name_static(), l );
+            for( const auto& line : line_range < 2 > ( geomodel_ ) ) {
+                gmme_id line_id = line.gmme();
                 index_t point0 = index_map[index++ ];
                 gmme_id corner0( Corner < 2 > ::type_name_static(), point0 );
                 index_t point1 = index_map[index++ ];
@@ -141,9 +140,8 @@ namespace {
                 // Update line vertex extremities with corner coordinates
                 geometry.set_mesh_entity_vertex( line_id, 0, unique_points[point0],
                     false );
-                geometry.set_mesh_entity_vertex( line_id,
-                    geomodel_.line( l ).nb_vertices() - 1, unique_points[point1],
-                    false );
+                geometry.set_mesh_entity_vertex( line_id, line.nb_vertices() - 1,
+                    unique_points[point1], false );
             }
         }
 
@@ -197,7 +195,8 @@ namespace {
             std::string letters( "MmLl" );
             for( char letter : letters ) {
                 std::string string_letter = GEO::String::to_string( letter );
-                replace_all_string_occurens( data, string_letter, " " + string_letter + " " );
+                replace_all_string_occurens( data, string_letter,
+                    " " + string_letter + " " );
             }
             std::vector< std::string > tokens;
             GEO::String::split_string( data, ' ', tokens );
@@ -236,9 +235,7 @@ namespace {
             GeoModelBuilderSVG builder( geomodel, filename );
             builder.build_geomodel();
         }
-        void save(
-            const GeoModel< 2 >& geomodel,
-            const std::string& filename ) final
+        void save( const GeoModel< 2 >& geomodel, const std::string& filename ) final
         {
             throw RINGMeshException( "I/O",
                 "Saving a GeoModel in svg not implemented yet" );

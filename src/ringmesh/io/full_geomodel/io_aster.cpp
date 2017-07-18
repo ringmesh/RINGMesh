@@ -133,14 +133,14 @@ namespace {
             std::ofstream& out ) const
         {
             const GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
-            for( index_t s : range( geomodel.nb_surfaces() ) ) {
+            for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
                 // -1 because polygons doesn' t exist in aster
                 for( index_t pt : range(
                     to_underlying_type( PolygonType::UNDEFINED ) - 1 ) ) {
-                    if( geomodel_mesh.polygons.nb_polygons( s, PolygonType( pt ) )
-                        > 0 ) {
-                        write_polygons_in_interface( PolygonType( pt ), s,
-                            geomodel_mesh, out );
+                    if( geomodel_mesh.polygons.nb_polygons( surface.index(),
+                        PolygonType( pt ) ) > 0 ) {
+                        write_polygons_in_interface( PolygonType( pt ),
+                            surface.index(), geomodel_mesh, out );
                     }
                 }
             }
@@ -193,12 +193,14 @@ namespace {
 
         void write_regions( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
-            for( index_t r : range( geomodel.nb_regions() ) ) {
-                if( geomodel.region( r ).is_meshed() ) {
+            for( const auto& region : region_range < 3 > ( geomodel ) ) {
+                if( region.is_meshed() ) {
                     out << "GROUP_MA" << std::endl;
-                    out << geomodel.region( r ).name() << std::endl;
-                    for( index_t c : range( geomodel.mesh.cells.nb_cells( r ) ) ) {
-                        out << "C" << geomodel.mesh.cells.cell( r, c ) << std::endl;
+                    out << region.name() << std::endl;
+                    for( index_t c : range(
+                        geomodel.mesh.cells.nb_cells( region.index() ) ) ) {
+                        out << "C" << geomodel.mesh.cells.cell( region.index(), c )
+                            << std::endl;
                     }
                     out << "FINSF" << std::endl;
                 }

@@ -179,12 +179,11 @@ namespace {
         {
             const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
                 geomodel_.mesh.vertices;
-            for( index_t s : range( geomodel_.nb_surfaces() ) ) {
-                const Surface< DIMENSION >& S = geomodel_.surface( s );
-                const SurfaceMesh< DIMENSION >& mesh = S.low_level_mesh_storage();
-                gmme_id S_id = S.gmme();
-                for( index_t p : range( S.nb_mesh_elements() ) ) {
-                    for( index_t v : range( S.nb_mesh_element_vertices( p ) ) ) {
+            for( const auto& surface : geomodel_.surfaces() ) {
+                const auto& mesh = surface.low_level_mesh_storage();
+                gmme_id S_id = surface.gmme();
+                for( index_t p : range( surface.nb_mesh_elements() ) ) {
+                    for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
                         if( mesh.is_edge_on_border( PolygonLocalEdge( p, v ) ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
                                 S_id, ElementLocalVertex( p, v ) );
@@ -192,8 +191,8 @@ namespace {
                                 geomodel_vertices.geomodel_vertex_id( S_id,
                                     mesh.next_polygon_vertex(
                                         ElementLocalVertex( p, v ) ) );
-                            border_polygons_.emplace_back( s, p, vertex,
-                                next_vertex );
+                            border_polygons_.emplace_back( surface.index(), p,
+                                vertex, next_vertex );
                         }
                     }
                 }
@@ -457,21 +456,20 @@ namespace {
         void compute_region_info()
         {
             const GeoModelMeshVertices< 3 >& vertices = this->geomodel_.mesh.vertices;
-            for( index_t line_id : range( this->geomodel_.nb_lines() ) ) {
-                const Line< 3 >& line = this->geomodel_.line( line_id );
+            for( const auto& line : geomodel_.lines() ) {
                 BorderPolygon line_border( NO_ID, NO_ID,
                     vertices.geomodel_vertex_id( line.gmme(), 0 ),
                     vertices.geomodel_vertex_id( line.gmme(), 1 ) );
                 for( const BorderPolygon& border : this->border_polygons_ ) {
                     if( line_border.same_edge( border ) ) {
                         index_t surface_id = border.surface_;
-                        region_info_[line_id].add_polygon_edge( surface_id,
+                        region_info_[line.index()].add_polygon_edge( surface_id,
                             this->geomodel_.surface( surface_id ).low_level_mesh_storage().polygon_normal(
                                 border.polygon_ ), vertices.vertex( border.v0_ ),
                             vertices.vertex( border.v1_ ) );
                     }
                 }
-                region_info_[line_id].sort();
+                region_info_[line.index()].sort();
             }
         }
 
@@ -983,11 +981,11 @@ namespace RINGMesh {
         // to the universe_, the one with the biggest volume
         double max_volume = -1.;
         index_t universe_id = NO_ID;
-        for( index_t i : range( geomodel_.nb_regions() ) ) {
-            double cur_volume = geomodel_.region( i ).size();
+        for( const auto& region : geomodel_.regions() ) {
+            double cur_volume = region.size();
             if( cur_volume > max_volume ) {
                 max_volume = cur_volume;
-                universe_id = i;
+                universe_id = region.index();
             }
         }
         const Region< 3 >& cur_region = geomodel_.region( universe_id );

@@ -72,13 +72,12 @@ namespace {
             std::vector< index_t > atom_exported_id(
                 mesh.cells.nb_duplicated_vertices(), NO_ID );
             index_t nb_vertices_exported = 1;
-            for( index_t r : range( geomodel.nb_regions() ) ) {
-                const RINGMesh::Region< 3 >& region = geomodel.region( r );
+            for( const auto& region : geomodel.regions() ) {
                 out << "TVOLUME " << region.name() << std::endl;
 
                 // Export not duplicated vertices
                 for( index_t c : range( region.nb_mesh_elements() ) ) {
-                    index_t cell = mesh.cells.cell( r, c );
+                    index_t cell = mesh.cells.cell( region.index(), c );
                     for( index_t v : range( mesh.cells.nb_vertices( cell ) ) ) {
                         index_t atom_id = mesh.cells.duplicated_corner_index(
                             ElementLocalVertex( cell, v ) );
@@ -124,7 +123,7 @@ namespace {
 
                 for( index_t c : range( region.nb_mesh_elements() ) ) {
                     out << "TETRA";
-                    index_t cell = mesh.cells.cell( r, c );
+                    index_t cell = mesh.cells.cell( region.index(), c );
                     for( index_t v : range( mesh.cells.nb_vertices( cell ) ) ) {
                         index_t atom_id = mesh.cells.duplicated_corner_index(
                             ElementLocalVertex( cell, v ) );
@@ -188,8 +187,7 @@ namespace {
                 }
             }
 
-            for( index_t r : range( geomodel.nb_regions() ) ) {
-                const RINGMesh::Region< 3 >& region = geomodel.region( r );
+            for( const auto& region : geomodel.regions() ) {
                 out << "MODEL_REGION " << region.name() << " ";
                 region.side( 0 ) ? out << "+" : out << "-";
                 out << region.boundary_gmme( 0 ).index() + 1 << std::endl;
