@@ -560,9 +560,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( vertex_id < 2 );
             if( vertex_id == 0 ) {
-                return polygon_vertex(
-                    ElementLocalVertex( polygon_local_edge.polygon_id_,
-                        polygon_local_edge.local_edge_id_ ) );
+                return polygon_vertex( polygon_local_edge );
             } else {
                 return polygon_vertex(
                     ElementLocalVertex( polygon_local_edge.polygon_id_,
