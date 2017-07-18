@@ -32,7 +32,6 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
-
 namespace {
 
     class StradivariusBuilder final: public GeoModelBuilderFile< 2 > {
@@ -242,7 +241,8 @@ namespace {
             save_header( out );
             save_milieux( out, geomodel );
             save_horizons( out, geomodel );
-
+            save_faults( out, geomodel );
+            save_vertices( out, geomodel );
         }
 
     private:
@@ -283,7 +283,7 @@ namespace {
             const Surface< 2 >& surface )
         {
             for( index_t boundary : range( surface.nb_boundaries() ) ) {
-                out << surface.boundary( boundary ).index();
+                out << surface.boundary( boundary ).index() << std::endl;
             }
         }
 
@@ -292,15 +292,15 @@ namespace {
          */
         void save_horizons( std::ofstream& out, const GeoModel< 2 >& geomodel )
         {
+            out << "liste des horizons" << std::endl;
             out << geomodel.nb_lines() + nb_horizons_for_seabed << " "
                 << "// milG milD nbrePoint   numeroHorizon   nom d'horizon"
                 << std::endl;
-            std::vector< vec2 > additional_points_for_seabed;
             ringmesh_assert( additional_points_for_seabed.size() == 2 );
             for( const auto& line : geomodel.lines() ) {
                 save_horizon( out, line );
             }
-            save_seabed( out, geomodel, additional_points_for_seabed );
+            save_seabed( out, geomodel );
 
         }
         void save_horizon( std::ofstream& out, const Line< 2 >& line )
@@ -317,6 +317,27 @@ namespace {
 
         void save_classical_horizon( std::ofstream& out, const Line< 2 >& line )
         {
+            const Surface< 2 > &incident_surface_1 = line.incident_entity( 0 );
+            index_t left = NO_ID;
+            index_t right = NO_ID;
+
+            index_t boundary_id = 0;
+            while( incident_surface_1.boundary_gmme( boundary_id ) != line.gmme() ) {
+                boundary_id++;
+            }
+            if( incident_surface_1.side( boundary_id ) ) {
+                left = 0;
+                right = 1;
+            } else {
+                left = 1;
+                right = 0;
+            }
+            save_horizon_topology( out,
+                line.incident_entity( left ).index() + shift_for_seabed,
+                line.incident_entity( right ).index() + shift_for_seabed,
+                line.nb_vertices(), line.index(),
+                "Line_" + GEO::String::to_string( line.index() ) );
+            save_horizons_points( out, line );
 
         }
 
@@ -350,8 +371,10 @@ namespace {
                     right_is_outside( out, line );
                 }
             } else {
+                DEBUG( line.index() );
                 //top surface
                 if( v0.x > v1.x ) {
+
                     right_is_outside( out, line );
                 } else {
                     left_is_outside( out, line );
@@ -362,17 +385,18 @@ namespace {
 
         void left_is_outside( std::ofstream& out, const Line< 2 >& line )
         {
-            out << outside_region << " "
-                << line.incident_entity( 0 ).index() + shift_for_seabed << " "
-                << nb_points_for_seabed_boundaries << " " << line.index() << "Line_"
-                << line.index() << std::endl;
+            save_horizon_topology( out, outside_region,
+                line.incident_entity( 0 ).index() + shift_for_seabed,
+                line.nb_vertices(), line.index(),
+                "Line_" + GEO::String::to_string( line.index() ) );
         }
 
         void right_is_outside( std::ofstream& out, const Line< 2 >& line )
         {
-            out << line.incident_entity( 0 ).index() + shift_for_seabed << " "
-                << outside_region << " " << nb_points_for_seabed_boundaries << " "
-                << line.index() << "Line_" << line.index() << std::endl;
+            save_horizon_topology( out,
+                line.incident_entity( 0 ).index() + shift_for_seabed, outside_region,
+                line.nb_vertices(), line.index(),
+                "Line_" + GEO::String::to_string( line.index() ) );
         }
 
         void save_horizons_points( std::ofstream& out, const Line< 2 >& line )
@@ -384,53 +408,44 @@ namespace {
             }
         }
 
-        void save_seabed(
-            std::ofstream& out,
-            const GeoModel< 2 >& geomodel,
-            std::vector< vec2 >& additional_points_for_seabed )
+        void save_seabed( std::ofstream& out, const GeoModel< 2 >& geomodel )
         {
             // goal : find the maximum z of the model, add +200
             // to have the seabed
             for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
                 model_box_.add_point( geomodel.mesh.vertices.vertex( v ) );
             }
-            vec2 right_up_point( model_box_.min()[0],
+            right_up_point_ = vec2( model_box_.max()[0],
                 model_box_.max()[1] + default_sea_depth );
-            vec2 left_up_point( model_box_.max()[0],
+            left_up_point_ = vec2( model_box_.min()[0],
                 model_box_.max()[1] + default_sea_depth );
-            additional_points_for_seabed.resize( 2 );
-            additional_points_for_seabed[0] = right_up_point;
-            additional_points_for_seabed[1] = left_up_point;
 
             index_t nb_lines = geomodel.nb_lines();
             index_t nb_points = geomodel.mesh.vertices.nb();
 
             index_t right_up_point_of_the_model_wo_seabed =
-                vertex_id_of_the_max_height_corner_at_constant_x( right_up_point.x,
+                vertex_id_of_the_max_height_corner_at_constant_x( right_up_point_.x,
                     model_box_.min().y, geomodel );
 
             index_t left_up_point_of_the_model_wo_seabed =
-                vertex_id_of_the_max_height_corner_at_constant_x( left_up_point.x,
+                vertex_id_of_the_max_height_corner_at_constant_x( left_up_point_.x,
                     model_box_.min().y, geomodel );
 
             // Top of the seabed
-            out << outside_region << " " << seabed_region << " "
-                << nb_points_for_seabed_boundaries << " " << nb_lines + 0 << "SB_TOP"
-                << std::endl;
+            save_horizon_topology( out, outside_region, seabed_region,
+                nb_points_for_seabed_boundaries, nb_lines, "SB_TOP" );
             out << nb_points << std::endl;
             out << nb_points + 1 << std::endl;
 
             // Left side of the seabed
-            out << outside_region << " " << seabed_region << " "
-                << nb_points_for_seabed_boundaries << " " << nb_lines + 1
-                << "SB_LEFT" << std::endl;
+            save_horizon_topology( out, outside_region, seabed_region,
+                nb_points_for_seabed_boundaries, nb_lines + 1, "SB_LEFT" );
             out << left_up_point_of_the_model_wo_seabed << std::endl;
             out << nb_points << std::endl;
 
             // Right side of the seabed
-            out << outside_region << " " << seabed_region << " "
-                << nb_points_for_seabed_boundaries << " " << nb_lines + 2
-                << "SB_RIGHT" << std::endl;
+            save_horizon_topology( out, outside_region, seabed_region,
+                nb_points_for_seabed_boundaries, nb_lines + 2, "SB_RIGHT" );
             out << nb_points << std::endl;
             out << right_up_point_of_the_model_wo_seabed + 1 << std::endl;
         }
@@ -443,7 +458,7 @@ namespace {
             index_t vertex_index = NO_ID;
             double cur_y = min_y;
             for( const auto& corner : geomodel.corners() ) {
-                vec2 corner_vertex = corner.vertex( 0 );
+                const vec2& corner_vertex = corner.vertex( 0 );
                 if( corner_vertex.x == x ) {
                     if( corner_vertex.y > cur_y ) {
                         cur_y = corner_vertex.y;
@@ -456,9 +471,57 @@ namespace {
             return vertex_index;
         }
 
+        void save_horizon_topology(
+            std::ofstream& out,
+            int left_id,
+            int right_id,
+            index_t nb_vertices,
+            index_t line_id,
+            const std::string& name )
+        {
+            out << left_id << " " << right_id << " " << nb_vertices << " " << line_id
+                << " " << name << std::endl;
+        }
+
+        void save_faults( std::ofstream& out, const GeoModel< 2 >& geomodel )
+        {
+            out << "liste des failles" << std::endl;
+            out << 0 << std::endl;
+        }
+
+        void save_vertices( std::ofstream& out, const GeoModel< 2 >& geomodel )
+        {
+            out << "liste des points" << std::endl;
+            out << geomodel.mesh.vertices.nb() + 2 << std::endl;
+            for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
+                out << v << " " << geomodel.mesh.vertices.vertex( v ) << " ";
+                save_uncertainties( out );
+                out << std::endl;
+            }
+            save_seabed_point( out, geomodel.mesh.vertices.nb(), left_up_point_ );
+            save_seabed_point( out, geomodel.mesh.vertices.nb() + 1,
+                right_up_point_ );
+        }
+
+        void save_seabed_point(
+            std::ofstream& out,
+            index_t vertex_id,
+            const vec2& point )
+        {
+            out << vertex_id << " " << point.x << " " << -point.y;
+            save_uncertainties( out );
+            out << std::endl;
+        }
+
+        void save_uncertainties( std::ofstream& out )
+        {
+            out << " " << uncertainty_x << " " << uncertainty_y << " "
+                << l_uncertainty_x << " " << l_uncertainty_y;
+        }
+
     private:
         static const index_t nb_horizons_for_seabed = 3;
-        static constexpr double default_sea_depth = 200;
+        static const double default_sea_depth;
         /// Sea milieu index is 0
         static const index_t seabed_region = 0;
         static const index_t nb_points_for_seabed_boundaries = 2;
@@ -466,8 +529,23 @@ namespace {
         static const index_t shift_for_seabed = 1;
 
         static const int outside_region = -1;
+        static const double uncertainty_x;
+        static const double uncertainty_y;
+        static const double l_uncertainty_x;
+        static const double l_uncertainty_y;
+
+        vec2 left_up_point_;
+        vec2 right_up_point_;
 
         Box< 2 > model_box_;
 
     };
+
+    const double StradivariusIOHandler::default_sea_depth = 200;
+
+    const double StradivariusIOHandler::uncertainty_x = -1.0000;
+    const double StradivariusIOHandler::uncertainty_y = -1.0000;
+    const double StradivariusIOHandler::l_uncertainty_x = .0000;
+    const double StradivariusIOHandler::l_uncertainty_y = .0000;
+
 }
