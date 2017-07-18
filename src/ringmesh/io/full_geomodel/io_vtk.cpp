@@ -97,7 +97,8 @@ namespace {
                     *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
                 for( index_t v : range( mesh.cells.nb_vertices( c ) ) ) {
                     index_t vertex_id = descriptor.vertices[v];
-                    out << SPACE << mesh.cells.vertex( c, vertex_id );
+                    out << SPACE
+                        << mesh.cells.vertex( ElementLocalVertex( c, vertex_id ) );
                 }
                 out << std::endl;
             }

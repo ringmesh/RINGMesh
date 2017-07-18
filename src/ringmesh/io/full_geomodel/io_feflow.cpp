@@ -139,7 +139,8 @@ namespace {
                 out << SPACE << descriptor.entity_type;
                 for( index_t v : range( cells.nb_vertices( c ) ) ) {
                     out << SPACE
-                        << cells.vertex( c, descriptor.vertices[v] )
+                        << cells.vertex(
+                            ElementLocalVertex( c, descriptor.vertices[v] ) )
                             + STARTING_OFFSET;
                 }
                 out << "\n";

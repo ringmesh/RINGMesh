@@ -70,11 +70,15 @@ namespace {
             for( index_t m : range( geomodel.nb_regions() ) ) {
                 for( index_t tet : range( mesh.cells.nb_tet( m ) ) ) {
                     index_t cell = mesh.cells.tet( m, tet );
-                    ele << nb_tet_exported << SPACE << mesh.cells.vertex( cell, 0 )
-                        << SPACE << mesh.cells.vertex( cell, 1 ) << SPACE
-                        << mesh.cells.vertex( cell, 2 ) << SPACE
-                        << mesh.cells.vertex( cell, 3 ) << SPACE << m + 1
-                        << std::endl;
+                    ele << nb_tet_exported << SPACE
+                        << mesh.cells.vertex( ElementLocalVertex( cell, 0 ) )
+                        << SPACE
+                        << mesh.cells.vertex( ElementLocalVertex( cell, 1 ) )
+                        << SPACE
+                        << mesh.cells.vertex( ElementLocalVertex( cell, 2 ) )
+                        << SPACE
+                        << mesh.cells.vertex( ElementLocalVertex( cell, 3 ) )
+                        << SPACE << m + 1 << std::endl;
                     neigh << nb_tet_exported;
                     for( index_t f : range( mesh.cells.nb_facets( tet ) ) ) {
                         neigh << SPACE;

@@ -97,7 +97,7 @@ namespace RINGMesh {
     /*!
      * Loads a WellGroup from a file
      * @param[in] filename the file to load
-     * @param][out] wells the wells to fill
+     * @param][in,out] wells the wells to fill
      */
     void RINGMESH_API well_load(
         const std::string& filename,
