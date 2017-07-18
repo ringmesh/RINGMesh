@@ -42,7 +42,6 @@
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/mesh/mesh.h>///TODO see for fwd decl ElementLocalVertex
 
 /*!
  * @file Well related classe declarations 
@@ -55,6 +54,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class NNSearch;
     template< index_t DIMENSION > class PointSetMesh;
     template< index_t DIMENSION > class LineMesh;
+    struct ElementLocalVertex;
 }
 
 namespace RINGMesh {
