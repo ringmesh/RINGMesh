@@ -78,13 +78,15 @@ namespace RINGMesh {
     }
 
     template< typename T, typename container >
-    bool contains( const container& in, const T& value, bool sorted = false )
+    bool contains( const container& in, const T& value )
     {
-        if( sorted ) {
-            return find_sorted( in, value ) != NO_ID;
-        } else {
-            return find( in, value ) != NO_ID;
-        }
+        return find( in, value ) != NO_ID;
+    }
+
+    template< typename T, typename container >
+    bool contains_sorted( const container& in, const T& value )
+    {
+        return find_sorted( in, value ) != NO_ID;
     }
 
     /*!

@@ -444,7 +444,6 @@ namespace RINGMesh {
             index_t id,
             const MeshType& type )
             : GeoModelMeshEntity< DIMENSION >( geomodel, id )
-
         {
             update_mesh_storage_type(
                 PointSetMesh< DIMENSION >::create_mesh( type ) );
