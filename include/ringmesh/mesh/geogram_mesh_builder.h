@@ -122,7 +122,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
-    public:
+    protected:
         void set_mesh( PointSetMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
@@ -137,12 +137,6 @@ namespace RINGMesh {
     class GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-
-        void set_mesh( LineMesh< DIMENSION >& mesh ) override
-        {
-            set_geogram_mesh(
-                dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) );
-        }
 
         void do_create_edge( index_t v1_id, index_t v2_id ) override
         {
@@ -180,6 +174,12 @@ namespace RINGMesh {
                 copy_std_vector_to_geo_vector( permutation );
             mesh_->mesh_->edges.permute_elements( geo_vector_permutation );
         }
+    protected:
+        void set_mesh( LineMesh< DIMENSION >& mesh ) override
+        {
+            set_geogram_mesh(
+                dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) );
+        }
     };
 
     using GeogramLineMesh2DBuilder = GeogramLineMeshBuilder< 2 >;
@@ -189,12 +189,6 @@ namespace RINGMesh {
     class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-
-        void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override
-        {
-            set_geogram_mesh(
-                dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) );
-        }
 
         void remove_small_connected_components(
             double min_area,
@@ -282,6 +276,12 @@ namespace RINGMesh {
                 copy_std_vector_to_geo_vector< bool, index_t >( to_delete );
             mesh_->mesh_->facets.delete_elements( polygons_to_delete, false );
         }
+    protected:
+        void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override
+        {
+            set_geogram_mesh(
+                dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) );
+        }
     };
 
     using GeogramSurfaceMesh2DBuilder = GeogramSurfaceMeshBuilder< 2 >;
@@ -291,12 +291,6 @@ namespace RINGMesh {
     class GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );ringmesh_template_assert_3d( DIMENSION );
     public:
-
-        void set_mesh( VolumeMesh< DIMENSION >& mesh ) override
-        {
-            set_geogram_mesh(
-                dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) );
-        }
 
         index_t do_create_cells( index_t nb_cells, CellType type ) override
         {
@@ -358,6 +352,12 @@ namespace RINGMesh {
             mesh_->mesh_->cells.delete_elements( geo_to_delete, false );
         }
 
+    protected:
+        void set_mesh( VolumeMesh< DIMENSION >& mesh ) override
+        {
+            set_geogram_mesh(
+                dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) );
+        }
     };
 
     using GeogramVolumeMesh3DBuilder = GeogramVolumeMeshBuilder< 3 >;
