@@ -81,7 +81,7 @@ namespace {
                     for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
                         out
                             << geomodel.mesh.vertices.geomodel_vertex_id(
-                                surface.gmme(), p, v ) << " ";
+                                surface.gmme(), ElementLocalVertex( p, v ) ) << " ";
                     }
                     out << std::endl;
                 }

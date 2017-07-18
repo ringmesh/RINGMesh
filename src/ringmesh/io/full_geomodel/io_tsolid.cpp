@@ -80,9 +80,11 @@ namespace {
                 for( index_t c : range( region.nb_mesh_elements() ) ) {
                     index_t cell = mesh.cells.cell( r, c );
                     for( index_t v : range( mesh.cells.nb_vertices( cell ) ) ) {
-                        index_t atom_id = mesh.cells.duplicated_corner_index( cell, v );
+                        index_t atom_id = mesh.cells.duplicated_corner_index(
+                            ElementLocalVertex( cell, v ) );
                         if( atom_id == NO_ID ) {
-                            index_t vertex_id = mesh.cells.vertex( cell, v );
+                            index_t vertex_id = mesh.cells.vertex(
+                                ElementLocalVertex( cell, v ) );
                             if( vertex_exported[vertex_id] ) continue;
                             vertex_exported[vertex_id] = true;
                             vertex_exported_id[vertex_id] = nb_vertices_exported;
@@ -124,9 +126,11 @@ namespace {
                     out << "TETRA";
                     index_t cell = mesh.cells.cell( r, c );
                     for( index_t v : range( mesh.cells.nb_vertices( cell ) ) ) {
-                        index_t atom_id = mesh.cells.duplicated_corner_index( cell, v );
+                        index_t atom_id = mesh.cells.duplicated_corner_index(
+                            ElementLocalVertex( cell, v ) );
                         if( atom_id == NO_ID ) {
-                            index_t vertex_id = mesh.cells.vertex( cell, v );
+                            index_t vertex_id = mesh.cells.vertex(
+                                ElementLocalVertex( cell, v ) );
                             out << " " << vertex_exported_id[vertex_id];
                         } else {
                             out << " " << atom_exported_id[atom_id];
@@ -167,8 +171,8 @@ namespace {
                     index_t key_polygon_id = polygons.polygon( surface_id, 0 );
                     for( index_t v : range( polygons.nb_vertices( key_polygon_id ) ) ) {
                         out << " "
-                            << vertex_exported_id[polygons.vertex( key_polygon_id,
-                                v )];
+                            << vertex_exported_id[polygons.vertex(
+                                ElementLocalVertex( key_polygon_id, v ) )];
                     }
                     out << std::endl;
                     for( index_t p : range( polygons.nb_polygons( surface_id ) ) ) {
@@ -176,8 +180,8 @@ namespace {
                         out << "TRGL";
                         for( index_t v : range( polygons.nb_vertices( polygon_id ) ) ) {
                             out << " "
-                                << vertex_exported_id[polygons.vertex( polygon_id,
-                                    v )];
+                                << vertex_exported_id[polygons.vertex(
+                                    ElementLocalVertex( polygon_id, v ) )];
                         }
                         out << std::endl;
                     }

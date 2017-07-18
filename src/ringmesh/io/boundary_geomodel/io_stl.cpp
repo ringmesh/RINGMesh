@@ -72,7 +72,8 @@ namespace {
     {
         out << "vertex "
             << geomodel.mesh.vertices.vertex(
-                geomodel.mesh.polygons.vertex( triangle_id, local_vertex_id ) )
+                geomodel.mesh.polygons.vertex(
+                    ElementLocalVertex( triangle_id, local_vertex_id ) ) )
             << std::endl;
     }
 

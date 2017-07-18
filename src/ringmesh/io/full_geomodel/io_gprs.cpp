@@ -117,15 +117,16 @@ namespace {
             const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
             for( index_t p : range( polygons.nb() ) ) {
                 for( index_t e : range( polygons.nb_vertices( p ) ) ) {
-                    index_t adj = polygons.adjacent( p, e );
+                    index_t adj = polygons.adjacent( PolygonLocalEdge( p, e ) );
                     if( adj != GEO::NO_CELL && adj < p ) {
                         pipes.emplace_back( p + cell_offset, adj + cell_offset );
                     } else {
                         const vec3& e0 = mesh.vertices.vertex(
-                            polygons.vertex( p, e ) );
+                            polygons.vertex( ElementLocalVertex( p, e ) ) );
                         const vec3& e1 = mesh.vertices.vertex(
-                            polygons.vertex( p,
-                                ( e + 1 ) % polygons.nb_vertices( p ) ) );
+                            polygons.vertex(
+                                ElementLocalVertex( p,
+                                    ( e + 1 ) % polygons.nb_vertices( p ) ) ) );
                         vec3 query = 0.5 * ( e0 + e1 );
                         std::vector< index_t > results = nn_search.get_neighbors(
                             query, geomodel.epsilon() );

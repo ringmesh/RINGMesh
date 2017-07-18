@@ -186,10 +186,14 @@ namespace {
     {
         switch( M.cell_type( cell ) ) {
             case CellType::TETRAHEDRON: {
-                const vecn< DIMENSION >& p0 = M.vertex( M.cell_vertex( cell, 0 ) );
-                const vecn< DIMENSION >& p1 = M.vertex( M.cell_vertex( cell, 1 ) );
-                const vecn< DIMENSION >& p2 = M.vertex( M.cell_vertex( cell, 2 ) );
-                const vecn< DIMENSION >& p3 = M.vertex( M.cell_vertex( cell, 3 ) );
+                const vecn< DIMENSION >& p0 = M.vertex(
+                    M.cell_vertex( ElementLocalVertex( cell, 0 ) ) );
+                const vecn< DIMENSION >& p1 = M.vertex(
+                    M.cell_vertex( ElementLocalVertex( cell, 1 ) ) );
+                const vecn< DIMENSION >& p2 = M.vertex(
+                    M.cell_vertex( ElementLocalVertex( cell, 2 ) ) );
+                const vecn< DIMENSION >& p3 = M.vertex(
+                    M.cell_vertex( ElementLocalVertex( cell, 3 ) ) );
                 return point_inside_tetra( p, p0, p1, p2, p3 );
             }
             default:
@@ -315,7 +319,8 @@ namespace RINGMesh {
         bboxes.resize( mesh.nb_edges() );
         for( index_t i : range( mesh.nb_edges() ) ) {
             for( index_t v : range( 2 ) ) {
-                bboxes[i].add_point( mesh.vertex( mesh.edge_vertex( i, v ) ) );
+                bboxes[i].add_point(
+                    mesh.vertex( mesh.edge_vertex( ElementLocalVertex( i, v ) ) ) );
             }
         }
         this->initialize_tree( bboxes );
@@ -334,8 +339,10 @@ namespace RINGMesh {
         const vecn< DIMENSION >& query,
         index_t cur_box ) const
     {
-        const vecn< DIMENSION >& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) );
-        const vecn< DIMENSION >& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) );
+        const vecn< DIMENSION >& v0 = mesh_.vertex(
+            mesh_.edge_vertex( ElementLocalVertex( cur_box, 0 ) ) );
+        const vecn< DIMENSION >& v1 = mesh_.vertex(
+            mesh_.edge_vertex( ElementLocalVertex( cur_box, 1 ) ) );
         return Distance::point_to_segment( query, v0, v1 );
     }
 
@@ -345,7 +352,8 @@ namespace RINGMesh {
         index_t element_id ) const
     {
         ringmesh_unused( box );
-        return mesh_.vertex( mesh_.edge_vertex( element_id, 0 ) );
+        return mesh_.vertex(
+            mesh_.edge_vertex( ElementLocalVertex( element_id, 0 ) ) );
     }
 
     /****************************************************************************/
@@ -359,7 +367,9 @@ namespace RINGMesh {
         bboxes.resize( mesh.nb_polygons() );
         for( index_t i : range( mesh.nb_polygons() ) ) {
             for( index_t v : range( mesh.nb_polygon_vertices( i ) ) ) {
-                bboxes[i].add_point( mesh.vertex( mesh.polygon_vertex( i, v ) ) );
+                bboxes[i].add_point(
+                    mesh.vertex(
+                        mesh.polygon_vertex( ElementLocalVertex( i, v ) ) ) );
             }
         }
         this->initialize_tree( bboxes );
@@ -379,11 +389,11 @@ namespace RINGMesh {
         index_t cur_box ) const
     {
         const vecn< DIMENSION >& v0 = mesh_.vertex(
-            mesh_.polygon_vertex( cur_box, 0 ) );
+            mesh_.polygon_vertex( ElementLocalVertex( cur_box, 0 ) ) );
         const vecn< DIMENSION >& v1 = mesh_.vertex(
-            mesh_.polygon_vertex( cur_box, 1 ) );
+            mesh_.polygon_vertex( ElementLocalVertex( cur_box, 1 ) ) );
         const vecn< DIMENSION >& v2 = mesh_.vertex(
-            mesh_.polygon_vertex( cur_box, 2 ) );
+            mesh_.polygon_vertex( ElementLocalVertex( cur_box, 2 ) ) );
         return Distance::point_to_triangle( query, v0, v1, v2 );
     }
 
@@ -393,7 +403,8 @@ namespace RINGMesh {
         index_t element_id ) const
     {
         ringmesh_unused( box );
-        return mesh_.vertex( mesh_.polygon_vertex( element_id, 0 ) );
+        return mesh_.vertex(
+            mesh_.polygon_vertex( ElementLocalVertex( element_id, 0 ) ) );
     }
 
     /****************************************************************************/
@@ -407,7 +418,8 @@ namespace RINGMesh {
         bboxes.resize( mesh.nb_cells() );
         for( index_t i : range( mesh.nb_cells() ) ) {
             for( index_t v : range( mesh.nb_cell_vertices( i ) ) ) {
-                bboxes[i].add_point( mesh.vertex( mesh.cell_vertex( i, v ) ) );
+                bboxes[i].add_point(
+                    mesh.vertex( mesh.cell_vertex( ElementLocalVertex( i, v ) ) ) );
             }
         }
         this->initialize_tree( bboxes );
@@ -419,7 +431,8 @@ namespace RINGMesh {
         index_t element_id ) const
     {
         ringmesh_unused( box );
-        return mesh_.vertex( mesh_.cell_vertex( element_id, 0 ) );
+        return mesh_.vertex(
+            mesh_.cell_vertex( ElementLocalVertex( element_id, 0 ) ) );
     }
 
     template< index_t DIMENSION >

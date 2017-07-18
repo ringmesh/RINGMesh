@@ -42,6 +42,7 @@
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/mesh/mesh.h>///TODO see for fwd decl ElementLocalVertex
 
 /*!
  * @file Well related classe declarations 
@@ -182,7 +183,8 @@ namespace RINGMesh {
             return id_;
         }
         const vecn< DIMENSION >& vertex( index_t v ) const;
-        const vecn< DIMENSION >& edge_vertex( index_t edge, index_t v ) const;
+        const vecn< DIMENSION >& edge_vertex(
+            const ElementLocalVertex& well_edge_local_vertex ) const;
 
         GEO::AttributesManager& vertex_attribute_manager() const;
         GEO::AttributesManager& edge_attribute_manager() const;

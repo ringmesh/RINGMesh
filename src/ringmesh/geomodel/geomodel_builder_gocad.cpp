@@ -251,8 +251,7 @@ namespace {
         for( index_t c : range( nb_cells ) ) {
             for( index_t f : range( region.nb_cell_facets( c ) ) ) {
                 cell_facet_centers.push_back(
-                    mesh.cell_facet_barycenter(
-                        VolumeMesh< 3 >::CellLocalFacet( c, f ) ) );
+                    mesh.cell_facet_barycenter( CellLocalFacet( c, f ) ) );
             }
         }
     }
@@ -322,7 +321,7 @@ namespace {
         index_t cell_id = ( cell_facet_center_id - local_facet_id ) / 4;
         vec3 cell_facet_normal =
             geomodel.region( region_id ).low_level_mesh_storage().cell_facet_normal(
-                VolumeMesh< 3 >::CellLocalFacet( cell_id, local_facet_id ) );
+                CellLocalFacet( cell_id, local_facet_id ) );
         vec3 first_polygon_normal =
             geomodel.surface( surface_id ).low_level_mesh_storage().polygon_normal(
                 0 );
@@ -571,7 +570,7 @@ namespace {
         const Surface< 3 >& surface = geomodel.surface( surface_id );
         const SurfaceMesh< 3 >& mesh = surface.low_level_mesh_storage();
         const vec3 barycenter = mesh.polygon_edge_barycenter(
-            SurfaceMesh< 3 >::PolygonLocalEdge( polygon, edge ) );
+            PolygonLocalEdge( polygon, edge ) );
         std::vector< index_t > result;
         index_t tested_surf = 0;
         while( result.empty() && tested_surf < surface_nns.size() ) {
@@ -600,10 +599,9 @@ namespace {
         const SurfaceMesh< 3 >& mesh = surface.low_level_mesh_storage();
         for( index_t p : range( surface.nb_mesh_elements() ) ) {
             for( index_t e : range( surface.nb_mesh_element_vertices( p ) ) ) {
-                if( mesh.is_edge_on_border( p, e ) ) {
+                if( mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) ) {
                     border_edge_barycenters.push_back(
-                        mesh.polygon_edge_barycenter(
-                            SurfaceMesh< 3 >::PolygonLocalEdge( p, e ) ) );
+                        mesh.polygon_edge_barycenter( PolygonLocalEdge( p, e ) ) );
                 }
             }
         }
@@ -1161,8 +1159,9 @@ namespace RINGMesh {
         for( index_t p : range( surface.nb_mesh_elements() ) ) {
             std::vector< index_t > adjacent_polygons_id( 3 );
             for( index_t e : range( 3 ) ) {
-                adjacent_polygons_id[e] = surface.polygon_adjacent_index( p, e );
-                if( !mesh.is_edge_on_border( p, e ) ) {
+                adjacent_polygons_id[e] = surface.polygon_adjacent_index(
+                    PolygonLocalEdge( p, e ) );
+                if( !mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) ) {
                     bool internal_border = is_edge_in_several_surfaces( geomodel_,
                         surface_id, p, e, surface_nns, surface_boxes );
                     if( internal_border ) {

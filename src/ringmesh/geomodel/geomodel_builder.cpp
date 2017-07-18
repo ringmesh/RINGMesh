@@ -185,11 +185,11 @@ namespace {
                 gmme_id S_id = S.gmme();
                 for( index_t p : range( S.nb_mesh_elements() ) ) {
                     for( index_t v : range( S.nb_mesh_element_vertices( p ) ) ) {
-                        if( mesh.is_edge_on_border( p, v ) ) {
+                        if( mesh.is_edge_on_border( PolygonLocalEdge( p, v ) ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
-                                S_id, p, v );
+                                S_id, ElementLocalVertex( p, v ) );
                             index_t next_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S_id, p,
+                                geomodel_vertices.geomodel_vertex_id( S_id,
                                     mesh.next_polygon_vertex(
                                         ElementLocalVertex( p, v ) ) );
                             border_polygons_.emplace_back( s, p, vertex,
@@ -682,26 +682,26 @@ namespace {
             index_t next_f_v1 = NO_ID;
 
             if( !backward ) {
-                std::tie( next_f, next_f_v0 ) = mesh.next_on_border( p,
-                    v0_id_in_polygon );
+                std::tie( next_f, next_f_v0 ) = mesh.next_on_border(
+                    PolygonLocalEdge( p, v0_id_in_polygon ) );
                 ringmesh_assert( next_f_v0 != NO_ID );
                 next_f_v1 = mesh.next_polygon_vertex(
-                    ElementLocalVertex( next_f, next_f_v0 ) );
+                    ElementLocalVertex( next_f, next_f_v0 ) ).local_vertex_id_;
             } else {
-                std::tie( next_f, next_f_v0 ) = mesh.prev_on_border( p,
-                    v0_id_in_polygon );
+                std::tie( next_f, next_f_v0 ) = mesh.prev_on_border(
+                    PolygonLocalEdge( p, v0_id_in_polygon ) );
                 ringmesh_assert( next_f_v0 != NO_ID );
                 next_f_v1 = mesh.next_polygon_vertex(
-                    ElementLocalVertex( next_f, next_f_v0 ) );
+                    ElementLocalVertex( next_f, next_f_v0 ) ).local_vertex_id_;
             }
 
             // Finds the BorderPolygon that is corresponding to this
             // It must exist and there is only one
             BorderPolygon bait( border_polygon.surface_, next_f,
-                geomodel_vertices.geomodel_vertex_id( surface_id, next_f,
-                    next_f_v0 ),
-                geomodel_vertices.geomodel_vertex_id( surface_id, next_f,
-                    next_f_v1 ) );
+                geomodel_vertices.geomodel_vertex_id( surface_id,
+                    ElementLocalVertex( next_f, next_f_v0 ) ),
+                geomodel_vertices.geomodel_vertex_id( surface_id,
+                    ElementLocalVertex( next_f, next_f_v1 ) ) );
             index_t result = find_sorted( this->border_polygons_, bait );
 
             ringmesh_assert( result != NO_ID );

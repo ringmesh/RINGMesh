@@ -86,11 +86,11 @@ namespace {
         surface.polygon_nn_search().get_neighbors( v_bary,
             [&surface, &v0, &v1, &result, &edge, &polygon]( index_t i ) {
                 for( index_t j : range( surface.nb_mesh_element_vertices( i ) ) ) {
-                    if( inexact_equal( surface.mesh_element_vertex( i, j ), v0,
+                    if( inexact_equal( surface.mesh_element_vertex( ElementLocalVertex(i, j) ), v0,
                             surface.geomodel().epsilon() ) ) {
                         index_t j_next = surface.low_level_mesh_storage().next_polygon_vertex(
-                            i, j );
-                        if( inexact_equal( surface.mesh_element_vertex( i, j_next ),
+                            ElementLocalVertex(i, j) ).local_vertex_id_;
+                        if( inexact_equal( surface.mesh_element_vertex( ElementLocalVertex(i, j_next )),
                                 v1, surface.geomodel().epsilon() ) ) {
                             edge = j;
                             polygon = i;
@@ -118,8 +118,8 @@ namespace {
             return false;
         }
         vec3 cell_facet_barycenter =
-            region.low_level_mesh_storage().cell_facet_barycenter( cell,
-                cell_facet );
+            region.low_level_mesh_storage().cell_facet_barycenter(
+                CellLocalFacet( cell, cell_facet ) );
         vec3 polygon_barycenter = surface.mesh_element_barycenter( polygon );
         return inexact_equal( cell_facet_barycenter, polygon_barycenter,
             region.geomodel().epsilon() );
@@ -161,10 +161,10 @@ namespace {
         surface.polygon_nn_search().get_neighbors( v,
             [&surface, &v, &result, &vertex_id, &element_id]( index_t i ) {
                 for( index_t j : range( surface.nb_mesh_element_vertices( i ) ) ) {
-                    if( inexact_equal( surface.mesh_element_vertex( i, j ),
+                    if( inexact_equal( surface.mesh_element_vertex( ElementLocalVertex(i, j) ),
                             v, surface.geomodel().epsilon() ) ) {
-                        vertex_id = surface.mesh_element_vertex_index( i,
-                            j );
+                        vertex_id = surface.mesh_element_vertex_index( ElementLocalVertex(i,
+                                j ));
                         element_id = i;
                         result = true;
                         break;
@@ -185,10 +185,10 @@ namespace {
         region.cell_nn_search().get_neighbors( v,
             [&region, &v, &result, &element_id, &vertex_id]( index_t i ) {
                 for( index_t j : range( region.nb_mesh_element_vertices( i ) ) ) {
-                    if( inexact_equal( region.mesh_element_vertex( i, j ),
+                    if( inexact_equal( region.mesh_element_vertex( ElementLocalVertex(i, j )),
                             v, region.geomodel().epsilon() ) ) {
-                        vertex_id = region.mesh_element_vertex_index( i,
-                            j );
+                        vertex_id = region.mesh_element_vertex_index( ElementLocalVertex(i,
+                                j ));
                         element_id = i;
                         result = true;
                         break;
@@ -207,14 +207,19 @@ namespace {
     {
         const SurfaceMesh< DIMENSION >& mesh = surface.low_level_mesh_storage();
         for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
-            if( !inexact_equal( surface.mesh_element_vertex( p, v ), v0,
+            if( !inexact_equal(
+                surface.mesh_element_vertex( ElementLocalVertex( p, v ) ), v0,
                 surface.geomodel().epsilon() ) ) continue;
-            index_t prev_v = mesh.prev_polygon_vertex( p, v );
-            index_t next_v = mesh.next_polygon_vertex( p, v );
-            if( inexact_equal( surface.mesh_element_vertex( p, prev_v ), v1,
+            index_t prev_v =
+                mesh.prev_polygon_vertex( ElementLocalVertex( p, v ) ).local_vertex_id_;
+            index_t next_v =
+                mesh.next_polygon_vertex( ElementLocalVertex( p, v ) ).local_vertex_id_;
+            if( inexact_equal(
+                surface.mesh_element_vertex( ElementLocalVertex( p, prev_v ) ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return prev_v;
-            } else if( inexact_equal( surface.mesh_element_vertex( p, next_v ), v1,
+            } else if( inexact_equal(
+                surface.mesh_element_vertex( ElementLocalVertex( p, next_v ) ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return v;
             }
@@ -232,7 +237,8 @@ namespace {
         const VolumeMesh< DIMENSION >& mesh = region.low_level_mesh_storage();
         vec3 polygon_barycenter = surface.mesh_element_barycenter( polygon );
         for( index_t f : range( region.nb_cell_facets( cell ) ) ) {
-            vec3 cell_facet_barycenter = mesh.cell_facet_barycenter( cell, f );
+            vec3 cell_facet_barycenter = mesh.cell_facet_barycenter(
+                CellLocalFacet( cell, f ) );
             if( inexact_equal( cell_facet_barycenter, polygon_barycenter,
                 surface.geomodel().epsilon() ) ) {
                 return f;
@@ -702,7 +708,8 @@ namespace RINGMesh {
             ringmesh_unused( found );
             ringmesh_assert( found && p != NO_ID && e != NO_ID );
 
-            index_t adj_f = surface.polygon_adjacent_index( p, e );
+            index_t adj_f = surface.polygon_adjacent_index(
+                PolygonLocalEdge( p, e ) );
             if( adj_f != NO_ID ) {
                 index_t adj_e = edge_index_from_polygon_and_edge_vertex_indices(
                     surface, adj_f, p0, p1 );
@@ -726,8 +733,8 @@ namespace RINGMesh {
             create_surface_builder( surface_id );
         for( index_t cur_p : polygons ) {
             for( index_t cur_v : range( surface.nb_mesh_element_vertices( cur_p ) ) ) {
-                if( surface.mesh_element_vertex_index( cur_p, cur_v )
-                    == old_vertex ) {
+                if( surface.mesh_element_vertex_index(
+                    ElementLocalVertex( cur_p, cur_v ) ) == old_vertex ) {
                     builder->set_polygon_vertex( cur_p, cur_v, new_vertex );
                 }
             }

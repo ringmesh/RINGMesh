@@ -234,9 +234,9 @@ namespace {
             vec3 result;
             std::tie( does_seg_intersect_triangle, result ) =
                 Intersection::segment_triangle( v_from_, v_to_,
-                    surface_.mesh_element_vertex( trgl, 0 ),
-                    surface_.mesh_element_vertex( trgl, 1 ),
-                    surface_.mesh_element_vertex( trgl, 2 ) );
+                    surface_.mesh_element_vertex( ElementLocalVertex( trgl, 0 ) ),
+                    surface_.mesh_element_vertex( ElementLocalVertex( trgl, 1 ) ),
+                    surface_.mesh_element_vertex( ElementLocalVertex( trgl, 2 ) ) );
             if( does_seg_intersect_triangle ) {
                 intersections_.push_back(
                     LineInstersection( result, surface_.index(), trgl ) );
@@ -255,10 +255,12 @@ namespace {
         OrientedEdge( const LineMesh< 3 >& mesh, index_t edge, index_t vertex_from )
             : edge_( edge ), vertex_from_( vertex_from )
         {
-            if( mesh.edge_vertex( edge, 0 ) == vertex_from ) {
+            if( mesh.edge_vertex( ElementLocalVertex( edge, 0 ) ) == vertex_from ) {
                 edge_vertex_ = 0;
             } else {
-                ringmesh_assert( mesh.edge_vertex( edge, 1 ) == vertex_from );
+                ringmesh_assert(
+                    mesh.edge_vertex( ElementLocalVertex( edge, 1 ) )
+                        == vertex_from );
                 edge_vertex_ = 1;
             }
         }
@@ -364,10 +366,9 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     const vecn< DIMENSION >& WellPart< DIMENSION >::edge_vertex(
-        index_t edge,
-        index_t v ) const
+        const ElementLocalVertex& well_edge_local_vertex ) const
     {
-        return vertex( mesh_->edge_vertex( edge, v ) );
+        return vertex( mesh_->edge_vertex( well_edge_local_vertex ) );
     }
 
     template< index_t DIMENSION >
@@ -552,9 +553,9 @@ namespace RINGMesh {
         }
 
         for( index_t e : range( in.nb_edges() ) ) {
-            index_t from_id = in.edge_vertex( e, 0 );
+            index_t from_id = in.edge_vertex( ElementLocalVertex( e, 0 ) );
             const vec3& from_vertex = in.vertex( from_id );
-            index_t to_id = in.edge_vertex( e, 1 );
+            index_t to_id = in.edge_vertex( ElementLocalVertex( e, 1 ) );
             const vec3& to_vertex = in.vertex( to_id );
 
             Box< 3 > box;
@@ -625,7 +626,7 @@ namespace RINGMesh {
             conformal_mesh.nb_vertices() );
         for( index_t e : range( conformal_mesh.nb_edges() ) ) {
             for( index_t i : range( 2 ) ) {
-                index_t v = conformal_mesh.edge_vertex( e, i );
+                index_t v = conformal_mesh.edge_vertex( ElementLocalVertex( e, i ) );
                 edges_around_vertices[v].push_back( e );
             }
         }
@@ -662,8 +663,9 @@ namespace RINGMesh {
                 edge_visited[cur_edge_part.edge_] = true;
                 const vec3& v_from = conformal_mesh.vertex(
                     cur_edge_part.vertex_from_ );
-                index_t v_to_id = conformal_mesh.edge_vertex( cur_edge_part.edge_,
-                    ( cur_edge_part.edge_vertex_ + 1 ) % 2 );
+                index_t v_to_id = conformal_mesh.edge_vertex(
+                    ElementLocalVertex( cur_edge_part.edge_,
+                        ( cur_edge_part.edge_vertex_ + 1 ) % 2 ) );
                 const vec3& v_to = conformal_mesh.vertex( v_to_id );
                 well_part_points.push_back( v_from );
 

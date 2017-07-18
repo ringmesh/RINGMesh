@@ -175,8 +175,8 @@ namespace {
                     geomodel_mesh_entity.nb_mesh_element_vertices( elt ) ) ) {
                     out
                         << geomodel_mesh_entity.geomodel().mesh.vertices.geomodel_vertex_id(
-                            geomodel_mesh_entity.gmme(), elt, v ) + id_offset_adeli
-                        << " ";
+                            geomodel_mesh_entity.gmme(),
+                            ElementLocalVertex( elt, v ) ) + id_offset_adeli << " ";
                 }
                 out << std::endl;
             }

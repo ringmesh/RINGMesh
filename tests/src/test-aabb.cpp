@@ -213,7 +213,7 @@ void create_5_tets_from_hex(
 {
     std::vector< index_t > vertices_in_hex( 8 );
     for( index_t v : range( 8 ) ) {
-        vertices_in_hex[v] = mesh_hex.cell_vertex( hex, v );
+        vertices_in_hex[v] = mesh_hex.cell_vertex( ElementLocalVertex( hex, v ) );
     }
     builder.set_cell_vertex( 5 * hex, 0, vertices_in_hex[0] );
     builder.set_cell_vertex( 5 * hex, 1, vertices_in_hex[4] );
