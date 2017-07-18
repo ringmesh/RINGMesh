@@ -453,15 +453,15 @@ namespace {
         }
 
     private:
-        static const index_t nb_horizons_for_seabed = 3;
+        static constexpr index_t nb_horizons_for_seabed = 3;
         static constexpr double default_sea_depth = 200;
         /// Sea milieu index is 0
-        static const index_t seabed_region = 0;
-        static const index_t nb_points_for_seabed_boundaries = 2;
+        static constexpr index_t seabed_region = 0;
+        static constexpr index_t nb_points_for_seabed_boundaries = 2;
 
-        static const index_t shift_for_seabed = 1;
+        static constexpr index_t shift_for_seabed = 1;
 
-        static const int outside_region = -1;
+        static constexpr int outside_region = -1;
 
         Box< 2 > model_box_;
 
