@@ -96,7 +96,7 @@ namespace {
                     for( index_t edge : range(
                         surface.nb_mesh_element_vertices( cur_polygon ) ) ) {
                         index_t adj_polygon = surface.polygon_adjacent_index(
-                            cur_polygon, edge );
+                            PolygonLocalEdge( cur_polygon, edge ) );
                         if( adj_polygon != NO_ID
                             && component[adj_polygon] == NO_COMPONENT ) {
                             S.push( adj_polygon );
@@ -162,7 +162,8 @@ namespace {
         for( index_t mesh_element_index : range( E.nb_mesh_elements() ) ) {
             for( index_t vertex : range(
                 E.nb_mesh_element_vertices( mesh_element_index ) ) ) {
-                ++nb[E.mesh_element_vertex_index( mesh_element_index, vertex )];
+                ++nb[E.mesh_element_vertex_index(
+                    ElementLocalVertex( mesh_element_index, vertex ) )];
             }
         }
         return nb;
@@ -214,9 +215,11 @@ namespace {
         const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             S.geomodel().mesh.vertices;
         for( index_t c : range( S.nb_mesh_element_vertices( p ) ) ) {
-            index_t polygon_vertex_index = S.mesh_element_vertex_index( p, c );
+            index_t polygon_vertex_index = S.mesh_element_vertex_index(
+                ElementLocalVertex( p, c ) );
             corners[v] = polygon_vertex_index;
-            corners_global[v] = geomodel_vertices.geomodel_vertex_id( id, p, v );
+            corners_global[v] = geomodel_vertices.geomodel_vertex_id( id,
+                ElementLocalVertex( p, v ) );
             v++;
         }
         double area = S.mesh_element_size( p );
@@ -238,9 +241,10 @@ namespace {
         const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             region.geomodel().mesh.vertices;
         for( index_t v : range( nb_vertices_in_cell ) ) {
-            vertices[v] = region.mesh_element_vertex_index( cell_index, v );
+            vertices[v] = region.mesh_element_vertex_index(
+                ElementLocalVertex( cell_index, v ) );
             vertices_global[v] = geomodel_vertices.geomodel_vertex_id( id,
-                cell_index, v );
+                ElementLocalVertex( cell_index, v ) );
         }
         double volume = region.mesh_element_size( cell_index );
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )

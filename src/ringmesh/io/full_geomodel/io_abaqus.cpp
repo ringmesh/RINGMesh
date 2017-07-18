@@ -119,7 +119,8 @@ namespace {
                 for( index_t p : range( polygons.nb_polygons( surface_id ) ) ) {
                     index_t polygon_id = polygons.polygon( surface_id, p );
                     for( index_t v : range( polygons.nb_vertices( polygon_id ) ) ) {
-                        index_t vertex_id = polygons.vertex( polygon_id, v );
+                        index_t vertex_id = polygons.vertex(
+                            ElementLocalVertex( polygon_id, v ) );
                         if( vertex_exported[vertex_id] ) continue;
                         vertex_exported[vertex_id] = true;
                         out << sep << vertex_id + 1;
@@ -144,7 +145,8 @@ namespace {
                         for( index_t v : range( 4 ) ) {
                             index_t vertex_id = tet_descriptor_abaqus.vertices[v];
                             out << COMMA << SPACE
-                                << cells.vertex( tetra, vertex_id ) + 1;
+                                << cells.vertex(
+                                    ElementLocalVertex( tetra, vertex_id ) ) + 1;
                         }
                         out << std::endl;
                     }
@@ -164,7 +166,8 @@ namespace {
                         for( index_t v : range( 8 ) ) {
                             index_t vertex_id = hex_descriptor_abaqus.vertices[v];
                             out << COMMA << SPACE
-                                << cells.vertex( hex, vertex_id ) + 1;
+                                << cells.vertex(
+                                    ElementLocalVertex( hex, vertex_id ) ) + 1;
                         }
                         out << std::endl;
                     }

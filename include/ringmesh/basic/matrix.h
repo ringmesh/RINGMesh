@@ -474,8 +474,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < mat1.ni(); ++i ) {
             for( index_t e : range( mat1.get_nb_elements_in_line( i ) ) ) {
                 index_t j = mat1.get_column_in_line( i, e );
-                T i_j_result;
-                mat1.get_element_in_line( i, e, i_j_result );
+                T i_j_result = mat1.get_element_in_line( i, e );
                 i_j_result *= mat2[j];
                 result[i] += i_j_result;
             }

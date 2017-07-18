@@ -323,7 +323,8 @@ namespace {
                         index_t cell = mesh.cells.cell( r, el, T );
                         for( index_t p : range( descriptor.nb_vertices ) ) {
                             index_t csmp_p = descriptor.vertices[p];
-                            index_t vertex_id = mesh.cells.vertex( cell, csmp_p );
+                            index_t vertex_id = mesh.cells.vertex(
+                                ElementLocalVertex( cell, csmp_p ) );
                             data << " " << std::setw( 7 ) << vertex_id;
                             new_line( count, 10, data );
                         }
@@ -338,7 +339,8 @@ namespace {
                     for( index_t el : range( polygons.nb_triangle( s_id ) ) ) {
                         index_t tri = polygons.triangle( s_id, el );
                         for( index_t p : range( polygons.nb_vertices( tri ) ) ) {
-                            index_t vertex_id = polygons.vertex( tri, p );
+                            index_t vertex_id = polygons.vertex(
+                                ElementLocalVertex( tri, p ) );
                             data << " " << std::setw( 7 ) << vertex_id;
                             new_line( count, 10, data );
                         }
@@ -346,7 +348,8 @@ namespace {
                     for( index_t el : range( polygons.nb_quad( s_id ) ) ) {
                         index_t quad = polygons.quad( s_id, el );
                         for( index_t p : range( polygons.nb_vertices( quad ) ) ) {
-                            index_t vertex_id = polygons.vertex( quad, p );
+                            index_t vertex_id = polygons.vertex(
+                                ElementLocalVertex( quad, p ) );
                             data << " " << std::setw( 7 ) << vertex_id;
                             new_line( count, 10, data );
                         }
@@ -398,7 +401,8 @@ namespace {
                     for( index_t el : range( polygons.nb_triangle( s_id ) ) ) {
                         index_t tri = polygons.triangle( s_id, el );
                         for( index_t e : range( polygons.nb_vertices( tri ) ) ) {
-                            index_t adj = polygons.adjacent( tri, e );
+                            index_t adj = polygons.adjacent(
+                                PolygonLocalEdge( tri, e ) );
                             if( adj == GEO::NO_FACET ) {
                                 data << " " << std::setw( 7 ) << -28;
                             } else {
@@ -410,7 +414,8 @@ namespace {
                     for( index_t el : range( polygons.nb_quad( s_id ) ) ) {
                         index_t quad = polygons.quad( s_id, el );
                         for( index_t e : range( polygons.nb_vertices( quad ) ) ) {
-                            index_t adj = polygons.adjacent( quad, e );
+                            index_t adj = polygons.adjacent(
+                                PolygonLocalEdge( quad, e ) );
                             if( adj == GEO::NO_FACET ) {
                                 data << " " << std::setw( 7 ) << -28;
                             } else {
@@ -657,7 +662,8 @@ namespace {
                 for( index_t p : range( gm.mesh.polygons.nb_polygons( s ) ) ) {
                     index_t p_id = gm.mesh.polygons.polygon( s, p );
                     for( index_t v : range( gm.mesh.polygons.nb_vertices( p_id ) ) ) {
-                        index_t vertex_id = gm.mesh.polygons.vertex( p_id, v );
+                        index_t vertex_id = gm.mesh.polygons.vertex(
+                            ElementLocalVertex( p_id, v ) );
                         point_boundaries_[vertex_id].insert( interface_id );
                     }
                 }

@@ -78,6 +78,51 @@ namespace RINGMesh {
         index_t local_vertex_id_;
     };
 
+    struct EdgeLocalVertex {
+    public:
+        EdgeLocalVertex()
+            : edge_id_( NO_ID ), local_vertex_id_( NO_ID )
+        {
+        }
+        EdgeLocalVertex( index_t edge_id, index_t local_vertex_id )
+            : edge_id_( edge_id ), local_vertex_id_( local_vertex_id )
+        {
+        }
+    public:
+        index_t edge_id_;
+        index_t local_vertex_id_;
+    };
+
+    struct PolygonLocalEdge {
+    public:
+        PolygonLocalEdge()
+            : polygon_id_( NO_ID ), local_edge_id_( NO_ID )
+        {
+        }
+        PolygonLocalEdge( index_t polygon_id, index_t local_edge_id )
+            : polygon_id_( polygon_id ), local_edge_id_( local_edge_id )
+        {
+        }
+    public:
+        index_t polygon_id_;
+        index_t local_edge_id_;
+    };
+
+    struct CellLocalFacet {
+    public:
+        CellLocalFacet()
+            : cell_id_( NO_ID ), local_facet_id_( NO_ID )
+        {
+        }
+        CellLocalFacet( index_t cell_id, index_t local_facet_id )
+            : cell_id_( cell_id ), local_facet_id_( local_facet_id )
+        {
+        }
+    public:
+        index_t cell_id_;
+        index_t local_facet_id_;
+    };
+
     /*!
      * class base class for encapsulating Mesh structure
      * @brief encapsulate adimensional mesh functionalities in order to provide an API
@@ -184,21 +229,6 @@ namespace RINGMesh {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class LineMeshBuilder< DIMENSION > ;
     public:
-        struct EdgeLocalVertex { ///TODO check if it is used BC
-        public:
-            EdgeLocalVertex()
-                : edge_id_( NO_ID ), local_vertex_id_( NO_ID )
-            {
-            }
-            EdgeLocalVertex( index_t edge_id, index_t local_vertex_id )
-                : edge_id_( edge_id ), local_vertex_id_( local_vertex_id )
-            {
-            }
-        public:
-            index_t edge_id_;
-            index_t local_vertex_id_;
-        };
-    public:
         virtual ~LineMesh() = default;
 
         static std::unique_ptr< LineMesh< DIMENSION > > create_mesh(
@@ -297,21 +327,6 @@ namespace RINGMesh {
         friend class SurfaceMeshBuilder< DIMENSION > ;
 
     public:
-        struct PolygonLocalEdge {
-        public:
-            PolygonLocalEdge()
-                : polygon_id_( NO_ID ), local_edge_id_( NO_ID )
-            {
-            }
-            PolygonLocalEdge( index_t polygon_id, index_t local_edge_id )
-                : polygon_id_( polygon_id ), local_edge_id_( local_edge_id )
-            {
-            }
-        public:
-            index_t polygon_id_;
-            index_t local_edge_id_;
-        };
-    public:
         virtual ~SurfaceMeshBase() = default;
 
         static std::unique_ptr< SurfaceMesh< DIMENSION > > create_mesh(
@@ -339,7 +354,7 @@ namespace RINGMesh {
          * @param[in] polygon_id polygon index
          * @param[in] vertex_id current index
          */
-        index_t next_polygon_vertex(
+        ElementLocalVertex next_polygon_vertex(
             const ElementLocalVertex& polygon_local_vertex ) const
         {
             const index_t local_vertex_id = polygon_local_vertex.local_vertex_id_;
@@ -348,9 +363,10 @@ namespace RINGMesh {
                     < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
             if( local_vertex_id
                 != nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 ) {
-                return local_vertex_id + 1;
+                return ElementLocalVertex( polygon_local_vertex.element_id_,
+                    local_vertex_id + 1 );
             } else {
-                return 0;
+                return ElementLocalVertex( polygon_local_vertex.element_id_, 0 );
             }
         }
         /*!
@@ -365,20 +381,26 @@ namespace RINGMesh {
          *
          * @pre the given polygon edge must be on border
          */
-        std::tuple< index_t, index_t > next_on_border( index_t p, index_t e ) const;
+        std::tuple< index_t, index_t > next_on_border(
+            const PolygonLocalEdge& polygon_local_edge ) const;
 
         /*!
          * @brief Gets the previous vertex index in the polygon \param polygon_id.
          * @param[in] polygon_id polygon index
          * @param[in] vertex_id current index
          */
-        index_t prev_polygon_vertex( index_t polygon_id, index_t vertex_id ) const
+        ElementLocalVertex prev_polygon_vertex(
+            const ElementLocalVertex& polygon_local_vertex ) const
         {
-            ringmesh_assert( vertex_id < nb_polygon_vertices( polygon_id ) );
-            if( vertex_id > 0 ) {
-                return vertex_id - 1;
+            ringmesh_assert(
+                polygon_local_vertex.local_vertex_id_
+                    < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
+            if( polygon_local_vertex.local_vertex_id_ > 0 ) {
+                return ElementLocalVertex( polygon_local_vertex.element_id_,
+                    polygon_local_vertex.local_vertex_id_ - 1 );
             } else {
-                return nb_polygon_vertices( polygon_id ) - 1;
+                return ElementLocalVertex( polygon_local_vertex.element_id_,
+                    nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 );
             }
         }
 
@@ -395,7 +417,8 @@ namespace RINGMesh {
          * the given polygon edge must be on border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
-        std::tuple< index_t, index_t > prev_on_border( index_t p, index_t e ) const;
+        std::tuple< index_t, index_t > prev_on_border(
+            const PolygonLocalEdge& polygon_local_edge ) const;
 
         /*!
          * @brief Get the vertex index in a polygon @param polygon_index from its
@@ -449,8 +472,7 @@ namespace RINGMesh {
          * @precondition  \param edge_id < number of edge of the polygon \param polygon_id .
          */
         virtual index_t polygon_adjacent(
-            index_t polygon_id,
-            index_t edge_id ) const = 0;
+            const PolygonLocalEdge& polygon_local_edge ) const = 0;
 
         virtual GEO::AttributesManager& polygon_attribute_manager() const = 0;
         /*!
@@ -480,9 +502,9 @@ namespace RINGMesh {
         /*!
          * Is the edge starting with the given vertex of the polygon on a border of the Surface?
          */
-        bool is_edge_on_border( index_t polygon_index, index_t vertex_index ) const
+        bool is_edge_on_border( const PolygonLocalEdge& polygon_local_edge ) const
         {
-            return polygon_adjacent( polygon_index, vertex_index ) == NO_ID;
+            return polygon_adjacent( polygon_local_edge ) == NO_ID;
         }
 
         /*!
@@ -491,7 +513,7 @@ namespace RINGMesh {
         bool is_polygon_on_border( index_t polygon_index ) const
         {
             for( index_t v : range( nb_polygon_vertices( polygon_index ) ) ) {
-                if( is_edge_on_border( polygon_index, v ) ) {
+                if( is_edge_on_border( PolygonLocalEdge( polygon_index, v ) ) ) {
                     return true;
                 }
             }
@@ -733,21 +755,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( VolumeMesh );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
         friend class VolumeMeshBuilder< DIMENSION > ;
-    public:
-        struct CellLocalFacet {
-        public:
-            CellLocalFacet()
-                : cell_id_( NO_ID ), local_facet_id_( NO_ID )
-            {
-            }
-            CellLocalFacet( index_t cell_id, index_t local_facet_id )
-                : cell_id_( cell_id ), local_facet_id_( local_facet_id )
-            {
-            }
-        public:
-            index_t cell_id_;
-            index_t local_facet_id_;
-        };
     public:
         virtual ~VolumeMesh() = default;
 

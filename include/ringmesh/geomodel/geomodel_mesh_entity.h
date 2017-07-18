@@ -734,13 +734,13 @@ namespace RINGMesh {
          * at which it is starting.
          */
         index_t polygon_adjacent_index(
-            index_t polygon_index,
-            index_t edge_index ) const
+            const PolygonLocalEdge& polygon_local_edge ) const
         {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
+            ringmesh_assert( polygon_local_edge.polygon_id_ < nb_mesh_elements() );
             ringmesh_assert(
-                edge_index < nb_mesh_element_vertices( polygon_index ) );
-            return surface_mesh_->polygon_adjacent( polygon_index, edge_index );
+                polygon_local_edge.local_edge_id_
+                    < nb_mesh_element_vertices( polygon_local_edge.polygon_id_ ) );
+            return surface_mesh_->polygon_adjacent( polygon_local_edge );
         }
 
         /*! @}
@@ -1009,8 +1009,7 @@ namespace RINGMesh {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
                 return volume_mesh_->nb_cell_facet_vertices(
-                    VolumeMesh< DIMENSION >::CellLocalFacet( cell_index,
-                        facet_index ) );
+                    CellLocalFacet( cell_index, facet_index ) );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1044,8 +1043,7 @@ namespace RINGMesh {
                 ringmesh_assert(
                     vertex_index < nb_mesh_element_vertices( cell_index ) );
                 return volume_mesh_->cell_facet_vertex(
-                    VolumeMesh< DIMENSION >::CellLocalFacet( cell_index, facet_index,
-                        vertex_index ) );
+                    CellLocalFacet( cell_index, facet_index ), vertex_index );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1057,8 +1055,7 @@ namespace RINGMesh {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
                 return volume_mesh_->cell_adjacent(
-                    VolumeMesh< DIMENSION >::CellLocalFacet( cell_index,
-                        facet_index ) );
+                    CellLocalFacet( cell_index, facet_index ) );
             }
             ringmesh_assert_not_reached;
             return NO_ID;

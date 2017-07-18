@@ -195,9 +195,8 @@ namespace {
                 index_t v0 = surface.mesh_element_vertex_index(
                     ElementLocalVertex( i, j ) );
                 index_t v1 = surface.mesh_element_vertex_index(
-                    ElementLocalVertex( i,
-                        surface.low_level_mesh_storage().next_polygon_vertex(
-                            ElementLocalVertex( i, j ) ) ) );
+                    surface.low_level_mesh_storage().next_polygon_vertex(
+                        ElementLocalVertex( i, j ) ) );
                 if( ( v0 == v0_in && v1 == v1_in )
                     || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true;

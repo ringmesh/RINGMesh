@@ -529,10 +529,11 @@ namespace RINGMesh {
             for( index_t t : range( surface->nb_mesh_elements() ) ) {
                 ringmesh_assert( surface->nb_mesh_element_vertices( t ) == 3 );
                 for( index_t v : range( 3 ) ) {
-                    tetmesh_constraint_.facets.set_vertex( offset_polygons + t, v,
+                tetmesh_constraint_.facets.set_vertex( offset_polygons + t, v,
                         starting_index
                             + unique_indices[offset_vertices
-                                + surface->mesh_element_vertex_index( t, v )] );
+                                + surface->mesh_element_vertex_index(
+                                    ElementLocalVertex( t, v ) )] );
                 }
                 surface_region[offset_polygons + t] = surface->index();
 
