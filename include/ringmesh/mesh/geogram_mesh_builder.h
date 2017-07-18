@@ -122,7 +122,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
-    private:
+    protected:
         void set_mesh( PointSetMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
@@ -174,7 +174,7 @@ namespace RINGMesh {
             mesh_->mesh_->edges.permute_elements( geo_vector_permutation );
         }
 
-    private:
+    protected:
         void set_mesh( LineMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
@@ -276,7 +276,7 @@ namespace RINGMesh {
             mesh_->mesh_->facets.delete_elements( polygons_to_delete, false );
         }
 
-    private:
+    protected:
         void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
@@ -351,7 +351,7 @@ namespace RINGMesh {
             mesh_->mesh_->cells.delete_elements( geo_to_delete, false );
         }
 
-    private:
+    protected:
         void set_mesh( VolumeMesh< DIMENSION >& mesh ) override
         {
             set_geogram_mesh(
