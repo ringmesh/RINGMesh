@@ -62,7 +62,6 @@ namespace RINGMesh {
 
     public:
         virtual ~GeoModelBuilderTopologyBase() = default;
-
         /*!
          * @brief Copy topological information from a geomodel
          * @details Copy all the geomodel entities and their relationship

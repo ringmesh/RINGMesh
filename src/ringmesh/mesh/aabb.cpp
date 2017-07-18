@@ -36,7 +36,6 @@
 #include <ringmesh/mesh/aabb.h>
 
 #include <numeric>
-
 #include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/mesh/mesh.h>
@@ -80,7 +79,7 @@ namespace {
      *  the two halves
      */
     template< class CMP >
-    inline const_vector_itr split(
+    const_vector_itr split(
         const_vector_itr& begin,
         const_vector_itr& end,
         CMP cmp )
@@ -187,10 +186,14 @@ namespace {
     {
         switch( M.cell_type( cell ) ) {
             case CellType::TETRAHEDRON: {
-                const vecn< DIMENSION >& p0 = M.vertex( M.cell_vertex( cell, 0 ) );
-                const vecn< DIMENSION >& p1 = M.vertex( M.cell_vertex( cell, 1 ) );
-                const vecn< DIMENSION >& p2 = M.vertex( M.cell_vertex( cell, 2 ) );
-                const vecn< DIMENSION >& p3 = M.vertex( M.cell_vertex( cell, 3 ) );
+                const vecn< DIMENSION >& p0 = M.vertex(
+                    M.cell_vertex( ElementLocalVertex( cell, 0 ) ) );
+                const vecn< DIMENSION >& p1 = M.vertex(
+                    M.cell_vertex( ElementLocalVertex( cell, 1 ) ) );
+                const vecn< DIMENSION >& p2 = M.vertex(
+                    M.cell_vertex( ElementLocalVertex( cell, 2 ) ) );
+                const vecn< DIMENSION >& p3 = M.vertex(
+                    M.cell_vertex( ElementLocalVertex( cell, 3 ) ) );
                 return point_inside_tetra( p, p0, p1, p2, p3 );
             }
             default:
@@ -262,11 +265,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void AABBTree< DIMENSION >::get_nearest_element_box_hint(
-        const vecn< DIMENSION >& query,
-        index_t& nearest_box,
-        vecn< DIMENSION >& nearest_point,
-        double& distance ) const
+    std::tuple< index_t, vecn< DIMENSION >, double > AABBTree< DIMENSION >::get_nearest_element_box_hint(
+        const vecn< DIMENSION >& query ) const
     {
         index_t box_begin = 0;
         index_t box_end = nb_bboxes();
@@ -285,9 +285,10 @@ namespace RINGMesh {
             }
         }
 
-        nearest_box = mapping_morton_[box_begin];
-        nearest_point = get_point_hint_from_box( node( box_begin ), nearest_box );
-        distance = length( query - nearest_point );
+        index_t nearest_box = mapping_morton_[box_begin];
+        vecn< DIMENSION > nearest_point = get_point_hint_from_box( tree_[box_begin], nearest_box );
+        double distance = length( query - nearest_point );
+        return std::make_tuple( nearest_box, nearest_point, distance );
     }
 
     /****************************************************************************/
@@ -318,34 +319,31 @@ namespace RINGMesh {
         bboxes.resize( mesh.nb_edges() );
         for( index_t i : range( mesh.nb_edges() ) ) {
             for( index_t v : range( 2 ) ) {
-                bboxes[i].add_point( mesh.vertex( mesh.edge_vertex( i, v ) ) );
+                bboxes[i].add_point(
+                    mesh.vertex( mesh.edge_vertex( ElementLocalVertex( i, v ) ) ) );
             }
         }
         this->initialize_tree( bboxes );
     }
 
     template< index_t DIMENSION >
-    index_t LineAABBTree< DIMENSION >::closest_edge(
-        const vecn< DIMENSION >& query,
-        vecn< DIMENSION >& nearest_point,
-        double& distance ) const
+    std::tuple< index_t, vecn< DIMENSION >, double > LineAABBTree< DIMENSION >::closest_edge(
+        const vecn< DIMENSION >& query ) const
     {
         DistanceToEdge action( mesh_ );
-        return this->closest_element_box( query, nearest_point, distance, action );
+        return this->closest_element_box( query, action );
     }
 
     template< index_t DIMENSION >
-    void LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
+    std::tuple< double, vecn< DIMENSION > > LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
         const vecn< DIMENSION >& query,
-        index_t cur_box,
-        vecn< DIMENSION >& nearest_point,
-        double& distance ) const
+        index_t cur_box ) const
     {
         const vecn< DIMENSION >& v0 = mesh_.vertex(
-            mesh_.edge_vertex( cur_box, 0 ) );
+            mesh_.edge_vertex( ElementLocalVertex( cur_box, 0 ) ) );
         const vecn< DIMENSION >& v1 = mesh_.vertex(
-            mesh_.edge_vertex( cur_box, 1 ) );
-        distance = Distance::point_to_segment( query, v0, v1, nearest_point );
+            mesh_.edge_vertex( ElementLocalVertex( cur_box, 1 ) ) );
+        return Distance::point_to_segment( query, v0, v1 );
     }
 
     template< index_t DIMENSION >
@@ -354,7 +352,8 @@ namespace RINGMesh {
         index_t element_id ) const
     {
         ringmesh_unused( box );
-        return mesh_.vertex( mesh_.edge_vertex( element_id, 0 ) );
+        return mesh_.vertex(
+            mesh_.edge_vertex( ElementLocalVertex( element_id, 0 ) ) );
     }
 
     /****************************************************************************/
@@ -368,36 +367,34 @@ namespace RINGMesh {
         bboxes.resize( mesh.nb_polygons() );
         for( index_t i : range( mesh.nb_polygons() ) ) {
             for( index_t v : range( mesh.nb_polygon_vertices( i ) ) ) {
-                bboxes[i].add_point( mesh.vertex( mesh.polygon_vertex( i, v ) ) );
+                bboxes[i].add_point(
+                    mesh.vertex(
+                        mesh.polygon_vertex( ElementLocalVertex( i, v ) ) ) );
             }
         }
         this->initialize_tree( bboxes );
     }
 
     template< index_t DIMENSION >
-    index_t SurfaceAABBTree< DIMENSION >::closest_triangle(
-        const vecn< DIMENSION >& query,
-        vecn< DIMENSION >& nearest_point,
-        double& distance ) const
+    std::tuple< index_t, vecn< DIMENSION >, double > SurfaceAABBTree< DIMENSION >::closest_triangle(
+        const vecn< DIMENSION >& query ) const
     {
         DistanceToTriangle action( mesh_ );
-        return this->closest_element_box( query, nearest_point, distance, action );
+        return this->closest_element_box( query, action );
     }
 
     template< index_t DIMENSION >
-    void SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
+    std::tuple< double, vecn< DIMENSION > > SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
         const vecn< DIMENSION >& query,
-        index_t cur_box,
-        vecn< DIMENSION >& nearest_point,
-        double& distance ) const
+        index_t cur_box ) const
     {
         const vecn< DIMENSION >& v0 = mesh_.vertex(
-            mesh_.polygon_vertex( cur_box, 0 ) );
+            mesh_.polygon_vertex( ElementLocalVertex( cur_box, 0 ) ) );
         const vecn< DIMENSION >& v1 = mesh_.vertex(
-            mesh_.polygon_vertex( cur_box, 1 ) );
+            mesh_.polygon_vertex( ElementLocalVertex( cur_box, 1 ) ) );
         const vecn< DIMENSION >& v2 = mesh_.vertex(
-            mesh_.polygon_vertex( cur_box, 2 ) );
-        distance = Distance::point_to_triangle( query, v0, v1, v2, nearest_point );
+            mesh_.polygon_vertex( ElementLocalVertex( cur_box, 2 ) ) );
+        return Distance::point_to_triangle( query, v0, v1, v2 );
     }
 
     template< index_t DIMENSION >
@@ -406,7 +403,8 @@ namespace RINGMesh {
         index_t element_id ) const
     {
         ringmesh_unused( box );
-        return mesh_.vertex( mesh_.polygon_vertex( element_id, 0 ) );
+        return mesh_.vertex(
+            mesh_.polygon_vertex( ElementLocalVertex( element_id, 0 ) ) );
     }
 
     /****************************************************************************/
@@ -420,7 +418,8 @@ namespace RINGMesh {
         bboxes.resize( mesh.nb_cells() );
         for( index_t i : range( mesh.nb_cells() ) ) {
             for( index_t v : range( mesh.nb_cell_vertices( i ) ) ) {
-                bboxes[i].add_point( mesh.vertex( mesh.cell_vertex( i, v ) ) );
+                bboxes[i].add_point(
+                    mesh.vertex( mesh.cell_vertex( ElementLocalVertex( i, v ) ) ) );
             }
         }
         this->initialize_tree( bboxes );
@@ -432,7 +431,8 @@ namespace RINGMesh {
         index_t element_id ) const
     {
         ringmesh_unused( box );
-        return mesh_.vertex( mesh_.cell_vertex( element_id, 0 ) );
+        return mesh_.vertex(
+            mesh_.cell_vertex( ElementLocalVertex( element_id, 0 ) ) );
     }
 
     template< index_t DIMENSION >
@@ -450,6 +450,7 @@ namespace RINGMesh {
         index_t box_begin,
         index_t box_end ) const
     {
+
         if( !this->node( node_index ).contains( query ) ) {
             return NO_ID;
         }
@@ -474,7 +475,6 @@ namespace RINGMesh {
         }
         return result;
     }
-
     template< index_t DIMENSION >
     double inner_point_box_distance(
         const vecn< DIMENSION >& p,
@@ -489,7 +489,6 @@ namespace RINGMesh {
         }
         return result;
     }
-
     template< index_t DIMENSION >
     double point_box_signed_distance(
         const vecn< DIMENSION >& p,
@@ -512,7 +511,6 @@ namespace RINGMesh {
             return result.length();
         }
     }
-
     template class RINGMESH_API AABBTree< 2 > ;
     template class RINGMESH_API BoxAABBTree< 2 > ;
     template class RINGMESH_API LineAABBTree< 2 > ;

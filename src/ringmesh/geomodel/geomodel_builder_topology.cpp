@@ -36,7 +36,6 @@
 #include <ringmesh/geomodel/geomodel_builder_topology.h>
 
 #include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
@@ -112,16 +111,17 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    void get_sorted_incident_surfaces(
-        const GeoModelMeshEntity< DIMENSION >& E,
-        std::vector< index_t >& incident_surfaces )
+    std::vector< index_t > get_sorted_incident_surfaces(
+        const GeoModelMeshEntity< DIMENSION >& E )
     {
+        std::vector< index_t > incident_surfaces;
         index_t nb = E.nb_incident_entities();
         incident_surfaces.resize( nb );
         for( index_t i : range( nb ) ) {
             incident_surfaces[i] = E.incident_entity_gmme( i ).index();
         }
         std::sort( incident_surfaces.begin(), incident_surfaces.end() );
+        return incident_surfaces;
     }
 }
 
@@ -139,6 +139,7 @@ namespace RINGMesh {
     void GeoModelBuilderTopologyBase< DIMENSION >::copy_all_mesh_entity_topology(
         const GeoModel< DIMENSION >& from )
     {
+
         copy_mesh_entity_topology< Corner >( from );
         copy_mesh_entity_topology< Line >( from );
         copy_mesh_entity_topology< Surface >( from );
@@ -300,8 +301,8 @@ namespace RINGMesh {
 
             if( ( c0 == first_corner && c1 == second_corner )
                 || ( c0 == second_corner && c1 == first_corner ) ) {
-                std::vector< index_t > cur_adjacent_surfaces;
-                get_sorted_incident_surfaces( line, cur_adjacent_surfaces );
+                std::vector< index_t > cur_adjacent_surfaces =
+                    get_sorted_incident_surfaces( line );
                 if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size()
                     && std::equal( cur_adjacent_surfaces.begin(),
                         cur_adjacent_surfaces.end(),
@@ -380,7 +381,6 @@ namespace RINGMesh {
         }
         return NO_ID;
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderTopologyBase< DIMENSION >::add_mesh_entity_boundary_relation(
         const gmme_id& incident_entity_id,
@@ -604,7 +604,6 @@ namespace RINGMesh {
                 nb_additional_entities );
         }
     }
-
     void GeoModelBuilderTopology< 3 >::copy_all_mesh_entity_topology(
         const GeoModel< 3 >& from )
     {

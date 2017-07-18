@@ -79,9 +79,7 @@ namespace {
 
             write_vertices( geomodel_mesh, out );
 
-            index_t elt = 1;
-            write_corners( geomodel, out, elt );
-            write_mesh_elements( geomodel, out, elt );
+            write_mesh_elements( geomodel, out );
         }
 
     private:
@@ -98,13 +96,13 @@ namespace {
             out << "$ENDNOD" << std::endl;
         }
 
-        void write_corners(
+        index_t write_corners(
             const GeoModel< 3 >& geomodel,
-            std::ofstream& out,
-            index_t& elt ) const
+            std::ofstream& out ) const
         {
             out << "$ELM" << std::endl;
             out << nb_total_elements( geomodel ) << std::endl;
+            index_t elt = 1;
             for( const auto& corner : geomodel.corners() ) {
                 out << elt++ << " " << adeli_cell_types[0] << " " << reg_phys << " "
                     << corner.index() + id_offset_adeli << " "
@@ -112,13 +110,14 @@ namespace {
                     << geomodel.mesh.vertices.geomodel_vertex_id( corner.gmme(),
                         0 ) + id_offset_adeli << std::endl;
             }
+            return elt;
         }
 
         void write_mesh_elements(
             const GeoModel< 3 >& geomodel,
-            std::ofstream& out,
-            index_t& elt ) const
+            std::ofstream& out ) const
         {
+            index_t elt = write_corners( geomodel, out );
             const MeshEntityTypeManager< 3 >& manager =
                 geomodel.entity_type_manager().mesh_entity_manager;
             const std::vector< MeshEntityType >& mesh_entity_types =
@@ -175,8 +174,8 @@ namespace {
                     geomodel_mesh_entity.nb_mesh_element_vertices( elt ) ) ) {
                     out
                         << geomodel_mesh_entity.geomodel().mesh.vertices.geomodel_vertex_id(
-                            geomodel_mesh_entity.gmme(), elt, v ) + id_offset_adeli
-                        << " ";
+                            geomodel_mesh_entity.gmme(),
+                            ElementLocalVertex( elt, v ) ) + id_offset_adeli << " ";
                 }
                 out << std::endl;
             }

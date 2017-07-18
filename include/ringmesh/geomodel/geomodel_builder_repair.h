@@ -117,16 +117,22 @@ namespace RINGMesh {
          * @return the number of degenerate edges that have been removed from the line.
          */
         index_t repair_line_mesh( const Line< DIMENSION >& line );
-        void line_detect_degenerate_edges(
-            const Line< DIMENSION >& L,
-            std::vector< bool >& e_is_degenerate,
+        /*!
+         * @return a vector of boolean. Element i of this vector corresponds
+         * to the edge i of the line. If the element is true, the edge is
+         * degenerated.
+         */
+        std::vector< bool > line_detect_degenerate_edges(
+            const Line< DIMENSION >& line,
             std::vector< index_t >& colocated_vertices );
         /*!
-         * \note Copied and modified from geogram\mesh\mesh_repair.cpp
+         * \note Copied and modified from geogram\mesh\mesh_repair.cpp.
+         * @return a vector of boolean. Element i of this vector corresponds
+         * to the facet i of the surface. If the element is true, the facet is
+         * degenerated.
          */
-        void surface_detect_degenerate_polygons(
-            const Surface< DIMENSION >& S,
-            std::vector< index_t >& f_is_degenerate,
+        std::vector< index_t > surface_detect_degenerate_polygons(
+            const Surface< DIMENSION >& surface,
             std::vector< index_t >& colocated_vertices );
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
@@ -170,11 +176,10 @@ namespace RINGMesh {
          * Get the indices of the duplicated vertices that are on an inside border.
          * Only the vertex with the biggest index are added.
          * @param[in] E_id GeoModelMeshEntity to check.
-         * @param[out] vertices vector of the vertex indexes on an inside boundary.
+         * @return vector of the vertex indexes on an inside boundary.
          */
-        void vertices_on_inside_boundary(
-            const gmme_id& E_id,
-            std::set< index_t >& vertices );
+        std::set< index_t > vertices_on_inside_boundary(
+            const gmme_id& E_id );
 
         /*!
          * @brief Checks if an edge is degenerate.
@@ -187,7 +192,7 @@ namespace RINGMesh {
          * @return true if the edge is degenerate. Else false.
          */
         bool edge_is_degenerate(
-            const Line< DIMENSION >& L,
+            const Line< DIMENSION >& line,
             index_t e,
             const std::vector< index_t >& colocated_vertices );
 
@@ -199,4 +204,4 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-} //namespace RINGMesh
+}
