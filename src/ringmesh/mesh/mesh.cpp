@@ -112,7 +112,7 @@ namespace RINGMesh {
     {
         ringmesh_assert(
             polygon_local_edge.local_edge_id_
-                < nb_polygon_vertices( polygon_local_edge.local_edge_id_ ) );
+                < nb_polygon_vertices( polygon_local_edge.polygon_id_ ) );
         ringmesh_assert( is_edge_on_border( polygon_local_edge ) );
 
         // Global indices in the surfaces
