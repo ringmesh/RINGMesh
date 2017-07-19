@@ -815,8 +815,18 @@ namespace {
                 builder().geometry.set_region_geometry( load_storage.cur_region_,
                     load_storage.vertices_, load_storage.tetra_corners_ );
             }
-            load_storage.cur_region_ = initialize_region( line.field( 1 ),
-                builder() );
+
+			char* region_name = NULL;
+			if( line.nb_fields() == 1 ){
+				region_name = "Unnamed";
+			}
+			else {
+				region_name = line.field( 1 );
+			}
+
+			load_storage.cur_region_ = initialize_region( region_name,
+				builder() );
+			Logger::out( "I/O", "Région initialisée..." );
             load_storage.vertices_.clear();
             load_storage.tetra_corners_.clear();
 		}
