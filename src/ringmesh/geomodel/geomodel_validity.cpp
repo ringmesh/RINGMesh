@@ -1372,4 +1372,3 @@ namespace RINGMesh {
         const GeoModel< 3 >& );
 
 }
-// namespace RINGMesh
