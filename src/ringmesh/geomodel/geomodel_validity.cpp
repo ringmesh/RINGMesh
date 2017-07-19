@@ -1207,7 +1207,6 @@ namespace {
     }
 
 }
-// anonymous namespace
 
 namespace RINGMesh {
 
