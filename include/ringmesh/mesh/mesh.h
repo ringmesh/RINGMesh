@@ -72,9 +72,9 @@ namespace RINGMesh {
             : element_id_( element_id ), local_vertex_id_( local_vertex_id )
         {
         }
-        ElementLocalVertex( const EdgeLocalVertex& edge_local_vertex );
-        ElementLocalVertex( const PolygonLocalEdge& polygon_local_edge );
-        ElementLocalVertex( const CellLocalFacet& cell_local_facet );
+        ElementLocalVertex( EdgeLocalVertex edge_local_vertex );
+        ElementLocalVertex( PolygonLocalEdge polygon_local_edge );
+        ElementLocalVertex( CellLocalFacet cell_local_facet );
         index_t element_id_{ NO_ID };
         index_t local_vertex_id_{ NO_ID };
     };
@@ -85,10 +85,10 @@ namespace RINGMesh {
             : edge_id_( edge_id ), local_vertex_id_( local_vertex_id )
         {
         }
-        EdgeLocalVertex( const ElementLocalVertex& edge_local_vertex )
+        EdgeLocalVertex( ElementLocalVertex edge_local_vertex )
             :
-                edge_id_( edge_local_vertex.element_id_ ),
-                local_vertex_id_( edge_local_vertex.local_vertex_id_ )
+                edge_id_( std::move( edge_local_vertex.element_id_ ) ),
+                local_vertex_id_( std::move( edge_local_vertex.local_vertex_id_ ) )
         {
         }
         index_t edge_id_{ NO_ID };
@@ -101,10 +101,10 @@ namespace RINGMesh {
             : polygon_id_( polygon_id ), local_edge_id_( local_edge_id )
         {
         }
-        PolygonLocalEdge( const ElementLocalVertex& polygon_local_vertex )
+        PolygonLocalEdge( ElementLocalVertex polygon_local_vertex )
             :
-                polygon_id_( polygon_local_vertex.element_id_ ),
-                local_edge_id_( polygon_local_vertex.local_vertex_id_ )
+                polygon_id_( std::move( polygon_local_vertex.element_id_ ) ),
+                local_edge_id_( std::move( polygon_local_vertex.local_vertex_id_ ) )
         {
         }
         index_t polygon_id_{ NO_ID };
