@@ -82,6 +82,7 @@ namespace {
             write_cells( geomodel_mesh, out );
             write_polygons( geomodel_mesh, out );
             write_vertices( geomodel_mesh, out );
+            out << std::flush;
         }
 
     private:
@@ -95,13 +96,13 @@ namespace {
             std::ofstream& out ) const
         {
             // MFEM mesh version
-            out << "MFEM mesh v1.0" << std::endl;
-            out << std::endl;
+            out << "MFEM mesh v1.0" << EOL;
+            out << EOL;
 
             // Dimension is always 3 in our case
-            out << "dimension" << std::endl;
-            out << dimension << std::endl;
-            out << std::endl;
+            out << "dimension" << EOL;
+            out << dimension << EOL;
+            out << EOL;
         }
 
         /*!
@@ -119,17 +120,17 @@ namespace {
             std::ofstream& out ) const
         {
             index_t nb_cells = geomodel_mesh.cells.nb();
-            out << "elements" << std::endl;
-            out << nb_cells << std::endl;
+            out << "elements" << EOL;
+            out << nb_cells << EOL;
             for( index_t c : range( nb_cells ) ) {
                 out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
                 out << cell_type_mfem[to_underlying_type( geomodel_mesh.cells.type( c ))] << " ";
                 for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
                     out << geomodel_mesh.cells.vertex( c, cell2mfem[v] ) << " ";
                 }
-                out << std::endl;
+                out << EOL;
             }
-            out << std::endl;
+            out << EOL;
         }
 
         /*!
@@ -147,8 +148,8 @@ namespace {
             std::ofstream& out ) const
         {
             const GeoModelMeshPolygons< 3 >& polygons = geomodel_mesh.polygons;
-            out << "boundary" << std::endl;
-            out << polygons.nb() << std::endl;
+            out << "boundary" << EOL;
+            out << polygons.nb() << EOL;
             for( index_t p : range( polygons.nb() ) ) {
                 index_t not_used = 0;
                 out << polygons.surface( p ) + mfem_offset << " ";
@@ -156,9 +157,9 @@ namespace {
                 for( index_t v : range( polygons.nb_vertices( p ) ) ) {
                     out << polygons.vertex( p, v ) << " ";
                 }
-                out << std::endl;
+                out << EOL;
             }
-            out << std::endl;
+            out << EOL;
         }
 
         /*!
@@ -172,11 +173,11 @@ namespace {
             const GeoModelMesh< 3 >& geomodel_mesh,
             std::ofstream& out ) const
         {
-            out << "vertices" << std::endl;
-            out << geomodel_mesh.vertices.nb() << std::endl;
-            out << dimension << std::endl;
+            out << "vertices" << EOL;
+            out << geomodel_mesh.vertices.nb() << EOL;
+            out << dimension << EOL;
             for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
-                out << geomodel_mesh.vertices.vertex( v ) << std::endl;
+                out << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
         }
 
