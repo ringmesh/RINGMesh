@@ -760,7 +760,7 @@ namespace {
         LineDefinition cur_line_;
     };
 
-} // anonymous namespace
+}
 
 namespace RINGMesh {
 
