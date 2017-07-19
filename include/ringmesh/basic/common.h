@@ -94,8 +94,9 @@ template< typename T > inline void ringmesh_unused( T const& )
 
 #include <ringmesh/basic/types.h>
 #include <ringmesh/basic/ringmesh_assert.h>
-
 #include <ringmesh/basic/logger.h>
+
+#include <geogram/basic/string.h>
 
 #define DEBUG( a ) \
     Logger::out( "Debug", #a, " = ", a )
@@ -133,10 +134,11 @@ namespace RINGMesh {
      */
     class RINGMESH_API RINGMeshException: public std::runtime_error {
     public:
-        explicit RINGMeshException(
-            std::string category,
-            const std::string& message )
-            : std::runtime_error( message ), category_( std::move( category ) )
+        template< typename ...Args >
+        explicit RINGMeshException( std::string category, const Args& ...messages )
+            :
+                std::runtime_error( string_concatener( messages... ) ),
+                category_( std::move( category ) )
         {
         }
         virtual ~RINGMeshException() throw()
@@ -147,7 +149,23 @@ namespace RINGMesh {
         {
             return category_;
         }
+
+    private:
+        std::string& string_concatener()
+        {
+            return message_;
+        }
+
+        template< class A0, class ...Args >
+        std::string& string_concatener( const A0& a0, const Args& ...args )
+        {
+            std::cout << &message_ << std::endl;
+            message_ += GEO::String::to_string( a0 );
+            std::cout << &message_ << std::endl;
+            return string_concatener( args... );
+        }
     protected:
+        std::string message_;
         std::string category_;
     };
 
