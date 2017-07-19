@@ -811,23 +811,6 @@ namespace {
         void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             if( !load_storage.vertices_.empty() ) {
-
-				std::ofstream log_file( "C:/Users/argentin1/Desktop/vertices_ts.txt", std::ios_base::app ); // Append mode
-				ringmesh_assert( log_file );
-				log_file << "Region id " << load_storage.cur_region_ << "\n";
-				for( vec3 vert : load_storage.vertices_ ){
-					log_file << vert.x << "\n";
-				}
-				log_file.close();
-
-				std::ofstream log_file_t( "C:/Users/argentin1/Desktop/tetras_ts.txt", std::ios_base::app ); // Append mode
-				ringmesh_assert( log_file_t );
-				log_file_t << "Region id " << load_storage.cur_region_ << "\n";
-				for( index_t index : load_storage.tetra_corners_ ){
-					log_file_t << index << "\n";
-				}
-				log_file_t.close();
-
                 builder().geometry.set_region_geometry( load_storage.cur_region_,
                     load_storage.vertices_, load_storage.tetra_corners_ );
             }
@@ -1044,23 +1027,6 @@ namespace {
         {
             ringmesh_unused( line );
             if( !load_storage.vertices_.empty() ) {
-
-				std::ofstream log_file( "C:/Users/argentin1/Desktop/vertices_ts.txt", std::ios_base::app ); // Append mode
-				ringmesh_assert( log_file );
-				log_file << "Region id " << load_storage.cur_region_ << "\n";
-				for( vec3 vert : load_storage.vertices_ ){
-					log_file << vert.x << "\n";
-				}
-				log_file.close();
-
-				std::ofstream log_file_t( "C:/Users/argentin1/Desktop/tetras_ts.txt", std::ios_base::app ); // Append mode
-				ringmesh_assert( log_file_t );
-				log_file_t << "Region id " << load_storage.cur_region_ << "\n";
-				for( index_t index : load_storage.tetra_corners_ ){
-					log_file_t << index << "\n";
-				}
-				log_file_t.close();
-
                 builder().geometry.set_region_geometry( load_storage.cur_region_,
                     load_storage.vertices_, load_storage.tetra_corners_ );
                 load_storage.vertices_.clear();
@@ -1121,24 +1087,6 @@ namespace {
 					region_tetra_corners_local.push_back( std::vector< index_t >() );
 					load_storage.vertex_map_.get_tetra_corners_with_this_region_id(
 						region_id, region_tetra_corners_local[region_id] );
-				}
-
-				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
-					std::ofstream log_file( "C:/Users/argentin1/Desktop/vertices_lts.txt", std::ios_base::app ); // Append mode
-					ringmesh_assert( log_file );
-					log_file << "Region id " << region_id << "\n";
-					for( vec3 vert : region_vertices[region_id] ){
-						log_file << vert.x << "\n";
-					}
-					log_file.close();
-
-					std::ofstream log_file_t( "C:/Users/argentin1/Desktop/tetras_lts.txt", std::ios_base::app ); // Append mode
-					ringmesh_assert( log_file_t );
-					log_file_t << "Region id " << region_id << "\n";
-					for( index_t index : region_tetra_corners_local[region_id] ){
-						log_file_t << index << "\n";
-					}
-					log_file_t.close();
 				}
 
 				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
