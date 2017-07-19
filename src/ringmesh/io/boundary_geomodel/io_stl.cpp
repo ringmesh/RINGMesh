@@ -123,9 +123,7 @@ namespace {
                 "Geological model loading of a from STL mesh not yet implemented" );
         }
 
-        void save(
-            const GeoModel< 3 >& geomodel,
-            const std::string& filename ) final
+        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
             check_stl_validity( geomodel );
             std::ofstream out( filename.c_str() );
