@@ -826,7 +826,6 @@ namespace {
 
 			load_storage.cur_region_ = initialize_region( region_name,
 				builder() );
-			Logger::out( "I/O", "Région initialisée..." );
             load_storage.vertices_.clear();
             load_storage.tetra_corners_.clear();
 		}
