@@ -343,7 +343,6 @@ int main()
         default_configure();
 
         Logger::out( "TEST", "Test AABB" );
-        throw RINGMeshException("Test","failed ", 5, " lol", 6.);
         test_LineAABB< 2 >();
         test_LineAABB< 3 >();
         test_SurfaceAABB< 2 >();
