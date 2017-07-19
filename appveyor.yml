@@ -21,10 +21,11 @@ build_script:
     
     cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DBUILD_RINGMESH_VIEW:BOOL=ON -DRINGMESH_TEST_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ../..
     
-    cmake --build . --config Debug
+    cmake --build . --config Release
     
 test_script:
- - cmd: cmake --build . --target RUN_TESTS --config Debug
+ - cmd: ctest -V -C Release
+ #- cmd: cmake --build . --target RUN_TESTS --config Debug
 
 on_success:
  - IF "%APPVEYOR_REPO_BRANCH%"=="default" (

@@ -74,7 +74,7 @@ namespace {
         virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
-            out.precision( 16 );
+            out.precision( PRECISION );
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
 
             write_title( out, geomodel );

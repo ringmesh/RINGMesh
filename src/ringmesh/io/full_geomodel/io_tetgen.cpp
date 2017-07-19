@@ -49,7 +49,7 @@ namespace {
             std::ostringstream oss_node;
             oss_node << directory << "/" << file << ".node";
             std::ofstream node( oss_node.str().c_str() );
-            node.precision( 16 );
+            node.precision( PRECISION );
 
             const GeoModelMesh& mesh = geomodel.mesh;
             node << mesh.vertices.nb() << " 3 0 0" << std::endl;

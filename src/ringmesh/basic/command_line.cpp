@@ -74,6 +74,8 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg_group( "out", "Output data" );
             GEO::CmdLine::declare_arg( "out:geomodel", "",
                 "Saves the geological model" );
+            GEO::CmdLine::declare_arg( "out:csmp", "",
+                "Information about box shape model", GEO::CmdLine::ARG_ADVANCED );
         }
 
         bool import_arg_group( const std::string& name )

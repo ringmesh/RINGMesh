@@ -67,8 +67,9 @@ namespace {
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
+            enable_truncated_floating_point();
             std::ofstream out( filename.c_str() );
-            out.precision( 16 );
+            out.precision( PRECISION );
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
                 {
@@ -82,6 +83,7 @@ namespace {
             index_t elt = 1;
             write_corners( geomodel, out, elt );
             write_mesh_elements( geomodel, out, elt );
+            desable_truncated_floating_point();
         }
 
     private:

@@ -69,7 +69,7 @@ namespace {
         virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
-            out.precision( 16 );
+            out.precision( PRECISION );
 
             out << "# vtk DataFile Version 2.0" << std::endl;
             out << "Unstructured Grid" << std::endl;
