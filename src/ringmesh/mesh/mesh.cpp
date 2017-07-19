@@ -44,25 +44,25 @@
 namespace RINGMesh {
 
     ElementLocalVertex::ElementLocalVertex(
-        const EdgeLocalVertex& edge_local_vertex )
+        EdgeLocalVertex edge_local_vertex )
         :
-            element_id_( edge_local_vertex.edge_id_ ),
-            local_vertex_id_( edge_local_vertex.local_vertex_id_ )
+            element_id_( std::move( edge_local_vertex.edge_id_ ) ),
+            local_vertex_id_( std::move( edge_local_vertex.local_vertex_id_ ) )
     {
     }
 
     ElementLocalVertex::ElementLocalVertex(
-        const PolygonLocalEdge& polygon_local_edge )
+        PolygonLocalEdge polygon_local_edge )
         :
-            element_id_( polygon_local_edge.polygon_id_ ),
-            local_vertex_id_( polygon_local_edge.local_edge_id_ )
+            element_id_( std::move( polygon_local_edge.polygon_id_ ) ),
+            local_vertex_id_( std::move( polygon_local_edge.local_edge_id_ ) )
     {
     }
 
-    ElementLocalVertex::ElementLocalVertex( const CellLocalFacet& cell_local_facet )
+    ElementLocalVertex::ElementLocalVertex( CellLocalFacet cell_local_facet )
         :
-            element_id_( cell_local_facet.cell_id_ ),
-            local_vertex_id_( cell_local_facet.local_facet_id_ )
+            element_id_( std::move( cell_local_facet.cell_id_ ) ),
+            local_vertex_id_( std::move( cell_local_facet.local_facet_id_ ) )
     {
     }
 
