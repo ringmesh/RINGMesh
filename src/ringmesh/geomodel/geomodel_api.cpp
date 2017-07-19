@@ -63,8 +63,8 @@ namespace {
     index_t count_geomodel_polygons( const GeoModel< DIMENSION >& geomodel )
     {
         index_t result = 0;
-        for( index_t i : range( geomodel.nb_surfaces() ) ) {
-            result += geomodel.surface( i ).nb_mesh_elements();
+        for( const auto& surface : geomodel.surfaces() ) {
+            result += surface.nb_mesh_elements();
         }
         return result;
     }
@@ -83,8 +83,8 @@ namespace {
     index_t count_geomodel_cells( const GeoModel< 3 >& geomodel )
     {
         index_t nb_cells = 0;
-        for( index_t i : range( geomodel.nb_regions() ) ) {
-            nb_cells += geomodel.region( i ).nb_mesh_elements();
+        for( const auto& region : geomodel.regions() ) {
+            nb_cells += region.nb_mesh_elements();
         }
         return nb_cells;
     }
@@ -93,8 +93,8 @@ namespace {
     index_t count_geomodel_edges( const GeoModel< DIMENSION >& geomodel )
     {
         index_t nb_edges = 0;
-        for( index_t i : range( geomodel.nb_lines() ) ) {
-            nb_edges += geomodel.line( i ).nb_mesh_elements();
+        for( const auto& line : geomodel.lines() ) {
+            nb_edges += line.nb_mesh_elements();
         }
         return nb_edges;
     }
@@ -145,8 +145,7 @@ namespace {
         prism_volume = 0;
         hex_volume = 0;
         poly_volume = 0;
-        for( index_t r : range( geomodel.nb_regions() ) ) {
-            const Region< DIMENSION >& region = geomodel.region( r );
+        for( const auto& region : geomodel.regions() ) {
             compute_region_volumes_per_cell_type( region, tet_volume, pyramid_volume,
                 prism_volume, hex_volume, poly_volume );
         }

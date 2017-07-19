@@ -846,8 +846,8 @@ namespace RINGMesh {
         std::vector< index_t > nb_cells_per_type(
             to_underlying_type( CellType::UNDEFINED ), 0 );
         index_t nb = 0;
-        for( index_t r : range( this->gm_.nb_regions() ) ) {
-            nb += this->gm_.region( r ).nb_mesh_elements();
+        for( const auto& region : this->gm_.regions() ) {
+            nb += region.nb_mesh_elements();
         }
 
         // Get out if no cells
@@ -856,10 +856,10 @@ namespace RINGMesh {
         }
 
         // Compute the number of cell per type and per region
-        for( index_t r : range( this->gm_.nb_regions() ) ) {
-            const Region< DIMENSION >& cur_region = this->gm_.region( r );
-            for( index_t c : range( this->gm_.region( r ).nb_mesh_elements() ) ) {
-                CellType cur_cell_type = cur_region.cell_type( c );
+        for( const auto& region : this->gm_.regions() ) {
+            index_t r = region.index();
+            for( index_t c : range( region.nb_mesh_elements() ) ) {
+                CellType cur_cell_type = region.cell_type( c );
                 switch( cur_cell_type ) {
                     case CellType::TETRAHEDRON:
                         nb_cells_per_type[to_underlying_type( CellType::TETRAHEDRON )]++;
@@ -918,21 +918,20 @@ namespace RINGMesh {
             to_underlying_type( CellType::UNDEFINED ), 0 );
         const GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices =
             this->gmm_.vertices;
-        for( index_t r : range( this->gm_.nb_regions() ) ) {
-            const Region< DIMENSION >& cur_region = this->gm_.region( r );
-            for( index_t c : range( cur_region.nb_mesh_elements() ) ) {
-                CellType cur_cell_type = cur_region.cell_type( c );
+        for( const auto& region : this->gm_.regions() ) {
+            for( index_t c : range( region.nb_mesh_elements() ) ) {
+                CellType cur_cell_type = region.cell_type( c );
                 index_t cur_cell = cells_offset_per_type[to_underlying_type(
                     cur_cell_type )]
                     + cur_cell_per_type[to_underlying_type( cur_cell_type )]++;
                 for( index_t v : range( mesh_->nb_cell_vertices( cur_cell ) ) ) {
-                    index_t region_vertex_index =
-                        cur_region.mesh_element_vertex_index( c, v );
+                    index_t region_vertex_index = region.mesh_element_vertex_index(
+                        c, v );
                     index_t global_vertex_id = geomodel_vertices.geomodel_vertex_id(
-                        cur_region.gmme(), region_vertex_index );
+                        region.gmme(), region_vertex_index );
                     mesh_builder->set_cell_vertex( cur_cell, v, global_vertex_id );
                 }
-                region_id_[cur_cell] = r;
+                region_id_[cur_cell] = region.index();
                 cell_id_[cur_cell] = c;
             }
         }
@@ -1342,10 +1341,9 @@ namespace RINGMesh {
         std::vector< bool > is_vertex_to_duplicate( corner_vertices.size(), false );
         {
             NNSearch< DIMENSION > nn_search( corner_vertices, false );
-            for( index_t s : range( this->gm_.nb_surfaces() ) ) {
-                if( !is_surface_to_duplicate( s ) ) continue;
-                actions_on_surfaces[s] = TO_PROCESS;
-                const Surface< DIMENSION >& surface = this->gm_.surface( s );
+            for( const auto& surface : this->gm_.surfaces() ) {
+                if( !is_surface_to_duplicate( surface.index() ) ) continue;
+                actions_on_surfaces[surface.index()] = TO_PROCESS;
                 for( index_t v : range( surface.nb_vertices() ) ) {
                     std::vector< index_t > colocated_corners =
                         nn_search.get_neighbors( surface.vertex( v ),
@@ -2419,20 +2417,17 @@ namespace RINGMesh {
                 cells.attribute_manager(), att_c );
             index_t att_dim = cur_att_on_geomodel_mesh.dimension();
 
-            for( index_t reg : range( geomodel_.nb_regions() ) ) {
-                if( geomodel_.region( reg ).cell_attribute_manager().is_defined(
-                    att_c ) ) {
+            for( const auto& region : geomodel_.regions() ) {
+                if( region.cell_attribute_manager().is_defined( att_c ) ) {
                     Logger::warn( "Transfer attribute", "The attribute ", att_c,
-                        " already exists on the region ", reg );
+                        " already exists on the ", region.gmme() );
                     continue;
                 }
                 GEO::Attribute< double > cur_att_on_geomodel_mesh_entity;
                 cur_att_on_geomodel_mesh_entity.create_vector_attribute(
-                    geomodel_.region( reg ).cell_attribute_manager(), att_c,
-                    att_dim );
-                for( index_t c : range( geomodel_.region( reg ).nb_mesh_elements() ) ) {
-                    vec3 center = geomodel_.region( reg ).mesh_element_barycenter(
-                        c );
+                    region.cell_attribute_manager(), att_c, att_dim );
+                for( index_t c : range( region.nb_mesh_elements() ) ) {
+                    vec3 center = region.mesh_element_barycenter( c );
                     std::vector< index_t > c_in_geom_model_mesh =
                         nn_search.get_neighbors( center, geomodel_.epsilon() );
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 );
@@ -2457,16 +2452,16 @@ namespace RINGMesh {
                 continue;
             }
             att_v_double_names.push_back( att_v_names[att_v] );
-            for( index_t reg : range( geomodel_.nb_regions() ) ) {
-                if( geomodel_.region( reg ).vertex_attribute_manager().is_defined(
+            for( const auto& region : geomodel_.regions() ) {
+                if( region.vertex_attribute_manager().is_defined(
                     att_v_names[att_v] ) ) {
                     Logger::warn( "Transfer attribute", "The attribute ",
-                        att_v_names[att_v], " already exists on the region ", reg );
+                        att_v_names[att_v], " already exists on the ",
+                        region.gmme() );
                     continue;
                 }
                 GEO::Attribute< double > cur_v_att;
-                cur_v_att.create_vector_attribute(
-                    geomodel_.region( reg ).vertex_attribute_manager(),
+                cur_v_att.create_vector_attribute( region.vertex_attribute_manager(),
                     att_v_names[att_v],
                     vertices.attribute_manager().find_attribute_store(
                         att_v_names[att_v] )->dimension() );
@@ -2479,9 +2474,9 @@ namespace RINGMesh {
 
             AttributeVector< double > att_on_regions( geomodel_.nb_regions() );
 
-            for( index_t reg : range( geomodel_.nb_regions() ) ) {
-                att_on_regions.bind_one_attribute( reg,
-                    geomodel_.region( reg ).vertex_attribute_manager(), att_v );
+            for( const auto& region : geomodel_.regions() ) {
+                att_on_regions.bind_one_attribute( region.index(),
+                    region.vertex_attribute_manager(), att_v );
             }
 
             for( index_t v : range( vertices.nb() ) ) {

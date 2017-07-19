@@ -105,12 +105,11 @@ namespace {
         {
             out << "$ELM" << std::endl;
             out << nb_total_elements( geomodel ) << std::endl;
-            for( index_t corner : range( geomodel.nb_corners() ) ) {
-                const Corner< 3 >& cur_corner = geomodel.corner( corner );
+            for( const auto& corner : geomodel.corners() ) {
                 out << elt++ << " " << adeli_cell_types[0] << " " << reg_phys << " "
-                    << cur_corner.index() + id_offset_adeli << " "
-                    << cur_corner.nb_vertices() << " "
-                    << geomodel.mesh.vertices.geomodel_vertex_id( cur_corner.gmme(),
+                    << corner.index() + id_offset_adeli << " "
+                    << corner.nb_vertices() << " "
+                    << geomodel.mesh.vertices.geomodel_vertex_id( corner.gmme(),
                         0 ) + id_offset_adeli << std::endl;
             }
         }

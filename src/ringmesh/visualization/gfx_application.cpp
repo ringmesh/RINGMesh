@@ -173,16 +173,16 @@ namespace RINGMesh {
         // Computation of the BBox is set with surface vertices
         // or with those of lines and corners if the model has no surface
         if( GM_.nb_surfaces() > 0 ) {
-            for( index_t s : range( GM_.nb_surfaces() ) ) {
-                compute_mesh_entity_bbox( GM_.surface( s ), bbox_ );
+            for( const auto& surface : GM_.surfaces() ) {
+                compute_mesh_entity_bbox( surface, bbox_ );
             }
         } else if( GM_.nb_lines() > 0 ) {
-            for( index_t l : range( GM_.nb_lines() ) ) {
-                compute_mesh_entity_bbox( GM_.line( l ), bbox_ );
+            for( const auto& line : GM_.lines() ) {
+                compute_mesh_entity_bbox( line, bbox_ );
             }
         } else {
-            for( index_t c : range( GM_.nb_corners() ) ) {
-                compute_mesh_entity_bbox( GM_.corner( c ), bbox_ );
+            for( const auto& corner : GM_.corners() ) {
+                compute_mesh_entity_bbox( corner, bbox_ );
             }
         }
 
@@ -288,9 +288,10 @@ namespace RINGMesh {
                     surface_style_.vertex_color_.Value.z );
             }
             if( selected_entity_type_ == 0 ) {
-                for( index_t s : range( GM_.nb_surfaces() ) ) {
-                    if( GM_.surface( s ).is_on_voi() ) {
-                        GM_gfx_.surfaces.set_surface_visibility( s, show_voi_ );
+                for( const auto& surface : GM_.surfaces() ) {
+                    if( surface.is_on_voi() ) {
+                        GM_gfx_.surfaces.set_surface_visibility( surface.index(),
+                            show_voi_ );
                     }
                 }
             }

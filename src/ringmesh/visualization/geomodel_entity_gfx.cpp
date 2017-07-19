@@ -156,10 +156,10 @@ namespace RINGMesh {
     {
         if( this->entities_.empty() ) {
             this->entities_.reserve( this->gfx_.geomodel()->nb_corners() );
-            for( index_t e : range( this->gfx_.geomodel()->nb_corners() ) ) {
+            for( const auto& corner : this->gfx_.geomodel()->corners() ) {
                 this->entities_.push_back(
                     PointSetMeshGfx< DIMENSION >::create_gfx(
-                        this->gfx_.geomodel()->corner( e ).low_level_mesh_storage() ) );
+                        corner.low_level_mesh_storage() ) );
             }
         }
     }
@@ -193,10 +193,10 @@ namespace RINGMesh {
     {
         if( this->entities_.empty() ) {
             this->entities_.reserve( this->gfx_.geomodel()->nb_lines() );
-            for( index_t e : range( this->gfx_.geomodel()->nb_lines() ) ) {
+            for( const auto& line : this->gfx_.geomodel()->lines() ) {
                 this->entities_.push_back(
                     LineMeshGfx< DIMENSION >::create_gfx(
-                        this->gfx_.geomodel()->line( e ).low_level_mesh_storage() ) );
+                        line.low_level_mesh_storage() ) );
             }
         }
     }
@@ -283,10 +283,10 @@ namespace RINGMesh {
     {
         if( this->entities_.empty() ) {
             this->entities_.reserve( this->gfx_.geomodel()->nb_surfaces() );
-            for( index_t e : range( this->gfx_.geomodel()->nb_surfaces() ) ) {
+            for( const auto& surface : this->gfx_.geomodel()->surfaces() ) {
                 this->entities_.push_back(
                     SurfaceMeshGfx< DIMENSION >::create_gfx(
-                        this->gfx_.geomodel()->surface( e ).low_level_mesh_storage() ) );
+                        surface.low_level_mesh_storage() ) );
             }
         }
     }
@@ -433,10 +433,10 @@ namespace RINGMesh {
     {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_regions() );
-            for( index_t e : range( gfx_.geomodel()->nb_regions() ) ) {
+            for( const auto& region : gfx_.geomodel()->regions() ) {
                 entities_.push_back(
                     VolumeMeshGfx< DIMENSION >::create_gfx(
-                        gfx_.geomodel()->region( e ).low_level_mesh_storage() ) );
+                        region.low_level_mesh_storage() ) );
             }
         }
     }
@@ -481,9 +481,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void RegionGfxEntity< DIMENSION >::set_draw_cells(
-        CellType type,
-        bool x )
+    void RegionGfxEntity< DIMENSION >::set_draw_cells( CellType type, bool x )
     {
         for( index_t r : range( entities_.size() ) ) {
             set_draw_cells( r, type, x );

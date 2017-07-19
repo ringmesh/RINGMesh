@@ -71,14 +71,14 @@ int main()
 
         GEO::Mesh in;
         GEO::mesh_load( file_name, in );
-        GeoModel< 3 > model;
+        GeoModel< 3 > geomodel;
 
-        GeoModelBuilderSurfaceMesh builder( model, in );
+        GeoModelBuilderSurfaceMesh builder( geomodel, in );
         builder.build_polygonal_surfaces_from_connected_components();
         builder.build_lines_and_corners_from_surfaces();
         builder.build_regions_from_lines_and_surfaces();
         builder.end_geomodel();
-        print_geomodel( model );
+        print_geomodel( geomodel );
 
         //Checking the validity of loaded model
 #ifdef RINGMESH_DEBUG
@@ -87,22 +87,21 @@ int main()
         GEO::CmdLine::set_arg( "in:intersection_check", false );
 #endif
 
-        if( !is_geomodel_valid( model ) ) {
+        if( !is_geomodel_valid( geomodel ) ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Failed when loading model " + model.name()
+                "Failed when loading model " + geomodel.name()
                     + ": the loaded model is not valid." );
         }
 
         // Save and reload the model
         std::string output_file( ringmesh_test_output_path );
         output_file += "saved_modelA6.gm";
-        geomodel_save( model, output_file );
+        geomodel_save( geomodel, output_file );
 
         // Compute mesh with duplicated points to compares number
         // of mesh elements and mesh entities
         GEO::Mesh surface_meshes;
-        for( index_t s : range( model.nb_surfaces() ) ) {
-            const Surface< 3 >& surface = model.surface( s );
+        for( const auto& surface : geomodel.surfaces() ) {
             index_t vertex_it = surface_meshes.vertices.create_vertices(
                 surface.nb_vertices() );
             for( index_t v : range( surface.nb_vertices() ) ) {
@@ -158,22 +157,22 @@ int main()
         }
 
         // Checking number of GeoModelMeshEntities
-        if( reloaded_model.nb_corners() != model.nb_corners() ) {
+        if( reloaded_model.nb_corners() != geomodel.nb_corners() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of corners "
                     "between saved model and reload model." );
         }
-        if( reloaded_model.nb_lines() != model.nb_lines() ) {
+        if( reloaded_model.nb_lines() != geomodel.nb_lines() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of lines "
                     "between saved model and reload model." );
         }
-        if( reloaded_model.nb_surfaces() != model.nb_surfaces() ) {
+        if( reloaded_model.nb_surfaces() != geomodel.nb_surfaces() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of surfaces "
                     "between saved model and reload model." );
         }
-        if( reloaded_model.nb_regions() != model.nb_regions() ) {
+        if( reloaded_model.nb_regions() != geomodel.nb_regions() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of regions "
                     "between saved model and reload model." );
