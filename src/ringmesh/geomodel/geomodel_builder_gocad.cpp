@@ -868,13 +868,13 @@ namespace {
 					region_id, region_name );
 			}
 
-			load_storage.vertex_map_.my_add_vertex(
+			load_storage.vertex_map_.record_vertex_with_its_region(
 				load_storage.cur_gocad_vrtx_id1_, region_id );
-			load_storage.vertex_map_.my_add_vertex(
+			load_storage.vertex_map_.record_vertex_with_its_region(
 				load_storage.cur_gocad_vrtx_id2_, region_id );
-			load_storage.vertex_map_.my_add_vertex(
+			load_storage.vertex_map_.record_vertex_with_its_region(
 				load_storage.cur_gocad_vrtx_id3_, region_id );
-			load_storage.vertex_map_.my_add_vertex(
+			load_storage.vertex_map_.record_vertex_with_its_region(
 				load_storage.cur_gocad_vrtx_id4_, region_id );
 		}
 	};
@@ -1096,6 +1096,10 @@ namespace {
 				std::vector< std::vector< index_t > > region_tetra_corners_local;
 				std::vector< std::vector< vec3 > > region_vertices;
 
+				region_tetra_corners_local.reserve( load_storage.vertex_map_.nb_regions() );
+				region_vertices.reserve( load_storage.vertex_map_.nb_regions() );
+				load_storage.vertex_map_.local_ids_.reserve( load_storage.vertex_map_.nb_regions() );
+
 				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
 					ringmesh_assert( !load_storage.vertices_.empty() );
 					/// Fill the region_vertices and local_ids
@@ -1107,11 +1111,8 @@ namespace {
 						load_storage.lighttsolid_atom_map_,
 						region_vertices[region_id],
 						load_storage.vertex_map_.local_ids_[region_id] );
-					Logger::out( "I/O", "local id taille ", load_storage.vertex_map_.local_ids_[region_id].size() );
 				}
-
-				// JUSQU'ICI NORMALEMENT OK
-
+				
 				load_storage.vertex_map_.fill_with_lighttsolid_local_ids();
 				load_storage.vertex_map_.deal_with_same_region_atoms( load_storage.lighttsolid_atom_map_ );
 
@@ -1123,7 +1124,6 @@ namespace {
 				}
 
 				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
-					Logger::out( "I/O", "region_vertices[region_id] size ", region_vertices[region_id].size() );
 					std::ofstream log_file( "C:/Users/argentin1/Desktop/vertices_lts.txt", std::ios_base::app ); // Append mode
 					ringmesh_assert( log_file );
 					log_file << "Region id " << region_id << "\n";
@@ -1142,10 +1142,6 @@ namespace {
 				}
 
 				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
-					Logger::out( "I/O", "set region geometry ", region_id );
-					Logger::out( "I/O", "region_vertices size ", region_vertices.size() );
-					Logger::out( "I/O", "region_vertices[region_id] size ", region_vertices[region_id].size() );
-					Logger::out( "I/O", "hey! " );
 					builder().geometry.set_region_geometry( region_id,
 						region_vertices[region_id], region_tetra_corners_local[region_id] );
 				}
@@ -1159,7 +1155,8 @@ namespace {
 				load_storage.lighttsolid_atom_map_.clear();
 			}
 
-			// LightTSolid LastSurface processing : same as TSolid processing
+			// End of LightTSolid peculiar processing
+			// Rest of LightTSolid Interface processing : same as TSolid processing
 			execute( line, load_storage );
 		}
     };

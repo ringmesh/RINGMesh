@@ -193,11 +193,11 @@ namespace RINGMesh {
 		void add_new_region( index_t region_id,
 			std::string region_name )
 		{
-			regions_.push_back( region_id );
-			region_name_.push_back( region_name );
+			region_ids_.push_back( region_id );
+			region_names_.push_back( region_name );
 		}
 
-		void my_add_vertex( index_t gocad_vertex_id, index_t region_id )
+		void record_vertex_with_its_region( index_t gocad_vertex_id, index_t region_id )
 		{
 			vertices_gocad_id_.push_back( gocad_vertex_id );
 			vertices_region_id_.push_back( region_id );
@@ -205,28 +205,16 @@ namespace RINGMesh {
 
 		index_t nb_regions() const
 		{
-			ringmesh_assert( region_name_.size() == regions_.size() );
-			return static_cast< index_t >( regions_.size() );
-		}
-
-		void reserve_nb_vertices( index_t capacity )
-		{
-			vertices_gocad_id_.reserve( capacity );
-			vertices_region_id_.reserve( capacity );
-		}
-
-		void reserve_nb_regions( index_t capacity )
-		{
-			regions_.reserve( capacity );
-			region_name_.reserve( capacity );
+			ringmesh_assert( region_names_.size() == region_ids_.size() );
+			return static_cast< index_t >( region_ids_.size() );
 		}
 
 		bool find_region_id_from_name( const std::string& region_name,
 			index_t& region_id )
 		{
-			for( size_t i = 0; i < region_name_.size(); i++ ){
-				if( region_name.compare( region_name_[i] ) == 0 ){
-					region_id = regions_[i];
+			for( size_t i = 0; i < region_names_.size(); i++ ){
+				if( region_name.compare( region_names_[i] ) == 0 ){
+					region_id = region_ids_[i];
 					ringmesh_assert( region_id != NO_ID );
 					return true;
 				}
@@ -237,7 +225,7 @@ namespace RINGMesh {
 
 		const std::vector< index_t >& get_regions()
 		{
-			return regions_;
+			return region_ids_;
 		}
 
 		void get_tetra_corners_with_this_region_id( index_t region_id,
@@ -247,9 +235,6 @@ namespace RINGMesh {
 			for( index_t tetra_region_id : vertices_region_id_ ) {
 				if( tetra_region_id == region_id ){
 					index_t local_i = local_id( vertices_gocad_id_[counter] );
-					if( local_i > 1336 ){
-						//Logger::out( "I/O", "Problem exists here already..." );
-					}
 					region_tetra_corners_local.push_back( local_i );
 				}
 				counter++;
@@ -269,26 +254,18 @@ namespace RINGMesh {
 				if( gocad_ids2region_ids_[gocad_id] == region_id ){
 					if( lighttsolid_atom_map.find( gocad_id ) == lighttsolid_atom_map.end() ){
 						region_tetra_vertices.push_back( stored_vertices[gocad_id] );
-						if( local_ids.size() > 2040 ){
-							Logger::out( "I/O", "Problem exists here already...0" );
-						}
 						local_ids.push_back( gocad_id );
 					}
 					else {
 						index_t corresponding_gocad_id = lighttsolid_atom_map.find( gocad_id )->second;
 						if( region( corresponding_gocad_id ) != region( gocad_id ) ){
 							region_tetra_vertices.push_back( stored_vertices[corresponding_gocad_id] );
-							if( local_ids.size() > 2040 ){
-								Logger::out( "I/O", "Problem exists here already...0" );
-							}
 							local_ids.push_back( gocad_id );
 						}
 					}
 				}
 				gocad_id++;
 			}
-			Logger::out( "I/O", "Max gocad id ", gocad_id );
-			Logger::out( "I/O", "Max local id ", local_ids.size() );
 		}
 
 		index_t local_id( index_t gocad_vertex_id ) const
@@ -312,6 +289,18 @@ namespace RINGMesh {
 		{
 			gocad_ids2local_ids_.reserve( capacity );
 			gocad_ids2region_ids_.reserve( capacity );
+		}
+
+		void reserve_nb_vertices( index_t capacity )
+		{
+			vertices_gocad_id_.reserve( capacity );
+			vertices_region_id_.reserve( capacity );
+		}
+
+		void reserve_nb_regions( index_t capacity )
+		{
+			region_ids_.reserve( capacity );
+			region_names_.reserve( capacity );
 		}
 
 		void fill_with_lighttsolid_region_ids()
@@ -357,9 +346,6 @@ namespace RINGMesh {
 							if( gocad_id == gocad_vertex_i ){
 								gocad_ids2local_ids_[gocad_vertex_i]
 									= local_id;
-								if( gocad_vertex_i == 2803 ){
-									Logger::out( "I/O", "J'ai bien 2803 qui passe ici" );
-								}
 							}
 						}
 					}
@@ -373,32 +359,55 @@ namespace RINGMesh {
 				if( region( pair.first ) == region( pair.second ) ){
 					gocad_ids2local_ids_[pair.first]
 						= gocad_ids2local_ids_[pair.second];
-					if( pair.first == 2803 ){
-						Logger::out( "I/O", "On est bien ici" );
-					}
 				}
 			}
 		}
 
 	public:
-		// The vertices are recorded ONLY ONE time here
+		/*!
+		 * LightTSolids
+		 * One std::vector< index_t > per region. Regions vector are recorded in the same order as region_ids_.
+		 * Mapping the indices of vertices from Gocad .so file to the local (in region) indices of vertices.
+		 * No duplicates: Only the Vertex and the Atoms linking to a different region Vertex are recorded here.
+		 */
 		std::vector< std::vector< index_t > > local_ids_;
 
 	private:
-		// The vertices are recorded multiple times due to the tetras...
+		/*!
+		 * LightTSolids
+		 * The gocad IDs of the vertices of the LightTSolid as read in the Tetra lines of the file.
+		 * Duplicates: One vertex is recorded multiple times due to its presence in multiple tetras.
+		 */
 		std::vector< index_t > vertices_gocad_id_;
+		/*!
+		 * LightTSolids
+		 * The region IDs of the vertices of the LightTSolid as read in the # CTETRA lines of the file.
+		 * Duplicates: One vertex is recorded multiple times due to its presence in multiple tetras.
+		 */
 		std::vector< index_t > vertices_region_id_;
 
-		std::vector< std::string > region_name_;
-		std::vector< index_t > regions_;
+		/*!
+		 * LightTSolids
+		 * All the region IDs are stored in order here. Ex: 0, 1, 2, 3.
+		 * No duplicates.
+		 */
+		std::vector< index_t > region_ids_;
+		/*!
+		 * LightTSolids
+		 * The names of the regions matching the regions IDs.
+		 * No duplicates.
+		 */
+		std::vector< std::string > region_names_;
 
     private:
         /*!
+		 * TSolids & LightTSolids
          * Mapping the indices of vertices from Gocad .so file
          * to the local (in region) indices of vertices
          */
         std::vector< index_t > gocad_ids2local_ids_;
         /*!
+		 * TSolids & LightTSolids
          * Mapping the indices of vertices from Gocad .so file
          * to the region containing them
          */
