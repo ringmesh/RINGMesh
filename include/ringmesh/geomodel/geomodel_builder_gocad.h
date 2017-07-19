@@ -247,6 +247,9 @@ namespace RINGMesh {
 			for( index_t tetra_region_id : vertices_region_id_ ) {
 				if( tetra_region_id == region_id ){
 					index_t local_i = local_id( vertices_gocad_id_[counter] );
+					if( local_i > 1336 ){
+						//Logger::out( "I/O", "Problem exists here already..." );
+					}
 					region_tetra_corners_local.push_back( local_i );
 				}
 				counter++;
@@ -266,21 +269,31 @@ namespace RINGMesh {
 				if( gocad_ids2region_ids_[gocad_id] == region_id ){
 					if( lighttsolid_atom_map.find( gocad_id ) == lighttsolid_atom_map.end() ){
 						region_tetra_vertices.push_back( stored_vertices[gocad_id] );
+						if( local_ids.size() > 2040 ){
+							Logger::out( "I/O", "Problem exists here already...0" );
+						}
 						local_ids.push_back( gocad_id );
 					}
 					else {
 						index_t corresponding_gocad_id = lighttsolid_atom_map.find( gocad_id )->second;
 						if( region( corresponding_gocad_id ) != region( gocad_id ) ){
 							region_tetra_vertices.push_back( stored_vertices[corresponding_gocad_id] );
+							if( local_ids.size() > 2040 ){
+								Logger::out( "I/O", "Problem exists here already...0" );
+							}
+							local_ids.push_back( gocad_id );
 						}
 					}
 				}
 				gocad_id++;
 			}
+			Logger::out( "I/O", "Max gocad id ", gocad_id );
+			Logger::out( "I/O", "Max local id ", local_ids.size() );
 		}
 
 		index_t local_id( index_t gocad_vertex_id ) const
 		{
+			ringmesh_assert( gocad_vertex_id < gocad_ids2local_ids_.size() );
 			return gocad_ids2local_ids_[gocad_vertex_id];
 		}
 
@@ -344,8 +357,24 @@ namespace RINGMesh {
 							if( gocad_id == gocad_vertex_i ){
 								gocad_ids2local_ids_[gocad_vertex_i]
 									= local_id;
+								if( gocad_vertex_i == 2803 ){
+									Logger::out( "I/O", "J'ai bien 2803 qui passe ici" );
+								}
 							}
 						}
+					}
+				}
+			}
+		}
+		
+		void deal_with_same_region_atoms( std::map< index_t, index_t > lighttsolid_atom_map )
+		{
+			for( std::pair< index_t, index_t > pair : lighttsolid_atom_map ){
+				if( region( pair.first ) == region( pair.second ) ){
+					gocad_ids2local_ids_[pair.first]
+						= gocad_ids2local_ids_[pair.second];
+					if( pair.first == 2803 ){
+						Logger::out( "I/O", "On est bien ici" );
 					}
 				}
 			}
