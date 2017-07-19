@@ -78,40 +78,33 @@ namespace {
             const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
 
             write_title( out, geomodel );
-
             write_vertices( out, geomodel_mesh );
-
             write_cells( geomodel, out );
-
             write_polygons( geomodel, out );
-
             write_regions( geomodel, out );
-
             write_interfaces( geomodel, out );
-
-            out << "FIN" << std::endl;
-
-            out.close();
+            out << "FIN" << EOL;
+            out << std::flush;
         }
 
     private:
 
         void write_title( std::ofstream& out, const GeoModel< 3 >& geomodel ) const
         {
-            out << "TITRE" << std::endl;
-            out << geomodel.name() << std::endl;
-            out << "FINSF" << std::endl;
+            out << "TITRE" << EOL;
+            out << geomodel.name() << EOL;
+            out << "FINSF" << EOL;
         }
         void write_vertices(
             std::ofstream& out,
             const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh ) const
         {
-            out << "COOR_3D" << std::endl;
+            out << "COOR_3D" << EOL;
             for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
                 out << "V" << v << " " << geomodel_mesh.vertices.vertex( v )
-                    << std::endl;
+                    << EOL;
             }
-            out << "FINSF" << std::endl;
+            out << "FINSF" << EOL;
         }
 
         void write_cells( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
@@ -152,7 +145,7 @@ namespace {
             std::ofstream& out ) const
         {
             out << *cell_name_in_aster_mail_file[to_underlying_type( cell_type )]
-                << std::endl;
+                << EOL;
             for( index_t c : range(
                 geomodel_mesh.cells.nb_cells( region, cell_type ) ) ) {
                 index_t global_id = geomodel_mesh.cells.cell( region, c, cell_type );
@@ -160,9 +153,9 @@ namespace {
                 for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
                     out << "V" << geomodel_mesh.cells.vertex( global_id, v ) << " ";
                 }
-                out << std::endl;
+                out << EOL;
             }
-            out << "FINSF" << std::endl;
+            out << "FINSF" << EOL;
         }
 
         void write_polygons_in_interface(
@@ -173,7 +166,7 @@ namespace {
         {
             out
                 << *polygon_name_in_aster_mail_file[to_underlying_type(
-                    polygon_type )] << std::endl;
+                    polygon_type )] << EOL;
             for( index_t p : range(
                 mesh.polygons.nb_polygons( surface, polygon_type ) ) ) {
                 index_t global_id = mesh.polygons.polygon( surface, p,
@@ -182,23 +175,23 @@ namespace {
                 for( index_t v : range( mesh.polygons.nb_vertices( p ) ) ) {
                     out << "V" << mesh.polygons.vertex( global_id, v ) << " ";
                 }
-                out << std::endl;
+                out << EOL;
             }
-            out << "FINSF" << std::endl;
+            out << "FINSF" << EOL;
         }
 
         void write_regions( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
             for( const auto& region : region_range < 3 > ( geomodel ) ) {
                 if( region.is_meshed() ) {
-                    out << "GROUP_MA" << std::endl;
-                    out << region.name() << std::endl;
+                    out << "GROUP_MA" << EOL;
+                    out << region.name() << EOL;
                     for( index_t c : range(
                         geomodel.mesh.cells.nb_cells( region.index() ) ) ) {
                         out << "C" << geomodel.mesh.cells.cell( region.index(), c )
-                            << std::endl;
+                            << EOL;
                     }
-                    out << "FINSF" << std::endl;
+                    out << "FINSF" << EOL;
                 }
             }
         }
@@ -215,27 +208,27 @@ namespace {
                         inter );
                 for( index_t s : range( cur_interface.nb_children() ) ) {
                     index_t surface_id = cur_interface.child( s ).index();
-                    out << "GROUP_MA" << std::endl;
-                    out << cur_interface.name() << "_" << s << std::endl;
+                    out << "GROUP_MA" << EOL;
+                    out << cur_interface.name() << "_" << s << EOL;
                     for( index_t p : range(
                         geomodel.mesh.polygons.nb_polygons( surface_id ) ) ) {
                         out << "F" << geomodel.mesh.polygons.polygon( surface_id, p )
-                            << std::endl;
+                            << EOL;
                     }
-                    out << "FINSF" << std::endl;
+                    out << "FINSF" << EOL;
                 }
 
-                out << "GROUP_MA" << std::endl;
-                out << cur_interface.name() << std::endl;
+                out << "GROUP_MA" << EOL;
+                out << cur_interface.name() << EOL;
                 for( index_t s : range( cur_interface.nb_children() ) ) {
                     index_t surface_id = cur_interface.child( s ).index();
                     for( index_t p : range(
                         geomodel.mesh.polygons.nb_polygons( surface_id ) ) ) {
                         out << "F" << geomodel.mesh.polygons.polygon( surface_id, p )
-                            << std::endl;
+                            << EOL;
                     }
                 }
-                out << "FINSF" << std::endl;
+                out << "FINSF" << EOL;
             }
         }
     };
