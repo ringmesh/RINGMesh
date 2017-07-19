@@ -68,7 +68,6 @@ namespace RINGMesh {
 
     struct ElementLocalVertex {
         ElementLocalVertex() = default;
-        ~ElementLocalVertex() = default;
         ElementLocalVertex( index_t element_id, index_t local_vertex_id )
             : element_id_( element_id ), local_vertex_id_( local_vertex_id )
         {
@@ -82,7 +81,6 @@ namespace RINGMesh {
 
     struct EdgeLocalVertex {
         EdgeLocalVertex() = default;
-        ~EdgeLocalVertex() = default;
         EdgeLocalVertex( index_t edge_id, index_t local_vertex_id )
             : edge_id_( edge_id ), local_vertex_id_( local_vertex_id )
         {
@@ -99,7 +97,6 @@ namespace RINGMesh {
 
     struct PolygonLocalEdge {
         PolygonLocalEdge() = default;
-        ~PolygonLocalEdge() = default;
         PolygonLocalEdge( index_t polygon_id, index_t local_edge_id )
             : polygon_id_( polygon_id ), local_edge_id_( local_edge_id )
         {
@@ -116,7 +113,6 @@ namespace RINGMesh {
 
     struct CellLocalFacet {
         CellLocalFacet() = default;
-        ~CellLocalFacet() = default;
         CellLocalFacet( index_t cell_id, index_t local_facet_id )
             : cell_id_( cell_id ), local_facet_id_( local_facet_id )
         {
