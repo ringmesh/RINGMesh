@@ -124,7 +124,6 @@ namespace {
         GEO::Attribute< char > vertex_char_attr( gmmv_attr_mgr, attribute_names[5] );
 
         for( index_t v_i = 0; v_i < gmmv.nb(); ++v_i ) {
-
             const vec3& cur_vertex = gmmv.vertex( v_i );
             const long int rounded_vertex_xy = std::lrint(
                 cur_vertex.x * cur_vertex.y );

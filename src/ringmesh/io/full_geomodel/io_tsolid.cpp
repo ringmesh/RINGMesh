@@ -126,9 +126,7 @@ namespace {
                         continue;
                     }
 
-                    if( std::find( att_v_double_names_.begin(),
-                        att_v_double_names_.end(), cur_att_v_name )
-                        != att_v_double_names_.end() ) {
+                    if( contains( att_v_double_names_, cur_att_v_name ) ) {
                         continue;
                     }
 
@@ -215,9 +213,7 @@ namespace {
                 ringmesh_assert( att_c_names.size() == reg_cell_attr_mgr.nb() );
                 for( const std::string& cur_att_c_name : att_c_names ) {
 
-                    if( std::find( att_c_double_names_.begin(),
-                        att_c_double_names_.end(), cur_att_c_name )
-                        != att_c_double_names_.end() ) {
+                    if( contains( att_c_double_names_, cur_att_c_name ) ) {
                         continue;
                     }
 
