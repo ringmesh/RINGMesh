@@ -132,14 +132,13 @@ namespace RINGMesh {
      *          Logger::err( "Exception", e.what() );
      *       }
      */
-    class RINGMESH_API RINGMeshException: public std::runtime_error {
+    class RINGMESH_API RINGMeshException {
     public:
         template< typename ...Args >
         explicit RINGMeshException( std::string category, const Args& ...messages )
-            :
-                std::runtime_error( string_concatener( messages... ) ),
-                category_( std::move( category ) )
+            : category_( std::move( category ) )
         {
+            message_ = string_concatener( messages... );
         }
         virtual ~RINGMeshException() throw()
         {
@@ -148,6 +147,11 @@ namespace RINGMesh {
         const std::string& category() const
         {
             return category_;
+        }
+
+        const std::string& what() const
+        {
+            return message_;
         }
 
     private:
@@ -159,14 +163,12 @@ namespace RINGMesh {
         template< class A0, class ...Args >
         std::string& string_concatener( const A0& a0, const Args& ...args )
         {
-            std::cout << &message_ << std::endl;
             message_ += GEO::String::to_string( a0 );
-            std::cout << &message_ << std::endl;
             return string_concatener( args... );
         }
     protected:
-        std::string message_;
         std::string category_;
+        std::string message_;
     };
 
     /*!
