@@ -1107,11 +1107,13 @@ namespace {
 						load_storage.lighttsolid_atom_map_,
 						region_vertices[region_id],
 						load_storage.vertex_map_.local_ids_[region_id] );
+					Logger::out( "I/O", "local id taille ", load_storage.vertex_map_.local_ids_[region_id].size() );
 				}
 
 				// JUSQU'ICI NORMALEMENT OK
 
 				load_storage.vertex_map_.fill_with_lighttsolid_local_ids();
+				load_storage.vertex_map_.deal_with_same_region_atoms( load_storage.lighttsolid_atom_map_ );
 
 				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
 					/// Fill the region_tetra_corners
@@ -1121,6 +1123,7 @@ namespace {
 				}
 
 				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
+					Logger::out( "I/O", "region_vertices[region_id] size ", region_vertices[region_id].size() );
 					std::ofstream log_file( "C:/Users/argentin1/Desktop/vertices_lts.txt", std::ios_base::app ); // Append mode
 					ringmesh_assert( log_file );
 					log_file << "Region id " << region_id << "\n";
@@ -1139,13 +1142,16 @@ namespace {
 				}
 
 				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
+					Logger::out( "I/O", "set region geometry ", region_id );
+					Logger::out( "I/O", "region_vertices size ", region_vertices.size() );
+					Logger::out( "I/O", "region_vertices[region_id] size ", region_vertices[region_id].size() );
+					Logger::out( "I/O", "hey! " );
 					builder().geometry.set_region_geometry( region_id,
 						region_vertices[region_id], region_tetra_corners_local[region_id] );
-
-					region_tetra_corners_local.clear();
-					region_vertices.clear();
 				}
 
+				region_tetra_corners_local.clear();
+				region_vertices.clear();
 				load_storage.tetra_corners_.clear();
 				load_storage.vertices_.clear();
 
