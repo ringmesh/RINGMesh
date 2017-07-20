@@ -221,6 +221,8 @@ namespace RINGMesh {
         vecn< DIMENSION > vertices_[2];
     };
 
+    CLASS_DIMENSION_ALIASES( Edge );
+
 // --------------------------------------------------------------------------
 
     template< index_t DIMENSION >

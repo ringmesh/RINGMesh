@@ -780,9 +780,9 @@ namespace RINGMesh {
     class GeoModelMeshPolygons< 3 > final: public GeoModelMeshPolygonsBase< 3 > {
     public:
         GeoModelMeshPolygons(
-            GeoModelMesh< 3 >& gmm,
+            GeoModelMesh3D& gmm,
             GeoModel3D& gm,
-            std::unique_ptr< SurfaceMesh< 3 > >& mesh );
+            std::unique_ptr< SurfaceMesh3D >& mesh );
 
         /*!
          * Get the normal of the polygon
@@ -1425,7 +1425,7 @@ namespace RINGMesh {
          * Access the DuplicateMode
          * @return the current DuplicateMode
          */
-        GeoModelMeshCells< 3 >::DuplicateMode duplicate_mode() const
+        GeoModelMeshCells3D::DuplicateMode duplicate_mode() const
         {
             return mode_;
         }
@@ -1434,22 +1434,22 @@ namespace RINGMesh {
          * @param[in] mode the new DuplicateMode for the GeoModelMesh
          */
         void set_duplicate_mode(
-            const GeoModelMeshCells< 3 >::DuplicateMode& mode ) const
+            const GeoModelMeshCells3D::DuplicateMode& mode ) const
         {
             if( mode_ == mode ) return;
             mode_ = mode;
-            const_cast< GeoModelMesh< 3 >* >( this )->cells.clear_duplication();
+            const_cast< GeoModelMesh3D* >( this )->cells.clear_duplication();
         }
 
         void change_volume_mesh_data_structure( const MeshType& type );
 
     private:
         /// Optional duplication mode to compute the duplication of cells on surfaces
-        mutable GeoModelMeshCells< 3 >::DuplicateMode mode_ {
-            GeoModelMeshCells< 3 >::NONE };
+        mutable GeoModelMeshCells3D::DuplicateMode mode_ {
+            GeoModelMeshCells3D::NONE };
 
     public:
-        GeoModelMeshCells< 3 > cells;
+        GeoModelMeshCells3D cells;
     };
 
 }

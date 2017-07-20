@@ -49,6 +49,7 @@
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderBase;
     template< index_t DIMENSION > class GeoModelBuilder;
+    CLASS_DIMENSION_ALIASES( GeoModelBuilder );
 }
 
 namespace RINGMesh {
@@ -203,8 +204,8 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilderTopology(
-            GeoModelBuilder< 2 >& builder,
-            GeoModel< 2 >& geomodel )
+            GeoModelBuilder2D& builder,
+            GeoModel2D& geomodel )
             : GeoModelBuilderTopologyBase< 2 >( builder, geomodel )
         {
         }
@@ -240,7 +241,7 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilderTopology(
-            GeoModelBuilder< 3 >& builder,
+            GeoModelBuilder3D& builder,
             GeoModel3D& geomodel )
             : GeoModelBuilderTopologyBase< 3 >( builder, geomodel )
         {

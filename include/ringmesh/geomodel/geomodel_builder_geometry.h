@@ -49,6 +49,7 @@
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderBase;
     template< index_t DIMENSION > class GeoModelBuilder;
+    CLASS_DIMENSION_ALIASES( GeoModelBuilder );
 }
 
 namespace RINGMesh {
@@ -418,16 +419,16 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh3DBuilder_var.
          */
-        std::unique_ptr< VolumeMeshBuilder< 3 > > create_region_builder(
+        std::unique_ptr< VolumeMeshBuilder3D > create_region_builder(
             index_t region_id )
         {
-            gmme_id id( Region< 3 >::type_name_static(), region_id );
-            GeoModelMeshEntity< 3 >& region =
+            gmme_id id( Region3D::type_name_static(), region_id );
+            GeoModelMeshEntity3D& region =
                 geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess< 3 > region_access( region );
-            VolumeMesh< 3 >& region_mesh =
-                dynamic_cast< VolumeMesh< 3 >& >( *region_access.modifiable_mesh() );
-            return VolumeMeshBuilder< 3 >::create_builder( region_mesh );
+            GeoModelMeshEntityAccess3D region_access( region );
+            VolumeMesh3D& region_mesh =
+                dynamic_cast< VolumeMesh3D& >( *region_access.modifiable_mesh() );
+            return VolumeMeshBuilder3D::create_builder( region_mesh );
         }
 
         void copy_meshes( const GeoModel3D& geomodel ) override;
@@ -491,7 +492,7 @@ namespace RINGMesh {
 
     protected:
         GeoModelBuilderGeometry(
-            GeoModelBuilder< 3 >& builder,
+            GeoModelBuilder3D& builder,
             GeoModel3D& geomodel )
             : GeoModelBuilderGeometryBase< 3 >( builder, geomodel )
         {

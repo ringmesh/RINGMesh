@@ -415,7 +415,7 @@ namespace RINGMesh {
     /*****************************************************************/
 
     template< index_t DIMENSION >
-    RegionGfxEntity< DIMENSION >::RegionGfxEntity( GeoModelGfx< 3 >& gfx )
+    RegionGfxEntity< DIMENSION >::RegionGfxEntity( GeoModelGfx3D& gfx )
         : GeoModelGfxEntity< DIMENSION >( gfx )
     {
     }

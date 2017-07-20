@@ -285,8 +285,8 @@ namespace RINGMesh {
          */
         void compute_surface_internal_borders(
             index_t surface_id,
-            const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-            const std::vector< Box< 3 > >& surface_boxes );
+            const std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
+            const std::vector< Box3D >& surface_boxes );
 
         /*!
          * @brief Computes the NNSearchs of the centers of polygon edges for
@@ -296,8 +296,8 @@ namespace RINGMesh {
          * @param[out] surface_boxes Bounding Box of surfaces
          */
         void compute_polygon_edge_centers_nn_and_surface_boxes(
-            std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-            std::vector< Box< 3 > >& surface_boxes );
+            std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
+            std::vector< Box3D >& surface_boxes );
 
         /*!
          * @brief Computes internal borders of the geomodel surfaces
