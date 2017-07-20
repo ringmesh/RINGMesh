@@ -124,9 +124,13 @@ namespace {
             out << nb_cells << EOL;
             for( index_t c : range( nb_cells ) ) {
                 out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
-                out << cell_type_mfem[to_underlying_type( geomodel_mesh.cells.type( c ))] << " ";
+                out
+                    << cell_type_mfem[to_underlying_type(
+                        geomodel_mesh.cells.type( c ) )] << " ";
                 for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
-                    out << geomodel_mesh.cells.vertex( c, cell2mfem[v] ) << " ";
+                    out
+                        << geomodel_mesh.cells.vertex(
+                            ElementLocalVertex( c, cell2mfem[v] ) ) << " ";
                 }
                 out << EOL;
             }
@@ -151,11 +155,12 @@ namespace {
             out << "boundary" << EOL;
             out << polygons.nb() << EOL;
             for( index_t p : range( polygons.nb() ) ) {
-                index_t not_used = 0;
                 out << polygons.surface( p ) + mfem_offset << " ";
-                out << polygon_type_mfem[to_underlying_type( polygons.type( p, not_used ) )] << " ";
+                PolygonType polygon_type;
+                std::tie( polygon_type, std::ignore ) = polygons.type( p );
+                out << polygon_type_mfem[to_underlying_type( polygon_type )] << " ";
                 for( index_t v : range( polygons.nb_vertices( p ) ) ) {
-                    out << polygons.vertex( p, v ) << " ";
+                    out << polygons.vertex( ElementLocalVertex( p, v ) ) << " ";
                 }
                 out << EOL;
             }

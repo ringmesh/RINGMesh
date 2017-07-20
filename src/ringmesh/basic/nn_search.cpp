@@ -66,11 +66,10 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t NNSearch< DIMENSION >::get_colocated_index_mapping(
-        double epsilon,
-        std::vector< index_t >& index_map ) const
+    std::tuple< index_t, std::vector< index_t > > NNSearch< DIMENSION >::get_colocated_index_mapping(
+        double epsilon ) const
     {
-        index_map.resize( nn_tree_->nb_points() );
+        std::vector< index_t > index_map( nn_tree_->nb_points() );
         std::iota( index_map.begin(), index_map.end(), 0 );
         index_t nb_colocalised_vertices = 0;
         for( index_t i : range( index_map.size() ) ) {
@@ -81,17 +80,18 @@ namespace RINGMesh {
                 nb_colocalised_vertices++;
             }
         }
-        return nb_colocalised_vertices;
+        return std::make_tuple( nb_colocalised_vertices, index_map );
     }
 
     template< index_t DIMENSION >
-    index_t NNSearch< DIMENSION >::get_colocated_index_mapping(
-        double epsilon,
-        std::vector< index_t >& index_map,
-        std::vector< vecn< DIMENSION > >& unique_points ) const
+    std::tuple< index_t, std::vector< index_t >, std::vector< vecn< DIMENSION > > >
+        NNSearch< DIMENSION >::get_colocated_index_mapping_and_unique_points(
+            double epsilon ) const
     {
-        index_t nb_colocalised_vertices = get_colocated_index_mapping( epsilon,
-            index_map );
+        index_t nb_colocalised_vertices = NO_ID;
+        std::vector< index_t > index_map;
+        std::tie( nb_colocalised_vertices, index_map ) = get_colocated_index_mapping( epsilon );
+        std::vector< vecn< DIMENSION > > unique_points;
         unique_points.reserve( nb_points() - nb_colocalised_vertices );
         index_t offset = 0;
         for( index_t p : range( index_map.size() ) ) {
@@ -104,7 +104,7 @@ namespace RINGMesh {
             }
         }
         ringmesh_assert( offset == nb_colocalised_vertices );
-        return offset;
+        return std::make_tuple( offset, index_map, unique_points );
     }
 
     template< index_t DIMENSION >
