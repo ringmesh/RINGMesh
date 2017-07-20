@@ -469,7 +469,9 @@ namespace {
             index_t nb_mesh_entites = nb_mesh_entities( geomodel );
             std::vector< std::string > filenames;
             filenames.reserve( nb_mesh_entites );
+            Logger::instance()->set_quiet( true );
             save_all_geomodel_mesh_entities( geomodel, filenames );
+            Logger::instance()->set_quiet( false );
             std::sort( filenames.begin(), filenames.end() );
             zip_files( filenames, zf );
 
