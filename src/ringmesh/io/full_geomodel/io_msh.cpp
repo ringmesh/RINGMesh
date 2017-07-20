@@ -100,20 +100,20 @@ namespace {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
 
-            out << "$MeshFormat" << std::endl;
-            out << "2.2 0 8" << std::endl;
-            out << "$EndMeshFormat" << std::endl;
+            out << "$MeshFormat" << EOL;
+            out << "2.2 0 8" << EOL;
+            out << "$EndMeshFormat" << EOL;
 
-            out << "$Nodes" << std::endl;
-            out << geomodel.mesh.vertices.nb() << std::endl;
+            out << "$Nodes" << EOL;
+            out << geomodel.mesh.vertices.nb() << EOL;
             for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
                 out << v + gmsh_offset << SPACE << geomodel.mesh.vertices.vertex( v )
-                    << std::endl;
+                    << EOL;
             }
-            out << "$EndNodes" << std::endl;
+            out << "$EndNodes" << EOL;
 
-            out << "$Elements" << std::endl;
-            out << count_elements( geomodel ) << std::endl;
+            out << "$Elements" << EOL;
+            out << count_elements( geomodel ) << EOL;
             const std::vector< MeshEntityType >& gmme_types =
                 geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
 
@@ -150,11 +150,12 @@ namespace {
                                             v_index_in_cur_element ) ) )
                                     + gmsh_offset << SPACE;
                         }
-                        out << std::endl;
+                        out << EOL;
                     }
                 }
             }
-            out << "$EndElements" << std::endl;
+            out << "$EndElements" << EOL;
+            out << std::flush;
         }
 
     private:
@@ -200,7 +201,7 @@ namespace {
             index_t nb_elements = 0;
             const std::vector< MeshEntityType >& gmme_types =
                 geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
-            for( MeshEntityType cur_mesh_entity_type : gmme_types ) {
+            for( const MeshEntityType& cur_mesh_entity_type : gmme_types ) {
                 for( index_t index_of_gmme_of_the_current_type : range(
                     geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) ) {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,

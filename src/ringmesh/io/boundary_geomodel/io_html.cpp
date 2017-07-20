@@ -70,13 +70,13 @@ namespace {
         {
             std::vector< std::vector< double > > xyz;
             xyz.resize( geomodel.nb_lines() );
-            for( index_t line_itr : range( geomodel.nb_lines() ) ) {
-                const Line& cur_line = geomodel.line( line_itr );
-                xyz[line_itr].reserve( 3 * cur_line.nb_vertices() );
-                for( index_t v_itr : range( cur_line.nb_vertices() ) ) {
-                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).x );
-                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).y );
-                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).z );
+            for( const auto& line : geomodel.lines() ) {
+                index_t line_id = line.index();
+                xyz[line_id].reserve( 3 * line.nb_vertices() );
+                for( index_t v_itr : range( line.nb_vertices() ) ) {
+                    xyz[line_id].push_back( line.vertex( v_itr ).x );
+                    xyz[line_id].push_back( line.vertex( v_itr ).y );
+                    xyz[line_id].push_back( line.vertex( v_itr ).z );
                 }
             }
             js.add_lines( "all_lines", xyz );

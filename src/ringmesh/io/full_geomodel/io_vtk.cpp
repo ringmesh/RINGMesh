@@ -73,24 +73,24 @@ namespace {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
 
-            out << "# vtk DataFile Version 2.0" << std::endl;
-            out << "Unstructured Grid" << std::endl;
-            out << "ASCII" << std::endl;
-            out << "DATASET UNSTRUCTURED_GRID" << std::endl;
+            out << "# vtk DataFile Version 2.0" << EOL;
+            out << "Unstructured Grid" << EOL;
+            out << "ASCII" << EOL;
+            out << "DATASET UNSTRUCTURED_GRID" << EOL;
 
             const GeoModelMesh< 3 >& mesh = geomodel.mesh;
-            out << "POINTS " << mesh.vertices.nb() << " double" << std::endl;
+            out << "POINTS " << mesh.vertices.nb() << " double" << EOL;
             for( index_t v : range( mesh.vertices.nb() ) ) {
-                out << mesh.vertices.vertex( v ) << std::endl;
+                out << mesh.vertices.vertex( v ) << EOL;
             }
-            out << std::endl;
+            out << EOL;
 
             index_t total_corners = ( 4 + 1 ) * mesh.cells.nb_tet()
                 + ( 5 + 1 ) * mesh.cells.nb_pyramid()
                 + ( 6 + 1 ) * mesh.cells.nb_prism()
                 + ( 8 + 1 ) * mesh.cells.nb_hex();
             out << "CELLS " << mesh.cells.nb_cells() << SPACE << total_corners
-                << std::endl;
+                << EOL;
             for( index_t c : range( mesh.cells.nb() ) ) {
                 out << mesh.cells.nb_vertices( c );
                 const RINGMesh2VTK& descriptor =
@@ -99,24 +99,25 @@ namespace {
                     index_t vertex_id = descriptor.vertices[v];
                     out << SPACE << mesh.cells.vertex( c, vertex_id );
                 }
-                out << std::endl;
+                out << EOL;
             }
 
-            out << "CELL_TYPES " << mesh.cells.nb() << std::endl;
+            out << "CELL_TYPES " << mesh.cells.nb() << EOL;
             for( index_t c : range( mesh.cells.nb() ) ) {
                 const RINGMesh2VTK& descriptor =
                     *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
-                out << descriptor.entity_type << std::endl;
+                out << descriptor.entity_type << EOL;
             }
-            out << std::endl;
+            out << EOL;
 
-            out << "CELL_DATA " << mesh.cells.nb() << std::endl;
-            out << "SCALARS region int 1" << std::endl;
-            out << "LOOKUP_TABLE default" << std::endl;
+            out << "CELL_DATA " << mesh.cells.nb() << EOL;
+            out << "SCALARS region int 1" << EOL;
+            out << "LOOKUP_TABLE default" << EOL;
             for( index_t c : range( mesh.cells.nb() ) ) {
-                out << mesh.cells.region( c ) << std::endl;
+                out << mesh.cells.region( c ) << EOL;
             }
-            out << std::endl;
+            out << EOL;
+            out << std::flush;
         }
     };
 

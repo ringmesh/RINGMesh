@@ -58,24 +58,23 @@ namespace {
             out.precision( 16 );
 
             /// 1. Write the unique vertices
-            out << "# Node list" << std::endl;
+            out << "# Node list" << EOL;
             out << "# node count, 3 dim, no attribute, no boundary marker"
-                << std::endl;
-            out << geomodel.mesh.vertices.nb() << " 3 0 0" << std::endl;
-            out << "# node index, node coordinates " << std::endl;
+                << EOL;
+            out << geomodel.mesh.vertices.nb() << " 3 0 0" << EOL;
+            out << "# node index, node coordinates " << EOL;
             for( index_t p : range( geomodel.mesh.vertices.nb() ) ) {
                 const vec3& V = geomodel.mesh.vertices.vertex( p );
                 out << p << " " << " " << V.x << " " << V.y << " " << V.z
-                    << std::endl;
+                    << EOL;
             }
 
             /// 2. Write the triangles
-            out << "# Part 2 - facet list" << std::endl;
-            out << "# facet count, no boundary marker" << std::endl;
-            out << nb_polygons( geomodel ) << "  0 " << std::endl;
+            out << "# Part 2 - facet list" << EOL;
+            out << "# facet count, no boundary marker" << EOL;
+            out << nb_polygons( geomodel ) << "  0 " << EOL;
 
-            for( index_t i : range( geomodel.nb_surfaces() ) ) {
-                const Surface< 3 >& surface = geomodel.surface( i );
+            for( const auto& surface : geomodel.surfaces() ) {
                 for( index_t p : range( surface.nb_mesh_elements() ) ) {
                     out << surface.nb_mesh_element_vertices( p ) << " ";
                     for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
@@ -83,12 +82,13 @@ namespace {
                             << geomodel.mesh.vertices.geomodel_vertex_id(
                                 surface.gmme(), p, v ) << " ";
                     }
-                    out << std::endl;
+                    out << EOL;
                 }
             }
 
             // Do not forget the stupid zeros at the end of the file
-            out << std::endl << "0" << std::endl << "0" << std::endl;
+            out << EOL << "0" << EOL << "0" << EOL;
+            out << std::flush;
         }
     };
 

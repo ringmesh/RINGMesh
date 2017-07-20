@@ -276,10 +276,6 @@ namespace RINGMesh {
             const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr );
 
-        void set_surface_geometry(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_vertices );
-
         void set_surface_element_geometry(
             index_t surface_id,
             index_t polygon_id,

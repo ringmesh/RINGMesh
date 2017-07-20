@@ -432,17 +432,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelBuilderGeometryBase< DIMENSION >::set_surface_geometry(
-        index_t surface_id,
-        const std::vector< index_t >& triangle_vertices )
-    {
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
-            create_surface_builder( surface_id );
-        builder->assign_triangle_mesh( triangle_vertices );
-        compute_surface_adjacencies( surface_id );
-    }
-
-    template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::set_corner(
         index_t corner_id,
         index_t geomodel_vertex_id )
@@ -614,18 +603,15 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::cut_surfaces_by_internal_lines()
     {
-        for( index_t s : range( geomodel_.nb_surfaces() ) ) {
-            Surface< DIMENSION >& surface =
-                dynamic_cast< Surface< DIMENSION >& >( geomodel_access_.modifiable_mesh_entity(
-                    gmme_id( Surface< DIMENSION >::type_name_static(), s ) ) );
+        for( const auto& surface : geomodel_.surfaces() ) {
             std::set< index_t > cutting_lines;
             get_internal_borders( surface, cutting_lines );
             for( index_t line_id : cutting_lines ) {
-                cut_surface_by_line( s, line_id );
+                cut_surface_by_line( surface.index(), line_id );
             }
             if( !cutting_lines.empty() ) {
                 std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > surface_mesh_builder =
-                    create_surface_builder( s );
+                    create_surface_builder( surface.index() );
                 surface_mesh_builder->remove_isolated_vertices();
             }
         }
@@ -894,19 +880,16 @@ namespace RINGMesh {
 
     void GeoModelBuilderGeometry< 3 >::cut_regions_by_internal_surfaces()
     {
-        for( index_t r = 0; r < geomodel_.nb_regions(); r++ ) {
-            Region< 3 >& region =
-                dynamic_cast< Region< 3 >& >( geomodel_access_.modifiable_mesh_entity(
-                    gmme_id( Region< 3 >::type_name_static(), r ) ) );
+        for( const auto& region : geomodel_.regions() ) {
             if( region.nb_mesh_elements() == 0 ) continue;
             std::set< index_t > cutting_surfaces;
             get_internal_borders( region, cutting_surfaces );
             for( index_t surface_id : cutting_surfaces ) {
-                cut_region_by_surface( r, surface_id );
+                cut_region_by_surface( region.index(), surface_id );
             }
             if( !cutting_surfaces.empty() ) {
                 std::unique_ptr< VolumeMeshBuilder< 3 > > region_mesh_builder =
-                    create_region_builder( r );
+                    create_region_builder( region.index() );
                 region_mesh_builder->remove_isolated_vertices();
             }
         }
