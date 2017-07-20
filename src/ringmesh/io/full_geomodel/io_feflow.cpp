@@ -166,8 +166,7 @@ namespace {
         {
             out << "ELEMENTALSETS\n";
             index_t offset = 0;
-            for( index_t r : range( geomodel.nb_regions() ) ) {
-                const Region< 3 >& region = geomodel.region( r );
+            for( const auto& region : geomodel.regions() ) {
                 out << SPACE << region.name() << SPACE << offset + STARTING_OFFSET;
                 offset += region.nb_mesh_elements();
                 out << "-" << offset << "\n";

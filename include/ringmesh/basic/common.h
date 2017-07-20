@@ -205,7 +205,7 @@ namespace RINGMesh {
             return iter_;
         }
 
-    private:
+    protected:
         index_t iter_ { 0 };
         index_t last_ { 0 };
     };

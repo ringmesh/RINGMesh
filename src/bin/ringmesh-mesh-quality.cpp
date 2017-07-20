@@ -77,14 +77,16 @@ namespace {
             throw RINGMeshException( "I/O", "Input geomodel has no region." );
         }
 
-        for( index_t reg_itr : range( geomodel.nb_regions() ) ) {
-            if( !geomodel.region( reg_itr ).is_meshed() ) {
+        for( const auto& region : geomodel.regions() ) {
+            if( !region.is_meshed() ) {
                 throw RINGMeshException( "I/O",
-                    "Region " + std::to_string( reg_itr ) + " is not meshed." );
+                    "Region " + std::to_string( region.index() )
+                        + " is not meshed." );
             }
-            if( !geomodel.region( reg_itr ).is_simplicial() ) {
+            if( !region.is_simplicial() ) {
                 throw RINGMeshException( "I/O",
-                    "Region " + std::to_string( reg_itr ) + " is not simplicial." );
+                    "Region " + std::to_string( region.index() )
+                        + " is not simplicial." );
             }
         }
     }

@@ -134,7 +134,7 @@ namespace {
         }
     }
 
-} // anonymous namespace
+}
 
 namespace RINGMesh {
 
@@ -348,8 +348,7 @@ namespace RINGMesh {
         }
 
         std::vector< std::set< gmge_id > > interfaces;
-        for( index_t i : range( geomodel_.nb_lines() ) ) {
-            const Line< DIMENSION >& line = geomodel_.line( i );
+        for( const auto& line : geomodel_.lines() ) {
             std::set< gmge_id > cur_interfaces;
             for( index_t j : range( line.nb_incident_entities() ) ) {
                 const GeoModelMeshEntity< DIMENSION >& surface =
@@ -398,4 +397,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderGeology< 2 > ;
     template class RINGMESH_API GeoModelBuilderGeology< 3 > ;
 
-} // namespace
+}

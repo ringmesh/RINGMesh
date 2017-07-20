@@ -201,4 +201,4 @@ namespace RINGMesh {
 
     CLASS_DIMENSION_ALIASES( GeoModelBuilderRepair );
 
-} //namespace RINGMesh
+}

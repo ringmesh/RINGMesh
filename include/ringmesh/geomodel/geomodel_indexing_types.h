@@ -68,4 +68,101 @@ namespace RINGMesh {
         /// Index of the vertex in the GeoModelEntity
         index_t v_index { NO_ID };
     };
+
+
+    template< index_t DIMENSION >
+    class RINGMESH_API entity_range: public range {
+    protected:
+        entity_range( const GeoModel< DIMENSION >& geomodel, index_t last )
+            : range( last ), geomodel_( geomodel )
+        {
+        }
+
+    protected:
+        const GeoModel< DIMENSION >& geomodel_;
+    };
+
+    template< index_t DIMENSION >
+    class RINGMESH_API corner_range: public entity_range< DIMENSION > {
+    public:
+        corner_range( const GeoModel< DIMENSION >& geomodel )
+            : entity_range< DIMENSION >( geomodel, geomodel.nb_corners() )
+        {
+        }
+        const corner_range< DIMENSION >& begin() const
+        {
+            return *this;
+        }
+        const corner_range< DIMENSION >& end() const
+        {
+            return *this;
+        }
+        const Corner< DIMENSION >& operator*() const
+        {
+            return this->geomodel_.corner( this->iter_ );
+        }
+    };
+
+    template< index_t DIMENSION >
+    class RINGMESH_API line_range: public entity_range< DIMENSION > {
+    public:
+        line_range( const GeoModel< DIMENSION >& geomodel )
+            : entity_range< DIMENSION >( geomodel, geomodel.nb_lines() )
+        {
+        }
+        const line_range< DIMENSION >& begin() const
+        {
+            return *this;
+        }
+        const line_range< DIMENSION >& end() const
+        {
+            return *this;
+        }
+        const Line< DIMENSION >& operator*() const
+        {
+            return this->geomodel_.line( this->iter_ );
+        }
+    };
+
+    template< index_t DIMENSION >
+    class RINGMESH_API surface_range: public entity_range< DIMENSION > {
+    public:
+        surface_range( const GeoModel< DIMENSION >& geomodel )
+            : entity_range< DIMENSION >( geomodel, geomodel.nb_surfaces() )
+        {
+        }
+        const surface_range< DIMENSION >& begin() const
+        {
+            return *this;
+        }
+        const surface_range< DIMENSION >& end() const
+        {
+            return *this;
+        }
+        const Surface< DIMENSION >& operator*() const
+        {
+            return this->geomodel_.surface( this->iter_ );
+        }
+    };
+
+    template< index_t DIMENSION >
+    class RINGMESH_API region_range: public entity_range< DIMENSION > {
+    public:
+        region_range( const GeoModel< DIMENSION >& geomodel )
+            : entity_range< DIMENSION >( geomodel, geomodel.nb_regions() )
+        {
+        }
+        const region_range< DIMENSION >& begin() const
+        {
+            return *this;
+        }
+        const region_range< DIMENSION >& end() const
+        {
+            return *this;
+        }
+        const Region< DIMENSION >& operator*() const
+        {
+            return this->geomodel_.region( this->iter_ );
+        }
+    };
 }

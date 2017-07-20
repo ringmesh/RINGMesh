@@ -786,7 +786,7 @@ namespace {
     {
         GeogramLineMesh< DIMENSION > mesh;
         GeogramLineMeshBuilder< DIMENSION > builder;
-        builder.set_mesh( mesh );
+        builder.configure_builder( mesh );
         index_t nb_edges = static_cast< index_t >( non_manifold_edges.size() );
         builder.create_vertices( 2 * nb_edges );
         builder.create_edges( nb_edges );
@@ -844,9 +844,9 @@ namespace {
         std::vector< index_t >& edge_indices )
     {
         const GeoModelMeshPolygons< DIMENSION >& polygons = geomodel.mesh.polygons;
-        for( index_t s : range( geomodel.nb_surfaces() ) ) {
-            for( index_t p : range( polygons.nb_polygons( s ) ) ) {
-                index_t polygon_id = polygons.polygon( s, p );
+        for( const auto& surface : geomodel.surfaces() ) {
+            for( index_t p : range( polygons.nb_polygons( surface.index() ) ) ) {
+                index_t polygon_id = polygons.polygon( surface.index(), p );
                 for( index_t v : range( polygons.nb_vertices( polygon_id ) ) ) {
                     index_t adj = polygons.adjacent( polygon_id, v );
                     if( adj == NO_ID ) {
@@ -885,8 +885,7 @@ namespace {
     {
         edge_on_lines.resize( edge_barycenters.size(), false );
         NNSearch< DIMENSION > nn( edge_barycenters );
-        for( index_t l : range( geomodel.nb_lines() ) ) {
-            const Line< DIMENSION >& line = geomodel.line( l );
+        for( const auto& line : geomodel.lines() ) {
             for( index_t e : range( line.nb_mesh_elements() ) ) {
                 const vecn< DIMENSION > query = line.mesh_element_barycenter( e );
                 std::vector< index_t > results = nn.get_neighbors( query,
@@ -1043,8 +1042,8 @@ namespace {
                 set_invalid_model();
             }
             // Check on that Surface edges are in a Line
-            for( index_t i : range( geomodel_.nb_surfaces() ) ) {
-                if( !surface_boundary_valid( geomodel_.surface( i ) ) ) {
+            for( const auto& surface : geomodel_.surfaces() ) {
+                if( !surface_boundary_valid( surface ) ) {
                     set_invalid_model();
                 }
             }
@@ -1056,9 +1055,8 @@ namespace {
                 // Check the consistency between Surface polygons and Region cell facets
                 const NNSearch< DIMENSION >& nn_search =
                     geomodel_.mesh.cells.cell_facet_nn_search();
-                for( index_t i : range( geomodel_.nb_surfaces() ) ) {
-                    if( !is_surface_conformal_to_volume( geomodel_.surface( i ),
-                        nn_search ) ) {
+                for( const auto& surface : geomodel_.surfaces() ) {
+                    if( !is_surface_conformal_to_volume( surface, nn_search ) ) {
                         set_invalid_model();
                     }
                 }
@@ -1071,20 +1069,18 @@ namespace {
                 Interface< DIMENSION >::type_name_static() ) ) {
                 return;
             }
-            for( index_t line_i : range( geomodel_.nb_lines() ) ) {
-                const Line< DIMENSION >& cur_line = geomodel_.line( line_i );
-                if( cur_line.nb_incident_entities() == 1 ) {
+            for( const auto& line : geomodel_.lines() ) {
+                if( line.nb_incident_entities() == 1 ) {
                     continue;
                 }
 
                 const index_t first_interface_id =
-                    cur_line.incident_entity( 0 ).parent_gmge(
+                    line.incident_entity( 0 ).parent_gmge(
                         Interface< DIMENSION >::type_name_static() ).index();
                 ringmesh_assert( first_interface_id != NO_ID );
                 bool at_least_two_different_interfaces = false;
-                for( index_t in_boundary_i : range( 1,
-                    cur_line.nb_incident_entities() ) ) {
-                    const index_t cur_interface_id = cur_line.incident_entity(
+                for( index_t in_boundary_i : range( 1, line.nb_incident_entities() ) ) {
+                    const index_t cur_interface_id = line.incident_entity(
                         in_boundary_i ).parent_gmge(
                         Interface< DIMENSION >::type_name_static() ).index();
                     ringmesh_assert( cur_interface_id != NO_ID );
@@ -1096,7 +1092,7 @@ namespace {
 
                 if( !at_least_two_different_interfaces ) {
                     Logger::warn( "GeoModel",
-                        "All in boundaries (surfaces) of line ", line_i,
+                        "All in boundaries (surfaces) of line ", line.index(),
                         " are children of a same interface." );
                     set_invalid_model();
                 }
@@ -1211,7 +1207,6 @@ namespace {
     }
 
 }
-// anonymous namespace
 
 namespace RINGMesh {
 
@@ -1376,4 +1371,3 @@ namespace RINGMesh {
         const GeoModel3D& );
 
 }
-// namespace RINGMesh

@@ -97,16 +97,15 @@ namespace {
             }
 
             index_t nb_edges = 0;
-            for( index_t l : range( geomodel.nb_lines() ) ) {
-                nb_edges += geomodel.line( l ).nb_mesh_elements();
+            for( const auto& line : geomodel.lines() ) {
+                nb_edges += line.nb_mesh_elements();
             }
             std::vector< index_t > temp;
             temp.reserve( 3 );
             std::vector< std::vector< index_t > > edges( nb_edges, temp );
             std::vector< vec3 > edge_vertices( nb_edges );
             index_t count_edge = 0;
-            for( index_t l : range( geomodel.nb_lines() ) ) {
-                const Line< 3 >& line = geomodel.line( l );
+            for( const auto& line : geomodel.lines() ) {
                 for( index_t e : range( line.nb_mesh_elements() ) ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
@@ -142,30 +141,34 @@ namespace {
             for( const std::vector< index_t >& vertices : edges ) {
                 nb_pipes += binomial_coef( vertices.size() );
             }
-            out_pipes << nb_pipes << std::endl;
+            out_pipes << nb_pipes << EOL;
             for( const Pipe& pipe : pipes ) {
-                out_pipes << pipe.v0 << SPACE << pipe.v1 << std::endl;
+                out_pipes << pipe.v0 << SPACE << pipe.v1 << EOL;
             }
             for( const std::vector< index_t >& vertices : edges ) {
                 for( index_t v0 : range( vertices.size() - 1 ) ) {
                     for( index_t v1 : range( v0 + 1, vertices.size() ) ) {
                         out_pipes << vertices[v0] << SPACE << vertices[v1]
-                            << std::endl;
+                            << EOL;
                     }
                 }
             }
 
             out_xyz
                 << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
-                << std::endl;
+                << EOL;
             for( index_t c : range( mesh.cells.nb() ) ) {
-                out_xyz << mesh.cells.barycenter( c ) << std::endl;
-                out_vol << mesh.cells.volume( c ) << std::endl;
+                out_xyz << mesh.cells.barycenter( c ) << EOL;
+                out_vol << mesh.cells.volume( c ) << EOL;
             }
             for( index_t p : range( polygons.nb() ) ) {
-                out_xyz << polygons.center( p ) << std::endl;
-                out_vol << polygons.area( p ) << std::endl;
+                out_xyz << polygons.center( p ) << EOL;
+                out_vol << polygons.area( p ) << EOL;
             }
+
+            out_pipes << std::flush;
+            out_vol << std::flush;
+            out_xyz << std::flush;
         }
         index_t binomial_coef( index_t n ) const
         {
