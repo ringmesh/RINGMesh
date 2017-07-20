@@ -431,7 +431,8 @@ namespace RINGMesh {
             std::vector< bool > to_delete( line_mesh_->nb_vertices(), true );
             for( index_t e : range( line_mesh_->nb_edges() ) ) {
                 for( index_t v : range( 2 ) ) {
-                    index_t vertex_id = line_mesh_->edge_vertex( e, v );
+                    index_t vertex_id = line_mesh_->edge_vertex(
+                        ElementLocalVertex( e, v ) );
                     to_delete[vertex_id] = false;
                 }
             }
@@ -677,8 +678,8 @@ namespace RINGMesh {
                 for( index_t v = 0;
                     v < this->surface_mesh_->nb_polygon_vertices( polygon );
                     v++, local_vertex_count++ ) {
-                    index_t vertex = this->surface_mesh_->polygon_vertex( polygon,
-                        v );
+                    index_t vertex = this->surface_mesh_->polygon_vertex(
+                        ElementLocalVertex( polygon, v ) );
                     next_local_vertex_around_vertex[local_vertex_count] =
                         vertex2polygon_local_vertex[vertex];
                     vertex2polygon_local_vertex[vertex] = local_vertex_count;
@@ -690,14 +691,15 @@ namespace RINGMesh {
                 for( index_t v = 0;
                     v < this->surface_mesh_->nb_polygon_vertices( polygon );
                     v++, local_vertex_count++ ) {
-                    if( !this->surface_mesh_->is_edge_on_border( polygon, v ) ) {
+                    if( !this->surface_mesh_->is_edge_on_border(
+                        PolygonLocalEdge( polygon, v ) ) ) {
                         continue;
                     }
-                    index_t vertex = this->surface_mesh_->polygon_vertex( polygon,
-                        v );
+                    index_t vertex = this->surface_mesh_->polygon_vertex(
+                        ElementLocalVertex( polygon, v ) );
                     index_t next_vertex = this->surface_mesh_->polygon_vertex(
-                        polygon,
-                        this->surface_mesh_->next_polygon_vertex( polygon, v ) );
+                        this->surface_mesh_->next_polygon_vertex(
+                            ElementLocalVertex( polygon, v ) ) );
                     for( index_t local_vertex =
                         vertex2polygon_local_vertex[next_vertex];
                         local_vertex != NO_ID; local_vertex =
@@ -709,9 +711,10 @@ namespace RINGMesh {
                         index_t adj_local_vertex =
                             polygon_vertices[local_vertex].local_vertex_;
                         index_t adj_next_vertex =
-                            this->surface_mesh_->polygon_vertex( adj_polygon,
-                                this->surface_mesh_->next_polygon_vertex( adj_polygon,
-                                    adj_local_vertex ) );
+                            this->surface_mesh_->polygon_vertex(
+                                this->surface_mesh_->next_polygon_vertex(
+                                    ElementLocalVertex( adj_polygon,
+                                        adj_local_vertex ) ) );
                         if( adj_next_vertex == vertex ) {
                             this->set_polygon_adjacent( polygon, v, adj_polygon );
                             this->set_polygon_adjacent( adj_polygon,
@@ -773,7 +776,8 @@ namespace RINGMesh {
             std::vector< bool > to_delete( surface_mesh_->nb_vertices(), true );
             for( index_t p : range( surface_mesh_->nb_polygons() ) ) {
                 for( index_t v : range( surface_mesh_->nb_polygon_vertices( p ) ) ) {
-                    index_t vertex_id = surface_mesh_->polygon_vertex( p, v );
+                    index_t vertex_id = surface_mesh_->polygon_vertex(
+                        ElementLocalVertex( p, v ) );
                     to_delete[vertex_id] = false;
                 }
             }
@@ -1040,7 +1044,8 @@ namespace RINGMesh {
             std::vector< bool > to_delete( volume_mesh_->nb_vertices(), true );
             for( index_t c : range( volume_mesh_->nb_cells() ) ) {
                 for( index_t v : range( volume_mesh_->nb_cell_vertices( c ) ) ) {
-                    index_t vertex_id = volume_mesh_->cell_vertex( c, v );
+                    index_t vertex_id = volume_mesh_->cell_vertex(
+                        ElementLocalVertex( c, v ) );
                     to_delete[vertex_id] = false;
                 }
             }

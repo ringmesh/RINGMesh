@@ -117,8 +117,9 @@ namespace {
             NNSearch < 2 > nn_search( point_extremities );
             std::vector< index_t > index_map;
             std::vector< vec2 > unique_points;
-            nn_search.get_colocated_index_mapping( geomodel_.epsilon(), index_map,
-                unique_points );
+            std::tie( std::ignore, index_map, unique_points ) =
+                nn_search.get_colocated_index_mapping_and_unique_points(
+                    geomodel_.epsilon() );
 
             topology.create_mesh_entities( Corner < 2 > ::type_name_static(),
                 unique_points.size() );

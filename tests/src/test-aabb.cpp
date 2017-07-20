@@ -39,7 +39,6 @@
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/matrix.h>
-
 #include <ringmesh/mesh/aabb.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/geogram_mesh.h>
@@ -166,10 +165,10 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
         for( index_t j : range( size - 1 ) ) {
             vecn< DIMENSION > query1 = create_vertex< DIMENSION >( i + offset,
                 j + offset );
+            index_t triangle1 = NO_ID;
             vecn< DIMENSION > nearest_point1;
-            double distance1;
-            index_t triangle1 = tree.closest_triangle( query1, nearest_point1,
-                distance1 );
+            std::tie( triangle1, nearest_point1, std::ignore ) =
+                tree.closest_triangle( query1 );
             if( triangle1 != id++ ) {
                 throw RINGMeshException( "TEST", "Not the correct triangle found" );
             }
@@ -180,10 +179,10 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
 
             vecn< DIMENSION > query2 = create_vertex< DIMENSION >( i + 1 - offset,
                 j + 1 - offset );
+            index_t triangle2 = NO_ID;
             vecn< DIMENSION > nearest_point2;
-            double distance2;
-            index_t triangle2 = tree.closest_triangle( query2, nearest_point2,
-                distance2 );
+            std::tie( triangle2, nearest_point2, std::ignore ) =
+                tree.closest_triangle( query2 );
             if( triangle2 != id++ ) {
                 throw RINGMeshException( "TEST", "Not the correct triangle found" );
             }
@@ -195,9 +194,9 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
     }
 
     vecn< DIMENSION > query;
+    index_t triangle = NO_ID;
     vecn< DIMENSION > nearest_point;
-    double distance;
-    index_t triangle = tree.closest_triangle( query, nearest_point, distance );
+    std::tie( triangle, nearest_point, std::ignore ) = tree.closest_triangle( query );
     if( triangle != 0 ) {
         throw RINGMeshException( "TEST", "Not the correct triangle found" );
     }
@@ -214,7 +213,7 @@ void create_5_tets_from_hex(
 {
     std::vector< index_t > vertices_in_hex( 8 );
     for( index_t v : range( 8 ) ) {
-        vertices_in_hex[v] = mesh_hex.cell_vertex( hex, v );
+        vertices_in_hex[v] = mesh_hex.cell_vertex( ElementLocalVertex( hex, v ) );
     }
     builder.set_cell_vertex( 5 * hex, 0, vertices_in_hex[0] );
     builder.set_cell_vertex( 5 * hex, 1, vertices_in_hex[4] );
@@ -308,13 +307,12 @@ void test_VolumeAABB()
 template< index_t DIMENSION >
 void test_locate_edge_on_1D_mesh( const GeogramLineMesh< DIMENSION >& mesh )
 {
-    double distance;
-    vecn< DIMENSION > nearest_point;
     for( index_t e : range( mesh.nb_edges() ) ) {
         vecn< DIMENSION > barycenter = mesh.edge_barycenter( e );
         const LineAABBTree< DIMENSION >& aabb1D = mesh.edge_aabb();
-        index_t closest_edge = aabb1D.closest_edge( barycenter, nearest_point,
-            distance );
+        index_t closest_edge = NO_ID;
+        std::tie( closest_edge, std::ignore, std::ignore ) = aabb1D.closest_edge(
+            barycenter );
         if( closest_edge != e ) {
             throw RINGMeshException( "TEST", "Not the correct edge found" );
         }
