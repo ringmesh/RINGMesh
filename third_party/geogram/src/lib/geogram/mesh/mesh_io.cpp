@@ -3685,18 +3685,18 @@ namespace GEO {
         const Mesh& M, const std::string& filename,
         const MeshIOFlags& ioflags
     ) {
-        Logger::out("I/O")
-            << "Saving file " << filename << "..."
-            << std::endl;
+//        Logger::out("I/O")
+//            << "Saving file " << filename << "..."
+//            << std::endl;
 
         MeshIOHandler_var handler = MeshIOHandler::get_handler(filename);
         if(handler != nil && handler->save(M, filename, ioflags)) {
             return true;
         }
 
-        Logger::err("I/O")
-            << "Could not save file: " << filename
-            << std::endl;
+//        Logger::err("I/O")
+//            << "Could not save file: " << filename
+//            << std::endl;
         return false;
     }
 
