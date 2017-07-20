@@ -329,13 +329,12 @@ namespace {
         const ENTITY& geomodel_entity_mesh,
         std::vector< std::string >& filenames )
     {
+        static std::mutex lock;
         std::string name = build_string_for_geomodel_entity_export(
             geomodel_entity_mesh );
         if( save_mesh( geomodel_entity_mesh, name ) ) {
-#pragma omp critical
-            {
-                filenames.push_back( name );
-            }
+            std::lock_guard< std::mutex > locking( lock );
+            filenames.push_back( name );
         }
     }
 
@@ -356,13 +355,13 @@ namespace {
         GEO::Logger* logger = Logger::instance();
         bool logger_status = logger->is_quiet();
         logger->set_quiet( true );
-        RINGMESH_PARALLEL_LOOP_DYNAMIC
-        for( index_t e = 0; e < geomodel.nb_mesh_entities( type ); e++ ) {
-            const ENTITY< DIMENSION >& entity =
+        parallel_for( geomodel.nb_mesh_entities( type ),
+            [&geomodel, &type, &filenames]( index_t i ) {
+                const ENTITY< DIMENSION >& entity =
                 dynamic_cast< const ENTITY< DIMENSION >& >( geomodel.mesh_entity(
-                    type, e ) );
-            save_geomodel_mesh_entity< ENTITY< DIMENSION > >( entity, filenames );
-        }
+                        type, i ) );
+                save_geomodel_mesh_entity< ENTITY< DIMENSION > >( entity, filenames );
+            } );
         logger->set_quiet( logger_status );
     }
     template< index_t DIMENSION >

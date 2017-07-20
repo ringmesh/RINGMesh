@@ -41,7 +41,6 @@ set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE CMAKE_CONFIGURA
 
 #------------------------------------------------------------------------------------------------
 # Project options
-option(USE_OPENMP "Use Open MP" ON)
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
