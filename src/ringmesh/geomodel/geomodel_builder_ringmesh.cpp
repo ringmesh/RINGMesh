@@ -35,6 +35,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder_ringmesh.h>
 
+#include <future>
+
 #include <geogram/basic/file_system.h>
 
 #include <ringmesh/io/io.h>
@@ -456,7 +458,9 @@ namespace RINGMesh {
         if( unzGoToFirstFile( uz ) != UNZ_OK ) {
             throw RINGMeshException( "I/O", "Unable to uncompress the first file" );
         }
-        std::vector< std::string > filenames;
+
+        Logger::instance()->set_minimal( true );
+        std::vector< std::future< void > > files;
         do {
             char char_file_name[MAX_FILENAME];
             if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
@@ -469,22 +473,21 @@ namespace RINGMesh {
             }
 
             unzip_current_file( uz, file_name.c_str() );
-            filenames.push_back( file_name );
+            files.push_back( std::async( std::launch::async, [file_name, this] {
+                std::string file_without_extension = GEO::FileSystem::base_name(
+                    file_name );
+                std::string entity_type, entity_id;
+                GEO::String::split_string( file_without_extension, '_', entity_type,
+                    entity_id );
+                index_t id = NO_ID;
+                GEO::String::from_string( entity_id, id );
+                load_mesh_entity( entity_type, file_name, id );
+                GEO::FileSystem::delete_file( file_name );
+            } ) );
         } while( unzGoToNextFile( uz ) == UNZ_OK );
 
-        Logger::instance()->set_minimal( true );
-        RINGMESH_PARALLEL_LOOP_DYNAMIC
-        for( index_t i = 0; i < filenames.size(); i++ ) {
-            const std::string& file_name = filenames[i];
-            std::string file_without_extension = GEO::FileSystem::base_name(
-                file_name );
-            std::string entity_type, entity_id;
-            GEO::String::split_string( file_without_extension, '_', entity_type,
-                entity_id );
-            index_t id = NO_ID;
-            GEO::String::from_string( entity_id, id );
-            load_mesh_entity( entity_type, file_name, id );
-            GEO::FileSystem::delete_file( file_name );
+        for( auto& file : files ) {
+            file.get();
         }
         Logger::instance()->set_minimal( false );
     }

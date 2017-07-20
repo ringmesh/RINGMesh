@@ -117,7 +117,6 @@ if(UNIX)
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                 -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
                 -DMG_TETRA:STRING=${MG_TETRA}
-                -DUSE_OPENMP:BOOL=${USE_OPENMP}
                 -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_TEST_GRAPHICS:BOOL=${RINGMESH_TEST_GRAPHICS}
@@ -213,16 +212,6 @@ if(MG_TETRA)
    
   set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
 endif()
-
-#------------------------------------------------------------------------------------------------
-# Add compiler options for OpenMP
-if(USE_OPENMP)
-    find_package(OpenMP)
-    if (OPENMP_FOUND)
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    endif()
-endif(USE_OPENMP)
 
 #--------------------------------------------------------
 # geology.js library

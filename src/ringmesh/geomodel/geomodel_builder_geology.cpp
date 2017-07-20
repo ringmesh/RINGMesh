@@ -327,14 +327,13 @@ namespace RINGMesh {
         const GeologicalEntityType& type )
     {
         create_geological_entities( type, from.nb_geological_entities( type ) );
-
-        RINGMESH_PARALLEL_LOOP
-        for( index_t e = 0; e < geomodel_.nb_geological_entities( type ); ++e ) {
-            gmge_id id( type, e );
-            GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
-                geomodel_access_.modifiable_geological_entity( id ) );
-            gmge_access.copy( from.geological_entity( id ) );
-        }
+        parallel_for( geomodel_.nb_geological_entities( type ),
+            [&type, &from, this]( index_t i ) {
+                gmge_id id( type, i );
+                GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
+                    geomodel_access_.modifiable_geological_entity( id ) );
+                gmge_access.copy( from.geological_entity( id ) );
+        } );
     }
 
     template< index_t DIMENSION >
