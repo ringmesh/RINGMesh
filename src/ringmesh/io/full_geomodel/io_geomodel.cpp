@@ -146,7 +146,7 @@ namespace {
 
     template< >
     void save_number_of_mesh_entities(
-        const GeoModel< 2 >& geomodel,
+        const GeoModel2D& geomodel,
         std::ofstream& out )
     {
         save_number_of_mesh_entities_base( geomodel, out );
@@ -154,7 +154,7 @@ namespace {
 
     template< >
     void save_number_of_mesh_entities(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         std::ofstream& out )
     {
         save_number_of_mesh_entities_base( geomodel, out );
@@ -195,7 +195,7 @@ namespace {
 
     template< >
     void save_mesh_entities_topology_and_sides(
-        const GeoModel< 2 >& geomodel,
+        const GeoModel2D& geomodel,
         std::ofstream& out )
     {
         save_mesh_entities_topology_and_sides_impl< Surface >( geomodel, out );
@@ -203,7 +203,7 @@ namespace {
 
     template< >
     void save_mesh_entities_topology_and_sides(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         std::ofstream& out )
     {
         save_mesh_entities_topology_and_sides_impl< Region >( geomodel, out );
@@ -226,7 +226,7 @@ namespace {
 
     template< >
     void save_mesh_entities_topology(
-        const GeoModel< 2 >& geomodel,
+        const GeoModel2D& geomodel,
         std::ofstream& out )
     {
         save_mesh_entities_topology_base( geomodel, out );
@@ -234,11 +234,11 @@ namespace {
     }
     template< >
     void save_mesh_entities_topology(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         std::ofstream& out )
     {
         save_mesh_entities_topology_base( geomodel, out );
-        save_mesh_entities_of_type< Surface< 3 > >( geomodel, out );
+        save_mesh_entities_of_type< Surface3D >( geomodel, out );
     }
 
     template< index_t DIMENSION >
@@ -288,11 +288,11 @@ namespace {
 
     template< >
     bool save_mesh(
-        const GeoModelMeshEntity< 3 >& geomodel_entity_mesh,
+        const GeoModelMeshEntity3D& geomodel_entity_mesh,
         const std::string& name )
     {
-        if( geomodel_entity_mesh.type_name() == Region < 3 > ::type_name_static() ) {
-            const Region< 3 >& region = geomodel_entity_mesh.geomodel().region(
+        if( geomodel_entity_mesh.type_name() == Region3D::type_name_static() ) {
+            const Region3D& region = geomodel_entity_mesh.geomodel().region(
                 geomodel_entity_mesh.index() );
             if( !region.is_meshed() ) {
                 // a region is not necessary meshed.
@@ -305,7 +305,7 @@ namespace {
 
     template< >
     bool save_mesh(
-        const GeoModelMeshEntity< 2 >& geomodel_entity_mesh,
+        const GeoModelMeshEntity2D& geomodel_entity_mesh,
         const std::string& name )
     {
         geomodel_entity_mesh.save( name );
@@ -384,14 +384,14 @@ namespace {
 
     template< >
     void save_all_geomodel_mesh_entities(
-        const GeoModel< 2 >& geomodel,
+        const GeoModel2D& geomodel,
         std::vector< std::string >& filenames )
     {
         save_all_geomodel_mesh_entities_base( geomodel, filenames );
     }
     template< >
     void save_all_geomodel_mesh_entities(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         std::vector< std::string >& filenames )
     {
         save_all_geomodel_mesh_entities_base( geomodel, filenames );
@@ -402,13 +402,13 @@ namespace {
     index_t nb_mesh_entities( const GeoModel< DIMENSION >& geomodel );
 
     template< >
-    index_t nb_mesh_entities( const GeoModel< 2 >& geomodel )
+    index_t nb_mesh_entities( const GeoModel2D& geomodel )
     {
         return geomodel.nb_corners() + geomodel.nb_lines() + geomodel.nb_surfaces();
     }
 
     template< >
-    index_t nb_mesh_entities( const GeoModel< 3 >& geomodel )
+    index_t nb_mesh_entities( const GeoModel3D& geomodel )
     {
         return geomodel.nb_corners() + geomodel.nb_lines() + geomodel.nb_surfaces()
             + geomodel.nb_regions();
@@ -502,4 +502,6 @@ namespace {
             const GeoModel< DIMENSION >& geomodel,
             std::vector< std::string >& filenames );
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelHandlerGM );
 }

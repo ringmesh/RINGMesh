@@ -61,13 +61,13 @@ namespace {
 
     class VTKIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from VTK not implemented yet" );
         }
         void save(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
@@ -78,7 +78,7 @@ namespace {
             out << "ASCII" << EOL;
             out << "DATASET UNSTRUCTURED_GRID" << EOL;
 
-            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
+            const GeoModelMesh3D& mesh = geomodel.mesh;
             out << "POINTS " << mesh.vertices.nb() << " double" << EOL;
             for( index_t v : range( mesh.vertices.nb() ) ) {
                 out << mesh.vertices.vertex( v ) << EOL;

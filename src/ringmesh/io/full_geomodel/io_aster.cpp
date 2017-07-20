@@ -66,16 +66,16 @@ namespace {
      */
     class AsterIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Code_Aster mesh not implemented yet" );
         }
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
-            const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
+            const RINGMesh::GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
 
             write_title( out, geomodel );
             write_vertices( out, geomodel_mesh );
@@ -89,7 +89,7 @@ namespace {
 
     private:
 
-        void write_title( std::ofstream& out, const GeoModel< 3 >& geomodel ) const
+        void write_title( std::ofstream& out, const GeoModel3D& geomodel ) const
         {
             out << "TITRE" << EOL;
             out << geomodel.name() << EOL;
@@ -97,7 +97,7 @@ namespace {
         }
         void write_vertices(
             std::ofstream& out,
-            const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh ) const
+            const RINGMesh::GeoModelMesh3D& geomodel_mesh ) const
         {
             out << "COOR_3D" << EOL;
             for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
@@ -107,9 +107,9 @@ namespace {
             out << "FINSF" << EOL;
         }
 
-        void write_cells( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void write_cells( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
+            const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
             for( index_t r : range( geomodel.nb_regions() ) ) {
                 // -1 Because connectors doesn't exist in aster
                 for( index_t ct : range( GEO::MESH_NB_CELL_TYPES - 1 ) ) {
@@ -122,10 +122,10 @@ namespace {
         }
 
         void write_polygons(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            const GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
+            const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
             for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
                 // -1 because polygons doesn' t exist in aster
                 for( index_t pt : range(
@@ -141,7 +141,7 @@ namespace {
         void write_cells_in_region(
             const CellType& cell_type,
             index_t region,
-            const GeoModelMesh< 3 >& geomodel_mesh,
+            const GeoModelMesh3D& geomodel_mesh,
             std::ofstream& out ) const
         {
             out << *cell_name_in_aster_mail_file[to_underlying_type( cell_type )]
@@ -161,7 +161,7 @@ namespace {
         void write_polygons_in_interface(
             const PolygonType& polygon_type,
             index_t surface,
-            const RINGMesh::GeoModelMesh< 3 >& mesh,
+            const RINGMesh::GeoModelMesh3D& mesh,
             std::ofstream& out ) const
         {
             out
@@ -180,7 +180,7 @@ namespace {
             out << "FINSF" << EOL;
         }
 
-        void write_regions( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void write_regions( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             for( const auto& region : region_range < 3 > ( geomodel ) ) {
                 if( region.is_meshed() ) {
@@ -197,14 +197,14 @@ namespace {
         }
 
         void write_interfaces(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
             for( index_t inter : range(
                 geomodel.nb_geological_entities(
-                    Interface < 3 > ::type_name_static() ) ) ) {
-                const GeoModelGeologicalEntity< 3 >& cur_interface =
-                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
+                    Interface3D::type_name_static() ) ) ) {
+                const GeoModelGeologicalEntity3D& cur_interface =
+                    geomodel.geological_entity( Interface3D::type_name_static(),
                         inter );
                 for( index_t s : range( cur_interface.nb_children() ) ) {
                     index_t surface_id = cur_interface.child( s ).index();

@@ -791,6 +791,8 @@ namespace RINGMesh {
         vec3 normal( index_t p ) const;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelMeshPolygons );
+
     template< index_t DIMENSION >
     class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshEdges );
@@ -865,6 +867,8 @@ namespace RINGMesh {
          */
         std::vector< index_t > well_ptr_;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelMeshEdges );
 
     template< index_t DIMENSION >
     class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
@@ -1326,6 +1330,8 @@ namespace RINGMesh {
          */
         GEO::Attribute< index_t > polygon_id_;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelMeshCells );
 
     template< index_t DIMENSION >
     class GeoModelMeshBase {
