@@ -69,9 +69,8 @@ int main()
         // Load the model
         bool init_model_is_valid = geomodel_load( M, file_name );
         if( init_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Input test model " + M.name()
-                    + " must be invalid to check the repair functionalities." );
+            throw RINGMeshException( "RINGMesh Test", "Input test model ", M.name(),
+                " must be invalid to check the repair functionalities." );
         }
 
         Logger::out( "RINGMesh Test", "Repairing" );
@@ -92,7 +91,7 @@ int main()
             return 0;
         } else {
             throw RINGMeshException( "RINGMesh Test",
-                "Fixing the invalid geological model " + M.name() + " failed." );
+                "Fixing the invalid geological model ", M.name(), " failed." );
         }
 
     } catch( const RINGMeshException& e ) {

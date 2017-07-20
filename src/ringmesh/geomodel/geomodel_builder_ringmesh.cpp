@@ -94,9 +94,9 @@ namespace RINGMesh {
         {
             // First line : type - id - name - geol_feature
             if( file_line.nb_fields() < 4 ) {
-                throw RINGMeshException( "I/O",
-                    "Invalid line: " + std::to_string( file_line.line_number() )
-                        + ", 4 fields are expected, the type, id, name, and geological feature" );
+                throw RINGMeshException( "I/O", "Invalid line: ",
+                    file_line.line_number(),
+                    ", 4 fields are expected, the type, id, name, and geological feature" );
             }
             gmme_id entity = read_first_line( file_line );
             read_second_line( file_line, entity );
@@ -195,10 +195,10 @@ namespace RINGMesh {
             // Read this entity
             // First line : type - id - name - geol_feature - mesh type
             if( file_line.nb_fields() < 5 ) {
-                throw RINGMeshException( "I/O",
-                    "Invalid line: " + std::to_string( file_line.line_number() )
-                        + ", 5 fields are expected, the type, id, name, "
-                        + "geological feature, and mesh type" );
+                throw RINGMeshException( "I/O", "Invalid line: ",
+                    file_line.line_number(),
+                    ", 5 fields are expected, the type, id, name, ",
+                    "geological feature, and mesh type" );
             }
             gmme_id entity = this->read_first_line( file_line );
 
@@ -245,10 +245,10 @@ namespace RINGMesh {
             // Read this entity
             // First line : type - id - name  - mesh type
             if( file_line.nb_fields() < 4 ) {
-                throw RINGMeshException( "I/O",
-                    "Invalid line: " + std::to_string( file_line.line_number() )
-                        + ", 4 fields are expected, the type, id, name, "
-                        + "geological feature, and mesh type" );
+                throw RINGMeshException( "I/O", "Invalid line: ",
+                    file_line.line_number(),
+                    ", 4 fields are expected, the type, id, name, ",
+                    "geological feature, and mesh type" );
             }
             gmme_id entity = this->read_first_line( file_line );
 

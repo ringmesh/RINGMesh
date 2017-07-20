@@ -130,7 +130,7 @@ namespace RINGMesh {
         MeshBaseBuilder< 2 >* builder = create_pointset_builder( mesh );
         if( !builder ) {
             throw RINGMeshException( "MeshBaseBuilder",
-                "Could not create mesh data structure: " + mesh.type_name() );
+                "Could not create mesh data structure: ", mesh.type_name() );
         }
         return std::unique_ptr< MeshBaseBuilder< 2 > >( builder );
     }
@@ -148,7 +148,7 @@ namespace RINGMesh {
         }
         if( !builder ) {
             throw RINGMeshException( "MeshBaseBuilder",
-                "Could not create mesh data structure: " + mesh.type_name() );
+                "Could not create mesh data structure: ", mesh.type_name() );
         }
         return std::unique_ptr< MeshBaseBuilder< 3 > >( builder );
     }

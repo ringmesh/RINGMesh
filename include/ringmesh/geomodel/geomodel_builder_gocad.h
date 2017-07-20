@@ -66,7 +66,7 @@ namespace RINGMesh {
             /*! @todo Review: A constructor is not supposed to throw, the object is left in an
              * undefined state [JP] */
             if( !file_line_.OK() ) {
-                throw RINGMeshException( "I/O", "Failed to open file " + filename_ );
+                throw RINGMeshException( "I/O", "Failed to open file ", filename_ );
             }
         }
 
@@ -315,10 +315,10 @@ namespace RINGMesh {
     struct MLLoadingStorage: public GocadLoadingStorage {
         MLLoadingStorage();
 
-        bool is_header_read_{ false };
+        bool is_header_read_ { false };
 
         /// Offset to read in the tface vertices in the tsurf vertices
-        index_t tface_vertex_ptr_{ 0 };
+        index_t tface_vertex_ptr_ { 0 };
     };
     class MLLineParser: public GocadBaseParser {
     ringmesh_disable_copy(MLLineParser);

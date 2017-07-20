@@ -323,10 +323,8 @@ namespace RINGMesh {
         index_t relation_id = manager.find_boundary_relationship( incident_entity,
             boundary );
         if( relation_id == NO_ID ) {
-            std::ostringstream message;
-            message << "No boundary relation found between " << boundary << " and "
-                << incident_entity;
-            throw RINGMeshException( "Entity", message.str() );
+            throw RINGMeshException( "Entity", "No boundary relation found between ",
+                boundary, " and ", incident_entity );
         }
         GeoModelMeshEntityAccess< DIMENSION > boundary_access(
             geomodel_access_.modifiable_mesh_entity( boundary ) );
@@ -392,19 +390,17 @@ namespace RINGMesh {
             geomodel_.entity_type_manager().mesh_entity_manager.incident_entity_type(
                 boundary.type() );
         if( incident_entity_id.type() != incident_entity_type ) {
-            std::ostringstream message;
-            message << "Wrong incident entity type in the boundary relation between "
-                << boundary << " and " << incident_entity_id;
-            throw RINGMeshException( "Entity", message.str() );
+            throw RINGMeshException( "Entity",
+                "Wrong incident entity type in the boundary relation between ",
+                boundary, " and ", incident_entity_id );
         }
         const MeshEntityType& boundary_type =
             geomodel_.entity_type_manager().mesh_entity_manager.boundary_entity_type(
                 incident_entity_id.type() );
         if( boundary.type() != boundary_type ) {
-            std::ostringstream message;
-            message << "Wrong boundary type in the boundary relation between "
-                << boundary << " and " << incident_entity_id;
-            throw RINGMeshException( "Entity", message.str() );
+            throw RINGMeshException( "Entity",
+                "Wrong boundary type in the boundary relation between ", boundary,
+                " and ", incident_entity_id );
         }
         index_t relation_id =
             check_if_boundary_incident_entity_relation_already_exists(

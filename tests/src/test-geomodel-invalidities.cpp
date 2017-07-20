@@ -62,7 +62,7 @@ void make_geomodel_copy(
 void verdict( const GeoModel< 3 >& invalid_model, const std::string& feature )
 {
     if( is_geomodel_valid( invalid_model ) ) {
-        throw RINGMeshException( "RINGMesh Test", "Fail to " + feature );
+        throw RINGMeshException( "RINGMesh Test", "Fail to " , feature );
     } else {
         Logger::out( "TEST", "Succeed to ", feature );
     }

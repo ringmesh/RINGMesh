@@ -211,9 +211,8 @@ namespace {
     void save_gocad_model3d( const GeoModel< 3 >& geomodel, std::ostream& out )
     {
         if( !check_gocad_validity( geomodel ) ) {
-            throw RINGMeshException( "I/O",
-                " The GeoModel " + geomodel.name()
-                    + +" cannot be saved in .ml format" );
+            throw RINGMeshException( "I/O", " The GeoModel ", geomodel.name(),
+                " cannot be saved in .ml format" );
         }
         out.precision( 16 );
 
@@ -238,10 +237,9 @@ namespace {
             const gmge_id& parent_interface = surface.parent_gmge(
                 Interface < 3 > ::type_name_static() );
             if( !parent_interface.is_defined() ) {
-                throw RINGMeshException( "I/O",
-                    "Failed to save GeoModel" " in .ml Gocad format "
-                        "because Surface " + std::to_string( surface.index() )
-                        + " has no Interface parent)" );
+                throw RINGMeshException( "I/O", "Failed to save GeoModel",
+                    " in .ml Gocad format because Surface ", surface.index(),
+                    " has no Interface parent)" );
             }
             const GeoModelGeologicalEntity< 3 >::GEOL_FEATURE& cur_geol_feature =
                 geomodel.geological_entity( parent_interface ).geological_feature();
@@ -409,7 +407,7 @@ namespace {
         {
             std::ifstream input( filename.c_str() );
             if( !input ) {
-                throw RINGMeshException( "I/O", "Failed to open file " + filename );
+                throw RINGMeshException( "I/O", "Failed to open file ", filename );
             }
             GeoModelBuilderML builder( geomodel, filename );
             builder.build_geomodel();

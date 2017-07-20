@@ -327,16 +327,15 @@ namespace RINGMesh {
             if( cur_gme.name() == name ) {
                 if( mesh_entity_id != NO_ID ) {
                     throw RINGMeshException( "GeoModel",
-                        " At least two GeoModelMeshEntity have the same name in the GeoModel: "
-                            + name );
+                        " At least two GeoModelMeshEntity have the same name in the GeoModel: ",
+                        name );
                 }
                 mesh_entity_id = cur_gme.index();
             }
         }
         if( mesh_entity_id == NO_ID ) {
-            throw RINGMeshException( "GeoModel",
-                name
-                    + " does not match with any actual GeoModelEntity name in the GeoModel" );
+            throw RINGMeshException( "GeoModel", name,
+                " does not match with any actual GeoModelEntity name in the GeoModel" );
         }
         return mesh_entity_id;
     }
@@ -354,16 +353,15 @@ namespace RINGMesh {
             if( cur_gme.name() == name ) {
                 if( geological_entity_id != NO_ID ) {
                     throw RINGMeshException( "GeoModel",
-                        "At least two GeoModelGeologicalEntity have the same name in the GeoModel : "
-                            + name );
+                        "At least two GeoModelGeologicalEntity have the same name in the GeoModel : ",
+                        name );
                 }
                 geological_entity_id = cur_gme.index();
             }
         }
         if( geological_entity_id == NO_ID ) {
-            throw RINGMeshException( "GeoModel",
-                name
-                    + " does not match with any actual GeoModelEntity name in the GeoModel" );
+            throw RINGMeshException( "GeoModel", name,
+                " does not match with any actual GeoModelEntity name in the GeoModel" );
         }
         return geological_entity_id;
     }

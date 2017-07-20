@@ -50,7 +50,7 @@ using namespace RINGMesh;
 void verdict( bool condition, std::string test_name )
 {
     if( !condition ) {
-        throw RINGMeshException( "TEST", test_name + ": KO" );
+        throw RINGMeshException( "TEST", test_name, ": KO" );
     } else {
         Logger::out( "TEST", test_name + ": OK" );
     }

@@ -132,8 +132,7 @@ namespace RINGMesh {
                 unzCloseCurrentFile( uz );
                 unzClose( uz );
                 fclose( out );
-                throw RINGMeshException( "ZLIB",
-                    "Invalid error: " + std::to_string( error ) );
+                throw RINGMeshException( "ZLIB", "Invalid error: ", error );
             }
             if( error > 0 ) {
                 fwrite( read_buffer, error, 1, out );
@@ -185,7 +184,7 @@ namespace RINGMesh {
         const std::string& filename )
     {
         if( !GEO::FileSystem::is_file( filename ) ) {
-            throw RINGMeshException( "I/O", "File does not exist: " + filename );
+            throw RINGMeshException( "I/O", "File does not exist: ", filename );
         }
         Logger::out( "I/O", "Loading file ", filename, "..." );
 
@@ -222,7 +221,7 @@ namespace RINGMesh {
                 Logger::err( "I/O", " ", name );
             }
 
-            throw RINGMeshException( "I/O", "Unsupported file format: " + format );
+            throw RINGMeshException( "I/O", "Unsupported file format: ", format );
         }
         return handler;
     }
