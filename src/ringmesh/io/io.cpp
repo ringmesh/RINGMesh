@@ -81,9 +81,9 @@ namespace RINGMesh {
     void mesh_initialize()
     {
         GeoModelIOHandler2D::initialize_full_geomodel_output();
-        GeoModelIOHandler2D::initialize_full_geomodel_output();
+        GeoModelIOHandler3D::initialize_full_geomodel_output();
 
-        GeoModelIOHandler3D::initialize_boundary_geomodel_output();
+        GeoModelIOHandler2D::initialize_boundary_geomodel_output();
         GeoModelIOHandler3D::initialize_boundary_geomodel_output();
 
         WellGroupIOHandler::initialize();
