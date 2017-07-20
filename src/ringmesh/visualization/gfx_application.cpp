@@ -44,7 +44,6 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
-#include <geogram/basic/stopwatch.h>
 
 #include <geogram/mesh/mesh_io.h>
 
@@ -172,14 +171,6 @@ namespace RINGMesh {
         reset_attribute_name();
 
         geomodel_load( GM_, filename );
-
-        GeoModel< DIMENSION > gm;
-        GeoModelBuilder< DIMENSION > builder( gm );
-        {
-        GEO::Stopwatch t("copy");
-        builder.copy.copy_geomodel( GM_ );
-        }
-
         // Computation of the BBox is set with surface vertices
         // or with those of lines and corners if the model has no surface
         if( GM_.nb_surfaces() > 0 ) {

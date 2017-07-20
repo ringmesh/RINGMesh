@@ -37,8 +37,6 @@
 
 #include <stack>
 
-#include <geogram/basic/stopwatch.h>
-
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/geomodel/geomodel_api.h>
@@ -778,18 +776,9 @@ namespace RINGMesh {
     void GeoModelBuilderCopy< DIMENSION >::copy_geomodel(
         const GeoModel< DIMENSION >& from )
     {
-        {
-            GEO::Stopwatch t("topo");
         builder_.topology.copy_topology( from );
-        }
-        {
-            GEO::Stopwatch t("mesh");
         builder_.geometry.copy_meshes( from );
-        }
-        {
-            GEO::Stopwatch t("geol");
         builder_.geology.copy_geology( from );
-        }
     }
 
     template< index_t DIMENSION >

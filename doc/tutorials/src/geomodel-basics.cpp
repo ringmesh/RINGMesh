@@ -88,7 +88,7 @@ int main()
         input_file_name += "modelA1.ml";
 
         //function to load a geomodel
-        geomodel_load( geomodel, "/users/j0479294/programming/RINGMesh/tests/data/corbi.ml" );
+        geomodel_load( geomodel, input_file_name );
 
         //function to print the statistics of the geomodel in the command terminal
         print_geomodel_mesh_stats( geomodel );
