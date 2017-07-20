@@ -64,30 +64,31 @@ namespace {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
 
-            out << "*HEADING" << std::endl;
-            out << "**Mesh exported from RINGMesh" << std::endl;
-            out << "**https://bitbucket.org/ring_team/ringmesh" << std::endl;
+            out << "*HEADING" << EOL;
+            out << "**Mesh exported from RINGMesh" << EOL;
+            out << "**https://bitbucket.org/ring_team/ringmesh" << EOL;
 
-            out << "*PART, name=Part-1" << std::endl;
+            out << "*PART, name=Part-1" << EOL;
 
             save_vertices( geomodel, out );
             save_nb_polygons( geomodel, out );
             save_cells( geomodel, out );
 
-            out << "*END PART" << std::endl;
+            out << "*END PART" << EOL;
+            out << std::flush;
         }
     private:
         void save_vertices( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
-            out << "*NODE" << std::endl;
+            out << "*NODE" << EOL;
             for( index_t v : range( vertices.nb() ) ) {
                 out << v + 1;
                 const vec3& vertex = vertices.vertex( v );
                 for( index_t i : range( 3 ) ) {
                     out << COMMA << SPACE << vertex[i];
                 }
-                out << std::endl;
+                out << EOL;
             }
 
         }
@@ -113,7 +114,7 @@ namespace {
             index_t count = 0;
             std::vector< bool > vertex_exported( geomodel.mesh.vertices.nb(),
                 false );
-            out << "*NSET, nset=" << entity.name() << std::endl;
+            out << "*NSET, nset=" << entity.name() << EOL;
             for( index_t s : range( entity.nb_children() ) ) {
                 index_t surface_id = entity.child_gmme( s ).index();
                 for( index_t p : range( polygons.nb_polygons( surface_id ) ) ) {
@@ -129,7 +130,7 @@ namespace {
                     }
                 }
             }
-            out << std::endl;
+            out << EOL;
         }
 
         void save_tets( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
@@ -137,7 +138,7 @@ namespace {
             const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
             if( cells.nb_tet() > 0 ) {
                 out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type
-                    << std::endl;
+                    << EOL;
                 for( index_t r : range( geomodel.nb_regions() ) ) {
                     for( index_t c : range( cells.nb_tet( r ) ) ) {
                         index_t tetra = cells.tet( r, c );
@@ -148,7 +149,7 @@ namespace {
                                 << cells.vertex(
                                     ElementLocalVertex( tetra, vertex_id ) ) + 1;
                         }
-                        out << std::endl;
+                        out << EOL;
                     }
                 }
             }
@@ -158,7 +159,7 @@ namespace {
             const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
             if( cells.nb_hex() > 0 ) {
                 out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type
-                    << std::endl;
+                    << EOL;
                 for( index_t r : range( geomodel.nb_regions() ) ) {
                     for( index_t c : range( cells.nb_hex( r ) ) ) {
                         index_t hex = cells.hex( r, c );
@@ -169,7 +170,7 @@ namespace {
                                 << cells.vertex(
                                     ElementLocalVertex( hex, vertex_id ) ) + 1;
                         }
-                        out << std::endl;
+                        out << EOL;
                     }
                 }
             }
@@ -179,7 +180,7 @@ namespace {
             const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
             for( index_t r : range( geomodel.nb_regions() ) ) {
                 const std::string& name = geomodel.region( r ).name();
-                out << "*ELSET, elset=" << name << std::endl;
+                out << "*ELSET, elset=" << name << EOL;
                 index_t count = 0;
                 std::string sep;
                 for( index_t c : range( cells.nb_tet( r ) ) ) {
@@ -197,7 +198,7 @@ namespace {
                 }
                 reset_line( count, out );
 
-                out << "*NSET, nset=" << name << ", elset=" << name << std::endl;
+                out << "*NSET, nset=" << name << ", elset=" << name << EOL;
             }
         }
         void save_cells( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
@@ -215,14 +216,14 @@ namespace {
             if( count == NB_ENTRY_PER_LINE ) {
                 count = 0;
                 sep = "";
-                out << std::endl;
+                out << EOL;
             }
         }
         void reset_line( index_t& count, std::ofstream& out ) const
         {
             if( count != 0 ) {
                 count = 0;
-                out << std::endl;
+                out << EOL;
             }
         }
     };

@@ -37,12 +37,12 @@ namespace {
 
     void save_header( const GeoModel< 3 >& geomodel, std::ostream& out )
     {
-        out << "solid " << geomodel.name() << std::endl;
+        out << "solid " << geomodel.name() << EOL;
     }
 
     void save_footer( const GeoModel< 3 >& geomodel, std::ostream& out )
     {
-        out << "endsolid" << geomodel.name() << std::endl;
+        out << "endsolid" << geomodel.name() << EOL;
     }
 
     void save_normal(
@@ -51,17 +51,17 @@ namespace {
         std::ostream& out )
     {
         out << "facet normal " << geomodel.mesh.polygons.normal( triangle_id )
-            << std::endl;
+            << EOL;
     }
 
     void begin_triangle( std::ostream& out )
     {
-        out << "outer loop" << std::endl;
+        out << "outer loop" << EOL;
     }
 
     void end_triangle( std::ostream& out )
     {
-        out << "endloop" << std::endl;
+        out << "endloop" << EOL;
     }
 
     void save_triangle_vertex(
@@ -74,7 +74,7 @@ namespace {
             << geomodel.mesh.vertices.vertex(
                 geomodel.mesh.polygons.vertex(
                     ElementLocalVertex( triangle_id, local_vertex_id ) ) )
-            << std::endl;
+            << EOL;
     }
 
     void save_triangle(
@@ -134,6 +134,7 @@ namespace {
             save_header( geomodel, out );
             save_triangles( geomodel, out );
             save_footer( geomodel, out );
+            out << std::flush;
         }
     };
 }

@@ -80,6 +80,7 @@ namespace {
             write_vertices( geomodel_mesh, out );
 
             write_mesh_elements( geomodel, out );
+            out << std::flush;
         }
 
     private:
@@ -87,28 +88,28 @@ namespace {
             const GeoModelMesh< 3 >& geomodel_mesh,
             std::ofstream& out ) const
         {
-            out << "$NOD" << std::endl;
-            out << geomodel_mesh.vertices.nb() << std::endl;
+            out << "$NOD" << EOL;
+            out << geomodel_mesh.vertices.nb() << EOL;
             for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
                 out << v + id_offset_adeli << " "
-                    << geomodel_mesh.vertices.vertex( v ) << std::endl;
+                    << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
-            out << "$ENDNOD" << std::endl;
+            out << "$ENDNOD" << EOL;
         }
 
         index_t write_corners(
             const GeoModel< 3 >& geomodel,
             std::ofstream& out ) const
         {
-            out << "$ELM" << std::endl;
-            out << nb_total_elements( geomodel ) << std::endl;
+            out << "$ELM" << EOL;
+            out << nb_total_elements( geomodel ) << EOL;
             index_t elt = 1;
             for( const auto& corner : geomodel.corners() ) {
                 out << elt++ << " " << adeli_cell_types[0] << " " << reg_phys << " "
                     << corner.index() + id_offset_adeli << " "
                     << corner.nb_vertices() << " "
                     << geomodel.mesh.vertices.geomodel_vertex_id( corner.gmme(),
-                        0 ) + id_offset_adeli << std::endl;
+                        0 ) + id_offset_adeli << EOL;
             }
             return elt;
         }
@@ -134,7 +135,7 @@ namespace {
                         adeli_cell_types[geomodel_mesh_entities], elt, out );
                 }
             }
-            out << "$ENDELM" << std::endl;
+            out << "$ENDELM" << EOL;
         }
 
         index_t nb_total_elements( const GeoModel< 3 >& geomodel ) const
@@ -177,7 +178,7 @@ namespace {
                             geomodel_mesh_entity.gmme(),
                             ElementLocalVertex( elt, v ) ) + id_offset_adeli << " ";
                 }
-                out << std::endl;
+                out << EOL;
             }
         }
     };

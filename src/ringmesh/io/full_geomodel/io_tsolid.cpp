@@ -52,14 +52,14 @@ namespace {
             out.precision( 16 );
 
             // Print Model3d headers
-            out << "GOCAD TSolid 1" << std::endl << "HEADER {" << std::endl
-                << "name:" << geomodel.name() << std::endl << "}" << std::endl;
+            out << "GOCAD TSolid 1" << EOL << "HEADER {" << EOL
+                << "name:" << geomodel.name() << EOL << "}" << EOL;
 
-            out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
-                << std::endl << "AXIS_NAME \"X\" \"Y\" \"Z\"" << std::endl
-                << "AXIS_UNIT \"m\" \"m\" \"m\"" << std::endl
-                << "ZPOSITIVE Elevation" << std::endl
-                << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
+            out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << EOL << "NAME Default"
+                << EOL << "AXIS_NAME \"X\" \"Y\" \"Z\"" << EOL
+                << "AXIS_UNIT \"m\" \"m\" \"m\"" << EOL
+                << "ZPOSITIVE Elevation" << EOL
+                << "END_ORIGINAL_COORDINATE_SYSTEM" << EOL;
 
             const GeoModelMesh< 3 >& mesh = geomodel.mesh;
             const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
@@ -73,7 +73,7 @@ namespace {
                 mesh.cells.nb_duplicated_vertices(), NO_ID );
             index_t nb_vertices_exported = 1;
             for( const auto& region : geomodel.regions() ) {
-                out << "TVOLUME " << region.name() << std::endl;
+                out << "TVOLUME " << region.name() << EOL;
 
                 // Export not duplicated vertices
                 for( index_t c : range( region.nb_mesh_elements() ) ) {
@@ -90,7 +90,7 @@ namespace {
                             // PVRTX must be used instead of VRTX because
                             // properties are not read by Gocad if it is VRTX.
                             out << "PVRTX " << nb_vertices_exported++ << " "
-                                << mesh.vertices.vertex( vertex_id ) << std::endl;
+                                << mesh.vertices.vertex( vertex_id ) << EOL;
                         }
                     }
                 }
@@ -106,7 +106,7 @@ namespace {
                  atom_exported_id[atom_id] = nb_vertices_exported ;
                  index_t vertex_id = mesh.cells.vertex( cell, v ) ;
                  out << "ATOM " << nb_vertices_exported++ << " "
-                 << vertex_exported_id[vertex_id] << std::endl ;
+                 << vertex_exported_id[vertex_id] << EOL ;
                  }
                  }
                  }*/
@@ -135,7 +135,7 @@ namespace {
                             out << " " << atom_exported_id[atom_id];
                         }
                     }
-                    out << std::endl;
+                    out << EOL;
                     out << "# CTETRA " << region.name();
                     for( index_t f : range( mesh.cells.nb_facets( c ) ) ) {
                         out << " ";
@@ -150,11 +150,11 @@ namespace {
                             out << "none";
                         }
                     }
-                    out << std::endl;
+                    out << EOL;
                 }
             }
 
-            out << "MODEL" << std::endl;
+            out << "MODEL" << EOL;
             int tface_count = 1;
             for( index_t i : range(
                 geomodel.nb_geological_entities(
@@ -162,9 +162,9 @@ namespace {
                 const RINGMesh::GeoModelGeologicalEntity< 3 >& interf =
                     geomodel.geological_entity( Interface < 3 > ::type_name_static(),
                         i );
-                out << "SURFACE " << interf.name() << std::endl;
+                out << "SURFACE " << interf.name() << EOL;
                 for( index_t s : range( interf.nb_children() ) ) {
-                    out << "TFACE " << tface_count++ << std::endl;
+                    out << "TFACE " << tface_count++ << EOL;
                     index_t surface_id = interf.child_gmme( s ).index();
                     out << "KEYVERTICES";
                     index_t key_polygon_id = polygons.polygon( surface_id, 0 );
@@ -173,7 +173,7 @@ namespace {
                             << vertex_exported_id[polygons.vertex(
                                 ElementLocalVertex( key_polygon_id, v ) )];
                     }
-                    out << std::endl;
+                    out << EOL;
                     for( index_t p : range( polygons.nb_polygons( surface_id ) ) ) {
                         index_t polygon_id = polygons.polygon( surface_id, p );
                         out << "TRGL";
@@ -182,7 +182,7 @@ namespace {
                                 << vertex_exported_id[polygons.vertex(
                                     ElementLocalVertex( polygon_id, v ) )];
                         }
-                        out << std::endl;
+                        out << EOL;
                     }
                 }
             }
@@ -190,10 +190,11 @@ namespace {
             for( const auto& region : geomodel.regions() ) {
                 out << "MODEL_REGION " << region.name() << " ";
                 region.side( 0 ) ? out << "+" : out << "-";
-                out << region.boundary_gmme( 0 ).index() + 1 << std::endl;
+                out << region.boundary_gmme( 0 ).index() + 1 << EOL;
             }
 
-            out << "END" << std::endl;
+            out << "END" << EOL;
+            out << std::flush;
         }
     };
 

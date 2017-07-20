@@ -769,7 +769,7 @@ namespace {
         LineDefinition cur_line_;
     };
 
-} // anonymous namespace
+}
 
 namespace RINGMesh {
 
@@ -1011,4 +1011,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderInfo< 3 > ;
     template class RINGMESH_API GeoModelBuilderCopy< 3 > ;
 
-} // namespace
+}
