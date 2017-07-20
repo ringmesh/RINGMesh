@@ -64,6 +64,30 @@ namespace {
         }
     }
 
+    void assign_vertex_attribute_values(
+        index_t vertex_i,
+        const vec3& cur_vertex,
+        GEO::Attribute< long int >& vertex_long_int_attr,
+        GEO::Attribute< bool >& vertex_bool_attr,
+        GEO::Attribute< double >& vertex_double_attr,
+        GEO::Attribute< vec3 >& vertex_vec3_attr,
+        GEO::Attribute< double >& vertex_dim_6_double_attr,
+        GEO::Attribute< char >& vertex_char_attr )
+    {
+        const long int rounded_vertex_xy = std::lrint( cur_vertex.x * cur_vertex.y );
+        vertex_long_int_attr[vertex_i] = rounded_vertex_xy;
+        vertex_bool_attr[vertex_i] = ( rounded_vertex_xy % 2 == 0 );
+        vertex_double_attr[vertex_i] = cur_vertex.x;
+        vertex_vec3_attr[vertex_i] = cur_vertex;
+        vertex_dim_6_double_attr[vertex_i * 6 + 0] = cur_vertex.x;
+        vertex_dim_6_double_attr[vertex_i * 6 + 1] = cur_vertex.y;
+        vertex_dim_6_double_attr[vertex_i * 6 + 2] = cur_vertex.z;
+        vertex_dim_6_double_attr[vertex_i * 6 + 3] = cur_vertex.x;
+        vertex_dim_6_double_attr[vertex_i * 6 + 4] = cur_vertex.y;
+        vertex_dim_6_double_attr[vertex_i * 6 + 5] = cur_vertex.z;
+        vertex_char_attr[vertex_i] = std::to_string( cur_vertex.y ).data()[0];
+    }
+
     void set_vertex_attributes_on_geomodel_regions( const GeoModel& geomodel )
     {
         for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
@@ -88,20 +112,9 @@ namespace {
             for( index_t vertex_i = 0; vertex_i < cur_reg.nb_vertices();
                 ++vertex_i ) {
                 const vec3& cur_vertex = cur_reg.vertex( vertex_i );
-                const long int rounded_vertex_xy = std::lrint(
-                    cur_vertex.x * cur_vertex.y );
-                vertex_long_int_attr[vertex_i] = rounded_vertex_xy;
-                vertex_bool_attr[vertex_i] = ( rounded_vertex_xy % 2 == 0 );
-                vertex_double_attr[vertex_i] = cur_vertex.x;
-                vertex_vec3_attr[vertex_i] = cur_vertex;
-                vertex_dim_6_double_attr[vertex_i * 6 + 0] = cur_vertex.x;
-                vertex_dim_6_double_attr[vertex_i * 6 + 1] = cur_vertex.y;
-                vertex_dim_6_double_attr[vertex_i * 6 + 2] = cur_vertex.z;
-                vertex_dim_6_double_attr[vertex_i * 6 + 3] = cur_vertex.x;
-                vertex_dim_6_double_attr[vertex_i * 6 + 4] = cur_vertex.y;
-                vertex_dim_6_double_attr[vertex_i * 6 + 5] = cur_vertex.z;
-                vertex_char_attr[vertex_i] =
-                    std::to_string( cur_vertex.y ).data()[0];
+                assign_vertex_attribute_values( vertex_i, cur_vertex,
+                    vertex_long_int_attr, vertex_bool_attr, vertex_double_attr,
+                    vertex_vec3_attr, vertex_dim_6_double_attr, vertex_char_attr );
             }
         }
     }
@@ -125,20 +138,36 @@ namespace {
 
         for( index_t v_i = 0; v_i < gmmv.nb(); ++v_i ) {
             const vec3& cur_vertex = gmmv.vertex( v_i );
-            const long int rounded_vertex_xy = std::lrint(
-                cur_vertex.x * cur_vertex.y );
-            vertex_long_int_attr[v_i] = rounded_vertex_xy;
-            vertex_bool_attr[v_i] = ( rounded_vertex_xy % 2 == 0 );
-            vertex_double_attr[v_i] = cur_vertex.x;
-            vertex_vec3_attr[v_i] = cur_vertex;
-            vertex_dim_6_double_attr[v_i * 6 + 0] = cur_vertex.x;
-            vertex_dim_6_double_attr[v_i * 6 + 1] = cur_vertex.y;
-            vertex_dim_6_double_attr[v_i * 6 + 2] = cur_vertex.z;
-            vertex_dim_6_double_attr[v_i * 6 + 3] = cur_vertex.x;
-            vertex_dim_6_double_attr[v_i * 6 + 4] = cur_vertex.y;
-            vertex_dim_6_double_attr[v_i * 6 + 5] = cur_vertex.z;
-            vertex_char_attr[v_i] = std::to_string( cur_vertex.y ).data()[0];
+            assign_vertex_attribute_values( v_i, cur_vertex, vertex_long_int_attr,
+                vertex_bool_attr, vertex_double_attr, vertex_vec3_attr,
+                vertex_dim_6_double_attr, vertex_char_attr );
         }
+    }
+
+    void assign_cell_attribute_values(
+        index_t cell_i,
+        double cell_volume,
+        const vec3& cell_barycenter,
+        GEO::Attribute< long int >& cell_long_int_attr,
+        GEO::Attribute< bool >& cell_bool_attr,
+        GEO::Attribute< double >& cell_double_attr,
+        GEO::Attribute< vec3 >& cell_vec3_attr,
+        GEO::Attribute< double >& cell_dim_6_double_attr,
+        GEO::Attribute< char >& cell_char_attr )
+    {
+        const long int rounded_volume = std::lrint( cell_volume );
+        cell_long_int_attr[cell_i] = rounded_volume;
+        cell_bool_attr[cell_i] = ( rounded_volume % 2 == 0 );
+        cell_double_attr[cell_i] = cell_volume;
+        cell_vec3_attr[cell_i] = cell_barycenter;
+        cell_dim_6_double_attr[cell_i * 6 + 0] = cell_vec3_attr[cell_i].x;
+        cell_dim_6_double_attr[cell_i * 6 + 1] = cell_vec3_attr[cell_i].y;
+        cell_dim_6_double_attr[cell_i * 6 + 2] = cell_vec3_attr[cell_i].z;
+        cell_dim_6_double_attr[cell_i * 6 + 3] = cell_vec3_attr[cell_i].x;
+        cell_dim_6_double_attr[cell_i * 6 + 4] = cell_vec3_attr[cell_i].y;
+        cell_dim_6_double_attr[cell_i * 6 + 5] = cell_vec3_attr[cell_i].z;
+        cell_char_attr[cell_i] =
+            std::to_string( cell_vec3_attr[cell_i].y ).data()[0];
     }
 
     void set_cell_attributes_on_geomodel_regions( const GeoModel& geomodel )
@@ -164,19 +193,10 @@ namespace {
             for( index_t cell_i = 0; cell_i < cur_reg.nb_mesh_elements();
                 ++cell_i ) {
                 const double cell_volume = cur_reg.mesh_element_size( cell_i );
-                const long int rounded_volume = std::lrint( cell_volume );
-                cell_long_int_attr[cell_i] = rounded_volume;
-                cell_bool_attr[cell_i] = ( rounded_volume % 2 == 0 );
-                cell_double_attr[cell_i] = cell_volume;
-                cell_vec3_attr[cell_i] = cur_reg.mesh_element_barycenter( cell_i );
-                cell_dim_6_double_attr[cell_i * 6 + 0] = cell_vec3_attr[cell_i].x;
-                cell_dim_6_double_attr[cell_i * 6 + 1] = cell_vec3_attr[cell_i].y;
-                cell_dim_6_double_attr[cell_i * 6 + 2] = cell_vec3_attr[cell_i].z;
-                cell_dim_6_double_attr[cell_i * 6 + 3] = cell_vec3_attr[cell_i].x;
-                cell_dim_6_double_attr[cell_i * 6 + 4] = cell_vec3_attr[cell_i].y;
-                cell_dim_6_double_attr[cell_i * 6 + 5] = cell_vec3_attr[cell_i].z;
-                cell_char_attr[cell_i] =
-                    std::to_string( cell_vec3_attr[cell_i].y ).data()[0];
+                assign_cell_attribute_values( cell_i, cell_volume,
+                    cur_reg.mesh_element_barycenter( cell_i ), cell_long_int_attr,
+                    cell_bool_attr, cell_double_attr, cell_vec3_attr,
+                    cell_dim_6_double_attr, cell_char_attr );
             }
         }
     }
@@ -200,19 +220,10 @@ namespace {
 
         for( index_t cell_i = 0; cell_i < gmmc.nb(); ++cell_i ) {
             const double cell_volume = gmmc.volume( cell_i );
-            const long int rounded_volume = std::lrint( cell_volume );
-            cell_long_int_attr[cell_i] = rounded_volume;
-            cell_bool_attr[cell_i] = ( rounded_volume % 2 == 0 );
-            cell_double_attr[cell_i] = cell_volume;
-            cell_vec3_attr[cell_i] = gmmc.barycenter( cell_i );
-            cell_dim_6_double_attr[cell_i * 6 + 0] = cell_vec3_attr[cell_i].x;
-            cell_dim_6_double_attr[cell_i * 6 + 1] = cell_vec3_attr[cell_i].y;
-            cell_dim_6_double_attr[cell_i * 6 + 2] = cell_vec3_attr[cell_i].z;
-            cell_dim_6_double_attr[cell_i * 6 + 3] = cell_vec3_attr[cell_i].x;
-            cell_dim_6_double_attr[cell_i * 6 + 4] = cell_vec3_attr[cell_i].y;
-            cell_dim_6_double_attr[cell_i * 6 + 5] = cell_vec3_attr[cell_i].z;
-            cell_char_attr[cell_i] =
-                std::to_string( cell_vec3_attr[cell_i].y ).data()[0];
+            assign_cell_attribute_values( cell_i, cell_volume,
+                gmmc.barycenter( cell_i ), cell_long_int_attr, cell_bool_attr,
+                cell_double_attr, cell_vec3_attr, cell_dim_6_double_attr,
+                cell_char_attr );
         }
     }
 
