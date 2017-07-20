@@ -87,6 +87,10 @@
 #define ringmesh_template_assert_3d( type ) \
     static_assert( type == 3, #type " template should be 3" )
 
+#define CLASS_DIMENSION_ALIASES( Class ) \
+    using Class ## 2D = Class< 2 >; \
+    using Class ## 3D = Class< 3 >;
+
 // To avoid unused argument warning in function definition
 template< typename T > void ringmesh_unused( T const& )
 {

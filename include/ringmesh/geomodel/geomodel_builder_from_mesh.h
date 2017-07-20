@@ -54,7 +54,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder< 3 > {
     public:
-        GeoModelBuilderSurfaceMesh( GeoModel< 3 >& geomodel, const GEO::Mesh& mesh )
+        GeoModelBuilderSurfaceMesh( GeoModel3D& geomodel, const GEO::Mesh& mesh )
             : GeoModelBuilder( geomodel ), mesh_( mesh )
         {
         }

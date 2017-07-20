@@ -60,16 +60,16 @@ namespace {
      */
     class AdeliIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Adeli .msh mesh not implemented yet" );
         }
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
-            const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
+            const RINGMesh::GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
             if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
                 {
                     throw RINGMeshException( "I/O",
@@ -85,7 +85,7 @@ namespace {
 
     private:
         void write_vertices(
-            const GeoModelMesh< 3 >& geomodel_mesh,
+            const GeoModelMesh3D& geomodel_mesh,
             std::ofstream& out ) const
         {
             out << "$NOD" << EOL;
@@ -98,7 +98,7 @@ namespace {
         }
 
         index_t write_corners(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
             out << "$ELM" << EOL;
@@ -115,11 +115,10 @@ namespace {
         }
 
         void write_mesh_elements(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            index_t elt = write_corners( geomodel, out );
-            const MeshEntityTypeManager< 3 >& manager =
+            const MeshEntityTypeManager3D& manager =
                 geomodel.entity_type_manager().mesh_entity_manager;
             const std::vector< MeshEntityType >& mesh_entity_types =
                 manager.mesh_entity_types();
@@ -138,9 +137,9 @@ namespace {
             out << "$ENDELM" << EOL;
         }
 
-        index_t nb_total_elements( const GeoModel< 3 >& geomodel ) const
+        index_t nb_total_elements( const GeoModel3D& geomodel ) const
         {
-            const MeshEntityTypeManager< 3 >& manager =
+            const MeshEntityTypeManager3D& manager =
                 geomodel.entity_type_manager().mesh_entity_manager;
             const std::vector< MeshEntityType >& mesh_entity_types =
                 manager.mesh_entity_types();
@@ -162,7 +161,7 @@ namespace {
         }
 
         void write_mesh_elements_for_a_mesh_entity(
-            const GeoModelMeshEntity< 3 >& geomodel_mesh_entity,
+            const GeoModelMeshEntity3D& geomodel_mesh_entity,
             index_t cell_descriptor,
             index_t& elt_id,
             std::ofstream& out ) const

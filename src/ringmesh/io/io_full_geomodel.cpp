@@ -80,7 +80,7 @@ namespace RINGMesh {
     template< >
     void GeoModelIOHandler< 2 >::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler2D_creator( GeoModelHandlerGM< 2 >, "gm" );
+        ringmesh_register_GeoModelIOHandler2D_creator( GeoModelHandlerGM2D, "gm" );
         ringmesh_register_GeoModelIOHandler2D_creator( SVGIOHandler, "svg" );
     }
 
@@ -98,7 +98,7 @@ namespace RINGMesh {
         ringmesh_register_GeoModelIOHandler3D_creator( GPRSIOHandler, "gprs" );
         ringmesh_register_GeoModelIOHandler3D_creator( MSHIOHandler, "msh" );
         ringmesh_register_GeoModelIOHandler3D_creator( MFEMIOHandler, "mfem" );
-        ringmesh_register_GeoModelIOHandler3D_creator( GeoModelHandlerGM< 3 >, "gm" );
+        ringmesh_register_GeoModelIOHandler3D_creator( GeoModelHandlerGM3D, "gm" );
         ringmesh_register_GeoModelIOHandler3D_creator( AbaqusIOHandler, "inp" );
         ringmesh_register_GeoModelIOHandler3D_creator( AdeliIOHandler, "adeli" );
         ringmesh_register_GeoModelIOHandler3D_creator( FeflowIOHandler, "fem" );

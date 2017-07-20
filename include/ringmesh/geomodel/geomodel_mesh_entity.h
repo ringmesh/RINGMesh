@@ -51,6 +51,7 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
+    CLASS_DIMENSION_ALIASES( GeoModel );
     template< index_t DIMENSION > class GeoModelGeologicalEntity;
     template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
     template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
@@ -353,6 +354,8 @@ namespace RINGMesh {
         std::shared_ptr< MeshBase< DIMENSION > > mesh_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelMeshEntity );
+
     /*!
      * @brief A GeoModelEntity of type CORNER
      * @details It is a unique point.
@@ -479,6 +482,8 @@ namespace RINGMesh {
     private:
         std::shared_ptr< PointSetMesh< DIMENSION > > point_set_mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( Corner );
 
     /*!
      * @brief A GeoModelEntity of type LINE
@@ -633,6 +638,8 @@ namespace RINGMesh {
     private:
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( Line );
 
     /*!
      * @brief A GeoModelEntity of type SURFACE
@@ -826,7 +833,7 @@ namespace RINGMesh {
     class Surface< 2 > final: public SurfaceBase< 2 > {
         friend class GeoModelMeshEntityAccess< 2 > ;
     private:
-        Surface( const GeoModel< 2 >& geomodel, index_t id, const MeshType type )
+        Surface( const GeoModel2D& geomodel, index_t id, const MeshType type )
             : SurfaceBase< 2 >( geomodel, id, type )
         {
         }
@@ -848,7 +855,7 @@ namespace RINGMesh {
     class Surface< 3 > final: public SurfaceBase< 3 > {
         friend class GeoModelMeshEntityAccess< 3 > ;
     private:
-        Surface( const GeoModel< 3 >& geomodel, index_t id, const MeshType type )
+        Surface( const GeoModel3D& geomodel, index_t id, const MeshType type )
             : SurfaceBase< 3 >( geomodel, id, type )
         {
         }
@@ -856,6 +863,8 @@ namespace RINGMesh {
     public:
         const Region< 3 >& incident_entity( index_t x ) const;
     };
+
+    CLASS_DIMENSION_ALIASES( Surface );
 
     /*!
      * @brief A GeoModelEntity of type REGION
@@ -1169,6 +1178,8 @@ namespace RINGMesh {
         std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_;
     };
 
+    using Region3D = Region< 3 >;
+
     template< index_t DIMENSION >
     class GeoModelMeshEntityConstAccess {
     ringmesh_disable_copy( GeoModelMeshEntityConstAccess );
@@ -1274,4 +1285,6 @@ namespace RINGMesh {
     private:
         GeoModelMeshEntity< DIMENSION >& gmme_;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelMeshEntityAccess );
 }

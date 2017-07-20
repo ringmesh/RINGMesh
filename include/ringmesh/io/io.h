@@ -61,7 +61,9 @@ const char TAB = '\t';
 namespace RINGMesh {
     class StratigraphicColumn;
     template< index_t DIMENSION > class GeoModel;
+    CLASS_DIMENSION_ALIASES( GeoModel );
     template< index_t DIMENSION > class WellGroup;
+    CLASS_DIMENSION_ALIASES( WellGroup );
 }
 
 namespace GEO {
@@ -148,6 +150,8 @@ namespace RINGMesh {
         static GeoModelIOHandler* create( const std::string& format );
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelIOHandler );
+
     template< index_t DIMENSION >
     using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler< DIMENSION > >;
 
@@ -170,10 +174,10 @@ namespace RINGMesh {
         static std::unique_ptr< WellGroupIOHandler > get_handler(
             const std::string& filename );
 
-        virtual void load( const std::string& filename, WellGroup< 3 >& mesh ) = 0;
+        virtual void load( const std::string& filename, WellGroup3D& mesh ) = 0;
 
         virtual void save(
-            const WellGroup< 3 >& mesh,
+            const WellGroup3D& mesh,
             const std::string& filename ) = 0;
 
     protected:
@@ -214,7 +218,7 @@ namespace RINGMesh {
         virtual void load(
             const std::string& filename,
             StratigraphicColumn& column,
-            GeoModel< 3 >& geomodel ) = 0;
+            GeoModel3D& geomodel ) = 0;
 
         virtual void save(
             const StratigraphicColumn& column,
