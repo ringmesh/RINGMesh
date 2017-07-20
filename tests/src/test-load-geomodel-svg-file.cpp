@@ -59,8 +59,8 @@ int main()
 
 //        if( !loaded_model_is_valid ) {
 //            throw RINGMeshException( "RINGMesh Test",
-//                "Failed when loading model " + in.name()
-//                    + ": the loaded model is not valid." );
+//                "Failed when loading model " +,in.name()
+//                    , ": the loaded model is not valid." );
 //        }
 
         std::string output_model_file_name( ringmesh_test_output_path );
@@ -73,8 +73,8 @@ int main()
 
 //        if( !reloaded_model_is_valid ) {
 //            throw RINGMeshException( "RINGMesh Test",
-//                "Failed when reloading model " + in2.name()
-//                    + ": the reloaded model is not valid." );
+//                "Failed when reloading model " , in2.name()
+//                    , ": the reloaded model is not valid." );
 //        }
 
         std::string output_model_file_name_bis( ringmesh_test_output_path );

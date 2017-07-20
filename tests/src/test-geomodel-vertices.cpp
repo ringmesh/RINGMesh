@@ -48,13 +48,11 @@ void error(
     index_t vertex_id_in_geomodel_mesh,
     const gmme_id& mesh_entity_gmme_id )
 {
-    throw RINGMeshException( "TEST",
-        "Vertex " + std::to_string( vertex_id_in_mesh_entity ) + " in entity "
-            + std::string( mesh_entity_gmme_id.type() )
-            + std::to_string( mesh_entity_gmme_id.index() )
-            + +" has not the same coordinates than its equivalent vertex "
-            + std::to_string( vertex_id_in_geomodel_mesh )
-            + " in the GeoModelMesh" );
+    throw RINGMeshException( "TEST", "Vertex ", vertex_id_in_mesh_entity,
+        " in entity ", std::string( mesh_entity_gmme_id.type() ),
+        mesh_entity_gmme_id.index(),
+        " has not the same coordinates than its equivalent vertex ",
+        vertex_id_in_geomodel_mesh, " in the GeoModelMesh" );
 
 }
 void test_geomodel_vertices( const GeoModel< 3 >& geomodel )
@@ -117,8 +115,8 @@ int main()
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
 
         if( !loaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when loading model " + in.name() );
+            throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
+                in.name() );
         }
         test_geomodel_vertices( in );
         test_GMEVertex( in );

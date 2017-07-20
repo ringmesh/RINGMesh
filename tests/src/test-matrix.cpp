@@ -53,16 +53,14 @@ void set_get_test( SparseMatrix< double, light >& matrix )
         double elt;
         if( !matrix.get_element( i, i, elt )
             || std::abs( elt - 1. ) > global_epsilon ) {
-            throw RINGMeshException( "TEST",
-                "Matrix element at (" + std::to_string( i ) + ","
-                    + std::to_string( i ) + ") should exist and be correct!" );
+            throw RINGMeshException( "TEST", "Matrix element at (", i, ",", i,
+                ") should exist and be correct!" );
         }
         for( index_t j = 0; j < matrix.nj(); ++j ) {
             if( i != j ) {
                 if( matrix.get_element( i, j, elt ) ) {
-                    throw RINGMeshException( "TEST",
-                        "Matrix element at (" + std::to_string( i ) + ","
-                            + std::to_string( i ) + ") should not exist!" );
+                    throw RINGMeshException( "TEST", "Matrix element at (", i, ",",
+                        i, ") should not exist!" );
                 }
             }
         }
@@ -84,7 +82,8 @@ void symmetry_test( SparseMatrix< double, light >& matrix )
                 "Matrix element at (1,0) should exist and be correct!" );
         }
     } else {
-        if( matrix.get_element( 1, 0, elt ) && std::abs( elt - 3. ) < global_epsilon ) {
+        if( matrix.get_element( 1, 0, elt )
+            && std::abs( elt - 3. ) < global_epsilon ) {
             throw RINGMeshException( "TEST",
                 "Matrix element at (1,0) should not exist and the matrix should not be symmetrical!" );
         }

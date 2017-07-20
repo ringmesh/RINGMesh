@@ -341,7 +341,6 @@ int main()
 
     try {
         default_configure();
-
         Logger::out( "TEST", "Test AABB" );
         test_LineAABB< 2 >();
         test_LineAABB< 3 >();

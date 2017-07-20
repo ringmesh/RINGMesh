@@ -41,7 +41,7 @@ namespace {
             std::ifstream input( filename.c_str() );
             if( !input ) {
                 throw RINGMeshException( "I/O",
-                    "Failed loading geomodel from file " + filename );
+                    "Failed loading geomodel from file ", filename );
             }
             GeoModelBuilderTSolid builder( geomodel, filename );
             builder.build_geomodel();

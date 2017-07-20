@@ -500,8 +500,8 @@ namespace {
             if( box_model_ ) {
                 GEO::LineInput parser( cmsp_filename );
                 if( !parser.OK() ) {
-                    throw RINGMeshException( "I/O",
-                        "Cannot open file: " + cmsp_filename );
+                    throw RINGMeshException( "I/O", "Cannot open file: ",
+                        cmsp_filename );
                 }
                 parser.get_line();
                 parser.get_fields();
@@ -525,7 +525,7 @@ namespace {
                     } else if( type == "ID" ) {
                         interface_id = parser.field_as_uint( 2 );
                     } else {
-                        throw RINGMeshException( "I/O", "Unknown type: " + type );
+                        throw RINGMeshException( "I/O", "Unknown type: ", type );
                     }
 
                     std::string keyword = parser.field( 0 );
@@ -542,8 +542,8 @@ namespace {
                     } else if( keyword == "RIGHT" ) {
                         right_ = interface_id;
                     } else {
-                        throw RINGMeshException( "I/O",
-                            "Unknown keyword: " + keyword );
+                        throw RINGMeshException( "I/O", "Unknown keyword: ",
+                            keyword );
                     }
                     parser.get_line();
                     parser.get_fields();

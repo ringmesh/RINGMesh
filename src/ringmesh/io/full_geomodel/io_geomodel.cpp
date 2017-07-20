@@ -67,8 +67,8 @@ namespace {
         std::ofstream out( file_name.c_str() );
         out.precision( 16 );
         if( out.bad() ) {
-            throw RINGMeshException( "I/O",
-                "Error when opening the file: " + file_name );
+            throw RINGMeshException( "I/O", "Error when opening the file: ",
+                file_name );
         }
 
         if( geomodel.nb_geological_entity_types() == 0 ) {
@@ -268,8 +268,8 @@ namespace {
         std::ofstream out( file_name.c_str() );
         out.precision( 16 );
         if( out.bad() ) {
-            throw RINGMeshException( "I/O",
-                "Error when opening the file: " + file_name );
+            throw RINGMeshException( "I/O", "Error when opening the file: ",
+                file_name );
         }
         save_dimension( geomodel, out );
         save_version_and_name( geomodel, out );

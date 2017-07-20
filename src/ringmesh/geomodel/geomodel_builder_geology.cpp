@@ -202,10 +202,9 @@ namespace RINGMesh {
             geomodel_.entity_type_manager().relationship_manager.parent_types(
                 children.type() );
         if( !contains( parent_entity_types, parent.type() ) ) {
-            std::ostringstream message;
-            message << "Wrong Parent type in the parent children relation between "
-                << parent << " and " << children;
-            throw RINGMeshException( "Entity", message.str() );
+            throw RINGMeshException( "Entity",
+                "Wrong Parent type in the parent children relation between ", parent,
+                " and ", children );
         }
 
         if( check_if_boundary_incident_entity_relation_already_exists( parent,
@@ -221,9 +220,9 @@ namespace RINGMesh {
 
         if( children_type != children.type() ) {
             std::ostringstream message;
-            message << "Wrong children type in the parent children relation between "
-                << parent << " and " << children;
-            throw RINGMeshException( "Entity", message.str() );
+            throw RINGMeshException( "Entity",
+                "Wrong children type in the parent children relation between ",
+                parent, " and ", children );
         }
 
         RelationshipManager& manager =

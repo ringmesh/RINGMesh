@@ -93,9 +93,8 @@ namespace {
             std::string action, parameters;
             GEO::String::split_string( attribute, '(', action, parameters );
             if( action != "translate" ) {
-                throw RINGMeshException( "I/O",
-                    "Forbidden transformation " + action
-                        + " found in the svg file. " );
+                throw RINGMeshException( "I/O", "Forbidden transformation ", action,
+                    " found in the svg file. " );
             }
             parameters.pop_back();
             std::vector< std::string > coordinates;
@@ -179,10 +178,9 @@ namespace {
             std::string forbidden_letters( "HhVvCcSs" );
             for( char letter : forbidden_letters ) {
                 if( data.find( letter ) != std::string::npos ) {
-                    throw RINGMeshException( "I/O",
-                        "Forbidden command " + GEO::String::to_string( letter )
-                            + " found in the svg file. "
-                                "Flatten your paths before importing in RINGMesh." );
+                    throw RINGMeshException( "I/O", "Forbidden command ", letter,
+                        " found in the svg file. ",
+                        "Flatten your paths before importing in RINGMesh." );
                 }
             }
         }

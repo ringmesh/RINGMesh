@@ -66,9 +66,8 @@ int main()
         bool loaded_model_is_valid = geomodel_load( model, file_name );
 
         if( !loaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when loading model " + model.name()
-                    + ": the loaded model is not valid." );
+            throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
+                model.name(), ": the loaded model is not valid." );
         }
 
         // Check number of entities of the imported GeoModel (from TSolid file)
@@ -79,9 +78,8 @@ int main()
             || model.nb_geological_entities( Contact< 3 >::type_name_static() ) != 38
             || model.mesh.vertices.nb() != 6691 || model.mesh.polygons.nb() != 10049
             || model.mesh.cells.nb() != 34540 ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when loading model " + model.name()
-                    + ": wrong number of entities." );
+            throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
+                model.name(), ": wrong number of entities." );
         }
 
     } catch( const RINGMeshException& e ) {
