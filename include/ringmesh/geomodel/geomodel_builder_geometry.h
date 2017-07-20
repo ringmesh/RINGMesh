@@ -385,6 +385,8 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelBuilderGeometryBase );
+
     template< index_t DIMENSION >
     class GeoModelBuilderGeometry final: public GeoModelBuilderGeometryBase<
         DIMENSION > {

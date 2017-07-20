@@ -595,6 +595,8 @@ namespace RINGMesh {
         std::vector< GeologicalEntityType > geological_entity_types_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelBuilderRemovalBase );
+
     template< index_t DIMENSION >
     class GeoModelBuilderRemoval: public GeoModelBuilderRemovalBase< DIMENSION > {
         friend class GeoModelBuilderBase< DIMENSION > ;
@@ -610,26 +612,27 @@ namespace RINGMesh {
     class GeoModelBuilderRemoval< 3 > : public GeoModelBuilderRemovalBase< 3 > {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
+        using GeoModelBuilder3D = GeoModelBuilder< 3 >;
     private:
         GeoModelBuilderRemoval(
-            GeoModelBuilder< 3 >& builder,
+            GeoModelBuilder3D& builder,
             GeoModel3D& geomodel );
         virtual ~GeoModelBuilderRemoval() = default;
 
-        void update_mesh_entity( GeoModelMeshEntity< 3 >& ME ) override;
+        void update_mesh_entity( GeoModelMeshEntity3D& ME ) override;
 
         void set_boundary_side(
-            Region< 3 >& R,
+            Region3D& R,
             index_t boundary_index,
             bool new_side )
         {
             ringmesh_assert( boundary_index < R.nb_boundaries() );
-            GeoModelMeshEntityAccess< 3 > region_access(
+            GeoModelMeshEntityAccess3D region_access(
                 geomodel_access_.modifiable_mesh_entity( R.gmme() ) );
             region_access.modifiable_sides()[boundary_index] = new_side;
         }
 
-        void update_region_boundary_signs( Region< 3 >& R )
+        void update_region_boundary_signs( Region3D& R )
         {
             const MeshEntityType& surface_type = boundary_entity_type(
                 R.mesh_entity_type() );
@@ -646,9 +649,9 @@ namespace RINGMesh {
             }
         }
 
-        void delete_invalid_signs( Region< 3 >& R )
+        void delete_invalid_signs( Region3D& R )
         {
-            GeoModelMeshEntityAccess< 3 > region_access(
+            GeoModelMeshEntityAccess3D region_access(
                 geomodel_access_.modifiable_mesh_entity( R.gmme() ) );
             region_access.modifiable_sides().resize( R.nb_boundaries() );
         }

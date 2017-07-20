@@ -211,6 +211,8 @@ namespace {
         std::vector< BorderPolygon > border_polygons_;
     };
 
+    CLASS_DIMENSION_ALIASES( CommonDataFromGeoModelSurfaces );
+
     /*!
      * @brief Utility class to sort a set of oriented polygons around a common edge
      */
@@ -444,14 +446,14 @@ namespace {
     public:
         RegionTopologyFromGeoModelSurfaces( const GeoModel3D& geomodel )
             :
-                CommonDataFromGeoModelSurfaces< 3 >( geomodel ),
+                CommonDataFromGeoModelSurfaces3D( geomodel ),
                 region_info_( geomodel.nb_lines() )
         {
         }
 
         void compute_region_info()
         {
-            const GeoModelMeshVertices< 3 >& vertices = this->geomodel_.mesh.vertices;
+            const GeoModelMeshVertices3D& vertices = this->geomodel_.mesh.vertices;
             for( const auto& line : geomodel_.lines() ) {
                 BorderPolygon line_border( NO_ID, NO_ID,
                     vertices.geomodel_vertex_id( line.gmme(), 0 ),
@@ -921,9 +923,9 @@ namespace RINGMesh {
                 continue;
             }
             // Create a new region
-            gmme_id cur_region_id( Region< 3 >::type_name_static(),
+            gmme_id cur_region_id( Region3D::type_name_static(),
                 geomodel_.nb_regions() );
-            topology.create_mesh_entities( Region< 3 >::type_name_static(), 1 );
+            topology.create_mesh_entities( Region3D::type_name_static(), 1 );
             // Get all oriented surfaces defining this region
             std::stack< std::pair< index_t, bool > > SR;
             SR.push( cur );
@@ -937,7 +939,7 @@ namespace RINGMesh {
                 }
                 // Add the surface to the current region
                 topology.add_mesh_entity_boundary_relation( cur_region_id,
-                    gmme_id( Surface< 3 >::type_name_static(), s.first ), s.second );
+                    gmme_id( Surface3D::type_name_static(), s.first ), s.second );
                 surf_2_region[s_id] = cur_region_id.index();
 
                 // Check the other side of the surface and push it in S
@@ -946,7 +948,7 @@ namespace RINGMesh {
                     S.emplace( s.first, !s.second );
                 }
                 // For each contact, push the next oriented surface that is in the same region
-                const Surface< 3 >& surface = geomodel_.surface( s.first );
+                const Surface3D& surface = geomodel_.surface( s.first );
                 for( index_t i : range( surface.nb_boundaries() ) ) {
                     const std::pair< index_t, bool >& n =
                         region_info[surface.boundary_gmme( i ).index()].next( s );
@@ -981,7 +983,7 @@ namespace RINGMesh {
                 universe_id = region.index();
             }
         }
-        const Region< 3 >& cur_region = geomodel_.region( universe_id );
+        const Region3D& cur_region = geomodel_.region( universe_id );
         for( index_t i : range( cur_region.nb_boundaries() ) ) {
             // Fill the Universe region boundaries
             // They are supposed to be empty

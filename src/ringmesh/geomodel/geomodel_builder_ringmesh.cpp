@@ -51,10 +51,10 @@ namespace {
 
     bool match_mesh_entity_type( const MeshEntityType& type )
     {
-        if( type == Corner< 3 >::type_name_static() ) return true;
-        if( type == Line< 3 >::type_name_static() ) return true;
-        if( type == Surface< 3 >::type_name_static() ) return true;
-        if( type == Region< 3 >::type_name_static() ) return true;
+        if( type == Corner3D::type_name_static() ) return true;
+        if( type == Line3D::type_name_static() ) return true;
+        if( type == Surface3D::type_name_static() ) return true;
+        if( type == Region3D::type_name_static() ) return true;
         return false;
     }
 }
@@ -154,7 +154,7 @@ namespace RINGMesh {
     {
         file_line.get_line();
         file_line.get_fields();
-        const MeshEntityTypeManager< 2 >& manager =
+        const MeshEntityTypeManager2D& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_surface( entity.type() ) ) {
             add_relation_for_entities_with_sides< Line >( entity, file_line );
@@ -170,7 +170,7 @@ namespace RINGMesh {
     {
         file_line.get_line();
         file_line.get_fields();
-        const MeshEntityTypeManager< 3 >& manager =
+        const MeshEntityTypeManager3D& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_region( entity.type() ) ) {
             add_relation_for_entities_with_sides< Surface >( entity, file_line );
@@ -440,10 +440,10 @@ namespace RINGMesh {
         index_t id )
     {
         if( !load_mesh_entity_base( entity_type, file_name, id ) ) {
-            const MeshEntityTypeManager< 3 >& manager =
+            const MeshEntityTypeManager3D& manager =
                 this->geomodel_.entity_type_manager().mesh_entity_manager;
             if( manager.is_region( entity_type ) ) {
-                std::unique_ptr< VolumeMeshBuilder< 3 > > builder =
+                std::unique_ptr< VolumeMeshBuilder3D > builder =
                     geometry.create_region_builder( id );
                 builder->load_mesh( file_name );
             }
