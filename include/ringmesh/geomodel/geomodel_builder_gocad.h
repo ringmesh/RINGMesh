@@ -276,12 +276,15 @@ namespace RINGMesh {
 
 		index_t region( index_t gocad_vertex_id ) const
 		{
+			ringmesh_assert( gocad_vertex_id < gocad_ids2region_ids_.size() );
+			ringmesh_assert( gocad_ids2region_ids_[gocad_vertex_id] < nb_regions() );
 			return gocad_ids2region_ids_[gocad_vertex_id];
 		}
 
 		void add_vertex( index_t local_vertex_id, index_t region_id )
 		{
 			gocad_ids2local_ids_.push_back( local_vertex_id );
+			ringmesh_assert( region_id < nb_regions() || region_id == NO_ID );
 			gocad_ids2region_ids_.push_back( region_id );
 		}
 
@@ -317,7 +320,7 @@ namespace RINGMesh {
 					// that are in this region.
 					if( region_id( lighttsolid_vertices_id ) == rgion_id ) {
 						index_t gocad_vertex_i = gocad_vertex_id( lighttsolid_vertices_id );
-
+						
 						gocad_ids2region_ids_[gocad_vertex_i] 
 							= region_id( lighttsolid_vertices_id );
 					}

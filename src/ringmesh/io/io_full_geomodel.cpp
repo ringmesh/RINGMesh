@@ -91,7 +91,8 @@ namespace RINGMesh {
     void GeoModelIOHandler< 3 >::initialize_full_geomodel_output()
     {
         ringmesh_register_GeoModelIOHandler3D_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_GeoModelIOHandler3D_creator( TSolidIOHandler, "so" );
+		ringmesh_register_GeoModelIOHandler3D_creator( TSolidIOHandler, "so" );
+		ringmesh_register_GeoModelIOHandler3D_creator( TSolidIOHandler, "lso" );
         ringmesh_register_GeoModelIOHandler3D_creator( CSMPIOHandler, "csmp" );
         ringmesh_register_GeoModelIOHandler3D_creator( AsterIOHandler, "mail" );
         ringmesh_register_GeoModelIOHandler3D_creator( VTKIOHandler, "vtk" );

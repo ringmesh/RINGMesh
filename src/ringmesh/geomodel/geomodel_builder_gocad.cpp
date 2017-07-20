@@ -1196,6 +1196,7 @@ namespace {
         ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "VRTX" );
 		ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "PVRTX" );
 		ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "SHAREDVRTX" );
+		ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "SHAREDPVRTX" );
         ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "ATOM" );
         ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "PATOM" );
         ringmesh_register_TSolidLineParser_creator( LoadTetra, "TETRA" );
