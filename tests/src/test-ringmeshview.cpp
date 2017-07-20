@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <future>
+
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/logger.h>
 
@@ -72,61 +74,22 @@ namespace RINGMesh {
 #endif
     }
 
-    class StartAppThread: public GEO::Thread {
-    public:
-        StartAppThread( RINGMeshApplication& app )
-            : GEO::Thread(), app_( app )
-        {
-        }
-
-        virtual void run()
-        {
-            app_.start();
-        }
-
-    private:
-        RINGMeshApplication& app_;
-    };
-
-    class QuitAppThread: public GEO::Thread {
-    public:
-        QuitAppThread( RINGMeshApplication& app )
-            : GEO::Thread(), app_( app )
-        {
-        }
-
-        virtual void run()
-        {
-            // Wait some seconds to be sure that the windows is really opened
-            wait( 4000 );
-            app_.quit();
-        }
-
-    private:
-        RINGMeshApplication& app_;
-    };
-
     void open_viewer_load_geomodel_then_close(
         const int argc,
         char** argv,
         const std::string& glup_profile )
     {
-        GEO::CmdLine::set_arg( "GLUP_profile", glup_profile );
-
         RINGMeshApplication app( argc, argv );
 
-        // Create the threads for launching the app window
+        GEO::CmdLine::set_arg( "GLUP_profile", glup_profile );
+
+        // Create the tasks for launching the app window
         // and the one for closing the window
-        StartAppThread* start_thread = new StartAppThread( app );
-        QuitAppThread* quit_thread = new QuitAppThread( app );
-
-        // Add the both threads in a group
-        GEO::ThreadGroup thread_group;
-        thread_group.push_back( start_thread );
-        thread_group.push_back( quit_thread );
-
-        // Run concurrently the both threads
-        GEO::Process::run_threads( thread_group );
+        std::future< void > start = std::async( std::launch::async,
+            [&app] {app.start();} );
+        wait( 4000 );
+        std::future< void > end = std::async( std::launch::async,
+            [&app] {app.quit();} );
     }
 
 }
