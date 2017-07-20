@@ -118,6 +118,7 @@ namespace {
             const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
+            index_t elt = write_corners( geomodel, out );
             const MeshEntityTypeManager3D& manager =
                 geomodel.entity_type_manager().mesh_entity_manager;
             const std::vector< MeshEntityType >& mesh_entity_types =
