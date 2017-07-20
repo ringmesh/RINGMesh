@@ -52,6 +52,7 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelGfx;
+    CLASS_DIMENSION_ALIASES( GeoModelGfx );
     template< index_t DIMENSION > class AttributeGfxManager;
     template< index_t DIMENSION > class AttributeGfx;
 
@@ -404,7 +405,7 @@ namespace RINGMesh {
     template< >
     class AttributeGfxManager< 3 > final: public AttributeGfxManagerBase< 3 > {
     public:
-        AttributeGfxManager( GeoModelGfx< 3 >& gfx );
+        AttributeGfxManager( GeoModelGfx3D& gfx );
 
         virtual ~AttributeGfxManager() = default;
     };

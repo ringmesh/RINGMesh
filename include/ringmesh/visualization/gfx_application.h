@@ -178,9 +178,15 @@ namespace RINGMesh {
             float attribute_max_ { 0 };
         };
 
+        CLASS_DIMENSION_ALIASES( GeoModelViewerBase )
+        ;
+
         template< index_t DIMENSION >
         class GeoModelViewer final: public GeoModelViewerBase< DIMENSION > {
         };
+
+        CLASS_DIMENSION_ALIASES( GeoModelViewer )
+        ;
 
         class MeshViewer {
         ringmesh_disable_copy( MeshViewer );
@@ -199,7 +205,7 @@ namespace RINGMesh {
             bool is_visible_ { true };
             GEO::Mesh mesh_;
             GEO::MeshGfx mesh_gfx_;
-            Box< 3 > bbox_;
+            Box3D bbox_;
             std::string name_;
 
             bool show_vertices_ { false };
@@ -230,8 +236,8 @@ namespace RINGMesh {
             std::vector< std::unique_ptr< GeoModelViewer< DIMENSION > > >& geomodels,
             int& id );
     private:
-        std::vector< std::unique_ptr< GeoModelViewer< 3 > > > geomodels3d_;
-        std::vector< std::unique_ptr< GeoModelViewer< 2 > > > geomodels2d_;
+        std::vector< std::unique_ptr< GeoModelViewer3D > > geomodels3d_;
+        std::vector< std::unique_ptr< GeoModelViewer2D > > geomodels2d_;
         std::vector< std::unique_ptr< MeshViewer > > meshes_;
         std::string ringmesh_file_extensions_;
         std::string geogram_file_extensions_;

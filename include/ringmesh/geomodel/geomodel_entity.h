@@ -111,6 +111,8 @@ namespace RINGMesh {
         index_t id_ { NO_ID };
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelEntity );
+
     template< index_t DIMENSION >
     class Universe: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy( Universe );
@@ -175,6 +177,8 @@ namespace RINGMesh {
 
     };
 
+    CLASS_DIMENSION_ALIASES( Universe );
+
     template< index_t DIMENSION >
     class UniverseAccess {
     ringmesh_disable_copy( UniverseAccess );
@@ -208,5 +212,7 @@ namespace RINGMesh {
     private:
         Universe< DIMENSION >& universe_;
     };
+
+    CLASS_DIMENSION_ALIASES( UniverseAccess );
 
 }

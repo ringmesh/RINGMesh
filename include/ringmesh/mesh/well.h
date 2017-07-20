@@ -223,6 +223,8 @@ namespace RINGMesh {
         vecn< DIMENSION > vertices_[2];
     };
 
+    CLASS_DIMENSION_ALIASES( Edge );
+
 // --------------------------------------------------------------------------
 
     template< index_t DIMENSION >
@@ -375,6 +377,8 @@ namespace RINGMesh {
         index_t nb_edges_;
     };
 
+    CLASS_DIMENSION_ALIASES( Well );
+
 // --------------------------------------------------------------------------
 
     /*! 
@@ -468,4 +472,6 @@ namespace RINGMesh {
         /// Associated GeoModel
         GeoModel< DIMENSION >* geomodel_;
     };
+
+    CLASS_DIMENSION_ALIASES( WellGroup );
 }
