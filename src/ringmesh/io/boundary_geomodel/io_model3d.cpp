@@ -38,7 +38,7 @@ namespace {
     /*!
      * @brief Total number of polygons in the Surfaces of a geomodel
      */
-    inline index_t nb_polygons( const GeoModel< 3 >& geomodel )
+    index_t nb_polygons( const GeoModel< 3 >& geomodel )
     {
         index_t result = 0;
         for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
@@ -191,9 +191,11 @@ namespace {
     {
         for( index_t i : range( surface.nb_mesh_elements() ) ) {
             for( index_t j : range( surface.nb_mesh_element_vertices( i ) ) ) {
-                index_t v0 = surface.mesh_element_vertex_index( i, j );
-                index_t v1 = surface.mesh_element_vertex_index( i,
-                    surface.low_level_mesh_storage().next_polygon_vertex( i, j ) );
+                index_t v0 = surface.mesh_element_vertex_index(
+                    ElementLocalVertex( i, j ) );
+                index_t v1 = surface.mesh_element_vertex_index(
+                    surface.low_level_mesh_storage().next_polygon_vertex(
+                        ElementLocalVertex( i, j ) ) );
                 if( ( v0 == v0_in && v1 == v1_in )
                     || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true;
@@ -232,6 +234,7 @@ namespace {
         }
 
         index_t count = 1;
+
         // Gocad::TFace = RINGMesh::Surface
         for( const auto& surface : geomodel.surfaces() ) {
             const gmge_id& parent_interface = surface.parent_gmge(
@@ -252,9 +255,15 @@ namespace {
 
             // Print the key polygon which is the first three
             // vertices of the first polygon
-            out << "  " << surface.mesh_element_vertex( 0, 0 ) << EOL;
-            out << "  " << surface.mesh_element_vertex( 0, 1 ) << EOL;
-            out << "  " << surface.mesh_element_vertex( 0, 2 ) << EOL;
+            out << "  "
+                << surface.mesh_element_vertex( ElementLocalVertex( 0, 0 ) )
+                << EOL;
+            out << "  "
+                << surface.mesh_element_vertex( ElementLocalVertex( 0, 1 ) )
+                << EOL;
+            out << "  "
+                << surface.mesh_element_vertex( ElementLocalVertex( 0, 2 ) )
+                << EOL;
 
             ++count;
         }
@@ -321,10 +330,12 @@ namespace {
                 }
                 for( index_t k : range( surface.nb_mesh_elements() ) ) {
                     out << "TRGL "
-                        << surface.mesh_element_vertex_index( k, 0 ) + offset << " "
-                        << surface.mesh_element_vertex_index( k, 1 ) + offset << " "
-                        << surface.mesh_element_vertex_index( k, 2 ) + offset
-                        << EOL;
+                        << surface.mesh_element_vertex_index(
+                            ElementLocalVertex( k, 0 ) ) + offset << " "
+                        << surface.mesh_element_vertex_index(
+                            ElementLocalVertex( k, 1 ) ) + offset << " "
+                        << surface.mesh_element_vertex_index(
+                            ElementLocalVertex( k, 2 ) ) + offset << EOL;
                 }
                 for( index_t k : range( surface.nb_boundaries() ) ) {
                     const Line< 3 >& line = surface.boundary( k );
@@ -415,6 +426,7 @@ namespace {
 
         void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
+
             std::ofstream out( filename.c_str() );
             save_gocad_model3d( geomodel, out );
             out << std::flush;

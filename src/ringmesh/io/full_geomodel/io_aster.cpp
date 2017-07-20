@@ -151,7 +151,9 @@ namespace {
                 index_t global_id = geomodel_mesh.cells.cell( region, c, cell_type );
                 out << "C" << global_id << " ";
                 for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
-                    out << "V" << geomodel_mesh.cells.vertex( global_id, v ) << " ";
+                    out << "V"
+                        << geomodel_mesh.cells.vertex(
+                            ElementLocalVertex( global_id, v ) ) << " ";
                 }
                 out << EOL;
             }
@@ -173,7 +175,9 @@ namespace {
                     polygon_type );
                 out << "F" << global_id << " ";
                 for( index_t v : range( mesh.polygons.nb_vertices( p ) ) ) {
-                    out << "V" << mesh.polygons.vertex( global_id, v ) << " ";
+                    out << "V"
+                        << mesh.polygons.vertex( ElementLocalVertex( global_id, v ) )
+                        << " ";
                 }
                 out << EOL;
             }

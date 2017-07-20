@@ -88,7 +88,7 @@
     static_assert( type == 3, #type " template should be 3" )
 
 // To avoid unused argument warning in function definition
-template< typename T > inline void ringmesh_unused( T const& )
+template< typename T > void ringmesh_unused( T const& )
 {
 }
 

@@ -37,14 +37,15 @@ namespace {
     void merge_colocated_vertices( double epsilon, LineMesh< 3 >& mesh )
     {
         std::vector< index_t > old2new;
-        index_t nb_colocated = mesh.vertex_nn_search().get_colocated_index_mapping(
-            epsilon, old2new );
+        index_t nb_colocated = NO_ID;
+        std::tie( nb_colocated, old2new ) =
+            mesh.vertex_nn_search().get_colocated_index_mapping( epsilon );
         if( nb_colocated > 0 ) {
             std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
                 > ::create_builder( mesh );
             for( index_t e : range( mesh.nb_edges() ) ) {
                 for( index_t i : range( 2 ) ) {
-                    index_t v = mesh.edge_vertex( e, i );
+                    index_t v = mesh.edge_vertex( ElementLocalVertex( e, i ) );
                     builder->set_edge_vertex( e, i, old2new[v] );
                 }
             }
