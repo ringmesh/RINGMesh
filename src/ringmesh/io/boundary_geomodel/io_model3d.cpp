@@ -57,7 +57,7 @@ namespace {
      */
     void save_region( index_t count, const Region< 3 >& region, std::ostream& out )
     {
-        out << "REGION " << count << "  " << region.name() << " " << std::endl;
+        out << "REGION " << count << "  " << region.name() << " " << EOL;
         index_t it = 0;
 
         for( index_t i : range( region.nb_boundaries() ) ) {
@@ -70,11 +70,11 @@ namespace {
             out << region.boundary( i ).index() + 1;
             it++;
             if( it == 5 ) {
-                out << std::endl;
+                out << EOL;
                 it = 0;
             }
         }
-        out << "  0" << std::endl;
+        out << "  0" << EOL;
     }
 
     void save_universe(
@@ -83,7 +83,7 @@ namespace {
         std::ostream& out )
     {
         out << "REGION " << count << "  " << universe.type_name() << " "
-            << std::endl;
+            << EOL;
         index_t it = 0;
 
         for( index_t i : range( universe.nb_boundaries() ) ) {
@@ -96,11 +96,11 @@ namespace {
             out << universe.boundary_gmme( i ).index() + 1;
             it++;
             if( it == 5 ) {
-                out << std::endl;
+                out << EOL;
                 it = 0;
             }
         }
-        out << "  0" << std::endl;
+        out << "  0" << EOL;
     }
 
     /*!
@@ -118,18 +118,18 @@ namespace {
         const GeoModelGeologicalEntity< 3 >& layer,
         std::ostream& out )
     {
-        out << "LAYER " << layer.name() << " " << std::endl;
+        out << "LAYER " << layer.name() << " " << EOL;
         index_t it = 0;
 
         for( index_t i : range( layer.nb_children() ) ) {
             out << "  " << layer.child_gmme( i ).index() + offset + 1;
             it++;
             if( it == 5 ) {
-                out << std::endl;
+                out << EOL;
                 it = 0;
             }
         }
-        out << "  0" << std::endl;
+        out << "  0" << EOL;
     }
 
     /*!
@@ -138,10 +138,10 @@ namespace {
      */
     void save_coordinate_system( std::ostream& out )
     {
-        out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
-            << std::endl << "AXIS_NAME \"X\" \"Y\" \"Z\"" << std::endl
-            << "AXIS_UNIT \"m\" \"m\" \"m\"" << std::endl << "ZPOSITIVE Elevation"
-            << std::endl << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
+        out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << EOL << "NAME Default"
+            << EOL << "AXIS_NAME \"X\" \"Y\" \"Z\"" << EOL
+            << "AXIS_UNIT \"m\" \"m\" \"m\"" << EOL << "ZPOSITIVE Elevation"
+            << EOL << "END_ORIGINAL_COORDINATE_SYSTEM" << EOL;
     }
 
     /*!
@@ -220,8 +220,8 @@ namespace {
         out.precision( 16 );
 
         // Gocad Model3d headers
-        out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name: "
-            << geomodel.name() << std::endl << "}" << std::endl;
+        out << "GOCAD Model3d 1" << EOL << "HEADER {" << EOL << "name: "
+            << geomodel.name() << EOL << "}" << EOL;
 
         save_coordinate_system( out );
 
@@ -231,7 +231,7 @@ namespace {
         for( index_t i : range( nb_interfaces ) ) {
             out << "TSURF "
                 << geomodel.geological_entity( Interface < 3 > ::type_name_static(),
-                    i ).name() << std::endl;
+                    i ).name() << EOL;
         }
 
         index_t count = 1;
@@ -253,19 +253,19 @@ namespace {
             out << GeoModelGeologicalEntity < 3 > ::geol_name( cur_geol_feature );
             out << " "
                 << surface.parent( Interface < 3 > ::type_name_static() ).name()
-                << std::endl;
+                << EOL;
 
             // Print the key polygon which is the first three
             // vertices of the first polygon
             out << "  "
                 << surface.mesh_element_vertex( ElementLocalVertex( 0, 0 ) )
-                << std::endl;
+                << EOL;
             out << "  "
                 << surface.mesh_element_vertex( ElementLocalVertex( 0, 1 ) )
-                << std::endl;
+                << EOL;
             out << "  "
                 << surface.mesh_element_vertex( ElementLocalVertex( 0, 2 ) )
-                << std::endl;
+                << EOL;
 
             ++count;
         }
@@ -290,7 +290,7 @@ namespace {
                 ++count;
             }
         }
-        out << "END" << std::endl;
+        out << "END" << EOL;
 
         const GeoModelMeshVertices< 3 >& geomodel_vertices = geomodel.mesh.vertices;
         // Save the geometry of the Surfaces, Interface per Interface
@@ -298,18 +298,18 @@ namespace {
             const GeoModelGeologicalEntity< 3 >& tsurf = geomodel.geological_entity(
                 Interface < 3 > ::type_name_static(), i );
             // TSurf beginning header
-            out << "GOCAD TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
-                << tsurf.name() << std::endl << "name_in_model_list:" << tsurf.name()
-                << std::endl << "}" << std::endl;
+            out << "GOCAD TSurf 1" << EOL << "HEADER {" << EOL << "name:"
+                << tsurf.name() << EOL << "name_in_model_list:" << tsurf.name()
+                << EOL << "}" << EOL;
             save_coordinate_system( out );
 
-            out << "GEOLOGICAL_FEATURE " << tsurf.name() << std::endl
+            out << "GEOLOGICAL_FEATURE " << tsurf.name() << EOL
                 << "GEOLOGICAL_TYPE ";
             out << GeoModelGeologicalEntity < 3
                 > ::geol_name( tsurf.geological_feature() );
-            out << std::endl;
-            out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" << std::endl
-                << "}" << std::endl;
+            out << EOL;
+            out << "PROPERTY_CLASS_HEADER Z {" << EOL << "is_z:on" << EOL
+                << "}" << EOL;
 
             index_t vertex_count = 1;
             // TFace vertex index = Surface vertex index + offset
@@ -324,10 +324,10 @@ namespace {
                 const Surface< 3 >& surface =
                     dynamic_cast< const Surface< 3 >& >( tsurf.child( j ) );
 
-                out << "TFACE" << std::endl;
+                out << "TFACE" << EOL;
                 for( index_t k : range( surface.nb_vertices() ) ) {
                     out << "VRTX " << vertex_count << " " << surface.vertex( k )
-                        << std::endl;
+                        << EOL;
                     vertex_count++;
                 }
                 for( index_t k : range( surface.nb_mesh_elements() ) ) {
@@ -337,7 +337,7 @@ namespace {
                         << surface.mesh_element_vertex_index(
                             ElementLocalVertex( k, 1 ) ) + offset << " "
                         << surface.mesh_element_vertex_index(
-                            ElementLocalVertex( k, 2 ) ) + offset << std::endl;
+                            ElementLocalVertex( k, 2 ) ) + offset << EOL;
                 }
                 for( index_t k : range( surface.nb_boundaries() ) ) {
                     const Line< 3 >& line = surface.boundary( k );
@@ -400,14 +400,14 @@ namespace {
             }
             // Add the remaining bstones that are not already in bstones
             for( auto it( corners.begin() ); it != corners.end(); ++it ) {
-                out << "BSTONE " << *it << std::endl;
+                out << "BSTONE " << *it << EOL;
             }
             for( auto it( lineindices.begin() ); it != lineindices.end(); ++it ) {
                 out << "BORDER " << vertex_count << " " << it->first << " "
-                    << it->second << std::endl;
+                    << it->second << EOL;
                 vertex_count++;
             }
-            out << "END" << std::endl;
+            out << "END" << EOL;
         }
     }
 
@@ -431,6 +431,7 @@ namespace {
 
             std::ofstream out( filename.c_str() );
             save_gocad_model3d( geomodel, out );
+            out << std::flush;
         }
     };
 }

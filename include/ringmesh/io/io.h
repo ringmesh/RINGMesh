@@ -48,9 +48,10 @@
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
 
-const std::string TAB = "\t";
-const std::string SPACE = " ";
-const std::string COMMA = ",";
+const char COMMA = ',';
+const char EOL = '\n';
+const char SPACE = ' ';
+const char TAB = '\t';
 
 /*!
  * @file Global input - output functions of RINGMesh
