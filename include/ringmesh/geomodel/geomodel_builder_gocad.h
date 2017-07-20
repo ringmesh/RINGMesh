@@ -62,7 +62,7 @@ namespace RINGMesh {
         GeoModelBuilderGocad( GeoModel< 3 >& geomodel, std::string filename )
             :
                 GeoModelBuilderFile( geomodel, std::move( filename ) ),
-                file_line_( filename_ )
+				file_line_(filename_), file_name_(filename_)
         {
             /*! @todo Review: A constructor is not supposed to throw, the object is left in an
              * undefined state [JP] */
@@ -84,6 +84,7 @@ namespace RINGMesh {
         virtual void read_line() = 0;
 
     protected:
+		std::string file_name_;
         GEO::LineInput file_line_;
     };
 
@@ -277,14 +278,12 @@ namespace RINGMesh {
 		index_t region( index_t gocad_vertex_id ) const
 		{
 			ringmesh_assert( gocad_vertex_id < gocad_ids2region_ids_.size() );
-			ringmesh_assert( gocad_ids2region_ids_[gocad_vertex_id] < nb_regions() );
 			return gocad_ids2region_ids_[gocad_vertex_id];
 		}
 
 		void add_vertex( index_t local_vertex_id, index_t region_id )
 		{
 			gocad_ids2local_ids_.push_back( local_vertex_id );
-			ringmesh_assert( region_id < nb_regions() || region_id == NO_ID );
 			gocad_ids2region_ids_.push_back( region_id );
 		}
 
@@ -298,12 +297,6 @@ namespace RINGMesh {
 		{
 			vertices_gocad_id_.reserve( capacity );
 			vertices_region_id_.reserve( capacity );
-		}
-
-		void reserve_nb_regions( index_t capacity )
-		{
-			region_ids_.reserve( capacity );
-			region_names_.reserve( capacity );
 		}
 
 		void fill_with_lighttsolid_region_ids()
@@ -439,7 +432,19 @@ namespace RINGMesh {
 		//// LightTSolid map between atoms and vertex
 		std::map< index_t, index_t > lighttsolid_atom_map_;
 
+		// The vertices and the atoms
+		index_t nb_vertices_;
+
+		// Names of the attributes for the TSolid
+		std::vector< std::string > vertex_attribute_names_;
+
+		// Dimensions of the attributes for the TSolid
+		std::vector< index_t > vertex_attribute_dims_;
+
+		// Storage of the attribute values
+		std::vector< std::vector< std::vector< double > > > vertex_attributes_;
     };
+
     class TSolidLineParser: public GocadBaseParser {
     ringmesh_disable_copy(TSolidLineParser);
     public:
@@ -488,6 +493,7 @@ namespace RINGMesh {
         virtual ~GeoModelBuilderTSolid() = default;
 
 	private:
+		void read_number_of_vertices();
 		void read_type();
 		void load_file() final;
 		void read_file();

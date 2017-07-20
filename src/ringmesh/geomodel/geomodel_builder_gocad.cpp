@@ -891,7 +891,58 @@ namespace {
         }
     };
 
-    class LoadTSolidVertex final: public TSolidLineParser {
+	class LoadAttributeTSolid final : public TSolidLineParser{
+	private:
+		void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+		{
+			load_storage.vertex_attribute_names_.reserve( line.nb_fields() - 1 );
+			for( index_t attrib_name_itr : range( 1, line.nb_fields() ) ) {
+				load_storage.vertex_attribute_names_.push_back(
+					line.field( attrib_name_itr ) );
+			}
+		}
+		virtual void execute_light(
+			GEO::LineInput& line,
+			TSolidLoadingStorage& load_storage ) final
+		{
+			execute( line, load_storage );
+		}
+	};
+
+	class LoadAttributeDimensionTSolid final : public TSolidLineParser{
+	private:
+		void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+		{
+			load_storage.vertex_attribute_dims_.reserve( line.nb_fields() - 1 );
+			for( index_t attrib_size_itr : range( 1, line.nb_fields() ) ) {
+				load_storage.vertex_attribute_dims_.push_back(
+					line.field_as_uint( attrib_size_itr ) );
+			}
+			allocate_vertex_attributes( load_storage );
+		}
+		virtual void execute_light(
+			GEO::LineInput& line,
+			TSolidLoadingStorage& load_storage ) final
+		{
+			execute( line, load_storage );
+		}
+
+		void allocate_vertex_attributes( TSolidLoadingStorage& load_storage ){
+			load_storage.vertex_attributes_.resize( 
+				load_storage.vertex_attribute_names_.size() );
+			for( index_t vertex_attributes_itr : range( 
+				load_storage.vertex_attributes_.size() ) ) {
+				load_storage.vertex_attributes_[vertex_attributes_itr]
+					.resize( load_storage.nb_vertices_ );
+				for( index_t vertex_itr : range( load_storage.nb_vertices_ ) ) {
+					load_storage.vertex_attributes_[vertex_attributes_itr][vertex_itr]
+						.resize( load_storage.vertex_attribute_dims_[vertex_attributes_itr], 0 );
+				}
+			}
+		}
+	};
+
+    class LoadTSolidVertex final : public TSolidLineParser {
     private:
         void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
@@ -899,8 +950,7 @@ namespace {
                 static_cast< index_t >( load_storage.vertices_.size() );
             load_storage.vertex_map_.add_vertex( vertex_id,
                 load_storage.cur_region_ );
-            GocadLineParser::create( "VRTX", builder(), geomodel() )->execute( line,
-                load_storage );
+			execute_in_common( line, load_storage );
 		}
 		virtual void execute_light(
 			GEO::LineInput& line,
@@ -908,8 +958,29 @@ namespace {
 		{
 			load_storage.vertex_map_.add_vertex( line.field_as_uint( 1 ) - GOCAD_OFFSET,
 				load_storage.cur_region_ );
-			GocadLineParser::create( "VRTX", builder(), geomodel() )->execute( line,
+			execute_in_common( line, load_storage );
+		}
+
+		void execute_in_common( GEO::LineInput& line, TSolidLoadingStorage& load_storage ){
+			GocadLineParser::create( "VRTX", builder(), geomodel() )->execute( line, 
 				load_storage );
+			
+			// Attributes
+			if( line.field_matches( 0, "PVRTX" ) ) {
+				index_t vertex_number = line.field_as_uint( 1 );
+				index_t offset = 5;
+				for( index_t attrib_name_itr : range(
+					load_storage.vertex_attribute_names_.size() ) ) {
+
+					for( index_t v_attr_dim_itr : range(
+						load_storage.vertex_attribute_dims_[attrib_name_itr] ) ) {
+						load_storage.vertex_attributes_
+							[attrib_name_itr][vertex_number][v_attr_dim_itr]
+							= line.field_as_double( offset );
+						++offset;
+					}
+				}
+			}
 		}
     };
 
@@ -1048,8 +1119,53 @@ namespace {
 			TSolidLoadingStorage& load_storage ) final
 		{
 			ringmesh_unused( line );
+			get_light_tsolid_workflow_to_catch_up_with_tsolid_workflow( load_storage );
+			// End of LightTSolid peculiar processing
 		}
-    };
+
+		void get_light_tsolid_workflow_to_catch_up_with_tsolid_workflow( 
+			TSolidLoadingStorage& load_storage )
+		{
+			load_storage.vertex_map_.fill_with_lighttsolid_region_ids();
+
+			std::vector< std::vector< index_t > > region_tetra_corners_local;
+			std::vector< std::vector< vec3 > > region_vertices;
+
+			region_tetra_corners_local.resize( load_storage.vertex_map_.nb_regions() );
+			region_vertices.resize( load_storage.vertex_map_.nb_regions() );
+			load_storage.vertex_map_.local_ids_.resize( load_storage.vertex_map_.nb_regions() );
+
+			for( index_t region_id : load_storage.vertex_map_.get_regions() ){
+				ringmesh_assert( !load_storage.vertices_.empty() );
+				/// Fill the region_vertices and local_ids
+				load_storage.vertex_map_.get_vertices_list_and_local_ids_from_gocad_ids(
+					load_storage.vertices_,
+					region_id,
+					load_storage.lighttsolid_atom_map_,
+					region_vertices[region_id],
+					load_storage.vertex_map_.local_ids_[region_id] );
+			}
+
+			load_storage.vertex_map_.fill_with_lighttsolid_local_ids();
+			load_storage.vertex_map_.deal_with_same_region_atoms( load_storage.lighttsolid_atom_map_ );
+
+			for( index_t region_id : load_storage.vertex_map_.get_regions() ){
+				/// Fill the region_tetra_corners
+				load_storage.vertex_map_.get_tetra_corners_with_this_region_id(
+					region_id, region_tetra_corners_local[region_id] );
+
+				builder().geometry.set_region_geometry( region_id,
+					region_vertices[region_id], region_tetra_corners_local[region_id] );
+			}
+
+			region_tetra_corners_local.clear();
+			region_vertices.clear();
+			load_storage.tetra_corners_.clear();
+			load_storage.vertices_.clear();
+			load_storage.lighttsolid_atom_map_.clear();
+		}
+
+	};
 
     class LoadInterface final : public TSolidLineParser {
     private:
@@ -1065,56 +1181,7 @@ namespace {
 			GEO::LineInput& line,
 			TSolidLoadingStorage& load_storage ) final
 		{
-			if( !load_storage.lighttsolid_atom_map_.empty() ){
-
-				load_storage.vertex_map_.fill_with_lighttsolid_region_ids();
-
-				std::vector< std::vector< index_t > > region_tetra_corners_local;
-				std::vector< std::vector< vec3 > > region_vertices;
-
-				region_tetra_corners_local.reserve( load_storage.vertex_map_.nb_regions() );
-				region_vertices.reserve( load_storage.vertex_map_.nb_regions() );
-				load_storage.vertex_map_.local_ids_.reserve( load_storage.vertex_map_.nb_regions() );
-
-				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
-					ringmesh_assert( !load_storage.vertices_.empty() );
-					/// Fill the region_vertices and local_ids
-					load_storage.vertex_map_.local_ids_.push_back( std::vector< index_t >() );
-					region_vertices.push_back( std::vector< vec3 >() );
-					load_storage.vertex_map_.get_vertices_list_and_local_ids_from_gocad_ids(
-						load_storage.vertices_,
-						region_id,
-						load_storage.lighttsolid_atom_map_,
-						region_vertices[region_id],
-						load_storage.vertex_map_.local_ids_[region_id] );
-				}
-				
-				load_storage.vertex_map_.fill_with_lighttsolid_local_ids();
-				load_storage.vertex_map_.deal_with_same_region_atoms( load_storage.lighttsolid_atom_map_ );
-
-				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
-					/// Fill the region_tetra_corners
-					region_tetra_corners_local.push_back( std::vector< index_t >() );
-					load_storage.vertex_map_.get_tetra_corners_with_this_region_id(
-						region_id, region_tetra_corners_local[region_id] );
-				}
-
-				for( index_t region_id : load_storage.vertex_map_.get_regions() ){
-					builder().geometry.set_region_geometry( region_id,
-						region_vertices[region_id], region_tetra_corners_local[region_id] );
-				}
-
-				region_tetra_corners_local.clear();
-				region_vertices.clear();
-				load_storage.tetra_corners_.clear();
-				load_storage.vertices_.clear();
-
-				// This way, doesn't enter the loop again
-				load_storage.lighttsolid_atom_map_.clear();
-			}
-
-			// End of LightTSolid peculiar processing
-			// Rest of LightTSolid Interface processing : same as TSolid processing
+			// LightTSolid Interface processing : same as TSolid processing
 			execute( line, load_storage );
 		}
     };
@@ -1193,6 +1260,8 @@ namespace {
     {
 		ringmesh_register_TSolidLineParser_creator( LoadTSolidRegion, "TVOLUME" );
 		ringmesh_register_TSolidLineParser_creator( LoadLightTSolidRegion, "#" );
+		ringmesh_register_TSolidLineParser_creator( LoadAttributeTSolid, "PROPERTIES" );
+		ringmesh_register_TSolidLineParser_creator( LoadAttributeDimensionTSolid, "ESIZES" );
         ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "VRTX" );
 		ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "PVRTX" );
 		ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "SHAREDVRTX" );
@@ -1262,6 +1331,27 @@ namespace RINGMesh {
 			new GeoModelBuilderTSolidImpl_LightTSolid( *this, geomodel, file_line_, tsolid_load_storage_ ) );
 	}
 
+	void GeoModelBuilderTSolid::read_number_of_vertices()
+	{
+		GEO::LineInput line ( file_name_ );
+		tsolid_load_storage_.nb_vertices_ = 0;
+		while( !line.eof() && line.get_line() ) {
+			line.get_fields();
+			if( line.nb_fields() > 0 ) {
+				if( line.field_matches( 0, "VRTX" )
+					|| line.field_matches( 0, "PVRTX" ) ) {
+					tsolid_load_storage_.nb_vertices_++;
+				}
+				else if( line.field_matches( 0, "PATOM" )
+					|| line.field_matches( 0, "ATOM" )
+					|| line.field_matches( 0, "SHAREDPVRTX" )
+					|| line.field_matches( 0, "SHAREDVRTX" ) ) {
+					tsolid_load_storage_.nb_vertices_++;
+				}
+			}
+		}
+	}
+
     void GeoModelBuilderTSolid::load_file()
     {
         read_file();
@@ -1303,12 +1393,15 @@ namespace RINGMesh {
 	void GeoModelBuilderTSolid::read_file()
 	{
 		read_type();
+		read_number_of_vertices();
 
 		GeoModelBuilderGocad::read_file();
 	}
 
 	void GeoModelBuilderTSolid::read_line()
 	{
+		tsolid_load_storage_.vertex_map_.reserve( tsolid_load_storage_.nb_vertices_ ); // Exactly
+		tsolid_load_storage_.vertex_map_.reserve_nb_vertices( tsolid_load_storage_.nb_vertices_ ); // At least
 		type_impl_[file_type_]->read_line();
 	}
 
