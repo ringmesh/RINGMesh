@@ -200,11 +200,11 @@ void test_rotation_matrix()
     // Tests rotation along x axis
     vec3 axis( 1, 0, 0 );
     for( double angle = 0.; angle <= 360.; angle += step ) {
-        rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
-            rot_mat_degree );
+        rot_mat_degree = rotation_matrix_about_arbitrary_axis( origin, axis, angle,
+            true );
         double angle_rad = angle * pi / 180.;
-        rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
-            rot_mat_radian );
+        rot_mat_radian = rotation_matrix_about_arbitrary_axis( origin, axis,
+            angle_rad, false );
         result( 0, 0 ) = 1;
         result( 0, 1 ) = 0;
         result( 0, 2 ) = 0;
@@ -224,11 +224,11 @@ void test_rotation_matrix()
     // Tests rotation along y axis
     axis = vec3( 0, 1, 0 );
     for( double angle = 0.; angle <= 360.; angle += step ) {
-        rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
-            rot_mat_degree );
+        rot_mat_degree = rotation_matrix_about_arbitrary_axis( origin, axis, angle,
+            true );
         double angle_rad = angle * pi / 180.;
-        rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
-            rot_mat_radian );
+        rot_mat_radian = rotation_matrix_about_arbitrary_axis( origin, axis,
+            angle_rad, false );
         result( 0, 0 ) = std::cos( angle_rad );
         result( 0, 1 ) = 0;
         result( 0, 2 ) = std::sin( angle_rad );
@@ -248,11 +248,11 @@ void test_rotation_matrix()
     // Tests rotation along z axis
     axis = vec3( 0, 0, 1 );
     for( double angle = 0.; angle <= 360.; angle += step ) {
-        rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
-            rot_mat_degree );
+        rot_mat_degree = rotation_matrix_about_arbitrary_axis( origin, axis, angle,
+            true );
         double angle_rad = angle * pi / 180.;
-        rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
-            rot_mat_radian );
+        rot_mat_radian = rotation_matrix_about_arbitrary_axis( origin, axis,
+            angle_rad, false );
         result( 0, 0 ) = std::cos( angle_rad );
         result( 0, 1 ) = -std::sin( angle_rad );
         result( 0, 2 ) = 0;

@@ -111,7 +111,9 @@ int main()
             for( index_t f : range( surface.nb_mesh_elements() ) ) {
                 for( index_t v : range( surface.nb_mesh_element_vertices( f ) ) ) {
                     surface_meshes.facets.set_vertex( facet_it + f, v,
-                        vertex_it + surface.mesh_element_vertex_index( f, v ) );
+                        vertex_it
+                            + surface.mesh_element_vertex_index(
+                                ElementLocalVertex( f, v ) ) );
                 }
             }
         }

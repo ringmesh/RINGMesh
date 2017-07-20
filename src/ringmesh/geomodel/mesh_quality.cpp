@@ -384,10 +384,11 @@ namespace RINGMesh {
                 mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
             for( index_t cell_itr : range( region.nb_mesh_elements() ) ) {
                 attr[cell_itr] = get_tet_quality(
-                    region.mesh_element_vertex( cell_itr, 0 ),
-                    region.mesh_element_vertex( cell_itr, 1 ),
-                    region.mesh_element_vertex( cell_itr, 2 ),
-                    region.mesh_element_vertex( cell_itr, 3 ), mesh_qual_mode );
+                    region.mesh_element_vertex( ElementLocalVertex( cell_itr, 0 ) ),
+                    region.mesh_element_vertex( ElementLocalVertex( cell_itr, 1 ) ),
+                    region.mesh_element_vertex( ElementLocalVertex( cell_itr, 2 ) ),
+                    region.mesh_element_vertex( ElementLocalVertex( cell_itr, 3 ) ),
+                    mesh_qual_mode );
             }
         }
     }
