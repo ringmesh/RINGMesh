@@ -134,7 +134,7 @@ namespace {
         }
     }
 
-} // anonymous namespace
+}
 
 namespace RINGMesh {
 
@@ -396,4 +396,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderGeology< 2 > ;
     template class RINGMESH_API GeoModelBuilderGeology< 3 > ;
 
-} // namespace
+}

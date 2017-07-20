@@ -199,4 +199,4 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-} //namespace RINGMesh
+}
