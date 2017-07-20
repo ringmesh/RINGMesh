@@ -287,7 +287,7 @@ namespace {
      * - Vector of colocated cell facet centers.
      */
     std::tuple< index_t, std::vector< index_t > > are_surface_sides_region_boundaries(
-        const Surface2D& surface,
+        const Surface3D& surface,
         const NNSearch3D& region_nn_search )
     {
         vec3 first_polygon_center = surface.mesh_element_barycenter( 0 );
