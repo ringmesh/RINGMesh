@@ -1278,4 +1278,6 @@ namespace RINGMesh {
     private:
         GeoModelMeshEntity< DIMENSION >& gmme_;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelMeshEntityAccess );
 }

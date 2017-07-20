@@ -303,6 +303,8 @@ namespace RINGMesh {
         const WellGroup< DIMENSION >* wells_ { nullptr };
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelBase );
+
     template< index_t DIMENSION >
     class GeoModel final: public GeoModelBase< DIMENSION > {
         friend class GeoModelAccess< DIMENSION > ;

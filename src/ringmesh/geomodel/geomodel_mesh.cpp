@@ -754,9 +754,9 @@ namespace RINGMesh {
     }
 
     GeoModelMeshVertices< 3 >::GeoModelMeshVertices(
-        GeoModelMesh< 3 >& gmm,
+        GeoModelMesh3D& gmm,
         GeoModel3D& gm,
-        std::unique_ptr< PointSetMesh< 3 > >& mesh )
+        std::unique_ptr< PointSetMesh3D >& mesh )
         : GeoModelMeshVerticesBase< 3 >( gmm, gm, mesh )
     {
     }
@@ -764,20 +764,20 @@ namespace RINGMesh {
     void GeoModelMeshVertices< 3 >::clear()
     {
         this->gmm_.cells.clear();
-        GeoModelMeshVerticesBase< 3 >::clear();
+        GeoModelMeshVerticesBase3D::clear();
     }
 
     index_t GeoModelMeshVertices< 3 >::nb_total_vertices() const
     {
-        index_t nb = GeoModelMeshVerticesBase< 3 >::nb_total_vertices();
-        nb += nb_entity_vertices( this->gm_, Region< 3 >::type_name_static() );
+        index_t nb = GeoModelMeshVerticesBase3D::nb_total_vertices();
+        nb += nb_entity_vertices( this->gm_, Region3D::type_name_static() );
         return nb;
     }
 
     index_t GeoModelMeshVertices< 3 >::fill_vertices()
     {
-        index_t count = GeoModelMeshVerticesBase< 3 >::fill_vertices();
-        fill_vertices_for_entity_type( this->gm_, Region< 3 >::type_name_static(),
+        index_t count = GeoModelMeshVerticesBase3D::fill_vertices();
+        fill_vertices_for_entity_type( this->gm_, Region3D::type_name_static(),
             count );
         return count;
     }
@@ -788,10 +788,10 @@ namespace RINGMesh {
         const GeoModel3D& geomodel )
         : geomodel_vertices_( geomodel_vertices ), geomodel_( geomodel )
     {
-        vertex_maps_[Corner< 3 >::type_name_static()] = &corner_vertex_maps_;
-        vertex_maps_[Line< 3 >::type_name_static()] = &line_vertex_maps_;
-        vertex_maps_[Surface< 3 >::type_name_static()] = &surface_vertex_maps_;
-        vertex_maps_[Region< 3 >::type_name_static()] = &region_vertex_maps_;
+        vertex_maps_[Corner3D::type_name_static()] = &corner_vertex_maps_;
+        vertex_maps_[Line3D::type_name_static()] = &line_vertex_maps_;
+        vertex_maps_[Surface3D::type_name_static()] = &surface_vertex_maps_;
+        vertex_maps_[Region3D::type_name_static()] = &region_vertex_maps_;
     }
 
     /*******************************************************************************/
@@ -2174,7 +2174,7 @@ namespace RINGMesh {
     GeoModelMeshPolygons< 3 >::GeoModelMeshPolygons(
         GeoModelMesh< 3 >& gmm,
         GeoModel3D& gm,
-        std::unique_ptr< SurfaceMesh< 3 > >& mesh )
+        std::unique_ptr< SurfaceMesh3D >& mesh )
         : GeoModelMeshPolygonsBase< 3 >( gmm, gm, mesh )
     {
     }
@@ -2406,7 +2406,7 @@ namespace RINGMesh {
         GEO::vector< std::string > att_c_names;
         cells.attribute_manager().list_attribute_names( att_c_names );
 
-        const NNSearch< 3 >& nn_search = cells.cell_nn_search();
+        const NNSearch3D& nn_search = cells.cell_nn_search();
 
         for( const std::string& att_c : att_c_names ) {
             if( !GEO::Attribute< double >::is_defined( cells.attribute_manager(),
@@ -2481,7 +2481,7 @@ namespace RINGMesh {
 
             for( index_t v : range( vertices.nb() ) ) {
                 std::vector< GMEVertex > vertices_on_geomodel_region =
-                    vertices.gme_type_vertices( Region< 3 >::type_name_static(), v );
+                    vertices.gme_type_vertices( Region3D::type_name_static(), v );
                 for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_region ) {
                     for( index_t att_e : range( att_dim ) ) {
                         att_on_regions[cur_vertex_on_geomodel.gmme.index()][cur_vertex_on_geomodel.v_index

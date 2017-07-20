@@ -60,6 +60,7 @@
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelMeshBase;
     template< index_t DIMENSION > class GeoModelMesh;
+    CLASS_DIMENSION_ALIASES( GeoModelMesh );
     template< index_t DIMENSION > class GeoModel;
     CLASS_DIMENSION_ALIASES( GeoModel );
     template< index_t DIMENSION > class GeoModelEntity;
@@ -491,6 +492,8 @@ namespace RINGMesh {
         GeoModelVertexMapper vertex_mapper_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelMeshVerticesBase );
+
     template< index_t DIMENSION >
     class GeoModelMeshVertices final: public GeoModelMeshVerticesBase< DIMENSION > {
     public:
@@ -504,9 +507,9 @@ namespace RINGMesh {
     class GeoModelMeshVertices< 3 > final: public GeoModelMeshVerticesBase< 3 > {
     public:
         GeoModelMeshVertices(
-            GeoModelMesh< 3 >& gmm,
+            GeoModelMesh3D& gmm,
             GeoModel3D& gm,
-            std::unique_ptr< PointSetMesh< 3 > >& mesh );
+            std::unique_ptr< PointSetMesh3D >& mesh );
 
         void clear() override;
         index_t nb_total_vertices() const override;

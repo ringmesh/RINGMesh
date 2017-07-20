@@ -1162,6 +1162,8 @@ namespace RINGMesh {
         VolumeMesh< DIMENSION >* volume_mesh_ { nullptr };
     };
 
+    using VolumeMeshBuilder3D = VolumeMeshBuilder< 3 >;
+
     template< index_t DIMENSION >
     using VolumeMeshBuilderFactory = GEO::Factory0< VolumeMeshBuilder< DIMENSION > >;
 

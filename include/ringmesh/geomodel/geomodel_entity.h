@@ -175,6 +175,8 @@ namespace RINGMesh {
 
     };
 
+    CLASS_DIMENSION_ALIASES( Universe );
+
     template< index_t DIMENSION >
     class UniverseAccess {
     ringmesh_disable_copy( UniverseAccess );
@@ -208,5 +210,7 @@ namespace RINGMesh {
     private:
         Universe< DIMENSION >& universe_;
     };
+
+    CLASS_DIMENSION_ALIASES( UniverseAccess );
 
 }

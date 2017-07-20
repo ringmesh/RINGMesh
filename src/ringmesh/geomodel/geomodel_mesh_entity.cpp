@@ -819,9 +819,9 @@ namespace RINGMesh {
             x ) );
     }
 
-    const Region< 3 >& Surface< 3 >::incident_entity( index_t x ) const
+    const Region3D& Surface< 3 >::incident_entity( index_t x ) const
     {
-        return static_cast< const Region< 3 >& >( GeoModelMeshEntity< 3 >::incident_entity(
+        return static_cast< const Region3D& >( GeoModelMeshEntity3D::incident_entity(
             x ) );
     }
 
@@ -962,15 +962,15 @@ namespace RINGMesh {
     template< >
     std::vector< bool >& GeoModelMeshEntityAccess< 2 >::modifiable_sides()
     {
-        ringmesh_assert( gmme_.type_name() == Surface< 2 >::type_name_static() );
-        return dynamic_cast< Surface< 2 >& >( gmme_ ).sides_;
+        ringmesh_assert( gmme_.type_name() == Surface2D::type_name_static() );
+        return dynamic_cast< Surface2D& >( gmme_ ).sides_;
     }
 
     template< >
     std::vector< bool >& GeoModelMeshEntityAccess< 3 >::modifiable_sides()
     {
-        ringmesh_assert( gmme_.type_name() == Region< 3 >::type_name_static() );
-        return dynamic_cast< Region< 3 >& >( gmme_ ).sides_;
+        ringmesh_assert( gmme_.type_name() == Region3D::type_name_static() );
+        return dynamic_cast< Region3D& >( gmme_ ).sides_;
     }
 
     template class RINGMESH_API GeoModelMeshEntity< 2 > ;

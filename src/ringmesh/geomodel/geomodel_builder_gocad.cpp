@@ -94,7 +94,7 @@ namespace {
         const GeoModel3D& geomodel,
         const std::string& interface_name )
     {
-        GeologicalEntityType type = Interface< 3 >::type_name_static();
+        GeologicalEntityType type = Interface3D::type_name_static();
         for( index_t i : range( geomodel.nb_geological_entities( type ) ) ) {
             if( geomodel.geological_entity( type, i ).name() == interface_name ) {
                 return geomodel.geological_entity( type, i ).gmge();
@@ -245,8 +245,8 @@ namespace {
         index_t region_id,
         std::vector< vec3 >& cell_facet_centers )
     {
-        const Region< 3 >& region = geomodel.region( region_id );
-        const VolumeMesh< 3 >& mesh = region.low_level_mesh_storage();
+        const Region3D& region = geomodel.region( region_id );
+        const VolumeMesh3D& mesh = region.low_level_mesh_storage();
         const index_t nb_cells = region.nb_mesh_elements();
         cell_facet_centers.reserve( 4 * nb_cells );
         for( index_t c : range( nb_cells ) ) {
@@ -262,16 +262,16 @@ namespace {
      * @param[in] geomodel GeoModel to consider
      * @return Pointers to the NNSearchs of regions
      */
-    std::vector< std::unique_ptr< NNSearch< 3 > > > compute_cell_facet_centers_region_nn_searchs(
+    std::vector< std::unique_ptr< NNSearch3D > > compute_cell_facet_centers_region_nn_searchs(
         const GeoModel3D& geomodel )
     {
-        std::vector< std::unique_ptr< NNSearch< 3 > > > region_nn_searchs(
+        std::vector< std::unique_ptr< NNSearch3D > > region_nn_searchs(
             geomodel.nb_regions() );
         for( index_t r : range( geomodel.nb_regions() ) ) {
             std::vector< vec3 > cell_facet_centers;
             compute_region_cell_facet_centers( geomodel, r, cell_facet_centers );
             region_nn_searchs[r].reset(
-                new NNSearch< 3 >( cell_facet_centers, true ) );
+                new NNSearch3D( cell_facet_centers, true ) );
         }
         return region_nn_searchs;
     }
@@ -287,8 +287,8 @@ namespace {
      * @return The number of surface sides bounding the region
      */
     index_t are_surface_sides_region_boundaries(
-        const Surface< 3 >& surface,
-        const NNSearch< 3 >& region_nn_search,
+        const Surface3D& surface,
+        const NNSearch3D& region_nn_search,
         std::vector< index_t >& colocated_cell_facet_centers )
     {
         vec3 first_polygon_center = surface.mesh_element_barycenter( 0 );
@@ -341,8 +341,8 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder )
     {
         geomodel_builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region< 3 >::type_name_static(), region_id ),
-            gmme_id( Surface< 3 >::type_name_static(), surface_id ), surf_side );
+            gmme_id( Region3D::type_name_static(), region_id ),
+            gmme_id( Surface3D::type_name_static(), surface_id ), surf_side );
     }
 
     /*!
@@ -431,7 +431,7 @@ namespace {
      */
     void add_surface_to_region_boundaries(
         index_t surface_id,
-        const std::vector< std::unique_ptr< NNSearch< 3 > > >& region_nn_searchs,
+        const std::vector< std::unique_ptr< NNSearch3D > >& region_nn_searchs,
         const GeoModel3D& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
@@ -463,7 +463,7 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder,
         const GeoModel3D& geomodel )
     {
-        std::vector< std::unique_ptr< NNSearch< 3 > > > reg_nn_searchs =
+        std::vector< std::unique_ptr< NNSearch3D > > reg_nn_searchs =
             compute_cell_facet_centers_region_nn_searchs( geomodel );
         for( const auto& surface : geomodel.surfaces() ) {
             add_surface_to_region_boundaries( surface.index(), reg_nn_searchs,
@@ -560,11 +560,11 @@ namespace {
         index_t surface_id,
         index_t polygon,
         index_t edge,
-        const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-        const std::vector< Box< 3 > >& surface_boxes )
+        const std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
+        const std::vector< Box3D >& surface_boxes )
     {
-        const Surface< 3 >& surface = geomodel.surface( surface_id );
-        const SurfaceMesh< 3 >& mesh = surface.low_level_mesh_storage();
+        const Surface3D& surface = geomodel.surface( surface_id );
+        const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
         const vec3 barycenter = mesh.polygon_edge_barycenter( polygon, edge );
         std::vector< index_t > result;
         index_t tested_surf = 0;
@@ -590,8 +590,8 @@ namespace {
         index_t surface_id,
         std::vector< vec3 >& border_edge_barycenters )
     {
-        const Surface< 3 >& surface = geomodel.surface( surface_id );
-        const SurfaceMesh< 3 >& mesh = surface.low_level_mesh_storage();
+        const Surface3D& surface = geomodel.surface( surface_id );
+        const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
         for( index_t p : range( surface.nb_mesh_elements() ) ) {
             for( index_t e : range( surface.nb_mesh_element_vertices( p ) ) ) {
                 if( mesh.is_edge_on_border( p, e ) ) {
@@ -646,7 +646,7 @@ namespace {
             std::string interface_name = read_name_with_spaces( 1, line );
             // Create an interface and set its name
             gmge_id interface_id = builder().geology.create_geological_entity(
-                Interface< 3 >::type_name_static() );
+                Interface3D::type_name_static() );
             builder().info.set_geological_entity_name( interface_id,
                 interface_name );
         }
@@ -684,7 +684,7 @@ namespace {
             gmme_id children = builder().topology.create_mesh_entity< Surface >();
             builder().geology.add_parent_children_relation( parent, children );
             builder().geology.set_geological_entity_geol_feature( parent,
-                GeoModelGeologicalEntity< 3 >::determine_geological_type( type ) );
+                GeoModelGeologicalEntity3D::determine_geological_type( type ) );
         }
     };
 
@@ -696,7 +696,7 @@ namespace {
             /// Build the volumetric layers from their name and
             /// the ids of the regions they contain
             gmge_id layer_id = builder().geology.create_geological_entity(
-                Layer< 3 >::type_name_static() );
+                Layer3D::type_name_static() );
             builder().info.set_geological_entity_name( layer_id, line.field( 1 ) );
             bool end_layer = false;
             while( !end_layer ) {
@@ -712,7 +712,7 @@ namespace {
                         region_id -= geomodel().nb_surfaces() + 1;
                         // Correction because ids begin at 1 in the file
                         builder().geology.add_parent_children_relation( layer_id,
-                            gmme_id( Region< 3 >::type_name_static(),
+                            gmme_id( Region3D::type_name_static(),
                                 region_id - GOCAD_OFFSET ) );
                     }
                 }
@@ -765,12 +765,12 @@ namespace {
             // Create the entity if it is not the universe
             // Set the region name and boundaries
             if( name
-                != static_cast< std::string >( Universe< 3 >::universe_type_name() ) ) {
+                != static_cast< std::string >( Universe3D::universe_type_name() ) ) {
                 gmme_id region_id =
                     builder().topology.create_mesh_entity< Region >();
                 builder().info.set_mesh_entity_name( region_id, name );
                 for( const std::pair< index_t, bool >& info : region_boundaries ) {
-                    gmme_id surface_id( Surface< 3 >::type_name_static(),
+                    gmme_id surface_id( Surface3D::type_name_static(),
                         info.first );
                     builder().topology.add_mesh_entity_boundary_relation( region_id,
                         surface_id, info.second );
@@ -984,7 +984,7 @@ namespace {
         void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             gmge_id created_interface = builder().geology.create_geological_entity(
-                Interface< 3 >::type_name_static() );
+                Interface3D::type_name_static() );
             load_storage.cur_interface_ = created_interface.index();
             builder().info.set_geological_entity_name( created_interface,
                 line.field( 1 ) );
@@ -1004,7 +1004,7 @@ namespace {
             gmme_id new_surface = builder().topology.create_mesh_entity< Surface >();
             load_storage.cur_surface_ = new_surface.index();
             builder().geology.add_parent_children_relation(
-                gmge_id( Interface< 3 >::type_name_static(),
+                gmge_id( Interface3D::type_name_static(),
                     load_storage.cur_interface_ ), new_surface );
         }
     };
@@ -1141,11 +1141,11 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_surface_internal_borders(
         index_t surface_id,
-        const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-        const std::vector< Box< 3 > >& surface_boxes )
+        const std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
+        const std::vector< Box3D >& surface_boxes )
     {
-        const Surface< 3 >& surface = geomodel_.surface( surface_id );
-        const SurfaceMesh< 3 >& mesh = surface.low_level_mesh_storage();
+        const Surface3D& surface = geomodel_.surface( surface_id );
+        const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
 
         for( index_t p : range( surface.nb_mesh_elements() ) ) {
             std::vector< index_t > adjacent_polygons_id( 3 );
@@ -1165,8 +1165,8 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTSolid::compute_polygon_edge_centers_nn_and_surface_boxes(
-        std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-        std::vector< Box< 3 > >& surface_boxes )
+        std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
+        std::vector< Box3D >& surface_boxes )
     {
         for( const auto& surface : geomodel_.surfaces() ) {
             for( index_t v : range( surface.nb_vertices() ) ) {
@@ -1176,15 +1176,15 @@ namespace RINGMesh {
             get_surface_border_edge_barycenters( geomodel_, surface.index(),
                 border_edge_barycenters );
             surface_nns[surface.index()].reset(
-                new NNSearch< 3 >( border_edge_barycenters, true ) );
+                new NNSearch3D( border_edge_barycenters, true ) );
         }
     }
 
     void GeoModelBuilderTSolid::compute_surfaces_internal_borders()
     {
-        std::vector< std::unique_ptr< NNSearch< 3 > > > nn_searchs(
+        std::vector< std::unique_ptr< NNSearch3D > > nn_searchs(
             geomodel_.nb_surfaces() );
-        std::vector< Box< 3 > > boxes( geomodel_.nb_surfaces() );
+        std::vector< Box3D > boxes( geomodel_.nb_surfaces() );
         compute_polygon_edge_centers_nn_and_surface_boxes( nn_searchs, boxes );
         for( const auto& surface : geomodel_.surfaces() ) {
             compute_surface_internal_borders( surface.index(), nn_searchs, boxes );
