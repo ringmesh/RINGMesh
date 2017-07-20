@@ -1053,6 +1053,6 @@ namespace RINGMesh {
         void create_volume_mesh( const MeshType type );
 
     public:
-        std::unique_ptr< VolumeMesh< 3 > > volume_mesh;
+        std::unique_ptr< VolumeMesh3D > volume_mesh;
     };
 }

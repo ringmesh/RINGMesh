@@ -81,10 +81,10 @@ namespace {
         bool side )
     {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() );
-        gmme_id cur_surface( Surface< 3 >::type_name_static(), surface_part_id );
-        const Surface< 3 >& surface = geomodel.surface( surface_part_id );
+        gmme_id cur_surface( Surface3D::type_name_static(), surface_part_id );
+        const Surface3D& surface = geomodel.surface( surface_part_id );
         for( index_t r : range( surface.nb_incident_entities() ) ) {
-            const Region< 3 >& cur_region = surface.incident_entity( r );
+            const Region3D& cur_region = surface.incident_entity( r );
             for( index_t s : range( cur_region.nb_boundaries() ) ) {
                 if( cur_region.side( s ) == side
                     && cur_region.boundary_gmme( s ) == cur_surface ) {
@@ -140,7 +140,7 @@ namespace {
     bool get_side(
         const vec3& vertex,
         const vec3& on_surface,
-        const Surface< 3 >& surface,
+        const Surface3D& surface,
         index_t triangle )
     {
         vec3 direction = vertex - on_surface;
@@ -214,7 +214,7 @@ namespace {
     class EdgeConformerAction {
     public:
         EdgeConformerAction(
-            const Surface< 3 >& surface,
+            const Surface3D& surface,
             const vec3& v_from,
             const vec3& v_to,
             std::vector< LineInstersection >& intersections )
@@ -239,7 +239,7 @@ namespace {
         }
 
     private:
-        const Surface< 3 >& surface_;
+        const Surface3D& surface_;
         const vec3& v_from_;
         const vec3& v_to_;
 
@@ -247,7 +247,7 @@ namespace {
     };
 
     struct OrientedEdge {
-        OrientedEdge( const LineMesh< 3 >& mesh, index_t edge, index_t vertex_from )
+        OrientedEdge( const LineMesh3D& mesh, index_t edge, index_t vertex_from )
             : edge_( edge ), vertex_from_( vertex_from )
         {
             if( mesh.edge_vertex( edge, 0 ) == vertex_from ) {
@@ -530,12 +530,12 @@ namespace RINGMesh {
 
     template< >
     void WellGroup< 3 >::compute_conformal_mesh(
-        const LineMesh< 3 >& in,
-        LineMesh< 3 >& out )
+        const LineMesh3D& in,
+        LineMesh3D& out )
     {
         double epsilon = geomodel_->epsilon();
-        std::unique_ptr< LineMeshBuilder< 3 > > builder =
-            LineMeshBuilder< 3 >::create_builder( out );
+        std::unique_ptr< LineMeshBuilder3D > builder =
+            LineMeshBuilder3D::create_builder( out );
         builder->clear( false, false );
 
         GEO::Attribute< LineInstersection > vertex_info(
@@ -553,7 +553,7 @@ namespace RINGMesh {
             index_t to_id = in.edge_vertex( e, 1 );
             const vec3& to_vertex = in.vertex( to_id );
 
-            Box< 3 > box;
+            Box3D box;
             box.add_point( from_vertex );
             box.add_point( to_vertex );
             std::vector< LineInstersection > intersections;
@@ -604,16 +604,16 @@ namespace RINGMesh {
 
     template< >
     void WellGroup< 3 >::add_well(
-        const LineMesh< 3 >& mesh,
+        const LineMesh3D& mesh,
         const std::string& name )
     {
         ringmesh_assert( geomodel() );
         if( find_well( name ) != NO_ID ) return;
-        wells_.push_back( new Well< 3 > );
-        Well< 3 >& new_well = *wells_.back();
+        wells_.push_back( new Well3D );
+        Well3D& new_well = *wells_.back();
         new_well.set_name( name );
 
-        GeogramLineMesh< 3 > conformal_mesh;
+        GeogramLineMesh3D conformal_mesh;
         compute_conformal_mesh( mesh, conformal_mesh );
 
         std::vector< std::vector< index_t > > edges_around_vertices(
