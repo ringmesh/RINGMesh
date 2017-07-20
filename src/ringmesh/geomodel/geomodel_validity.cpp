@@ -1207,7 +1207,6 @@ namespace {
     }
 
 }
-// anonymous namespace
 
 namespace RINGMesh {
 
@@ -1372,4 +1371,3 @@ namespace RINGMesh {
         const GeoModel< 3 >& );
 
 }
-// namespace RINGMesh

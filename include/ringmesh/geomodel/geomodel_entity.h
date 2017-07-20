@@ -209,4 +209,4 @@ namespace RINGMesh {
         Universe< DIMENSION >& universe_;
     };
 
-} // namespace
+}

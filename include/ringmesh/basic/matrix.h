@@ -446,11 +446,6 @@ namespace RINGMesh {
             value = values_[value_id];
         }
 
-        void print_matrix( void )
-        {
-            std::cout << "deque size = " << values_.size() << std::endl;
-        }
-
     private:
         index_t get_value_id( index_t i, index_t j )
         {
