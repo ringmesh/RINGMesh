@@ -52,13 +52,13 @@ namespace {
     public:
         static const index_t NB_ENTRY_PER_LINE = 16;
 
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from abaqus not implemented yet" );
         }
         void save(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
@@ -78,9 +78,9 @@ namespace {
             out << std::flush;
         }
     private:
-        void save_vertices( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void save_vertices( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
+            const GeoModelMeshVertices3D& vertices = geomodel.mesh.vertices;
             out << "*NODE" << EOL;
             for( index_t v : range( vertices.nb() ) ) {
                 out << v + 1;
@@ -93,23 +93,23 @@ namespace {
 
         }
         void save_nb_polygons(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            const GeologicalEntityType& type = Interface < 3 > ::type_name_static();
+            const GeologicalEntityType& type = Interface3D ::type_name_static();
             index_t nb_interfaces = geomodel.nb_geological_entities( type );
             for( index_t i : range( nb_interfaces ) ) {
                 save_interface( geomodel, i, out );
             }
         }
         void save_interface(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             index_t interface_id,
             std::ofstream& out ) const
         {
-            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
-            const GeoModelGeologicalEntity< 3 >& entity = geomodel.geological_entity(
-                Interface < 3 > ::type_name_static(), interface_id );
+            const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
+            const GeoModelGeologicalEntity3D& entity = geomodel.geological_entity(
+                Interface3D::type_name_static(), interface_id );
             std::string sep;
             index_t count = 0;
             std::vector< bool > vertex_exported( geomodel.mesh.vertices.nb(),
@@ -132,9 +132,9 @@ namespace {
             out << EOL;
         }
 
-        void save_tets( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void save_tets( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
+            const GeoModelMeshCells3D& cells = geomodel.mesh.cells;
             if( cells.nb_tet() > 0 ) {
                 out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type
                     << EOL;
@@ -152,9 +152,9 @@ namespace {
                 }
             }
         }
-        void save_hex( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void save_hex( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
+            const GeoModelMeshCells3D& cells = geomodel.mesh.cells;
             if( cells.nb_hex() > 0 ) {
                 out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type
                     << EOL;
@@ -172,9 +172,9 @@ namespace {
                 }
             }
         }
-        void save_regions( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void save_regions( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
+            const GeoModelMeshCells3D& cells = geomodel.mesh.cells;
             for( index_t r : range( geomodel.nb_regions() ) ) {
                 const std::string& name = geomodel.region( r ).name();
                 out << "*ELSET, elset=" << name << EOL;
@@ -198,7 +198,7 @@ namespace {
                 out << "*NSET, nset=" << name << ", elset=" << name << EOL;
             }
         }
-        void save_cells( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void save_cells( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             save_tets( geomodel, out );
             save_hex( geomodel, out );

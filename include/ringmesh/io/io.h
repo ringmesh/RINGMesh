@@ -149,6 +149,8 @@ namespace RINGMesh {
         static GeoModelIOHandler* create( const std::string& format );
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelIOHandler );
+
     template< index_t DIMENSION >
     using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler< DIMENSION > >;
 

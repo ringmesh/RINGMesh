@@ -282,6 +282,8 @@ namespace RINGMesh {
         MeshBase< DIMENSION >* mesh_base_ { nullptr };
     };
 
+    CLASS_DIMENSION_ALIASES( MeshBaseBuilder );
+
     template< index_t DIMENSION >
     class PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
     ringmesh_disable_copy( PointSetMeshBuilder );
@@ -320,6 +322,8 @@ namespace RINGMesh {
     protected:
         PointSetMesh< DIMENSION >* pointset_mesh_ { nullptr };
     };
+
+    CLASS_DIMENSION_ALIASES( PointSetMeshBuilder );
 
     template< index_t DIMENSION >
     using PointMeshBuilderFactory = GEO::Factory0< PointSetMeshBuilder< DIMENSION > >;
@@ -507,6 +511,8 @@ namespace RINGMesh {
     protected:
         LineMesh< DIMENSION >* line_mesh_ { nullptr };
     };
+
+    CLASS_DIMENSION_ALIASES( LineMeshBuilder );
 
     template< index_t DIMENSION >
     using LineMeshBuilderFactory = GEO::Factory0< LineMeshBuilder< DIMENSION > >;
@@ -886,6 +892,8 @@ namespace RINGMesh {
     protected:
         SurfaceMeshBase< DIMENSION >* surface_mesh_ { nullptr };
     };
+
+    CLASS_DIMENSION_ALIASES( SurfaceMeshBuilder );
 
     template< index_t DIMENSION >
     using SurfaceMeshBuilderFactory = GEO::Factory0< SurfaceMeshBuilder< DIMENSION > >;

@@ -34,7 +34,7 @@
  */
 
 /*!
- * @brief Classes to load and build a GeoModel< 2 > from a .svg
+ * @brief Classes to load and build a GeoModel2D from a .svg
  * @author Arnaud Botella
  */
 
@@ -42,7 +42,7 @@ namespace {
 
     class GeoModelBuilderSVG final : public GeoModelBuilderFile< 2 > {
     public:
-        GeoModelBuilderSVG( GeoModel< 2 >& geomodel, const std::string& filename )
+        GeoModelBuilderSVG( GeoModel2D& geomodel, const std::string& filename )
             : GeoModelBuilderFile< 2 >( geomodel, filename ), height_( 0. )
         {
         }
@@ -115,13 +115,13 @@ namespace {
                 point_extremities.push_back( line.vertex( line.nb_vertices() - 1 ) );
             }
 
-            NNSearch < 2 > nn_search( point_extremities );
+            NNSearch2D nn_search( point_extremities );
             std::vector< index_t > index_map;
             std::vector< vec2 > unique_points;
             nn_search.get_colocated_index_mapping( geomodel_.epsilon(), index_map,
                 unique_points );
 
-            topology.create_mesh_entities( Corner < 2 > ::type_name_static(),
+            topology.create_mesh_entities( Corner2D::type_name_static(),
                 unique_points.size() );
             for( index_t c : range( geomodel_.nb_corners() ) ) {
                 geometry.set_corner( c, unique_points[c] );
@@ -130,9 +130,9 @@ namespace {
             for( const auto& line : line_range < 2 > ( geomodel_ ) ) {
                 gmme_id line_id = line.gmme();
                 index_t point0 = index_map[index++ ];
-                gmme_id corner0( Corner < 2 > ::type_name_static(), point0 );
+                gmme_id corner0( Corner2D::type_name_static(), point0 );
                 index_t point1 = index_map[index++ ];
-                gmme_id corner1( Corner < 2 > ::type_name_static(), point1 );
+                gmme_id corner1( Corner2D::type_name_static(), point1 );
                 topology.add_mesh_entity_boundary_relation( line_id, corner0 );
                 topology.add_mesh_entity_boundary_relation( line_id, corner1 );
 
@@ -229,12 +229,12 @@ namespace {
     public:
         virtual ~SVGIOHandler() = default;
 
-        void load( const std::string& filename, GeoModel< 2 >& geomodel ) final
+        void load( const std::string& filename, GeoModel2D& geomodel ) final
         {
             GeoModelBuilderSVG builder( geomodel, filename );
             builder.build_geomodel();
         }
-        void save( const GeoModel< 2 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel2D& geomodel, const std::string& filename ) final
         {
             throw RINGMeshException( "I/O",
                 "Saving a GeoModel in svg not implemented yet" );

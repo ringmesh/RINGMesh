@@ -82,12 +82,12 @@ namespace {
             clear();
         }
 
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" );
         }
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             initialize( geomodel );
 
@@ -113,8 +113,8 @@ namespace {
             regions << "'" << oss_regions.str() << EOL;
             regions << "no properties" << EOL;
 
-            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
-            const GeoModelMeshPolygons< 3 >& polygons = mesh.polygons;
+            const GeoModelMesh3D& mesh = geomodel.mesh;
+            const GeoModelMeshPolygons3D& polygons = mesh.polygons;
             index_t count = 0;
             // Conversion from (X,Y,Z) to (X,Z,-Y)
             signed_index_t conversion_sign[3] = { 1, 1, -1 };
@@ -133,13 +133,12 @@ namespace {
 
             index_t nb_families = 0;
             index_t nb_interfaces = geomodel.nb_geological_entities(
-                Interface < 3 > ::type_name_static() );
+                Interface3D::type_name_static() );
             std::vector< index_t > nb_triangle_interface( nb_interfaces, 0 );
             std::vector< index_t > nb_quad_interface( nb_interfaces, 0 );
             for( index_t i : range( nb_interfaces ) ) {
-                const GeoModelGeologicalEntity< 3 >& interf =
-                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
-                        i );
+                const GeoModelGeologicalEntity3D& interf =
+                    geomodel.geological_entity( Interface3D::type_name_static(), i );
                 for( index_t s : range( interf.nb_children() ) ) {
                     index_t s_id = interf.child_gmme( s ).index();
                     nb_triangle_interface[i] += polygons.nb_triangle( s_id );
@@ -187,7 +186,7 @@ namespace {
             }
             if( geomodel.wells() ) {
                 for( index_t w : range( geomodel.wells()->nb_wells() ) ) {
-                    const Well< 3 >& well = geomodel.wells()->well( w );
+                    const Well3D& well = geomodel.wells()->well( w );
                     regions << well.name() << EOL;
                     ascii << well.name() << TAB << "BAR_2" << TAB << 0 << TAB
                         << well.nb_edges() << EOL;
@@ -239,7 +238,7 @@ namespace {
             }
             if( geomodel.wells() ) {
                 for( index_t w : range( geomodel.wells()->nb_wells() ) ) {
-                    const Well< 3 >& well = geomodel.wells()->well( w );
+                    const Well3D& well = geomodel.wells()->well( w );
                     for( index_t e : range( well.nb_edges() ) ) {
                         ringmesh_unused( e );
                         data << " " << std::setw( 3 ) << 2;
@@ -254,7 +253,7 @@ namespace {
                 << EOL;
             index_t cur_cell = 0;
             for( index_t r : range( geomodel.nb_regions() ) ) {
-                const RINGMesh::GeoModelEntity< 3 >& region = geomodel.region( r );
+                const RINGMesh::GeoModelEntity3D& region = geomodel.region( r );
                 std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
                                                "PYRA_5" };
                 for( index_t type : range(
@@ -297,7 +296,7 @@ namespace {
             }
             if( geomodel.wells() ) {
                 for( index_t w : range( geomodel.wells()->nb_wells() ) ) {
-                    const Well< 3 >& well = geomodel.wells()->well( w );
+                    const Well3D& well = geomodel.wells()->well( w );
                     ascii << well.name() << " " << "BAR_2" << " " << well.nb_edges()
                         << EOL;
                     for( index_t e : range( well.nb_edges() ) ) {
@@ -332,9 +331,8 @@ namespace {
                 }
             }
             for( index_t i : range( nb_interfaces ) ) {
-                const GeoModelGeologicalEntity< 3 >& interf =
-                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
-                        i );
+                const GeoModelGeologicalEntity3D& interf =
+                    geomodel.geological_entity( Interface3D::type_name_static(), i );
                 for( index_t s : range( interf.nb_children() ) ) {
                     index_t s_id = interf.child_gmme( s ).index();
                     for( index_t el : range( polygons.nb_triangle( s_id ) ) ) {
@@ -393,9 +391,8 @@ namespace {
                 }
             }
             for( index_t i : range( nb_interfaces ) ) {
-                const GeoModelGeologicalEntity< 3 >& interf =
-                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
-                        i );
+                const GeoModelGeologicalEntity3D& interf =
+                    geomodel.geological_entity( Interface3D::type_name_static(), i );
                 for( index_t s : range( interf.nb_children() ) ) {
                     index_t s_id = interf.child_gmme( s ).index();
                     for( index_t el : range( polygons.nb_triangle( s_id ) ) ) {
@@ -494,11 +491,11 @@ namespace {
             edge_boundary_flags_.clear();
             surface_boundary_flags_.clear();
         }
-        void initialize( const GeoModel< 3 >& gm )
+        void initialize( const GeoModel3D& gm )
         {
             clear();
 
-            const GeoModel< 3 >& geomodel = gm;
+            const GeoModel3D& geomodel = gm;
             std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" );
             box_model_ = cmsp_filename != "";
             if( box_model_ ) {
@@ -672,7 +669,7 @@ namespace {
         }
         std::string interface_csmp_name(
             index_t i,
-            const GeoModel< 3 >& geomodel ) const
+            const GeoModel3D& geomodel ) const
         {
             if( box_model_ ) {
                 if( i == back_ ) {
@@ -689,8 +686,7 @@ namespace {
                     return "RIGHT";
                 }
             }
-            return geomodel.geological_entity( Interface < 3 > ::type_name_static(),
-                i ).name();
+            return geomodel.geological_entity( Interface3D::type_name_static(), i ).name();
         }
         signed_index_t point_boundary( index_t p ) const
         {

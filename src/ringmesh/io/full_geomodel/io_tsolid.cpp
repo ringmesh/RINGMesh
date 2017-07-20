@@ -36,7 +36,7 @@
 namespace {
     class TSolidIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
             if( !input ) {
@@ -46,7 +46,7 @@ namespace {
             GeoModelBuilderTSolid builder( geomodel, filename );
             builder.build_geomodel();
         }
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -61,8 +61,8 @@ namespace {
                 << "ZPOSITIVE Elevation" << EOL
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << EOL;
 
-            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
-            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
+            const GeoModelMesh3D& mesh = geomodel.mesh;
+            const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false );
@@ -154,9 +154,9 @@ namespace {
             int tface_count = 1;
             for( index_t i : range(
                 geomodel.nb_geological_entities(
-                    Interface < 3 > ::type_name_static() ) ) ) {
-                const RINGMesh::GeoModelGeologicalEntity< 3 >& interf =
-                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
+                    Interface3D::type_name_static() ) ) ) {
+                const RINGMesh::GeoModelGeologicalEntity3D& interf =
+                    geomodel.geological_entity( Interface3D::type_name_static(),
                         i );
                 out << "SURFACE " << interf.name() << EOL;
                 for( index_t s : range( interf.nb_children() ) ) {
