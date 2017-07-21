@@ -12,6 +12,10 @@ New Features:
 Bug fix:
  * Error in computation of polygon area (for 3D concave polygons)
 
+Improvements:
+ * Export attributes to TSolid file.
+ * Use std::tuple for output only values, these values are no longer taken as parameter.
+
 
 #### Release: 4.1.0 ####
 
