@@ -38,7 +38,6 @@
 #include <stack>
 
 #include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!
@@ -134,7 +133,7 @@ namespace {
         }
     }
 
-} // anonymous namespace
+}
 
 namespace RINGMesh {
 
@@ -202,10 +201,9 @@ namespace RINGMesh {
             geomodel_.entity_type_manager().relationship_manager.parent_types(
                 children.type() );
         if( !contains( parent_entity_types, parent.type() ) ) {
-            std::ostringstream message;
-            message << "Wrong Parent type in the parent children relation between "
-                << parent << " and " << children;
-            throw RINGMeshException( "Entity", message.str() );
+            throw RINGMeshException( "Entity",
+                "Wrong Parent type in the parent children relation between ", parent,
+                " and ", children );
         }
 
         if( check_if_boundary_incident_entity_relation_already_exists( parent,
@@ -221,9 +219,9 @@ namespace RINGMesh {
 
         if( children_type != children.type() ) {
             std::ostringstream message;
-            message << "Wrong children type in the parent children relation between "
-                << parent << " and " << children;
-            throw RINGMeshException( "Entity", message.str() );
+            throw RINGMeshException( "Entity",
+                "Wrong children type in the parent children relation between ",
+                parent, " and ", children );
         }
 
         RelationshipManager& manager =
@@ -262,7 +260,6 @@ namespace RINGMesh {
         std::remove_if( parents.begin(), parents.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeology< DIMENSION >::delete_geological_entity(
         const GeologicalEntityType& type,
@@ -382,7 +379,6 @@ namespace RINGMesh {
             add_parent_children_relation( contact_id, line.gmme() );
         }
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeology< DIMENSION >::set_geological_entity_geol_feature(
         const gmge_id& gmge_id,
@@ -396,4 +392,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderGeology< 2 > ;
     template class RINGMESH_API GeoModelBuilderGeology< 3 > ;
 
-} // namespace
+}

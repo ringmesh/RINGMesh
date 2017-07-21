@@ -53,10 +53,10 @@ namespace {
 
     bool match_mesh_entity_type( const MeshEntityType& type )
     {
-        if( type == Corner< 3 >::type_name_static() ) return true;
-        if( type == Line< 3 >::type_name_static() ) return true;
-        if( type == Surface< 3 >::type_name_static() ) return true;
-        if( type == Region< 3 >::type_name_static() ) return true;
+        if( type == Corner3D::type_name_static() ) return true;
+        if( type == Line3D::type_name_static() ) return true;
+        if( type == Surface3D::type_name_static() ) return true;
+        if( type == Region3D::type_name_static() ) return true;
         return false;
     }
 }
@@ -96,9 +96,9 @@ namespace RINGMesh {
         {
             // First line : type - id - name - geol_feature
             if( file_line.nb_fields() < 4 ) {
-                throw RINGMeshException( "I/O",
-                    "Invalid line: " + std::to_string( file_line.line_number() )
-                        + ", 4 fields are expected, the type, id, name, and geological feature" );
+                throw RINGMeshException( "I/O", "Invalid line: ",
+                    file_line.line_number(),
+                    ", 4 fields are expected, the type, id, name, and geological feature" );
             }
             gmme_id entity = read_first_line( file_line );
             read_second_line( file_line, entity );
@@ -156,7 +156,7 @@ namespace RINGMesh {
     {
         file_line.get_line();
         file_line.get_fields();
-        const MeshEntityTypeManager< 2 >& manager =
+        const MeshEntityTypeManager2D& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_surface( entity.type() ) ) {
             add_relation_for_entities_with_sides< Line >( entity, file_line );
@@ -172,7 +172,7 @@ namespace RINGMesh {
     {
         file_line.get_line();
         file_line.get_fields();
-        const MeshEntityTypeManager< 3 >& manager =
+        const MeshEntityTypeManager3D& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_region( entity.type() ) ) {
             add_relation_for_entities_with_sides< Surface >( entity, file_line );
@@ -197,10 +197,10 @@ namespace RINGMesh {
             // Read this entity
             // First line : type - id - name - geol_feature - mesh type
             if( file_line.nb_fields() < 5 ) {
-                throw RINGMeshException( "I/O",
-                    "Invalid line: " + std::to_string( file_line.line_number() )
-                        + ", 5 fields are expected, the type, id, name, "
-                        + "geological feature, and mesh type" );
+                throw RINGMeshException( "I/O", "Invalid line: ",
+                    file_line.line_number(),
+                    ", 5 fields are expected, the type, id, name, ",
+                    "geological feature, and mesh type" );
             }
             gmme_id entity = this->read_first_line( file_line );
 
@@ -247,10 +247,10 @@ namespace RINGMesh {
             // Read this entity
             // First line : type - id - name  - mesh type
             if( file_line.nb_fields() < 4 ) {
-                throw RINGMeshException( "I/O",
-                    "Invalid line: " + std::to_string( file_line.line_number() )
-                        + ", 4 fields are expected, the type, id, name, "
-                        + "geological feature, and mesh type" );
+                throw RINGMeshException( "I/O", "Invalid line: ",
+                    file_line.line_number(),
+                    ", 4 fields are expected, the type, id, name, ",
+                    "geological feature, and mesh type" );
             }
             gmme_id entity = this->read_first_line( file_line );
 
@@ -442,10 +442,10 @@ namespace RINGMesh {
         index_t id )
     {
         if( !load_mesh_entity_base( entity_type, file_name, id ) ) {
-            const MeshEntityTypeManager< 3 >& manager =
+            const MeshEntityTypeManager3D& manager =
                 this->geomodel_.entity_type_manager().mesh_entity_manager;
             if( manager.is_region( entity_type ) ) {
-                std::unique_ptr< VolumeMeshBuilder< 3 > > builder =
+                std::unique_ptr< VolumeMeshBuilder3D > builder =
                     geometry.create_region_builder( id );
                 builder->load_mesh( file_name );
             }

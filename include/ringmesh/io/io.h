@@ -48,9 +48,10 @@
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
 
-const std::string TAB = "\t";
-const std::string SPACE = " ";
-const std::string COMMA = ",";
+const char COMMA = ',';
+const char EOL = '\n';
+const char SPACE = ' ';
+const char TAB = '\t';
 
 /*!
  * @file Global input - output functions of RINGMesh
@@ -61,6 +62,9 @@ namespace RINGMesh {
     class StratigraphicColumn;
     template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class WellGroup;
+
+    CLASS_DIMENSION_ALIASES( GeoModel );
+    CLASS_DIMENSION_ALIASES( WellGroup );
 }
 
 namespace GEO {
@@ -97,7 +101,7 @@ namespace RINGMesh {
     /*!
      * Loads a WellGroup from a file
      * @param[in] filename the file to load
-     * @param][out] wells the wells to fill
+     * @param][in,out] wells the wells to fill
      */
     void RINGMESH_API well_load(
         const std::string& filename,
@@ -147,6 +151,8 @@ namespace RINGMesh {
         static GeoModelIOHandler* create( const std::string& format );
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelIOHandler );
+
     template< index_t DIMENSION >
     using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler< DIMENSION > >;
 
@@ -169,10 +175,10 @@ namespace RINGMesh {
         static std::unique_ptr< WellGroupIOHandler > get_handler(
             const std::string& filename );
 
-        virtual void load( const std::string& filename, WellGroup< 3 >& mesh ) = 0;
+        virtual void load( const std::string& filename, WellGroup3D& mesh ) = 0;
 
         virtual void save(
-            const WellGroup< 3 >& mesh,
+            const WellGroup3D& mesh,
             const std::string& filename ) = 0;
 
     protected:
@@ -213,7 +219,7 @@ namespace RINGMesh {
         virtual void load(
             const std::string& filename,
             StratigraphicColumn& column,
-            GeoModel< 3 >& geomodel ) = 0;
+            GeoModel3D& geomodel ) = 0;
 
         virtual void save(
             const StratigraphicColumn& column,

@@ -54,6 +54,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class NNSearch;
     template< index_t DIMENSION > class PointSetMesh;
     template< index_t DIMENSION > class LineMesh;
+    struct ElementLocalVertex;
 }
 
 namespace RINGMesh {
@@ -79,6 +80,8 @@ namespace RINGMesh {
         /// Pointer to the Well owning this entity
         const Well< DIMENSION >* well_;
     };
+
+    CLASS_DIMENSION_ALIASES( WellEntity );
 
 // --------------------------------------------------------------------------
 
@@ -113,6 +116,8 @@ namespace RINGMesh {
         index_t id_;
         std::unique_ptr< PointSetMesh< DIMENSION > > mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( WellCorner );
 
 // --------------------------------------------------------------------------
 
@@ -182,7 +187,8 @@ namespace RINGMesh {
             return id_;
         }
         const vecn< DIMENSION >& vertex( index_t v ) const;
-        const vecn< DIMENSION >& edge_vertex( index_t edge, index_t v ) const;
+        const vecn< DIMENSION >& edge_vertex(
+            const ElementLocalVertex& well_edge_local_vertex ) const;
 
         GEO::AttributesManager& vertex_attribute_manager() const;
         GEO::AttributesManager& edge_attribute_manager() const;
@@ -196,6 +202,8 @@ namespace RINGMesh {
         index_t corners_[2];
         std::unique_ptr< LineMesh< DIMENSION > > mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( WellPart );
 
 // --------------------------------------------------------------------------
 
@@ -221,6 +229,8 @@ namespace RINGMesh {
         vecn< DIMENSION > vertices_[2];
     };
 
+    CLASS_DIMENSION_ALIASES( Edge );
+
 // --------------------------------------------------------------------------
 
     template< index_t DIMENSION >
@@ -238,7 +248,7 @@ namespace RINGMesh {
         /*!
          * Gets the edges of a part
          * @param[in] part_id the part id
-         * @param[out] edges the edges of the part
+         * @param[in,out] edges the edges of the part
          */
         void get_part_edges(
             index_t part_id,
@@ -246,7 +256,7 @@ namespace RINGMesh {
         /*!
          * Gets all the edges of a corresponding region
          * @param[in] region the region id
-         * @param[out] edges the corresponding edges
+         * @param[in,out] edges the corresponding edges
          */
         void get_region_edges(
             index_t part_id,
@@ -373,6 +383,8 @@ namespace RINGMesh {
         index_t nb_edges_;
     };
 
+    CLASS_DIMENSION_ALIASES( Well );
+
 // --------------------------------------------------------------------------
 
     /*! 
@@ -388,7 +400,7 @@ namespace RINGMesh {
         /*!
          * Gets all the edges contained in a region
          * @param[in] region the region id
-         * @param[out] edges the edges of the region
+         * @param[in,out] edges the edges of the region
          */
         void get_region_edges(
             index_t region,
@@ -397,7 +409,7 @@ namespace RINGMesh {
         /*!
          * Gets all the edges contained in a region
          * @param[in] region the region id
-         * @param[out] edges the edges of the region, one vector per well
+         * @param[in,out] edges the edges of the region, one vector per well
          */
         void get_region_edges(
             index_t region,
@@ -466,4 +478,6 @@ namespace RINGMesh {
         /// Associated GeoModel
         GeoModel< DIMENSION >* geomodel_;
     };
+
+    CLASS_DIMENSION_ALIASES( WellGroup );
 }

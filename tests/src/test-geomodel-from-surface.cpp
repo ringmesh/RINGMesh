@@ -88,9 +88,8 @@ int main()
 #endif
 
         if( !is_geomodel_valid( geomodel ) ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when loading model " + geomodel.name()
-                    + ": the loaded model is not valid." );
+            throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
+                geomodel.name(), ": the loaded model is not valid." );
         }
 
         // Save and reload the model
@@ -112,7 +111,9 @@ int main()
             for( index_t f : range( surface.nb_mesh_elements() ) ) {
                 for( index_t v : range( surface.nb_mesh_element_vertices( f ) ) ) {
                     surface_meshes.facets.set_vertex( facet_it + f, v,
-                        vertex_it + surface.mesh_element_vertex_index( f, v ) );
+                        vertex_it
+                            + surface.mesh_element_vertex_index(
+                                ElementLocalVertex( f, v ) ) );
                 }
             }
         }
@@ -134,48 +135,47 @@ int main()
 
         // Checking if building has been successfully done
         if( !is_geomodel_valid( reloaded_model ) ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when reloading model " + reloaded_model.name()
-                    + ": the reloaded model is not valid." );
+            throw RINGMeshException( "RINGMesh Test", "Failed when reloading model ",
+                reloaded_model.name(), ": the reloaded model is not valid." );
         }
 
         // Checking number of mesh elements
         if( surface_meshes.vertices.nb() != in.vertices.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Error when building model: not same number of vertices "
-                    "than input mesh." );
+                "Error when building model: not same number of vertices ",
+                "than input mesh." );
         }
         if( surface_meshes.facets.nb() != in.facets.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Error when building model: not same number of facets "
-                    "than input mesh." );
+                "Error when building model: not same number of facets ",
+                "than input mesh." );
         }
         if( surface_meshes.cells.nb() != in.cells.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Error when building model: not same number of cells "
-                    "than input mesh." );
+                "Error when building model: not same number of cells ",
+                "than input mesh." );
         }
 
         // Checking number of GeoModelMeshEntities
         if( reloaded_model.nb_corners() != geomodel.nb_corners() ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Error when reload model: not same number of corners "
-                    "between saved model and reload model." );
+                "Error when reload model: not same number of corners ",
+                "between saved model and reload model." );
         }
         if( reloaded_model.nb_lines() != geomodel.nb_lines() ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Error when reload model: not same number of lines "
-                    "between saved model and reload model." );
+                "Error when reload model: not same number of lines ",
+                "between saved model and reload model." );
         }
         if( reloaded_model.nb_surfaces() != geomodel.nb_surfaces() ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Error when reload model: not same number of surfaces "
-                    "between saved model and reload model." );
+                "Error when reload model: not same number of surfaces ",
+                "between saved model and reload model." );
         }
         if( reloaded_model.nb_regions() != geomodel.nb_regions() ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Error when reload model: not same number of regions "
-                    "between saved model and reload model." );
+                "Error when reload model: not same number of regions ",
+                "between saved model and reload model." );
         }
 
     } catch( const RINGMeshException& e ) {

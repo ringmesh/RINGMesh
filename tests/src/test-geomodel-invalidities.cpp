@@ -50,19 +50,19 @@
 using namespace RINGMesh;
 
 void make_geomodel_copy(
-    const GeoModel< 3 >& from,
+    const GeoModel3D& from,
     const std::string& name,
-    GeoModel< 3 >& to )
+    GeoModel3D& to )
 {
-    GeoModelBuilder< 3 > geomodel_breaker2( to );
+    GeoModelBuilder3D geomodel_breaker2( to );
     geomodel_breaker2.copy.copy_geomodel( from );
     geomodel_breaker2.info.set_geomodel_name( name );
 }
 
-void verdict( const GeoModel< 3 >& invalid_model, const std::string& feature )
+void verdict( const GeoModel3D& invalid_model, const std::string& feature )
 {
     if( is_geomodel_valid( invalid_model ) ) {
-        throw RINGMeshException( "RINGMesh Test", "Fail to " + feature );
+        throw RINGMeshException( "RINGMesh Test", "Fail to " , feature );
     } else {
         Logger::out( "TEST", "Succeed to ", feature );
     }
@@ -75,7 +75,7 @@ int main()
 
         std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml";
 
-        GeoModel< 3 > in;
+        GeoModel3D in;
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
 
         if( !loaded_model_is_valid ) {
@@ -86,11 +86,11 @@ int main()
 
         Logger::out( "TEST", "Break geomodels:" );
 
-        GeoModel< 3 > invalid_model;
+        GeoModel3D invalid_model;
         make_geomodel_copy( in, "broken model 1", invalid_model );
-        GeoModelBuilder< 3 > geomodel_breaker( invalid_model );
+        GeoModelBuilder3D geomodel_breaker( invalid_model );
         geomodel_breaker.geology.create_geological_entity(
-            RINGMesh::Interface< 3 >::type_name_static() );
+            RINGMesh::Interface3D::type_name_static() );
         verdict( invalid_model,
             "detect addition of an isolated GeoModelGeologicalEntity" );
 

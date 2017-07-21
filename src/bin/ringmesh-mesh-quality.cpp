@@ -79,14 +79,12 @@ namespace {
 
         for( const auto& region : geomodel.regions() ) {
             if( !region.is_meshed() ) {
-                throw RINGMeshException( "I/O",
-                    "Region " + std::to_string( region.index() )
-                        + " is not meshed." );
+                throw RINGMeshException( "I/O", "Region ", region.index(),
+                    " is not meshed." );
             }
             if( !region.is_simplicial() ) {
-                throw RINGMeshException( "I/O",
-                    "Region " + std::to_string( region.index() )
-                        + " is not simplicial." );
+                throw RINGMeshException( "I/O", "Region ", region.index(),
+                    " is not simplicial." );
             }
         }
     }
