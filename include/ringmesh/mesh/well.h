@@ -81,6 +81,8 @@ namespace RINGMesh {
         const Well< DIMENSION >* well_;
     };
 
+    CLASS_DIMENSION_ALIASES( WellEntity );
+
 // --------------------------------------------------------------------------
 
     template< index_t DIMENSION >
@@ -114,6 +116,8 @@ namespace RINGMesh {
         index_t id_;
         std::unique_ptr< PointSetMesh< DIMENSION > > mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( WellCorner );
 
 // --------------------------------------------------------------------------
 
@@ -198,6 +202,8 @@ namespace RINGMesh {
         index_t corners_[2];
         std::unique_ptr< LineMesh< DIMENSION > > mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( WellPart );
 
 // --------------------------------------------------------------------------
 

@@ -189,6 +189,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_;
     };
 
+    CLASS_DIMENSION_ALIASES( MeshBase );
+
     /*!
      * class for encapsulating mesh composed of points
      */
@@ -628,6 +630,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_;
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_;
     };
+
+    CLASS_DIMENSION_ALIASES( SurfaceMeshBase );
 
     template< index_t DIMENSION >
     class SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
