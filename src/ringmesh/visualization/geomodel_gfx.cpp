@@ -49,40 +49,62 @@
 
 namespace RINGMesh {
 
-    GeoModelGfx::GeoModelGfx()
+    template< index_t DIMENSION >
+    GeoModelGfxBase< DIMENSION >::GeoModelGfxBase( GeoModelGfx< DIMENSION >& gfx )
         :
-            geomodel_( nullptr ),
-            corners( *this ),
-            lines( *this ),
-            surfaces( *this ),
-            regions( *this ),
-            attribute( *this )
+            corners( gfx ),
+            lines( gfx ),
+            surfaces( gfx ),
+            attribute( gfx )
     {
     }
 
-    GeoModelGfx::~GeoModelGfx()
-    {
-    }
-
-    void GeoModelGfx::set_geomodel( const GeoModel& geomodel )
+    template< index_t DIMENSION >
+    void GeoModelGfxBase< DIMENSION >::set_geomodel(
+        const GeoModel< DIMENSION >& geomodel )
     {
         geomodel_ = &geomodel;
         initialize();
     }
 
-    const GeoModel* GeoModelGfx::geomodel() const
+    template< index_t DIMENSION >
+    const GeoModel< DIMENSION >* GeoModelGfxBase< DIMENSION >::geomodel() const
     {
         return geomodel_;
     }
 
-    void GeoModelGfx::initialize()
+    template< index_t DIMENSION >
+    void GeoModelGfxBase< DIMENSION >::initialize()
     {
         ringmesh_assert( geomodel_ );
         corners.initialize();
         lines.initialize();
         surfaces.initialize();
+    }
+
+    template< index_t DIMENSION >
+    GeoModelGfx< DIMENSION >::GeoModelGfx()
+        : GeoModelGfxBase< DIMENSION >( *this )
+    {
+    }
+
+    GeoModelGfx< 3 >::GeoModelGfx()
+        : GeoModelGfxBase< 3 >( *this ), regions( *this )
+    {
+    }
+
+    void GeoModelGfx< 3 >::initialize()
+    {
+        GeoModelGfxBase3D::initialize();
         regions.initialize();
     }
+
+    template class RINGMESH_API GeoModelGfxBase< 2 > ;
+    template class RINGMESH_API GeoModelGfx< 2 > ;
+
+    template class RINGMESH_API GeoModelGfxBase< 3 > ;
+    template class RINGMESH_API GeoModelGfx< 3 > ;
+
 }
 
 #endif

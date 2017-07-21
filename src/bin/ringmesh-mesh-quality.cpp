@@ -71,22 +71,20 @@ namespace {
         CmdLine::import_arg_group( "out" );
     }
 
-    void check_geomodel_is_3d_meshed_by_simplexes( const GeoModel& geomodel )
+    void check_geomodel_is_3d_meshed_by_simplexes( const GeoModel< 3 >& geomodel )
     {
         if( geomodel.nb_regions() == 0 ) {
             throw RINGMeshException( "I/O", "Input geomodel has no region." );
         }
 
-        for( index_t reg_itr = 0; reg_itr < geomodel.nb_regions(); ++reg_itr ) {
-            if( !geomodel.region( reg_itr ).is_meshed() ) {
-                throw RINGMeshException( "I/O",
-                    "Region " + GEO::String::to_string( reg_itr )
-                        + " is not meshed." );
+        for( const auto& region : geomodel.regions() ) {
+            if( !region.is_meshed() ) {
+                throw RINGMeshException( "I/O", "Region ", region.index(),
+                    " is not meshed." );
             }
-            if( !geomodel.region( reg_itr ).is_simplicial() ) {
-                throw RINGMeshException( "I/O",
-                    "Region " + GEO::String::to_string( reg_itr )
-                        + " is not simplicial." );
+            if( !region.is_simplicial() ) {
+                throw RINGMeshException( "I/O", "Region ", region.index(),
+                    " is not simplicial." );
             }
         }
     }
@@ -100,7 +98,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel geomodel;
+        GeoModel< 3 > geomodel;
         geomodel_load( geomodel, geomodel_in_name );
         check_geomodel_is_3d_meshed_by_simplexes( geomodel );
 

@@ -50,19 +50,19 @@
 using namespace RINGMesh;
 
 void make_geomodel_copy(
-    const GeoModel& from,
+    const GeoModel3D& from,
     const std::string& name,
-    GeoModel& to )
+    GeoModel3D& to )
 {
-    GeoModelBuilder geomodel_breaker2( to );
+    GeoModelBuilder3D geomodel_breaker2( to );
     geomodel_breaker2.copy.copy_geomodel( from );
     geomodel_breaker2.info.set_geomodel_name( name );
 }
 
-void verdict( const GeoModel& invalid_model, const std::string& feature )
+void verdict( const GeoModel3D& invalid_model, const std::string& feature )
 {
     if( is_geomodel_valid( invalid_model ) ) {
-        throw RINGMeshException( "RINGMesh Test", "Fail to " + feature );
+        throw RINGMeshException( "RINGMesh Test", "Fail to " , feature );
     } else {
         Logger::out( "TEST", "Succeed to ", feature );
     }
@@ -75,7 +75,7 @@ int main()
 
         std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml";
 
-        GeoModel in;
+        GeoModel3D in;
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
 
         if( !loaded_model_is_valid ) {
@@ -86,13 +86,21 @@ int main()
 
         Logger::out( "TEST", "Break geomodels:" );
 
-        GeoModel invalid_model;
+        GeoModel3D invalid_model;
         make_geomodel_copy( in, "broken model 1", invalid_model );
-        GeoModelBuilder geomodel_breaker( invalid_model );
+        GeoModelBuilder3D geomodel_breaker( invalid_model );
         geomodel_breaker.geology.create_geological_entity(
-            RINGMesh::Interface::type_name_static() );
+            RINGMesh::Interface3D::type_name_static() );
         verdict( invalid_model,
             "detect addition of an isolated GeoModelGeologicalEntity" );
+
+        GeoModel< 3 > cloudspin;
+        geomodel_load( cloudspin, ringmesh_test_data_path + "CloudSpin.ml" );
+        if( is_geomodel_valid( cloudspin,
+            ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Fail to SURFACE_LINE_MESH_CONFORMITY on CloudSpin" );
+        }
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
