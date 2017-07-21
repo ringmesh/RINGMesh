@@ -1170,35 +1170,29 @@ namespace {
 		void assign_attributes_to_mesh(
 			GeoModel< 3 >& geomodel, TSolidLoadingStorage& load_storage ){
 
-			GEO::vector< std::string > att_v_names;
-			GEO::AttributesManager& mesh_vertex_mgr = geomodel.mesh.vertices.attribute_manager();
-			mesh_vertex_mgr.list_attribute_names( att_v_names );
-			for( std::string name : att_v_names ){
-				Logger::out( "I/O", "attributes before ", name );
-			}
-
 			for( index_t attrib_name_itr : range( load_storage.vertex_attribute_names_.size() ) ) {
-
-				GEO::Attribute< double > attr;
-				index_t nb_dimensions = load_storage.vertex_attribute_dims_[attrib_name_itr];
-				attr.create_vector_attribute( geomodel.mesh.vertices.attribute_manager(),
-					load_storage.vertex_attribute_names_[attrib_name_itr], nb_dimensions );
-				// Does it resize all the past attributes to the size of the current attribute? 
-				// Problematic, isn't it?
-				geomodel.mesh.vertices.attribute_manager().resize( 
-					load_storage.nb_vertices_ * nb_dimensions + nb_dimensions );
-				
-				for( index_t v_itr : range( load_storage.nb_vertices_ ) ) {
-					for( index_t attrib_dim_itr : range( nb_dimensions ) ) {
-						attr[v_itr * nb_dimensions + attrib_dim_itr] =
-							load_storage.vertex_attributes_[attrib_name_itr][v_itr][attrib_dim_itr];
+				std::string name = load_storage.vertex_attribute_names_[attrib_name_itr];
+				for( const auto& region : geomodel.regions() ){
+					if( region.vertex_attribute_manager().is_defined( name ) ) {
+						Logger::warn( "Transfer attribute", "The attribute ", name,
+							" already exists on the ", region.gmme() );
+						continue;
+					}
+					GEO::Attribute< double > attr;
+					index_t nb_dimensions = load_storage.vertex_attribute_dims_[attrib_name_itr];
+					attr.create_vector_attribute( region.vertex_attribute_manager(),
+						load_storage.vertex_attribute_names_[attrib_name_itr], nb_dimensions );
+					// Does it resize all the past attributes to the size of the current attribute? 
+					// Problematic, isn't it?
+					region.vertex_attribute_manager().resize(
+						load_storage.nb_vertices_ * nb_dimensions + nb_dimensions );
+					for( index_t v_itr : range( load_storage.nb_vertices_ ) ) {
+						for( index_t attrib_dim_itr : range( nb_dimensions ) ) {
+							attr[v_itr * nb_dimensions + attrib_dim_itr] =
+								load_storage.vertex_attributes_[attrib_name_itr][v_itr][attrib_dim_itr];
+						}
 					}
 				}
-			}
-
-			mesh_vertex_mgr.list_attribute_names( att_v_names );
-			for( std::string name : att_v_names ){
-				Logger::out( "I/O", "attributes after ", name );
 			}
 		}
 	};
