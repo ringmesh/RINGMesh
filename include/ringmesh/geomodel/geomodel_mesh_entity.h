@@ -1131,7 +1131,7 @@ namespace RINGMesh {
         std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
             index_t cell_hint ) const {
-            return volume_mesh_->cells_around_vertex( vertex_id, this->geomodel_.epsilon(),cell_hint );
+            return volume_mesh_->cells_around_vertex( vertex_id, cell_hint );
         }
 
         void compute_region_volumes_per_cell_type(
