@@ -73,14 +73,14 @@ namespace {
     index_t count_geomodel_cells( const GeoModel< DIMENSION >& geomodel );
 
     template< >
-    index_t count_geomodel_cells( const GeoModel< 2 >& geomodel )
+    index_t count_geomodel_cells( const GeoModel2D& geomodel )
     {
         ringmesh_unused( geomodel );
         return 0;
     }
 
     template< >
-    index_t count_geomodel_cells( const GeoModel< 3 >& geomodel )
+    index_t count_geomodel_cells( const GeoModel3D& geomodel )
     {
         index_t nb_cells = 0;
         for( const auto& region : geomodel.regions() ) {
@@ -250,13 +250,13 @@ namespace RINGMesh {
     }
 
     template< >
-    void print_geomodel_mesh_stats( const GeoModel< 2 >& geomodel )
+    void print_geomodel_mesh_stats( const GeoModel2D& geomodel )
     {
         print_geomodel_base_mesh_stats( geomodel );
     }
 
     template< >
-    void print_geomodel_mesh_stats( const GeoModel< 3 >& geomodel )
+    void print_geomodel_mesh_stats( const GeoModel3D& geomodel )
     {
         print_geomodel_base_mesh_stats( geomodel );
 
@@ -285,7 +285,7 @@ namespace RINGMesh {
         Logger::out( "GeoModel" );
     }
 
-    void print_geomodel_mesh_cell_volumes( const GeoModel< 3 >& geomodel )
+    void print_geomodel_mesh_cell_volumes( const GeoModel3D& geomodel )
     {
         double volume = 0;
         double tet_volume = 0;
@@ -316,7 +316,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-
     index_t find_mesh_entity_id_from_name(
         const GeoModel< DIMENSION >& geomodel,
         const MeshEntityType& gmme_type,
@@ -384,7 +383,7 @@ namespace RINGMesh {
     }
 
     void rotate(
-        GeoModel< 3 >& geomodel,
+        GeoModel3D& geomodel,
         const vec3& origin,
         const vec3& axis,
         double theta,
@@ -413,7 +412,7 @@ namespace RINGMesh {
 #ifdef RINGMESH_WITH_TETGEN
 
     void tetrahedralize(
-        GeoModel< 3 >& geomodel,
+        GeoModel3D& geomodel,
         const std::string& method,
         index_t region_id,
         bool add_steiner_points )
@@ -429,7 +428,7 @@ namespace RINGMesh {
     }
 
     void tetrahedralize(
-        GeoModel< 3 >& geomodel,
+        GeoModel3D& geomodel,
         const std::string& method,
         index_t region_id,
         bool add_steiner_points,
@@ -460,28 +459,29 @@ namespace RINGMesh {
         geomodel.mesh.vertices.clear();
     }
 #endif
-    template void RINGMESH_API print_geomodel( const GeoModel< 2 >& );
-    template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel< 2 >& );
-    template index_t RINGMESH_API find_mesh_entity_id_from_name(
-        const GeoModel< 2 >&,
-        const MeshEntityType&,
-        const std::string& );
-    template index_t RINGMESH_API find_geological_entity_id_from_name(
-        const RINGMesh::GeoModel< 2 >&,
-        const RINGMesh::GeologicalEntityType&,
-        const std::string& );
-    template void RINGMESH_API translate( GeoModel< 2 >&, const vec2& );
 
-    template void RINGMESH_API print_geomodel( const GeoModel< 3 >& );
-    template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel< 3 >& );
+    template void RINGMESH_API print_geomodel( const GeoModel2D& );
+    template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel2D& );
     template index_t RINGMESH_API find_mesh_entity_id_from_name(
-        const GeoModel< 3 >&,
+        const GeoModel2D&,
         const MeshEntityType&,
         const std::string& );
     template index_t RINGMESH_API find_geological_entity_id_from_name(
-        const RINGMesh::GeoModel< 3 >&,
+        const RINGMesh::GeoModel2D&,
         const RINGMesh::GeologicalEntityType&,
         const std::string& );
-    template void RINGMESH_API translate( GeoModel< 3 >&, const vec3& );
+    template void RINGMESH_API translate( GeoModel2D&, const vec2& );
+
+    template void RINGMESH_API print_geomodel( const GeoModel3D& );
+    template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel3D& );
+    template index_t RINGMESH_API find_mesh_entity_id_from_name(
+        const GeoModel3D&,
+        const MeshEntityType&,
+        const std::string& );
+    template index_t RINGMESH_API find_geological_entity_id_from_name(
+        const RINGMesh::GeoModel3D&,
+        const RINGMesh::GeologicalEntityType&,
+        const std::string& );
+    template void RINGMESH_API translate( GeoModel3D&, const vec3& );
 
 }

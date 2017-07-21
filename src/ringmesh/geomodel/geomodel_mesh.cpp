@@ -756,9 +756,9 @@ namespace RINGMesh {
     }
 
     GeoModelMeshVertices< 3 >::GeoModelMeshVertices(
-        GeoModelMesh< 3 >& gmm,
-        GeoModel< 3 >& gm,
-        std::unique_ptr< PointSetMesh< 3 > >& mesh )
+        GeoModelMesh3D& gmm,
+        GeoModel3D& gm,
+        std::unique_ptr< PointSetMesh3D >& mesh )
         : GeoModelMeshVerticesBase< 3 >( gmm, gm, mesh )
     {
     }
@@ -766,20 +766,20 @@ namespace RINGMesh {
     void GeoModelMeshVertices< 3 >::clear()
     {
         this->gmm_.cells.clear();
-        GeoModelMeshVerticesBase< 3 >::clear();
+        GeoModelMeshVerticesBase3D::clear();
     }
 
     index_t GeoModelMeshVertices< 3 >::nb_total_vertices() const
     {
-        index_t nb = GeoModelMeshVerticesBase< 3 >::nb_total_vertices();
-        nb += nb_entity_vertices( this->geomodel_, Region< 3 >::type_name_static() );
+        index_t nb = GeoModelMeshVerticesBase3D::nb_total_vertices();
+        nb += nb_entity_vertices( this->geomodel_, Region3D::type_name_static() );
         return nb;
     }
 
     index_t GeoModelMeshVertices< 3 >::fill_vertices()
     {
-        index_t count = GeoModelMeshVerticesBase< 3 >::fill_vertices();
-        fill_vertices_for_entity_type( this->geomodel_, Region< 3 >::type_name_static(),
+        index_t count = GeoModelMeshVerticesBase3D::fill_vertices();
+        fill_vertices_for_entity_type( this->geomodel_, Region3D::type_name_static(),
             count );
         return count;
     }
@@ -787,13 +787,13 @@ namespace RINGMesh {
     template< >
     GeoModelMeshVerticesBase< 3 >::GeoModelVertexMapper::GeoModelVertexMapper(
         GeoModelMeshVerticesBase& geomodel_vertices,
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
         : geomodel_vertices_( geomodel_vertices ), geomodel_( geomodel )
     {
-        vertex_maps_[Corner< 3 >::type_name_static()] = &corner_vertex_maps_;
-        vertex_maps_[Line< 3 >::type_name_static()] = &line_vertex_maps_;
-        vertex_maps_[Surface< 3 >::type_name_static()] = &surface_vertex_maps_;
-        vertex_maps_[Region< 3 >::type_name_static()] = &region_vertex_maps_;
+        vertex_maps_[Corner3D::type_name_static()] = &corner_vertex_maps_;
+        vertex_maps_[Line3D::type_name_static()] = &line_vertex_maps_;
+        vertex_maps_[Surface3D::type_name_static()] = &surface_vertex_maps_;
+        vertex_maps_[Region3D::type_name_static()] = &region_vertex_maps_;
     }
     /*******************************************************************************/
 
@@ -2183,8 +2183,8 @@ namespace RINGMesh {
 
     GeoModelMeshPolygons< 3 >::GeoModelMeshPolygons(
         GeoModelMesh< 3 >& gmm,
-        GeoModel< 3 >& gm,
-        std::unique_ptr< SurfaceMesh< 3 > >& mesh )
+        GeoModel3D& gm,
+        std::unique_ptr< SurfaceMesh3D >& mesh )
         : GeoModelMeshPolygonsBase< 3 >( gmm, gm, mesh )
     {
     }
@@ -2386,7 +2386,7 @@ namespace RINGMesh {
     {
     }
 
-    GeoModelMesh< 3 >::GeoModelMesh( GeoModel< 3 >& geomodel )
+    GeoModelMesh< 3 >::GeoModelMesh( GeoModel3D& geomodel )
         :
             GeoModelMeshBase< 3 >( *this, geomodel ),
             cells( *this, geomodel, mesh_set_.volume_mesh )
@@ -2406,19 +2406,19 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh<3>::transfer_attributes_from_gmm_to_gm_regions() const
+    void GeoModelMesh< 3 >::transfer_attributes_from_gmm_to_gm_regions() const
     {
         transfer_vertex_attributes_from_gmm_to_gm_regions();
         transfer_cell_attributes_from_gmm_to_gm_regions();
     }
 
-    void GeoModelMesh<3>::transfer_attributes_from_gm_regions_to_gmm() const
+    void GeoModelMesh< 3 >::transfer_attributes_from_gm_regions_to_gmm() const
     {
         transfer_vertex_attributes_from_gm_regions_to_gmm();
         transfer_cell_attributes_from_gm_regions_to_gmm();
     }
 
-    void GeoModelMesh<3>::transfer_vertex_attributes_from_gmm_to_gm_regions() const
+    void GeoModelMesh< 3 >::transfer_vertex_attributes_from_gmm_to_gm_regions() const
     {
         GEO::AttributesManager& gmm_v_attr_mgr = vertices.attribute_manager();
         GEO::vector< std::string > att_v_names;
@@ -2440,7 +2440,7 @@ namespace RINGMesh {
                     vertices.gme_type_vertices( Region<3>::type_name_static(), v );
                 for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_region ) {
 
-                    const Region<3>& cur_region = geomodel_.region(
+                    const Region3D& cur_region = geomodel_.region(
                         cur_vertex_on_geomodel.gmme.index() );
                     GEO::AttributesManager& reg_v_attr_mgr =
                         cur_region.vertex_attribute_manager();
@@ -2480,11 +2480,11 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh<3>::transfer_vertex_attributes_from_gm_regions_to_gmm() const
+    void GeoModelMesh< 3 >::transfer_vertex_attributes_from_gm_regions_to_gmm() const
     {
         for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
             GEO::vector< std::string > att_v_names;
-            const Region<3>& cur_reg = geomodel().region( reg_itr );
+            const Region3D& cur_reg = geomodel().region( reg_itr );
             GEO::AttributesManager& reg_vertex_attr_mgr =
                 cur_reg.vertex_attribute_manager();
             reg_vertex_attr_mgr.list_attribute_names( att_v_names );
@@ -2538,12 +2538,12 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh<3>::transfer_cell_attributes_from_gmm_to_gm_regions() const
+    void GeoModelMesh< 3 >::transfer_cell_attributes_from_gmm_to_gm_regions() const
     {
         GEO::AttributesManager& gmm_c_attr_mgr = cells.attribute_manager();
         GEO::vector< std::string > att_c_names;
         gmm_c_attr_mgr.list_attribute_names( att_c_names );
-        const NNSearch<3>& nn_search = cells.cell_nn_search();
+        const NNSearch3D& nn_search = cells.cell_nn_search();
 
         for( const std::string& cur_attr_name : att_c_names ) {
             GEO::AttributeStore* cur_c_att_store_in_gmm =
@@ -2553,7 +2553,7 @@ namespace RINGMesh {
 
             for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
 
-                const Region<3>& cur_region = geomodel_.region( reg );
+                const Region3D& cur_region = geomodel_.region( reg );
                 GEO::AttributesManager& reg_c_attr_mgr =
                     cur_region.cell_attribute_manager();
                 GEO::AttributeStore* cur_c_att_store_in_reg = nullptr;
@@ -2596,12 +2596,12 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh<3>::transfer_cell_attributes_from_gm_regions_to_gmm() const
+    void GeoModelMesh< 3 >::transfer_cell_attributes_from_gm_regions_to_gmm() const
     {
-        const NNSearch<3>& nn_search = cells.cell_nn_search();
+        const NNSearch3D& nn_search = cells.cell_nn_search();
         for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
             GEO::vector< std::string > att_c_names;
-            const Region<3>& cur_reg = geomodel().region( reg_itr );
+            const Region3D& cur_reg = geomodel().region( reg_itr );
             GEO::AttributesManager& reg_cell_attr_mgr =
                 cur_reg.cell_attribute_manager();
             reg_cell_attr_mgr.list_attribute_names( att_c_names );
