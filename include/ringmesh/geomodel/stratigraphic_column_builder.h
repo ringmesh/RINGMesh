@@ -49,21 +49,23 @@ namespace RINGMesh {
     class RINGMESH_API StratigraphicColumnBuilder {
     ringmesh_disable_copy(StratigraphicColumnBuilder);
     public:
-        StratigraphicColumnBuilder( StratigraphicColumn& column, GeoModel& model );
+        StratigraphicColumnBuilder(
+            StratigraphicColumn& column,
+            GeoModel3D& model );
         virtual ~StratigraphicColumnBuilder()
         {
         }
     protected:
         StratigraphicColumn& column_;
-        GeoModel& model_;
+        GeoModel3D& model_;
     };
 
     class RINGMESH_API StratigraphicColumnBuilderFile: public StratigraphicColumnBuilder {
     public:
         StratigraphicColumnBuilderFile(
             StratigraphicColumn& column,
-            GeoModel& model,
-            const std::string& filename );
+            GeoModel3D& model,
+            std::string filename );
         virtual ~StratigraphicColumnBuilderFile() = default;
         void build_column()
         {
@@ -80,7 +82,7 @@ namespace RINGMesh {
     public:
         StratigraphicColumnBuilderXML(
             StratigraphicColumn& column,
-            GeoModel& model,
+            GeoModel3D& model,
             const std::string& filename )
             : StratigraphicColumnBuilderFile( column, model, filename )
         {

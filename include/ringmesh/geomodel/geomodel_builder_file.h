@@ -33,72 +33,46 @@
  *     FRANCE
  */
 
-#include <ringmesh/basic/box3d.h>
+#pragma once
 
-#include <algorithm>
+#include <ringmesh/basic/common.h>
+
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
+
+#include <ringmesh/io/io.h>
 
 /*!
- * @file Implementation of Box3D class
- * @author Arnaud Botella
- * @todo Rename this file.
+ * @brief Classes to build GeoModel from various inputs
+ * @author Jeanne Pellerin
  */
 
 namespace RINGMesh {
 
-    template< typename T >
-    inline T sqr( T x )
-    {
-        return x * x;
-    }
+    /*!
+     * @brief Abstract interface class to load and build GeoModels from files
+     */
+    template< index_t DIMENSION >
+    class GeoModelBuilderFile: public GeoModelBuilder< DIMENSION > {
+    public:
+        GeoModelBuilderFile( GeoModel< DIMENSION >& geomodel, std::string filename );
 
-    void Box3d::add_point( const vec3& p )
-    {
-        if( !initialized_ ) {
-            min_ = p;
-            max_ = p;
-            initialized_ = true;
-        } else {
-            for( index_t i = 0; i < 3; i++ ) {
-                min_[i] = std::min( min_[i], p[i] );
-                max_[i] = std::max( max_[i], p[i] );
+        virtual ~GeoModelBuilderFile() = default;
+
+        void build_geomodel()
+        {
+            if( find_geomodel_dimension( filename_ ) != DIMENSION ) {
+                throw RINGMeshException( "I/O",
+                    "Dimension of the GeoModel does not match the file" );
             }
+            load_file();
+            this->end_geomodel();
         }
-    }
 
-    double Box3d::signed_distance( const vec3& p ) const
-    {
-        bool inside = true;
-        double result = 0.0;
-        for( index_t c = 0; c < 3; c++ ) {
-            if( p[c] < min()[c] ) {
-                inside = false;
-                result += sqr( p[c] - min()[c] );
-            } else if( p[c] > max()[c] ) {
-                inside = false;
-                result += sqr( p[c] - max()[c] );
-            }
-        }
-        if( inside ) {
-            result = sqr( p[0] - min()[0] );
-            result = std::min( result, sqr( p[0] - max()[0] ) );
-            for( index_t c = 1; c < 3; ++c ) {
-                result = std::min( result, sqr( p[c] - min()[c] ) );
-                result = std::min( result, sqr( p[c] - max()[c] ) );
-            }
-            result = -result;
-        }
-        return result;
-    }
+    private:
+        virtual void load_file() = 0;
 
-    double Box3d::distance_to_center( const vec3& p ) const
-    {
-        double result = 0.0;
-        for( index_t c = 0; c < 3; ++c ) {
-            double d = p[c] - 0.5 * ( min()[c] + max()[c] );
-            result += sqr( d );
-        }
-        return result;
-    }
-
+    protected:
+        std::string filename_;
+    };
 }
-
