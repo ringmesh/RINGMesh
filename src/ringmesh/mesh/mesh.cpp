@@ -449,16 +449,16 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool VolumeMesh< DIMENSION >::find_cell_from_colocated_vertex_within_distance_if_any(
         const vecn< DIMENSION >& vertex_vec,
-        double epsilon,
+        double distance,
         index_t& cell_id,
         index_t& cell_vertex_id ) const
     {
         bool result = false;
         cell_nn_search().get_neighbors( vertex_vec,
-            [this, &vertex_vec, &result, &cell_id, &cell_vertex_id, epsilon]( index_t i ) {
+            [this, &vertex_vec, &result, &cell_id, &cell_vertex_id, distance]( index_t i ) {
                 for( index_t j : range( nb_cell_vertices( i ) ) ) {
                     if( inexact_equal( this->vertex( cell_vertex( ElementLocalVertex(i, j ))),
-                            vertex_vec, epsilon ) ) {
+                            vertex_vec, distance ) ) {
                         cell_vertex_id = cell_vertex( ElementLocalVertex(i,
                                 j ));
                         cell_id = i;
