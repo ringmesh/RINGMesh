@@ -384,7 +384,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     std::vector< index_t > VolumeMesh< DIMENSION >::cells_around_vertex(
         index_t vertex_id,
-        double epsilon,
         index_t cell_hint ) const
     {
         std::vector< index_t > result;
@@ -392,7 +391,7 @@ namespace RINGMesh {
         if( cell_hint == NO_ID ) {
             const vecn< DIMENSION > cur_vec = this->vertex( vertex_id );
             index_t cell_vertex_not_used = NO_ID;
-            bool found = find_cell_from_vertex( cur_vec, epsilon, cell_hint,
+            bool found = find_cell_from_vertex( cur_vec, global_epsilon, cell_hint,
                 cell_vertex_not_used );
             if( !found ) {
                 return result;
