@@ -504,7 +504,7 @@ namespace RINGMesh {
 
     void MeshSet< 3 >::create_volume_mesh( const MeshType type )
     {
-        volume_mesh = VolumeMesh< 3 >::create_mesh( type );
+        volume_mesh = VolumeMesh3D::create_mesh( type );
     }
 
     template class RINGMESH_API PointSetMesh< 2 > ;

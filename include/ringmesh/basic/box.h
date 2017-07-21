@@ -131,4 +131,6 @@ namespace RINGMesh {
 
     };
 
+    CLASS_DIMENSION_ALIASES( Box );
+
 }
