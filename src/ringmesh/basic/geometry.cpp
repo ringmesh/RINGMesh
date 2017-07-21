@@ -170,6 +170,28 @@ namespace RINGMesh {
         return std::make_tuple( true, lambdas );
     }
 
+    std::tuple< bool, std::array< double, 3 > > triangle_barycentric_coordinates(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        const vec2& p2 )
+    {
+        double total_area = GEO::Geom::triangle_signed_area( p2, p1, p0 );
+        if( std::fabs( total_area ) < global_epsilon_sq ) {
+            std::array< double, 3 > lambdas = { 0., 0., 0. };
+            return std::make_tuple( false, lambdas );
+        }
+        double area0 = GEO::Geom::triangle_signed_area( p2, p1, p );
+        double area1 = GEO::Geom::triangle_signed_area( p0, p2, p );
+        double area2 = GEO::Geom::triangle_signed_area( p1, p0, p );
+
+        double lambda0 = area0 / total_area;
+        double lambda1 = area1 / total_area;
+        double lambda2 = area2 / total_area;
+        std::array< double, 3 > lambdas = { lambda0, lambda1, lambda2 };
+        return std::make_tuple( true, lambdas );
+    }
+
     template< index_t DIMENSION >
     std::tuple< bool, vecn< DIMENSION > > point_segment_projection(
         const vecn< DIMENSION >& p,
