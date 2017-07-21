@@ -66,6 +66,8 @@ namespace {
         index_t coord_;
     };
 
+    CLASS_DIMENSION_ALIASES( Morton_cmp );
+
     /**
      * \brief Splits a sequence into two ordered halves.
      * \details The algorithm shuffles the sequence and
@@ -119,7 +121,7 @@ namespace {
     template< >
     template< index_t COORDX >
     void MortonSort< 3 >::sort(
-        const std::vector< Box< 3 > >& bboxes,
+        const std::vector< Box3D >& bboxes,
         const_vector_itr& begin,
         const_vector_itr& end )
     {
@@ -129,13 +131,13 @@ namespace {
         const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3;
 
         const_vector_itr m0 = begin, m8 = end;
-        const_vector_itr m4 = split( m0, m8, Morton_cmp< 3 >( bboxes, COORDX ) );
-        const_vector_itr m2 = split( m0, m4, Morton_cmp< 3 >( bboxes, COORDY ) );
-        const_vector_itr m1 = split( m0, m2, Morton_cmp< 3 >( bboxes, COORDZ ) );
-        const_vector_itr m3 = split( m2, m4, Morton_cmp< 3 >( bboxes, COORDZ ) );
-        const_vector_itr m6 = split( m4, m8, Morton_cmp< 3 >( bboxes, COORDY ) );
-        const_vector_itr m5 = split( m4, m6, Morton_cmp< 3 >( bboxes, COORDZ ) );
-        const_vector_itr m7 = split( m6, m8, Morton_cmp< 3 >( bboxes, COORDZ ) );
+        const_vector_itr m4 = split( m0, m8, Morton_cmp3D( bboxes, COORDX ) );
+        const_vector_itr m2 = split( m0, m4, Morton_cmp3D( bboxes, COORDY ) );
+        const_vector_itr m1 = split( m0, m2, Morton_cmp3D( bboxes, COORDZ ) );
+        const_vector_itr m3 = split( m2, m4, Morton_cmp3D( bboxes, COORDZ ) );
+        const_vector_itr m6 = split( m4, m8, Morton_cmp3D( bboxes, COORDY ) );
+        const_vector_itr m5 = split( m4, m6, Morton_cmp3D( bboxes, COORDZ ) );
+        const_vector_itr m7 = split( m6, m8, Morton_cmp3D( bboxes, COORDZ ) );
         sort< COORDZ >( bboxes, m0, m1 );
         sort< COORDY >( bboxes, m1, m2 );
         sort< COORDY >( bboxes, m2, m3 );
@@ -149,7 +151,7 @@ namespace {
     template< >
     template< index_t COORDX >
     void MortonSort< 2 >::sort(
-        const std::vector< Box< 2 > >& bboxes,
+        const std::vector< Box2D >& bboxes,
         const_vector_itr& begin,
         const_vector_itr& end )
     {
@@ -159,9 +161,9 @@ namespace {
         const index_t COORDY = ( COORDX + 1 ) % 2;
 
         const_vector_itr m0 = begin, m4 = end;
-        const_vector_itr m2 = split( m0, m4, Morton_cmp< 2 >( bboxes, COORDX ) );
-        const_vector_itr m1 = split( m0, m2, Morton_cmp< 2 >( bboxes, COORDY ) );
-        const_vector_itr m3 = split( m2, m4, Morton_cmp< 2 >( bboxes, COORDY ) );
+        const_vector_itr m2 = split( m0, m4, Morton_cmp2D( bboxes, COORDX ) );
+        const_vector_itr m1 = split( m0, m2, Morton_cmp2D( bboxes, COORDY ) );
+        const_vector_itr m3 = split( m2, m4, Morton_cmp2D( bboxes, COORDY ) );
         sort< COORDY >( bboxes, m0, m1 );
         sort< COORDX >( bboxes, m1, m2 );
         sort< COORDX >( bboxes, m2, m3 );

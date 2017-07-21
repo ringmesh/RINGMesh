@@ -51,7 +51,7 @@ namespace {
                 atom_exported_id_()
         {
         }
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
             if( !input ) {
@@ -61,7 +61,7 @@ namespace {
             GeoModelBuilderTSolid builder( geomodel, filename );
             builder.build_geomodel();
         }
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             ringmesh_assert( !out_.is_open() );
             out_.open( filename.c_str() );
@@ -70,7 +70,7 @@ namespace {
 
             fill_top_header( geomodel );
 
-            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
+            const GeoModelMesh3D& mesh = geomodel.mesh;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             fill_vertex_attribute_header( geomodel );
@@ -81,7 +81,7 @@ namespace {
             vertex_exported_id_.resize( mesh.vertices.nb(), NO_ID );
             atom_exported_id_.resize( mesh.cells.nb_duplicated_vertices(), NO_ID );
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                const RINGMesh::Region< 3 >& region = geomodel.region( r );
+                const RINGMesh::Region3D& region = geomodel.region( r );
                 export_one_region( region );
             }
 
@@ -91,11 +91,11 @@ namespace {
             out_ << "END" << std::endl;
         }
     private:
-        const GeoModelMesh< 3 >& geomodel_mesh( const Region< 3 >& region ) const
+        const GeoModelMesh3D& geomodel_mesh( const Region3D& region ) const
         {
             return region.geomodel().mesh;
         }
-        void fill_top_header( const GeoModel< 3 >& geomodel )
+        void fill_top_header( const GeoModel3D& geomodel )
         {
             ringmesh_assert( out_.is_open() );
             // Print Model3d headers
@@ -107,12 +107,12 @@ namespace {
                 << "AXIS_UNIT \"m\" \"m\" \"m\"" << EOL << "ZPOSITIVE Elevation"
                 << EOL << "END_ORIGINAL_COORDINATE_SYSTEM" << EOL;
         }
-        void fill_vertex_attribute_header( const GeoModel< 3 >& geomodel )
+        void fill_vertex_attribute_header( const GeoModel3D& geomodel )
         {
             ringmesh_assert( out_.is_open() );
             std::vector< bool > is_integer_like_attribute;
             for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
-                const Region< 3 >& cur_reg = geomodel.region( reg_i );
+                const Region3D& cur_reg = geomodel.region( reg_i );
                 GEO::AttributesManager& reg_vertex_attr_mgr =
                     cur_reg.vertex_attribute_manager();
                 GEO::vector< std::string > att_v_names;
@@ -224,12 +224,12 @@ namespace {
             }
         }
 
-        void fill_cell_attribute_header( const GeoModel< 3 >& geomodel )
+        void fill_cell_attribute_header( const GeoModel3D& geomodel )
         {
             ringmesh_assert( out_.is_open() );
             std::vector< bool > is_integer_like_attribute;
             for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
-                const Region< 3 >& cur_reg = geomodel.region( reg_i );
+                const Region3D& cur_reg = geomodel.region( reg_i );
                 GEO::AttributesManager& reg_cell_attr_mgr =
                     cur_reg.cell_attribute_manager();
                 GEO::vector< std::string > att_c_names;
@@ -330,7 +330,7 @@ namespace {
             }
         }
 
-        void export_one_region( const RINGMesh::Region< 3 >& region )
+        void export_one_region( const RINGMesh::Region3D& region )
         {
             ringmesh_assert( out_.is_open() );
             out_ << "TVOLUME " << region.name() << EOL;
@@ -338,7 +338,7 @@ namespace {
             export_tetrahedra( region );
         }
 
-        void export_region_vertices( const RINGMesh::Region< 3 >& region )
+        void export_region_vertices( const RINGMesh::Region3D& region )
         {
             // Export not duplicated vertices
             for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
@@ -347,10 +347,10 @@ namespace {
         }
 
         void export_region_cell_vertices(
-            const RINGMesh::Region< 3 >& region,
+            const RINGMesh::Region3D& region,
             index_t c )
         {
-            const GeoModelMesh< 3 >& mesh = geomodel_mesh( region );
+            const GeoModelMesh3D& mesh = geomodel_mesh( region );
             index_t cell = mesh.cells.cell( region.gmme().index(), c );
             vec3 cell_center = mesh.cells.barycenter( cell );
             for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
@@ -359,13 +359,13 @@ namespace {
         }
 
         void export_region_cell_vertex(
-            const RINGMesh::Region< 3 >& region,
+            const RINGMesh::Region3D& region,
             index_t cell,
             index_t v,
             const vec3& cell_center )
         {
             ringmesh_assert( out_.is_open() );
-            const GeoModelMesh< 3 >& mesh = geomodel_mesh( region );
+            const GeoModelMesh3D& mesh = geomodel_mesh( region );
             index_t atom_id = mesh.cells.duplicated_corner_index(
                 ElementLocalVertex( cell, v ) );
             if( atom_id == NO_ID ) {
@@ -387,7 +387,7 @@ namespace {
         }
 
         void export_region_cell_vertex_attributes(
-            const RINGMesh::Region< 3 >& region,
+            const RINGMesh::Region3D& region,
             index_t vertex_id,
             const vec3& cell_center )
         {
@@ -406,6 +406,7 @@ namespace {
                     const GEO::AttributeStore* attr_store =
                         reg_vertex_attr_mgr.find_attribute_store(
                             numeric_like_vertex_attribute_names_[attr_dbl_itr] );
+                    ringmesh_unused( attr_store );
                     ringmesh_assert( attr_store != nullptr );
                     ringmesh_assert(
                         attr_store->dimension()
@@ -432,11 +433,11 @@ namespace {
         }
 
         index_t find_gmm_cell_in_gm_region(
-            const Region< 3 >& region,
+            const Region3D& region,
             index_t vertex_id,
             const vec3& cell_center ) const
         {
-            const GeoModelMesh< 3 >& mesh = geomodel_mesh( region );
+            const GeoModelMesh3D& mesh = geomodel_mesh( region );
             /// As we export the non duplicated vertices,
             /// gme_vertices should be at size 1 (to check),
             /// so the loop should not be needed but I [BC]
@@ -466,7 +467,7 @@ namespace {
             return NO_ID;
         }
 
-        void export_tetrahedra( const RINGMesh::Region< 3 >& region )
+        void export_tetrahedra( const RINGMesh::Region3D& region )
         {
             // Export duplicated vertices
             export_duplicated_vertices();
@@ -474,7 +475,7 @@ namespace {
             // Mark if a boundary is ending in the region
             mark_boundary_ending_in_region( region );
 
-            const GeoModelMesh< 3 >& mesh = geomodel_mesh( region );
+            const GeoModelMesh3D& mesh = geomodel_mesh( region );
             for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
                 out_ << "TETRA";
                 index_t cell = mesh.cells.cell( region.gmme().index(), c );
@@ -506,7 +507,7 @@ namespace {
 
         /// TODO it seems that this code is not used for export since no writtings
         /// in out ofstream.
-        void mark_boundary_ending_in_region( const Region< 3 >& region )
+        void mark_boundary_ending_in_region( const Region3D& region )
         {
             std::map< index_t, index_t > sides;
             for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
@@ -519,17 +520,17 @@ namespace {
             }
         }
 
-        void export_tetra( const Region< 3 >& region, index_t cell )
+        void export_tetra( const Region3D& region, index_t cell )
         {
             export_tetra_coordinates( region, cell );
             /// Export cell attributes
             export_tetra_attributes( region, cell );
         }
 
-        void export_tetra_coordinates( const Region< 3 >& region, index_t cell )
+        void export_tetra_coordinates( const Region3D& region, index_t cell )
         {
             ringmesh_assert( out_.is_open() );
-            const GeoModelMesh< 3 >& mesh = geomodel_mesh( region );
+            const GeoModelMesh3D& mesh = geomodel_mesh( region );
             for( index_t v = 0; v < region.geomodel().mesh.cells.nb_vertices( cell );
                 v++ ) {
                 index_t atom_id = mesh.cells.duplicated_corner_index(
@@ -544,12 +545,12 @@ namespace {
             }
         }
 
-        void export_tetra_attributes( const Region< 3 >& region, index_t cell )
+        void export_tetra_attributes( const Region3D& region, index_t cell )
         {
             ringmesh_assert( out_.is_open() );
             GEO::AttributesManager& reg_cell_attr_mgr =
                 region.cell_attribute_manager();
-            const GeoModelMesh< 3 >& mesh = geomodel_mesh( region );
+            const GeoModelMesh3D& mesh = geomodel_mesh( region );
             vec3 center = mesh.cells.barycenter( cell );
             const std::vector< index_t > c_in_reg =
                 region.cell_nn_search().get_neighbors( center,
@@ -563,6 +564,7 @@ namespace {
                     const GEO::AttributeStore* attr_store =
                         reg_cell_attr_mgr.find_attribute_store(
                             numeric_like_cell_attribute_names_[attr_dbl_itr] );
+                    ringmesh_unused( attr_store );
                     ringmesh_assert( attr_store != nullptr );
                     ringmesh_assert(
                         attr_store->dimension()
@@ -585,10 +587,10 @@ namespace {
             }
         }
 
-        void export_ctetra( const Region< 3 >& region, index_t c )
+        void export_ctetra( const Region3D& region, index_t c )
         {
             ringmesh_assert( out_.is_open() );
-            const GeoModelMesh< 3 >& mesh = geomodel_mesh( region );
+            const GeoModelMesh3D& mesh = geomodel_mesh( region );
             for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                 out_ << " ";
                 index_t polygon = NO_ID;
@@ -604,19 +606,19 @@ namespace {
             }
         }
 
-        void export_model( const GeoModel< 3 >& geomodel )
+        void export_model( const GeoModel3D& geomodel )
         {
             ringmesh_assert( out_.is_open() );
             out_ << "MODEL" << EOL;
             int tface_count = 1;
 
-            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
+            const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
             for( index_t i = 0;
                 i
                     < geomodel.nb_geological_entities(
-                        Interface < 3 > ::type_name_static() ); i++ ) {
-                const RINGMesh::GeoModelGeologicalEntity< 3 >& interf =
-                    geomodel.geological_entity( Interface < 3 > ::type_name_static(),
+                        Interface3D::type_name_static() ); i++ ) {
+                const RINGMesh::GeoModelGeologicalEntity3D& interf =
+                    geomodel.geological_entity( Interface3D::type_name_static(),
                         i );
                 out_ << "SURFACE " << interf.name() << EOL;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
@@ -646,11 +648,11 @@ namespace {
                 }
             }
         }
-        void export_model_region( const GeoModel< 3 >& geomodel )
+        void export_model_region( const GeoModel3D& geomodel )
         {
             ringmesh_assert( out_.is_open() );
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                const RINGMesh::Region< 3 >& region = geomodel.region( r );
+                const RINGMesh::Region3D& region = geomodel.region( r );
                 out_ << "MODEL_REGION " << region.name() << " ";
                 region.side( 0 ) ? out_ << "+" : out_ << "-";
                 out_ << region.boundary_gmme( 0 ).index() + 1 << EOL;

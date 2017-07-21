@@ -95,7 +95,7 @@ namespace RINGMesh {
 
     void GeoModelGfx< 3 >::initialize()
     {
-        GeoModelGfxBase< 3 >::initialize();
+        GeoModelGfxBase3D::initialize();
         regions.initialize();
     }
 

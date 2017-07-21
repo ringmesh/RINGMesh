@@ -278,19 +278,19 @@ namespace RINGMesh {
     }
 
     GeoModelBuilderRemoval< 3 >::GeoModelBuilderRemoval(
-        GeoModelBuilder< 3 >& builder,
-        GeoModel< 3 >& geomodel )
+        GeoModelBuilder3D& builder,
+        GeoModel3D& geomodel )
         : GeoModelBuilderRemovalBase< 3 >( builder, geomodel )
     {
     }
 
     void GeoModelBuilderRemoval< 3 >::update_mesh_entity(
-        GeoModelMeshEntity< 3 >& ME )
+        GeoModelMeshEntity3D& ME )
     {
-        GeoModelBuilderRemovalBase< 3 >::update_mesh_entity( ME );
+        GeoModelBuilderRemovalBase3D::update_mesh_entity( ME );
 
-        if( ME.mesh_entity_type() == Region< 3 >::type_name_static() ) {
-            Region< 3 >& R = dynamic_cast< Region< 3 >& >( ME );
+        if( ME.mesh_entity_type() == Region3D::type_name_static() ) {
+            Region3D& R = dynamic_cast< Region3D& >( ME );
             update_region_boundary_signs( R );
             delete_invalid_signs( R );
         }
