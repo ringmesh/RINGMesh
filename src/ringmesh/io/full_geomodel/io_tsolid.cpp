@@ -403,17 +403,18 @@ namespace {
                 ++attr_dbl_itr ) {
                 if( reg_vertex_attr_mgr.is_defined(
                     numeric_like_vertex_attribute_names_[attr_dbl_itr] ) ) {
-                    const GEO::AttributeStore* attr_store =
-                        reg_vertex_attr_mgr.find_attribute_store(
-                            numeric_like_vertex_attribute_names_[attr_dbl_itr] );
-                    ringmesh_unused( attr_store );
-                    ringmesh_assert( attr_store != nullptr );
                     ringmesh_assert(
-                        attr_store->dimension()
+                        reg_vertex_attr_mgr.find_attribute_store(
+                            numeric_like_vertex_attribute_names_[attr_dbl_itr] )
+                            != nullptr );
+                    ringmesh_assert(
+                        reg_vertex_attr_mgr.find_attribute_store(
+                            numeric_like_vertex_attribute_names_[attr_dbl_itr] )->dimension()
                             == vertex_attribute_dimensions_[attr_dbl_itr] );
                     ringmesh_assert(
                         GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                            attr_store ) );
+                            reg_vertex_attr_mgr.find_attribute_store(
+                                numeric_like_vertex_attribute_names_[attr_dbl_itr] ) ) );
                     GEO::ReadOnlyScalarAttributeAdapter cur_attr(
                         reg_vertex_attr_mgr,
                         numeric_like_vertex_attribute_names_[attr_dbl_itr] );
@@ -561,17 +562,18 @@ namespace {
                 ++attr_dbl_itr ) {
                 if( reg_cell_attr_mgr.is_defined(
                     numeric_like_cell_attribute_names_[attr_dbl_itr] ) ) {
-                    const GEO::AttributeStore* attr_store =
-                        reg_cell_attr_mgr.find_attribute_store(
-                            numeric_like_cell_attribute_names_[attr_dbl_itr] );
-                    ringmesh_unused( attr_store );
-                    ringmesh_assert( attr_store != nullptr );
                     ringmesh_assert(
-                        attr_store->dimension()
+                        reg_cell_attr_mgr.find_attribute_store(
+                            numeric_like_cell_attribute_names_[attr_dbl_itr] )
+                            != nullptr );
+                    ringmesh_assert(
+                        reg_cell_attr_mgr.find_attribute_store(
+                            numeric_like_cell_attribute_names_[attr_dbl_itr] )->dimension()
                             == cell_attribute_dimensions_[attr_dbl_itr] );
                     ringmesh_assert(
                         GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                            attr_store ) );
+                            reg_cell_attr_mgr.find_attribute_store(
+                                numeric_like_cell_attribute_names_[attr_dbl_itr] ) ) );
                     GEO::ReadOnlyScalarAttributeAdapter cur_attr( reg_cell_attr_mgr,
                         numeric_like_cell_attribute_names_[attr_dbl_itr] );
                     for( index_t dim_itr = 0;
