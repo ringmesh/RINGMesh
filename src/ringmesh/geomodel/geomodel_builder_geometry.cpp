@@ -79,8 +79,8 @@ namespace {
         const vecn< DIMENSION >& v0,
         const vecn< DIMENSION >& v1 )
     {
-        index_t polygon;
-        index_t edge;
+        index_t polygon = NO_ID;
+        index_t edge = NO_ID;
         vecn< DIMENSION > v_bary = 0.5 * ( v0 + v1 );
         bool result = false;
         surface.polygon_nn_search().get_neighbors( v_bary,
@@ -99,7 +99,8 @@ namespace {
                         }
                     }
                 }
-                return result;} );
+                return result;
+        } );
         return std::make_tuple( result, polygon, edge );
     }
 
@@ -131,8 +132,8 @@ namespace {
         const Surface< DIMENSION >& surface,
         index_t polygon )
     {
-        index_t cell;
-        index_t cell_facet;
+        index_t cell = NO_ID;
+        index_t cell_facet = NO_ID;
         vec3 v_bary = surface.mesh_element_barycenter( polygon );
         bool result = false;
         region.cell_nn_search().get_neighbors( v_bary,
@@ -146,7 +147,8 @@ namespace {
                         break;
                     }
                 }
-                return result;} );
+                return result;
+        } );
         return std::make_tuple( result, cell,cell_facet );
     }
 
@@ -170,7 +172,8 @@ namespace {
                         break;
                     }
                 }
-                return result;} );
+                return result;
+        } );
         return result;
     }
 
@@ -194,7 +197,8 @@ namespace {
                         break;
                     }
                 }
-                return result;} );
+                return result;
+        } );
         return result;
     }
 
