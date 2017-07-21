@@ -35,18 +35,18 @@
 
 namespace {
 
-    void save_header( const GeoModel< 3 >& geomodel, std::ostream& out )
+    void save_header( const GeoModel3D& geomodel, std::ostream& out )
     {
         out << "solid " << geomodel.name() << EOL;
     }
 
-    void save_footer( const GeoModel< 3 >& geomodel, std::ostream& out )
+    void save_footer( const GeoModel3D& geomodel, std::ostream& out )
     {
         out << "endsolid" << geomodel.name() << EOL;
     }
 
     void save_normal(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         index_t triangle_id,
         std::ostream& out )
     {
@@ -65,7 +65,7 @@ namespace {
     }
 
     void save_triangle_vertex(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         index_t triangle_id,
         index_t local_vertex_id,
         std::ostream& out )
@@ -78,7 +78,7 @@ namespace {
     }
 
     void save_triangle(
-        const GeoModel< 3 >& geomodel,
+        const GeoModel3D& geomodel,
         index_t triangle_id,
         std::ostream& out )
     {
@@ -90,14 +90,14 @@ namespace {
         end_triangle( out );
     }
 
-    void save_triangles( const GeoModel< 3 >& geomodel, std::ostream& out )
+    void save_triangles( const GeoModel3D& geomodel, std::ostream& out )
     {
         for( index_t triangle : range( geomodel.mesh.polygons.nb_triangle() ) ) {
             save_triangle( geomodel, triangle, out );
         }
     }
 
-    void check_stl_validity( const GeoModel< 3 >& geomodel )
+    void check_stl_validity( const GeoModel3D& geomodel )
     {
         if( geomodel.mesh.polygons.nb() != geomodel.mesh.polygons.nb_triangle() ) {
             throw RINGMeshException( "I/O",
@@ -118,14 +118,14 @@ namespace {
      */
     class STLIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from STL mesh not yet implemented" );
         }
 
         void save(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             const std::string& filename ) final
         {
             check_stl_validity( geomodel );

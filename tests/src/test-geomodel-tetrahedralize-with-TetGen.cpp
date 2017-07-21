@@ -62,7 +62,7 @@ int main()
         file_name += "modelA6.ml";
 
         // Loading the GeoModel
-        GeoModel< 3 > geomodel;
+        GeoModel3D geomodel;
         bool loaded_model_is_valid = geomodel_load( geomodel, file_name );
 
         if( !loaded_model_is_valid ) {
@@ -88,7 +88,7 @@ int main()
         geomodel_save( geomodel, output_file_name );
 
         // Reload it and test its validity
-        GeoModel< 3 > reloaded_model;
+        GeoModel3D reloaded_model;
         bool reloaded_model_is_valid = geomodel_load( reloaded_model,
             output_file_name );
 

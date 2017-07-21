@@ -67,6 +67,9 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelMeshPolygons;
     template< index_t DIMENSION > class GeoModelMeshPolygonsBase;
     template< index_t DIMENSION > class GeoModelMeshCells;
+
+    CLASS_DIMENSION_ALIASES( GeoModelMesh );
+    CLASS_DIMENSION_ALIASES( GeoModel );
 }
 
 namespace RINGMesh {
@@ -489,6 +492,8 @@ namespace RINGMesh {
         GeoModelVertexMapper vertex_mapper_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelMeshVerticesBase );
+
     template< index_t DIMENSION >
     class GeoModelMeshVertices final: public GeoModelMeshVerticesBase< DIMENSION > {
     public:
@@ -502,14 +507,16 @@ namespace RINGMesh {
     class GeoModelMeshVertices< 3 > final: public GeoModelMeshVerticesBase< 3 > {
     public:
         GeoModelMeshVertices(
-            GeoModelMesh< 3 >& gmm,
-            GeoModel< 3 >& gm,
-            std::unique_ptr< PointSetMesh< 3 > >& mesh );
+            GeoModelMesh3D& gmm,
+            GeoModel3D& gm,
+            std::unique_ptr< PointSetMesh3D >& mesh );
 
         void clear() override;
         index_t nb_total_vertices() const override;
         index_t fill_vertices() override;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelMeshVertices );
 
     template< index_t DIMENSION >
     class GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
@@ -773,9 +780,9 @@ namespace RINGMesh {
     class GeoModelMeshPolygons< 3 > final: public GeoModelMeshPolygonsBase< 3 > {
     public:
         GeoModelMeshPolygons(
-            GeoModelMesh< 3 >& gmm,
-            GeoModel< 3 >& gm,
-            std::unique_ptr< SurfaceMesh< 3 > >& mesh );
+            GeoModelMesh3D& gmm,
+            GeoModel3D& gm,
+            std::unique_ptr< SurfaceMesh3D >& mesh );
 
         /*!
          * Get the normal of the polygon
@@ -783,6 +790,8 @@ namespace RINGMesh {
          */
         vec3 normal( index_t p ) const;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelMeshPolygons );
 
     template< index_t DIMENSION >
     class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
@@ -858,6 +867,8 @@ namespace RINGMesh {
          */
         std::vector< index_t > well_ptr_;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelMeshEdges );
 
     template< index_t DIMENSION >
     class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
@@ -1320,6 +1331,8 @@ namespace RINGMesh {
         GEO::Attribute< index_t > polygon_id_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelMeshCells );
+
     template< index_t DIMENSION >
     class GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshBase );
@@ -1387,7 +1400,7 @@ namespace RINGMesh {
     template< >
     class GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
     public:
-        GeoModelMesh( GeoModel< 3 >& geomodel );
+        GeoModelMesh( GeoModel3D& geomodel );
         virtual ~GeoModelMesh();
 
         /*! @}
@@ -1409,7 +1422,7 @@ namespace RINGMesh {
          * Access the DuplicateMode
          * @return the current DuplicateMode
          */
-        GeoModelMeshCells< 3 >::DuplicateMode duplicate_mode() const
+        GeoModelMeshCells3D::DuplicateMode duplicate_mode() const
         {
             return mode_;
         }
@@ -1418,11 +1431,11 @@ namespace RINGMesh {
          * @param[in] mode the new DuplicateMode for the GeoModelMesh
          */
         void set_duplicate_mode(
-            const GeoModelMeshCells< 3 >::DuplicateMode& mode ) const
+            const GeoModelMeshCells3D::DuplicateMode& mode ) const
         {
             if( mode_ == mode ) return;
             mode_ = mode;
-            const_cast< GeoModelMesh< 3 >* >( this )->cells.clear_duplication();
+            const_cast< GeoModelMesh3D* >( this )->cells.clear_duplication();
         }
 
         /*! @}
@@ -1433,11 +1446,11 @@ namespace RINGMesh {
 
     private:
         /// Optional duplication mode to compute the duplication of cells on surfaces
-        mutable GeoModelMeshCells< 3 >::DuplicateMode mode_ {
-            GeoModelMeshCells< 3 >::NONE };
+        mutable GeoModelMeshCells3D::DuplicateMode mode_ {
+            GeoModelMeshCells3D::NONE };
 
     public:
-        GeoModelMeshCells< 3 > cells;
+        GeoModelMeshCells3D cells;
     };
 
 }
