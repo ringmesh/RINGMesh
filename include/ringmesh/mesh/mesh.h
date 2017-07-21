@@ -1020,6 +1020,10 @@ namespace RINGMesh {
          */
         virtual double cell_volume( index_t cell_id ) const = 0;
 
+        std::vector< index_t > cells_around_vertex(
+            index_t vertex_id,
+            index_t cell_hint ) const;
+
         index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const
         {
             for( index_t v : range( nb_cell_vertices( cell_id ) ) ) {
@@ -1080,6 +1084,11 @@ namespace RINGMesh {
         }
     protected:
         VolumeMesh() = default;
+    private:
+        /// @TODO use find_cell_from_vertex function in geomodel_builder_geometry
+        /// (in the unnamed namespace, geomodel2d branch) which uses C++11 a lambda
+        /// function. BC.
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_mesh ) const;
 
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_facet_nn_search_;
