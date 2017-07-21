@@ -87,7 +87,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelBase {
     ringmesh_disable_copy( GeoModelBase );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelAccess< DIMENSION > ;
 
     public:
@@ -303,6 +303,8 @@ namespace RINGMesh {
         const WellGroup< DIMENSION >* wells_ { nullptr };
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelBase );
+
     template< index_t DIMENSION >
     class GeoModel final: public GeoModelBase< DIMENSION > {
         friend class GeoModelAccess< DIMENSION > ;
@@ -351,16 +353,16 @@ namespace RINGMesh {
             return static_cast< index_t >( regions_.size() );
         }
 
-        const Region< 3 >& region( index_t index ) const;
+        const Region3D& region( index_t index ) const;
 
-        const GeoModelMeshEntity< 3 >& mesh_entity(
+        const GeoModelMeshEntity3D& mesh_entity(
             const MeshEntityType& entity_type,
             index_t entity_index ) const
         {
-            return GeoModelBase< 3 >::mesh_entity( entity_type, entity_index );
+            return GeoModelBase3D::mesh_entity( entity_type, entity_index );
         }
 
-        const GeoModelMeshEntity< 3 >& mesh_entity( gmme_id id ) const override;
+        const GeoModelMeshEntity3D& mesh_entity( gmme_id id ) const override;
 
         index_t nb_mesh_entities( const MeshEntityType& type ) const override;
 
@@ -369,17 +371,19 @@ namespace RINGMesh {
             return epsilon2() * epsilon();
         }
     private:
-        const std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& mesh_entities(
+        const std::vector< std::unique_ptr< GeoModelMeshEntity3D > >& mesh_entities(
             const MeshEntityType& type ) const override;
 
     private:
-        std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > > regions_;
+        std::vector< std::unique_ptr< GeoModelMeshEntity3D > > regions_;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModel );
 
     template< index_t DIMENSION >
     class GeoModelAccess {
     ringmesh_disable_copy( GeoModelAccess );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
         friend class GeoModelBuilderGM< DIMENSION > ;

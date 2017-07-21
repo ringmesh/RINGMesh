@@ -59,16 +59,16 @@ namespace {
      */
     class MFEMIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from MFEM not implemented yet" );
         }
         void save(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             const std::string& filename ) final
         {
-            const GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
+            const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
             index_t nb_cells = geomodel_mesh.cells.nb();
             if( geomodel_mesh.cells.nb_tet() != nb_cells
                 && geomodel_mesh.cells.nb_hex() != nb_cells ) {
@@ -92,7 +92,7 @@ namespace {
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
         void write_header(
-            const GeoModelMesh< 3 >& geomodel_mesh,
+            const GeoModelMesh3D& geomodel_mesh,
             std::ofstream& out ) const
         {
             // MFEM mesh version
@@ -116,7 +116,7 @@ namespace {
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
         void write_cells(
-            const GeoModelMesh< 3 >& geomodel_mesh,
+            const GeoModelMesh3D& geomodel_mesh,
             std::ofstream& out ) const
         {
             index_t nb_cells = geomodel_mesh.cells.nb();
@@ -148,10 +148,10 @@ namespace {
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
         void write_polygons(
-            const GeoModelMesh< 3 >& geomodel_mesh,
+            const GeoModelMesh3D& geomodel_mesh,
             std::ofstream& out ) const
         {
-            const GeoModelMeshPolygons< 3 >& polygons = geomodel_mesh.polygons;
+            const GeoModelMeshPolygons3D& polygons = geomodel_mesh.polygons;
             out << "boundary" << EOL;
             out << polygons.nb() << EOL;
             for( index_t p : range( polygons.nb() ) ) {
@@ -175,7 +175,7 @@ namespace {
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
         void write_vertices(
-            const GeoModelMesh< 3 >& geomodel_mesh,
+            const GeoModelMesh3D& geomodel_mesh,
             std::ofstream& out ) const
         {
             out << "vertices" << EOL;

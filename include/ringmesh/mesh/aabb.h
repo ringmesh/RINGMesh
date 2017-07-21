@@ -266,6 +266,8 @@ namespace RINGMesh {
             index_t element_id ) const override;
     };
 
+    CLASS_DIMENSION_ALIASES( BoxAABBTree );
+
     template< index_t DIMENSION >
     class LineAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -312,6 +314,8 @@ namespace RINGMesh {
     private:
         const LineMesh< DIMENSION >& mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( LineAABBTree );
 
     template< index_t DIMENSION >
     class SurfaceAABBTree: public AABBTree< DIMENSION > {
@@ -362,6 +366,8 @@ namespace RINGMesh {
         const SurfaceMeshBase< DIMENSION >& mesh_;
     };
 
+    CLASS_DIMENSION_ALIASES( SurfaceAABBTree );
+
     template< index_t DIMENSION >
     class VolumeAABBTree: public AABBTree< DIMENSION > {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
@@ -394,6 +400,8 @@ namespace RINGMesh {
     private:
         const VolumeMesh< DIMENSION >& mesh_;
     };
+
+    using VolumeAABBTree3D = VolumeAABBTree< 3 >;
 
     template< index_t DIMENSION >
     double inner_point_box_distance(

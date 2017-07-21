@@ -722,19 +722,19 @@ namespace RINGMesh {
         // To disable the key 'R'. If no layer within the model, layer is not
         // a valid type.
         if( !GM_.entity_type_manager().geological_entity_manager.is_valid_type(
-            Layer< 3 >::type_name_static() ) ) {
+            Layer3D::type_name_static() ) ) {
             show_colored_layers_.new_status = false;
             return;
         }
         colored_cells_.new_status = false;
         show_colored_regions_.new_status = false;
         for( index_t l : range(
-            GM_.nb_geological_entities( Layer< 3 >::type_name_static() ) ) ) {
+            GM_.nb_geological_entities( Layer3D::type_name_static() ) ) ) {
             float red = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float green = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float blue = std::fmod( GEO::Numeric::random_float32(), 1.f );
-            const GeoModelGeologicalEntity< 3 >& cur_layer = GM_.geological_entity(
-                Layer< 3 >::type_name_static(), l );
+            const GeoModelGeologicalEntity3D& cur_layer = GM_.geological_entity(
+                Layer3D::type_name_static(), l );
             for( index_t r : range( cur_layer.nb_children() ) )
                 GM_gfx_.regions.set_region_color( cur_layer.child( r ).index(), red,
                     green, blue );
@@ -743,7 +743,7 @@ namespace RINGMesh {
 
     void RINGMeshApplication::GeoModelViewer< 3 >::draw_scene()
     {
-        GeoModelViewerBase< 3 >::draw_scene();
+        GeoModelViewerBase3D::draw_scene();
 
         if( show_volume_ && meshed_regions_ ) {
             GM_gfx_.regions.set_mesh_visibility( mesh_visible_ );
@@ -799,7 +799,7 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer< 3 >::update_all_entity_visibility(
         bool value )
     {
-        GeoModelViewerBase< 3 >::update_all_entity_visibility( value );
+        GeoModelViewerBase3D::update_all_entity_visibility( value );
         GM_gfx_.regions.set_region_visibility( value );
         if( volume_style_.visible_vertices_ ) {
             GM_gfx_.regions.set_vertex_visibility( value );
@@ -812,7 +812,7 @@ namespace RINGMesh {
         GM_gfx_.regions.set_region_visibility( region_id, true );
         GM_gfx_.regions.set_vertex_visibility( region_id,
             volume_style_.visible_vertices_ );
-        const Region< 3 >& region = GM_.region( region_id );
+        const Region3D& region = GM_.region( region_id );
         for( index_t i : range( region.nb_boundaries() ) ) {
             toggle_surface_and_boundaries_visibility(
                 region.boundary_gmme( i ).index() );
@@ -822,19 +822,19 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer< 3 >::toggle_mesh_entity_and_boundaries_visibility(
         const gmme_id& entity_id )
     {
-        const MeshEntityTypeManager< 3 >& manager =
+        const MeshEntityTypeManager3D& manager =
             GM_.entity_type_manager().mesh_entity_manager;
         if( manager.is_region( entity_id.type() ) ) {
             toggle_region_and_boundaries_visibility( entity_id.index() );
         } else {
-            GeoModelViewerBase< 3 >::toggle_mesh_entity_and_boundaries_visibility(
+            GeoModelViewerBase3D::toggle_mesh_entity_and_boundaries_visibility(
                 entity_id );
         }
     }
 
     void RINGMeshApplication::GeoModelViewer< 3 >::draw_object_properties()
     {
-        GeoModelViewerBase< 3 >::draw_object_properties();
+        GeoModelViewerBase3D::draw_object_properties();
 
         if( meshed_regions_ ) {
             ImGui::Separator();
@@ -850,7 +850,7 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Col. regions [r]",
                     &show_colored_regions_.new_status );
                 if( GM_.entity_type_manager().geological_entity_manager.is_valid_type(
-                    Layer< 3 >::type_name_static() ) ) {
+                    Layer3D::type_name_static() ) ) {
                     ImGui::Checkbox( "Col. layers [R]",
                         &show_colored_layers_.new_status );
                 }
@@ -1091,8 +1091,8 @@ namespace RINGMesh {
         configure_ringmesh();
 
         std::vector< std::string > ringmesh_extensions;
-        GeoModelIOHandlerFactory< 2 >::list_creators( ringmesh_extensions );
-        GeoModelIOHandlerFactory< 3 >::list_creators( ringmesh_extensions );
+        GeoModelIOHandlerFactory2D::list_creators( ringmesh_extensions );
+        GeoModelIOHandlerFactory3D::list_creators( ringmesh_extensions );
         ringmesh_file_extensions_ = GEO::String::join_strings( ringmesh_extensions,
             ';' );
 
@@ -1257,12 +1257,12 @@ namespace RINGMesh {
             index_t dimension = find_geomodel_dimension( filename );
             if( dimension == 2 ) {
                 geomodels2d_.emplace_back(
-                    new GeoModelViewer< 2 >( *this, filename ) );
+                    new GeoModelViewer2D( *this, filename ) );
                 current_viewer_ = static_cast< index_t >( geomodels2d_.size() - 1 );
                 current_viewer_type_ = ViewerType::GEOMODEL2D;
             } else if( dimension == 3 ) {
                 geomodels3d_.emplace_back(
-                    new GeoModelViewer< 3 >( *this, filename ) );
+                    new GeoModelViewer3D( *this, filename ) );
                 current_viewer_ = static_cast< index_t >( geomodels3d_.size() - 1 );
                 current_viewer_type_ = ViewerType::GEOMODEL3D;
             } else {
@@ -1276,8 +1276,8 @@ namespace RINGMesh {
 
     void RINGMeshApplication::update_region_of_interest()
     {
-        Box< 3 > bbox;
-        for( std::unique_ptr< GeoModelViewer< 2 > >& geomodel : geomodels2d_ ) {
+        Box3D bbox;
+        for( std::unique_ptr< GeoModelViewer2D >& geomodel : geomodels2d_ ) {
             if( geomodel->is_visible_ ) {
                 vec2 min = geomodel->bbox_.min();
                 vec2 max = geomodel->bbox_.max();
@@ -1285,7 +1285,7 @@ namespace RINGMesh {
                 bbox.add_point( vec3( max.x, max.y, 0. ) );
             }
         }
-        for( std::unique_ptr< GeoModelViewer< 3 > >& geomodel : geomodels3d_ ) {
+        for( std::unique_ptr< GeoModelViewer3D >& geomodel : geomodels3d_ ) {
             if( geomodel->is_visible_ ) {
                 bbox.add_box( geomodel->bbox_ );
             }
@@ -1310,25 +1310,25 @@ namespace RINGMesh {
                 mesh->draw_scene();
             }
         }
-        for( std::unique_ptr< GeoModelViewer< 2 > >& geomodel : geomodels2d_ ) {
+        for( std::unique_ptr< GeoModelViewer2D >& geomodel : geomodels2d_ ) {
             if( geomodel->is_visible_ ) {
                 geomodel->draw_scene();
             }
         }
-        for( std::unique_ptr< GeoModelViewer< 3 > >& geomodel : geomodels3d_ ) {
+        for( std::unique_ptr< GeoModelViewer3D >& geomodel : geomodels3d_ ) {
             if( geomodel->is_visible_ ) {
                 geomodel->draw_scene();
             }
         }
 
         if( current_viewer_type_ == ViewerType::GEOMODEL2D ) {
-            GeoModelViewerBase< 2 >& viewer = *geomodels2d_[current_viewer_];
+            GeoModelViewerBase2D& viewer = *geomodels2d_[current_viewer_];
             if( viewer.show_colormap_ ) {
                 viewer.draw_colormap();
             }
         }
         if( current_viewer_type_ == ViewerType::GEOMODEL3D ) {
-            GeoModelViewerBase< 3 >& viewer = *geomodels3d_[current_viewer_];
+            GeoModelViewerBase3D& viewer = *geomodels3d_[current_viewer_];
             if( viewer.show_colormap_ ) {
                 viewer.draw_colormap();
             }

@@ -61,6 +61,8 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
     template< index_t DIMENSION > class GeoModelBuilderRemoval;
     template< index_t DIMENSION > class GeoModelBuilderInfo;
+
+    CLASS_DIMENSION_ALIASES( GeoModel );
 }
 
 namespace RINGMesh {
@@ -353,6 +355,8 @@ namespace RINGMesh {
         std::shared_ptr< MeshBase< DIMENSION > > mesh_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelMeshEntity );
+
     /*!
      * @brief A GeoModelEntity of type CORNER
      * @details It is a unique point.
@@ -479,6 +483,8 @@ namespace RINGMesh {
     private:
         std::shared_ptr< PointSetMesh< DIMENSION > > point_set_mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( Corner );
 
     /*!
      * @brief A GeoModelEntity of type LINE
@@ -633,6 +639,8 @@ namespace RINGMesh {
     private:
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( Line );
 
     /*!
      * @brief A GeoModelEntity of type SURFACE
@@ -826,7 +834,7 @@ namespace RINGMesh {
     class Surface< 2 > final: public SurfaceBase< 2 > {
         friend class GeoModelMeshEntityAccess< 2 > ;
     private:
-        Surface( const GeoModel< 2 >& geomodel, index_t id, const MeshType type )
+        Surface( const GeoModel2D& geomodel, index_t id, const MeshType type )
             : SurfaceBase< 2 >( geomodel, id, type )
         {
         }
@@ -848,7 +856,7 @@ namespace RINGMesh {
     class Surface< 3 > final: public SurfaceBase< 3 > {
         friend class GeoModelMeshEntityAccess< 3 > ;
     private:
-        Surface( const GeoModel< 3 >& geomodel, index_t id, const MeshType type )
+        Surface( const GeoModel3D& geomodel, index_t id, const MeshType type )
             : SurfaceBase< 3 >( geomodel, id, type )
         {
         }
@@ -856,6 +864,8 @@ namespace RINGMesh {
     public:
         const Region< 3 >& incident_entity( index_t x ) const;
     };
+
+    CLASS_DIMENSION_ALIASES( Surface );
 
     /*!
      * @brief A GeoModelEntity of type REGION
@@ -1115,6 +1125,12 @@ namespace RINGMesh {
             return vecn< DIMENSION >();
         }
 
+        std::vector< index_t > cells_around_vertex(
+            index_t vertex_id,
+            index_t cell_hint ) const {
+            return volume_mesh_->cells_around_vertex( vertex_id, cell_hint );
+        }
+
         bool side( index_t i ) const
         {
             return sides_[i];
@@ -1168,6 +1184,8 @@ namespace RINGMesh {
     private:
         std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_;
     };
+
+    using Region3D = Region< 3 >;
 
     template< index_t DIMENSION >
     class GeoModelMeshEntityConstAccess {
@@ -1274,4 +1292,6 @@ namespace RINGMesh {
     private:
         GeoModelMeshEntity< DIMENSION >& gmme_;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelMeshEntityAccess );
 }

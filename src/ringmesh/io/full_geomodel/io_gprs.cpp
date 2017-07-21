@@ -44,13 +44,13 @@ namespace {
             index_t v0;
             index_t v1;
         };
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" );
         }
         void save(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             const std::string& filename ) final
         {
             std::string path = GEO::FileSystem::dir_name( filename );
@@ -77,7 +77,7 @@ namespace {
             std::ofstream out_xyz( oss_xyz.str().c_str() );
             out_xyz.precision( 16 );
 
-            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
+            const GeoModelMesh3D& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
             for( index_t c :range( mesh.cells.nb() ) ) {
@@ -111,9 +111,9 @@ namespace {
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
                 }
             }
-            NNSearch < 3 > nn_search( edge_vertices, false );
+            NNSearch3D nn_search( edge_vertices, false );
 
-            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
+            const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
             for( index_t p : range( polygons.nb() ) ) {
                 for( index_t e : range( polygons.nb_vertices( p ) ) ) {
                     index_t adj = polygons.adjacent( PolygonLocalEdge( p, e ) );
