@@ -681,10 +681,8 @@ namespace {
             const PolygonLocalEdge cur_polygon_local_edge( p, v0_id_in_polygon );
             PolygonLocalEdge next_polygon_local_edge0_on_border =
                 backward ?
-                    next_polygon_local_edge0_on_border = mesh.prev_on_border(
-                        cur_polygon_local_edge ) :
-                    next_polygon_local_edge0_on_border = mesh.next_on_border(
-                        cur_polygon_local_edge );
+                    mesh.prev_on_border( cur_polygon_local_edge ) :
+                    mesh.next_on_border( cur_polygon_local_edge );
             ringmesh_assert(
                 next_polygon_local_edge0_on_border.polygon_id_ != NO_ID );
             ringmesh_assert(
