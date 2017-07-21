@@ -50,7 +50,7 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelGfx;
-    CLASS_DIMENSION_ALIASES( GeoModelGfx )
+    CLASS_DIMENSION_ALIASES( GeoModelGfx );
     template< index_t DIMENSION > class PointSetMeshGfx;
     template< index_t DIMENSION > class LineMeshGfx;
     template< index_t DIMENSION > class SurfaceMeshGfx;
