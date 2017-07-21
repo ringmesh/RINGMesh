@@ -47,7 +47,6 @@
 namespace RINGMesh {
     class GeoModelBuilderTSolid;
     class GeoModelBuilderML;
-    template< index_t DIMENSION > class Box;
     CLASS_DIMENSION_ALIASES( Box );
     struct VertexMap;
     struct TSolidLoadingStorage;
@@ -67,7 +66,7 @@ namespace RINGMesh {
             /*! @todo Review: A constructor is not supposed to throw, the object is left in an
              * undefined state [JP] */
             if( !file_line_.OK() ) {
-                throw RINGMeshException( "I/O", "Failed to open file " + filename_ );
+                throw RINGMeshException( "I/O", "Failed to open file ", filename_ );
             }
         }
 
