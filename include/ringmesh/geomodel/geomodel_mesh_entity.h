@@ -1131,13 +1131,6 @@ namespace RINGMesh {
             return volume_mesh_->cells_around_vertex( vertex_id, cell_hint );
         }
 
-        void compute_region_volumes_per_cell_type(
-            double& tet_volume,
-            double& pyramid_volume,
-            double& prism_volume,
-            double& hex_volume,
-            double& poly_volume ) const;
-
         bool side( index_t i ) const
         {
             return sides_[i];
