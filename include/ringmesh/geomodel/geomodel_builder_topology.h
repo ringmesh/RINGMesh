@@ -49,6 +49,8 @@
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderBase;
     template< index_t DIMENSION > class GeoModelBuilder;
+
+    CLASS_DIMENSION_ALIASES( GeoModelBuilder );
 }
 
 namespace RINGMesh {
@@ -62,7 +64,6 @@ namespace RINGMesh {
 
     public:
         virtual ~GeoModelBuilderTopologyBase() = default;
-
         /*!
          * @brief Copy topological information from a geomodel
          * @details Copy all the geomodel entities and their relationship
@@ -171,6 +172,8 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelBuilderTopologyBase );
+
     template< index_t DIMENSION >
     class GeoModelBuilderTopology: public GeoModelBuilderTopologyBase< DIMENSION > {
     };
@@ -201,8 +204,8 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilderTopology(
-            GeoModelBuilder< 2 >& builder,
-            GeoModel< 2 >& geomodel )
+            GeoModelBuilder2D& builder,
+            GeoModel2D& geomodel )
             : GeoModelBuilderTopologyBase< 2 >( builder, geomodel )
         {
         }
@@ -238,13 +241,13 @@ namespace RINGMesh {
 
     private:
         GeoModelBuilderTopology(
-            GeoModelBuilder< 3 >& builder,
-            GeoModel< 3 >& geomodel )
+            GeoModelBuilder3D& builder,
+            GeoModel3D& geomodel )
             : GeoModelBuilderTopologyBase< 3 >( builder, geomodel )
         {
         }
 
-        void copy_all_mesh_entity_topology( const GeoModel< 3 >& from ) override;
+        void copy_all_mesh_entity_topology( const GeoModel3D& from ) override;
     };
 
 }

@@ -73,6 +73,10 @@
 #define ringmesh_template_assert_3d( type ) \
     static_assert( type == 3, #type " template should be 3" )
 
+#define CLASS_DIMENSION_ALIASES( Class )                                        \
+    using Class ## 2D = Class< 2 >;                                             \
+    using Class ## 3D = Class< 3 >
+
 // To avoid unused argument warning in function definition
 template< typename T > inline void ringmesh_unused( T const& )
 {
@@ -82,10 +86,11 @@ template< typename T > inline void ringmesh_unused( T const& )
 
 #include <ringmesh/basic/types.h>
 #include <ringmesh/basic/ringmesh_assert.h>
-
 #include <ringmesh/basic/logger.h>
 
-#define DEBUG( a ) \
+#include <geogram/basic/string.h>
+
+#define DEBUG( a )                                                              \
     Logger::out( "Debug", #a, " = ", a )
 
 #include <stdexcept>
@@ -121,10 +126,11 @@ namespace RINGMesh {
      */
     class RINGMESH_API RINGMeshException: public std::runtime_error {
     public:
-        explicit RINGMeshException(
-            std::string category,
-            const std::string& message )
-            : std::runtime_error( message ), category_( std::move( category ) )
+        template< typename ...Args >
+        explicit RINGMeshException( std::string category, const Args& ...messages )
+            :
+                std::runtime_error( string_concatener( messages... ) ),
+                category_( std::move( category ) )
         {
         }
         virtual ~RINGMeshException() throw()
@@ -134,6 +140,22 @@ namespace RINGMesh {
         const std::string& category() const
         {
             return category_;
+        }
+
+    private:
+        template< typename A0 >
+        std::string string_concatener( const A0& a0 )
+        {
+            return GEO::String::to_string( a0 );
+        }
+
+        template< typename A0, typename A1, typename ...Args >
+        std::string string_concatener(
+            const A0& a0,
+            const A1& a1,
+            const Args& ...args )
+        {
+            return GEO::String::to_string( a0 ) + string_concatener( a1, args... );
         }
     protected:
         std::string category_;

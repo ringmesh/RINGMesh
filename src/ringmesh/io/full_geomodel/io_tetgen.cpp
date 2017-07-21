@@ -36,12 +36,12 @@
 namespace {
     class TetGenIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from TetGen not implemented yet" );
         }
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::string directory = GEO::FileSystem::dir_name( filename );
             std::string file = GEO::FileSystem::base_name( filename );
@@ -51,10 +51,10 @@ namespace {
             std::ofstream node( oss_node.str().c_str() );
             node.precision( 16 );
 
-            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
-            node << mesh.vertices.nb() << " 3 0 0" << std::endl;
+            const GeoModelMesh3D& mesh = geomodel.mesh;
+            node << mesh.vertices.nb() << " 3 0 0" << EOL;
             for( index_t v : range( mesh.vertices.nb() ) ) {
-                node << v << SPACE << mesh.vertices.vertex( v ) << std::endl;
+                node << v << SPACE << mesh.vertices.vertex( v ) << EOL;
             }
 
             std::ostringstream oss_ele;
@@ -64,17 +64,21 @@ namespace {
             oss_neigh << directory << "/" << file << ".neigh";
             std::ofstream neigh( oss_neigh.str().c_str() );
 
-            ele << mesh.cells.nb() << " 4 1" << std::endl;
-            neigh << mesh.cells.nb() << " 4" << std::endl;
+            ele << mesh.cells.nb() << " 4 1" << EOL;
+            neigh << mesh.cells.nb() << " 4" << EOL;
             index_t nb_tet_exported = 0;
             for( index_t m : range( geomodel.nb_regions() ) ) {
                 for( index_t tet : range( mesh.cells.nb_tet( m ) ) ) {
                     index_t cell = mesh.cells.tet( m, tet );
-                    ele << nb_tet_exported << SPACE << mesh.cells.vertex( cell, 0 )
-                        << SPACE << mesh.cells.vertex( cell, 1 ) << SPACE
-                        << mesh.cells.vertex( cell, 2 ) << SPACE
-                        << mesh.cells.vertex( cell, 3 ) << SPACE << m + 1
-                        << std::endl;
+                    ele << nb_tet_exported << SPACE
+                        << mesh.cells.vertex( ElementLocalVertex( cell, 0 ) )
+                        << SPACE
+                        << mesh.cells.vertex( ElementLocalVertex( cell, 1 ) )
+                        << SPACE
+                        << mesh.cells.vertex( ElementLocalVertex( cell, 2 ) )
+                        << SPACE
+                        << mesh.cells.vertex( ElementLocalVertex( cell, 3 ) )
+                        << SPACE << m + 1 << EOL;
                     neigh << nb_tet_exported;
                     for( index_t f : range( mesh.cells.nb_facets( tet ) ) ) {
                         neigh << SPACE;
@@ -85,10 +89,13 @@ namespace {
                             neigh << adj;
                         }
                     }
-                    neigh << std::endl;
+                    neigh << EOL;
                     nb_tet_exported++;
                 }
             }
+            ele << std::flush;
+            neigh << std::flush;
+            node << std::flush;
         }
     };
 

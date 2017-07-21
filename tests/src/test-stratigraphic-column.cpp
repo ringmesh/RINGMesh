@@ -69,18 +69,18 @@ void test_rock_feature()
     }
 }
 
-void test_stratigraphic_unit( const GeoModel< 3 >& in )
+void test_stratigraphic_unit( const GeoModel3D& in )
 {
     RINGMesh::Logger::out( "StratigraphicUnit", "Test StratigraphicUnit building" );
 
     RockFeature rock( "rock", ROCKTYPE::NONE );
     UnsubdividedStratigraphicUnit test_strat_unit( "strat unit",
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 1 ) ),
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 0 ) ),
-        dynamic_cast< const Layer< 3 >& >( in.geological_entity(
-            Layer< 3 >::type_name_static(), 0 ) ), RELATION::CONFORMABLE,
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 1 ) ),
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 0 ) ),
+        dynamic_cast< const Layer3D& >( in.geological_entity(
+            Layer3D::type_name_static(), 0 ) ), RELATION::CONFORMABLE,
         RELATION::CONFORMABLE, rock, 0, 10 );
     if( test_strat_unit.get_name() != "strat unit" ) {
         throw RINGMeshException( "Test",
@@ -113,7 +113,7 @@ void test_stratigraphic_unit( const GeoModel< 3 >& in )
     }
 }
 
-void test_stratigraphic_column_building( const GeoModel< 3 >& in )
+void test_stratigraphic_column_building( const GeoModel3D& in )
 {
     RINGMesh::Logger::out( "StratigraphicColumn",
         "Test StratigraphicColumn building" );
@@ -128,36 +128,36 @@ void test_stratigraphic_column_building( const GeoModel< 3 >& in )
     std::string four_name = "four";
 
     UnsubdividedStratigraphicUnit one( one_name,
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 1 ) ),
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 0 ) ),
-        dynamic_cast< const Layer< 3 >& >( in.geological_entity(
-            Layer< 3 >::type_name_static(), 0 ) ), RELATION::CONFORMABLE,
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 1 ) ),
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 0 ) ),
+        dynamic_cast< const Layer3D& >( in.geological_entity(
+            Layer3D::type_name_static(), 0 ) ), RELATION::CONFORMABLE,
         RELATION::CONFORMABLE, rock, 0, 10 );
     UnsubdividedStratigraphicUnit two( two_name,
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 2 ) ),
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 1 ) ),
-        dynamic_cast< const Layer< 3 >& >( in.geological_entity(
-            Layer< 3 >::type_name_static(), 1 ) ), RELATION::CONFORMABLE,
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 2 ) ),
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 1 ) ),
+        dynamic_cast< const Layer3D& >( in.geological_entity(
+            Layer3D::type_name_static(), 1 ) ), RELATION::CONFORMABLE,
         RELATION::CONFORMABLE, rock, 0, 20 );
     UnsubdividedStratigraphicUnit three( three_name,
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 3 ) ),
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 2 ) ),
-        dynamic_cast< const Layer< 3 >& >( in.geological_entity(
-            Layer< 3 >::type_name_static(), 2 ) ), RELATION::CONFORMABLE,
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 3 ) ),
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 2 ) ),
+        dynamic_cast< const Layer3D& >( in.geological_entity(
+            Layer3D::type_name_static(), 2 ) ), RELATION::CONFORMABLE,
         RELATION::CONFORMABLE, rock, 0, 30 );
     UnsubdividedStratigraphicUnit four( four_name,
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 11 ) ),
-        dynamic_cast< const Interface< 3 >& >( in.geological_entity(
-            Interface< 3 >::type_name_static(), 3 ) ),
-        dynamic_cast< const Layer< 3 >& >( in.geological_entity(
-            Layer< 3 >::type_name_static(), 3 ) ), RELATION::CONFORMABLE,
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 11 ) ),
+        dynamic_cast< const Interface3D& >( in.geological_entity(
+            Interface3D::type_name_static(), 3 ) ),
+        dynamic_cast< const Layer3D& >( in.geological_entity(
+            Layer3D::type_name_static(), 3 ) ), RELATION::CONFORMABLE,
         RELATION::CONFORMABLE, rock, 0, 40 );
 
     RINGMesh::Logger::out( "StratigraphicColumn",
@@ -309,7 +309,7 @@ void test_load_from_gocad_xml_file()
 
     std::string input_geomodel_file_name( ringmesh_test_data_path );
     input_geomodel_file_name += "CloudSpin.ml";
-    GeoModel< 3 > in;
+    GeoModel3D in;
     geomodel_load( in, input_geomodel_file_name );
 
     std::string input_column_file_name( RINGMesh::ringmesh_test_data_path );
@@ -338,7 +338,7 @@ int main()
         //build geomodel
         std::string input_model_file_name( ringmesh_test_data_path );
         input_model_file_name += "CloudSpin.ml";
-        GeoModel< 3 > in;
+        GeoModel3D in;
         geomodel_load( in, input_model_file_name );
 
         //test RockFeature

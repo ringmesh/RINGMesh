@@ -57,11 +57,69 @@ namespace RINGMesh {
     template< index_t DIMENSION > class SurfaceMeshBuilder;
     template< index_t DIMENSION > class VolumeMeshBuilder;
     template< index_t DIMENSION > class SurfaceMesh;
+    struct EdgeLocalVertex;
+    struct PolygonLocalEdge;
+    struct CellLocalFacet;
 }
 
 namespace RINGMesh {
 
     using MeshType = std::string;
+
+    struct ElementLocalVertex {
+        ElementLocalVertex() = default;
+        ElementLocalVertex( index_t element_id, index_t local_vertex_id )
+            : element_id_( element_id ), local_vertex_id_( local_vertex_id )
+        {
+        }
+        ElementLocalVertex( EdgeLocalVertex edge_local_vertex );
+        ElementLocalVertex( PolygonLocalEdge polygon_local_edge );
+        ElementLocalVertex( CellLocalFacet cell_local_facet );
+        index_t element_id_{ NO_ID };
+        index_t local_vertex_id_{ NO_ID };
+    };
+
+    struct EdgeLocalVertex {
+        EdgeLocalVertex() = default;
+        EdgeLocalVertex( index_t edge_id, index_t local_vertex_id )
+            : edge_id_( edge_id ), local_vertex_id_( local_vertex_id )
+        {
+        }
+        EdgeLocalVertex( ElementLocalVertex edge_local_vertex )
+            :
+                edge_id_( std::move( edge_local_vertex.element_id_ ) ),
+                local_vertex_id_( std::move( edge_local_vertex.local_vertex_id_ ) )
+        {
+        }
+        index_t edge_id_{ NO_ID };
+        index_t local_vertex_id_{ NO_ID };
+    };
+
+    struct PolygonLocalEdge {
+        PolygonLocalEdge() = default;
+        PolygonLocalEdge( index_t polygon_id, index_t local_edge_id )
+            : polygon_id_( polygon_id ), local_edge_id_( local_edge_id )
+        {
+        }
+        PolygonLocalEdge( ElementLocalVertex polygon_local_vertex )
+            :
+                polygon_id_( std::move( polygon_local_vertex.element_id_ ) ),
+                local_edge_id_( std::move( polygon_local_vertex.local_vertex_id_ ) )
+        {
+        }
+        index_t polygon_id_{ NO_ID };
+        index_t local_edge_id_{ NO_ID };
+    };
+
+    struct CellLocalFacet {
+        CellLocalFacet() = default;
+        CellLocalFacet( index_t cell_id, index_t local_facet_id )
+            : cell_id_( cell_id ), local_facet_id_( local_facet_id )
+        {
+        }
+        index_t cell_id_{ NO_ID };
+        index_t local_facet_id_{ NO_ID };
+    };
 
     /*!
      * class base class for encapsulating Mesh structure
@@ -131,6 +189,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_;
     };
 
+    CLASS_DIMENSION_ALIASES( MeshBase );
+
     /*!
      * class for encapsulating mesh composed of points
      */
@@ -148,6 +208,8 @@ namespace RINGMesh {
     protected:
         PointSetMesh() = default;
     };
+
+    CLASS_DIMENSION_ALIASES( PointSetMesh );
 
     template< index_t DIMENSION >
     using PointMeshFactory = GEO::Factory0< PointSetMesh< DIMENSION > >;
@@ -176,11 +238,12 @@ namespace RINGMesh {
 
         /*
          * @brief Gets the index of an edge vertex.
-         * @param[in] edge_id index of the edge.
-         * @param[in] vertex_id local index of the vertex, in {0,1}
-         * @return the global index of vertex \param vertex_id in edge \param edge_id.
+         * @param[in] edge_local_vertex index of the edge and of the
+         * local index of the vertex, in {0,1}
+         * @return the global index of vertex in \p edge_local_vertex.
          */
-        virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const = 0;
+        virtual index_t edge_vertex(
+            const ElementLocalVertex& edge_local_vertex ) const = 0;
 
         /*!
          * @brief Gets the number of all the edges in the whole Mesh.
@@ -192,15 +255,19 @@ namespace RINGMesh {
          */
         double edge_length( index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 = this->vertex( edge_vertex( edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 = this->vertex( edge_vertex( edge_id, 1 ) );
+            const vecn< DIMENSION >& e0 = this->vertex(
+                edge_vertex( ElementLocalVertex( edge_id, 0 ) ) );
+            const vecn< DIMENSION >& e1 = this->vertex(
+                edge_vertex( ElementLocalVertex( edge_id, 1 ) ) );
             return ( e1 - e0 ).length();
         }
 
         vecn< DIMENSION > edge_barycenter( index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 = this->vertex( edge_vertex( edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 = this->vertex( edge_vertex( edge_id, 1 ) );
+            const vecn< DIMENSION >& e0 = this->vertex(
+                edge_vertex( ElementLocalVertex( edge_id, 0 ) ) );
+            const vecn< DIMENSION >& e1 = this->vertex(
+                edge_vertex( ElementLocalVertex( edge_id, 1 ) ) );
             return ( e1 + e0 ) / 2.;
         }
 
@@ -241,6 +308,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_;
     };
 
+    CLASS_DIMENSION_ALIASES( LineMesh );
+
     template< index_t DIMENSION >
     using LineMeshFactory = GEO::Factory0< LineMesh< DIMENSION > >;
 
@@ -269,12 +338,11 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets the vertex index by polygon index and local vertex index.
-         * @param[in] polygon_id the polygon index.
-         * @param[in] vertex_id the local edge index in \param polygon_id.
+         * @param[in] polygon_local_vertex the polygon index and
+         * the local edge index in the polygon.
          */
         virtual index_t polygon_vertex(
-            index_t polygon_id,
-            index_t vertex_id ) const = 0;
+            const ElementLocalVertex& polygon_local_vertex ) const = 0;
 
         /*!
          * @brief Gets the number of all polygons in the whole Mesh.
@@ -286,17 +354,24 @@ namespace RINGMesh {
          */
         virtual index_t nb_polygon_vertices( index_t polygon_id ) const = 0;
         /*!
-         * @brief Gets the next vertex index in the polygon \param polygon_id.
-         * @param[in] polygon_id polygon index
-         * @param[in] vertex_id current index
+         * @brief Gets the next vertex index in the polygon vertex
+         * \param polygon_local_vertex.
+         * @param[in] polygon_local_vertex polygon index and the current
+         * local vertex index.
          */
-        index_t next_polygon_vertex( index_t polygon_id, index_t vertex_id ) const
+        ElementLocalVertex next_polygon_vertex(
+            const ElementLocalVertex& polygon_local_vertex ) const
         {
-            ringmesh_assert( vertex_id < nb_polygon_vertices( polygon_id ) );
-            if( vertex_id != nb_polygon_vertices( polygon_id ) - 1 ) {
-                return vertex_id + 1;
+            const index_t local_vertex_id = polygon_local_vertex.local_vertex_id_;
+            ringmesh_assert(
+                local_vertex_id
+                    < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
+            if( local_vertex_id
+                != nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 ) {
+                return ElementLocalVertex( polygon_local_vertex.element_id_,
+                    local_vertex_id + 1 );
             } else {
-                return 0;
+                return ElementLocalVertex( polygon_local_vertex.element_id_, 0 );
             }
         }
         /*!
@@ -304,31 +379,33 @@ namespace RINGMesh {
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          * @details The returned border edge is the next in the way of polygon edges
          * orientation.
-         * @param[in] p Input polygon index
-         * @param[in] e Edge index in the polygon
-         * @param[out] next_p Next polygon index
-         * @param[out] next_e Next edge index in the polygon
+         * @param[in] polygon_local_edge input polygon index and its local
+         * edge index in the polygon
+         * @return the next polygon index
+         * and the next edge index in the polygon
          *
          * @pre the given polygon edge must be on border
          */
-        void next_on_border(
-            index_t p,
-            index_t e,
-            index_t& next_p,
-            index_t& next_e ) const;
+        PolygonLocalEdge next_on_border(
+            const PolygonLocalEdge& polygon_local_edge ) const;
 
         /*!
          * @brief Gets the previous vertex index in the polygon \param polygon_id.
-         * @param[in] polygon_id polygon index
-         * @param[in] vertex_id current index
+         * @param[in] polygon_local_vertex polygon index and its current
+         * local vertex index
          */
-        index_t prev_polygon_vertex( index_t polygon_id, index_t vertex_id ) const
+        ElementLocalVertex prev_polygon_vertex(
+            const ElementLocalVertex& polygon_local_vertex ) const
         {
-            ringmesh_assert( vertex_id < nb_polygon_vertices( polygon_id ) );
-            if( vertex_id > 0 ) {
-                return vertex_id - 1;
+            ringmesh_assert(
+                polygon_local_vertex.local_vertex_id_
+                    < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
+            if( polygon_local_vertex.local_vertex_id_ > 0 ) {
+                return ElementLocalVertex( polygon_local_vertex.element_id_,
+                    polygon_local_vertex.local_vertex_id_ - 1 );
             } else {
-                return nb_polygon_vertices( polygon_id ) - 1;
+                return ElementLocalVertex( polygon_local_vertex.element_id_,
+                    nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 );
             }
         }
 
@@ -338,18 +415,15 @@ namespace RINGMesh {
          * orientation.
          * @param[in] p Input polygon index
          * @param[in] e Edge index in the polygon
-         * @param[out] prev_p Previous polygon index
-         * @param[out] prev_e Previous edge index in the polygon
+         * @return the previous polygon index
+         * and the previous edge index in the polygon (tuple).
          *
          * @pre the surface must be correctly oriented and
          * the given polygon edge must be on border
          * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
-        void prev_on_border(
-            index_t p,
-            index_t e,
-            index_t& prev_p,
-            index_t& prev_e ) const;
+        PolygonLocalEdge prev_on_border(
+            const PolygonLocalEdge& polygon_local_edge ) const;
 
         /*!
          * @brief Get the vertex index in a polygon @param polygon_index from its
@@ -403,8 +477,7 @@ namespace RINGMesh {
          * @precondition  \param edge_id < number of edge of the polygon \param polygon_id .
          */
         virtual index_t polygon_adjacent(
-            index_t polygon_id,
-            index_t edge_id ) const = 0;
+            const PolygonLocalEdge& polygon_local_edge ) const = 0;
 
         virtual GEO::AttributesManager& polygon_attribute_manager() const = 0;
         /*!
@@ -434,9 +507,9 @@ namespace RINGMesh {
         /*!
          * Is the edge starting with the given vertex of the polygon on a border of the Surface?
          */
-        bool is_edge_on_border( index_t polygon_index, index_t vertex_index ) const
+        bool is_edge_on_border( const PolygonLocalEdge& polygon_local_edge ) const
         {
-            return polygon_adjacent( polygon_index, vertex_index ) == NO_ID;
+            return polygon_adjacent( polygon_local_edge ) == NO_ID;
         }
 
         /*!
@@ -445,7 +518,7 @@ namespace RINGMesh {
         bool is_polygon_on_border( index_t polygon_index ) const
         {
             for( index_t v : range( nb_polygon_vertices( polygon_index ) ) ) {
-                if( is_edge_on_border( polygon_index, v ) ) {
+                if( is_edge_on_border( PolygonLocalEdge( polygon_index, v ) ) ) {
                     return true;
                 }
             }
@@ -454,50 +527,52 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets the length of the edge starting at a given vertex
-         * @param[in] polygon_id index of the polygon
-         * @param[in] vertex_id the edge starting vertex index
+         * @param[in] polygon_local_edge index of the polygon and its
+         * local edge starting vertex index
          */
-        double polygon_edge_length( index_t polygon_id, index_t vertex_id ) const
+        double polygon_edge_length(
+            const PolygonLocalEdge& polygon_local_edge ) const
         {
             const vecn< DIMENSION >& e0 = this->vertex(
-                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+                polygon_edge_vertex( polygon_local_edge, 0 ) );
             const vecn< DIMENSION >& e1 = this->vertex(
-                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+                polygon_edge_vertex( polygon_local_edge, 1 ) );
             return ( e1 - e0 ).length();
         }
         /*!
          * @brief Gets the barycenter of the edge starting at a given vertex
-         * @param[in] polygon_id index of the polygon
-         * @param[in] vertex_id the edge starting vertex index
+         * @param[in] polygon_local_edge index of the polygon and
+         * the local edge starting vertex index
          */
         vecn< DIMENSION > polygon_edge_barycenter(
-            index_t polygon_id,
-            index_t vertex_id ) const
+            const PolygonLocalEdge& polygon_local_edge ) const
         {
             const vecn< DIMENSION >& e0 = this->vertex(
-                polygon_edge_vertex( polygon_id, vertex_id, 0 ) );
+                polygon_edge_vertex( polygon_local_edge, 0 ) );
             const vecn< DIMENSION >& e1 = this->vertex(
-                polygon_edge_vertex( polygon_id, vertex_id, 1 ) );
+                polygon_edge_vertex( polygon_local_edge, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
         /*!
          * @brief Gets the vertex index on the polygon edge
-         * @param[in] polygon_id index of the polygon
-         * @param[in] edge_id index of the edge in the polygon \param polygon_id
+         * @param[in] polygon_local_edge index of the polygon and
+         * the local index of the edge in the polygon
          * @param[in] vertex_id index of the local vertex in the edge \param edge_id (0 or 1)
          * @return the vertex index
          */
         index_t polygon_edge_vertex(
-            index_t polygon_id,
-            index_t edge_id,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t vertex_id ) const
         {
             ringmesh_assert( vertex_id < 2 );
             if( vertex_id == 0 ) {
-                return polygon_vertex( polygon_id, edge_id );
+                return polygon_vertex( polygon_local_edge );
             } else {
-                return polygon_vertex( polygon_id,
-                    ( edge_id + vertex_id ) % nb_polygon_vertices( polygon_id ) );
+                return polygon_vertex(
+                    ElementLocalVertex( polygon_local_edge.polygon_id_,
+                        ( polygon_local_edge.local_edge_id_ + vertex_id )
+                            % nb_polygon_vertices(
+                                polygon_local_edge.polygon_id_ ) ) );
             }
         }
 
@@ -511,7 +586,8 @@ namespace RINGMesh {
             vecn< DIMENSION > result;
             ringmesh_assert( nb_polygon_vertices( polygon_id ) >= 1 );
             for( index_t v : range( nb_polygon_vertices( polygon_id ) ) ) {
-                result += this->vertex( polygon_vertex( polygon_id, v ) );
+                result += this->vertex(
+                    polygon_vertex( ElementLocalVertex( polygon_id, v ) ) );
             }
             return ( 1.0 / nb_polygon_vertices( polygon_id ) ) * result;
         }
@@ -555,6 +631,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_;
     };
 
+    CLASS_DIMENSION_ALIASES( SurfaceMeshBase );
+
     template< index_t DIMENSION >
     class SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
     };
@@ -585,10 +663,13 @@ namespace RINGMesh {
             if( nb_polygon_vertices( polygon_id ) == 0 ) {
                 return result;
             }
-            const vec3& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+            const vec3& p1 = vertex(
+                polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
             for( index_t i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
-                const vec3& p2 = vertex( polygon_vertex( polygon_id, i ) );
-                const vec3& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
+                const vec3& p2 = vertex(
+                    polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
+                const vec3& p3 = vertex(
+                    polygon_vertex( ElementLocalVertex( polygon_id, i + 1 ) ) );
                 result += triangle_signed_area( p1, p2, p3,
                     polygon_normal( polygon_id ) );
             }
@@ -602,9 +683,12 @@ namespace RINGMesh {
          */
         vec3 polygon_normal( index_t polygon_id ) const
         {
-            const vec3& p1 = this->vertex( this->polygon_vertex( polygon_id, 0 ) );
-            const vec3& p2 = this->vertex( this->polygon_vertex( polygon_id, 1 ) );
-            const vec3& p3 = this->vertex( this->polygon_vertex( polygon_id, 2 ) );
+            const vec3& p1 = this->vertex(
+                this->polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
+            const vec3& p2 = this->vertex(
+                this->polygon_vertex( ElementLocalVertex( polygon_id, 1 ) ) );
+            const vec3& p3 = this->vertex(
+                this->polygon_vertex( ElementLocalVertex( polygon_id, 2 ) ) );
             vec3 norm = cross( p2 - p1, p3 - p1 );
             return normalize( norm );
         }
@@ -622,7 +706,8 @@ namespace RINGMesh {
             index_t p = 0;
             while( p0 == NO_ID && p < nb_polygons() ) {
                 for( index_t lv : range( nb_polygon_vertices( p ) ) ) {
-                    if( polygon_vertex( p, lv ) == vertex_id ) {
+                    if( polygon_vertex( ElementLocalVertex( p, lv ) )
+                        == vertex_id ) {
                         p0 = p;
                         break;
                     }
@@ -654,15 +739,20 @@ namespace RINGMesh {
             if( nb_polygon_vertices( polygon_id ) == 0 ) {
                 return result;
             }
-            const vec2& p1 = vertex( polygon_vertex( polygon_id, 0 ) );
+            const vec2& p1 = vertex(
+                polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
             for( index_t i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
-                const vec2& p2 = vertex( polygon_vertex( polygon_id, i ) );
-                const vec2& p3 = vertex( polygon_vertex( polygon_id, i + 1 ) );
+                const vec2& p2 = vertex(
+                    polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
+                const vec2& p3 = vertex(
+                    polygon_vertex( ElementLocalVertex( polygon_id, i + 1 ) ) );
                 result += GEO::Geom::triangle_signed_area( p1, p2, p3 );
             }
             return std::fabs( result );
         }
     };
+
+    CLASS_DIMENSION_ALIASES( SurfaceMesh );
 
     /*!
      * class for encapsulating volume mesh component
@@ -672,7 +762,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( VolumeMesh );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
         friend class VolumeMeshBuilder< DIMENSION > ;
-
     public:
         virtual ~VolumeMesh() = default;
 
@@ -686,7 +775,8 @@ namespace RINGMesh {
          * @return the global vertex index.
          * @precondition vertex_id<number of vertices of the cell.
          */
-        virtual index_t cell_vertex( index_t cell_id, index_t vertex_id ) const = 0;
+        virtual index_t cell_vertex(
+            const ElementLocalVertex& cell_local_vertex ) const = 0;
 
         /*!
          * @brief Gets a vertex index by cell and local edge and local vertex index.
@@ -703,25 +793,25 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets a vertex by cell facet and local vertex index.
-         * @param[in] cell_id index of the cell
-         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] cell_local_facet index of the cell and
+         * the local index of the facet in the cell
          * @param[in] vertex_id index of the vertex in the facet \param facet_id
          * @return the global vertex index.
          * @precondition vertex_id < number of vertices in the facet \param facet_id
          * and facet_id number of facet in th cell \param cell_id
          */
         virtual index_t cell_facet_vertex(
-            index_t cell_id,
-            index_t facet_id,
+            const CellLocalFacet& cell_local_facet,
             index_t vertex_id ) const = 0;
 
         /*!
          * @brief Gets a facet index by cell and local facet index.
-         * @param[in] cell_id index of the cell
-         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] cell_local_facet index of the cell and
+         * the local index of the facet in the cell
          * @return the global facet index.
          */
-        virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0;
+        virtual index_t cell_facet(
+            const CellLocalFacet& cell_local_facet ) const = 0;
 
         /*!
          * Computes the Mesh cell edge length
@@ -736,63 +826,6 @@ namespace RINGMesh {
             const vecn< DIMENSION >& e1 = this->vertex(
                 cell_edge_vertex( cell_id, edge_id, 1 ) );
             return ( e1 - e0 ).length();
-        }
-
-        index_t cells_around_vertex(
-            index_t vertex_id,
-            std::vector< index_t >& result,
-            index_t cell_hint ) const
-        {
-            result.resize( 0 );
-
-            if( cell_hint == NO_ID ) {
-                return 0;
-            }
-
-            // Flag the visited cells
-            std::vector< index_t > visited;
-            visited.reserve( 10 );
-
-            // Stack of the adjacent cells
-            std::stack< index_t > S;
-            S.push( cell_hint );
-            visited.push_back( cell_hint );
-
-            do {
-                index_t c = S.top();
-                S.pop();
-
-                bool cell_includes_vertex = false;
-                for( index_t v : range( nb_cell_vertices( c ) ) ) {
-                    if( cell_vertex( c, v ) == vertex_id ) {
-                        result.push_back( c );
-                        cell_includes_vertex = true;
-                        break;
-                    }
-                }
-                if( !cell_includes_vertex ) {
-                    continue;
-                }
-
-                for( index_t f : range( nb_cell_facets( c ) ) ) {
-                    for( index_t v : range( nb_cell_facet_vertices( c, f ) ) ) {
-                        index_t vertex = cell_facet_vertex( c, f, v );
-                        if( vertex == vertex_id ) {
-                            index_t adj_P = cell_adjacent( c, f );
-
-                            if( adj_P != NO_ID ) {
-                                if( !contains( visited, adj_P ) ) {
-                                    S.push( adj_P );
-                                    visited.push_back( adj_P );
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-            } while( !S.empty() );
-
-            return static_cast< index_t >( result.size() );
         }
 
         /*!
@@ -832,13 +865,12 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets the number of vertices of a facet in a cell
-         * @param[in] cell_id index of the cell
-         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] cell_local_facet index of the cell and
+         * the local index of the facet in the cell
          * @return the number of vertices in the facet \param facet_id in the cell \param cell_id
          */
         virtual index_t nb_cell_facet_vertices(
-            index_t cell_id,
-            index_t facet_id ) const = 0;
+            const CellLocalFacet& cell_local_facet ) const = 0;
 
         /*!
          * @brief Gets the number of vertices of a cell
@@ -857,9 +889,10 @@ namespace RINGMesh {
         virtual index_t cell_end( index_t cell_id ) const = 0;
 
         /*!
-         * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
+         * @return the index of the adjacent cell of \param cell_local_facet
          */
-        virtual index_t cell_adjacent( index_t cell_id, index_t facet_id ) const = 0;
+        virtual index_t cell_adjacent(
+            const CellLocalFacet& cell_local_facet ) const = 0;
 
         virtual GEO::AttributesManager& cell_attribute_manager() const = 0;
 
@@ -880,18 +913,17 @@ namespace RINGMesh {
 
         /*!
          * Computes the Mesh cell facet barycenter
-         * @param[in] cell_id the cell index
-         * @param[in] facet_id the facet index in the cell
+         * @param[in] cell_local_facet the cell index and
+         * the local facet index in the cell
          * @return the cell facet center
          */
         vecn< DIMENSION > cell_facet_barycenter(
-            index_t cell_id,
-            index_t facet_id ) const
+            const CellLocalFacet& cell_local_facet ) const
         {
             vecn< DIMENSION > result;
-            index_t nb_vertices = nb_cell_facet_vertices( cell_id, facet_id );
+            index_t nb_vertices = nb_cell_facet_vertices( cell_local_facet );
             for( index_t v : range( nb_vertices ) ) {
-                result += this->vertex( cell_facet_vertex( cell_id, facet_id, v ) );
+                result += this->vertex( cell_facet_vertex( cell_local_facet, v ) );
             }
             ringmesh_assert( nb_vertices > 0 );
 
@@ -905,29 +937,31 @@ namespace RINGMesh {
             vecn< DIMENSION > result;
             ringmesh_assert( nb_cell_vertices( cell_id ) >= 1 );
             for( index_t v : range( nb_cell_vertices( cell_id ) ) ) {
-                result += this->vertex( cell_vertex( cell_id, v ) );
+                result += this->vertex(
+                    cell_vertex( ElementLocalVertex( cell_id, v ) ) );
             }
             return ( 1.0 / nb_cell_vertices( cell_id ) ) * result;
         }
         /*!
          * Computes the Mesh cell facet normal
-         * @param[in] cell_id the cell index
-         * @param[in] facet_id the facet index in the cell
+         * @param[in] cell_local_facet the cell index and
+         * the local facet index in the cell
          * @return the cell facet normal
          */
         vecn< DIMENSION > cell_facet_normal(
-            index_t cell_id,
-            index_t facet_id ) const
+            const CellLocalFacet& cell_local_facet ) const
         {
-            ringmesh_assert( cell_id < nb_cells() );
-            ringmesh_assert( facet_id < nb_cell_facets( cell_id ) );
+            ringmesh_assert( cell_local_facet.cell_id_ < nb_cells() );
+            ringmesh_assert(
+                cell_local_facet.local_facet_id_
+                    < nb_cell_facets( cell_local_facet.cell_id_ ) );
 
             const vecn< DIMENSION >& p1 = this->vertex(
-                cell_facet_vertex( cell_id, facet_id, 0 ) );
+                cell_facet_vertex( cell_local_facet, 0 ) );
             const vecn< DIMENSION >& p2 = this->vertex(
-                cell_facet_vertex( cell_id, facet_id, 1 ) );
+                cell_facet_vertex( cell_local_facet, 1 ) );
             const vecn< DIMENSION >& p3 = this->vertex(
-                cell_facet_vertex( cell_id, facet_id, 2 ) );
+                cell_facet_vertex( cell_local_facet, 2 ) );
 
             return cross( p2 - p1, p3 - p1 );
         }
@@ -937,15 +971,25 @@ namespace RINGMesh {
          */
         virtual double cell_volume( index_t cell_id ) const = 0;
 
+        std::vector< index_t > cells_around_vertex(
+            index_t vertex_id,
+            index_t cell_hint ) const;
+
         index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const
         {
             for( index_t v : range( nb_cell_vertices( cell_id ) ) ) {
-                if( cell_vertex( cell_id, v ) == vertex_id ) {
-                    return cell_vertex( cell_id, v );
+                if( cell_vertex( ElementLocalVertex( cell_id, v ) ) == vertex_id ) {
+                    return v;
                 }
             }
             return NO_ID;
         }
+
+        bool find_cell_from_colocated_vertex_within_distance_if_any(
+            const vecn< DIMENSION >& vertex_vec,
+            double distance,
+            index_t& cell_id,
+            index_t& cell_vertex_id ) const;
 
         /*!
          * @brief return the NNSearch at cell facets
@@ -960,7 +1004,8 @@ namespace RINGMesh {
                 index_t cf = 0;
                 for( index_t c : range( nb_cells() ) ) {
                     for( index_t f : range( nb_cell_facets( c ) ) ) {
-                        cell_facet_centers[cf] = cell_facet_barycenter( c, f );
+                        cell_facet_centers[cf] = cell_facet_barycenter(
+                            CellLocalFacet( c, f ) );
                         ++cf;
                     }
                 }
@@ -1002,6 +1047,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_;
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_;
     };
+
+    using VolumeMesh3D = VolumeMesh< 3 >;
 
     template< index_t DIMENSION >
     using VolumeMeshFactory = GEO::Factory0< VolumeMesh< DIMENSION > >;
@@ -1045,6 +1092,6 @@ namespace RINGMesh {
         void create_volume_mesh( const MeshType type );
 
     public:
-        std::unique_ptr< VolumeMesh< 3 > > volume_mesh;
+        std::unique_ptr< VolumeMesh3D > volume_mesh;
     };
 }
