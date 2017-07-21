@@ -1,6 +1,6 @@
 Major change:
  * Add support of 2D GeoModel:
-     * User can use GeoModel2D or GeoModel3D representation, they follow the same boundary reprsentation design as before
+     * User can use GeoModel2D and GeoModel3D, they follow the same boundary representation design as before
      * Meshes can be defined using only 2 coordinates
 
 New Features:
