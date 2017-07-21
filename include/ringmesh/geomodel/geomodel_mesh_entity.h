@@ -1070,6 +1070,9 @@ namespace RINGMesh {
             return NO_ID;
         }
 
+        ElementLocalVertex find_cell_from_colocated_vertex_if_any(
+            const vecn< DIMENSION >& vertex_vec ) const;
+
         /*! @}
          * \name Geometrical request on Region Entity
          * @{

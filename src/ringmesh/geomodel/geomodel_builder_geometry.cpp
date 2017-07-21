@@ -54,15 +54,6 @@ namespace {
         return internal_borders;
     }
 
-    template< index_t DIMENSION >
-    bool inexact_equal(
-        const vecn< DIMENSION >& v1,
-        const vecn< DIMENSION >& v2,
-        double epsilon )
-    {
-        return length( v2 - v1 ) < epsilon;
-    }
-
     /*!
      * Finds a polygon and its edge index that are colocalised with an edge
      * defined by its two geomodel vertex indices
@@ -166,31 +157,6 @@ namespace {
                     if( inexact_equal( surface.mesh_element_vertex( ElementLocalVertex(i, j) ),
                             v, surface.geomodel().epsilon() ) ) {
                         vertex_id = surface.mesh_element_vertex_index( ElementLocalVertex(i,
-                                j ));
-                        element_id = i;
-                        result = true;
-                        break;
-                    }
-                }
-                return result;
-        } );
-        return result;
-    }
-
-    template< index_t DIMENSION >
-    bool find_cell_from_vertex(
-        const Region< DIMENSION >& region,
-        const vec3& v,
-        index_t& element_id,
-        index_t& vertex_id )
-    {
-        bool result = false;
-        region.cell_nn_search().get_neighbors( v,
-            [&region, &v, &result, &element_id, &vertex_id]( index_t i ) {
-                for( index_t j : range( region.nb_mesh_element_vertices( i ) ) ) {
-                    if( inexact_equal( region.mesh_element_vertex( ElementLocalVertex(i, j )),
-                            v, region.geomodel().epsilon() ) ) {
-                        vertex_id = region.mesh_element_vertex_index( ElementLocalVertex(i,
                                 j ));
                         element_id = i;
                         result = true;
@@ -854,9 +820,12 @@ namespace RINGMesh {
 
             index_t& cell = cell_vertices[v].element_;
             index_t& cell_vertex = cell_vertices[v].vertex_;
-            bool found = find_cell_from_vertex( region, p, cell, cell_vertex );
-            ringmesh_unused( found );
-            ringmesh_assert( found && cell != NO_ID && cell_vertex != NO_ID );
+            ElementLocalVertex element_local_vertex =
+                region.find_cell_from_colocated_vertex_if_any( p );
+            cell = element_local_vertex.element_id_;
+            cell_vertex = element_local_vertex.local_vertex_id_;
+
+            ringmesh_assert( cell != NO_ID && cell_vertex != NO_ID );
 
         }
 
@@ -870,8 +839,8 @@ namespace RINGMesh {
             const index_t& cell = cell_vertices[v].element_;
             const index_t& cell_vertex = cell_vertices[v].vertex_;
 
-            std::vector< index_t > cells;
-            mesh.cells_around_vertex( cell_vertex, cells, cell );
+            std::vector< index_t > cells = mesh.cells_around_vertex( cell_vertex,
+                cell );
             update_cell_vertex( region_id, cells, cell_vertex, vertex_id );
             region_mesh_builder->set_vertex( vertex_id, p );
             vertex_id++;

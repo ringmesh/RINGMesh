@@ -828,65 +828,6 @@ namespace RINGMesh {
             return ( e1 - e0 ).length();
         }
 
-        index_t cells_around_vertex(
-            index_t vertex_id,
-            std::vector< index_t >& result,
-            index_t cell_hint ) const
-        {
-            result.resize( 0 );
-
-            if( cell_hint == NO_ID ) {
-                return 0;
-            }
-
-            // Flag the visited cells
-            std::vector< index_t > visited;
-            visited.reserve( 10 );
-
-            // Stack of the adjacent cells
-            std::stack< index_t > S;
-            S.push( cell_hint );
-            visited.push_back( cell_hint );
-
-            do {
-                index_t c = S.top();
-                S.pop();
-
-                bool cell_includes_vertex = false;
-                for( index_t v : range( nb_cell_vertices( c ) ) ) {
-                    if( cell_vertex( ElementLocalVertex( c, v ) ) == vertex_id ) {
-                        result.push_back( c );
-                        cell_includes_vertex = true;
-                        break;
-                    }
-                }
-                if( !cell_includes_vertex ) {
-                    continue;
-                }
-
-                for( index_t f : range( nb_cell_facets( c ) ) ) {
-                    for( index_t v : range(
-                        nb_cell_facet_vertices( CellLocalFacet( c, f ) ) ) ) {
-                        index_t vertex = cell_facet_vertex( CellLocalFacet( c, f ),
-                            v );
-                        if( vertex == vertex_id ) {
-                            index_t adj_P = cell_adjacent( CellLocalFacet( c, f ) );
-
-                            if( adj_P != NO_ID ) {
-                                if( !contains( visited, adj_P ) ) {
-                                    S.push( adj_P );
-                                    visited.push_back( adj_P );
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-            } while( !S.empty() );
-
-            return static_cast< index_t >( result.size() );
-        }
-
         /*!
          * Computes the Mesh cell edge barycenter
          * @param[in] cell_id the facet index
@@ -1044,6 +985,12 @@ namespace RINGMesh {
             return NO_ID;
         }
 
+        bool find_cell_from_colocated_vertex_within_distance_if_any(
+            const vecn< DIMENSION >& vertex_vec,
+            double distance,
+            index_t& cell_id,
+            index_t& cell_vertex_id ) const;
+
         /*!
          * @brief return the NNSearch at cell facets
          * @warning the NNSearch is destroyed when calling the Mesh::facets_aabb()
@@ -1094,11 +1041,6 @@ namespace RINGMesh {
         }
     protected:
         VolumeMesh() = default;
-    private:
-        /// @TODO use find_cell_from_vertex function in geomodel_builder_geometry
-        /// (in the unnamed namespace, geomodel2d branch) which uses C++11 a lambda
-        /// function. BC.
-        index_t find_first_cell_owing_vertex( index_t vertex_id_in_mesh ) const;
 
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_facet_nn_search_;

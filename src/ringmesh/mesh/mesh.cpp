@@ -389,11 +389,15 @@ namespace RINGMesh {
         std::vector< index_t > result;
 
         if( cell_hint == NO_ID ) {
-            cell_hint = find_first_cell_owing_vertex( vertex_id );
-            if( cell_hint == NO_ID ) {
+            const vecn< DIMENSION > cur_vec = this->vertex( vertex_id );
+            index_t cell_vertex_not_used = NO_ID;
+            bool found = find_cell_from_colocated_vertex_within_distance_if_any( cur_vec, global_epsilon, cell_hint,
+                cell_vertex_not_used );
+            if( !found ) {
                 return result;
             }
         }
+        ringmesh_assert( cell_hint != NO_ID );
 
         // Flag the visited cells
         std::vector< index_t > visited;
@@ -443,37 +447,27 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t VolumeMesh< DIMENSION >::find_first_cell_owing_vertex(
-        index_t vertex_id_in_mesh ) const
+    bool VolumeMesh< DIMENSION >::find_cell_from_colocated_vertex_within_distance_if_any(
+        const vecn< DIMENSION >& vertex_vec,
+        double distance,
+        index_t& cell_id,
+        index_t& cell_vertex_id ) const
     {
-        ringmesh_assert( nb_cells() != 0 );
-        const NNSearch< DIMENSION >& ann_cells = cell_nn_search();
-        const vecn< DIMENSION >& vertex_pos = this->vertex( vertex_id_in_mesh );
-
-        index_t nb_neighbors = std::min( index_t( 5 ), nb_cells() );
-        std::vector< index_t > neighbors;
-        index_t cur_neighbor = 0;
-        index_t prev_neighbor = 0;
-        do {
-            prev_neighbor = cur_neighbor;
-            cur_neighbor += nb_neighbors;
-            cur_neighbor = std::min( cur_neighbor, nb_cells() );
-            neighbors.resize( cur_neighbor );
-            neighbors = ann_cells.get_neighbors( vertex_pos, cur_neighbor );
-            // nb_neighbors can be less than cur_neighbor.
-            nb_neighbors = static_cast< index_t >( neighbors.size() );
-            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                index_t c = neighbors[i];
-                for( index_t j = 0; j < nb_cell_vertices( c ); j++ ) {
-                    if( cell_vertex( ElementLocalVertex( c, j ) )
-                        == vertex_id_in_mesh ) {
-                        return c;
+        bool result = false;
+        cell_nn_search().get_neighbors( vertex_vec,
+            [this, &vertex_vec, &result, &cell_id, &cell_vertex_id, distance]( index_t i ) {
+                for( index_t j : range( nb_cell_vertices( i ) ) ) {
+                    if( inexact_equal( this->vertex( cell_vertex( ElementLocalVertex(i, j ))),
+                            vertex_vec, distance ) ) {
+                        cell_vertex_id = cell_vertex( ElementLocalVertex(i,
+                                j ));
+                        cell_id = i;
+                        result = true;
+                        break;
                     }
                 }
-            }
-        } while( nb_cells() != cur_neighbor );
-
-        return NO_ID;
+                return result;} );
+        return result;
     }
 
     template< index_t DIMENSION >
