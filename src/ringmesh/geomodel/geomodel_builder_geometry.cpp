@@ -817,8 +817,8 @@ namespace RINGMesh {
 
             index_t& cell = cell_vertices[v].element_;
             index_t& cell_vertex = cell_vertices[v].vertex_;
-            ElementLocalVertex element_local_vertex = region.find_cell_from_vertex(
-                p );
+            ElementLocalVertex element_local_vertex =
+                region.find_cell_from_colocated_vertex_if_any( p );
             cell = element_local_vertex.element_id_;
             cell_vertex = element_local_vertex.local_vertex_id_;
 

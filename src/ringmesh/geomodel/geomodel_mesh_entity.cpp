@@ -953,8 +953,9 @@ namespace RINGMesh {
         const vecn< DIMENSION >& vertex_vec ) const
     {
         ElementLocalVertex cell_local_vertex;
-        volume_mesh_->find_cell_from_vertex( vertex_vec, this->geomodel_.epsilon(),
-            cell_local_vertex.element_id_, cell_local_vertex.local_vertex_id_ );
+        volume_mesh_->find_cell_from_colocated_vertex_within_distance_if_any(
+            vertex_vec, this->geomodel_.epsilon(), cell_local_vertex.element_id_,
+            cell_local_vertex.local_vertex_id_ );
         return cell_local_vertex;
     }
 
