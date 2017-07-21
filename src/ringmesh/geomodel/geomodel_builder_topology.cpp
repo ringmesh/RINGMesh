@@ -125,11 +125,15 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    void add_to_set_children_of_geological_entities(
+    index_t add_to_set_children_of_geological_entities(
         const GeoModel< DIMENSION >& geomodel,
         const std::set< gmge_id >& geological_entities,
         std::set< gmme_id >& mesh_entities )
     {
+        int nb_added =
+            -1
+                * static_cast< int >( mesh_entities.size()
+                    + geological_entities.size() );
         for( const gmge_id& cur_gmge_id : geological_entities ) {
             const GeoModelGeologicalEntity< DIMENSION >& cur_geol_entity =
                 geomodel.geological_entity( cur_gmge_id );
@@ -138,14 +142,22 @@ namespace {
                 mesh_entities.insert( cur_geol_entity.child_gmme( child_i ) );
             }
         }
+        nb_added += static_cast< int >( mesh_entities.size()
+            + geological_entities.size() );
+        ringmesh_assert( nb_added >= 0 );
+        return static_cast< index_t >( nb_added );
     }
 
     template< index_t DIMENSION >
-    void add_to_set_geological_entities_which_have_no_child(
+    index_t add_to_set_geological_entities_which_have_no_child(
         const GeoModel< DIMENSION >& geomodel,
         const std::set< gmme_id >& mesh_entities,
         std::set< gmge_id >& geological_entities )
     {
+        int nb_added =
+            -1
+                * static_cast< int >( mesh_entities.size()
+                    + geological_entities.size() );
         const index_t nb_geological_entity_types =
             geomodel.entity_type_manager().geological_entity_manager.nb_geological_entity_types();
         for( index_t geol_entity_type_i = 0;
@@ -173,13 +185,18 @@ namespace {
                 }
             }
         }
+        nb_added += static_cast< int >( mesh_entities.size()
+            + geological_entities.size() );
+        ringmesh_assert( nb_added >= 0 );
+        return static_cast< index_t >( nb_added );
     }
 
     template< index_t DIMENSION >
-    void add_to_set_mesh_entities_being_boundaries_of_no_mesh_entity(
+    index_t add_to_set_mesh_entities_being_boundaries_of_no_mesh_entity(
         const GeoModel< DIMENSION >& geomodel,
         std::set< gmme_id >& mesh_entities )
     {
+        int nb_added = -1 * static_cast< int >( mesh_entities.size() );
         for( index_t mesh_entity_type_i = 0;
             mesh_entity_type_i
                 < geomodel.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types()
@@ -208,6 +225,9 @@ namespace {
                 }
             }
         }
+        nb_added += static_cast< int >( mesh_entities.size() );
+        ringmesh_assert( nb_added >= 0 );
+        return static_cast< index_t >( nb_added );
     }
 
 }
@@ -251,19 +271,15 @@ namespace RINGMesh {
         std::set< gmme_id >& mesh_entities,
         std::set< gmge_id >& geological_entities ) const
     {
-        const std::size_t input_geological_size = geological_entities.size();
-        const std::size_t input_mesh_size = mesh_entities.size();
-
-        add_to_set_children_of_geological_entities( geomodel_, geological_entities,
-            mesh_entities );
-        add_to_set_geological_entities_which_have_no_child( geomodel_, mesh_entities,
-            geological_entities );
-        add_to_set_mesh_entities_being_boundaries_of_no_mesh_entity( geomodel_,
-            mesh_entities );
+        index_t nb_added = add_to_set_children_of_geological_entities( geomodel_,
+            geological_entities, mesh_entities );
+        nb_added += add_to_set_geological_entities_which_have_no_child( geomodel_,
+            mesh_entities, geological_entities );
+        nb_added += add_to_set_mesh_entities_being_boundaries_of_no_mesh_entity(
+            geomodel_, mesh_entities );
 
         // Recursive call till nothing is added
-        if( mesh_entities.size() != input_mesh_size
-            || geological_entities.size() != input_geological_size ) {
+        if( nb_added > 0 ) {
             return get_dependent_entities( mesh_entities, geological_entities );
         } else {
             return false;
