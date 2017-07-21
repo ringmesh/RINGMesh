@@ -985,7 +985,7 @@ namespace RINGMesh {
             return NO_ID;
         }
 
-        bool find_cell_from_vertex(
+        bool find_cell_from_colocated_vertex_within_distance_if_any(
             const vecn< DIMENSION >& vertex_vec,
             double epsilon,
             index_t& cell_id,

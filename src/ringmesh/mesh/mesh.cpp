@@ -391,7 +391,7 @@ namespace RINGMesh {
         if( cell_hint == NO_ID ) {
             const vecn< DIMENSION > cur_vec = this->vertex( vertex_id );
             index_t cell_vertex_not_used = NO_ID;
-            bool found = find_cell_from_vertex( cur_vec, global_epsilon, cell_hint,
+            bool found = find_cell_from_colocated_vertex_within_distance_if_any( cur_vec, global_epsilon, cell_hint,
                 cell_vertex_not_used );
             if( !found ) {
                 return result;
@@ -447,7 +447,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool VolumeMesh< DIMENSION >::find_cell_from_vertex(
+    bool VolumeMesh< DIMENSION >::find_cell_from_colocated_vertex_within_distance_if_any(
         const vecn< DIMENSION >& vertex_vec,
         double epsilon,
         index_t& cell_id,

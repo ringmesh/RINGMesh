@@ -949,7 +949,7 @@ namespace RINGMesh {
 
 
     template< index_t DIMENSION >
-    ElementLocalVertex Region< DIMENSION >::find_cell_from_vertex(
+    ElementLocalVertex Region< DIMENSION >::find_cell_from_colocated_vertex_if_any(
         const vecn< DIMENSION >& vertex_vec ) const
     {
         ElementLocalVertex cell_local_vertex;
