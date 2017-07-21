@@ -50,7 +50,7 @@ namespace {
                                              "double_attr", "vec3_attr",
                                              "dim_6_double_attr", "char_attr" };
 
-    void load_geomodel( GeoModel< 3 >& in, const std::string& filename )
+    void load_geomodel( GeoModel3D& in, const std::string& filename )
     {
         std::string input_model_file_name( ringmesh_test_data_path );
         input_model_file_name += filename;
@@ -87,10 +87,10 @@ namespace {
         vertex_char_attr[vertex_i] = std::to_string( cur_vertex.y ).data()[0];
     }
 
-    void set_vertex_attributes_on_geomodel_regions( const GeoModel< 3 >& geomodel )
+    void set_vertex_attributes_on_geomodel_regions( const GeoModel3D& geomodel )
     {
         for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
-            const Region< 3 >& cur_reg = geomodel.region( reg_i );
+            const Region3D& cur_reg = geomodel.region( reg_i );
 
             GEO::AttributesManager& reg_attr_mgr =
                 cur_reg.vertex_attribute_manager();
@@ -118,10 +118,10 @@ namespace {
         }
     }
 
-    void set_vertex_attributes_on_geomodelmesh( const GeoModel< 3 >& geomodel )
+    void set_vertex_attributes_on_geomodelmesh( const GeoModel3D& geomodel )
     {
-        const GeoModelMesh< 3 >& gmm = geomodel.mesh;
-        const GeoModelMeshVertices< 3 >& gmmv = gmm.vertices;
+        const GeoModelMesh3D& gmm = geomodel.mesh;
+        const GeoModelMeshVertices3D& gmmv = gmm.vertices;
         GEO::AttributesManager& gmmv_attr_mgr = gmmv.attribute_manager();
 
         GEO::Attribute< long int > vertex_long_int_attr( gmmv_attr_mgr,
@@ -169,10 +169,10 @@ namespace {
             std::to_string( cell_vec3_attr[cell_i].y ).data()[0];
     }
 
-    void set_cell_attributes_on_geomodel_regions( const GeoModel< 3 >& geomodel )
+    void set_cell_attributes_on_geomodel_regions( const GeoModel3D& geomodel )
     {
         for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
-            const Region< 3 >& cur_reg = geomodel.region( reg_i );
+            const Region3D& cur_reg = geomodel.region( reg_i );
 
             GEO::AttributesManager& reg_attr_mgr = cur_reg.cell_attribute_manager();
             GEO::Attribute< long int > cell_long_int_attr( reg_attr_mgr,
@@ -200,10 +200,10 @@ namespace {
         }
     }
 
-    void set_cell_attributes_on_geomodelmesh( const GeoModel< 3 >& geomodel )
+    void set_cell_attributes_on_geomodelmesh( const GeoModel3D& geomodel )
     {
-        const GeoModelMesh< 3 >& gmm = geomodel.mesh;
-        const GeoModelMeshCells< 3 >& gmmc = gmm.cells;
+        const GeoModelMesh3D& gmm = geomodel.mesh;
+        const GeoModelMeshCells3D& gmmc = gmm.cells;
         GEO::AttributesManager& gmmc_attr_mgr = gmmc.attribute_manager();
 
         GEO::Attribute< long int > cell_long_int_attr( gmmc_attr_mgr,
@@ -249,10 +249,10 @@ namespace {
     }
 
     void check_vertex_attr_transfer_from_geomodel_regions_to_geomodelmesh(
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
     {
-        const GeoModelMesh< 3 >& gmm = geomodel.mesh;
-        const GeoModelMeshVertices< 3 >& gmmv = gmm.vertices;
+        const GeoModelMesh3D& gmm = geomodel.mesh;
+        const GeoModelMeshVertices3D& gmmv = gmm.vertices;
         GEO::AttributesManager& gmmv_attr_mgr = gmmv.attribute_manager();
         check_attributes_exist_on_mesh( gmmv_attr_mgr, "geomodelmesh", "vertices" );
 
@@ -326,10 +326,10 @@ namespace {
     }
 
     void check_vertex_attr_transfer_from_geomodelmesh_to_geomodel_regions(
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
     {
         for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
-            const Region< 3 >& cur_reg = geomodel.region( reg_i );
+            const Region3D& cur_reg = geomodel.region( reg_i );
             GEO::AttributesManager& reg_v_attr_mgr =
                 cur_reg.vertex_attribute_manager();
             check_attributes_exist_on_mesh( reg_v_attr_mgr, "geomodel region",
@@ -411,10 +411,10 @@ namespace {
     }
 
     void check_cell_attr_transfer_from_geomodel_regions_to_geomodelmesh(
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
     {
-        const GeoModelMesh< 3 >& gmm = geomodel.mesh;
-        const GeoModelMeshCells< 3 >& gmmc = gmm.cells;
+        const GeoModelMesh3D& gmm = geomodel.mesh;
+        const GeoModelMeshCells3D& gmmc = gmm.cells;
         GEO::AttributesManager& gmmc_attr_mgr = gmmc.attribute_manager();
         check_attributes_exist_on_mesh( gmmc_attr_mgr, "geomodelmesh", "cells" );
 
@@ -489,10 +489,10 @@ namespace {
     }
 
     void check_cell_attr_transfer_from_geomodelmesh_to_geomodel_regions(
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
     {
         for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
-            const Region< 3 >& cur_reg = geomodel.region( reg_i );
+            const Region3D& cur_reg = geomodel.region( reg_i );
             GEO::AttributesManager& reg_c_attr_mgr =
                 cur_reg.cell_attribute_manager();
             check_attributes_exist_on_mesh( reg_c_attr_mgr, "geomodel region",
@@ -576,7 +576,7 @@ namespace {
     }
 
     void check_attr_transfer_from_geomodel_regions_to_geomodelmesh(
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
     {
         check_vertex_attr_transfer_from_geomodel_regions_to_geomodelmesh( geomodel );
         check_cell_attr_transfer_from_geomodel_regions_to_geomodelmesh( geomodel );
@@ -584,7 +584,7 @@ namespace {
     }
 
     void check_attr_transfer_from_geomodelmesh_to_geomodel_regions(
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
     {
         check_vertex_attr_transfer_from_geomodelmesh_to_geomodel_regions( geomodel );
         check_cell_attr_transfer_from_geomodelmesh_to_geomodel_regions( geomodel );
@@ -593,24 +593,24 @@ namespace {
 
     void tests_transfer_from_geomodel_regions_to_geomodelmesh()
     {
-        GeoModel< 3 > geomodel;
+        GeoModel3D geomodel;
         load_geomodel( geomodel, "modelA1_volume_meshed.gm" );
 
         set_vertex_attributes_on_geomodel_regions( geomodel );
         set_cell_attributes_on_geomodel_regions( geomodel );
-        const GeoModelMesh< 3 >& gmm = geomodel.mesh;
+        const GeoModelMesh3D& gmm = geomodel.mesh;
         gmm.transfer_attributes_from_gm_regions_to_gmm();
         check_attr_transfer_from_geomodel_regions_to_geomodelmesh( geomodel );
     }
 
     void tests_transfer_from_geomodelmesh_to_geomodel_regions()
     {
-        GeoModel< 3 > geomodel;
+        GeoModel3D geomodel;
         load_geomodel( geomodel, "modelA1_volume_meshed.gm" );
 
         set_vertex_attributes_on_geomodelmesh( geomodel );
         set_cell_attributes_on_geomodelmesh( geomodel );
-        const GeoModelMesh< 3 >& gmm = geomodel.mesh;
+        const GeoModelMesh3D& gmm = geomodel.mesh;
         gmm.transfer_attributes_from_gmm_to_gm_regions();
         check_attr_transfer_from_geomodelmesh_to_geomodel_regions( geomodel );
     }
