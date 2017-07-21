@@ -202,6 +202,8 @@ namespace RINGMesh {
         }
     };
 
+    CLASS_DIMENSION_ALIASES( MeshEntityTypeManager );
+
     /*!
      * @brief this class contains methods to manage the type of the
      * GeoModelGeologicalEntity. It gives access to the number of geological entities of each

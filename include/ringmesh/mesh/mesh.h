@@ -207,6 +207,8 @@ namespace RINGMesh {
         PointSetMesh() = default;
     };
 
+    CLASS_DIMENSION_ALIASES( PointSetMesh );
+
     template< index_t DIMENSION >
     using PointMeshFactory = GEO::Factory0< PointSetMesh< DIMENSION > >;
 
@@ -303,6 +305,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_;
         mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_;
     };
+
+    CLASS_DIMENSION_ALIASES( LineMesh );
 
     template< index_t DIMENSION >
     using LineMeshFactory = GEO::Factory0< LineMesh< DIMENSION > >;
@@ -744,6 +748,8 @@ namespace RINGMesh {
         }
     };
 
+    CLASS_DIMENSION_ALIASES( SurfaceMesh );
+
     /*!
      * class for encapsulating volume mesh component
      */
@@ -1096,6 +1102,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_;
     };
 
+    using VolumeMesh3D = VolumeMesh< 3 >;
+
     template< index_t DIMENSION >
     using VolumeMeshFactory = GEO::Factory0< VolumeMesh< DIMENSION > >;
 
@@ -1138,6 +1146,6 @@ namespace RINGMesh {
         void create_volume_mesh( const MeshType type );
 
     public:
-        std::unique_ptr< VolumeMesh< 3 > > volume_mesh;
+        std::unique_ptr< VolumeMesh3D > volume_mesh;
     };
 }

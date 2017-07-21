@@ -50,6 +50,7 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelGfx;
+    CLASS_DIMENSION_ALIASES( GeoModelGfx );
     template< index_t DIMENSION > class PointSetMeshGfx;
     template< index_t DIMENSION > class LineMeshGfx;
     template< index_t DIMENSION > class SurfaceMeshGfx;
@@ -301,7 +302,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RegionGfxEntity final: public GeoModelGfxEntity< 3 > {
     public:
-        RegionGfxEntity( GeoModelGfx< 3 >& gfx );
+        RegionGfxEntity( GeoModelGfx3D& gfx );
         virtual ~RegionGfxEntity() = default;
 
         VolumeMeshGfx< DIMENSION >& region( index_t region_id );
@@ -416,6 +417,8 @@ namespace RINGMesh {
         void set_shrink( index_t region_id, double shrink );
 
     };
+
+    CLASS_DIMENSION_ALIASES( RegionGfxEntity );
 }
 
 #endif
