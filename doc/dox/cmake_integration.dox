@@ -1,0 +1,90 @@
+/*
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the ASGA nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
+
+
+/*!
+
+\page ringmesh_cmake_integration How to integrate RINGMesh in anther cmake project
+
+This page explain how to complete a CMakeLists.txt of a project using RINGMesh as dependency.
+
+
+Define a user-defined variable to get RINGMesh directory path
+-------------------------------------------------------------
+The code below define a variable RINGMesh_HOME containing the path to the RINGMesh directory.
+The user can change the default value (parent directory of the current cmake project).
+
+\code
+SET(RINGMesh_HOME "${PROJECT_SOURCE_DIR}/../RINGMesh" CACHE PATH "Path to RINGMesh project (mandatory dependency)")
+\endcode
+
+
+Find the RINGMesh cmake configuration file
+------------------------------------------
+The code below finds the RINGMesh cmake configuration file from the variable RINGMesh_HOME.
+Several variables are defined toward RINGMesh, geogram, zlib and tinyxml2 includes, and RINGMesh and geogram libraries.
+There are some variations between Linux and Windows. All RINGMesh includes are added to the current
+project includes. The RINGMesh libraries are added to a variable EXTRA_LIBS in which all the
+libraries, used in the current cmake project, i.e., not only RINGMesh, are added.
+All this steps are defined in the cmake/RINGMeshConfig.cmake file.
+
+\code
+message(STATUS "Using RINGMesh directory = ${RINGMesh_HOME}")
+
+find_package(RINGMesh REQUIRED PATHS ${RINGMesh_HOME}/cmake)
+set_ringmesh_includes_and_libs(EXTRA_LIBS)
+
+\endcode
+
+
+Link your code with RINGMesh
+----------------------------
+Add this line to link your library (called MyLib) with RINGMesh:
+\code
+target_link_libraries(MyLib ${EXTRA_LIBS})
+\endcode
+As said previously, EXTRA_LIBS may contain other libraries than the ones of RINGMesh.
+
+To link your binaries (e.g., MyBin) with RINGMesh, you can use the following line:
+\code
+target_link_libraries(MyBin MyLib ${EXTRA_LIBS})
+\endcode
+or potentially:
+\code
+target_link_libraries(MyBin MyLib ${RINGMesh_LIBRARIES})
+\endcode
+
+*/
+
