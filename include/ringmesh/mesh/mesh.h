@@ -189,6 +189,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_;
     };
 
+    CLASS_DIMENSION_ALIASES( MeshBase );
+
     /*!
      * class for encapsulating mesh composed of points
      */
@@ -206,6 +208,8 @@ namespace RINGMesh {
     protected:
         PointSetMesh() = default;
     };
+
+    CLASS_DIMENSION_ALIASES( PointSetMesh );
 
     template< index_t DIMENSION >
     using PointMeshFactory = GEO::Factory0< PointSetMesh< DIMENSION > >;
@@ -303,6 +307,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_;
         mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_;
     };
+
+    CLASS_DIMENSION_ALIASES( LineMesh );
 
     template< index_t DIMENSION >
     using LineMeshFactory = GEO::Factory0< LineMesh< DIMENSION > >;
@@ -625,6 +631,8 @@ namespace RINGMesh {
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_;
     };
 
+    CLASS_DIMENSION_ALIASES( SurfaceMeshBase );
+
     template< index_t DIMENSION >
     class SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
     };
@@ -743,6 +751,8 @@ namespace RINGMesh {
             return std::fabs( result );
         }
     };
+
+    CLASS_DIMENSION_ALIASES( SurfaceMesh );
 
     /*!
      * class for encapsulating volume mesh component
@@ -1020,6 +1030,10 @@ namespace RINGMesh {
          */
         virtual double cell_volume( index_t cell_id ) const = 0;
 
+        std::vector< index_t > cells_around_vertex(
+            index_t vertex_id,
+            index_t cell_hint ) const;
+
         index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const
         {
             for( index_t v : range( nb_cell_vertices( cell_id ) ) ) {
@@ -1080,12 +1094,19 @@ namespace RINGMesh {
         }
     protected:
         VolumeMesh() = default;
+    private:
+        /// @TODO use find_cell_from_vertex function in geomodel_builder_geometry
+        /// (in the unnamed namespace, geomodel2d branch) which uses C++11 a lambda
+        /// function. BC.
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_mesh ) const;
 
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_facet_nn_search_;
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_;
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_;
     };
+
+    using VolumeMesh3D = VolumeMesh< 3 >;
 
     template< index_t DIMENSION >
     using VolumeMeshFactory = GEO::Factory0< VolumeMesh< DIMENSION > >;
@@ -1129,6 +1150,6 @@ namespace RINGMesh {
         void create_volume_mesh( const MeshType type );
 
     public:
-        std::unique_ptr< VolumeMesh< 3 > > volume_mesh;
+        std::unique_ptr< VolumeMesh3D > volume_mesh;
     };
 }

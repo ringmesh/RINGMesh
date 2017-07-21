@@ -37,17 +37,17 @@ namespace {
 
     class WLIOHandler final: public WellGroupIOHandler {
     public:
-        void load( const std::string& filename, WellGroup< 3 >& wells ) final
+        void load( const std::string& filename, WellGroup3D& wells ) final
         {
             GEO::LineInput in( filename );
             if( !in.OK() ) {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr< LineMesh< 3 > > mesh = LineMesh < 3
-                > ::create_mesh( GeogramLineMesh < 3 > ::type_name_static() );
-            std::unique_ptr< LineMeshBuilder< 3 > > builder = LineMeshBuilder < 3
-                > ::create_builder( *mesh );
+            std::unique_ptr< LineMesh3D > mesh = LineMesh3D::create_mesh(
+                GeogramLineMesh3D::type_name_static() );
+            std::unique_ptr< LineMeshBuilder3D > builder =
+                LineMeshBuilder3D::create_builder( *mesh );
             std::string name;
             double z_sign = 1.0;
             vec3 vertex_ref;
@@ -78,13 +78,12 @@ namespace {
                 } else if( in.field_matches( 0, "END" ) ) {
                     wells.add_well( *mesh, name );
                     mesh = LineMesh < 3
-                        > ::create_mesh(
-                            GeogramLineMesh < 3 > ::type_name_static() );
-                    builder = LineMeshBuilder < 3 > ::create_builder( *mesh );
+                        > ::create_mesh( GeogramLineMesh3D::type_name_static() );
+                    builder = LineMeshBuilder3D::create_builder( *mesh );
                 }
             }
         }
-        void save( const WellGroup< 3 >& wells, const std::string& filename ) final
+        void save( const WellGroup3D& wells, const std::string& filename ) final
         {
             ringmesh_unused( wells );
             ringmesh_unused( filename );
