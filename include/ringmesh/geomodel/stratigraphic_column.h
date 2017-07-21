@@ -49,9 +49,10 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class Interface;
-    CLASS_DIMENSION_ALIASES( Interface );
     template< index_t DIMENSION > class Layer;
-    using Layer3D = Layer< 3 >;
+
+    CLASS_DIMENSION_ALIASES( Interface );
+    CLASS_DIMENSION_ALIASES( Layer );
 
     // @todo To develop
     enum struct ROCKTYPE {

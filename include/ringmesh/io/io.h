@@ -61,8 +61,9 @@ const char TAB = '\t';
 namespace RINGMesh {
     class StratigraphicColumn;
     template< index_t DIMENSION > class GeoModel;
-    CLASS_DIMENSION_ALIASES( GeoModel );
     template< index_t DIMENSION > class WellGroup;
+
+    CLASS_DIMENSION_ALIASES( GeoModel );
     CLASS_DIMENSION_ALIASES( WellGroup );
 }
 

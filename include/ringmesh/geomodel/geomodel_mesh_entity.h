@@ -51,7 +51,6 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
-    CLASS_DIMENSION_ALIASES( GeoModel );
     template< index_t DIMENSION > class GeoModelGeologicalEntity;
     template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
     template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
@@ -62,6 +61,8 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
     template< index_t DIMENSION > class GeoModelBuilderRemoval;
     template< index_t DIMENSION > class GeoModelBuilderInfo;
+
+    CLASS_DIMENSION_ALIASES( GeoModel );
 }
 
 namespace RINGMesh {

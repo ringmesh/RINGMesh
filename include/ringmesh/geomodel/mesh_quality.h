@@ -45,6 +45,7 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
+
     CLASS_DIMENSION_ALIASES( GeoModel );
 }
 
