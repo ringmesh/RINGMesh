@@ -64,13 +64,20 @@ namespace RINGMesh {
     /*
      * Initializes the possible handlers for IO GeoModel files
      */
-    void GeoModelIOHandler::initialize_boundary_geomodel_output()
+    template< >
+    void GeoModelIOHandler< 2 >::initialize_boundary_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" );
-        ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" );
-        ringmesh_register_GeoModelIOHandler_creator( STLIOHandler, "stl" );
+    }
+
+    template< >
+    void GeoModelIOHandler< 3 >::initialize_boundary_geomodel_output()
+    {
+        ringmesh_register_GeoModelIOHandler3D_creator( MLIOHandler, "ml" );
+        ringmesh_register_GeoModelIOHandler3D_creator( SMESHIOHandler, "smesh" );
+        ringmesh_register_GeoModelIOHandler3D_creator( STLIOHandler, "stl" );
 #ifdef RINGMESH_WITH_GEOLOGYJS
         ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" );
 #endif
     }
+
 }

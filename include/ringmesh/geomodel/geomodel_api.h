@@ -45,9 +45,11 @@
  */
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
     class MeshEntityType;
     class GeologicalEntityType;
+
+    CLASS_DIMENSION_ALIASES( GeoModel );
 }
 
 namespace RINGMesh {
@@ -57,7 +59,8 @@ namespace RINGMesh {
      * @details Output number of polygons, vertices, and of the different entity types
      * @todo Implement a test are_geomodels_equals to be able to check that tests went well
      */
-    void RINGMESH_API print_geomodel( const GeoModel& geomodel );
+    template< index_t DIMENSION >
+    void print_geomodel( const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * Output the number of vertices, edges, polygons and cells.
@@ -65,19 +68,15 @@ namespace RINGMesh {
      * Also output the number of tetra, prisms, pyramids, hex and polyhedra if any.
      * @param[in] geomodel the geomodel to compute the statistics on
      */
-    void RINGMESH_API print_geomodel_mesh_stats( const GeoModel& geomodel );
+    template< index_t DIMENSION >
+    void print_geomodel_mesh_stats( const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * Output the volume of the geomodel and the volume per cell type.
      * @param[in] geomodel the geomodel to compute the statistics on
      */
-    void RINGMESH_API print_geomodel_mesh_cell_volumes( const GeoModel& geomodel );
-
-    bool RINGMESH_API are_geomodel_surface_meshes_simplicial(
-        const GeoModel& geomodel );
-
-    bool RINGMESH_API are_geomodel_region_meshes_simplicial(
-        const GeoModel& geomodel );
+    void RINGMESH_API print_geomodel_mesh_cell_volumes(
+        const GeoModel3D& geomodel );
 
     /*!
      * @return the index of the mesh entity \param gme_type named as \param name
@@ -85,8 +84,9 @@ namespace RINGMesh {
      * @note throw exception if no entities have this \param name or if two entities
      * have the same \param name
      */
-    index_t RINGMESH_API find_mesh_entity_id_from_name(
-        const GeoModel& geomodel,
+    template< index_t DIMENSION >
+    index_t find_mesh_entity_id_from_name(
+        const GeoModel< DIMENSION >& geomodel,
         const MeshEntityType& gmme_type,
         const std::string& name );
 
@@ -96,8 +96,9 @@ namespace RINGMesh {
      * @note throw exception if no entities have this \param name or if two entities
      * have the same \param name
      */
-    index_t RINGMESH_API find_geological_entity_id_from_name(
-        const RINGMesh::GeoModel& geomodel,
+    template< index_t DIMENSION >
+    index_t find_geological_entity_id_from_name(
+        const RINGMesh::GeoModel< DIMENSION >& geomodel,
         const RINGMesh::GeologicalEntityType& gmge_type,
         const std::string& name );
 
@@ -110,8 +111,11 @@ namespace RINGMesh {
      * @param[in] region_id Region to mesh. By default it set to NO_ID and all regions are meshed.
      * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
      */
-    void RINGMESH_API tetrahedralize( GeoModel& geomodel, const std::string& method =
-        "TetGen", index_t region_id = NO_ID, bool add_steiner_points = true );
+    void RINGMESH_API tetrahedralize(
+        GeoModel3D& geomodel,
+        const std::string& method = "TetGen",
+        index_t region_id = NO_ID,
+        bool add_steiner_points = true );
 
     /*!
      * Compute the tetrahedral mesh of the input structural geomodel
@@ -123,7 +127,7 @@ namespace RINGMesh {
      * There is one vector per region.
      */
     void RINGMESH_API tetrahedralize(
-        GeoModel& geomodel,
+        GeoModel3D& geomodel,
         const std::string& method,
         index_t region_id,
         bool add_steiner_points,
@@ -140,9 +144,10 @@ namespace RINGMesh {
      * @param[in/out] geomodel GeoModel on which compute the translation
      * @param[in] translation_vector vector of translation.
      */
-    void RINGMESH_API translate(
-        GeoModel& geomodel,
-        const vec3& translation_vector );
+    template< index_t DIMENSION >
+    void translate(
+        GeoModel< DIMENSION >& geomodel,
+        const vecn< DIMENSION >& translation_vector );
 
     /*!
      * \brief Rotate the boundary geomodel.
@@ -162,7 +167,7 @@ namespace RINGMesh {
      * if in radians.
      */
     void RINGMESH_API rotate(
-        GeoModel& geomodel,
+        GeoModel3D& geomodel,
         const vec3& origin,
         const vec3& axis,
         double angle,

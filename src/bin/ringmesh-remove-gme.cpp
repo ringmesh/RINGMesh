@@ -61,7 +61,7 @@ namespace {
     void import_arg_group_remove_gme()
     {
         GEO::CmdLine::declare_arg_group( "remove", "GeoModel repair processes" );
-        GEO::CmdLine::declare_arg( "remove:type", Region::type_name_static(),
+        GEO::CmdLine::declare_arg( "remove:type", Region3D::type_name_static(),
             "Type name of the GeoModelEntity to remove" );
         GEO::CmdLine::declare_arg( "remove:index", 0,
             "Index of the entity to remove" );
@@ -74,25 +74,20 @@ namespace {
         import_arg_group_remove_gme();
     }
 
-    void run()
+    template< index_t DIMENSION >
+    void remove_gme( const std::string& in_model_file_name )
     {
-        GEO::Stopwatch total( "Total time" );
-
-        std::string in_model_file_name = GEO::CmdLine::get_arg( "in:geomodel" );
-        if( in_model_file_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel" );
-        }
-        GeoModel geomodel;
+        GeoModel< DIMENSION > geomodel;
         geomodel_load( geomodel, in_model_file_name );
 
         const std::string gme_type = GEO::CmdLine::get_arg( "remove:type" );
         index_t gme_index = GEO::CmdLine::get_arg_uint( "remove:index" );
 
-        GeoModelBuilder builder( geomodel );
+        GeoModelBuilder< DIMENSION > builder( geomodel );
         MeshEntityType mesh_entity_type( gme_type );
         GeologicalEntityType geological_entity_type( gme_type );
-        if( MeshEntityTypeManager::is_valid_type( mesh_entity_type ) ) {
+        if( geomodel.entity_type_manager().mesh_entity_manager.is_valid_type(
+            mesh_entity_type ) ) {
             if( gme_index >= geomodel.nb_mesh_entities( mesh_entity_type ) ) {
                 throw RINGMeshException( "I/O",
                     "Gme index higher than number of entities of the given type" );
@@ -118,6 +113,26 @@ namespace {
                 "Give at least a filename in out:geomodel" );
         }
         geomodel_save( geomodel, out_model_file_name );
+    }
+
+    void run()
+    {
+        GEO::Stopwatch total( "Total time" );
+
+        const std::string in_model_file_name = GEO::CmdLine::get_arg(
+            "in:geomodel" );
+        if( in_model_file_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in in:geomodel" );
+        }
+        index_t dimension = find_geomodel_dimension( in_model_file_name );
+        if( dimension == 2 ) {
+            remove_gme< 2 >( in_model_file_name );
+        } else if( dimension == 3 ) {
+            remove_gme< 3 >( in_model_file_name );
+        } else {
+            throw RINGMeshException( "I/O", "Forbidden dimension", dimension );
+        }
     }
 }
 

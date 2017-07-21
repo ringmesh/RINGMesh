@@ -152,9 +152,8 @@ int main()
 //        GLUP_profiles[2] = "GLUP440" ;
 //        GLUP_profiles[3] = "VanillaGL" ;
 
-        for( index_t profile = 0; profile < GLUP_profiles.size(); profile++ ) {
-            open_viewer_load_geomodel_then_close( argc, argv,
-                GLUP_profiles[profile] );
+        for( const std::string& profile : GLUP_profiles ) {
+            open_viewer_load_geomodel_then_close( argc, argv, profile );
         }
 
     } catch( const RINGMeshException& e ) {

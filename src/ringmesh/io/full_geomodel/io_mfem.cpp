@@ -57,16 +57,18 @@ namespace {
      * "MFEM is a free, lightweight, scalable C++ library for finite element
      * methods"
      */
-    class MFEMIOHandler final: public GeoModelIOHandler {
+    class MFEMIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from MFEM not implemented yet" );
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+        void save(
+            const GeoModel3D& geomodel,
+            const std::string& filename ) final
         {
-            const GeoModelMesh& geomodel_mesh = geomodel.mesh;
+            const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
             index_t nb_cells = geomodel_mesh.cells.nb();
             if( geomodel_mesh.cells.nb_tet() != nb_cells
                 && geomodel_mesh.cells.nb_hex() != nb_cells ) {
@@ -80,6 +82,7 @@ namespace {
             write_cells( geomodel_mesh, out );
             write_polygons( geomodel_mesh, out );
             write_vertices( geomodel_mesh, out );
+            out << std::flush;
         }
 
     private:
@@ -88,16 +91,18 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_header( const GeoModelMesh& geomodel_mesh, std::ofstream& out ) const
+        void write_header(
+            const GeoModelMesh3D& geomodel_mesh,
+            std::ofstream& out ) const
         {
             // MFEM mesh version
-            out << "MFEM mesh v1.0" << std::endl;
-            out << std::endl;
+            out << "MFEM mesh v1.0" << EOL;
+            out << EOL;
 
             // Dimension is always 3 in our case
-            out << "dimension" << std::endl;
-            out << dimension << std::endl;
-            out << std::endl;
+            out << "dimension" << EOL;
+            out << dimension << EOL;
+            out << EOL;
         }
 
         /*!
@@ -110,20 +115,26 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_cells( const GeoModelMesh& geomodel_mesh, std::ofstream& out ) const
+        void write_cells(
+            const GeoModelMesh3D& geomodel_mesh,
+            std::ofstream& out ) const
         {
             index_t nb_cells = geomodel_mesh.cells.nb();
-            out << "elements" << std::endl;
-            out << nb_cells << std::endl;
-            for( index_t c = 0; c < nb_cells; c++ ) {
+            out << "elements" << EOL;
+            out << nb_cells << EOL;
+            for( index_t c : range( nb_cells ) ) {
                 out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
-                out << cell_type_mfem[to_underlying_type( geomodel_mesh.cells.type( c ))] << " ";
-                for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
-                    out << geomodel_mesh.cells.vertex( c, cell2mfem[v] ) << " ";
+                out
+                    << cell_type_mfem[to_underlying_type(
+                        geomodel_mesh.cells.type( c ) )] << " ";
+                for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
+                    out
+                        << geomodel_mesh.cells.vertex(
+                            ElementLocalVertex( c, cell2mfem[v] ) ) << " ";
                 }
-                out << std::endl;
+                out << EOL;
             }
-            out << std::endl;
+            out << EOL;
         }
 
         /*!
@@ -136,21 +147,24 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_polygons( const GeoModelMesh& geomodel_mesh, std::ofstream& out ) const
+        void write_polygons(
+            const GeoModelMesh3D& geomodel_mesh,
+            std::ofstream& out ) const
         {
-            const GeoModelMeshPolygons& polygons = geomodel_mesh.polygons;
-            out << "boundary" << std::endl;
-            out << polygons.nb() << std::endl;
-            for( index_t p = 0; p < polygons.nb(); p++ ) {
-                index_t not_used = 0;
+            const GeoModelMeshPolygons3D& polygons = geomodel_mesh.polygons;
+            out << "boundary" << EOL;
+            out << polygons.nb() << EOL;
+            for( index_t p : range( polygons.nb() ) ) {
                 out << polygons.surface( p ) + mfem_offset << " ";
-                out << polygon_type_mfem[to_underlying_type( polygons.type( p, not_used ) )] << " ";
-                for( index_t v = 0; v < polygons.nb_vertices( p ); v++ ) {
-                    out << polygons.vertex( p, v ) << " ";
+                PolygonType polygon_type;
+                std::tie( polygon_type, std::ignore ) = polygons.type( p );
+                out << polygon_type_mfem[to_underlying_type( polygon_type )] << " ";
+                for( index_t v : range( polygons.nb_vertices( p ) ) ) {
+                    out << polygons.vertex( ElementLocalVertex( p, v ) ) << " ";
                 }
-                out << std::endl;
+                out << EOL;
             }
-            out << std::endl;
+            out << EOL;
         }
 
         /*!
@@ -160,13 +174,15 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out ) const
+        void write_vertices(
+            const GeoModelMesh3D& geomodel_mesh,
+            std::ofstream& out ) const
         {
-            out << "vertices" << std::endl;
-            out << geomodel_mesh.vertices.nb() << std::endl;
-            out << dimension << std::endl;
-            for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
-                out << geomodel_mesh.vertices.vertex( v ) << std::endl;
+            out << "vertices" << EOL;
+            out << geomodel_mesh.vertices.nb() << EOL;
+            out << dimension << EOL;
+            for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
+                out << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
         }
 

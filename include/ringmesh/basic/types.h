@@ -64,16 +64,21 @@ namespace RINGMesh {
     static const double global_epsilon_sq = global_epsilon * global_epsilon;
     static const double global_epsilon_3 = global_epsilon_sq * global_epsilon;
 
-    // This is an array of 3 doubles
-    using GEO::vec3;
     // This is an unsigned int
     using GEO::index_t;
     // This is an int
     using GEO::signed_index_t;
+    // This is an array template of doubles
+    template< index_t DIMENSION >
+    using vecn = GEO::vecng< DIMENSION, double >;
+    // This is an array of 3 doubles
+    using vec3 = vecn< 3 >;
+    // This is an array of 3 doubles
+    using vec2 = vecn< 2 >;
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
-
+    
     /*! enum defining the type of cell in region 
      *  * CellType::UNCLASSIFIED may be either a connector or more complex cell that is not specified.
      *  * CellType::UNDEFINED means that the cell is not defined and cannot be used.
@@ -97,9 +102,58 @@ namespace RINGMesh {
         UNCLASSIFIED = 2,
         UNDEFINED = 3
     };
-    template<typename E>
-    auto to_underlying_type( E e ) -> typename std::underlying_type<E>::type
+    
+    template< typename Enum >
+    auto to_underlying_type( Enum e ) -> typename std::underlying_type< Enum >::type
     {
-        return static_cast<typename std::underlying_type<E>::type>( e );
+        return static_cast< typename std::underlying_type< Enum >::type >( e );
+    }
+
+    template< typename Enum >
+    struct EnableBitMaskOperators {
+        static const bool enable = false;
+    };
+
+    template< typename Enum >
+    typename std::enable_if< EnableBitMaskOperators< Enum >::enable, Enum >::type operator |(
+        Enum lhs,
+        Enum rhs )
+    {
+        using underlying = typename std::underlying_type<Enum>::type;
+        return static_cast< Enum >( static_cast< underlying >( lhs )
+            | static_cast< underlying >( rhs ) );
+    }
+
+    template< typename Enum >
+    typename std::enable_if< EnableBitMaskOperators< Enum >::enable, Enum >::type operator &(
+        Enum lhs,
+        Enum rhs )
+    {
+        using underlying = typename std::underlying_type<Enum>::type;
+        return static_cast< Enum >( static_cast< underlying >( lhs )
+            & static_cast< underlying >( rhs ) );
+    }
+
+    template< typename Enum >
+    typename std::enable_if< EnableBitMaskOperators< Enum >::enable, Enum >::type operator ^(
+        Enum lhs,
+        Enum rhs )
+    {
+        using underlying = typename std::underlying_type<Enum>::type;
+        return static_cast< Enum >( static_cast< underlying >( lhs )
+            ^ static_cast< underlying >( rhs ) );
+    }
+
+    template< typename Enum >
+    bool enum_contains( Enum lhs, Enum rhs )
+    {
+        return ( lhs & rhs ) != Enum::EMPTY;
+    }
+
+#define ENABLE_BITMASK_OPERATORS( Enum )    \
+    template<>                              \
+    struct EnableBitMaskOperators< Enum >   \
+    {                                       \
+        static const bool enable = true;    \
     }
 }
