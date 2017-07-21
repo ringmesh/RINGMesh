@@ -58,7 +58,7 @@ namespace RINGMesh {
      */
     bool compare_files( const std::string& f1, const std::string& f2 )
     {
-        const unsigned int MAX_LINE_LEN = 65535;
+        const unsigned int MAX_LINE_LEN = std::pow( 2, 16 ) - 1;
 
         std::ifstream lFile( f1.c_str() );
         std::ifstream rFile( f2.c_str() );
@@ -80,11 +80,11 @@ namespace RINGMesh {
 
     void mesh_initialize()
     {
-        GeoModelIOHandler< 2 >::initialize_full_geomodel_output();
-        GeoModelIOHandler< 3 >::initialize_full_geomodel_output();
+        GeoModelIOHandler2D::initialize_full_geomodel_output();
+        GeoModelIOHandler3D::initialize_full_geomodel_output();
 
-        GeoModelIOHandler< 2 >::initialize_boundary_geomodel_output();
-        GeoModelIOHandler< 3 >::initialize_boundary_geomodel_output();
+        GeoModelIOHandler2D::initialize_boundary_geomodel_output();
+        GeoModelIOHandler3D::initialize_boundary_geomodel_output();
 
         WellGroupIOHandler::initialize();
     }
@@ -167,10 +167,10 @@ namespace RINGMesh {
     {
         std::string ext = GEO::FileSystem::extension( filename );
         if( GeoModelIOHandlerFactory2D::has_creator( ext ) ) {
-            return GeoModelIOHandler< 2 >::get_handler( filename )->dimension(
+            return GeoModelIOHandler2D::get_handler( filename )->dimension(
                 filename );
         } else if( GeoModelIOHandlerFactory3D::has_creator( ext ) ) {
-            return GeoModelIOHandler< 3 >::get_handler( filename )->dimension(
+            return GeoModelIOHandler3D::get_handler( filename )->dimension(
                 filename );
         } else {
             ringmesh_assert_not_reached;
@@ -237,14 +237,14 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelIOHandler< 2 > ;
     template class RINGMESH_API GeoModelIOHandler< 3 > ;
 
-    template bool RINGMESH_API geomodel_load( GeoModel< 2 >&, const std::string& );
+    template bool RINGMESH_API geomodel_load( GeoModel2D&, const std::string& );
     template void RINGMESH_API geomodel_save(
-        const GeoModel< 2 >&,
+        const GeoModel2D&,
         const std::string& );
 
-    template bool RINGMESH_API geomodel_load( GeoModel< 3 >&, const std::string& );
+    template bool RINGMESH_API geomodel_load( GeoModel3D&, const std::string& );
     template void RINGMESH_API geomodel_save(
-        const GeoModel< 3 >&,
+        const GeoModel3D&,
         const std::string& );
 
 }

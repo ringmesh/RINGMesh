@@ -43,7 +43,7 @@ namespace RINGMesh {
 
     StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(
         StratigraphicColumn& column,
-        GeoModel< 3 >& model,
+        GeoModel3D& model,
         std::string filename )
         :
             StratigraphicColumnBuilder( column, model ),
@@ -53,7 +53,7 @@ namespace RINGMesh {
 
     StratigraphicColumnBuilder::StratigraphicColumnBuilder(
         StratigraphicColumn& column,
-        GeoModel< 3 >& model )
+        GeoModel3D& model )
         : column_( column ), model_( model )
     {
         if( model_.nb_geological_entities( GeologicalEntityType( "Layer" ) ) == 0 ) {

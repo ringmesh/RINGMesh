@@ -76,16 +76,20 @@
 #   define RINGMESH_PARALLEL_LOOP_DYNAMIC
 #endif
 
-#define ringmesh_disable_copy( Class ) \
-    public: \
-    Class( const Class & ) = delete ; \
+#define ringmesh_disable_copy( Class )                                          \
+    public:                                                                     \
+    Class( const Class & ) = delete ;                                           \
     Class& operator=( const Class& ) = delete
 
-#define ringmesh_template_assert_2d_or_3d( type ) \
+#define ringmesh_template_assert_2d_or_3d( type )                               \
     static_assert( type == 2 || type == 3, #type " template should be 2 or 3" )
 
-#define ringmesh_template_assert_3d( type ) \
+#define ringmesh_template_assert_3d( type )                                     \
     static_assert( type == 3, #type " template should be 3" )
+
+#define CLASS_DIMENSION_ALIASES( Class )                                        \
+    using Class ## 2D = Class< 2 >;                                             \
+    using Class ## 3D = Class< 3 >
 
 // To avoid unused argument warning in function definition
 template< typename T > void ringmesh_unused( T const& )
@@ -98,7 +102,7 @@ template< typename T > void ringmesh_unused( T const& )
 
 #include <geogram/basic/string.h>
 
-#define DEBUG( a ) \
+#define DEBUG( a )                                                              \
     Logger::out( "Debug", #a, " = ", a )
 
 #include <stdexcept>

@@ -197,30 +197,30 @@ namespace RINGMesh {
     {
     }
 
-    const Region< 3 >& GeoModel< 3 >::region( index_t index ) const
+    const Region3D& GeoModel< 3 >::region( index_t index ) const
     {
         ringmesh_assert( index < regions_.size() );
-        return *static_cast< const Region< 3 >* >( regions_[index].get() );
+        return *static_cast< const Region3D* >( regions_[index].get() );
     }
 
-    const std::vector< std::unique_ptr< GeoModelMeshEntity< 3 > > >& GeoModel< 3 >::mesh_entities(
+    const std::vector< std::unique_ptr< GeoModelMeshEntity3D > >& GeoModel< 3 >::mesh_entities(
         const MeshEntityType& type ) const
     {
         if( entity_type_manager().mesh_entity_manager.is_region( type ) ) {
             return regions_;
         } else {
-            return GeoModelBase< 3 >::mesh_entities( type );
+            return GeoModelBase3D::mesh_entities( type );
         }
     }
 
-    const GeoModelMeshEntity< 3 >& GeoModel< 3 >::mesh_entity( gmme_id id ) const
+    const GeoModelMeshEntity3D& GeoModel< 3 >::mesh_entity( gmme_id id ) const
     {
         const MeshEntityType& type = id.type();
         index_t index = id.index();
         if( entity_type_manager().mesh_entity_manager.is_region( type ) ) {
             return region( index );
         } else {
-            return GeoModelBase< 3 >::mesh_entity( id );
+            return GeoModelBase3D::mesh_entity( id );
         }
         ringmesh_assert_not_reached;
         return surface( 0 );
@@ -231,7 +231,7 @@ namespace RINGMesh {
         if( entity_type_manager().mesh_entity_manager.is_region( type ) ) {
             return nb_regions();
         } else {
-            return GeoModelBase< 3 >::nb_mesh_entities( type );
+            return GeoModelBase3D::nb_mesh_entities( type );
         }
     }
 

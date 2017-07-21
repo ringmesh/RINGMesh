@@ -631,7 +631,7 @@ namespace {
         index_t i );
 
     template< >
-    bool is_geomodel_vertex_valid( const GeoModel< 3 >& geomodel, index_t i )
+    bool is_geomodel_vertex_valid( const GeoModel3D& geomodel, index_t i )
     {
         // Get the mesh entities in which this vertex is
         std::map< MeshEntityType, std::vector< index_t > > entities = get_entities(
@@ -648,7 +648,7 @@ namespace {
     }
 
     template< >
-    bool is_geomodel_vertex_valid( const GeoModel< 2 >& geomodel, index_t i )
+    bool is_geomodel_vertex_valid( const GeoModel2D& geomodel, index_t i )
     {
         // Get the mesh entities in which this vertex is
         std::map< MeshEntityType, std::vector< index_t > > entities = get_entities(
@@ -1376,27 +1376,27 @@ namespace RINGMesh {
     }
 
     template bool RINGMESH_API is_geomodel_valid< 2 >(
-        const GeoModel< 2 >&,
+        const GeoModel2D&,
         ValidityCheckMode );
     template bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
-        const GeoModel< 2 >& );
+        const GeoModel2D& );
     template bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
-        const GeoModel< 2 >& );
+        const GeoModel2D& );
     template bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
-        const GeoModel< 2 >& );
+        const GeoModel2D& );
     template bool RINGMESH_API are_geomodel_geological_entities_valid(
-        const GeoModel< 2 >& );
+        const GeoModel2D& );
 
     template bool RINGMESH_API is_geomodel_valid< 3 >(
-        const GeoModel< 3 >&,
+        const GeoModel3D&,
         ValidityCheckMode );
     template bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
-        const GeoModel< 3 >& );
+        const GeoModel3D& );
     template bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
-        const GeoModel< 3 >& );
+        const GeoModel3D& );
     template bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
-        const GeoModel< 3 >& );
+        const GeoModel3D& );
     template bool RINGMESH_API are_geomodel_geological_entities_valid(
-        const GeoModel< 3 >& );
+        const GeoModel3D& );
 
 }

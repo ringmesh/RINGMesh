@@ -204,4 +204,6 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelBuilderRepair );
+
 }
