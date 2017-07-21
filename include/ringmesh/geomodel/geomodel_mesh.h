@@ -1390,24 +1390,21 @@ namespace RINGMesh {
         GeoModelMesh( GeoModel< 3 >& geomodel );
         virtual ~GeoModelMesh();
 
-        /*!
-         * @brief Transfer attributes from the GeoModelMesh to the
-         * GeoModel
+        /*! @}
+         * \name Transfers of attributes
+         * @{
          */
-        void transfer_attributes() const;
+        void transfer_attributes_from_gmm_to_gm_regions() const;
+        void transfer_attributes_from_gm_regions_to_gmm() const;
+        void transfer_cell_attributes_from_gmm_to_gm_regions() const;
+        void transfer_cell_attributes_from_gm_regions_to_gmm() const;
+        void transfer_vertex_attributes_from_gmm_to_gm_regions() const;
+        void transfer_vertex_attributes_from_gm_regions_to_gmm() const;
 
-        /*!
-         * @brief Transfer attributes from the GeoModelMeshVertices to the
-         * GeoModel
+        /*! @}
+         * \name Vertex duplication
+         * @{
          */
-        void transfer_vertex_attributes() const;
-
-        /*!
-         * @brief Transfer attributes from the GeoModelMeshCell to the
-         * GeoModel
-         */
-        void transfer_cell_attributes() const;
-
         /*!
          * Access the DuplicateMode
          * @return the current DuplicateMode
@@ -1428,6 +1425,10 @@ namespace RINGMesh {
             const_cast< GeoModelMesh< 3 >* >( this )->cells.clear_duplication();
         }
 
+        /*! @}
+         * \name Data structure change
+         * @{
+         */
         void change_volume_mesh_data_structure( const MeshType& type );
 
     private:

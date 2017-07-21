@@ -1115,6 +1115,19 @@ namespace RINGMesh {
             return vecn< DIMENSION >();
         }
 
+        std::vector< index_t > cells_around_vertex(
+            index_t vertex_id,
+            index_t cell_hint ) const {
+            return volume_mesh_->cells_around_vertex( vertex_id, cell_hint );
+        }
+
+        void compute_region_volumes_per_cell_type(
+            double& tet_volume,
+            double& pyramid_volume,
+            double& prism_volume,
+            double& hex_volume,
+            double& poly_volume ) const;
+
         bool side( index_t i ) const
         {
             return sides_[i];

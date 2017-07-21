@@ -75,6 +75,7 @@ namespace {
 #include "full_geomodel/io_vtk.cpp"
 
 }
+
 namespace RINGMesh {
 
     template< >
