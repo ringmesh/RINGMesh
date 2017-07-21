@@ -234,7 +234,7 @@ void test_on_corner_on_botom_corner_voi( GeoModel3D& geomodel )
     // Contact: none.
     // Interface: none.
     // Layer: none.
-    std::set< gmge_id > solution_gmge_id = {};
+    std::set< gmge_id > solution_gmge_id;
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
         std::string( Corner3D::type_name_static() ), 135 );
