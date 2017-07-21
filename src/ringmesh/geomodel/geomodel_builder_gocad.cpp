@@ -1112,7 +1112,8 @@ namespace {
                     load_storage.vertices_, load_storage.tetra_corners_ );
                 load_storage.vertices_.clear();
                 load_storage.tetra_corners_.clear();
-            }
+			}
+			assign_attributes_to_mesh( geomodel(), load_storage );
 		}
 		virtual void execute_light(
 			GEO::LineInput& line,
@@ -1121,9 +1122,10 @@ namespace {
 			ringmesh_unused( line );
 			get_light_tsolid_workflow_to_catch_up_with_tsolid_workflow( load_storage );
 			// End of LightTSolid peculiar processing
+			assign_attributes_to_mesh( geomodel(), load_storage );
 		}
 
-		void get_light_tsolid_workflow_to_catch_up_with_tsolid_workflow( 
+		void get_light_tsolid_workflow_to_catch_up_with_tsolid_workflow(
 			TSolidLoadingStorage& load_storage )
 		{
 			load_storage.vertex_map_.fill_with_lighttsolid_region_ids();
@@ -1165,6 +1167,40 @@ namespace {
 			load_storage.lighttsolid_atom_map_.clear();
 		}
 
+		void assign_attributes_to_mesh(
+			GeoModel< 3 >& geomodel, TSolidLoadingStorage& load_storage ){
+
+			GEO::vector< std::string > att_v_names;
+			GEO::AttributesManager& mesh_vertex_mgr = geomodel.mesh.vertices.attribute_manager();
+			mesh_vertex_mgr.list_attribute_names( att_v_names );
+			for( std::string name : att_v_names ){
+				Logger::out( "I/O", "attributes before ", name );
+			}
+
+			for( index_t attrib_name_itr : range( load_storage.vertex_attribute_names_.size() ) ) {
+
+				GEO::Attribute< double > attr;
+				index_t nb_dimensions = load_storage.vertex_attribute_dims_[attrib_name_itr];
+				attr.create_vector_attribute( geomodel.mesh.vertices.attribute_manager(),
+					load_storage.vertex_attribute_names_[attrib_name_itr], nb_dimensions );
+				// Does it resize all the past attributes to the size of the current attribute? 
+				// Problematic, isn't it?
+				geomodel.mesh.vertices.attribute_manager().resize( 
+					load_storage.nb_vertices_ * nb_dimensions + nb_dimensions );
+				
+				for( index_t v_itr : range( load_storage.nb_vertices_ ) ) {
+					for( index_t attrib_dim_itr : range( nb_dimensions ) ) {
+						attr[v_itr * nb_dimensions + attrib_dim_itr] =
+							load_storage.vertex_attributes_[attrib_name_itr][v_itr][attrib_dim_itr];
+					}
+				}
+			}
+
+			mesh_vertex_mgr.list_attribute_names( att_v_names );
+			for( std::string name : att_v_names ){
+				Logger::out( "I/O", "attributes after ", name );
+			}
+		}
 	};
 
     class LoadInterface final : public TSolidLineParser {
