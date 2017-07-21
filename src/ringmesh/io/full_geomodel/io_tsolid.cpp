@@ -406,6 +406,7 @@ namespace {
                     const GEO::AttributeStore* attr_store =
                         reg_vertex_attr_mgr.find_attribute_store(
                             numeric_like_vertex_attribute_names_[attr_dbl_itr] );
+                    ringmesh_unused( attr_store );
                     ringmesh_assert( attr_store != nullptr );
                     ringmesh_assert(
                         attr_store->dimension()
@@ -563,6 +564,7 @@ namespace {
                     const GEO::AttributeStore* attr_store =
                         reg_cell_attr_mgr.find_attribute_store(
                             numeric_like_cell_attribute_names_[attr_dbl_itr] );
+                    ringmesh_unused( attr_store );
                     ringmesh_assert( attr_store != nullptr );
                     ringmesh_assert(
                         attr_store->dimension()
