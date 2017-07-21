@@ -60,6 +60,15 @@ namespace RINGMesh {
         return !( u == v );
     }
 
+    template< index_t DIMENSION >
+    bool inexact_equal(
+        const vecn< DIMENSION >& v1,
+        const vecn< DIMENSION >& v2,
+        double epsilon )
+    {
+        return length( v2 - v1 ) < epsilon;
+    }
+
     double RINGMESH_API dot_perp( const vec2& v0, const vec2& v1 );
 
     /* @warning Duplicate from Geogram/basic/numeric.h */
