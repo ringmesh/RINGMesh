@@ -47,9 +47,10 @@
 namespace RINGMesh {
     class GeoModelBuilderTSolid;
     class GeoModelBuilderML;
-    CLASS_DIMENSION_ALIASES( Box );
     struct VertexMap;
     struct TSolidLoadingStorage;
+
+    CLASS_DIMENSION_ALIASES( Box );
 }
 
 namespace RINGMesh {
