@@ -34,22 +34,23 @@
  */
 
 namespace {
-    void merge_colocated_vertices( double epsilon, LineMesh& mesh )
+    void merge_colocated_vertices( double epsilon, LineMesh3D& mesh )
     {
         std::vector< index_t > old2new;
-        index_t nb_colocated = mesh.vertex_nn_search().get_colocated_index_mapping(
-            epsilon, old2new );
+        index_t nb_colocated = NO_ID;
+        std::tie( nb_colocated, old2new ) =
+            mesh.vertex_nn_search().get_colocated_index_mapping( epsilon );
         if( nb_colocated > 0 ) {
-            std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
-                mesh );
-            for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
-                for( index_t i = 0; i < 2; i++ ) {
-                    index_t v = mesh.edge_vertex( e, i );
+            std::unique_ptr< LineMeshBuilder3D > builder =
+                LineMeshBuilder3D::create_builder( mesh );
+            for( index_t e : range( mesh.nb_edges() ) ) {
+                for( index_t i : range( 2 ) ) {
+                    index_t v = mesh.edge_vertex( ElementLocalVertex( e, i ) );
                     builder->set_edge_vertex( e, i, old2new[v] );
                 }
             }
             std::vector< bool > delete_vertices( mesh.nb_vertices(), false );
-            for( index_t v = 0; v < mesh.nb_vertices(); v++ ) {
+            for( index_t v : range( mesh.nb_vertices() ) ) {
                 if( old2new[v] != v ) {
                     delete_vertices[v] = true;
                 }
@@ -60,17 +61,17 @@ namespace {
 
     class SmeshIOHandler final: public WellGroupIOHandler {
     public:
-        virtual void load( const std::string& filename, WellGroup& wells ) override
+        void load( const std::string& filename, WellGroup3D& wells ) final
         {
             GEO::LineInput in( filename );
             if( !in.OK() ) {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr< LineMesh > mesh = LineMesh::create_mesh(
-                GeogramLineMesh::type_name_static() );
-            std::unique_ptr< LineMeshBuilder > builder = LineMeshBuilder::create_builder(
-                *mesh );
+            std::unique_ptr< LineMesh3D > mesh = LineMesh3D::create_mesh(
+                GeogramLineMesh3D::type_name_static() );
+            std::unique_ptr< LineMeshBuilder3D > builder =
+                LineMeshBuilder3D::create_builder( *mesh );
             std::string name = GEO::FileSystem::base_name( filename );
 
             bool is_first_part = true;
@@ -85,9 +86,9 @@ namespace {
                 if( is_first_part ) {
                     index_t nb_vertices = in.field_as_uint( 0 );
                     builder->create_vertices( nb_vertices );
-                    Box3d box;
+                    Box3D box;
 
-                    for( index_t v = 0; v < nb_vertices; v++ ) {
+                    for( index_t v : range( nb_vertices ) ) {
                         do {
                             in.get_line();
                             in.get_fields();
@@ -103,7 +104,7 @@ namespace {
                 } else {
                     index_t nb_edges = in.field_as_uint( 0 );
                     builder->create_edges( nb_edges );
-                    for( index_t e = 0; e < nb_edges; e++ ) {
+                    for( index_t e : range( nb_edges ) ) {
                         do {
                             in.get_line();
                             in.get_fields();
@@ -117,7 +118,7 @@ namespace {
                 }
             }
         }
-        virtual void save( const WellGroup& wells, const std::string& filename ) override
+        void save( const WellGroup3D& wells, const std::string& filename ) final
         {
             ringmesh_unused( wells );
             ringmesh_unused( filename );

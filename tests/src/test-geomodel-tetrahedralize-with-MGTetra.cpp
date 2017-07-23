@@ -62,13 +62,12 @@ int main()
         file_name += "modelA6.ml";
 
         // Loading the GeoModel
-        GeoModel geomodel;
+        GeoModel3D geomodel;
         bool loaded_model_is_valid = geomodel_load( geomodel, file_name );
 
         if( !loaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when building model " + geomodel.name()
-                    + ": the model is not valid." );
+            throw RINGMeshException( "RINGMesh Test", "Failed when building model ",
+                geomodel.name(), ": the model is not valid." );
         }
 
 #ifdef USE_MG_TETRA
@@ -76,19 +75,18 @@ int main()
         // Tetrahedralize the GeoModel
         tetrahedralize( geomodel, "MG_Tetra", NO_ID, false );
 
-        for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+        for( index_t r : range( geomodel.nb_regions() ) ) {
             if( !geomodel.region( r ).is_meshed() ) {
                 throw RINGMeshException( "RINGMesh Test",
-                    "Failed when tetrahedralize model " + geomodel.name()
-                        + " Region " + GEO::String::to_string( r )
-                        + " is not meshed "
-                        + "maybe the MG Tetra Licence can not be reached" );
+                    "Failed when tetrahedralize model ", geomodel.name(), " Region ",
+                    r, " is not meshed ",
+                    "maybe the MG Tetra Licence can not be reached" );
             }
         }
         if( !is_geomodel_valid( geomodel ) ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Failed when tetrahedralize model " + geomodel.name()
-                    + ": the model becomes invalid." );
+                "Failed when tetrahedralize model ", geomodel.name(),
+                ": the model becomes invalid." );
         }
 
 #endif

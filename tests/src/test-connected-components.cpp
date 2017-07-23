@@ -50,9 +50,9 @@ namespace {
 
     void point_set_mesh_connected_component_test()
     {
-        std::unique_ptr< PointSetMesh > point_set = PointSetMesh::create_mesh();
-        std::unique_ptr< PointSetMeshBuilder > point_set_builder =
-            PointSetMeshBuilder::create_builder( *point_set );
+        std::unique_ptr< PointSetMesh3D > point_set = PointSetMesh3D::create_mesh();
+        std::unique_ptr< PointSetMeshBuilder3D > point_set_builder =
+            PointSetMeshBuilder3D::create_builder( *point_set );
 
         index_t nb_connected_components = NO_ID;
         std::vector< index_t > connected_components;
@@ -86,9 +86,9 @@ namespace {
 
     void line_mesh_connected_component_test()
     {
-        std::unique_ptr< LineMesh > line_mesh = LineMesh::create_mesh();
-        std::unique_ptr< LineMeshBuilder > line_mesh_builder =
-            LineMeshBuilder::create_builder( *line_mesh );
+        std::unique_ptr< LineMesh3D > line_mesh = LineMesh3D::create_mesh();
+        std::unique_ptr< LineMeshBuilder3D > line_mesh_builder =
+            LineMeshBuilder3D::create_builder( *line_mesh );
 
         index_t nb_connected_components = NO_ID;
         std::vector< index_t > connected_components;
@@ -143,9 +143,9 @@ namespace {
 
     void surface_mesh_connected_component_test()
     {
-        std::unique_ptr< SurfaceMesh > surface_mesh = SurfaceMesh::create_mesh();
-        std::unique_ptr< SurfaceMeshBuilder > surface_mesh_builder =
-            SurfaceMeshBuilder::create_builder( *surface_mesh );
+        std::unique_ptr< SurfaceMesh3D > surface_mesh = SurfaceMesh3D::create_mesh();
+        std::unique_ptr< SurfaceMeshBuilder3D > surface_mesh_builder =
+            SurfaceMeshBuilder3D::create_builder( *surface_mesh );
 
         index_t nb_connected_components = NO_ID;
         std::vector< index_t > connected_components;
@@ -192,9 +192,9 @@ namespace {
 
     void volume_mesh_connected_component_test()
     {
-        std::unique_ptr< VolumeMesh > volume_mesh = VolumeMesh::create_mesh();
-        std::unique_ptr< VolumeMeshBuilder > volume_mesh_builder =
-            VolumeMeshBuilder::create_builder( *volume_mesh );
+        std::unique_ptr< VolumeMesh3D > volume_mesh = VolumeMesh3D::create_mesh();
+        std::unique_ptr< VolumeMeshBuilder3D > volume_mesh_builder =
+            VolumeMeshBuilder3D::create_builder( *volume_mesh );
 
         index_t nb_connected_components = NO_ID;
         std::vector< index_t > connected_components;

@@ -120,8 +120,8 @@ int main( int argc, char** argv )
         for( const std::string& format : output_formats ) {
             if( !GEO::FileSystem::create_directory(
                 saving_directory + "/" + format ) ) {
-                throw RINGMeshException( "I/O",
-                    "Can't create " + format + " directory." );
+                throw RINGMeshException( "I/O", "Can't create ", format,
+                    " directory." );
             }
         }
 
@@ -133,7 +133,7 @@ int main( int argc, char** argv )
             // load the tsurf
             GEO::Mesh mesh_surface_in;
             if( !GEO::mesh_load( ts_name, mesh_surface_in ) ) {
-                throw RINGMeshException( "I/O", "Can't load: " + ts_name );
+                throw RINGMeshException( "I/O", "Can't load: ", ts_name );
             }
 
             // get the basename
@@ -147,8 +147,8 @@ int main( int argc, char** argv )
                 std::string surface_output_name = surface_in_basename + "."
                     + output_format;
                 if( !GEO::mesh_save( mesh_surface_in, surface_output_name ) ) {
-                    throw RINGMeshException( "I/O",
-                        "Can't save to: " + surface_output_name );
+                    throw RINGMeshException( "I/O", "Can't save to: ",
+                        surface_output_name );
                 }
             }
 
