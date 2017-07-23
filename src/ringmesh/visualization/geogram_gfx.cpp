@@ -41,10 +41,14 @@ namespace RINGMesh {
 
     void register_geogram_mesh_gfx()
     {
-        ringmesh_register_point_set_gfx( GeogramPointSetMesh );
-        ringmesh_register_line_gfx( GeogramLineMesh );
-        ringmesh_register_surface_gfx( GeogramSurfaceMesh );
-        ringmesh_register_volume_gfx( GeogramVolumeMesh );
+        ringmesh_register_point_set_gfx_3d( GeogramPointSetMesh3D );
+        ringmesh_register_line_gfx_3d( GeogramLineMesh3D );
+        ringmesh_register_surface_gfx_3d( GeogramSurfaceMesh3D );
+        ringmesh_register_volume_gfx_3d( GeogramVolumeMesh3D );
+
+        ringmesh_register_point_set_gfx_2d( GeogramPointSetMesh2D );
+        ringmesh_register_line_gfx_2d( GeogramLineMesh2D );
+        ringmesh_register_surface_gfx_2d( GeogramSurfaceMesh2D );
     }
 }
 

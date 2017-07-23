@@ -48,9 +48,10 @@
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
 
-const std::string TAB = "\t";
-const std::string SPACE = " ";
-const std::string COMMA = ",";
+const char COMMA = ',';
+const char EOL = '\n';
+const char SPACE = ' ';
+const char TAB = '\t';
 
 /*!
  * @file Global input - output functions of RINGMesh
@@ -59,8 +60,11 @@ const std::string COMMA = ",";
 
 namespace RINGMesh {
     class StratigraphicColumn;
-    class GeoModel;
-    class WellGroup;
+    template< index_t DIMENSION > class GeoModel;
+    template< index_t DIMENSION > class WellGroup;
+
+    CLASS_DIMENSION_ALIASES( GeoModel );
+    CLASS_DIMENSION_ALIASES( WellGroup );
 }
 
 namespace GEO {
@@ -81,66 +85,101 @@ namespace RINGMesh {
      * @param[out] geomodel the geomodel to fill
      * @param[in] filename the file to load
      */
-    bool RINGMESH_API geomodel_load(
-        GeoModel& geomodel,
+    template< index_t DIMENSION >
+    bool geomodel_load(
+        GeoModel< DIMENSION >& geomodel,
         const std::string& filename );
     /*!
      * Saves a GeoModel to a file
      * @param[in] geomodel the geomodel to save
      * @param[in] filename the file to save
      */
-    void RINGMESH_API geomodel_save(
-        const GeoModel& geomodel,
+    template< index_t DIMENSION >
+    void geomodel_save(
+        const GeoModel< DIMENSION >& geomodel,
         const std::string& filename );
     /*!
      * Loads a WellGroup from a file
      * @param[in] filename the file to load
-     * @param][out] wells the wells to fill
+     * @param][in,out] wells the wells to fill
      */
-    void RINGMESH_API well_load( const std::string& filename, WellGroup& wells );
+    void RINGMESH_API well_load(
+        const std::string& filename,
+        WellGroup< 3 >& wells );
 
-    class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
+    /*!
+     * Returns the dimension of the GeoModel in the \p filename
+     */
+    index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
+
+    template< index_t DIMENSION >
+    class GeoModelIOHandler: public GEO::Counted {
     public:
+        virtual ~GeoModelIOHandler() = default;
+
         static void initialize_full_geomodel_output();
 
         static void initialize_boundary_geomodel_output();
 
-        static std::unique_ptr< GeoModelIOHandler > get_handler(
+        static std::unique_ptr< GeoModelIOHandler< DIMENSION > > get_handler(
             const std::string& filename );
 
-        bool load_geomodel( const std::string& filename, GeoModel& geomodel );
+        bool load_geomodel(
+            const std::string& filename,
+            GeoModel< DIMENSION >& geomodel );
 
-        void save_geomodel( const GeoModel& geomodel, const std::string& filename );
+        void save_geomodel(
+            const GeoModel< DIMENSION >& geomodel,
+            const std::string& filename );
+
+        virtual index_t dimension( const std::string& filename ) const
+        {
+            return DIMENSION;
+        }
 
     protected:
         GeoModelIOHandler() = default;
-
-        virtual void load( const std::string& filename, GeoModel& geomodel ) = 0;
+        virtual void load(
+            const std::string& filename,
+            GeoModel< DIMENSION >& geomodel ) = 0;
 
         virtual void save(
-            const GeoModel& geomodel,
+            const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) = 0;
 
     private:
         static GeoModelIOHandler* create( const std::string& format );
     };
 
-    using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler >;
+    CLASS_DIMENSION_ALIASES( GeoModelIOHandler );
 
-#define ringmesh_register_GeoModelIOHandler_creator( type, name ) \
-    geo_register_creator( GeoModelIOHandlerFactory, type, name )
+    template< index_t DIMENSION >
+    using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler< DIMENSION > >;
+
+    using GeoModelIOHandlerFactory2D = GeoModelIOHandlerFactory< 2 >;
+    using GeoModelIOHandlerFactory3D = GeoModelIOHandlerFactory< 3 >;
+
+#define ringmesh_register_GeoModelIOHandler2D_creator( type, name ) \
+    geo_register_creator( GeoModelIOHandlerFactory2D, type, name )
+
+#define ringmesh_register_GeoModelIOHandler3D_creator( type, name ) \
+    geo_register_creator( GeoModelIOHandlerFactory3D, type, name )
 
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
     public:
+        virtual ~WellGroupIOHandler() = default;
+
         static void initialize();
 
         static std::unique_ptr< WellGroupIOHandler > get_handler(
             const std::string& filename );
 
-        virtual void load( const std::string& filename, WellGroup& mesh ) = 0;
+        virtual void load( const std::string& filename, WellGroup3D& mesh ) = 0;
 
-        virtual void save( const WellGroup& mesh, const std::string& filename ) = 0;
+        virtual void save(
+            const WellGroup3D& mesh,
+            const std::string& filename ) = 0;
 
     protected:
         WellGroupIOHandler() = default;
@@ -168,6 +207,8 @@ namespace RINGMesh {
     /*********************************************************************************************/
     class RINGMESH_API StratigraphicColumnIOHandler: public GEO::Counted {
     public:
+        virtual ~StratigraphicColumnIOHandler() = default;
+
         static void initialize();
 
         static StratigraphicColumnIOHandler* create( const std::string& format );
@@ -178,20 +219,15 @@ namespace RINGMesh {
         virtual void load(
             const std::string& filename,
             StratigraphicColumn& column,
-            GeoModel& geomodel ) = 0;
+            GeoModel3D& geomodel ) = 0;
 
         virtual void save(
             const StratigraphicColumn& column,
             const std::string& filename ) = 0;
 
     protected:
-        StratigraphicColumnIOHandler()
-        {
-        }
+        StratigraphicColumnIOHandler() = default;
 
-        virtual ~StratigraphicColumnIOHandler()
-        {
-        }
     };
     typedef GEO::SmartPointer< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler_var;
     typedef GEO::Factory0< StratigraphicColumnIOHandler > StratigraphicColumnIOHandlerFactory;

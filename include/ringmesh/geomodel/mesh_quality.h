@@ -44,7 +44,9 @@
  */
 
 namespace RINGMesh {
-    class GeoModel;
+    template< index_t DIMENSION > class GeoModel;
+
+    CLASS_DIMENSION_ALIASES( GeoModel );
 }
 
 namespace RINGMesh {
@@ -79,5 +81,5 @@ namespace RINGMesh {
      */
     void RINGMESH_API compute_prop_tet_mesh_quality(
         MeshQualityMode mesh_qual_mode,
-        const GeoModel& geomodel );
+        const GeoModel3D& geomodel );
 }

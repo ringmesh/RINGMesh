@@ -86,7 +86,8 @@ namespace RINGMesh {
         CmdLine::import_arg_group( "global" );
         mesh_initialize();
         TetraGen::initialize();
-        GeoModelGeologicalEntity::initialize();
+        GeoModelGeologicalEntity2D::initialize();
+        GeoModelGeologicalEntity3D::initialize();
         ringmesh_mesh_io_initialize();
         initialize_gocad_import_factories();
         register_geogram_mesh();
