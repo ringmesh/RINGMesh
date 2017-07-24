@@ -87,13 +87,10 @@ namespace RINGMesh {
         GEO::LineInput file_line_;
     };
 
-    class GocadBaseParser: public GEO::Counted {
+    class GocadBaseParser{
     ringmesh_disable_copy(GocadBaseParser);
     protected:
-        GocadBaseParser()
-            : Counted(), builder_( nullptr ), geomodel_( nullptr )
-        {
-        }
+        GocadBaseParser() = default;
         virtual ~GocadBaseParser() = default;
 
         GeoModelBuilderGocad& builder()
@@ -119,8 +116,8 @@ namespace RINGMesh {
         }
 
     private:
-        GeoModelBuilderGocad* builder_;
-        GeoModel3D* geomodel_;
+        GeoModelBuilderGocad* builder_ { nullptr };
+        GeoModel3D* geomodel_ { nullptr };
     };
 
     struct GocadLoadingStorage {
@@ -159,7 +156,6 @@ namespace RINGMesh {
     class GocadLineParser: public GocadBaseParser {
     ringmesh_disable_copy(GocadLineParser);
     public:
-        GocadLineParser() = default;
         static std::unique_ptr< GocadLineParser > create(
             const std::string& keyword,
             GeoModelBuilderGocad& gm_builder,
@@ -167,6 +163,8 @@ namespace RINGMesh {
         virtual void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) = 0;
+    protected:
+        GocadLineParser() = default;
     };
 
     using GocadLineParserFactory = GEO::Factory0< GocadLineParser >;
@@ -316,10 +314,10 @@ namespace RINGMesh {
     struct MLLoadingStorage: public GocadLoadingStorage {
         MLLoadingStorage();
 
-        bool is_header_read_{ false };
+        bool is_header_read_ { false };
 
         /// Offset to read in the tface vertices in the tsurf vertices
-        index_t tface_vertex_ptr_{ 0 };
+        index_t tface_vertex_ptr_ { 0 };
     };
     class MLLineParser: public GocadBaseParser {
     ringmesh_disable_copy(MLLineParser);
