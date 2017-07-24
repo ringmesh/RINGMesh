@@ -60,6 +60,7 @@ namespace {
             }
             GeoModelBuilderTSolid builder( geomodel, filename );
             builder.build_geomodel();
+            builder.geometry.clear_geomodel_mesh();
         }
         void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
