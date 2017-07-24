@@ -209,53 +209,53 @@ namespace RINGMesh {
     template< >
     void GeoModelGeologicalEntity< 2 >::initialize()
     {
-        ringmesh_register_GeoModelGeologicalEntity2D_creator( Contact< 2 > );
-        ringmesh_register_GeoModelGeologicalEntity2D_creator( Interface< 2 > );
-        ringmesh_register_GeoModelGeologicalEntity2D_creator( Layer< 2 > );
+        ringmesh_register_GeoModelGeologicalEntity2D_creator( Contact2D );
+        ringmesh_register_GeoModelGeologicalEntity2D_creator( Interface2D );
+        ringmesh_register_GeoModelGeologicalEntity2D_creator( Layer2D );
     }
 
     template< >
     void GeoModelGeologicalEntity< 3 >::initialize()
     {
-        ringmesh_register_GeoModelGeologicalEntity3D_creator( Contact< 3 > );
-        ringmesh_register_GeoModelGeologicalEntity3D_creator( Interface< 3 > );
-        ringmesh_register_GeoModelGeologicalEntity3D_creator( Layer< 3 > );
+        ringmesh_register_GeoModelGeologicalEntity3D_creator( Contact3D );
+        ringmesh_register_GeoModelGeologicalEntity3D_creator( Interface3D );
+        ringmesh_register_GeoModelGeologicalEntity3D_creator( Layer3D );
     }
 
     template< >
     MeshEntityType Contact< 2 >::child_type_name() const
     {
-        return Corner< 2 >::type_name_static();
+        return Corner2D::type_name_static();
     }
 
     template< >
     MeshEntityType Interface< 2 >::child_type_name() const
     {
-        return Line< 2 >::type_name_static();
+        return Line2D::type_name_static();
     }
 
     template< >
     MeshEntityType Layer< 2 >::child_type_name() const
     {
-        return Surface< 2 >::type_name_static();
+        return Surface2D::type_name_static();
     }
 
     template< >
     MeshEntityType Contact< 3 >::child_type_name() const
     {
-        return Line< 3 >::type_name_static();
+        return Line3D::type_name_static();
     }
 
     template< >
     MeshEntityType Interface< 3 >::child_type_name() const
     {
-        return Surface< 3 >::type_name_static();
+        return Surface3D::type_name_static();
     }
 
     template< >
     MeshEntityType Layer< 3 >::child_type_name() const
     {
-        return Region< 3 >::type_name_static();
+        return Region3D::type_name_static();
     }
 
     template< index_t DIMENSION >

@@ -52,7 +52,7 @@ namespace RINGMesh {
      * in the container, NO_ID if not found.
      */
     template< typename T, typename container >
-    inline index_t find( const container& in, const T& value )
+    index_t find( const container& in, const T& value )
     {
         auto it = std::find( in.begin(), in.end(), value );
         if( it == in.end() ) {
@@ -67,7 +67,7 @@ namespace RINGMesh {
      * in a sorted container, NO_ID if not found.
      */
     template< typename T, typename container >
-    inline index_t find_sorted( const container& in, const T& value )
+    index_t find_sorted( const container& in, const T& value )
     {
         auto low = std::lower_bound( in.begin(), in.end(), value );
         if( low == in.end() || value < *low ) {
@@ -78,13 +78,15 @@ namespace RINGMesh {
     }
 
     template< typename T, typename container >
-    inline bool contains( const container& in, const T& value, bool sorted = false )
+    bool contains( const container& in, const T& value )
     {
-        if( sorted ) {
-            return find_sorted( in, value ) != NO_ID;
-        } else {
-            return find( in, value ) != NO_ID;
-        }
+        return find( in, value ) != NO_ID;
+    }
+
+    template< typename T, typename container >
+    bool contains_sorted( const container& in, const T& value )
+    {
+        return find_sorted( in, value ) != NO_ID;
     }
 
     /*!
@@ -92,7 +94,7 @@ namespace RINGMesh {
      * @note Not efficient.
      */
     template< typename T1, typename T2 >
-    inline void indirect_sort( std::vector< T1 >& input, std::vector< T2 >& output )
+    void indirect_sort( std::vector< T1 >& input, std::vector< T2 >& output )
     {
         if( input.size() < 2 ) {
             return;
@@ -114,115 +116,12 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Comparator of indices relying on values token in a vector
-     * @note To be used in unique_values function
-     */
-    template< typename T >
-    class CompareIndexFromValue {
-    public:
-        CompareIndexFromValue( const std::vector< T >& values )
-            : values_( values )
-        {
-        }
-        /*! @brief Compare two indices based on the stored values at these indices
-         */
-        inline bool operator()( index_t i, index_t j ) const
-        {
-            ringmesh_assert( i < values_.size() );
-            ringmesh_assert( j < values_.size() );
-            if( equal_values( i, j ) ) {
-                return i < j;
-            } else {
-                return values_[i] < values_[j];
-            }
-        }
-        inline bool equal_values( index_t i, index_t j ) const
-        {
-            return values_[i] == values_[j];
-        }
-    private:
-        const std::vector< T >& values_;
-    };
-
-    /*!
-     * @brief Determines unique occurences of values in input vector
-     * and fill a mapping to the first occurence of each unique value
-     * @param[in] input values  example: 1 4 6 0 4 1 5 6
-     * @param[out] unique_value_indices example: 0 1 2 3 1 0 6 2
-     * Maps each index to the index of the first occurence of the value in the vector.
-     * @return Number of unique values in input
-     * @note Tricky algorithm, used over and over in Geogram
-     */
-    template< typename T >
-    inline index_t determine_unique_values_indices(
-        const std::vector< T >& input_values,
-        std::vector< index_t >& unique_value_indices )
-    {
-        index_t nb_values = static_cast< index_t >( input_values.size() );
-        std::vector< index_t > sorted_indices( nb_values );
-        std::iota( sorted_indices.begin(), sorted_indices.end(), 0 );
-        CompareIndexFromValue< T > comparator( input_values );
-        // Sort the indices according to the values token in the input vector
-        std::sort( sorted_indices.begin(), sorted_indices.end(), comparator );
-
-        unique_value_indices.resize( nb_values, NO_ID );
-        index_t nb_unique_values = 0;
-        index_t i = 0;
-        while( i != nb_values ) {
-            nb_unique_values++;
-            unique_value_indices[sorted_indices[i]] = sorted_indices[i];
-            index_t j = i + 1;
-            while( j < nb_values
-                && comparator.equal_values( sorted_indices[i], sorted_indices[j] ) ) {
-                unique_value_indices[sorted_indices[j]] = sorted_indices[i];
-                j++;
-            }
-            i = j;
-        }
-        return nb_unique_values;
-    }
-
-    /*!
-     * @brief Determines unique occurences of input values plus a mapping.
-     * Example:
-     * Input  : input = 1 3 25 8 3 8
-     * Output : unique_values = 1 3 25 8
-     *          input2unique_values = 0 1 2 3 1 3
-     */
-    template< typename T >
-    inline void get_unique_input_values_and_mapping(
-        const std::vector< T >& input_values,
-        std::vector< T >& unique_values,
-        std::vector< index_t >& input2unique_values )
-    {
-        unique_values.resize( 0 );
-        index_t nb_values = static_cast< index_t >( input_values.size() );
-        input2unique_values.resize( nb_values, NO_ID );
-
-        std::vector< index_t > unique_value_indices;
-        index_t nb_unique_values = determine_unique_values_indices( input_values,
-            unique_value_indices );
-        unique_values.reserve( nb_unique_values );
-
-        for( index_t i : range( nb_values ) ) {
-            if( unique_value_indices[i] == i ) {
-                input2unique_values[i] =
-                    static_cast< index_t >( unique_values.size() );
-                unique_values.push_back( input_values[i] );
-            } else {
-                input2unique_values[i] =
-                    input2unique_values[unique_value_indices[i]];
-            }
-        }
-    }
-
-    /*!
      * @brief Sorts a container and suppresses all duplicated entities.
      * @param[in,out] container the container to sort
      * @param[in] cmp a comparator function
      */
     template< typename CONTAINER, typename CMP >
-    inline void sort_unique( CONTAINER& container, const CMP& cmp )
+    void sort_unique( CONTAINER& container, const CMP& cmp )
     {
         std::sort( container.begin(), container.end(), cmp );
         container.erase( std::unique( container.begin(), container.end(), cmp ),
@@ -234,7 +133,7 @@ namespace RINGMesh {
      * @param[in,out] container the container to sort
      */
     template< typename CONTAINER >
-    inline void sort_unique( CONTAINER& container )
+    void sort_unique( CONTAINER& container )
     {
         std::sort( container.begin(), container.end() );
         container.erase( std::unique( container.begin(), container.end() ),

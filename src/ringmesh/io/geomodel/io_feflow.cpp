@@ -56,13 +56,13 @@ namespace {
     public:
         static const index_t STARTING_OFFSET = 1;
 
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Feflow not implemented yet" );
         }
         void save(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
@@ -90,20 +90,20 @@ namespace {
             out << "   0    0    0    3    0    0    8    8    0    0\n";
         }
         void write_dimensions(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
+            const GeoModelMesh3D& mesh = geomodel.mesh;
             out << "DIMENS\n";
             out << SPACE << mesh.vertices.nb() << SPACE << mesh.cells.nb()
                 << " 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0\n";
             out << "SCALE\n\n";
         }
         void write_elements(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            const GeoModelMeshCells< 3 >& cells = geomodel.mesh.cells;
+            const GeoModelMeshCells3D& cells = geomodel.mesh.cells;
             out << "VARNODE\n";
             out << SPACE << cells.nb();
             index_t min_nb_vertices_per_element;
@@ -139,17 +139,18 @@ namespace {
                 out << SPACE << descriptor.entity_type;
                 for( index_t v : range( cells.nb_vertices( c ) ) ) {
                     out << SPACE
-                        << cells.vertex( c, descriptor.vertices[v] )
+                        << cells.vertex(
+                            ElementLocalVertex( c, descriptor.vertices[v] ) )
                             + STARTING_OFFSET;
                 }
                 out << "\n";
             }
         }
         void write_vertices(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
+            const GeoModelMeshVertices3D& vertices = geomodel.mesh.vertices;
             out << "XYZCOOR\n" << std::scientific;
             for( index_t v : range( vertices.nb() ) ) {
                 const vec3& point = vertices.vertex( v );
@@ -162,7 +163,7 @@ namespace {
             }
             out << std::fixed;
         }
-        void write_regions( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void write_regions( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             out << "ELEMENTALSETS\n";
             index_t offset = 0;
@@ -172,9 +173,9 @@ namespace {
                 out << "-" << offset << "\n";
             }
         }
-        void write_wells( const GeoModel< 3 >& geomodel, std::ofstream& out ) const
+        void write_wells( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            const WellGroup< 3 >* wells = geomodel.wells();
+            const WellGroup3D* wells = geomodel.wells();
             if( !wells ) {
                 return;
             }
@@ -189,10 +190,10 @@ namespace {
             out << " </fractures>\n";
         }
         void write_well_edges(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            const GeoModelMeshEdges< 3 >& edges = geomodel.mesh.edges;
+            const GeoModelMeshEdges3D& edges = geomodel.mesh.edges;
             out << " <nop count=\"" << edges.nb_edges() << "\">\n";
             out << " <![CDATA[";
             for( index_t w : range( edges.nb_wells() ) ) {
@@ -205,11 +206,11 @@ namespace {
             out << " </nop>\n";
         }
         void write_well_groups(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            const GeoModelMeshEdges< 3 >& edges = geomodel.mesh.edges;
-            const WellGroup< 3 >* wells = geomodel.wells();
+            const GeoModelMeshEdges3D& edges = geomodel.mesh.edges;
+            const WellGroup3D* wells = geomodel.wells();
             index_t offset = 0;
             out << " <groups count=\"" << edges.nb_wells() << "\">\n";
             for( index_t w : range( edges.nb_wells() ) ) {

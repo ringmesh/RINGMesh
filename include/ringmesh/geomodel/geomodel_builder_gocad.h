@@ -47,9 +47,10 @@
 namespace RINGMesh {
     class GeoModelBuilderTSolid;
     class GeoModelBuilderML;
-    template< index_t DIMENSION > class Box;
     struct VertexMap;
     struct TSolidLoadingStorage;
+
+    CLASS_DIMENSION_ALIASES( Box );
 }
 
 namespace RINGMesh {
@@ -58,7 +59,7 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile< 3 > {
     public:
-        GeoModelBuilderGocad( GeoModel< 3 >& geomodel, std::string filename )
+        GeoModelBuilderGocad( GeoModel3D& geomodel, std::string filename )
             :
                 GeoModelBuilderFile( geomodel, std::move( filename ) ),
                 file_line_( filename_ )
@@ -66,7 +67,7 @@ namespace RINGMesh {
             /*! @todo Review: A constructor is not supposed to throw, the object is left in an
              * undefined state [JP] */
             if( !file_line_.OK() ) {
-                throw RINGMeshException( "I/O", "Failed to open file " + filename_ );
+                throw RINGMeshException( "I/O", "Failed to open file ", filename_ );
             }
         }
 
@@ -86,13 +87,10 @@ namespace RINGMesh {
         GEO::LineInput file_line_;
     };
 
-    class GocadBaseParser: public GEO::Counted {
+    class GocadBaseParser{
     ringmesh_disable_copy(GocadBaseParser);
     protected:
-        GocadBaseParser()
-            : Counted(), builder_( nullptr ), geomodel_( nullptr )
-        {
-        }
+        GocadBaseParser() = default;
         virtual ~GocadBaseParser() = default;
 
         GeoModelBuilderGocad& builder()
@@ -101,7 +99,7 @@ namespace RINGMesh {
             return *builder_;
         }
 
-        GeoModel< 3 >& geomodel()
+        GeoModel3D& geomodel()
         {
             ringmesh_assert( geomodel_ != nullptr );
             return *geomodel_;
@@ -112,14 +110,14 @@ namespace RINGMesh {
             builder_ = &builder;
         }
 
-        void set_geomodel( GeoModel< 3 >& geomodel )
+        void set_geomodel( GeoModel3D& geomodel )
         {
             geomodel_ = &geomodel;
         }
 
     private:
-        GeoModelBuilderGocad* builder_;
-        GeoModel< 3 >* geomodel_;
+        GeoModelBuilderGocad* builder_ { nullptr };
+        GeoModel3D* geomodel_ { nullptr };
     };
 
     struct GocadLoadingStorage {
@@ -158,14 +156,15 @@ namespace RINGMesh {
     class GocadLineParser: public GocadBaseParser {
     ringmesh_disable_copy(GocadLineParser);
     public:
-        GocadLineParser() = default;
         static std::unique_ptr< GocadLineParser > create(
             const std::string& keyword,
             GeoModelBuilderGocad& gm_builder,
-            GeoModel< 3 >& geomodel );
+            GeoModel3D& geomodel );
         virtual void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) = 0;
+    protected:
+        GocadLineParser() = default;
     };
 
     using GocadLineParserFactory = GEO::Factory0< GocadLineParser >;
@@ -242,7 +241,7 @@ namespace RINGMesh {
         static std::unique_ptr< TSolidLineParser > create(
             const std::string& keyword,
             GeoModelBuilderTSolid& gm_builder,
-            GeoModel< 3 >& geomodel );
+            GeoModel3D& geomodel );
         virtual void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) = 0;
@@ -257,7 +256,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderTSolid final : public GeoModelBuilderGocad {
     public:
-        GeoModelBuilderTSolid( GeoModel< 3 >& geomodel, std::string filename )
+        GeoModelBuilderTSolid( GeoModel3D& geomodel, std::string filename )
             : GeoModelBuilderGocad( geomodel, std::move( filename ) )
         {
         }
@@ -284,8 +283,8 @@ namespace RINGMesh {
          */
         void compute_surface_internal_borders(
             index_t surface_id,
-            const std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-            const std::vector< Box< 3 > >& surface_boxes );
+            const std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
+            const std::vector< Box3D >& surface_boxes );
 
         /*!
          * @brief Computes the NNSearchs of the centers of polygon edges for
@@ -295,8 +294,8 @@ namespace RINGMesh {
          * @param[out] surface_boxes Bounding Box of surfaces
          */
         void compute_polygon_edge_centers_nn_and_surface_boxes(
-            std::vector< std::unique_ptr< NNSearch< 3 > > >& surface_nns,
-            std::vector< Box< 3 > >& surface_boxes );
+            std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
+            std::vector< Box3D >& surface_boxes ) const;
 
         /*!
          * @brief Computes internal borders of the geomodel surfaces
@@ -315,10 +314,10 @@ namespace RINGMesh {
     struct MLLoadingStorage: public GocadLoadingStorage {
         MLLoadingStorage();
 
-        bool is_header_read_{ false };
+        bool is_header_read_ { false };
 
         /// Offset to read in the tface vertices in the tsurf vertices
-        index_t tface_vertex_ptr_{ 0 };
+        index_t tface_vertex_ptr_ { 0 };
     };
     class MLLineParser: public GocadBaseParser {
     ringmesh_disable_copy(MLLineParser);
@@ -328,7 +327,7 @@ namespace RINGMesh {
         static std::unique_ptr< MLLineParser > create(
             const std::string& keyword,
             GeoModelBuilderML& gm_builder,
-            GeoModel< 3 >& geomodel );
+            GeoModel3D& geomodel );
         virtual void execute(
             GEO::LineInput& line,
             MLLoadingStorage& load_storage ) = 0;
@@ -343,7 +342,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderML final : public GeoModelBuilderGocad {
     public:
-        GeoModelBuilderML( GeoModel< 3 >& geomodel, std::string filename )
+        GeoModelBuilderML( GeoModel3D& geomodel, std::string filename )
             : GeoModelBuilderGocad( geomodel, std::move( filename ) )
         {
         }
