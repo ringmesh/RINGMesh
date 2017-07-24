@@ -77,39 +77,9 @@ namespace {
 }
 namespace RINGMesh {
 
-    // possible to construct
-    template< typename T, typename ... Args >
-    typename std::enable_if< std::is_constructible< T, Args... >::value,
-        std::unique_ptr< T > >::type create( Args&&... args )
-    {
-        return std::unique_ptr< T >( new T( std::forward<Args>(args)... ) );
-    }
-
-    // impossible to construct
-    template< typename T, typename ... Args >
-    typename std::enable_if< !std::is_constructible< T, Args... >::value,
-        std::unique_ptr< T > >::type create( Args&&... )
-    {
-        return nullptr;
-    }
-
-    template< class ... Args >
-    std::unique_ptr< GeoModelIOHandler< 3 > > create_ptr( Args&&... args )
-    {
-        return create< FeflowIOHandler, Args... >( std::forward<Args>(args)... );
-    }
-
     template< >
     void GeoModelIOHandler< 2 >::initialize_full_geomodel_output()
     {
-
-        DEBUG( create_ptr().get() );
-        DEBUG( create_ptr(3).get() );
-        int t = 3;
-        DEBUG( create_ptr(t).get() );
-        DEBUG( create_ptr(3, 3).get() );
-        DEBUG( create_ptr(3, 3.).get() );
-
         ringmesh_register_GeoModelIOHandler2D_creator( GeoModelHandlerGM< 2 >, "gm" );
         ringmesh_register_GeoModelIOHandler2D_creator( SVGIOHandler, "svg" );
     }
