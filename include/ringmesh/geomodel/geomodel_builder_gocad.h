@@ -141,7 +141,14 @@ namespace RINGMesh {
         // The orientation of positive Z
         int z_sign_ { 1 };
 
-        std::vector< vec3 > vertices_;
+		std::vector< vec3 > vertices_;
+
+		std::vector< std::vector< double > > attributes_;
+
+		index_t vertex_nb = 0;
+
+		// The vertices and the atoms
+		index_t nb_attribute_fields_ = 0;
 
         // Current interface index
         index_t cur_interface_ { NO_ID };
@@ -242,7 +249,31 @@ namespace RINGMesh {
 			}
 		}
 
-		void get_vertices_list_and_local_ids_from_gocad_ids( const std::vector< vec3 >& stored_vertices,
+		void get_vertices_attributes_list_from_gocad_ids( 
+			const std::vector< std::vector< double > >& stored_attributes,
+			index_t region_id,
+			const std::map< index_t, index_t >& lighttsolid_atom_map,
+			std::vector< std::vector< double > >& region_tetra_attributes ) const {
+
+			index_t gocad_id = 0;
+			for( std::vector< double > attrib : stored_attributes ){
+				if( gocad_ids2region_ids_[gocad_id] == region_id ){
+					if( lighttsolid_atom_map.find( gocad_id ) == lighttsolid_atom_map.end() ){
+						region_tetra_attributes.push_back( stored_attributes[gocad_id] );
+					}
+					else {
+						index_t corresponding_gocad_id = lighttsolid_atom_map.find( gocad_id )->second;
+						if( region( corresponding_gocad_id ) != region( gocad_id ) ){
+							region_tetra_attributes.push_back( stored_attributes[corresponding_gocad_id] );
+						}
+					}
+				}
+				gocad_id++;
+			}
+		}
+
+		void get_vertices_list_and_local_ids_from_gocad_ids( 
+			const std::vector< vec3 >& stored_vertices,
 			index_t region_id,
 			const std::map< index_t, index_t >& lighttsolid_atom_map,
 			std::vector< vec3 >& region_tetra_vertices,
@@ -423,6 +454,12 @@ namespace RINGMesh {
         // Region tetrahedron corners
 		std::vector< index_t > tetra_corners_;
 
+		// Names of the attributes for the TSolid
+		std::vector< std::string > vertex_attribute_names_;
+
+		// Dimensions of the attributes for the TSolid
+		std::vector< index_t > vertex_attribute_dims_;
+
 		//// Current lighttsolid gocad vertex index 1
 		index_t cur_gocad_vrtx_id1_{ NO_ID };
 		index_t cur_gocad_vrtx_id2_{ NO_ID };
@@ -434,15 +471,6 @@ namespace RINGMesh {
 
 		// The vertices and the atoms
 		index_t nb_vertices_;
-
-		// Names of the attributes for the TSolid
-		std::vector< std::string > vertex_attribute_names_;
-
-		// Dimensions of the attributes for the TSolid
-		std::vector< index_t > vertex_attribute_dims_;
-
-		// Storage of the attribute values
-		std::vector< std::vector< std::vector< double > > > vertex_attributes_;
     };
 
     class TSolidLineParser: public GocadBaseParser {
