@@ -54,9 +54,6 @@ namespace {
 
     class FeflowIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        FeflowIOHandler() = default;
-        FeflowIOHandler(int&) {};
-        FeflowIOHandler(int, index_t) {};
         static const index_t STARTING_OFFSET = 1;
 
         void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
