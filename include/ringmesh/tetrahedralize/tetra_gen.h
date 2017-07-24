@@ -72,7 +72,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    class RINGMESH_API TetraGen: public GEO::Counted {
+    class RINGMESH_API TetraGen {
     ringmesh_disable_copy( TetraGen );
     public:
         virtual ~TetraGen() = default;
