@@ -508,7 +508,8 @@ namespace {
                             for( index_t line : lines ) {
                                 gmme_id s_id( Surface::type_name_static(), surface );
                                 gmme_id l_id( Line::type_name_static(), line );
-                                if( !is_in_incident_entity( geomodel, s_id, l_id ) ) {
+                                if( !is_in_incident_entity( geomodel, s_id,
+                                    l_id ) ) {
                                     Logger::warn( "GeoModel",
                                         " Inconsistent Line-Surface connectivity ",
                                         " Vertex ", i, " shows that ", s_id,
@@ -983,7 +984,8 @@ namespace {
                 ringmesh_assert( first_interface_id != NO_ID );
                 bool at_least_two_different_interfaces = false;
                 for( index_t in_boundary_i = 1;
-                    in_boundary_i < cur_line.nb_incident_entities(); ++in_boundary_i ) {
+                    in_boundary_i < cur_line.nb_incident_entities();
+                    ++in_boundary_i ) {
                     const index_t cur_interface_id =
                         cur_line.incident_entity( in_boundary_i ).parent_gmge(
                             Interface::type_name_static() ).index();
@@ -1038,9 +1040,10 @@ namespace {
          */
         void test_polygon_intersections()
         {
-            if( geomodel_.mesh.polygons.nb()
-                == geomodel_.mesh.polygons.nb_triangle()
-                    + geomodel_.mesh.polygons.nb_quad() ) {
+            if( geomodel_.mesh.polygons.nb() > 0
+                && geomodel_.mesh.polygons.nb()
+                    == geomodel_.mesh.polygons.nb_triangle()
+                        + geomodel_.mesh.polygons.nb_quad() ) {
                 std::vector< bool > has_intersection;
                 StoreIntersections action( geomodel_, has_intersection );
                 const SurfaceAABBTree& AABB = geomodel_.mesh.polygons.aabb();

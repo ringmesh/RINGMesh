@@ -1073,7 +1073,8 @@ namespace RINGMesh {
         // Get out if the geomodel has no surface
         if( geomodel_.nb_surfaces() == 0 ) {
             print_geomodel( geomodel_ );
-            throw RINGMeshException( "GeoModel", "The GeoModel has no surface" );
+//            return;
+//            throw RINGMeshException( "GeoModel", "The GeoModel has no surface" );
         }
 
         geometry.cut_surfaces_by_internal_lines();
