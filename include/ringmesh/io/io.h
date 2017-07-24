@@ -117,9 +117,7 @@ namespace RINGMesh {
     public:
         virtual ~GeoModelIOHandler() = default;
 
-        static void initialize_full_geomodel_output();
-
-        static void initialize_boundary_geomodel_output();
+        static void initialize_geomodel_output();
 
         static std::unique_ptr< GeoModelIOHandler< DIMENSION > > get_handler(
             const std::string& filename );
