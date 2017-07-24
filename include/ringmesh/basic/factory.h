@@ -48,25 +48,28 @@ namespace RINGMesh {
 
     /*!
      * Generic factory
-     * Example of use with A the base class and B, C Inherited classes
-     *      // Instantiate
+     * Example of use with A the base class and B, C derived classes
+     *      // Instantiation
      *      Factory< std::string, A > factory;
      *      // Registration
      *      factory.register< B >( "B" );                 // B constructor has no argument
      *      factory.register< C, int >( "C" );            // C constructor takes an int
      *      factory.register< C, double, double >( "C" ); // Another C constructor
      *      // Creation
-     *      std::unique_ptr< A > c = factory.crete( "C", 2.1, 8.6 );
+     *      std::unique_ptr< A > c = factory.create( "C", 2.1, 8.6 );
      */
     template< typename Key, typename BaseClass >
     class Factory {
-        static_assert( std::has_virtual_destructor<BaseClass>::value, "BaseClass must have a virtual destructor" );
+        static_assert( std::has_virtual_destructor< BaseClass >::value,
+            "BaseClass must have a virtual destructor" );
     public:
         template< typename DerivedClass, typename ... Args >
         void register_creator( const Key& key )
         {
-            static_assert( std::is_base_of<BaseClass, DerivedClass>::value, "DerivedClass must be a subclass of BaseClass" );
-            static_assert( std::is_constructible<DerivedClass, Args...>::value, "DerivedClass must be constructible with Args..." );
+            static_assert( std::is_base_of< BaseClass, DerivedClass >::value,
+                "DerivedClass must be a subclass of BaseClass" );
+            static_assert( std::is_constructible< DerivedClass, Args... >::value,
+                "DerivedClass must be constructible with Args..." );
             creators_.emplace(
                 CreatorKey { key, create_function_type_index< Args... >() },
                 reinterpret_cast< CreateFunc< > >( create_function_impl<
@@ -76,13 +79,13 @@ namespace RINGMesh {
         template< typename ... Args >
         std::unique_ptr< BaseClass > create(
             const Key& key,
-            Args const&... args ) const
+            const Args&... args ) const
         {
             auto creator = creators_.find(
                 { key, create_function_type_index< Args... >() } );
             if( creator != creators_.end() ) {
                 return reinterpret_cast< CreateFunc< Args... > >( creator )(
-                    std::forward<const Args&>( args )... );
+                    std::forward< const Args& >( args )... );
             } else {
                 return {};
             }
@@ -97,16 +100,16 @@ namespace RINGMesh {
 
         template< typename DerivedClass, typename ... Args >
         static std::unique_ptr< BaseClass > create_function_impl(
-            Args const&... args )
+            const Args&... args )
         {
             return std::unique_ptr< BaseClass > { new DerivedClass {
-                std::forward<const Args&>( args )... } };
+                std::forward< const Args& >( args )... } };
         }
 
         template< typename ... Args >
-        using CreateFunc = typename std::add_pointer< std::unique_ptr<BaseClass>( const Args&... ) >::type;
+        using CreateFunc = typename std::add_pointer< std::unique_ptr< BaseClass >( const Args&... ) >::type;
         using CreatorKey = std::pair< Key, std::type_index >;
 
-        std::map< CreatorKey, CreateFunc<> > creators_;
+        std::map< CreatorKey, CreateFunc< > > creators_;
     };
 }
