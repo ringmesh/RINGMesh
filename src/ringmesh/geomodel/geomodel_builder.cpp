@@ -38,7 +38,6 @@
 #include <stack>
 
 #include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!
@@ -185,12 +184,13 @@ namespace {
                 gmme_id S_id = surface.gmme();
                 for( index_t p : range( surface.nb_mesh_elements() ) ) {
                     for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
-                        if( mesh.is_edge_on_border( p, v ) ) {
+                        if( mesh.is_edge_on_border( PolygonLocalEdge( p, v ) ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
-                                S_id, p, v );
+                                S_id, ElementLocalVertex( p, v ) );
                             index_t next_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S_id, p,
-                                    mesh.next_polygon_vertex( p, v ) );
+                                geomodel_vertices.geomodel_vertex_id( S_id,
+                                    mesh.next_polygon_vertex(
+                                        ElementLocalVertex( p, v ) ) );
                             border_polygons_.emplace_back( surface.index(), p,
                                 vertex, next_vertex );
                         }
@@ -210,6 +210,8 @@ namespace {
         // All the polygons on a boundary of all the Surfaces of the GeoModel
         std::vector< BorderPolygon > border_polygons_;
     };
+
+    CLASS_DIMENSION_ALIASES( CommonDataFromGeoModelSurfaces );
 
     /*!
      * @brief Utility class to sort a set of oriented polygons around a common edge
@@ -241,6 +243,7 @@ namespace {
                     side_( false )
             {
                 ringmesh_assert( p0 != p1 );
+
                 vec3 e1 = normalize( p1 - p0 );
                 B_A_ = normalize( cross( e1, N_ ) );
             }
@@ -252,12 +255,16 @@ namespace {
 
             /// Index in GeoModelRegionFromSurfaces
             index_t index_;
+
             /// Global index of the surface owning this polygon
             index_t surface_index_;
+
             /// Normal to the polygon - normalized vector
             vec3 N_;
+
             /// Normal to the edge p0p1 in the plane defined by the polygon - normalized
             vec3 B_A_;
+
             // Values filled by sorting function in GeoModelRegionFromSurfaces
             double angle_;
             bool side_;
@@ -442,16 +449,16 @@ namespace {
     class RegionTopologyFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces<
         3 > {
     public:
-        RegionTopologyFromGeoModelSurfaces( const GeoModel< 3 >& geomodel )
+        RegionTopologyFromGeoModelSurfaces( const GeoModel3D& geomodel )
             :
-                CommonDataFromGeoModelSurfaces< 3 >( geomodel ),
+                CommonDataFromGeoModelSurfaces3D( geomodel ),
                 region_info_( geomodel.nb_lines() )
         {
         }
 
         void compute_region_info()
         {
-            const GeoModelMeshVertices< 3 >& vertices = this->geomodel_.mesh.vertices;
+            const GeoModelMeshVertices3D& vertices = this->geomodel_.mesh.vertices;
             for( const auto& line : geomodel_.lines() ) {
                 BorderPolygon line_border( NO_ID, NO_ID,
                     vertices.geomodel_vertex_id( line.gmme(), 0 ),
@@ -551,6 +558,7 @@ namespace {
         }
 
     private:
+
         void compute_line_geometry()
         {
             visit_border_polygons_on_same_edge( cur_border_polygon_ );
@@ -670,27 +678,31 @@ namespace {
             index_t v0_id_in_polygon = mesh.vertex_index_in_polygon( p, v0_id );
             ringmesh_assert( v0_id_in_polygon != NO_ID );
 
-            index_t next_f = NO_ID;
-            index_t next_f_v0 = NO_ID;
-            index_t next_f_v1 = NO_ID;
+            const PolygonLocalEdge cur_polygon_local_edge( p, v0_id_in_polygon );
+            PolygonLocalEdge next_polygon_local_edge0_on_border =
+                backward ?
+                    mesh.prev_on_border( cur_polygon_local_edge ) :
+                    mesh.next_on_border( cur_polygon_local_edge );
+            ringmesh_assert(
+                next_polygon_local_edge0_on_border.polygon_id_ != NO_ID );
+            ringmesh_assert(
+                next_polygon_local_edge0_on_border.local_edge_id_ != NO_ID );
 
-            if( !backward ) {
-                mesh.next_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
-                ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
-            } else {
-                mesh.prev_on_border( p, v0_id_in_polygon, next_f, next_f_v0 );
-                ringmesh_assert( next_f_v0 != NO_ID );
-                next_f_v1 = mesh.next_polygon_vertex( next_f, next_f_v0 );
-            }
+            PolygonLocalEdge next_polygon_local_edge1_on_border =
+                mesh.next_polygon_vertex( next_polygon_local_edge0_on_border );
+            ringmesh_assert(
+                next_polygon_local_edge1_on_border.polygon_id_ != NO_ID );
+            ringmesh_assert(
+                next_polygon_local_edge1_on_border.local_edge_id_ != NO_ID );
 
             // Finds the BorderPolygon that is corresponding to this
             // It must exist and there is only one
-            BorderPolygon bait( border_polygon.surface_, next_f,
-                geomodel_vertices.geomodel_vertex_id( surface_id, next_f,
-                    next_f_v0 ),
-                geomodel_vertices.geomodel_vertex_id( surface_id, next_f,
-                    next_f_v1 ) );
+            BorderPolygon bait( border_polygon.surface_,
+                next_polygon_local_edge0_on_border.polygon_id_,
+                geomodel_vertices.geomodel_vertex_id( surface_id,
+                    next_polygon_local_edge0_on_border ),
+                geomodel_vertices.geomodel_vertex_id( surface_id,
+                    next_polygon_local_edge1_on_border ) );
             index_t result = find_sorted( this->border_polygons_, bait );
 
             ringmesh_assert( result != NO_ID );
@@ -710,7 +722,6 @@ namespace {
                         next_border_id ); next_border_id++ ) {
                 visited_[next_border_id] = true;
             }
-
             for( index_t prev_border_id = border_id - 1;
                 prev_border_id != NO_ID
                     && this->have_border_polygons_same_boundary_edge( border_id,
@@ -746,7 +757,6 @@ namespace {
                 adjacent_surfaces.push_back(
                     this->border_polygons_[prev_border_id].surface_ );
             }
-
             std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() );
             return adjacent_surfaces;
         }
@@ -760,7 +770,7 @@ namespace {
         LineDefinition cur_line_;
     };
 
-} // anonymous namespace
+}
 
 namespace RINGMesh {
 
@@ -869,7 +879,7 @@ namespace RINGMesh {
         print_geomodel( geomodel_ );
     }
 
-    GeoModelBuilder< 2 >::GeoModelBuilder( GeoModel< 2 >& geomodel )
+    GeoModelBuilder< 2 >::GeoModelBuilder( GeoModel2D& geomodel )
         : GeoModelBuilderBase< 2 >( *this, geomodel )
     {
     }
@@ -880,7 +890,7 @@ namespace RINGMesh {
         geometry.cut_surfaces_by_internal_lines();
     }
 
-    GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel< 3 >& geomodel )
+    GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel3D& geomodel )
         : GeoModelBuilderBase< 3 >( *this, geomodel )
     {
     }
@@ -921,9 +931,9 @@ namespace RINGMesh {
                 continue;
             }
             // Create a new region
-            gmme_id cur_region_id( Region< 3 >::type_name_static(),
+            gmme_id cur_region_id( Region3D::type_name_static(),
                 geomodel_.nb_regions() );
-            topology.create_mesh_entities( Region< 3 >::type_name_static(), 1 );
+            topology.create_mesh_entities( Region3D::type_name_static(), 1 );
             // Get all oriented surfaces defining this region
             std::stack< std::pair< index_t, bool > > SR;
             SR.push( cur );
@@ -937,7 +947,7 @@ namespace RINGMesh {
                 }
                 // Add the surface to the current region
                 topology.add_mesh_entity_boundary_relation( cur_region_id,
-                    gmme_id( Surface< 3 >::type_name_static(), s.first ), s.second );
+                    gmme_id( Surface3D::type_name_static(), s.first ), s.second );
                 surf_2_region[s_id] = cur_region_id.index();
 
                 // Check the other side of the surface and push it in S
@@ -946,7 +956,7 @@ namespace RINGMesh {
                     S.emplace( s.first, !s.second );
                 }
                 // For each contact, push the next oriented surface that is in the same region
-                const Surface< 3 >& surface = geomodel_.surface( s.first );
+                const Surface3D& surface = geomodel_.surface( s.first );
                 for( index_t i : range( surface.nb_boundaries() ) ) {
                     const std::pair< index_t, bool >& n =
                         region_info[surface.boundary_gmme( i ).index()].next( s );
@@ -981,7 +991,7 @@ namespace RINGMesh {
                 universe_id = region.index();
             }
         }
-        const Region< 3 >& cur_region = geomodel_.region( universe_id );
+        const Region3D& cur_region = geomodel_.region( universe_id );
         for( index_t i : range( cur_region.nb_boundaries() ) ) {
             // Fill the Universe region boundaries
             // They are supposed to be empty
@@ -1003,4 +1013,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderInfo< 3 > ;
     template class RINGMESH_API GeoModelBuilderCopy< 3 > ;
 
-} // namespace
+}

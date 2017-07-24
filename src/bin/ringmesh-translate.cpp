@@ -80,9 +80,8 @@ namespace {
         split_coords.reserve( DIMENSION );
         GEO::String::split_string( coords_in_string, ' ', split_coords, true );
         if( split_coords.size() != DIMENSION ) {
-            throw RINGMeshException( "I/O",
-                "Vector (" + coords_in_string + ") has not exactly "
-                    + std::to_string( DIMENSION ) + " components" );
+            throw RINGMeshException( "I/O", "Vector (", coords_in_string,
+                ") has not exactly ", DIMENSION, " components" );
         }
         vecn< DIMENSION > coords_vec;
         for( index_t split_coords_itr : range( DIMENSION ) ) {

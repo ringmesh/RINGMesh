@@ -44,13 +44,13 @@ namespace {
             index_t v0;
             index_t v1;
         };
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" );
         }
         void save(
-            const GeoModel< 3 >& geomodel,
+            const GeoModel3D& geomodel,
             const std::string& filename ) final
         {
             std::string path = GEO::FileSystem::dir_name( filename );
@@ -77,7 +77,7 @@ namespace {
             std::ofstream out_xyz( oss_xyz.str().c_str() );
             out_xyz.precision( 16 );
 
-            const GeoModelMesh< 3 >& mesh = geomodel.mesh;
+            const GeoModelMesh3D& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
             for( index_t c :range( mesh.cells.nb() ) ) {
@@ -111,20 +111,21 @@ namespace {
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
                 }
             }
-            NNSearch < 3 > nn_search( edge_vertices, false );
+            NNSearch3D nn_search( edge_vertices, false );
 
-            const GeoModelMeshPolygons< 3 >& polygons = geomodel.mesh.polygons;
+            const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
             for( index_t p : range( polygons.nb() ) ) {
                 for( index_t e : range( polygons.nb_vertices( p ) ) ) {
-                    index_t adj = polygons.adjacent( p, e );
+                    index_t adj = polygons.adjacent( PolygonLocalEdge( p, e ) );
                     if( adj != GEO::NO_CELL && adj < p ) {
                         pipes.emplace_back( p + cell_offset, adj + cell_offset );
                     } else {
                         const vec3& e0 = mesh.vertices.vertex(
-                            polygons.vertex( p, e ) );
+                            polygons.vertex( ElementLocalVertex( p, e ) ) );
                         const vec3& e1 = mesh.vertices.vertex(
-                            polygons.vertex( p,
-                                ( e + 1 ) % polygons.nb_vertices( p ) ) );
+                            polygons.vertex(
+                                ElementLocalVertex( p,
+                                    ( e + 1 ) % polygons.nb_vertices( p ) ) ) );
                         vec3 query = 0.5 * ( e0 + e1 );
                         std::vector< index_t > results = nn_search.get_neighbors(
                             query, geomodel.epsilon() );
@@ -141,30 +142,34 @@ namespace {
             for( const std::vector< index_t >& vertices : edges ) {
                 nb_pipes += binomial_coef( vertices.size() );
             }
-            out_pipes << nb_pipes << std::endl;
+            out_pipes << nb_pipes << EOL;
             for( const Pipe& pipe : pipes ) {
-                out_pipes << pipe.v0 << SPACE << pipe.v1 << std::endl;
+                out_pipes << pipe.v0 << SPACE << pipe.v1 << EOL;
             }
             for( const std::vector< index_t >& vertices : edges ) {
                 for( index_t v0 : range( vertices.size() - 1 ) ) {
                     for( index_t v1 : range( v0 + 1, vertices.size() ) ) {
                         out_pipes << vertices[v0] << SPACE << vertices[v1]
-                            << std::endl;
+                            << EOL;
                     }
                 }
             }
 
             out_xyz
                 << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
-                << std::endl;
+                << EOL;
             for( index_t c : range( mesh.cells.nb() ) ) {
-                out_xyz << mesh.cells.barycenter( c ) << std::endl;
-                out_vol << mesh.cells.volume( c ) << std::endl;
+                out_xyz << mesh.cells.barycenter( c ) << EOL;
+                out_vol << mesh.cells.volume( c ) << EOL;
             }
             for( index_t p : range( polygons.nb() ) ) {
-                out_xyz << polygons.center( p ) << std::endl;
-                out_vol << polygons.area( p ) << std::endl;
+                out_xyz << polygons.center( p ) << EOL;
+                out_vol << polygons.area( p ) << EOL;
             }
+
+            out_pipes << std::flush;
+            out_vol << std::flush;
+            out_xyz << std::flush;
         }
         index_t binomial_coef( index_t n ) const
         {

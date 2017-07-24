@@ -60,16 +60,16 @@ namespace {
      */
     class AdeliIOHandler final: public GeoModelIOHandler< 3 > {
     public:
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Adeli .msh mesh not implemented yet" );
         }
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
-            const RINGMesh::GeoModelMesh< 3 >& geomodel_mesh = geomodel.mesh;
+            const RINGMesh::GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
             if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
                 {
                     throw RINGMeshException( "I/O",
@@ -79,47 +79,47 @@ namespace {
 
             write_vertices( geomodel_mesh, out );
 
-            index_t elt = 1;
-            write_corners( geomodel, out, elt );
-            write_mesh_elements( geomodel, out, elt );
+            write_mesh_elements( geomodel, out );
+            out << std::flush;
         }
 
     private:
         void write_vertices(
-            const GeoModelMesh< 3 >& geomodel_mesh,
+            const GeoModelMesh3D& geomodel_mesh,
             std::ofstream& out ) const
         {
-            out << "$NOD" << std::endl;
-            out << geomodel_mesh.vertices.nb() << std::endl;
+            out << "$NOD" << EOL;
+            out << geomodel_mesh.vertices.nb() << EOL;
             for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
                 out << v + id_offset_adeli << " "
-                    << geomodel_mesh.vertices.vertex( v ) << std::endl;
+                    << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
-            out << "$ENDNOD" << std::endl;
+            out << "$ENDNOD" << EOL;
         }
 
-        void write_corners(
-            const GeoModel< 3 >& geomodel,
-            std::ofstream& out,
-            index_t& elt ) const
+        index_t write_corners(
+            const GeoModel3D& geomodel,
+            std::ofstream& out ) const
         {
-            out << "$ELM" << std::endl;
-            out << nb_total_elements( geomodel ) << std::endl;
+            out << "$ELM" << EOL;
+            out << nb_total_elements( geomodel ) << EOL;
+            index_t elt = 1;
             for( const auto& corner : geomodel.corners() ) {
                 out << elt++ << " " << adeli_cell_types[0] << " " << reg_phys << " "
                     << corner.index() + id_offset_adeli << " "
                     << corner.nb_vertices() << " "
                     << geomodel.mesh.vertices.geomodel_vertex_id( corner.gmme(),
-                        0 ) + id_offset_adeli << std::endl;
+                        0 ) + id_offset_adeli << EOL;
             }
+            return elt;
         }
 
         void write_mesh_elements(
-            const GeoModel< 3 >& geomodel,
-            std::ofstream& out,
-            index_t& elt ) const
+            const GeoModel3D& geomodel,
+            std::ofstream& out ) const
         {
-            const MeshEntityTypeManager< 3 >& manager =
+            index_t elt = write_corners( geomodel, out );
+            const MeshEntityTypeManager3D& manager =
                 geomodel.entity_type_manager().mesh_entity_manager;
             const std::vector< MeshEntityType >& mesh_entity_types =
                 manager.mesh_entity_types();
@@ -135,12 +135,12 @@ namespace {
                         adeli_cell_types[geomodel_mesh_entities], elt, out );
                 }
             }
-            out << "$ENDELM" << std::endl;
+            out << "$ENDELM" << EOL;
         }
 
-        index_t nb_total_elements( const GeoModel< 3 >& geomodel ) const
+        index_t nb_total_elements( const GeoModel3D& geomodel ) const
         {
-            const MeshEntityTypeManager< 3 >& manager =
+            const MeshEntityTypeManager3D& manager =
                 geomodel.entity_type_manager().mesh_entity_manager;
             const std::vector< MeshEntityType >& mesh_entity_types =
                 manager.mesh_entity_types();
@@ -162,7 +162,7 @@ namespace {
         }
 
         void write_mesh_elements_for_a_mesh_entity(
-            const GeoModelMeshEntity< 3 >& geomodel_mesh_entity,
+            const GeoModelMeshEntity3D& geomodel_mesh_entity,
             index_t cell_descriptor,
             index_t& elt_id,
             std::ofstream& out ) const
@@ -175,10 +175,10 @@ namespace {
                     geomodel_mesh_entity.nb_mesh_element_vertices( elt ) ) ) {
                     out
                         << geomodel_mesh_entity.geomodel().mesh.vertices.geomodel_vertex_id(
-                            geomodel_mesh_entity.gmme(), elt, v ) + id_offset_adeli
-                        << " ";
+                            geomodel_mesh_entity.gmme(),
+                            ElementLocalVertex( elt, v ) ) + id_offset_adeli << " ";
                 }
-                out << std::endl;
+                out << EOL;
             }
         }
     };
