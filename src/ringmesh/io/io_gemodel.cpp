@@ -86,7 +86,7 @@ namespace {
 namespace RINGMesh {
 
     template< >
-    void GeoModelIOHandler< 2 >::initialize_geomodel_output()
+    void GeoModelIOHandler< 2 >::initialize()
     {
         ringmesh_register_GeoModelIOHandler2D_creator( GeoModelHandlerGM2D, "gm" );
         ringmesh_register_GeoModelIOHandler2D_creator( SVGIOHandler, "svg" );
@@ -96,7 +96,7 @@ namespace RINGMesh {
      * Initializes the possible handler for IO files
      */
     template< >
-    void GeoModelIOHandler< 3 >::initialize_geomodel_output()
+    void GeoModelIOHandler< 3 >::initialize()
     {
         ringmesh_register_GeoModelIOHandler3D_creator( TetGenIOHandler, "tetgen" );
         ringmesh_register_GeoModelIOHandler3D_creator( TSolidIOHandler, "so" );
