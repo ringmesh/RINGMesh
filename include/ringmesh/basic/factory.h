@@ -46,6 +46,18 @@
 
 namespace RINGMesh {
 
+    /*!
+     * Generic factory
+     * Example of use with A the base class and B, C Inherited classes
+     *      // Instantiate
+     *      Factory< std::string, A > factory;
+     *      // Registration
+     *      factory.register< B >( "B" );                 // B constructor has no argument
+     *      factory.register< C, int >( "C" );            // C constructor takes an int
+     *      factory.register< C, double, double >( "C" ); // Another C constructor
+     *      // Creation
+     *      std::unique_ptr< A > c = factory.crete( "C", 2.1, 8.6 );
+     */
     template< typename Key, typename BaseClass >
     class Factory {
         static_assert( std::has_virtual_destructor<BaseClass>::value, "BaseClass must have a virtual destructor" );
