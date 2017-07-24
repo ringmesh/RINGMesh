@@ -196,6 +196,13 @@ namespace RINGMesh {
                 bbox_.add_point( p );
             }
         }
+        for( GEO::index_t l = 0; l < GM_.nb_lines(); l++ ) {
+            const RINGMesh::Line& L = GM_.line( l );
+            for( GEO::index_t v = 0; v < L.nb_vertices(); ++v ) {
+                const vec3& p = L.vertex( v );
+                bbox_.add_point( p );
+            }
+        }
         selected_entity_type_ = 0;
         selected_entity_id_ = 0;
         entity_types_.emplace_back( "All" );
