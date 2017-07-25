@@ -980,7 +980,9 @@ namespace {
         {
             read_and_add_atom_to_region_vertices( geomodel(), line,
                 load_storage.cur_region_, load_storage.vertices_,
-				load_storage.attributes_, load_storage.vertex_map_ );
+				load_storage.attributes_, load_storage.vertex_map_,
+				load_storage.vertex_attribute_names_,
+				load_storage.vertex_attribute_dims_ );
 		}
 		virtual void execute_light(
 			GEO::LineInput& line,
@@ -1000,7 +1002,6 @@ namespace {
 				std::vector< double > null_attrib( load_storage.nb_attribute_fields_, 0 );
 				load_storage.attributes_.push_back( null_attrib );
 			}
-			load_storage.vertex_nb++;
 		}
 
         /*!
@@ -1018,7 +1019,9 @@ namespace {
             index_t region_id,
 			std::vector< vec3 >& region_vertices,
 			std::vector< std::vector< double > >& region_attributes,
-            VertexMap& vertex_map )
+            VertexMap& vertex_map,
+			const std::vector< std::string >& attribute_names,
+			const std::vector< index_t >& attribute_dims )
         {
             const index_t referring_vertex = line.field_as_uint( 2 ) - GOCAD_OFFSET;
             const index_t referred_vertex_local_id = vertex_map.local_id(
@@ -1033,7 +1036,19 @@ namespace {
                 region_vertices.push_back(
                     geomodel.region( referred_vertex_region_id ).vertex(
                         referred_vertex_local_id ) );
-				region_attributes.push_back( std::vector< double >( 1, 0 ) );
+
+				std::vector< double > attribute_v;
+				for( index_t attrib_itr : range( attribute_names.size() ) ){
+					std::string name = attribute_names[attrib_itr];
+					index_t dim = attribute_dims[attrib_itr];
+					GEO::Attribute< double > attr( geomodel.region(
+						referred_vertex_region_id ).vertex_attribute_manager(), name );
+					for( index_t dim_itr : range( dim ) ) {
+						attribute_v.push_back( attr[referred_vertex_local_id * dim + dim_itr] );
+					}
+				}
+				region_attributes.push_back( attribute_v );
+				
             } else {
                 // If the atom referred to an atom of the same region
                 vertex_map.add_vertex( referred_vertex_local_id,
