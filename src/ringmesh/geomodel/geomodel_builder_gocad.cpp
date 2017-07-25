@@ -979,10 +979,8 @@ namespace {
         void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             read_and_add_atom_to_region_vertices( geomodel(), line,
-                load_storage.cur_region_, load_storage.vertices_,
-				load_storage.attributes_, load_storage.vertex_map_,
-				load_storage.vertex_attribute_names_,
-				load_storage.vertex_attribute_dims_ );
+                load_storage, load_storage.vertices_,
+				load_storage.attributes_, load_storage.vertex_map_ );
 		}
 		virtual void execute_light(
 			GEO::LineInput& line,
@@ -1007,40 +1005,42 @@ namespace {
         /*!
          * @brief Reads atom information and adds it in the list
          * of region vertices only if it refers to a vertex of another region
+         * @param[in] geomodel GeoModel
          * @param[in] line ACSII file reader
-         * @param[in] region_id Index of the region
+         * @param[in] load_storage Load informations
          * @param[in,out] region_vertices Vector of the coordinates of the
          * vertices of the region
-         * @param[in] vertex_map Map between Gocad and GeoModel vertex indices
+         * @param[in,out] vertex_map Map between Gocad and GeoModel vertex indices
+         * @param[in,out] region_attributes Vector of the attributes of the
+         * vertices of the region
          */
         void read_and_add_atom_to_region_vertices(
             const GeoModel< 3 >& geomodel,
             GEO::LineInput& line,
-            index_t region_id,
+			const TSolidLoadingStorage& load_storage,
 			std::vector< vec3 >& region_vertices,
 			std::vector< std::vector< double > >& region_attributes,
-            VertexMap& vertex_map,
-			const std::vector< std::string >& attribute_names,
-			const std::vector< index_t >& attribute_dims )
+            VertexMap& vertex_map )
         {
             const index_t referring_vertex = line.field_as_uint( 2 ) - GOCAD_OFFSET;
             const index_t referred_vertex_local_id = vertex_map.local_id(
                 referring_vertex );
             const index_t referred_vertex_region_id = vertex_map.region(
                 referring_vertex );
-            if( referred_vertex_region_id < region_id ) {
+			if( referred_vertex_region_id < load_storage.cur_region_ ) {
                 // If the atom referred to a vertex of another region,
                 // acting like for a vertex
                 index_t index = static_cast< index_t >( region_vertices.size() );
-                vertex_map.add_vertex( index, region_id );
-                region_vertices.push_back(
+				vertex_map.add_vertex( index, load_storage.cur_region_ );
+                
+				region_vertices.push_back(
                     geomodel.region( referred_vertex_region_id ).vertex(
                         referred_vertex_local_id ) );
 
 				std::vector< double > attribute_v;
-				for( index_t attrib_itr : range( attribute_names.size() ) ){
-					std::string name = attribute_names[attrib_itr];
-					index_t dim = attribute_dims[attrib_itr];
+				for( index_t attrib_itr : range( load_storage.vertex_attribute_names_.size() ) ){
+					std::string name = load_storage.vertex_attribute_names_[attrib_itr];
+					index_t dim = load_storage.vertex_attribute_dims_[attrib_itr];
 					GEO::Attribute< double > attr( geomodel.region(
 						referred_vertex_region_id ).vertex_attribute_manager(), name );
 					for( index_t dim_itr : range( dim ) ) {
