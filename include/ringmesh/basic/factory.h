@@ -52,9 +52,9 @@ namespace RINGMesh {
      *      // Instantiation
      *      Factory< std::string, A > factory;
      *      // Registration
-     *      factory.register< B >( "B" );                 // B constructor has no argument
-     *      factory.register< C, int >( "C" );            // C constructor takes an int
-     *      factory.register< C, double, double >( "C" ); // Another C constructor
+     *      factory.register_creator< B >( "B" );                 // B constructor has no argument
+     *      factory.register_creator< C, int >( "C" );            // C constructor takes an int
+     *      factory.register_creator< C, double, double >( "C" ); // Another C constructor
      *      // Creation
      *      std::unique_ptr< A > c = factory.create( "C", 2.1, 8.6 );
      */
@@ -79,14 +79,22 @@ namespace RINGMesh {
         template< typename ... Args >
         std::unique_ptr< BaseClass > create(
             const Key& key,
-            const Args&... args ) const
+             Args&&... args ) const
         {
             auto creator = creators_.find(
                 { key, create_function_type_index< Args... >() } );
             if( creator != creators_.end() ) {
-                return reinterpret_cast< CreateFunc< Args... > >( creator )(
-                    std::forward< const Args& >( args )... );
+                return reinterpret_cast< CreateFunc< Args... > >( creator->second )(
+                    std::forward< Args>( args )... );
             } else {
+                DEBUG( "###" );
+                DEBUG( key );
+                DEBUG( create_function_type_index< Args... >().name() );
+                for( auto& it : creators_ ) {
+                    DEBUG( it.first.first );
+                    DEBUG( it.first.second.name() );
+                }
+//                exit(0);
                 return {};
             }
         }
