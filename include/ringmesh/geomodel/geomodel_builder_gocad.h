@@ -505,6 +505,45 @@ namespace RINGMesh {
 			geomodel_builder.info.set_mesh_entity_name( cur_region, region_name );
 			return cur_region.index();
 		}
+
+		void assign_attributes_to_mesh(
+			index_t region_id,
+			const Region< 3 >& region, TSolidLoadingStorage& load_storage,
+			const std::vector< std::vector< double > >& region_attributes ){
+
+			for( index_t attrib_name_itr : range( load_storage.vertex_attribute_names_.size() ) ) {
+				std::string name = load_storage.vertex_attribute_names_[attrib_name_itr];
+
+				if( region.vertex_attribute_manager().is_defined( name ) ) {
+					Logger::warn( "Transfer attribute", "The attribute ", name,
+						" already exists on the ", region.gmme() );
+					continue;
+				}
+				GEO::Attribute< double > attr;
+				index_t nb_dimensions = load_storage.vertex_attribute_dims_[attrib_name_itr];
+				attr.create_vector_attribute( region.vertex_attribute_manager(),
+					load_storage.vertex_attribute_names_[attrib_name_itr], nb_dimensions );
+				// Does it resize all the past attributes to the size of the current attribute? 
+				// Problematic, isn't it?
+				region.vertex_attribute_manager().resize(
+					region_attributes.size() * nb_dimensions + nb_dimensions );
+				for( index_t v_itr : range( region_attributes.size() ) ) {
+					for( index_t attrib_dim_itr : range( nb_dimensions ) ) {
+						if( v_itr * nb_dimensions + attrib_dim_itr >= attr.size() ){
+							Logger::out( "I/O", "HERE 1" );
+						}
+						if( v_itr >= region_attributes.size() ){
+							Logger::out( "I/O", "HERE 2" );
+						}
+						if( attrib_dim_itr >= region_attributes[v_itr].size() ){
+							Logger::out( "I/O", "HERE 3" );
+						}
+						attr[v_itr * nb_dimensions + attrib_dim_itr] =
+							region_attributes[v_itr][attrib_dim_itr];
+					}
+				}
+			}
+		}
     };
 
     using TSolidLineParserFactory = GEO::Factory0< TSolidLineParser >;
