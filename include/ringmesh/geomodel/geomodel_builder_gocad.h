@@ -264,6 +264,10 @@ namespace RINGMesh {
 						if( region( corresponding_gocad_id ) != region( gocad_id ) ){
 							region_tetra_attributes.push_back( stored_attributes[corresponding_gocad_id] );
 						}
+						else {
+							Logger::out( "I/O", "stored_attributes[gocad_id] ", stored_attributes[gocad_id][0] );
+							Logger::out( "I/O", "stored_attributes[corresponding_gocad_id] ", stored_attributes[corresponding_gocad_id][0] );
+						}
 					}
 				}
 				gocad_id++;
