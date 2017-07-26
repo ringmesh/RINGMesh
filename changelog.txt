@@ -11,6 +11,7 @@ New Features:
 
 Bug fix:
  * Error in computation of polygon area (for 3D concave polygons)
+ * Crash when removing the first object in RINGMeshView object tree
 
 Improvements:
  * Export attributes to TSolid file.
