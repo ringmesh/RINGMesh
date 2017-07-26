@@ -45,48 +45,36 @@
 
 using namespace RINGMesh;
 
-class ___A___ {
-
-};
-
-class ___B___ {
-
-};
-
-class ___Base___ {
+class A {
+ringmesh_disable_copy( A );
 public:
-    virtual ~___Base___() = default;
+    A() = default;
+};
+
+class B {
+ringmesh_disable_copy( B );
+public:
+    B() = default;
+};
+
+class Base {
+public:
+    virtual ~Base() = default;
 protected:
-    ___Base___( ___A___ a, ___B___ b )
+    Base( A& a, B& b )
         : a_( a ), b_( b )
     {
     }
 
 protected:
-    ___A___ a_;
-    ___B___ b_;
+    A& a_;
+    B& b_;
 };
 
-class ___Derived___: public ___Base___ {
+class Derived: public Base {
 public:
-    ___Derived___( ___A___& a, ___B___& b )
-    : ___Base___( a, b )
-    {
-    }
-};
-
-class ___Derived2___: public ___Base___ {
-public:
-    ___Derived2___( ___A___ a, ___B___ b )
-        : ___Base___( a, b )
-    {
-    }
-};
-
-class ___Derived3___: public ___Base___ {
-public:
-    ___Derived3___( ___A___& a, ___B___ b )
-    : ___Base___( a, b )
+    Derived( A& a, B& b )
+        : Base( a, b )
     {
     }
 };
@@ -107,19 +95,13 @@ int main()
         default_configure();
         Logger::out( "TEST", "Test Factory" );
 
-        Factory< std::string, ___Base___ > factory;
-        factory.register_creator< ___Derived___, ___A___ &, ___B___& >( "Derived" );
-        factory.register_creator< ___Derived2___, ___A___, ___B___ >( "Derived2" );
-        factory.register_creator< ___Derived3___, ___A___ &, ___B___ >( "Derived3" );
+        Factory< std::string, Base, A &, B& > factory;
+        factory.register_creator< Derived >( "Derived" );
 
-        ___A___ a;
-        ___B___ b;
+        A a;
+        B b;
         auto D = factory.create( "Derived", a, b );
         verdict( !D, "Derived" );
-        auto D2 = factory.create( "Derived2", ___A___(), ___B___() );
-        verdict( !D2, "Derived2" );
-        auto D3 = factory.create( "Derived3", a, ___B___() );
-        verdict( !D3, "Derived3" );
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );

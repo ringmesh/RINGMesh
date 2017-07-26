@@ -648,7 +648,7 @@ namespace {
 
     class LoadTSurf final : public MLLineParser {
     public:
-        LoadTSurf( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadTSurf( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
@@ -666,7 +666,7 @@ namespace {
 
     class LoadMLSurface final : public MLLineParser {
     public:
-        LoadMLSurface( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadMLSurface( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
@@ -707,7 +707,7 @@ namespace {
 
     class LoadLayer final : public MLLineParser {
     public:
-        LoadLayer( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadLayer( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
@@ -744,7 +744,7 @@ namespace {
 
     class MLEndSection final : public MLLineParser {
     public:
-        MLEndSection( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        MLEndSection( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
@@ -764,7 +764,7 @@ namespace {
 
     class LoadCorner final : public MLLineParser {
     public:
-        LoadCorner( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadCorner( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
@@ -784,7 +784,7 @@ namespace {
 
     class LoadMLRegion final : public MLLineParser {
     public:
-        LoadMLRegion( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadMLRegion( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
@@ -845,7 +845,7 @@ namespace {
 
     class LoadRegion final: public TSolidLineParser {
     public:
-        LoadRegion( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadRegion( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
@@ -896,7 +896,7 @@ namespace {
 
     class LoadMLAtom final : public MLLineParser {
     public:
-        LoadMLAtom( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadMLAtom( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
@@ -911,7 +911,7 @@ namespace {
 
     class LoadTSolidVertex final: public TSolidLineParser {
     public:
-        LoadTSolidVertex( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadTSolidVertex( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
@@ -929,7 +929,7 @@ namespace {
 
     class LoadTSAtomic final : public TSolidLineParser {
     public:
-        LoadTSAtomic( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadTSAtomic( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
@@ -980,7 +980,7 @@ namespace {
 
     class LoadTetra final : public TSolidLineParser {
     public:
-        LoadTetra( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadTetra( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
@@ -1039,7 +1039,7 @@ namespace {
 
     class LoadLastRegion final : public TSolidLineParser {
     public:
-        LoadLastRegion( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadLastRegion( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
@@ -1058,7 +1058,7 @@ namespace {
 
     class LoadInterface final : public TSolidLineParser {
     public:
-        LoadInterface( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadInterface( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
@@ -1075,7 +1075,7 @@ namespace {
 
     class LoadSurface final : public TSolidLineParser {
     public:
-        LoadSurface( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadSurface( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
@@ -1098,7 +1098,7 @@ namespace {
 
     class LoadLastSurface final : public TSolidLineParser {
     public:
-        LoadLastSurface( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        LoadLastSurface( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
@@ -1146,53 +1146,46 @@ namespace {
 
     void tsolid_import_factory_initialize()
     {
-        TSolidLineParser::factory_.register_creator< LoadRegion,
-            GeoModelBuilderGocad&, GeoModel3D& >( "TVOLUME" );
-        TSolidLineParser::factory_.register_creator< LoadTSolidVertex,
-            GeoModelBuilderGocad&, GeoModel3D& >( "VRTX" );
-        TSolidLineParser::factory_.register_creator< LoadTSolidVertex,
-            GeoModelBuilderGocad&, GeoModel3D& >( "PVRTX" );
-        TSolidLineParser::factory_.register_creator< LoadTSAtomic,
-            GeoModelBuilderGocad&, GeoModel3D& >( "ATOM" );
-        TSolidLineParser::factory_.register_creator< LoadTSAtomic,
-            GeoModelBuilderGocad&, GeoModel3D& >( "PATOM" );
-        TSolidLineParser::factory_.register_creator< LoadTetra,
-            GeoModelBuilderGocad&, GeoModel3D& >( "TETRA" );
-        TSolidLineParser::factory_.register_creator< LoadLastRegion,
-            GeoModelBuilderGocad&, GeoModel3D& >( "MODEL" );
-        TSolidLineParser::factory_.register_creator< LoadInterface,
-            GeoModelBuilderGocad&, GeoModel3D& >( "SURFACE" );
-        TSolidLineParser::factory_.register_creator< LoadSurface,
-            GeoModelBuilderGocad&, GeoModel3D& >( "TFACE" );
-        TSolidLineParser::factory_.register_creator< LoadLastSurface,
-            GeoModelBuilderGocad&, GeoModel3D& >( "END" );
+        TSolidLineParser::factory_.register_creator< LoadRegion >( "TVOLUME" );
+        TSolidLineParser::factory_.register_creator< LoadTSolidVertex >( "VRTX" );
+        TSolidLineParser::factory_.register_creator< LoadTSolidVertex >( "PVRTX" );
+        TSolidLineParser::factory_.register_creator< LoadTSAtomic >( "ATOM" );
+        TSolidLineParser::factory_.register_creator< LoadTSAtomic >( "PATOM" );
+        TSolidLineParser::factory_.register_creator< LoadTetra >( "TETRA" );
+        TSolidLineParser::factory_.register_creator< LoadLastRegion >( "MODEL" );
+        TSolidLineParser::factory_.register_creator< LoadInterface >( "SURFACE" );
+        TSolidLineParser::factory_.register_creator< LoadSurface >( "TFACE" );
+        TSolidLineParser::factory_.register_creator< LoadLastSurface >( "END" );
     }
 
     void ml_import_factory_initialize()
     {
-        MLLineParser::factory_.register_creator< LoadTSurf, GeoModelBuilderGocad&,
-            GeoModel3D& >( "TSURF" );
-        MLLineParser::factory_.register_creator< LoadMLSurface,
-            GeoModelBuilderGocad&, GeoModel3D& >( "TFACE" );
-        MLLineParser::factory_.register_creator< LoadMLRegion, GeoModelBuilderGocad&,
-            GeoModel3D& >( "REGION" );
-        MLLineParser::factory_.register_creator< LoadLayer, GeoModelBuilderGocad&,
-            GeoModel3D& >( "LAYER" );
-        MLLineParser::factory_.register_creator< MLEndSection, GeoModelBuilderGocad&,
-            GeoModel3D& >( "END" );
-        MLLineParser::factory_.register_creator< LoadMLAtom, GeoModelBuilderGocad&,
-            GeoModel3D& >( "ATOM" );
-        MLLineParser::factory_.register_creator< LoadMLAtom, GeoModelBuilderGocad&,
-            GeoModel3D& >( "PATOM" );
+        MLLineParser::factory_.register_creator< LoadTSurf >( "TSURF" );
+        MLLineParser::factory_.register_creator< LoadMLSurface >( "TFACE" );
+        MLLineParser::factory_.register_creator< LoadMLRegion >( "REGION" );
+        MLLineParser::factory_.register_creator< LoadLayer >( "LAYER" );
+        MLLineParser::factory_.register_creator< MLEndSection >( "END" );
+        MLLineParser::factory_.register_creator< LoadMLAtom >( "ATOM" );
+        MLLineParser::factory_.register_creator< LoadMLAtom >( "PATOM" );
     }
 
 }
 
 namespace RINGMesh {
 
-    Factory< std::string, GocadLineParser > GocadLineParser::factory_;
-    Factory< std::string, MLLineParser > MLLineParser::factory_;
-    Factory< std::string, TSolidLineParser > TSolidLineParser::factory_;
+    Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& > GocadLineParser::factory_;
+    Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > MLLineParser::factory_;
+    Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&, GeoModel3D& > TSolidLineParser::factory_;
+
+    TSolidLineParser::TSolidLineParser( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
+        : GocadBaseParser( gm_builder, geomodel )
+    {
+    }
+
+    MLLineParser::MLLineParser( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
+        : GocadBaseParser( gm_builder, geomodel )
+    {
+    }
 
     void GeoModelBuilderGocad::read_file()
     {
@@ -1330,16 +1323,11 @@ namespace RINGMesh {
 
     void initialize_gocad_import_factories()
     {
-        GocadLineParser::factory_.register_creator< LoadZSign, GeoModelBuilderGocad&,
-            GeoModel3D& >( "ZPOSITIVE" );
-        GocadLineParser::factory_.register_creator< LoadVertex,
-            GeoModelBuilderGocad&, GeoModel3D& >( "VRTX" );
-        GocadLineParser::factory_.register_creator< LoadVertex,
-            GeoModelBuilderGocad&, GeoModel3D& >( "PVRTX" );
-        GocadLineParser::factory_.register_creator< LoadName, GeoModelBuilderGocad&,
-            GeoModel3D& >( "name:" );
-        GocadLineParser::factory_.register_creator< LoadTriangle,
-            GeoModelBuilderGocad&, GeoModel3D& >( "TRGL" );
+        GocadLineParser::factory_.register_creator< LoadZSign >( "ZPOSITIVE" );
+        GocadLineParser::factory_.register_creator< LoadVertex >( "VRTX" );
+        GocadLineParser::factory_.register_creator< LoadVertex >( "PVRTX" );
+        GocadLineParser::factory_.register_creator< LoadName >( "name:" );
+        GocadLineParser::factory_.register_creator< LoadTriangle >( "TRGL" );
         tsolid_import_factory_initialize();
         ml_import_factory_initialize();
     }
