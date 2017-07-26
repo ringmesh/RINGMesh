@@ -37,6 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
 #include <typeindex>
 
 /*!
@@ -77,9 +78,7 @@ namespace RINGMesh {
         }
 
         template< typename ... Args >
-        std::unique_ptr< BaseClass > create(
-            const Key& key,
-             Args&&... args ) const
+        std::unique_ptr< BaseClass > create( const Key& key, Args&&... args ) const
         {
             auto creator = creators_.find(
                 { key, create_function_type_index< Args... >() } );
@@ -119,5 +118,101 @@ namespace RINGMesh {
         using CreatorKey = std::pair< Key, std::type_index >;
 
         std::map< CreatorKey, CreateFunc< > > creators_;
+    };
+
+    /*!
+     * Generic factory
+     * Example of use with A the base class and B, C derived classes
+     *      // Instantiation
+     *      Factory< std::string, A > factory;
+     *      // Registration
+     *      factory.register_creator< B >( "B" );                 // B constructor has no argument
+     *      factory.register_creator< C, int >( "C" );            // C constructor takes an int
+     *      factory.register_creator< C, double, double >( "C" ); // Another C constructor
+     *      // Creation
+     *      std::unique_ptr< A > c = factory.create( "C", 2.1, 8.6 );
+     */
+    template< typename Key, typename BaseClass >
+    class Factory2 {
+        static_assert( std::has_virtual_destructor< BaseClass >::value,
+            "BaseClass must have a virtual destructor" );
+    public:
+        template< typename DerivedClass, typename ... Args >
+        void register_creator( const Key& key )
+        {
+            static_assert( std::is_base_of< BaseClass, DerivedClass >::value,
+                "DerivedClass must be a subclass of BaseClass" );
+            static_assert( std::is_constructible< DerivedClass, Args... >::value,
+                "DerivedClass must be constructible with Args..." );
+            creators_.emplace(
+                CreatorKey { key, create_function_type_index< Args... >() },
+                reinterpret_cast< CreateFunc< > >( create_function_impl<
+                    DerivedClass, Args... > ) );
+        }
+
+        template< typename ... Args >
+        std::unique_ptr< BaseClass > create( const Key& key, Args&&... args ) const
+        {
+            auto creator = creators_.find(
+                { key, create_function_type_index< Args... >() } );
+            if( creator != creators_.end() ) {
+                return reinterpret_cast< CreateFunc< Args... > >( creator->second )(
+                    std::forward< Args>( args )... );
+            } else {
+                DEBUG( "###" );
+                DEBUG( key );
+//                DEBUG( create_function_type_index< Args... >().name() );
+                for( auto& it : creators_ ) {
+                    DEBUG( it.first.first );
+//                    DEBUG( it.first.second.name() );
+                }
+//                exit(0);
+                return {};
+            }
+        }
+
+    private:
+        struct Arguments {
+            virtual bool equal( const Arguments& rhs ) const = 0;
+        };
+
+        template< typename ...Agrs >
+        struct TypedArguments: public Arguments {
+            using type = std::tuple<Agrs...>;
+            bool equal( const Arguments& rhs ) const final
+            {
+                return std::is_constructible< type, rhs::type >::value;
+            }
+        };
+        using CreatorKey = std::pair< Key, std::unique_ptr< Arguments > >;
+
+        struct classcomp {
+            bool operator()( const CreatorKey& lhs, const CreatorKey& rhs ) const
+            {
+                if( lhs.first != rhs.first ) {
+                    return false;
+                } else {
+                    return lhs.equal( rhs );
+                }
+            }
+        };
+
+        template< typename ... Args >
+        static std::unique_ptr< Arguments > create_function_type_index()
+        {
+            return std::unique_ptr< Arguments > { new TypedArguments< Args... > };
+        }
+
+        template< typename DerivedClass, typename ... Args >
+        static std::unique_ptr< BaseClass > create_function_impl(
+            const Args&... args )
+        {
+            return std::unique_ptr< BaseClass > { new DerivedClass {
+                std::forward< const Args& >( args )... } };
+        }
+        template< typename ... Args >
+        using CreateFunc = typename std::add_pointer< std::unique_ptr< BaseClass >( const Args&... ) >::type;
+        using FactoryElement = std::pair< CreatorKey, CreateFunc< > >;
+        std::vector< FactoryElement > creators_;
     };
 }
