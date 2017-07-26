@@ -92,11 +92,10 @@ namespace RINGMesh {
 
     private:
         template< typename DerivedClass >
-        static std::unique_ptr< BaseClass > create_function_impl(
-            const Args&... args )
+        static std::unique_ptr< BaseClass > create_function_impl( Args&&... args )
         {
             return std::unique_ptr< BaseClass > { new DerivedClass {
-                std::forward< const Args& >( args )... } };
+                std::forward< Args >( args )... } };
         }
 
         using Creator = typename std::add_pointer< std::unique_ptr< BaseClass >( const Args&... ) >::type;
