@@ -143,7 +143,7 @@ namespace RINGMesh {
         }
         virtual void execute(
             GEO::LineInput& line,
-            GocadLoadingStorage& load_storage ) = 0;
+            GocadLoadingStorage& load_storage ){}/* = 0*/;
     protected:
         GocadLineParser( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
             : GocadBaseParser( gm_builder, geomodel )
