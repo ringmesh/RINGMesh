@@ -13,7 +13,12 @@ if(WIN32)
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
-    set(geoplatform Linux64-gcc-dynamic)
+
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        set(geoplatform Linux64-clang-dynamic)
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        set(geoplatform Linux64-clang-dynamic)
+    endif()
 endif(WIN32)
 
 # Define Geogram as an external project that we know how to
@@ -37,6 +42,8 @@ ExternalProject_Add(geogram_ext
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}
@@ -96,6 +103,8 @@ ExternalProject_Add(tinyxml2_ext
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${TINYXML2_PATH}
         -G ${CMAKE_GENERATOR} 
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
   #--Build step-----------------
   BINARY_DIR ${TINYXML2_PATH_BIN}
@@ -148,7 +157,9 @@ ExternalProject_Add(zlib_ext
   SOURCE_DIR ${ZLIB_PATH}
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
         -G ${CMAKE_GENERATOR} 
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} 
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
   #--Build step-----------------
   BINARY_DIR ${ZLIB_PATH_BIN}
