@@ -138,6 +138,7 @@ namespace RINGMesh {
 
     class GocadLineParser: public GocadBaseParser {
     public:
+        virtual ~GocadLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) = 0;
@@ -215,6 +216,7 @@ namespace RINGMesh {
     };
     class TSolidLineParser: public GocadBaseParser {
     public:
+        virtual ~TSolidLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) = 0;
@@ -295,6 +297,7 @@ namespace RINGMesh {
     };
     class MLLineParser: public GocadBaseParser {
     public:
+        virtual ~MLLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
             MLLoadingStorage& load_storage ) = 0;
