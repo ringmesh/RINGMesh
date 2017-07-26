@@ -38,7 +38,6 @@
 #include <ringmesh/basic/common.h>
 
 #include <memory>
-#include <typeindex>
 
 /*!
  * @file  Factory class
@@ -70,8 +69,10 @@ namespace RINGMesh {
                 "DerivedClass must be a subclass of BaseClass" );
             static_assert( std::is_constructible< DerivedClass, Args... >::value,
                 "DerivedClass must be constructible with Args..." );
-            creators_.emplace( key,
-                Creator( create_function_impl< DerivedClass > ) );
+            if( !creators_.emplace( key,
+                Creator( create_function_impl< DerivedClass > ) ).second ) {
+                Logger::warn( "Factory", "Trying to register twice the same key" );
+            }
         }
 
         std::unique_ptr< BaseClass > create( const Key& key, Args&&... args ) const

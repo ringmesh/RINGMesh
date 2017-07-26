@@ -1177,10 +1177,10 @@ namespace RINGMesh {
     Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > MLLineParser::factory_;
     Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&, GeoModel3D& > TSolidLineParser::factory_;
 
-    TSolidLineParser::TSolidLineParser( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
-        : GocadBaseParser( gm_builder, geomodel )
-    {
-    }
+//    TSolidLineParser::TSolidLineParser( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
+//        : GocadBaseParser( gm_builder, geomodel )
+//    {
+//    }
 
     MLLineParser::MLLineParser( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
         : GocadBaseParser( gm_builder, geomodel )

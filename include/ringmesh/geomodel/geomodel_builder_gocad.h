@@ -138,7 +138,9 @@ namespace RINGMesh {
 
     class GocadLineParser: public GocadBaseParser {
     public:
-        virtual ~GocadLineParser() = default;
+        virtual ~GocadLineParser()
+        {
+        }
         virtual void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) = 0;
@@ -221,7 +223,10 @@ namespace RINGMesh {
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) = 0;
     protected:
-        TSolidLineParser( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel );
+        TSolidLineParser( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+            : GocadBaseParser( gm_builder, geomodel )
+        {
+        }
     public:
         static Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&,
             GeoModel3D& > factory_;
