@@ -67,7 +67,7 @@ namespace RINGMesh {
             update_mesh_entity_connectivity();
             flag_geological_entities_without_children();
             do_delete_flagged_geological_entities();
-            update_geological_entity_connectivity();
+//            update_geological_entity_connectivity();
             update_universe();
         }
     }
