@@ -88,6 +88,23 @@ namespace RINGMesh {
             return {};
         }
 
+        static std::vector< Key > list_creators()
+        {
+            Factory& self = instance();
+            std::vector< Key > creators;
+            creators.reserve( self.creators_.size() );
+            for( const auto& creator : self.creators_ ) {
+                creators.emplace_back( creator.first );
+            }
+            return creators;
+        }
+
+        static bool has_creator( const Key& key )
+        {
+            Factory& self = instance();
+            return self.creators_.find( key ) != self.creators_.end();
+        }
+
     private:
         static Factory& instance()
         {

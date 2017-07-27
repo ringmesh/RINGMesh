@@ -44,7 +44,7 @@
 
 #include <memory>
 
-#include <geogram/basic/factory.h>
+#include <ringmesh/basic/factory.h>
 
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
@@ -63,7 +63,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelGeologicalEntity: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy( GeoModelGeologicalEntity );
-    ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelGeologicalEntityAccess< DIMENSION > ;
 
@@ -191,15 +191,9 @@ namespace RINGMesh {
     CLASS_DIMENSION_ALIASES( GeoModelGeologicalEntity );
 
     template< index_t DIMENSION >
-    using GeoModelGeologicalEntityFactory = GEO::Factory1< GeoModelGeologicalEntity< DIMENSION >, GeoModel < DIMENSION > >;
+    using GeoModelGeologicalEntityFactory = Factory< GeologicalEntityType, GeoModelGeologicalEntity< DIMENSION >, const GeoModel < DIMENSION >& >;
 
     CLASS_DIMENSION_ALIASES( GeoModelGeologicalEntityFactory );
-
-#define ringmesh_register_GeoModelGeologicalEntity2D_creator( type ) \
-    geo_register_creator( GeoModelGeologicalEntityFactory2D, type, type::type_name_static() )
-
-#define ringmesh_register_GeoModelGeologicalEntity3D_creator( type ) \
-    geo_register_creator( GeoModelGeologicalEntityFactory3D, type, type::type_name_static() )
 
     template< index_t DIMENSION >
     class Contact: public GeoModelGeologicalEntity< DIMENSION > {
