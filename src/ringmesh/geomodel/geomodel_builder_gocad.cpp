@@ -846,7 +846,6 @@ namespace {
 				builder() );
             load_storage.vertices_.clear();
             load_storage.tetra_corners_.clear();
-			Logger::out( "I/O", "region ", load_storage.cur_region_ );
 		}
 		virtual void execute_light(
 			GEO::LineInput& line,
