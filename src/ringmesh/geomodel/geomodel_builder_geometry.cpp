@@ -828,11 +828,11 @@ namespace RINGMesh {
             ringmesh_assert( cell != NO_ID && cell_vertex != NO_ID );
 
         }
-		
-		GEO::vector< std::string > names;
-		geomodel_.region( region_id ).vertex_attribute_manager().list_attribute_names( names );
-		GEO::Attribute< double > attr_before( geomodel_.region( region_id ).vertex_attribute_manager(), names[2] );
-		index_t size_before = attr_before.size();
+
+        GEO::vector< std::string > names;
+        geomodel_.region( region_id ).vertex_attribute_manager().list_attribute_names( names );
+        GEO::Attribute< double > attr_before( geomodel_.region( region_id ).vertex_attribute_manager(), names[2] );
+        index_t size_before = attr_before.size();
 
         index_t vertex_id = create_mesh_entity_vertices( region_gme,
             surface.nb_vertices() );
@@ -848,15 +848,15 @@ namespace RINGMesh {
                 cell );
             update_cell_vertex( region_id, cells, cell_vertex, vertex_id );
             region_mesh_builder->set_vertex( vertex_id, p );
-			vertex_id++;
+            vertex_id++;
 
-			for( std::string name : names ){
-				if( name != "model_vertex_map" && name != "point" ){
-					GEO::Attribute< double > attr( geomodel_.region( region_id )
-						.vertex_attribute_manager(), name );
-					attr[size_before + v - 1] = attr[cell_vertex];
-				}
-			}
+            for( std::string name : names ){
+                if( name != "model_vertex_map" && name != "point" ){
+                    GEO::Attribute< double > attr( geomodel_.region( region_id )
+                        .vertex_attribute_manager(), name );
+                    attr[size_before + v - 1] = attr[cell_vertex];
+                }
+            }
         }
     }
 
