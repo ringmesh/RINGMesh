@@ -138,21 +138,17 @@ namespace RINGMesh {
 
     class GocadLineParser: public GocadBaseParser {
     public:
-        virtual ~GocadLineParser()
-        {
-        }
+        virtual ~GocadLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
-            GocadLoadingStorage& load_storage ){}/* = 0*/;
+            GocadLoadingStorage& load_storage ) = 0;
     protected:
         GocadLineParser( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
             : GocadBaseParser( gm_builder, geomodel )
         {
         }
-    public:
-        static Factory< std::string, GocadLineParser, GeoModelBuilderGocad&,
-            GeoModel3D& > factory_;
     };
+    static Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& > gocad_factory;
 
     /*!
      * @brief Structure which maps the vertex indices in Gocad::TSolid to the
@@ -223,10 +219,7 @@ namespace RINGMesh {
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) = 0;
     protected:
-        TSolidLineParser( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
-            : GocadBaseParser( gm_builder, geomodel )
-        {
-        }
+        TSolidLineParser( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel );
     public:
         static Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&,
             GeoModel3D& > factory_;
@@ -289,7 +282,7 @@ namespace RINGMesh {
 
     private:
         TSolidLoadingStorage tsolid_load_storage_;
-        friend class RINGMesh::GocadLineParser;
+        friend class RINGMesh::TSolidLineParser;
     };
 
     struct MLLoadingStorage: public GocadLoadingStorage {
