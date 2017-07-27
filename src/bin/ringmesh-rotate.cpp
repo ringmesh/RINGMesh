@@ -102,7 +102,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel< 3 > geomodel;
+        GeoModel3D geomodel;
         geomodel_load( geomodel, input_geomodel_name );
 
         std::string rotation_origin_string = GEO::CmdLine::get_arg(

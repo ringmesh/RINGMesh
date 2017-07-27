@@ -50,7 +50,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     template< index_t DIMENSION >
-    class MeshBaseBuilder: public GEO::Counted {
+    class MeshBaseBuilder {
     ringmesh_disable_copy( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
