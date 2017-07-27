@@ -1054,7 +1054,7 @@ namespace {
          */
         void test_finite_extension()
         {
-            if( DIMENSION == 2 /*|| DIMENSION == 3*/ )
+            if( DIMENSION == 2 || DIMENSION == 3 )
             {
                 return; /// @TODO to handle [BC]
             }
