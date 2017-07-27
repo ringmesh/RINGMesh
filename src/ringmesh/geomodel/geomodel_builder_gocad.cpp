@@ -922,7 +922,7 @@ namespace {
                 static_cast< index_t >( load_storage.vertices_.size() );
             load_storage.vertex_map_.add_vertex( vertex_id,
                 load_storage.cur_region_ );
-            gocad_factory.create( "VRTX", builder_, geomodel_ )->execute( line,
+            GocadLineFactory::create( "VRTX", builder_, geomodel_ )->execute( line,
                 load_storage );
         }
     };
@@ -1146,33 +1146,32 @@ namespace {
 
     void tsolid_import_factory_initialize()
     {
-        tsolid_factory.register_creator< LoadRegion >( "TVOLUME" );
-        tsolid_factory.register_creator< LoadTSolidVertex >( "VRTX" );
-        tsolid_factory.register_creator< LoadTSolidVertex >( "PVRTX" );
-        tsolid_factory.register_creator< LoadTSAtomic >( "ATOM" );
-        tsolid_factory.register_creator< LoadTSAtomic >( "PATOM" );
-        tsolid_factory.register_creator< LoadTetra >( "TETRA" );
-        tsolid_factory.register_creator< LoadLastRegion >( "MODEL" );
-        tsolid_factory.register_creator< LoadInterface >( "SURFACE" );
-        tsolid_factory.register_creator< LoadSurface >( "TFACE" );
-        tsolid_factory.register_creator< LoadLastSurface >( "END" );
+        TSolidLineFactory::register_creator< LoadRegion >( "TVOLUME" );
+        TSolidLineFactory::register_creator< LoadTSolidVertex >( "VRTX" );
+        TSolidLineFactory::register_creator< LoadTSolidVertex >( "PVRTX" );
+        TSolidLineFactory::register_creator< LoadTSAtomic >( "ATOM" );
+        TSolidLineFactory::register_creator< LoadTSAtomic >( "PATOM" );
+        TSolidLineFactory::register_creator< LoadTetra >( "TETRA" );
+        TSolidLineFactory::register_creator< LoadLastRegion >( "MODEL" );
+        TSolidLineFactory::register_creator< LoadInterface >( "SURFACE" );
+        TSolidLineFactory::register_creator< LoadSurface >( "TFACE" );
+        TSolidLineFactory::register_creator< LoadLastSurface >( "END" );
     }
 
     void ml_import_factory_initialize()
     {
-        ml_factory.register_creator< LoadTSurf >( "TSURF" );
-        ml_factory.register_creator< LoadMLSurface >( "TFACE" );
-        ml_factory.register_creator< LoadMLRegion >( "REGION" );
-        ml_factory.register_creator< LoadLayer >( "LAYER" );
-        ml_factory.register_creator< MLEndSection >( "END" );
-        ml_factory.register_creator< LoadMLAtom >( "ATOM" );
-        ml_factory.register_creator< LoadMLAtom >( "PATOM" );
+        MLLineFactory::register_creator< LoadTSurf >( "TSURF" );
+        MLLineFactory::register_creator< LoadMLSurface >( "TFACE" );
+        MLLineFactory::register_creator< LoadMLRegion >( "REGION" );
+        MLLineFactory::register_creator< LoadLayer >( "LAYER" );
+        MLLineFactory::register_creator< MLEndSection >( "END" );
+        MLLineFactory::register_creator< LoadMLAtom >( "ATOM" );
+        MLLineFactory::register_creator< LoadMLAtom >( "PATOM" );
     }
 }
 
 namespace RINGMesh {
 
-    Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& > gocad_factory;
     Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > ml_factory;
     Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&, GeoModel3D& > tsolid_factory;
 
@@ -1224,13 +1223,13 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::read_line()
     {
         std::string keyword = file_line_.field( 0 );
-        std::unique_ptr< TSolidLineParser > tsolid_parser = tsolid_factory.create(
-            keyword, *this, geomodel_ );
+        std::unique_ptr< TSolidLineParser > tsolid_parser =
+            TSolidLineFactory::create( keyword, *this, geomodel_ );
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ );
         } else {
-            std::unique_ptr< GocadLineParser > gocad_parser = gocad_factory.create(
-                keyword, *this, geomodel_ );
+            std::unique_ptr< GocadLineParser > gocad_parser =
+                GocadLineFactory::create( keyword, *this, geomodel_ );
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, tsolid_load_storage_ );
             }
@@ -1310,12 +1309,12 @@ namespace RINGMesh {
     {
         std::string keyword = file_line_.field( 0 );
         std::unique_ptr< MLLineParser > tsolid_parser(
-            ml_factory.create( keyword, *this, geomodel_ ) );
+            MLLineFactory::create( keyword, *this, geomodel_ ) );
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, ml_load_storage_ );
         } else {
-            std::unique_ptr< GocadLineParser > gocad_parser = gocad_factory.create(
-                keyword, *this, geomodel_ );
+            std::unique_ptr< GocadLineParser > gocad_parser =
+                GocadLineFactory::create( keyword, *this, geomodel_ );
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, ml_load_storage_ );
             }
@@ -1324,11 +1323,11 @@ namespace RINGMesh {
 
     void initialize_gocad_import_factories()
     {
-        gocad_factory.register_creator< LoadZSign >( "ZPOSITIVE" );
-        gocad_factory.register_creator< LoadVertex >( "VRTX" );
-        gocad_factory.register_creator< LoadVertex >( "PVRTX" );
-        gocad_factory.register_creator< LoadName >( "name:" );
-        gocad_factory.register_creator< LoadTriangle >( "TRGL" );
+        GocadLineFactory::register_creator< LoadZSign >( "ZPOSITIVE" );
+        GocadLineFactory::register_creator< LoadVertex >( "VRTX" );
+        GocadLineFactory::register_creator< LoadVertex >( "PVRTX" );
+        GocadLineFactory::register_creator< LoadName >( "name:" );
+        GocadLineFactory::register_creator< LoadTriangle >( "TRGL" );
         tsolid_import_factory_initialize();
         ml_import_factory_initialize();
     }

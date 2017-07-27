@@ -39,6 +39,8 @@
 
 #include <memory>
 
+#include <geogram/basic/factory.h>
+
 /*!
  * @file  Factory class
  * @author Arnaud Botella
@@ -58,32 +60,34 @@ namespace RINGMesh {
      *      std::unique_ptr< A > c = factory.create( "C", 2, 8.6 );
      */
     template< typename Key, typename BaseClass, typename ...Args >
-    class Factory {
+    class RINGMESH_API Factory: public GEO::InstanceRepo::Instance {
         static_assert( std::has_virtual_destructor< BaseClass >::value,
             "BaseClass must have a virtual destructor" );
     public:
         template< typename DerivedClass >
-        void register_creator( const Key& key )
+        static void register_creator( const Key& key )
         {
             static_assert( std::is_base_of< BaseClass, DerivedClass >::value,
                 "DerivedClass must be a subclass of BaseClass" );
             static_assert( std::is_constructible< DerivedClass, Args... >::value,
                 "DerivedClass must be constructible with Args..." );
-            if( !creators_.emplace( key,
+            Factory& self = instance();
+            if( !self.creators_.emplace( key,
                 Creator( create_function_impl< DerivedClass > ) ).second ) {
                 Logger::warn( "Factory", "Trying to register twice the same key" );
             }
         }
 
-        std::unique_ptr< BaseClass > create( const Key& key, Args&&... args ) const
+        static std::unique_ptr< BaseClass > create( const Key& key, Args&&... args )
         {
-            auto creator = creators_.find( key );
-            if( creator != creators_.end() ) {
+            Factory& self = instance();
+            auto creator = self.creators_.find( key );
+            if( creator != self.creators_.end() ) {
                 return creator->second( std::forward< Args>( args )... );
             } else {
                 DEBUG( "###" );
                 DEBUG( key );
-                for( auto& it : creators_ ) {
+                for( auto& it : self.creators_ ) {
                     DEBUG( it.first );
                 }
 //                exit(0);
@@ -92,6 +96,11 @@ namespace RINGMesh {
         }
 
     private:
+        static Factory& instance()
+        {
+            return GEO::InstanceRepo::instance< Factory >();
+        }
+
         template< typename DerivedClass >
         static std::unique_ptr< BaseClass > create_function_impl( Args&&... args )
         {
