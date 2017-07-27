@@ -73,36 +73,36 @@ namespace RINGMesh {
         /*!
          * @brief Gets the closest element box to a point
          * @param[in] query the point to test
-         * @param[out] nearest_point the nearest point on the element box
-         * @param[out] distance the distance between the \p query
-         * and \p nearest_point
          * @param[in] action the functor to compute the distance between
          * the \p query and the tree element boxes
-         * @return the index of the closest element box
+         * @return a tuple containing:
+         * - the index of the closest element box.
+         * - the nearest point on the element box.
+         * - the distance between the \p query.
+         * and \p nearest_point.
          * @tparam EvalDistance this functor should have an operator() defined like this:
-         *  void operator()(
+         *  std::tuple< double, vecn< DIMENSION > > operator()(
          *      const vecn< DIMENSION >& query,
-         *      index_t cur_box,
-         *      vecn< DIMENSION >& nearest_point,
-         *      double& distance ) const ;
+         *      index_t cur_box ) const ;
          * where query is the same than \p query, cur_box is the element box index
-         * (e.g. in the case of SurfaceAABBTree, this index is a polygon index) and nearest_point
-         * and distance are the value computed using the element in the \p cur_box.
+         * (e.g. in the case of SurfaceAABBTree, this index is a polygon index).
+         * The returned tuple contains the distance of the nearest point and the
+         * nearest point computed using the element in the \p cur_box.
          */
         template< typename EvalDistance >
-        index_t closest_element_box(
+        std::tuple< index_t, vecn< DIMENSION >, double > closest_element_box(
             const vecn< DIMENSION >& query,
-            vecn< DIMENSION >& nearest_point,
-            double& distance,
             const EvalDistance& action ) const
         {
             index_t nearest_box = NO_ID;
-            get_nearest_element_box_hint( query, nearest_box, nearest_point,
-                distance );
+            vecn< DIMENSION > nearest_point;
+            double distance;
+            std::tie( nearest_box, nearest_point, distance ) =
+                get_nearest_element_box_hint( query );
             closest_element_box_recursive< EvalDistance >( query, nearest_box,
                 nearest_point, distance, ROOT_INDEX, 0, nb_bboxes(), action );
             ringmesh_assert( nearest_box != NO_ID );
-            return nearest_box;
+            return std::make_tuple( nearest_box, nearest_point, distance );
         }
         /*
          * @brief Computes the intersections between a given
@@ -178,7 +178,6 @@ namespace RINGMesh {
             ringmesh_assert( i < tree_.size() );
             return tree_[i];
         }
-
     private:
         /*!
          * @brief Gets the number of nodes in the tree subset
@@ -235,11 +234,8 @@ namespace RINGMesh {
          * the distance computation between \p query and the real elements
          * inside the bboxes
          */
-        void get_nearest_element_box_hint(
-            const vecn< DIMENSION >& query,
-            index_t& nearest_box,
-            vecn< DIMENSION >& nearest_point,
-            double& distance ) const;
+        std::tuple< index_t, vecn< DIMENSION >, double > get_nearest_element_box_hint(
+            const vecn< DIMENSION >& query ) const;
         /*!
          * @brief Gets an element point from its box
          * @details This function is used to get a result from the selected hint box
@@ -270,6 +266,8 @@ namespace RINGMesh {
             index_t element_id ) const override;
     };
 
+    CLASS_DIMENSION_ALIASES( BoxAABBTree );
+
     template< index_t DIMENSION >
     class LineAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -280,14 +278,12 @@ namespace RINGMesh {
         /*!
          * @brief Gets the closest edge to a given point
          * @param[in] query the point to use
-         * @param[out] nearest_point the nearest point on the closest edge
-         * @param[out] distance the distance between \p query and \p nearest_point
-         * @return the closest edge index
+         * @return a tuple containing:
+         * - the closest edge index.
+         * - nearest_point the nearest point on the closest edge.
+         * - distance the distance between \p query and \p nearest_point.
          */
-        index_t closest_edge(
-            const vecn< DIMENSION >& query,
-            vecn< DIMENSION >& nearest_point,
-            double& distance ) const;
+        std::tuple< index_t, vecn< DIMENSION >, double > closest_edge( const vecn< DIMENSION >& query ) const;
     private:
         /*!
          * @brief Gets an element point from its box
@@ -307,11 +303,9 @@ namespace RINGMesh {
             {
             }
 
-            void operator()(
+            std::tuple< double, vecn< DIMENSION > > operator()(
                 const vecn< DIMENSION >& query,
-                index_t cur_box,
-                vecn< DIMENSION >& nearest_point,
-                double& distance ) const;
+                index_t cur_box ) const;
 
         private:
             const LineMesh< DIMENSION >& mesh_;
@@ -320,6 +314,8 @@ namespace RINGMesh {
     private:
         const LineMesh< DIMENSION >& mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( LineAABBTree );
 
     template< index_t DIMENSION >
     class SurfaceAABBTree: public AABBTree< DIMENSION > {
@@ -332,14 +328,13 @@ namespace RINGMesh {
          * @brief Gets the closest triangle to a given point
          * @pre The mesh needs to be triangulated
          * @param[in] query the point to use
-         * @param[out] nearest_point the nearest point on the closest triangle
-         * @param[out] distance the distance between \p query and \p nearest_point
-         * @return the closest triangle index
+         * @return a tuple containing:
+         * - the closest triangle index.
+         * - the nearest point on the closest triangle.
+         * - the distance between \p query and \p nearest_point.
          */
-        index_t closest_triangle(
-            const vecn< DIMENSION >& query,
-            vecn< DIMENSION >& nearest_point,
-            double& distance ) const;
+        std::tuple< index_t, vecn< DIMENSION >, double > closest_triangle(
+            const vecn< DIMENSION >& query ) const;
     private:
         /*!
          * @brief Gets an element point from its box
@@ -359,11 +354,9 @@ namespace RINGMesh {
             {
             }
 
-            void operator()(
+            std::tuple< double, vecn< DIMENSION > > operator()(
                 const vecn< DIMENSION >& query,
-                index_t cur_box,
-                vecn< DIMENSION >& nearest_point,
-                double& distance ) const;
+                index_t cur_box ) const;
 
         private:
             const SurfaceMeshBase< DIMENSION >& mesh_;
@@ -372,6 +365,8 @@ namespace RINGMesh {
     private:
         const SurfaceMeshBase< DIMENSION >& mesh_;
     };
+
+    CLASS_DIMENSION_ALIASES( SurfaceAABBTree );
 
     template< index_t DIMENSION >
     class VolumeAABBTree: public AABBTree< DIMENSION > {
@@ -406,6 +401,8 @@ namespace RINGMesh {
         const VolumeMesh< DIMENSION >& mesh_;
     };
 
+    using VolumeAABBTree3D = VolumeAABBTree< 3 >;
+
     template< index_t DIMENSION >
     double inner_point_box_distance(
         const vecn< DIMENSION >& p,
@@ -437,7 +434,7 @@ namespace RINGMesh {
             index_t cur_box = mapping_morton_[box_begin];
             vecn< DIMENSION > cur_nearest_point;
             double cur_distance;
-            action( query, cur_box, cur_nearest_point, cur_distance );
+            std::tie( cur_distance, cur_nearest_point ) = action( query, cur_box );
             if( cur_distance < distance ) {
                 nearest_box = cur_box;
                 nearest_point = cur_nearest_point;

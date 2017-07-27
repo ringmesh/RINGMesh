@@ -94,6 +94,8 @@ namespace RINGMesh {
         AttributeGfxManager< DIMENSION > attribute;
     };
 
+    CLASS_DIMENSION_ALIASES( GeoModelGfxBase );
+
     template< index_t DIMENSION >
     class GeoModelGfx final: public GeoModelGfxBase< DIMENSION > {
     public:
@@ -108,8 +110,10 @@ namespace RINGMesh {
         void initialize() final;
 
     public:
-        RegionGfxEntity< 3 > regions;
+        RegionGfxEntity3D regions;
     };
+
+    CLASS_DIMENSION_ALIASES( GeoModelGfx );
 }
 
 #endif

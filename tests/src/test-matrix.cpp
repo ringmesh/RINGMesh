@@ -50,19 +50,19 @@ void set_get_test( SparseMatrix< double, light >& matrix )
     matrix.set_element( 1, 1, 1. );
     matrix.set_element( 2, 2, 1. );
     for( index_t i = 0; i < matrix.ni(); ++i ) {
+        bool exists = false;
         double elt;
-        if( !matrix.get_element( i, i, elt )
-            || std::abs( elt - 1. ) > global_epsilon ) {
-            throw RINGMeshException( "TEST",
-                "Matrix element at (" + std::to_string( i ) + ","
-                    + std::to_string( i ) + ") should exist and be correct!" );
+        std::tie( exists, elt ) = matrix.get_element( i, i );
+        if( !exists || std::abs( elt - 1. ) > global_epsilon ) {
+            throw RINGMeshException( "TEST", "Matrix element at (", i, ",", i,
+                ") should exist and be correct!" );
         }
         for( index_t j = 0; j < matrix.nj(); ++j ) {
             if( i != j ) {
-                if( matrix.get_element( i, j, elt ) ) {
-                    throw RINGMeshException( "TEST",
-                        "Matrix element at (" + std::to_string( i ) + ","
-                            + std::to_string( i ) + ") should not exist!" );
+                std::tie( exists, std::ignore ) = matrix.get_element( i, j );
+                if( exists ) {
+                    throw RINGMeshException( "TEST", "Matrix element at (", i, ",",
+                        i, ") should not exist!" );
                 }
             }
         }
@@ -72,21 +72,24 @@ void set_get_test( SparseMatrix< double, light >& matrix )
 void symmetry_test( SparseMatrix< double, light >& matrix )
 {
     matrix.set_element( 0, 1, 3. );
+    bool exists = false;
     double elt;
-    if( !matrix.get_element( 0, 1, elt ) || std::abs( elt - 3. ) > global_epsilon ) {
+    std::tie( exists, elt ) = matrix.get_element( 0, 1 );
+    if( !exists || std::abs( elt - 3. ) > global_epsilon ) {
         throw RINGMeshException( "TEST",
-            "Matrix element at (0,1) should not exist and be correct!" );
+            "Matrix element at (0,1) should exist and be correct!" );
     }
     if( matrix.is_symmetrical() ) {
-        if( !matrix.get_element( 1, 0, elt )
-            || std::abs( elt - 3. ) > global_epsilon ) {
+        std::tie( exists, elt ) = matrix.get_element( 1, 0 );
+        if( !exists || std::abs( elt - 3. ) > global_epsilon ) {
             throw RINGMeshException( "TEST",
                 "Matrix element at (1,0) should exist and be correct!" );
         }
     } else {
-        if( matrix.get_element( 1, 0, elt ) && std::abs( elt - 3. ) < global_epsilon ) {
+        std::tie( exists, elt ) = matrix.get_element( 1, 0 );
+        if( exists ) {
             throw RINGMeshException( "TEST",
-                "Matrix element at (1,0) should not exist and the matrix should not be symmetrical!" );
+                "Matrix element at (1,0) should not exist!" );
         }
     }
 }

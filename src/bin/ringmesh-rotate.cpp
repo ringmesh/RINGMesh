@@ -82,8 +82,8 @@ namespace {
         split_coords.reserve( 3 );
         GEO::String::split_string( coords_in_string, ' ', split_coords, true );
         if( split_coords.size() != 3 ) {
-            throw RINGMeshException( "I/O",
-                "Vector" + coords_in_string + "has not exactly 3 components" );
+            throw RINGMeshException( "I/O", "Vector ", coords_in_string,
+                " has not exactly 3 components" );
         }
         vec3 coords_vec;
         for( index_t split_coords_itr : range( 3 ) ) {
@@ -102,7 +102,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        GeoModel< 3 > geomodel;
+        GeoModel3D geomodel;
         geomodel_load( geomodel, input_geomodel_name );
 
         std::string rotation_origin_string = GEO::CmdLine::get_arg(
@@ -121,7 +121,7 @@ namespace {
         } else if( rotation_unit == "rad" ) {
             is_deg = false;
         } else {
-            throw RINGMeshException( "I/O", "Unknown angle unit " + rotation_unit );
+            throw RINGMeshException( "I/O", "Unknown angle unit ", rotation_unit );
         }
 
         rotate( geomodel, rotation_origin_vec, rotation_axis_vec, rotation_angle,

@@ -43,6 +43,29 @@
 
 namespace RINGMesh {
 
+    ElementLocalVertex::ElementLocalVertex(
+        EdgeLocalVertex edge_local_vertex )
+        :
+            element_id_( std::move( edge_local_vertex.edge_id_ ) ),
+            local_vertex_id_( std::move( edge_local_vertex.local_vertex_id_ ) )
+    {
+    }
+
+    ElementLocalVertex::ElementLocalVertex(
+        PolygonLocalEdge polygon_local_edge )
+        :
+            element_id_( std::move( polygon_local_edge.polygon_id_ ) ),
+            local_vertex_id_( std::move( polygon_local_edge.local_edge_id_ ) )
+    {
+    }
+
+    ElementLocalVertex::ElementLocalVertex( CellLocalFacet cell_local_facet )
+        :
+            element_id_( std::move( cell_local_facet.cell_id_ ) ),
+            local_vertex_id_( std::move( cell_local_facet.local_facet_id_ ) )
+    {
+    }
+
     template< index_t DIMENSION >
     std::unique_ptr< PointSetMesh< DIMENSION > > PointSetMesh< DIMENSION >::create_mesh(
         const MeshType type )
@@ -107,30 +130,33 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void SurfaceMeshBase< DIMENSION >::next_on_border(
-        index_t p,
-        index_t e,
-        index_t& next_p,
-        index_t& next_e ) const
+    PolygonLocalEdge SurfaceMeshBase< DIMENSION >::next_on_border(
+        const PolygonLocalEdge& polygon_local_edge ) const
     {
-        ringmesh_assert( e < nb_polygon_vertices( p ) );
-        ringmesh_assert( is_edge_on_border( p, e ) );
+        ringmesh_assert(
+            polygon_local_edge.local_edge_id_
+                < nb_polygon_vertices( polygon_local_edge.polygon_id_ ) );
+        ringmesh_assert( is_edge_on_border( polygon_local_edge ) );
 
         // Global indices in the surfaces
-        index_t next_v_id = polygon_vertex( p, next_polygon_vertex( p, e ) );
+        index_t next_v_id = polygon_vertex(
+            next_polygon_vertex( polygon_local_edge ) );
 
         // Get the polygons around the shared vertex (next_v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
         std::vector< index_t > polygons_around_next_v_id = polygons_around_vertex(
-            next_v_id, true, p );
+            next_v_id, true, polygon_local_edge.polygon_id_ );
         index_t nb_around =
             static_cast< index_t >( polygons_around_next_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
+        PolygonLocalEdge next_polygon_local_edge( NO_ID, NO_ID );
+        index_t& next_p = next_polygon_local_edge.polygon_id_;
         next_p = polygons_around_next_v_id[0];
+        index_t& next_e = next_polygon_local_edge.local_edge_id_;
 
         if( nb_around == 2 ) {
-            if( next_p == p ) {
+            if( next_p == polygon_local_edge.polygon_id_ ) {
                 next_p = polygons_around_next_v_id[1];
             }
             ringmesh_assert( next_p != NO_ID );
@@ -138,38 +164,42 @@ namespace RINGMesh {
 
             // Local index of next vertex in the next polygon
             next_e = vertex_index_in_polygon( next_p, next_v_id );
-            ringmesh_assert( is_edge_on_border( next_p, next_e ) );
+            ringmesh_assert( is_edge_on_border( next_polygon_local_edge ) );
         } else if( nb_around == 1 ) {
             // next_v_id must be in two border edges of polygon p
             next_e = vertex_index_in_polygon( next_p, next_v_id );
-            ringmesh_assert( is_edge_on_border( next_p, next_e ) );
+            ringmesh_assert( is_edge_on_border( next_polygon_local_edge ) );
         }
+
+        return next_polygon_local_edge;
     }
 
     template< index_t DIMENSION >
-    void SurfaceMeshBase< DIMENSION >::prev_on_border(
-        index_t p,
-        index_t e,
-        index_t& prev_p,
-        index_t& prev_e ) const
+    PolygonLocalEdge SurfaceMeshBase< DIMENSION >::prev_on_border(
+        const PolygonLocalEdge& polygon_local_edge ) const
     {
-        ringmesh_assert( e < nb_polygon_vertices( p ) );
-        ringmesh_assert( is_edge_on_border( p, e ) );
+        ringmesh_assert(
+            polygon_local_edge.local_edge_id_
+                < nb_polygon_vertices( polygon_local_edge.polygon_id_ ) );
+        ringmesh_assert( is_edge_on_border( polygon_local_edge ) );
 
         // Global indices in the surfaces
-        index_t v_id = polygon_vertex( p, e );
+        index_t v_id = polygon_vertex( ElementLocalVertex( polygon_local_edge ) );
 
         // Get the polygons around the shared vertex (v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
         std::vector< index_t > polygons_around_v_id = polygons_around_vertex( v_id,
-            true, p );
+            true, polygon_local_edge.polygon_id_ );
         index_t nb_around = static_cast< index_t >( polygons_around_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
+        PolygonLocalEdge prev_polygon_local_edge( NO_ID, NO_ID );
+        index_t& prev_p = prev_polygon_local_edge.polygon_id_;
         prev_p = polygons_around_v_id[0];
+        index_t& prev_e = prev_polygon_local_edge.local_edge_id_;
 
         if( nb_around == 2 ) {
-            if( prev_p == p ) {
+            if( prev_p == polygon_local_edge.polygon_id_ ) {
                 prev_p = polygons_around_v_id[1];
             }
             ringmesh_assert( prev_p != NO_ID );
@@ -178,14 +208,19 @@ namespace RINGMesh {
             // Local index of given vertex in the prev polygon
             index_t v_in_prev_f = vertex_index_in_polygon( prev_p, v_id );
             // Local index of previous vertex in the prev polygon
-            prev_e = prev_polygon_vertex( prev_p, v_in_prev_f );
-            ringmesh_assert( is_edge_on_border( prev_p, prev_e ) );
+            prev_e =
+                prev_polygon_vertex( ElementLocalVertex( prev_p, v_in_prev_f ) ).local_vertex_id_;
+            ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         } else if( nb_around == 1 ) {
             // v_id must be in two border edges of polygon p
             index_t v_in_next_polygon = vertex_index_in_polygon( prev_p, v_id );
-            prev_e = prev_polygon_vertex( prev_p, v_in_next_polygon );
-            ringmesh_assert( is_edge_on_border( prev_p, prev_e ) );
+            prev_e =
+                prev_polygon_vertex(
+                ElementLocalVertex( prev_p, v_in_next_polygon ) ).local_vertex_id_;
+            ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         }
+
+        return prev_polygon_local_edge;
     }
 
     template< index_t DIMENSION >
@@ -201,9 +236,10 @@ namespace RINGMesh {
         // Check if the edge is in one of the polygon
         for( index_t poly : range( nb_polygons() ) ) {
             bool found = false;
-            index_t prev = polygon_vertex( poly, nb_polygon_vertices( poly ) - 1 );
+            index_t prev = polygon_vertex(
+                ElementLocalVertex( poly, nb_polygon_vertices( poly ) - 1 ) );
             for( index_t v : range( nb_polygon_vertices( poly ) ) ) {
-                index_t p = polygon_vertex( poly, v );
+                index_t p = polygon_vertex( ElementLocalVertex( poly, v ) );
                 if( ( prev == in0 && p == in1 ) || ( prev == in1 && p == in0 ) ) {
                     found = true;
                     break;
@@ -224,7 +260,7 @@ namespace RINGMesh {
     {
         ringmesh_assert( polygon_index < nb_polygons() );
         for( index_t v : range( nb_polygon_vertices( polygon_index ) ) ) {
-            if( polygon_vertex( polygon_index, v ) == vertex_id ) {
+            if( polygon_vertex( ElementLocalVertex(polygon_index, v) ) == vertex_id ) {
                 return v;
             }
         }
@@ -240,7 +276,7 @@ namespace RINGMesh {
         double dist = DBL_MAX;
         for( index_t v_id : range( nb_polygon_vertices( p ) ) ) {
             double distance = length2(
-                v - this->vertex( polygon_vertex( p, v_id ) ) );
+                v - this->vertex( polygon_vertex( ElementLocalVertex(p, v_id) ) ) );
             if( dist > distance ) {
                 dist = distance;
                 result = v_id;
@@ -258,7 +294,8 @@ namespace RINGMesh {
         index_t cur_p = 0;
         while( p0 == NO_ID && cur_p < nb_polygons() ) {
             for( index_t lv : range( nb_polygon_vertices( cur_p ) ) ) {
-                if( polygon_vertex( cur_p, lv ) == surf_vertex_id ) {
+                if( polygon_vertex( ElementLocalVertex( cur_p, lv ) )
+                    == surf_vertex_id ) {
                     p0 = cur_p;
                     break;
                 }
@@ -283,10 +320,13 @@ namespace RINGMesh {
             S.pop();
 
             for( index_t v : range( nb_polygon_vertices( p ) ) ) {
-                if( polygon_vertex( p, v ) == surf_vertex_id ) {
-                    index_t adj_P = polygon_adjacent( p, v );
-                    index_t prev = prev_polygon_vertex( p, v );
-                    index_t adj_prev = polygon_adjacent( p, prev );
+                if( polygon_vertex( ElementLocalVertex( p, v ) )
+                    == surf_vertex_id ) {
+                    index_t adj_P = polygon_adjacent( PolygonLocalEdge( p, v ) );
+                    index_t prev = prev_polygon_vertex(
+                        ElementLocalVertex( p, v ) ).local_vertex_id_;
+                    index_t adj_prev = polygon_adjacent(
+                        PolygonLocalEdge( p, prev ) );
 
                     if( adj_P != NO_ID ) {
                         // The edge starting at P is not on the boundary
@@ -342,6 +382,95 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
+    std::vector< index_t > VolumeMesh< DIMENSION >::cells_around_vertex(
+        index_t vertex_id,
+        index_t cell_hint ) const
+    {
+        std::vector< index_t > result;
+
+        if( cell_hint == NO_ID ) {
+            const vecn< DIMENSION > cur_vec = this->vertex( vertex_id );
+            index_t cell_vertex_not_used = NO_ID;
+            bool found = find_cell_from_colocated_vertex_within_distance_if_any( cur_vec, global_epsilon, cell_hint,
+                cell_vertex_not_used );
+            if( !found ) {
+                return result;
+            }
+        }
+        ringmesh_assert( cell_hint != NO_ID );
+
+        // Flag the visited cells
+        std::vector< index_t > visited;
+        visited.reserve( 10 );
+
+        // Stack of the adjacent cells
+        std::stack< index_t > S;
+        S.push( cell_hint );
+        visited.push_back( cell_hint );
+
+        do {
+            index_t c = S.top();
+            S.pop();
+
+            bool cell_includes_vertex = false;
+            for( index_t v = 0; v < nb_cell_vertices( c ); v++ ) {
+                if( cell_vertex( ElementLocalVertex( c, v ) ) == vertex_id ) {
+                    result.push_back( c );
+                    cell_includes_vertex = true;
+                    break;
+                }
+            }
+            if( !cell_includes_vertex ) {
+                continue;
+            }
+
+            for( index_t f = 0; f < nb_cell_facets( c ); f++ ) {
+                for( index_t v = 0;
+                    v < nb_cell_facet_vertices( CellLocalFacet( c, f ) ); v++ ) {
+                    index_t vertex = cell_facet_vertex( CellLocalFacet( c, f ), v );
+                    if( vertex == vertex_id ) {
+                        index_t adj_P = cell_adjacent( CellLocalFacet( c, f ) );
+
+                        if( adj_P != NO_ID ) {
+                            if( !contains( visited, adj_P ) ) {
+                                S.push( adj_P );
+                                visited.push_back( adj_P );
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        } while( !S.empty() );
+
+        return result;
+    }
+
+    template< index_t DIMENSION >
+    bool VolumeMesh< DIMENSION >::find_cell_from_colocated_vertex_within_distance_if_any(
+        const vecn< DIMENSION >& vertex_vec,
+        double distance,
+        index_t& cell_id,
+        index_t& cell_vertex_id ) const
+    {
+        bool result = false;
+        cell_nn_search().get_neighbors( vertex_vec,
+            [this, &vertex_vec, &result, &cell_id, &cell_vertex_id, distance]( index_t i ) {
+                for( index_t j : range( nb_cell_vertices( i ) ) ) {
+                    if( inexact_equal( this->vertex( cell_vertex( ElementLocalVertex(i, j ))),
+                            vertex_vec, distance ) ) {
+                        cell_vertex_id = cell_vertex( ElementLocalVertex(i,
+                                j ));
+                        cell_id = i;
+                        result = true;
+                        break;
+                    }
+                }
+                return result;} );
+        return result;
+    }
+
+    template< index_t DIMENSION >
     MeshSetBase< DIMENSION >::MeshSetBase()
     {
         create_point_set_mesh( "" );
@@ -374,7 +503,7 @@ namespace RINGMesh {
 
     void MeshSet< 3 >::create_volume_mesh( const MeshType type )
     {
-        volume_mesh = VolumeMesh< 3 >::create_mesh( type );
+        volume_mesh = VolumeMesh3D::create_mesh( type );
     }
 
     template class RINGMESH_API PointSetMesh< 2 > ;

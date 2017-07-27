@@ -54,7 +54,7 @@ namespace RINGMesh {
         StratigraphicColumnIOHandler* handler =
             StratigraphicColumnIOHandlerFactory::create_object( format );
         if( !handler ) {
-            throw RINGMeshException( "I/O", "Unsupported file format: " + format );
+            throw RINGMeshException( "I/O", "Unsupported file format: ", format );
         }
         return handler;
     }
