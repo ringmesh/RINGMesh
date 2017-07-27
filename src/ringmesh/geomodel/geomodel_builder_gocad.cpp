@@ -922,8 +922,8 @@ namespace {
                 static_cast< index_t >( load_storage.vertices_.size() );
             load_storage.vertex_map_.add_vertex( vertex_id,
                 load_storage.cur_region_ );
-            GocadLineParser::factory_.create( "VRTX", builder_, geomodel_ )->execute(
-                line, load_storage );
+            gocad_factory.create( "VRTX", builder_, geomodel_ )->execute( line,
+                load_storage );
         }
     };
 
@@ -1173,14 +1173,16 @@ namespace {
 
 namespace RINGMesh {
 
-    Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& > GocadLineParser::factory_;
+//    Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& > gocad_factory;
     Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > MLLineParser::factory_;
     Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&, GeoModel3D& > TSolidLineParser::factory_;
 
-//    TSolidLineParser::TSolidLineParser( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
-//        : GocadBaseParser( gm_builder, geomodel )
-//    {
-//    }
+    TSolidLineParser::TSolidLineParser(
+        GeoModelBuilderTSolid& gm_builder,
+        GeoModel3D& geomodel )
+        : GocadBaseParser( gm_builder, geomodel )
+    {
+    }
 
     MLLineParser::MLLineParser( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
         : GocadBaseParser( gm_builder, geomodel )
@@ -1228,8 +1230,8 @@ namespace RINGMesh {
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ );
         } else {
-            std::unique_ptr< GocadLineParser > gocad_parser =
-                GocadLineParser::factory_.create( keyword, *this, geomodel_ );
+            std::unique_ptr< GocadLineParser > gocad_parser = gocad_factory.create(
+                keyword, *this, geomodel_ );
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, tsolid_load_storage_ );
             }
@@ -1313,8 +1315,8 @@ namespace RINGMesh {
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, ml_load_storage_ );
         } else {
-            std::unique_ptr< GocadLineParser > gocad_parser =
-                GocadLineParser::factory_.create( keyword, *this, geomodel_ );
+            std::unique_ptr< GocadLineParser > gocad_parser = gocad_factory.create(
+                keyword, *this, geomodel_ );
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, ml_load_storage_ );
             }
@@ -1323,11 +1325,11 @@ namespace RINGMesh {
 
     void initialize_gocad_import_factories()
     {
-        GocadLineParser::factory_.register_creator< LoadZSign >( "ZPOSITIVE" );
-        GocadLineParser::factory_.register_creator< LoadVertex >( "VRTX" );
-        GocadLineParser::factory_.register_creator< LoadVertex >( "PVRTX" );
-        GocadLineParser::factory_.register_creator< LoadName >( "name:" );
-        GocadLineParser::factory_.register_creator< LoadTriangle >( "TRGL" );
+        gocad_factory.register_creator< LoadZSign >( "ZPOSITIVE" );
+        gocad_factory.register_creator< LoadVertex >( "VRTX" );
+        gocad_factory.register_creator< LoadVertex >( "PVRTX" );
+        gocad_factory.register_creator< LoadName >( "name:" );
+        gocad_factory.register_creator< LoadTriangle >( "TRGL" );
         tsolid_import_factory_initialize();
         ml_import_factory_initialize();
     }
