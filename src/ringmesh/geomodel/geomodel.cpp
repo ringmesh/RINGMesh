@@ -63,17 +63,17 @@ namespace {
     {
         Box< DIMENSION > bbox;
         if( gm.nb_surfaces() > 0 ) {
-            for( const auto& surface : gm.surfaces() ) {
-                compute_mesh_entity_bbox( surface, bbox );
+            for( index_t s : range( gm.nb_surfaces() ) ) {
+                compute_mesh_entity_bbox( gm.surface( s ), bbox );
             }
         } else if( gm.nb_lines() > 0 ) {
-            for( const auto& line : gm.lines() ) {
-                compute_mesh_entity_bbox( line, bbox );
+            for( index_t l : range( gm.nb_lines() ) ) {
+                compute_mesh_entity_bbox( gm.line( l ), bbox );
             }
         } else {
             ringmesh_assert( gm.nb_corners() > 0 );
-             for( const auto& corner : gm.corners() ) {
-                bbox.add_point( corner.vertex( 0 ) );
+             for( index_t c : range( gm.nb_corners() ) ) {
+                bbox.add_point( gm.corner( c ).vertex( 0 ) );
             }
         }
         return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" );
