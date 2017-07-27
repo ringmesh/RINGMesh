@@ -60,7 +60,7 @@ namespace RINGMesh {
      *      std::unique_ptr< A > c = factory.create( "C", 2, 8.6 );
      */
     template< typename Key, typename BaseClass, typename ...Args >
-    class RINGMESH_API Factory: public GEO::InstanceRepo::Instance {
+    class Factory: public GEO::InstanceRepo::Instance {
         static_assert( std::has_virtual_destructor< BaseClass >::value,
             "BaseClass must have a virtual destructor" );
     public:
@@ -84,15 +84,8 @@ namespace RINGMesh {
             auto creator = self.creators_.find( key );
             if( creator != self.creators_.end() ) {
                 return creator->second( std::forward< Args>( args )... );
-            } else {
-                DEBUG( "###" );
-                DEBUG( key );
-                for( auto& it : self.creators_ ) {
-                    DEBUG( it.first );
-                }
-//                exit(0);
-                return {};
             }
+            return {};
         }
 
     private:
