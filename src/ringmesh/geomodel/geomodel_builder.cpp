@@ -212,7 +212,6 @@ namespace {
     };
 
     CLASS_DIMENSION_ALIASES( CommonDataFromGeoModelSurfaces );
-
     /*!
      * @brief Utility class to sort a set of oriented polygons around a common edge
      */
@@ -574,6 +573,7 @@ namespace {
             get_one_line_vertices( backward );
             backward = true;
             get_one_line_vertices( backward );
+
         }
         /*!
          * @brief Gets the geometry of a line propagating in a given direction
@@ -853,6 +853,7 @@ namespace RINGMesh {
                     first_corner );
                 topology.add_mesh_entity_boundary_relation( line_index,
                     second_corner );
+
             } else {
                 bool same_geometry = line_equal(
                     geomodel_.line( line_index.index() ), vertices );
@@ -871,7 +872,6 @@ namespace RINGMesh {
         }
 
         cut_geomodel_on_internal_boundaries();
-        topology.compute_universe();
 
         // Deliberate clear of the geomodel vertices used for geomodel building
         geometry.clear_geomodel_mesh();
@@ -979,7 +979,6 @@ namespace RINGMesh {
             /// @todo handle the region building of small bubble regions
         }
 
-        topology.compute_universe();
         // We need to remove from the regions_ the one corresponding
         // to the universe_, the one with the biggest volume
         double max_volume = -1.;
@@ -992,12 +991,6 @@ namespace RINGMesh {
             }
         }
         const Region3D& cur_region = geomodel_.region( universe_id );
-        for( index_t i : range( cur_region.nb_boundaries() ) ) {
-            // Fill the Universe region boundaries
-            // They are supposed to be empty
-            topology.add_universe_boundary( cur_region.boundary( i ).index(),
-                cur_region.side( i ) );
-        }
         std::set< gmme_id > to_erase;
         to_erase.insert( cur_region.gmme() );
         removal.remove_mesh_entities( to_erase );

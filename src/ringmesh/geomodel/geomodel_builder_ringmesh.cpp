@@ -105,6 +105,7 @@ namespace RINGMesh {
     protected:
         virtual gmme_id read_first_line( GEO::LineInput& file_line )
         {
+
             gmme_id cur_gmme( MeshEntityType( file_line.field( 0 ) ),
                 file_line.field_as_uint( 1 ) );
             this->builder_.info.set_mesh_entity_name( cur_gmme,
@@ -206,16 +207,20 @@ namespace RINGMesh {
             if( GEO::String::string_starts_with( mesh_type, "Geogram" ) ) {
                 this->builder_.geometry.change_mesh_data_structure( entity,
                     old_2_new_name( mesh_type ) );
+
             } else {
                 this->builder_.geometry.change_mesh_data_structure( entity,
                     mesh_type );
+
             }
 
             this->read_second_line( file_line, entity );
+
         }
     private:
         const std::string& old_2_new_name( const std::string& old_name )
         {
+
             index_t new_name_pos = GEO::String::to_int(
                 GEO::String::to_string( old_name.at( old_name.length() - 2 ) ) );
             return new_names[new_name_pos];
@@ -228,7 +233,6 @@ namespace RINGMesh {
     const std::string GeoModelBuilderGMImpl_1< DIMENSION >::new_names[4] = {
         std::string( "GeogramPointSetMesh" ), std::string( "GeogramLineMesh" ),
         std::string( "GeogramSurfaceMesh" ), std::string( "GeogramVolumeMesh" ) };
-
     template< index_t DIMENSION >
     class GeoModelBuilderGMImpl_2: public GeoModelBuilderGMImpl_1< DIMENSION > {
     public:
@@ -308,26 +312,9 @@ namespace RINGMesh {
                     MeshEntityType( file_line.field( 0 ) ) ) ) {
                     version_impl_[file_version_]->read_mesh_entity_line( file_line );
                 }
-                // Universe
-                else if( file_line.field_matches( 0, "Universe" ) ) {
-                    // Second line: signed indices of boundaries
-                    file_line.get_line();
-                    file_line.get_fields();
-                    for( index_t c : range( file_line.nb_fields() ) ) {
-                        bool side = false;
-                        if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
-                            side = true;
-                        }
-                        index_t s = NO_ID;
-                        GEO::String::from_string( &file_line.field( c )[1], s );
-
-                        this->topology.add_universe_boundary( s, side );
-                    }
-                }
             }
         }
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGM< DIMENSION >::load_file()
     {

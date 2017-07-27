@@ -40,6 +40,7 @@
 #include <vector>
 
 #include <ringmesh/basic/algorithm.h>
+
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
@@ -76,10 +77,16 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderBase;
     template< index_t DIMENSION > class GeoModelBuilder;
     template< index_t DIMENSION > class GeoModelBuilderGM;
-
 }
 
 namespace RINGMesh {
+
+    struct SurfaceSide {
+        SurfaceSide() = default;
+        std::vector< index_t > surfaces_;
+        std::vector< bool > sides_;
+    };
+
     /*!
      * @brief The class to describe a geological structural model represented
      * by its boundary surfaces and whose regions can be optionally meshed
@@ -125,7 +132,6 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( geological_entities( type ).size() );
         }
-
         /*!
          * @brief Returns the index of the geological entity type storage
          * @details Default value is NO_ID
@@ -141,7 +147,6 @@ namespace RINGMesh {
             return entity_type_manager_.geological_entity_manager.geological_entity_type(
                 index );
         }
-
         /*!
          * @brief Returns a const reference the identified GeoModelGeologicalEntity
          * @param[in] id Type and index of the entity.
@@ -152,7 +157,6 @@ namespace RINGMesh {
         {
             return *geological_entities( id.type() )[id.index()];
         }
-
         /*!
          * Convenient overload of entity( gmge_id id )
          */
@@ -162,14 +166,12 @@ namespace RINGMesh {
         {
             return geological_entity( gmge_id( entity_type, entity_index ) );
         }
-
         /*!
          * @brief Generic access to a meshed entity
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION
          */
         virtual const GeoModelMeshEntity< DIMENSION >& mesh_entity(
             gmme_id id ) const;
-
         /*!
          * Convenient overload of mesh_entity( gmme_id id )
          */
@@ -179,7 +181,6 @@ namespace RINGMesh {
         {
             return mesh_entity( gmme_id( entity_type, entity_index ) );
         }
-
         /*! @}
          * \name Specialized accessors.
          * @{
@@ -200,10 +201,6 @@ namespace RINGMesh {
         const Corner< DIMENSION >& corner( index_t index ) const;
         const Line< DIMENSION >& line( index_t index ) const;
         const Surface< DIMENSION >& surface( index_t index ) const;
-        const Universe< DIMENSION >& universe() const
-        {
-            return universe_;
-        }
 
         double epsilon() const;
 
@@ -226,6 +223,8 @@ namespace RINGMesh {
         {
             return wells_;
         }
+
+        virtual SurfaceSide get_voi_surfaces() const = 0;
 
     public:
         GeoModelMesh< DIMENSION > mesh;
@@ -280,11 +279,6 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > corners_;
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > lines_;
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > > surfaces_;
-
-        /*!
-         * The Universe defines the extension of the GeoModel
-         */
-        Universe< DIMENSION > universe_;
 
         /*!
          * @brief Geological entities. They are optional.
@@ -370,12 +364,35 @@ namespace RINGMesh {
         {
             return epsilon2() * epsilon();
         }
+        SurfaceSide get_voi_surfaces() const final;
     private:
         const std::vector< std::unique_ptr< GeoModelMeshEntity3D > >& mesh_entities(
             const MeshEntityType& type ) const override;
 
     private:
         std::vector< std::unique_ptr< GeoModelMeshEntity3D > > regions_;
+    };
+
+
+    template< >
+    class GeoModel< 2 > final: public GeoModelBase< 2 > {
+        friend class GeoModelAccess< 2 > ;
+    public:
+        GeoModel();
+
+        corner_range< 2 > corners() const
+        {
+            return corner_range< 2 >( *this );
+        }
+        line_range< 2 > lines() const
+        {
+            return line_range< 2 >( *this );
+        }
+        surface_range< 2 > surfaces() const
+        {
+            return surface_range< 2 >( *this );
+        }
+        SurfaceSide get_voi_surfaces() const final;
     };
 
     CLASS_DIMENSION_ALIASES( GeoModel );
@@ -447,11 +464,6 @@ namespace RINGMesh {
             return *modifiable_geological_entities( id.type() )[id.index()];
         }
 
-        Universe< DIMENSION >& modifiable_universe()
-        {
-            return geomodel_.universe_;
-        }
-
         double& modifiable_epsilon()
         {
             return geomodel_.epsilon_;
@@ -460,4 +472,5 @@ namespace RINGMesh {
     private:
         GeoModel< DIMENSION >& geomodel_;
     };
+
 }

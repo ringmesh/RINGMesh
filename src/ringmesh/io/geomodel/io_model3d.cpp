@@ -79,21 +79,23 @@ namespace {
 
     void save_universe(
         index_t count,
-        const Universe3D& universe,
+        const GeoModel3D& GM,
         std::ostream& out )
     {
-        out << "REGION " << count << "  " << universe.type_name() << " "
+        const SurfaceSide surface_region_sides = GM.get_voi_surfaces();
+
+        out << "REGION " << count << "  Universe "
             << EOL;
         index_t it = 0;
 
-        for( index_t i : range( universe.nb_boundaries() ) ) {
+        for( index_t i : range( surface_region_sides.surfaces_.size() ) ) {
             out << "  ";
-            if( universe.side( i ) ) {
+            if( surface_region_sides.sides_[ i ] ) {
                 out << "+";
             } else {
                 out << "-";
             }
-            out << universe.boundary_gmme( i ).index() + 1;
+            out << surface_region_sides.surfaces_[ i ] + 1;
             it++;
             if( it == 5 ) {
                 out << EOL;
@@ -269,7 +271,7 @@ namespace {
         }
         // Universe
         index_t offset_layer = count;
-        save_universe( count, geomodel.universe(), out );
+        save_universe( count, geomodel, out );
         ++count;
         // Regions
         for( const auto& region : geomodel.regions() ) {
@@ -426,6 +428,7 @@ namespace {
 
         void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
+
             std::ofstream out( filename.c_str() );
             save_gocad_model3d( geomodel, out );
             out << std::flush;
