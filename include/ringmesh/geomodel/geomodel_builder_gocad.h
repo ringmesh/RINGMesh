@@ -148,7 +148,7 @@ namespace RINGMesh {
         {
         }
     };
-    static Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& > gocad_factory;
+    extern Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& > gocad_factory;
 
     /*!
      * @brief Structure which maps the vertex indices in Gocad::TSolid to the
@@ -220,10 +220,9 @@ namespace RINGMesh {
             TSolidLoadingStorage& load_storage ) = 0;
     protected:
         TSolidLineParser( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel );
-    public:
-        static Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&,
-            GeoModel3D& > factory_;
     };
+    extern Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&,
+        GeoModel3D& > tsolid_factory;
 
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
@@ -301,9 +300,8 @@ namespace RINGMesh {
             MLLoadingStorage& load_storage ) = 0;
     protected:
         MLLineParser( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel );
-    public:
-        static Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > factory_;
     };
+    extern Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > ml_factory;
 
     /*!
      * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
