@@ -805,8 +805,7 @@ namespace {
         const std::vector< index_t >& non_manifold_edges )
     {
         GeogramLineMesh< DIMENSION > mesh;
-        GeogramLineMeshBuilder< DIMENSION > builder;
-        builder.configure_builder( mesh );
+        GeogramLineMeshBuilder< DIMENSION > builder( mesh );
         index_t nb_edges = static_cast< index_t >( non_manifold_edges.size() );
         builder.create_vertices( 2 * nb_edges );
         builder.create_edges( nb_edges );

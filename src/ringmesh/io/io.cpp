@@ -209,10 +209,8 @@ namespace RINGMesh {
     {
         auto handler = GeoModelIOHandlerFactory< DIMENSION >::create( format );
         if( !handler ) {
-            std::vector< std::string > names =
-                GeoModelIOHandlerFactory< DIMENSION >::list_creators();
             Logger::err( "I/O", "Currently supported file formats are: " );
-            for( const std::string& name : names ) {
+            for( const std::string& name : GeoModelIOHandlerFactory< DIMENSION >::list_creators() ) {
                 Logger::err( "I/O", " ", name );
             }
 
@@ -225,7 +223,7 @@ namespace RINGMesh {
     std::unique_ptr< GeoModelIOHandler< DIMENSION > > GeoModelIOHandler< DIMENSION >::get_handler(
         const std::string& filename )
     {
-        return create( GEO::FileSystem::extension( filename ) ) ;
+        return create( GEO::FileSystem::extension( filename ) );
     }
 
     template class RINGMESH_API GeoModelIOHandler< 2 > ;
