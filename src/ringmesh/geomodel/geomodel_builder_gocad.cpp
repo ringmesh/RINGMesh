@@ -1146,36 +1146,35 @@ namespace {
 
     void tsolid_import_factory_initialize()
     {
-        TSolidLineParser::factory_.register_creator< LoadRegion >( "TVOLUME" );
-        TSolidLineParser::factory_.register_creator< LoadTSolidVertex >( "VRTX" );
-        TSolidLineParser::factory_.register_creator< LoadTSolidVertex >( "PVRTX" );
-        TSolidLineParser::factory_.register_creator< LoadTSAtomic >( "ATOM" );
-        TSolidLineParser::factory_.register_creator< LoadTSAtomic >( "PATOM" );
-        TSolidLineParser::factory_.register_creator< LoadTetra >( "TETRA" );
-        TSolidLineParser::factory_.register_creator< LoadLastRegion >( "MODEL" );
-        TSolidLineParser::factory_.register_creator< LoadInterface >( "SURFACE" );
-        TSolidLineParser::factory_.register_creator< LoadSurface >( "TFACE" );
-        TSolidLineParser::factory_.register_creator< LoadLastSurface >( "END" );
+        tsolid_factory.register_creator< LoadRegion >( "TVOLUME" );
+        tsolid_factory.register_creator< LoadTSolidVertex >( "VRTX" );
+        tsolid_factory.register_creator< LoadTSolidVertex >( "PVRTX" );
+        tsolid_factory.register_creator< LoadTSAtomic >( "ATOM" );
+        tsolid_factory.register_creator< LoadTSAtomic >( "PATOM" );
+        tsolid_factory.register_creator< LoadTetra >( "TETRA" );
+        tsolid_factory.register_creator< LoadLastRegion >( "MODEL" );
+        tsolid_factory.register_creator< LoadInterface >( "SURFACE" );
+        tsolid_factory.register_creator< LoadSurface >( "TFACE" );
+        tsolid_factory.register_creator< LoadLastSurface >( "END" );
     }
 
     void ml_import_factory_initialize()
     {
-        MLLineParser::factory_.register_creator< LoadTSurf >( "TSURF" );
-        MLLineParser::factory_.register_creator< LoadMLSurface >( "TFACE" );
-        MLLineParser::factory_.register_creator< LoadMLRegion >( "REGION" );
-        MLLineParser::factory_.register_creator< LoadLayer >( "LAYER" );
-        MLLineParser::factory_.register_creator< MLEndSection >( "END" );
-        MLLineParser::factory_.register_creator< LoadMLAtom >( "ATOM" );
-        MLLineParser::factory_.register_creator< LoadMLAtom >( "PATOM" );
+        ml_factory.register_creator< LoadTSurf >( "TSURF" );
+        ml_factory.register_creator< LoadMLSurface >( "TFACE" );
+        ml_factory.register_creator< LoadMLRegion >( "REGION" );
+        ml_factory.register_creator< LoadLayer >( "LAYER" );
+        ml_factory.register_creator< MLEndSection >( "END" );
+        ml_factory.register_creator< LoadMLAtom >( "ATOM" );
+        ml_factory.register_creator< LoadMLAtom >( "PATOM" );
     }
-
 }
 
 namespace RINGMesh {
 
-//    Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& > gocad_factory;
-    Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > MLLineParser::factory_;
-    Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&, GeoModel3D& > TSolidLineParser::factory_;
+    Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& > gocad_factory;
+    Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > ml_factory;
+    Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&, GeoModel3D& > tsolid_factory;
 
     TSolidLineParser::TSolidLineParser(
         GeoModelBuilderTSolid& gm_builder,
@@ -1225,8 +1224,8 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::read_line()
     {
         std::string keyword = file_line_.field( 0 );
-        std::unique_ptr< TSolidLineParser > tsolid_parser =
-            TSolidLineParser::factory_.create( keyword, *this, geomodel_ );
+        std::unique_ptr< TSolidLineParser > tsolid_parser = tsolid_factory.create(
+            keyword, *this, geomodel_ );
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ );
         } else {
@@ -1311,7 +1310,7 @@ namespace RINGMesh {
     {
         std::string keyword = file_line_.field( 0 );
         std::unique_ptr< MLLineParser > tsolid_parser(
-            MLLineParser::factory_.create( keyword, *this, geomodel_ ) );
+            ml_factory.create( keyword, *this, geomodel_ ) );
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, ml_load_storage_ );
         } else {
