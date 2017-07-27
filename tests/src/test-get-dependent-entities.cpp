@@ -55,10 +55,9 @@ void check_element_of_a_set_are_in_another_set(
     if( to_compare != with ) {
         // To debug it is nice to know which entity fails...
         for( const GME& cur_gme_id : to_compare ) {
-            if( std::find( with.begin(), with.end(), cur_gme_id ) == with.end() ) {
-                throw RINGMeshException( "RINGMesh Test",
-                    std::string( cur_gme_id.type() ), " ", cur_gme_id.index(),
-                    " is not in the ", set_name, "." );
+            if( find( with.begin(), with.end(), cur_gme_id ) == with.end() ) {
+                throw RINGMeshException( "RINGMesh Test", cur_gme_id.type(), " ",
+                    cur_gme_id.index(), " is not in the ", set_name, "." );
             }
         }
         ringmesh_assert_not_reached;
