@@ -95,12 +95,12 @@ int main()
         default_configure();
         Logger::out( "TEST", "Test Factory" );
 
-        Factory< std::string, Base, A &, B& > factory;
-        factory.register_creator< Derived >( "Derived" );
+        using factory = Factory< std::string, Base, A &, B& >;
+        factory::register_creator< Derived >( "Derived" );
 
         A a;
         B b;
-        auto D = factory.create( "Derived", a, b );
+        auto D = factory::create( "Derived", a, b );
         verdict( !D, "Derived" );
 
     } catch( const RINGMeshException& e ) {
