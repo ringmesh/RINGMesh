@@ -178,12 +178,10 @@ namespace RINGMesh {
         WellGroupIOHandler() = default;
 
     private:
-        static WellGroupIOHandler* create( const std::string& format );
+        static std::unique_ptr< WellGroupIOHandler > create(
+            const std::string& format );
     };
-    using WellGroupIOHandlerFactory = GEO::Factory0< WellGroupIOHandler >;
-
-#define ringmesh_register_WellGroupIOHandler_creator( type, name ) \
-    geo_register_creator( WellGroupIOHandlerFactory, type, name )
+    using WellGroupIOHandlerFactory = Factory< std::string, WellGroupIOHandler >;
 
     /***************************************************************************/
 
@@ -204,9 +202,7 @@ namespace RINGMesh {
 
         static void initialize();
 
-        static StratigraphicColumnIOHandler* create( const std::string& format );
-
-        static StratigraphicColumnIOHandler* get_handler(
+        static std::unique_ptr< StratigraphicColumnIOHandler > get_handler(
             const std::string& filename );
 
         virtual void load(
@@ -221,10 +217,10 @@ namespace RINGMesh {
     protected:
         StratigraphicColumnIOHandler() = default;
 
-    };
-    typedef GEO::SmartPointer< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler_var;
-    typedef GEO::Factory0< StratigraphicColumnIOHandler > StratigraphicColumnIOHandlerFactory;
+    private:
+        static std::unique_ptr< StratigraphicColumnIOHandler > create(
+            const std::string& format );
 
-#define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
-		geo_register_creator( StratigraphicColumnIOHandlerFactory, type, name )
+    };
+    using StratigraphicColumnIOHandlerFactory = Factory< std::string, StratigraphicColumnIOHandler >;
 }
