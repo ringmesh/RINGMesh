@@ -42,8 +42,9 @@
 #include <zlib/zip.h>
 #include <zlib/unzip.h>
 
-#include <geogram/basic/factory.h>
 #include <geogram/basic/string.h>
+
+#include <ringmesh/basic/factory.h>
 
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
@@ -146,22 +147,16 @@ namespace RINGMesh {
             const std::string& filename ) = 0;
 
     private:
-        static GeoModelIOHandler* create( const std::string& format );
+        static std::unique_ptr< GeoModelIOHandler > create(
+            const std::string& format );
     };
 
     CLASS_DIMENSION_ALIASES( GeoModelIOHandler );
 
     template< index_t DIMENSION >
-    using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler< DIMENSION > >;
+    using GeoModelIOHandlerFactory = Factory< std::string, GeoModelIOHandler< DIMENSION > >;
 
-    using GeoModelIOHandlerFactory2D = GeoModelIOHandlerFactory< 2 >;
-    using GeoModelIOHandlerFactory3D = GeoModelIOHandlerFactory< 3 >;
-
-#define ringmesh_register_GeoModelIOHandler2D_creator( type, name ) \
-    geo_register_creator( GeoModelIOHandlerFactory2D, type, name )
-
-#define ringmesh_register_GeoModelIOHandler3D_creator( type, name ) \
-    geo_register_creator( GeoModelIOHandlerFactory3D, type, name )
+    CLASS_DIMENSION_ALIASES( GeoModelIOHandlerFactory );
 
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler {

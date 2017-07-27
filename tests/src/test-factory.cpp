@@ -79,9 +79,9 @@ public:
     }
 };
 
-void verdict( bool is_not_instantiated, std::string name )
+void verdict( bool is_instantiated, std::string name )
 {
-    if( is_not_instantiated ) {
+    if( !is_instantiated ) {
         throw RINGMeshException( "TEST", "Failed to instantiate the ", name,
             " class" );
     }
@@ -100,8 +100,8 @@ int main()
 
         A a;
         B b;
-        auto D = factory::create( "Derived", a, b );
-        verdict( !D, "Derived" );
+        auto d = factory::create( "Derived", a, b );
+        verdict( d != nullptr, "Derived" );
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
