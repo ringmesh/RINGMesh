@@ -43,16 +43,14 @@
 
 namespace RINGMesh {
 
-    ElementLocalVertex::ElementLocalVertex(
-        EdgeLocalVertex edge_local_vertex )
+    ElementLocalVertex::ElementLocalVertex( EdgeLocalVertex edge_local_vertex )
         :
             element_id_( std::move( edge_local_vertex.edge_id_ ) ),
             local_vertex_id_( std::move( edge_local_vertex.local_vertex_id_ ) )
     {
     }
 
-    ElementLocalVertex::ElementLocalVertex(
-        PolygonLocalEdge polygon_local_edge )
+    ElementLocalVertex::ElementLocalVertex( PolygonLocalEdge polygon_local_edge )
         :
             element_id_( std::move( polygon_local_edge.polygon_id_ ) ),
             local_vertex_id_( std::move( polygon_local_edge.local_edge_id_ ) )
@@ -74,17 +72,16 @@ namespace RINGMesh {
         if( new_type.empty() ) {
             new_type = GeogramPointSetMesh< DIMENSION >::type_name_static();
         }
-        PointSetMesh< DIMENSION >* mesh =
-            PointMeshFactory< DIMENSION >::create_object( new_type );
+        auto mesh = PointSetMeshFactory< DIMENSION >::create( new_type );
         if( !mesh ) {
             Logger::warn( "PointSetMesh", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "PointSetMesh",
                 "Falling back to GeogramPointSetMesh data structure" );
 
-            mesh = new GeogramPointSetMesh< DIMENSION >;
+            mesh.reset( new GeogramPointSetMesh< DIMENSION > );
         }
-        return std::unique_ptr< PointSetMesh< DIMENSION > >( mesh );
+        return mesh;
     }
 
     template< index_t DIMENSION >
@@ -95,17 +92,16 @@ namespace RINGMesh {
         if( new_type.empty() ) {
             new_type = GeogramLineMesh< DIMENSION >::type_name_static();
         }
-        LineMesh< DIMENSION >* mesh = LineMeshFactory< DIMENSION >::create_object(
-            new_type );
+        auto mesh = LineMeshFactory< DIMENSION >::create( new_type );
         if( !mesh ) {
             Logger::warn( "LineMesh", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "LineMesh",
                 "Falling back to GeogramLineMesh data structure" );
 
-            mesh = new GeogramLineMesh< DIMENSION >;
+            mesh.reset( new GeogramLineMesh< DIMENSION > );
         }
-        return std::unique_ptr< LineMesh< DIMENSION > >( mesh );
+        return mesh;
     }
 
     template< index_t DIMENSION >
@@ -116,17 +112,16 @@ namespace RINGMesh {
         if( new_type.empty() ) {
             new_type = GeogramSurfaceMesh< DIMENSION >::type_name_static();
         }
-        SurfaceMesh< DIMENSION > *mesh =
-            SurfaceMeshFactory< DIMENSION >::create_object( new_type );
+        auto mesh = SurfaceMeshFactory< DIMENSION >::create( new_type );
         if( !mesh ) {
             Logger::warn( "SurfaceMesh", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "SurfaceMesh",
                 "Falling back to GeogramSurfaceMesh data structure" );
 
-            mesh = new GeogramSurfaceMesh< DIMENSION >;
+            mesh.reset( new GeogramSurfaceMesh< DIMENSION > );
         }
-        return std::unique_ptr< SurfaceMesh< DIMENSION > >( mesh );
+        return mesh;
     }
 
     template< index_t DIMENSION >
@@ -214,8 +209,7 @@ namespace RINGMesh {
         } else if( nb_around == 1 ) {
             // v_id must be in two border edges of polygon p
             index_t v_in_next_polygon = vertex_index_in_polygon( prev_p, v_id );
-            prev_e =
-                prev_polygon_vertex(
+            prev_e = prev_polygon_vertex(
                 ElementLocalVertex( prev_p, v_in_next_polygon ) ).local_vertex_id_;
             ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         }
@@ -260,7 +254,8 @@ namespace RINGMesh {
     {
         ringmesh_assert( polygon_index < nb_polygons() );
         for( index_t v : range( nb_polygon_vertices( polygon_index ) ) ) {
-            if( polygon_vertex( ElementLocalVertex(polygon_index, v) ) == vertex_id ) {
+            if( polygon_vertex( ElementLocalVertex( polygon_index, v ) )
+                == vertex_id ) {
                 return v;
             }
         }
@@ -276,7 +271,9 @@ namespace RINGMesh {
         double dist = DBL_MAX;
         for( index_t v_id : range( nb_polygon_vertices( p ) ) ) {
             double distance = length2(
-                v - this->vertex( polygon_vertex( ElementLocalVertex(p, v_id) ) ) );
+                v
+                    - this->vertex(
+                        polygon_vertex( ElementLocalVertex( p, v_id ) ) ) );
             if( dist > distance ) {
                 dist = distance;
                 result = v_id;
@@ -323,8 +320,8 @@ namespace RINGMesh {
                 if( polygon_vertex( ElementLocalVertex( p, v ) )
                     == surf_vertex_id ) {
                     index_t adj_P = polygon_adjacent( PolygonLocalEdge( p, v ) );
-                    index_t prev = prev_polygon_vertex(
-                        ElementLocalVertex( p, v ) ).local_vertex_id_;
+                    index_t prev =
+                        prev_polygon_vertex( ElementLocalVertex( p, v ) ).local_vertex_id_;
                     index_t adj_prev = polygon_adjacent(
                         PolygonLocalEdge( p, prev ) );
 
@@ -368,17 +365,16 @@ namespace RINGMesh {
         if( new_type.empty() ) {
             new_type = GeogramVolumeMesh< DIMENSION >::type_name_static();
         }
-        VolumeMesh< DIMENSION >* mesh =
-            VolumeMeshFactory< DIMENSION >::create_object( new_type );
+        auto mesh = VolumeMeshFactory< DIMENSION >::create( new_type );
         if( !mesh ) {
             Logger::warn( "VolumeMesh", "Could not create mesh data structure: ",
                 new_type );
             Logger::warn( "VolumeMesh",
                 "Falling back to GeogramVolumeMesh data structure" );
 
-            mesh = new GeogramVolumeMesh< DIMENSION >;
+            mesh.reset( new GeogramVolumeMesh< DIMENSION > );
         }
-        return std::unique_ptr< VolumeMesh< DIMENSION > >( mesh );
+        return mesh;
     }
 
     template< index_t DIMENSION >
@@ -391,8 +387,8 @@ namespace RINGMesh {
         if( cell_hint == NO_ID ) {
             const vecn< DIMENSION > cur_vec = this->vertex( vertex_id );
             index_t cell_vertex_not_used = NO_ID;
-            bool found = find_cell_from_colocated_vertex_within_distance_if_any( cur_vec, global_epsilon, cell_hint,
-                cell_vertex_not_used );
+            bool found = find_cell_from_colocated_vertex_within_distance_if_any(
+                cur_vec, global_epsilon, cell_hint, cell_vertex_not_used );
             if( !found ) {
                 return result;
             }
