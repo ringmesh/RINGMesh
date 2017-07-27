@@ -573,7 +573,6 @@ namespace {
             get_one_line_vertices( backward );
             backward = true;
             get_one_line_vertices( backward );
-
         }
         /*!
          * @brief Gets the geometry of a line propagating in a given direction

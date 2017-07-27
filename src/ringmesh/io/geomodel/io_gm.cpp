@@ -424,7 +424,6 @@ namespace {
                 > builder( geomodel, GEO::FileSystem::base_name( filename, false ) );
             builder.build_geomodel();
             GEO::FileSystem::set_current_working_directory( pwd );
-
         }
         void save(
             const GeoModel< DIMENSION >& geomodel,

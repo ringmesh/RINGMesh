@@ -207,11 +207,9 @@ namespace RINGMesh {
             if( GEO::String::string_starts_with( mesh_type, "Geogram" ) ) {
                 this->builder_.geometry.change_mesh_data_structure( entity,
                     old_2_new_name( mesh_type ) );
-
             } else {
                 this->builder_.geometry.change_mesh_data_structure( entity,
                     mesh_type );
-
             }
 
             this->read_second_line( file_line, entity );

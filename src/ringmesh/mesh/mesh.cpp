@@ -122,7 +122,7 @@ namespace RINGMesh {
     {
         std::vector< index_t > components( nb_edges(), NO_ID );
         index_t nb_components = 0;
-        for( index_t edge = 0; edge < nb_edges(); edge++ ) {
+        for( index_t edge : range( nb_edges() ) ) {
             if( components[edge] == NO_ID ) {
                 std::stack< index_t > S;
                 S.push( edge );
@@ -130,7 +130,7 @@ namespace RINGMesh {
                 do {
                     index_t cur_edge = S.top();
                     S.pop();
-                    for( index_t vertex = 0; vertex < 2; vertex++ ) {
+                    for( index_t vertex : range( 2 ) ) {
                         index_t adj_edge = edge_vertex(
                             ElementLocalVertex( cur_edge, vertex ) );
                         if( adj_edge != NO_ID && components[adj_edge] == NO_ID ) {
@@ -400,7 +400,7 @@ namespace RINGMesh {
     {
         std::vector< index_t > components( nb_polygons(), NO_ID );
         index_t nb_components = 0;
-        for( index_t polygon = 0; polygon < nb_polygons(); polygon++ ) {
+        for( index_t polygon : range( nb_polygons() ) ) {
             if( components[polygon] == NO_ID ) {
                 std::stack< index_t > S;
                 S.push( polygon );
@@ -408,8 +408,7 @@ namespace RINGMesh {
                 do {
                     index_t cur_polygon = S.top();
                     S.pop();
-                    for( index_t edge = 0; edge < nb_polygon_vertices( cur_polygon );
-                        edge++ ) {
+                    for( index_t edge : range( nb_polygon_vertices( cur_polygon ) ) ) {
                         index_t adj_polygon = polygon_adjacent(
                             PolygonLocalEdge( cur_polygon, edge ) );
                         if( adj_polygon != NO_ID
@@ -451,7 +450,7 @@ namespace RINGMesh {
     {
         std::vector< index_t > components( nb_cells(), NO_ID );
         index_t nb_components = 0;
-        for( index_t cell = 0; cell < nb_cells(); cell++ ) {
+        for( index_t cell : range( nb_cells() ) ) {
             if( components[cell] == NO_ID ) {
                 std::stack< index_t > S;
                 S.push( cell );
@@ -459,8 +458,7 @@ namespace RINGMesh {
                 do {
                     index_t cur_cell = S.top();
                     S.pop();
-                    for( index_t facet = 0; facet < nb_cell_facets( cur_cell );
-                        facet++ ) {
+                    for( index_t facet : range( nb_cell_facets( cur_cell ) ) ) {
                         index_t adj_cell = cell_adjacent(
                             CellLocalFacet( cur_cell, facet ) );
                         if( adj_cell != NO_ID && components[adj_cell] == NO_ID ) {
@@ -518,9 +516,9 @@ namespace RINGMesh {
                 continue;
             }
 
-            for( index_t f = 0; f < nb_cell_facets( c ); f++ ) {
-                for( index_t v = 0;
-                    v < nb_cell_facet_vertices( CellLocalFacet( c, f ) ); v++ ) {
+            for( index_t f : range( nb_cell_facets( c ) ) ) {
+                for( index_t v : range(
+                    nb_cell_facet_vertices( CellLocalFacet( c, f ) ) ) ) {
                     index_t vertex = cell_facet_vertex( CellLocalFacet( c, f ), v );
                     if( vertex == vertex_id ) {
                         index_t adj_P = cell_adjacent( CellLocalFacet( c, f ) );

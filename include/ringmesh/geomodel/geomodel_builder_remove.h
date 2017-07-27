@@ -179,9 +179,7 @@ namespace RINGMesh {
                 index_t size = geomodel_.nb_geological_entities(
                     index_to_geological_entity_type( i ) );
                 old_2_new_geological_entity_[i].resize( size, 0 );
-
                 nb_childs_[i].resize( size, 0 );
-
             }
 
         }

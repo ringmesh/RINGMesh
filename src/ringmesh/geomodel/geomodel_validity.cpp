@@ -1064,7 +1064,7 @@ namespace {
 
             std::vector< vecn< DIMENSION > > all_points;
             all_points.reserve( geomodelmesh_vertices.nb() );
-            for( index_t v_i = 0; v_i < geomodelmesh_vertices.nb(); ++v_i ) {
+            for( index_t v_i :range(geomodelmesh_vertices.nb()) ) {
                 all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
             }
 
@@ -1078,26 +1078,22 @@ namespace {
                 static_cast< index_t >( all_points.size() ) );
             ringmesh_unused( start );
             ringmesh_assert( start == 0 );
-            for( index_t v_i = 0; v_i < all_points.size(); ++v_i ) {
+            for( index_t v_i : range( all_points.size() ) ) {
                 builder->set_vertex( v_i, all_points[v_i] );
             }
 
             SurfaceSide voi_surfaces = geomodel_.get_voi_surfaces();
             const GeoModelMeshPolygons< DIMENSION >& geomodelmesh_polygons =
                 geomodelmesh.polygons;
-            for( index_t polygon_i = 0; polygon_i < geomodelmesh_polygons.nb();
-                ++polygon_i ) {
+            for( index_t polygon_i : range( geomodelmesh_polygons.nb() ) ) {
 
                 const index_t cur_surface_id = geomodelmesh_polygons.surface(
                     polygon_i );
-                if( std::find( voi_surfaces.surfaces_.begin(),
-                    voi_surfaces.surfaces_.end(), cur_surface_id )
-                    != voi_surfaces.surfaces_.end() ) {
+                if( contains( voi_surfaces.surfaces_, cur_surface_id ) ) {
                     std::vector< index_t > polygon_vertices(
                         geomodelmesh_polygons.nb_vertices( polygon_i ) );
-                    for( index_t v_i = 0;
-                        v_i < geomodelmesh_polygons.nb_vertices( polygon_i );
-                        ++v_i ) {
+                    for( index_t v_i : range(
+                        geomodelmesh_polygons.nb_vertices( polygon_i ) ) ) {
                         polygon_vertices[v_i] = geomodelmesh_polygons.vertex(
                             ElementLocalVertex( polygon_i, v_i ) );
                     }
@@ -1105,8 +1101,8 @@ namespace {
                 }
             }
 
-            for( index_t p = 0; p < surface->nb_polygons(); p++ ) {
-                for( index_t v = 0; v < surface->nb_polygon_vertices( p ); v++ ) {
+            for( index_t p : range( surface->nb_polygons() ) ) {
+                for( index_t v : range( surface->nb_polygon_vertices( p ) ) ) {
                     builder->set_polygon_adjacent( p, v, NO_ID );
                 }
             }
