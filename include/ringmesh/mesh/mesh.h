@@ -128,7 +128,7 @@ namespace RINGMesh {
      * @note For now, we encapsulate the GEO::Mesh class.
      */
     template< index_t DIMENSION >
-    class MeshBase: public GEO::Counted {
+    class MeshBase {
     ringmesh_disable_copy( MeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class MeshBaseBuilder< DIMENSION > ;

@@ -365,6 +365,7 @@ namespace RINGMesh {
             }
         }
     }
+
     template< index_t DIMENSION >
     void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::toggle_mesh_entity_and_boundaries_visibility(
         const gmme_id& entity_id )
@@ -1373,6 +1374,7 @@ namespace RINGMesh {
                     if( geomodels.empty() ) {
                         current_viewer_type_ = ViewerType::NONE;
                     }
+                    break;
                 }
                 ImGui::PopID();
             }
@@ -1408,6 +1410,7 @@ namespace RINGMesh {
                     if( meshes_.empty() ) {
                         current_viewer_type_ = ViewerType::NONE;
                     }
+                    break;
                 }
                 ImGui::PopID();
             }

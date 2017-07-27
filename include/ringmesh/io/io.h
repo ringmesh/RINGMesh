@@ -113,13 +113,11 @@ namespace RINGMesh {
     index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
 
     template< index_t DIMENSION >
-    class GeoModelIOHandler: public GEO::Counted {
+    class GeoModelIOHandler {
     public:
         virtual ~GeoModelIOHandler() = default;
 
-        static void initialize_full_geomodel_output();
-
-        static void initialize_boundary_geomodel_output();
+        static void initialize();
 
         static std::unique_ptr< GeoModelIOHandler< DIMENSION > > get_handler(
             const std::string& filename );
@@ -166,7 +164,7 @@ namespace RINGMesh {
     geo_register_creator( GeoModelIOHandlerFactory3D, type, name )
 
     /***************************************************************************/
-    class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
+    class RINGMESH_API WellGroupIOHandler {
     public:
         virtual ~WellGroupIOHandler() = default;
 
@@ -205,7 +203,7 @@ namespace RINGMesh {
         const char filename[MAX_FILENAME] );
 
     /*********************************************************************************************/
-    class RINGMESH_API StratigraphicColumnIOHandler: public GEO::Counted {
+    class RINGMESH_API StratigraphicColumnIOHandler {
     public:
         virtual ~StratigraphicColumnIOHandler() = default;
 
