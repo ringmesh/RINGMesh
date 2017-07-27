@@ -50,19 +50,22 @@ void test_triangle_barycentric_coordinates()
     vec3 p1( 1, 0, 0 );
     vec3 p2( 0, 1, 0 );
 
-    double lambda[3];
-    triangle_barycentric_coordinates( vec3( 0.25, 0.25, 0 ), p0, p1, p2, lambda );
-    if( lambda[0] != 0.5 || lambda[1] != 0.25 || lambda[2] != 0.25 ) {
+    std::array< double, 3 > lambdas;
+    std::tie( std::ignore, lambdas ) = triangle_barycentric_coordinates(
+        vec3( 0.25, 0.25, 0 ), p0, p1, p2 );
+    if( lambdas[0] != 0.5 || lambdas[1] != 0.25 || lambdas[2] != 0.25 ) {
         throw RINGMeshException( "TEST",
             "Error in triangle barycentric coordinates" );
     }
-    triangle_barycentric_coordinates( vec3( 0.5, 0.5, 0 ), p0, p1, p2, lambda );
-    if( lambda[0] != 0 || lambda[1] != 0.5 || lambda[2] != 0.5 ) {
+    std::tie( std::ignore, lambdas ) = triangle_barycentric_coordinates(
+        vec3( 0.5, 0.5, 0 ), p0, p1, p2 );
+    if( lambdas[0] != 0 || lambdas[1] != 0.5 || lambdas[2] != 0.5 ) {
         throw RINGMeshException( "TEST",
             "Error in triangle barycentric coordinates" );
     }
-    triangle_barycentric_coordinates( vec3( 1, 1, 0 ), p0, p1, p2, lambda );
-    if( lambda[0] != -1 || lambda[1] != 1 || lambda[2] != 1 ) {
+    std::tie( std::ignore, lambdas ) = triangle_barycentric_coordinates(
+        vec3( 1, 1, 0 ), p0, p1, p2 );
+    if( lambdas[0] != -1 || lambdas[1] != 1 || lambdas[2] != 1 ) {
         throw RINGMeshException( "TEST",
             "Error in triangle barycentric coordinates" );
     }
@@ -75,8 +78,7 @@ void test_point_plane_projection()
     vec3 test0( 1, 1, 1 );
     vec3 N0( 0, 0, 2 );
     vec3 O0( 0, 0, 0 );
-    vec3 projected0;
-    point_plane_projection( test0, N0, O0, projected0 );
+    vec3 projected0 = point_plane_projection( test0, N0, O0 );
     if( projected0 != vec3( 1, 1, 0 ) ) {
         throw RINGMeshException( "TEST", "Error in point plane projection" );
     }
@@ -84,8 +86,7 @@ void test_point_plane_projection()
     vec3 test1( 0, 0.5, 1 );
     vec3 N1( 1, 0, 0 );
     vec3 O1( 1, 1, 1 );
-    vec3 projected1;
-    point_plane_projection( test1, N1, O1, projected1 );
+    vec3 projected1 = point_plane_projection( test1, N1, O1 );
     if( projected1 != vec3( 1, 0.5, 1 ) ) {
         throw RINGMeshException( "TEST", "Error in point plane projection" );
     }

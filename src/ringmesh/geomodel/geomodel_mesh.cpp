@@ -116,8 +116,10 @@ namespace {
         std::vector< index_t > facets;
         facets.reserve( mesh.nb_cell_facets( cell ) );
         for( index_t f : range( mesh.nb_cell_facets( cell ) ) ) {
-            for( index_t v : range( mesh.nb_cell_facet_vertices( cell, f ) ) ) {
-                if( mesh.cell_facet_vertex( cell, f, v ) == vertex_id ) {
+            for( index_t v : range(
+                mesh.nb_cell_facet_vertices( CellLocalFacet( cell, f ) ) ) ) {
+                if( mesh.cell_facet_vertex( CellLocalFacet( cell, f ), v )
+                    == vertex_id ) {
                     facets.push_back( f );
                     break;
                 }
@@ -145,7 +147,7 @@ namespace RINGMesh {
     GeoModelMeshCommon< DIMENSION >::GeoModelMeshCommon(
         GeoModelMesh< DIMENSION >& gmm,
         GeoModel< DIMENSION >& gm )
-        : gmm_( gmm ), gm_( gm ), mesh_base_( nullptr )
+        : gmm_( gmm ), geomodel_( gm ), mesh_base_( nullptr )
     {
     }
 
@@ -461,10 +463,10 @@ namespace RINGMesh {
     index_t GeoModelMeshVerticesBase< DIMENSION >::nb_total_vertices() const
     {
         index_t nb = 0;
-        nb += nb_entity_vertices( this->gm_,
+        nb += nb_entity_vertices( this->geomodel_,
             Corner< DIMENSION >::type_name_static() );
-        nb += nb_entity_vertices( this->gm_, Line< DIMENSION >::type_name_static() );
-        nb += nb_entity_vertices( this->gm_,
+        nb += nb_entity_vertices( this->geomodel_, Line< DIMENSION >::type_name_static() );
+        nb += nb_entity_vertices( this->geomodel_,
             Surface< DIMENSION >::type_name_static() );
         return nb;
     }
@@ -500,11 +502,11 @@ namespace RINGMesh {
     index_t GeoModelMeshVerticesBase< DIMENSION >::fill_vertices()
     {
         index_t count = 0;
-        fill_vertices_for_entity_type( this->gm_,
+        fill_vertices_for_entity_type( this->geomodel_,
             Corner< DIMENSION >::type_name_static(), count );
-        fill_vertices_for_entity_type( this->gm_,
+        fill_vertices_for_entity_type( this->geomodel_,
             Line< DIMENSION >::type_name_static(), count );
-        fill_vertices_for_entity_type( this->gm_,
+        fill_vertices_for_entity_type( this->geomodel_,
             Surface< DIMENSION >::type_name_static(), count );
         return count;
     }
@@ -558,7 +560,7 @@ namespace RINGMesh {
         test_and_initialize();
         const NNSearch< DIMENSION >& colocator = mesh_->vertex_nn_search();
         std::vector< index_t > vertices = colocator.get_neighbors( p,
-            this->gm_.epsilon() );
+            this->geomodel_.epsilon() );
         if( vertices.empty() ) {
             return NO_ID;
         } else {
@@ -580,12 +582,11 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     index_t GeoModelMeshVerticesBase< DIMENSION >::geomodel_vertex_id(
         const gmme_id& mesh_entity,
-        index_t entity_mesh_element_index,
-        index_t vertex_local_index ) const
+        const ElementLocalVertex& element_local_vertex ) const
     {
         index_t entity_vertex_index =
-            this->gm_.mesh_entity( mesh_entity ).mesh_element_vertex_index(
-                entity_mesh_element_index, vertex_local_index );
+            this->geomodel_.mesh_entity( mesh_entity ).mesh_element_vertex_index(
+                element_local_vertex );
         return geomodel_vertex_id( mesh_entity, entity_vertex_index );
     }
 
@@ -655,7 +656,7 @@ namespace RINGMesh {
             PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         mesh_builder->set_vertex( v, point );
 
-        GeoModelBuilder< DIMENSION > builder( this->gm_ );
+        GeoModelBuilder< DIMENSION > builder( this->geomodel_ );
 
         const std::vector< GMEVertex >& gme_v = gme_vertices( v );
         for( const GMEVertex& info : gme_v ) {
@@ -685,10 +686,11 @@ namespace RINGMesh {
             return;
         }
         // Identify and invalidate colocated vertices
+        index_t nb_colocalised_vertices = NO_ID;
         std::vector< index_t > old2new;
-        index_t nb_colocalised_vertices =
+        std::tie( nb_colocalised_vertices, old2new ) =
             mesh_->vertex_nn_search().get_colocated_index_mapping(
-                this->gm_.epsilon(), old2new );
+                this->geomodel_.epsilon() );
         if( nb_colocalised_vertices > 0 ) {
             erase_vertices( old2new );
         }
@@ -754,9 +756,9 @@ namespace RINGMesh {
     }
 
     GeoModelMeshVertices< 3 >::GeoModelMeshVertices(
-        GeoModelMesh< 3 >& gmm,
-        GeoModel< 3 >& gm,
-        std::unique_ptr< PointSetMesh< 3 > >& mesh )
+        GeoModelMesh3D& gmm,
+        GeoModel3D& gm,
+        std::unique_ptr< PointSetMesh3D >& mesh )
         : GeoModelMeshVerticesBase< 3 >( gmm, gm, mesh )
     {
     }
@@ -764,20 +766,20 @@ namespace RINGMesh {
     void GeoModelMeshVertices< 3 >::clear()
     {
         this->gmm_.cells.clear();
-        GeoModelMeshVerticesBase< 3 >::clear();
+        GeoModelMeshVerticesBase3D::clear();
     }
 
     index_t GeoModelMeshVertices< 3 >::nb_total_vertices() const
     {
-        index_t nb = GeoModelMeshVerticesBase< 3 >::nb_total_vertices();
-        nb += nb_entity_vertices( this->gm_, Region< 3 >::type_name_static() );
+        index_t nb = GeoModelMeshVerticesBase3D::nb_total_vertices();
+        nb += nb_entity_vertices( this->geomodel_, Region3D::type_name_static() );
         return nb;
     }
 
     index_t GeoModelMeshVertices< 3 >::fill_vertices()
     {
-        index_t count = GeoModelMeshVerticesBase< 3 >::fill_vertices();
-        fill_vertices_for_entity_type( this->gm_, Region< 3 >::type_name_static(),
+        index_t count = GeoModelMeshVerticesBase3D::fill_vertices();
+        fill_vertices_for_entity_type( this->geomodel_, Region3D::type_name_static(),
             count );
         return count;
     }
@@ -785,15 +787,14 @@ namespace RINGMesh {
     template< >
     GeoModelMeshVerticesBase< 3 >::GeoModelVertexMapper::GeoModelVertexMapper(
         GeoModelMeshVerticesBase& geomodel_vertices,
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
         : geomodel_vertices_( geomodel_vertices ), geomodel_( geomodel )
     {
-        vertex_maps_[Corner< 3 >::type_name_static()] = &corner_vertex_maps_;
-        vertex_maps_[Line< 3 >::type_name_static()] = &line_vertex_maps_;
-        vertex_maps_[Surface< 3 >::type_name_static()] = &surface_vertex_maps_;
-        vertex_maps_[Region< 3 >::type_name_static()] = &region_vertex_maps_;
+        vertex_maps_[Corner3D::type_name_static()] = &corner_vertex_maps_;
+        vertex_maps_[Line3D::type_name_static()] = &line_vertex_maps_;
+        vertex_maps_[Surface3D::type_name_static()] = &surface_vertex_maps_;
+        vertex_maps_[Region3D::type_name_static()] = &region_vertex_maps_;
     }
-
     /*******************************************************************************/
 
     template< index_t DIMENSION >
@@ -839,14 +840,15 @@ namespace RINGMesh {
         }
 
         region_cell_ptr_.resize(
-            this->gm_.nb_regions() * to_underlying_type( CellType::UNDEFINED ) + 1,
+            this->geomodel_.nb_regions() * to_underlying_type( CellType::UNDEFINED ) + 1,
             0 );
 
         // Total number of  cells
         std::vector< index_t > nb_cells_per_type(
             to_underlying_type( CellType::UNDEFINED ), 0 );
         index_t nb = 0;
-        for( const auto& region : this->gm_.regions() ) {
+
+        for( const auto& region : this->geomodel_.regions() ) {
             nb += region.nb_mesh_elements();
         }
 
@@ -856,7 +858,7 @@ namespace RINGMesh {
         }
 
         // Compute the number of cell per type and per region
-        for( const auto& region : this->gm_.regions() ) {
+        for( const auto& region : this->geomodel_.regions() ) {
             index_t r = region.index();
             for( index_t c : range( region.nb_mesh_elements() ) ) {
                 CellType cur_cell_type = region.cell_type( c );
@@ -918,15 +920,16 @@ namespace RINGMesh {
             to_underlying_type( CellType::UNDEFINED ), 0 );
         const GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices =
             this->gmm_.vertices;
-        for( const auto& region : this->gm_.regions() ) {
+        for( const auto& region : this->geomodel_.regions() ) {
             for( index_t c : range( region.nb_mesh_elements() ) ) {
                 CellType cur_cell_type = region.cell_type( c );
                 index_t cur_cell = cells_offset_per_type[to_underlying_type(
                     cur_cell_type )]
                     + cur_cell_per_type[to_underlying_type( cur_cell_type )]++;
                 for( index_t v : range( mesh_->nb_cell_vertices( cur_cell ) ) ) {
-                    index_t region_vertex_index = region.mesh_element_vertex_index(
-                        c, v );
+                    index_t region_vertex_index =
+                        region.mesh_element_vertex_index(
+                            ElementLocalVertex( c, v ) );
                     index_t global_vertex_id = geomodel_vertices.geomodel_vertex_id(
                         region.gmme(), region_vertex_index );
                     mesh_builder->set_cell_vertex( cur_cell, v, global_vertex_id );
@@ -996,12 +999,15 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshCells< DIMENSION >::vertex( index_t c, index_t v ) const
+    index_t GeoModelMeshCells< DIMENSION >::vertex(
+        const ElementLocalVertex& cell_local_vertex ) const
     {
         test_and_initialize();
-        ringmesh_assert( c < mesh_->nb_cells() );
-        ringmesh_assert( v < mesh_->nb_cell_vertices( c ) );
-        return mesh_->cell_vertex( c, v );
+        ringmesh_assert( cell_local_vertex.element_id_ < mesh_->nb_cells() );
+        ringmesh_assert(
+            cell_local_vertex.local_vertex_id_
+                < mesh_->nb_cell_vertices( cell_local_vertex.element_id_ ) );
+        return mesh_->cell_vertex( cell_local_vertex );
     }
 
     template< index_t DIMENSION >
@@ -1022,25 +1028,27 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     index_t GeoModelMeshCells< DIMENSION >::nb_facet_vertices(
-        index_t c,
-        index_t lf ) const
+        const CellLocalFacet& cell_local_facet ) const
     {
         test_and_initialize();
-        ringmesh_assert( c < mesh_->nb_cells() );
-        ringmesh_assert( lf < mesh_->nb_cell_facets( c ) );
-        return mesh_->nb_cell_facet_vertices( c, lf );
+        ringmesh_assert( cell_local_facet.cell_id_ < mesh_->nb_cells() );
+        ringmesh_assert(
+            cell_local_facet.local_facet_id_
+                < mesh_->nb_cell_facets( cell_local_facet.cell_id_ ) );
+        return mesh_->nb_cell_facet_vertices( cell_local_facet );
     }
 
     template< index_t DIMENSION >
     index_t GeoModelMeshCells< DIMENSION >::facet_vertex(
-        index_t c,
-        index_t lf,
+        const CellLocalFacet& cell_local_facet,
         index_t lv ) const
     {
         test_and_initialize();
-        ringmesh_assert( c < mesh_->nb_cells() );
-        ringmesh_assert( lf < mesh_->nb_cell_facets( c ) );
-        return mesh_->cell_facet_vertex( c, lf, lv );
+        ringmesh_assert( cell_local_facet.cell_id_ < mesh_->nb_cells() );
+        ringmesh_assert(
+            cell_local_facet.local_facet_id_
+                < mesh_->nb_cell_facets( cell_local_facet.cell_id_ ) );
+        return mesh_->cell_facet_vertex( cell_local_facet, lv );
     }
 
     template< index_t DIMENSION >
@@ -1060,7 +1068,7 @@ namespace RINGMesh {
         test_and_initialize();
         ringmesh_assert( c < mesh_->nb_cells() );
         ringmesh_assert( f < mesh_->nb_cell_facets( c ) );
-        return mesh_->cell_adjacent( c, f );
+        return mesh_->cell_adjacent( CellLocalFacet( c, f ) );
     }
 
     template< index_t DIMENSION >
@@ -1132,7 +1140,7 @@ namespace RINGMesh {
                     region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
                         * ( r + 1 )]
                         - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
-                            * r] == this->gm_.region( r ).nb_mesh_elements() );
+                            * r] == this->geomodel_.region( r ).nb_mesh_elements() );
                 return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED )
                     * ( r + 1 )]
                     - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r];
@@ -1180,7 +1188,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_tet( index_t r ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + ( to_underlying_type( CellType::TETRAHEDRON ) + 1 )]
             - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
@@ -1191,7 +1199,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::tet( index_t r, index_t t ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + to_underlying_type( CellType::TETRAHEDRON )] + t;
     }
@@ -1207,7 +1215,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_hex( index_t r ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + ( to_underlying_type( CellType::HEXAHEDRON ) + 1 )]
             - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
@@ -1218,7 +1226,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::hex( index_t r, index_t h ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + to_underlying_type( CellType::HEXAHEDRON )] + h;
     }
@@ -1234,7 +1242,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_prism( index_t r ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + ( to_underlying_type( CellType::PRISM ) + 1 )]
             - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
@@ -1245,7 +1253,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::prism( index_t r, index_t p ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + to_underlying_type( CellType::PRISM )] + p;
     }
@@ -1261,7 +1269,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_pyramid( index_t r ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + ( to_underlying_type( CellType::PYRAMID ) + 1 )]
             - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
@@ -1272,7 +1280,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::pyramid( index_t r, index_t p ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + to_underlying_type( CellType::PYRAMID )] + p;
     }
@@ -1288,7 +1296,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_connector( index_t r ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + ( to_underlying_type( CellType::UNCLASSIFIED ) + 1 )]
             - region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
@@ -1299,7 +1307,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::connector( index_t r, index_t c ) const
     {
         test_and_initialize();
-        ringmesh_assert( r < this->gm_.nb_regions() );
+        ringmesh_assert( r < this->geomodel_.nb_regions() );
         return region_cell_ptr_[to_underlying_type( CellType::UNDEFINED ) * r
             + to_underlying_type( CellType::UNCLASSIFIED )] + c;
     }
@@ -1331,23 +1339,23 @@ namespace RINGMesh {
             index_t begin = mesh_->cell_begin( c );
             for( index_t v : range( mesh_->nb_cell_vertices( c ) ) ) {
                 corner_vertices[begin + v] = mesh_->vertex(
-                    mesh_->cell_vertex( c, v ) );
+                    mesh_->cell_vertex( ElementLocalVertex( c, v ) ) );
             }
         }
 
         /// 2. Tag all corners to duplicate (vertices on a surface to duplicate)
-        std::vector< ActionOnSurface > actions_on_surfaces( this->gm_.nb_surfaces(),
+        std::vector< ActionOnSurface > actions_on_surfaces( this->geomodel_.nb_surfaces(),
             SKIP );
         std::vector< bool > is_vertex_to_duplicate( corner_vertices.size(), false );
         {
             NNSearch< DIMENSION > nn_search( corner_vertices, false );
-            for( const auto& surface : this->gm_.surfaces() ) {
+            for( const auto& surface : this->geomodel_.surfaces() ) {
                 if( !is_surface_to_duplicate( surface.index() ) ) continue;
                 actions_on_surfaces[surface.index()] = TO_PROCESS;
                 for( index_t v : range( surface.nb_vertices() ) ) {
                     std::vector< index_t > colocated_corners =
                         nn_search.get_neighbors( surface.vertex( v ),
-                            this->gm_.epsilon() );
+                            this->geomodel_.epsilon() );
                     for( index_t co : colocated_corners ) {
                         is_vertex_to_duplicate[co] = true;
                     }
@@ -1375,7 +1383,7 @@ namespace RINGMesh {
 
                 // Propagate on the cells around the corresponding vertex.
                 // The propagation process cannot cross any surface.
-                index_t vertex_id = mesh_->cell_vertex( c, v );
+                index_t vertex_id = mesh_->cell_vertex( ElementLocalVertex( c, v ) );
 
                 // all the cell corners resulting of the propagation
                 std::vector< index_t > corner_used;
@@ -1419,7 +1427,8 @@ namespace RINGMesh {
                             // The cell facet is not on a surface.
                             // Add the adjacent cell to the stack if it exists
                             // and has not already been processed or added into the stack
-                            index_t cur_adj = mesh_->cell_adjacent( cur_c, cur_f );
+                            index_t cur_adj = mesh_->cell_adjacent(
+                                CellLocalFacet( cur_c, cur_f ) );
                             if( cur_adj != GEO::NO_CELL
                                 && !contains( cell_added, cur_adj ) ) {
                                 cell_added.push_back( cur_adj );
@@ -1468,10 +1477,11 @@ namespace RINGMesh {
         bool& side ) const
     {
         test_and_initialize_cell_facet();
-        polygon = polygon_id_[mesh_->cell_facet( c, f )];
+        polygon = polygon_id_[mesh_->cell_facet( CellLocalFacet( c, f ) )];
         if( polygon != NO_ID ) {
             vec3 facet_normal = this->gmm_.polygons.normal( polygon );
-            vec3 cell_facet_normal = mesh_->cell_facet_normal( c, f );
+            vec3 cell_facet_normal = mesh_->cell_facet_normal(
+                CellLocalFacet( c, f ) );
             side = dot( facet_normal, cell_facet_normal ) > 0;
         }
         return polygon != NO_ID;
@@ -1526,7 +1536,7 @@ namespace RINGMesh {
     bool GeoModelMeshCells< DIMENSION >::is_surface_to_duplicate(
         index_t surface_id ) const
     {
-        const Surface< DIMENSION >& cur_surface = this->gm_.surface( surface_id );
+        const Surface< DIMENSION >& cur_surface = this->geomodel_.surface( surface_id );
         if( cur_surface.is_on_voi() ) return false;
         switch( this->gmm_.duplicate_mode() ) {
             case ALL:
@@ -1536,7 +1546,7 @@ namespace RINGMesh {
                     Interface< DIMENSION >::type_name_static() );
                 if( parent_interface.is_defined() ) {
                     typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE feature =
-                        this->gm_.geological_entity( parent_interface ).geological_feature();
+                        this->geomodel_.geological_entity( parent_interface ).geological_feature();
                     return GeoModelGeologicalEntity< DIMENSION >::is_fault( feature );
                 }
                 return false;
@@ -1561,20 +1571,19 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool GeoModelMeshCells< DIMENSION >::is_corner_duplicated(
-        index_t c,
-        index_t v,
-        index_t& duplicate_vertex_index ) const
+    index_t GeoModelMeshCells< DIMENSION >::duplicated_corner_index(
+        const ElementLocalVertex& cell_local_vertex ) const
     {
         test_and_initialize_duplication();
-        ringmesh_assert( c < mesh_->nb_cells() );
-        ringmesh_assert( v < mesh_->nb_cell_vertices( c ) );
-        index_t corner_value = mesh_->cell_vertex( c, v );
+        ringmesh_assert( cell_local_vertex.element_id_ < mesh_->nb_cells() );
+        ringmesh_assert(
+            cell_local_vertex.local_vertex_id_
+                < mesh_->nb_cell_vertices( cell_local_vertex.element_id_ ) );
+        index_t corner_value = mesh_->cell_vertex( cell_local_vertex );
         if( corner_value < mesh_->nb_vertices() ) {
-            return false;
+            return NO_ID;
         } else {
-            duplicate_vertex_index = corner_value - mesh_->nb_vertices();
-            return true;
+            return corner_value - mesh_->nb_vertices();
         }
     }
 
@@ -1612,8 +1621,9 @@ namespace RINGMesh {
             VolumeMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         for( index_t c : range( mesh_->nb_cells() ) ) {
             for( index_t v : range( mesh_->nb_cell_vertices( c ) ) ) {
-                index_t index = NO_ID;
-                if( is_corner_duplicated( c, v, index ) ) {
+                index_t index = duplicated_corner_index(
+                    ElementLocalVertex( c, v ) );
+                if( index != NO_ID ) {
                     mesh_builder->set_cell_corner_vertex_index( c,
                         duplicated_vertex( index ) );
                 }
@@ -1643,9 +1653,11 @@ namespace RINGMesh {
         for( index_t c : range( mesh_->nb_cells() ) ) {
             for( index_t f : range( mesh_->nb_cell_facets( c ) ) ) {
                 std::vector< index_t > result = nn_search.get_neighbors(
-                    mesh_->cell_facet_barycenter( c, f ), this->gm_.epsilon() );
+                    mesh_->cell_facet_barycenter( CellLocalFacet( c, f ) ),
+                    this->geomodel_.epsilon() );
                 if( !result.empty() ) {
-                    polygon_id_[mesh_->cell_facet( c, f )] = result[0];
+                    polygon_id_[mesh_->cell_facet( CellLocalFacet( c, f ) )] =
+                        result[0];
                     // If there are more than 1 matching facet, this is WRONG
                     // and the vertex indices should be checked too [Jeanne]
                     ringmesh_assert( result.size() == 1 );
@@ -1745,24 +1757,26 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     index_t GeoModelMeshPolygonsBase< DIMENSION >::vertex(
-        index_t p,
-        index_t v ) const
+        const ElementLocalVertex& polygon_local_vertex ) const
     {
         test_and_initialize();
-        ringmesh_assert( p < mesh_->nb_polygons() );
-        ringmesh_assert( v < mesh_->nb_polygon_vertices( p ) );
-        return mesh_->polygon_vertex( p, v );
+        ringmesh_assert( polygon_local_vertex.element_id_ < mesh_->nb_polygons() );
+        ringmesh_assert(
+            polygon_local_vertex.local_vertex_id_
+                < mesh_->nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
+        return mesh_->polygon_vertex( polygon_local_vertex );
     }
 
     template< index_t DIMENSION >
     index_t GeoModelMeshPolygonsBase< DIMENSION >::adjacent(
-        index_t p,
-        index_t e ) const
+        const PolygonLocalEdge& polygon_local_edge ) const
     {
         test_and_initialize();
-        ringmesh_assert( p < mesh_->nb_polygons() );
-        ringmesh_assert( e < mesh_->nb_polygon_vertices( p ) );
-        return mesh_->polygon_adjacent( p, e );
+        ringmesh_assert( polygon_local_edge.polygon_id_ < mesh_->nb_polygons() );
+        ringmesh_assert(
+            polygon_local_edge.local_edge_id_
+                < mesh_->nb_polygon_vertices( polygon_local_edge.polygon_id_ ) );
+        return mesh_->polygon_adjacent( polygon_local_edge );
     }
 
     template< index_t DIMENSION >
@@ -1783,9 +1797,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    PolygonType GeoModelMeshPolygonsBase< DIMENSION >::type(
-        index_t p,
-        index_t& index ) const
+    std::tuple< PolygonType, index_t > GeoModelMeshPolygonsBase< DIMENSION >::type( index_t p ) const
     {
         test_and_initialize();
         ringmesh_assert( p < mesh_->nb_polygons() );
@@ -1795,14 +1807,12 @@ namespace RINGMesh {
             to_underlying_type( PolygonType::UNDEFINED ) ) ) {
             PolygonType T = static_cast< PolygonType >( t );
             if( polygon < nb_polygons( s, T ) ) {
-                index = polygon;
-                return T;
+                return std::make_tuple( T, polygon );
             }
             polygon -= nb_polygons( s, T );
         }
-        index = NO_ID;
         ringmesh_assert_not_reached;
-        return PolygonType::UNDEFINED;
+        return std::make_tuple( PolygonType::UNDEFINED, NO_ID );
     }
 
     template< index_t DIMENSION >
@@ -1831,7 +1841,7 @@ namespace RINGMesh {
         PolygonType type ) const
     {
         test_and_initialize();
-        ringmesh_assert( s < this->gm_.nb_surfaces() );
+        ringmesh_assert( s < this->geomodel_.nb_surfaces() );
         switch( type ) {
             case PolygonType::TRIANGLE:
                 return nb_triangle( s );
@@ -1857,7 +1867,7 @@ namespace RINGMesh {
         PolygonType type ) const
     {
         test_and_initialize();
-        ringmesh_assert( s < this->gm_.nb_surfaces() );
+        ringmesh_assert( s < this->geomodel_.nb_surfaces() );
         switch( type ) {
             case PolygonType::TRIANGLE:
                 return triangle( s, p );
@@ -1885,7 +1895,7 @@ namespace RINGMesh {
     index_t GeoModelMeshPolygonsBase< DIMENSION >::nb_triangle( index_t s ) const
     {
         test_and_initialize();
-        ringmesh_assert( s < this->gm_.nb_surfaces() );
+        ringmesh_assert( s < this->geomodel_.nb_surfaces() );
         return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
             + ( to_underlying_type( PolygonType::TRIANGLE ) + 1 )]
             - surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
@@ -1898,7 +1908,7 @@ namespace RINGMesh {
         index_t t ) const
     {
         test_and_initialize();
-        ringmesh_assert( s < this->gm_.nb_surfaces() );
+        ringmesh_assert( s < this->geomodel_.nb_surfaces() );
         return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
             + to_underlying_type( PolygonType::TRIANGLE )] + t;
     }
@@ -1914,7 +1924,7 @@ namespace RINGMesh {
     index_t GeoModelMeshPolygonsBase< DIMENSION >::nb_quad( index_t s ) const
     {
         test_and_initialize();
-        ringmesh_assert( s < this->gm_.nb_surfaces() );
+        ringmesh_assert( s < this->geomodel_.nb_surfaces() );
         return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
             + ( to_underlying_type( PolygonType::QUAD ) + 1 )]
             - surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
@@ -1925,7 +1935,7 @@ namespace RINGMesh {
     index_t GeoModelMeshPolygonsBase< DIMENSION >::quad( index_t s, index_t q ) const
     {
         test_and_initialize();
-        ringmesh_assert( s < this->gm_.nb_surfaces() );
+        ringmesh_assert( s < this->geomodel_.nb_surfaces() );
         return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
             + to_underlying_type( PolygonType::QUAD )] + q;
     }
@@ -1942,7 +1952,7 @@ namespace RINGMesh {
         index_t s ) const
     {
         test_and_initialize();
-        ringmesh_assert( s < this->gm_.nb_surfaces() );
+        ringmesh_assert( s < this->geomodel_.nb_surfaces() );
         return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
             + ( to_underlying_type( PolygonType::UNCLASSIFIED ) + 1 )]
             - surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
@@ -1955,7 +1965,7 @@ namespace RINGMesh {
         index_t p ) const
     {
         test_and_initialize();
-        ringmesh_assert( s < this->gm_.nb_surfaces() );
+        ringmesh_assert( s < this->geomodel_.nb_surfaces() );
         return surface_polygon_ptr_[to_underlying_type( PolygonType::UNDEFINED ) * s
             + to_underlying_type( PolygonType::UNCLASSIFIED )] + p;
     }
@@ -1985,7 +1995,7 @@ namespace RINGMesh {
         this->gmm_.vertices.test_and_initialize();
         clear();
         surface_polygon_ptr_.resize(
-            this->gm_.nb_surfaces() * to_underlying_type( PolygonType::UNDEFINED )
+            this->geomodel_.nb_surfaces() * to_underlying_type( PolygonType::UNDEFINED )
                 + 1, 0 );
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > mesh_builder =
             SurfaceMeshBuilder< DIMENSION >::create_builder( *mesh_ );
@@ -1997,8 +2007,8 @@ namespace RINGMesh {
         std::map< PolygonType, index_t > nb_polygon_per_type = {
             { PolygonType::TRIANGLE, 0 }, { PolygonType::QUAD, 0 }, {
                 PolygonType::UNCLASSIFIED, 0 } };
-        for( index_t s : range( this->gm_.nb_surfaces() ) ) {
-            const Surface< DIMENSION >& surface = this->gm_.surface( s );
+        for( index_t s : range( this->geomodel_.nb_surfaces() ) ) {
+            const Surface< DIMENSION >& surface = this->geomodel_.surface( s );
             if( surface.is_simplicial() ) {
                 nb_polygon_per_type[PolygonType::TRIANGLE] +=
                     surface.nb_mesh_elements();
@@ -2070,8 +2080,8 @@ namespace RINGMesh {
             this->gmm_.vertices;
         std::vector< index_t > cur_polygon_per_type(
             to_underlying_type( PolygonType::UNDEFINED ), 0 );
-        for( index_t s : range( this->gm_.nb_surfaces() ) ) {
-            const Surface< DIMENSION >& surface = this->gm_.surface( s );
+        for( index_t s : range( this->geomodel_.nb_surfaces() ) ) {
+            const Surface< DIMENSION >& surface = this->geomodel_.surface( s );
             gmme_id surface_id = surface.gmme();
             for( index_t p : range( surface.nb_mesh_elements() ) ) {
                 index_t nb_vertices = surface.nb_mesh_element_vertices( p );
@@ -2082,7 +2092,7 @@ namespace RINGMesh {
                         + cur_polygon_per_type[to_underlying_type( T )]++;
                     for( index_t v : range( nb_vertices ) ) {
                         index_t v_id = geomodel_vertices.geomodel_vertex_id(
-                            surface_id, p, v );
+                            surface_id, ElementLocalVertex( p, v ) );
                         ringmesh_assert( v_id != NO_ID );
                         mesh_builder->set_polygon_vertex( cur_polygon, v, v_id );
                     }
@@ -2090,7 +2100,7 @@ namespace RINGMesh {
                     std::vector< index_t > vertices( nb_vertices );
                     for( index_t v : range( nb_vertices ) ) {
                         vertices[v] = geomodel_vertices.geomodel_vertex_id(
-                            surface_id, p, v );
+                            surface_id, ElementLocalVertex( p, v ) );
                     }
                     cur_polygon = mesh_builder->create_polygon( vertices );
                 }
@@ -2124,14 +2134,14 @@ namespace RINGMesh {
     {
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > mesh_builder =
             SurfaceMeshBuilder< DIMENSION >::create_builder( *mesh_ );
-        for( index_t s : range( this->gm_.nb_surfaces() ) ) {
-            const Surface< DIMENSION >& surface = this->gm_.surface( s );
+        for( index_t s : range( this->geomodel_.nb_surfaces() ) ) {
+            const Surface< DIMENSION >& surface = this->geomodel_.surface( s );
             for( index_t p : range( nb_polygons( s ) ) ) {
                 index_t polygon_id = polygon( s, p );
                 index_t surface_polygon_id = index_in_surface( polygon_id );
                 for( index_t v : range( nb_vertices( polygon_id ) ) ) {
-                    index_t adj = surface.polygon_adjacent_index( surface_polygon_id,
-                        v );
+                    index_t adj = surface.polygon_adjacent_index(
+                        PolygonLocalEdge( surface_polygon_id, v ) );
                     if( adj == NO_ID ) {
                         mesh_builder->set_polygon_adjacent( polygon_id, v, NO_ID );
                     }
@@ -2173,8 +2183,8 @@ namespace RINGMesh {
 
     GeoModelMeshPolygons< 3 >::GeoModelMeshPolygons(
         GeoModelMesh< 3 >& gmm,
-        GeoModel< 3 >& gm,
-        std::unique_ptr< SurfaceMesh< 3 > >& mesh )
+        GeoModel3D& gm,
+        std::unique_ptr< SurfaceMesh3D >& mesh )
         : GeoModelMeshPolygonsBase< 3 >( gmm, gm, mesh )
     {
     }
@@ -2201,7 +2211,7 @@ namespace RINGMesh {
     index_t GeoModelMeshEdges< DIMENSION >::nb_wells() const
     {
         test_and_initialize();
-        return this->gm_.wells() ? this->gm_.wells()->nb_wells() : 0;
+        return this->geomodel_.wells() ? this->geomodel_.wells()->nb_wells() : 0;
     }
 
     template< index_t DIMENSION >
@@ -2225,7 +2235,7 @@ namespace RINGMesh {
         index_t v ) const
     {
         test_and_initialize();
-        return mesh_->edge_vertex( well_ptr_[w] + e, v );
+        return mesh_->edge_vertex( ElementLocalVertex( well_ptr_[w] + e, v ) );
     }
 
     template< index_t DIMENSION >
@@ -2254,7 +2264,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshEdges< DIMENSION >::initialize()
     {
-        if( !this->gm_.wells() ) return;
+        if( !this->geomodel_.wells() ) return;
         this->gmm_.vertices.test_and_initialize();
         clear();
         std::unique_ptr< LineMeshBuilder< DIMENSION > > mesh_builder =
@@ -2264,7 +2274,7 @@ namespace RINGMesh {
         }
 
         // Compute the total number of edge per well
-        const WellGroup< DIMENSION >& wells = *this->gm_.wells();
+        const WellGroup< DIMENSION >& wells = *this->geomodel_.wells();
         well_ptr_.resize( wells.nb_wells() + 1, 0 );
         index_t nb_edges = 0;
         for( index_t w : range( wells.nb_wells() ) ) {
@@ -2286,10 +2296,12 @@ namespace RINGMesh {
             const Well< DIMENSION >& well = wells.well( w );
             for( index_t p : range( well.nb_parts() ) ) {
                 for( index_t e : range( well.part( p ).nb_edges() ) ) {
-                    const vecn< DIMENSION >& e0 = well.part( p ).edge_vertex( e, 0 );
+                    const vecn< DIMENSION >& e0 = well.part( p ).edge_vertex(
+                        ElementLocalVertex( e, 0 ) );
                     mesh_builder->set_edge_vertex( cur_edge, 0,
                         this->gmm_.vertices.index( e0 ) );
-                    const vecn< DIMENSION >& e1 = well.part( p ).edge_vertex( e, 1 );
+                    const vecn< DIMENSION >& e1 = well.part( p ).edge_vertex(
+                        ElementLocalVertex( e, 1 ) );
                     mesh_builder->set_edge_vertex( cur_edge, 1,
                         this->gmm_.vertices.index( e1 ) );
                     cur_edge++;
@@ -2374,7 +2386,7 @@ namespace RINGMesh {
     {
     }
 
-    GeoModelMesh< 3 >::GeoModelMesh( GeoModel< 3 >& geomodel )
+    GeoModelMesh< 3 >::GeoModelMesh( GeoModel3D& geomodel )
         :
             GeoModelMeshBase< 3 >( *this, geomodel ),
             cells( *this, geomodel, mesh_set_.volume_mesh )
@@ -2394,102 +2406,252 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelMesh< 3 >::transfer_attributes() const
+    void GeoModelMesh< 3 >::transfer_attributes_from_gmm_to_gm_regions() const
     {
-        transfer_vertex_attributes();
-        transfer_cell_attributes();
+        transfer_vertex_attributes_from_gmm_to_gm_regions();
+        transfer_cell_attributes_from_gmm_to_gm_regions();
     }
 
-    void GeoModelMesh< 3 >::transfer_cell_attributes() const
+    void GeoModelMesh< 3 >::transfer_attributes_from_gm_regions_to_gmm() const
     {
+        transfer_vertex_attributes_from_gm_regions_to_gmm();
+        transfer_cell_attributes_from_gm_regions_to_gmm();
+    }
 
-        GEO::vector< std::string > att_c_names;
-        cells.attribute_manager().list_attribute_names( att_c_names );
+    void GeoModelMesh< 3 >::transfer_vertex_attributes_from_gmm_to_gm_regions() const
+    {
+        GEO::AttributesManager& gmm_v_attr_mgr = vertices.attribute_manager();
+        GEO::vector< std::string > att_v_names;
+        gmm_v_attr_mgr.list_attribute_names( att_v_names );
+        for( const std::string& cur_attr_name : att_v_names ) {
 
-        const NNSearch< 3 >& nn_search = cells.cell_nn_search();
-
-        for( const std::string& att_c : att_c_names ) {
-            if( !GEO::Attribute< double >::is_defined( cells.attribute_manager(),
-                att_c ) ) {
+            // It is not necessary to copy the coordinates. There are already there.
+            if( cur_attr_name == "point" ) {
                 continue;
             }
-            GEO::Attribute< double > cur_att_on_geomodel_mesh(
-                cells.attribute_manager(), att_c );
-            index_t att_dim = cur_att_on_geomodel_mesh.dimension();
 
-            for( const auto& region : geomodel_.regions() ) {
-                if( region.cell_attribute_manager().is_defined( att_c ) ) {
-                    Logger::warn( "Transfer attribute", "The attribute ", att_c,
-                        " already exists on the ", region.gmme() );
+            GEO::AttributeStore* cur_v_att_store_in_gmm =
+                gmm_v_attr_mgr.find_attribute_store( cur_attr_name );
+            ringmesh_assert( cur_v_att_store_in_gmm != nullptr );
+            index_t dim = cur_v_att_store_in_gmm->dimension();
+
+            for( index_t v = 0; v < vertices.nb(); v++ ) {
+                std::vector< GMEVertex > vertices_on_geomodel_region =
+                    vertices.gme_type_vertices( Region<3>::type_name_static(), v );
+                for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_region ) {
+
+                    const Region3D& cur_region = geomodel_.region(
+                        cur_vertex_on_geomodel.gmme.index() );
+                    GEO::AttributesManager& reg_v_attr_mgr =
+                        cur_region.vertex_attribute_manager();
+                    GEO::AttributeStore* cur_v_att_store_in_reg = nullptr;
+
+                    if( !reg_v_attr_mgr.is_defined( cur_attr_name ) ) {
+                        const std::string cur_type_name =
+                            GEO::AttributeStore::element_type_name_by_element_typeid_name(
+                                cur_v_att_store_in_gmm->element_typeid_name() );
+                        ringmesh_assert(
+                            GEO::AttributeStore::element_type_name_is_known(
+                                cur_type_name ) );
+                        cur_v_att_store_in_reg =
+                            GEO::AttributeStore::create_attribute_store_by_element_type_name(
+                                cur_type_name, dim );
+                        reg_v_attr_mgr.bind_attribute_store( cur_attr_name,
+                            cur_v_att_store_in_reg );
+                    } else {
+                        cur_v_att_store_in_reg = reg_v_attr_mgr.find_attribute_store(
+                            cur_attr_name );
+                    }
+                    ringmesh_assert( cur_v_att_store_in_reg != nullptr );
+                    ringmesh_assert(
+                        cur_v_att_store_in_reg->element_size()
+                            == cur_v_att_store_in_gmm->element_size() );
+
+                    GEO::Memory::copy(
+                        static_cast< GEO::Memory::pointer >( cur_v_att_store_in_reg->data() )
+                            + cur_vertex_on_geomodel.v_index * dim
+                                * cur_v_att_store_in_reg->element_size(),
+                        static_cast< GEO::Memory::pointer >( cur_v_att_store_in_gmm->data() )
+                            + v * dim * cur_v_att_store_in_gmm->element_size(),
+                        dim * cur_v_att_store_in_reg->element_size() );
+                }
+
+            }
+        }
+    }
+
+    void GeoModelMesh< 3 >::transfer_vertex_attributes_from_gm_regions_to_gmm() const
+    {
+        for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
+            GEO::vector< std::string > att_v_names;
+            const Region3D& cur_reg = geomodel().region( reg_itr );
+            GEO::AttributesManager& reg_vertex_attr_mgr =
+                cur_reg.vertex_attribute_manager();
+            reg_vertex_attr_mgr.list_attribute_names( att_v_names );
+            for( const std::string& cur_attr_name : att_v_names ) {
+
+                // It is not necessary to copy the coordinates. There are already there.
+                if( cur_attr_name == "point" ) {
                     continue;
                 }
-                GEO::Attribute< double > cur_att_on_geomodel_mesh_entity;
-                cur_att_on_geomodel_mesh_entity.create_vector_attribute(
-                    region.cell_attribute_manager(), att_c, att_dim );
-                for( index_t c : range( region.nb_mesh_elements() ) ) {
-                    vec3 center = region.mesh_element_barycenter( c );
+
+                GEO::AttributeStore* cur_v_att_store_in_reg =
+                    reg_vertex_attr_mgr.find_attribute_store( cur_attr_name );
+                ringmesh_assert( cur_v_att_store_in_reg != nullptr );
+                index_t dim = cur_v_att_store_in_reg->dimension();
+                GEO::AttributeStore* cur_v_att_store = nullptr;
+                if( !vertices.attribute_manager().is_defined( cur_attr_name ) ) {
+                    const std::string cur_type_name =
+                        GEO::AttributeStore::element_type_name_by_element_typeid_name(
+                            cur_v_att_store_in_reg->element_typeid_name() );
+                    ringmesh_assert(
+                        GEO::AttributeStore::element_type_name_is_known(
+                            cur_type_name ) );
+                    cur_v_att_store =
+                        GEO::AttributeStore::create_attribute_store_by_element_type_name(
+                            cur_type_name, dim );
+                    vertices.attribute_manager().bind_attribute_store( cur_attr_name,
+                        cur_v_att_store );
+                } else {
+                    cur_v_att_store =
+                        vertices.attribute_manager().find_attribute_store(
+                            cur_attr_name );
+                }
+                ringmesh_assert( cur_v_att_store != nullptr );
+                ringmesh_assert(
+                    cur_v_att_store->element_size()
+                        == cur_v_att_store_in_reg->element_size() );
+
+                for( index_t v_in_reg_itr = 0; v_in_reg_itr < cur_reg.nb_vertices();
+                    ++v_in_reg_itr ) {
+                    index_t v_id_in_gmm = vertices.geomodel_vertex_id(
+                        cur_reg.gmme(), v_in_reg_itr );
+                    GEO::Memory::copy(
+                        static_cast< GEO::Memory::pointer >( cur_v_att_store->data() )
+                            + v_id_in_gmm * dim * cur_v_att_store->element_size(),
+                        static_cast< GEO::Memory::pointer >( cur_v_att_store_in_reg->data() )
+                            + v_in_reg_itr * dim
+                                * cur_v_att_store_in_reg->element_size(),
+                        dim * cur_v_att_store->element_size() );
+                }
+            }
+        }
+    }
+
+    void GeoModelMesh< 3 >::transfer_cell_attributes_from_gmm_to_gm_regions() const
+    {
+        GEO::AttributesManager& gmm_c_attr_mgr = cells.attribute_manager();
+        GEO::vector< std::string > att_c_names;
+        gmm_c_attr_mgr.list_attribute_names( att_c_names );
+        const NNSearch3D& nn_search = cells.cell_nn_search();
+
+        for( const std::string& cur_attr_name : att_c_names ) {
+            GEO::AttributeStore* cur_c_att_store_in_gmm =
+                gmm_c_attr_mgr.find_attribute_store( cur_attr_name );
+            ringmesh_assert( cur_c_att_store_in_gmm != nullptr );
+            index_t dim = cur_c_att_store_in_gmm->dimension();
+
+            for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
+
+                const Region3D& cur_region = geomodel_.region( reg );
+                GEO::AttributesManager& reg_c_attr_mgr =
+                    cur_region.cell_attribute_manager();
+                GEO::AttributeStore* cur_c_att_store_in_reg = nullptr;
+
+                if( !reg_c_attr_mgr.is_defined( cur_attr_name ) ) {
+                    const std::string cur_type_name =
+                        GEO::AttributeStore::element_type_name_by_element_typeid_name(
+                            cur_c_att_store_in_gmm->element_typeid_name() );
+                    ringmesh_assert(
+                        GEO::AttributeStore::element_type_name_is_known(
+                            cur_type_name ) );
+                    cur_c_att_store_in_reg =
+                        GEO::AttributeStore::create_attribute_store_by_element_type_name(
+                            cur_type_name, dim );
+                    reg_c_attr_mgr.bind_attribute_store( cur_attr_name,
+                        cur_c_att_store_in_reg );
+                } else {
+                    cur_c_att_store_in_reg = reg_c_attr_mgr.find_attribute_store(
+                        cur_attr_name );
+                }
+                ringmesh_assert( cur_c_att_store_in_reg != nullptr );
+                ringmesh_assert(
+                    cur_c_att_store_in_reg->element_size()
+                        == cur_c_att_store_in_gmm->element_size() );
+
+                for( index_t c = 0; c < cur_region.nb_mesh_elements(); c++ ) {
+                    vec3 center = cur_region.mesh_element_barycenter( c );
                     std::vector< index_t > c_in_geom_model_mesh =
                         nn_search.get_neighbors( center, geomodel_.epsilon() );
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 );
-                    for( index_t att_e : range( att_dim ) ) {
-                        cur_att_on_geomodel_mesh_entity[c * att_dim + att_e] =
-                            cur_att_on_geomodel_mesh[c_in_geom_model_mesh[0]
-                                * att_dim + att_e];
-                    }
+                    GEO::Memory::copy(
+                        static_cast< GEO::Memory::pointer >( cur_c_att_store_in_reg->data() )
+                            + c * dim * cur_c_att_store_in_reg->element_size(),
+                        static_cast< GEO::Memory::pointer >( cur_c_att_store_in_gmm->data() )
+                            + c_in_geom_model_mesh[0] * dim
+                                * cur_c_att_store_in_gmm->element_size(),
+                        dim * cur_c_att_store_in_reg->element_size() );
                 }
             }
         }
     }
 
-    void GeoModelMesh< 3 >::transfer_vertex_attributes() const
+    void GeoModelMesh< 3 >::transfer_cell_attributes_from_gm_regions_to_gmm() const
     {
-        GEO::vector< std::string > att_v_names;
-        std::vector< std::string > att_v_double_names;
-        vertices.attribute_manager().list_attribute_names( att_v_names );
-        for( index_t att_v : range( vertices.attribute_manager().nb() ) ) {
-            if( !GEO::Attribute< double >::is_defined( vertices.attribute_manager(),
-                att_v_names[att_v] ) ) {
-                continue;
-            }
-            att_v_double_names.push_back( att_v_names[att_v] );
-            for( const auto& region : geomodel_.regions() ) {
-                if( region.vertex_attribute_manager().is_defined(
-                    att_v_names[att_v] ) ) {
-                    Logger::warn( "Transfer attribute", "The attribute ",
-                        att_v_names[att_v], " already exists on the ",
-                        region.gmme() );
-                    continue;
+        const NNSearch3D& nn_search = cells.cell_nn_search();
+        for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
+            GEO::vector< std::string > att_c_names;
+            const Region3D& cur_reg = geomodel().region( reg_itr );
+            GEO::AttributesManager& reg_cell_attr_mgr =
+                cur_reg.cell_attribute_manager();
+            reg_cell_attr_mgr.list_attribute_names( att_c_names );
+            for( const std::string& cur_attr_name : att_c_names ) {
+
+                GEO::AttributeStore* cur_c_att_store_in_reg =
+                    reg_cell_attr_mgr.find_attribute_store( cur_attr_name );
+                ringmesh_assert( cur_c_att_store_in_reg != nullptr );
+                index_t dim = cur_c_att_store_in_reg->dimension();
+                GEO::AttributeStore* cur_c_att_store = nullptr;
+                if( !cells.attribute_manager().is_defined( cur_attr_name ) ) {
+                    const std::string cur_type_name =
+                        GEO::AttributeStore::element_type_name_by_element_typeid_name(
+                            cur_c_att_store_in_reg->element_typeid_name() );
+                    ringmesh_assert(
+                        GEO::AttributeStore::element_type_name_is_known(
+                            cur_type_name ) );
+                    cur_c_att_store =
+                        GEO::AttributeStore::create_attribute_store_by_element_type_name(
+                            cur_type_name, dim );
+                    cells.attribute_manager().bind_attribute_store( cur_attr_name,
+                        cur_c_att_store );
+                } else {
+                    cur_c_att_store = cells.attribute_manager().find_attribute_store(
+                        cur_attr_name );
                 }
-                GEO::Attribute< double > cur_v_att;
-                cur_v_att.create_vector_attribute( region.vertex_attribute_manager(),
-                    att_v_names[att_v],
-                    vertices.attribute_manager().find_attribute_store(
-                        att_v_names[att_v] )->dimension() );
-            }
-        }
-        for( const std::string& att_v : att_v_double_names ) {
-            GEO::Attribute< double > cur_att_on_geomodelmesh(
-                vertices.attribute_manager(), att_v );
-            index_t att_dim = cur_att_on_geomodelmesh.dimension();
+                ringmesh_assert( cur_c_att_store != nullptr );
+                ringmesh_assert(
+                    cur_c_att_store->element_size()
+                        == cur_c_att_store_in_reg->element_size() );
 
-            AttributeVector< double > att_on_regions( geomodel_.nb_regions() );
-
-            for( const auto& region : geomodel_.regions() ) {
-                att_on_regions.bind_one_attribute( region.index(),
-                    region.vertex_attribute_manager(), att_v );
-            }
-
-            for( index_t v : range( vertices.nb() ) ) {
-                std::vector< GMEVertex > vertices_on_geomodel_region =
-                    vertices.gme_type_vertices( Region< 3 >::type_name_static(), v );
-                for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_region ) {
-                    for( index_t att_e : range( att_dim ) ) {
-                        att_on_regions[cur_vertex_on_geomodel.gmme.index()][cur_vertex_on_geomodel.v_index
-                            * att_dim + att_e] = cur_att_on_geomodelmesh[v * att_dim
-                            + att_e];
+                for( index_t c_in_reg_itr = 0;
+                    c_in_reg_itr < cur_reg.nb_mesh_elements(); ++c_in_reg_itr ) {
+                    vec3 center =
+                        geomodel_.region( reg_itr ).mesh_element_barycenter(
+                            c_in_reg_itr );
+                    std::vector< index_t > c_in_geom_model_mesh =
+                        nn_search.get_neighbors( center, geomodel_.epsilon() );
+                    ringmesh_assert( c_in_geom_model_mesh.size() == 1 );
+                    for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
+                        GEO::Memory::copy(
+                            static_cast< GEO::Memory::pointer >( cur_c_att_store->data() )
+                                + c_in_geom_model_mesh[0] * dim
+                                    * cur_c_att_store->element_size(),
+                            static_cast< GEO::Memory::pointer >( cur_c_att_store_in_reg->data() )
+                                + c_in_reg_itr * dim
+                                    * cur_c_att_store_in_reg->element_size(),
+                            dim * cur_c_att_store->element_size() );
                     }
                 }
-
             }
         }
     }

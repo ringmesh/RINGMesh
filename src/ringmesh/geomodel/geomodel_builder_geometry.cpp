@@ -41,25 +41,17 @@ namespace {
     using namespace RINGMesh;
 
     template< index_t DIMENSION >
-    void get_internal_borders(
-        const GeoModelMeshEntity< DIMENSION >& entity,
-        std::set< index_t >& internal_borders )
+    std::set< index_t > get_internal_borders(
+        const GeoModelMeshEntity< DIMENSION >& entity )
     {
+        std::set< index_t > internal_borders;
         for( index_t i : range( entity.nb_boundaries() ) ) {
             const GeoModelMeshEntity< DIMENSION >& border = entity.boundary( i );
             if( border.is_inside_border( entity ) ) {
                 internal_borders.insert( border.index() );
             }
         }
-    }
-
-    template< index_t DIMENSION >
-    bool inexact_equal(
-        const vecn< DIMENSION >& v1,
-        const vecn< DIMENSION >& v2,
-        double epsilon )
-    {
-        return length( v2 - v1 ) < epsilon;
+        return internal_borders;
     }
 
     /*!
@@ -73,23 +65,23 @@ namespace {
      * @return True if the polygon and the edge indices are found
      */
     template< index_t DIMENSION >
-    bool find_polygon_from_edge_vertices(
+    std::tuple< bool, index_t, index_t > find_polygon_from_edge_vertices(
         const Surface< DIMENSION >& surface,
         const vecn< DIMENSION >& v0,
-        const vecn< DIMENSION >& v1,
-        index_t& polygon,
-        index_t& edge )
+        const vecn< DIMENSION >& v1 )
     {
+        index_t polygon = NO_ID;
+        index_t edge = NO_ID;
         vecn< DIMENSION > v_bary = 0.5 * ( v0 + v1 );
         bool result = false;
         surface.polygon_nn_search().get_neighbors( v_bary,
             [&surface, &v0, &v1, &result, &edge, &polygon]( index_t i ) {
                 for( index_t j : range( surface.nb_mesh_element_vertices( i ) ) ) {
-                    if( inexact_equal( surface.mesh_element_vertex( i, j ), v0,
+                    if( inexact_equal( surface.mesh_element_vertex( ElementLocalVertex(i, j) ), v0,
                             surface.geomodel().epsilon() ) ) {
                         index_t j_next = surface.low_level_mesh_storage().next_polygon_vertex(
-                            i, j );
-                        if( inexact_equal( surface.mesh_element_vertex( i, j_next ),
+                            ElementLocalVertex(i, j) ).local_vertex_id_;
+                        if( inexact_equal( surface.mesh_element_vertex( ElementLocalVertex(i, j_next )),
                                 v1, surface.geomodel().epsilon() ) ) {
                             edge = j;
                             polygon = i;
@@ -98,8 +90,9 @@ namespace {
                         }
                     }
                 }
-                return result;} );
-        return result;
+                return result;
+        } );
+        return std::make_tuple( result, polygon, edge );
     }
 
     template< index_t DIMENSION >
@@ -117,21 +110,21 @@ namespace {
             return false;
         }
         vec3 cell_facet_barycenter =
-            region.low_level_mesh_storage().cell_facet_barycenter( cell,
-                cell_facet );
+            region.low_level_mesh_storage().cell_facet_barycenter(
+                CellLocalFacet( cell, cell_facet ) );
         vec3 polygon_barycenter = surface.mesh_element_barycenter( polygon );
         return inexact_equal( cell_facet_barycenter, polygon_barycenter,
             region.geomodel().epsilon() );
     }
 
     template< index_t DIMENSION >
-    bool find_cell_facet_from_polygon(
+    std::tuple< bool, index_t, index_t > find_cell_facet_from_polygon(
         const Region< DIMENSION >& region,
         const Surface< DIMENSION >& surface,
-        index_t polygon,
-        index_t& cell,
-        index_t& cell_facet )
+        index_t polygon )
     {
+        index_t cell = NO_ID;
+        index_t cell_facet = NO_ID;
         vec3 v_bary = surface.mesh_element_barycenter( polygon );
         bool result = false;
         region.cell_nn_search().get_neighbors( v_bary,
@@ -145,8 +138,9 @@ namespace {
                         break;
                     }
                 }
-                return result;} );
-        return result;
+                return result;
+        } );
+        return std::make_tuple( result, cell,cell_facet );
     }
 
     template< index_t DIMENSION >
@@ -160,40 +154,17 @@ namespace {
         surface.polygon_nn_search().get_neighbors( v,
             [&surface, &v, &result, &vertex_id, &element_id]( index_t i ) {
                 for( index_t j : range( surface.nb_mesh_element_vertices( i ) ) ) {
-                    if( inexact_equal( surface.mesh_element_vertex( i, j ),
+                    if( inexact_equal( surface.mesh_element_vertex( ElementLocalVertex(i, j) ),
                             v, surface.geomodel().epsilon() ) ) {
-                        vertex_id = surface.mesh_element_vertex_index( i,
-                            j );
+                        vertex_id = surface.mesh_element_vertex_index( ElementLocalVertex(i,
+                                j ));
                         element_id = i;
                         result = true;
                         break;
                     }
                 }
-                return result;} );
-        return result;
-    }
-
-    template< index_t DIMENSION >
-    bool find_cell_from_vertex(
-        const Region< DIMENSION >& region,
-        const vec3& v,
-        index_t& element_id,
-        index_t& vertex_id )
-    {
-        bool result = false;
-        region.cell_nn_search().get_neighbors( v,
-            [&region, &v, &result, &element_id, &vertex_id]( index_t i ) {
-                for( index_t j : range( region.nb_mesh_element_vertices( i ) ) ) {
-                    if( inexact_equal( region.mesh_element_vertex( i, j ),
-                            v, region.geomodel().epsilon() ) ) {
-                        vertex_id = region.mesh_element_vertex_index( i,
-                            j );
-                        element_id = i;
-                        result = true;
-                        break;
-                    }
-                }
-                return result;} );
+                return result;
+        } );
         return result;
     }
 
@@ -206,14 +177,19 @@ namespace {
     {
         const SurfaceMesh< DIMENSION >& mesh = surface.low_level_mesh_storage();
         for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
-            if( !inexact_equal( surface.mesh_element_vertex( p, v ), v0,
+            if( !inexact_equal(
+                surface.mesh_element_vertex( ElementLocalVertex( p, v ) ), v0,
                 surface.geomodel().epsilon() ) ) continue;
-            index_t prev_v = mesh.prev_polygon_vertex( p, v );
-            index_t next_v = mesh.next_polygon_vertex( p, v );
-            if( inexact_equal( surface.mesh_element_vertex( p, prev_v ), v1,
+            index_t prev_v =
+                mesh.prev_polygon_vertex( ElementLocalVertex( p, v ) ).local_vertex_id_;
+            index_t next_v =
+                mesh.next_polygon_vertex( ElementLocalVertex( p, v ) ).local_vertex_id_;
+            if( inexact_equal(
+                surface.mesh_element_vertex( ElementLocalVertex( p, prev_v ) ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return prev_v;
-            } else if( inexact_equal( surface.mesh_element_vertex( p, next_v ), v1,
+            } else if( inexact_equal(
+                surface.mesh_element_vertex( ElementLocalVertex( p, next_v ) ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return v;
             }
@@ -231,7 +207,8 @@ namespace {
         const VolumeMesh< DIMENSION >& mesh = region.low_level_mesh_storage();
         vec3 polygon_barycenter = surface.mesh_element_barycenter( polygon );
         for( index_t f : range( region.nb_cell_facets( cell ) ) ) {
-            vec3 cell_facet_barycenter = mesh.cell_facet_barycenter( cell, f );
+            vec3 cell_facet_barycenter = mesh.cell_facet_barycenter(
+                CellLocalFacet( cell, f ) );
             if( inexact_equal( cell_facet_barycenter, polygon_barycenter,
                 surface.geomodel().epsilon() ) ) {
                 return f;
@@ -544,7 +521,6 @@ namespace RINGMesh {
         to_delete.push_back( true );
         delete_mesh_entity_vertices( corner, to_delete );
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::delete_line_edges(
         index_t line_id,
@@ -555,7 +531,6 @@ namespace RINGMesh {
             create_line_builder( line_id );
         builder->delete_edges( to_delete, remove_isolated_vertices );
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::delete_surface_polygons(
         index_t surface_id,
@@ -604,8 +579,7 @@ namespace RINGMesh {
     void GeoModelBuilderGeometryBase< DIMENSION >::cut_surfaces_by_internal_lines()
     {
         for( const auto& surface : geomodel_.surfaces() ) {
-            std::set< index_t > cutting_lines;
-            get_internal_borders( surface, cutting_lines );
+            std::set< index_t > cutting_lines = get_internal_borders( surface );
             for( index_t line_id : cutting_lines ) {
                 cut_surface_by_line( surface.index(), line_id );
             }
@@ -693,13 +667,16 @@ namespace RINGMesh {
             const vecn< DIMENSION >& p0 = line.vertex( i );
             const vecn< DIMENSION >& p1 = line.vertex( i + 1 );
 
+            bool found = false;
             index_t p = NO_ID;
             index_t e = NO_ID;
-            bool found = find_polygon_from_edge_vertices( surface, p0, p1, p, e );
+            std::tie( found, p, e ) = find_polygon_from_edge_vertices( surface, p0,
+                p1 );
             ringmesh_unused( found );
             ringmesh_assert( found && p != NO_ID && e != NO_ID );
 
-            index_t adj_f = surface.polygon_adjacent_index( p, e );
+            index_t adj_f = surface.polygon_adjacent_index(
+                PolygonLocalEdge( p, e ) );
             if( adj_f != NO_ID ) {
                 index_t adj_e = edge_index_from_polygon_and_edge_vertex_indices(
                     surface, adj_f, p0, p1 );
@@ -711,7 +688,6 @@ namespace RINGMesh {
         }
         return nb_disconnected_edges;
     }
-
     template< index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::update_polygon_vertex(
         index_t surface_id,
@@ -724,8 +700,8 @@ namespace RINGMesh {
             create_surface_builder( surface_id );
         for( index_t cur_p : polygons ) {
             for( index_t cur_v : range( surface.nb_mesh_element_vertices( cur_p ) ) ) {
-                if( surface.mesh_element_vertex_index( cur_p, cur_v )
-                    == old_vertex ) {
+                if( surface.mesh_element_vertex_index(
+                    ElementLocalVertex( cur_p, cur_v ) ) == old_vertex ) {
                     builder->set_polygon_vertex( cur_p, cur_v, new_vertex );
                 }
             }
@@ -770,13 +746,13 @@ namespace RINGMesh {
         index_t old_vertex,
         index_t new_vertex )
     {
-        const Region< 3 >& region = geomodel_.region( region_id );
-        std::unique_ptr< VolumeMeshBuilder< 3 > > builder = create_region_builder(
+        const Region3D& region = geomodel_.region( region_id );
+        std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
         for( index_t cur_c : cells ) {
             for( index_t cur_v : range( region.nb_mesh_element_vertices( cur_c ) ) ) {
-                if( region.mesh_element_vertex_index( cur_c, cur_v )
-                    == old_vertex ) {
+                if( region.mesh_element_vertex_index(
+                    ElementLocalVertex( cur_c, cur_v ) ) == old_vertex ) {
                     builder->set_cell_vertex( cur_c, cur_v, new_vertex );
                 }
             }
@@ -787,7 +763,7 @@ namespace RINGMesh {
         index_t region_id,
         const std::vector< index_t >& tet_vertices )
     {
-        std::unique_ptr< VolumeMeshBuilder< 3 > > builder = create_region_builder(
+        std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
         builder->assign_cell_tet_mesh( tet_vertices );
         builder->connect_cells();
@@ -800,16 +776,17 @@ namespace RINGMesh {
         ringmesh_assert( region_id < geomodel_.nb_regions() );
         ringmesh_assert( surface_id < geomodel_.nb_surfaces() );
 
-        const Region< 3 >& region = geomodel_.region( region_id );
-        const Surface< 3 >& surface = geomodel_.surface( surface_id );
-        std::unique_ptr< VolumeMeshBuilder< 3 > > builder = create_region_builder(
+        const Region3D& region = geomodel_.region( region_id );
+        const Surface3D& surface = geomodel_.surface( surface_id );
+        std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
         index_t nb_disconnected_polygons = 0;
         for( index_t polygon : range( surface.nb_mesh_elements() ) ) {
+            bool found = false;
             index_t cell = NO_ID;
             index_t cell_facet = NO_ID;
-            bool found = find_cell_facet_from_polygon( region, surface, polygon,
-                cell, cell_facet );
+            std::tie( found, cell, cell_facet ) = find_cell_facet_from_polygon(
+                region, surface, polygon );
             ringmesh_unused( found );
             ringmesh_assert( found && cell != NO_ID && cell_facet != NO_ID );
 
@@ -833,9 +810,9 @@ namespace RINGMesh {
         ringmesh_assert( region_id < geomodel_.nb_regions() );
         ringmesh_assert( surface_id < geomodel_.nb_surfaces() );
 
-        gmme_id region_gme( Region< 3 >::type_name_static(), region_id );
-        const Region< 3 >& region = geomodel_.region( region_id );
-        const Surface< 3 >& surface = geomodel_.surface( surface_id );
+        gmme_id region_gme( Region3D::type_name_static(), region_id );
+        const Region3D& region = geomodel_.region( region_id );
+        const Surface3D& surface = geomodel_.surface( surface_id );
 
         std::vector< ElementVertex > cell_vertices( surface.nb_vertices() );
         for( index_t v : range( surface.nb_vertices() ) ) {
@@ -843,11 +820,14 @@ namespace RINGMesh {
 
             index_t& cell = cell_vertices[v].element_;
             index_t& cell_vertex = cell_vertices[v].vertex_;
-            bool found = find_cell_from_vertex( region, p, cell, cell_vertex );
-            ringmesh_unused( found );
-            ringmesh_assert( found && cell != NO_ID && cell_vertex != NO_ID );
+            ElementLocalVertex element_local_vertex =
+                region.find_cell_from_colocated_vertex_if_any( p );
+            cell = element_local_vertex.element_id_;
+            cell_vertex = element_local_vertex.local_vertex_id_;
 
-		}
+            ringmesh_assert( cell != NO_ID && cell_vertex != NO_ID );
+
+        }
 		
 		GEO::vector< std::string > names;
 		geomodel_.region( region_id ).vertex_attribute_manager().list_attribute_names( names );
@@ -856,18 +836,16 @@ namespace RINGMesh {
 
         index_t vertex_id = create_mesh_entity_vertices( region_gme,
             surface.nb_vertices() );
-
-        std::unique_ptr< VolumeMeshBuilder< 3 > > region_mesh_builder =
+        std::unique_ptr< VolumeMeshBuilder3D > region_mesh_builder =
             create_region_builder( region_id );
-		const VolumeMesh< 3 >& mesh = region.low_level_mesh_storage();
-
+        const VolumeMesh3D& mesh = region.low_level_mesh_storage();
         for( index_t v : range( surface.nb_vertices() ) ) {
             const vec3& p = surface.vertex( v );
             const index_t& cell = cell_vertices[v].element_;
             const index_t& cell_vertex = cell_vertices[v].vertex_;
 
-            std::vector< index_t > cells;
-            mesh.cells_around_vertex( cell_vertex, cells, cell );
+            std::vector< index_t > cells = mesh.cells_around_vertex( cell_vertex,
+                cell );
             update_cell_vertex( region_id, cells, cell_vertex, vertex_id );
             region_mesh_builder->set_vertex( vertex_id, p );
 			vertex_id++;
@@ -897,13 +875,12 @@ namespace RINGMesh {
     {
         for( const auto& region : geomodel_.regions() ) {
             if( region.nb_mesh_elements() == 0 ) continue;
-            std::set< index_t > cutting_surfaces;
-            get_internal_borders( region, cutting_surfaces );
+            std::set< index_t > cutting_surfaces = get_internal_borders( region );
             for( index_t surface_id : cutting_surfaces ) {
                 cut_region_by_surface( region.index(), surface_id );
             }
             if( !cutting_surfaces.empty() ) {
-                std::unique_ptr< VolumeMeshBuilder< 3 > > region_mesh_builder =
+                std::unique_ptr< VolumeMeshBuilder3D > region_mesh_builder =
                     create_region_builder( region.index() );
                 region_mesh_builder->remove_isolated_vertices();
             }
@@ -916,7 +893,7 @@ namespace RINGMesh {
         const std::vector< index_t >& tetras )
     {
         set_mesh_entity_vertices(
-            gmme_id( Region< 3 >::type_name_static(), region_id ), points, true );
+            gmme_id( Region3D::type_name_static(), region_id ), points, true );
         assign_region_tet_mesh( region_id, tetras );
     }
 
@@ -924,10 +901,9 @@ namespace RINGMesh {
         index_t region_id,
         bool recompute_adjacency )
     {
-        const Region< 3 >& region = geomodel_.region( region_id );
-        std::unique_ptr< VolumeMeshBuilder< 3 > > builder = create_region_builder(
+        const Region3D& region = geomodel_.region( region_id );
+        std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
-
         if( recompute_adjacency ) {
             for( index_t c : range( region.nb_mesh_elements() ) ) {
                 for( index_t f : range( region.nb_cell_facets( c ) ) ) {
@@ -943,7 +919,7 @@ namespace RINGMesh {
         const std::vector< bool >& to_delete,
         bool remove_isolated_vertices )
     {
-        std::unique_ptr< VolumeMeshBuilder< 3 > > builder = create_region_builder(
+        std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
         builder->delete_cells( to_delete, remove_isolated_vertices );
     }
@@ -953,7 +929,7 @@ namespace RINGMesh {
         CellType type,
         index_t nb_cells )
     {
-        std::unique_ptr< VolumeMeshBuilder< 3 > > builder = create_region_builder(
+        std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
         return builder->create_cells( nb_cells, type );
     }
@@ -963,7 +939,7 @@ namespace RINGMesh {
         index_t cell_id,
         const std::vector< index_t >& corners )
     {
-        std::unique_ptr< VolumeMeshBuilder< 3 > > builder = create_region_builder(
+        std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
         for( index_t cell_vertex : range( corners.size() ) ) {
             builder->set_cell_vertex( cell_id, cell_vertex, corners[cell_vertex] );
@@ -974,7 +950,7 @@ namespace RINGMesh {
     {
         if( geomodel_.entity_type_manager().mesh_entity_manager.is_region(
             E_id.type() ) ) {
-            std::unique_ptr< VolumeMeshBuilder< 3 > > builder =
+            std::unique_ptr< VolumeMeshBuilder3D > builder =
                 create_region_builder( E_id.index() );
             builder->remove_isolated_vertices();
         } else {
@@ -993,11 +969,11 @@ namespace RINGMesh {
         return cell_id;
     }
 
-    void GeoModelBuilderGeometry< 3 >::copy_meshes( const GeoModel< 3 >& geomodel )
+    void GeoModelBuilderGeometry< 3 >::copy_meshes( const GeoModel3D& geomodel )
     {
-        GeoModelBuilderGeometryBase< 3 >::copy_meshes( geomodel );
-        GeoModelBuilderGeometryBase< 3 >::copy_meshes( geomodel,
-            Region< 3 >::type_name_static() );
+        GeoModelBuilderGeometryBase3D::copy_meshes( geomodel );
+        GeoModelBuilderGeometryBase3D::copy_meshes( geomodel,
+            Region3D::type_name_static() );
     }
 
     template class RINGMESH_API GeoModelBuilderGeometry< 2 > ;

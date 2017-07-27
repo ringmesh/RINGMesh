@@ -80,7 +80,7 @@ namespace RINGMesh {
                 Logger::err( "I/O", " ", name );
             }
 
-            throw RINGMeshException( "I/O", "Unsupported file format: " + format );
+            throw RINGMeshException( "I/O", "Unsupported file format: ", format );
         }
         return handler;
     }
