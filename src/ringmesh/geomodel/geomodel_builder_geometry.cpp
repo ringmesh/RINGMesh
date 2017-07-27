@@ -826,16 +826,18 @@ namespace RINGMesh {
             cell_vertex = element_local_vertex.local_vertex_id_;
 
             ringmesh_assert( cell != NO_ID && cell_vertex != NO_ID );
-
         }
 
         GEO::vector< std::string > names;
         geomodel_.region( region_id ).vertex_attribute_manager().list_attribute_names( names );
-        GEO::Attribute< double > attr_before( geomodel_.region( region_id ).vertex_attribute_manager(), names[2] );
-        index_t size_before = attr_before.size();
+        index_t attr_nb = names.size();
+
+        GeoModelMeshEntity3D& E = geomodel_access_.modifiable_mesh_entity( region_gme );
+        index_t vertices_nb = E.nb_vertices();
 
         index_t vertex_id = create_mesh_entity_vertices( region_gme,
             surface.nb_vertices() );
+
         std::unique_ptr< VolumeMeshBuilder3D > region_mesh_builder =
             create_region_builder( region_id );
         const VolumeMesh3D& mesh = region.low_level_mesh_storage();
@@ -850,11 +852,17 @@ namespace RINGMesh {
             region_mesh_builder->set_vertex( vertex_id, p );
             vertex_id++;
 
-            for( std::string name : names ){
-                if( name != "model_vertex_map" && name != "point" ){
-                    GEO::Attribute< double > attr( geomodel_.region( region_id )
-                        .vertex_attribute_manager(), name );
-                    attr[size_before + v - 1] = attr[cell_vertex];
+            if( names.size() > 2 ){
+                for( int i : range( attr_nb ) ){
+                    if( names[i] != "model_vertex_map" && names[i] != "point" ){
+                        GEO::Attribute< double > attr( geomodel_.region( region_id )
+                            .vertex_attribute_manager(), names[i] );
+                        index_t dim_nb = attr.dimension();
+                        for( index_t dim : range( dim_nb ) ){
+                            attr[( vertices_nb + v ) * dim_nb + dim] 
+                                = attr[cell_vertex * dim_nb + dim ];
+                        }
+                    }
                 }
             }
         }
