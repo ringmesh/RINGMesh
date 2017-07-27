@@ -63,16 +63,15 @@ namespace {
                 "Point set should have 0 connected component." );
         }
         const index_t max_itr = 5;
-        for( index_t i = 1; i <= max_itr; ++i ) {
+        for( index_t i : range( 1, max_itr + 1 ) ) {
             point_set_builder->create_vertex( vec3( i, i, i ) );
             nb_connected_components = NO_ID;
-            connected_components.resize( 0 );
+            connected_components.clear();
             std::tie( nb_connected_components, connected_components ) =
                 point_set->get_connected_components();
             if( nb_connected_components != i || connected_components.size() != i ) {
-                throw RINGMeshException( "RINGMesh Test",
-                    "Point set should have " + std::to_string( i )
-                        + " connected components." );
+                throw RINGMeshException( "RINGMesh Test", "Point set should have ",
+                    i, " connected components." );
             }
 
             std::vector< index_t > solution( i );

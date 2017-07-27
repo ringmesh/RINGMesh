@@ -63,17 +63,17 @@ namespace {
     {
         Box< DIMENSION > bbox;
         if( gm.nb_surfaces() > 0 ) {
-            for( index_t s : range( gm.nb_surfaces() ) ) {
-                compute_mesh_entity_bbox( gm.surface( s ), bbox );
+            for( const auto& surface : gm.surfaces() ) {
+                compute_mesh_entity_bbox( surface, bbox );
             }
         } else if( gm.nb_lines() > 0 ) {
-            for( index_t l : range( gm.nb_lines() ) ) {
-                compute_mesh_entity_bbox( gm.line( l ), bbox );
+            for( const auto& line : gm.lines() ) {
+                compute_mesh_entity_bbox( line, bbox );
             }
         } else {
             ringmesh_assert( gm.nb_corners() > 0 );
-             for( index_t c : range( gm.nb_corners() ) ) {
-                bbox.add_point( gm.corner( c ).vertex( 0 ) );
+             for( const auto& corner : gm.corners() ) {
+                bbox.add_point( corner.vertex( 0 ) );
             }
         }
         return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" );
@@ -242,19 +242,17 @@ namespace RINGMesh {
         std::vector< bool >& voi_surface_region_side = surface_side.sides_;
         voi_surface_region_side.reserve( nb_surfaces() );
 
-        for( index_t surface_i = 0; surface_i < nb_surfaces(); ++surface_i ) {
-            const Surface3D& cur_surface = surface( surface_i );
+        for( const auto& cur_surface : surfaces() ) {
             if( cur_surface.is_on_voi() ) {
                 ringmesh_assert( cur_surface.nb_incident_entities() == 1 );
-                voi_surfaces.push_back( surface_i );
+                voi_surfaces.push_back( cur_surface.index() );
                 const Region3D& incident_region = cur_surface.incident_entity( 0 );
 
                 index_t local_boundary_id = NO_ID;
-                for( index_t region_boundary_i = 0;
-                    region_boundary_i < incident_region.nb_boundaries();
-                    ++region_boundary_i ) {
+                for( index_t region_boundary_i : range(
+                    incident_region.nb_boundaries() ) ) {
                     if( incident_region.boundary_gmme( region_boundary_i ).index()
-                        == surface_i ) {
+                        == cur_surface.index() ) {
                         local_boundary_id = region_boundary_i;
                         break;
                     }

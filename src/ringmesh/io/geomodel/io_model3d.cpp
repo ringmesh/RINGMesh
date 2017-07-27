@@ -428,7 +428,6 @@ namespace {
 
         void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
         {
-
             std::ofstream out( filename.c_str() );
             save_gocad_model3d( geomodel, out );
             out << std::flush;
