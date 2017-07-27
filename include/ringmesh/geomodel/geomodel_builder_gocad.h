@@ -506,6 +506,7 @@ namespace RINGMesh {
             const Region< 3 >& region, TSolidLoadingStorage& load_storage,
             const std::vector< std::vector< double > >& region_attributes ){
 
+            index_t read_fields = 0;
             for( index_t attrib_itr : range( load_storage.vertex_attribute_names_.size() ) ) {
                 std::string name = load_storage.vertex_attribute_names_[attrib_itr];
 
@@ -525,9 +526,10 @@ namespace RINGMesh {
                 for( index_t v_itr : range( region_attributes.size() ) ) {
                     for( index_t attrib_dim_itr : range( nb_dimensions ) ) {
                         attr[v_itr * nb_dimensions + attrib_dim_itr] =
-                            region_attributes[v_itr][attrib_dim_itr];
+                            region_attributes[v_itr][read_fields + attrib_dim_itr];
                     }
                 }
+                read_fields += nb_dimensions;
             }
         }
     };
