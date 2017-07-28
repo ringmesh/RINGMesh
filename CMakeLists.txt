@@ -139,6 +139,11 @@ if(UNIX)
       # We do not want to execute the rest of the file in that case
       return()
     endif()
+
+    if(APPLE)
+        set(CMAKE_MACOSX_RPATH 1)
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    endif(APPLE)
 else(UNIX)
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
 endif(UNIX)
@@ -160,9 +165,10 @@ elseif(UNIX)
     # Determine gcc version and activate additional warnings available in latest versions
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE G++_VERSION)
 
-    if(G++_VERSION VERSION_LESS 4.8 )
-        message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
+    if(G++_VERSION VERSION_LESS 4.2 )
+        message(FATAL_ERROR "RINGMesh require G++ version >= 4.2")
     endif()
+    # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     add_compile_options(-Wsign-conversion)
     add_compile_options(-Wdouble-promotion)
@@ -216,6 +222,15 @@ endif()
 
 #------------------------------------------------------------------------------------------------
 # Add compiler options for OpenMP
+if(APPLE)
+    # TODO check the case gnu
+    if(USE_OPENMP)
+        # Comment from geogram: "Compile and link with OpenMP ** NOT YET SUPPORTED in clang 3 **"
+        SET(USE_OPENMP FALSE)
+	message(WARNING "OPENMP has been desactivated since not supported by clang." )
+    endif(USE_OPENMP)
+endif(APPLE)
+
 if(USE_OPENMP)
     find_package(OpenMP)
     if (OPENMP_FOUND)
