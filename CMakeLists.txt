@@ -223,7 +223,6 @@ endif()
 #------------------------------------------------------------------------------------------------
 # Add compiler options for OpenMP
 if(APPLE)
-    # TODO check the case gnu
     if(USE_OPENMP)
         # Comment from geogram: "Compile and link with OpenMP ** NOT YET SUPPORTED in clang 3 **"
         SET(USE_OPENMP FALSE)
