@@ -67,8 +67,14 @@ namespace RINGMesh {
 #ifdef WIN32
         Sleep(milliseconds);
 #else
-        // usleep takes microseconds
-        usleep( static_cast< __useconds_t >( milliseconds * 1000 ) );
+     // usleep takes microseconds
+     const index_t microseconds = milliseconds * 1000;
+#    ifdef linux
+         usleep( static_cast< __useconds_t >( microseconds ) );
+#     else
+	 // Mac OS
+         usleep( static_cast< __darwin_useconds_t >( microseconds ) );
+#     endif
 #endif
     }
 
