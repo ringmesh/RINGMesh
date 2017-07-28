@@ -46,37 +46,14 @@
 
 #include <ringmesh/visualization/gfx_application.h>
 
+#include <thread>
+#include <chrono>
+
 /*!
  * @author Pierre Anquez
  */
 
 namespace RINGMesh {
-
-    /*!
-     * Cross-platform function to make a pause
-     */
-
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
-    void wait( const index_t milliseconds )
-    {
-#ifdef WIN32
-        Sleep(milliseconds);
-#else
-     // usleep takes microseconds
-     const index_t microseconds = milliseconds * 1000;
-#    ifdef linux
-         usleep( static_cast< __useconds_t >( microseconds ) );
-#     else
-	 // Mac OS
-         usleep( static_cast< __darwin_useconds_t >( microseconds ) );
-#     endif
-#endif
-    }
 
     class StartAppThread: public GEO::Thread {
     public:
@@ -104,7 +81,7 @@ namespace RINGMesh {
         virtual void run()
         {
             // Wait some seconds to be sure that the windows is really opened
-            wait( 4000 );
+            std::this_thread::sleep_for( std::chrono::seconds( 4 ) );
             app_.quit();
         }
 

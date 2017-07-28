@@ -165,9 +165,18 @@ elseif(UNIX)
     # Determine gcc version and activate additional warnings available in latest versions
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE G++_VERSION)
 
-    if(G++_VERSION VERSION_LESS 4.2 )
-        message(FATAL_ERROR "RINGMesh require G++ version >= 4.2")
-    endif()
+    # C++11 fully works on Linux from gcc/g++ 4.8 (before not fully operational).
+    # On MacOS, it seems that C++11 is working since gcc/g++ 4.2.
+    if(APPLE)
+        if(G++_VERSION VERSION_LESS 4.2 )
+            message(FATAL_ERROR "RINGMesh require G++ version >= 4.2")
+        endif()
+    else(APPLE)
+        # Linux
+        if(G++_VERSION VERSION_LESS 4.8 )
+            message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
+        endif()
+    endif(APPLE)
     # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     add_compile_options(-Wsign-conversion)
