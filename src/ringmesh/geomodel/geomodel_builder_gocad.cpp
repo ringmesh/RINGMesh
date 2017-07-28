@@ -84,7 +84,7 @@ namespace {
 		index_t nb_attribute_fields )
 	{
 		std::vector< double > vertex( nb_attribute_fields );
-		for( const index_t i : range( nb_attribute_fields ) ){
+		for( index_t i : range( nb_attribute_fields ) ){
 			ringmesh_assert( !in.field_matches( start_field, "CNXYZ" ) );
 			ringmesh_assert( !in.field_matches( start_field, "XYZ" ) );
 			vertex[i] = in.field_as_double( start_field++ );
@@ -451,8 +451,8 @@ namespace {
         const GeoModel3D& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
-        index_t cur_region = 0;
-        index_t nb_added_surf_sides = 0;
+        index_t cur_region { 0 };
+        index_t nb_added_surf_sides { 0 };
         // Maximum 2 regions could be bounded by a single surface
         while( cur_region < geomodel.nb_regions() && nb_added_surf_sides < 2 ) {
             index_t nb_surf_sides_are_boundary = NO_ID;
@@ -586,7 +586,7 @@ namespace {
         const vec3 barycenter = mesh.polygon_edge_barycenter(
             PolygonLocalEdge( polygon, edge ) );
         std::vector< index_t > result;
-        index_t tested_surf = 0;
+        index_t tested_surf { 0 };
         while( result.empty() && tested_surf < surface_nns.size() ) {
             if( surface_boxes[tested_surf].contains( barycenter ) ) {
                 result = surface_nns[tested_surf]->get_neighbors( barycenter,
@@ -642,7 +642,7 @@ namespace {
     }
 
     // Indices begin to 1 in Gocad
-    index_t GOCAD_OFFSET = 1;
+    index_t GOCAD_OFFSET { 1 };
 
     class LoadZSign final : public GocadLineParser {
     private:

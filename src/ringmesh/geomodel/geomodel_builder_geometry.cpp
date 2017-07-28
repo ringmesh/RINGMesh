@@ -662,7 +662,7 @@ namespace RINGMesh {
         const Line< DIMENSION >& line = geomodel_.line( line_id );
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
             create_surface_builder( surface_id );
-        index_t nb_disconnected_edges = 0;
+        index_t nb_disconnected_edges { 0 };
         for( index_t i : range( line.nb_mesh_elements() ) ) {
             const vecn< DIMENSION >& p0 = line.vertex( i );
             const vecn< DIMENSION >& p1 = line.vertex( i + 1 );
@@ -780,7 +780,7 @@ namespace RINGMesh {
         const Surface3D& surface = geomodel_.surface( surface_id );
         std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
-        index_t nb_disconnected_polygons = 0;
+        index_t nb_disconnected_polygons { 0 };
         for( index_t polygon : range( surface.nb_mesh_elements() ) ) {
             bool found = false;
             index_t cell = NO_ID;

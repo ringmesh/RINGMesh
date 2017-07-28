@@ -215,7 +215,7 @@ namespace RINGMesh {
         bool find_region_id_from_name( const std::string& region_name,
             index_t& region_id )
         {
-            for( const size_t i : range( region_names_.size() ) ){
+            for( size_t i : range( region_names_.size() ) ){
                 if( region_name.compare( region_names_[i] ) == 0 ){
                     region_id = region_ids_[i];
                     ringmesh_assert( region_id != NO_ID );
@@ -226,14 +226,14 @@ namespace RINGMesh {
             return false;
         }
 
-        const std::vector< index_t >& get_regions()
+        const std::vector< index_t >& get_regions() const
         {
             return region_ids_;
         }
 
         void get_tetra_corners_with_this_region_id( index_t region_id,
-            std::vector< index_t >& region_tetra_corners_local ){
-
+            std::vector< index_t >& region_tetra_corners_local ) const
+        {
             unsigned int counter { 0 };
             for( index_t tetra_region_id : vertices_region_id_ ) {
                 if( tetra_region_id == region_id ){
@@ -251,7 +251,7 @@ namespace RINGMesh {
             std::vector< std::vector< double > >& region_tetra_attributes ) const {
 
             index_t gocad_id { 0 };
-            for( std::vector< double > attrib : stored_attributes ){
+            for( const std::vector< double >& attrib : stored_attributes ){
                 if( gocad_ids2region_ids_[gocad_id] == region_id ){
                     if( lighttsolid_atom_map.find( gocad_id ) == lighttsolid_atom_map.end() ){
                         region_tetra_attributes.push_back( stored_attributes[gocad_id] );
@@ -271,12 +271,12 @@ namespace RINGMesh {
             index_t region_id,
             const std::map< index_t, index_t >& lighttsolid_atom_map,
             std::vector< vec3 >& region_tetra_vertices,
-            std::vector< index_t >& local_ids ){
-
+            std::vector< index_t >& local_ids ) const
+        {
             local_ids.clear();
 
             index_t gocad_id { 0 };
-            for( vec3 vertex : stored_vertices ){
+            for( const vec3& vertex : stored_vertices ){
                 if( gocad_ids2region_ids_[gocad_id] == region_id ){
                     if( lighttsolid_atom_map.find( gocad_id ) == lighttsolid_atom_map.end() ){
                         region_tetra_vertices.push_back( stored_vertices[gocad_id] );
@@ -330,9 +330,9 @@ namespace RINGMesh {
             size_t lighttsolid_region_nb = nb_regions();
 
             // For every region ...
-            for( const index_t rgion_id : range( lighttsolid_region_nb ) ) {
+            for( index_t rgion_id : range( lighttsolid_region_nb ) ) {
                 // we want to record the region ids of the LightTSolid vertices ...
-                for( const index_t lighttsolid_vertices_id : range( lighttsolid_vertices_nb ) ) {
+                for( index_t lighttsolid_vertices_id : range( lighttsolid_vertices_nb ) ) {
                     // that are in this region.
                     if( region_id( lighttsolid_vertices_id ) == rgion_id ) {
                         index_t gocad_vertex_i = gocad_vertex_id( lighttsolid_vertices_id );
@@ -351,10 +351,10 @@ namespace RINGMesh {
             size_t lighttsolid_region_nb = nb_regions();
 
             // For every region ...
-            for( const index_t rgion_id : range( lighttsolid_region_nb ) ) {
+            for( index_t rgion_id : range( lighttsolid_region_nb ) ) {
                 // we want to record the local ids of the LightTSolid vertices ...
                 std::vector< index_t > local_ids = local_ids_[rgion_id];
-                for( const index_t lighttsolid_vertices_id : range( lighttsolid_vertices_nb ) ) {
+                for( index_t lighttsolid_vertices_id : range( lighttsolid_vertices_nb ) ) {
                     // that are in this region.
                     if( region_id( lighttsolid_vertices_id ) == rgion_id ) {
                         index_t gocad_vertex_i = gocad_vertex_id( lighttsolid_vertices_id );
@@ -372,7 +372,7 @@ namespace RINGMesh {
 
         void deal_with_same_region_atoms( std::map< index_t, index_t > lighttsolid_atom_map )
         {
-            for( std::pair< index_t, index_t > pair : lighttsolid_atom_map ){
+            for( const std::pair< index_t, index_t >& pair : lighttsolid_atom_map ){
                 if( region( pair.first ) == region( pair.second ) ){
                     gocad_ids2local_ids_[pair.first]
                         = gocad_ids2local_ids_[pair.second];
@@ -488,7 +488,7 @@ namespace RINGMesh {
         */
         index_t initialize_region(
             const std::string& region_name,
-            GeoModelBuilderGocad& geomodel_builder )
+            GeoModelBuilderGocad& geomodel_builder ) const
         {
             gmme_id cur_region =
                 geomodel_builder.topology.create_mesh_entity< Region >();
@@ -499,8 +499,8 @@ namespace RINGMesh {
         void assign_attributes_to_mesh(
             index_t region_id,
             const Region< 3 >& region, TSolidLoadingStorage& load_storage,
-            const std::vector< std::vector< double > >& region_attributes ){
-
+            const std::vector< std::vector< double > >& region_attributes ) const 
+        {
             index_t read_fields { 0 };
             for( index_t attrib_itr : range( load_storage.vertex_attribute_names_.size() ) ) {
                 std::string name = load_storage.vertex_attribute_names_[attrib_itr];
