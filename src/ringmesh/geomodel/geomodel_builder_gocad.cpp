@@ -84,7 +84,7 @@ namespace {
 		index_t nb_attribute_fields )
 	{
 		std::vector< double > vertex( nb_attribute_fields );
-		for( index_t i = 0; i < nb_attribute_fields; i++){
+		for( const index_t i : range( nb_attribute_fields ) ){
 			ringmesh_assert( !in.field_matches( start_field, "CNXYZ" ) );
 			ringmesh_assert( !in.field_matches( start_field, "XYZ" ) );
 			vertex[i] = in.field_as_double( start_field++ );
