@@ -194,7 +194,7 @@ namespace RINGMesh {
         }
 
         void add_new_region( index_t region_id,
-            std::string region_name )
+            const std::string& region_name )
         {
             region_ids_.push_back( region_id );
             region_names_.push_back( region_name );
@@ -212,18 +212,18 @@ namespace RINGMesh {
             return static_cast<index_t>( region_ids_.size() );
         }
 
-        bool find_region_id_from_name( const std::string& region_name,
-            index_t& region_id )
+        std::tuple< bool, index_t > find_region_id_from_name( const std::string& region_name )
         {
+            index_t region_id;
             for( size_t i : range( region_names_.size() ) ){
                 if( region_name.compare( region_names_[i] ) == 0 ){
                     region_id = region_ids_[i];
                     ringmesh_assert( region_id != NO_ID );
-                    return true;
+                    return std::make_tuple( true, region_id );
                 }
             }
             region_id = NO_ID;
-            return false;
+            return std::make_tuple( false, region_id );
         }
 
         const std::vector< index_t >& get_regions() const
@@ -248,8 +248,8 @@ namespace RINGMesh {
             const std::vector< std::vector< double > >& stored_attributes,
             index_t region_id,
             const std::map< index_t, index_t >& lighttsolid_atom_map,
-            std::vector< std::vector< double > >& region_tetra_attributes ) const {
-
+            std::vector< std::vector< double > >& region_tetra_attributes ) const 
+        {
             index_t gocad_id { 0 };
             for( const std::vector< double >& attrib : stored_attributes ){
                 if( gocad_ids2region_ids_[gocad_id] == region_id ){
@@ -370,7 +370,7 @@ namespace RINGMesh {
             }
         }
 
-        void deal_with_same_region_atoms( std::map< index_t, index_t > lighttsolid_atom_map )
+        void deal_with_same_region_atoms( const std::map< index_t, index_t >& lighttsolid_atom_map )
         {
             for( const std::pair< index_t, index_t >& pair : lighttsolid_atom_map ){
                 if( region( pair.first ) == region( pair.second ) ){
