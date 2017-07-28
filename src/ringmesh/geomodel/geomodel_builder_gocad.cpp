@@ -876,11 +876,10 @@ namespace {
         {
             std::string region_name = line.field( 2 );
 
-            index_t region_id = NO_ID;
-
             // Record new regions
-            if( !load_storage.vertex_map_.
-                find_region_id_from_name( region_name, region_id ) ){
+            auto output = load_storage.vertex_map_.find_region_id_from_name( region_name );
+            auto region_id = std::get<1>( output );
+            if( !std::get<0>(output) ){
                 region_id = initialize_region( region_name, builder() );
                 load_storage.vertex_map_.add_new_region(
                     region_id, region_name );
@@ -1022,7 +1021,7 @@ namespace {
          */
         void read_and_add_atom_to_region_vertices(
             const GeoModel3D& geomodel,
-            GEO::LineInput& line,
+            const GEO::LineInput& line,
             const TSolidLoadingStorage& load_storage,
             std::vector< vec3 >& region_vertices,
             std::vector< std::vector< double > >& region_attributes,
@@ -1092,7 +1091,7 @@ namespace {
          * @return Indices of the four vertices
          */
         std::vector< index_t > read_tetraedra(
-            GEO::LineInput& in,
+            const GEO::LineInput& in,
             const VertexMap& vertex_map )
         {
             std::vector< index_t > corners_id( 4 );
@@ -1280,7 +1279,7 @@ namespace {
          * to build polygons
          */
         void read_triangle(
-            GEO::LineInput& in,
+            const GEO::LineInput& in,
             std::vector< index_t >& cur_surf_polygons )
         {
             cur_surf_polygons.push_back( in.field_as_uint( 1 ) - GOCAD_OFFSET );
