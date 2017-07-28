@@ -169,6 +169,7 @@ namespace {
     }
 
     template< index_t DIMENSION >
+
     index_t edge_index_from_polygon_and_edge_vertex_indices(
         const Surface< DIMENSION >& surface,
         index_t p,
@@ -601,6 +602,24 @@ namespace RINGMesh {
         if( nb_disconnected_edges > 0 ) {
             duplicate_surface_vertices_along_line( surface_id, line_id );
         }
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderGeometryBase< DIMENSION >::invert_surface_normals( index_t surface_id )
+    {
+        ringmesh_assert( surface_id < geomodel_.nb_surfaces() );
+        Surface< DIMENSION >& surface =
+            dynamic_cast< Surface< DIMENSION >& >( geomodel_access_.modifiable_mesh_entity(
+                gmme_id( Surface < DIMENSION > ::type_name_static(), surface_id ) ) );
+        /// TODO find a way to avoid the const_cast. May create a mesh2d which
+        /// is the same as the one of the surface, and then inverse the normals
+        /// in this new mesh2d. At the end the new mesh2d is assigned to the
+        /// surface (the previous mesh should be deleted?)... to discuss BC
+        std::unique_ptr < SurfaceMeshBuilder< DIMENSION > > builder =
+            SurfaceMeshBuilder < DIMENSION
+                > ::create_builder(
+                    const_cast< SurfaceMesh< DIMENSION >& >( surface.low_level_mesh_storage() ) );
+        builder->invert_normals();
     }
 
     struct ElementVertex {

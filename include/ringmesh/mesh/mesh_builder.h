@@ -201,12 +201,10 @@ namespace RINGMesh {
         {
             mesh_base_->vertex_nn_search_.reset();
         }
-
         /*!
          * @brief Deletes the NNSearch on vertices
          */
         virtual void clear_vertex_linked_objects() = 0;
-
     private:
         /*!
          * @brief Copy a mesh into this one.
@@ -318,7 +316,6 @@ namespace RINGMesh {
         {
             this->delete_vertex_nn_search();
         }
-
     protected:
         PointSetMesh< DIMENSION >* pointset_mesh_ { nullptr };
     };
@@ -456,7 +453,6 @@ namespace RINGMesh {
         {
             line_mesh_->edge_nn_search_.reset();
         }
-
         void clear_vertex_linked_objects() override
         {
             this->delete_vertex_nn_search();
@@ -772,6 +768,7 @@ namespace RINGMesh {
             index_t min_polygons ) = 0;
         virtual void triangulate(
             const SurfaceMeshBase< DIMENSION >& surface_in ) = 0;
+        virtual void invert_normals() = 0;
         /*!@}
          */
         /*!
@@ -802,7 +799,6 @@ namespace RINGMesh {
         {
             surface_mesh_->nn_search_.reset();
         }
-
         /*!
          * @brief Deletes the AABB on polygons
          */
@@ -1064,7 +1060,6 @@ namespace RINGMesh {
 
     private:
         virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) = 0;
-
         /*!
          * @brief Deletes the NNSearch on cells
          */
@@ -1073,7 +1068,6 @@ namespace RINGMesh {
             volume_mesh_->cell_nn_search_.reset();
             volume_mesh_->cell_facet_nn_search_.reset();
         }
-
         /*!
          * @brief Deletes the AABB on cells
          */

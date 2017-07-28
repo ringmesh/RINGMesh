@@ -947,7 +947,6 @@ namespace RINGMesh {
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
-
     template< index_t DIMENSION >
     ElementLocalVertex Region< DIMENSION >::find_cell_from_colocated_vertex_if_any(
         const vecn< DIMENSION >& vertex_vec ) const

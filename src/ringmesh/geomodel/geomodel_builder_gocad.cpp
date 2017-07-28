@@ -629,7 +629,6 @@ namespace {
 
     // Indices begin to 1 in Gocad
     index_t GOCAD_OFFSET = 1;
-
     class LoadZSign final : public GocadLineParser {
     private:
         void execute( GEO::LineInput& line, GocadLoadingStorage& load_storage ) final
@@ -1259,7 +1258,6 @@ namespace RINGMesh {
             }
         }
     }
-
     void initialize_gocad_import_factories()
     {
         ringmesh_register_GocadLineParser_creator( LoadZSign, "ZPOSITIVE" );
@@ -1270,5 +1268,6 @@ namespace RINGMesh {
         tsolid_import_factory_initialize();
         ml_import_factory_initialize();
     }
+
 }
 // RINGMesh namespace

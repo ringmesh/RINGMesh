@@ -46,6 +46,7 @@
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/basic/nn_search.h>
 #include <ringmesh/mesh/aabb.h>
 
@@ -65,7 +66,6 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     using MeshType = std::string;
-
     struct ElementLocalVertex {
         ElementLocalVertex() = default;
         ElementLocalVertex( index_t element_id, index_t local_vertex_id )
@@ -190,7 +190,6 @@ namespace RINGMesh {
     };
 
     CLASS_DIMENSION_ALIASES( MeshBase );
-
     /*!
      * class for encapsulating mesh composed of points
      */
@@ -208,7 +207,6 @@ namespace RINGMesh {
     protected:
         PointSetMesh() = default;
     };
-
     CLASS_DIMENSION_ALIASES( PointSetMesh );
 
     template< index_t DIMENSION >
@@ -230,6 +228,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( LineMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class LineMeshBuilder< DIMENSION > ;
+
     public:
         virtual ~LineMesh() = default;
 
@@ -307,7 +306,6 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_;
         mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_;
     };
-
     CLASS_DIMENSION_ALIASES( LineMesh );
 
     template< index_t DIMENSION >
@@ -343,7 +341,6 @@ namespace RINGMesh {
          */
         virtual index_t polygon_vertex(
             const ElementLocalVertex& polygon_local_vertex ) const = 0;
-
         /*!
          * @brief Gets the number of all polygons in the whole Mesh.
          */
@@ -408,7 +405,6 @@ namespace RINGMesh {
                     nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 );
             }
         }
-
         /*!
          * @brief Get the previous edge on the border
          * @details The returned border edge is the previous in the way of polygon edges
@@ -478,7 +474,6 @@ namespace RINGMesh {
          */
         virtual index_t polygon_adjacent(
             const PolygonLocalEdge& polygon_local_edge ) const = 0;
-
         virtual GEO::AttributesManager& polygon_attribute_manager() const = 0;
         /*!
          * @brief Tests whether all the polygons are triangles. when all the polygons are triangles, storage and access is optimized.
@@ -762,6 +757,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( VolumeMesh );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
         friend class VolumeMeshBuilder< DIMENSION > ;
+
     public:
         virtual ~VolumeMesh() = default;
 
@@ -812,7 +808,6 @@ namespace RINGMesh {
          */
         virtual index_t cell_facet(
             const CellLocalFacet& cell_local_facet ) const = 0;
-
         /*!
          * Computes the Mesh cell edge length
          * @param[in] cell_id the facet index
@@ -970,7 +965,6 @@ namespace RINGMesh {
          * @brief compute the volume of the cell \param cell_id.
          */
         virtual double cell_volume( index_t cell_id ) const = 0;
-
         std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
             index_t cell_hint ) const;
@@ -984,7 +978,6 @@ namespace RINGMesh {
             }
             return NO_ID;
         }
-
         bool find_cell_from_colocated_vertex_within_distance_if_any(
             const vecn< DIMENSION >& vertex_vec,
             double distance,
@@ -1047,7 +1040,6 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_;
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_;
     };
-
     using VolumeMesh3D = VolumeMesh< 3 >;
 
     template< index_t DIMENSION >
@@ -1068,7 +1060,6 @@ namespace RINGMesh {
         void create_point_set_mesh( const MeshType type );
         void create_line_mesh( const MeshType type );
         void create_surface_mesh( const MeshType type );
-
     protected:
         MeshSetBase();
 

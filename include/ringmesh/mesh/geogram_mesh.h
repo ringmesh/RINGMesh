@@ -41,6 +41,7 @@
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_topology.h>
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
@@ -132,7 +133,6 @@ namespace RINGMesh {
             return mesh_->edges.vertex(
                 edge_local_vertex.element_id_, edge_local_vertex.local_vertex_id_ );
         }
-
         index_t nb_edges() const override
         {
             return mesh_->edges.nb();
@@ -161,7 +161,6 @@ namespace RINGMesh {
         {
             return mesh_->facets.nb();
         }
-
         index_t nb_polygon_vertices( index_t polygon_id ) const override
         {
             return mesh_->facets.nb_vertices( polygon_id );
@@ -172,12 +171,10 @@ namespace RINGMesh {
             return mesh_->facets.adjacent(
                 polygon_local_edge.polygon_id_, polygon_local_edge.local_edge_id_ );
         }
-
         GEO::AttributesManager& polygon_attribute_manager() const override
         {
             return mesh_->facets.attributes();
         }
-
         bool polygons_are_simplicies() const override
         {
             return mesh_->facets.are_simplices();
@@ -195,7 +192,6 @@ namespace RINGMesh {
         {
             return mesh_->cells.vertex( cell_local_vertex.element_id_, cell_local_vertex.local_vertex_id_ );
         }
-
         index_t cell_edge_vertex(
             index_t cell_id,
             index_t edge_id,
@@ -203,7 +199,6 @@ namespace RINGMesh {
         {
             return mesh_->cells.edge_vertex( cell_id, edge_id, vertex_id );
         }
-
         index_t cell_facet_vertex(
             const CellLocalFacet& cell_local_facet,
             index_t vertex_id ) const override
@@ -211,7 +206,6 @@ namespace RINGMesh {
             return mesh_->cells.facet_vertex(
                 cell_local_facet.cell_id_, cell_local_facet.local_facet_id_, vertex_id );
         }
-
         index_t cell_facet( const CellLocalFacet& cell_local_facet ) const override
         {
             return mesh_->cells.facet(
@@ -222,29 +216,24 @@ namespace RINGMesh {
         {
             return mesh_->cells.nb_facets( cell_id );
         }
-
         index_t nb_cell_facets() const override
         {
             return mesh_->cell_facets.nb();
         }
-
         index_t nb_cell_edges( index_t cell_id ) const override
         {
             return mesh_->cells.nb_edges( cell_id );
         }
-
         index_t nb_cell_facet_vertices(
             const CellLocalFacet& cell_local_facet ) const override
         {
             return mesh_->cells.facet_nb_vertices(
                 cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
         }
-
         index_t nb_cell_vertices( index_t cell_id ) const override
         {
             return mesh_->cells.nb_vertices( cell_id );
         }
-
         index_t nb_cells() const override
         {
             return mesh_->cells.nb();
@@ -254,33 +243,27 @@ namespace RINGMesh {
         {
             return mesh_->cells.corners_begin( cell_id );
         }
-
         index_t cell_end( index_t cell_id ) const override
         {
             return mesh_->cells.corners_end( cell_id );
         }
-
         index_t cell_adjacent( const CellLocalFacet& cell_local_facet ) const override
         {
             return mesh_->cells.adjacent(
                 cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
         }
-
         GEO::AttributesManager& cell_attribute_manager() const override
         {
             return mesh_->cells.attributes();
         }
-
         GEO::AttributesManager& cell_facet_attribute_manager() const override
         {
             return mesh_->cell_facets.attributes();
         }
-
         CellType cell_type( index_t cell_id ) const override
         {
             return static_cast<CellType>( mesh_->cells.type( cell_id ) );
         }
-
         bool cells_are_simplicies() const override
         {
             return mesh_->cells.are_simplices();
@@ -291,7 +274,6 @@ namespace RINGMesh {
             return RINGMesh::mesh_cell_volume( *mesh_, cell_id );
         }
     };
-
     using GeogramVolumeMesh2D = GeogramVolumeMesh< 2 >;
     using GeogramVolumeMesh3D = GeogramVolumeMesh< 3 >;
 
