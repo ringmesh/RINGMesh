@@ -1,18 +1,17 @@
-How to compile RINGMesh             {#ringmesh_compiling}
-=======================
+# How to compile RINGMesh             {#ringmesh_compiling}
 
 [![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0/branch/default?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh/branch/default)
 [![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmeshcoverage/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmeshcoverage?branch=default)
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 2.8.11). There is no other dependency (everything
- you need is shipped with RINGMesh). Follow the Linux or Windows instructions below.
+you need is shipped with RINGMesh). Follow the Linux, Mac OS or Windows instructions below.
 
-Linux
-=====
+# Unix-like operating systems
 
-Configuring RINGMesh
-------------------
+Tested on Linux (Debian-based and Red Hat-based distributions) and Mac OS.
+
+## Configuring RINGMesh
 
 Execute cmake command in a RINGMesh/build directory.
 
@@ -28,11 +27,12 @@ To define the options, use the cmake interface:
 * cmake-gui .. or ccmake ..
 
 
-Compiling RINGMesh
-------------------
+## Compiling RINGMesh
 
-To compile you need the following packages (tested on Debian-based linux):
+### Necessary packages
 
+#### Linux
+To compile you need the following packages (on Debian-based linux):
 * build-essential
 * libx11-dev
 * libxrandr-dev
@@ -42,6 +42,15 @@ To compile you need the following packages (tested on Debian-based linux):
 * libxi-dev
 
 Note: you need gcc/g++ version higher or equal to 4.8 to compile RINGMesh.
+
+#### Mac OS
+You need to install the Mac OS "Command Line Developer Tools".
+XCode project generation is not supported yet.
+
+Note: you need gcc/g++ version higher or equal to 4.2 to compile RINGMesh.
+In Mac OS, clang is used.
+
+### Compiling
 
 Then, to compile RINGMesh, go to RINGMesh root directory and:
 
@@ -56,8 +65,7 @@ select the root directory (RINGMesh directory) then click on Finish. There are t
 build configurations: release and debug. There is a target to clean and compile. There are
 also targets to build/rebuild geogram.
 
-Compiling the documentation
----------------------------
+## Compiling the documentation
 
 The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
 
@@ -75,11 +83,9 @@ doc-devkit-lite include only the RINGMesh documentation
 Then you can go in doc/devkit[-lite]/html and open the index.html with your web browser.
 A ringmesh.qch file is generated in doc/devkit[-lite]/html (to load in Qt Assistant).
 
-Windows
-=======
+# Windows
 
-Configuring RINGMesh
-------------------
+## Configuring RINGMesh
 
 Launch CMake GUI, indicate where is the source code as the path to RINGMesh root and 
 where to put the binaries as this_root/build/ringmesh.
@@ -92,8 +98,7 @@ RINGMesh has previously been compiled with:
 * Visual Studio 12 2013 Win64
 * Visual Studio 14 2015 Win64
 
-Compiling RINGMesh
-------------------
+## Compiling RINGMesh
 
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step:
@@ -109,8 +114,7 @@ The available compilation modes are:
 * RelWithDebInfo (mandatory to debug a Gocad plugin in Debug mode with a Gocad
   in Release, there are issues between libraries in Debug linked to a Gocad plugin)
 
-Compiling the documentation
----------------------------
+## Compiling the documentation
 
 The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
 
