@@ -144,11 +144,6 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
-if(APPLE)
-    set(CMAKE_MACOSX_RPATH 1)
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-endif(APPLE)
-
 message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}") 
 message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}") 
 
@@ -202,6 +197,11 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # are automatically built with the same build type as RINGMesh.
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+
+if(APPLE)
+    set(CMAKE_MACOSX_RPATH 1)
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif(APPLE)
 
 #------------------------------------------------------------------------------------------------
 # Compil Third Parties
