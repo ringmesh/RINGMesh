@@ -95,7 +95,7 @@ set (RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RING
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them
-if(UNIX)    
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")    
     # If the CMAKE_BUILD_TYPE is no defined
     # i.e. at first run of that file
     if(CMAKE_BUILD_TYPE STREQUAL "")
@@ -140,13 +140,9 @@ if(UNIX)
       return()
     endif()
 
-    if(APPLE)
-        set(CMAKE_MACOSX_RPATH 1)
-        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-    endif(APPLE)
-else(UNIX)
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
-endif(UNIX)
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}") 
 message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}") 
@@ -155,10 +151,7 @@ include(cmake/utils.cmake)
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
-if(WIN32)
-    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
-    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
-elseif(UNIX)
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
     
@@ -198,10 +191,17 @@ elseif(UNIX)
         list(LENGTH procs PROCESSOR_COUNT)
     endif()
     set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
-else(WIN32)
-    # Nothing else really supported
-    message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    
-endif(WIN32)
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
+    # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
+    # are automatically built with the same build type as RINGMesh.
+    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+
+if(APPLE)
+    set(CMAKE_MACOSX_RPATH 1)
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif(APPLE)
 
 #------------------------------------------------------------------------------------------------
 # Compil Third Parties
