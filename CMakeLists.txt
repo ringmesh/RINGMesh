@@ -156,10 +156,7 @@ include(cmake/utils.cmake)
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
-if(WIN32)
-    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
-    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
-elseif(UNIX)
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
     
@@ -198,13 +195,13 @@ elseif(UNIX)
         file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
         list(LENGTH procs PROCESSOR_COUNT)
     endif()
-    # TODO TO FIX ASAP
-    message(STATUS "Nb cpu ${PROCESSOR_COUNT}")
-    #set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
-else(WIN32)
-    # Nothing else really supported
-    message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    
-endif(WIN32)
+    set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
+    # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
+    # are automatically built with the same build type as RINGMesh.
+    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 #------------------------------------------------------------------------------------------------
 # Compil Third Parties
