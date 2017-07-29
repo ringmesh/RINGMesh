@@ -143,6 +143,10 @@ if(UNIX)
     if(APPLE)
         set(CMAKE_MACOSX_RPATH 1)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+	# TODO if Xcode generation for is below
+    	set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
+
     endif(APPLE)
 else(UNIX)
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
@@ -197,7 +201,9 @@ elseif(UNIX)
         file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
         list(LENGTH procs PROCESSOR_COUNT)
     endif()
-    set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
+    # TODO TO FIX ASAP
+    message(STATUS "Nb cpu ${PROCESSOR_COUNT}")
+    #set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
 else(WIN32)
     # Nothing else really supported
     message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    
