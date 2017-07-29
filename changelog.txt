@@ -4,7 +4,7 @@ Major change:
      * Meshes can be defined using only 2 coordinates
 
 New Features:
- * Add support to Mac OS using Clang (Unix Makefile generation only). Works
+ * Add support to Mac OS using Clang (Unix Makefile and Xcode project). Works
        with the internal eclipse project.
  * Add import of SVG file for GeoModel2D. 
        We only read pathes and they should be flat. There is a command to flatten pathes in Inkscape.
