@@ -41,7 +41,7 @@ RINGMesh is a programming library to ease the use of geological models in genera
 It includes one efficient data structure to represent meshed geological models: the \link ringmesh_geo_model GeoModel\endlink.
 
 - <a href="http://ring.georessources.univ-lorraine.fr/index.php/software/downloads/ringmesh">Download</a>
-- \link How to compile RINGMesh \endlink
+- \link ringmesh_compiling How to compile RINGMesh \endlink
 - \link ringmesh_license License and bundled third-party software \endlink
 - \link ringmesh_features RINGMesh Functionalities \endlink
 - \link ringmesh_geo_model Description of the GeoModel \endlink
