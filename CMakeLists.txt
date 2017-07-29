@@ -95,7 +95,7 @@ set (RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RING
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them
-if(UNIX)    
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")    
     # If the CMAKE_BUILD_TYPE is no defined
     # i.e. at first run of that file
     if(CMAKE_BUILD_TYPE STREQUAL "")
@@ -140,17 +140,14 @@ if(UNIX)
       return()
     endif()
 
-    if(APPLE)
-        set(CMAKE_MACOSX_RPATH 1)
-        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-
-	# TODO if Xcode generation for is below
-    	set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
-
-    endif(APPLE)
-else(UNIX)
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
-endif(UNIX)
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+
+if(APPLE)
+    set(CMAKE_MACOSX_RPATH 1)
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif(APPLE)
 
 message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}") 
 message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}") 
