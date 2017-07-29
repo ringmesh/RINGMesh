@@ -8,13 +8,12 @@ RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 2.8.11). There is no other dependency (everything
 you need is shipped with RINGMesh). Follow the Linux, Mac OS or Windows instructions below.
 
-Unix-like operating systems
+Linux
 ===========================
-
-Tested on Linux (Debian-based and Red Hat-based distributions) and Mac OS.
 
 Configuring RINGMesh
 --------------------
+<a name="linux_configuration"></a>
 
 Execute cmake command in a RINGMesh/build directory.
 
@@ -32,9 +31,8 @@ To define the options, use the cmake interface:
 
 Compiling RINGMesh
 ------------------
+<a name="linux_compilation"></a>
 
-### Necessary packages
-#### Linux
 To compile you need the following packages (on Debian-based linux):
 * build-essential
 * libx11-dev
@@ -45,15 +43,6 @@ To compile you need the following packages (on Debian-based linux):
 * libxi-dev
 
 Note: you need gcc/g++ version higher or equal to 4.8 to compile RINGMesh.
-
-#### Mac OS
-You need to install the Mac OS "Command Line Developer Tools".
-XCode project generation is not supported yet.
-
-Note: you need gcc/g++ version higher or equal to 4.2 to compile RINGMesh.
-In Mac OS, clang is used.
-
-### Compiling
 
 Then, to compile RINGMesh, go to RINGMesh root directory and:
 
@@ -70,8 +59,7 @@ also targets to build/rebuild geogram.
 
 Compiling the documentation
 ---------------------------
-
-The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
+<a name="linux_documentation"></a>
 
 * Check the BUILD_DOCUMENTATION option when using cmake
  * cd build
@@ -81,17 +69,15 @@ The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/
 * cd build/ringmesh/Release
 * make doc-devkit OR make doc-devkit-lite
 
-doc-devkit include full documentation of RINGMesh and Geogram
-doc-devkit-lite include only the RINGMesh documentation
-
-Then you can go in doc/devkit[-lite]/html and open the index.html with your web browser.
-A ringmesh.qch file is generated in doc/devkit[-lite]/html (to load in Qt Assistant).
+You can also build the documentation through eclipse (see available targets).
+See the [documentation](#about_documentation) section for more details.
 
 Windows
 =======
 
 Configuring RINGMesh
 --------------------
+<a name="windows_configuration"></a>
 
 Launch CMake GUI, indicate where is the source code as the path to RINGMesh root and 
 where to put the binaries as this_root/build/ringmesh.
@@ -106,6 +92,7 @@ RINGMesh has previously been compiled with:
 
 Compiling RINGMesh
 ------------------
+<a name="windows_compilation"></a>
 
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step:
@@ -123,15 +110,65 @@ The available compilation modes are:
 
 Compiling the documentation
 ---------------------------
-
-The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
+<a name="windows_documentation"></a>
 
 * Check the BUILD_DOCUMENTATION option when using cmake
 * Open the solution which is in build/ringmesh/RINGmesh.sln in VisualStudio
 * Build the doc-devkit or the doc-devkit-lite project
 
-doc-devkit include full documentation of RINGMesh and Geogram
-doc-devkit-lite include only the RINGMesh documentation
+See the [documentation](#about_documentation) section for more details.
+
+Mac OS
+======
+
+Configuring RINGMesh
+--------------------
+### Using clang (without Xcode)
+As in [Linux](#linux_configuration).
+
+### Using Xcode IDE
+As in [Windows](#windows_configuration) but with the Xcode generator
+(use "-G Xcode" if you use cmake in command lines).
+
+Compiling RINGMesh
+------------------
+You need to install the Mac OS "Command Line Developer Tools".
+
+Note: you need gcc/g++ version higher or equal to 4.2 to compile RINGMesh.
+In Mac OS, clang is used.
+
+### Using clang (without Xcode)
+As in [Linux](#linux_compilation) except for the packages.
+
+### Using Xcode IDE
+You need to install Xcode IDE.
+Open the build/ringmesh/RINGMesh.xcodeproj with Xcode IDE,
+and then compile (as in [Windows](#windows_compilation) with VisualStudio).
+Or use these command lines:
+* cd build/ringmesh
+* xcodebuild -project RINGMesh.xcodeproj -alltargets -configuration Release
+
+To build in Debug, replace "Release" by "Debug" after "-configuration".
+
+Compiling the documentation
+---------------------------
+
+See the [documentation](#about_documentation) section for more details.
+
+### Using clang (without Xcode)
+As in [Linux](#linux_documentation).
+
+### Using Xcode IDE
+As in [Windows](#windows_documentation) with VisualStudio but with Xcode.
+
+About documentation
+===================
+<a name="about_documentation"></a>
+
+The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/).
+Two targets are available:
+* doc-devkit include full documentation of RINGMesh and Geogram
+* doc-devkit-lite include only the RINGMesh documentation
 
 Then you can go in doc/devkit[-lite]/html and open the index.html with your web browser.
 A ringmesh.qch file is generated in doc/devkit[-lite]/html (to load in Qt Assistant).
