@@ -31,10 +31,9 @@ To define the options, use the cmake interface:
 
 
 Compiling RINGMesh
---------------------
+------------------
 
 ### Necessary packages
-
 #### Linux
 To compile you need the following packages (on Debian-based linux):
 * build-essential
