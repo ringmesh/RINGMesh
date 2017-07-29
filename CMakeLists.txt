@@ -151,7 +151,7 @@ include(cmake/utils.cmake)
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
     
@@ -164,6 +164,8 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
         if(G++_VERSION VERSION_LESS 4.2 )
             message(FATAL_ERROR "RINGMesh require G++ version >= 4.2")
         endif()
+        set(CMAKE_MACOSX_RPATH 1)
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
     else(APPLE)
         # Linux
         if(G++_VERSION VERSION_LESS 4.8 )
@@ -183,7 +185,9 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
        include(Coveralls)
        coveralls_turn_on_coverage()
     endif()
+endif(UNIX)
     
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Enable parallel computation
     set(cpuinfo_file "/proc/cpuinfo")
     if(EXISTS "${cpuinfo_file}")
@@ -197,11 +201,6 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # are automatically built with the same build type as RINGMesh.
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-
-if(APPLE)
-    set(CMAKE_MACOSX_RPATH 1)
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-endif(APPLE)
 
 #------------------------------------------------------------------------------------------------
 # Compil Third Parties
