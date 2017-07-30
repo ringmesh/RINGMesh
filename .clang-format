@@ -1,0 +1,10 @@
+BasedOnStyle: Chromium
+
+AlignTrailingComments: false
+ColumnLimit: 80
+IndentWidth: 4
+Language: Cpp
+MaxEmptyLinesToKeep: 1
+SpacesBeforeTrailingComments: 1
+TabWidth: 4
+UseTab: Never
