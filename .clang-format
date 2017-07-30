@@ -1,4 +1,4 @@
-BasedOnStyle: Chromium
+BasedOnStyle: WebKit
 
 AlignTrailingComments: false
 ColumnLimit: 80
