@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA) All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -47,253 +47,204 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeogramPointSetMeshBuilder;
-    template< index_t DIMENSION > class GeogramLineMeshBuilder;
-    template< index_t DIMENSION > class GeogramSurfaceMeshBuilder;
-    template< index_t DIMENSION > class GeogramVolumeMeshBuilder;
-}
+template <index_t DIMENSION> class GeogramPointSetMeshBuilder;
+template <index_t DIMENSION> class GeogramLineMeshBuilder;
+template <index_t DIMENSION> class GeogramSurfaceMeshBuilder;
+template <index_t DIMENSION> class GeogramVolumeMeshBuilder;
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
-#define COMMON_GEOGRAM_MESH_IMPLEMENTATION( Class )                          \
-    friend class Class ## Builder< DIMENSION >;                              \
-    public:                                                                  \
-        Class()                                                              \
-            : mesh_( new GEO::Mesh( DIMENSION, false ) )                     \
-        {                                                                    \
-        }                                                                    \
-        virtual ~Class() = default;                                          \
-        static MeshType type_name_static()                                   \
-        {                                                                    \
-            return #Class;                                                   \
-        }                                                                    \
-        void save_mesh( const std::string& filename ) const override         \
-        {                                                                    \
-            GEO::mesh_save( *mesh_, filename, GEO::MeshIOFlags() );          \
-        }                                                                    \
-        const GEO::Mesh& gfx_mesh() const                                    \
-        {                                                                    \
-            return *mesh_;                                                   \
-        }                                                                    \
-        void print_mesh_bounded_attributes() const override                  \
-        {                                                                    \
-            print_bounded_attributes( *mesh_ );                              \
-        }                                                                    \
-        GEO::AttributesManager& vertex_attribute_manager() const override    \
-        {                                                                    \
-            return mesh_->vertices.attributes();                             \
-        }                                                                    \
-        MeshType type_name() const override                                  \
-        {                                                                    \
-            return type_name_static();                                       \
-        }                                                                    \
-        static std::string default_extension_static()                        \
-        {                                                                    \
-            return "geogram";                                                \
-        }                                                                    \
-        std::string default_extension() const override                       \
-        {                                                                    \
-            return default_extension_static();                               \
-        }                                                                    \
-        const vecn< DIMENSION >& vertex( index_t v_id ) const override       \
-        {                                                                    \
-            ringmesh_assert( v_id < nb_vertices() );                         \
-            double* vertex_ptr = mesh_->vertices.point_ptr( v_id );          \
-            return *( vecn< DIMENSION >* )( vertex_ptr );                    \
-        }                                                                    \
-        index_t nb_vertices() const override                                 \
-        {                                                                    \
-            return mesh_->vertices.nb();                                     \
-        }                                                                    \
-    private:                                                                 \
-        vecn< DIMENSION >& ref_vertex( index_t v_id )                        \
-        {                                                                    \
-            ringmesh_assert( v_id < nb_vertices() );                         \
-            double* vertex_ptr = mesh_->vertices.point_ptr( v_id );          \
-            return *( vecn< DIMENSION >* )( vertex_ptr );                    \
-        }                                                                    \
-    protected:                                                               \
-        std::unique_ptr< GEO::Mesh > mesh_
+#define COMMON_GEOGRAM_MESH_IMPLEMENTATION(Class)                              \
+    friend class Class##Builder<DIMENSION>;                                    \
+                                                                               \
+  public:                                                                      \
+    Class() : mesh_(new GEO::Mesh(DIMENSION, false)) {}                        \
+    virtual ~Class() = default;                                                \
+    static MeshType type_name_static() { return #Class; }                      \
+    void save_mesh(const std::string &filename) const override {               \
+        GEO::mesh_save(*mesh_, filename, GEO::MeshIOFlags());                  \
+    }                                                                          \
+    const GEO::Mesh &gfx_mesh() const { return *mesh_; }                       \
+    void print_mesh_bounded_attributes() const override {                      \
+        print_bounded_attributes(*mesh_);                                      \
+    }                                                                          \
+    GEO::AttributesManager &vertex_attribute_manager() const override {        \
+        return mesh_->vertices.attributes();                                   \
+    }                                                                          \
+    MeshType type_name() const override { return type_name_static(); }         \
+    static std::string default_extension_static() { return "geogram"; }        \
+    std::string default_extension() const override {                           \
+        return default_extension_static();                                     \
+    }                                                                          \
+    const vecn<DIMENSION> &vertex(index_t v_id) const override {               \
+        ringmesh_assert(v_id < nb_vertices());                                 \
+        double *vertex_ptr = mesh_->vertices.point_ptr(v_id);                  \
+        return *(vecn<DIMENSION> *)(vertex_ptr);                               \
+    }                                                                          \
+    index_t nb_vertices() const override { return mesh_->vertices.nb(); }      \
+                                                                               \
+  private:                                                                     \
+    vecn<DIMENSION> &ref_vertex(index_t v_id) {                                \
+        ringmesh_assert(v_id < nb_vertices());                                 \
+        double *vertex_ptr = mesh_->vertices.point_ptr(v_id);                  \
+        return *(vecn<DIMENSION> *)(vertex_ptr);                               \
+    }                                                                          \
+                                                                               \
+  protected:                                                                   \
+    std::unique_ptr<GEO::Mesh> mesh_
 
-    template< index_t DIMENSION >
-    class GeogramPointSetMesh: public PointSetMesh< DIMENSION > {
-        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
-    };
+template <index_t DIMENSION>
+class GeogramPointSetMesh : public PointSetMesh<DIMENSION> {
+    COMMON_GEOGRAM_MESH_IMPLEMENTATION(GeogramPointSetMesh);
+};
 
-    using GeogramPointSetMesh2D = GeogramPointSetMesh< 2 >;
-    using GeogramPointSetMesh3D = GeogramPointSetMesh< 3 >;
+using GeogramPointSetMesh2D = GeogramPointSetMesh<2>;
+using GeogramPointSetMesh3D = GeogramPointSetMesh<3>;
 
-    template< index_t DIMENSION >
-    class GeogramLineMesh: public LineMesh< DIMENSION > {
-        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
-    public:
-        index_t edge_vertex( const ElementLocalVertex& edge_local_vertex ) const override
-        {
-            return mesh_->edges.vertex(
-                edge_local_vertex.element_id_, edge_local_vertex.local_vertex_id_ );
-        }
+template <index_t DIMENSION>
+class GeogramLineMesh : public LineMesh<DIMENSION> {
+    COMMON_GEOGRAM_MESH_IMPLEMENTATION(GeogramLineMesh);
 
-        index_t nb_edges() const override
-        {
-            return mesh_->edges.nb();
-        }
+  public:
+    index_t
+    edge_vertex(const ElementLocalVertex &edge_local_vertex) const override {
+        return mesh_->edges.vertex(edge_local_vertex.element_id_,
+                                   edge_local_vertex.local_vertex_id_);
+    }
 
-        GEO::AttributesManager& edge_attribute_manager() const override
-        {
-            return mesh_->edges.attributes();
-        }
-    };
+    index_t nb_edges() const override { return mesh_->edges.nb(); }
 
-    using GeogramLineMesh2D = GeogramLineMesh< 2 >;
-    using GeogramLineMesh3D = GeogramLineMesh< 3 >;
+    GEO::AttributesManager &edge_attribute_manager() const override {
+        return mesh_->edges.attributes();
+    }
+};
 
-    template< index_t DIMENSION >
-    class GeogramSurfaceMesh: public SurfaceMesh< DIMENSION > {
-        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
-    public:
-        index_t polygon_vertex( const ElementLocalVertex& polygon_local_vertex ) const override
-        {
-            return mesh_->facets.vertex(
-                polygon_local_vertex.element_id_, polygon_local_vertex.local_vertex_id_ );
-        }
+using GeogramLineMesh2D = GeogramLineMesh<2>;
+using GeogramLineMesh3D = GeogramLineMesh<3>;
 
-        index_t nb_polygons() const override
-        {
-            return mesh_->facets.nb();
-        }
+template <index_t DIMENSION>
+class GeogramSurfaceMesh : public SurfaceMesh<DIMENSION> {
+    COMMON_GEOGRAM_MESH_IMPLEMENTATION(GeogramSurfaceMesh);
 
-        index_t nb_polygon_vertices( index_t polygon_id ) const override
-        {
-            return mesh_->facets.nb_vertices( polygon_id );
-        }
+  public:
+    index_t polygon_vertex(
+        const ElementLocalVertex &polygon_local_vertex) const override {
+        return mesh_->facets.vertex(polygon_local_vertex.element_id_,
+                                    polygon_local_vertex.local_vertex_id_);
+    }
 
-        index_t polygon_adjacent( const PolygonLocalEdge& polygon_local_edge ) const override
-        {
-            return mesh_->facets.adjacent(
-                polygon_local_edge.polygon_id_, polygon_local_edge.local_edge_id_ );
-        }
+    index_t nb_polygons() const override { return mesh_->facets.nb(); }
 
-        GEO::AttributesManager& polygon_attribute_manager() const override
-        {
-            return mesh_->facets.attributes();
-        }
+    index_t nb_polygon_vertices(index_t polygon_id) const override {
+        return mesh_->facets.nb_vertices(polygon_id);
+    }
 
-        bool polygons_are_simplicies() const override
-        {
-            return mesh_->facets.are_simplices();
-        }
-    };
+    index_t polygon_adjacent(
+        const PolygonLocalEdge &polygon_local_edge) const override {
+        return mesh_->facets.adjacent(polygon_local_edge.polygon_id_,
+                                      polygon_local_edge.local_edge_id_);
+    }
 
-    using GeogramSurfaceMesh2D = GeogramSurfaceMesh< 2 >;
-    using GeogramSurfaceMesh3D = GeogramSurfaceMesh< 3 >;
+    GEO::AttributesManager &polygon_attribute_manager() const override {
+        return mesh_->facets.attributes();
+    }
 
-    template< index_t DIMENSION >
-    class GeogramVolumeMesh: public VolumeMesh< DIMENSION > {
-        COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramVolumeMesh );
-    public:
-        index_t cell_vertex( const ElementLocalVertex& cell_local_vertex ) const override
-        {
-            return mesh_->cells.vertex( cell_local_vertex.element_id_, cell_local_vertex.local_vertex_id_ );
-        }
+    bool polygons_are_simplicies() const override {
+        return mesh_->facets.are_simplices();
+    }
+};
 
-        index_t cell_edge_vertex(
-            index_t cell_id,
-            index_t edge_id,
-            index_t vertex_id ) const override
-        {
-            return mesh_->cells.edge_vertex( cell_id, edge_id, vertex_id );
-        }
+using GeogramSurfaceMesh2D = GeogramSurfaceMesh<2>;
+using GeogramSurfaceMesh3D = GeogramSurfaceMesh<3>;
 
-        index_t cell_facet_vertex(
-            const CellLocalFacet& cell_local_facet,
-            index_t vertex_id ) const override
-        {
-            return mesh_->cells.facet_vertex(
-                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_, vertex_id );
-        }
+template <index_t DIMENSION>
+class GeogramVolumeMesh : public VolumeMesh<DIMENSION> {
+    COMMON_GEOGRAM_MESH_IMPLEMENTATION(GeogramVolumeMesh);
 
-        index_t cell_facet( const CellLocalFacet& cell_local_facet ) const override
-        {
-            return mesh_->cells.facet(
-                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
-        }
+  public:
+    index_t
+    cell_vertex(const ElementLocalVertex &cell_local_vertex) const override {
+        return mesh_->cells.vertex(cell_local_vertex.element_id_,
+                                   cell_local_vertex.local_vertex_id_);
+    }
 
-        index_t nb_cell_facets( index_t cell_id ) const override
-        {
-            return mesh_->cells.nb_facets( cell_id );
-        }
+    index_t cell_edge_vertex(index_t cell_id, index_t edge_id,
+                             index_t vertex_id) const override {
+        return mesh_->cells.edge_vertex(cell_id, edge_id, vertex_id);
+    }
 
-        index_t nb_cell_facets() const override
-        {
-            return mesh_->cell_facets.nb();
-        }
+    index_t cell_facet_vertex(const CellLocalFacet &cell_local_facet,
+                              index_t vertex_id) const override {
+        return mesh_->cells.facet_vertex(cell_local_facet.cell_id_,
+                                         cell_local_facet.local_facet_id_,
+                                         vertex_id);
+    }
 
-        index_t nb_cell_edges( index_t cell_id ) const override
-        {
-            return mesh_->cells.nb_edges( cell_id );
-        }
+    index_t cell_facet(const CellLocalFacet &cell_local_facet) const override {
+        return mesh_->cells.facet(cell_local_facet.cell_id_,
+                                  cell_local_facet.local_facet_id_);
+    }
 
-        index_t nb_cell_facet_vertices(
-            const CellLocalFacet& cell_local_facet ) const override
-        {
-            return mesh_->cells.facet_nb_vertices(
-                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
-        }
+    index_t nb_cell_facets(index_t cell_id) const override {
+        return mesh_->cells.nb_facets(cell_id);
+    }
 
-        index_t nb_cell_vertices( index_t cell_id ) const override
-        {
-            return mesh_->cells.nb_vertices( cell_id );
-        }
+    index_t nb_cell_facets() const override { return mesh_->cell_facets.nb(); }
 
-        index_t nb_cells() const override
-        {
-            return mesh_->cells.nb();
-        }
+    index_t nb_cell_edges(index_t cell_id) const override {
+        return mesh_->cells.nb_edges(cell_id);
+    }
 
-        index_t cell_begin( index_t cell_id ) const override
-        {
-            return mesh_->cells.corners_begin( cell_id );
-        }
+    index_t nb_cell_facet_vertices(
+        const CellLocalFacet &cell_local_facet) const override {
+        return mesh_->cells.facet_nb_vertices(cell_local_facet.cell_id_,
+                                              cell_local_facet.local_facet_id_);
+    }
 
-        index_t cell_end( index_t cell_id ) const override
-        {
-            return mesh_->cells.corners_end( cell_id );
-        }
+    index_t nb_cell_vertices(index_t cell_id) const override {
+        return mesh_->cells.nb_vertices(cell_id);
+    }
 
-        index_t cell_adjacent( const CellLocalFacet& cell_local_facet ) const override
-        {
-            return mesh_->cells.adjacent(
-                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
-        }
+    index_t nb_cells() const override { return mesh_->cells.nb(); }
 
-        GEO::AttributesManager& cell_attribute_manager() const override
-        {
-            return mesh_->cells.attributes();
-        }
+    index_t cell_begin(index_t cell_id) const override {
+        return mesh_->cells.corners_begin(cell_id);
+    }
 
-        GEO::AttributesManager& cell_facet_attribute_manager() const override
-        {
-            return mesh_->cell_facets.attributes();
-        }
+    index_t cell_end(index_t cell_id) const override {
+        return mesh_->cells.corners_end(cell_id);
+    }
 
-        CellType cell_type( index_t cell_id ) const override
-        {
-            return static_cast<CellType>( mesh_->cells.type( cell_id ) );
-        }
+    index_t
+    cell_adjacent(const CellLocalFacet &cell_local_facet) const override {
+        return mesh_->cells.adjacent(cell_local_facet.cell_id_,
+                                     cell_local_facet.local_facet_id_);
+    }
 
-        bool cells_are_simplicies() const override
-        {
-            return mesh_->cells.are_simplices();
-        }
+    GEO::AttributesManager &cell_attribute_manager() const override {
+        return mesh_->cells.attributes();
+    }
 
-        double cell_volume( index_t cell_id ) const override
-        {
-            return RINGMesh::mesh_cell_volume( *mesh_, cell_id );
-        }
-    };
+    GEO::AttributesManager &cell_facet_attribute_manager() const override {
+        return mesh_->cell_facets.attributes();
+    }
 
-    using GeogramVolumeMesh2D = GeogramVolumeMesh< 2 >;
-    using GeogramVolumeMesh3D = GeogramVolumeMesh< 3 >;
+    CellType cell_type(index_t cell_id) const override {
+        return static_cast<CellType>(mesh_->cells.type(cell_id));
+    }
 
-    void register_geogram_mesh();
+    bool cells_are_simplicies() const override {
+        return mesh_->cells.are_simplices();
+    }
+
+    double cell_volume(index_t cell_id) const override {
+        return RINGMesh::mesh_cell_volume(*mesh_, cell_id);
+    }
+};
+
+using GeogramVolumeMesh2D = GeogramVolumeMesh<2>;
+using GeogramVolumeMesh3D = GeogramVolumeMesh<3>;
+
+void register_geogram_mesh();
 }

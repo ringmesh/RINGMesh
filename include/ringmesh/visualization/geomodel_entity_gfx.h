@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA) All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -49,377 +49,354 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelGfx;
-    template< index_t DIMENSION > class PointSetMeshGfx;
-    template< index_t DIMENSION > class LineMeshGfx;
-    template< index_t DIMENSION > class SurfaceMeshGfx;
-    template< index_t DIMENSION > class VolumeMeshGfx;
-    template< index_t DIMENSION > class MeshEntityGfx;
+template <index_t DIMENSION> class GeoModelGfx;
+template <index_t DIMENSION> class PointSetMeshGfx;
+template <index_t DIMENSION> class LineMeshGfx;
+template <index_t DIMENSION> class SurfaceMeshGfx;
+template <index_t DIMENSION> class VolumeMeshGfx;
+template <index_t DIMENSION> class MeshEntityGfx;
 
-    CLASS_DIMENSION_ALIASES( GeoModelGfx );
-}
+CLASS_DIMENSION_ALIASES(GeoModelGfx);
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
-    template< index_t DIMENSION >
-    class GeoModelGfxEntity {
-    ringmesh_disable_copy( GeoModelGfxEntity );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
-    public:
-        GeoModelGfxEntity( GeoModelGfx< DIMENSION >& gfx );
-        virtual ~GeoModelGfxEntity() = default;
+template <index_t DIMENSION> class GeoModelGfxEntity {
+    ringmesh_disable_copy(GeoModelGfxEntity);
+    ringmesh_template_assert_2d_or_3d(DIMENSION);
 
-        virtual void draw() = 0;
-        virtual void initialize() = 0;
-        void set_scalar_attribute(
-            GEO::MeshElementsFlags subelements,
-            const std::string& name,
-            double attr_min,
-            double attr_max,
-            GLuint colormap_texture );
-        void unset_scalar_attribute();
+  public:
+    GeoModelGfxEntity(GeoModelGfx<DIMENSION> &gfx);
+    virtual ~GeoModelGfxEntity() = default;
 
-        /*!
-         * Sets the entity color to all the entities
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_vertex_color( float red, float green, float blue );
-        /*!
-         * Sets the vertex color
-         * @param[in] entity_id the entity index
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_vertex_color(
-            index_t entity_id,
-            float red,
-            float green,
-            float blue );
-        /*!
-         * Sets the vertex entity visibility to all the entities
-         * @param[in] is_visible the visibility
-         */
-        void set_vertex_visibility( bool is_visible );
-        /*!
-         * Sets the vertex entity visibility
-         * @param[in] entity_id the entity index
-         * @param[in] is_visible the visibility
-         */
-        void set_vertex_visibility( index_t entity_id, bool is_visible );
-        /*!
-         * Sets the vertex size to all the elements
-         * @param[in] size the size
-         */
-        void set_vertex_size( index_t size );
-        /*!
-         * Sets the vertex size to all the elements
-         * @param[in] entity_id the entity index
-         * @param[in] size the size
-         */
-        void set_vertex_size( index_t entity_id, index_t size );
+    virtual void draw() = 0;
+    virtual void initialize() = 0;
+    void set_scalar_attribute(GEO::MeshElementsFlags subelements,
+                              const std::string &name, double attr_min,
+                              double attr_max, GLuint colormap_texture);
+    void unset_scalar_attribute();
 
-    protected:
-        GeoModelGfx< DIMENSION >& gfx_;
-        std::vector< std::unique_ptr< MeshEntityGfx< DIMENSION > > > entities_;
-    };
+    /*!
+     * Sets the entity color to all the entities
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_vertex_color(float red, float green, float blue);
+    /*!
+     * Sets the vertex color
+     * @param[in] entity_id the entity index
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_vertex_color(index_t entity_id, float red, float green,
+                          float blue);
+    /*!
+     * Sets the vertex entity visibility to all the entities
+     * @param[in] is_visible the visibility
+     */
+    void set_vertex_visibility(bool is_visible);
+    /*!
+     * Sets the vertex entity visibility
+     * @param[in] entity_id the entity index
+     * @param[in] is_visible the visibility
+     */
+    void set_vertex_visibility(index_t entity_id, bool is_visible);
+    /*!
+     * Sets the vertex size to all the elements
+     * @param[in] size the size
+     */
+    void set_vertex_size(index_t size);
+    /*!
+     * Sets the vertex size to all the elements
+     * @param[in] entity_id the entity index
+     * @param[in] size the size
+     */
+    void set_vertex_size(index_t entity_id, index_t size);
 
-    template< index_t DIMENSION >
-    class CornerGfxEntity final: public GeoModelGfxEntity< DIMENSION > {
-    public:
-        CornerGfxEntity( GeoModelGfx< DIMENSION >& gfx );
-        virtual ~CornerGfxEntity() = default;
+  protected:
+    GeoModelGfx<DIMENSION> &gfx_;
+    std::vector<std::unique_ptr<MeshEntityGfx<DIMENSION>>> entities_;
+};
 
-        PointSetMeshGfx< DIMENSION >& corner( index_t corner_id );
+template <index_t DIMENSION>
+class CornerGfxEntity final : public GeoModelGfxEntity<DIMENSION> {
+  public:
+    CornerGfxEntity(GeoModelGfx<DIMENSION> &gfx);
+    virtual ~CornerGfxEntity() = default;
 
-        /*!
-         * Draws the corners
-         */
-        void draw() override;
-        void initialize() override;
-    };
+    PointSetMeshGfx<DIMENSION> &corner(index_t corner_id);
 
-    template< index_t DIMENSION >
-    class LineGfxEntity final: public GeoModelGfxEntity< DIMENSION > {
-    public:
-        LineGfxEntity( GeoModelGfx< DIMENSION >& gfx );
-        virtual ~LineGfxEntity() = default;
+    /*!
+     * Draws the corners
+     */
+    void draw() override;
+    void initialize() override;
+};
 
-        LineMeshGfx< DIMENSION >& line( index_t line_id );
+template <index_t DIMENSION>
+class LineGfxEntity final : public GeoModelGfxEntity<DIMENSION> {
+  public:
+    LineGfxEntity(GeoModelGfx<DIMENSION> &gfx);
+    virtual ~LineGfxEntity() = default;
 
-        /*!
-         * Draws the lines
-         */
-        void draw() override;
-        void initialize() override;
+    LineMeshGfx<DIMENSION> &line(index_t line_id);
 
-        /*!
-         * Sets the line color
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_line_color( float red, float green, float blue );
-        /*!
-         * Sets the line color
-         * @param[in] line_id the line index
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_line_color( index_t line_id, float red, float green, float blue );
-        /*!
-         * Sets the line visibility
-         * @param[in] is_visible the visibility
-         */
-        void set_line_visibility( bool is_visible );
-        /*!
-         * Sets the line visibility
-         * @param[in] line_id the line index
-         * @param[in] is_visible the visibility
-         */
-        void set_line_visibility( index_t line_id, bool is_visible );
-        /*!
-         * Sets the line size
-         * @param[in] size the size
-         */
-        void set_line_size( index_t size );
-        /*!
-         * Sets the line size
-         * @param[in] line_id the line index
-         * @param[in] size the size
-         */
-        void set_line_size( index_t line_id, index_t size );
+    /*!
+     * Draws the lines
+     */
+    void draw() override;
+    void initialize() override;
 
-    };
+    /*!
+     * Sets the line color
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_line_color(float red, float green, float blue);
+    /*!
+     * Sets the line color
+     * @param[in] line_id the line index
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_line_color(index_t line_id, float red, float green, float blue);
+    /*!
+     * Sets the line visibility
+     * @param[in] is_visible the visibility
+     */
+    void set_line_visibility(bool is_visible);
+    /*!
+     * Sets the line visibility
+     * @param[in] line_id the line index
+     * @param[in] is_visible the visibility
+     */
+    void set_line_visibility(index_t line_id, bool is_visible);
+    /*!
+     * Sets the line size
+     * @param[in] size the size
+     */
+    void set_line_size(index_t size);
+    /*!
+     * Sets the line size
+     * @param[in] line_id the line index
+     * @param[in] size the size
+     */
+    void set_line_size(index_t line_id, index_t size);
+};
 
-    template< index_t DIMENSION >
-    class SurfaceGfxEntity final: public GeoModelGfxEntity< DIMENSION > {
-    public:
-        SurfaceGfxEntity( GeoModelGfx< DIMENSION >& gfx );
-        virtual ~SurfaceGfxEntity() = default;
+template <index_t DIMENSION>
+class SurfaceGfxEntity final : public GeoModelGfxEntity<DIMENSION> {
+  public:
+    SurfaceGfxEntity(GeoModelGfx<DIMENSION> &gfx);
+    virtual ~SurfaceGfxEntity() = default;
 
-        SurfaceMeshGfx< DIMENSION >& surface( index_t surface_id );
+    SurfaceMeshGfx<DIMENSION> &surface(index_t surface_id);
 
-        /*!
-         * Draws the surfaces
-         */
-        void draw() override;
-        void initialize() override;
-        /*!
-         * Sets the surfaces color
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_surface_color( float red, float green, float blue );
-        /*!
-         * Sets the surface color
-         * @param[in] s the surface index
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_surface_color(
-            index_t surface_id,
-            float red,
-            float green,
-            float blue );
-        /*!
-         * Sets the surface visibility
-         * @param[in] is_visible the visibility
-         */
-        void set_surface_visibility( bool is_visible );
-        /*!
-         * Sets the surface visibility
-         * @param[in] surface_id the surface index
-         * @param[in] is_visible the visibility
-         */
-        void set_surface_visibility( index_t surface_id, bool is_visible );
-        /*!
-         * Sets the backface surface color to all the elements
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_backface_surface_color( float red, float green, float blue );
-        /*!
-         * Sets the backsurface surface color
-         * @param[in] surface_id the surface index
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_backface_surface_color(
-            index_t surface_id,
-            float red,
-            float green,
-            float blue );
-        /*!
-         * Sets the mesh surface color to all the elements
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_mesh_color( float red, float green, float blue );
-        /*!
-         * Sets the mesh surface color
-         * @param[in] surface_id the surface index
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_mesh_color(
-            index_t surface_id,
-            float red,
-            float green,
-            float blue );
-        /*!
-         * Sets the mesh surface visibility to all the elements
-         * @param[in] is_visible the visibility
-         */
-        void set_mesh_visibility( bool is_visible );
-        /*!
-         * Sets the mesh surface visibility
-         * @param[in] surface_id the surface index
-         * @param[in] is_visible the visibility
-         */
-        void set_mesh_visibility( index_t surface_id, bool is_visible );
-        /*!
-         * Sets the mesh surface size to all the elements
-         * @param[in] size the size
-         */
-        void set_mesh_size( index_t size );
-        /*!
-         * Sets the mesh surface size
-         * @param[in] surface_id the surface index
-         * @param[in] size the size
-         */
-        void set_mesh_size( index_t surface_id, index_t size );
-    };
+    /*!
+     * Draws the surfaces
+     */
+    void draw() override;
+    void initialize() override;
+    /*!
+     * Sets the surfaces color
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_surface_color(float red, float green, float blue);
+    /*!
+     * Sets the surface color
+     * @param[in] s the surface index
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_surface_color(index_t surface_id, float red, float green,
+                           float blue);
+    /*!
+     * Sets the surface visibility
+     * @param[in] is_visible the visibility
+     */
+    void set_surface_visibility(bool is_visible);
+    /*!
+     * Sets the surface visibility
+     * @param[in] surface_id the surface index
+     * @param[in] is_visible the visibility
+     */
+    void set_surface_visibility(index_t surface_id, bool is_visible);
+    /*!
+     * Sets the backface surface color to all the elements
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_backface_surface_color(float red, float green, float blue);
+    /*!
+     * Sets the backsurface surface color
+     * @param[in] surface_id the surface index
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_backface_surface_color(index_t surface_id, float red, float green,
+                                    float blue);
+    /*!
+     * Sets the mesh surface color to all the elements
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_mesh_color(float red, float green, float blue);
+    /*!
+     * Sets the mesh surface color
+     * @param[in] surface_id the surface index
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_mesh_color(index_t surface_id, float red, float green, float blue);
+    /*!
+     * Sets the mesh surface visibility to all the elements
+     * @param[in] is_visible the visibility
+     */
+    void set_mesh_visibility(bool is_visible);
+    /*!
+     * Sets the mesh surface visibility
+     * @param[in] surface_id the surface index
+     * @param[in] is_visible the visibility
+     */
+    void set_mesh_visibility(index_t surface_id, bool is_visible);
+    /*!
+     * Sets the mesh surface size to all the elements
+     * @param[in] size the size
+     */
+    void set_mesh_size(index_t size);
+    /*!
+     * Sets the mesh surface size
+     * @param[in] surface_id the surface index
+     * @param[in] size the size
+     */
+    void set_mesh_size(index_t surface_id, index_t size);
+};
 
-    template< index_t DIMENSION >
-    class RegionGfxEntity final: public GeoModelGfxEntity< 3 > {
-    public:
-        RegionGfxEntity( GeoModelGfx3D& gfx );
-        virtual ~RegionGfxEntity() = default;
+template <index_t DIMENSION>
+class RegionGfxEntity final : public GeoModelGfxEntity<3> {
+  public:
+    RegionGfxEntity(GeoModelGfx3D &gfx);
+    virtual ~RegionGfxEntity() = default;
 
-        VolumeMeshGfx< DIMENSION >& region( index_t region_id );
+    VolumeMeshGfx<DIMENSION> &region(index_t region_id);
 
-        /*!
-         * Draws the Regions
-         */
-        void draw() override;
-        void initialize() override;
+    /*!
+     * Draws the Regions
+     */
+    void draw() override;
+    void initialize() override;
 
-        /*!
-         * Sets the region color
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_region_color( float red, float green, float blue );
-        /*!
-         * Sets the region color
-         * @param[in] region_id the region index
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_region_color(
-            index_t region_id,
-            float red,
-            float green,
-            float blue );
-        /*!
-         * Sets the region visibility to all the regions
-         * @param[in] is_visible the visibility
-         */
-        void set_region_visibility( bool is_visible );
-        /*!
-         * Sets the region visibility to all the regions
-         * @param[in] region_id the region index
-         * @param[in] is_visible the visibility
-         */
-        void set_region_visibility( index_t region_id, bool is_visible );
+    /*!
+     * Sets the region color
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_region_color(float red, float green, float blue);
+    /*!
+     * Sets the region color
+     * @param[in] region_id the region index
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_region_color(index_t region_id, float red, float green,
+                          float blue);
+    /*!
+     * Sets the region visibility to all the regions
+     * @param[in] is_visible the visibility
+     */
+    void set_region_visibility(bool is_visible);
+    /*!
+     * Sets the region visibility to all the regions
+     * @param[in] region_id the region index
+     * @param[in] is_visible the visibility
+     */
+    void set_region_visibility(index_t region_id, bool is_visible);
 
-        /*!
-         * Sets the mesh region color to all the regions
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_mesh_color( float red, float green, float blue );
-        /*!
-         * Sets the mesh region color
-         * @param[in] region_id the region index
-         * @param[in] red the red component of the color in [0.0, 1.0]
-         * @param[in] green the green component of the color in [0.0, 1.0]
-         * @param[in] blue the blue component of the color in [0.0, 1.0]
-         */
-        void set_mesh_color( index_t region_id, float red, float green, float blue );
-        /*!
-         * Sets the mesh region visibility to all the regions
-         * @param[in] is_visible the visibility
-         */
-        void set_mesh_visibility( bool is_visible );
-        /*!
-         * Sets the mesh region visibility
-         * @param[in] region_id the region index
-         * @param[in] is_visible the visibility
-         */
-        void set_mesh_visibility( index_t region_id, bool is_visible );
-        /*!
-         * Sets the mesh region size to all the regions
-         * @param[in] size the size
-         */
-        void set_mesh_size( index_t size );
-        /*!
-         * Sets the mesh region size
-         * @param[in] region_id the region index
-         * @param[in] size the size
-         */
-        void set_mesh_size( index_t region_id, index_t size );
+    /*!
+     * Sets the mesh region color to all the regions
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_mesh_color(float red, float green, float blue);
+    /*!
+     * Sets the mesh region color
+     * @param[in] region_id the region index
+     * @param[in] red the red component of the color in [0.0, 1.0]
+     * @param[in] green the green component of the color in [0.0, 1.0]
+     * @param[in] blue the blue component of the color in [0.0, 1.0]
+     */
+    void set_mesh_color(index_t region_id, float red, float green, float blue);
+    /*!
+     * Sets the mesh region visibility to all the regions
+     * @param[in] is_visible the visibility
+     */
+    void set_mesh_visibility(bool is_visible);
+    /*!
+     * Sets the mesh region visibility
+     * @param[in] region_id the region index
+     * @param[in] is_visible the visibility
+     */
+    void set_mesh_visibility(index_t region_id, bool is_visible);
+    /*!
+     * Sets the mesh region size to all the regions
+     * @param[in] size the size
+     */
+    void set_mesh_size(index_t size);
+    /*!
+     * Sets the mesh region size
+     * @param[in] region_id the region index
+     * @param[in] size the size
+     */
+    void set_mesh_size(index_t region_id, index_t size);
 
-        /*!
-         * Toggles the cell type to all the regions
-         */
-        void set_draw_cells( CellType type, bool x );
-        /*!
-         * Toggles the cell type display
-         */
-        void set_draw_cells( index_t region_id, CellType type, bool x );
-        /*!
-         * Toggles the cell region color per cell type to all the regions
-         */
-        void set_cell_colors_by_type();
-        /*!
-         * Toggles the cell region color per cell type
-         * @param[in] region_id the region index
-         */
-        void set_cell_colors_by_type( index_t region_id );
-        void set_cell_type_visibility( CellType t, bool is_visible );
-        void set_cell_type_visibility(
-            index_t region_id,
-            CellType t,
-            bool is_visible );
-        /*!
-         * Sets the cell region shrink to all the regions
-         * @param[in] shrink the shrink
-         */
-        void set_shrink( double shrink );
-        /*!
-         * Sets the cell region shrink
-         * @param[in] region_id the region index
-         * @param[in] shrink the shrink
-         */
-        void set_shrink( index_t region_id, double shrink );
+    /*!
+     * Toggles the cell type to all the regions
+     */
+    void set_draw_cells(CellType type, bool x);
+    /*!
+     * Toggles the cell type display
+     */
+    void set_draw_cells(index_t region_id, CellType type, bool x);
+    /*!
+     * Toggles the cell region color per cell type to all the regions
+     */
+    void set_cell_colors_by_type();
+    /*!
+     * Toggles the cell region color per cell type
+     * @param[in] region_id the region index
+     */
+    void set_cell_colors_by_type(index_t region_id);
+    void set_cell_type_visibility(CellType t, bool is_visible);
+    void set_cell_type_visibility(index_t region_id, CellType t,
+                                  bool is_visible);
+    /*!
+     * Sets the cell region shrink to all the regions
+     * @param[in] shrink the shrink
+     */
+    void set_shrink(double shrink);
+    /*!
+     * Sets the cell region shrink
+     * @param[in] region_id the region index
+     * @param[in] shrink the shrink
+     */
+    void set_shrink(index_t region_id, double shrink);
+};
 
-    };
-
-    CLASS_DIMENSION_ALIASES( RegionGfxEntity );
-}
+CLASS_DIMENSION_ALIASES(RegionGfxEntity);
+} // namespace RINGMesh
 
 #endif

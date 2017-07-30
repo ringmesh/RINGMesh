@@ -1,4 +1,4 @@
-BasedOnStyle: Chromium
+BasedOnStyle: LLVM
 
 AlignTrailingComments: false
 ColumnLimit: 80
