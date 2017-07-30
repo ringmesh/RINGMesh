@@ -1,4 +1,4 @@
-BasedOnStyle: Chromium
+BasedOnStyle: Mozilla
 
 AlignTrailingComments: false
 ColumnLimit: 80
