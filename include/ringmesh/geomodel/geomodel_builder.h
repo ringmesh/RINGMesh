@@ -177,17 +177,15 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 > {
+    class RINGMESH_API GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 > {
     public:
         GeoModelBuilder( GeoModel2D& geomodel );
-        virtual ~GeoModelBuilder() = default;
     };
 
     template< >
-    class GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 > {
+    class RINGMESH_API GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 > {
     public:
         GeoModelBuilder( GeoModel3D& geomodel );
-        virtual ~GeoModelBuilder() = default;
 
         void build_regions_from_lines_and_surfaces();
     };

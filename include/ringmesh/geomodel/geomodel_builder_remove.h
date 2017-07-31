@@ -607,7 +607,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelBuilderRemoval< 3 > : public GeoModelBuilderRemovalBase< 3 > {
+    class RINGMESH_API GeoModelBuilderRemoval< 3 > : public GeoModelBuilderRemovalBase< 3 > {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
         using GeoModelBuilder3D = GeoModelBuilder< 3 >;

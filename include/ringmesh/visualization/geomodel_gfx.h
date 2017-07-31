@@ -103,7 +103,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelGfx< 3 > final: public GeoModelGfxBase< 3 > {
+    class RINGMESH_API GeoModelGfx< 3 > final: public GeoModelGfxBase< 3 > {
     public:
         GeoModelGfx();
 
