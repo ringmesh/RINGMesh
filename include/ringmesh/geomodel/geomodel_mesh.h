@@ -1398,7 +1398,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
+    class RINGMESH_API GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
     public:
         GeoModelMesh( GeoModel3D& geomodel );
         virtual ~GeoModelMesh();
