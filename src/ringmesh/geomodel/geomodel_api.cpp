@@ -461,6 +461,7 @@ namespace RINGMesh {
 #endif
 
     template void RINGMESH_API print_geomodel( const GeoModel2D& );
+    template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel2D& );
     template index_t RINGMESH_API find_mesh_entity_id_from_name(
         const GeoModel2D&,
         const MeshEntityType&,
@@ -472,6 +473,7 @@ namespace RINGMesh {
     template void RINGMESH_API translate( GeoModel2D&, const vec2& );
 
     template void RINGMESH_API print_geomodel( const GeoModel3D& );
+    template void RINGMESH_API print_geomodel_mesh_stats( const GeoModel3D& );
     template index_t RINGMESH_API find_mesh_entity_id_from_name(
         const GeoModel3D&,
         const MeshEntityType&,

@@ -517,4 +517,5 @@ namespace RINGMesh {
     template class RINGMESH_API SurfaceMeshBase< 3 > ;
     template class RINGMESH_API VolumeMesh< 3 > ;
     template class RINGMESH_API MeshSetBase< 3 > ;
+    template class RINGMESH_API MeshSet< 3 > ;
 }
