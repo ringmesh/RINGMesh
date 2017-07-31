@@ -304,10 +304,10 @@ namespace RINGMesh {
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type );
         geomodel_access_.modifiable_geological_entities().emplace_back();
-        auto E = GeoModelGeologicalEntityFactory< DIMENSION >::create( type,
-            geomodel_ );
+        auto geol_entity = GeoModelGeologicalEntityFactory< DIMENSION >::create(
+            type, geomodel_ );
 
-        const MeshEntityType child_type = E->child_type_name();
+        const MeshEntityType child_type = geol_entity->child_type_name();
         RelationshipManager& parentage =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
         parentage.register_geology_relationship( type, child_type );
