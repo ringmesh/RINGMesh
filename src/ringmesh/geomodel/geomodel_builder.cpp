@@ -1004,12 +1004,10 @@ namespace RINGMesh {
     }
 
     template class RINGMESH_API GeoModelBuilderBase< 2 > ;
-    template class RINGMESH_API GeoModelBuilder< 2 > ;
     template class RINGMESH_API GeoModelBuilderInfo< 2 > ;
     template class RINGMESH_API GeoModelBuilderCopy< 2 > ;
 
     template class RINGMESH_API GeoModelBuilderBase< 3 > ;
-    template class RINGMESH_API GeoModelBuilder< 3 > ;
     template class RINGMESH_API GeoModelBuilderInfo< 3 > ;
     template class RINGMESH_API GeoModelBuilderCopy< 3 > ;
 

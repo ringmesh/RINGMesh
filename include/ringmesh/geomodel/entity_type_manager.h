@@ -194,14 +194,13 @@ namespace RINGMesh {
     };
 
     template< >
-    class MeshEntityTypeManager< 3 > : public MeshEntityTypeManagerBase< 3 > {
+    class RINGMESH_API MeshEntityTypeManager< 3 > : public MeshEntityTypeManagerBase< 3 > {
     public:
         bool is_region( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[3];
         }
     };
-
     CLASS_DIMENSION_ALIASES( MeshEntityTypeManager );
 
     /*!
