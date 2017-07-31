@@ -13,7 +13,12 @@ if(WIN32)
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
-    set(geoplatform Linux64-gcc-dynamic)
+    if(APPLE)
+        set(geoplatform Darwin-clang-dynamic)
+    else(APPLE)
+	# Linux
+        set(geoplatform Linux64-gcc-dynamic)
+    endif(APPLE)
 endif(WIN32)
 
 # Define Geogram as an external project that we know how to
@@ -32,7 +37,7 @@ ExternalProject_Add(geogram_ext
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
         -G ${CMAKE_GENERATOR} 
         -DVORPALINE_PLATFORM:STRING=${geoplatform}
-		-DGEOGRAM_WITH_LUA:BOOL=OFF
+        -DGEOGRAM_WITH_LUA:BOOL=OFF
         -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
