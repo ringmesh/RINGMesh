@@ -17,7 +17,7 @@ else(WIN32)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(geoplatform Linux64-clang-dynamic)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        set(geoplatform Linux64-clang-dynamic)
+        set(geoplatform Linux64-gcc-dynamic)
     endif()
 endif(WIN32)
 
