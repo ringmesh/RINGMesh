@@ -52,12 +52,12 @@ namespace RINGMesh {
      * Generic factory
      * Example of use with A the base class and B, C derived classes
      *      // Instantiation
-     *      Factory< std::string, A, int, double > factory;
+     *      using MyFactory = Factory< std::string, A, int, double >;
      *      // Registration
-     *      factory.register_creator< B >( "B" );   // B constructor takes an int and a double
-     *      factory.register_creator< C >( "C" );   // C constructor takes an int and a double
+     *      MyFactory::register_creator< B >( "B" );   // B constructor takes an int and a double
+     *      MyFactory::register_creator< C >( "C" );   // C constructor takes an int and a double
      *      // Creation
-     *      std::unique_ptr< A > c = factory.create( "C", 2, 8.6 );
+     *      std::unique_ptr< A > c = MyFactory::create( "C", 2, 8.6 );
      */
     template< typename Key, typename BaseClass, typename ...Args >
     class Factory: public GEO::InstanceRepo::Instance {
