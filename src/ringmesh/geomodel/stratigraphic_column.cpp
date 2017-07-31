@@ -67,6 +67,7 @@ namespace RINGMesh {
             min_thick_( min_thick ),
             max_thick_( max_thick )
     {
+        // TODO Should we keep this layer_? [AB]
         ringmesh_unused( layer_ );
     }
 
