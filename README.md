@@ -51,6 +51,12 @@ Then, to compile RINGMesh, go to RINGMesh root directory and:
 
 To build in debug, go to build/ringmesh/Debug instead.
 
+Note: if you get this error during geogram gfx compilation
+"No rule to make target '/usr/lib/x86_64-linux-gnu/libGL.so'"
+(occured for Ubuntu 17.04), do:
+* sudo rm /usr/lib/x86_64-linux-gnu/libGL.so
+* sudo ln -s /usr/lib/libGL.so.1 /usr/lib/x86_64-linux-gnu/libGL.so
+
 Eclipse-cdt project is provided (.project and .cproject). You can import RINGMesh into
 Eclipse: File>Import...>General>Existing Projects into Workspace. Click on next, then
 select the root directory (RINGMesh directory) then click on Finish. There are two
