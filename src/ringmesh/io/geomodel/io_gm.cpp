@@ -77,12 +77,12 @@ namespace {
             return;
         }
         for( index_t i : range( geomodel.nb_geological_entity_types() ) ) {
-            const std::string& type = geomodel.geological_entity_type( i );
+            const GeologicalEntityType& type = geomodel.geological_entity_type( i );
             index_t nb = geomodel.nb_geological_entities( type );
             out << "Nb " << type << " " << nb << EOL;
         }
         for( index_t i : range( geomodel.nb_geological_entity_types() ) ) {
-            const std::string& type = geomodel.geological_entity_type( i );
+            const GeologicalEntityType& type = geomodel.geological_entity_type( i );
             index_t nb = geomodel.nb_geological_entities( type );
             for( index_t j : range( nb ) ) {
                 save_geological_entity( out, geomodel.geological_entity( type, j ) );
@@ -96,7 +96,7 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         std::ofstream& out )
     {
-        const std::string& type = ENTITY::type_name_static();
+        const MeshEntityType& type = ENTITY::type_name_static();
         for( index_t e : range( geomodel.nb_mesh_entities( type ) ) ) {
             const ENTITY& cur_mesh_entity =
                 dynamic_cast< const ENTITY& >( geomodel.mesh_entity( type, e ) );
@@ -316,7 +316,7 @@ namespace {
     std::string build_string_for_geomodel_entity_export( const ENTITY& entity )
     {
         const gmme_id& id = entity.gmme();
-        std::string base_name = static_cast< std::string >( id.type() ) + "_"
+        std::string base_name = id.type().to_string() + "_"
             + std::to_string( id.index() );
         return base_name + "." + entity.low_level_mesh_storage().default_extension();
     }
@@ -354,7 +354,7 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         std::vector< std::string >& filenames )
     {
-        const std::string& type = ENTITY< DIMENSION >::type_name_static();
+        const MeshEntityType& type = ENTITY< DIMENSION >::type_name_static();
         GEO::Logger* logger = Logger::instance();
         bool logger_status = logger->is_quiet();
         logger->set_quiet( true );
@@ -367,6 +367,7 @@ namespace {
         }
         logger->set_quiet( logger_status );
     }
+
     template< index_t DIMENSION >
     void save_all_geomodel_mesh_entities_base(
         const GeoModel< DIMENSION >& geomodel,
@@ -503,5 +504,5 @@ namespace {
             std::vector< std::string >& filenames );
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelHandlerGM );
+    CLASS_DIMENSION_ALIASES (GeoModelHandlerGM);
 }

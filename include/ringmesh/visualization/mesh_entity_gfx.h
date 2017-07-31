@@ -47,8 +47,6 @@
 
 #include <ringmesh/mesh/mesh.h>
 
-#include <ringmesh/basic/factory.h>
-
 /*!
  * @file Classes for mesh entity visualization
  * @author Benjamin Chauvin and Arnaud Botella
