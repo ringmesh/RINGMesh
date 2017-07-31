@@ -78,12 +78,12 @@ namespace RINGMesh {
             }
         }
 
-        static std::unique_ptr< BaseClass > create( const Key& key, Args&&... args )
+        static std::unique_ptr< BaseClass > create( const Key& key, const Args&... args )
         {
             Factory& self = instance();
             auto creator = self.creators_.find( key );
             if( creator != self.creators_.end() ) {
-                return creator->second( std::forward< Args>( args )... );
+                return creator->second( std::forward< const Args& >( args )... );
             }
             return {};
         }

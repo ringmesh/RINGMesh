@@ -41,9 +41,13 @@
 
 #include <memory>
 
-#include <geogram/basic/factory.h>
-
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
+
+#include <ringmesh/basic/factory.h>
+
+#include <ringmesh/mesh/mesh.h>
+
+#include <ringmesh/basic/factory.h>
 
 /*!
  * @file Classes for mesh entity visualization
@@ -105,8 +109,6 @@ namespace RINGMesh {
     public:
         virtual ~PointSetMeshGfx() = default;
 
-        virtual void set_mesh( const PointSetMesh< DIMENSION >& mesh ) = 0;
-
         static std::unique_ptr< PointSetMeshGfx< DIMENSION > > create_gfx(
             const PointSetMesh< DIMENSION >& mesh );
 
@@ -119,23 +121,13 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using PointSetMeshGfxFactory = GEO::Factory0< PointSetMeshGfx< DIMENSION> >;
-
-    using PointSetMeshGfxFactory2D = PointSetMeshGfxFactory< 2 >;
-    using PointSetMeshGfxFactory3D = PointSetMeshGfxFactory< 3 >;
-
-#define ringmesh_register_point_set_gfx_2d(type) \
-    geo_register_creator(RINGMesh::PointSetMeshGfxFactory2D, type ## Gfx, type::type_name_static())
-
-#define ringmesh_register_point_set_gfx_3d(type) \
-    geo_register_creator(RINGMesh::PointSetMeshGfxFactory3D, type ## Gfx, type::type_name_static())
+    using PointSetMeshGfxFactory = Factory< MeshType, PointSetMeshGfx< DIMENSION>, const PointSetMesh< DIMENSION>& >;
+    CLASS_DIMENSION_ALIASES( PointSetMeshGfxFactory );
 
     template< index_t DIMENSION >
     class LineMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
         virtual ~LineMeshGfx() = default;
-
-        virtual void set_mesh( const LineMesh< DIMENSION >& mesh ) = 0;
 
         static std::unique_ptr< LineMeshGfx< DIMENSION > > create_gfx(
             const LineMesh< DIMENSION >& mesh );
@@ -164,23 +156,13 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using LineMeshGfxFactory = GEO::Factory0< LineMeshGfx< DIMENSION > >;
-
-    using LineMeshGfxFactory2D = LineMeshGfxFactory< 2 >;
-    using LineMeshGfxFactory3D = LineMeshGfxFactory< 3 >;
-
-#define ringmesh_register_line_gfx_2d(type) \
-    geo_register_creator(RINGMesh::LineMeshGfxFactory2D, type ## Gfx, type::type_name_static())
-
-#define ringmesh_register_line_gfx_3d(type) \
-    geo_register_creator(RINGMesh::LineMeshGfxFactory3D, type ## Gfx, type::type_name_static())
+    using LineMeshGfxFactory = Factory< MeshType, LineMeshGfx< DIMENSION>, const LineMesh< DIMENSION>& >;
+    CLASS_DIMENSION_ALIASES( LineMeshGfxFactory );
 
     template< index_t DIMENSION >
     class SurfaceMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
         virtual ~SurfaceMeshGfx() = default;
-
-        virtual void set_mesh( const SurfaceMesh< DIMENSION >& mesh ) = 0;
 
         static std::unique_ptr< SurfaceMeshGfx< DIMENSION > > create_gfx(
             const SurfaceMesh< DIMENSION >& mesh );
@@ -214,23 +196,13 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using SurfaceMeshGfxFactory = GEO::Factory0< SurfaceMeshGfx< DIMENSION > >;
-
-    using SurfaceMeshGfxFactory2D = SurfaceMeshGfxFactory< 2 >;
-    using SurfaceMeshGfxFactory3D = SurfaceMeshGfxFactory< 3 >;
-
-#define ringmesh_register_surface_gfx_2d(type) \
-    geo_register_creator(RINGMesh::SurfaceMeshGfxFactory2D, type ## Gfx, type::type_name_static())
-
-#define ringmesh_register_surface_gfx_3d(type) \
-    geo_register_creator(RINGMesh::SurfaceMeshGfxFactory3D, type ## Gfx, type::type_name_static())
+    using SurfaceMeshGfxFactory = Factory< MeshType, SurfaceMeshGfx< DIMENSION >, const SurfaceMesh< DIMENSION >& >;
+    CLASS_DIMENSION_ALIASES( SurfaceMeshGfxFactory );
 
     template< index_t DIMENSION >
     class VolumeMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
         virtual ~VolumeMeshGfx() = default;
-
-        virtual void set_mesh( const VolumeMesh< DIMENSION >& mesh ) = 0;
 
         static std::unique_ptr< VolumeMeshGfx< DIMENSION > > create_gfx(
             const VolumeMesh< DIMENSION >& mesh );
@@ -264,10 +236,8 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using VolumeMeshGfxFactory = GEO::Factory0< VolumeMeshGfx< DIMENSION > >;
-
-    using VolumeMeshGfxFactory2D = VolumeMeshGfxFactory< 2 >;
-    using VolumeMeshGfxFactory3D = VolumeMeshGfxFactory< 3 >;
+    using VolumeMeshGfxFactory = Factory< MeshType, VolumeMeshGfx< DIMENSION >, const VolumeMesh< DIMENSION >& >;
+    CLASS_DIMENSION_ALIASES( VolumeMeshGfxFactory );
 
 #define ringmesh_register_volume_gfx_2d(type) \
     geo_register_creator(RINGMesh::VolumeMeshGfxFactory2D, type ## Gfx, type::type_name_static())
