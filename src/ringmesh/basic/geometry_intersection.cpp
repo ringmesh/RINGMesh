@@ -35,6 +35,8 @@
 
 #include <ringmesh/basic/geometry.h>
 
+#include <geogram/numerics/predicates.h>
+
 /*!
  * @file Basic geometrical requests 
  * @author Arnaud Botella
@@ -52,9 +54,9 @@ namespace RINGMesh {
             const vec3& N_circle,
             double r )
         {
-            vec3 norm_N_plane = normalize( N_plane );
-            vec3 norm_N_circle = normalize( N_circle );
-            bool does_plane_intersect_plane = false;
+            vec3 norm_N_plane { normalize( N_plane ) };
+            vec3 norm_N_circle { normalize( N_circle ) };
+            bool does_plane_intersect_plane { false };
             vec3 O_inter;
             vec3 D_inter;
             std::tie( does_plane_intersect_plane, O_inter, D_inter ) = plane_plane(
@@ -68,12 +70,12 @@ namespace RINGMesh {
             // line is t*D+P, the circle center is C, and the circle radius is r,
             // then r^2 = |t*D+P-C|^2 = |D|^2*t^2 + 2*Dot(D,P-C)*t + |P-C|^2.  This
             // is a quadratic equation of the form:  a2*t^2 + 2*a1*t + a0 = 0.
-            vec3 diff = O_inter - O_circle;
-            double a2 = D_inter.length2();
-            double a1 = dot( diff, D_inter );
-            double a0 = diff.length2() - r * r;
+            vec3 diff { O_inter - O_circle };
+            double a2 { D_inter.length2() };
+            double a1 { dot( diff, D_inter ) };
+            double a0 { diff.length2() - r * r };
 
-            double discr = a1 * a1 - a0 * a2;
+            double discr { a1 * a1 - a0 * a2 };
             if( discr < 0.0 ) {
                 return std::make_tuple( false, std::vector< vec3 >() );
             }
@@ -81,12 +83,12 @@ namespace RINGMesh {
             if( std::fabs( a2 ) < global_epsilon ) {
                 return std::make_tuple( false, std::vector< vec3 >() );
             }
-            double inv = 1.0 / a2;
+            double inv { 1.0 / a2 };
             std::vector< vec3 > result;
             if( discr < global_epsilon ) {
                 result.emplace_back( O_inter - ( a1 * inv ) * D_inter );
             } else {
-                double root = sqrt( discr );
+                double root { std::sqrt( discr ) };
                 result.emplace_back( O_inter - ( ( a1 + root ) * inv ) * D_inter );
                 result.emplace_back( O_inter - ( ( a1 - root ) * inv ) * D_inter );
             }
@@ -114,22 +116,22 @@ namespace RINGMesh {
             //   c1 = (d1 - d*d0)/det
             // where det = 1 - d^2.
 
-            vec3 norm_N_P0 = normalize( N_P0 );
-            vec3 norm_N_P1 = normalize( N_P1 );
-            double norm_d = dot( norm_N_P0, norm_N_P1 );
+            vec3 norm_N_P0 { normalize( N_P0 ) };
+            vec3 norm_N_P1 { normalize( N_P1 ) };
+            double norm_d { dot( norm_N_P0, norm_N_P1 ) };
 
             // Planes are parallel
             if( std::fabs( std::fabs( norm_d ) - 1 ) < global_epsilon ) {
                 return std::make_tuple( false, vec3(), vec3() );
             }
 
-            double invDet = 1.0 / ( 1.0 - norm_d * norm_d );
-            double const_P0 = dot( norm_N_P0, O_P0 );
-            double const_P1 = dot( norm_N_P1, O_P1 );
-            double c0 = ( const_P0 - norm_d * const_P1 ) * invDet;
-            double c1 = ( const_P1 - norm_d * const_P0 ) * invDet;
-            vec3 O_inter = c0 * norm_N_P0 + c1 * norm_N_P1;
-            vec3 D_inter = cross( norm_N_P0, norm_N_P1 );
+            double invDet { 1.0 / ( 1.0 - norm_d * norm_d ) };
+            double const_P0 { dot( norm_N_P0, O_P0 ) };
+            double const_P1 { dot( norm_N_P1, O_P1 ) };
+            double c0 { ( const_P0 - norm_d * const_P1 ) * invDet };
+            double c1 { ( const_P1 - norm_d * const_P0 ) * invDet };
+            vec3 O_inter { c0 * norm_N_P0 + c1 * norm_N_P1 };
+            vec3 D_inter { cross( norm_N_P0, norm_N_P1 ) };
             return std::make_tuple( true, O_inter, D_inter );
         }
 
@@ -147,19 +149,19 @@ namespace RINGMesh {
             // produces the point of intersection.  Also,
             //   s1 = DotPerp(Q, D0))/DotPerp(D0, D1))
 
-            vec2 norm_D_line0 = normalize( D_line0 );
-            vec2 norm_D_line1 = normalize( D_line1 );
-            vec2 diff = O_line1 - O_line0;
-            double D0DotPerpD1 = dot_perp( norm_D_line0, norm_D_line1 );
+            vec2 norm_D_line0 { normalize( D_line0 ) };
+            vec2 norm_D_line1 { normalize( D_line1 ) };
+            vec2 diff { O_line1 - O_line0 };
+            double D0DotPerpD1 { dot_perp( norm_D_line0, norm_D_line1 ) };
             if( std::fabs( D0DotPerpD1 ) < global_epsilon ) {
                 // The lines are parallel.
                 return std::make_tuple( false, vec2() );
             }
 
-            double invD0DotPerpD1 = 1.0 / D0DotPerpD1;
-            double diffDotPerpD1 = dot_perp( diff, norm_D_line1 );
-            double s0 = diffDotPerpD1 * invD0DotPerpD1;
-            vec2 result = O_line0 + s0 * norm_D_line0;
+            double invD0DotPerpD1 { 1.0 / D0DotPerpD1 };
+            double diffDotPerpD1 { dot_perp( diff, norm_D_line1 ) };
+            double s0 { diffDotPerpD1 * invD0DotPerpD1 };
+            vec2 result { O_line0 + s0 * norm_D_line0 };
             return std::make_tuple( true, result );
         }
 
@@ -169,21 +171,36 @@ namespace RINGMesh {
             const vec2& p0_seg1,
             const vec2& p1_seg1 )
         {
-            vec2 O_seg0( ( p0_seg0 + p1_seg0 ) / 2. );
-            vec2 D_seg0( p1_seg0 - p0_seg0 );
-            vec2 O_seg1( ( p0_seg1 + p1_seg1 ) / 2. );
-            vec2 D_seg1( p1_seg1 - p0_seg1 );
-            bool does_segment_intersect_segment = false;
+            vec2 O_seg0 { ( p0_seg0 + p1_seg0 ) / 2. };
+            vec2 D_seg0 { p1_seg0 - p0_seg0 };
+            vec2 O_seg1 { ( p0_seg1 + p1_seg1 ) / 2. };
+            vec2 D_seg1 { p1_seg1 - p0_seg1 };
+            bool does_segment_intersect_segment { false };
             vec2 line_intersection_result;
             std::tie( does_segment_intersect_segment, line_intersection_result ) =
                 line_line( O_seg0, D_seg0, O_seg1, D_seg1 );
             if( does_segment_intersect_segment ) {
                 // Test whether the line-line intersection is on the segments.
-                if( length( line_intersection_result - O_seg0 )
-                    <= 0.5 * D_seg0.length() + global_epsilon
-                    && length( line_intersection_result - O_seg1 )
-                        <= 0.5 * D_seg1.length() + global_epsilon ) {
-                    return std::make_tuple( true, line_intersection_result );
+                Sign s0_seg0 = sign(
+                    GEO::PCK::orient_2d( p0_seg0, p0_seg1, p1_seg1 ) );
+                Sign s1_seg0 = sign(
+                    GEO::PCK::orient_2d( p1_seg0, p0_seg1, p1_seg1 ) );
+                if( s0_seg0 != ZERO && ( s0_seg0 == s1_seg0 ) ) {
+                    return std::make_tuple( false, vec2() );
+                }
+                Sign s0_seg1 = sign(
+                    GEO::PCK::orient_2d( p0_seg1, p0_seg0, p1_seg0 ) );
+                Sign s1_seg1 = sign(
+                    GEO::PCK::orient_2d( p1_seg1, p0_seg0, p1_seg0 ) );
+                if( s0_seg1 != ZERO && ( s0_seg1 == s1_seg1 ) ) {
+                    return std::make_tuple( false, vec2() );
+                }
+
+                if( s0_seg0 == ZERO || s1_seg0 == ZERO || ( s0_seg0 != s1_seg0 ) ) {
+                    if( s0_seg1 == ZERO || s1_seg1 == ZERO
+                        || ( s0_seg1 != s1_seg1 ) ) {
+                        return std::make_tuple( true, line_intersection_result );
+                    }
                 }
             }
             return std::make_tuple( false, vec2() );
@@ -195,16 +212,21 @@ namespace RINGMesh {
             const vec2& O_line,
             const vec2& D_line )
         {
-            vec2 O_seg( ( p0_seg + p1_seg ) / 2. );
-            vec2 D_seg( p1_seg - p0_seg );
-            bool does_segment_intersect_line = false;
+            vec2 O_seg { ( p0_seg + p1_seg ) / 2. };
+            vec2 D_seg { p1_seg - p0_seg };
+            bool does_segment_intersect_line { false };
             vec2 line_intersection_result;
             std::tie( does_segment_intersect_line, line_intersection_result ) =
                 line_line( O_seg, D_seg, O_line, D_line );
             if( does_segment_intersect_line ) {
                 // Test whether the line-line intersection is on the segment.
-                if( length( line_intersection_result - O_seg )
-                    <= 0.5 * D_seg.length() + global_epsilon ) {
+                vec2 minus_direction { line_intersection_result - D_line };
+                vec2 plus_direction { line_intersection_result + D_line };
+                Sign s0 = sign(
+                    GEO::PCK::orient_2d( p0_seg, minus_direction, plus_direction ) );
+                Sign s1 = sign(
+                    GEO::PCK::orient_2d( p1_seg, minus_direction, plus_direction ) );
+                if( s0 == ZERO || s1 == ZERO || ( s0 != s1 ) ) {
                     return std::make_tuple( true, line_intersection_result );
                 }
             }
@@ -215,16 +237,16 @@ namespace RINGMesh {
             const vec3& O_line,
             const vec3& D_line,
             const vec3& O_plane,
-            const vec3& N_plane)
+            const vec3& N_plane )
         {
-            double dot_directions = dot( D_line, N_plane );
+            double dot_directions { dot( D_line, N_plane ) };
             if( std::fabs( dot_directions ) > global_epsilon ) {
-                double plane_constant = 0.0;
+                double plane_constant { 0.0 };
                 for( index_t i : range( 3 ) ) {
                     plane_constant += O_plane[i] * N_plane[i];
                 }
-                double signed_distance = dot( N_plane, O_line ) - plane_constant;
-                vec3 result = O_line - signed_distance * D_line / dot_directions;
+                double signed_distance { dot( N_plane, O_line ) - plane_constant };
+                vec3 result { O_line - signed_distance * D_line / dot_directions };
                 return std::make_tuple( true, result );
             } else {
                 // line is parallel to the plane
@@ -238,9 +260,9 @@ namespace RINGMesh {
             const vec3& O_plane,
             const vec3& N_plane )
         {
-            vec3 segment_direction = normalize( seg1 - seg0 );
-            vec3 segment_barycenter = 0.5 * ( seg0 + seg1 );
-            bool does_line_intersect_plane = false;
+            vec3 segment_direction { normalize( seg1 - seg0 ) };
+            vec3 segment_barycenter { 0.5 * ( seg0 + seg1 ) };
+            bool does_line_intersect_plane { false };
             vec3 line_plane_result;
             std::tie( does_line_intersect_plane, line_plane_result ) = line_plane(
                 segment_barycenter, segment_direction, O_plane, N_plane );
@@ -250,7 +272,7 @@ namespace RINGMesh {
                     // result outside the segment
                     return std::make_tuple( false, vec3() );
                 } else {
-                    return std::make_tuple( true,line_plane_result );
+                    return std::make_tuple( true, line_plane_result );
                 }
             } else {
                 return std::make_tuple( false, vec3() );
@@ -264,13 +286,13 @@ namespace RINGMesh {
             const vec3& N_circle,
             double r )
         {
-            bool does_segment_intersect_plane = false;
+            bool does_segment_intersect_plane { false };
             vec3 segment_plane_result;
             std::tie( does_segment_intersect_plane, segment_plane_result ) =
                 segment_plane( p0, p1, O_circle, N_circle );
             if( does_segment_intersect_plane ) {
                 if( ( segment_plane_result - O_circle ).length() <= r ) {
-                    return std::make_tuple( true,segment_plane_result );
+                    return std::make_tuple( true, segment_plane_result );
                 }
             }
             return std::make_tuple( false, vec3() );
@@ -284,9 +306,9 @@ namespace RINGMesh {
             const vec3& N_circle,
             double r )
         {
-            vec3 N_triangle = normalize( cross( p1 - p0, p2 - p0 ) );
-            vec3 barycenter = ( p0 + p1 + p2 ) / 3;
-            bool does_circle_intersect_plane = false;
+            vec3 N_triangle { normalize( cross( p1 - p0, p2 - p0 ) ) };
+            vec3 barycenter { ( p0 + p1 + p2 ) / 3. };
+            bool does_circle_intersect_plane { false };
             std::vector< vec3 > inter_circle_plane;
             std::tie( does_circle_intersect_plane, inter_circle_plane ) =
                 circle_plane( barycenter, N_triangle, O_circle, N_circle, r );
@@ -310,19 +332,19 @@ namespace RINGMesh {
         {
             // http://www.geometrictools.com/LibMathematics/Intersection/Intersection.html
             // Compute the offset origin, edges, and normal.
-            vec3 seg_center = ( seg0 + seg1 ) / 2;
-            vec3 diff = seg_center - trgl0;
-            vec3 edge1 = trgl1 - trgl0;
-            vec3 edge2 = trgl2 - trgl0;
-            vec3 normal = cross( edge1, edge2 );
+            vec3 seg_center { ( seg0 + seg1 ) / 2 };
+            vec3 diff { seg_center - trgl0 };
+            vec3 edge1 { trgl1 - trgl0 };
+            vec3 edge2 { trgl2 - trgl0 };
+            vec3 normal { cross( edge1, edge2 ) };
 
             // Solve Q + t*D = b1*E1 + b2*E2 (Q = diff, D = segment direction,
             // E1 = edge1, E2 = edge2, N = Cross(E1,E2)) by
             //   |Dot(D,N)|*b1 = sign(Dot(D,N))*Dot(D,Cross(Q,E2))
             //   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
             //   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
-            vec3 D = normalize( seg1 - seg0 );
-            double DdN = dot( D, normal );
+            vec3 D { normalize( seg1 - seg0 ) };
+            double DdN { dot( D, normal ) };
             signed_index_t sign;
             if( DdN > global_epsilon ) {
                 sign = 1;
@@ -335,20 +357,20 @@ namespace RINGMesh {
                 return std::make_tuple( false, vec3() );
             }
 
-            double DdQxE2 = sign * dot( D, cross( diff, edge2 ) );
+            double DdQxE2 { sign * dot( D, cross( diff, edge2 ) ) };
             if( DdQxE2 >= 0 ) {
-                double DdE1xQ = sign * dot( D, cross( edge1, diff ) );
+                double DdE1xQ { sign * dot( D, cross( edge1, diff ) ) };
                 if( DdE1xQ >= 0 ) {
                     if( DdQxE2 + DdE1xQ <= DdN ) {
                         // Line intersects triangle, check if segment does.
-                        double QdN = -sign * dot( diff, normal );
-                        double extDdN = length( seg1 - seg0 ) * DdN / 2.;
+                        double QdN { -sign * dot( diff, normal ) };
+                        double extDdN { length( seg1 - seg0 ) * DdN / 2. };
                         if( -extDdN <= QdN && QdN <= extDdN ) {
                             // Segment intersects triangle.
-                            double inv = 1. / DdN;
-                            double seg_parameter = QdN * inv;
+                            double inv { 1. / DdN };
+                            double seg_parameter { QdN * inv };
 
-                            vec3 result = seg_center + seg_parameter * D;
+                            vec3 result { seg_center + seg_parameter * D };
                             return std::make_tuple( true, result );
                         }
                         // else: |t| > extent, no intersection

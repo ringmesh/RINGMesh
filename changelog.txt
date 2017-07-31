@@ -18,7 +18,8 @@ Improvements:
  * Use std::tuple for output only values, these values are no longer taken as parameter.
  * Use of variadic template for RINGMesh Exceptions. Useful to write long description messages
       involving the output of string, double, int etc.
- * Simplify GeoModel io file hierarchy.   
+ * Simplify GeoModel io file hierarchy.
+ * Add exact predicates into 2d geometric intersections.
 
 #### Release: 4.1.0 ####
 
