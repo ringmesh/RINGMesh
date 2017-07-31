@@ -132,6 +132,7 @@ namespace RINGMesh {
 
         virtual index_t dimension( const std::string& filename ) const
         {
+            ringmesh_unused( filename );
             return DIMENSION;
         }
 

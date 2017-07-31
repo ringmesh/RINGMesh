@@ -67,6 +67,7 @@ namespace RINGMesh {
             min_thick_( min_thick ),
             max_thick_( max_thick )
     {
+        ringmesh_unused( layer_ );
     }
 
     void StratigraphicColumn::insert_unit_below(

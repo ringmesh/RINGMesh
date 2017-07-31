@@ -49,7 +49,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class Line;
     template< index_t DIMENSION > class Surface;
     template< index_t DIMENSION > class Region;
-    template< index_t DIMENSION > class EntityTypeManager;
+    template< index_t DIMENSION > struct EntityTypeManager;
     template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
     template< index_t DIMENSION > class GeoModelBuilderTopology;
     template< index_t DIMENSION > class GeoModelBuilderGeology;
