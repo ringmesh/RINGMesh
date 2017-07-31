@@ -286,6 +286,8 @@ namespace RINGMesh {
          */
         T get_element_in_line( index_t i, index_t e ) const
         {
+            ringmesh_unused( i );
+            ringmesh_unused( e );
             ringmesh_assert_not_reached;
             return T();
         }

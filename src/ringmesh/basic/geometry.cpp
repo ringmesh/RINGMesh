@@ -131,7 +131,7 @@ namespace RINGMesh {
     {
         double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 );
         if( std::fabs( total_volume ) < global_epsilon_3 ) {
-            std::array< double, 4 > lambdas = { 0., 0., 0., 0. };
+            std::array< double, 4 > lambdas { { 0., 0., 0., 0. } };
             return std::make_tuple( false, lambdas );
         }
         double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p );
@@ -143,7 +143,7 @@ namespace RINGMesh {
         double lambda1 = volume1 / total_volume;
         double lambda2 = volume2 / total_volume;
         double lambda3 = volume3 / total_volume;
-        std::array< double, 4 > lambdas = { lambda0, lambda1, lambda2, lambda3 };
+        std::array< double, 4 > lambdas { { lambda0, lambda1, lambda2, lambda3 } };
         return std::make_tuple( true, lambdas );
     }
 
@@ -155,7 +155,7 @@ namespace RINGMesh {
     {
         double total_area = GEO::Geom::triangle_area( p0, p1, p2 );
         if( std::fabs( total_area ) < global_epsilon_sq ) {
-            std::array< double, 3 > lambdas = { 0., 0., 0. };
+            std::array< double, 3 > lambdas { { 0., 0., 0. } };
             return std::make_tuple( false, lambdas );
         }
         vec3 triangle_normal = cross( p2 - p0, p1 - p0 );
@@ -166,7 +166,7 @@ namespace RINGMesh {
         double lambda0 = area0 / total_area;
         double lambda1 = area1 / total_area;
         double lambda2 = area2 / total_area;
-        std::array< double, 3 > lambdas = { lambda0, lambda1, lambda2 };
+        std::array< double, 3 > lambdas { { lambda0, lambda1, lambda2 } };
         return std::make_tuple( true, lambdas );
     }
 
@@ -178,7 +178,7 @@ namespace RINGMesh {
     {
         double total_area = GEO::Geom::triangle_signed_area( p2, p1, p0 );
         if( std::fabs( total_area ) < global_epsilon_sq ) {
-            std::array< double, 3 > lambdas = { 0., 0., 0. };
+            std::array< double, 3 > lambdas { { 0., 0., 0. } };
             return std::make_tuple( false, lambdas );
         }
         double area0 = GEO::Geom::triangle_signed_area( p2, p1, p );
@@ -188,7 +188,7 @@ namespace RINGMesh {
         double lambda0 = area0 / total_area;
         double lambda1 = area1 / total_area;
         double lambda2 = area2 / total_area;
-        std::array< double, 3 > lambdas = { lambda0, lambda1, lambda2 };
+        std::array< double, 3 > lambdas { { lambda0, lambda1, lambda2 } };
         return std::make_tuple( true, lambdas );
     }
 
