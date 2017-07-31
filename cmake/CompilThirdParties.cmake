@@ -14,11 +14,11 @@ if(WIN32)
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
 
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        set(geoplatform Linux64-clang-dynamic)
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    #if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    #    set(geoplatform Linux64-clang-dynamic)
+    #elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(geoplatform Linux64-gcc-dynamic)
-    endif()
+    #endif()
 endif(WIN32)
 
 # Define Geogram as an external project that we know how to
@@ -37,13 +37,13 @@ ExternalProject_Add(geogram_ext
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
         -G ${CMAKE_GENERATOR} 
         -DVORPALINE_PLATFORM:STRING=${geoplatform}
-		-DGEOGRAM_WITH_LUA:BOOL=OFF
+	-DGEOGRAM_WITH_LUA:BOOL=OFF
         -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        #-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        #-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}
@@ -103,8 +103,8 @@ ExternalProject_Add(tinyxml2_ext
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${TINYXML2_PATH}
         -G ${CMAKE_GENERATOR} 
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        #-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        #-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
   #--Build step-----------------
   BINARY_DIR ${TINYXML2_PATH_BIN}
@@ -158,8 +158,8 @@ ExternalProject_Add(zlib_ext
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
         -G ${CMAKE_GENERATOR} 
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} 
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        #-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        #-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
   #--Build step-----------------
   BINARY_DIR ${ZLIB_PATH_BIN}
