@@ -1188,7 +1188,7 @@ namespace RINGMesh {
         std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_;
     };
 
-    using Region3D = Region< 3 >;
+    CLASS_3D_ALIAS( Region );
 
     template< index_t DIMENSION >
     class GeoModelMeshEntityConstAccess {
