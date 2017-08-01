@@ -121,7 +121,7 @@ namespace {
         if( line_vertices.empty() ) {
             return;
         }
-        for( index_t i : range( 1, line_vertices.size() - i ) ) {
+        for( index_t i : range( 1, line_vertices.size() - 1 ) ) {
             gmme_id corner = find_corner( geomodel, line_vertices[i] );
             if( corner.is_defined() ) {
                 line_vertices.pop_back();
