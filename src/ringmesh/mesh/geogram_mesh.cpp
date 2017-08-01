@@ -41,21 +41,35 @@ namespace RINGMesh {
 
     void register_geogram_mesh()
     {
-        ringmesh_register_point_mesh_2d( GeogramPointSetMesh2D );
-        ringmesh_register_point_mesh_builder_2d (GeogramPointSetMesh2D);
-        ringmesh_register_line_mesh_2d( GeogramLineMesh2D );
-        ringmesh_register_line_mesh_builder_2d (GeogramLineMesh2D);
-        ringmesh_register_surface_mesh_2d( GeogramSurfaceMesh2D );
-        ringmesh_register_surface_mesh_builder_2d (GeogramSurfaceMesh2D);
+        PointSetMeshFactory2D::register_creator< GeogramPointSetMesh2D >(
+            GeogramPointSetMesh2D::type_name_static() );
+        PointSetMeshBuilderFactory2D::register_creator< GeogramPointSetMeshBuilder2D >(
+            GeogramPointSetMesh2D::type_name_static() );
+        LineMeshFactory2D::register_creator< GeogramLineMesh2D >(
+            GeogramLineMesh2D::type_name_static() );
+        LineMeshBuilderFactory2D::register_creator< GeogramLineMeshBuilder2D >(
+            GeogramLineMesh2D::type_name_static() );
+        SurfaceMeshBuilderFactory2D::register_creator< GeogramSurfaceMeshBuilder2D >(
+            GeogramSurfaceMesh2D::type_name_static() );
+        SurfaceMeshBuilderFactory2D::register_creator< GeogramSurfaceMeshBuilder2D >(
+            GeogramSurfaceMesh2D::type_name_static() );
 
-        ringmesh_register_point_mesh_3d( GeogramPointSetMesh3D );
-        ringmesh_register_point_mesh_builder_3d (GeogramPointSetMesh3D);
-        ringmesh_register_line_mesh_3d( GeogramLineMesh3D );
-        ringmesh_register_line_mesh_builder_3d (GeogramLineMesh3D);
-        ringmesh_register_surface_mesh_3d( GeogramSurfaceMesh3D );
-        ringmesh_register_surface_mesh_builder_3d (GeogramSurfaceMesh3D);
-        ringmesh_register_volume_mesh_3d( GeogramVolumeMesh3D );
-        ringmesh_register_volume_mesh_builder_3d (GeogramVolumeMesh3D);
+        PointSetMeshFactory3D::register_creator< GeogramPointSetMesh3D >(
+            GeogramPointSetMesh3D::type_name_static() );
+        PointSetMeshBuilderFactory3D::register_creator< GeogramPointSetMeshBuilder3D >(
+            GeogramPointSetMesh3D::type_name_static() );
+        LineMeshFactory3D::register_creator< GeogramLineMesh3D >(
+            GeogramLineMesh3D::type_name_static() );
+        LineMeshBuilderFactory3D::register_creator< GeogramLineMeshBuilder3D >(
+            GeogramLineMesh3D::type_name_static() );
+        SurfaceMeshBuilderFactory3D::register_creator< GeogramSurfaceMeshBuilder3D >(
+            GeogramSurfaceMesh3D::type_name_static() );
+        SurfaceMeshBuilderFactory3D::register_creator< GeogramSurfaceMeshBuilder3D >(
+            GeogramSurfaceMesh3D::type_name_static() );
+        VolumeMeshFactory3D::register_creator< GeogramVolumeMesh3D >(
+            GeogramVolumeMesh3D::type_name_static() );
+        VolumeMeshBuilderFactory3D::register_creator< GeogramVolumeMeshBuilder3D >(
+            GeogramVolumeMesh3D::type_name_static() );
     }
 }
 

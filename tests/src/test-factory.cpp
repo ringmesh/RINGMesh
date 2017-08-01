@@ -33,36 +33,83 @@
  *     FRANCE
  */
 
+#include <ringmesh/ringmesh_tests_config.h>
+
+#include <memory>
+
+#include <ringmesh/basic/factory.h>
+
 /*!
- * @file Implementation of all GeoModelEntities classes
- * @author Jeanne Pellerin and Arnaud Botella 
+ * @author Arnaud Botella
  */
 
-#include <ringmesh/geomodel/geomodel_entity.h>
+using namespace RINGMesh;
 
-#include <ringmesh/geomodel/geomodel.h>
+class A {
+ringmesh_disable_copy( A );
+public:
+    A() = default;
+};
 
-namespace RINGMesh {
+class B {
+ringmesh_disable_copy( B );
+public:
+    B() = default;
+};
 
-    template< index_t DIMENSION >
-    Universe< DIMENSION >::Universe( const GeoModel< DIMENSION >& geomodel )
-        : GeoModelEntity< DIMENSION >( geomodel, NO_ID )
+class Base {
+public:
+    virtual ~Base() = default;
+protected:
+    Base( A& a, B& b )
+        : a_( a ), b_( b )
     {
-        this->name_ = universe_type_name().to_string();
     }
 
-    template< index_t DIMENSION >
-    bool Universe< DIMENSION >::is_valid() const
+protected:
+    A& a_;
+    B& b_;
+};
+
+class Derived: public Base {
+public:
+    Derived( A& a, B& b )
+        : Base( a, b )
     {
-        return true;
     }
+};
 
-    template class RINGMESH_API GeoModelEntity< 2 > ;
-    template class RINGMESH_API Universe< 2 > ;
-    template class RINGMESH_API UniverseAccess< 2 > ;
+void verdict( bool is_instantiated, std::string name )
+{
+    if( !is_instantiated ) {
+        throw RINGMeshException( "TEST", "Failed to instantiate the ", name,
+            " class" );
+    }
+}
 
-    template class RINGMESH_API GeoModelEntity< 3 > ;
-    template class RINGMESH_API Universe< 3 > ;
-    template class RINGMESH_API UniverseAccess< 3 > ;
+int main()
+{
+    using namespace RINGMesh;
 
+    try {
+        default_configure();
+        Logger::out( "TEST", "Test Factory" );
+
+        using factory = Factory< std::string, Base, A &, B& >;
+        factory::register_creator< Derived >( "Derived" );
+
+        A a;
+        B b;
+        auto d = factory::create( "Derived", a, b );
+        verdict( d != nullptr, "Derived" );
+
+    } catch( const RINGMeshException& e ) {
+        Logger::err( e.category(), e.what() );
+        return 1;
+    } catch( const std::exception& e ) {
+        Logger::err( "Exception", e.what() );
+        return 1;
+    }
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
 }

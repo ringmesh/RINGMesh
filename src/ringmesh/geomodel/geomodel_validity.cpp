@@ -464,8 +464,7 @@ namespace {
         if( entities.find( boundary_type )->second.empty() ) {
             if( !type_entities.empty() ) {
                 if( type_entities.size() != 1 ) {
-                    print_error( type_entities,
-                        static_cast< std::string >( type ) + "s" );
+                    print_error( type_entities, type.to_string() + "s" );
                     Logger::warn( "GeoModel", "It should be in only one ",
                         boundary_type );
                     return false;
@@ -805,8 +804,7 @@ namespace {
         const std::vector< index_t >& non_manifold_edges )
     {
         GeogramLineMesh< DIMENSION > mesh;
-        GeogramLineMeshBuilder< DIMENSION > builder;
-        builder.configure_builder( mesh );
+        GeogramLineMeshBuilder< DIMENSION > builder( mesh );
         index_t nb_edges = static_cast< index_t >( non_manifold_edges.size() );
         builder.create_vertices( 2 * nb_edges );
         builder.create_edges( nb_edges );
@@ -923,7 +921,7 @@ namespace {
     }
 
     std::vector< index_t > compute_non_manifold_edges(
-        const std::vector< bool >& edge_on_lines  )
+        const std::vector< bool >& edge_on_lines )
     {
         std::vector< index_t > non_manifold_edges;
         for( index_t e : range( edge_on_lines.size() ) ) {
@@ -1139,8 +1137,8 @@ namespace {
         void test_non_manifold_edges()
         {
             std::vector< index_t > edge_indices = compute_border_edges( geomodel_ );
-            std::vector< vecn< DIMENSION > > edge_barycenters = compute_border_edge_barycenters(
-                geomodel_, edge_indices );
+            std::vector< vecn< DIMENSION > > edge_barycenters =
+                compute_border_edge_barycenters( geomodel_, edge_indices );
             std::vector< bool > edge_on_lines = compute_edge_on_lines( geomodel_,
                 edge_barycenters );
             std::vector< index_t > non_manifold_edges = compute_non_manifold_edges(
@@ -1184,8 +1182,7 @@ namespace {
                         vertices.reserve( geomodel_.mesh.polygons.nb_vertices( p ) );
                         for( index_t v : range(
                             geomodel_.mesh.polygons.nb_vertices( p ) ) ) {
-                            index_t id =
-                                mesh.vertices.create_vertex(
+                            index_t id = mesh.vertices.create_vertex(
                                 geomodel_.mesh.vertices.vertex(
                                     geomodel_.mesh.polygons.vertex(
                                         ElementLocalVertex( p, v ) ) ).data() );
