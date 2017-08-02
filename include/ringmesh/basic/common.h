@@ -97,17 +97,17 @@
     CLASS_2D_ALIAS( Class );                                                    \
     CLASS_3D_ALIAS( Class )
 
-#define FWD_DECL_2D_CLASS( Class )                                              \
-    template< index_t DIMENSION > class Class;                                  \
-    CLASS_2D_ALIAS( Class)
+#define FORWARD_DECLARATION_2D_CLASS( Class )                                   \
+    template< index_t > class Class;                                            \
+    CLASS_2D_ALIAS( Class )
 
-#define FWD_DECL_3D_CLASS( Class )                                              \
-    template< index_t DIMENSION > class Class;                                  \
-    CLASS_3D_ALIAS( Class)
+#define FORWARD_DECLARATION_3D_CLASS( Class )                                   \
+    template< index_t > class Class;                                            \
+    CLASS_3D_ALIAS( Class )
 
-#define FWD_DECL_DIM_CLASS( Class )                                             \
-    template< index_t DIMENSION > class Class;                                  \
-    CLASS_DIMENSION_ALIASES( Class)
+#define FORWARD_DECLARATION_DIMENSION_CLASS( Class )                            \
+    template< index_t > class Class;                                            \
+    CLASS_DIMENSION_ALIASES( Class )
 
 // To avoid unused argument warning in function definition
 template< typename T > void ringmesh_unused( T const& )
