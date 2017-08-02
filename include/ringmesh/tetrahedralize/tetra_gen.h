@@ -39,9 +39,9 @@
 
 #include <memory>
 
-#include <geogram/basic/factory.h>
-
 #include <geogram/mesh/mesh.h>
+
+#include <ringmesh/basic/factory.h>
 
 #include <ringmesh/geomodel/geomodel_builder.h>
 
@@ -106,20 +106,20 @@ namespace RINGMesh {
         bool tetrahedralize( bool refine = true );
 
     protected:
-        TetraGen() = default;
+        TetraGen( GeoModel3D& geomodel, index_t region_id )
+            : builder_( geomodel ), output_region_( region_id )
+        {
+        }
 
         virtual bool do_tetrahedralize( bool refine ) = 0;
 
     protected:
-        std::unique_ptr< GeoModelBuilder3D > builder_;
+        GeoModelBuilder3D builder_;
         index_t output_region_ { NO_ID };
         GEO::Mesh tetmesh_constraint_;
         const Region3D* region_ { nullptr };
         const WellGroup3D* wells_ { nullptr };
     };
 
-    typedef GEO::Factory0< TetraGen > TetraGenFactory;
-
-#define ringmesh_register_tetragen(type, name) \
-    geo_register_creator(TetraGenFactory, type, name)
+    using TetraGenFactory = Factory< std::string, TetraGen, GeoModel3D&, index_t >;
 }
