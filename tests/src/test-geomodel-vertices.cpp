@@ -49,7 +49,7 @@ void error(
     const gmme_id& mesh_entity_gmme_id )
 {
     throw RINGMeshException( "TEST", "Vertex ", vertex_id_in_mesh_entity,
-        " in entity ", mesh_entity_gmme_id.type().to_string(),
+        " in entity ", mesh_entity_gmme_id.type().get_std_string(),
         mesh_entity_gmme_id.index(),
         " has not the same coordinates than its equivalent vertex ",
         vertex_id_in_geomodel_mesh, " in the GeoModelMesh" );
