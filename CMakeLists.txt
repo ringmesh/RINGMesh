@@ -264,13 +264,13 @@ endif(RINGMESH_WITH_GEOLOGYJS)
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files
-FILE(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh ${PROJECT_SOURCE_DIR}/src/ringmesh/*)
-FOREACH(directory ${directories})
-    IF(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
+file(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh ${PROJECT_SOURCE_DIR}/src/ringmesh/*)
+foreach(directory ${directories})
+    if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
         source_file_directory(ringmesh_src ${directory})
         include_file_directory(ringmesh_include ${directory})
-    ENDIF()
-ENDFOREACH()
+    endif()
+endforeach()
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
