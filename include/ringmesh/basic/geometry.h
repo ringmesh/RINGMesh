@@ -185,6 +185,21 @@ namespace RINGMesh {
             double radius );
 
         /*!
+         * Computes the intersection(s) between a sphere and a segment
+         * @param[in] p0 the first vertex of the segment
+         * @param[in] p1 the second vertex of the segment
+         * @param[in] O_sphere the center of the sphere
+         * @param[in] radius the radius of the sphere
+         * @return returns a tuple containing a boolean (true if there is at least one intersection)
+         * and the intersected points.
+         */
+        std::tuple< bool, std::vector< vec3 > > RINGMESH_API segment_sphere(
+            const vec3& seg0,
+            const vec3& seg1,
+            const vec3& O_sphere,
+            double radius );
+
+        /*!
          * Computes the intersection between a plane and a segment
          * @param[in] p0 the first vertex of the segment
          * @param[in] p1 the second vertex of the segment

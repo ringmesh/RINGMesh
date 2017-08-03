@@ -652,6 +652,54 @@ void test_line_sphere_intersection()
     Logger::out( "TEST", " " );
 }
 
+void test_segment_sphere_intersection()
+{
+    Logger::out( "TEST", "Test Segment-Sphere intersections" );
+    vec3 O_sphere { 2., 2., 2. };
+    double sphere_radius { 4. };
+
+    // Segment outside the sphere
+    vec3 seg0_outside { 10., 10., 10. };
+    vec3 seg1_outside { 15., 20., 10. };
+    bool segment_outside_intersect_sphere;
+    std::tie( segment_outside_intersect_sphere, std::ignore ) =
+        Intersection::segment_sphere( seg0_outside, seg1_outside, O_sphere,
+            sphere_radius );
+    verdict( !segment_outside_intersect_sphere, "Test segment outside sphere" );
+
+    // Segment tangent to the sphere
+    vec3 seg0_tangent { -2., 5., 5. };
+    vec3 seg1_tangent { -2., -5., -5. };
+    bool segment_tangent_intersect_sphere;
+    std::vector< vec3 > tangent_result;
+    std::tie( segment_tangent_intersect_sphere, tangent_result ) =
+        Intersection::segment_sphere( seg0_tangent, seg1_tangent, O_sphere,
+            sphere_radius );
+    verdict( tangent_result.size() == 1, "Test segment tangent to the sphere" );
+    vec3 tangent_answer { -2., 2., 2. };
+    verdict( are_almost_equal( tangent_result.front(), tangent_answer ),
+        "Test segment tangent to the sphere (intersection coordinates)" );
+
+    // Segment crossing the sphere
+    vec3 seg0_cross { -10., 2., 2. };
+    vec3 seg1_cross { 10., 2., 2. };
+    bool segment_cross_intersect_sphere;
+    std::vector< vec3 > cross_result;
+    std::tie( segment_cross_intersect_sphere, cross_result ) =
+        Intersection::segment_sphere( seg0_cross, seg1_cross, O_sphere,
+            sphere_radius );
+    verdict( cross_result.size() == 2,
+        "Test segment crossing the sphere (intersection exists)" );
+    vec3 answer_cross0 { -2., 2., 2. };
+    vec3 answer_cross1 { 6., 2., 2. };
+    verdict( are_almost_equal( cross_result.front(), answer_cross0 ),
+        "Test segment crossing the sphere (intersection coordinates)" );
+    verdict( are_almost_equal( cross_result.back(), answer_cross1 ),
+        "Test segment crossing the sphere (intersection coordinates)" );
+
+    Logger::out( "TEST", " " );
+}
+
 int main()
 {
     try {
@@ -670,6 +718,7 @@ int main()
         test_segment_segment_intersection();
         test_segment_line_intersection();
         test_line_sphere_intersection();
+        test_segment_sphere_intersection();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
