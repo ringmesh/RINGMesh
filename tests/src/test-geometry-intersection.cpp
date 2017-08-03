@@ -689,12 +689,26 @@ void test_segment_sphere_intersection()
         Intersection::segment_sphere( seg0_cross, seg1_cross, O_sphere,
             sphere_radius );
     verdict( cross_result.size() == 2,
-        "Test segment crossing the sphere (intersection exists)" );
+        "Test segment crossing the sphere (2 intersections)" );
     vec3 answer_cross0 { -2., 2., 2. };
     vec3 answer_cross1 { 6., 2., 2. };
     verdict( are_almost_equal( cross_result.front(), answer_cross0 ),
         "Test segment crossing the sphere (intersection coordinates)" );
     verdict( are_almost_equal( cross_result.back(), answer_cross1 ),
+        "Test segment crossing the sphere (intersection coordinates)" );
+
+    // Segment crossing the sphere
+    vec3 seg0_cross2 { 2., 3., 2. };
+    vec3 seg1_cross2 { 2., 8., 2. };
+    bool segment_cross_intersect_sphere2;
+    std::vector< vec3 > cross_result2;
+    std::tie( segment_cross_intersect_sphere2, cross_result2 ) =
+        Intersection::segment_sphere( seg0_cross2, seg1_cross2, O_sphere,
+            sphere_radius );
+    verdict( cross_result2.size() == 1,
+        "Test segment crossing the sphere (1 intersection)" );
+    vec3 answer_cross3 { 2., 6., 2. };
+    verdict( are_almost_equal( cross_result2.front(), answer_cross3 ),
         "Test segment crossing the sphere (intersection coordinates)" );
 
     Logger::out( "TEST", " " );

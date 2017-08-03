@@ -429,10 +429,10 @@ namespace RINGMesh {
             if( line_intersect ) {
                 segment_intersections.reserve( line_intersections.size() );
                 vec3 segment_center { ( seg0 + seg1 ) / 2. };
-                double half_lenght { segment.length() / 2. };
+                double half_length { segment.length() / 2. };
                 for( auto& point : line_intersections ) {
                     if( length( point - segment_center )
-                        < half_lenght + global_epsilon ) {
+                        < half_length + global_epsilon ) {
                         segment_intersections.emplace_back( std::move( point ) );
                     }
                 }
