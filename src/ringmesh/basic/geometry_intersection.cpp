@@ -413,5 +413,32 @@ namespace RINGMesh {
             return std::make_tuple( !results.empty(), results );
         }
 
+        std::tuple< bool, std::vector< vec3 > > segment_sphere(
+            const vec3& seg0,
+            const vec3& seg1,
+            const vec3& O_sphere,
+            double radius )
+        {
+            bool line_intersect;
+            std::vector< vec3 > line_intersections;
+            vec3 segment { seg1 - seg0 };
+            std::tie( line_intersect, line_intersections ) = line_sphere( seg0,
+                segment, O_sphere, radius );
+
+            std::vector< vec3 > segment_intersections;
+            if( line_intersect ) {
+                segment_intersections.reserve( line_intersections.size() );
+                vec3 segment_center { ( seg0 + seg1 ) / 2. };
+                double half_lenght { segment.length() / 2. };
+                for( auto& point : line_intersections ) {
+                    if( length( point - segment_center )
+                        < half_lenght + global_epsilon ) {
+                        segment_intersections.emplace_back( std::move( point ) );
+                    }
+                }
+            }
+            return std::make_tuple( !segment_intersections.empty(),
+                segment_intersections );
+        }
     }
 }
