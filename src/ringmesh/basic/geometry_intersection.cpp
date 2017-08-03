@@ -382,5 +382,36 @@ namespace RINGMesh {
             // else: b1 < 0, no intersection
             return std::make_tuple( false, vec3() );
         }
+
+        std::tuple< bool, std::vector< vec3 > > line_sphere(
+            const vec3& O_line,
+            const vec3& D_line,
+            const vec3& O_sphere,
+            double radius )
+        {
+            vec3 D_line_normalized { normalize( D_line ) };
+            // The sphere is (X-C)^T*(X-C)-1 = 0 and the line is X = P+t*D.
+            // Substitute the line equation into the sphere equation to obtain a
+            // quadratic equation Q(t) = t^2 + 2*a1*t + a0 = 0, where a1 = D^T*(P-C),
+            // and a0 = (P-C)^T*(P-C)-1.
+            vec3 diff { O_line - O_sphere };
+            double a0 { dot( diff, diff ) - radius * radius };
+            double a1 { dot( D_line_normalized, diff ) };
+
+            // Intersection occurs when Q(t) has real roots.
+            double discr { a1 * a1 - a0 };
+            std::vector< vec3 > results;
+            if( discr > global_epsilon ) {
+                double root { std::sqrt( discr ) };
+                results.reserve( 2 );
+                results.emplace_back( O_line + ( -a1 - root ) * D_line_normalized );
+                results.emplace_back( O_line + ( -a1 + root ) * D_line_normalized );
+            } else if( discr > -global_epsilon ) {
+                results.reserve( 1 );
+                results.emplace_back( O_line + -a1 * D_line_normalized );
+            }
+            return std::make_tuple( !results.empty(), results );
+        }
+
     }
 }
