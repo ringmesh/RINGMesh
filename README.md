@@ -13,7 +13,6 @@ Linux
 
 Configuring RINGMesh
 --------------------
-<a name="linux_configuration"></a>
 
 Execute cmake command in a RINGMesh/build directory.
 
@@ -31,7 +30,6 @@ To define the options, use the cmake interface:
 
 Compiling RINGMesh
 ------------------
-<a name="linux_compilation"></a>
 
 To compile you need the following packages (on Debian-based linux):
 * build-essential
@@ -65,7 +63,6 @@ also targets to build/rebuild geogram.
 
 Compiling the documentation
 ---------------------------
-<a name="linux_documentation"></a>
 
 * Check the BUILD_DOCUMENTATION option when using cmake
  * cd build
@@ -76,14 +73,13 @@ Compiling the documentation
 * make doc-devkit OR make doc-devkit-lite
 
 You can also build the documentation through eclipse (see available targets).
-See the [documentation](#about_documentation) section for more details.
+See the documentation section for more details.
 
 Windows
 =======
 
 Configuring RINGMesh
 --------------------
-<a name="windows_configuration"></a>
 
 Launch CMake GUI, indicate where is the source code as the path to RINGMesh root and 
 where to put the binaries as this_root/build/ringmesh.
@@ -98,7 +94,6 @@ RINGMesh has previously been compiled with:
 
 Compiling RINGMesh
 ------------------
-<a name="windows_compilation"></a>
 
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step:
@@ -116,13 +111,12 @@ The available compilation modes are:
 
 Compiling the documentation
 ---------------------------
-<a name="windows_documentation"></a>
 
 * Check the BUILD_DOCUMENTATION option when using cmake
 * Open the solution which is in build/ringmesh/RINGmesh.sln in VisualStudio
 * Build the doc-devkit or the doc-devkit-lite project
 
-See the [documentation](#about_documentation) section for more details.
+See the documentation section for more details.
 
 Mac OS
 ======
@@ -130,10 +124,10 @@ Mac OS
 Configuring RINGMesh
 --------------------
 ### Using clang (without Xcode)
-As in [Linux](#linux_configuration).
+As in Linux.
 
 ### Using Xcode IDE
-As in [Windows](#windows_configuration) but with the Xcode generator
+As in Windows but with the Xcode generator
 (use "-G Xcode" if you use cmake in command lines).
 
 Compiling RINGMesh
@@ -144,12 +138,12 @@ Note: you need gcc/g++ version higher or equal to 4.2 to compile RINGMesh.
 In Mac OS, clang is used.
 
 ### Using clang (without Xcode)
-As in [Linux](#linux_compilation) except for the packages.
+As in Linux except for the packages.
 
 ### Using Xcode IDE
 You need to install Xcode IDE.
 Open the build/ringmesh/RINGMesh.xcodeproj with Xcode IDE,
-and then compile (as in [Windows](#windows_compilation) with VisualStudio).
+and then compile (as in Windows with VisualStudio).
 Or use these command lines:
 * cd build/ringmesh
 * xcodebuild -project RINGMesh.xcodeproj -alltargets -configuration Release
@@ -159,17 +153,16 @@ To build in Debug, replace "Release" by "Debug" after "-configuration".
 Compiling the documentation
 ---------------------------
 
-See the [documentation](#about_documentation) section for more details.
+See the documentation section for more details.
 
 ### Using clang (without Xcode)
-As in [Linux](#linux_documentation).
+As in Linux.
 
 ### Using Xcode IDE
-As in [Windows](#windows_documentation) with VisualStudio but with Xcode.
+As in Windows with VisualStudio but with Xcode.
 
 About documentation
 ===================
-<a name="about_documentation"></a>
 
 The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/).
 Two targets are available:
