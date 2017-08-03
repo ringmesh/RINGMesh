@@ -74,7 +74,7 @@ namespace RINGMesh {
             return type_ < rhs.type_;
         }
 
-        const std::string& get_std_string() const
+        const std::string& string() const
         {
             return type_;
         }

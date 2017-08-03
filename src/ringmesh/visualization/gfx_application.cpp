@@ -191,10 +191,10 @@ namespace RINGMesh {
         entity_types_.reserve( types.size() + 1 );
         entity_types_.emplace_back( "All" );
         for( const MeshEntityType& type : types ) {
-            entity_types_.emplace_back( type.get_std_string() );
+            entity_types_.emplace_back( type.string() );
         }
         for( index_t i : range( GM_.nb_geological_entity_types() ) ) {
-            entity_types_.emplace_back( GM_.geological_entity_type( i ).get_std_string() );
+            entity_types_.emplace_back( GM_.geological_entity_type( i ).string() );
         }
         GM_gfx_.set_geomodel( GM_ );
         if( !app.colormaps_.empty() ) {

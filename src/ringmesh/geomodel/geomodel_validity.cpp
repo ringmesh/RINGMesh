@@ -464,7 +464,7 @@ namespace {
         if( entities.find( boundary_type )->second.empty() ) {
             if( !type_entities.empty() ) {
                 if( type_entities.size() != 1 ) {
-                    print_error( type_entities, type.get_std_string() + "s" );
+                    print_error( type_entities, type.string() + "s" );
                     Logger::warn( "GeoModel", "It should be in only one ",
                         boundary_type );
                     return false;
