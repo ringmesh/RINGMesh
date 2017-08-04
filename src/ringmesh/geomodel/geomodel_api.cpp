@@ -35,6 +35,7 @@
 
 #include <ringmesh/geomodel/geomodel_api.h>
 
+#include <array>
 #include <iomanip>
 #include <iostream>
 
