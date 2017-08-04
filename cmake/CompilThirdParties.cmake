@@ -13,19 +13,28 @@ if(WIN32)
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
-    if(${PROPAGATE_COMPILER_TO_THIRD_PARTIES})
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-            message(STATUS "Using Clang compiler to compile third parties")
-            set(geoplatform Linux64-clang-dynamic)
-        elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            message(STATUS "Using gcc compiler to compile third parties")
-            set(geoplatform Linux64-gcc-dynamic)
-        endif()
-    else(${PROPAGATE_COMPILER_TO_THIRD_PARTIES})
-        message(STATUS "Using gcc default compiler to compile third parties")
-    endif()
-endif(WIN32)
 
+    if(APPLE)
+        set(geoplatform Darwin-clang-dynamic)
+    else(APPLE)
+	# Linux
+        if(${PROPAGATE_COMPILER_TO_THIRD_PARTIES})
+            if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+                message(STATUS "Using Clang compiler to compile third parties")
+                set(geoplatform Linux64-clang-dynamic)
+            elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+                message(STATUS "Using gcc compiler to compile third parties")
+                set(geoplatform Linux64-gcc-dynamic)
+            endif()
+        else(${PROPAGATE_COMPILER_TO_THIRD_PARTIES})
+            message(STATUS "Using gcc default compiler to compile third parties")
+            set(geoplatform Linux64-gcc-dynamic)
+            find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
+            find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
+        endif()
+    endif(APPLE)
+
+endif(WIN32)
 # Define Geogram as an external project that we know how to
 # configure and compile
 ExternalProject_Add(geogram_ext
@@ -49,7 +58,7 @@ ExternalProject_Add(geogram_ext
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-  
+
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}
   #-- Command to build geogram
@@ -105,11 +114,11 @@ ExternalProject_Add(tinyxml2_ext
 
   #--Configure step-------------
   SOURCE_DIR ${TINYXML2_PATH}
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${TINYXML2_PATH}
-        -G ${CMAKE_GENERATOR} 
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+      CONFIGURE_COMMAND ${CMAKE_COMMAND} ${TINYXML2_PATH}
+          -G ${CMAKE_GENERATOR} 
+          -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
   #--Build step-----------------
   BINARY_DIR ${TINYXML2_PATH_BIN}
@@ -160,9 +169,9 @@ ExternalProject_Add(zlib_ext
 
   #--Configure step-------------
   SOURCE_DIR ${ZLIB_PATH}
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
         -G ${CMAKE_GENERATOR} 
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} 
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
