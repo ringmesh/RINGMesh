@@ -69,7 +69,7 @@ endif(RINGMESH_WITH_GRAPHICS)
     
 # Add geogram bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
-link_directories(${GEOGRAM_PATH_BIN}/lib)
+link_directories(${GEOGRAM_PATH_BIN}/lib/${CMAKE_CFG_INTDIR})
 
 #------------------------------------------------------------------------------------------------
 # tinyxml2 
