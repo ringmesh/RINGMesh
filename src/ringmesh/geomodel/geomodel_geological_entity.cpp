@@ -82,6 +82,8 @@ namespace RINGMesh {
             return GEOL_FEATURE::UNCONFORMITY;
         } else if( in == "boundary" ) {
             return GEOL_FEATURE::VOI;
+        } else if( in == "lease" ) {
+            return GEOL_FEATURE::VOI;
         } else {
             // Default case - no information
             return GEOL_FEATURE::NO_GEOL;
