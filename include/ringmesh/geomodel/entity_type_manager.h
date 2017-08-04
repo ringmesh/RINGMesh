@@ -155,8 +155,8 @@ namespace RINGMesh {
         const MeshEntityType& boundary_entity_type(
             const MeshEntityType& mesh_entity_type ) const
         {
-            MeshEntityTypeMap::const_iterator itr = boundary_relationships_.map.find(
-                mesh_entity_type );
+            MeshEntityTypeMap::const_iterator itr { boundary_relationships_.map.find(
+                mesh_entity_type ) };
             ringmesh_assert( itr != boundary_relationships_.map.end() );
             return itr->second;
         }
@@ -164,8 +164,8 @@ namespace RINGMesh {
         const MeshEntityType& incident_entity_type(
             const MeshEntityType& mesh_entity_type ) const
         {
-            MeshEntityTypeMap::const_iterator itr =
-                incident_entity_relationships_.map.find( mesh_entity_type );
+            MeshEntityTypeMap::const_iterator itr {
+                incident_entity_relationships_.map.find( mesh_entity_type ) };
             ringmesh_assert( itr != incident_entity_relationships_.map.end() );
             return itr->second;
         }
@@ -226,7 +226,7 @@ namespace RINGMesh {
         void register_geological_entity_type(
             const GeologicalEntityType& geological_type_name )
         {
-            if( find( geological_entity_types_, geological_type_name ) == NO_ID ) {
+            if( !contains( geological_entity_types_, geological_type_name ) ) {
                 geological_entity_types_.push_back( ( geological_type_name ) );
             }
         }
@@ -305,8 +305,8 @@ namespace RINGMesh {
             const gmme_id& incident_entity,
             const gmme_id& boundary )
         {
-            index_t relationship_id =
-                static_cast< index_t >( boundary_relationships_.size() );
+            index_t relationship_id {
+                static_cast< index_t >( boundary_relationships_.size() ) };
             boundary_relationships_.emplace_back( incident_entity, boundary );
             return relationship_id;
         }
@@ -359,8 +359,8 @@ namespace RINGMesh {
             const gmge_id& parent,
             const gmme_id& child )
         {
-            index_t relationship_id =
-                static_cast< index_t >( parent_child_relationships_.size() );
+            index_t relationship_id {
+                static_cast< index_t >( parent_child_relationships_.size() ) };
             parent_child_relationships_.emplace_back( parent, child );
             return relationship_id;
         }

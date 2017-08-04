@@ -70,8 +70,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     double Box< DIMENSION >::signed_distance( const vecn< DIMENSION >& p ) const
     {
-        bool inside = true;
-        double result = 0.0;
+        bool inside { true };
+        double result { 0.0 };
         for( index_t c : range( DIMENSION ) ) {
             if( p[c] < min()[c] ) {
                 inside = false;
@@ -96,7 +96,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     double Box< DIMENSION >::distance_to_center( const vecn< DIMENSION >& p ) const
     {
-        double result = 0.0;
+        double result { 0.0 };
         for( index_t c : range( DIMENSION ) ) {
             double d = p[c] - 0.5 * ( min()[c] + max()[c] );
             result += sqr( d );
@@ -104,8 +104,8 @@ namespace RINGMesh {
         return result;
     }
 
-    template class RINGMESH_API Box< 2 >;
-    template class RINGMESH_API Box< 3 >;
+    template class RINGMESH_API Box< 2 > ;
+    template class RINGMESH_API Box< 3 > ;
 
 }
 
