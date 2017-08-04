@@ -375,7 +375,7 @@ namespace RINGMesh {
      * @return returns true if the point is inside
      */
     template< index_t DIMENSION >
-    bool RINGMESH_API point_inside_triangle(
+    bool point_inside_triangle(
         const vecn< DIMENSION >& p,
         const vecn< DIMENSION >& p0,
         const vecn< DIMENSION >& p1,
