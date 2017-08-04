@@ -351,6 +351,20 @@ namespace RINGMesh {
     }
 
     /*!
+     * @brief Tests if a point is inside a segment
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the segment
+     * @param[in] p1 the second vertex of the segment
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
+     * @return returns true if the point is inside
+     */
+    bool RINGMESH_API point_inside_segment(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        bool exact_predicates = false );
+
+    /*!
      * @brief Tests if a point is inside a triangle
      * @details if it is inside a prism based on the triangle and its normal
      * @param[in] p the point to test

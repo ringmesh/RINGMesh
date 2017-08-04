@@ -68,8 +68,8 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& triangle_normal )
     {
-        double area = GEO::Geom::triangle_area( p0, p1, p2 );
-        vec3 area_normal = cross( p0 - p2, p1 - p2 );
+        double area { GEO::Geom::triangle_area( p0, p1, p2 ) };
+        vec3 area_normal { cross( p0 - p2, p1 - p2 ) };
         if( dot( triangle_normal, area_normal ) < 0 ) {
             area = -area;
         }
@@ -94,15 +94,15 @@ namespace RINGMesh {
         const vec3& p3,
         bool exact_predicates )
     {
-        vec3 vertices[4] = { p0, p1, p2, p3 };
+        vec3 vertices[4] { p0, p1, p2, p3 };
         Sign signs[4];
         if( !exact_predicates ) {
             for( index_t f : range( 4 ) ) {
-                double volume =
+                double volume {
                     GEO::Geom::tetra_signed_volume( p,
                         vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] );
+                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] ) };
                 if( is_almost_zero( volume ) ) {
                     return point_inside_tetra( p, p0, p1, p2, p3, true );
                 }
@@ -129,21 +129,21 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& p3 )
     {
-        double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 );
+        double total_volume { GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 ) };
         if( std::fabs( total_volume ) < global_epsilon_3 ) {
-            std::array< double, 4 > lambdas = { 0., 0., 0., 0. };
+            std::array< double, 4 > lambdas { { 0., 0., 0., 0. } };
             return std::make_tuple( false, lambdas );
         }
-        double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p );
-        double volume1 = GEO::Geom::tetra_signed_volume( p0, p2, p3, p );
-        double volume2 = GEO::Geom::tetra_signed_volume( p0, p3, p1, p );
-        double volume3 = GEO::Geom::tetra_signed_volume( p0, p1, p2, p );
+        double volume0 { GEO::Geom::tetra_signed_volume( p1, p3, p2, p ) };
+        double volume1 { GEO::Geom::tetra_signed_volume( p0, p2, p3, p ) };
+        double volume2 { GEO::Geom::tetra_signed_volume( p0, p3, p1, p ) };
+        double volume3 { GEO::Geom::tetra_signed_volume( p0, p1, p2, p ) };
 
-        double lambda0 = volume0 / total_volume;
-        double lambda1 = volume1 / total_volume;
-        double lambda2 = volume2 / total_volume;
-        double lambda3 = volume3 / total_volume;
-        std::array< double, 4 > lambdas = { lambda0, lambda1, lambda2, lambda3 };
+        double lambda0 { volume0 / total_volume };
+        double lambda1 { volume1 / total_volume };
+        double lambda2 { volume2 / total_volume };
+        double lambda3 { volume3 / total_volume };
+        std::array< double, 4 > lambdas { { lambda0, lambda1, lambda2, lambda3 } };
         return std::make_tuple( true, lambdas );
     }
 
@@ -153,20 +153,20 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2 )
     {
-        double total_area = GEO::Geom::triangle_area( p0, p1, p2 );
+        double total_area { GEO::Geom::triangle_area( p0, p1, p2 ) };
         if( std::fabs( total_area ) < global_epsilon_sq ) {
-            std::array< double, 3 > lambdas = { 0., 0., 0. };
+            std::array< double, 3 > lambdas { { 0., 0., 0. } };
             return std::make_tuple( false, lambdas );
         }
-        vec3 triangle_normal = cross( p2 - p0, p1 - p0 );
-        double area0 = triangle_signed_area( p2, p1, p, triangle_normal );
-        double area1 = triangle_signed_area( p0, p2, p, triangle_normal );
-        double area2 = triangle_signed_area( p1, p0, p, triangle_normal );
+        vec3 triangle_normal { cross( p2 - p0, p1 - p0 ) };
+        double area0 { triangle_signed_area( p2, p1, p, triangle_normal ) };
+        double area1 { triangle_signed_area( p0, p2, p, triangle_normal ) };
+        double area2 { triangle_signed_area( p1, p0, p, triangle_normal ) };
 
-        double lambda0 = area0 / total_area;
-        double lambda1 = area1 / total_area;
-        double lambda2 = area2 / total_area;
-        std::array< double, 3 > lambdas = { lambda0, lambda1, lambda2 };
+        double lambda0 { area0 / total_area };
+        double lambda1 { area1 / total_area };
+        double lambda2 { area2 / total_area };
+        std::array< double, 3 > lambdas { { lambda0, lambda1, lambda2 } };
         return std::make_tuple( true, lambdas );
     }
 
@@ -176,19 +176,19 @@ namespace RINGMesh {
         const vec2& p1,
         const vec2& p2 )
     {
-        double total_area = GEO::Geom::triangle_signed_area( p2, p1, p0 );
+        double total_area { GEO::Geom::triangle_signed_area( p2, p1, p0 ) };
         if( std::fabs( total_area ) < global_epsilon_sq ) {
-            std::array< double, 3 > lambdas = { 0., 0., 0. };
+            std::array< double, 3 > lambdas { { 0., 0., 0. } };
             return std::make_tuple( false, lambdas );
         }
-        double area0 = GEO::Geom::triangle_signed_area( p2, p1, p );
-        double area1 = GEO::Geom::triangle_signed_area( p0, p2, p );
-        double area2 = GEO::Geom::triangle_signed_area( p1, p0, p );
+        double area0 { GEO::Geom::triangle_signed_area( p2, p1, p ) };
+        double area1 { GEO::Geom::triangle_signed_area( p0, p2, p ) };
+        double area2 { GEO::Geom::triangle_signed_area( p1, p0, p ) };
 
-        double lambda0 = area0 / total_area;
-        double lambda1 = area1 / total_area;
-        double lambda2 = area2 / total_area;
-        std::array< double, 3 > lambdas = { lambda0, lambda1, lambda2 };
+        double lambda0 { area0 / total_area };
+        double lambda1 { area1 / total_area };
+        double lambda2 { area2 / total_area };
+        std::array< double, 3 > lambdas { { lambda0, lambda1, lambda2 } };
         return std::make_tuple( true, lambdas );
     }
 
@@ -198,15 +198,15 @@ namespace RINGMesh {
         const vecn< DIMENSION >& p0,
         const vecn< DIMENSION >& p1 )
     {
-        vecn< DIMENSION > center = ( p0 + p1 ) * 0.5;
-        vecn< DIMENSION > diff = p - center;
-        vecn< DIMENSION > edge = p1 - p0;
-        double extent = 0.5 * edge.length();
+        vecn< DIMENSION > center { ( p0 + p1 ) * 0.5 };
+        vecn< DIMENSION > diff { p - center };
+        vecn< DIMENSION > edge { p1 - p0 };
+        double extent { 0.5 * edge.length() };
         edge = normalize( edge );
-        double d = dot( edge, diff );
+        double d { dot( edge, diff ) };
 
         if( std::fabs( d ) <= extent ) {
-            vecn< DIMENSION > new_p = center + d * edge;
+            vecn< DIMENSION > new_p { center + d * edge };
             return std::make_tuple( true, new_p );
         }
         vecn< DIMENSION > empty_point;
@@ -218,10 +218,10 @@ namespace RINGMesh {
         const vec3& N_plane,
         const vec3& O_plane )
     {
-        vec3 N_unit_plane = normalize( N_plane );
-        vec3 v( p - O_plane );
-        double distance = dot( v, N_unit_plane );
-        vec3 projected_p = p - distance * N_unit_plane;
+        vec3 N_unit_plane { normalize( N_plane ) };
+        vec3 v { p - O_plane };
+        double distance { dot( v, N_unit_plane ) };
+        vec3 projected_p { p - distance * N_unit_plane };
         return projected_p;
     }
 
@@ -230,21 +230,19 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1 )
     {
-        bool is_point_segment_projection_possible = false;
+        bool is_point_segment_projection_possible;
         vec3 nearest_p;
         std::tie( is_point_segment_projection_possible, nearest_p ) =
             point_segment_projection( p, p0, p1 );
         if( is_point_segment_projection_possible ) {
             return std::make_tuple( length( nearest_p - p ), nearest_p );
         } else {
-            double p0_distance_sq = length2( p0 - p );
-            double p1_distance_sq = length2( p1 - p );
+            double p0_distance_sq { length2( p0 - p ) };
+            double p1_distance_sq { length2( p1 - p ) };
             if( p0_distance_sq < p1_distance_sq ) {
-                nearest_p = p0;
-                return std::make_tuple( std::sqrt( p0_distance_sq ), nearest_p );
+                return std::make_tuple( std::sqrt( p0_distance_sq ), p0 );
             } else {
-                nearest_p = p1;
-                return std::make_tuple( std::sqrt( p1_distance_sq ), nearest_p );
+                return std::make_tuple( std::sqrt( p1_distance_sq ), p1 );
             }
         }
     }
@@ -262,17 +260,17 @@ namespace RINGMesh {
             theta = theta * M_PI / 180.;
         }
 
-        double axis_length = axis.length();
+        double axis_length { axis.length() };
         ringmesh_assert( axis_length > 0. );
-        double x1 = origin[0];
-        double y1 = origin[1];
-        double z1 = origin[2];
-        double a = axis[0] / axis_length;
-        double b = axis[1] / axis_length;
-        double c = axis[2] / axis_length;
-        double d = std::sqrt( b * b + c * c );
-        double cos_angle = std::cos( theta );
-        double sin_angle = std::sin( theta );
+        double x1 { origin[0] };
+        double y1 { origin[1] };
+        double z1 { origin[2] };
+        double a { axis[0] / axis_length };
+        double b { axis[1] / axis_length };
+        double c { axis[2] / axis_length };
+        double d { std::sqrt( b * b + c * c ) };
+        double cos_angle { std::cos( theta ) };
+        double sin_angle { std::sin( theta ) };
 
         GEO::Matrix< 4, double > T;
         T( 0, 0 ) = 1;
@@ -475,9 +473,7 @@ namespace RINGMesh {
         Rz( 3, 2 ) = 0.;
         Rz( 3, 3 ) = 1.;
 
-        GEO::Matrix< 4, double > rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx
-            * T;
-        return rot_mat;
+        return inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T;
     }
 
     bool point_inside_triangle(
@@ -488,22 +484,22 @@ namespace RINGMesh {
         bool exact_predicates )
     {
         // Get another point not in the triangle plane (using its normal)
-        vec3 n = cross( p2 - p0, p1 - p0 );
-        vec3 q = p + n;
+        vec3 n { cross( p2 - p0, p1 - p0 ) };
+        vec3 q { p + n };
 
         Sign s1, s2, s3;
         if( !exact_predicates ) {
-            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 );
+            double vol1 { GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) };
             if( is_almost_zero( vol1 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
             s1 = sign( vol1 );
-            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 );
+            double vol2 { GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) };
             if( is_almost_zero( vol2 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
             s2 = sign( vol2 );
-            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p0 );
+            double vol3 { GEO::Geom::tetra_signed_volume( p, q, p2, p0 ) };
             if( is_almost_zero( vol3 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
@@ -547,17 +543,17 @@ namespace RINGMesh {
     {
         Sign s1, s2, s3;
         if( !exact_predicates ) {
-            double area1 = GEO::Geom::triangle_signed_area( p, p0, p1 );
+            double area1 { GEO::Geom::triangle_signed_area( p, p0, p1 ) };
             if( is_almost_zero( area1 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
             s1 = sign( area1 );
-            double area2 = GEO::Geom::triangle_signed_area( p, p1, p2 );
+            double area2 { GEO::Geom::triangle_signed_area( p, p1, p2 ) };
             if( is_almost_zero( area2 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
             s2 = sign( area2 );
-            double area3 = GEO::Geom::triangle_signed_area( p, p2, p0 );
+            double area3 { GEO::Geom::triangle_signed_area( p, p2, p0 ) };
             if( is_almost_zero( area3 ) ) {
                 return point_inside_triangle( p, p0, p1, p2, true );
             }
@@ -587,6 +583,52 @@ namespace RINGMesh {
         }
 
         return s1 == s2 && s2 == s3;
+    }
+
+    bool point_inside_segment(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        bool exact_predicates )
+    {
+        vec3 segment { p1 - p0 };
+        double half_length { segment.length() / 2. };
+        if( !exact_predicates ) {
+            vec3 segment_center { ( p0 + p1 ) / 2. };
+            double point_distance { length( p - segment_center ) };
+            if( point_distance < half_length - global_epsilon ) {
+                return true;
+            } else if( point_distance > half_length + global_epsilon ) {
+                return false;
+            } else {
+                return point_inside_segment( p, p0, p1, true );
+            }
+        } else {
+            vec3 plane_normal { normalize( segment ) };
+            double plane_constant { 0 };
+            for( index_t i : range( 3 ) ) {
+                plane_constant -= plane_normal[i] * p[i];
+            }
+            vec3 vector_on_plane;
+            for( index_t i : range( 3 ) ) {
+                if( std::fabs( plane_normal[i] ) > global_epsilon ) {
+                    vector_on_plane[i] = -plane_constant / plane_normal[i];
+                    vector_on_plane = normalize( vector_on_plane );
+                }
+            }
+            vec3 vector_on_plane2 { cross( plane_normal, vector_on_plane ) };
+
+            vec3 point_on_plane { p + half_length * vector_on_plane };
+            vec3 point_on_plane2 { p + half_length * vector_on_plane2 };
+            Sign s1 { sign(
+                GEO::PCK::orient_3d( p.data(), point_on_plane.data(),
+                    point_on_plane2.data(), p0.data() ) ) };
+            Sign s2 { sign(
+                GEO::PCK::orient_3d( p.data(), point_on_plane.data(),
+                    point_on_plane2.data(), p1.data() ) ) };
+
+            return s1 == ZERO || s2 == ZERO || s1 != s2;
+        }
     }
 
     template std::tuple< bool, vecn< 2 > > RINGMESH_API point_segment_projection(
