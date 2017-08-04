@@ -120,8 +120,7 @@ namespace RINGMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
     };
 
-    using GeogramPointSetMesh2D = GeogramPointSetMesh< 2 >;
-    using GeogramPointSetMesh3D = GeogramPointSetMesh< 3 >;
+    CLASS_DIMENSION_ALIASES( GeogramPointSetMesh );
 
     template< index_t DIMENSION >
     class GeogramLineMesh: public LineMesh< DIMENSION > {
@@ -144,8 +143,7 @@ namespace RINGMesh {
         }
     };
 
-    using GeogramLineMesh2D = GeogramLineMesh< 2 >;
-    using GeogramLineMesh3D = GeogramLineMesh< 3 >;
+    CLASS_DIMENSION_ALIASES( GeogramLineMesh );
 
     template< index_t DIMENSION >
     class GeogramSurfaceMesh: public SurfaceMesh< DIMENSION > {
@@ -184,8 +182,7 @@ namespace RINGMesh {
         }
     };
 
-    using GeogramSurfaceMesh2D = GeogramSurfaceMesh< 2 >;
-    using GeogramSurfaceMesh3D = GeogramSurfaceMesh< 3 >;
+    CLASS_DIMENSION_ALIASES( GeogramSurfaceMesh );
 
     template< index_t DIMENSION >
     class GeogramVolumeMesh: public VolumeMesh< DIMENSION > {
@@ -292,7 +289,6 @@ namespace RINGMesh {
         }
     };
 
-    using GeogramVolumeMesh2D = GeogramVolumeMesh< 2 >;
     using GeogramVolumeMesh3D = GeogramVolumeMesh< 3 >;
 
     void register_geogram_mesh();
