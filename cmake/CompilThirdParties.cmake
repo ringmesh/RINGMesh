@@ -13,7 +13,6 @@ if(WIN32)
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
-
     if(${PROPAGATE_COMPILER_TO_THIRD_PARTIES})
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
             message(STATUS "Using Clang compiler to compile third parties")
@@ -43,7 +42,7 @@ ExternalProject_Add(geogram_ext
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
         -G ${CMAKE_GENERATOR} 
         -DVORPALINE_PLATFORM:STRING=${geoplatform}
-	-DGEOGRAM_WITH_LUA:BOOL=OFF
+        -DGEOGRAM_WITH_LUA:BOOL=OFF
         -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF

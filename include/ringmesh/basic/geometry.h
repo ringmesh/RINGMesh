@@ -170,6 +170,36 @@ namespace RINGMesh {
             const vec3& N_plane );
 
         /*!
+         * Computes the intersection(s) between a sphere and a line
+         * @param[in] O_line a point on the line
+         * @param[in] D_line the direction of the plane
+         * @param[in] O_sphere the center of the sphere
+         * @param[in] radius the radius of the sphere
+         * @return returns a tuple containing a boolean (true if there is at least one intersection)
+         * and the intersected points.
+         */
+        std::tuple< bool, std::vector< vec3 > > RINGMESH_API line_sphere(
+            const vec3& O_line,
+            const vec3& D_line,
+            const vec3& O_sphere,
+            double radius );
+
+        /*!
+         * Computes the intersection(s) between a sphere and a segment
+         * @param[in] p0 the first vertex of the segment
+         * @param[in] p1 the second vertex of the segment
+         * @param[in] O_sphere the center of the sphere
+         * @param[in] radius the radius of the sphere
+         * @return returns a tuple containing a boolean (true if there is at least one intersection)
+         * and the intersected points.
+         */
+        std::tuple< bool, std::vector< vec3 > > RINGMESH_API segment_sphere(
+            const vec3& seg0,
+            const vec3& seg1,
+            const vec3& O_sphere,
+            double radius );
+
+        /*!
          * Computes the intersection between a plane and a segment
          * @param[in] p0 the first vertex of the segment
          * @param[in] p1 the second vertex of the segment
@@ -207,7 +237,7 @@ namespace RINGMesh {
          * @param[in] N_plane the normal of the plane
          * @param[in] O_circle the center of the circle
          * @param[in] N_circle the normal of the plane supporting the circle
-         * @param[in] r the radius of the circle
+         * @param[in] radius the radius of the circle
          * @return returns a tuple containing a boolean (true if there is at least one intersection)
          * and the intersected points if any.
          */
@@ -216,7 +246,7 @@ namespace RINGMesh {
             const vec3& N_plane,
             const vec3& O_circle,
             const vec3& N_circle,
-            double r );
+            double radius );
 
         /*!
          * Computes the intersection between a disk and a segment
@@ -224,7 +254,7 @@ namespace RINGMesh {
          * @param[in] p1 the second vertex of the segment
          * @param[in] O_disk the center of the disk
          * @param[in] N_disk the normal of the plane supporting the disk
-         * @param[in] r the radius of the disk
+         * @param[in] radius the radius of the disk
          * @return returns a tuple containing a boolean (true if there is an intersection)
          * and the intersected point if any.
          */
@@ -233,7 +263,7 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& O_disk,
             const vec3& N_disk,
-            double r );
+            double radius );
 
         /*!
          * Computes the intersection(s) between a circle and a triangle
@@ -242,7 +272,7 @@ namespace RINGMesh {
          * @param[in] p2 the third vertex of the triangle
          * @param[in] O_circle the center of the circle
          * @param[in] N_circle the normal of the plane supporting the circle
-         * @param[in] r the radius of the circle
+         * @param[in] radius the radius of the circle
          * @return returns a tuple containing a boolean (true if there is at least one intersection)
          * and the intersected points if any.
          */
@@ -252,7 +282,7 @@ namespace RINGMesh {
             const vec3& p2,
             const vec3& O_circle,
             const vec3& N_circle,
-            double r );
+            double radius );
 
         /*!
          * Computes the intersection between two planes

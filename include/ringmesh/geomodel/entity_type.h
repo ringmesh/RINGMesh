@@ -74,13 +74,9 @@ namespace RINGMesh {
             return type_ < rhs.type_;
         }
 
-        operator std::string() const
+        const std::string& string() const
         {
             return type_;
-        }
-        explicit operator std::string*() const
-        {
-            return nil;
         }
 
     private:
