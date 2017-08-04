@@ -131,7 +131,8 @@ if(UNIX)
                 -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}  
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
                 -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY} 
-                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}                     
+                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}           
+                -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}                               
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -162,6 +163,10 @@ elseif(UNIX)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         if(COMPILER_VERSION VERSION_LESS 3.3 )
            message(FATAL_ERROR "RINGMesh require Clang version >= 3.3")
+        endif()
+        if(USE_OPENMP)
+           message(WARNING "Clang does not support OpenMP. Option is set to off")
+           set(USE_OPENMP off)
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         if(COMPILER_VERSION VERSION_LESS 4.8 )
@@ -225,11 +230,6 @@ endif()
 if(USE_OPENMP)
     find_package(OpenMP)
     if (OPENMP_FOUND)
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-            if(COMPILER_VERSION VERSION_LESS 3.7 )
-               message(FATAL_ERROR "RINGMesh require Clang version  >= 3.7" to work with OpenMP)
-            endif()
-        endif()
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     else (OPENMP_FOUND)
