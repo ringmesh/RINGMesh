@@ -50,9 +50,9 @@ namespace RINGMesh {
     NNSearch< DIMENSION >::NNSearch(
         const std::vector< vecn< DIMENSION > >& vertices,
         bool copy )
+        : nn_tree_( GEO::NearestNeighborSearch::create( DIMENSION, "BNN" ) )
     {
         index_t nb_vertices = static_cast< index_t >( vertices.size() );
-        nn_tree_ = GEO::NearestNeighborSearch::create( DIMENSION, "BNN" );
         if( copy ) {
             nn_points_ = new double[nb_vertices * DIMENSION];
             delete_points_ = true;
@@ -71,10 +71,10 @@ namespace RINGMesh {
     {
         std::vector< index_t > index_map( nn_tree_->nb_points() );
         std::iota( index_map.begin(), index_map.end(), 0 );
-        index_t nb_colocalised_vertices = 0;
+        index_t nb_colocalised_vertices { 0 };
         for( index_t i : range( index_map.size() ) ) {
             std::vector< index_t > results = get_neighbors( point( i ), epsilon );
-            index_t id = *std::min_element( results.begin(), results.end() );
+            index_t id { *std::min_element( results.begin(), results.end() ) };
             if( id < i ) {
                 index_map[i] = id;
                 nb_colocalised_vertices++;
@@ -84,16 +84,17 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, std::vector< index_t >, std::vector< vecn< DIMENSION > > >
-        NNSearch< DIMENSION >::get_colocated_index_mapping_and_unique_points(
-            double epsilon ) const
+    std::tuple< index_t, std::vector< index_t >, std::vector< vecn< DIMENSION > > > NNSearch<
+        DIMENSION >::get_colocated_index_mapping_and_unique_points(
+        double epsilon ) const
     {
-        index_t nb_colocalised_vertices = NO_ID;
+        index_t nb_colocalised_vertices { NO_ID };
         std::vector< index_t > index_map;
-        std::tie( nb_colocalised_vertices, index_map ) = get_colocated_index_mapping( epsilon );
+        std::tie( nb_colocalised_vertices, index_map ) = get_colocated_index_mapping(
+            epsilon );
         std::vector< vecn< DIMENSION > > unique_points;
         unique_points.reserve( nb_points() - nb_colocalised_vertices );
-        index_t offset = 0;
+        index_t offset { 0 };
         for( index_t p : range( index_map.size() ) ) {
             if( index_map[p] == p ) {
                 unique_points.push_back( point( p ) );
@@ -112,9 +113,10 @@ namespace RINGMesh {
         const vecn< DIMENSION >& v,
         double threshold_distance ) const
     {
-        double threshold_distance_sq = threshold_distance * threshold_distance;
+        double threshold_distance_sq { threshold_distance * threshold_distance };
         return get_neighbors( v, [this, &v, threshold_distance_sq]( index_t i ) {
-            return length2( v - point( i ) ) > threshold_distance_sq;} );
+            return length2( v - point( i ) ) > threshold_distance_sq;
+        } );
     }
 
     template< index_t DIMENSION >
