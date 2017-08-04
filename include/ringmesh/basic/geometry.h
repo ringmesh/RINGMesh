@@ -151,6 +151,19 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& p2,
             const vec3& p3 );
+        /*!
+         * Computes the distance between a point and a plane
+         * @param[in] p the point to project
+         * @param[in] N_plane the normal of the plane
+         * @param[in] O_plane a point of the plane
+         * @return a tuple containing:
+         * - the distance between the point and the plane.
+         * - the nearest point on the plane.
+         */
+        std::tuple< double, vec3 > RINGMESH_API point_to_plane(
+            const vec3& p,
+            const vec3& N_plane,
+            const vec3& O_plane );
     }
 
     namespace Intersection {
@@ -351,7 +364,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Tests if a point is inside a segment
+     * @brief Tests if a point is on a segment
      * @param[in] p the point to test
      * @param[in] p0 the first vertex of the segment
      * @param[in] p1 the second vertex of the segment
@@ -413,18 +426,6 @@ namespace RINGMesh {
         const vecn< DIMENSION >& p,
         const vecn< DIMENSION >& p0,
         const vecn< DIMENSION >& p1 );
-
-    /*!
-     * Computes the orthogonal projection of a point on a plane
-     * @param[in] p the point to project
-     * @param[in] N_plane the normal of the plane
-     * @param[in] O_plane a point of the plane
-     * @return the projected point
-     */
-    vec3 RINGMESH_API point_plane_projection(
-        const vec3& p,
-        const vec3& N_plane,
-        const vec3& O_plane );
 
     /*!
      * Computes barycentric coordinates of \p p
