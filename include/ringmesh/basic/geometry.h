@@ -409,7 +409,7 @@ namespace RINGMesh {
      * and the projected point if any.
      */
     template< index_t DIMENSION >
-    std::tuple< bool, vecn< DIMENSION > > RINGMESH_API point_segment_projection(
+    std::tuple< bool, vecn< DIMENSION > > point_segment_projection(
         const vecn< DIMENSION >& p,
         const vecn< DIMENSION >& p0,
         const vecn< DIMENSION >& p1 );
