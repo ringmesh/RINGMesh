@@ -123,7 +123,7 @@ if(RINGMesh_FOUND)
 	
     # Add RINGMesh include directories
     include_directories(${RINGMesh_INCLUDE_DIRS})
-    # Add RINGMesh project libs to the libs with which RINGMecha will link
+    # Add RINGMesh project libs to the libs with which the client code will link
     set(${extra_libs} ${${extra_libs}} ${RINGMesh_LIBRARIES} PARENT_SCOPE)
 else(RINGMesh_FOUND)
     # In theory find_package with REQUIRED stops the cmake generation if the package is not found, so this else should never happen...
