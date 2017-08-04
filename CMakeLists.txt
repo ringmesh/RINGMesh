@@ -166,6 +166,30 @@ if(UNIX)
         endif()
         set(CMAKE_MACOSX_RPATH 1)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+	################################################################################
+	function(add_flags _var)
+   		 string(REPLACE " " ";" flags "${${_var}};${ARGN}")
+    		list(REMOVE_DUPLICATES flags)
+    		string(REPLACE ";" " " flags "${flags}")
+    		set(${_var} ${flags} PARENT_SCOPE)
+	endfunction()
+	# Comment from geogram: "Forbid undefined symbols at link time (shared libraries and executables)"
+	add_flags(CMAKE_CXX_FLAGS -m64)
+        add_flags(CMAKE_C_FLAGS -m64)
+	# Add static and dynamic bounds checks (optimization required)
+	add_flags(CMAKE_CXX_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
+	add_flags(CMAKE_C_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
+
+	# Enable SSE3 instruction set
+	add_flags(CMAKE_CXX_FLAGS -msse3)
+	add_flags(CMAKE_C_FLAGS -msse3)
+
+	# C++11 standard
+	add_flags(CMAKE_CXX_FLAGS -Qunused-arguments -std=c++11 -Wno-c++98-compat)
+	# Forbid undefined symbols at link time (shared libraries and executables)
+	add_flags(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,error")
+	add_flags(CMAKE_EXE_LINKER_FLAGS "-Wl,-undefined,error")
+	################################################################################
     else(APPLE)
         # Linux
         if(G++_VERSION VERSION_LESS 4.8 )
