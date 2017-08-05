@@ -626,7 +626,6 @@ namespace {
 
     // Indices begin to 1 in Gocad
     index_t GOCAD_OFFSET = 1;
-
     class LoadZSign final : public GocadLineParser {
     public:
         LoadZSign( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
@@ -1319,7 +1318,6 @@ namespace RINGMesh {
             }
         }
     }
-
     void initialize_gocad_import_factories()
     {
         GocadLineFactory::register_creator< LoadZSign >( "ZPOSITIVE" );
@@ -1330,4 +1328,5 @@ namespace RINGMesh {
         tsolid_import_factory_initialize();
         ml_import_factory_initialize();
     }
+
 }
