@@ -62,15 +62,15 @@
 #   pragma warning( disable: 4275 ) // let's pray we have no issues
 #endif
 
-#define ringmesh_disable_copy( Class ) \
-    public: \
-    Class( const Class & ) = delete ; \
+#define ringmesh_disable_copy( Class )                                          \
+    public:                                                                     \
+    Class( const Class & ) = delete ;                                           \
     Class& operator=( const Class& ) = delete
 
-#define ringmesh_template_assert_2d_or_3d( type ) \
+#define ringmesh_template_assert_2d_or_3d( type )                               \
     static_assert( type == 2 || type == 3, #type " template should be 2 or 3" )
 
-#define ringmesh_template_assert_3d( type ) \
+#define ringmesh_template_assert_3d( type )                                     \
     static_assert( type == 3, #type " template should be 3" )
 
 #define CLASS_2D_ALIAS( Class )                                                 \
@@ -96,7 +96,7 @@
     CLASS_DIMENSION_ALIASES( Class )
 
 // To avoid unused argument warning in function definition
-template< typename T > inline void ringmesh_unused( T const& )
+template< typename T > void ringmesh_unused( T const& )
 {
 }
 
