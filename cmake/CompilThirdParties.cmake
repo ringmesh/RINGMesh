@@ -152,7 +152,7 @@ set(ZLIB_PATH ${PROJECT_SOURCE_DIR}/third_party/zlib)
 # zib platform dependent settings
 if(WIN32)
     set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib)
-else(WIN32)
+else(WIN32) 
     set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE})
 endif(WIN32)
 
@@ -169,11 +169,11 @@ ExternalProject_Add(zlib_ext
 
   #--Configure step-------------
   SOURCE_DIR ${ZLIB_PATH}
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
-        -G ${CMAKE_GENERATOR} 
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+      CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
+          -G ${CMAKE_GENERATOR} 
+          -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
   #--Build step-----------------
   BINARY_DIR ${ZLIB_PATH_BIN}
