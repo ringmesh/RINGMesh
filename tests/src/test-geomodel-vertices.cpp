@@ -49,11 +49,10 @@ void error(
     const gmme_id& mesh_entity_gmme_id )
 {
     throw RINGMeshException( "TEST", "Vertex ", vertex_id_in_mesh_entity,
-        " in entity ", std::string( mesh_entity_gmme_id.type() ),
+        " in entity ", mesh_entity_gmme_id.type().string(),
         mesh_entity_gmme_id.index(),
         " has not the same coordinates than its equivalent vertex ",
         vertex_id_in_geomodel_mesh, " in the GeoModelMesh" );
-
 }
 void test_geomodel_vertices( const GeoModel3D& geomodel )
 {

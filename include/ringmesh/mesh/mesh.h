@@ -45,9 +45,11 @@
 #include <geogram/mesh/mesh.h>
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/basic/nn_search.h>
+
 #include <ringmesh/mesh/aabb.h>
 
 namespace RINGMesh {
@@ -213,15 +215,8 @@ namespace RINGMesh {
     CLASS_DIMENSION_ALIASES( PointSetMesh );
 
     template< index_t DIMENSION >
-    using PointMeshFactory = GEO::Factory0< PointSetMesh< DIMENSION > >;
-
-    using PointMeshFactory3D = PointMeshFactory< 3 >;
-#define ringmesh_register_point_mesh_3d(type) \
-    geo_register_creator(RINGMesh::PointMeshFactory3D, type, type::type_name_static())
-
-    using PointMeshFactory2D = PointMeshFactory< 2 >;
-#define ringmesh_register_point_mesh_2d(type) \
-    geo_register_creator(RINGMesh::PointMeshFactory2D, type, type::type_name_static())
+    using PointSetMeshFactory = Factory< MeshType, PointSetMesh< DIMENSION > >;
+    CLASS_DIMENSION_ALIASES( PointSetMeshFactory );
 
     /*!
      * class for encapsulating line mesh (composed of edges)
@@ -313,15 +308,8 @@ namespace RINGMesh {
     CLASS_DIMENSION_ALIASES( LineMesh );
 
     template< index_t DIMENSION >
-    using LineMeshFactory = GEO::Factory0< LineMesh< DIMENSION > >;
-
-    using LineMeshFactory3D = LineMeshFactory< 3 >;
-#define ringmesh_register_line_mesh_3d(type) \
-    geo_register_creator(RINGMesh::LineMeshFactory3D, type, type::type_name_static())
-
-    using LineMeshFactory2D = LineMeshFactory< 2 >;
-#define ringmesh_register_line_mesh_2d(type) \
-    geo_register_creator(RINGMesh::LineMeshFactory2D, type, type::type_name_static())
+    using LineMeshFactory = Factory< MeshType, LineMesh< DIMENSION > >;
+    CLASS_DIMENSION_ALIASES( LineMeshFactory );
 
     /*!
      * class for encapsulating surface mesh component
@@ -634,7 +622,6 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_;
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_;
     };
-
     CLASS_DIMENSION_ALIASES( SurfaceMeshBase );
 
     template< index_t DIMENSION >
@@ -642,15 +629,8 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    using SurfaceMeshFactory = GEO::Factory0< SurfaceMesh< DIMENSION > >;
-
-    using SurfaceMeshFactory3D = SurfaceMeshFactory< 3 >;
-#define ringmesh_register_surface_mesh_3d(type) \
-    geo_register_creator(RINGMesh::SurfaceMeshFactory3D, type, type::type_name_static())
-
-    using SurfaceMeshFactory2D = SurfaceMeshFactory< 2 >;
-#define ringmesh_register_surface_mesh_2d(type) \
-    geo_register_creator(RINGMesh::SurfaceMeshFactory2D, type, type::type_name_static())
+    using SurfaceMeshFactory = Factory< MeshType, SurfaceMesh< DIMENSION > >;
+    CLASS_DIMENSION_ALIASES( SurfaceMeshFactory );
 
     template< >
     class SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
@@ -1055,11 +1035,8 @@ namespace RINGMesh {
     using VolumeMesh3D = VolumeMesh< 3 >;
 
     template< index_t DIMENSION >
-    using VolumeMeshFactory = GEO::Factory0< VolumeMesh< DIMENSION > >;
-
+    using VolumeMeshFactory = Factory< MeshType, VolumeMesh< DIMENSION > >;
     using VolumeMeshFactory3D = VolumeMeshFactory< 3 >;
-#define ringmesh_register_volume_mesh_3d(type) \
-    geo_register_creator(RINGMesh::VolumeMeshFactory3D, type, type::type_name_static())
 
     /*!
      * class composed of meshes from all the dimensions

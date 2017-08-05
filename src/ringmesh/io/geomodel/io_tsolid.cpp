@@ -34,6 +34,7 @@
  */
 
 namespace {
+    using namespace RINGMesh;
 
     class TSolidIOHandler final : public GeoModelIOHandler< 3 > {
     public:
