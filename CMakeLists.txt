@@ -335,6 +335,7 @@ if(RINGMESH_WITH_UTILITIES)
     add_ringmesh_binary(ringmesh-mesh-quality)
     add_ringmesh_binary(ringmesh-rotate)
     add_ringmesh_binary(ringmesh-translate)
+    add_ringmesh_binary(ringmesh-remove-gme)
     copy_for_windows()
 endif(RINGMESH_WITH_UTILITIES)
 
