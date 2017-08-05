@@ -149,7 +149,7 @@ include(cmake/utils.cmake)
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
-iif(UNIX)
+if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
     
