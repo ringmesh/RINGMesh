@@ -32,7 +32,7 @@
 #     FRANCE
 
 get_filename_component(RINGMESH_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-SET(RINGMESH_ROOT_DIRECTORY "${RINGMESH_CMAKE_DIR}/..")
+set(RINGMESH_ROOT_DIRECTORY "${RINGMESH_CMAKE_DIR}/..")
 
 find_path(RINGMesh_INCLUDE_DIR NAMES ringmesh
     PATHS ${RINGMESH_ROOT_DIRECTORY}/include)
@@ -105,28 +105,28 @@ endif(WIN32)
 
 function(set_ringmesh_includes_and_libs extra_libs)
 if(RINGMesh_FOUND)
-    MESSAGE(STATUS "RINGMesh is found!")
-    MESSAGE(STATUS "RINGMesh include directory ${RINGMesh_INCLUDE_DIR}")
-    MESSAGE(STATUS "geogram include directory ${GEOGRAM_INCLUDE_DIR}")
-    MESSAGE(STATUS "third party include directory ${THIRD_PARTY_INCLUDE_DIR}")
-    MESSAGE(STATUS "RINGMesh include directories ${RINGMesh_INCLUDE_DIRS}")
-    IF(WIN32)
-        MESSAGE(STATUS "RINGMesh release library ${RINGMesh_RELEASE_LIBRARY}")
-        MESSAGE(STATUS "geogram release library ${GEOGRAM_RELEASE_LIBRARY}")
-        MESSAGE(STATUS "RINGMesh debug library ${RINGMesh_DEBUG_LIBRARY}")
-        MESSAGE(STATUS "geogram debug library ${GEOGRAM_DEBUG_LIBRARY}")
-    ELSE(WIN32)
-        MESSAGE(STATUS "RINGMesh library ${RINGMesh_LIBRARY}")
-        MESSAGE(STATUS "geogram library ${GEOGRAM_LIBRARY}")
-    ENDIF(WIN32)
-    MESSAGE(STATUS "RINGMesh libraries ${RINGMesh_LIBRARIES}")
+    message(STATUS "RINGMesh is found!")
+    message(STATUS "RINGMesh include directory ${RINGMesh_INCLUDE_DIR}")
+    message(STATUS "geogram include directory ${GEOGRAM_INCLUDE_DIR}")
+    message(STATUS "third party include directory ${THIRD_PARTY_INCLUDE_DIR}")
+    message(STATUS "RINGMesh include directories ${RINGMesh_INCLUDE_DIRS}")
+    if(WIN32)
+        message(STATUS "RINGMesh release library ${RINGMesh_RELEASE_LIBRARY}")
+        message(STATUS "geogram release library ${GEOGRAM_RELEASE_LIBRARY}")
+        message(STATUS "RINGMesh debug library ${RINGMesh_DEBUG_LIBRARY}")
+        message(STATUS "geogram debug library ${GEOGRAM_DEBUG_LIBRARY}")
+    else(WIN32)
+        message(STATUS "RINGMesh library ${RINGMesh_LIBRARY}")
+        message(STATUS "geogram library ${GEOGRAM_LIBRARY}")
+    endif(WIN32)
+    message(STATUS "RINGMesh libraries ${RINGMesh_LIBRARIES}")
 	
     # Add RINGMesh include directories
     include_directories(${RINGMesh_INCLUDE_DIRS})
-    # Add RINGMesh project libs to the libs with which RINGMecha will link
+    # Add RINGMesh project libs to the libs with which the client code will link
     set(${extra_libs} ${${extra_libs}} ${RINGMesh_LIBRARIES} PARENT_SCOPE)
 else(RINGMesh_FOUND)
     # In theory find_package with REQUIRED stops the cmake generation if the package is not found, so this else should never happen...
-    MESSAGE(FATAL_ERROR "RINGMesh not found")
+    message(FATAL_ERROR "RINGMesh not found")
 endif(RINGMesh_FOUND)
 endfunction()

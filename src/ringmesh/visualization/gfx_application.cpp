@@ -192,10 +192,10 @@ namespace RINGMesh {
         entity_types_.reserve( types.size() + 1 );
         entity_types_.emplace_back( "All" );
         for( const MeshEntityType& type : types ) {
-            entity_types_.emplace_back( type );
+            entity_types_.emplace_back( type.string() );
         }
         for( index_t i : range( GM_.nb_geological_entity_types() ) ) {
-            entity_types_.emplace_back( GM_.geological_entity_type( i ) );
+            entity_types_.emplace_back( GM_.geological_entity_type( i ).string() );
         }
         GM_gfx_.set_geomodel( GM_ );
         if( !app.colormaps_.empty() ) {
@@ -366,6 +366,7 @@ namespace RINGMesh {
             }
         }
     }
+
     template< index_t DIMENSION >
     void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::toggle_mesh_entity_and_boundaries_visibility(
         const gmme_id& entity_id )
@@ -1091,11 +1092,11 @@ namespace RINGMesh {
             "use single precision vertices (FP32)" );
         configure_ringmesh();
 
-        std::vector< std::string > ringmesh_extensions;
-        GeoModelIOHandlerFactory2D::list_creators( ringmesh_extensions );
-        GeoModelIOHandlerFactory3D::list_creators( ringmesh_extensions );
-        ringmesh_file_extensions_ = GEO::String::join_strings( ringmesh_extensions,
-            ';' );
+        auto ringmesh_2d_extensions = GeoModelIOHandlerFactory2D::list_creators();
+        auto ringmesh_3d_extensions = GeoModelIOHandlerFactory3D::list_creators();
+        ringmesh_file_extensions_ = GEO::String::join_strings(
+            ringmesh_2d_extensions, ';' )
+            + GEO::String::join_strings( ringmesh_3d_extensions, ';' );
 
         std::vector< std::string > geogram_extensions;
         GEO::MeshIOHandlerFactory::list_creators( geogram_extensions );
@@ -1257,13 +1258,11 @@ namespace RINGMesh {
         if( !filename.empty() && GEO::FileSystem::is_file( filename ) ) {
             index_t dimension = find_geomodel_dimension( filename );
             if( dimension == 2 ) {
-                geomodels2d_.emplace_back(
-                    new GeoModelViewer2D( *this, filename ) );
+                geomodels2d_.emplace_back( new GeoModelViewer2D( *this, filename ) );
                 current_viewer_ = static_cast< index_t >( geomodels2d_.size() - 1 );
                 current_viewer_type_ = ViewerType::GEOMODEL2D;
             } else if( dimension == 3 ) {
-                geomodels3d_.emplace_back(
-                    new GeoModelViewer3D( *this, filename ) );
+                geomodels3d_.emplace_back( new GeoModelViewer3D( *this, filename ) );
                 current_viewer_ = static_cast< index_t >( geomodels3d_.size() - 1 );
                 current_viewer_type_ = ViewerType::GEOMODEL3D;
             } else {
@@ -1374,6 +1373,7 @@ namespace RINGMesh {
                     if( geomodels.empty() ) {
                         current_viewer_type_ = ViewerType::NONE;
                     }
+                    break;
                 }
                 ImGui::PopID();
             }
@@ -1409,6 +1409,7 @@ namespace RINGMesh {
                     if( meshes_.empty() ) {
                         current_viewer_type_ = ViewerType::NONE;
                     }
+                    break;
                 }
                 ImGui::PopID();
             }

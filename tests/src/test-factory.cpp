@@ -33,67 +33,83 @@
  *     FRANCE
  */
 
-#pragma once
-
-#include <ringmesh/basic/common.h>
+#include <ringmesh/ringmesh_tests_config.h>
 
 #include <memory>
 
-#include <geogram/basic/line_stream.h>
-
-#include <zlib/unzip.h>
-
-#include <ringmesh/geomodel/geomodel_builder_file.h>
+#include <ringmesh/basic/factory.h>
 
 /*!
- * @file ringmesh/geomodel_builder_ringmesh.h
- * @brief Classes to build GeoModel from various inputs
- * @author 
+ * @author Arnaud Botella
  */
 
-namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelBuilderGMImpl;
+using namespace RINGMesh;
+
+class A {
+ringmesh_disable_copy( A );
+public:
+    A() = default;
+};
+
+class B {
+ringmesh_disable_copy( B );
+public:
+    B() = default;
+};
+
+class Base {
+public:
+    virtual ~Base() = default;
+protected:
+    Base( A& a, B& b )
+        : a_( a ), b_( b )
+    {
+    }
+
+protected:
+    A& a_;
+    B& b_;
+};
+
+class Derived: public Base {
+public:
+    Derived( A& a, B& b )
+        : Base( a, b )
+    {
+    }
+};
+
+void verdict( bool is_instantiated, std::string name )
+{
+    if( !is_instantiated ) {
+        throw RINGMeshException( "TEST", "Failed to instantiate the ", name,
+            " class" );
+    }
 }
 
-namespace RINGMesh {
+int main()
+{
+    using namespace RINGMesh;
 
-    template< index_t DIMENSION >
-    class GeoModelBuilderGM final : public GeoModelBuilderFile< DIMENSION > {
-    public:
-        static const index_t NB_VERSION = 3;
-        GeoModelBuilderGM( GeoModel< DIMENSION >& geomodel, std::string filename );
-        virtual ~GeoModelBuilderGM();
+    try {
+        default_configure();
+        Logger::out( "TEST", "Test Factory" );
 
-    private:
-        void load_geological_entities( const std::string& geological_entity_file );
+        using factory = Factory< std::string, Base, A &, B& >;
+        factory::register_creator< Derived >( "Derived" );
 
-        /*!
-         * @brief Load meshes of all the mesh entities from a zip file
-         * @param[in] uz the zip file
-         */
-        void load_meshes( unzFile& uz );
+        A a;
+        B b;
+        auto d = factory::create( "Derived", a, b );
+        verdict( d != nullptr, "Derived" );
 
-        void load_mesh_entity(
-            const std::string& entity_type,
-            const std::string& file_name,
-            index_t id );
-
-        bool load_mesh_entity_base(
-            const std::string& entity_type,
-            const std::string& file_name,
-            index_t id );
-
-        void load_file() final;
-
-        void load_mesh_entities( const std::string& mesh_entity_file );
-
-        void load_region_if_entity_is_region(
-            const std::string& entity_type,
-            index_t id,
-            const std::string& file_name,
-            const MeshEntityTypeManager< DIMENSION >& manager );
-    private:
-        index_t file_version_ { 0 };
-        std::unique_ptr< GeoModelBuilderGMImpl< DIMENSION > > version_impl_[NB_VERSION];
-    };
+    } catch( const RINGMeshException& e ) {
+        Logger::err( e.category(), e.what() );
+        return 1;
+    } catch( const std::exception& e ) {
+        Logger::err( "Exception", e.what() );
+        return 1;
+    }
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
 }

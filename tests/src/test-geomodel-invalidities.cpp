@@ -94,7 +94,7 @@ int main()
         verdict( invalid_model,
             "detect addition of an isolated GeoModelGeologicalEntity" );
 
-        GeoModel< 3 > cloudspin;
+        GeoModel3D cloudspin;
         geomodel_load( cloudspin, ringmesh_test_data_path + "CloudSpin.ml" );
         if( is_geomodel_valid( cloudspin,
             ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) ) {

@@ -35,6 +35,7 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <chrono>
 #include <future>
 
 #include <geogram/basic/command_line.h>
@@ -54,26 +55,6 @@
 
 namespace RINGMesh {
 
-    /*!
-     * Cross-platform function to make a pause
-     */
-
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
-    void wait( const index_t milliseconds )
-    {
-#ifdef WIN32
-        Sleep(milliseconds);
-#else
-        // usleep takes microseconds
-        usleep( static_cast< __useconds_t >( milliseconds * 1000 ) );
-#endif
-    }
-
     void open_viewer_load_geomodel_then_close(
         const int argc,
         char** argv,
@@ -86,8 +67,8 @@ namespace RINGMesh {
         // Create the tasks for launching the app window
         // and the one for closing the window
         std::future< void > start = std::async( std::launch::async,
-            [&app] {app.start();} );
-        wait( 4000 );
+            [&app] {app.start();} );            
+        std::this_thread::sleep_for( std::chrono::seconds( 4 ) );
         std::future< void > end = std::async( std::launch::async,
             [&app] {app.quit();} );
     }
