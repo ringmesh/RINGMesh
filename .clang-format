@@ -1,0 +1,8 @@
+AlignTrailingComments: false
+ColumnLimit: 85
+IndentWidth: 4
+Language: Cpp
+MaxEmptyLinesToKeep: 1
+SpacesBeforeTrailingComments: 1
+TabWidth: 4
+UseTab: Never
