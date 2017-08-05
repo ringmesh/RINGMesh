@@ -39,8 +39,9 @@
 
 #include <memory>
 
-#include <geogram/basic/factory.h>
 #include <geogram/basic/line_stream.h>
+
+#include <ringmesh/basic/factory.h>
 
 #include <ringmesh/geomodel/geomodel_builder_file.h>
 
@@ -87,40 +88,19 @@ namespace RINGMesh {
         GEO::LineInput file_line_;
     };
 
-    class GocadBaseParser: public GEO::Counted {
+    class GocadBaseParser {
     ringmesh_disable_copy(GocadBaseParser);
-    protected:
-        GocadBaseParser()
-            : Counted(), builder_( nullptr ), geomodel_( nullptr )
-        {
-        }
+    public:
         virtual ~GocadBaseParser() = default;
-
-        GeoModelBuilderGocad& builder()
+    protected:
+        GocadBaseParser( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+            : builder_( gm_builder ), geomodel_( geomodel )
         {
-            ringmesh_assert( builder_ != nullptr );
-            return *builder_;
         }
 
-        GeoModel3D& geomodel()
-        {
-            ringmesh_assert( geomodel_ != nullptr );
-            return *geomodel_;
-        }
-
-        void set_builder( GeoModelBuilderGocad& builder )
-        {
-            builder_ = &builder;
-        }
-
-        void set_geomodel( GeoModel3D& geomodel )
-        {
-            geomodel_ = &geomodel;
-        }
-
-    private:
-        GeoModelBuilderGocad* builder_;
-        GeoModel3D* geomodel_;
+    protected:
+        GeoModelBuilderGocad& builder_;
+        GeoModel3D& geomodel_;
     };
 
     struct GocadLoadingStorage {
@@ -157,21 +137,18 @@ namespace RINGMesh {
     };
 
     class GocadLineParser: public GocadBaseParser {
-    ringmesh_disable_copy(GocadLineParser);
     public:
-        GocadLineParser() = default;
-        static std::unique_ptr< GocadLineParser > create(
-            const std::string& keyword,
-            GeoModelBuilderGocad& gm_builder,
-            GeoModel3D& geomodel );
+        virtual ~GocadLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) = 0;
+    protected:
+        GocadLineParser( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+            : GocadBaseParser( gm_builder, geomodel )
+        {
+        }
     };
-
-    using GocadLineParserFactory = GEO::Factory0< GocadLineParser >;
-#define ringmesh_register_GocadLineParser_creator(type, name) \
-     geo_register_creator(GocadLineParserFactory, type, name)
+    using GocadLineFactory = Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& >;
 
     /*!
      * @brief Structure which maps the vertex indices in Gocad::TSolid to the
@@ -236,22 +213,16 @@ namespace RINGMesh {
 
     };
     class TSolidLineParser: public GocadBaseParser {
-    ringmesh_disable_copy(TSolidLineParser);
     public:
-        TSolidLineParser() = default;
-
-        static std::unique_ptr< TSolidLineParser > create(
-            const std::string& keyword,
-            GeoModelBuilderTSolid& gm_builder,
-            GeoModel3D& geomodel );
+        virtual ~TSolidLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) = 0;
+    protected:
+        TSolidLineParser( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel );
     };
-
-    using TSolidLineParserFactory = GEO::Factory0< TSolidLineParser >;
-#define ringmesh_register_TSolidLineParser_creator(type, name) \
-     geo_register_creator(TSolidLineParserFactory, type, name)
+    using TSolidLineFactory = Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&,
+    GeoModel3D& >;
 
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
@@ -310,34 +281,27 @@ namespace RINGMesh {
 
     private:
         TSolidLoadingStorage tsolid_load_storage_;
-        friend class RINGMesh::GocadLineParser;
+        friend class RINGMesh::TSolidLineParser;
     };
 
     struct MLLoadingStorage: public GocadLoadingStorage {
         MLLoadingStorage();
 
-        bool is_header_read_{ false };
+        bool is_header_read_ { false };
 
         /// Offset to read in the tface vertices in the tsurf vertices
-        index_t tface_vertex_ptr_{ 0 };
+        index_t tface_vertex_ptr_ { 0 };
     };
     class MLLineParser: public GocadBaseParser {
-    ringmesh_disable_copy(MLLineParser);
     public:
-        MLLineParser() = default;
-
-        static std::unique_ptr< MLLineParser > create(
-            const std::string& keyword,
-            GeoModelBuilderML& gm_builder,
-            GeoModel3D& geomodel );
+        virtual ~MLLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
             MLLoadingStorage& load_storage ) = 0;
+    protected:
+        MLLineParser( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel );
     };
-
-    using MLLineParserFactory = GEO::Factory0< MLLineParser >;
-#define ringmesh_register_MLLineParser_creator(type, name) \
-     geo_register_creator(MLLineParserFactory, type, name)
+    using MLLineFactory = Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& >;
 
     /*!
      * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)

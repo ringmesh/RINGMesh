@@ -90,64 +90,50 @@ namespace RINGMesh {
     class GeogramPointSetMeshGfx: public PointSetMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramPointSetMeshGfx );
     public:
-        GeogramPointSetMeshGfx()
-        {
-            set_vertex_color( 1, 0, 0 );
-        }
-
-        void set_mesh( const PointSetMesh< DIMENSION >& mesh ) override
+        GeogramPointSetMeshGfx( const PointSetMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramPointSetMesh< DIMENSION >& >( mesh ).gfx_mesh() );
+            set_vertex_color( 1, 0, 0 );
         }
     };
-
-    using GeogramPointSetMesh3DGfx = GeogramPointSetMeshGfx< 3 >;
-    using GeogramPointSetMesh2DGfx = GeogramPointSetMeshGfx< 2 >;
+    CLASS_DIMENSION_ALIASES( GeogramPointSetMeshGfx );
 
     template< index_t DIMENSION >
     class GeogramLineMeshGfx: public LineMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramLineMeshGfx );
     public:
-        GeogramLineMeshGfx()
-        {
-            set_vertex_color( 1, 1, 1 );
-            set_edge_color( 1, 1, 1 );
-        }
-
-        void set_mesh( const LineMesh< DIMENSION >& mesh ) override
+        GeogramLineMeshGfx( const LineMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramLineMesh< DIMENSION >& >( mesh ).gfx_mesh() );
+            set_vertex_color( 1, 1, 1 );
+            set_edge_color( 1, 1, 1 );
         }
 
         void draw_edges() override
         {
             mesh_gfx_.draw_edges();
         }
-        
+
         void set_edge_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_mesh_color( r, g, b );
         }
-        
+
         void set_edge_width( index_t s ) override
         {
             mesh_gfx_.set_mesh_width( s );
         }
 
     };
-
-    using GeogramLineMesh3DGfx = GeogramLineMeshGfx< 3 >;
-    using GeogramLineMesh2DGfx = GeogramLineMeshGfx< 2 >;
+    CLASS_DIMENSION_ALIASES( GeogramLineMeshGfx );
 
     template< index_t DIMENSION >
     class GeogramSurfaceMeshGfx: public SurfaceMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramSurfaceMeshGfx );
     public:
-        GeogramSurfaceMeshGfx() = default;
-
-        void set_mesh( const SurfaceMesh< DIMENSION >& mesh ) override
+        GeogramSurfaceMeshGfx( const SurfaceMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -157,43 +143,39 @@ namespace RINGMesh {
         {
             mesh_gfx_.draw_surface();
         }
-        
+
         void set_surface_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_surface_color( r, g, b );
         }
-        
+
         void set_backface_surface_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_backface_surface_color( r, g, b );
         }
-        
+
         void set_mesh_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_mesh_color( r, g, b );
         }
-        
+
         void set_mesh_visibility( bool b ) override
         {
             mesh_gfx_.set_show_mesh( b );
         }
-        
+
         void set_mesh_width( index_t s ) override
         {
             mesh_gfx_.set_mesh_width( s );
         }
     };
-
-    using GeogramSurfaceMesh3DGfx = GeogramSurfaceMeshGfx< 3 >;
-    using GeogramSurfaceMesh2DGfx = GeogramSurfaceMeshGfx< 2 >;
+    CLASS_DIMENSION_ALIASES( GeogramSurfaceMeshGfx );
 
     template< index_t DIMENSION >
     class GeogramVolumeMeshGfx: public VolumeMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramVolumeMeshGfx );
     public:
-        GeogramVolumeMeshGfx() = default;
-
-        void set_mesh( const VolumeMesh< DIMENSION >& mesh ) override
+        GeogramVolumeMeshGfx( const VolumeMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramVolumeMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -203,44 +185,43 @@ namespace RINGMesh {
         {
             mesh_gfx_.draw_volume();
         }
-        
+
         void set_draw_cells( CellType type, bool x ) override
         {
             mesh_gfx_.set_draw_cells( static_cast< GEO::MeshCellType >( type ), x );
         }
-        
+
         void set_cell_colors_by_type() override
         {
             mesh_gfx_.set_cells_colors_by_type();
         }
-        
+
         void set_cells_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_cells_color( r, g, b );
         }
-        
+
         void set_mesh_color( float r, float g, float b ) override
         {
             mesh_gfx_.set_mesh_color( r, g, b );
         }
-        
+
         void set_mesh_visibility( bool b ) override
         {
             mesh_gfx_.set_show_mesh( b );
         }
-        
+
         void set_mesh_width( index_t s ) override
         {
             mesh_gfx_.set_mesh_width( s );
         }
-        
+
         void set_shrink( double s ) override
         {
             mesh_gfx_.set_shrink( s );
         }
     };
-
-    using GeogramVolumeMesh3DGfx = GeogramVolumeMeshGfx< 3 >;
+    using GeogramVolumeMeshGfx3D = GeogramVolumeMeshGfx< 3 >;
 
     void register_geogram_mesh_gfx();
 }

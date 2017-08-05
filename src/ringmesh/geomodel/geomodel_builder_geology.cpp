@@ -121,7 +121,7 @@ namespace {
         if( line_vertices.empty() ) {
             return;
         }
-        for( index_t i : range( 1, line_vertices.size() - i ) ) {
+        for( index_t i : range( 1, line_vertices.size() - 1 ) ) {
             gmme_id corner = find_corner( geomodel, line_vertices[i] );
             if( corner.is_defined() ) {
                 line_vertices.pop_back();
@@ -303,13 +303,11 @@ namespace RINGMesh {
 
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type );
-        geomodel_access_.modifiable_geological_entities().push_back(
-            std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >() );
-        std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > E(
-            GeoModelGeologicalEntityFactory< DIMENSION >::create_object( type,
-                geomodel_ ) );
+        geomodel_access_.modifiable_geological_entities().emplace_back();
+        auto geol_entity = GeoModelGeologicalEntityFactory< DIMENSION >::create(
+            type, geomodel_ );
 
-        const MeshEntityType child_type = E->child_type_name();
+        const MeshEntityType child_type = geol_entity->child_type_name();
         RelationshipManager& parentage =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
         parentage.register_geology_relationship( type, child_type );

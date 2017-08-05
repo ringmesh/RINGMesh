@@ -131,8 +131,8 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >& surface =
                 geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess< DIMENSION > surface_access( surface );
-            SurfaceMeshBase< DIMENSION >& surface_mesh =
-                dynamic_cast< SurfaceMeshBase< DIMENSION >& >( *surface_access.modifiable_mesh() );
+            SurfaceMesh< DIMENSION >& surface_mesh =
+                dynamic_cast< SurfaceMesh< DIMENSION >& >( *surface_access.modifiable_mesh() );
             return SurfaceMeshBuilder< DIMENSION >::create_builder( surface_mesh );
         }
 

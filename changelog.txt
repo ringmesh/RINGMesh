@@ -4,19 +4,27 @@ Major change:
      * Meshes can be defined using only 2 coordinates
 
 New Features:
+ * Add support to Mac OS using Clang (Unix Makefile and Xcode project). Works
+       with the internal eclipse project.
  * Add import of SVG file for GeoModel2D. 
        We only read pathes and they should be flat. There is a command to flatten pathes in Inkscape.
  * Add objects to iterate using range-loop like for integers and GeoModelMeshEntities:
        objects are range for integers, region_range for Regions etc.
+ * Generic factory:
+     * the key is template
+     * the instantiated classes can have different constructor arguments (type and number)
 
 Bug fix:
  * Error in computation of polygon area (for 3D concave polygons)
+ * Crash when removing the first object in RINGMeshView object tree
 
 Improvements:
  * Export attributes to TSolid file.
  * Use std::tuple for output only values, these values are no longer taken as parameter.
  * Use of variadic template for RINGMesh Exceptions. Useful to write long description messages
       involving the output of string, double, int etc.
+ * Simplify GeoModel io file hierarchy.
+ * Add exact predicates into 2d geometric intersections.
 
 #### Release: 4.1.0 ####
 

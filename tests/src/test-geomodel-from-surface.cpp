@@ -71,7 +71,7 @@ int main()
 
         GEO::Mesh in;
         GEO::mesh_load( file_name, in );
-        GeoModel< 3 > geomodel;
+        GeoModel3D geomodel;
 
         GeoModelBuilderSurfaceMesh builder( geomodel, in );
         builder.build_polygonal_surfaces_from_connected_components();
@@ -124,7 +124,7 @@ int main()
         output_file2 += "saved_modelA6_dupl_points.mesh";
         GEO::mesh_save( surface_meshes, output_file2 );
 
-        GeoModel< 3 > reloaded_model;
+        GeoModel3D reloaded_model;
 
         GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes );
         builder2.build_polygonal_surfaces_from_connected_components();

@@ -42,8 +42,9 @@
 #include <zlib/zip.h>
 #include <zlib/unzip.h>
 
-#include <geogram/basic/factory.h>
 #include <geogram/basic/string.h>
+
+#include <ringmesh/basic/factory.h>
 
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
@@ -113,13 +114,11 @@ namespace RINGMesh {
     index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
 
     template< index_t DIMENSION >
-    class GeoModelIOHandler: public GEO::Counted {
+    class GeoModelIOHandler {
     public:
         virtual ~GeoModelIOHandler() = default;
 
-        static void initialize_full_geomodel_output();
-
-        static void initialize_boundary_geomodel_output();
+        static void initialize();
 
         static std::unique_ptr< GeoModelIOHandler< DIMENSION > > get_handler(
             const std::string& filename );
@@ -148,25 +147,19 @@ namespace RINGMesh {
             const std::string& filename ) = 0;
 
     private:
-        static GeoModelIOHandler* create( const std::string& format );
+        static std::unique_ptr< GeoModelIOHandler > create(
+            const std::string& format );
     };
 
     CLASS_DIMENSION_ALIASES( GeoModelIOHandler );
 
     template< index_t DIMENSION >
-    using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler< DIMENSION > >;
+    using GeoModelIOHandlerFactory = Factory< std::string, GeoModelIOHandler< DIMENSION > >;
 
-    using GeoModelIOHandlerFactory2D = GeoModelIOHandlerFactory< 2 >;
-    using GeoModelIOHandlerFactory3D = GeoModelIOHandlerFactory< 3 >;
-
-#define ringmesh_register_GeoModelIOHandler2D_creator( type, name ) \
-    geo_register_creator( GeoModelIOHandlerFactory2D, type, name )
-
-#define ringmesh_register_GeoModelIOHandler3D_creator( type, name ) \
-    geo_register_creator( GeoModelIOHandlerFactory3D, type, name )
+    CLASS_DIMENSION_ALIASES( GeoModelIOHandlerFactory );
 
     /***************************************************************************/
-    class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
+    class RINGMESH_API WellGroupIOHandler {
     public:
         virtual ~WellGroupIOHandler() = default;
 
@@ -185,12 +178,10 @@ namespace RINGMesh {
         WellGroupIOHandler() = default;
 
     private:
-        static WellGroupIOHandler* create( const std::string& format );
+        static std::unique_ptr< WellGroupIOHandler > create(
+            const std::string& format );
     };
-    using WellGroupIOHandlerFactory = GEO::Factory0< WellGroupIOHandler >;
-
-#define ringmesh_register_WellGroupIOHandler_creator( type, name ) \
-    geo_register_creator( WellGroupIOHandlerFactory, type, name )
+    using WellGroupIOHandlerFactory = Factory< std::string, WellGroupIOHandler >;
 
     /***************************************************************************/
 
@@ -205,15 +196,13 @@ namespace RINGMesh {
         const char filename[MAX_FILENAME] );
 
     /*********************************************************************************************/
-    class RINGMESH_API StratigraphicColumnIOHandler: public GEO::Counted {
+    class RINGMESH_API StratigraphicColumnIOHandler {
     public:
         virtual ~StratigraphicColumnIOHandler() = default;
 
         static void initialize();
 
-        static StratigraphicColumnIOHandler* create( const std::string& format );
-
-        static StratigraphicColumnIOHandler* get_handler(
+        static std::unique_ptr< StratigraphicColumnIOHandler > get_handler(
             const std::string& filename );
 
         virtual void load(
@@ -228,10 +217,10 @@ namespace RINGMesh {
     protected:
         StratigraphicColumnIOHandler() = default;
 
-    };
-    typedef GEO::SmartPointer< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler_var;
-    typedef GEO::Factory0< StratigraphicColumnIOHandler > StratigraphicColumnIOHandlerFactory;
+    private:
+        static std::unique_ptr< StratigraphicColumnIOHandler > create(
+            const std::string& format );
 
-#define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
-		geo_register_creator( StratigraphicColumnIOHandlerFactory, type, name )
+    };
+    using StratigraphicColumnIOHandlerFactory = Factory< std::string, StratigraphicColumnIOHandler >;
 }
