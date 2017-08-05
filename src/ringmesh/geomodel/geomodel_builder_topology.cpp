@@ -151,9 +151,6 @@ namespace RINGMesh {
     {
         copy_all_mesh_entity_topology( from );
 
-        UniverseAccess< DIMENSION > universe_access(
-            geomodel_access_.modifiable_universe() );
-        universe_access.copy( from.universe() );
         geomodel_access_.modifiable_epsilon() = from.epsilon();
         geomodel_access_.modifiable_entity_type_manager().relationship_manager =
             from.entity_type_manager().relationship_manager;
@@ -491,98 +488,6 @@ namespace RINGMesh {
         } else {
             ringmesh_assert_not_reached;
             return false;
-        }
-    }
-
-    void GeoModelBuilderTopology< 2 >::add_universe_boundary(
-        index_t boundary_id,
-        bool side )
-    {
-        gmme_id boundary( Line2D::type_name_static(), boundary_id );
-        UniverseAccess2D universe_access(
-            geomodel_access_.modifiable_universe() );
-        universe_access.modifiable_boundaries().push_back( boundary );
-        universe_access.modifiable_sides().push_back( side );
-    }
-
-    void GeoModelBuilderTopology< 2 >::set_universe_boundary(
-        index_t id,
-        index_t boundary_id,
-        bool side )
-    {
-        ringmesh_assert( id < geomodel_.universe().nb_boundaries() );
-        gmme_id boundary( Line2D::type_name_static(), boundary_id );
-        UniverseAccess2D universe_access(
-            geomodel_access_.modifiable_universe() );
-        universe_access.modifiable_boundaries()[id] = boundary;
-        universe_access.modifiable_sides()[id] = side;
-    }
-
-    void GeoModelBuilderTopology< 3 >::add_universe_boundary(
-        index_t boundary_id,
-        bool side )
-    {
-        gmme_id boundary( Surface3D::type_name_static(), boundary_id );
-        UniverseAccess3D universe_access(
-            geomodel_access_.modifiable_universe() );
-        universe_access.modifiable_boundaries().push_back( boundary );
-        universe_access.modifiable_sides().push_back( side );
-    }
-
-    void GeoModelBuilderTopology< 3 >::set_universe_boundary(
-        index_t id,
-        index_t boundary_id,
-        bool side )
-    {
-        ringmesh_assert( id < geomodel_.universe().nb_boundaries() );
-        gmme_id boundary( Surface3D::type_name_static(), boundary_id );
-        UniverseAccess3D universe_access(
-            geomodel_access_.modifiable_universe() );
-        universe_access.modifiable_boundaries()[id] = boundary;
-        universe_access.modifiable_sides()[id] = side;
-    }
-
-    void GeoModelBuilderTopology< 2 >::compute_universe()
-    {
-        if( geomodel_.universe().nb_boundaries() != 0 ) return;
-        std::vector< bool > is_line_universe_boundary( geomodel_.nb_lines(), false );
-        std::vector< bool > line_side( geomodel_.nb_lines() );
-        for( const auto& surface : geomodel_.surfaces() ) {
-            for( index_t l : range( surface.nb_boundaries() ) ) {
-                index_t line_id = surface.boundary_gmme( l ).index();
-                is_line_universe_boundary[line_id] =
-                    !is_line_universe_boundary[line_id];
-                line_side[line_id] = surface.side( l );
-            }
-        }
-
-        for( const auto& line : geomodel_.lines() ) {
-            if( is_line_universe_boundary[line.index()] ) {
-                add_universe_boundary( line.index(), line_side[line.index()] );
-            }
-        }
-    }
-
-    void GeoModelBuilderTopology< 3 >::compute_universe()
-    {
-        if( geomodel_.universe().nb_boundaries() != 0 ) return;
-        std::vector< bool > is_surface_universe_boundary( geomodel_.nb_surfaces(),
-            false );
-        std::vector< bool > surface_side( geomodel_.nb_surfaces() );
-        for( const auto& region : geomodel_.regions() ) {
-            for( index_t s : range( region.nb_boundaries() ) ) {
-                index_t surface_id = region.boundary_gmme( s ).index();
-                is_surface_universe_boundary[surface_id] =
-                    !is_surface_universe_boundary[surface_id];
-                surface_side[surface_id] = region.side( s );
-            }
-        }
-
-        for( const auto& surface : geomodel_.surfaces() ) {
-            if( is_surface_universe_boundary[surface.index()] ) {
-                add_universe_boundary( surface.index(),
-                    surface_side[surface.index()] );
-            }
         }
     }
 

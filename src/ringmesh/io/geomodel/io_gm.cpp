@@ -431,22 +431,6 @@ namespace {
                         version_impl_[file_version_]->read_mesh_entity_line(
                             file_line );
                     }
-                    // Universe
-                    else if( file_line.field_matches( 0, "Universe" ) ) {
-                        // Second line: signed indices of boundaries
-                        file_line.get_line();
-                        file_line.get_fields();
-                        for( index_t c : range( file_line.nb_fields() ) ) {
-                            bool side = false;
-                            if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
-                                side = true;
-                            }
-                            index_t s = NO_ID;
-                            GEO::String::from_string( &file_line.field( c )[1], s );
-
-                            this->topology.add_universe_boundary( s, side );
-                        }
-                    }
                 }
             }
         }
@@ -695,21 +679,6 @@ namespace {
         save_mesh_entities_of_type< Surface3D >( geomodel, out );
     }
 
-    template< index_t DIMENSION >
-    void save_universe( const GeoModel< DIMENSION >& M, std::ofstream& out )
-    {
-        out << "Universe " << EOL;
-        for( index_t j : range( M.universe().nb_boundaries() ) ) {
-            if( M.universe().side( j ) ) {
-                out << "+";
-            } else {
-                out << "-";
-            }
-            out << M.universe().boundary_gmme( j ).index() << " ";
-        }
-        out << EOL;
-    }
-
     /*!
      * @brief Save the topology of a GeoModelin a file
      * @param[in] geomodel the GeoModel
@@ -731,7 +700,6 @@ namespace {
         save_number_of_mesh_entities( geomodel, out );
         save_mesh_entities_topology( geomodel, out );
         save_mesh_entities_topology_and_sides( geomodel, out );
-        save_universe( geomodel, out );
         out << std::flush;
     }
 
@@ -896,7 +864,6 @@ namespace {
             builder.build_geomodel();
             GEO::FileSystem::set_current_working_directory( pwd );
         }
-
         void save(
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
@@ -934,7 +901,6 @@ namespace {
             zipClose( zf, NULL );
             GEO::FileSystem::set_current_working_directory( pwd );
         }
-
         index_t dimension( const std::string& filename ) const final
         {
             unzFile uz = unzOpen( filename.c_str() );

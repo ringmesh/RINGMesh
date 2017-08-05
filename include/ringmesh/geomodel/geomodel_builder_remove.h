@@ -224,6 +224,7 @@ namespace RINGMesh {
         {
             for( index_t i : range( nb_mesh_entity_types_ ) ) {
                 const MeshEntityType& entity_type = index_to_mesh_entity_type( i );
+
                 for( index_t j : range( geomodel_.nb_mesh_entities( entity_type ) ) ) {
                     gmme_id new_id( entity_type, j );
                     GeoModelMeshEntity< DIMENSION >& ME =
@@ -252,6 +253,7 @@ namespace RINGMesh {
 
             for( index_t i : range( nb_mesh_entity_types_ ) ) {
                 const MeshEntityType& entity_type = index_to_mesh_entity_type( i );
+
                 for( index_t j : range( geomodel_.nb_mesh_entities( entity_type ) ) ) {
                     gmme_id new_id( entity_type, j );
                     GeoModelMeshEntity< DIMENSION >& ME =
@@ -260,13 +262,6 @@ namespace RINGMesh {
                     delete_invalid_parents( ME );
                 }
             }
-        }
-
-        void update_universe()
-        {
-            Universe< DIMENSION >& U = geomodel_access_.modifiable_universe();
-            update_universe_sided_boundaries( U );
-            delete_invalid_universe_sided_boundaries( U );
         }
 
         //        void remove_dependencies()
@@ -353,23 +348,19 @@ namespace RINGMesh {
             const MeshEntityType& type = E.type_name();
             return mesh_entity_type_to_index( type );
         }
-
         index_t geological_entity_type_index(
             const GeoModelGeologicalEntity< DIMENSION >& E ) const;
-
         index_t children_type_index( const GeologicalEntityType& type ) const
         {
             const MeshEntityType& child_type = children_type( type );
             return mesh_entity_type_to_index( child_type );
         }
-
         const MeshEntityType children_type( const GeologicalEntityType& type ) const
         {
             const RelationshipManager& family =
                 geomodel_.entity_type_manager().relationship_manager;
             return family.child_type( type );
         }
-
         index_t boundary_type_index( const MeshEntityType& type ) const
         {
             const MeshEntityType& b_type = boundary_entity_type( type );
@@ -380,7 +371,6 @@ namespace RINGMesh {
                 return mesh_entity_type_to_index( b_type );
             }
         }
-
         const MeshEntityType& boundary_entity_type(
             const MeshEntityType& type ) const
         {
@@ -388,7 +378,6 @@ namespace RINGMesh {
                 geomodel_.entity_type_manager().mesh_entity_manager;
             return family.boundary_entity_type( type );
         }
-
         /// TODO unused function. To handle during removal refactoring BC.
         index_t incident_entity_type_to_index( const MeshEntityType& type ) const
         {
@@ -400,7 +389,6 @@ namespace RINGMesh {
                 return mesh_entity_type_to_index( in_ent_type );
             }
         }
-
         const MeshEntityType& incident_entity_type(
             const MeshEntityType& type ) const
         {
@@ -408,12 +396,10 @@ namespace RINGMesh {
                 geomodel_.entity_type_manager().mesh_entity_manager;
             return family.incident_entity_type( type );
         }
-
         bool is_mesh_entity( index_t i ) const
         {
             return i < nb_mesh_entity_types_;
         }
-
         bool is_geological_entity( index_t i ) const
         {
             return !is_mesh_entity( i );
@@ -449,12 +435,19 @@ namespace RINGMesh {
             GeoModelGeologicalEntity< DIMENSION >& GE );
         void update_mesh_entity_boundaries( GeoModelMeshEntity< DIMENSION >& ME );
 
+        void set_boundary_side( Region3D& R, index_t boundary_index, bool new_side )
+        {
+            ringmesh_assert( boundary_index < R.nb_boundaries() );
+            GeoModelMeshEntityAccess< DIMENSION > region_access(
+                geomodel_access_.modifiable_mesh_entity( R.gmme() ) );
+            region_access.modifiable_sides()[boundary_index] = new_side;
+        }
+
         void update_mesh_entity_incident_entity(
             GeoModelMeshEntity< DIMENSION >& E );
         void update_mesh_entity_parents( GeoModelMeshEntity< DIMENSION >& E );
         void update_geological_entity_children(
             GeoModelGeologicalEntity< DIMENSION >& E );
-        void update_universe_sided_boundaries( Universe< DIMENSION >& U );
 
         // --- Deletion of some values the GeoModel storage
         template< typename TEST, typename THINGS_TO_DELETE >
@@ -527,18 +520,6 @@ namespace RINGMesh {
                 E.geomodel().entity_type_manager().relationship_manager;
             remove_invalid_values( gmme_access.modifiable_parents(),
                 [ &manager](index_t i) {return manager.parent_of_gmme( i ).index() == NO_ID;} );
-        }
-
-        void delete_invalid_universe_sided_boundaries( Universe< DIMENSION >& U )
-        {
-            const MeshEntityType& b_type = Surface< DIMENSION >::type_name_static();
-            gmme_id invalid( b_type, NO_ID );
-            UniverseAccess< DIMENSION > universe_access( U );
-            const RelationshipManager& manager =
-                U.geomodel().entity_type_manager().relationship_manager;
-            remove_invalid_values( universe_access.modifiable_boundaries(),
-                [&invalid, &manager](const gmme_id& id) {return id == invalid;} );
-            universe_access.modifiable_sides().resize( U.nb_boundaries() );
         }
 
         index_t mesh_entity_type_to_index( const MeshEntityType& type ) const

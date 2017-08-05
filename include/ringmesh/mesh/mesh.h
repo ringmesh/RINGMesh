@@ -47,6 +47,7 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/aabb.h>
@@ -67,7 +68,6 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     using MeshType = std::string;
-
     struct ElementLocalVertex {
         ElementLocalVertex() = default;
         ElementLocalVertex( index_t element_id, index_t local_vertex_id )
@@ -140,6 +140,8 @@ namespace RINGMesh {
 
         virtual void save_mesh( const std::string& filename ) const = 0;
 
+        virtual std::tuple< index_t, std::vector< index_t > > get_connected_components() const = 0;
+
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         virtual void print_mesh_bounded_attributes() const = 0;
         /*!
@@ -206,6 +208,7 @@ namespace RINGMesh {
 
         static std::unique_ptr< PointSetMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         PointSetMesh() = default;
     };
@@ -223,6 +226,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( LineMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class LineMeshBuilder< DIMENSION > ;
+
     public:
         virtual ~LineMesh() = default;
 
@@ -293,6 +297,7 @@ namespace RINGMesh {
         }
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         LineMesh() = default;
 
@@ -608,6 +613,8 @@ namespace RINGMesh {
             }
             return *polygon_aabb_;
         }
+
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         SurfaceMeshBase() = default;
 
@@ -739,6 +746,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( VolumeMesh );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
         friend class VolumeMeshBuilder< DIMENSION > ;
+
     public:
         virtual ~VolumeMesh() = default;
 
@@ -947,7 +955,6 @@ namespace RINGMesh {
          * @brief compute the volume of the cell \param cell_id.
          */
         virtual double cell_volume( index_t cell_id ) const = 0;
-
         std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
             index_t cell_hint ) const;
@@ -961,7 +968,6 @@ namespace RINGMesh {
             }
             return NO_ID;
         }
-
         bool find_cell_from_colocated_vertex_within_distance_if_any(
             const vecn< DIMENSION >& vertex_vec,
             double distance,
@@ -1016,6 +1022,8 @@ namespace RINGMesh {
             }
             return *cell_aabb_.get();
         }
+
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         VolumeMesh() = default;
 
@@ -1024,7 +1032,6 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_;
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_;
     };
-
     using VolumeMesh3D = VolumeMesh< 3 >;
 
     template< index_t DIMENSION >
@@ -1042,7 +1049,6 @@ namespace RINGMesh {
         void create_point_set_mesh( const MeshType type );
         void create_line_mesh( const MeshType type );
         void create_surface_mesh( const MeshType type );
-
     protected:
         MeshSetBase();
 
