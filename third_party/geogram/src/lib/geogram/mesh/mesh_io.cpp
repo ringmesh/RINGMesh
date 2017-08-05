@@ -3624,9 +3624,10 @@ namespace GEO {
         const std::string& filename, Mesh& M,
         const MeshIOFlags& ioflags
     ) {
-        Logger::out("I/O")
-            << "Loading file " << filename << "..."
-            << std::endl;
+//        Logger::out("I/O")
+//            << "Loading file " << filename << "..."
+//            << std::endl;
+        printf( "Loading file %s ... \n" , filename.c_str() );
 
         M.clear();
 
@@ -3685,9 +3686,11 @@ namespace GEO {
         const Mesh& M, const std::string& filename,
         const MeshIOFlags& ioflags
     ) {
-        Logger::out("I/O")
-            << "Saving file " << filename << "..."
-            << std::endl;
+//        Logger::out("I/O")
+//            << "Saving file " << filename << "..."
+//            << std::endl;
+
+        printf( "Saving file %s ... \n" , filename.c_str() );
 
         MeshIOHandler_var handler = MeshIOHandler::get_handler(filename);
         if(handler != nil && handler->save(M, filename, ioflags)) {
