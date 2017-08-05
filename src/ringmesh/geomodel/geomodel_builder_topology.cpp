@@ -123,6 +123,113 @@ namespace {
         std::sort( incident_surfaces.begin(), incident_surfaces.end() );
         return incident_surfaces;
     }
+
+    template< index_t DIMENSION >
+    index_t add_to_set_children_of_geological_entities(
+        const GeoModel< DIMENSION >& geomodel,
+        const std::set< gmge_id >& geological_entities,
+        std::set< gmme_id >& mesh_entities )
+    {
+        int nb_added =
+            -1
+                * static_cast< int >( mesh_entities.size()
+                    + geological_entities.size() );
+        for( const gmge_id& cur_gmge_id : geological_entities ) {
+            const GeoModelGeologicalEntity< DIMENSION >& cur_geol_entity =
+                geomodel.geological_entity( cur_gmge_id );
+            for( index_t child_i = 0; child_i < cur_geol_entity.nb_children();
+                ++child_i ) {
+                mesh_entities.insert( cur_geol_entity.child_gmme( child_i ) );
+            }
+        }
+        nb_added += static_cast< int >( mesh_entities.size()
+            + geological_entities.size() );
+        ringmesh_assert( nb_added >= 0 );
+        return static_cast< index_t >( nb_added );
+    }
+
+    template< index_t DIMENSION >
+    index_t add_to_set_geological_entities_which_have_no_child(
+        const GeoModel< DIMENSION >& geomodel,
+        const std::set< gmme_id >& mesh_entities,
+        std::set< gmge_id >& geological_entities )
+    {
+        int nb_added =
+            -1
+                * static_cast< int >( mesh_entities.size()
+                    + geological_entities.size() );
+        const index_t nb_geological_entity_types =
+            geomodel.entity_type_manager().geological_entity_manager.nb_geological_entity_types();
+        for( index_t geol_entity_type_i = 0;
+            geol_entity_type_i < nb_geological_entity_types; ++geol_entity_type_i ) {
+            const GeologicalEntityType& geol_type =
+                geomodel.entity_type_manager().geological_entity_manager.geological_entity_type(
+                    geol_entity_type_i );
+
+            for( index_t geol_entity_i = 0;
+                geol_entity_i < geomodel.nb_geological_entities( geol_type );
+                ++geol_entity_i ) {
+                bool no_child = true;
+                const GeoModelGeologicalEntity< DIMENSION >& cur_geol_entity =
+                    geomodel.geological_entity( geol_type, geol_entity_i );
+                for( index_t child_i = 0; child_i < cur_geol_entity.nb_children();
+                    ++child_i ) {
+                    if( mesh_entities.count( cur_geol_entity.child_gmme( child_i ) )
+                        == 0 ) {
+                        no_child = false;
+                        break;
+                    }
+                }
+                if( no_child ) {
+                    geological_entities.insert( cur_geol_entity.gmge() );
+                }
+            }
+        }
+        nb_added += static_cast< int >( mesh_entities.size()
+            + geological_entities.size() );
+        ringmesh_assert( nb_added >= 0 );
+        return static_cast< index_t >( nb_added );
+    }
+
+    template< index_t DIMENSION >
+    index_t add_to_set_mesh_entities_being_boundaries_of_no_mesh_entity(
+        const GeoModel< DIMENSION >& geomodel,
+        std::set< gmme_id >& mesh_entities )
+    {
+        int nb_added = -1 * static_cast< int >( mesh_entities.size() );
+        for( index_t mesh_entity_type_i = 0;
+            mesh_entity_type_i
+                < geomodel.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types()
+                    - 1; ++mesh_entity_type_i ) {
+            const MeshEntityType& mesh_type =
+                geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types()[mesh_entity_type_i];
+            ringmesh_assert( mesh_type != Region3D::type_name_static() );
+            for( index_t mesh_entity_i = 0;
+                mesh_entity_i < geomodel.nb_mesh_entities( mesh_type );
+                ++mesh_entity_i ) {
+                bool no_incident = true;
+                const GeoModelMeshEntity< DIMENSION >& cur_mesh_entity = geomodel.mesh_entity(
+                    mesh_type, mesh_entity_i );
+                for( index_t incident_entity_i = 0;
+                    incident_entity_i < cur_mesh_entity.nb_incident_entities();
+                    ++incident_entity_i ) {
+                    if( mesh_entities.count(
+                        cur_mesh_entity.incident_entity_gmme( incident_entity_i ) )
+                        == 0 ) {
+                        no_incident = false;
+                        break;
+                    }
+                }
+                if( no_incident ) {
+                    mesh_entities.insert( cur_mesh_entity.gmme() );
+                }
+            }
+        }
+        nb_added += static_cast< int >( mesh_entities.size() );
+        ringmesh_assert( nb_added >= 0 );
+        return static_cast< index_t >( nb_added );
+    }
+
 }
 
 namespace RINGMesh {
@@ -164,63 +271,15 @@ namespace RINGMesh {
         std::set< gmme_id >& mesh_entities,
         std::set< gmge_id >& geological_entities ) const
     {
-        std::size_t input_geological_size = geological_entities.size();
-        std::size_t input_mesh_size = mesh_entities.size();
+        index_t nb_added = add_to_set_children_of_geological_entities( geomodel_,
+            geological_entities, mesh_entities );
+        nb_added += add_to_set_geological_entities_which_have_no_child( geomodel_,
+            mesh_entities, geological_entities );
+        nb_added += add_to_set_mesh_entities_being_boundaries_of_no_mesh_entity(
+            geomodel_, mesh_entities );
 
-        // Add children of geological entities
-        for( const gmge_id& cur : geological_entities ) {
-            const GeoModelGeologicalEntity< DIMENSION >& E =
-                geomodel_.geological_entity( cur );
-            for( index_t j : range( E.nb_children() ) ) {
-                mesh_entities.insert( E.child_gmme( j ) );
-            }
-        }
-        // Add geological entities which have no child
-        index_t nb_geological_entity_types =
-            geomodel_.entity_type_manager().geological_entity_manager.nb_geological_entity_types();
-        for( index_t i : range( nb_geological_entity_types ) ) {
-            const GeologicalEntityType& type =
-                geomodel_.entity_type_manager().geological_entity_manager.geological_entity_type(
-                    i );
-
-            for( index_t j : range( geomodel_.nb_geological_entities( type ) ) ) {
-                bool no_child = true;
-                const GeoModelGeologicalEntity< DIMENSION >& E =
-                    geomodel_.geological_entity( type, j );
-                for( index_t k : range( E.nb_children() ) ) {
-                    if( mesh_entities.count( E.child_gmme( k ) ) == 0 ) {
-                        no_child = false;
-                        break;
-                    }
-                }
-                if( no_child ) {
-                    geological_entities.insert( E.gmge() );
-                }
-            }
-        }
-        // Add mesh entities that are in the boundary of no mesh entity
-        const MeshEntityTypeManager< DIMENSION >& manager =
-            geomodel_.entity_type_manager().mesh_entity_manager;
-        for( index_t i : range( manager.nb_mesh_entity_types() ) ) {
-            const MeshEntityType& type = manager.mesh_entity_types()[i];
-            for( index_t j : range( geomodel_.nb_mesh_entities( type ) ) ) {
-                bool no_incident = true;
-                const GeoModelMeshEntity< DIMENSION >& E = geomodel_.mesh_entity(
-                    type, j );
-                for( index_t k : range( E.nb_incident_entities() ) ) {
-                    if( mesh_entities.count( E.incident_entity_gmme( k ) ) == 0 ) {
-                        no_incident = false;
-                        break;
-                    }
-                }
-                if( no_incident ) {
-                    mesh_entities.insert( E.gmme() );
-                }
-            }
-        }
         // Recursive call till nothing is added
-        if( mesh_entities.size() != input_mesh_size
-            || geological_entities.size() != input_geological_size ) {
+        if( nb_added > 0 ) {
             return get_dependent_entities( mesh_entities, geological_entities );
         } else {
             return false;
@@ -230,7 +289,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     template< template< index_t > class ENTITY >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entity(
-        const MeshType mesh_type )
+        const MeshType& mesh_type )
     {
         const MeshEntityType entity_type = ENTITY< DIMENSION >::type_name_static();
         index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) );
@@ -345,7 +404,7 @@ namespace RINGMesh {
     template< template< index_t > class ENTITY >
     bool GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entities(
         index_t nb_additionnal_entities,
-        const MeshType type )
+        const MeshType& type )
     {
         const MeshEntityType& entity_type = ENTITY< DIMENSION >::type_name_static();
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& store =
@@ -674,22 +733,22 @@ namespace RINGMesh {
     }
 
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 2 >::create_mesh_entity<
-        Corner >( const MeshType );
+        Corner >( const MeshType& );
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 2 >::create_mesh_entity<
-        Line >( const MeshType );
+        Line >( const MeshType& );
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 2 >::create_mesh_entity<
-        Surface >( const MeshType );
+        Surface >( const MeshType& );
     template class RINGMESH_API GeoModelBuilderTopologyBase< 2 > ;
     template class RINGMESH_API GeoModelBuilderTopology< 2 > ;
 
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 3 >::create_mesh_entity<
-        Corner >( const MeshType );
+        Corner >( const MeshType& );
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 3 >::create_mesh_entity<
-        Line >( const MeshType );
+        Line >( const MeshType& );
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 3 >::create_mesh_entity<
-        Surface >( const MeshType );
+        Surface >( const MeshType& );
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 3 >::create_mesh_entity<
-        Region >( const MeshType );
+        Region >( const MeshType& );
     template class RINGMESH_API GeoModelBuilderTopologyBase< 3 > ;
     template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
 }
