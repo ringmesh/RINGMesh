@@ -48,22 +48,20 @@ namespace {
 
 namespace RINGMesh {
 
-    StratigraphicColumnIOHandler* StratigraphicColumnIOHandler::create(
+    std::unique_ptr< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler::create(
         const std::string& format )
     {
-        StratigraphicColumnIOHandler* handler =
-            StratigraphicColumnIOHandlerFactory::create_object( format );
+        auto handler = StratigraphicColumnIOHandlerFactory::create( format );
         if( !handler ) {
             throw RINGMeshException( "I/O", "Unsupported file format: ", format );
         }
         return handler;
     }
 
-    StratigraphicColumnIOHandler* StratigraphicColumnIOHandler::get_handler(
+    std::unique_ptr< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler::get_handler(
         const std::string& filename )
     {
-        std::string ext = GEO::FileSystem::extension( filename );
-        return create( ext );
+        return create( GEO::FileSystem::extension( filename ) );
     }
 
     /*
@@ -71,7 +69,7 @@ namespace RINGMesh {
      */
     void StratigraphicColumnIOHandler::initialize()
     {
-        ringmesh_register_StratigraphicColumnIOHandler_creator(
-            XMLStratigraphicColumnIOHandler, "xml" );
+        StratigraphicColumnIOHandlerFactory::register_creator<
+            XMLStratigraphicColumnIOHandler >( "xml" );
     }
 }

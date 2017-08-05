@@ -13,7 +13,12 @@ if(WIN32)
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
-    set(geoplatform Linux64-gcc-dynamic)
+    if(APPLE)
+        set(geoplatform Darwin-clang-dynamic)
+    else(APPLE)
+	# Linux
+        set(geoplatform Linux64-gcc-dynamic)
+    endif(APPLE)
 endif(WIN32)
 
 # Define Geogram as an external project that we know how to
@@ -32,7 +37,7 @@ ExternalProject_Add(geogram_ext
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
         -G ${CMAKE_GENERATOR} 
         -DVORPALINE_PLATFORM:STRING=${geoplatform}
-		-DGEOGRAM_WITH_LUA:BOOL=OFF
+        -DGEOGRAM_WITH_LUA:BOOL=OFF
         -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
@@ -62,9 +67,12 @@ if(RINGMESH_WITH_GRAPHICS)
     set(EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx ${OPENGL_LIBRARIES})
 endif(RINGMESH_WITH_GRAPHICS)
     
-# Add geogram bin directories to the current ones 
-# It would be preferable to set the imported library location [JP]
-link_directories(${GEOGRAM_PATH_BIN}/lib)
+# Add geogram bin directories to the current ones.
+# It would be preferable to set the imported library location [JP].
+# CMAKE_CFG_INTDIR is needed for Xcode (in MacOS) because the executables
+# need the complete path to geogram libraries (with the configuration:
+# Release or Debug).
+link_directories(${GEOGRAM_PATH_BIN}/lib/${CMAKE_CFG_INTDIR})
 
 #------------------------------------------------------------------------------------------------
 # tinyxml2 

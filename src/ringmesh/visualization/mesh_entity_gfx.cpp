@@ -390,72 +390,51 @@ namespace RINGMesh {
     std::unique_ptr< PointSetMeshGfx< DIMENSION > > PointSetMeshGfx< DIMENSION >::create_gfx(
         const PointSetMesh< DIMENSION >& mesh )
     {
-        PointSetMeshGfx< DIMENSION >* gfx =
-            PointSetMeshGfxFactory< DIMENSION >::create_object( mesh.type_name() );
+        auto gfx = PointSetMeshGfxFactory< DIMENSION >::create( mesh.type_name(),
+            mesh );
         if( !gfx ) {
-            Logger::warn( "PointSetMeshGfx",
-                "Could not create mesh data structure: ", mesh.type_name() );
-            Logger::warn( "PointSetMeshGfx",
-                "Falling back to GeogramPointSetMeshGfx data structure" );
-
-            gfx = new GeogramPointSetMeshGfx< DIMENSION >;
+            throw RINGMeshException( "PointSetMeshGfx",
+                "Could not create mesh gfx data structure: ", mesh.type_name() );
         }
-        gfx->set_mesh( mesh );
-        return std::unique_ptr< PointSetMeshGfx< DIMENSION > >( gfx );
+        return gfx;
     }
 
     template< index_t DIMENSION >
     std::unique_ptr< LineMeshGfx< DIMENSION > > LineMeshGfx< DIMENSION >::create_gfx(
         const LineMesh< DIMENSION >& mesh )
     {
-        LineMeshGfx< DIMENSION > *gfx =
-            LineMeshGfxFactory< DIMENSION >::create_object( mesh.type_name() );
+        auto gfx = LineMeshGfxFactory< DIMENSION >::create( mesh.type_name(), mesh );
         if( !gfx ) {
-            Logger::warn( "LineMeshGfx", "Could not create mesh data structure: ",
-                mesh.type_name() );
-            Logger::warn( "LineMeshGfx",
-                "Falling back to GeogramLineMeshGfx data structure" );
-
-            gfx = new GeogramLineMeshGfx< DIMENSION >;
+            throw RINGMeshException( "LineMeshGfx",
+                "Could not create mesh gfx data structure: ", mesh.type_name() );
         }
-        gfx->set_mesh( mesh );
-        return std::unique_ptr< LineMeshGfx< DIMENSION > >( gfx );
+        return gfx;
     }
 
     template< index_t DIMENSION >
     std::unique_ptr< SurfaceMeshGfx< DIMENSION > > SurfaceMeshGfx< DIMENSION >::create_gfx(
         const SurfaceMesh< DIMENSION >& mesh )
     {
-        SurfaceMeshGfx< DIMENSION >* gfx =
-            SurfaceMeshGfxFactory< DIMENSION >::create_object( mesh.type_name() );
+        auto gfx = SurfaceMeshGfxFactory< DIMENSION >::create( mesh.type_name(),
+            mesh );
         if( !gfx ) {
-            Logger::warn( "SurfaceMeshGfx", "Could not create mesh data structure: ",
-                mesh.type_name() );
-            Logger::warn( "SurfaceMeshGfx",
-                "Falling back to GeogramSurfaceMeshGfx data structure" );
-
-            gfx = new GeogramSurfaceMeshGfx< DIMENSION >;
+            throw RINGMeshException( "SurfaceMeshGfx",
+                "Could not create mesh gfx data structure: ", mesh.type_name() );
         }
-        gfx->set_mesh( mesh );
-        return std::unique_ptr< SurfaceMeshGfx< DIMENSION > >( gfx );
+        return gfx;
     }
 
     template< index_t DIMENSION >
     std::unique_ptr< VolumeMeshGfx< DIMENSION > > VolumeMeshGfx< DIMENSION >::create_gfx(
         const VolumeMesh< DIMENSION >& mesh )
     {
-        VolumeMeshGfx< DIMENSION > *gfx =
-            VolumeMeshGfxFactory< DIMENSION >::create_object( mesh.type_name() );
+        auto gfx = VolumeMeshGfxFactory< DIMENSION >::create( mesh.type_name(),
+            mesh );
         if( !gfx ) {
-            Logger::warn( "VolumeMeshGfx", "Could not create mesh data structure: ",
-                mesh.type_name() );
-            Logger::warn( "VolumeMeshGfx",
-                "Falling back to GeogramVolumeMeshGfx data structure" );
-
-            gfx = new GeogramVolumeMeshGfx< DIMENSION >;
+            throw RINGMeshException( "VolumeMeshGfx",
+                "Could not create mesh gfx data structure: ", mesh.type_name() );
         }
-        gfx->set_mesh( mesh );
-        return std::unique_ptr< VolumeMeshGfx< DIMENSION > >( gfx );
+        return gfx;
     }
 
     template std::unique_ptr< PointSetMeshGfx< 2 > > RINGMESH_API PointSetMeshGfx< 2 >::create_gfx(

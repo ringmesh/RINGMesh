@@ -213,7 +213,7 @@ void test_on_top_region( GeoModel3D& geomodel )
                                                  0 ), };
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
-        std::string( Region3D::type_name_static() ), 4 );
+        Region3D::type_name_static().string(), 4 );
 }
 
 void test_on_surface_within_bottom_region_partially_connected_to_voi(
@@ -238,7 +238,7 @@ void test_on_surface_within_bottom_region_partially_connected_to_voi(
               Interface3D::type_name_static(), 3 ) };
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
-        std::string( Surface3D::type_name_static() ), 24 );
+        Surface3D::type_name_static().string(), 24 );
 }
 
 void test_on_fault_not_connected_to_any_surface( GeoModel3D& geomodel )
@@ -278,7 +278,7 @@ void test_on_fault_not_connected_to_any_surface( GeoModel3D& geomodel )
               Interface3D::type_name_static(), 8 ) };
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
-        std::string( Interface3D::type_name_static() ), 8 );
+        Interface3D::type_name_static().string(), 8 );
 }
 
 void test_on_corner_on_botom_corner_voi( GeoModel3D& geomodel )
@@ -298,7 +298,7 @@ void test_on_corner_on_botom_corner_voi( GeoModel3D& geomodel )
     std::set< gmge_id > solution_gmge_id;
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
-        std::string( Corner3D::type_name_static() ), 135 );
+        Corner3D::type_name_static().string(), 135 );
 }
 
 void run_tests( GeoModel3D& geomodel )
