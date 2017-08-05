@@ -1,9 +1,10 @@
+#BasedOnStyle (desactivated since we want to control everything [BC])
 AccessModifierOffset: 0
 AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-#AlignEscapedNewlines: Right
-#AlignOperands: true
+#AlignEscapedNewlines: Right (this option provokes a clang-format error [BC])
+AlignOperands: true
 AlignTrailingComments: false
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: true
@@ -12,7 +13,7 @@ AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 #AlwaysBreakAfterDefinitionReturnType (not set because deprecated [BC])
-#AlwaysBreakAfterReturnType
+AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: false
 BinPackArguments: true
@@ -20,21 +21,21 @@ BinPackParameters: false
 #BraceWrapping
 BreakBeforeBinaryOperators: NonAssignment
 #BreakBeforeBraces
-#BreakBeforeInheritanceComma: false
+#BreakBeforeInheritanceComma: false  (this option provokes a clang-format error [BC])
 BreakBeforeTernaryOperators: true
-#BreakConstructorInitializers: AfterColon
+#BreakConstructorInitializers: AfterColon (this option provokes a clang-format error [BC])
 #BreakStringLiterals
 ColumnLimit: 85
 #CommentPragmas
-#CompactNamespaces: false
+#CompactNamespaces: false (this option provokes a clang-format error [BC])
 #ConstructorInitializerAllOnOneLineOrOnePerLine
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 Cpp11BracedListStyle: false
-#DerivePointerAlignment: 
+#DerivePointerAlignment:
 #DisableFormat
 #ExperimentalAutoDetectBinPacking (Not defined since the documentation to not use it)
-#FixNamespaceComments: false
+#FixNamespaceComments: false (this option provokes a clang-format error [BC])
 #ForEachMacros
 #IncludeCategories
 #IncludeIsMainRegex
