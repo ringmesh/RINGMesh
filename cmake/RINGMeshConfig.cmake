@@ -36,7 +36,7 @@ set(RINGMESH_ROOT_DIRECTORY "${RINGMESH_CMAKE_DIR}/..")
 
 find_path(RINGMesh_INCLUDE_DIR NAMES ringmesh
     PATHS ${RINGMESH_ROOT_DIRECTORY}/include)
-# On Visual Studio anbd Xcode there is no CMAKE_BUILD_TYPE variable since everything
+# On Visual Studio and Xcode there is no CMAKE_BUILD_TYPE variable since everything
 # is in the same project. It is necessary to differenciate Release and Debug.
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     find_path(RINGMesh_CONFIG_INCLUDE_DIR NAMES ringmesh
