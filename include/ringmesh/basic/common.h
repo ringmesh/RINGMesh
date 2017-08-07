@@ -242,7 +242,7 @@ namespace RINGMesh {
         }
         index_t nb_threads { std::min( size, std::thread::hardware_concurrency() ) };
         std::vector< std::future< void > > futures;
-        futures.reserve( size );
+        futures.reserve( nb_threads );
         index_t start { 0 };
         auto action_per_thread = [&action] ( index_t start, index_t end ) {
             for( index_t i : range( start, end ) ) {
