@@ -50,7 +50,6 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class GeoModelGeologicalEntity;
     template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
     template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
@@ -61,8 +60,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
     template< index_t DIMENSION > class GeoModelBuilderRemoval;
     template< index_t DIMENSION > class GeoModelBuilderInfo;
-
-    CLASS_DIMENSION_ALIASES( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 }
 
 namespace RINGMesh {

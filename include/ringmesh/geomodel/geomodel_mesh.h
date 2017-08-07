@@ -59,17 +59,14 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelMeshBase;
-    template< index_t DIMENSION > class GeoModelMesh;
-    template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class GeoModelEntity;
     template< index_t DIMENSION > class GeoModelMeshEntity;
     template< index_t DIMENSION > class GeoModelMeshEdges;
     template< index_t DIMENSION > class GeoModelMeshPolygons;
     template< index_t DIMENSION > class GeoModelMeshPolygonsBase;
     template< index_t DIMENSION > class GeoModelMeshCells;
-
-    CLASS_DIMENSION_ALIASES( GeoModelMesh );
-    CLASS_DIMENSION_ALIASES( GeoModel );
+    FORWARD_DECLARATION_3D_CLASS( GeoModelMesh );
+    FORWARD_DECLARATION_3D_CLASS( GeoModel );
 }
 
 namespace RINGMesh {

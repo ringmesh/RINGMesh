@@ -49,14 +49,12 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelGfx;
     template< index_t DIMENSION > class PointSetMeshGfx;
     template< index_t DIMENSION > class LineMeshGfx;
     template< index_t DIMENSION > class SurfaceMeshGfx;
     template< index_t DIMENSION > class VolumeMeshGfx;
     template< index_t DIMENSION > class MeshEntityGfx;
-
-    CLASS_DIMENSION_ALIASES( GeoModelGfx );
+    FORWARD_DECLARATION_3D_CLASS( GeoModelGfx );
 }
 
 namespace RINGMesh {
