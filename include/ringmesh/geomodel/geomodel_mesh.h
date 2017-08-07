@@ -63,6 +63,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class GeoModelEntity;
     template< index_t DIMENSION > class GeoModelMeshEntity;
+    template< index_t DIMENSION > class GeoModelMeshEdges;
     template< index_t DIMENSION > class GeoModelMeshWells;
     template< index_t DIMENSION > class GeoModelMeshPolygons;
     template< index_t DIMENSION > class GeoModelMeshPolygonsBase;
@@ -77,8 +78,10 @@ namespace RINGMesh {
     /*! @todo Move this global variables in a function */
     static const std::string surface_att_name = "region";
     static const std::string region_att_name = "region";
+    static const std::string line_att_name = "region";
     static const std::string cell_region_att_name = "cell_region";
     static const std::string polygon_surface_att_name = "polygon_surface";
+    static const std::string edge_line_att_name = "edge_line";
 
     template< index_t DIMENSION >
     class GeoModelMeshCommon {
@@ -113,6 +116,7 @@ namespace RINGMesh {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshWells< DIMENSION > ;
+        friend class GeoModelMeshEdges< DIMENSION > ;
         friend class GeoModelMeshPolygonsBase< DIMENSION > ;
         friend class GeoModelMeshCells< DIMENSION > ;
 
@@ -611,7 +615,7 @@ namespace RINGMesh {
          * of type \p type in the surface \p s.
          * @warning \p p is NOT a polygon id
          * of the surface \p s.
-         * It is fth polygon of type \p type in the internal storage of the
+         * It is pth polygon of type \p type in the internal storage of the
          * GeoModelMeshPolygons (see GeoModelMeshPolygons::surface_polygon_ptr_).
          * @note to find the polygon id of the GeoModelMeshPolygons from a surface
          * and a polygon id of this surface, you need to perform a search using
@@ -792,6 +796,147 @@ namespace RINGMesh {
     };
 
     CLASS_DIMENSION_ALIASES( GeoModelMeshPolygons );
+
+
+    template< index_t DIMENSION >
+        class GeoModelMeshEdges: public GeoModelMeshCommon< DIMENSION > {
+        ringmesh_disable_copy( GeoModelMeshEdges );
+            ringmesh_template_assert_2d_or_3d( DIMENSION );
+        public:
+            friend class GeoModelMeshBase< DIMENSION > ;
+            friend class GeoModelMesh< DIMENSION > ;
+
+            virtual ~GeoModelMeshEdges();
+
+            GEO::AttributesManager& attribute_manager() const
+            {
+                return mesh_->edge_attribute_manager();
+            }
+
+            /*!
+             * Test if the mesh edges are initialized
+             */
+            bool is_initialized() const;
+            void test_and_initialize() const;
+
+            /*!
+             * @brief Number of edge stored.
+             */
+            index_t nb() const;
+
+            /*!
+             * Get the vertex index of a vertex in a edge
+             * in the GeoModelMesh
+             * @param[in] e the edge index
+             * @param[in] v the local vertex index
+             * @return the vertex index
+             */
+            index_t vertex( const ElementLocalVertex& edge_local_vertex ) const;
+
+            /*!
+             * Get the line index in the GeoModel according the edge
+             * index in the GeoModelMesh
+             * @param[in] e the edge index
+             * @return the line index
+             */
+            index_t line( index_t e ) const;
+            /*!
+             * Get the edge index in the GeoModelMesh restricted to
+             * the line owing the edge
+             * @param[in] e the edge index
+             * @return the edge index varying from 0 to nb_edge()
+             * in the line owing \p e
+             */
+            index_t index_in_line( index_t e ) const;
+
+            /*!
+             * Get the number of edges in the given line
+             * @param[in] e the edge index
+             * @return the number of edges
+             */
+            index_t nb_edges( index_t l ) const;
+            /*!
+             * Get the edge index in the GeoModelMesh corresponding
+             * to the asked edge in the line
+             * @param[in] l the line index
+             * @param[in] e the eth edge index varying from 0 to nb_edges( l )
+             * @return the edge index
+             */
+            index_t edge( index_t l, index_t e ) const;
+            /*!
+             * Clear the edges of the GeoModelMesh
+             */
+            void clear();
+
+            /*!
+             * Get the center of the given edge
+             * @param[in] p the edge index
+             */
+            vecn< DIMENSION > center( index_t e ) const;
+            /*!
+             * Get the length of the edge
+             * @param[in] p the edge index
+             */
+            double length( index_t e ) const;
+
+            const NNSearch< DIMENSION >& nn_search() const
+            {
+                test_and_initialize();
+                return mesh_->edge_nn_search();
+            }
+
+            /*!
+             * @brief return the AABB tree for the edges of the mesh
+             */
+            const LineAABBTree< DIMENSION >& aabb() const;
+
+        private:
+            /*!
+             * Initialize the edges of the GeoModelMesh
+             * and sort them per line
+             * Example for a mesh with two lines
+             * [EDGE, EDGE, ... ,EDGE , EDGE, EDGE, ... , EDGE]
+             * |        line 0        |        line 1         |
+             */
+            void initialize();
+
+            /*!
+             * Bind attribute to the edge attribute manager
+             */
+            void bind_attribute();
+            /*!
+             * Unbind attribute to the edge attribute manager
+             */
+            void unbind_attribute();
+
+
+        protected:
+            GeoModelMeshEdges(
+                GeoModelMesh< DIMENSION >& gmm,
+                GeoModel< DIMENSION >& gm,
+                std::unique_ptr< LineMesh< DIMENSION > >& mesh );
+
+        protected:
+            /// Attached Mesh
+            std::unique_ptr< LineMesh< DIMENSION > >& mesh_;
+
+            /// Attribute storing the line index per edge
+            GEO::Attribute< index_t > line_id_;
+            /// Attribute storing the edge index in line per edge
+            GEO::Attribute< index_t > edge_id_;
+
+            /*!
+             * Vector storing the index of the starting edge index
+             * for a given line and a given edge type.
+             * For example:
+             *    the 2nd edge index of the line index L will be found here:
+             *    line_edge_ptr_[L] + 2
+             */
+            std::vector< index_t > line_edge_ptr_;
+
+            /// Number of edges in the GeoModelMesh
+            index_t nb_edge_;
+        };
 
     template< index_t DIMENSION >
     class GeoModelMeshWells final: public GeoModelMeshCommon< DIMENSION > {
@@ -1387,6 +1532,7 @@ namespace RINGMesh {
 
     public:
         GeoModelMeshVertices< DIMENSION > vertices;
+        GeoModelMeshEdges< DIMENSION > edges;
         GeoModelMeshWells< DIMENSION > wells;
         GeoModelMeshPolygons< DIMENSION > polygons;
     };
