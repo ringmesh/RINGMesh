@@ -63,7 +63,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModel;
     template< index_t DIMENSION > class GeoModelEntity;
     template< index_t DIMENSION > class GeoModelMeshEntity;
-    template< index_t DIMENSION > class GeoModelMeshEdges;
+    template< index_t DIMENSION > class GeoModelMeshWells;
     template< index_t DIMENSION > class GeoModelMeshPolygons;
     template< index_t DIMENSION > class GeoModelMeshPolygonsBase;
     template< index_t DIMENSION > class GeoModelMeshCells;
@@ -112,7 +112,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelMeshVerticesBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        friend class GeoModelMeshEdges< DIMENSION > ;
+        friend class GeoModelMeshWells< DIMENSION > ;
         friend class GeoModelMeshPolygonsBase< DIMENSION > ;
         friend class GeoModelMeshCells< DIMENSION > ;
 
@@ -794,15 +794,15 @@ namespace RINGMesh {
     CLASS_DIMENSION_ALIASES( GeoModelMeshPolygons );
 
     template< index_t DIMENSION >
-    class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
-    ringmesh_disable_copy( GeoModelMeshEdges );
+    class GeoModelMeshWells final: public GeoModelMeshCommon< DIMENSION > {
+    ringmesh_disable_copy( GeoModelMeshWells );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        GeoModelMeshEdges(
+        GeoModelMeshWells(
             GeoModelMesh< DIMENSION >& gmm,
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< LineMesh< DIMENSION > >& mesh );
-        ~GeoModelMeshEdges() = default;
+        ~GeoModelMeshWells() = default;
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -868,7 +868,7 @@ namespace RINGMesh {
         std::vector< index_t > well_ptr_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshEdges );
+    CLASS_DIMENSION_ALIASES( GeoModelMeshWells );
 
     template< index_t DIMENSION >
     class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
@@ -1387,7 +1387,7 @@ namespace RINGMesh {
 
     public:
         GeoModelMeshVertices< DIMENSION > vertices;
-        GeoModelMeshEdges< DIMENSION > edges;
+        GeoModelMeshWells< DIMENSION > wells;
         GeoModelMeshPolygons< DIMENSION > polygons;
     };
 
