@@ -209,7 +209,7 @@ namespace {
             reset_line( count, data );
 
             index_t nb_total_entities = mesh.cells.nb_cells()
-                + polygons.nb_polygons() + mesh.edges.nb_edges();
+                + polygons.nb_polygons() + mesh.wells.nb_edges();
             data << nb_total_entities << " # PELEMENT" << EOL;
             for( index_t r : range( geomodel.nb_regions() ) ) {
                 index_t entity_type[4] = { 4, 6, 12, 18 };
@@ -311,7 +311,7 @@ namespace {
             index_t nb_plist = 3 * polygons.nb_triangle() + 4 * polygons.nb_quad()
                 + 4 * mesh.cells.nb_tet() + 5 * mesh.cells.nb_pyramid()
                 + 6 * mesh.cells.nb_prism() + 8 * mesh.cells.nb_hex()
-                + 2 * mesh.edges.nb_edges();
+                + 2 * mesh.wells.nb_edges();
             data << nb_plist << " # PLIST" << EOL;
             for( index_t r : range( geomodel.nb_regions() ) ) {
                 for( index_t type : range(
@@ -356,10 +356,10 @@ namespace {
                     }
                 }
             }
-            for( index_t w : range( mesh.edges.nb_wells() ) ) {
-                for( index_t e : range( mesh.edges.nb_edges( w ) ) ) {
+            for( index_t w : range( mesh.wells.nb_wells() ) ) {
+                for( index_t e : range( mesh.wells.nb_edges( w ) ) ) {
                     for( index_t v : range( 2 ) ) {
-                        index_t vertex_id = mesh.edges.vertex( w, e, v );
+                        index_t vertex_id = mesh.wells.vertex( w, e, v );
                         data << " " << std::setw( 7 ) << vertex_id;
                         new_line( count, 10, data );
                     }
@@ -370,7 +370,7 @@ namespace {
             index_t nb_polygons = 3 * polygons.nb_triangle() + 4 * polygons.nb_quad()
                 + 4 * mesh.cells.nb_tet() + 5 * mesh.cells.nb_pyramid()
                 + 5 * mesh.cells.nb_prism() + 6 * mesh.cells.nb_hex()
-                + 2 * mesh.edges.nb_edges();
+                + 2 * mesh.wells.nb_edges();
             data << nb_polygons << " # PFVERTS" << EOL;
             for( index_t r : range( geomodel.nb_regions() ) ) {
                 for( index_t type : range(
@@ -428,14 +428,14 @@ namespace {
             }
             index_t edge_offset = polygons.nb() + mesh.cells.nb();
             index_t cur_edge = 0;
-            for( index_t w : range( mesh.edges.nb_wells() ) ) {
+            for( index_t w : range( mesh.wells.nb_wells() ) ) {
                 data << " " << std::setw( 7 ) << -28;
                 new_line( count, 10, data );
-                if( mesh.edges.nb_edges( w ) > 1 ) {
+                if( mesh.wells.nb_edges( w ) > 1 ) {
                     data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1;
                     cur_edge++;
                     new_line( count, 10, data );
-                    for( index_t e = 1; e < mesh.edges.nb_edges( w ) - 1;
+                    for( index_t e = 1; e < mesh.wells.nb_edges( w ) - 1;
                         e++, cur_edge++ ) {
                         data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1;
                         new_line( count, 10, data );

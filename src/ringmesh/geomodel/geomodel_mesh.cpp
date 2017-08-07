@@ -515,7 +515,7 @@ namespace RINGMesh {
     void GeoModelMeshVerticesBase< DIMENSION >::clear()
     {
         this->gmm_.polygons.clear();
-        this->gmm_.edges.clear();
+        this->gmm_.wells.clear();
         vertex_mapper_.clear();
 
         std::unique_ptr< PointSetMeshBuilder< DIMENSION > > builder =
@@ -2198,7 +2198,7 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     template< index_t DIMENSION >
-    GeoModelMeshEdges< DIMENSION >::GeoModelMeshEdges(
+    GeoModelMeshWells< DIMENSION >::GeoModelMeshWells(
         GeoModelMesh< DIMENSION >& gmm,
         GeoModel< DIMENSION >& gm,
         std::unique_ptr< LineMesh< DIMENSION > >& mesh )
@@ -2208,28 +2208,28 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshEdges< DIMENSION >::nb_wells() const
+    index_t GeoModelMeshWells< DIMENSION >::nb_wells() const
     {
         test_and_initialize();
         return this->geomodel_.wells() ? this->geomodel_.wells()->nb_wells() : 0;
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshEdges< DIMENSION >::nb_edges() const
+    index_t GeoModelMeshWells< DIMENSION >::nb_edges() const
     {
         test_and_initialize();
         return mesh_->nb_edges();
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshEdges< DIMENSION >::nb_edges( index_t w ) const
+    index_t GeoModelMeshWells< DIMENSION >::nb_edges( index_t w ) const
     {
         test_and_initialize();
         return well_ptr_[w + 1] - well_ptr_[w];
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshEdges< DIMENSION >::vertex(
+    index_t GeoModelMeshWells< DIMENSION >::vertex(
         index_t w,
         index_t e,
         index_t v ) const
@@ -2239,7 +2239,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshEdges< DIMENSION >::clear()
+    void GeoModelMeshWells< DIMENSION >::clear()
     {
         std::unique_ptr< LineMeshBuilder< DIMENSION > > mesh_builder =
             LineMeshBuilder< DIMENSION >::create_builder( *mesh_ );
@@ -2248,21 +2248,21 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool GeoModelMeshEdges< DIMENSION >::is_initialized() const
+    bool GeoModelMeshWells< DIMENSION >::is_initialized() const
     {
         return mesh_->nb_edges() > 0;
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshEdges< DIMENSION >::test_and_initialize() const
+    void GeoModelMeshWells< DIMENSION >::test_and_initialize() const
     {
         if( !is_initialized() ) {
-            const_cast< GeoModelMeshEdges* >( this )->initialize();
+            const_cast< GeoModelMeshWells* >( this )->initialize();
         }
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshEdges< DIMENSION >::initialize()
+    void GeoModelMeshWells< DIMENSION >::initialize()
     {
         if( !this->geomodel_.wells() ) return;
         this->gmm_.vertices.test_and_initialize();
@@ -2311,7 +2311,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const LineAABBTree< DIMENSION >& GeoModelMeshEdges< DIMENSION >::aabb() const
+    const LineAABBTree< DIMENSION >& GeoModelMeshWells< DIMENSION >::aabb() const
     {
         test_and_initialize();
         return mesh_->edge_aabb();
@@ -2326,7 +2326,7 @@ namespace RINGMesh {
         :
             geomodel_( geomodel ),
             vertices( gmm, geomodel, mesh_set_.point_set_mesh ),
-            edges( gmm, geomodel, mesh_set_.line_mesh ),
+            wells( gmm, geomodel, mesh_set_.line_mesh ),
             polygons( gmm, geomodel, mesh_set_.surface_mesh )
     {
     }
@@ -2365,7 +2365,7 @@ namespace RINGMesh {
         const MeshType& type )
     {
         if( mesh_set_.line_mesh->type_name() != type ) {
-            edges.clear();
+            wells.clear();
             mesh_set_.create_line_mesh( type );
         }
     }
@@ -2659,13 +2659,13 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelMeshBase< 2 > ;
     template class RINGMESH_API GeoModelMesh< 2 > ;
     template class RINGMESH_API GeoModelMeshVerticesBase< 2 > ;
-    template class RINGMESH_API GeoModelMeshEdges< 2 > ;
+    template class RINGMESH_API GeoModelMeshWells< 2 > ;
     template class RINGMESH_API GeoModelMeshPolygonsBase< 2 > ;
 
     template class RINGMESH_API GeoModelMeshBase< 3 > ;
     template class RINGMESH_API GeoModelMesh< 3 > ;
     template class RINGMESH_API GeoModelMeshVerticesBase< 3 > ;
-    template class RINGMESH_API GeoModelMeshEdges< 3 > ;
+    template class RINGMESH_API GeoModelMeshWells< 3 > ;
     template class RINGMESH_API GeoModelMeshPolygonsBase< 3 > ;
     template class RINGMESH_API GeoModelMeshCells< 3 > ;
 
