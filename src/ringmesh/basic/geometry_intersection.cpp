@@ -181,17 +181,17 @@ namespace RINGMesh {
                 line_line( O_seg0, D_seg0, O_seg1, D_seg1 );
             if( does_segment_intersect_segment ) {
                 // Test whether the line-line intersection is on the segments.
-                Sign s0_seg0 = sign(
-                    GEO::PCK::orient_2d( p0_seg0, p0_seg1, p1_seg1 ) );
-                Sign s1_seg0 = sign(
-                    GEO::PCK::orient_2d( p1_seg0, p0_seg1, p1_seg1 ) );
+                Sign s0_seg0 { sign(
+                    GEO::PCK::orient_2d( p0_seg0, p0_seg1, p1_seg1 ) ) };
+                Sign s1_seg0 { sign(
+                    GEO::PCK::orient_2d( p1_seg0, p0_seg1, p1_seg1 ) ) };
                 if( s0_seg0 != ZERO && ( s0_seg0 == s1_seg0 ) ) {
                     return std::make_tuple( false, vec2() );
                 }
-                Sign s0_seg1 = sign(
-                    GEO::PCK::orient_2d( p0_seg1, p0_seg0, p1_seg0 ) );
-                Sign s1_seg1 = sign(
-                    GEO::PCK::orient_2d( p1_seg1, p0_seg0, p1_seg0 ) );
+                Sign s0_seg1 { sign(
+                    GEO::PCK::orient_2d( p0_seg1, p0_seg0, p1_seg0 ) ) };
+                Sign s1_seg1 { sign(
+                    GEO::PCK::orient_2d( p1_seg1, p0_seg0, p1_seg0 ) ) };
                 if( s0_seg1 != ZERO && ( s0_seg1 == s1_seg1 ) ) {
                     return std::make_tuple( false, vec2() );
                 }
@@ -222,10 +222,10 @@ namespace RINGMesh {
                 // Test whether the line-line intersection is on the segment.
                 vec2 minus_direction { line_intersection_result - D_line };
                 vec2 plus_direction { line_intersection_result + D_line };
-                Sign s0 = sign(
-                    GEO::PCK::orient_2d( p0_seg, minus_direction, plus_direction ) );
-                Sign s1 = sign(
-                    GEO::PCK::orient_2d( p1_seg, minus_direction, plus_direction ) );
+                Sign s0 { sign(
+                    GEO::PCK::orient_2d( p0_seg, minus_direction, plus_direction ) ) };
+                Sign s1 { sign(
+                    GEO::PCK::orient_2d( p1_seg, minus_direction, plus_direction ) ) };
                 if( s0 == ZERO || s1 == ZERO || ( s0 != s1 ) ) {
                     return std::make_tuple( true, line_intersection_result );
                 }
@@ -267,12 +267,11 @@ namespace RINGMesh {
             std::tie( does_line_intersect_plane, line_plane_result ) = line_plane(
                 segment_barycenter, segment_direction, O_plane, N_plane );
             if( does_line_intersect_plane ) {
-                if( ( line_plane_result - segment_barycenter ).length2()
-                    > ( seg0 - segment_barycenter ).length2() + global_epsilon ) {
-                    // result outside the segment
-                    return std::make_tuple( false, vec3() );
-                } else {
+                if( point_inside_segment( line_plane_result, seg0, seg1 ) ) {
+                    // result inside the segment
                     return std::make_tuple( true, line_plane_result );
+                } else {
+                    return std::make_tuple( false, vec3() );
                 }
             } else {
                 return std::make_tuple( false, vec3() );
@@ -428,11 +427,8 @@ namespace RINGMesh {
             std::vector< vec3 > segment_intersections;
             if( line_intersect ) {
                 segment_intersections.reserve( line_intersections.size() );
-                vec3 segment_center { ( seg0 + seg1 ) / 2. };
-                double half_length { segment.length() / 2. };
                 for( auto& point : line_intersections ) {
-                    if( length( point - segment_center )
-                        < half_length + global_epsilon ) {
+                    if( point_inside_segment( point, seg0, seg1 ) ) {
                         segment_intersections.emplace_back( std::move( point ) );
                     }
                 }

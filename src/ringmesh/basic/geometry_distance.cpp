@@ -339,5 +339,17 @@ namespace RINGMesh {
                 }
             }
         }
+
+        std::tuple< double, vec3 > point_to_plane(
+            const vec3& p,
+            const vec3& N_plane,
+            const vec3& O_plane )
+        {
+            vec3 N_unit_plane { normalize( N_plane ) };
+            vec3 v { p - O_plane };
+            double distance { dot( v, N_unit_plane ) };
+            vec3 projected_p { p - distance * N_unit_plane };
+            return std::make_tuple( distance, projected_p );
+        }
     }
 }
