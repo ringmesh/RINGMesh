@@ -233,10 +233,9 @@ namespace RINGMesh {
         index_t nb_points = static_cast< index_t >( tetgen_out_.numberofpoints );
         std::vector< double > points( 3 * nb_points );
         double* points_ptr = tetgen_out_.pointlist;
-        RINGMESH_PARALLEL_LOOP
-        for( index_t i = 0; i < 3 * nb_points; ++i ) {
+        parallel_for( 3 * nb_points, [&points, &points_ptr]( index_t i ) {
             points[i] = points_ptr[i];
-        }
+        } );
         return points;
     }
 
@@ -247,13 +246,12 @@ namespace RINGMesh {
         index_t nb_tets = static_cast< index_t >( tets_to_keep.size() );
         std::vector< index_t > tets( 4 * nb_tets );
         int* tets_ptr = tetgen_out_.tetrahedronlist;
-        RINGMESH_PARALLEL_LOOP
-        for( index_t i = 0; i < nb_tets; ++i ) {
+        parallel_for( nb_tets, [&tets_to_keep, &tets_ptr, &tets]( index_t i ) {
             index_t tetra = tets_to_keep[i];
             for( index_t v : range( 4 ) ) {
                 tets[4 * i + v] = static_cast< index_t >( tets_ptr[4 * tetra + v] );
             }
-        }
+        } );
         return tets;
     }
 

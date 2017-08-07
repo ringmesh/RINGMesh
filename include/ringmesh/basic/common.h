@@ -62,20 +62,6 @@
 #   pragma warning( disable: 4275 ) // let's pray we have no issues
 #endif
 
-#ifdef USE_OPENMP
-#   include <omp.h>
-#   ifdef WIN32
-#       define RINGMESH_PARALLEL_LOOP __pragma("omp parallel for")
-#       define RINGMESH_PARALLEL_LOOP_DYNAMIC __pragma( "omp parallel for schedule(dynamic)" )
-#   else
-#       define RINGMESH_PARALLEL_LOOP _Pragma("omp parallel for")
-#       define RINGMESH_PARALLEL_LOOP_DYNAMIC _Pragma( "omp parallel for schedule(dynamic)" )
-#   endif
-#else
-#   define RINGMESH_PARALLEL_LOOP
-#   define RINGMESH_PARALLEL_LOOP_DYNAMIC
-#endif
-
 #define ringmesh_disable_copy( Class )                                          \
     public:                                                                     \
     Class( const Class & ) = delete ;                                           \
@@ -113,6 +99,8 @@
 template< typename T > void ringmesh_unused( T const& )
 {
 }
+
+#include <future>
 
 #include <ringmesh/basic/types.h>
 #include <ringmesh/basic/ringmesh_assert.h>
@@ -245,4 +233,17 @@ namespace RINGMesh {
         index_t iter_ { 0 };
         index_t last_ { 0 };
     };
+
+    template< typename ACTION >
+    void parallel_for( index_t size, const ACTION& action )
+    {
+        std::vector< std::future< void > > futures;
+        futures.reserve( size );
+        for( index_t i : range( size ) ) {
+            futures.push_back( std::async( std::launch::async, action, i ) );
+        }
+        for( auto& future : futures ) {
+            future.get();
+        }
+    }
 }

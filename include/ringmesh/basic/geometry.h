@@ -151,6 +151,19 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& p2,
             const vec3& p3 );
+        /*!
+         * Computes the distance between a point and a plane
+         * @param[in] p the point to project
+         * @param[in] N_plane the normal of the plane
+         * @param[in] O_plane a point of the plane
+         * @return a tuple containing:
+         * - the distance between the point and the plane.
+         * - the nearest point on the plane.
+         */
+        std::tuple< double, vec3 > RINGMESH_API point_to_plane(
+            const vec3& p,
+            const vec3& N_plane,
+            const vec3& O_plane );
     }
 
     namespace Intersection {
@@ -351,21 +364,16 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Tests if a point is inside a triangle
-     * @details if it is inside a prism based on the triangle and its normal
+     * @brief Tests if a point is on a segment
      * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the triangle
-     * @param[in] p1 the second vertex of the triangle
-     * @param[in] p2 the third vertex of the triangle
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
+     * @param[in] p0 the first vertex of the segment
+     * @param[in] p1 the second vertex of the segment
      * @return returns true if the point is inside
      */
-    bool RINGMESH_API point_inside_triangle(
+    bool RINGMESH_API point_inside_segment(
         const vec3& p,
         const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        bool exact_predicates = false );
+        const vec3& p1 );
 
     /*!
      * @brief Tests if a point is inside a triangle
@@ -374,15 +382,14 @@ namespace RINGMesh {
      * @param[in] p0 the first vertex of the triangle
      * @param[in] p1 the second vertex of the triangle
      * @param[in] p2 the third vertex of the triangle
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside
      */
-    bool RINGMESH_API point_inside_triangle(
-        const vec2& p,
-        const vec2& p0,
-        const vec2& p1,
-        const vec2& p2,
-        bool exact_predicates = false );
+    template< index_t DIMENSION >
+    bool point_inside_triangle(
+        const vecn< DIMENSION >& p,
+        const vecn< DIMENSION >& p0,
+        const vecn< DIMENSION >& p1,
+        const vecn< DIMENSION >& p2 );
 
     /*!
      * Tests if a point is inside a tetrahedron
@@ -391,7 +398,6 @@ namespace RINGMesh {
      * @param[in] p1 the second vertex of the tetrahedron
      * @param[in] p2 the third vertex of the tetrahedron
      * @param[in] p3 the fourth vertex of the tetrahedron
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside the tetrahedron
      */
     bool RINGMESH_API point_inside_tetra(
@@ -399,8 +405,7 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3,
-        bool exact_predicates = false );
+        const vec3& p3 );
 
     /*!
      * Computes the orthogonal projection of a point on a segment
@@ -411,22 +416,10 @@ namespace RINGMesh {
      * and the projected point if any.
      */
     template< index_t DIMENSION >
-    std::tuple< bool, vecn< DIMENSION > > RINGMESH_API point_segment_projection(
+    std::tuple< bool, vecn< DIMENSION > > point_segment_projection(
         const vecn< DIMENSION >& p,
         const vecn< DIMENSION >& p0,
         const vecn< DIMENSION >& p1 );
-
-    /*!
-     * Computes the orthogonal projection of a point on a plane
-     * @param[in] p the point to project
-     * @param[in] N_plane the normal of the plane
-     * @param[in] O_plane a point of the plane
-     * @return the projected point
-     */
-    vec3 RINGMESH_API point_plane_projection(
-        const vec3& p,
-        const vec3& N_plane,
-        const vec3& O_plane );
 
     /*!
      * Computes barycentric coordinates of \p p
