@@ -326,7 +326,7 @@ namespace {
                 }
 
                 unzip_current_file( uz, file_name.c_str() );
-                files.push_back( std::async( std::launch::async, [file_name, this] {
+                files.push_back( std::async( std::launch::deferred, [file_name, this] {
                     std::string file_without_extension = GEO::FileSystem::base_name(
                         file_name );
                     std::string entity_type, entity_id;
