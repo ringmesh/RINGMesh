@@ -55,6 +55,7 @@
 
 #include <ringmesh/basic/command_line.h>
 
+#include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
