@@ -485,6 +485,8 @@ namespace RINGMesh {
             std::vector< std::vector< GMEVertex > > gme_vertices_;
         };
 
+        mutable std::mutex lock_;
+
     protected:
         /// Attached Mesh
         std::unique_ptr< PointSetMesh< DIMENSION > >& mesh_;

@@ -35,6 +35,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder_gocad.h>
 
+#include <geogram/basic/stopwatch.h>
+
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 
@@ -1298,6 +1300,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderML::load_file()
     {
+        GEO::Stopwatch t("ML");
         read_file();
         geomodel_.mesh.vertices.test_and_initialize();
         build_lines_and_corners_from_surfaces();
