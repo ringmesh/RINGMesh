@@ -237,6 +237,9 @@ namespace RINGMesh {
     template< typename ACTION >
     void parallel_for( index_t size, const ACTION& action )
     {
+        if( size == 0 ) {
+            return;
+        }
         index_t nb_threads { std::min( size, std::thread::hardware_concurrency() ) };
         std::vector< std::future< void > > futures;
         futures.reserve( size );
