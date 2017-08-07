@@ -36,9 +36,16 @@ set(RINGMESH_ROOT_DIRECTORY "${RINGMESH_CMAKE_DIR}/..")
 
 find_path(RINGMesh_INCLUDE_DIR NAMES ringmesh
     PATHS ${RINGMESH_ROOT_DIRECTORY}/include)
-# On Windows there is no CMAKE_BUILD_TYPE variable since everything
+# On Visual Studio and Xcode there is no CMAKE_BUILD_TYPE variable since everything
 # is in the same project. It is necessary to differenciate Release and Debug.
-if(WIN32)
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    find_path(RINGMesh_CONFIG_INCLUDE_DIR NAMES ringmesh
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/${CMAKE_BUILD_TYPE})
+    find_library(RINGMesh_LIBRARY NAMES RINGMesh
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/${CMAKE_BUILD_TYPE}/lib)
+    find_library(GEOGRAM_LIBRARY NAMES geogram
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/${CMAKE_BUILD_TYPE}/lib)
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     find_path(RINGMesh_CONFIG_INCLUDE_DIR NAMES ringmesh
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh)
     find_library(RINGMesh_DEBUG_LIBRARY NAMES RINGMesh
@@ -49,14 +56,7 @@ if(WIN32)
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/lib/Debug)
     find_library(GEOGRAM_RELEASE_LIBRARY NAMES geogram
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/lib/Release)
-else(WIN32)
-    find_path(RINGMesh_CONFIG_INCLUDE_DIR NAMES ringmesh
-        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/${CMAKE_BUILD_TYPE})
-    find_library(RINGMesh_LIBRARY NAMES RINGMesh
-        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/${CMAKE_BUILD_TYPE}/lib)
-    find_library(GEOGRAM_LIBRARY NAMES geogram
-        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/${CMAKE_BUILD_TYPE}/lib)
-endif(WIN32)
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 find_path(GEOGRAM_INCLUDE_DIR NAMES geogram
     PATHS ${RINGMESH_ROOT_DIRECTORY}/third_party/geogram/src/lib)
 find_path(THIRD_PARTY_INCLUDE_DIR NAMES zlib
@@ -69,7 +69,18 @@ set(RINGMesh_INCLUDE_DIRS
     ${RINGMesh_CONFIG_INCLUDE_DIR}
     ${GEOGRAM_INCLUDE_DIR}
     ${THIRD_PARTY_INCLUDE_DIR})
-if(WIN32)
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    # Check that all the paths and libraries have been found.
+    # Else error message in during cmake configuration.
+    find_package_handle_standard_args(RINGMesh DEFAULT_MSG RINGMesh_INCLUDE_DIR
+        RINGMesh_CONFIG_INCLUDE_DIR GEOGRAM_INCLUDE_DIR RINGMesh_LIBRARY
+        GEOGRAM_LIBRARY THIRD_PARTY_INCLUDE_DIR)
+    set(RINGMesh_LIBRARIES ${RINGMesh_LIBRARY} ${GEOGRAM_LIBRARY} )
+    # Local variables are not displayed in the cmake-gui.
+    # RINGMesh_DIR is defined by cmake implicitly.
+    mark_as_advanced(RINGMesh_DIR RINGMesh_INCLUDE_DIR RINGMesh_CONFIG_INCLUDE_DIR
+        GEOGRAM_INCLUDE_DIR THIRD_PARTY_INCLUDE_DIR RINGMesh_LIBRARY GEOGRAM_LIBRARY)
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Check that all the paths and libraries have been found.
     # Else error message in during cmake configuration.
     find_package_handle_standard_args(RINGMesh DEFAULT_MSG RINGMesh_INCLUDE_DIR
@@ -90,18 +101,7 @@ if(WIN32)
     mark_as_advanced(RINGMesh_DIR RINGMesh_INCLUDE_DIR RINGMesh_CONFIG_INCLUDE_DIR
         GEOGRAM_INCLUDE_DIR RINGMesh_RELEASE_LIBRARY RINGMesh_DEBUG_LIBRARY
         GEOGRAM_RELEASE_LIBRARY GEOGRAM_DEBUG_LIBRARY THIRD_PARTY_INCLUDE_DIR)
-else(WIN32)
-    # Check that all the paths and libraries have been found.
-    # Else error message in during cmake configuration.
-    find_package_handle_standard_args(RINGMesh DEFAULT_MSG RINGMesh_INCLUDE_DIR
-        RINGMesh_CONFIG_INCLUDE_DIR GEOGRAM_INCLUDE_DIR RINGMesh_LIBRARY
-        GEOGRAM_LIBRARY THIRD_PARTY_INCLUDE_DIR)
-    set(RINGMesh_LIBRARIES ${RINGMesh_LIBRARY} ${GEOGRAM_LIBRARY} )
-    # Local variables are not displayed in the cmake-gui.
-    # RINGMesh_DIR is defined by cmake implicitly.
-    mark_as_advanced(RINGMesh_DIR RINGMesh_INCLUDE_DIR RINGMesh_CONFIG_INCLUDE_DIR
-        GEOGRAM_INCLUDE_DIR THIRD_PARTY_INCLUDE_DIR RINGMesh_LIBRARY GEOGRAM_LIBRARY)
-endif(WIN32)
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 function(set_ringmesh_includes_and_libs extra_libs)
 if(RINGMesh_FOUND)
@@ -110,15 +110,15 @@ if(RINGMesh_FOUND)
     message(STATUS "geogram include directory ${GEOGRAM_INCLUDE_DIR}")
     message(STATUS "third party include directory ${THIRD_PARTY_INCLUDE_DIR}")
     message(STATUS "RINGMesh include directories ${RINGMesh_INCLUDE_DIRS}")
-    if(WIN32)
+    if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+        message(STATUS "RINGMesh library ${RINGMesh_LIBRARY}")
+        message(STATUS "geogram library ${GEOGRAM_LIBRARY}")
+    else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
         message(STATUS "RINGMesh release library ${RINGMesh_RELEASE_LIBRARY}")
         message(STATUS "geogram release library ${GEOGRAM_RELEASE_LIBRARY}")
         message(STATUS "RINGMesh debug library ${RINGMesh_DEBUG_LIBRARY}")
         message(STATUS "geogram debug library ${GEOGRAM_DEBUG_LIBRARY}")
-    else(WIN32)
-        message(STATUS "RINGMesh library ${RINGMesh_LIBRARY}")
-        message(STATUS "geogram library ${GEOGRAM_LIBRARY}")
-    endif(WIN32)
+    endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     message(STATUS "RINGMesh libraries ${RINGMesh_LIBRARIES}")
 	
     # Add RINGMesh include directories
