@@ -218,6 +218,38 @@ namespace {
         return s1 == s2 && s2 == s3;
     }
 
+    bool point_inside_tetra_exact( const vec3& p, std::array< vec3, 4 >& vertices )
+    {
+        std::array< Sign, 4 > signs;
+        for( index_t f : range( 4 ) ) {
+            signs[f] =
+                sign(
+                    GEO::PCK::orient_3d( p.data(),
+                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]].data(),
+                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]].data(),
+                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) );
+        }
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
+    }
+
+    bool point_inside_tetra_approx( const vec3& p, std::array< vec3, 4 >& vertices )
+    {
+        std::array< Sign, 4 > signs;
+        for( index_t f : range( 4 ) ) {
+            double volume {
+                GEO::Geom::tetra_signed_volume( p,
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] ) };
+            if( is_almost_zero( volume ) ) {
+                return point_inside_tetra_exact( p, vertices );
+            }
+            signs[f] = sign( volume );
+        }
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
+    }
 }
 
 namespace RINGMesh {
@@ -226,6 +258,7 @@ namespace RINGMesh {
     {
         return dot( v0, vec2( v1.y, -v1.x ) );
     }
+
     double triangle_signed_area(
         const vec3& p0,
         const vec3& p1,
@@ -255,35 +288,10 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3,
-        bool exact_predicates )
+        const vec3& p3 )
     {
-        vec3 vertices[4] { p0, p1, p2, p3 };
-        Sign signs[4];
-        if( !exact_predicates ) {
-            for( index_t f : range( 4 ) ) {
-                double volume {
-                    GEO::Geom::tetra_signed_volume( p,
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] ) };
-                if( is_almost_zero( volume ) ) {
-                    return point_inside_tetra( p, p0, p1, p2, p3, true );
-                }
-                signs[f] = sign( volume );
-            }
-        } else {
-            for( index_t f : range( 4 ) ) {
-                signs[f] =
-                    sign(
-                        GEO::PCK::orient_3d( p.data(),
-                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]].data(),
-                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]].data(),
-                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) );
-            }
-        }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
+        std::array< vec3, 4 > vertices { { p0, p1, p2, p3 } };
+        return point_inside_tetra_approx( p, vertices );
     }
 
     std::tuple< bool, std::array< double, 4 > > tetra_barycentric_coordinates(
@@ -633,27 +641,14 @@ namespace RINGMesh {
         const vecn< DIMENSION >& p,
         const vecn< DIMENSION >& p0,
         const vecn< DIMENSION >& p1,
-        const vecn< DIMENSION >& p2,
-        bool exact_predicates )
+        const vecn< DIMENSION >& p2 )
     {
-        if( !exact_predicates ) {
-            return point_inside_triangle_approx( p, p0, p1, p2 );
-        } else {
-            return point_inside_triangle_exact( p, p0, p1, p2 );
-        }
+        return point_inside_triangle_approx( p, p0, p1, p2 );
     }
 
-    bool point_inside_segment(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        bool exact_predicates )
+    bool point_inside_segment( const vec3& p, const vec3& p0, const vec3& p1 )
     {
-        if( !exact_predicates ) {
-            return point_inside_segment_approx( p, p0, p1 );
-        } else {
-            return point_inside_segment_exact( p, p0, p1 );
-        }
+        return point_inside_segment_approx( p, p0, p1 );
     }
 
     template std::tuple< bool, vecn< 2 > > RINGMESH_API point_segment_projection(
@@ -664,8 +659,7 @@ namespace RINGMesh {
         const vecn< 2 >&,
         const vecn< 2 >&,
         const vecn< 2 >&,
-        const vecn< 2 >&,
-        bool );
+        const vecn< 2 >& );
 
     template std::tuple< bool, vecn< 3 > > RINGMESH_API point_segment_projection(
         const vecn< 3 >&,
@@ -675,6 +669,5 @@ namespace RINGMesh {
         const vecn< 3 >&,
         const vecn< 3 >&,
         const vecn< 3 >&,
-        const vecn< 3 >&,
-        bool );
+        const vecn< 3 >& );
 }

@@ -368,14 +368,12 @@ namespace RINGMesh {
      * @param[in] p the point to test
      * @param[in] p0 the first vertex of the segment
      * @param[in] p1 the second vertex of the segment
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside
      */
     bool RINGMESH_API point_inside_segment(
         const vec3& p,
         const vec3& p0,
-        const vec3& p1,
-        bool exact_predicates = false );
+        const vec3& p1 );
 
     /*!
      * @brief Tests if a point is inside a triangle
@@ -384,7 +382,6 @@ namespace RINGMesh {
      * @param[in] p0 the first vertex of the triangle
      * @param[in] p1 the second vertex of the triangle
      * @param[in] p2 the third vertex of the triangle
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside
      */
     template< index_t DIMENSION >
@@ -392,8 +389,7 @@ namespace RINGMesh {
         const vecn< DIMENSION >& p,
         const vecn< DIMENSION >& p0,
         const vecn< DIMENSION >& p1,
-        const vecn< DIMENSION >& p2,
-        bool exact_predicates = false );
+        const vecn< DIMENSION >& p2 );
 
     /*!
      * Tests if a point is inside a tetrahedron
@@ -402,7 +398,6 @@ namespace RINGMesh {
      * @param[in] p1 the second vertex of the tetrahedron
      * @param[in] p2 the third vertex of the tetrahedron
      * @param[in] p3 the fourth vertex of the tetrahedron
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside the tetrahedron
      */
     bool RINGMESH_API point_inside_tetra(
@@ -410,8 +405,7 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3,
-        bool exact_predicates = false );
+        const vec3& p3 );
 
     /*!
      * Computes the orthogonal projection of a point on a segment
