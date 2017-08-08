@@ -110,8 +110,8 @@ namespace RINGMesh {
         inline Box< DIMENSION > bbox_intersection( const Box< DIMENSION >& B ) const
         {
             Box< DIMENSION > result;
-            vecn< DIMENSION > minimal_max { 0., 0., 0. };
-            vecn< DIMENSION > maximal_min { 0., 0., 0. };
+            vecn< DIMENSION > minimal_max;
+            vecn< DIMENSION > maximal_min;
             for( index_t d : range( DIMENSION ) ) {
                 minimal_max[d] = std::min( this->max()[d], B.max()[d] );
                 maximal_min[d] = std::max( this->min()[d], B.min()[d] );
