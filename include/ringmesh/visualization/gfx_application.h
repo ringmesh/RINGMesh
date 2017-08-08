@@ -103,6 +103,14 @@ namespace RINGMesh {
             double y = 0,
             double z = 0 );
 
+        void create_aabbox( std::string name = "box",
+            double xmin = 0,
+            double ymin = 0,
+            double zmin = 0,
+            double xmax = 1,
+            double ymax = 1,
+            double zmax = 1 );
+
     private:
         class GeoModelViewer {
         ringmesh_disable_copy( GeoModelViewer );
