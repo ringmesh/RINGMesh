@@ -907,13 +907,11 @@ namespace {
     {
         const LineAABBTree< DIMENSION >& abbb = geomodel.mesh.edges.aabb();
         std::vector< bool > border_edges_on_line( barycenters.size(), true );
-        index_t edge_index = 0;
-        vecn< DIMENSION > closest_point;
         double distance = 0;
 
         for( index_t border_edge : range( barycenters.size() ) ) {
             const vecn< DIMENSION >& barycenter = barycenters[border_edge];
-            std::tie( edge_index, closest_point, distance ) = abbb.closest_edge(
+            std::tie( std::ignore, std::ignore, distance ) = abbb.closest_edge(
                 barycenter );
             if( distance > geomodel.epsilon() ) {
                 border_edges_on_line[border_edge] = false;
