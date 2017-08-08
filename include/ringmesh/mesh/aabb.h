@@ -108,7 +108,7 @@ namespace RINGMesh {
          * @brief Computes the intersections between a given
          * box and the element boxes.
          * @param[in] box the box to test
-         * @param[in] action The functor to run when an element box intersect \p box
+         * @param[in] action The functor to run when an element box intersects \p box
          * @tparam EvalIntersection this functor should have an operator() defined like this:
          * void operator()( index_t cur_box ) ;
          * where cur_box is the element box index
