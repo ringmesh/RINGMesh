@@ -106,12 +106,11 @@ namespace RINGMesh {
         }
         /*
          * @brief Computes the intersections between a given
-         *  box and the element boxes.
+         * box and the element boxes.
          * @param[in] box the box to test
-         * @param[in] action The functor used to compute intersection
-         * with the element boxes when they intersect \p box
+         * @param[in] action The functor to run when an element box intersect \p box
          * @tparam EvalIntersection this functor should have an operator() defined like this:
-         *  void operator()( index_t cur_box ) ;
+         * void operator()( index_t cur_box ) ;
          * where cur_box is the element box index
          * (e.g. in the case of AABBTree2D, this index is a polygon index)
          */
@@ -125,10 +124,9 @@ namespace RINGMesh {
         }
         /*
          * @brief Computes the self intersections of the element boxes.
-         * @param[in] action The functor used to compute intersection
-         * with the intersected element boxes
+         * @param[in] action The functor to run when two boxes intersect
          * @tparam EvalIntersection this functor should have an operator() defined like this:
-         *  void operator()( index_t box1, index_t box2 ) ;
+         * void operator()( index_t box1, index_t box2 ) ;
          * where box1 and box2 are the element box indices
          * (e.g. in the case of AABBTree2D, this index is a polygon index)
          */
