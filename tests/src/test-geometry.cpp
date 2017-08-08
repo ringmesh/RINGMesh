@@ -75,21 +75,19 @@ void test_point_plane_distance()
 {
     Logger::out( "TEST", "Test point plane distance" );
 
-    vec3 test0( 1, 1, 1 );
-    vec3 N0( 0, 0, 2 );
-    vec3 O0( 0, 0, 0 );
+    vec3 test0 { 1, 1, 1 };
+    Geometry::Plane plane0 { { 0, 0, 2 }, { 0, 0, 0 } };
     vec3 projected0;
-    std::tie( std::ignore, projected0 ) = Distance::point_to_plane( test0, N0, O0 );
-    if( projected0 != vec3( 1, 1, 0 ) ) {
+    std::tie( std::ignore, projected0 ) = Distance::point_to_plane( test0, plane0 );
+    if( projected0 != vec3{ 1, 1, 0 } ) {
         throw RINGMeshException( "TEST", "Error in point plane distance" );
     }
 
-    vec3 test1( 0, 0.5, 1 );
-    vec3 N1( 1, 0, 0 );
-    vec3 O1( 1, 1, 1 );
+    vec3 test1 { 0, 0.5, 1 };
+    Geometry::Plane plane1 { { 1, 0, 0 }, { 1, 1, 1 } };
     vec3 projected1;
-    std::tie( std::ignore, projected1 ) = Distance::point_to_plane( test1, N1, O1 );
-    if( projected1 != vec3( 1, 0.5, 1 ) ) {
+    std::tie( std::ignore, projected1 ) = Distance::point_to_plane( test1, plane1 );
+    if( projected1 != vec3{ 1, 0.5, 1 } ) {
         throw RINGMeshException( "TEST", "Error in point plane distance" );
     }
 }

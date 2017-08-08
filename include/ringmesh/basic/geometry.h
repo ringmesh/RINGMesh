@@ -82,6 +82,83 @@ namespace RINGMesh {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
 
+    namespace Geometry {
+
+        template< index_t DIMENSION >
+        using Point = vecn< DIMENSION >;
+        CLASS_DIMENSION_ALIASES( Point );
+
+        template< index_t DIMENSION >
+        struct Segment {
+            Segment( vecn< DIMENSION > p0, vecn< DIMENSION > p1 )
+                : p0_( std::move( p0 ) ), p1_( std::move( p1 ) )
+            {
+            }
+            vecn< DIMENSION > p0_;
+            vecn< DIMENSION > p1_;
+        };
+        CLASS_DIMENSION_ALIASES( Segment );
+
+        template< index_t DIMENSION >
+        struct Line {
+            Line( const vecn< DIMENSION >& direction, vecn< DIMENSION > origin )
+                :
+                    origin_( std::move( origin ) ),
+                    direction_( normalize( direction ) )
+            {
+            }
+            Line( Segment< DIMENSION > segment )
+                : Line( segment.p1_ - segment.p0_, std::move( segment.p0_ ) )
+            {
+            }
+            vecn< DIMENSION > origin_;
+            vecn< DIMENSION > direction_;
+        };
+        CLASS_DIMENSION_ALIASES( Line );
+
+        template< index_t DIMENSION >
+        struct Triangle {
+            Triangle(
+                vecn< DIMENSION > p0,
+                vecn< DIMENSION > p1,
+                vecn< DIMENSION > p2 )
+                :
+                    p0_( std::move( p0 ) ),
+                    p1_( std::move( p1 ) ),
+                    p2_( std::move( p2 ) )
+            {
+            }
+            vecn< DIMENSION > p0_;
+            vecn< DIMENSION > p1_;
+            vecn< DIMENSION > p2_;
+        };
+        CLASS_DIMENSION_ALIASES( Triangle );
+
+        struct Tetra {
+            Tetra( vec3 p0, vec3 p1, vec3 p2, vec3 p3 )
+                :
+                    p0_( std::move( p0 ) ),
+                    p1_( std::move( p1 ) ),
+                    p2_( std::move( p2 ) ),
+                    p3_( std::move( p3 ) )
+            {
+            }
+            vec3 p0_;
+            vec3 p1_;
+            vec3 p2_;
+            vec3 p3_;
+        };
+
+        struct Plane {
+            Plane( const vec3& normal, vec3 origin )
+                : normal_( normalize( normal ) ), origin_( std::move( origin ) )
+            {
+            }
+            vec3 normal_;
+            vec3 origin_;
+        };
+    }
+
     double RINGMESH_API triangle_signed_area(
         const vec3& p0,
         const vec3& p1,
@@ -92,78 +169,40 @@ namespace RINGMesh {
         /*!
          * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
          */
-        std::tuple< double, vec3 > RINGMESH_API point_to_segment(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1 );
-
-        std::tuple< double, vec2 > RINGMESH_API point_to_segment(
-            const vec2& p,
-            const vec2& p0,
-            const vec2& p1 );
+        template< index_t DIMENSION >
+        std::tuple< double, vecn< DIMENSION > > point_to_segment(
+            const Geometry::Point< DIMENSION >& point,
+            const Geometry::Segment< DIMENSION >& segment );
 
         /*!
          * Computes the smallest distance between a point and a triangle
-         * @param[in] point the point to test
-         * @param[in] V0 the first vertex of the triangle
-         * @param[in] V1 the second vertex of the triangle
-         * @param[in] V2 the third vertex of the triangle
          * @return a tuple containing the following elements (in this order):
          * - the smallest distance
          * - the closest point on the triangle
          */
-        std::tuple< double, vec3 > RINGMESH_API point_to_triangle(
-            const vec3& point,
-            const vec3& V0,
-            const vec3& V1,
-            const vec3& V2 );
-
-        /*!
-         * Computes the smallest distance between a point and a triangle
-         * @param[in] point the point to test
-         * @param[in] V0 the first vertex of the triangle
-         * @param[in] V1 the second vertex of the triangle
-         * @param[in] V2 the third vertex of the triangle
-         * @return a tuple containing:
-         * - the smallest distance.
-         * - the closest_point the closest point on the triangle.
-         */
-        std::tuple< double, vec2 > RINGMESH_API point_to_triangle(
-            const vec2& point,
-            const vec2& V0,
-            const vec2& V1,
-            const vec2& V2 );
+        template< index_t DIMENSION >
+        std::tuple< double, vecn< DIMENSION > > point_to_triangle(
+            const Geometry::Point< DIMENSION >& point,
+            const Geometry::Triangle< DIMENSION >& triangle );
 
         /*!
          * Computes the distance between a point and a tetrahedron
-         * @param[in] p the point
-         * @param[in] p0 the first vertex of the tetrahedron
-         * @param[in] p1 the second vertex of the tetrahedron
-         * @param[in] p2 the third vertex of the tetrahedron
-         * @param[in] p3 the fourth vertex of the tetrahedron
          * @return a tuple containing:
          * - the distance between the point and the tetrahedron facets.
          * - the nearest point on the tetrahedron.
          */
         std::tuple< double, vec3 > RINGMESH_API point_to_tetra(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3 );
+            const Geometry::Point3D& point,
+            const Geometry::Tetra& tetra );
         /*!
          * Computes the distance between a point and a plane
-         * @param[in] p the point to project
-         * @param[in] N_plane the normal of the plane
-         * @param[in] O_plane a point of the plane
          * @return a tuple containing:
          * - the distance between the point and the plane.
          * - the nearest point on the plane.
          */
         std::tuple< double, vec3 > RINGMESH_API point_to_plane(
-            const vec3& p,
-            const vec3& N_plane,
-            const vec3& O_plane );
+            const Geometry::Point3D& point,
+            const Geometry::Plane& plane );
     }
 
     namespace Intersection {
