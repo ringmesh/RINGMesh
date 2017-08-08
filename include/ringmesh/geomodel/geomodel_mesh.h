@@ -797,7 +797,7 @@ namespace RINGMesh {
     CLASS_DIMENSION_ALIASES( GeoModelMeshPolygons );
 
     template< index_t DIMENSION >
-    class GeoModelMeshEdges: public GeoModelMeshCommon< DIMENSION > {
+    class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
     ringmesh_disable_copy( GeoModelMeshEdges );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         static const std::string line_att_name;
