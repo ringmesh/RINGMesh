@@ -53,14 +53,13 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelGfx;
-    template< index_t DIMENSION > class AttributeGfxManager;
-    template< index_t DIMENSION > class AttributeGfx;
-    template< index_t DIMENSION > class PointSetMesh;
-    template< index_t DIMENSION > class LineMesh;
-    template< index_t DIMENSION > class SurfaceMesh;
-    template< index_t DIMENSION > class VolumeMesh;
-
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGfx );
+    FORWARD_DECLARATION_DIMENSION_CLASS( AttributeGfxManager );
+    FORWARD_DECLARATION_DIMENSION_CLASS( AttributeGfx );
+    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
     CLASS_DIMENSION_ALIASES( GeoModelGfx );
 }
 

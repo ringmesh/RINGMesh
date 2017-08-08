@@ -49,11 +49,11 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class Well;
-    template< index_t DIMENSION > class NNSearch;
-    template< index_t DIMENSION > class PointSetMesh;
-    template< index_t DIMENSION > class LineMesh;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Well );
+    FORWARD_DECLARATION_DIMENSION_CLASS( NNSearch );
+    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
     struct ElementLocalVertex;
 }
 

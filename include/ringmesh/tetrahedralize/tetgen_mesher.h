@@ -50,7 +50,7 @@ namespace GEO {
     class Mesh;
 }
 namespace RINGMesh {
-    template< index_t DIMENSION > class VolumeMeshBuilder;
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
 }
 
 namespace RINGMesh {
