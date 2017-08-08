@@ -48,7 +48,7 @@
 
 namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderBase;
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
+    FORWARD_DECLARATION_2D_3D_CLASS( GeoModelBuilder );
 }
 
 namespace RINGMesh {

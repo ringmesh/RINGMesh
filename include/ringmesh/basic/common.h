@@ -91,7 +91,7 @@
     template< index_t > class Class;                                            \
     CLASS_3D_ALIAS( Class )
 
-#define FORWARD_DECLARATION_DIMENSION_CLASS( Class )                            \
+#define FORWARD_DECLARATION_2D_3D_CLASS( Class )                            \
     template< index_t > class Class;                                            \
     CLASS_DIMENSION_ALIASES( Class )
 
