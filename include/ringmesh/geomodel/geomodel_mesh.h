@@ -154,7 +154,7 @@ namespace RINGMesh {
          * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its
          * index in that GeoModelMeshEntity
          * @param[in] mesh_entity GeoModelMeshEntity that vertex belongs to
-         * @param[in] edgentity_vertex_index index of the query vertex in the GeoModelMeshEntity
+         * @param[in] entity_vertex_index index of the query vertex in the GeoModelMeshEntity
          * @return if found the vertex index in the geomodel, else NO_ID.
          */
         index_t geomodel_vertex_id(
@@ -165,8 +165,7 @@ namespace RINGMesh {
          * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its
          * index in that GeoModelMeshEntity
          * @param[in] mesh_entity GeoModelMeshEntity that vertex belongs to
-         * @param[in] edgentity_mesh_element_index index of the mesh element that vertex belongs to
-         * @param[in] vertexertex_local_index local index of the query vertex in the mesh element
+         * @param[in] element_local_vertex local vertex in the element
          * @return if found the vertex index in the geomodel, else NO_ID.
          */
         index_t geomodel_vertex_id(
@@ -196,7 +195,7 @@ namespace RINGMesh {
          */
         std::vector< GMEVertex > gme_type_vertices(
             const MeshEntityType& entity_type,
-            index_t v ) const;
+            index_t vertex ) const;
 
         /*!
          * @brief To use when building the geomodel by first adding its vertices
@@ -600,7 +599,7 @@ namespace RINGMesh {
         /*!
          * Get the number of polygons of the corresponding type
          * in the given surface of the GeoModel
-         * @param[in] s the surface index
+         * @param[in] surface the surface index
          * @param[in] type the corresponding type
          * @return the number of polygons
          */
@@ -608,8 +607,8 @@ namespace RINGMesh {
             PolygonType::UNDEFINED ) const;
         /*!
          * Get the polygon index in the GeoModelMesh
-         * @param[in] s the surface index owing the polygon
-         * @param[in] p the polygon index varying from 0 to the number of polygons
+         * @param[in] surface the surface index owing the polygon
+         * @param[in] polygon the polygon index varying from 0 to the number of polygons
          * of type \p type in the surface \p surface.
          * @warning \p polygon is NOT a polygon id
          * of the surface \p surface.
