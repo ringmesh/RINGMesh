@@ -521,6 +521,9 @@ namespace RINGMesh {
         // Simple case: leaf - leaf intersection.
         if( is_leaf( element_begin1, element_end1 )
             && is_leaf( element_begin2, element_end2 ) ) {
+            if( node_index1 == node_index2 ) {
+                return;
+            }
             action( mapping_morton_[element_begin1],
                 mapping_morton_[element_begin2] );
             return;
