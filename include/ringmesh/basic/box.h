@@ -87,7 +87,7 @@ namespace RINGMesh {
             }
         }
 
-        inline bool bboxes_overlap( const Box< DIMENSION >& B ) const
+        bool bboxes_overlap( const Box< DIMENSION >& B ) const
         {
             for( index_t c : range( DIMENSION ) ) {
                 if( max()[c] < B.min()[c] ) {
@@ -100,25 +100,37 @@ namespace RINGMesh {
             return true;
         }
 
-        inline Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const
+        Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const
         {
             Box< DIMENSION > result { *this };
             result.add_box( B );
             return result;
         }
 
-        inline Box< DIMENSION > bbox_intersection( const Box< DIMENSION >& B ) const
+        /*!
+         * Computes the intersection between this box and another one
+         * @param[in] B another box
+         * @return a tuple containing:
+         * - a boolean (true if the two boxes do intersect, false otherwise).
+         * - the box corresponding to the intersection.
+         */
+        std::tuple< bool, Box< DIMENSION > > bbox_intersection(
+            const Box< DIMENSION >& B ) const
         {
+            if( !bboxes_overlap( B ) ) {
+                return std::make_tuple( false, Box() );
+            }
+
             Box< DIMENSION > result;
             vecn< DIMENSION > minimal_max;
             vecn< DIMENSION > maximal_min;
-            for( index_t d : range( DIMENSION ) ) {
-                minimal_max[d] = std::min( this->max()[d], B.max()[d] );
-                maximal_min[d] = std::max( this->min()[d], B.min()[d] );
+            for( index_t c : range( DIMENSION ) ) {
+                minimal_max[c] = std::min( this->max()[c], B.max()[c] );
+                maximal_min[c] = std::max( this->min()[c], B.min()[c] );
             }
             result.add_point( maximal_min );
             result.add_point( minimal_max );
-            return result;
+            return std::make_tuple( true, result );
         }
 
         bool contains( const vecn< DIMENSION >& b ) const
