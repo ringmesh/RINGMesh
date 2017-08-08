@@ -126,6 +126,20 @@ namespace RINGMesh {
             return result;
         }
 
+        inline Box3d bbox_intersection( const Box3d& B ) const
+        {
+            Box3d result;
+            vec3 maximal_min { 0., 0., 0. };
+            vec3 minimal_max { 0., 0., 0. };
+            for( index_t d = 0; d < 3; ++d ) {
+                maximal_min[d] = std::max( this->min()[d], B.min()[d] );
+                minimal_max[d] = std::min( this->max()[d], B.max()[d] );
+            }
+            result.add_point( maximal_min );
+            result.add_point( minimal_max );
+            return result;
+        }
+
         bool contains( const vec3& b ) const
         {
             for( index_t c = 0; c < 3; ++c ) {
