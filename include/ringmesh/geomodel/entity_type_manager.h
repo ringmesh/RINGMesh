@@ -43,16 +43,16 @@
 #include <vector>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class GeoModelMeshEntity;
-    template< index_t DIMENSION > class Corner;
-    template< index_t DIMENSION > class Line;
-    template< index_t DIMENSION > class Surface;
-    template< index_t DIMENSION > class Region;
-    template< index_t DIMENSION > class EntityTypeManager;
-    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
-    template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderGeology;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Line );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
+    FORWARD_DECLARATION_DIMENSION_CLASS( EntityTypeManager );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
 }
 
 namespace RINGMesh {

@@ -50,16 +50,16 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelGeologicalEntity;
-    template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
-    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
-    template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderGeometryBase;
-    template< index_t DIMENSION > class GeoModelBuilderGeometry;
-    template< index_t DIMENSION > class GeoModelBuilderGeology;
-    template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
-    template< index_t DIMENSION > class GeoModelBuilderRemoval;
-    template< index_t DIMENSION > class GeoModelBuilderInfo;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntityConstAccess );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometry );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
     FORWARD_DECLARATION_2D_3D_CLASS( GeoModel );
 }
 
