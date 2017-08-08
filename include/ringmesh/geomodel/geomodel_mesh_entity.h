@@ -60,7 +60,7 @@ namespace RINGMesh {
     template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
     template< index_t DIMENSION > class GeoModelBuilderRemoval;
     template< index_t DIMENSION > class GeoModelBuilderInfo;
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_2D_3D_CLASS( GeoModel );
 }
 
 namespace RINGMesh {
