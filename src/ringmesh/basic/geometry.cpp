@@ -87,9 +87,10 @@ namespace {
     bool point_inside_segment_approx( const vec3& p, const vec3& p0, const vec3& p1 )
     {
         double distance;
-        std::tie( distance, std::ignore ) = Distance::point_to_segment( p, p0, p1 );
+        std::tie( distance, std::ignore ) = Distance::point_to_segment( p,
+            { p0, p1 } );
         if( distance > global_epsilon ) {
-            return false ;
+            return false;
         }
         vec3 segment { p1 - p0 };
         double half_length { segment.length() / 2. };

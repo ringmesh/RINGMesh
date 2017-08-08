@@ -81,10 +81,7 @@ namespace {
      *  the two halves
      */
     template< class CMP >
-    const_vector_itr split(
-        const_vector_itr& begin,
-        const_vector_itr& end,
-        CMP cmp )
+    const_vector_itr split( const_vector_itr& begin, const_vector_itr& end, CMP cmp )
     {
         if( begin >= end ) {
             return begin;
@@ -288,7 +285,8 @@ namespace RINGMesh {
         }
 
         index_t nearest_box = mapping_morton_[box_begin];
-        vecn< DIMENSION > nearest_point = get_point_hint_from_box( tree_[box_begin], nearest_box );
+        vecn< DIMENSION > nearest_point = get_point_hint_from_box( tree_[box_begin],
+            nearest_box );
         double distance = length( query - nearest_point );
         return std::make_tuple( nearest_box, nearest_point, distance );
     }
@@ -341,11 +339,9 @@ namespace RINGMesh {
         const vecn< DIMENSION >& query,
         index_t cur_box ) const
     {
-        const vecn< DIMENSION >& v0 = mesh_.vertex(
-            mesh_.edge_vertex( ElementLocalVertex( cur_box, 0 ) ) );
-        const vecn< DIMENSION >& v1 = mesh_.vertex(
-            mesh_.edge_vertex( ElementLocalVertex( cur_box, 1 ) ) );
-        return Distance::point_to_segment( query, v0, v1 );
+        const auto& v0 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 0 } ) );
+        const auto& v1 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 1 } ) );
+        return Distance::point_to_segment( query, { v0, v1 } );
     }
 
     template< index_t DIMENSION >
@@ -390,13 +386,10 @@ namespace RINGMesh {
         const vecn< DIMENSION >& query,
         index_t cur_box ) const
     {
-        const vecn< DIMENSION >& v0 = mesh_.vertex(
-            mesh_.polygon_vertex( ElementLocalVertex( cur_box, 0 ) ) );
-        const vecn< DIMENSION >& v1 = mesh_.vertex(
-            mesh_.polygon_vertex( ElementLocalVertex( cur_box, 1 ) ) );
-        const vecn< DIMENSION >& v2 = mesh_.vertex(
-            mesh_.polygon_vertex( ElementLocalVertex( cur_box, 2 ) ) );
-        return Distance::point_to_triangle( query, v0, v1, v2 );
+        const auto& v0 = mesh_.vertex( mesh_.polygon_vertex( { cur_box, 0 } ) );
+        const auto& v1 = mesh_.vertex( mesh_.polygon_vertex( { cur_box, 1 } ) );
+        const auto& v2 = mesh_.vertex( mesh_.polygon_vertex( { cur_box, 2 } ) );
+        return Distance::point_to_triangle( query, { v0, v1, v2 } );
     }
 
     template< index_t DIMENSION >
