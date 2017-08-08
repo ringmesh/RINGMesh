@@ -1187,10 +1187,19 @@ namespace RINGMesh {
                 browse_geogram( path_ );
                 ImGui::EndMenu();
             }
-            if( ImGui::MenuItem( "Create point" ) ) {
+            ImGui::EndMenu();
+        }
+        if( ImGui::BeginMenu( "Create...") ) {
+            if( ImGui::MenuItem( "point" ) ) {
                 GEO::Command::set_current( "create_point(std::string name=\"debug\","
                     " double x=0, double y=0, double z=0)", this,
                     &RINGMeshApplication::create_point );
+            }
+            if( ImGui::MenuItem( "AABB" ) ) {
+                GEO::Command::set_current( "create_aabbox(std::string name=\"box\","
+                    " double xmin=0, double ymin=0, double zmin=0,"
+                    " double xmax=1, double ymax=1, double zmax=1)", this,
+                    &RINGMeshApplication::create_aabbox );
             }
             ImGui::EndMenu();
         }
@@ -1219,6 +1228,73 @@ namespace RINGMesh {
         viewer->bbox_.add_point( point );
         viewer->name_ = name;
         viewer->show_vertices_ = true;
+        current_viewer_ = static_cast< index_t >( meshes_.size() - 1 );
+        current_viewer_type_ = ViewerType::MESH;
+        update_region_of_interest();
+    }
+
+    void RINGMeshApplication::create_aabbox(
+        std::string name,
+        double xmin,
+        double ymin,
+        double zmin,
+        double xmax,
+        double ymax,
+        double zmax )
+    {
+        vec3 min { xmin, ymin, zmin };
+        vec3 max { xmax, ymax, zmax };
+        MeshViewer* viewer = nullptr;
+        for( std::unique_ptr< MeshViewer >& i : meshes_ ) {
+            if( i->name_ == name ) {
+                viewer = i.get();
+                return;
+            }
+        }
+        if( !viewer ) {
+            meshes_.emplace_back( new MeshViewer( *this, "" ) );
+            viewer = meshes_.back().get();
+        }
+        vec3 box_other_vertex1 { min[0], min[1], max[2] };
+        vec3 box_other_vertex2 { min[0], max[1], max[2] };
+        vec3 box_other_vertex3 { max[0], min[1], max[2] };
+        vec3 box_other_vertex4 { max[0], max[1], min[2] };
+        vec3 box_other_vertex5 { max[0], min[1], min[2] };
+        vec3 box_other_vertex6 { min[0], max[1], min[2] };
+        viewer->mesh_.vertices.create_vertex( min.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex1.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex2.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex3.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex4.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex5.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex6.data() );
+        viewer->mesh_.vertices.create_vertex( max.data() );
+        viewer->mesh_.edges.create_edge( 0, 1 );
+        viewer->mesh_.edges.create_edge( 0, 5 );
+        viewer->mesh_.edges.create_edge( 0, 6 );
+        viewer->mesh_.edges.create_edge( 1, 2 );
+        viewer->mesh_.edges.create_edge( 1, 3 );
+        viewer->mesh_.edges.create_edge( 2, 6 );
+        viewer->mesh_.edges.create_edge( 2, 7 );
+        viewer->mesh_.edges.create_edge( 3, 5 );
+        viewer->mesh_.edges.create_edge( 3, 7 );
+        viewer->mesh_.edges.create_edge( 4, 5 );
+        viewer->mesh_.edges.create_edge( 4, 6 );
+        viewer->mesh_.edges.create_edge( 4, 7 );
+        viewer->mesh_.facets.create_quad( 0, 6, 4, 5 );
+        viewer->mesh_.facets.create_quad( 0, 1, 2, 6 );
+        viewer->mesh_.facets.create_quad( 0, 5, 3, 1 );
+        viewer->mesh_.facets.create_quad( 7, 2, 1, 3 );
+        viewer->mesh_.facets.create_quad( 7, 3, 5, 4 );
+        viewer->mesh_.facets.create_quad( 7, 4, 6, 2 );
+        viewer->mesh_gfx_.set_mesh( &viewer->mesh_ );
+        viewer->bbox_.add_point( min );
+        viewer->bbox_.add_point( max );
+        viewer->name_ = name;
+        viewer->show_vertices_ = false;
+        viewer->show_mesh_ = true;
+        viewer->show_surface_borders_ = false;
+        viewer->show_surface_colors_ = false;
         current_viewer_ = static_cast< index_t >( meshes_.size() - 1 );
         current_viewer_type_ = ViewerType::MESH;
         update_region_of_interest();
