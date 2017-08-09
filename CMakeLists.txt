@@ -171,7 +171,7 @@ if(UNIX)
         endif()
     endif(APPLE)
     # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     add_compile_options(-Wsign-conversion)
     add_compile_options(-Wdouble-promotion)
     add_compile_options(-Wno-attributes)
