@@ -191,25 +191,23 @@ namespace RINGMesh {
         }
 
         std::tuple< bool, vec2 > segment_line(
-            const vec2& p0_seg,
-            const vec2& p1_seg,
-            const vec2& O_line,
-            const vec2& D_line )
+            const Geometry::Segment2D& segment,
+            const Geometry::Line2D& line )
         {
-            vec2 O_seg { ( p0_seg + p1_seg ) / 2. };
-            vec2 D_seg { p1_seg - p0_seg };
-            bool does_segment_intersect_line { false };
+            bool does_segment_intersect_line;
             vec2 line_intersection_result;
             std::tie( does_segment_intersect_line, line_intersection_result ) =
-                line_line( { O_seg, D_seg }, { O_line, D_line } );
+                line_line( { segment }, line );
             if( does_segment_intersect_line ) {
                 // Test whether the line-line intersection is on the segment.
-                vec2 minus_direction { line_intersection_result - D_line };
-                vec2 plus_direction { line_intersection_result + D_line };
+                vec2 minus_direction { line_intersection_result - line.direction_ };
+                vec2 plus_direction { line_intersection_result + line.direction_ };
                 Sign s0 { sign(
-                    GEO::PCK::orient_2d( p0_seg, minus_direction, plus_direction ) ) };
+                    GEO::PCK::orient_2d( segment.p0_, minus_direction,
+                        plus_direction ) ) };
                 Sign s1 { sign(
-                    GEO::PCK::orient_2d( p1_seg, minus_direction, plus_direction ) ) };
+                    GEO::PCK::orient_2d( segment.p1_, minus_direction,
+                        plus_direction ) ) };
                 if( s0 == ZERO || s1 == ZERO || ( s0 != s1 ) ) {
                     return std::make_tuple( true, line_intersection_result );
                 }
@@ -243,8 +241,7 @@ namespace RINGMesh {
             std::tie( does_line_intersect_plane, line_plane_result ) = line_plane( {
                 segment }, plane );
             if( does_line_intersect_plane ) {
-                if( point_inside_segment( line_plane_result, segment.p0_,
-                    segment.p1_ ) ) {
+                if( Position::point_inside_segment( line_plane_result, segment ) ) {
                     // result inside the segment
                     return std::make_tuple( true, line_plane_result );
                 } else {
@@ -285,8 +282,7 @@ namespace RINGMesh {
             if( does_circle_intersect_plane ) {
                 for( const vec3& p : inter_circle_plane ) {
                     DEBUG( p );
-                    if( point_inside_triangle( p, triangle.p0_, triangle.p1_,
-                        triangle.p2_ ) ) {
+                    if( Position::point_inside_triangle( p, triangle ) ) {
                         result.push_back( p );
                     }
                 }
@@ -393,7 +389,7 @@ namespace RINGMesh {
             if( line_intersect ) {
                 segment_intersections.reserve( line_intersections.size() );
                 for( auto& point : line_intersections ) {
-                    if( point_inside_segment( point, segment.p0_, segment.p1_ ) ) {
+                    if( Position::point_inside_segment( point, segment ) ) {
                         segment_intersections.emplace_back( std::move( point ) );
                     }
                 }
