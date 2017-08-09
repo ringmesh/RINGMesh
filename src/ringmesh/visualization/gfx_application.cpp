@@ -324,7 +324,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::update_all_entity_visibility(
-        bool value )
+    bool value )
     {
         GM_gfx_.corners.set_vertex_visibility( value );
         GM_gfx_.lines.set_line_visibility( value );
@@ -799,7 +799,7 @@ namespace RINGMesh {
     }
 
     void RINGMeshApplication::GeoModelViewer< 3 >::update_all_entity_visibility(
-        bool value )
+    bool value )
     {
         GeoModelViewerBase3D::update_all_entity_visibility( value );
         GM_gfx_.regions.set_region_visibility( value );
@@ -1189,7 +1189,7 @@ namespace RINGMesh {
             }
             ImGui::EndMenu();
         }
-        if( ImGui::BeginMenu( "Create...") ) {
+        if( ImGui::BeginMenu( "Create..." ) ) {
             if( ImGui::MenuItem( "point" ) ) {
                 GEO::Command::set_current( "create_point(std::string name=\"debug\","
                     " double x=0, double y=0, double z=0)", this,
@@ -1211,8 +1211,8 @@ namespace RINGMesh {
         double y,
         double z )
     {
-        MeshViewer* viewer = nullptr;
-        for( std::unique_ptr< MeshViewer >& i : meshes_ ) {
+        MeshViewer* viewer { nullptr };
+        for( auto& i : meshes_ ) {
             if( i->name_ == name ) {
                 viewer = i.get();
                 break;
@@ -1222,7 +1222,7 @@ namespace RINGMesh {
             meshes_.emplace_back( new MeshViewer( *this, "" ) );
             viewer = meshes_.back().get();
         }
-        vec3 point( x, y, z );
+        vec3 point { x, y, z };
         viewer->mesh_.vertices.create_vertex( point.data() );
         viewer->mesh_gfx_.set_mesh( &viewer->mesh_ );
         viewer->bbox_.add_point( point );
@@ -1244,17 +1244,18 @@ namespace RINGMesh {
     {
         vec3 min { xmin, ymin, zmin };
         vec3 max { xmax, ymax, zmax };
-        MeshViewer* viewer = nullptr;
-        for( std::unique_ptr< MeshViewer >& i : meshes_ ) {
+        MeshViewer* viewer { nullptr };
+        for( auto& i : meshes_ ) {
             if( i->name_ == name ) {
                 viewer = i.get();
-                return;
+                break;
             }
         }
         if( !viewer ) {
             meshes_.emplace_back( new MeshViewer( *this, "" ) );
             viewer = meshes_.back().get();
         }
+        const index_t prev_nbv { viewer->mesh_.vertices.nb() };
         vec3 box_other_vertex1 { min[0], min[1], max[2] };
         vec3 box_other_vertex2 { min[0], max[1], max[2] };
         vec3 box_other_vertex3 { max[0], min[1], max[2] };
@@ -1269,24 +1270,30 @@ namespace RINGMesh {
         viewer->mesh_.vertices.create_vertex( box_other_vertex5.data() );
         viewer->mesh_.vertices.create_vertex( box_other_vertex6.data() );
         viewer->mesh_.vertices.create_vertex( max.data() );
-        viewer->mesh_.edges.create_edge( 0, 1 );
-        viewer->mesh_.edges.create_edge( 0, 5 );
-        viewer->mesh_.edges.create_edge( 0, 6 );
-        viewer->mesh_.edges.create_edge( 1, 2 );
-        viewer->mesh_.edges.create_edge( 1, 3 );
-        viewer->mesh_.edges.create_edge( 2, 6 );
-        viewer->mesh_.edges.create_edge( 2, 7 );
-        viewer->mesh_.edges.create_edge( 3, 5 );
-        viewer->mesh_.edges.create_edge( 3, 7 );
-        viewer->mesh_.edges.create_edge( 4, 5 );
-        viewer->mesh_.edges.create_edge( 4, 6 );
-        viewer->mesh_.edges.create_edge( 4, 7 );
-        viewer->mesh_.facets.create_quad( 0, 6, 4, 5 );
-        viewer->mesh_.facets.create_quad( 0, 1, 2, 6 );
-        viewer->mesh_.facets.create_quad( 0, 5, 3, 1 );
-        viewer->mesh_.facets.create_quad( 7, 2, 1, 3 );
-        viewer->mesh_.facets.create_quad( 7, 3, 5, 4 );
-        viewer->mesh_.facets.create_quad( 7, 4, 6, 2 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 0, prev_nbv + 1 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 0, prev_nbv + 5 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 0, prev_nbv + 6 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 1, prev_nbv + 2 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 1, prev_nbv + 3 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 2, prev_nbv + 6 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 2, prev_nbv + 7 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 3, prev_nbv + 5 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 3, prev_nbv + 7 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 4, prev_nbv + 5 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 4, prev_nbv + 6 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 4, prev_nbv + 7 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 0, prev_nbv + 6, prev_nbv + 4,
+            prev_nbv + 5 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 0, prev_nbv + 1, prev_nbv + 2,
+            prev_nbv + 6 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 0, prev_nbv + 5, prev_nbv + 3,
+            prev_nbv + 1 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 7, prev_nbv + 2, prev_nbv + 1,
+            prev_nbv + 3 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 7, prev_nbv + 3, prev_nbv + 5,
+            prev_nbv + 4 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 7, prev_nbv + 4, prev_nbv + 6,
+            prev_nbv + 2 );
         viewer->mesh_gfx_.set_mesh( &viewer->mesh_ );
         viewer->bbox_.add_point( min );
         viewer->bbox_.add_point( max );
