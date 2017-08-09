@@ -35,8 +35,6 @@
 
 #include <ringmesh/basic/geometry.h>
 
-#include <geogram/numerics/predicates.h>
-
 /*!
  * @file Basic geometrical requests 
  * @author Arnaud Botella
@@ -165,17 +163,17 @@ namespace RINGMesh {
                 line_line( { segment0 }, { segment1 } );
             if( does_segment_intersect_segment ) {
                 // Test whether the line-line intersection is on the segments.
-                Sign s0_seg0 { sign(
-                    GEO::PCK::orient_2d( segment0.p0_, segment1.p0_, segment1.p1_ ) ) };
-                Sign s1_seg0 { sign(
-                    GEO::PCK::orient_2d( segment0.p1_, segment1.p0_, segment1.p1_ ) ) };
+                Sign s0_seg0 { Position::point_side_to_segment( segment0.p0_,
+                    segment1 ) };
+                Sign s1_seg0 { Position::point_side_to_segment( segment0.p1_,
+                    segment1 ) };
                 if( s0_seg0 != ZERO && ( s0_seg0 == s1_seg0 ) ) {
                     return std::make_tuple( false, vec2() );
                 }
-                Sign s0_seg1 { sign(
-                    GEO::PCK::orient_2d( segment1.p0_, segment0.p0_, segment0.p1_ ) ) };
-                Sign s1_seg1 { sign(
-                    GEO::PCK::orient_2d( segment1.p1_, segment0.p0_, segment0.p1_ ) ) };
+                Sign s0_seg1 { Position::point_side_to_segment( segment1.p0_,
+                    segment0 ) };
+                Sign s1_seg1 { Position::point_side_to_segment( segment1.p1_,
+                    segment0 ) };
                 if( s0_seg1 != ZERO && ( s0_seg1 == s1_seg1 ) ) {
                     return std::make_tuple( false, vec2() );
                 }
@@ -200,14 +198,14 @@ namespace RINGMesh {
                 line_line( { segment }, line );
             if( does_segment_intersect_line ) {
                 // Test whether the line-line intersection is on the segment.
-                vec2 minus_direction { line_intersection_result - line.direction_ };
-                vec2 plus_direction { line_intersection_result + line.direction_ };
-                Sign s0 { sign(
-                    GEO::PCK::orient_2d( segment.p0_, minus_direction,
-                        plus_direction ) ) };
-                Sign s1 { sign(
-                    GEO::PCK::orient_2d( segment.p1_, minus_direction,
-                        plus_direction ) ) };
+                Geometry::Segment2D line_segment { { line_intersection_result
+                    - line.direction_ },
+                                                   { line_intersection_result
+                                                       + line.direction_ } };
+                Sign s0 { Position::point_side_to_segment( segment.p0_,
+                    line_segment ) };
+                Sign s1 { Position::point_side_to_segment( segment.p1_,
+                    line_segment ) };
                 if( s0 == ZERO || s1 == ZERO || ( s0 != s1 ) ) {
                     return std::make_tuple( true, line_intersection_result );
                 }

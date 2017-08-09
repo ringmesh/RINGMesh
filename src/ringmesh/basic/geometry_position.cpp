@@ -58,30 +58,10 @@ namespace {
         const Geometry::Point3D& point,
         const Geometry::Segment3D& segment )
     {
-        double half_length { segment.length() / 2. };
-        vec3 plane_normal { segment.direction() };
-        double plane_constant { 0 };
-        for( index_t i : range( 3 ) ) {
-            plane_constant -= plane_normal[i] * point[i];
-        }
-        vec3 vector_on_plane;
-        for( index_t i : range( 3 ) ) {
-            if( std::fabs( plane_normal[i] ) > global_epsilon ) {
-                vector_on_plane[i] = -plane_constant / plane_normal[i];
-                vector_on_plane = normalize( vector_on_plane );
-            }
-        }
-        vec3 vector_on_plane2 { cross( plane_normal, vector_on_plane ) };
-
-        vec3 point_on_plane { point + half_length * vector_on_plane };
-        vec3 point_on_plane2 { point + half_length * vector_on_plane2 };
-        Sign s1 { sign(
-            GEO::PCK::orient_3d( point.data(), point_on_plane.data(),
-                point_on_plane2.data(), segment.p0_.data() ) ) };
-        Sign s2 { sign(
-            GEO::PCK::orient_3d( point.data(), point_on_plane.data(),
-                point_on_plane2.data(), segment.p1_.data() ) ) };
-
+        Sign s1 { Position::point_side_to_plane( point, { segment.direction(),
+                                                          segment.p0_ } ) };
+        Sign s2 { Position::point_side_to_plane( point, { segment.direction(),
+                                                          segment.p1_ } ) };
         return s1 == ZERO || s2 == ZERO || s1 != s2;
     }
 
@@ -111,15 +91,12 @@ namespace {
         const Geometry::Point2D& point,
         const Geometry::Triangle2D& triangle )
     {
-        Sign s1 { sign(
-            GEO::PCK::orient_2d( point.data(), triangle.p0_.data(),
-                triangle.p1_.data() ) ) };
-        Sign s2 { sign(
-            GEO::PCK::orient_2d( point.data(), triangle.p1_.data(),
-                triangle.p2_.data() ) ) };
-        Sign s3 { sign(
-            GEO::PCK::orient_2d( point.data(), triangle.p2_.data(),
-                triangle.p0_.data() ) ) };
+        Sign s1 { Position::point_side_to_segment( point,
+            { triangle.p0_, triangle.p1_ } ) };
+        Sign s2 { Position::point_side_to_segment( point,
+            { triangle.p1_, triangle.p2_ } ) };
+        Sign s3 { Position::point_side_to_segment( point,
+            { triangle.p2_, triangle.p0_ } ) };
 
         if( s1 == ZERO ) {
             if( s2 == ZERO || s3 == ZERO ) {
@@ -166,23 +143,27 @@ namespace {
         return s1 == s2 && s2 == s3;
     }
 
+    Geometry::Plane plane_from_triangle_normal_and_edge(
+        const vec3& normal,
+        const vec3& e0,
+        const vec3& e1 )
+    {
+        return {normalize( cross( normal, e1 - e0 ) ), e0};
+    }
+
     bool point_inside_triangle_exact(
         const Geometry::Point3D& point,
         const Geometry::Triangle3D& triangle )
     {
         // Get another point not in the triangle plane (using its normal)
         vec3 n { triangle.plane().normal_ };
-        vec3 q { point + n };
 
-        Sign s1 { sign(
-            GEO::PCK::orient_3d( point.data(), q.data(), triangle.p0_.data(),
-                triangle.p1_.data() ) ) };
-        Sign s2 { sign(
-            GEO::PCK::orient_3d( point.data(), q.data(), triangle.p1_.data(),
-                triangle.p2_.data() ) ) };
-        Sign s3 { sign(
-            GEO::PCK::orient_3d( point.data(), q.data(), triangle.p2_.data(),
-                triangle.p0_.data() ) ) };
+        Sign s1 { Position::point_side_to_plane( point,
+            plane_from_triangle_normal_and_edge( n, triangle.p0_, triangle.p1_ ) ) };
+        Sign s2 { Position::point_side_to_plane( point,
+            plane_from_triangle_normal_and_edge( n, triangle.p1_, triangle.p2_ ) ) };
+        Sign s3 { Position::point_side_to_plane( point,
+            plane_from_triangle_normal_and_edge( n, triangle.p2_, triangle.p0_ ) ) };
 
         DEBUG( s1 );
         DEBUG( s2 );
@@ -300,6 +281,40 @@ namespace RINGMesh {
             const Geometry::Segment3D& segment )
         {
             return point_inside_segment_approx( point, segment );
+        }
+
+        Sign point_side_to_segment(
+            const Geometry::Point2D& point,
+            const Geometry::Segment2D& segment )
+        {
+            return sign( GEO::PCK::orient_2d( point, segment.p0_, segment.p1_ ) );
+        }
+
+        Sign point_side_to_plane(
+            const Geometry::Point3D& point,
+            const Geometry::Plane& plane )
+        {
+            double distance;
+            vec3 projected_point;
+            std::tie( distance, projected_point ) = Distance::point_to_plane( point,
+                plane );
+
+            vec3 point_on_plane { projected_point.x + 1, projected_point.y + 1, 0 };
+            point_on_plane.z = -( plane.plane_constant()
+                + plane.normal_.x * projected_point.x
+                + plane.normal_.y * projected_point.y );
+            vec3 u { normalize( point_on_plane ) };
+            vec3 v { cross( plane.normal_, u ) };
+
+            vec3 p0 { distance * u };
+            vec3 p1 { distance
+                * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
+            vec3 p2 { distance
+                * ( std::cos( 2 * M_PI / 3 ) * u - std::sin( 2 * M_PI / 3 ) * v ) };
+
+            return sign(
+                GEO::PCK::orient_3d( point.data(), p0.data(), p1.data(),
+                    p2.data() ) );
         }
 
         template bool RINGMESH_API point_inside_triangle(
