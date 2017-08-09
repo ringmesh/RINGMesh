@@ -208,7 +208,7 @@ namespace RINGMesh {
             {
             }
             vec3 origin_;
-            double radius_;
+            double radius_ { 0 };
         };
 
         struct Circle {
@@ -218,17 +218,11 @@ namespace RINGMesh {
             {
             }
             Plane plane_;
-            double radius_;
+            double radius_ { 0 };
         };
 
         using Disk = Circle;
     }
-
-    double RINGMESH_API triangle_signed_area(
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& triangle_normal );
 
     namespace Distance {
         /*!
@@ -412,7 +406,27 @@ namespace RINGMesh {
             const Geometry::Point3D& point,
             const Geometry::Tetra& tetra );
 
+        /*!
+         * Returns the point side to a segment
+         */
+        Sign RINGMESH_API point_side_to_segment(
+            const Geometry::Point2D& point,
+            const Geometry::Segment2D& segment );
+
+        /*!
+         * Returns the point side to a plane
+         */
+        Sign RINGMESH_API point_side_to_plane(
+            const Geometry::Point3D& point,
+            const Geometry::Plane& plane );
+
     }
+
+    double RINGMESH_API triangle_signed_area(
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& triangle_normal );
 
     /*!
      * Computes the orthogonal projection of a point on a segment
