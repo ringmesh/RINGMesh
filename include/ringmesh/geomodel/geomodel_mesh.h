@@ -1460,7 +1460,7 @@ namespace RINGMesh {
         index_t nb_connectors_ { 0 };
 
         /// Current duplicate mode applied on the mesh
-        DuplicateMode mode_;
+        DuplicateMode mode_ { NONE };
         /*!
          * @brief Vector of duplicated vertices
          * @details Each value is a duplicated vertex, the index corresponds to

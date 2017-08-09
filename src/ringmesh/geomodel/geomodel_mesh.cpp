@@ -806,7 +806,7 @@ namespace RINGMesh {
         GeoModelMesh< DIMENSION >& gmm,
         GeoModel< DIMENSION >& gm,
         std::unique_ptr< VolumeMesh< DIMENSION > >& mesh )
-        : GeoModelMeshCommon< DIMENSION >( gmm, gm ), mesh_( mesh ), mode_( NONE )
+        : GeoModelMeshCommon< DIMENSION >( gmm, gm ), mesh_( mesh )
     {
         this->set_mesh( mesh_.get() );
     }
@@ -1875,10 +1875,7 @@ namespace RINGMesh {
         GeoModelMesh< DIMENSION >& gmm,
         GeoModel< DIMENSION >& gm,
         std::unique_ptr< SurfaceMesh< DIMENSION > >& mesh )
-        :
-            GeoModelMeshCommon< DIMENSION >( gmm, gm ),
-            mesh_( mesh ),
-            nb_unclassified_polygons_( 0 )
+        : GeoModelMeshCommon< DIMENSION >( gmm, gm ), mesh_( mesh )
     {
         this->set_mesh( mesh_.get() );
     }
