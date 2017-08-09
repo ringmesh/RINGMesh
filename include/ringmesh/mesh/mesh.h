@@ -1041,6 +1041,7 @@ namespace RINGMesh {
     public:
         void create_point_set_mesh( const MeshType type );
         void create_line_mesh( const MeshType type );
+        void create_well_mesh( const MeshType type );
         void create_surface_mesh( const MeshType type );
 
     protected:
@@ -1048,6 +1049,7 @@ namespace RINGMesh {
 
     public:
         std::unique_ptr< PointSetMesh< DIMENSION > > point_set_mesh;
+        std::unique_ptr< LineMesh< DIMENSION > > well_mesh;
         std::unique_ptr< LineMesh< DIMENSION > > line_mesh;
         std::unique_ptr< SurfaceMesh< DIMENSION > > surface_mesh;
     };

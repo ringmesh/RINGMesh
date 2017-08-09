@@ -193,13 +193,13 @@ namespace {
             const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            const GeoModelMeshEdges3D& edges = geomodel.mesh.edges;
-            out << " <nop count=\"" << edges.nb_edges() << "\">\n";
+            const GeoModelMeshWells3D& wells = geomodel.mesh.wells;
+            out << " <nop count=\"" << wells.nb_edges() << "\">\n";
             out << " <![CDATA[";
-            for( index_t w : range( edges.nb_wells() ) ) {
-                for( index_t e : range( edges.nb_edges( w ) ) ) {
-                    out << "\n 0, 2, " << edges.vertex( w, e, 0 ) + STARTING_OFFSET
-                        << ", " << edges.vertex( w, e, 1 ) + STARTING_OFFSET;
+            for( index_t w : range( wells.nb_wells() ) ) {
+                for( index_t e : range( wells.nb_edges( w ) ) ) {
+                    out << "\n 0, 2, " << wells.vertex( w, e, 0 ) + STARTING_OFFSET
+                        << ", " << wells.vertex( w, e, 1 ) + STARTING_OFFSET;
                 }
             }
             out << "]]>\n";
@@ -209,16 +209,16 @@ namespace {
             const GeoModel3D& geomodel,
             std::ofstream& out ) const
         {
-            const GeoModelMeshEdges3D& edges = geomodel.mesh.edges;
+            const GeoModelMeshWells3D& well_edges = geomodel.mesh.wells;
             const WellGroup3D* wells = geomodel.wells();
             index_t offset = 0;
-            out << " <groups count=\"" << edges.nb_wells() << "\">\n";
-            for( index_t w : range( edges.nb_wells() ) ) {
+            out << " <groups count=\"" << well_edges.nb_wells() << "\">\n";
+            for( index_t w : range( well_edges.nb_wells() ) ) {
                 out << " <group name=\"" << wells->well( w ).name()
                     << "\" mode=\"unstructured\">\n";
-                out << " <elements count=\"" << edges.nb_edges( w ) << "\">\n";
+                out << " <elements count=\"" << well_edges.nb_edges( w ) << "\">\n";
                 out << " <![CDATA[ " << offset + STARTING_OFFSET;
-                offset += edges.nb_edges( w );
+                offset += well_edges.nb_edges( w );
                 out << "-" << offset << "]]>\n";
                 out << " </elements>\n";
                 out << " </group>\n";
