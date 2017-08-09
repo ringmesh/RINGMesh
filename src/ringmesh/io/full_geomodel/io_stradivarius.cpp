@@ -87,8 +87,8 @@ namespace {
                 file.get_fields();
 
                 gmme_id horizon( Line< 2 >::type_name_static(), horizon_id );
-                int medium_1 = file.field_as_int( 0 );
-                int medium_2 = file.field_as_int( 1 );
+                int medium_1 { file.field_as_int( 0 ) };
+                int medium_2 { file.field_as_int( 1 ) };
                 index_t nb_points = file.field_as_uint( 2 );
                 info.set_mesh_entity_name(horizon, file.field( 4 ));
 
