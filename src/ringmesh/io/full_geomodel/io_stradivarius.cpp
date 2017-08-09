@@ -46,18 +46,9 @@ namespace {
     private:
         void load_file() override
         {
-            {
-                GEO::LineInput file( filename_ );
-                load_points( file );
-            }
-            {
-                GEO::LineInput file( filename_ );
-                load_interfaces( file );
-            }
-            {
-                GEO::LineInput file( filename_ );
-                load_media( file );
-            }
+            load_points();
+            load_interfaces();
+            load_media();
 
             horizon_m0.insert(
                 gmme_id( Surface < 2 > ::type_name_static(), index_t( 0 ) ) );
@@ -65,8 +56,9 @@ namespace {
             build_corners_from_lines();
         }
 
-        void load_points( GEO::LineInput& file )
+        void load_points()
         {
+            GEO::LineInput file( filename_ );
             move_to( file, "liste des points\n" );
             file.get_line();
             file.get_fields();
@@ -79,7 +71,8 @@ namespace {
             }
         }
 
-        void load_interfaces(GEO::LineInput& file) {
+        void load_interfaces() {
+            GEO::LineInput file( filename_ );
             move_to( file, "liste des horizons\n" );
             file.get_line();
             file.get_fields();
@@ -111,7 +104,8 @@ namespace {
             }
         }
 
-        void load_media(GEO::LineInput& file) {
+        void load_media() {
+            GEO::LineInput file( filename_ );
             move_to(file, "liste des milieux\n");
             file.get_line();
             file.get_fields();
