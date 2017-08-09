@@ -87,8 +87,8 @@ namespace {
                 file.get_fields();
 
                 gmme_id horizon( Line< 2 >::type_name_static(), horizon_id );
-                index_t m1 = index_t( file.field_as_int( 0 ) );
-                index_t m2 = index_t( file.field_as_int( 1 ) );
+                int medium_1 = file.field_as_int( 0 );
+                int medium_2 = file.field_as_int( 1 );
                 index_t nb_points = file.field_as_uint( 2 );
                 info.set_mesh_entity_name(horizon, file.field( 4 ));
 
@@ -101,7 +101,7 @@ namespace {
                 }
                 geometry.set_line(horizon_id, vertices);
 
-                if (((m1 == index_t(0) && (m2 == index_t(-1)))) || ((m1 == index_t(-1) && (m2 == index_t(0))))) {
+                if (((medium_1 == 0 && (medium_2 == -1))) || ((medium_1 == -1 && (medium_2 == 0)))) {
                     horizon_m0_.insert(horizon);
                 }
             }
@@ -115,7 +115,7 @@ namespace {
             index_t nb_media = file.field_as_uint( 0 );
             topology.create_mesh_entities( Surface < 2 > ::type_name_static(), nb_media + 1 );
 
-            for (gmme_id horizon : horizon_m0_) {
+            for( const gmme_id& horizon : horizon_m0_ ) {
                 topology.add_mesh_entity_boundary_relation(
                     {   Surface < 2 > ::type_name_static(), index_t( 0 )}, horizon,
                     true );
