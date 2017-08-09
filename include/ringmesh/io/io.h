@@ -61,11 +61,8 @@ const char TAB = '\t';
 
 namespace RINGMesh {
     class StratigraphicColumn;
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class WellGroup;
-
-    CLASS_DIMENSION_ALIASES( GeoModel );
-    CLASS_DIMENSION_ALIASES( WellGroup );
+    FORWARD_DECLARATION_3D_CLASS( GeoModel );
+    FORWARD_DECLARATION_3D_CLASS( WellGroup );
 }
 
 namespace GEO {
@@ -106,7 +103,7 @@ namespace RINGMesh {
      */
     void RINGMESH_API well_load(
         const std::string& filename,
-        WellGroup< 3 >& wells );
+        WellGroup3D& wells );
 
     /*!
      * Returns the dimension of the GeoModel in the \p filename

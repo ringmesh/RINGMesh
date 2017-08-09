@@ -42,8 +42,6 @@
 
 #include <ringmesh/basic/nn_search.h>
 
-#include <numeric>
-
 namespace RINGMesh {
 
     template< index_t DIMENSION >
@@ -70,17 +68,17 @@ namespace RINGMesh {
         double epsilon ) const
     {
         std::vector< index_t > index_map( nn_tree_->nb_points() );
-        std::iota( index_map.begin(), index_map.end(), 0 );
-        index_t nb_colocalised_vertices { 0 };
-        for( index_t i : range( index_map.size() ) ) {
-            std::vector< index_t > results = get_neighbors( point( i ), epsilon );
-            index_t id { *std::min_element( results.begin(), results.end() ) };
-            if( id < i ) {
+        std::atomic< index_t > nb_colocalised_vertices { 0 };
+        parallel_for( nn_tree_->nb_points(),
+            [this, &index_map, &nb_colocalised_vertices, &epsilon](index_t i) {
+                std::vector< index_t > results = get_neighbors( point( i ), epsilon );
+                index_t id {*std::min_element( results.begin(), results.end() )};
                 index_map[i] = id;
-                nb_colocalised_vertices++;
-            }
-        }
-        return std::make_tuple( nb_colocalised_vertices, index_map );
+                if( id < i ) {
+                    nb_colocalised_vertices++;
+                }
+            } );
+        return std::make_tuple( nb_colocalised_vertices.load(), index_map );
     }
 
     template< index_t DIMENSION >

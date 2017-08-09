@@ -475,8 +475,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::initialize()
     {
-        clear();
-
         // Total number of vertices in the
         // Corners, Lines, Surfaces and Regions of the GeoModel
         index_t nb = nb_total_vertices();
@@ -1327,7 +1325,6 @@ namespace RINGMesh {
     void GeoModelMeshCells< DIMENSION >::initialize_duplication()
     {
         test_and_initialize();
-        clear_duplication();
 
         /// 1. Get all the corner vertices (a lot of duplicated vertices)
         std::vector< vec3 > corner_vertices(
@@ -2176,7 +2173,6 @@ namespace RINGMesh {
     void GeoModelMeshPolygonsBase< DIMENSION >::initialize()
     {
         this->gmm_.vertices.test_and_initialize();
-        clear();
         surface_polygon_ptr_.resize(
             this->geomodel_.nb_surfaces()
                 * to_underlying_type( PolygonType::UNDEFINED ) + 1, 0 );
@@ -2450,7 +2446,6 @@ namespace RINGMesh {
     {
         if( !this->geomodel_.wells() ) return;
         this->gmm_.vertices.test_and_initialize();
-        clear();
         std::unique_ptr< LineMeshBuilder< DIMENSION > > mesh_builder =
             LineMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         if( mesh_->nb_vertices() != this->gmm_.vertices.nb() ) {

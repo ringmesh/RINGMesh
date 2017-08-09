@@ -47,10 +47,10 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeogramPointSetMeshBuilder;
-    template< index_t DIMENSION > class GeogramLineMeshBuilder;
-    template< index_t DIMENSION > class GeogramSurfaceMeshBuilder;
-    template< index_t DIMENSION > class GeogramVolumeMeshBuilder;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeogramPointSetMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeogramLineMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeogramSurfaceMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeogramVolumeMeshBuilder );
 }
 
 namespace RINGMesh {

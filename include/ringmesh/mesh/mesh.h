@@ -52,13 +52,13 @@
 #include <ringmesh/mesh/aabb.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class MeshBaseBuilder;
-    template< index_t DIMENSION > class PointSetMeshBuilder;
-    template< index_t DIMENSION > class LineMeshBuilder;
-    template< index_t DIMENSION > class SurfaceMeshBuilder;
-    template< index_t DIMENSION > class VolumeMeshBuilder;
-    template< index_t DIMENSION > class SurfaceMesh;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( MeshBaseBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
     struct EdgeLocalVertex;
     struct PolygonLocalEdge;
     struct CellLocalFacet;

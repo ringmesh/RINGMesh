@@ -47,7 +47,7 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 }
 
 namespace RINGMesh {
@@ -614,22 +614,13 @@ namespace RINGMesh {
         }
         void connect_polygons( const std::vector< index_t >& polygons_to_connect )
         {
-            struct PolygonLocalVertex {
-                PolygonLocalVertex( index_t polygon, index_t local_vertex )
-                    : polygon_( polygon ), local_vertex_( local_vertex )
-                {
-                }
-                index_t polygon_ { NO_ID };
-                index_t local_vertex_ { NO_ID };
-            };
-
             index_t nb_local_vertices = 0;
             for( index_t polygon : polygons_to_connect ) {
                 nb_local_vertices += this->surface_mesh_.nb_polygon_vertices(
                     polygon );
             }
 
-            std::vector< PolygonLocalVertex > polygon_vertices;
+            std::vector< ElementLocalVertex > polygon_vertices;
             polygon_vertices.reserve( nb_local_vertices );
             for( index_t polygon : polygons_to_connect ) {
                 for( index_t v : range(
@@ -676,9 +667,9 @@ namespace RINGMesh {
                         if( local_vertex == local_vertex_count ) {
                             continue;
                         }
-                        index_t adj_polygon = polygon_vertices[local_vertex].polygon_;
+                        index_t adj_polygon = polygon_vertices[local_vertex].element_id_;
                         index_t adj_local_vertex =
-                            polygon_vertices[local_vertex].local_vertex_;
+                            polygon_vertices[local_vertex].local_vertex_id_;
                         index_t adj_next_vertex = this->surface_mesh_.polygon_vertex(
                             this->surface_mesh_.next_polygon_vertex(
                                 ElementLocalVertex( adj_polygon,

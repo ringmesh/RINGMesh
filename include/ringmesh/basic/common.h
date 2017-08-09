@@ -83,16 +83,19 @@
     CLASS_2D_ALIAS( Class );                                                    \
     CLASS_3D_ALIAS( Class )
 
+#define FORWARD_DECLARATION_DIMENSION_CLASS( Class )                            \
+    template< index_t > class Class;
+
 #define FORWARD_DECLARATION_2D_CLASS( Class )                                   \
-    template< index_t > class Class;                                            \
+    FORWARD_DECLARATION_DIMENSION_CLASS( Class )                                \
     CLASS_2D_ALIAS( Class )
 
 #define FORWARD_DECLARATION_3D_CLASS( Class )                                   \
-    template< index_t > class Class;                                            \
+    FORWARD_DECLARATION_DIMENSION_CLASS( Class )                                \
     CLASS_3D_ALIAS( Class )
 
-#define FORWARD_DECLARATION_DIMENSION_CLASS( Class )                            \
-    template< index_t > class Class;                                            \
+#define FORWARD_DECLARATION_2D_3D_CLASS( Class )                                \
+    FORWARD_DECLARATION_DIMENSION_CLASS( Class )                                \
     CLASS_DIMENSION_ALIASES( Class )
 
 // To avoid unused argument warning in function definition
@@ -237,11 +240,28 @@ namespace RINGMesh {
     template< typename ACTION >
     void parallel_for( index_t size, const ACTION& action )
     {
-        std::vector< std::future< void > > futures;
-        futures.reserve( size );
-        for( index_t i : range( size ) ) {
-            futures.push_back( std::async( std::launch::async, action, i ) );
+        if( size == 0 ) {
+            return;
         }
+        index_t nb_threads { std::min( size, std::thread::hardware_concurrency() ) };
+        std::vector< std::future< void > > futures;
+        futures.reserve( nb_threads );
+        index_t start { 0 };
+        auto action_per_thread = [&action] ( index_t start, index_t end ) {
+            for( index_t i : range( start, end ) ) {
+                action( i );
+            }
+        };
+        index_t nb_tasks_per_thread { size / nb_threads };
+        for( index_t thread : range( nb_threads - 1 ) ) {
+            ringmesh_unused( thread );
+            futures.emplace_back(
+                std::async( std::launch::async, action_per_thread, start,
+                    start + nb_tasks_per_thread ) );
+            start += nb_tasks_per_thread;
+        }
+        futures.emplace_back(
+            std::async( std::launch::async, action_per_thread, start, size ) );
         for( auto& future : futures ) {
             future.get();
         }
