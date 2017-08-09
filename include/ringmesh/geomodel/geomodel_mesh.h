@@ -762,11 +762,11 @@ namespace RINGMesh {
         std::vector< index_t > surface_polygon_ptr_;
 
         /// Number of triangles in the GeoModelMesh
-        index_t nb_triangles_;
+        index_t nb_triangles_ { 0 };
         /// Number of quads in the GeoModelMesh
-        index_t nb_quads_;
+        index_t nb_quads_ { 0 };
         /// Number of unclassified polygons in the GeoModelMesh
-        index_t nb_unclassified_polygons_;
+        index_t nb_unclassified_polygons_ { 0 };
     };
 
     template< index_t DIMENSION >
@@ -935,7 +935,7 @@ namespace RINGMesh {
         std::vector< index_t > line_edge_ptr_;
 
         /// Number of edges in the GeoModelMesh
-        index_t nb_edges_;
+        index_t nb_edges_ { 0 };
     };
 
     template< index_t DIMENSION >
@@ -1452,15 +1452,15 @@ namespace RINGMesh {
         std::vector< index_t > region_cell_ptr_;
 
         /// Number of tet in the GeoModelMesh
-        index_t nb_tets_;
+        index_t nb_tets_ { 0 };
         /// Number of hex in the GeoModelMesh
-        index_t nb_hexs_;
+        index_t nb_hexs_ { 0 };
         /// Number of prism in the GeoModelMesh
-        index_t nb_prisms_;
+        index_t nb_prisms_ { 0 };
         /// Number of pyramid in the GeoModelMesh
-        index_t nb_pyramids_;
+        index_t nb_pyramids_ { 0 };
         /// Number of connector in the GeoModelMesh
-        index_t nb_connectors_;
+        index_t nb_connectors_ { 0 };
 
         /// Current duplicate mode applied on the mesh
         DuplicateMode mode_;
