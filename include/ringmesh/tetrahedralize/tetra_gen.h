@@ -62,12 +62,7 @@ extern "C" {
 
 namespace RINGMesh {
     class TetraGen;
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class Region;
-    template< index_t DIMENSION > class WellGroup;
-
-    CLASS_DIMENSION_ALIASES( GeoModel );
-    CLASS_DIMENSION_ALIASES( WellGroup );
+    FORWARD_DECLARATION_3D_CLASS( WellGroup );
 }
 
 namespace RINGMesh {

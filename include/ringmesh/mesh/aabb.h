@@ -39,10 +39,10 @@
 #include <ringmesh/basic/common.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class MeshBase;
-    template< index_t DIMENSION > class LineMesh;
-    template< index_t DIMENSION > class SurfaceMeshBase;
-    template< index_t DIMENSION > class VolumeMesh;
+    FORWARD_DECLARATION_DIMENSION_CLASS( MeshBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
 }
 
 namespace RINGMesh {

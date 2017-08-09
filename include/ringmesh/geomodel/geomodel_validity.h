@@ -48,8 +48,8 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class GeoModelEntity;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelEntity );
 }
 
 namespace RINGMesh {
