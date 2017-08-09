@@ -375,64 +375,44 @@ namespace RINGMesh {
 
         /*!
          * Computes the intersection between a segment and a line
-         * @param[in] p0_seg the first vertex of the segment
-         * @param[in] p1_seg the second vertex of the segment
-         * @param[in] O_line a point on the line
-         * @param[in] D_line the direction of the line
          * @return a tuple containing:
          * - a boolean: true if there is an intersection.
          * - the intersected point if any.
          */
         std::tuple< bool, vec2 > RINGMESH_API segment_line(
-            const vec2& p0_seg,
-            const vec2& p1_seg,
-            const vec2& O_line,
-            const vec2& D_line );
+            const Geometry::Segment2D& segment,
+            const Geometry::Line2D& line );
     }
 
-    /*!
-     * @brief Tests if a point is on a segment
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @return returns true if the point is inside
-     */
-    bool RINGMESH_API point_inside_segment(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1 );
+    namespace Position {
 
-    /*!
-     * @brief Tests if a point is inside a triangle
-     * @details if it is inside a prism based on the triangle and its normal
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the triangle
-     * @param[in] p1 the second vertex of the triangle
-     * @param[in] p2 the third vertex of the triangle
-     * @return returns true if the point is inside
-     */
-    template< index_t DIMENSION >
-    bool point_inside_triangle(
-        const vecn< DIMENSION >& p,
-        const vecn< DIMENSION >& p0,
-        const vecn< DIMENSION >& p1,
-        const vecn< DIMENSION >& p2 );
+        /*!
+         * @brief Tests if a point is on a segment
+         * @return returns true if the point is inside
+         */
+        bool RINGMESH_API point_inside_segment(
+            const Geometry::Point3D& point,
+            const Geometry::Segment3D& segment );
 
-    /*!
-     * Tests if a point is inside a tetrahedron
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the tetrahedron
-     * @param[in] p1 the second vertex of the tetrahedron
-     * @param[in] p2 the third vertex of the tetrahedron
-     * @param[in] p3 the fourth vertex of the tetrahedron
-     * @return returns true if the point is inside the tetrahedron
-     */
-    bool RINGMESH_API point_inside_tetra(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3 );
+        /*!
+         * @brief Tests if a point is inside a triangle
+         * @details if it is inside a prism based on the triangle and its normal
+         * @return returns true if the point is inside
+         */
+        template< index_t DIMENSION >
+        bool point_inside_triangle(
+            const Geometry::Point< DIMENSION >& point,
+            const Geometry::Triangle< DIMENSION >& triangle );
+
+        /*!
+         * Tests if a point is inside a tetrahedron
+         * @return returns true if the point is inside the tetrahedron
+         */
+        bool RINGMESH_API point_inside_tetra(
+            const Geometry::Point3D& point,
+            const Geometry::Tetra& tetra );
+
+    }
 
     /*!
      * Computes the orthogonal projection of a point on a segment

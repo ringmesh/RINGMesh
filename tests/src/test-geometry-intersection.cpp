@@ -473,35 +473,27 @@ void test_segment_segment_intersection()
 void test_segment_line_intersection()
 {
     Logger::out( "TEST", "Test Segment-Line intersections" );
+    Geometry::Segment2D segment { { 0., 0. }, { 1.5, 1.5 } };
 
     // non-intersecting
-    vec2 p0_seg { 0., 0. };
-    vec2 p1_seg { 1.5, 1.5 };
-    vec2 O_line { 2., 2. };
-    vec2 D_line { 0., 2. };
+    Geometry::Line2D line { { 0., 2. }, { 2., 2. } };
     bool does_segment_intersect_line;
     std::tie( does_segment_intersect_line, std::ignore ) =
-        Intersection::segment_line( p0_seg, p1_seg, O_line, D_line );
+        Intersection::segment_line( segment, line );
     verdict( !does_segment_intersect_line, "Test non-intersecting" );
 
     // Segment is on the line
-    vec2 p0_seg0_same { 0., 0. };
-    vec2 p1_seg0_same { 1.5, 1.5 };
-    vec2 D_line_same { -1., -1. };
+    Geometry::Line2D line_same { { -1., -1. }, { 1.5, 1.5 } };
     std::tie( does_segment_intersect_line, std::ignore ) =
-        Intersection::segment_line( p0_seg0_same, p1_seg0_same, p0_seg0_same,
-            D_line_same );
+        Intersection::segment_line( segment, line_same );
     verdict( !does_segment_intersect_line, "Test segment on line" );
 
     // intersecting
-    vec2 p0_seg0_inter { 0., 0. };
-    vec2 p1_seg0_inter { 2., 2. };
-    vec2 O_line_inter { 2., 0. };
-    vec2 D_line_inter { -0.5, 0.5 };
+    Geometry::Segment2D segment_inter { { 0., 0. }, { 2., 2. } };
+    Geometry::Line2D line_inter { { -0.5, 0.5 }, { 2., 0. } };
     vec2 result_inter;
     std::tie( does_segment_intersect_line, result_inter ) =
-        Intersection::segment_line( p0_seg0_inter, p1_seg0_inter, O_line_inter,
-            D_line_inter );
+        Intersection::segment_line( segment_inter, line_inter );
     vec2 result_answer { 1., 1. };
     verdict(
         does_segment_intersect_line
@@ -509,13 +501,10 @@ void test_segment_line_intersection()
         "Test intersecting" );
 
     // intersecting from same origin
-    vec2 p0_seg0_inter2 { 0., 0. };
-    vec2 p1_seg0_inter2 { 1.5, 1.5 };
-    vec2 D_line_inter2 { 0., 1. };
+    Geometry::Line2D line_inter2 { { 0., 1. }, { 0., 0. } };
     vec2 result_inter2;
     std::tie( does_segment_intersect_line, result_inter2 ) =
-        Intersection::segment_line( p0_seg0_inter2, p1_seg0_inter2, p0_seg0_inter2,
-            D_line_inter2 );
+        Intersection::segment_line( segment, line_inter2 );
     vec2 result_answer2 { 0., 0. };
     verdict(
         does_segment_intersect_line
@@ -523,14 +512,11 @@ void test_segment_line_intersection()
         "Test intersecting from same origin" );
 
     // intersecting segments at extremity
-    vec2 p0_seg0_inter3 { 0., 0. };
-    vec2 p1_seg0_inter3 { 1., 1. };
-    vec2 p0_seg1_inter3 { 0., 2. };
-    vec2 D_line_inter3 { -0.5, 0.5 };
+    Geometry::Segment2D segment_inter3 { { 0., 0. }, { 1., 1. } };
+    Geometry::Line2D line_inter3 { { -0.5, 0.5 }, { 0., 2. } };
     vec2 result_inter3;
     std::tie( does_segment_intersect_line, result_inter3 ) =
-        Intersection::segment_line( p0_seg0_inter3, p1_seg0_inter3, p0_seg1_inter3,
-            D_line_inter3 );
+        Intersection::segment_line( segment_inter3, line_inter3 );
     vec2 result_answer3 { 1., 1. };
     verdict(
         does_segment_intersect_line

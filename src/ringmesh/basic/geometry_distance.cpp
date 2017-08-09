@@ -261,8 +261,7 @@ namespace RINGMesh {
         {
             double result { max_float64() };
             vec2 closest_point;
-            if( point_inside_triangle( point, triangle.p0_, triangle.p1_,
-                triangle.p2_ ) ) {
+            if( Position::point_inside_triangle( point, triangle ) ) {
                 closest_point = point;
                 result = 0.0;
             } else {
