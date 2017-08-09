@@ -115,8 +115,8 @@ namespace {
             move_to(file, "liste des milieux\n");
             file.get_line();
             file.get_fields();
-            index_t nb_milieux = file.field_as_uint( 0 );
-            topology.create_mesh_entities( Surface < 2 > ::type_name_static(), nb_milieux + 1 );
+            index_t nb_media = file.field_as_uint( 0 );
+            topology.create_mesh_entities( Surface < 2 > ::type_name_static(), nb_media + 1 );
 
             for (gmme_id horizon : horizon_m0) {
                 topology.add_mesh_entity_boundary_relation(
@@ -124,7 +124,7 @@ namespace {
                     true );
             }
 
-            for (index_t milieu_i : range( nb_milieux )) {
+            for (index_t milieu_i : range( nb_media )) {
                 file.get_line();
                 file.get_fields();
                 index_t nb_interfaces = file.field_as_uint( 1 );
