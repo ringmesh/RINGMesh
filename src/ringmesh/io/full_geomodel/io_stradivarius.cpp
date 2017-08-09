@@ -50,9 +50,9 @@ namespace {
             load_interfaces();
             load_media();
 
-            horizon_m0.insert(
+            horizon_m0_.insert(
                 gmme_id( Surface < 2 > ::type_name_static(), index_t( 0 ) ) );
-            removal.remove_mesh_entities( horizon_m0 );
+            removal.remove_mesh_entities( horizon_m0_ );
             build_corners_from_lines();
         }
 
@@ -99,7 +99,7 @@ namespace {
                 geometry.set_line(horizon_id, vertices);
 
                 if (((m1 == index_t(0) && (m2 == index_t(-1)))) || ((m1 == index_t(-1) && (m2 == index_t(0))))) {
-                    horizon_m0.insert(horizon);
+                    horizon_m0_.insert(horizon);
                 }
             }
         }
@@ -112,7 +112,7 @@ namespace {
             index_t nb_media = file.field_as_uint( 0 );
             topology.create_mesh_entities( Surface < 2 > ::type_name_static(), nb_media + 1 );
 
-            for (gmme_id horizon : horizon_m0) {
+            for (gmme_id horizon : horizon_m0_) {
                 topology.add_mesh_entity_boundary_relation(
                     {   Surface < 2 > ::type_name_static(), index_t( 0 )}, horizon,
                     true );
@@ -145,7 +145,7 @@ namespace {
 
     private:
         std::vector< vec2 > points_;
-        std::set< gmme_id > horizon_m0;
+        std::set< gmme_id > horizon_m0_;
     }
     ;
 
