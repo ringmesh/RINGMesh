@@ -176,6 +176,15 @@ namespace {
         Sign s3 { sign(
             GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) };
 
+        DEBUG( p );
+        DEBUG( p0 );
+        DEBUG( p1 );
+        DEBUG( p2 );
+
+        DEBUG( s1 );
+        DEBUG( s2 );
+        DEBUG( s3 );
+
         if( s1 == ZERO ) {
             if( s2 == ZERO || s3 == ZERO ) {
                 //Case where p is exactly equal to one triangle vertex
@@ -207,16 +216,19 @@ namespace {
         vec3 q { p + n };
 
         double vol1 { GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) };
+        DEBUG( vol1 );
         if( is_almost_zero( vol1 ) ) {
             return point_inside_triangle_exact( p, p0, p1, p2 );
         }
         Sign s1 { sign( vol1 ) };
         double vol2 { GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) };
+        DEBUG( vol2 );
         if( is_almost_zero( vol2 ) ) {
             return point_inside_triangle_exact( p, p0, p1, p2 );
         }
         Sign s2 { sign( vol2 ) };
         double vol3 { GEO::Geom::tetra_signed_volume( p, q, p2, p0 ) };
+        DEBUG( vol3 );
         if( is_almost_zero( vol3 ) ) {
             return point_inside_triangle_exact( p, p0, p1, p2 );
         }
