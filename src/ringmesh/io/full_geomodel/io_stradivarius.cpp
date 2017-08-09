@@ -35,6 +35,9 @@
 
 namespace {
 
+    /*!
+     * @brief Import for the Stradivarius .model format
+     */
     class StradivariusBuilder final: public GeoModelBuilderFile< 2 > {
     public:
         StradivariusBuilder( GeoModel< 2 >& geomodel, std::string filename )
@@ -150,9 +153,7 @@ namespace {
     ;
 
     /*!
-     * @brief Export for the GMSH format 2.2 which is described here:
-     * http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format
-     * NB : Mesh entities are also exported
+     * @brief Export for the Stradivarius .model format
      */
     class StradivariusIOHandler final: public GeoModelIOHandler< 2 > {
     public:
