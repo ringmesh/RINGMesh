@@ -308,9 +308,9 @@ namespace RINGMesh {
 
             vec3 p0 { distance * u };
             vec3 p1 { distance
-                * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
-            vec3 p2 { distance
                 * ( std::cos( 2 * M_PI / 3 ) * u - std::sin( 2 * M_PI / 3 ) * v ) };
+            vec3 p2 { distance
+                * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
 
             return sign(
                 GEO::PCK::orient_3d( point.data(), p0.data(), p1.data(),
