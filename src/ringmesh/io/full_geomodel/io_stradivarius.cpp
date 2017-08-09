@@ -471,9 +471,9 @@ namespace {
 
     const double StradivariusIOHandler::default_sea_depth = 200;
 
-    const double StradivariusIOHandler::uncertainty_x = -1.0000;
-    const double StradivariusIOHandler::uncertainty_y = -1.0000;
-    const double StradivariusIOHandler::l_uncertainty_x = .0000;
-    const double StradivariusIOHandler::l_uncertainty_y = .0000;
+    const double StradivariusIOHandler::uncertainty_x { -1.0000 };
+    const double StradivariusIOHandler::uncertainty_y { -1.0000 };
+    const double StradivariusIOHandler::l_uncertainty_x { .0000 };
+    const double StradivariusIOHandler::l_uncertainty_y { .0000 };
 }
 
