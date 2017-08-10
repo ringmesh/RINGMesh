@@ -42,10 +42,12 @@
 
 #include <geogram/mesh/mesh_repair.h>
 
+#include <ringmesh/basic/factory.h>
+
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 }
 
 namespace RINGMesh {
@@ -190,16 +192,14 @@ namespace RINGMesh {
         static std::unique_ptr< MeshBaseBuilder< DIMENSION > > create_builder(
             MeshBase< DIMENSION >& mesh );
     protected:
-        MeshBaseBuilder() = default;
-
-        void configure_base_builder( MeshBase< DIMENSION >& mesh )
+        MeshBaseBuilder( MeshBase< DIMENSION >& mesh )
+            : mesh_base_( mesh )
         {
-            mesh_base_ = &mesh;
         }
 
         void delete_vertex_nn_search()
         {
-            mesh_base_->vertex_nn_search_.reset();
+            mesh_base_.vertex_nn_search_.reset();
         }
 
         /*!
@@ -279,7 +279,7 @@ namespace RINGMesh {
             const std::vector< index_t >& permutation ) = 0;
 
     protected:
-        MeshBase< DIMENSION >* mesh_base_ { nullptr };
+        MeshBase< DIMENSION >& mesh_base_;
     };
 
     CLASS_DIMENSION_ALIASES( MeshBaseBuilder );
@@ -289,16 +289,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( PointSetMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~PointSetMeshBuilder()
-        {
-        }
-
-        void configure_builder( PointSetMesh< DIMENSION >& mesh )
-        {
-            this->configure_base_builder( mesh );
-            pointset_mesh_ = &mesh;
-            set_mesh( mesh );
-        }
+        virtual ~PointSetMeshBuilder() = default;
 
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > > create_builder(
             PointSetMesh< DIMENSION >& mesh );
@@ -309,48 +300,34 @@ namespace RINGMesh {
         }
 
     protected:
-        PointSetMeshBuilder() = default;
+        PointSetMeshBuilder( PointSetMesh< DIMENSION >& mesh )
+            : MeshBaseBuilder< DIMENSION >( mesh ), pointset_mesh_( mesh )
+        {
+        }
 
     private:
-        virtual void set_mesh( PointSetMesh< DIMENSION >& mesh ) = 0;
-
         void clear_vertex_linked_objects() final
         {
             this->delete_vertex_nn_search();
         }
 
     protected:
-        PointSetMesh< DIMENSION >* pointset_mesh_ { nullptr };
+        PointSetMesh< DIMENSION >& pointset_mesh_;
     };
 
     CLASS_DIMENSION_ALIASES( PointSetMeshBuilder );
 
     template< index_t DIMENSION >
-    using PointMeshBuilderFactory = GEO::Factory0< PointSetMeshBuilder< DIMENSION > >;
+    using PointSetMeshBuilderFactory = Factory< MeshType, PointSetMeshBuilder< DIMENSION >, PointSetMesh< DIMENSION >& >;
 
-    using PointMeshBuilderFactory3D = PointMeshBuilderFactory< 3 >;
-#define ringmesh_register_point_mesh_builder_3d(type) \
-    geo_register_creator(RINGMesh::PointMeshBuilderFactory3D, type ## Builder, type::type_name_static())
-
-    using PointMeshBuilderFactory2D = PointMeshBuilderFactory< 2 >;
-#define ringmesh_register_point_mesh_builder_2d(type) \
-    geo_register_creator(RINGMesh::PointMeshBuilderFactory2D, type ## Builder, type::type_name_static())
+    CLASS_DIMENSION_ALIASES( PointSetMeshBuilderFactory );
 
     template< index_t DIMENSION >
     class LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
     ringmesh_disable_copy( LineMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~LineMeshBuilder()
-        {
-        }
-
-        void configure_builder( LineMesh< DIMENSION >& mesh )
-        {
-            this->configure_base_builder( mesh );
-            line_mesh_ = &mesh;
-            set_mesh( mesh );
-        }
+        virtual ~LineMeshBuilder() = default;
 
         static std::unique_ptr< LineMeshBuilder > create_builder(
             LineMesh< DIMENSION >& mesh );
@@ -432,10 +409,10 @@ namespace RINGMesh {
          */
         void remove_isolated_vertices()
         {
-            std::vector< bool > to_delete( line_mesh_->nb_vertices(), true );
-            for( index_t e : range( line_mesh_->nb_edges() ) ) {
+            std::vector< bool > to_delete( line_mesh_.nb_vertices(), true );
+            for( index_t e : range( line_mesh_.nb_edges() ) ) {
                 for( index_t v : range( 2 ) ) {
-                    index_t vertex_id = line_mesh_->edge_vertex(
+                    index_t vertex_id = line_mesh_.edge_vertex(
                         ElementLocalVertex( e, v ) );
                     to_delete[vertex_id] = false;
                 }
@@ -444,17 +421,18 @@ namespace RINGMesh {
 
         }
     protected:
-        LineMeshBuilder() = default;
+        LineMeshBuilder( LineMesh< DIMENSION >& mesh )
+            : MeshBaseBuilder< DIMENSION >( mesh ), line_mesh_( mesh )
+        {
+        }
 
     private:
-        virtual void set_mesh( LineMesh< DIMENSION >& mesh ) = 0;
-
         /*!
          * @brief Deletes the NNSearch on edges
          */
         void delete_edge_nn_search()
         {
-            line_mesh_->edge_nn_search_.reset();
+            line_mesh_.edge_nn_search_.reset();
         }
 
         void clear_vertex_linked_objects() override
@@ -510,40 +488,25 @@ namespace RINGMesh {
             const std::vector< index_t >& permutation ) = 0;
 
     protected:
-        LineMesh< DIMENSION >* line_mesh_ { nullptr };
+        LineMesh< DIMENSION >& line_mesh_;
     };
 
     CLASS_DIMENSION_ALIASES( LineMeshBuilder );
 
     template< index_t DIMENSION >
-    using LineMeshBuilderFactory = GEO::Factory0< LineMeshBuilder< DIMENSION > >;
+    using LineMeshBuilderFactory = Factory< MeshType, LineMeshBuilder< DIMENSION >, LineMesh< DIMENSION >& >;
 
-    using LineMeshBuilderFactory3D = LineMeshBuilderFactory< 3 >;
-#define ringmesh_register_line_mesh_builder_3d(type) \
-    geo_register_creator(RINGMesh::LineMeshBuilderFactory3D, type ## Builder, type::type_name_static())
-
-    using LineMeshBuilderFactory2D = LineMeshBuilderFactory< 2 >;
-#define ringmesh_register_line_mesh_builder_2d(type) \
-    geo_register_creator(RINGMesh::LineMeshBuilderFactory2D, type ## Builder, type::type_name_static())
+    CLASS_DIMENSION_ALIASES( LineMeshBuilderFactory );
 
     template< index_t DIMENSION >
     class SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
     ringmesh_disable_copy( SurfaceMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~SurfaceMeshBuilder()
-        {
-        }
-
-        void configure_builder( SurfaceMeshBase< DIMENSION >& mesh )
-        {
-            this->configure_base_builder( mesh );
-            surface_mesh_ = &mesh;
-            set_mesh( mesh );
-        }
+        virtual ~SurfaceMeshBuilder() = default;
 
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > create_builder(
-            SurfaceMeshBase< DIMENSION >& mesh );
+            SurfaceMesh< DIMENSION >& mesh );
 
         /*!@}
          * \name Polygon related methods
@@ -645,32 +608,23 @@ namespace RINGMesh {
         void connect_polygons()
         {
             std::vector< index_t > polygons_to_connect(
-                surface_mesh_->nb_polygons() );
+                surface_mesh_.nb_polygons() );
             std::iota( polygons_to_connect.begin(), polygons_to_connect.end(), 0 );
             connect_polygons( polygons_to_connect );
         }
         void connect_polygons( const std::vector< index_t >& polygons_to_connect )
         {
-            struct PolygonLocalVertex {
-                PolygonLocalVertex( index_t polygon, index_t local_vertex )
-                    : polygon_( polygon ), local_vertex_( local_vertex )
-                {
-                }
-                index_t polygon_ { NO_ID };
-                index_t local_vertex_ { NO_ID };
-            };
-
             index_t nb_local_vertices = 0;
             for( index_t polygon : polygons_to_connect ) {
-                nb_local_vertices += this->surface_mesh_->nb_polygon_vertices(
+                nb_local_vertices += this->surface_mesh_.nb_polygon_vertices(
                     polygon );
             }
 
-            std::vector< PolygonLocalVertex > polygon_vertices;
+            std::vector< ElementLocalVertex > polygon_vertices;
             polygon_vertices.reserve( nb_local_vertices );
             for( index_t polygon : polygons_to_connect ) {
                 for( index_t v : range(
-                    this->surface_mesh_->nb_polygon_vertices( polygon ) ) ) {
+                    this->surface_mesh_.nb_polygon_vertices( polygon ) ) ) {
                     polygon_vertices.emplace_back( polygon, v );
                 }
             }
@@ -678,13 +632,13 @@ namespace RINGMesh {
             std::vector< index_t > next_local_vertex_around_vertex(
                 nb_local_vertices, NO_ID );
             std::vector< index_t > vertex2polygon_local_vertex(
-                this->surface_mesh_->nb_vertices(), NO_ID );
+                this->surface_mesh_.nb_vertices(), NO_ID );
             index_t local_vertex_count = 0;
             for( index_t polygon : polygons_to_connect ) {
                 for( index_t v = 0;
-                    v < this->surface_mesh_->nb_polygon_vertices( polygon );
+                    v < this->surface_mesh_.nb_polygon_vertices( polygon );
                     v++, local_vertex_count++ ) {
-                    index_t vertex = this->surface_mesh_->polygon_vertex(
+                    index_t vertex = this->surface_mesh_.polygon_vertex(
                         ElementLocalVertex( polygon, v ) );
                     next_local_vertex_around_vertex[local_vertex_count] =
                         vertex2polygon_local_vertex[vertex];
@@ -695,16 +649,16 @@ namespace RINGMesh {
             local_vertex_count = 0;
             for( index_t polygon : polygons_to_connect ) {
                 for( index_t v = 0;
-                    v < this->surface_mesh_->nb_polygon_vertices( polygon );
+                    v < this->surface_mesh_.nb_polygon_vertices( polygon );
                     v++, local_vertex_count++ ) {
-                    if( !this->surface_mesh_->is_edge_on_border(
+                    if( !this->surface_mesh_.is_edge_on_border(
                         PolygonLocalEdge( polygon, v ) ) ) {
                         continue;
                     }
-                    index_t vertex = this->surface_mesh_->polygon_vertex(
+                    index_t vertex = this->surface_mesh_.polygon_vertex(
                         ElementLocalVertex( polygon, v ) );
-                    index_t next_vertex = this->surface_mesh_->polygon_vertex(
-                        this->surface_mesh_->next_polygon_vertex(
+                    index_t next_vertex = this->surface_mesh_.polygon_vertex(
+                        this->surface_mesh_.next_polygon_vertex(
                             ElementLocalVertex( polygon, v ) ) );
                     for( index_t local_vertex =
                         vertex2polygon_local_vertex[next_vertex];
@@ -713,14 +667,13 @@ namespace RINGMesh {
                         if( local_vertex == local_vertex_count ) {
                             continue;
                         }
-                        index_t adj_polygon = polygon_vertices[local_vertex].polygon_;
+                        index_t adj_polygon = polygon_vertices[local_vertex].element_id_;
                         index_t adj_local_vertex =
-                            polygon_vertices[local_vertex].local_vertex_;
-                        index_t adj_next_vertex =
-                            this->surface_mesh_->polygon_vertex(
-                                this->surface_mesh_->next_polygon_vertex(
-                                    ElementLocalVertex( adj_polygon,
-                                        adj_local_vertex ) ) );
+                            polygon_vertices[local_vertex].local_vertex_id_;
+                        index_t adj_next_vertex = this->surface_mesh_.polygon_vertex(
+                            this->surface_mesh_.next_polygon_vertex(
+                                ElementLocalVertex( adj_polygon,
+                                    adj_local_vertex ) ) );
                         if( adj_next_vertex == vertex ) {
                             this->set_polygon_adjacent( polygon, v, adj_polygon );
                             this->set_polygon_adjacent( adj_polygon,
@@ -779,10 +732,10 @@ namespace RINGMesh {
          */
         void remove_isolated_vertices()
         {
-            std::vector< bool > to_delete( surface_mesh_->nb_vertices(), true );
-            for( index_t p : range( surface_mesh_->nb_polygons() ) ) {
-                for( index_t v : range( surface_mesh_->nb_polygon_vertices( p ) ) ) {
-                    index_t vertex_id = surface_mesh_->polygon_vertex(
+            std::vector< bool > to_delete( surface_mesh_.nb_vertices(), true );
+            for( index_t p : range( surface_mesh_.nb_polygons() ) ) {
+                for( index_t v : range( surface_mesh_.nb_polygon_vertices( p ) ) ) {
+                    index_t vertex_id = surface_mesh_.polygon_vertex(
                         ElementLocalVertex( p, v ) );
                     to_delete[vertex_id] = false;
                 }
@@ -790,17 +743,18 @@ namespace RINGMesh {
             this->delete_vertices( to_delete );
         }
     protected:
-        SurfaceMeshBuilder() = default;
+        SurfaceMeshBuilder( SurfaceMeshBase< DIMENSION >& mesh )
+            : MeshBaseBuilder< DIMENSION >( mesh ), surface_mesh_( mesh )
+        {
+        }
 
     private:
-        virtual void set_mesh( SurfaceMeshBase< DIMENSION >& mesh ) = 0;
-
         /*!
          * @brief Deletes the NNSearch on polygons
          */
         void delete_polygon_nn_search()
         {
-            surface_mesh_->nn_search_.reset();
+            surface_mesh_.nn_search_.reset();
         }
 
         /*!
@@ -808,7 +762,7 @@ namespace RINGMesh {
          */
         void delete_polygon_aabb()
         {
-            surface_mesh_->polygon_aabb_.reset();
+            surface_mesh_.polygon_aabb_.reset();
         }
 
         void clear_vertex_linked_objects() override
@@ -894,21 +848,15 @@ namespace RINGMesh {
         virtual void do_delete_polygons( const std::vector< bool >& to_delete ) = 0;
 
     protected:
-        SurfaceMeshBase< DIMENSION >* surface_mesh_ { nullptr };
+        SurfaceMeshBase< DIMENSION >& surface_mesh_;
     };
 
     CLASS_DIMENSION_ALIASES( SurfaceMeshBuilder );
 
     template< index_t DIMENSION >
-    using SurfaceMeshBuilderFactory = GEO::Factory0< SurfaceMeshBuilder< DIMENSION > >;
+    using SurfaceMeshBuilderFactory = Factory< MeshType, SurfaceMeshBuilder< DIMENSION >, SurfaceMesh< DIMENSION >& >;
 
-    using SurfaceMeshBuilderFactory3D = SurfaceMeshBuilderFactory< 3 >;
-#define ringmesh_register_surface_mesh_builder_3d(type) \
-    geo_register_creator(RINGMesh::SurfaceMeshBuilderFactory3D, type ## Builder, type::type_name_static())
-
-    using SurfaceMeshBuilderFactory2D = SurfaceMeshBuilderFactory< 2 >;
-#define ringmesh_register_surface_mesh_builder_2d(type) \
-    geo_register_creator(RINGMesh::SurfaceMeshBuilderFactory2D, type ## Builder, type::type_name_static())
+    CLASS_DIMENSION_ALIASES( SurfaceMeshBuilderFactory );
 
     template< index_t DIMENSION >
     class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -916,13 +864,6 @@ namespace RINGMesh {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
         virtual ~VolumeMeshBuilder() = default;
-
-        void configure_builder( VolumeMesh< DIMENSION >& mesh )
-        {
-            this->configure_base_builder( mesh );
-            volume_mesh_ = &mesh;
-            set_mesh( mesh );
-        }
 
         static std::unique_ptr< VolumeMeshBuilder< DIMENSION > > create_builder(
             VolumeMesh< DIMENSION >& mesh );
@@ -1049,10 +990,10 @@ namespace RINGMesh {
 
         void remove_isolated_vertices()
         {
-            std::vector< bool > to_delete( volume_mesh_->nb_vertices(), true );
-            for( index_t c : range( volume_mesh_->nb_cells() ) ) {
-                for( index_t v : range( volume_mesh_->nb_cell_vertices( c ) ) ) {
-                    index_t vertex_id = volume_mesh_->cell_vertex(
+            std::vector< bool > to_delete( volume_mesh_.nb_vertices(), true );
+            for( index_t c : range( volume_mesh_.nb_cells() ) ) {
+                for( index_t v : range( volume_mesh_.nb_cell_vertices( c ) ) ) {
+                    index_t vertex_id = volume_mesh_.cell_vertex(
                         ElementLocalVertex( c, v ) );
                     to_delete[vertex_id] = false;
                 }
@@ -1060,18 +1001,19 @@ namespace RINGMesh {
             this->delete_vertices( to_delete );
         }
     protected:
-        VolumeMeshBuilder() = default;
+        VolumeMeshBuilder( VolumeMesh< DIMENSION >& mesh )
+            : MeshBaseBuilder< DIMENSION >( mesh ), volume_mesh_( mesh )
+        {
+        }
 
     private:
-        virtual void set_mesh( VolumeMesh< DIMENSION >& mesh ) = 0;
-
         /*!
          * @brief Deletes the NNSearch on cells
          */
         void delete_cell_nn_search()
         {
-            volume_mesh_->cell_nn_search_.reset();
-            volume_mesh_->cell_facet_nn_search_.reset();
+            volume_mesh_.cell_nn_search_.reset();
+            volume_mesh_.cell_facet_nn_search_.reset();
         }
 
         /*!
@@ -1079,7 +1021,7 @@ namespace RINGMesh {
          */
         void delete_cell_aabb()
         {
-            volume_mesh_->cell_aabb_.reset();
+            volume_mesh_.cell_aabb_.reset();
         }
 
         void clear_vertex_linked_objects() override
@@ -1172,15 +1114,13 @@ namespace RINGMesh {
         virtual void do_delete_cells( const std::vector< bool >& to_delete ) = 0;
 
     protected:
-        VolumeMesh< DIMENSION >* volume_mesh_ { nullptr };
+        VolumeMesh< DIMENSION >& volume_mesh_;
     };
 
     using VolumeMeshBuilder3D = VolumeMeshBuilder< 3 >;
 
     template< index_t DIMENSION >
-    using VolumeMeshBuilderFactory = GEO::Factory0< VolumeMeshBuilder< DIMENSION > >;
+    using VolumeMeshBuilderFactory = Factory< MeshType, VolumeMeshBuilder< DIMENSION >, VolumeMesh< DIMENSION >& >;
 
     using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory< 3 >;
-#define ringmesh_register_volume_mesh_builder_3d(type) \
-    geo_register_creator(RINGMesh::VolumeMeshBuilderFactory3D, type ## Builder, type::type_name_static())
 }

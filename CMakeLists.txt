@@ -95,7 +95,7 @@ set (RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RING
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them
-if(UNIX)    
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")    
     # If the CMAKE_BUILD_TYPE is no defined
     # i.e. at first run of that file
     if(CMAKE_BUILD_TYPE STREQUAL "")
@@ -117,7 +117,6 @@ if(UNIX)
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                 -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
                 -DMG_TETRA:STRING=${MG_TETRA}
-                -DUSE_OPENMP:BOOL=${USE_OPENMP}
                 -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_TEST_GRAPHICS:BOOL=${RINGMESH_TEST_GRAPHICS}
@@ -131,7 +130,8 @@ if(UNIX)
                 -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}  
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
                 -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY} 
-                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}                     
+                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}           
+                -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}                               
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -139,9 +139,9 @@ if(UNIX)
       # We do not want to execute the rest of the file in that case
       return()
     endif()
-else(UNIX)
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
-endif(UNIX)
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}") 
 message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}") 
@@ -150,27 +150,36 @@ include(cmake/utils.cmake)
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
-if(WIN32)
-    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
-    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
-elseif(UNIX)
+if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion 
         -Wsign-conversion -Wdouble-promotion)
     
     # Determine gcc version and activate additional warnings available in latest versions
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        if(COMPILER_VERSION VERSION_LESS 3.3 )
-           message(FATAL_ERROR "RINGMesh require Clang version >= 3.3")
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        if(COMPILER_VERSION VERSION_LESS 4.8 )
-           message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
-        endif()
-    endif()
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    # C++11 fully works on Linux from gcc/g++ 4.8 (before not fully operational).
+    # On MacOS, it seems that C++11 is working since gcc/g++ 4.2.
+    if(APPLE)
+        if(G++_VERSION VERSION_LESS 4.2 )
+            message(FATAL_ERROR "RINGMesh require G++ version >= 4.2")
+        endif()
+        set(CMAKE_MACOSX_RPATH 1)
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    else(APPLE)
+        # Linux
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+            if(COMPILER_VERSION VERSION_LESS 3.3 )
+               message(FATAL_ERROR "RINGMesh require Clang version >= 3.3")
+            endif()
+        elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            if(COMPILER_VERSION VERSION_LESS 4.8 )
+               message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
+            endif()
+        endif()
+    endif(APPLE)
+    # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
@@ -179,7 +188,9 @@ elseif(UNIX)
        include(Coveralls)
        coveralls_turn_on_coverage()
     endif()
+endif(UNIX)
     
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Enable parallel computation
     set(cpuinfo_file "/proc/cpuinfo")
     if(EXISTS "${cpuinfo_file}")
@@ -187,10 +198,12 @@ elseif(UNIX)
         list(LENGTH procs PROCESSOR_COUNT)
     endif()
     set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
-else(WIN32)
-    # Nothing else really supported
-    message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    
-endif(WIN32)
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
+    # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
+    # are automatically built with the same build type as RINGMesh.
+    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 #------------------------------------------------------------------------------------------------
 # Compil Third Parties
@@ -218,23 +231,6 @@ if(MG_TETRA)
   set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
 endif()
 
-#------------------------------------------------------------------------------------------------
-# Add compiler options for OpenMP
-if(USE_OPENMP)
-    find_package(OpenMP)
-    if (OPENMP_FOUND)
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-            if(COMPILER_VERSION VERSION_LESS 3.7 )
-               message(FATAL_ERROR "RINGMesh require Clang version  >= 3.7" to work with OpenMP)
-            endif()
-        endif()
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    else (OPENMP_FOUND)
-        message(FATAL_ERROR "OpenMP not found on your system.")
-    endif(OPENMP_FOUND)
-endif(USE_OPENMP)
-
 #--------------------------------------------------------
 # geology.js library
 if(RINGMESH_WITH_GEOLOGYJS)
@@ -253,13 +249,13 @@ endif(RINGMESH_WITH_GEOLOGYJS)
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files
-FILE(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh ${PROJECT_SOURCE_DIR}/src/ringmesh/*)
-FOREACH(directory ${directories})
-    IF(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
+file(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh ${PROJECT_SOURCE_DIR}/src/ringmesh/*)
+foreach(directory ${directories})
+    if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
         source_file_directory(ringmesh_src ${directory})
         include_file_directory(ringmesh_include ${directory})
-    ENDIF()
-ENDFOREACH()
+    endif()
+endforeach()
 
 #------------------------------------------------------------------------------------------------
 # Build configuration

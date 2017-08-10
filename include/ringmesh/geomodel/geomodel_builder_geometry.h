@@ -47,10 +47,8 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelBuilderBase;
-    template< index_t DIMENSION > class GeoModelBuilder;
-
-    CLASS_DIMENSION_ALIASES( GeoModelBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
+    FORWARD_DECLARATION_2D_3D_CLASS( GeoModelBuilder );
 }
 
 namespace RINGMesh {
@@ -131,8 +129,8 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >& surface =
                 geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess< DIMENSION > surface_access( surface );
-            SurfaceMeshBase< DIMENSION >& surface_mesh =
-                dynamic_cast< SurfaceMeshBase< DIMENSION >& >( *surface_access.modifiable_mesh() );
+            SurfaceMesh< DIMENSION >& surface_mesh =
+                dynamic_cast< SurfaceMesh< DIMENSION >& >( *surface_access.modifiable_mesh() );
             return SurfaceMeshBuilder< DIMENSION >::create_builder( surface_mesh );
         }
 

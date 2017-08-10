@@ -47,10 +47,8 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelBuilderBase;
-    template< index_t DIMENSION > class GeoModelBuilder;
-
-    CLASS_DIMENSION_ALIASES( GeoModelBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
+    FORWARD_DECLARATION_2D_3D_CLASS( GeoModelBuilder );
 }
 
 namespace RINGMesh {
@@ -150,13 +148,13 @@ namespace RINGMesh {
             const MeshEntityType& type = ENTITY< DIMENSION >::type_name_static();
             create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
 
-            RINGMESH_PARALLEL_LOOP
-            for( index_t e = 0; e < geomodel_.nb_mesh_entities( type ); ++e ) {
-                gmme_id id( type, e );
-                GeoModelMeshEntityAccess< DIMENSION > gmme_access(
-                    geomodel_access_.modifiable_mesh_entity( id ) );
-                gmme_access.copy( from.mesh_entity( id ) );
-            }
+            parallel_for( geomodel_.nb_mesh_entities( type ),
+                [&type, &from, this] ( index_t i ) {
+                    gmme_id id( type, i );
+                    GeoModelMeshEntityAccess< DIMENSION > gmme_access(
+                        geomodel_access_.modifiable_mesh_entity( id ) );
+                    gmme_access.copy( from.mesh_entity( id ) );
+            } );
         }
 
         index_t check_if_boundary_incident_entity_relation_already_exists(

@@ -71,24 +71,26 @@ void test_triangle_barycentric_coordinates()
     }
 }
 
-void test_point_plane_projection()
+void test_point_plane_distance()
 {
-    Logger::out( "TEST", "Test point plane projection" );
+    Logger::out( "TEST", "Test point plane distance" );
 
     vec3 test0( 1, 1, 1 );
     vec3 N0( 0, 0, 2 );
     vec3 O0( 0, 0, 0 );
-    vec3 projected0 = point_plane_projection( test0, N0, O0 );
+    vec3 projected0;
+    std::tie( std::ignore, projected0 ) = Distance::point_to_plane( test0, N0, O0 );
     if( projected0 != vec3( 1, 1, 0 ) ) {
-        throw RINGMeshException( "TEST", "Error in point plane projection" );
+        throw RINGMeshException( "TEST", "Error in point plane distance" );
     }
 
     vec3 test1( 0, 0.5, 1 );
     vec3 N1( 1, 0, 0 );
     vec3 O1( 1, 1, 1 );
-    vec3 projected1 = point_plane_projection( test1, N1, O1 );
+    vec3 projected1;
+    std::tie( std::ignore, projected1 ) = Distance::point_to_plane( test1, N1, O1 );
     if( projected1 != vec3( 1, 0.5, 1 ) ) {
-        throw RINGMeshException( "TEST", "Error in point plane projection" );
+        throw RINGMeshException( "TEST", "Error in point plane distance" );
     }
 }
 
@@ -102,7 +104,7 @@ int main()
         Logger::out( "TEST", "Test geometric tools" );
 
         test_triangle_barycentric_coordinates();
-        test_point_plane_projection();
+        test_point_plane_distance();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );

@@ -54,29 +54,28 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class WellGroup;
-    template< index_t DIMENSION > class GeoModelGeologicalEntity;
-    template< index_t DIMENSION > class GeoModelMeshEntity;
-    template< index_t DIMENSION > class Corner;
-    template< index_t DIMENSION > class Surface;
-    template< index_t DIMENSION > class Line;
-    template< index_t DIMENSION > class Region;
-    template< index_t DIMENSION > class GeoModelAccess;
+    FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Line );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
     template< index_t DIMENSION > struct EntityTypeManager;
-    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
-    template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderGeometryBase;
-    template< index_t DIMENSION > class GeoModelBuilderGeometry;
-    template< index_t DIMENSION > class GeoModelBuilderGeology;
-    template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
-    template< index_t DIMENSION > class GeoModelBuilderRemoval;
-    template< index_t DIMENSION > class GeoModelBuilderRepair;
-    template< index_t DIMENSION > class GeoModelBuilderCopy;
-    template< index_t DIMENSION > class GeoModelBuilderInfo;
-    template< index_t DIMENSION > class GeoModelBuilderBase;
-    template< index_t DIMENSION > class GeoModelBuilder;
-    template< index_t DIMENSION > class GeoModelBuilderGM;
-
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometry );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRepair );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderCopy );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
 }
 
 namespace RINGMesh {

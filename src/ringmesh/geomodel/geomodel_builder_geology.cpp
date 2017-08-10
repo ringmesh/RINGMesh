@@ -303,13 +303,11 @@ namespace RINGMesh {
 
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type );
-        geomodel_access_.modifiable_geological_entities().push_back(
-            std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >() );
-        std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > E(
-            GeoModelGeologicalEntityFactory< DIMENSION >::create_object( type,
-                geomodel_ ) );
+        geomodel_access_.modifiable_geological_entities().emplace_back();
+        auto geol_entity = GeoModelGeologicalEntityFactory< DIMENSION >::create(
+            type, geomodel_ );
 
-        const MeshEntityType child_type = E->child_type_name();
+        const MeshEntityType child_type = geol_entity->child_type_name();
         RelationshipManager& parentage =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
         parentage.register_geology_relationship( type, child_type );
@@ -324,14 +322,13 @@ namespace RINGMesh {
         const GeologicalEntityType& type )
     {
         create_geological_entities( type, from.nb_geological_entities( type ) );
-
-        RINGMESH_PARALLEL_LOOP
-        for( index_t e = 0; e < geomodel_.nb_geological_entities( type ); ++e ) {
-            gmge_id id( type, e );
-            GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
-                geomodel_access_.modifiable_geological_entity( id ) );
-            gmge_access.copy( from.geological_entity( id ) );
-        }
+        parallel_for( geomodel_.nb_geological_entities( type ),
+            [&type, &from, this]( index_t i ) {
+                gmge_id id( type, i );
+                GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
+                    geomodel_access_.modifiable_geological_entity( id ) );
+                gmge_access.copy( from.geological_entity( id ) );
+        } );
     }
 
     template< index_t DIMENSION >

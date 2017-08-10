@@ -102,7 +102,7 @@ namespace RINGMesh {
 
         inline Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const
         {
-            Box< DIMENSION > result = *this;
+            Box< DIMENSION > result { *this };
             result.add_box( B );
             return result;
         }
@@ -130,7 +130,6 @@ namespace RINGMesh {
         vecn< DIMENSION > max_;
 
     };
-
     CLASS_DIMENSION_ALIASES( Box );
 
 }

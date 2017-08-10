@@ -55,6 +55,7 @@
 
 #include <ringmesh/basic/command_line.h>
 
+#include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
@@ -191,10 +192,10 @@ namespace RINGMesh {
         entity_types_.reserve( types.size() + 1 );
         entity_types_.emplace_back( "All" );
         for( const MeshEntityType& type : types ) {
-            entity_types_.emplace_back( type );
+            entity_types_.emplace_back( type.string() );
         }
         for( index_t i : range( GM_.nb_geological_entity_types() ) ) {
-            entity_types_.emplace_back( GM_.geological_entity_type( i ) );
+            entity_types_.emplace_back( GM_.geological_entity_type( i ).string() );
         }
         GM_gfx_.set_geomodel( GM_ );
         if( !app.colormaps_.empty() ) {
@@ -1088,11 +1089,11 @@ namespace RINGMesh {
             "use single precision vertices (FP32)" );
         configure_ringmesh();
 
-        std::vector< std::string > ringmesh_extensions;
-        GeoModelIOHandlerFactory2D::list_creators( ringmesh_extensions );
-        GeoModelIOHandlerFactory3D::list_creators( ringmesh_extensions );
-        ringmesh_file_extensions_ = GEO::String::join_strings( ringmesh_extensions,
-            ';' );
+        auto ringmesh_2d_extensions = GeoModelIOHandlerFactory2D::list_creators();
+        auto ringmesh_3d_extensions = GeoModelIOHandlerFactory3D::list_creators();
+        ringmesh_file_extensions_ = GEO::String::join_strings(
+            ringmesh_2d_extensions, ';' )
+            + GEO::String::join_strings( ringmesh_3d_extensions, ';' );
 
         std::vector< std::string > geogram_extensions;
         GEO::MeshIOHandlerFactory::list_creators( geogram_extensions );

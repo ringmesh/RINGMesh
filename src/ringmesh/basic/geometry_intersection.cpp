@@ -181,17 +181,17 @@ namespace RINGMesh {
                 line_line( O_seg0, D_seg0, O_seg1, D_seg1 );
             if( does_segment_intersect_segment ) {
                 // Test whether the line-line intersection is on the segments.
-                Sign s0_seg0 = sign(
-                    GEO::PCK::orient_2d( p0_seg0, p0_seg1, p1_seg1 ) );
-                Sign s1_seg0 = sign(
-                    GEO::PCK::orient_2d( p1_seg0, p0_seg1, p1_seg1 ) );
+                Sign s0_seg0 { sign(
+                    GEO::PCK::orient_2d( p0_seg0, p0_seg1, p1_seg1 ) ) };
+                Sign s1_seg0 { sign(
+                    GEO::PCK::orient_2d( p1_seg0, p0_seg1, p1_seg1 ) ) };
                 if( s0_seg0 != ZERO && ( s0_seg0 == s1_seg0 ) ) {
                     return std::make_tuple( false, vec2() );
                 }
-                Sign s0_seg1 = sign(
-                    GEO::PCK::orient_2d( p0_seg1, p0_seg0, p1_seg0 ) );
-                Sign s1_seg1 = sign(
-                    GEO::PCK::orient_2d( p1_seg1, p0_seg0, p1_seg0 ) );
+                Sign s0_seg1 { sign(
+                    GEO::PCK::orient_2d( p0_seg1, p0_seg0, p1_seg0 ) ) };
+                Sign s1_seg1 { sign(
+                    GEO::PCK::orient_2d( p1_seg1, p0_seg0, p1_seg0 ) ) };
                 if( s0_seg1 != ZERO && ( s0_seg1 == s1_seg1 ) ) {
                     return std::make_tuple( false, vec2() );
                 }
@@ -222,10 +222,10 @@ namespace RINGMesh {
                 // Test whether the line-line intersection is on the segment.
                 vec2 minus_direction { line_intersection_result - D_line };
                 vec2 plus_direction { line_intersection_result + D_line };
-                Sign s0 = sign(
-                    GEO::PCK::orient_2d( p0_seg, minus_direction, plus_direction ) );
-                Sign s1 = sign(
-                    GEO::PCK::orient_2d( p1_seg, minus_direction, plus_direction ) );
+                Sign s0 { sign(
+                    GEO::PCK::orient_2d( p0_seg, minus_direction, plus_direction ) ) };
+                Sign s1 { sign(
+                    GEO::PCK::orient_2d( p1_seg, minus_direction, plus_direction ) ) };
                 if( s0 == ZERO || s1 == ZERO || ( s0 != s1 ) ) {
                     return std::make_tuple( true, line_intersection_result );
                 }
@@ -267,12 +267,11 @@ namespace RINGMesh {
             std::tie( does_line_intersect_plane, line_plane_result ) = line_plane(
                 segment_barycenter, segment_direction, O_plane, N_plane );
             if( does_line_intersect_plane ) {
-                if( ( line_plane_result - segment_barycenter ).length2()
-                    > ( seg0 - segment_barycenter ).length2() + global_epsilon ) {
-                    // result outside the segment
-                    return std::make_tuple( false, vec3() );
-                } else {
+                if( point_inside_segment( line_plane_result, seg0, seg1 ) ) {
+                    // result inside the segment
                     return std::make_tuple( true, line_plane_result );
+                } else {
+                    return std::make_tuple( false, vec3() );
                 }
             } else {
                 return std::make_tuple( false, vec3() );
@@ -381,6 +380,61 @@ namespace RINGMesh {
             }
             // else: b1 < 0, no intersection
             return std::make_tuple( false, vec3() );
+        }
+
+        std::tuple< bool, std::vector< vec3 > > line_sphere(
+            const vec3& O_line,
+            const vec3& D_line,
+            const vec3& O_sphere,
+            double radius )
+        {
+            vec3 D_line_normalized { normalize( D_line ) };
+            // The sphere is (X-C)^T*(X-C)-1 = 0 and the line is X = P+t*D.
+            // Substitute the line equation into the sphere equation to obtain a
+            // quadratic equation Q(t) = t^2 + 2*a1*t + a0 = 0, where a1 = D^T*(P-C),
+            // and a0 = (P-C)^T*(P-C)-1.
+            vec3 diff { O_line - O_sphere };
+            double a0 { dot( diff, diff ) - radius * radius };
+            double a1 { dot( D_line_normalized, diff ) };
+
+            // Intersection occurs when Q(t) has real roots.
+            double discr { a1 * a1 - a0 };
+            std::vector< vec3 > results;
+            if( discr > global_epsilon ) {
+                double root { std::sqrt( discr ) };
+                results.reserve( 2 );
+                results.emplace_back( O_line + ( -a1 - root ) * D_line_normalized );
+                results.emplace_back( O_line + ( -a1 + root ) * D_line_normalized );
+            } else if( discr > -global_epsilon ) {
+                results.reserve( 1 );
+                results.emplace_back( O_line + -a1 * D_line_normalized );
+            }
+            return std::make_tuple( !results.empty(), results );
+        }
+
+        std::tuple< bool, std::vector< vec3 > > segment_sphere(
+            const vec3& seg0,
+            const vec3& seg1,
+            const vec3& O_sphere,
+            double radius )
+        {
+            bool line_intersect;
+            std::vector< vec3 > line_intersections;
+            vec3 segment { seg1 - seg0 };
+            std::tie( line_intersect, line_intersections ) = line_sphere( seg0,
+                segment, O_sphere, radius );
+
+            std::vector< vec3 > segment_intersections;
+            if( line_intersect ) {
+                segment_intersections.reserve( line_intersections.size() );
+                for( auto& point : line_intersections ) {
+                    if( point_inside_segment( point, seg0, seg1 ) ) {
+                        segment_intersections.emplace_back( std::move( point ) );
+                    }
+                }
+            }
+            return std::make_tuple( !segment_intersections.empty(),
+                segment_intersections );
         }
     }
 }

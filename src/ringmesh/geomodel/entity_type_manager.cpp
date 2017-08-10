@@ -145,8 +145,8 @@ namespace RINGMesh {
     std::vector< GeologicalEntityType > RelationshipManager::parent_types(
         const MeshEntityType& child_type ) const
     {
-        MeshEntityToParents::const_iterator itr = child_to_parents_.find(
-            child_type );
+        MeshEntityToParents::const_iterator itr { child_to_parents_.find(
+            child_type ) };
         std::vector< GeologicalEntityType > result;
         if( itr != child_to_parents_.end() ) {
             result.insert( result.begin(), itr->second.begin(), itr->second.end() );
@@ -163,8 +163,8 @@ namespace RINGMesh {
     const MeshEntityType RelationshipManager::child_type(
         const GeologicalEntityType& parent_type ) const
     {
-        GeologicalEntityToChild::const_iterator itr = parent_to_child_.find(
-            parent_type );
+        GeologicalEntityToChild::const_iterator itr { parent_to_child_.find(
+            parent_type ) };
         if( itr == parent_to_child_.end() ) {
             return ForbiddenMeshEntityType::type_name_static();
         } else {

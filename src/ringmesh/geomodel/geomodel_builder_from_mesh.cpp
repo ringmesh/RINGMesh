@@ -69,33 +69,33 @@ namespace RINGMesh {
                 std::stack< index_t > S;
                 S.push( i );
                 while( !S.empty() ) {
-                    index_t f = S.top();
+                    index_t f { S.top() };
                     S.pop();
                     visited[f] = true;
 
                     for( index_t c : range( mesh_.facets.corners_begin( f ),
                         mesh_.facets.corners_end( f ) ) ) {
-                        index_t v = mesh_.facet_corners.vertex( c );
+                        index_t v { mesh_.facet_corners.vertex( c ) };
                         if( global_vertex_id_to_id_in_cc[v] == NO_ID ) {
-                            index_t index =
-                                static_cast< index_t >( cc_vertices.size() );
+                            index_t index {
+                                static_cast< index_t >( cc_vertices.size() ) };
                             global_vertex_id_to_id_in_cc[v] = index;
                             cc_vertices.push_back( mesh_.vertices.point( v ) );
                         }
                         cc_corners.push_back( global_vertex_id_to_id_in_cc[v] );
 
-                        index_t n = mesh_.facet_corners.adjacent_facet( c );
+                        index_t n { mesh_.facet_corners.adjacent_facet( c ) };
                         if( n != NO_ID && !visited[n] ) {
                             visited[n] = true;
                             S.push( n );
                         }
                     }
-                    index_t nb_cc_corners =
-                        static_cast< index_t >( cc_corners.size() );
+                    index_t nb_cc_corners {
+                        static_cast< index_t >( cc_corners.size() ) };
                     cc_facets_ptr.push_back( nb_cc_corners );
                 }
 
-                gmme_id surface_gme = topology.create_mesh_entity< Surface >();
+                gmme_id surface_gme { topology.create_mesh_entity< Surface >() };
                 geometry.set_surface_geometry( surface_gme.index(), cc_vertices,
                     cc_corners, cc_facets_ptr );
             }
