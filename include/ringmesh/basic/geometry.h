@@ -82,330 +82,351 @@ namespace RINGMesh {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
 
-    double RINGMESH_API triangle_signed_area(
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& triangle_normal );
+    namespace Geometry {
+
+        template< index_t DIMENSION >
+        using Point = vecn< DIMENSION >;
+        CLASS_DIMENSION_ALIASES( Point );
+
+        template< index_t DIMENSION >
+        struct Segment {
+            Segment() = default;
+            Segment( vecn< DIMENSION > p0, vecn< DIMENSION > p1 )
+                : p0_( std::move( p0 ) ), p1_( std::move( p1 ) )
+            {
+            }
+            vecn< DIMENSION > direction() const
+            {
+                return normalize( p1_ - p0_ );
+            }
+            vecn< DIMENSION > barycenter() const
+            {
+                return ( p1_ + p0_ ) / 2.;
+            }
+            double length() const
+            {
+                return ( p1_ - p0_ ).length();
+            }
+            vecn< DIMENSION > p0_;
+            vecn< DIMENSION > p1_;
+        };
+        CLASS_DIMENSION_ALIASES( Segment );
+
+        template< index_t DIMENSION >
+        struct Line {
+            Line() = default;
+            Line( const vecn< DIMENSION >& direction, vecn< DIMENSION > origin )
+                :
+                    origin_( std::move( origin ) ),
+                    direction_( normalize( direction ) )
+            {
+            }
+            Line( Segment< DIMENSION > segment )
+                : Line( segment.p1_ - segment.p0_, std::move( segment.p0_ ) )
+            {
+            }
+            vecn< DIMENSION > origin_;
+            vecn< DIMENSION > direction_;
+        };
+        CLASS_DIMENSION_ALIASES( Line );
+
+        struct Plane {
+            Plane() = default;
+            Plane( const vec3& normal, vec3 origin )
+                : normal_( normalize( normal ) ), origin_( std::move( origin ) )
+            {
+            }
+            double plane_constant() const
+            {
+                double plane_constant { 0.0 };
+                for( index_t i : range( 3 ) ) {
+                    plane_constant += origin_[i] * normal_[i];
+                }
+                return plane_constant;
+            }
+            vec3 normal_;
+            vec3 origin_;
+        };
+
+        template< index_t DIMENSION >
+        struct Triangle {
+            Triangle() = default;
+            Triangle(
+                vecn< DIMENSION > p0,
+                vecn< DIMENSION > p1,
+                vecn< DIMENSION > p2 )
+                :
+                    p0_( std::move( p0 ) ),
+                    p1_( std::move( p1 ) ),
+                    p2_( std::move( p2 ) )
+            {
+            }
+            vecn< DIMENSION > p0_;
+            vecn< DIMENSION > p1_;
+            vecn< DIMENSION > p2_;
+        };
+        template< >
+        struct Triangle< 3 > {
+            Triangle() = default;
+            Triangle( vec3 p0, vec3 p1, vec3 p2 )
+                :
+                    p0_( std::move( p0 ) ),
+                    p1_( std::move( p1 ) ),
+                    p2_( std::move( p2 ) )
+            {
+            }
+            Plane plane() const
+            {
+                return {cross( p1_ - p0_, p2_ - p0_ ), p0_};
+            }
+            vec3 p0_;
+            vec3 p1_;
+            vec3 p2_;
+        };
+        CLASS_DIMENSION_ALIASES( Triangle );
+
+        struct Tetra {
+            Tetra() = default;
+            Tetra( vec3 p0, vec3 p1, vec3 p2, vec3 p3 )
+                :
+                    p0_( std::move( p0 ) ),
+                    p1_( std::move( p1 ) ),
+                    p2_( std::move( p2 ) ),
+                    p3_( std::move( p3 ) )
+            {
+            }
+            vec3 p0_;
+            vec3 p1_;
+            vec3 p2_;
+            vec3 p3_;
+        };
+
+        struct Sphere {
+            Sphere() = default;
+            Sphere( vec3 origin, double radius )
+                : origin_( std::move( origin ) ), radius_( std::move( radius ) )
+            {
+            }
+            vec3 origin_;
+            double radius_ { 0 };
+        };
+
+        struct Circle {
+            Circle() = default;
+            Circle( Plane plane, double radius )
+                : plane_( std::move( plane ) ), radius_( std::move( radius ) )
+            {
+            }
+            Plane plane_;
+            double radius_ { 0 };
+        };
+
+        using Disk = Circle;
+    }
 
     namespace Distance {
         /*!
          * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
          */
-        std::tuple< double, vec3 > RINGMESH_API point_to_segment(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1 );
-
-        std::tuple< double, vec2 > RINGMESH_API point_to_segment(
-            const vec2& p,
-            const vec2& p0,
-            const vec2& p1 );
+        template< index_t DIMENSION >
+        std::tuple< double, vecn< DIMENSION > > point_to_segment(
+            const Geometry::Point< DIMENSION >& point,
+            const Geometry::Segment< DIMENSION >& segment );
 
         /*!
          * Computes the smallest distance between a point and a triangle
-         * @param[in] point the point to test
-         * @param[in] V0 the first vertex of the triangle
-         * @param[in] V1 the second vertex of the triangle
-         * @param[in] V2 the third vertex of the triangle
          * @return a tuple containing the following elements (in this order):
          * - the smallest distance
          * - the closest point on the triangle
          */
-        std::tuple< double, vec3 > RINGMESH_API point_to_triangle(
-            const vec3& point,
-            const vec3& V0,
-            const vec3& V1,
-            const vec3& V2 );
-
-        /*!
-         * Computes the smallest distance between a point and a triangle
-         * @param[in] point the point to test
-         * @param[in] V0 the first vertex of the triangle
-         * @param[in] V1 the second vertex of the triangle
-         * @param[in] V2 the third vertex of the triangle
-         * @return a tuple containing:
-         * - the smallest distance.
-         * - the closest_point the closest point on the triangle.
-         */
-        std::tuple< double, vec2 > RINGMESH_API point_to_triangle(
-            const vec2& point,
-            const vec2& V0,
-            const vec2& V1,
-            const vec2& V2 );
+        template< index_t DIMENSION >
+        std::tuple< double, vecn< DIMENSION > > point_to_triangle(
+            const Geometry::Point< DIMENSION >& point,
+            const Geometry::Triangle< DIMENSION >& triangle );
 
         /*!
          * Computes the distance between a point and a tetrahedron
-         * @param[in] p the point
-         * @param[in] p0 the first vertex of the tetrahedron
-         * @param[in] p1 the second vertex of the tetrahedron
-         * @param[in] p2 the third vertex of the tetrahedron
-         * @param[in] p3 the fourth vertex of the tetrahedron
          * @return a tuple containing:
          * - the distance between the point and the tetrahedron facets.
          * - the nearest point on the tetrahedron.
          */
         std::tuple< double, vec3 > RINGMESH_API point_to_tetra(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3 );
+            const Geometry::Point3D& point,
+            const Geometry::Tetra& tetra );
         /*!
          * Computes the distance between a point and a plane
-         * @param[in] p the point to project
-         * @param[in] N_plane the normal of the plane
-         * @param[in] O_plane a point of the plane
          * @return a tuple containing:
          * - the distance between the point and the plane.
          * - the nearest point on the plane.
          */
         std::tuple< double, vec3 > RINGMESH_API point_to_plane(
-            const vec3& p,
-            const vec3& N_plane,
-            const vec3& O_plane );
+            const Geometry::Point3D& point,
+            const Geometry::Plane& plane );
     }
 
     namespace Intersection {
         /*!
          * Computes the intersection between a plane and a line
-         * @param[in] O_line a point on the line
-         * @param[in] D_line the direction of the plane
-         * @param[in] O_plane a point on the plane
-         * @param[in] N_plane the normal of the plane
          * @return returns a tuple containing a boolean (true if there is an intersection)
          * and the intersected point if any.
          */
         std::tuple< bool, vec3 > RINGMESH_API line_plane(
-            const vec3& O_line,
-            const vec3& D_line,
-            const vec3& O_plane,
-            const vec3& N_plane );
+            const Geometry::Line3D& line,
+            const Geometry::Plane& plane );
 
         /*!
          * Computes the intersection(s) between a sphere and a line
-         * @param[in] O_line a point on the line
-         * @param[in] D_line the direction of the plane
-         * @param[in] O_sphere the center of the sphere
-         * @param[in] radius the radius of the sphere
          * @return returns a tuple containing a boolean (true if there is at least one intersection)
          * and the intersected points.
          */
         std::tuple< bool, std::vector< vec3 > > RINGMESH_API line_sphere(
-            const vec3& O_line,
-            const vec3& D_line,
-            const vec3& O_sphere,
-            double radius );
+            const Geometry::Line3D& line,
+            const Geometry::Sphere& sphere );
 
         /*!
          * Computes the intersection(s) between a sphere and a segment
-         * @param[in] p0 the first vertex of the segment
-         * @param[in] p1 the second vertex of the segment
-         * @param[in] O_sphere the center of the sphere
-         * @param[in] radius the radius of the sphere
          * @return returns a tuple containing a boolean (true if there is at least one intersection)
          * and the intersected points.
          */
         std::tuple< bool, std::vector< vec3 > > RINGMESH_API segment_sphere(
-            const vec3& seg0,
-            const vec3& seg1,
-            const vec3& O_sphere,
-            double radius );
+            const Geometry::Segment3D& segment,
+            const Geometry::Sphere& sphere );
 
         /*!
          * Computes the intersection between a plane and a segment
-         * @param[in] p0 the first vertex of the segment
-         * @param[in] p1 the second vertex of the segment
-         * @param[in] O_plane a point on the plane
-         * @param[in] N_plane the normal of the plane
          * @return returns a tuple containing a boolean (true if there is an intersection)
          * and the intersected point if any.
          */
         std::tuple< bool, vec3 > RINGMESH_API segment_plane(
-            const vec3& seg0,
-            const vec3& seg1,
-            const vec3& O_plane,
-            const vec3& N_plane );
+            const Geometry::Segment3D& segment,
+            const Geometry::Plane& plane );
 
         /*!
          * Computes the intersection of a segment and a triangle
-         * @param[in] seg0 the first vertex of the segment
-         * @param[in] seg1 the second vertex of the segment
-         * @param[in] trgl0 the first vertex of the triangle
-         * @param[in] trgl1 the second vertex of the triangle
-         * @param[in] trgl2 the third vertex of the triangle
          * @return a tuple containing a boolean (true is there is an intersection)
          * and the intersected point if any.
          */
         std::tuple< bool, vec3 > RINGMESH_API segment_triangle(
-            const vec3& seg0,
-            const vec3& seg1,
-            const vec3& trgl0,
-            const vec3& trgl1,
-            const vec3& trgl2 );
+            const Geometry::Segment3D& segment,
+            const Geometry::Triangle3D& triangle );
 
         /*!
          * Computes the intersection(s) between a circle and a plane
-         * @param[in] O_plane a point on the plane
-         * @param[in] N_plane the normal of the plane
-         * @param[in] O_circle the center of the circle
-         * @param[in] N_circle the normal of the plane supporting the circle
-         * @param[in] radius the radius of the circle
          * @return returns a tuple containing a boolean (true if there is at least one intersection)
          * and the intersected points if any.
          */
         std::tuple< bool, std::vector< vec3 > > RINGMESH_API circle_plane(
-            const vec3& O_plane,
-            const vec3& N_plane,
-            const vec3& O_circle,
-            const vec3& N_circle,
-            double radius );
+            const Geometry::Circle& circle,
+            const Geometry::Plane& plane );
 
         /*!
          * Computes the intersection between a disk and a segment
-         * @param[in] p0 the first vertex of the segment
-         * @param[in] p1 the second vertex of the segment
-         * @param[in] O_disk the center of the disk
-         * @param[in] N_disk the normal of the plane supporting the disk
-         * @param[in] radius the radius of the disk
          * @return returns a tuple containing a boolean (true if there is an intersection)
          * and the intersected point if any.
          */
-        std::tuple< bool, vec3 > RINGMESH_API disk_segment(
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& O_disk,
-            const vec3& N_disk,
-            double radius );
+        std::tuple< bool, vec3 > RINGMESH_API segment_disk(
+            const Geometry::Segment3D& segment,
+            const Geometry::Disk& disk );
 
         /*!
          * Computes the intersection(s) between a circle and a triangle
-         * @param[in] p0 the first vertex of the triangle
-         * @param[in] p1 the second vertex of the triangle
-         * @param[in] p2 the third vertex of the triangle
-         * @param[in] O_circle the center of the circle
-         * @param[in] N_circle the normal of the plane supporting the circle
-         * @param[in] radius the radius of the circle
          * @return returns a tuple containing a boolean (true if there is at least one intersection)
          * and the intersected points if any.
          */
-        std::tuple< bool, std::vector< vec3 > > RINGMESH_API circle_triangle(
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& O_circle,
-            const vec3& N_circle,
-            double radius );
+        std::tuple< bool, std::vector< vec3 > > RINGMESH_API triangle_circle(
+            const Geometry::Triangle3D& triangle,
+            const Geometry::Circle& circle );
 
         /*!
          * Computes the intersection between two planes
-         * @param[in] O_P0 a point on the first plane
-         * @param[in] N_P0 the normal of the first plane
-         * @param[in] O_P1 a point on the second plane
-         * @param[in] N_P1 the normal of the second plane
          * @return a tuple containing:
          * - a boolean: true is there is an intersection between the planes.
-         * - a point on the intersected line if any.
-         * - the direction of the intersected line if any.
+         * - the intersected line if any.
          */
-        std::tuple< bool, vec3, vec3 > RINGMESH_API plane_plane(
-            const vec3& O_P0,
-            const vec3& N_P0,
-            const vec3& O_P1,
-            const vec3& N_P1 );
+        std::tuple< bool, Geometry::Line3D > RINGMESH_API plane_plane(
+            const Geometry::Plane& plane0,
+            const Geometry::Plane& plane1 );
 
         /*!
          * Computes the intersection between two lines
-         * @param[in] O_line0 a point on the first line
-         * @param[in] D_line0 the direction of the first line
-         * @param[in] O_line1 a point on the second line
-         * @param[in] D_line1 the direction of the second line
          * @return a tuple containing:
          * - a boolean: true if there is an intersection.
          * - the intersected point if any.
          */
         std::tuple< bool, vec2 > RINGMESH_API line_line(
-            const vec2& O_line0,
-            const vec2& D_line0,
-            const vec2& O_line1,
-            const vec2& D_line1 );
+            const Geometry::Line2D& line0,
+            const Geometry::Line2D& line1 );
 
         /*!
          * Computes the intersection between two segments
-         * @param[in] p0_seg0 the first vertex of the segment
-         * @param[in] p1_seg0 the second vertex of the segment
-         * @param[in] p0_seg1 the first vertex of the segment
-         * @param[in] p1_seg1 the second vertex of the segment
          * @return a tuple containing:
          * - a boolean: true if there is an intersection.
          * - the intersected point if any.
          */
         std::tuple< bool, vec2 > RINGMESH_API segment_segment(
-            const vec2& p0_seg0,
-            const vec2& p1_seg0,
-            const vec2& p0_seg1,
-            const vec2& p1_seg1 );
+            const Geometry::Segment2D& segment0,
+            const Geometry::Segment2D& segment1 );
 
         /*!
          * Computes the intersection between a segment and a line
-         * @param[in] p0_seg the first vertex of the segment
-         * @param[in] p1_seg the second vertex of the segment
-         * @param[in] O_line a point on the line
-         * @param[in] D_line the direction of the line
          * @return a tuple containing:
          * - a boolean: true if there is an intersection.
          * - the intersected point if any.
          */
         std::tuple< bool, vec2 > RINGMESH_API segment_line(
-            const vec2& p0_seg,
-            const vec2& p1_seg,
-            const vec2& O_line,
-            const vec2& D_line );
+            const Geometry::Segment2D& segment,
+            const Geometry::Line2D& line );
     }
 
-    /*!
-     * @brief Tests if a point is on a segment
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @return returns true if the point is inside
-     */
-    bool RINGMESH_API point_inside_segment(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1 );
+    namespace Position {
 
-    /*!
-     * @brief Tests if a point is inside a triangle
-     * @details if it is inside a prism based on the triangle and its normal
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the triangle
-     * @param[in] p1 the second vertex of the triangle
-     * @param[in] p2 the third vertex of the triangle
-     * @return returns true if the point is inside
-     */
-    template< index_t DIMENSION >
-    bool point_inside_triangle(
-        const vecn< DIMENSION >& p,
-        const vecn< DIMENSION >& p0,
-        const vecn< DIMENSION >& p1,
-        const vecn< DIMENSION >& p2 );
+        /*!
+         * @brief Tests if a point is on a segment
+         * @return returns true if the point is inside
+         */
+        bool RINGMESH_API point_inside_segment(
+            const Geometry::Point3D& point,
+            const Geometry::Segment3D& segment );
 
-    /*!
-     * Tests if a point is inside a tetrahedron
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the tetrahedron
-     * @param[in] p1 the second vertex of the tetrahedron
-     * @param[in] p2 the third vertex of the tetrahedron
-     * @param[in] p3 the fourth vertex of the tetrahedron
-     * @return returns true if the point is inside the tetrahedron
-     */
-    bool RINGMESH_API point_inside_tetra(
-        const vec3& p,
+        /*!
+         * @brief Tests if a point is inside a triangle
+         * @details if it is inside a prism based on the triangle and its normal
+         * @return returns true if the point is inside
+         */
+        template< index_t DIMENSION >
+        bool point_inside_triangle(
+            const Geometry::Point< DIMENSION >& point,
+            const Geometry::Triangle< DIMENSION >& triangle );
+
+        /*!
+         * Tests if a point is inside a tetrahedron
+         * @return returns true if the point is inside the tetrahedron
+         */
+        bool RINGMESH_API point_inside_tetra(
+            const Geometry::Point3D& point,
+            const Geometry::Tetra& tetra );
+
+        /*!
+         * Returns the point side to a segment
+         */
+        Sign RINGMESH_API point_side_to_segment(
+            const Geometry::Point2D& point,
+            const Geometry::Segment2D& segment );
+
+        /*!
+         * Returns the point side to a plane
+         */
+        Sign RINGMESH_API point_side_to_plane(
+            const Geometry::Point3D& point,
+            const Geometry::Plane& plane );
+
+    }
+
+    double RINGMESH_API triangle_signed_area(
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3 );
+        const vec3& triangle_normal );
 
     /*!
      * Computes the orthogonal projection of a point on a segment
