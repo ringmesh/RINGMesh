@@ -86,7 +86,7 @@ namespace RINGMesh {
 
         template< index_t DIMENSION >
         using Point = vecn< DIMENSION >;
-        CLASS_DIMENSION_ALIASES( Point );
+        ALIAS_2D_AND_3D( Point );
 
         template< index_t DIMENSION >
         struct Segment {
@@ -114,7 +114,7 @@ namespace RINGMesh {
             vecn< DIMENSION > p0_;
             vecn< DIMENSION > p1_;
         };
-        CLASS_DIMENSION_ALIASES( Segment );
+        ALIAS_2D_AND_3D( Segment );
 
         template< index_t DIMENSION >
         struct Line {
@@ -132,7 +132,7 @@ namespace RINGMesh {
             vecn< DIMENSION > origin_;
             vecn< DIMENSION > direction_;
         };
-        CLASS_DIMENSION_ALIASES( Line );
+        ALIAS_2D_AND_3D( Line );
 
         struct Plane {
             Plane() = default;
@@ -187,7 +187,7 @@ namespace RINGMesh {
             vec3 p1_;
             vec3 p2_;
         };
-        CLASS_DIMENSION_ALIASES( Triangle );
+        ALIAS_2D_AND_3D( Triangle );
 
         struct Tetra {
             Tetra() = default;
