@@ -311,19 +311,15 @@ void test_circle_triangle_intersection()
     Logger::out( "TEST", "Test Circle-Triangle intersections" );
     Geometry::Triangle3D triangle { { 1., 1., 0. }, { 2., 3., 0. }, { 4., -1., 0. } };
 
-    // The circle is adjacent to the triangle plane on a triangle border
-//    Geometry::Circle circle1 { { { 1., 1., 0. }, { 1.5, 2., 4. } }, 4. };
-//    bool does_circle1_intersect_triangle;
-//    std::vector< vec3 > results1;
-//    std::tie( does_circle1_intersect_triangle, results1 ) =
-//        Intersection::triangle_circle( triangle, circle1 );
-//    vec3 answer1 { 1.5, 2., 0. };
-//    verdict( does_circle1_intersect_triangle && results1.size() == 1,
-//        "Test1 (number of points)" );
-//    verdict( are_almost_equal( results1[0], answer1 ),
-//        "Test1 (intersection coordinates)" );
+    // The circle is (almost) adjacent to the triangle plane on a triangle border
+    Geometry::Circle circle1 { { { 1., 1., 0. }, { 1.5, 2., 4. } }, 4. };
+    bool does_circle1_intersect_triangle;
+    std::vector< vec3 > results1;
+    std::tie( does_circle1_intersect_triangle, results1 ) =
+        Intersection::triangle_circle( triangle, circle1 );
+    verdict( !does_circle1_intersect_triangle, "Test1 (number of points)" );
 
-// One point inside triangle the other one outside
+    // One point inside triangle the other one outside
     Geometry::Circle circle2 { { { 1., 1., 0. }, { 2., 2., 0. } }, 1. };
     bool does_circle2_intersect_triangle;
     std::vector< vec3 > results2;
@@ -335,17 +331,13 @@ void test_circle_triangle_intersection()
     verdict( are_almost_equal( results2[0], answer2 ),
         "Test2 (intersection coordinates)" );
 
-    // The circle is adjacent to the triangle plane on a triangle vertex
-//    Geometry::Circle circle3 { { { 1., 1., 0. }, { 1., 1., 4. } }, 4. };
-//    bool does_circle3_intersect_triangle;
-//    std::vector< vec3 > results3;
-//    std::tie( does_circle3_intersect_triangle, results3 ) =
-//        Intersection::triangle_circle( triangle, circle3 );
-//    vec3 answer3 { triangle.p0_ };
-//    verdict( does_circle3_intersect_triangle && results3.size() == 1,
-//        "Test3 (number of points)" );
-//    verdict( are_almost_equal( results3[0], answer3 ),
-//        "Test3 (intersection coordinates)" );
+    // The circle is (almost) adjacent to the triangle plane on a triangle vertex
+    Geometry::Circle circle3 { { { 1., 1., 0. }, { 1., 1., 4. } }, 4. };
+    bool does_circle3_intersect_triangle;
+    std::vector< vec3 > results3;
+    std::tie( does_circle3_intersect_triangle, results3 ) =
+        Intersection::triangle_circle( triangle, circle3 );
+    verdict( !does_circle3_intersect_triangle, "Test3 (number of points)" );
 
     Logger::out( "TEST", " " );
 }
