@@ -126,7 +126,7 @@ namespace RINGMesh {
             {
             }
             Line( Segment< DIMENSION > segment )
-                : Line( segment.p1_ - segment.p0_, std::move( segment.p0_ ) )
+                : Line( segment.direction(), std::move( segment.p0_ ) )
             {
             }
             vecn< DIMENSION > origin_;
@@ -214,6 +214,8 @@ namespace RINGMesh {
             vec3 origin_;
             double radius_ { 0 };
         };
+
+        using Ball = Sphere;
 
         struct Circle {
             Circle() = default;
