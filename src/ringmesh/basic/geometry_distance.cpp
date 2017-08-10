@@ -35,6 +35,8 @@
 
 #include <ringmesh/basic/geometry.h>
 
+#include <array>
+
 #include <geogram/mesh/mesh.h>
 
 /*!
@@ -47,24 +49,26 @@
 namespace RINGMesh {
     namespace Distance {
 
+        template< >
         std::tuple< double, vec3 > point_to_triangle(
-            const vec3& point,
-            const vec3& V0,
-            const vec3& V1,
-            const vec3& V2 )
+            const Geometry::Point3D& point,
+            const Geometry::Triangle3D& triangle )
         {
-            vec3 diff = V0 - point;
-            vec3 edge0 = V1 - V0;
-            vec3 edge1 = V2 - V0;
-            double a00 = length2( edge0 );
-            double a01 = dot( edge0, edge1 );
-            double a11 = length2( edge1 );
-            double b0 = dot( diff, edge0 );
-            double b1 = dot( diff, edge1 );
-            double c = length2( diff );
-            double det = std::fabs( a00 * a11 - a01 * a01 );
-            double s = a01 * b1 - a11 * b0;
-            double t = a01 * b0 - a00 * b1;
+            const vec3& V0 = triangle.p0_;
+            const vec3& V1 = triangle.p1_;
+            const vec3& V2 = triangle.p2_;
+            vec3 diff { V0 - point };
+            vec3 edge0 { V1 - V0 };
+            vec3 edge1 { V2 - V0 };
+            double a00 { length2( edge0 ) };
+            double a01 { dot( edge0, edge1 ) };
+            double a11 { length2( edge1 ) };
+            double b0 { dot( diff, edge0 ) };
+            double b1 { dot( diff, edge1 ) };
+            double c { length2( diff ) };
+            double det { std::fabs( a00 * a11 - a01 * a01 ) };
+            double s { a01 * b1 - a11 * b0 };
+            double t { a01 * b0 - a00 * b1 };
             double sqrDistance;
 
             if( s + t <= det ) {
@@ -213,63 +217,62 @@ namespace RINGMesh {
                 sqrDistance = 0.0;
             }
 
-            vec3 closest_point = V0 + s * edge0 + t * edge1;
+            vec3 closest_point { V0 + s * edge0 + t * edge1 };
             return std::make_tuple( std::sqrt( sqrDistance ), closest_point );
         }
 
+        template< >
         std::tuple< double, vec2 > point_to_segment(
-            const vec2& p,
-            const vec2& p0,
-            const vec2& p1 )
+            const Geometry::Point2D& point,
+            const Geometry::Segment2D& segment )
         {
             // The direction vector is not unit length.  The normalization is deferred
             // until it is needed.
-            vec2 direction = p1 - p0;
-            vec2 diff = p - p1;
+            vec2 direction = segment.p1_ - segment.p0_;
+            vec2 diff = point - segment.p1_;
             double t = dot( direction, diff );
             vec2 nearest_p;
             if( t >= global_epsilon ) {
-                nearest_p = p1;
+                nearest_p = segment.p1_;
             } else {
-                diff = p - p0;
+                diff = point - segment.p0_;
                 t = dot( direction, diff );
                 if( t <= global_epsilon ) {
-                    nearest_p = p0;
+                    nearest_p = segment.p0_;
                 } else {
                     double sqrLength = dot( direction, direction );
                     if( sqrLength > global_epsilon ) {
                         t /= sqrLength;
-                        nearest_p = p0 + t * direction;
+                        nearest_p = segment.p0_ + t * direction;
                     } else {
-                        nearest_p = p0;
+                        nearest_p = segment.p0_;
                     }
                 }
             }
 
-            diff = p - nearest_p;
+            diff = point - nearest_p;
             return std::make_tuple( std::sqrt( dot( diff, diff ) ), nearest_p );
         }
 
+        template< >
         std::tuple< double, vec2 > point_to_triangle(
-            const vec2& point,
-            const vec2& V0,
-            const vec2& V1,
-            const vec2& V2 )
+            const Geometry::Point2D& point,
+            const Geometry::Triangle2D& triangle )
         {
-            double result = max_float64();
+            double result { max_float64() };
             vec2 closest_point;
-            if( point_inside_triangle( point, V0, V1, V2 ) ) {
+            if( Position::point_inside_triangle( point, triangle ) ) {
                 closest_point = point;
                 result = 0.0;
             } else {
-                vec2 closest[3];
-                double distance[3];
-                std::tie( distance[0], closest[0] ) = point_to_segment( point, V0,
-                    V1 );
-                std::tie( distance[1], closest[1] ) = point_to_segment( point, V1,
-                    V2 );
-                std::tie( distance[2], closest[2] ) = point_to_segment( point, V2,
-                    V0 );
+                std::array< vec2, 3 > closest;
+                std::array< double, 3 > distance;
+                std::tie( distance[0], closest[0] ) = point_to_segment( point, {
+                    triangle.p0_, triangle.p1_ } );
+                std::tie( distance[1], closest[1] ) = point_to_segment( point, {
+                    triangle.p1_, triangle.p2_ } );
+                std::tie( distance[2], closest[2] ) = point_to_segment( point, {
+                    triangle.p2_, triangle.p0_ } );
                 if( distance[0] < distance[1] ) {
                     if( distance[0] < distance[2] ) {
                         result = distance[0];
@@ -292,24 +295,22 @@ namespace RINGMesh {
         }
 
         std::tuple< double, vec3 > point_to_tetra(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3 )
+            const Geometry::Point3D& point,
+            const Geometry::Tetra& tetra )
         {
-            vec3 vertices[4] = { p0, p1, p2, p3 };
-            double dist = max_float64();
+            std::array< vec3, 4 > vertices { { tetra.p0_, tetra.p1_, tetra.p2_,
+                                               tetra.p3_ } };
+            double dist { max_float64() };
             vec3 nearest_p;
             for( index_t f : range(
                 GEO::MeshCellDescriptors::tet_descriptor.nb_facets ) ) {
-                double distance = max_float64();
+                double distance { max_float64() };
                 vec3 cur_p;
                 std::tie( distance, cur_p ) =
-                    point_to_triangle( p,
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] );
+                    point_to_triangle( point,
+                        { vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
+                          vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
+                          vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] } );
                 if( distance < dist ) {
                     dist = distance;
                     nearest_p = cur_p;
@@ -318,38 +319,51 @@ namespace RINGMesh {
             return std::make_tuple( dist, nearest_p );
         }
 
+        template< >
         std::tuple< double, vec3 > point_to_segment(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1 )
+            const Geometry::Point3D& point,
+            const Geometry::Segment3D& segment )
         {
-            bool can_point_be_projected = false;
+            bool can_point_be_projected;
             vec3 nearest_p;
             std::tie( can_point_be_projected, nearest_p ) = point_segment_projection(
-                p, p0, p1 );
+                point, segment.p0_, segment.p1_ );
             if( can_point_be_projected ) {
-                return std::make_tuple( length( nearest_p - p ), nearest_p );
+                return std::make_tuple( length( nearest_p - point ), nearest_p );
             } else {
-                double p0_sq = length2( p0 - p );
-                double p1_sq = length2( p1 - p );
+                double p0_sq { length2( segment.p0_ - point ) };
+                double p1_sq { length2( segment.p1_ - point ) };
                 if( p0_sq < p1_sq ) {
-                    return std::make_tuple( std::sqrt( p0_sq ), p0 );
+                    return std::make_tuple( std::sqrt( p0_sq ), segment.p0_ );
                 } else {
-                    return std::make_tuple( std::sqrt( p1_sq ), p1 );
+                    return std::make_tuple( std::sqrt( p1_sq ), segment.p1_ );
                 }
             }
         }
 
         std::tuple< double, vec3 > point_to_plane(
-            const vec3& p,
-            const vec3& N_plane,
-            const vec3& O_plane )
+            const Geometry::Point3D& point,
+            const Geometry::Plane& plane )
         {
-            vec3 N_unit_plane { normalize( N_plane ) };
-            vec3 v { p - O_plane };
-            double distance { dot( v, N_unit_plane ) };
-            vec3 projected_p { p - distance * N_unit_plane };
+            vec3 v { point - plane.origin_ };
+            double distance { dot( v, plane.normal_ ) };
+            vec3 projected_p { point - distance * plane.normal_ };
             return std::make_tuple( distance, projected_p );
         }
+
+        template std::tuple< double, vecn< 2 > > RINGMESH_API point_to_segment(
+            const Geometry::Point< 2 >&,
+            const Geometry::Segment< 2 >& );
+        template std::tuple< double, vecn< 2 > > RINGMESH_API point_to_triangle(
+            const Geometry::Point< 2 >&,
+            const Geometry::Triangle< 2 >& );
+
+        template std::tuple< double, vecn< 3 > > RINGMESH_API point_to_segment(
+            const Geometry::Point< 3 >&,
+            const Geometry::Segment< 3 >& );
+        template std::tuple< double, vecn< 3 > > RINGMESH_API point_to_triangle(
+            const Geometry::Point< 3 >&,
+            const Geometry::Triangle< 3 >& );
     }
 }
+
