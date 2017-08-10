@@ -489,7 +489,8 @@ namespace RINGMesh {
             }
             tetmesh_constraint_.edges.create_edges( nb_well_edges );
             GEO::Attribute< index_t > edge_region(
-                tetmesh_constraint_.edges.attributes(), surface_att_name );
+                tetmesh_constraint_.edges.attributes(),
+                GeoModelMeshPolygonsBase< 3 >::surface_att_name );
             index_t cur_vertex_id { nb_surface_vertices };
             index_t cur_edge { 0 };
             for( index_t w : range( well_edges.size() ) ) {
@@ -508,7 +509,8 @@ namespace RINGMesh {
         index_t offset_polygons { 0 };
         tetmesh_constraint_.facets.create_triangles( nb_polygons );
         GEO::Attribute< index_t > surface_region(
-            tetmesh_constraint_.facets.attributes(), surface_att_name );
+            tetmesh_constraint_.facets.attributes(),
+            GeoModelMeshPolygonsBase< 3 >::surface_att_name );
         for( const GeoModelMeshEntity3D*& surface : unique_surfaces ) {
             for( index_t t : range( surface->nb_mesh_elements() ) ) {
                 ringmesh_assert( surface->nb_mesh_element_vertices( t ) == 3 );
