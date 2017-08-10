@@ -97,7 +97,7 @@ namespace RINGMesh {
             set_vertex_color( 1, 0, 0 );
         }
     };
-    CLASS_DIMENSION_ALIASES( GeogramPointSetMeshGfx );
+    ALIAS_2D_3D( GeogramPointSetMeshGfx );
 
     template< index_t DIMENSION >
     class GeogramLineMeshGfx: public LineMeshGfx< DIMENSION > {
@@ -127,7 +127,7 @@ namespace RINGMesh {
         }
 
     };
-    CLASS_DIMENSION_ALIASES( GeogramLineMeshGfx );
+    ALIAS_2D_3D( GeogramLineMeshGfx );
 
     template< index_t DIMENSION >
     class GeogramSurfaceMeshGfx: public SurfaceMeshGfx< DIMENSION > {
@@ -169,7 +169,7 @@ namespace RINGMesh {
             mesh_gfx_.set_mesh_width( s );
         }
     };
-    CLASS_DIMENSION_ALIASES( GeogramSurfaceMeshGfx );
+    ALIAS_2D_3D( GeogramSurfaceMeshGfx );
 
     template< index_t DIMENSION >
     class GeogramVolumeMeshGfx: public VolumeMeshGfx< DIMENSION > {

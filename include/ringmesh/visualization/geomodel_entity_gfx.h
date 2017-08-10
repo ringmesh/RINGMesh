@@ -54,7 +54,9 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshGfx );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshGfx );
     FORWARD_DECLARATION_DIMENSION_CLASS( MeshEntityGfx );
-    FORWARD_DECLARATION_3D_CLASS( GeoModelGfx );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGfx );
+
+    ALIAS_3D( GeoModelGfx );
 }
 
 namespace RINGMesh {
@@ -399,10 +401,8 @@ namespace RINGMesh {
          */
         void set_cell_colors_by_type( index_t region_id );
         void set_cell_type_visibility( CellType t, bool is_visible );
-        void set_cell_type_visibility(
-            index_t region_id,
-            CellType t,
-            bool is_visible );
+        void set_cell_type_visibility( index_t region_id, CellType t,
+        bool is_visible );
         /*!
          * Sets the cell region shrink to all the regions
          * @param[in] shrink the shrink
@@ -417,7 +417,7 @@ namespace RINGMesh {
 
     };
 
-    CLASS_DIMENSION_ALIASES( RegionGfxEntity );
+    ALIAS_2D_3D( RegionGfxEntity );
 }
 
 #endif

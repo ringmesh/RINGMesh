@@ -153,7 +153,7 @@ include(cmake/utils.cmake)
 if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion 
-        -Wsign-conversion -Wdouble-promotion)
+        -Wsign-conversion -Wdouble-promotion -Wno-attributes)
     
     # Determine gcc version and activate additional warnings available in latest versions
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)

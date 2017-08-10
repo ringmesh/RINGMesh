@@ -111,7 +111,7 @@ namespace RINGMesh {
         index_t id_ { NO_ID };
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelEntity );
+    ALIAS_2D_3D( GeoModelEntity );
 
     template< index_t DIMENSION >
     class Universe: public GeoModelEntity< DIMENSION > {
@@ -177,7 +177,7 @@ namespace RINGMesh {
 
     };
 
-    CLASS_DIMENSION_ALIASES( Universe );
+    ALIAS_2D_3D( Universe );
 
     template< index_t DIMENSION >
     class UniverseAccess {
@@ -213,6 +213,6 @@ namespace RINGMesh {
         Universe< DIMENSION >& universe_;
     };
 
-    CLASS_DIMENSION_ALIASES( UniverseAccess );
+    ALIAS_2D_3D( UniverseAccess );
 
 }
