@@ -593,7 +593,7 @@ namespace RINGMesh {
         std::vector< GeologicalEntityType > geological_entity_types_;
     };
 
-    ALIAS_2D_3D( GeoModelBuilderRemovalBase );
+    ALIAS_2D_AND_3D( GeoModelBuilderRemovalBase );
 
     template< index_t DIMENSION >
     class GeoModelBuilderRemoval: public GeoModelBuilderRemovalBase< DIMENSION > {

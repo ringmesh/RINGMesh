@@ -962,5 +962,5 @@ namespace {
             std::vector< std::string >& filenames );
     };
 
-    ALIAS_2D_3D (GeoModelHandlerGM);
+    ALIAS_2D_AND_3D (GeoModelHandlerGM);
 }

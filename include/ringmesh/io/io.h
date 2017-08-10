@@ -152,12 +152,12 @@ namespace RINGMesh {
             const std::string& format );
     };
 
-    ALIAS_2D_3D( GeoModelIOHandler );
+    ALIAS_2D_AND_3D( GeoModelIOHandler );
 
     template< index_t DIMENSION >
     using GeoModelIOHandlerFactory = Factory< std::string, GeoModelIOHandler< DIMENSION > >;
 
-    ALIAS_2D_3D( GeoModelIOHandlerFactory );
+    ALIAS_2D_AND_3D( GeoModelIOHandlerFactory );
 
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler {

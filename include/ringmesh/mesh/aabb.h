@@ -264,7 +264,7 @@ namespace RINGMesh {
             index_t element_id ) const override;
     };
 
-    ALIAS_2D_3D( BoxAABBTree );
+    ALIAS_2D_AND_3D( BoxAABBTree );
 
     template< index_t DIMENSION >
     class LineAABBTree: public AABBTree< DIMENSION > {
@@ -314,7 +314,7 @@ namespace RINGMesh {
         const LineMesh< DIMENSION >& mesh_;
     };
 
-    ALIAS_2D_3D( LineAABBTree );
+    ALIAS_2D_AND_3D( LineAABBTree );
 
     template< index_t DIMENSION >
     class SurfaceAABBTree: public AABBTree< DIMENSION > {
@@ -365,7 +365,7 @@ namespace RINGMesh {
         const SurfaceMeshBase< DIMENSION >& mesh_;
     };
 
-    ALIAS_2D_3D( SurfaceAABBTree );
+    ALIAS_2D_AND_3D( SurfaceAABBTree );
 
     template< index_t DIMENSION >
     class VolumeAABBTree: public AABBTree< DIMENSION > {

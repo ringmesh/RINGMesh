@@ -182,6 +182,6 @@ namespace RINGMesh {
          */
         bool delete_points_;
     };
-    ALIAS_2D_3D( NNSearch );
+    ALIAS_2D_AND_3D( NNSearch );
 
 }

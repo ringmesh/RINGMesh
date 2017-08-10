@@ -417,7 +417,7 @@ namespace RINGMesh {
 
     };
 
-    ALIAS_2D_3D( RegionGfxEntity );
+    ALIAS_2D_AND_3D( RegionGfxEntity );
 }
 
 #endif
