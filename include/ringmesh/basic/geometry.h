@@ -232,7 +232,10 @@ namespace RINGMesh {
 
     namespace Distance {
         /*!
-         * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
+         * Computes the smallest distance between a point and a segment
+         * @return a tuple containing the following elements (in this order):
+         * - the smallest distance
+         * - the closest point on the segment
          */
         template< index_t DIMENSION >
         std::tuple< double, vecn< DIMENSION > > point_to_segment(

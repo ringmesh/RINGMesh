@@ -155,15 +155,16 @@ namespace {
         const Geometry::Point3D& point,
         const Geometry::Triangle3D& triangle )
     {
-        // Get another point not in the triangle plane (using its normal)
-        vec3 n { triangle.plane().normal_ };
-
+        vec3 triangle_normal { triangle.plane().normal_ };
         Sign s1 { Position::point_side_to_plane( point,
-            plane_from_triangle_normal_and_edge( n, triangle.p0_, triangle.p1_ ) ) };
+            plane_from_triangle_normal_and_edge( triangle_normal, triangle.p0_,
+                triangle.p1_ ) ) };
         Sign s2 { Position::point_side_to_plane( point,
-            plane_from_triangle_normal_and_edge( n, triangle.p1_, triangle.p2_ ) ) };
+            plane_from_triangle_normal_and_edge( triangle_normal, triangle.p1_,
+                triangle.p2_ ) ) };
         Sign s3 { Position::point_side_to_plane( point,
-            plane_from_triangle_normal_and_edge( n, triangle.p2_, triangle.p0_ ) ) };
+            plane_from_triangle_normal_and_edge( triangle_normal, triangle.p2_,
+                triangle.p0_ ) ) };
 
         if( s1 == ZERO ) {
             if( s2 == ZERO || s3 == ZERO ) {
@@ -190,23 +191,22 @@ namespace {
         const Geometry::Triangle3D& triangle )
     {
         // Get another point not in the triangle plane (using its normal)
-        vec3 n { triangle.plane().normal_ };
-        vec3 q { point + n };
+        vec3 translated_point { point + triangle.plane().normal_ };
 
-        double vol1 { GEO::Geom::tetra_signed_volume( point, q, triangle.p0_,
-            triangle.p1_ ) };
+        double vol1 { GEO::Geom::tetra_signed_volume( point, translated_point,
+            triangle.p0_, triangle.p1_ ) };
         if( is_almost_zero( vol1 ) ) {
             return point_inside_triangle_exact( point, triangle );
         }
         Sign s1 { sign( vol1 ) };
-        double vol2 { GEO::Geom::tetra_signed_volume( point, q, triangle.p1_,
-            triangle.p2_ ) };
+        double vol2 { GEO::Geom::tetra_signed_volume( point, translated_point,
+            triangle.p1_, triangle.p2_ ) };
         if( is_almost_zero( vol2 ) ) {
             return point_inside_triangle_exact( point, triangle );
         }
         Sign s2 { sign( vol2 ) };
-        double vol3 { GEO::Geom::tetra_signed_volume( point, q, triangle.p2_,
-            triangle.p0_ ) };
+        double vol3 { GEO::Geom::tetra_signed_volume( point, translated_point,
+            triangle.p2_, triangle.p0_ ) };
         if( is_almost_zero( vol3 ) ) {
             return point_inside_triangle_exact( point, triangle );
         }
