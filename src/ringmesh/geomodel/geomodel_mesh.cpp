@@ -465,7 +465,8 @@ namespace RINGMesh {
         index_t nb = 0;
         nb += nb_entity_vertices( this->geomodel_,
             Corner< DIMENSION >::type_name_static() );
-        nb += nb_entity_vertices( this->geomodel_, Line< DIMENSION >::type_name_static() );
+        nb += nb_entity_vertices( this->geomodel_,
+            Line< DIMENSION >::type_name_static() );
         nb += nb_entity_vertices( this->geomodel_,
             Surface< DIMENSION >::type_name_static() );
         return nb;
@@ -513,7 +514,7 @@ namespace RINGMesh {
     void GeoModelMeshVerticesBase< DIMENSION >::clear()
     {
         this->gmm_.polygons.clear();
-        this->gmm_.edges.clear();
+        this->gmm_.wells.clear();
         vertex_mapper_.clear();
 
         std::unique_ptr< PointSetMeshBuilder< DIMENSION > > builder =
@@ -659,7 +660,7 @@ namespace RINGMesh {
         const std::vector< GMEVertex >& gme_v = gme_vertices( v );
         for( const GMEVertex& info : gme_v ) {
             builder.geometry.set_mesh_entity_vertex( info.gmme, info.v_index, point,
-                false );
+            false );
         }
     }
 
@@ -794,21 +795,18 @@ namespace RINGMesh {
         vertex_maps_[Region3D::type_name_static()] = &region_vertex_maps_;
     }
     /*******************************************************************************/
+    template< index_t DIMENSION >
+    const std::string GeoModelMeshCells< DIMENSION >::region_att_name = "region";
+    template< index_t DIMENSION >
+    const std::string GeoModelMeshCells< DIMENSION >::cell_region_att_name =
+        "cell_region";
 
     template< index_t DIMENSION >
     GeoModelMeshCells< DIMENSION >::GeoModelMeshCells(
         GeoModelMesh< DIMENSION >& gmm,
         GeoModel< DIMENSION >& gm,
         std::unique_ptr< VolumeMesh< DIMENSION > >& mesh )
-        :
-            GeoModelMeshCommon< DIMENSION >( gmm, gm ),
-            mesh_( mesh ),
-            nb_tet_( 0 ),
-            nb_hex_( 0 ),
-            nb_prism_( 0 ),
-            nb_pyramid_( 0 ),
-            nb_connector_( 0 ),
-            mode_( NONE )
+        : GeoModelMeshCommon< DIMENSION >( gmm, gm ), mesh_( mesh )
     {
         this->set_mesh( mesh_.get() );
     }
@@ -838,8 +836,8 @@ namespace RINGMesh {
         }
 
         region_cell_ptr_.resize(
-            this->geomodel_.nb_regions() * to_underlying_type( CellType::UNDEFINED ) + 1,
-            0 );
+            this->geomodel_.nb_regions() * to_underlying_type( CellType::UNDEFINED )
+                + 1, 0 );
 
         // Total number of  cells
         std::vector< index_t > nb_cells_per_type(
@@ -925,9 +923,8 @@ namespace RINGMesh {
                     cur_cell_type )]
                     + cur_cell_per_type[to_underlying_type( cur_cell_type )]++;
                 for( index_t v : range( mesh_->nb_cell_vertices( cur_cell ) ) ) {
-                    index_t region_vertex_index =
-                        region.mesh_element_vertex_index(
-                            ElementLocalVertex( c, v ) );
+                    index_t region_vertex_index = region.mesh_element_vertex_index(
+                        ElementLocalVertex( c, v ) );
                     index_t global_vertex_id = geomodel_vertices.geomodel_vertex_id(
                         region.gmme(), region_vertex_index );
                     mesh_builder->set_cell_vertex( cur_cell, v, global_vertex_id );
@@ -948,11 +945,11 @@ namespace RINGMesh {
         mesh_builder->permute_cells( sorted_indices );
 
         // Cache some values
-        nb_tet_ = nb_cells_per_type[to_underlying_type( CellType::TETRAHEDRON )];
-        nb_hex_ = nb_cells_per_type[to_underlying_type( CellType::HEXAHEDRON )];
-        nb_prism_ = nb_cells_per_type[to_underlying_type( CellType::PRISM )];
-        nb_pyramid_ = nb_cells_per_type[to_underlying_type( CellType::PYRAMID )];
-        nb_connector_ = nb_cells_per_type[to_underlying_type(
+        nb_tets_ = nb_cells_per_type[to_underlying_type( CellType::TETRAHEDRON )];
+        nb_hexs_ = nb_cells_per_type[to_underlying_type( CellType::HEXAHEDRON )];
+        nb_prisms_ = nb_cells_per_type[to_underlying_type( CellType::PRISM )];
+        nb_pyramids_ = nb_cells_per_type[to_underlying_type( CellType::PYRAMID )];
+        nb_connectors_ = nb_cells_per_type[to_underlying_type(
             CellType::UNCLASSIFIED )];
     }
 
@@ -1179,7 +1176,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_tet() const
     {
         test_and_initialize();
-        return nb_tet_;
+        return nb_tets_;
     }
 
     template< index_t DIMENSION >
@@ -1206,7 +1203,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_hex() const
     {
         test_and_initialize();
-        return nb_hex_;
+        return nb_hexs_;
     }
 
     template< index_t DIMENSION >
@@ -1233,7 +1230,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_prism() const
     {
         test_and_initialize();
-        return nb_prism_;
+        return nb_prisms_;
     }
 
     template< index_t DIMENSION >
@@ -1260,7 +1257,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_pyramid() const
     {
         test_and_initialize();
-        return nb_pyramid_;
+        return nb_pyramids_;
     }
 
     template< index_t DIMENSION >
@@ -1287,7 +1284,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells< DIMENSION >::nb_connector() const
     {
         test_and_initialize();
-        return nb_connector_;
+        return nb_connectors_;
     }
 
     template< index_t DIMENSION >
@@ -1341,8 +1338,8 @@ namespace RINGMesh {
         }
 
         /// 2. Tag all corners to duplicate (vertices on a surface to duplicate)
-        std::vector< ActionOnSurface > actions_on_surfaces( this->geomodel_.nb_surfaces(),
-            SKIP );
+        std::vector< ActionOnSurface > actions_on_surfaces(
+            this->geomodel_.nb_surfaces(), SKIP );
         std::vector< bool > is_vertex_to_duplicate( corner_vertices.size(), false );
         {
             NNSearch< DIMENSION > nn_search( corner_vertices, false );
@@ -1533,7 +1530,8 @@ namespace RINGMesh {
     bool GeoModelMeshCells< DIMENSION >::is_surface_to_duplicate(
         index_t surface_id ) const
     {
-        const Surface< DIMENSION >& cur_surface = this->geomodel_.surface( surface_id );
+        const Surface< DIMENSION >& cur_surface = this->geomodel_.surface(
+            surface_id );
         if( cur_surface.is_on_voi() ) return false;
         switch( this->gmm_.duplicate_mode() ) {
             case ALL:
@@ -1601,11 +1599,11 @@ namespace RINGMesh {
             VolumeMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         mesh_builder->clear( true, false );
         region_cell_ptr_.clear();
-        nb_tet_ = 0;
-        nb_hex_ = 0;
-        nb_prism_ = 0;
-        nb_pyramid_ = 0;
-        nb_connector_ = 0;
+        nb_tets_ = 0;
+        nb_hexs_ = 0;
+        nb_prisms_ = 0;
+        nb_pyramids_ = 0;
+        nb_connectors_ = 0;
 
         mode_ = NONE;
         duplicated_vertex_indices_.clear();
@@ -1685,18 +1683,199 @@ namespace RINGMesh {
     }
 
     /*******************************************************************************/
+    template< index_t DIMENSION >
+    const std::string GeoModelMeshEdges< DIMENSION >::line_att_name = "line";
+    template< index_t DIMENSION >
+    const std::string GeoModelMeshEdges< DIMENSION >::edge_line_att_name =
+        "edge_line";
+
+    template< index_t DIMENSION >
+    GeoModelMeshEdges< DIMENSION >::GeoModelMeshEdges(
+        GeoModelMesh< DIMENSION >& gmm,
+        GeoModel< DIMENSION >& gm,
+        std::unique_ptr< LineMesh< DIMENSION > >& mesh )
+        : GeoModelMeshCommon< DIMENSION >( gmm, gm ), mesh_( mesh )
+    {
+        this->set_mesh( mesh_.get() );
+    }
+
+    template< index_t DIMENSION >
+    GeoModelMeshEdges< DIMENSION >::~GeoModelMeshEdges()
+    {
+        unbind_attribute();
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelMeshEdges< DIMENSION >::bind_attribute()
+    {
+        if( !line_id_.is_bound() ) {
+            line_id_.bind( attribute_manager(), line_att_name );
+        }
+        if( !edge_id_.is_bound() ) {
+            edge_id_.bind( attribute_manager(), edge_line_att_name );
+        }
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelMeshEdges< DIMENSION >::unbind_attribute()
+    {
+        if( line_id_.is_bound() ) {
+            line_id_.unbind();
+        }
+        if( edge_id_.is_bound() ) {
+            edge_id_.unbind();
+        }
+    }
+
+    template< index_t DIMENSION >
+    bool GeoModelMeshEdges< DIMENSION >::is_initialized() const
+    {
+        return mesh_->nb_edges() > 0;
+    }
+
+    template< index_t DIMENSION >
+    index_t GeoModelMeshEdges< DIMENSION >::nb() const
+    {
+        test_and_initialize();
+        return mesh_->nb_edges();
+    }
+
+    template< index_t DIMENSION >
+    index_t GeoModelMeshEdges< DIMENSION >::vertex(
+        const ElementLocalVertex& edge_local_vertex ) const
+    {
+        test_and_initialize();
+        ringmesh_assert( edge_local_vertex.element_id_ < mesh_->nb_edges() );
+        ringmesh_assert( edge_local_vertex.local_vertex_id_ < 2 );
+        return mesh_->edge_vertex( edge_local_vertex );
+    }
+
+    template< index_t DIMENSION >
+    index_t GeoModelMeshEdges< DIMENSION >::line( index_t e ) const
+    {
+        test_and_initialize();
+        ringmesh_assert( e < mesh_->nb_edges() );
+        return line_id_[e];
+    }
+
+    template< index_t DIMENSION >
+    index_t GeoModelMeshEdges< DIMENSION >::index_in_line( index_t e ) const
+    {
+        test_and_initialize();
+        ringmesh_assert( e < mesh_->nb_edges() );
+        return edge_id_[e];
+    }
+
+    template< index_t DIMENSION >
+    index_t GeoModelMeshEdges< DIMENSION >::nb_edges( index_t l ) const
+    {
+        test_and_initialize();
+        ringmesh_assert( l < this->geomodel_.nb_lines() );
+        return line_edge_ptr_[l + 1];
+    }
+
+    template< index_t DIMENSION >
+    index_t GeoModelMeshEdges< DIMENSION >::edge( index_t l, index_t e ) const
+    {
+        test_and_initialize();
+        ringmesh_assert( l < this->geomodel_.nb_lines() );
+        return line_edge_ptr_[l] + e;
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelMeshEdges< DIMENSION >::clear()
+    {
+        line_edge_ptr_.clear();
+        nb_edges_ = 0;
+        std::unique_ptr< LineMeshBuilder< DIMENSION > > mesh_builder =
+            LineMeshBuilder< DIMENSION >::create_builder( *mesh_ );
+        mesh_builder->clear( true, false );
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelMeshEdges< DIMENSION >::test_and_initialize() const
+    {
+        if( !is_initialized() ) {
+            const_cast< GeoModelMeshEdges* >( this )->initialize();
+        }
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelMeshEdges< DIMENSION >::initialize()
+    {
+        this->gmm_.vertices.test_and_initialize();
+        line_edge_ptr_.resize( this->geomodel_.nb_lines() + 1, 0 );
+        std::unique_ptr< LineMeshBuilder< DIMENSION > > mesh_builder =
+            LineMeshBuilder< DIMENSION >::create_builder( *mesh_ );
+        if( mesh_->nb_vertices() != this->gmm_.vertices.nb() ) {
+            copy_vertices( mesh_builder.get(), *this->gmm_.vertices.mesh_ );
+        }
+
+        // Compute the total number of edges per line
+        for( index_t l : range( this->geomodel_.nb_lines() ) ) {
+            const Line< DIMENSION >& line = this->geomodel_.line( l );
+            line_edge_ptr_[l + 1] = line_edge_ptr_[l] + line.nb_mesh_elements();
+            nb_edges_ += line.nb_mesh_elements();
+        }
+
+        // Create  edges
+        mesh_builder->create_edges( nb_edges_ );
+        bind_attribute();
+        const GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices =
+            this->gmm_.vertices;
+        index_t cur_edge { 0 };
+        for( index_t l : range( this->geomodel_.nb_lines() ) ) {
+            const Line< DIMENSION >& line = this->geomodel_.line( l );
+            gmme_id line_id = line.gmme();
+            for( index_t e : range( line.nb_mesh_elements() ) ) {
+                for( index_t v : range( 2 ) ) {
+                    index_t v_id = geomodel_vertices.geomodel_vertex_id( line_id,
+                        ElementLocalVertex( e, v ) );
+                    ringmesh_assert( v_id != NO_ID );
+                    mesh_builder->set_edge_vertex( cur_edge, v, v_id );
+                }
+                line_id_[cur_edge] = l;
+                edge_id_[cur_edge] = e;
+                cur_edge++;
+            }
+        }
+    }
+
+    template< index_t DIMENSION >
+    vecn< DIMENSION > GeoModelMeshEdges< DIMENSION >::center( index_t e ) const
+    {
+        test_and_initialize();
+        return mesh_->edge_barycenter( e );
+    }
+
+    template< index_t DIMENSION >
+    double GeoModelMeshEdges< DIMENSION >::length( index_t e ) const
+    {
+        test_and_initialize();
+        return mesh_->edge_length( e );
+    }
+
+    template< index_t DIMENSION >
+    const LineAABBTree< DIMENSION >& GeoModelMeshEdges< DIMENSION >::aabb() const
+    {
+        test_and_initialize();
+        return mesh_->edge_aabb();
+    }
+
+    /*******************************************************************************/
+    template< index_t DIMENSION >
+    const std::string GeoModelMeshPolygonsBase< DIMENSION >::surface_att_name =
+        "surface";
+    template< index_t DIMENSION >
+    const std::string GeoModelMeshPolygonsBase< DIMENSION >::polygon_surface_att_name =
+        "polygon_surface";
 
     template< index_t DIMENSION >
     GeoModelMeshPolygonsBase< DIMENSION >::GeoModelMeshPolygonsBase(
         GeoModelMesh< DIMENSION >& gmm,
         GeoModel< DIMENSION >& gm,
         std::unique_ptr< SurfaceMesh< DIMENSION > >& mesh )
-        :
-            GeoModelMeshCommon< DIMENSION >( gmm, gm ),
-            mesh_( mesh ),
-            nb_triangle_( 0 ),
-            nb_quad_( 0 ),
-            nb_unclassified_polygon_( 0 )
+        : GeoModelMeshCommon< DIMENSION >( gmm, gm ), mesh_( mesh )
     {
         this->set_mesh( mesh_.get() );
     }
@@ -1794,7 +1973,8 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< PolygonType, index_t > GeoModelMeshPolygonsBase< DIMENSION >::type( index_t p ) const
+    std::tuple< PolygonType, index_t > GeoModelMeshPolygonsBase< DIMENSION >::type(
+        index_t p ) const
     {
         test_and_initialize();
         ringmesh_assert( p < mesh_->nb_polygons() );
@@ -1885,7 +2065,7 @@ namespace RINGMesh {
     index_t GeoModelMeshPolygonsBase< DIMENSION >::nb_triangle() const
     {
         test_and_initialize();
-        return nb_triangle_;
+        return nb_triangles_;
     }
 
     template< index_t DIMENSION >
@@ -1914,7 +2094,7 @@ namespace RINGMesh {
     index_t GeoModelMeshPolygonsBase< DIMENSION >::nb_quad() const
     {
         test_and_initialize();
-        return nb_quad_;
+        return nb_quads_;
     }
 
     template< index_t DIMENSION >
@@ -1941,7 +2121,7 @@ namespace RINGMesh {
     index_t GeoModelMeshPolygonsBase< DIMENSION >::nb_unclassified_polygon() const
     {
         test_and_initialize();
-        return nb_unclassified_polygon_;
+        return nb_unclassified_polygons_;
     }
 
     template< index_t DIMENSION >
@@ -1971,8 +2151,8 @@ namespace RINGMesh {
     void GeoModelMeshPolygonsBase< DIMENSION >::clear()
     {
         surface_polygon_ptr_.clear();
-        nb_triangle_ = 0;
-        nb_quad_ = 0;
+        nb_triangles_ = 0;
+        nb_quads_ = 0;
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > mesh_builder =
             SurfaceMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         mesh_builder->clear( true, false );
@@ -1991,8 +2171,8 @@ namespace RINGMesh {
     {
         this->gmm_.vertices.test_and_initialize();
         surface_polygon_ptr_.resize(
-            this->geomodel_.nb_surfaces() * to_underlying_type( PolygonType::UNDEFINED )
-                + 1, 0 );
+            this->geomodel_.nb_surfaces()
+                * to_underlying_type( PolygonType::UNDEFINED ) + 1, 0 );
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > mesh_builder =
             SurfaceMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         if( mesh_->nb_vertices() != this->gmm_.vertices.nb() ) {
@@ -2039,7 +2219,8 @@ namespace RINGMesh {
 
         // Get out if no polygons
         index_t nb_total_polygons = nb_polygon_per_type[PolygonType::TRIANGLE]
-            + nb_polygon_per_type[PolygonType::QUAD]
+
+        + nb_polygon_per_type[PolygonType::QUAD]
             + nb_polygon_per_type[PolygonType::UNCLASSIFIED];
 
         if( nb_total_polygons == 0 ) {
@@ -2120,9 +2301,9 @@ namespace RINGMesh {
         disconnect_along_lines();
 
         // Cache some values
-        nb_triangle_ = nb_polygon_per_type[PolygonType::TRIANGLE];
-        nb_quad_ = nb_polygon_per_type[PolygonType::QUAD];
-        nb_unclassified_polygon_ = nb_polygon_per_type[PolygonType::UNCLASSIFIED];
+        nb_triangles_ = nb_polygon_per_type[PolygonType::TRIANGLE];
+        nb_quads_ = nb_polygon_per_type[PolygonType::QUAD];
+        nb_unclassified_polygons_ = nb_polygon_per_type[PolygonType::UNCLASSIFIED];
     }
 
     template< index_t DIMENSION >
@@ -2194,7 +2375,7 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     template< index_t DIMENSION >
-    GeoModelMeshEdges< DIMENSION >::GeoModelMeshEdges(
+    GeoModelMeshWells< DIMENSION >::GeoModelMeshWells(
         GeoModelMesh< DIMENSION >& gmm,
         GeoModel< DIMENSION >& gm,
         std::unique_ptr< LineMesh< DIMENSION > >& mesh )
@@ -2204,28 +2385,28 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshEdges< DIMENSION >::nb_wells() const
+    index_t GeoModelMeshWells< DIMENSION >::nb_wells() const
     {
         test_and_initialize();
         return this->geomodel_.wells() ? this->geomodel_.wells()->nb_wells() : 0;
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshEdges< DIMENSION >::nb_edges() const
+    index_t GeoModelMeshWells< DIMENSION >::nb_edges() const
     {
         test_and_initialize();
         return mesh_->nb_edges();
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshEdges< DIMENSION >::nb_edges( index_t w ) const
+    index_t GeoModelMeshWells< DIMENSION >::nb_edges( index_t w ) const
     {
         test_and_initialize();
         return well_ptr_[w + 1] - well_ptr_[w];
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshEdges< DIMENSION >::vertex(
+    index_t GeoModelMeshWells< DIMENSION >::vertex(
         index_t w,
         index_t e,
         index_t v ) const
@@ -2235,7 +2416,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshEdges< DIMENSION >::clear()
+    void GeoModelMeshWells< DIMENSION >::clear()
     {
         std::unique_ptr< LineMeshBuilder< DIMENSION > > mesh_builder =
             LineMeshBuilder< DIMENSION >::create_builder( *mesh_ );
@@ -2244,21 +2425,21 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool GeoModelMeshEdges< DIMENSION >::is_initialized() const
+    bool GeoModelMeshWells< DIMENSION >::is_initialized() const
     {
         return mesh_->nb_edges() > 0;
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshEdges< DIMENSION >::test_and_initialize() const
+    void GeoModelMeshWells< DIMENSION >::test_and_initialize() const
     {
         if( !is_initialized() ) {
-            const_cast< GeoModelMeshEdges* >( this )->initialize();
+            const_cast< GeoModelMeshWells* >( this )->initialize();
         }
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshEdges< DIMENSION >::initialize()
+    void GeoModelMeshWells< DIMENSION >::initialize()
     {
         if( !this->geomodel_.wells() ) return;
         this->gmm_.vertices.test_and_initialize();
@@ -2306,7 +2487,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const LineAABBTree< DIMENSION >& GeoModelMeshEdges< DIMENSION >::aabb() const
+    const LineAABBTree< DIMENSION >& GeoModelMeshWells< DIMENSION >::aabb() const
     {
         test_and_initialize();
         return mesh_->edge_aabb();
@@ -2322,6 +2503,7 @@ namespace RINGMesh {
             geomodel_( geomodel ),
             vertices( gmm, geomodel, mesh_set_.point_set_mesh ),
             edges( gmm, geomodel, mesh_set_.line_mesh ),
+            wells( gmm, geomodel, mesh_set_.well_mesh ),
             polygons( gmm, geomodel, mesh_set_.surface_mesh )
     {
     }
@@ -2360,7 +2542,7 @@ namespace RINGMesh {
         const MeshType& type )
     {
         if( mesh_set_.line_mesh->type_name() != type ) {
-            edges.clear();
+            wells.clear();
             mesh_set_.create_line_mesh( type );
         }
     }
@@ -2432,7 +2614,7 @@ namespace RINGMesh {
 
             for( index_t v = 0; v < vertices.nb(); v++ ) {
                 std::vector< GMEVertex > vertices_on_geomodel_region =
-                    vertices.gme_type_vertices( Region<3>::type_name_static(), v );
+                    vertices.gme_type_vertices( Region3D::type_name_static(), v );
                 for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_region ) {
 
                     const Region3D& cur_region = geomodel_.region(
@@ -2654,12 +2836,13 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelMeshBase< 2 > ;
     template class RINGMESH_API GeoModelMesh< 2 > ;
     template class RINGMESH_API GeoModelMeshVerticesBase< 2 > ;
+    template class RINGMESH_API GeoModelMeshWells< 2 > ;
     template class RINGMESH_API GeoModelMeshEdges< 2 > ;
     template class RINGMESH_API GeoModelMeshPolygonsBase< 2 > ;
 
     template class RINGMESH_API GeoModelMeshBase< 3 > ;
-    template class RINGMESH_API GeoModelMesh< 3 > ;
     template class RINGMESH_API GeoModelMeshVerticesBase< 3 > ;
+    template class RINGMESH_API GeoModelMeshWells< 3 > ;
     template class RINGMESH_API GeoModelMeshEdges< 3 > ;
     template class RINGMESH_API GeoModelMeshPolygonsBase< 3 > ;
     template class RINGMESH_API GeoModelMeshCells< 3 > ;

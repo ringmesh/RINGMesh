@@ -61,8 +61,11 @@ const char TAB = '\t';
 
 namespace RINGMesh {
     class StratigraphicColumn;
-    FORWARD_DECLARATION_3D_CLASS( GeoModel );
-    FORWARD_DECLARATION_3D_CLASS( WellGroup );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
+
+    ALIAS_3D( GeoModel );
+    ALIAS_3D( WellGroup );
 }
 
 namespace GEO {
@@ -130,6 +133,7 @@ namespace RINGMesh {
 
         virtual index_t dimension( const std::string& filename ) const
         {
+            ringmesh_unused( filename );
             return DIMENSION;
         }
 
@@ -148,12 +152,12 @@ namespace RINGMesh {
             const std::string& format );
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelIOHandler );
+    ALIAS_2D_AND_3D( GeoModelIOHandler );
 
     template< index_t DIMENSION >
     using GeoModelIOHandlerFactory = Factory< std::string, GeoModelIOHandler< DIMENSION > >;
 
-    CLASS_DIMENSION_ALIASES( GeoModelIOHandlerFactory );
+    ALIAS_2D_AND_3D( GeoModelIOHandlerFactory );
 
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler {

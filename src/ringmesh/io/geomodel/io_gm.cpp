@@ -309,7 +309,8 @@ namespace {
         void load_meshes( unzFile& uz )
         {
             if( unzGoToFirstFile( uz ) != UNZ_OK ) {
-                throw RINGMeshException( "I/O", "Unable to uncompress the first file" );
+                throw RINGMeshException( "I/O",
+                    "Unable to uncompress the first file" );
             }
 
             Logger::instance()->set_minimal( true );
@@ -317,7 +318,7 @@ namespace {
             do {
                 char char_file_name[MAX_FILENAME];
                 if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
-                MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
+                    MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
                     throw RINGMeshException( "I/O", "Unable to get file name" );
                 }
                 std::string file_name( char_file_name );
@@ -326,17 +327,19 @@ namespace {
                 }
 
                 unzip_current_file( uz, file_name.c_str() );
-                files.push_back( std::async( std::launch::deferred, [file_name, this] {
-                    std::string file_without_extension = GEO::FileSystem::base_name(
-                        file_name );
-                    std::string entity_type, entity_id;
-                    GEO::String::split_string( file_without_extension, '_', entity_type,
-                        entity_id );
-                    index_t id = NO_ID;
-                    GEO::String::from_string( entity_id, id );
-                    load_mesh_entity( entity_type, file_name, id );
-                    GEO::FileSystem::delete_file( file_name );
-                } ) );
+                files.push_back(
+                    std::async( std::launch::deferred,
+                        [file_name, this] {
+                            std::string file_without_extension = GEO::FileSystem::base_name(
+                                file_name );
+                            std::string entity_type, entity_id;
+                            GEO::String::split_string( file_without_extension, '_', entity_type,
+                                entity_id );
+                            index_t id = NO_ID;
+                            GEO::String::from_string( entity_id, id );
+                            load_mesh_entity( entity_type, file_name, id );
+                            GEO::FileSystem::delete_file( file_name );
+                        } ) );
             } while( unzGoToNextFile( uz ) == UNZ_OK );
 
             for( auto& file : files ) {
@@ -959,5 +962,5 @@ namespace {
             std::vector< std::string >& filenames );
     };
 
-    CLASS_DIMENSION_ALIASES (GeoModelHandlerGM);
+    ALIAS_2D_AND_3D (GeoModelHandlerGM);
 }

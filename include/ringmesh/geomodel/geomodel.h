@@ -62,7 +62,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( Line );
     FORWARD_DECLARATION_DIMENSION_CLASS( Region );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
-    FORWARD_DECLARATION_DIMENSION_CLASS( EntityTypeManager );
+    template< index_t DIMENSION > struct EntityTypeManager;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
@@ -76,7 +76,6 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
-
 }
 
 namespace RINGMesh {
@@ -302,8 +301,7 @@ namespace RINGMesh {
          */
         const WellGroup< DIMENSION >* wells_ { nullptr };
     };
-
-    CLASS_DIMENSION_ALIASES( GeoModelBase );
+    ALIAS_2D_AND_3D( GeoModelBase );
 
     template< index_t DIMENSION >
     class GeoModel final: public GeoModelBase< DIMENSION > {
@@ -326,7 +324,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModel< 3 > final: public GeoModelBase< 3 > {
+    class RINGMESH_API GeoModel< 3 > final: public GeoModelBase< 3 > {
         friend class GeoModelAccess< 3 > ;
     public:
         GeoModel();
@@ -377,8 +375,7 @@ namespace RINGMesh {
     private:
         std::vector< std::unique_ptr< GeoModelMeshEntity3D > > regions_;
     };
-
-    CLASS_DIMENSION_ALIASES( GeoModel );
+    ALIAS_2D_AND_3D( GeoModel );
 
     template< index_t DIMENSION >
     class GeoModelAccess {

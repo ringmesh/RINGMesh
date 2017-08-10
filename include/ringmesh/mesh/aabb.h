@@ -60,7 +60,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class AABBTree {
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d (DIMENSION);
     public:
         /// The index where to store the root. It starts to one for algorithm trick.
         static const index_t ROOT_INDEX = 1;
@@ -95,7 +95,7 @@ namespace RINGMesh {
             const EvalDistance& action ) const
         {
             index_t nearest_box = NO_ID;
-            vecn< DIMENSION > nearest_point;
+            vecn < DIMENSION > nearest_point;
             double distance;
             std::tie( nearest_box, nearest_point, distance ) =
                 get_nearest_element_box_hint( query );
@@ -106,12 +106,11 @@ namespace RINGMesh {
         }
         /*
          * @brief Computes the intersections between a given
-         *  box and the element boxes.
+         * box and the element boxes.
          * @param[in] box the box to test
-         * @param[in] action The functor used to compute intersection
-         * with the element boxes when they intersect \p box
+         * @param[in] action The functor to run when an element box intersects \p box
          * @tparam EvalIntersection this functor should have an operator() defined like this:
-         *  void operator()( index_t cur_box ) ;
+         * void operator()( index_t cur_box ) ;
          * where cur_box is the element box index
          * (e.g. in the case of AABBTree2D, this index is a polygon index)
          */
@@ -125,10 +124,9 @@ namespace RINGMesh {
         }
         /*
          * @brief Computes the self intersections of the element boxes.
-         * @param[in] action The functor used to compute intersection
-         * with the intersected element boxes
+         * @param[in] action The functor to run when two boxes intersect
          * @tparam EvalIntersection this functor should have an operator() defined like this:
-         *  void operator()( index_t box1, index_t box2 ) ;
+         * void operator()( index_t box1, index_t box2 ) ;
          * where box1 and box2 are the element box indices
          * (e.g. in the case of AABBTree2D, this index is a polygon index)
          */
@@ -251,7 +249,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class BoxAABBTree: public AABBTree< DIMENSION > {
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d (DIMENSION);
     public:
         BoxAABBTree( const std::vector< Box< DIMENSION > >& boxes );
         virtual ~BoxAABBTree() = default;
@@ -266,11 +264,11 @@ namespace RINGMesh {
             index_t element_id ) const override;
     };
 
-    CLASS_DIMENSION_ALIASES( BoxAABBTree );
+    ALIAS_2D_AND_3D( BoxAABBTree );
 
     template< index_t DIMENSION >
     class LineAABBTree: public AABBTree< DIMENSION > {
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d (DIMENSION);
     public:
         LineAABBTree( const LineMesh< DIMENSION >& mesh );
         virtual ~LineAABBTree() = default;
@@ -283,7 +281,8 @@ namespace RINGMesh {
          * - nearest_point the nearest point on the closest edge.
          * - distance the distance between \p query and \p nearest_point.
          */
-        std::tuple< index_t, vecn< DIMENSION >, double > closest_edge( const vecn< DIMENSION >& query ) const;
+        std::tuple< index_t, vecn< DIMENSION >, double > closest_edge(
+            const vecn< DIMENSION >& query ) const;
     private:
         /*!
          * @brief Gets an element point from its box
@@ -315,11 +314,11 @@ namespace RINGMesh {
         const LineMesh< DIMENSION >& mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( LineAABBTree );
+    ALIAS_2D_AND_3D( LineAABBTree );
 
     template< index_t DIMENSION >
     class SurfaceAABBTree: public AABBTree< DIMENSION > {
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_template_assert_2d_or_3d (DIMENSION);
     public:
         SurfaceAABBTree( const SurfaceMeshBase< DIMENSION >& mesh );
         virtual ~SurfaceAABBTree() = default;
@@ -366,7 +365,7 @@ namespace RINGMesh {
         const SurfaceMeshBase< DIMENSION >& mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( SurfaceAABBTree );
+    ALIAS_2D_AND_3D( SurfaceAABBTree );
 
     template< index_t DIMENSION >
     class VolumeAABBTree: public AABBTree< DIMENSION > {
@@ -432,7 +431,7 @@ namespace RINGMesh {
         // and replace current if nearer
         if( is_leaf( box_begin, box_end ) ) {
             index_t cur_box = mapping_morton_[box_begin];
-            vecn< DIMENSION > cur_nearest_point;
+            vecn < DIMENSION > cur_nearest_point;
             double cur_distance;
             std::tie( cur_distance, cur_nearest_point ) = action( query, cur_box );
             if( cur_distance < distance ) {
@@ -497,6 +496,7 @@ namespace RINGMesh {
 
         // Leaf case
         if( is_leaf( element_begin, element_end ) ) {
+            // @todo Check if the box is not intersecting itself
             index_t cur_box = mapping_morton_[element_begin];
             action( cur_box );
             return;
@@ -542,6 +542,9 @@ namespace RINGMesh {
         // Simple case: leaf - leaf intersection.
         if( is_leaf( element_begin1, element_end1 )
             && is_leaf( element_begin2, element_end2 ) ) {
+            if( node_index1 == node_index2 ) {
+                return;
+            }
             action( mapping_morton_[element_begin1],
                 mapping_morton_[element_begin2] );
             return;
