@@ -35,6 +35,10 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <vector>
+
+#include <geogram/basic/vecg.h>
+
 #include <ringmesh/basic/geometry.h>
 
 /*!
@@ -43,66 +47,47 @@
 
 using namespace RINGMesh;
 
-void test_triangle_barycentric_coordinates()
+void verdict( bool condition, std::string test_name )
 {
-    Logger::out( "TEST", "Test triangle barycentric coordinates" );
-    vec3 p0( 0, 0, 0 );
-    vec3 p1( 1, 0, 0 );
-    vec3 p2( 0, 1, 0 );
-
-    std::array< double, 3 > lambdas;
-    std::tie( std::ignore, lambdas ) = triangle_barycentric_coordinates(
-        vec3( 0.25, 0.25, 0 ), p0, p1, p2 );
-    if( lambdas[0] != 0.5 || lambdas[1] != 0.25 || lambdas[2] != 0.25 ) {
-        throw RINGMeshException( "TEST",
-            "Error in triangle barycentric coordinates" );
-    }
-    std::tie( std::ignore, lambdas ) = triangle_barycentric_coordinates(
-        vec3( 0.5, 0.5, 0 ), p0, p1, p2 );
-    if( lambdas[0] != 0 || lambdas[1] != 0.5 || lambdas[2] != 0.5 ) {
-        throw RINGMeshException( "TEST",
-            "Error in triangle barycentric coordinates" );
-    }
-    std::tie( std::ignore, lambdas ) = triangle_barycentric_coordinates(
-        vec3( 1, 1, 0 ), p0, p1, p2 );
-    if( lambdas[0] != -1 || lambdas[1] != 1 || lambdas[2] != 1 ) {
-        throw RINGMeshException( "TEST",
-            "Error in triangle barycentric coordinates" );
+    if( !condition ) {
+        throw RINGMeshException( "TEST", test_name, ": KO" );
+    } else {
+        Logger::out( "TEST", test_name, ": OK" );
     }
 }
 
-void test_point_plane_distance()
+template< index_t DIMENSION >
+bool are_almost_equal( const vecn< DIMENSION >& vec0, const vecn< DIMENSION >& vec1 )
 {
-    Logger::out( "TEST", "Test point plane distance" );
+    return ( vec0 - vec1 ).length2() < global_epsilon_sq;
+}
 
-    vec3 test0 { 1, 1, 1 };
-    Geometry::Plane plane0 { { 0, 0, 2 }, { 0, 0, 0 } };
-    vec3 projected0;
-    std::tie( std::ignore, projected0 ) = Distance::point_to_plane( test0, plane0 );
-    if( projected0 != vec3{ 1, 1, 0 } ) {
-        throw RINGMeshException( "TEST", "Error in point plane distance" );
-    }
+void test_point_plane_side()
+{
+    Logger::out( "TEST", "Test Point-Plane side" );
+    Geometry::Plane plane { { 1., 0., 0. }, { 1., 4., -2. } };
 
-    vec3 test1 { 0, 0.5, 1 };
-    Geometry::Plane plane1 { { 1, 0, 0 }, { 1, 1, 1 } };
-    vec3 projected1;
-    std::tie( std::ignore, projected1 ) = Distance::point_to_plane( test1, plane1 );
-    if( projected1 != vec3{ 1, 0.5, 1 } ) {
-        throw RINGMeshException( "TEST", "Error in point plane distance" );
-    }
+    // Test from each side
+    Sign positive_side { Position::point_side_to_plane( { 2., 2., 2. }, plane ) };
+    verdict( positive_side == POSITIVE, "True point side positive" );
+    Sign negative_side { Position::point_side_to_plane( { -2., -2., -9. }, plane ) };
+    verdict( negative_side == NEGATIVE, "True point side negative" );
+
+    // Test on the plane
+    Sign on_plane_side { Position::point_side_to_plane( { 1., 6., -6. }, plane ) };
+    verdict( on_plane_side == ZERO, "True point side on plane" );
+
+    Logger::out( "TEST", " " );
 }
 
 int main()
 {
-    using namespace RINGMesh;
-
     try {
         default_configure();
 
-        Logger::out( "TEST", "Test geometric tools" );
+        Logger::out( "TEST", "Test intersection algorithms" );
 
-        test_triangle_barycentric_coordinates();
-        test_point_plane_distance();
+        test_point_plane_side();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
