@@ -148,7 +148,7 @@ namespace {
         const vec3& e0,
         const vec3& e1 )
     {
-        return {normalize( cross( normal, e1 - e0 ) ), e0};
+        return {cross( normal, normalize(e1 - e0 ) ), e0};
     }
 
     bool point_inside_triangle_exact(
@@ -164,10 +164,6 @@ namespace {
             plane_from_triangle_normal_and_edge( n, triangle.p1_, triangle.p2_ ) ) };
         Sign s3 { Position::point_side_to_plane( point,
             plane_from_triangle_normal_and_edge( n, triangle.p2_, triangle.p0_ ) ) };
-
-        DEBUG( s1 );
-        DEBUG( s2 );
-        DEBUG( s3 );
 
         if( s1 == ZERO ) {
             if( s2 == ZERO || s3 == ZERO ) {
@@ -199,21 +195,18 @@ namespace {
 
         double vol1 { GEO::Geom::tetra_signed_volume( point, q, triangle.p0_,
             triangle.p1_ ) };
-        DEBUG( vol1 );
         if( is_almost_zero( vol1 ) ) {
             return point_inside_triangle_exact( point, triangle );
         }
         Sign s1 { sign( vol1 ) };
         double vol2 { GEO::Geom::tetra_signed_volume( point, q, triangle.p1_,
             triangle.p2_ ) };
-        DEBUG( vol2 );
         if( is_almost_zero( vol2 ) ) {
             return point_inside_triangle_exact( point, triangle );
         }
         Sign s2 { sign( vol2 ) };
         double vol3 { GEO::Geom::tetra_signed_volume( point, q, triangle.p2_,
             triangle.p0_ ) };
-        DEBUG( vol3 );
         if( is_almost_zero( vol3 ) ) {
             return point_inside_triangle_exact( point, triangle );
         }

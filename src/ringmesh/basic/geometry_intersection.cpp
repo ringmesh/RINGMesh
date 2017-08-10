@@ -62,30 +62,25 @@ namespace RINGMesh {
             // line is t*D+P, the circle center is C, and the circle radius is r,
             // then r^2 = |t*D+P-C|^2 = |D|^2*t^2 + 2*Dot(D,P-C)*t + |P-C|^2.  This
             // is a quadratic equation of the form:  a2*t^2 + 2*a1*t + a0 = 0.
+            // In our case, a2 = 1 because direction plane is normalized
             vec3 diff { inter.origin_ - circle.plane_.origin_ };
-            double a2 { 1. };
             double a1 { dot( diff, inter.direction_ ) };
             double a0 { diff.length2() - circle.radius_ * circle.radius_ };
 
-            double discr { a1 * a1 - a0 * a2 };
+            double discr { a1 * a1 - a0 };
             if( discr < 0.0 ) {
                 return std::make_tuple( false, std::vector< vec3 >() );
             }
 
-            if( std::fabs( a2 ) < global_epsilon ) {
-                return std::make_tuple( false, std::vector< vec3 >() );
-            }
-            double inv { 1.0 / a2 };
             std::vector< vec3 > result;
             if( discr < global_epsilon ) {
-                result.emplace_back(
-                    inter.origin_ - ( a1 * inv ) * inter.direction_ );
+                result.emplace_back( inter.origin_ - a1 * inter.direction_ );
             } else {
                 double root { std::sqrt( discr ) };
                 result.emplace_back(
-                    inter.origin_ - ( ( a1 + root ) * inv ) * inter.direction_ );
+                    inter.origin_ - ( a1 + root ) * inter.direction_ );
                 result.emplace_back(
-                    inter.origin_ - ( ( a1 - root ) * inv ) * inter.direction_ );
+                    inter.origin_ - ( a1 - root ) * inter.direction_ );
             }
             return std::make_tuple( true, result );
         }
@@ -113,7 +108,7 @@ namespace RINGMesh {
 
             // Planes are parallel
             if( std::fabs( std::fabs( norm_d ) - 1 ) < global_epsilon ) {
-                return std::make_tuple( false, Geometry::Line3D { { }, { } } );
+                return std::make_tuple( false, Geometry::Line3D { } );
             }
 
             double invDet { 1.0 / ( 1.0 - norm_d * norm_d ) };
@@ -275,11 +270,9 @@ namespace RINGMesh {
             std::vector< vec3 > inter_circle_plane;
             std::tie( does_circle_intersect_plane, inter_circle_plane ) =
                 circle_plane( circle, triangle.plane() );
-            DEBUG( does_circle_intersect_plane );
             std::vector< vec3 > result;
             if( does_circle_intersect_plane ) {
                 for( const vec3& p : inter_circle_plane ) {
-                    DEBUG( p );
                     if( Position::point_inside_triangle( p, triangle ) ) {
                         result.push_back( p );
                     }
