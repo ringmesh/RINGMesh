@@ -95,6 +95,10 @@ namespace RINGMesh {
                 : p0_( std::move( p0 ) ), p1_( std::move( p1 ) )
             {
             }
+            /*!
+             * Returns a normalized vector aligned on the segment
+             * going from p0_ to p1_.
+             */
             vecn< DIMENSION > direction() const
             {
                 return normalize( p1_ - p0_ );

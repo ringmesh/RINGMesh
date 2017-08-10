@@ -267,12 +267,12 @@ namespace RINGMesh {
             } else {
                 std::array< vec2, 3 > closest;
                 std::array< double, 3 > distance;
-                std::tie( distance[0], closest[0] ) = point_to_segment( point, {
-                    triangle.p0_, triangle.p1_ } );
-                std::tie( distance[1], closest[1] ) = point_to_segment( point, {
-                    triangle.p1_, triangle.p2_ } );
-                std::tie( distance[2], closest[2] ) = point_to_segment( point, {
-                    triangle.p2_, triangle.p0_ } );
+                std::tie( distance[0], closest[0] ) = point_to_segment( point,
+                    Geometry::Segment2D { triangle.p0_, triangle.p1_ } );
+                std::tie( distance[1], closest[1] ) = point_to_segment( point,
+                    Geometry::Segment2D { triangle.p1_, triangle.p2_ } );
+                std::tie( distance[2], closest[2] ) = point_to_segment( point,
+                    Geometry::Segment2D { triangle.p2_, triangle.p0_ } );
                 if( distance[0] < distance[1] ) {
                     if( distance[0] < distance[2] ) {
                         result = distance[0];
@@ -308,9 +308,10 @@ namespace RINGMesh {
                 vec3 cur_p;
                 std::tie( distance, cur_p ) =
                     point_to_triangle( point,
-                        { vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
-                          vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
-                          vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] } );
+                        Geometry::Triangle3D {
+                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
+                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
+                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] } );
                 if( distance < dist ) {
                     dist = distance;
                     nearest_p = cur_p;
