@@ -66,7 +66,7 @@ namespace {
         index_t coord_;
     };
 
-    CLASS_DIMENSION_ALIASES( Morton_cmp );
+    ALIAS_2D_3D( Morton_cmp );
 
     /**
      * \brief Splits a sequence into two ordered halves.

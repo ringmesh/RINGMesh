@@ -201,7 +201,7 @@ namespace RINGMesh {
             return type == mesh_entity_types_.container()[3];
         }
     };
-    CLASS_DIMENSION_ALIASES( MeshEntityTypeManager );
+    ALIAS_2D_3D( MeshEntityTypeManager );
 
     /*!
      * @brief this class contains methods to manage the type of the

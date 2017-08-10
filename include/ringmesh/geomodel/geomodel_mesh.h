@@ -65,8 +65,11 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshPolygons );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshPolygonsBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshCells );
-    FORWARD_DECLARATION_3D_CLASS( GeoModelMesh );
-    FORWARD_DECLARATION_3D_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+
+    ALIAS_3D( GeoModel );
+    ALIAS_3D( GeoModelMesh );
 }
 
 namespace RINGMesh {
@@ -489,7 +492,7 @@ namespace RINGMesh {
         GeoModelVertexMapper vertex_mapper_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshVerticesBase );
+    ALIAS_2D_3D( GeoModelMeshVerticesBase );
 
     template< index_t DIMENSION >
     class GeoModelMeshVertices final: public GeoModelMeshVerticesBase< DIMENSION > {
@@ -513,7 +516,7 @@ namespace RINGMesh {
         index_t fill_vertices() override;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshVertices );
+    ALIAS_2D_3D( GeoModelMeshVertices );
 
     template< index_t DIMENSION >
     class GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
@@ -788,7 +791,7 @@ namespace RINGMesh {
         vec3 normal( index_t p ) const;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshPolygons );
+    ALIAS_2D_3D( GeoModelMeshPolygons );
 
     template< index_t DIMENSION >
     class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
@@ -865,7 +868,7 @@ namespace RINGMesh {
         std::vector< index_t > well_ptr_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshEdges );
+    ALIAS_2D_3D( GeoModelMeshEdges );
 
     template< index_t DIMENSION >
     class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
@@ -1328,7 +1331,7 @@ namespace RINGMesh {
         GEO::Attribute< index_t > polygon_id_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshCells );
+    ALIAS_2D_3D( GeoModelMeshCells );
 
     template< index_t DIMENSION >
     class GeoModelMeshBase {

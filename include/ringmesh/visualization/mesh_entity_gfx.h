@@ -60,7 +60,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
-    CLASS_DIMENSION_ALIASES( GeoModelGfx );
+    ALIAS_2D_3D( GeoModelGfx );
 }
 
 namespace RINGMesh {
@@ -119,7 +119,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     using PointSetMeshGfxFactory = Factory< MeshType, PointSetMeshGfx< DIMENSION>, const PointSetMesh< DIMENSION>& >;
-    CLASS_DIMENSION_ALIASES( PointSetMeshGfxFactory );
+    ALIAS_2D_3D( PointSetMeshGfxFactory );
 
     template< index_t DIMENSION >
     class LineMeshGfx: public MeshEntityGfx< DIMENSION > {
@@ -154,7 +154,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     using LineMeshGfxFactory = Factory< MeshType, LineMeshGfx< DIMENSION>, const LineMesh< DIMENSION>& >;
-    CLASS_DIMENSION_ALIASES( LineMeshGfxFactory );
+    ALIAS_2D_3D( LineMeshGfxFactory );
 
     template< index_t DIMENSION >
     class SurfaceMeshGfx: public MeshEntityGfx< DIMENSION > {
@@ -194,7 +194,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     using SurfaceMeshGfxFactory = Factory< MeshType, SurfaceMeshGfx< DIMENSION >, const SurfaceMesh< DIMENSION >& >;
-    CLASS_DIMENSION_ALIASES( SurfaceMeshGfxFactory );
+    ALIAS_2D_3D( SurfaceMeshGfxFactory );
 
     template< index_t DIMENSION >
     class VolumeMeshGfx: public MeshEntityGfx< DIMENSION > {
@@ -234,7 +234,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     using VolumeMeshGfxFactory = Factory< MeshType, VolumeMeshGfx< DIMENSION >, const VolumeMesh< DIMENSION >& >;
-    CLASS_DIMENSION_ALIASES( VolumeMeshGfxFactory );
+    ALIAS_2D_3D( VolumeMeshGfxFactory );
 
 #define ringmesh_register_volume_gfx_2d(type) \
     geo_register_creator(RINGMesh::VolumeMeshGfxFactory2D, type ## Gfx, type::type_name_static())
