@@ -301,7 +301,7 @@ namespace RINGMesh {
          */
         const WellGroup< DIMENSION >* wells_ { nullptr };
     };
-    ALIAS_2D_3D( GeoModelBase );
+    ALIAS_2D_AND_3D( GeoModelBase );
 
     template< index_t DIMENSION >
     class GeoModel final: public GeoModelBase< DIMENSION > {
@@ -375,7 +375,7 @@ namespace RINGMesh {
     private:
         std::vector< std::unique_ptr< GeoModelMeshEntity3D > > regions_;
     };
-    ALIAS_2D_3D( GeoModel );
+    ALIAS_2D_AND_3D( GeoModel );
 
     template< index_t DIMENSION >
     class GeoModelAccess {

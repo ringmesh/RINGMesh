@@ -79,7 +79,7 @@
 #define ALIAS_3D( Class )                                                 \
     using Class ## 3D = Class< 3 >
 
-#define ALIAS_2D_3D( Class )                                        \
+#define ALIAS_2D_AND_3D( Class )                                        \
     ALIAS_2D( Class );                                                    \
     ALIAS_3D( Class )
 

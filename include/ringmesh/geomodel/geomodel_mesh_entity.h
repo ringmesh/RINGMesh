@@ -62,7 +62,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
-    ALIAS_2D_3D( GeoModel );
+    ALIAS_2D_AND_3D( GeoModel );
 }
 
 namespace RINGMesh {
@@ -354,7 +354,7 @@ namespace RINGMesh {
         /// The RINGMesh::Mesh giving the geometry of this entity
         std::shared_ptr< MeshBase< DIMENSION > > mesh_;
     };
-    ALIAS_2D_3D( GeoModelMeshEntity );
+    ALIAS_2D_AND_3D( GeoModelMeshEntity );
 
     /*!
      * @brief A GeoModelEntity of type CORNER
@@ -482,7 +482,7 @@ namespace RINGMesh {
     private:
         std::shared_ptr< PointSetMesh< DIMENSION > > point_set_mesh_;
     };
-    ALIAS_2D_3D( Corner );
+    ALIAS_2D_AND_3D( Corner );
 
     /*!
      * @brief A GeoModelEntity of type LINE
@@ -637,7 +637,7 @@ namespace RINGMesh {
     private:
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_;
     };
-    ALIAS_2D_3D( Line );
+    ALIAS_2D_AND_3D( Line );
 
     /*!
      * @brief A GeoModelEntity of type SURFACE
@@ -861,7 +861,7 @@ namespace RINGMesh {
     public:
         const Region< 3 >& incident_entity( index_t x ) const;
     };
-    ALIAS_2D_3D( Surface );
+    ALIAS_2D_AND_3D( Surface );
 
     /*!
      * @brief A GeoModelEntity of type REGION
@@ -1291,5 +1291,5 @@ namespace RINGMesh {
     private:
         GeoModelMeshEntity< DIMENSION >& gmme_;
     };
-    ALIAS_2D_3D( GeoModelMeshEntityAccess );
+    ALIAS_2D_AND_3D( GeoModelMeshEntityAccess );
 }

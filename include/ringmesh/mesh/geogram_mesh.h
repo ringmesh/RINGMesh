@@ -120,7 +120,7 @@ namespace RINGMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
     };
 
-    ALIAS_2D_3D( GeogramPointSetMesh );
+    ALIAS_2D_AND_3D( GeogramPointSetMesh );
 
     template< index_t DIMENSION >
     class GeogramLineMesh: public LineMesh< DIMENSION > {
@@ -143,7 +143,7 @@ namespace RINGMesh {
         }
     };
 
-    ALIAS_2D_3D( GeogramLineMesh );
+    ALIAS_2D_AND_3D( GeogramLineMesh );
 
     template< index_t DIMENSION >
     class GeogramSurfaceMesh: public SurfaceMesh< DIMENSION > {
@@ -182,7 +182,7 @@ namespace RINGMesh {
         }
     };
 
-    ALIAS_2D_3D( GeogramSurfaceMesh );
+    ALIAS_2D_AND_3D( GeogramSurfaceMesh );
 
     template< index_t DIMENSION >
     class GeogramVolumeMesh: public VolumeMesh< DIMENSION > {

@@ -81,7 +81,7 @@ namespace RINGMesh {
         const Well< DIMENSION >* well_;
     };
 
-    ALIAS_2D_3D( WellEntity );
+    ALIAS_2D_AND_3D( WellEntity );
 
 // --------------------------------------------------------------------------
 
@@ -117,7 +117,7 @@ namespace RINGMesh {
         std::unique_ptr< PointSetMesh< DIMENSION > > mesh_;
     };
 
-    ALIAS_2D_3D( WellCorner );
+    ALIAS_2D_AND_3D( WellCorner );
 
 // --------------------------------------------------------------------------
 
@@ -203,7 +203,7 @@ namespace RINGMesh {
         std::unique_ptr< LineMesh< DIMENSION > > mesh_;
     };
 
-    ALIAS_2D_3D( WellPart );
+    ALIAS_2D_AND_3D( WellPart );
 
 // --------------------------------------------------------------------------
 
@@ -229,7 +229,7 @@ namespace RINGMesh {
         vecn< DIMENSION > vertices_[2];
     };
 
-    ALIAS_2D_3D( Edge );
+    ALIAS_2D_AND_3D( Edge );
 
 // --------------------------------------------------------------------------
 
@@ -383,7 +383,7 @@ namespace RINGMesh {
         index_t nb_edges_;
     };
 
-    ALIAS_2D_3D( Well );
+    ALIAS_2D_AND_3D( Well );
 
 // --------------------------------------------------------------------------
 
@@ -479,5 +479,5 @@ namespace RINGMesh {
         GeoModel< DIMENSION >* geomodel_;
     };
 
-    ALIAS_2D_3D( WellGroup );
+    ALIAS_2D_AND_3D( WellGroup );
 }

@@ -122,7 +122,7 @@ namespace RINGMesh {
         }
     };
 
-    ALIAS_2D_3D( GeogramPointSetMeshBuilder );
+    ALIAS_2D_AND_3D( GeogramPointSetMeshBuilder );
 
     template< index_t DIMENSION >
     class GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
@@ -173,7 +173,7 @@ namespace RINGMesh {
         }
     };
 
-    ALIAS_2D_3D( GeogramLineMeshBuilder );
+    ALIAS_2D_AND_3D( GeogramLineMeshBuilder );
 
     template< index_t DIMENSION >
     class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder< DIMENSION > {
@@ -273,7 +273,7 @@ namespace RINGMesh {
         }
     };
 
-    ALIAS_2D_3D( GeogramSurfaceMeshBuilder );
+    ALIAS_2D_AND_3D( GeogramSurfaceMeshBuilder );
 
     template< index_t DIMENSION >
     class GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {

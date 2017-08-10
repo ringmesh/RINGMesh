@@ -211,7 +211,7 @@ namespace {
         std::vector< BorderPolygon > border_polygons_;
     };
 
-    ALIAS_2D_3D( CommonDataFromGeoModelSurfaces );
+    ALIAS_2D_AND_3D( CommonDataFromGeoModelSurfaces );
 
     /*!
      * @brief Utility class to sort a set of oriented polygons around a common edge

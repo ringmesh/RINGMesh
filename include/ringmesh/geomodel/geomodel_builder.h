@@ -190,5 +190,5 @@ namespace RINGMesh {
         void build_regions_from_lines_and_surfaces();
     };
 
-    ALIAS_2D_3D( GeoModelBuilder );
+    ALIAS_2D_AND_3D( GeoModelBuilder );
 }

@@ -50,7 +50,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
 
-    ALIAS_2D_3D( GeoModelBuilder );
+    ALIAS_2D_AND_3D( GeoModelBuilder );
 }
 
 namespace RINGMesh {
@@ -387,7 +387,7 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-    ALIAS_2D_3D( GeoModelBuilderGeometryBase );
+    ALIAS_2D_AND_3D( GeoModelBuilderGeometryBase );
 
     template< index_t DIMENSION >
     class GeoModelBuilderGeometry final: public GeoModelBuilderGeometryBase<

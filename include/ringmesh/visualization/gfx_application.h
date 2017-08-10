@@ -186,14 +186,14 @@ namespace RINGMesh {
             float attribute_max_ { 0 };
         };
 
-        ALIAS_2D_3D( GeoModelViewerBase )
+        ALIAS_2D_AND_3D( GeoModelViewerBase )
         ;
 
         template< index_t DIMENSION >
         class GeoModelViewer final: public GeoModelViewerBase< DIMENSION > {
         };
 
-        ALIAS_2D_3D( GeoModelViewer )
+        ALIAS_2D_AND_3D( GeoModelViewer )
         ;
 
         class MeshViewer {
