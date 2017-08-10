@@ -324,7 +324,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::update_all_entity_visibility(
-        bool value )
+    bool value )
     {
         GM_gfx_.corners.set_vertex_visibility( value );
         GM_gfx_.lines.set_line_visibility( value );
@@ -491,10 +491,12 @@ namespace RINGMesh {
                 }
             }
             if( ImGui::InputFloat( "min", &attribute_min_ ) ) {
-                GM_gfx_.attribute.set_minimum( attribute_min_ );
+                GM_gfx_.attribute.set_minimum(
+                    static_cast< double >( attribute_min_ ) );
             }
             if( ImGui::InputFloat( "max", &attribute_max_ ) ) {
-                GM_gfx_.attribute.set_maximum( attribute_max_ );
+                GM_gfx_.attribute.set_maximum(
+                    static_cast< double >( attribute_max_ ) );
             }
             if( ImGui::Button( "autorange", ImVec2( -1, 0 ) ) ) {
                 autorange();
@@ -608,34 +610,34 @@ namespace RINGMesh {
         glupPushMatrix();
         glupLoadIdentity();
 
-        const float z = -1.0f;
-        const float w = 0.3f;
-        const float h = 0.1f;
-        const float x1 = 0.f;
-        const float y1 = -0.9f;
-        const float tmin = float( GM_gfx_.attribute.minimum() );
-        const float tmax = float( GM_gfx_.attribute.maximum() );
+        const double z = -1.0;
+        const double w = 0.3;
+        const double h = 0.1;
+        const double x1 = 0.;
+        const double y1 = -0.9;
+        const double tmin = GM_gfx_.attribute.minimum();
+        const double tmax = GM_gfx_.attribute.maximum();
         GEO::glupMapTexCoords1d( tmin, tmax, 1. );
 
-        glupColor3f( 1.0f, 1.0f, 1.0f );
+        glupColor3d( 1.0, 1.0, 1.0 );
         glupDisable( GLUP_LIGHTING );
         glupEnable( GLUP_TEXTURING );
         glupTextureMode( GLUP_TEXTURE_REPLACE );
         glupTextureType( GLUP_TEXTURE_1D );
         glupEnable( GLUP_DRAW_MESH );
-        glupSetColor3f( GLUP_MESH_COLOR, 0.0f, 0.0f, 0.0f );
+        glupSetColor3d( GLUP_MESH_COLOR, 0.0, 0.0, 0.0 );
         glupSetMeshWidth( 2 );
         glupSetCellsShrink( 0.0f );
 
         glupBegin( GLUP_QUADS );
-        glupTexCoord1f( tmin );
-        glupVertex3f( x1 - w, y1, z );
-        glupTexCoord1f( tmax );
-        glupVertex3f( x1 + w, y1, z );
-        glupTexCoord1f( tmax );
-        glupVertex3f( x1 + w, y1 + h, z );
-        glupTexCoord1f( tmin );
-        glupVertex3f( x1 - w, y1 + h, z );
+        glupTexCoord1d( tmin );
+        glupVertex3d( x1 - w, y1, z );
+        glupTexCoord1d( tmax );
+        glupVertex3d( x1 + w, y1, z );
+        glupTexCoord1d( tmax );
+        glupVertex3d( x1 + w, y1 + h, z );
+        glupTexCoord1d( tmin );
+        glupVertex3d( x1 - w, y1 + h, z );
         glupEnd();
 
         glupTextureType( GLUP_TEXTURE_2D );
@@ -643,25 +645,20 @@ namespace RINGMesh {
         glupLoadIdentity();
         glupMatrixMode( GLUP_MODELVIEW_MATRIX );
 
-        glupSetColor4f( GLUP_FRONT_AND_BACK_COLOR, 0.0f, 0.0f, 0.0f, 1.0f );
+        glupSetColor4d( GLUP_FRONT_AND_BACK_COLOR, 0.0, 0.0, 0.0, 1.0 );
 
-        const float font_sz = 0.003f;
-        const float font_height = 0.4f
-            * float( glQuickText::getFontHeight( font_sz ) );
+        const double font_sz = 0.003;
+        const double font_height = 0.4 * glQuickText::getFontHeight( font_sz );
 
         std::string min_value = std::to_string( GM_gfx_.attribute.minimum() );
-        float nb_min_letter = static_cast< float >( min_value.size() );
-        glQuickText::printfAt(
-            static_cast< double >( x1 - w - font_height * nb_min_letter * 0.3f ),
-            static_cast< double >( y1 - font_height ), static_cast< double >( z ),
-            static_cast< double >( font_sz ), min_value.c_str() );
+        const double nb_min_letter = static_cast< double >( min_value.size() );
+        glQuickText::printfAt( x1 - w - font_height * nb_min_letter * 0.3,
+            y1 - font_height, z, font_sz, min_value.c_str() );
 
         std::string max_value = std::to_string( GM_gfx_.attribute.maximum() );
-        float nb_max_letter = static_cast< float >( max_value.size() );
-        glQuickText::printfAt(
-            static_cast< double >( x1 + w - font_height * nb_max_letter * 0.3f ),
-            static_cast< double >( y1 - font_height ), static_cast< double >( z ),
-            static_cast< double >( font_sz ), max_value.c_str() );
+        const double nb_max_letter = static_cast< double >( max_value.size() );
+        glQuickText::printfAt( x1 + w - font_height * nb_max_letter * 0.3,
+            y1 - font_height, z, font_sz, max_value.c_str() );
 
         glupMatrixMode( GLUP_PROJECTION_MATRIX );
         glupPopMatrix();
@@ -793,13 +790,13 @@ namespace RINGMesh {
             GM_gfx_.regions.set_draw_cells( CellType::PRISM, show_prism_ );
             GM_gfx_.regions.set_draw_cells( CellType::PYRAMID, show_pyramid_ );
             GM_gfx_.regions.set_draw_cells( CellType::TETRAHEDRON, show_tetra_ );
-            GM_gfx_.regions.set_shrink( shrink_ );
+            GM_gfx_.regions.set_shrink( static_cast< double >( shrink_ ) );
             GM_gfx_.regions.draw();
         }
     }
 
     void RINGMeshApplication::GeoModelViewer< 3 >::update_all_entity_visibility(
-        bool value )
+    bool value )
     {
         GeoModelViewerBase3D::update_all_entity_visibility( value );
         GM_gfx_.regions.set_region_visibility( value );
@@ -1187,10 +1184,19 @@ namespace RINGMesh {
                 browse_geogram( path_ );
                 ImGui::EndMenu();
             }
-            if( ImGui::MenuItem( "Create point" ) ) {
+            ImGui::EndMenu();
+        }
+        if( ImGui::BeginMenu( "Create..." ) ) {
+            if( ImGui::MenuItem( "point" ) ) {
                 GEO::Command::set_current( "create_point(std::string name=\"debug\","
                     " double x=0, double y=0, double z=0)", this,
                     &RINGMeshApplication::create_point );
+            }
+            if( ImGui::MenuItem( "AABB" ) ) {
+                GEO::Command::set_current( "create_aabbox(std::string name=\"box\","
+                    " double xmin=0, double ymin=0, double zmin=0,"
+                    " double xmax=1, double ymax=1, double zmax=1)", this,
+                    &RINGMeshApplication::create_aabbox );
             }
             ImGui::EndMenu();
         }
@@ -1202,8 +1208,8 @@ namespace RINGMesh {
         double y,
         double z )
     {
-        MeshViewer* viewer = nullptr;
-        for( std::unique_ptr< MeshViewer >& i : meshes_ ) {
+        MeshViewer* viewer { nullptr };
+        for( auto& i : meshes_ ) {
             if( i->name_ == name ) {
                 viewer = i.get();
                 break;
@@ -1213,12 +1219,86 @@ namespace RINGMesh {
             meshes_.emplace_back( new MeshViewer( *this, "" ) );
             viewer = meshes_.back().get();
         }
-        vec3 point( x, y, z );
+        vec3 point { x, y, z };
         viewer->mesh_.vertices.create_vertex( point.data() );
         viewer->mesh_gfx_.set_mesh( &viewer->mesh_ );
         viewer->bbox_.add_point( point );
         viewer->name_ = name;
         viewer->show_vertices_ = true;
+        current_viewer_ = static_cast< index_t >( meshes_.size() - 1 );
+        current_viewer_type_ = ViewerType::MESH;
+        update_region_of_interest();
+    }
+
+    void RINGMeshApplication::create_aabbox(
+        std::string name,
+        double xmin,
+        double ymin,
+        double zmin,
+        double xmax,
+        double ymax,
+        double zmax )
+    {
+        vec3 min { xmin, ymin, zmin };
+        vec3 max { xmax, ymax, zmax };
+        MeshViewer* viewer { nullptr };
+        for( auto& i : meshes_ ) {
+            if( i->name_ == name ) {
+                viewer = i.get();
+                break;
+            }
+        }
+        if( !viewer ) {
+            meshes_.emplace_back( new MeshViewer( *this, "" ) );
+            viewer = meshes_.back().get();
+        }
+        const index_t prev_nbv { viewer->mesh_.vertices.nb() };
+        vec3 box_other_vertex1 { min[0], min[1], max[2] };
+        vec3 box_other_vertex2 { min[0], max[1], max[2] };
+        vec3 box_other_vertex3 { max[0], min[1], max[2] };
+        vec3 box_other_vertex4 { max[0], max[1], min[2] };
+        vec3 box_other_vertex5 { max[0], min[1], min[2] };
+        vec3 box_other_vertex6 { min[0], max[1], min[2] };
+        viewer->mesh_.vertices.create_vertex( min.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex1.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex2.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex3.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex4.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex5.data() );
+        viewer->mesh_.vertices.create_vertex( box_other_vertex6.data() );
+        viewer->mesh_.vertices.create_vertex( max.data() );
+        viewer->mesh_.edges.create_edge( prev_nbv + 0, prev_nbv + 1 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 0, prev_nbv + 5 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 0, prev_nbv + 6 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 1, prev_nbv + 2 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 1, prev_nbv + 3 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 2, prev_nbv + 6 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 2, prev_nbv + 7 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 3, prev_nbv + 5 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 3, prev_nbv + 7 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 4, prev_nbv + 5 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 4, prev_nbv + 6 );
+        viewer->mesh_.edges.create_edge( prev_nbv + 4, prev_nbv + 7 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 0, prev_nbv + 6, prev_nbv + 4,
+            prev_nbv + 5 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 0, prev_nbv + 1, prev_nbv + 2,
+            prev_nbv + 6 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 0, prev_nbv + 5, prev_nbv + 3,
+            prev_nbv + 1 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 7, prev_nbv + 2, prev_nbv + 1,
+            prev_nbv + 3 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 7, prev_nbv + 3, prev_nbv + 5,
+            prev_nbv + 4 );
+        viewer->mesh_.facets.create_quad( prev_nbv + 7, prev_nbv + 4, prev_nbv + 6,
+            prev_nbv + 2 );
+        viewer->mesh_gfx_.set_mesh( &viewer->mesh_ );
+        viewer->bbox_.add_point( min );
+        viewer->bbox_.add_point( max );
+        viewer->name_ = name;
+        viewer->show_vertices_ = false;
+        viewer->show_mesh_ = true;
+        viewer->show_surface_borders_ = false;
+        viewer->show_surface_colors_ = false;
         current_viewer_ = static_cast< index_t >( meshes_.size() - 1 );
         current_viewer_type_ = ViewerType::MESH;
         update_region_of_interest();
@@ -1353,7 +1433,7 @@ namespace RINGMesh {
             ImGui::Separator();
             std::ostringstream oss;
             oss << "GeoModel" << DIMENSION << "D";
-            ImGui::Text( oss.str().c_str() );
+            ImGui::Text( "%s", oss.str().c_str() );
             for( index_t i : range( geomodels.size() ) ) {
                 GeoModelViewer< DIMENSION >& viewer = *geomodels[i];
                 ImGui::PushID( id++ );
