@@ -177,7 +177,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelBuilderTopology< 2 > : public GeoModelBuilderTopologyBase< 2 > {
+    class RINGMESH_API GeoModelBuilderTopology< 2 > : public GeoModelBuilderTopologyBase< 2 > {
         friend class GeoModelBuilderBase< 2 > ;
         friend class GeoModelBuilder< 2 > ;
     public:
@@ -210,7 +210,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelBuilderTopology< 3 > : public GeoModelBuilderTopologyBase< 3 > {
+    class RINGMESH_API GeoModelBuilderTopology< 3 > : public GeoModelBuilderTopologyBase< 3 > {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
     public:

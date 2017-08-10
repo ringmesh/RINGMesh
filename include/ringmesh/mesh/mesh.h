@@ -1059,7 +1059,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class MeshSet< 3 > : public MeshSetBase< 3 > {
+    class RINGMESH_API MeshSet< 3 > : public MeshSetBase< 3 > {
     public:
         MeshSet();
 

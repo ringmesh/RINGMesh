@@ -534,10 +534,8 @@ namespace RINGMesh {
             const MeshEntityType& b_type = Surface< DIMENSION >::type_name_static();
             gmme_id invalid( b_type, NO_ID );
             UniverseAccess< DIMENSION > universe_access( U );
-            const RelationshipManager& manager =
-                U.geomodel().entity_type_manager().relationship_manager;
             remove_invalid_values( universe_access.modifiable_boundaries(),
-                [&invalid, &manager](const gmme_id& id) {return id == invalid;} );
+                [&invalid](const gmme_id& id) {return id == invalid;} );
             universe_access.modifiable_sides().resize( U.nb_boundaries() );
         }
 
@@ -609,22 +607,17 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelBuilderRemoval< 3 > : public GeoModelBuilderRemovalBase< 3 > {
+    class RINGMESH_API GeoModelBuilderRemoval< 3 > : public GeoModelBuilderRemovalBase< 3 > {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
         using GeoModelBuilder3D = GeoModelBuilder< 3 >;
     private:
-        GeoModelBuilderRemoval(
-            GeoModelBuilder3D& builder,
-            GeoModel3D& geomodel );
+        GeoModelBuilderRemoval( GeoModelBuilder3D& builder, GeoModel3D& geomodel );
         virtual ~GeoModelBuilderRemoval() = default;
 
         void update_mesh_entity( GeoModelMeshEntity3D& ME ) override;
 
-        void set_boundary_side(
-            Region3D& R,
-            index_t boundary_index,
-            bool new_side )
+        void set_boundary_side( Region3D& R, index_t boundary_index, bool new_side )
         {
             ringmesh_assert( boundary_index < R.nb_boundaries() );
             GeoModelMeshEntityAccess3D region_access(

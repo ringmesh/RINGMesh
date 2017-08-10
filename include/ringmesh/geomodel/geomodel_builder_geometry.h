@@ -405,7 +405,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelBuilderGeometry< 3 > final: public GeoModelBuilderGeometryBase< 3 > {
+    class RINGMESH_API GeoModelBuilderGeometry< 3 > final: public GeoModelBuilderGeometryBase< 3 > {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
     public:

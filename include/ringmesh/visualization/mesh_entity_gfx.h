@@ -370,7 +370,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class AttributeGfxManager< 3 > final: public AttributeGfxManagerBase< 3 > {
+    class RINGMESH_API AttributeGfxManager< 3 > final: public AttributeGfxManagerBase< 3 > {
     public:
         AttributeGfxManager( GeoModelGfx3D& gfx );
 
