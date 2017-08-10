@@ -1246,7 +1246,6 @@ namespace {
 
         len_orient3d = geo_max(len_orient3d, Delta.length());
 
-        Delta.show( std::cout );
         return Delta.sign();
     }
 
@@ -1906,10 +1905,8 @@ namespace GEO {
             ) {
             cnt_orient3d_total++;
             Sign result = Sign(orient_3d_filter(p0, p1, p2, p3));
-            std::cout << result << '\n';
             if(result == 0) {
                 result = orient_3d_exact(p0, p1, p2, p3);
-                std::cout << result << '\n';
             }
             return result;
         }
