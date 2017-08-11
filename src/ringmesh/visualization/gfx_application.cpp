@@ -491,10 +491,12 @@ namespace RINGMesh {
                 }
             }
             if( ImGui::InputFloat( "min", &attribute_min_ ) ) {
-                GM_gfx_.attribute.set_minimum( attribute_min_ );
+                GM_gfx_.attribute.set_minimum(
+                    static_cast< double >( attribute_min_ ) );
             }
             if( ImGui::InputFloat( "max", &attribute_max_ ) ) {
-                GM_gfx_.attribute.set_maximum( attribute_max_ );
+                GM_gfx_.attribute.set_maximum(
+                    static_cast< double >( attribute_max_ ) );
             }
             if( ImGui::Button( "autorange", ImVec2( -1, 0 ) ) ) {
                 autorange();
@@ -608,34 +610,34 @@ namespace RINGMesh {
         glupPushMatrix();
         glupLoadIdentity();
 
-        const float z = -1.0f;
-        const float w = 0.3f;
-        const float h = 0.1f;
-        const float x1 = 0.f;
-        const float y1 = -0.9f;
-        const float tmin = float( GM_gfx_.attribute.minimum() );
-        const float tmax = float( GM_gfx_.attribute.maximum() );
+        const double z = -1.0;
+        const double w = 0.3;
+        const double h = 0.1;
+        const double x1 = 0.;
+        const double y1 = -0.9;
+        const double tmin = GM_gfx_.attribute.minimum();
+        const double tmax = GM_gfx_.attribute.maximum();
         GEO::glupMapTexCoords1d( tmin, tmax, 1. );
 
-        glupColor3f( 1.0f, 1.0f, 1.0f );
+        glupColor3d( 1.0, 1.0, 1.0 );
         glupDisable( GLUP_LIGHTING );
         glupEnable( GLUP_TEXTURING );
         glupTextureMode( GLUP_TEXTURE_REPLACE );
         glupTextureType( GLUP_TEXTURE_1D );
         glupEnable( GLUP_DRAW_MESH );
-        glupSetColor3f( GLUP_MESH_COLOR, 0.0f, 0.0f, 0.0f );
+        glupSetColor3d( GLUP_MESH_COLOR, 0.0, 0.0, 0.0 );
         glupSetMeshWidth( 2 );
         glupSetCellsShrink( 0.0f );
 
         glupBegin( GLUP_QUADS );
-        glupTexCoord1f( tmin );
-        glupVertex3f( x1 - w, y1, z );
-        glupTexCoord1f( tmax );
-        glupVertex3f( x1 + w, y1, z );
-        glupTexCoord1f( tmax );
-        glupVertex3f( x1 + w, y1 + h, z );
-        glupTexCoord1f( tmin );
-        glupVertex3f( x1 - w, y1 + h, z );
+        glupTexCoord1d( tmin );
+        glupVertex3d( x1 - w, y1, z );
+        glupTexCoord1d( tmax );
+        glupVertex3d( x1 + w, y1, z );
+        glupTexCoord1d( tmax );
+        glupVertex3d( x1 + w, y1 + h, z );
+        glupTexCoord1d( tmin );
+        glupVertex3d( x1 - w, y1 + h, z );
         glupEnd();
 
         glupTextureType( GLUP_TEXTURE_2D );
@@ -643,25 +645,20 @@ namespace RINGMesh {
         glupLoadIdentity();
         glupMatrixMode( GLUP_MODELVIEW_MATRIX );
 
-        glupSetColor4f( GLUP_FRONT_AND_BACK_COLOR, 0.0f, 0.0f, 0.0f, 1.0f );
+        glupSetColor4d( GLUP_FRONT_AND_BACK_COLOR, 0.0, 0.0, 0.0, 1.0 );
 
-        const float font_sz = 0.003f;
-        const float font_height = 0.4f
-            * float( glQuickText::getFontHeight( font_sz ) );
+        const double font_sz = 0.003;
+        const double font_height = 0.4 * glQuickText::getFontHeight( font_sz );
 
         std::string min_value = std::to_string( GM_gfx_.attribute.minimum() );
-        float nb_min_letter = static_cast< float >( min_value.size() );
-        glQuickText::printfAt(
-            static_cast< double >( x1 - w - font_height * nb_min_letter * 0.3f ),
-            static_cast< double >( y1 - font_height ), static_cast< double >( z ),
-            static_cast< double >( font_sz ), min_value.c_str() );
+        const double nb_min_letter = static_cast< double >( min_value.size() );
+        glQuickText::printfAt( x1 - w - font_height * nb_min_letter * 0.3,
+            y1 - font_height, z, font_sz, min_value.c_str() );
 
         std::string max_value = std::to_string( GM_gfx_.attribute.maximum() );
-        float nb_max_letter = static_cast< float >( max_value.size() );
-        glQuickText::printfAt(
-            static_cast< double >( x1 + w - font_height * nb_max_letter * 0.3f ),
-            static_cast< double >( y1 - font_height ), static_cast< double >( z ),
-            static_cast< double >( font_sz ), max_value.c_str() );
+        const double nb_max_letter = static_cast< double >( max_value.size() );
+        glQuickText::printfAt( x1 + w - font_height * nb_max_letter * 0.3,
+            y1 - font_height, z, font_sz, max_value.c_str() );
 
         glupMatrixMode( GLUP_PROJECTION_MATRIX );
         glupPopMatrix();
@@ -793,7 +790,7 @@ namespace RINGMesh {
             GM_gfx_.regions.set_draw_cells( CellType::PRISM, show_prism_ );
             GM_gfx_.regions.set_draw_cells( CellType::PYRAMID, show_pyramid_ );
             GM_gfx_.regions.set_draw_cells( CellType::TETRAHEDRON, show_tetra_ );
-            GM_gfx_.regions.set_shrink( shrink_ );
+            GM_gfx_.regions.set_shrink( static_cast< double >( shrink_ ) );
             GM_gfx_.regions.draw();
         }
     }
@@ -1436,7 +1433,7 @@ namespace RINGMesh {
             ImGui::Separator();
             std::ostringstream oss;
             oss << "GeoModel" << DIMENSION << "D";
-            ImGui::Text( oss.str().c_str() );
+            ImGui::Text( "%s", oss.str().c_str() );
             for( index_t i : range( geomodels.size() ) ) {
                 GeoModelViewer< DIMENSION >& viewer = *geomodels[i];
                 ImGui::PushID( id++ );

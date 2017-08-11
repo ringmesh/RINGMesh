@@ -61,9 +61,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Feflow not implemented yet" );
         }
-        void save(
-            const GeoModel3D& geomodel,
-            const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -89,9 +87,7 @@ namespace {
             // More information on the CLASS keyword Feflow documentation
             out << "   0    0    0    3    0    0    8    8    0    0\n";
         }
-        void write_dimensions(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        void write_dimensions( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMesh3D& mesh = geomodel.mesh;
             out << "DIMENS\n";
@@ -99,15 +95,13 @@ namespace {
                 << " 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0\n";
             out << "SCALE\n\n";
         }
-        void write_elements(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        void write_elements( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshCells3D& cells = geomodel.mesh.cells;
             out << "VARNODE\n";
             out << SPACE << cells.nb();
-            index_t min_nb_vertices_per_element;
-            index_t max_nb_vertices_per_element;
+            index_t min_nb_vertices_per_element { 0 };
+            index_t max_nb_vertices_per_element { 0 };
             if( cells.nb_tet() > 0 ) {
                 min_nb_vertices_per_element = 4;
             } else if( cells.nb_pyramid() > 0 ) {
@@ -135,7 +129,8 @@ namespace {
 
             for( index_t c : range( cells.nb() ) ) {
                 const RINGMesh2Feflow& descriptor =
-                    *cell_type_to_feflow_cell_descriptor[to_underlying_type( cells.type( c ) )];
+                    *cell_type_to_feflow_cell_descriptor[to_underlying_type(
+                        cells.type( c ) )];
                 out << SPACE << descriptor.entity_type;
                 for( index_t v : range( cells.nb_vertices( c ) ) ) {
                     out << SPACE
@@ -146,9 +141,7 @@ namespace {
                 out << "\n";
             }
         }
-        void write_vertices(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        void write_vertices( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshVertices3D& vertices = geomodel.mesh.vertices;
             out << "XYZCOOR\n" << std::scientific;
@@ -189,9 +182,7 @@ namespace {
             write_well_groups( geomodel, out );
             out << " </fractures>\n";
         }
-        void write_well_edges(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        void write_well_edges( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshWells3D& wells = geomodel.mesh.wells;
             out << " <nop count=\"" << wells.nb_edges() << "\">\n";

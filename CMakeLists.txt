@@ -152,7 +152,8 @@ include(cmake/utils.cmake)
 # Platform dependent settings
 if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
+    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion 
+        -Wsign-conversion -Wdouble-promotion -Wno-attributes)
     
     # Determine gcc version and activate additional warnings available in latest versions
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
@@ -179,11 +180,8 @@ if(UNIX)
     endif(APPLE)
     # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
-    add_compile_options(-Wsign-conversion)
-    add_compile_options(-Wdouble-promotion)
-    add_compile_options(-Wno-attributes)
 
-     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+    if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
        set(COVERALLS ON)
        set(COVERALLS_UPLOAD ON)

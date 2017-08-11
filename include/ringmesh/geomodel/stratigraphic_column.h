@@ -48,9 +48,14 @@
  */
 
 namespace RINGMesh {
-    FORWARD_DECLARATION_3D_CLASS( Interface );
-    FORWARD_DECLARATION_3D_CLASS( Layer );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Interface );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Layer );
 
+    ALIAS_3D( Interface );
+    ALIAS_3D( Layer );
+}
+
+namespace RINGMesh {
     // @todo To develop
     enum struct ROCKTYPE {
         NONE, MULTIPLE

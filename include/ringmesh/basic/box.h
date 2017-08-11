@@ -156,6 +156,6 @@ namespace RINGMesh {
         vecn< DIMENSION > max_;
 
     };
-    CLASS_DIMENSION_ALIASES( Box );
+    ALIAS_2D_AND_3D( Box );
 
 }

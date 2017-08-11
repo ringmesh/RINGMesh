@@ -282,7 +282,7 @@ namespace RINGMesh {
         MeshBase< DIMENSION >& mesh_base_;
     };
 
-    CLASS_DIMENSION_ALIASES( MeshBaseBuilder );
+    ALIAS_2D_AND_3D( MeshBaseBuilder );
 
     template< index_t DIMENSION >
     class PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -315,12 +315,12 @@ namespace RINGMesh {
         PointSetMesh< DIMENSION >& pointset_mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( PointSetMeshBuilder );
+    ALIAS_2D_AND_3D( PointSetMeshBuilder );
 
     template< index_t DIMENSION >
     using PointSetMeshBuilderFactory = Factory< MeshType, PointSetMeshBuilder< DIMENSION >, PointSetMesh< DIMENSION >& >;
 
-    CLASS_DIMENSION_ALIASES( PointSetMeshBuilderFactory );
+    ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
     template< index_t DIMENSION >
     class LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -491,12 +491,12 @@ namespace RINGMesh {
         LineMesh< DIMENSION >& line_mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( LineMeshBuilder );
+    ALIAS_2D_AND_3D( LineMeshBuilder );
 
     template< index_t DIMENSION >
     using LineMeshBuilderFactory = Factory< MeshType, LineMeshBuilder< DIMENSION >, LineMesh< DIMENSION >& >;
 
-    CLASS_DIMENSION_ALIASES( LineMeshBuilderFactory );
+    ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
     template< index_t DIMENSION >
     class SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -851,12 +851,12 @@ namespace RINGMesh {
         SurfaceMeshBase< DIMENSION >& surface_mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( SurfaceMeshBuilder );
+    ALIAS_2D_AND_3D( SurfaceMeshBuilder );
 
     template< index_t DIMENSION >
     using SurfaceMeshBuilderFactory = Factory< MeshType, SurfaceMeshBuilder< DIMENSION >, SurfaceMesh< DIMENSION >& >;
 
-    CLASS_DIMENSION_ALIASES( SurfaceMeshBuilderFactory );
+    ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template< index_t DIMENSION >
     class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {

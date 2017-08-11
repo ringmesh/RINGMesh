@@ -198,8 +198,8 @@ namespace RINGMesh {
         std::tie( std::ignore, colocated ) = nn_search.get_colocated_index_mapping(
             geomodel_.epsilon() );
 
-        std::vector< index_t > degenerate = surface_detect_degenerate_polygons( surface,
-            colocated );
+        std::vector< index_t > degenerate = surface_detect_degenerate_polygons(
+            surface, colocated );
         return static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) );
     }
@@ -338,9 +338,9 @@ namespace RINGMesh {
     {
         to_remove.clear();
         // For all Lines and Surfaces
-        std::array< const MeshEntityType, 2 > types = {
+        std::array< const MeshEntityType, 2 > types { {
             Line< DIMENSION >::type_name_static(),
-            Surface< DIMENSION >::type_name_static() };
+            Surface< DIMENSION >::type_name_static() } };
         for( const MeshEntityType& type : types ) {
             for( index_t e : range( geomodel_.nb_mesh_entities( type ) ) ) {
                 gmme_id entity_id( type, e );

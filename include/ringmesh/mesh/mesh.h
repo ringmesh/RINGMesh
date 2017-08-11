@@ -190,7 +190,7 @@ namespace RINGMesh {
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_;
     };
-    CLASS_DIMENSION_ALIASES( MeshBase );
+    ALIAS_2D_AND_3D( MeshBase );
 
     /*!
      * class for encapsulating mesh composed of points
@@ -209,11 +209,11 @@ namespace RINGMesh {
     protected:
         PointSetMesh() = default;
     };
-    CLASS_DIMENSION_ALIASES( PointSetMesh );
+    ALIAS_2D_AND_3D( PointSetMesh );
 
     template< index_t DIMENSION >
     using PointSetMeshFactory = Factory< MeshType, PointSetMesh< DIMENSION > >;
-    CLASS_DIMENSION_ALIASES( PointSetMeshFactory );
+    ALIAS_2D_AND_3D( PointSetMeshFactory );
 
     /*!
      * class for encapsulating line mesh (composed of edges)
@@ -300,11 +300,11 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_;
         mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_;
     };
-    CLASS_DIMENSION_ALIASES( LineMesh );
+    ALIAS_2D_AND_3D( LineMesh );
 
     template< index_t DIMENSION >
     using LineMeshFactory = Factory< MeshType, LineMesh< DIMENSION > >;
-    CLASS_DIMENSION_ALIASES( LineMeshFactory );
+    ALIAS_2D_AND_3D( LineMeshFactory );
 
     /*!
      * class for encapsulating surface mesh component
@@ -615,7 +615,7 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_;
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_;
     };
-    CLASS_DIMENSION_ALIASES( SurfaceMeshBase );
+    ALIAS_2D_AND_3D( SurfaceMeshBase );
 
     template< index_t DIMENSION >
     class SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
@@ -623,7 +623,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     using SurfaceMeshFactory = Factory< MeshType, SurfaceMesh< DIMENSION > >;
-    CLASS_DIMENSION_ALIASES( SurfaceMeshFactory );
+    ALIAS_2D_AND_3D( SurfaceMeshFactory );
 
     template< >
     class SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
@@ -729,7 +729,7 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( SurfaceMesh );
+    ALIAS_2D_AND_3D( SurfaceMesh );
 
     /*!
      * class for encapsulating volume mesh component
@@ -1061,7 +1061,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class MeshSet< 3 > : public MeshSetBase< 3 > {
+    class RINGMESH_API MeshSet< 3 > : public MeshSetBase< 3 > {
     public:
         MeshSet();
 

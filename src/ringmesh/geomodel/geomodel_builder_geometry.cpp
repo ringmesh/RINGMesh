@@ -967,5 +967,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderGeometryBase< 2 > ;
 
     template class RINGMESH_API GeoModelBuilderGeometryBase< 3 > ;
-    template class RINGMESH_API GeoModelBuilderGeometry< 3 > ;
 }
