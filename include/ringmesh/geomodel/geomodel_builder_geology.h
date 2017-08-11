@@ -39,8 +39,8 @@
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/geomodel_builder_remove.h>
@@ -55,13 +55,13 @@
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelBuilderGeology final {
-    ringmesh_disable_copy( GeoModelBuilderGeology );
+    ringmesh_disable_copy_and_move( GeoModelBuilderGeology );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
@@ -142,6 +142,7 @@ namespace RINGMesh {
         GeoModelBuilderGeology(
             GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
+        ~GeoModelBuilderGeology() = default;
 
     private:
         index_t create_geological_entity_type( const GeologicalEntityType& type );
@@ -162,4 +163,4 @@ namespace RINGMesh {
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
-}
+} // namespace RINGMesh

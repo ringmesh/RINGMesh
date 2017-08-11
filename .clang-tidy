@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-android-*,-boost-*,-mpi*,-misc-unused-parameters'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-android-*,-boost-*,-mpi*,-misc-unused-parameters,-google-runtime-references,-modernize-make-unique,-llvm-header-guard,-misc-macro-parentheses,-google-readability-todo'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

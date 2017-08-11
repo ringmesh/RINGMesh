@@ -363,11 +363,10 @@ if(CLANG_TIDY)
     foreach(dir ${dirs})
         set(include_dirs -I${dir} ${include_dirs})
     endforeach()
-    message(STATUS        "${include_dirs}")
     add_custom_target(
         tidy
         COMMAND ${CLANG_TIDY}
-        ${ringmesh_files}
+        ${ringmesh_include}
         -config=''
         --
         -std=c++11

@@ -239,4 +239,4 @@ namespace RINGMesh {
         const GeoModel3D&,
         const std::string& );
 
-}
+} // namespace RINGMesh

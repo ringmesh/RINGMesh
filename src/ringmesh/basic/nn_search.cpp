@@ -50,7 +50,7 @@ namespace RINGMesh {
         bool copy )
         : nn_tree_( GEO::NearestNeighborSearch::create( DIMENSION, "BNN" ) )
     {
-        index_t nb_vertices = static_cast< index_t >( vertices.size() );
+        auto nb_vertices = static_cast< index_t >( vertices.size() );
         if( copy ) {
             nn_points_ = new double[nb_vertices * DIMENSION];
             delete_points_ = true;
@@ -145,4 +145,4 @@ namespace RINGMesh {
 
     template class RINGMESH_API NNSearch< 2 > ;
     template class RINGMESH_API NNSearch< 3 > ;
-}
+} // namespace RINGMesh

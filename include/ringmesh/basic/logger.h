@@ -99,4 +99,4 @@ namespace RINGMesh {
         static std::mutex lock_;
     };
 
-}
+} // namespace RINGMesh

@@ -50,7 +50,7 @@
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelEntity );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
     /// Option to select what are checked.
@@ -120,4 +120,4 @@ static    std::string validity_errors_directory =
     template< index_t DIMENSION >
     bool are_geomodel_geological_entities_valid(
         const GeoModel< DIMENSION >& geomodel );
-}
+} // namespace RINGMesh
