@@ -1751,12 +1751,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    index_t GeoModelMeshEdges< DIMENSION >::nb_vertices( index_t edge ) const
-    {
-        return 2;
-    }
-
-    template< index_t DIMENSION >
     index_t GeoModelMeshEdges< DIMENSION >::line( index_t e ) const
     {
         test_and_initialize();
