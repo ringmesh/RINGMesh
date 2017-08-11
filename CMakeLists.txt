@@ -370,7 +370,7 @@ if(CLANG_TIDY)
         -config=''
         --
         -std=c++11
-        ${include_dirs}
+        ${ringmesh_files}
     )
 endif()
 
