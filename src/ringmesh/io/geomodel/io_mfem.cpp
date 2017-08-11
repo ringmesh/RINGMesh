@@ -91,7 +91,7 @@ namespace {
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
         void write_header(
-            const GeoModelMesh3D& geomodel_mesh,
+            const GeoModelMesh< DIMENSION >& geomodel_mesh,
             std::ofstream& out ) const
         {
             // MFEM mesh version
@@ -131,6 +131,8 @@ namespace {
             }
         }
     };
+
+    ALIAS_2D_AND_3D(MFEMIOHandler);
 
     template< >
     void MFEMIOHandler< 3 >::test_if_mesh_is_valid(
@@ -250,7 +252,7 @@ namespace {
         for( index_t p : range( edges.nb() ) ) {
             out << edges.line( p ) + mfem_offset << " ";
             out << "1" << " "; // MFEM Geometry Types : SEGMENT = 1
-            for( index_t v : range( edges.nb_vertices( p ) ) ) {
+            for( index_t v : range( 2 ) ) {
                 out << edges.vertex( ElementLocalVertex( p, v ) ) << " ";
             }
             out << EOL;
