@@ -182,4 +182,4 @@ namespace RINGMesh {
     template class RINGMESH_API MeshEntityTypeManagerBase< 3 > ;
     template struct RINGMESH_API MeshEntityTypeIncidentEntityMap< 3 > ;
     template struct RINGMESH_API MeshEntityTypeBoundaryMap< 3 > ;
-}
+} // namespace RINGMesh

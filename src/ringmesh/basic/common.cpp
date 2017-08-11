@@ -40,9 +40,9 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
+#include <geogram/basic/common.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
 #   include <geogram_gfx/basic/common.h>
@@ -117,4 +117,4 @@ namespace RINGMesh {
             "projects of the team: " );
         Logger::out( "", "http://www.ring-team.org" );
     }
-}
+} // namespace RINGMesh

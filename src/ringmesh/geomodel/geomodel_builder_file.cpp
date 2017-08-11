@@ -56,4 +56,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderFile< 2 > ;
     template class RINGMESH_API GeoModelBuilderFile< 3 > ;
 
-}
+} // namespace RINGMesh

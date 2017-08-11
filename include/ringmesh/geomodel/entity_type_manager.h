@@ -36,7 +36,9 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+
 #include <ringmesh/basic/algorithm.h>
+
 #include <ringmesh/geomodel/entity_type.h>
 
 #include <deque>
@@ -53,7 +55,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -417,4 +419,4 @@ namespace RINGMesh {
         GeologicalTypeManager geological_entity_manager;
         RelationshipManager relationship_manager;
     };
-}
+} // namespace RINGMesh

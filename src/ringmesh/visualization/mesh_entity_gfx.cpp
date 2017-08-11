@@ -73,7 +73,7 @@ namespace {
             }
         }
     }
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -456,6 +456,6 @@ namespace RINGMesh {
         const VolumeMesh< 3 >& );
     template class RINGMESH_API AttributeGfxManagerBase< 3 > ;
 
-}
+} // namespace RINGMesh
 
 #endif

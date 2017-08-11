@@ -230,7 +230,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     template< template< index_t > class ENTITY >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entity(
-        const MeshType mesh_type )
+        MeshType mesh_type )
     {
         const MeshEntityType entity_type = ENTITY< DIMENSION >::type_name_static();
         index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) );
@@ -345,7 +345,7 @@ namespace RINGMesh {
     template< template< index_t > class ENTITY >
     bool GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entities(
         index_t nb_additionnal_entities,
-        const MeshType type )
+        MeshType type )
     {
         const MeshEntityType& entity_type = ENTITY< DIMENSION >::type_name_static();
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& store =
@@ -690,4 +690,4 @@ namespace RINGMesh {
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 3 >::create_mesh_entity<
         Region >( const MeshType );
     template class RINGMESH_API GeoModelBuilderTopologyBase< 3 > ;
-}
+} // namespace RINGMesh

@@ -64,14 +64,23 @@
 
 #define ringmesh_disable_copy( Class )                                          \
     public:                                                                     \
-    Class( const Class & ) = delete ;                                           \
+    Class( const Class& ) = delete ;                                        \
     Class& operator=( const Class& ) = delete
 
+#define ringmesh_disable_move( Class )                                          \
+    public:                                                                     \
+    Class( const Class&& ) = delete ;                                           \
+    Class& operator= ( Class&& ) = delete
+
+#define ringmesh_disable_copy_and_move( Class )                                  \
+    ringmesh_disable_copy( Class );                                              \
+    ringmesh_disable_move( Class )
+
 #define ringmesh_template_assert_2d_or_3d( type )                               \
-    static_assert( type == 2 || type == 3, #type " template should be 2 or 3" )
+    static_assert( ( type ) == 2 || type == 3, #type " template should be 2 or 3" )
 
 #define ringmesh_template_assert_3d( type )                                     \
-    static_assert( type == 3, #type " template should be 3" )
+    static_assert( ( type ) == 3, #type " template should be 3" )
 
 #define ALIAS_2D( Class )                                                 \
     using Class ## 2D = Class< 2 >
@@ -90,15 +99,15 @@
     template< index_t > struct Struct;
 
 // To avoid unused argument warning in function definition
-template< typename T > void ringmesh_unused( T const& )
+template< typename T > void ringmesh_unused( const T& /*unused*/)
 {
 }
 
 #include <future>
 
-#include <ringmesh/basic/types.h>
-#include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/logger.h>
+#include <ringmesh/basic/ringmesh_assert.h>
+#include <ringmesh/basic/types.h>
 
 #include <geogram/basic/string.h>
 
@@ -145,9 +154,7 @@ namespace RINGMesh {
                 category_( std::move( category ) )
         {
         }
-        virtual ~RINGMeshException() throw()
-        {
-        }
+        virtual ~RINGMeshException() noexcept = default;
 
         const std::string& category() const
         {
@@ -170,7 +177,7 @@ namespace RINGMesh {
             return GEO::String::to_string( a0 ) + string_concatener( a1, args... );
         }
     protected:
-        std::string category_;
+        std::string category_ { };
     };
 
     /*!
@@ -196,7 +203,7 @@ namespace RINGMesh {
         {
         }
         template< typename T >
-        range( T end )
+        explicit range( T end )
             : last_( static_cast< index_t >( end ) )
         {
         }
@@ -210,7 +217,7 @@ namespace RINGMesh {
             return *this;
         }
         // Iterator functions
-        bool operator!=( const range& ) const
+        bool operator!=( const range& /*unused*/) const
         {
             return iter_ < last_;
         }
@@ -257,4 +264,4 @@ namespace RINGMesh {
             future.get();
         }
     }
-}
+} // namespace RINGMesh

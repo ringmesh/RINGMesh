@@ -259,7 +259,7 @@ namespace RINGMesh {
             const Geometry::Point2D& point,
             const Geometry::Triangle2D& triangle )
         {
-            double result { max_float64() };
+            double result ;
             vec2 closest_point;
             if( Position::point_inside_triangle( point, triangle ) ) {
                 closest_point = point;
@@ -331,15 +331,13 @@ namespace RINGMesh {
                 point, segment.p0_, segment.p1_ );
             if( can_point_be_projected ) {
                 return std::make_tuple( length( nearest_p - point ), nearest_p );
-            } else {
-                double p0_sq { length2( segment.p0_ - point ) };
-                double p1_sq { length2( segment.p1_ - point ) };
-                if( p0_sq < p1_sq ) {
-                    return std::make_tuple( std::sqrt( p0_sq ), segment.p0_ );
-                } else {
-                    return std::make_tuple( std::sqrt( p1_sq ), segment.p1_ );
-                }
             }
+            double p0_sq { length2( segment.p0_ - point ) };
+            double p1_sq { length2( segment.p1_ - point ) };
+            if( p0_sq < p1_sq ) {
+                return std::make_tuple( std::sqrt( p0_sq ), segment.p0_ );
+            }
+            return std::make_tuple( std::sqrt( p1_sq ), segment.p1_ );
         }
 
         std::tuple< double, vec3 > point_to_plane(
@@ -365,6 +363,6 @@ namespace RINGMesh {
         template std::tuple< double, vecn< 3 > > RINGMESH_API point_to_triangle(
             const Geometry::Point< 3 >&,
             const Geometry::Triangle< 3 >& );
-    }
-}
+    }  // namespace Distance
+}  // namespace RINGMesh
 

@@ -47,7 +47,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
     ALIAS_3D( GeoModel );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -82,4 +82,4 @@ namespace RINGMesh {
     void RINGMESH_API compute_prop_tet_mesh_quality(
         MeshQualityMode mesh_qual_mode,
         const GeoModel3D& geomodel );
-}
+} // namespace RINGMesh

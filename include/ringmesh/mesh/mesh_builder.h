@@ -48,7 +48,7 @@
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
     template< index_t DIMENSION >
@@ -57,9 +57,7 @@ namespace RINGMesh {
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
-        virtual ~MeshBaseBuilder()
-        {
-        }
+        virtual ~MeshBaseBuilder() = default;
         /*!
          * \name general methods
          * @{
@@ -192,7 +190,7 @@ namespace RINGMesh {
         static std::unique_ptr< MeshBaseBuilder< DIMENSION > > create_builder(
             MeshBase< DIMENSION >& mesh );
     protected:
-        MeshBaseBuilder( MeshBase< DIMENSION >& mesh )
+        explicit MeshBaseBuilder( MeshBase< DIMENSION >& mesh )
             : mesh_base_( mesh )
         {
         }
@@ -289,8 +287,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( PointSetMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~PointSetMeshBuilder() = default;
-
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > > create_builder(
             PointSetMesh< DIMENSION >& mesh );
 
@@ -300,7 +296,7 @@ namespace RINGMesh {
         }
 
     protected:
-        PointSetMeshBuilder( PointSetMesh< DIMENSION >& mesh )
+        explicit PointSetMeshBuilder( PointSetMesh< DIMENSION >& mesh )
             : MeshBaseBuilder< DIMENSION >( mesh ), pointset_mesh_( mesh )
         {
         }
@@ -327,8 +323,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( LineMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~LineMeshBuilder() = default;
-
         static std::unique_ptr< LineMeshBuilder > create_builder(
             LineMesh< DIMENSION >& mesh );
 
@@ -421,7 +415,7 @@ namespace RINGMesh {
 
         }
     protected:
-        LineMeshBuilder( LineMesh< DIMENSION >& mesh )
+        explicit LineMeshBuilder( LineMesh< DIMENSION >& mesh )
             : MeshBaseBuilder< DIMENSION >( mesh ), line_mesh_( mesh )
         {
         }
@@ -503,8 +497,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( SurfaceMeshBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        virtual ~SurfaceMeshBuilder() = default;
-
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > create_builder(
             SurfaceMesh< DIMENSION >& mesh );
 
@@ -743,7 +735,7 @@ namespace RINGMesh {
             this->delete_vertices( to_delete );
         }
     protected:
-        SurfaceMeshBuilder( SurfaceMeshBase< DIMENSION >& mesh )
+        explicit SurfaceMeshBuilder( SurfaceMeshBase< DIMENSION >& mesh )
             : MeshBaseBuilder< DIMENSION >( mesh ), surface_mesh_( mesh )
         {
         }
@@ -1001,7 +993,7 @@ namespace RINGMesh {
             this->delete_vertices( to_delete );
         }
     protected:
-        VolumeMeshBuilder( VolumeMesh< DIMENSION >& mesh )
+        explicit VolumeMeshBuilder( VolumeMesh< DIMENSION >& mesh )
             : MeshBaseBuilder< DIMENSION >( mesh ), volume_mesh_( mesh )
         {
         }
@@ -1123,4 +1115,4 @@ namespace RINGMesh {
     using VolumeMeshBuilderFactory = Factory< MeshType, VolumeMeshBuilder< DIMENSION >, VolumeMesh< DIMENSION >& >;
 
     using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory< 3 >;
-}
+} // namespace RINGMesh
