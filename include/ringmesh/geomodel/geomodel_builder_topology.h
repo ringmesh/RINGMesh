@@ -183,7 +183,6 @@ namespace RINGMesh {
             const MeshEntityType& type = ENTITY::type_name_static();
             create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
 
-            RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( type ); ++e ) {
                 gmme_id id( type, e );
                 GeoModelMeshEntityAccess gmme_access(
