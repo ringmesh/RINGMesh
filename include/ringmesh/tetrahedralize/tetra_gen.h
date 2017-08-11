@@ -62,7 +62,11 @@ extern "C" {
 
 namespace RINGMesh {
     class TetraGen;
-    FORWARD_DECLARATION_3D_CLASS( WellGroup );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
+    FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
+
+    ALIAS_3D( Region );
+    ALIAS_3D( WellGroup );
 }
 
 namespace RINGMesh {

@@ -33,77 +33,69 @@
  *     FRANCE
  */
 
-/*! 
- * @file Implementation of visualization of GeoModelEntities
- * @author Benjamin Chauvin and Arnaud Botella
+#include <ringmesh/ringmesh_tests_config.h>
+
+#include <vector>
+
+#include <geogram/basic/vecg.h>
+
+#include <ringmesh/basic/geometry.h>
+
+/*!
+ * @author Arnaud Botella
  */
 
-#include <ringmesh/visualization/geomodel_gfx.h>
+using namespace RINGMesh;
 
-#ifdef RINGMESH_WITH_GRAPHICS
-
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
-
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
-    GeoModelGfxBase< DIMENSION >::GeoModelGfxBase( GeoModelGfx< DIMENSION >& gfx )
-        :
-            corners( gfx ),
-            lines( gfx ),
-            surfaces( gfx ),
-            attribute( gfx )
-    {
+void verdict( bool condition, std::string test_name )
+{
+    if( !condition ) {
+        throw RINGMeshException( "TEST", test_name, ": KO" );
+    } else {
+        Logger::out( "TEST", test_name, ": OK" );
     }
-
-    template< index_t DIMENSION >
-    void GeoModelGfxBase< DIMENSION >::set_geomodel(
-        const GeoModel< DIMENSION >& geomodel )
-    {
-        geomodel_ = &geomodel;
-        initialize();
-    }
-
-    template< index_t DIMENSION >
-    const GeoModel< DIMENSION >* GeoModelGfxBase< DIMENSION >::geomodel() const
-    {
-        return geomodel_;
-    }
-
-    template< index_t DIMENSION >
-    void GeoModelGfxBase< DIMENSION >::initialize()
-    {
-        ringmesh_assert( geomodel_ );
-        corners.initialize();
-        lines.initialize();
-        surfaces.initialize();
-    }
-
-    template< index_t DIMENSION >
-    GeoModelGfx< DIMENSION >::GeoModelGfx()
-        : GeoModelGfxBase< DIMENSION >( *this )
-    {
-    }
-
-    GeoModelGfx< 3 >::GeoModelGfx()
-        : GeoModelGfxBase< 3 >( *this ), regions( *this )
-    {
-    }
-
-    void GeoModelGfx< 3 >::initialize()
-    {
-        GeoModelGfxBase3D::initialize();
-        regions.initialize();
-    }
-
-    template class RINGMESH_API GeoModelGfxBase< 2 > ;
-    template class RINGMESH_API GeoModelGfx< 2 > ;
-
-    template class RINGMESH_API GeoModelGfxBase< 3 > ;
-
 }
 
-#endif
+template< index_t DIMENSION >
+bool are_almost_equal( const vecn< DIMENSION >& vec0, const vecn< DIMENSION >& vec1 )
+{
+    return ( vec0 - vec1 ).length2() < global_epsilon_sq;
+}
+
+void test_point_plane_side()
+{
+    Logger::out( "TEST", "Test Point-Plane side" );
+    Geometry::Plane plane { { 1., 0., 0. }, { 1., 4., -2. } };
+
+    // Test from each side
+    Sign positive_side { Position::point_side_to_plane( { 2., 2., 2. }, plane ) };
+    verdict( positive_side == POSITIVE, "True point side positive" );
+    Sign negative_side { Position::point_side_to_plane( { -2., -2., -9. }, plane ) };
+    verdict( negative_side == NEGATIVE, "True point side negative" );
+
+    // Test on the plane
+    Sign on_plane_side { Position::point_side_to_plane( { 1., 6., -6. }, plane ) };
+    verdict( on_plane_side == ZERO, "True point side on plane" );
+
+    Logger::out( "TEST", " " );
+}
+
+int main()
+{
+    try {
+        default_configure();
+
+        Logger::out( "TEST", "Test intersection algorithms" );
+
+        test_point_plane_side();
+
+    } catch( const RINGMeshException& e ) {
+        Logger::err( e.category(), e.what() );
+        return 1;
+    } catch( const std::exception& e ) {
+        Logger::err( "Exception", e.what() );
+        return 1;
+    }
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
+}

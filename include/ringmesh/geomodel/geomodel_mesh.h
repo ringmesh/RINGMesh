@@ -66,8 +66,11 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshPolygons );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshPolygonsBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshCells );
-    FORWARD_DECLARATION_3D_CLASS( GeoModelMesh );
-    FORWARD_DECLARATION_3D_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+
+    ALIAS_3D( GeoModel );
+    ALIAS_3D( GeoModelMesh );
 }
 
 namespace RINGMesh {
@@ -488,7 +491,7 @@ namespace RINGMesh {
         GeoModelVertexMapper vertex_mapper_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshVerticesBase );
+    ALIAS_2D_AND_3D( GeoModelMeshVerticesBase );
 
     template< index_t DIMENSION >
     class GeoModelMeshVertices final: public GeoModelMeshVerticesBase< DIMENSION > {
@@ -512,7 +515,7 @@ namespace RINGMesh {
         index_t fill_vertices() override;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshVertices );
+    ALIAS_2D_AND_3D( GeoModelMeshVertices );
 
     template< index_t DIMENSION >
     class GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
@@ -793,7 +796,7 @@ namespace RINGMesh {
         vec3 normal( index_t p ) const;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshPolygons );
+    ALIAS_2D_AND_3D( GeoModelMeshPolygons );
 
     template< index_t DIMENSION >
     class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
@@ -1014,7 +1017,7 @@ namespace RINGMesh {
         std::vector< index_t > well_ptr_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshWells );
+    ALIAS_2D_AND_3D( GeoModelMeshWells );
 
     template< index_t DIMENSION >
     class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
@@ -1480,7 +1483,7 @@ namespace RINGMesh {
         GEO::Attribute< index_t > polygon_id_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelMeshCells );
+    ALIAS_2D_AND_3D( GeoModelMeshCells );
 
     template< index_t DIMENSION >
     class GeoModelMeshBase {
@@ -1548,7 +1551,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
+    class RINGMESH_API GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
     public:
         GeoModelMesh( GeoModel3D& geomodel );
         virtual ~GeoModelMesh();
