@@ -57,35 +57,34 @@ namespace {
      * "MFEM is a free, lightweight, scalable C++ library for finite element
      * methods"
      */
-    class MFEMIOHandler final: public GeoModelIOHandler< 3 > {
+    template< index_t DIMENSION >
+    class MFEMIOHandler final: public GeoModelIOHandler< DIMENSION > {
     public:
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
+        void load( const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from MFEM not implemented yet" );
         }
         void save(
-            const GeoModel3D& geomodel,
+            const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
         {
-            const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
-            index_t nb_cells = geomodel_mesh.cells.nb();
-            if( geomodel_mesh.cells.nb_tet() != nb_cells
-                && geomodel_mesh.cells.nb_hex() != nb_cells ) {
-                throw RINGMeshException( "I/O",
-                    "Export to MFEM format works only with full tet or full hex format" );
-            }
+            const GeoModelMesh< DIMENSION >& geomodel_mesh = geomodel.mesh;
+            test_if_mesh_is_valid( geomodel.mesh );
+
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
 
             write_header( geomodel_mesh, out );
-            write_cells( geomodel_mesh, out );
-            write_polygons( geomodel_mesh, out );
+            write_elements( geomodel_mesh, out );
+            write_boundaries( geomodel_mesh, out );
             write_vertices( geomodel_mesh, out );
             out << std::flush;
         }
 
     private:
+        void test_if_mesh_is_valid( const GeoModelMesh< DIMENSION >& geomodel_mesh );
+
         /*!
          * @brief Write the header for the MFEM mesh file
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
@@ -101,71 +100,17 @@ namespace {
 
             // Dimension is always 3 in our case
             out << "dimension" << EOL;
-            out << dimension << EOL;
+            out << DIMENSION << EOL;
             out << EOL;
         }
 
-        /*!
-         * @brief Write the cells for the MFEM mesh file (work only with
-         * tetrahedra and hexaedra)
-         * @details The structure of the MFEM file for cells is
-         * [group_id] [cell_type] [id_vertex_0] [id_vertex_1] .....
-         * cell_type is 4 for  tetrahedra and 5 for hexahedra.
-         * group_id begin with 1
-         * @param[in] geomodel_mesh the GeoModelMesh to be saved
-         * @param[in] out the ofstream that wrote the MFEM mesh file
-         */
-        void write_cells(
-            const GeoModelMesh3D& geomodel_mesh,
-            std::ofstream& out ) const
-        {
-            index_t nb_cells = geomodel_mesh.cells.nb();
-            out << "elements" << EOL;
-            out << nb_cells << EOL;
-            for( index_t c : range( nb_cells ) ) {
-                out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
-                out
-                    << cell_type_mfem[to_underlying_type(
-                        geomodel_mesh.cells.type( c ) )] << " ";
-                for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
-                    out
-                        << geomodel_mesh.cells.vertex(
-                            ElementLocalVertex( c, cell2mfem[v] ) ) << " ";
-                }
-                out << EOL;
-            }
-            out << EOL;
-        }
+        void write_elements(
+            const GeoModelMesh< DIMENSION >& geomodel_mesh,
+            std::ofstream& out ) const;
 
-        /*!
-         * @brief Write the polygons for the MFEM mesh file (work only with
-         * triangles and quads)
-         * @details The structure of the MFEM file for polygons is
-         * [group_id] [polygon_type] [id_vertex_0] [id_vertex_1] .....
-         * polygon_type is 2 for triangles and 3 for the quads
-         * group_id is continuous with the groupd indexes of the cells
-         * @param[in] geomodel_mesh the GeoModelMesh to be saved
-         * @param[in] out the ofstream that wrote the MFEM mesh file
-         */
-        void write_polygons(
-            const GeoModelMesh3D& geomodel_mesh,
-            std::ofstream& out ) const
-        {
-            const GeoModelMeshPolygons3D& polygons = geomodel_mesh.polygons;
-            out << "boundary" << EOL;
-            out << polygons.nb() << EOL;
-            for( index_t p : range( polygons.nb() ) ) {
-                out << polygons.surface( p ) + mfem_offset << " ";
-                PolygonType polygon_type;
-                std::tie( polygon_type, std::ignore ) = polygons.type( p );
-                out << polygon_type_mfem[to_underlying_type( polygon_type )] << " ";
-                for( index_t v : range( polygons.nb_vertices( p ) ) ) {
-                    out << polygons.vertex( ElementLocalVertex( p, v ) ) << " ";
-                }
-                out << EOL;
-            }
-            out << EOL;
-        }
+        void write_boundaries(
+            const GeoModelMesh< DIMENSION >& geomodel_mesh,
+            std::ofstream& out ) const;
 
         /*!
          * @brief Write the vertices for the MFEM mesh file
@@ -175,19 +120,141 @@ namespace {
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
         void write_vertices(
-            const GeoModelMesh3D& geomodel_mesh,
+            const GeoModelMesh< DIMENSION >& geomodel_mesh,
             std::ofstream& out ) const
         {
             out << "vertices" << EOL;
             out << geomodel_mesh.vertices.nb() << EOL;
-            out << dimension << EOL;
+            out << DIMENSION << EOL;
             for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
                 out << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
         }
-
-    private:
-        static const index_t dimension = 3;
     };
 
+    template< >
+    void MFEMIOHandler< 3 >::test_if_mesh_is_valid(
+        const GeoModelMesh< 3 >& geomodel_mesh )
+    {
+        index_t nb_cells = geomodel_mesh.cells.nb();
+        if( geomodel_mesh.cells.nb_tet() != nb_cells
+            && geomodel_mesh.cells.nb_hex() != nb_cells ) {
+            throw RINGMeshException( "I/O",
+                "Export to MFEM format works only with full tet or full hex format" );
+        }
+    }
+
+    template< >
+    void MFEMIOHandler< 2 >::test_if_mesh_is_valid(
+        const GeoModelMesh< 2 >& geomodel_mesh )
+    {
+        if( geomodel_mesh.polygons.nb() != geomodel_mesh.polygons.nb_triangle() ) {
+            throw RINGMeshException( "I/O",
+                "Export to MFEM format works only with triangles in 2D" );
+        }
+    }
+
+    /*!
+     * @brief Write the cells for the MFEM mesh file (work only with
+     * tetrahedra and hexaedra)
+     * @details The structure of the MFEM file for cells is
+     * [group_id] [cell_type] [id_vertex_0] [id_vertex_1] .....
+     * cell_type is 4 for  tetrahedra and 5 for hexahedra.
+     * group_id begin with 1
+     * @param[in] geomodel_mesh the GeoModelMesh to be saved
+     * @param[in] out the ofstream that wrote the MFEM mesh file
+     */
+    template< >
+    void MFEMIOHandler< 3 >::write_elements(
+        const GeoModelMesh< 3 >& geomodel_mesh,
+        std::ofstream& out ) const
+    {
+        index_t nb_cells = geomodel_mesh.cells.nb();
+        out << "elements" << EOL;
+        out << nb_cells << EOL;
+        for( index_t c : range( nb_cells ) ) {
+            out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
+            out
+                << cell_type_mfem[to_underlying_type( geomodel_mesh.cells.type( c ) )]
+                << " ";
+            for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
+                out
+                    << geomodel_mesh.cells.vertex(
+                        ElementLocalVertex( c, cell2mfem[v] ) ) << " ";
+            }
+            out << EOL;
+        }
+        out << EOL;
+    }
+
+    template< >
+    void MFEMIOHandler< 2 >::write_elements(
+        const GeoModelMesh< 2 >& geomodel_mesh,
+        std::ofstream& out ) const
+    {
+        index_t nb_triangles = geomodel_mesh.polygons.nb_triangle();
+        out << "elements" << EOL;
+        out << nb_triangles << EOL;
+        for( index_t c : range( nb_triangles ) ) {
+            out << geomodel_mesh.polygons.surface( c ) + mfem_offset << " ";
+            out << "2" // MFEM Geometry Types : TRIANGLE = 2
+                << " ";
+            for( index_t v : range( geomodel_mesh.polygons.nb_vertices( c ) ) ) {
+                out << geomodel_mesh.polygons.vertex( ElementLocalVertex( c, v ) )
+                    << " ";
+            }
+            out << EOL;
+        }
+        out << EOL;
+    }
+
+    /*!
+     * @brief Write the polygons for the MFEM mesh file (work only with
+     * triangles and quads)
+     * @details The structure of the MFEM file for polygons is
+     * [group_id] [polygon_type] [id_vertex_0] [id_vertex_1] .....
+     * polygon_type is 2 for triangles and 3 for the quads
+     * group_id is continuous with the groupd indexes of the cells
+     * @param[in] geomodel_mesh the GeoModelMesh to be saved
+     * @param[in] out the ofstream that wrote the MFEM mesh file
+     */
+    template< >
+    void MFEMIOHandler< 3 >::write_boundaries(
+        const GeoModelMesh< 3 >& geomodel_mesh,
+        std::ofstream& out ) const
+    {
+        const GeoModelMeshPolygons3D& polygons = geomodel_mesh.polygons;
+        out << "boundary" << EOL;
+        out << polygons.nb() << EOL;
+        for( index_t p : range( polygons.nb() ) ) {
+            out << polygons.surface( p ) + mfem_offset << " ";
+            PolygonType polygon_type;
+            std::tie( polygon_type, std::ignore ) = polygons.type( p );
+            out << polygon_type_mfem[to_underlying_type( polygon_type )] << " ";
+            for( index_t v : range( polygons.nb_vertices( p ) ) ) {
+                out << polygons.vertex( ElementLocalVertex( p, v ) ) << " ";
+            }
+            out << EOL;
+        }
+        out << EOL;
+    }
+
+    template< >
+    void MFEMIOHandler< 2 >::write_boundaries(
+        const GeoModelMesh< 2 >& geomodel_mesh,
+        std::ofstream& out ) const
+    {
+        const GeoModelMeshEdges< 2 >& edges = geomodel_mesh.edges;
+        out << "boundary" << EOL;
+        out << edges.nb() << EOL;
+        for( index_t p : range( edges.nb() ) ) {
+            out << edges.line( p ) + mfem_offset << " ";
+            out << "1" << " "; // MFEM Geometry Types : SEGMENT = 1
+            for( index_t v : range( edges.nb_vertices( p ) ) ) {
+                out << edges.vertex( ElementLocalVertex( p, v ) ) << " ";
+            }
+            out << EOL;
+        }
+        out << EOL;
+    }
 }

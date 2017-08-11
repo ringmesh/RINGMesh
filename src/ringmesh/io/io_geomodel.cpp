@@ -91,6 +91,7 @@ namespace RINGMesh {
     {
         GeoModelIOHandlerFactory2D::register_creator< GeoModelHandlerGM2D >( "gm" );
         GeoModelIOHandlerFactory2D::register_creator< SVGIOHandler >( "svg" );
+        GeoModelIOHandlerFactory3D::register_creator< MFEMIOHandler<2> >( "mfem" );
     }
 
     /*
@@ -106,7 +107,7 @@ namespace RINGMesh {
         GeoModelIOHandlerFactory3D::register_creator< VTKIOHandler >( "vtk" );
         GeoModelIOHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
         GeoModelIOHandlerFactory3D::register_creator< MSHIOHandler >( "msh" );
-        GeoModelIOHandlerFactory3D::register_creator< MFEMIOHandler >( "mfem" );
+        GeoModelIOHandlerFactory3D::register_creator< MFEMIOHandler<3> >( "mfem" );
         GeoModelIOHandlerFactory3D::register_creator< GeoModelHandlerGM3D >( "gm" );
         GeoModelIOHandlerFactory3D::register_creator< AbaqusIOHandler >( "inp" );
         GeoModelIOHandlerFactory3D::register_creator< AdeliIOHandler >( "adeli" );

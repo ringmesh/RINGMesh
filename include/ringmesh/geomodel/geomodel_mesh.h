@@ -139,6 +139,8 @@ namespace RINGMesh {
          */
         const vecn< DIMENSION >& vertex( index_t v ) const;
 
+        index_t nb_vertices( index_t v ) const;
+
         /*!
          * @brief Returns the index of the given vertex in the geomodel
          * @param[in] p input point coordinates
@@ -830,6 +832,8 @@ namespace RINGMesh {
          * @return the vertex index
          */
         index_t vertex( const ElementLocalVertex& edge_local_vertex ) const;
+
+        index_t nb_vertices( index_t edge ) const;
 
         /*!
          * Get the line index in the GeoModel according the edge
