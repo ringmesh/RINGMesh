@@ -162,7 +162,7 @@ if(UNIX)
     # On MacOS, it seems that C++11 is working since gcc/g++ 4.2.
     if(APPLE)
         if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-            message(FATAL_ERROR "RINGMesh require Clang version >= 4.2")
+            message(FATAL_ERROR "RINGMesh on Apple requires Clang compiler")
         endif()
         set(CMAKE_MACOSX_RPATH 1)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
