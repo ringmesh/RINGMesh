@@ -154,7 +154,9 @@ namespace RINGMesh {
                 category_( std::move( category ) )
         {
         }
-        virtual ~RINGMeshException() noexcept = default;
+        virtual ~RINGMeshException() throw()
+        {
+        }
 
         const std::string& category() const
         {
