@@ -76,13 +76,19 @@ namespace RINGMesh {
          * @brief Add to the vector the entities which cannot exist if
          *        an entity in the set does not exist.
          * @return True if at least one entity was added.
+         * @todo I do not think that it work for only else than region and layer
+         * because if you remove something else, for instance a corner or a line
+         * or a surface, the incident boundaries may still exist but you removed
+         * one of its boundaries... to handle in the future.
+         * In fact, the model can be still be valid since there is everything geometrically.
+         * But the incident entities which shared the removed mesh entity must be merged... [BC].
          */
         bool get_dependent_entities(
             std::set< gmme_id >& in_mesh_entities,
             std::set< gmge_id >& in_geological_entities ) const;
 
         template< template< index_t > class ENTITY >
-        gmme_id create_mesh_entity( const MeshType mesh_type = "" );
+        gmme_id create_mesh_entity( const MeshType& mesh_type = "" );
 
         virtual bool create_mesh_entities(
             const MeshEntityType& type,
@@ -142,7 +148,7 @@ namespace RINGMesh {
         template< template< index_t > class ENTITY >
         bool create_mesh_entities(
             index_t nb_additionnal_entities,
-            const MeshType type = "" );
+            const MeshType& type = "" );
 
         template< template< index_t > class ENTITY >
         void copy_mesh_entity_topology( const GeoModel< DIMENSION >& from )
