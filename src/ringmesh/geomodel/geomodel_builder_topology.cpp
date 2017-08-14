@@ -160,7 +160,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool GeoModelBuilderTopologyBase< DIMENSION >::get_dependent_entities(
+    void GeoModelBuilderTopologyBase< DIMENSION >::get_dependent_entities(
         std::set< gmme_id >& mesh_entities,
         std::set< gmge_id >& geological_entities ) const
     {
@@ -221,9 +221,7 @@ namespace RINGMesh {
         // Recursive call till nothing is added
         if( mesh_entities.size() != input_mesh_size
             || geological_entities.size() != input_geological_size ) {
-            return get_dependent_entities( mesh_entities, geological_entities );
-        } else {
-            return false;
+            get_dependent_entities( mesh_entities, geological_entities );
         }
     }
 
