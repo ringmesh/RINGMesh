@@ -739,7 +739,6 @@ namespace RINGMesh {
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 2 >::create_mesh_entity<
         Surface >( const MeshType& );
     template class RINGMESH_API GeoModelBuilderTopologyBase< 2 > ;
-    template class RINGMESH_API GeoModelBuilderTopology< 2 > ;
 
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 3 >::create_mesh_entity<
         Corner >( const MeshType& );
@@ -750,5 +749,4 @@ namespace RINGMesh {
     template gmme_id RINGMESH_API GeoModelBuilderTopologyBase< 3 >::create_mesh_entity<
         Region >( const MeshType& );
     template class RINGMESH_API GeoModelBuilderTopologyBase< 3 > ;
-    template class RINGMESH_API GeoModelBuilderTopology< 3 > ;
 }

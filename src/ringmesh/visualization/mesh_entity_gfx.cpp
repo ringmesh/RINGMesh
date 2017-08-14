@@ -455,7 +455,6 @@ namespace RINGMesh {
     template std::unique_ptr< VolumeMeshGfx< 3 > > RINGMESH_API VolumeMeshGfx< 3 >::create_gfx(
         const VolumeMesh< 3 >& );
     template class RINGMESH_API AttributeGfxManagerBase< 3 > ;
-    template class RINGMESH_API AttributeGfxManager< 3 > ;
 
 }
 

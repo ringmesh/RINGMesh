@@ -48,12 +48,14 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class Interface;
-    template< index_t DIMENSION > class Layer;
+    FORWARD_DECLARATION_DIMENSION_CLASS( Interface );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Layer );
 
-    CLASS_DIMENSION_ALIASES( Interface );
-    CLASS_DIMENSION_ALIASES( Layer );
+    ALIAS_3D( Interface );
+    ALIAS_3D( Layer );
+}
 
+namespace RINGMesh {
     // @todo To develop
     enum struct ROCKTYPE {
         NONE, MULTIPLE

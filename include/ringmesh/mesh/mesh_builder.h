@@ -47,7 +47,7 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 }
 
 namespace RINGMesh {
@@ -282,7 +282,7 @@ namespace RINGMesh {
         MeshBase< DIMENSION >& mesh_base_;
     };
 
-    CLASS_DIMENSION_ALIASES( MeshBaseBuilder );
+    ALIAS_2D_AND_3D( MeshBaseBuilder );
 
     template< index_t DIMENSION >
     class PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -315,12 +315,12 @@ namespace RINGMesh {
         PointSetMesh< DIMENSION >& pointset_mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( PointSetMeshBuilder );
+    ALIAS_2D_AND_3D( PointSetMeshBuilder );
 
     template< index_t DIMENSION >
     using PointSetMeshBuilderFactory = Factory< MeshType, PointSetMeshBuilder< DIMENSION >, PointSetMesh< DIMENSION >& >;
 
-    CLASS_DIMENSION_ALIASES( PointSetMeshBuilderFactory );
+    ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
     template< index_t DIMENSION >
     class LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -491,12 +491,12 @@ namespace RINGMesh {
         LineMesh< DIMENSION >& line_mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( LineMeshBuilder );
+    ALIAS_2D_AND_3D( LineMeshBuilder );
 
     template< index_t DIMENSION >
     using LineMeshBuilderFactory = Factory< MeshType, LineMeshBuilder< DIMENSION >, LineMesh< DIMENSION >& >;
 
-    CLASS_DIMENSION_ALIASES( LineMeshBuilderFactory );
+    ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
     template< index_t DIMENSION >
     class SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
@@ -614,22 +614,13 @@ namespace RINGMesh {
         }
         void connect_polygons( const std::vector< index_t >& polygons_to_connect )
         {
-            struct PolygonLocalVertex {
-                PolygonLocalVertex( index_t polygon, index_t local_vertex )
-                    : polygon_( polygon ), local_vertex_( local_vertex )
-                {
-                }
-                index_t polygon_ { NO_ID };
-                index_t local_vertex_ { NO_ID };
-            };
-
             index_t nb_local_vertices = 0;
             for( index_t polygon : polygons_to_connect ) {
                 nb_local_vertices += this->surface_mesh_.nb_polygon_vertices(
                     polygon );
             }
 
-            std::vector< PolygonLocalVertex > polygon_vertices;
+            std::vector< ElementLocalVertex > polygon_vertices;
             polygon_vertices.reserve( nb_local_vertices );
             for( index_t polygon : polygons_to_connect ) {
                 for( index_t v : range(
@@ -676,9 +667,9 @@ namespace RINGMesh {
                         if( local_vertex == local_vertex_count ) {
                             continue;
                         }
-                        index_t adj_polygon = polygon_vertices[local_vertex].polygon_;
+                        index_t adj_polygon = polygon_vertices[local_vertex].element_id_;
                         index_t adj_local_vertex =
-                            polygon_vertices[local_vertex].local_vertex_;
+                            polygon_vertices[local_vertex].local_vertex_id_;
                         index_t adj_next_vertex = this->surface_mesh_.polygon_vertex(
                             this->surface_mesh_.next_polygon_vertex(
                                 ElementLocalVertex( adj_polygon,
@@ -860,12 +851,12 @@ namespace RINGMesh {
         SurfaceMeshBase< DIMENSION >& surface_mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( SurfaceMeshBuilder );
+    ALIAS_2D_AND_3D( SurfaceMeshBuilder );
 
     template< index_t DIMENSION >
     using SurfaceMeshBuilderFactory = Factory< MeshType, SurfaceMeshBuilder< DIMENSION >, SurfaceMesh< DIMENSION >& >;
 
-    CLASS_DIMENSION_ALIASES( SurfaceMeshBuilderFactory );
+    ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template< index_t DIMENSION >
     class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {

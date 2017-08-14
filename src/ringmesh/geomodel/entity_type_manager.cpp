@@ -49,8 +49,8 @@ namespace RINGMesh {
             Surface3D::type_name_static() );
     }
 
-    template< index_t DIMENSION >
-    MeshEntityTypeBoundaryMap< DIMENSION >::MeshEntityTypeBoundaryMap()
+    template< >
+    MeshEntityTypeBoundaryMap< 2 >::MeshEntityTypeBoundaryMap()
     {
         initialize_base();
     }
@@ -145,8 +145,8 @@ namespace RINGMesh {
     std::vector< GeologicalEntityType > RelationshipManager::parent_types(
         const MeshEntityType& child_type ) const
     {
-        MeshEntityToParents::const_iterator itr = child_to_parents_.find(
-            child_type );
+        MeshEntityToParents::const_iterator itr { child_to_parents_.find(
+            child_type ) };
         std::vector< GeologicalEntityType > result;
         if( itr != child_to_parents_.end() ) {
             result.insert( result.begin(), itr->second.begin(), itr->second.end() );
@@ -163,8 +163,8 @@ namespace RINGMesh {
     const MeshEntityType RelationshipManager::child_type(
         const GeologicalEntityType& parent_type ) const
     {
-        GeologicalEntityToChild::const_iterator itr = parent_to_child_.find(
-            parent_type );
+        GeologicalEntityToChild::const_iterator itr { parent_to_child_.find(
+            parent_type ) };
         if( itr == parent_to_child_.end() ) {
             return ForbiddenMeshEntityType::type_name_static();
         } else {
@@ -175,12 +175,11 @@ namespace RINGMesh {
     template class RINGMESH_API MeshEntityTypes< 2 > ;
     template class RINGMESH_API MeshEntityTypeManagerBase< 2 > ;
     template class RINGMESH_API MeshEntityTypeManager< 2 > ;
-    template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 2 > ;
-    template class RINGMESH_API MeshEntityTypeBoundaryMap< 2 > ;
+    template struct RINGMESH_API MeshEntityTypeIncidentEntityMap< 2 > ;
+    template struct RINGMESH_API MeshEntityTypeBoundaryMap< 2 > ;
 
     template class RINGMESH_API MeshEntityTypes< 3 > ;
     template class RINGMESH_API MeshEntityTypeManagerBase< 3 > ;
-    template class RINGMESH_API MeshEntityTypeManager< 3 > ;
-    template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 3 > ;
-    template class RINGMESH_API MeshEntityTypeBoundaryMap< 3 > ;
+    template struct RINGMESH_API MeshEntityTypeIncidentEntityMap< 3 > ;
+    template struct RINGMESH_API MeshEntityTypeBoundaryMap< 3 > ;
 }

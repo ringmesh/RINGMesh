@@ -46,11 +46,11 @@
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class UniverseAccess;
-    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
-    template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( UniverseAccess );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
 }
 
 namespace RINGMesh {
@@ -111,7 +111,7 @@ namespace RINGMesh {
         index_t id_ { NO_ID };
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelEntity );
+    ALIAS_2D_AND_3D( GeoModelEntity );
 
     template< index_t DIMENSION >
     class Universe: public GeoModelEntity< DIMENSION > {
@@ -177,7 +177,7 @@ namespace RINGMesh {
 
     };
 
-    CLASS_DIMENSION_ALIASES( Universe );
+    ALIAS_2D_AND_3D( Universe );
 
     template< index_t DIMENSION >
     class UniverseAccess {
@@ -213,6 +213,6 @@ namespace RINGMesh {
         Universe< DIMENSION >& universe_;
     };
 
-    CLASS_DIMENSION_ALIASES( UniverseAccess );
+    ALIAS_2D_AND_3D( UniverseAccess );
 
 }
