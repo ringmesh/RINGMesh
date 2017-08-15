@@ -50,13 +50,13 @@
 #include <ringmesh/geomodel/geomodel_entity.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class GeoModelMeshEntity;
-    template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderGeology;
-    template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
-    template< index_t DIMENSION > class GeoModelBuilderRemoval;
-    template< index_t DIMENSION > class GeoModelBuilderInfo;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
 }
 
 namespace RINGMesh {
@@ -188,12 +188,12 @@ namespace RINGMesh {
         GEOL_FEATURE geol_feature_ { GEOL_FEATURE::NO_GEOL };
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelGeologicalEntity );
+    ALIAS_2D_AND_3D( GeoModelGeologicalEntity );
 
     template< index_t DIMENSION >
     using GeoModelGeologicalEntityFactory = Factory< GeologicalEntityType, GeoModelGeologicalEntity< DIMENSION >, const GeoModel < DIMENSION >& >;
 
-    CLASS_DIMENSION_ALIASES( GeoModelGeologicalEntityFactory );
+    ALIAS_2D_AND_3D( GeoModelGeologicalEntityFactory );
 
     template< index_t DIMENSION >
     class Contact: public GeoModelGeologicalEntity< DIMENSION > {
@@ -216,7 +216,7 @@ namespace RINGMesh {
         MeshEntityType child_type_name() const override;
     };
 
-    CLASS_DIMENSION_ALIASES( Contact );
+    ALIAS_2D_AND_3D( Contact );
 
     template< index_t DIMENSION >
     class Interface: public GeoModelGeologicalEntity< DIMENSION > {
@@ -239,7 +239,7 @@ namespace RINGMesh {
         MeshEntityType child_type_name() const override;
     };
 
-    CLASS_DIMENSION_ALIASES( Interface );
+    ALIAS_2D_AND_3D( Interface );
 
     template< index_t DIMENSION >
     class Layer: public GeoModelGeologicalEntity< DIMENSION > {
@@ -262,7 +262,7 @@ namespace RINGMesh {
         MeshEntityType child_type_name() const override;
     };
 
-    CLASS_DIMENSION_ALIASES( Layer );
+    ALIAS_2D_AND_3D( Layer );
 
     template< index_t DIMENSION >
     class GeoModelGeologicalEntityAccess {

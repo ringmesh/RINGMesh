@@ -42,8 +42,8 @@
 #include <ringmesh/basic/algorithm.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelMeshEntityAccess;
-    template< index_t DIMENSION > class GeoModelGeologicalEntityAccess;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntityAccess );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntityAccess );
 }
 
 namespace RINGMesh {

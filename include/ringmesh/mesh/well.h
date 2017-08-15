@@ -49,11 +49,11 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class Well;
-    template< index_t DIMENSION > class NNSearch;
-    template< index_t DIMENSION > class PointSetMesh;
-    template< index_t DIMENSION > class LineMesh;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Well );
+    FORWARD_DECLARATION_DIMENSION_CLASS( NNSearch );
+    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
     struct ElementLocalVertex;
 }
 
@@ -81,7 +81,7 @@ namespace RINGMesh {
         const Well< DIMENSION >* well_;
     };
 
-    CLASS_DIMENSION_ALIASES( WellEntity );
+    ALIAS_2D_AND_3D( WellEntity );
 
 // --------------------------------------------------------------------------
 
@@ -117,7 +117,7 @@ namespace RINGMesh {
         std::unique_ptr< PointSetMesh< DIMENSION > > mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( WellCorner );
+    ALIAS_2D_AND_3D( WellCorner );
 
 // --------------------------------------------------------------------------
 
@@ -203,7 +203,7 @@ namespace RINGMesh {
         std::unique_ptr< LineMesh< DIMENSION > > mesh_;
     };
 
-    CLASS_DIMENSION_ALIASES( WellPart );
+    ALIAS_2D_AND_3D( WellPart );
 
 // --------------------------------------------------------------------------
 
@@ -229,7 +229,7 @@ namespace RINGMesh {
         vecn< DIMENSION > vertices_[2];
     };
 
-    CLASS_DIMENSION_ALIASES( Edge );
+    ALIAS_2D_AND_3D( Edge );
 
 // --------------------------------------------------------------------------
 
@@ -383,7 +383,7 @@ namespace RINGMesh {
         index_t nb_edges_;
     };
 
-    CLASS_DIMENSION_ALIASES( Well );
+    ALIAS_2D_AND_3D( Well );
 
 // --------------------------------------------------------------------------
 
@@ -479,5 +479,5 @@ namespace RINGMesh {
         GeoModel< DIMENSION >* geomodel_;
     };
 
-    CLASS_DIMENSION_ALIASES( WellGroup );
+    ALIAS_2D_AND_3D( WellGroup );
 }

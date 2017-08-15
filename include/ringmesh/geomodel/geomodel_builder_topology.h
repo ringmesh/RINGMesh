@@ -47,10 +47,10 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModelBuilderBase;
-    template< index_t DIMENSION > class GeoModelBuilder;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
 
-    CLASS_DIMENSION_ALIASES( GeoModelBuilder );
+    ALIAS_2D_AND_3D( GeoModelBuilder );
 }
 
 namespace RINGMesh {
@@ -149,13 +149,13 @@ namespace RINGMesh {
             const MeshEntityType& type = ENTITY< DIMENSION >::type_name_static();
             create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
 
-            RINGMESH_PARALLEL_LOOP
-            for( index_t e = 0; e < geomodel_.nb_mesh_entities( type ); ++e ) {
-                gmme_id id( type, e );
-                GeoModelMeshEntityAccess< DIMENSION > gmme_access(
-                    geomodel_access_.modifiable_mesh_entity( id ) );
-                gmme_access.copy( from.mesh_entity( id ) );
-            }
+            parallel_for( geomodel_.nb_mesh_entities( type ),
+                [&type, &from, this] ( index_t i ) {
+                    gmme_id id( type, i );
+                    GeoModelMeshEntityAccess< DIMENSION > gmme_access(
+                        geomodel_access_.modifiable_mesh_entity( id ) );
+                    gmme_access.copy( from.mesh_entity( id ) );
+            } );
         }
 
         index_t check_if_boundary_incident_entity_relation_already_exists(
@@ -171,14 +171,14 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelBuilderTopologyBase );
+    ALIAS_2D_AND_3D( GeoModelBuilderTopologyBase );
 
     template< index_t DIMENSION >
     class GeoModelBuilderTopology: public GeoModelBuilderTopologyBase< DIMENSION > {
     };
 
     template< >
-    class GeoModelBuilderTopology< 2 > : public GeoModelBuilderTopologyBase< 2 > {
+    class RINGMESH_API GeoModelBuilderTopology< 2 > : public GeoModelBuilderTopologyBase< 2 > {
         friend class GeoModelBuilderBase< 2 > ;
         friend class GeoModelBuilder< 2 > ;
     public:
@@ -205,7 +205,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelBuilderTopology< 3 > : public GeoModelBuilderTopologyBase< 3 > {
+    class RINGMESH_API GeoModelBuilderTopology< 3 > : public GeoModelBuilderTopologyBase< 3 > {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
     public:

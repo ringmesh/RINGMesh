@@ -339,20 +339,18 @@ namespace RINGMesh {
 
         void write_vertices_in_ringmesh_data_structure() final
         {
-            RINGMESH_PARALLEL_LOOP
-            for( index_t v = 0; v < region_->nb_vertices(); v++ ) {
+            parallel_for( region_->nb_vertices(), [this]( index_t v ) {
                 double point[3];
                 mesh_get_vertex_coordinates( mesh_output_, v + starting_index_,
                     point );
                 set_point( v, point );
-            }
+            } );
         }
 
         void write_tet_in_ringmesh_data_structure() final
         {
-            RINGMESH_PARALLEL_LOOP
-            for( index_t t = 0; t < region_->nb_mesh_elements(); t++ ) {
-                signed_index_t tet[4];
+            parallel_for( region_->nb_mesh_elements(), [this]( index_t t ) {
+                int tet[4];
                 mesh_get_tetrahedron_vertices( mesh_output_, t + starting_index_,
                     tet );
                 // Because MG Tetra count the vertices starting with 1
@@ -360,7 +358,7 @@ namespace RINGMesh {
                     tet[v] -= starting_index_;
                 }
                 set_tetra( t, tet );
-            }
+            } );
             builder_->geometry.compute_region_adjacencies( output_region_ );
         }
         void set_point( index_t index, const double* point )
@@ -491,7 +489,8 @@ namespace RINGMesh {
             }
             tetmesh_constraint_.edges.create_edges( nb_well_edges );
             GEO::Attribute< index_t > edge_region(
-                tetmesh_constraint_.edges.attributes(), surface_att_name );
+                tetmesh_constraint_.edges.attributes(),
+                GeoModelMeshPolygonsBase< 3 >::surface_att_name );
             index_t cur_vertex_id { nb_surface_vertices };
             index_t cur_edge { 0 };
             for( index_t w : range( well_edges.size() ) ) {
@@ -510,7 +509,8 @@ namespace RINGMesh {
         index_t offset_polygons { 0 };
         tetmesh_constraint_.facets.create_triangles( nb_polygons );
         GEO::Attribute< index_t > surface_region(
-            tetmesh_constraint_.facets.attributes(), surface_att_name );
+            tetmesh_constraint_.facets.attributes(),
+            GeoModelMeshPolygonsBase< 3 >::surface_att_name );
         for( const GeoModelMeshEntity3D*& surface : unique_surfaces ) {
             for( index_t t : range( surface->nb_mesh_elements() ) ) {
                 ringmesh_assert( surface->nb_mesh_element_vertices( t ) == 3 );

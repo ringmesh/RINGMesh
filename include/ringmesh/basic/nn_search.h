@@ -82,7 +82,7 @@ namespace RINGMesh {
          *     return 2
          */
         std::tuple< index_t, std::vector< index_t >, std::vector< vecn< DIMENSION > > >
-            get_colocated_index_mapping_and_unique_points( double epsilon ) const;
+        get_colocated_index_mapping_and_unique_points( double epsilon ) const;
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test
@@ -90,9 +90,8 @@ namespace RINGMesh {
          */
         index_t get_closest_neighbor( const vecn< DIMENSION >& v ) const
         {
-            index_t nb_neighbors = 1;
-            index_t result = get_neighbors( v, nb_neighbors ).front();
-            return result;
+            index_t nb_neighbors { 1 };
+            return get_neighbors( v, nb_neighbors ).front();
         }
 
         /*!
@@ -120,9 +119,9 @@ namespace RINGMesh {
             std::vector< index_t > result;
             index_t nb_points = nn_tree_->nb_points();
             if( nb_points != 0 ) {
-                index_t nb_neighbors = std::min( index_t( 5 ), nb_points );
-                index_t cur_neighbor = 0;
-                index_t prev_neighbor = 0;
+                index_t nb_neighbors { std::min( index_t( 5 ), nb_points ) };
+                index_t cur_neighbor { 0 };
+                index_t prev_neighbor { 0 };
                 do {
                     prev_neighbor = cur_neighbor;
                     cur_neighbor += nb_neighbors;
@@ -183,7 +182,6 @@ namespace RINGMesh {
          */
         bool delete_points_;
     };
-
-    CLASS_DIMENSION_ALIASES( NNSearch );
+    ALIAS_2D_AND_3D( NNSearch );
 
 }

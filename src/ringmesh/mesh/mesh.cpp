@@ -564,6 +564,7 @@ namespace RINGMesh {
     {
         create_point_set_mesh( "" );
         create_line_mesh( "" );
+        create_well_mesh( "" );
         create_surface_mesh( "" );
     }
 
@@ -577,6 +578,12 @@ namespace RINGMesh {
     void MeshSetBase< DIMENSION >::create_line_mesh( const MeshType type )
     {
         line_mesh = LineMesh< DIMENSION >::create_mesh( type );
+    }
+
+    template< index_t DIMENSION >
+    void MeshSetBase< DIMENSION >::create_well_mesh( const MeshType type )
+    {
+        well_mesh = LineMesh< DIMENSION >::create_mesh( type );
     }
 
     template< index_t DIMENSION >
@@ -606,5 +613,4 @@ namespace RINGMesh {
     template class RINGMESH_API SurfaceMeshBase< 3 > ;
     template class RINGMESH_API VolumeMesh< 3 > ;
     template class RINGMESH_API MeshSetBase< 3 > ;
-    template class RINGMESH_API MeshSet< 3 > ;
 }

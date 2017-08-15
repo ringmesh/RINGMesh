@@ -62,20 +62,6 @@
 #   pragma warning( disable: 4275 ) // let's pray we have no issues
 #endif
 
-#ifdef USE_OPENMP
-#   include <omp.h>
-#   ifdef WIN32
-#       define RINGMESH_PARALLEL_LOOP __pragma("omp parallel for")
-#       define RINGMESH_PARALLEL_LOOP_DYNAMIC __pragma( "omp parallel for schedule(dynamic)" )
-#   else
-#       define RINGMESH_PARALLEL_LOOP _Pragma("omp parallel for")
-#       define RINGMESH_PARALLEL_LOOP_DYNAMIC _Pragma( "omp parallel for schedule(dynamic)" )
-#   endif
-#else
-#   define RINGMESH_PARALLEL_LOOP
-#   define RINGMESH_PARALLEL_LOOP_DYNAMIC
-#endif
-
 #define ringmesh_disable_copy( Class )                                          \
     public:                                                                     \
     Class( const Class & ) = delete ;                                           \
@@ -87,32 +73,28 @@
 #define ringmesh_template_assert_3d( type )                                     \
     static_assert( type == 3, #type " template should be 3" )
 
-#define CLASS_2D_ALIAS( Class )                                                 \
+#define ALIAS_2D( Class )                                                 \
     using Class ## 2D = Class< 2 >
 
-#define CLASS_3D_ALIAS( Class )                                                 \
+#define ALIAS_3D( Class )                                                 \
     using Class ## 3D = Class< 3 >
 
-#define CLASS_DIMENSION_ALIASES( Class )                                        \
-    CLASS_2D_ALIAS( Class );                                                    \
-    CLASS_3D_ALIAS( Class )
-
-#define FORWARD_DECLARATION_2D_CLASS( Class )                                   \
-    template< index_t > class Class;                                            \
-    CLASS_2D_ALIAS( Class )
-
-#define FORWARD_DECLARATION_3D_CLASS( Class )                                   \
-    template< index_t > class Class;                                            \
-    CLASS_3D_ALIAS( Class )
+#define ALIAS_2D_AND_3D( Class )                                        \
+    ALIAS_2D( Class );                                                    \
+    ALIAS_3D( Class )
 
 #define FORWARD_DECLARATION_DIMENSION_CLASS( Class )                            \
-    template< index_t > class Class;                                            \
-    CLASS_DIMENSION_ALIASES( Class )
+    template< index_t > class Class;
+
+#define FORWARD_DECLARATION_DIMENSION_STRUCT( Struct )                           \
+    template< index_t > struct Struct;
 
 // To avoid unused argument warning in function definition
 template< typename T > void ringmesh_unused( T const& )
 {
 }
+
+#include <future>
 
 #include <ringmesh/basic/types.h>
 #include <ringmesh/basic/ringmesh_assert.h>
@@ -245,4 +227,34 @@ namespace RINGMesh {
         index_t iter_ { 0 };
         index_t last_ { 0 };
     };
+
+    template< typename ACTION >
+    void parallel_for( index_t size, const ACTION& action )
+    {
+        if( size == 0 ) {
+            return;
+        }
+        index_t nb_threads { std::min( size, std::thread::hardware_concurrency() ) };
+        std::vector< std::future< void > > futures;
+        futures.reserve( nb_threads );
+        index_t start { 0 };
+        auto action_per_thread = [&action] ( index_t start, index_t end ) {
+            for( index_t i : range( start, end ) ) {
+                action( i );
+            }
+        };
+        index_t nb_tasks_per_thread { size / nb_threads };
+        for( index_t thread : range( nb_threads - 1 ) ) {
+            ringmesh_unused( thread );
+            futures.emplace_back(
+                std::async( std::launch::async, action_per_thread, start,
+                    start + nb_tasks_per_thread ) );
+            start += nb_tasks_per_thread;
+        }
+        futures.emplace_back(
+            std::async( std::launch::async, action_per_thread, start, size ) );
+        for( auto& future : futures ) {
+            future.get();
+        }
+    }
 }

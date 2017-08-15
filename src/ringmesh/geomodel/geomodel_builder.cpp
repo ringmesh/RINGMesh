@@ -211,7 +211,8 @@ namespace {
         std::vector< BorderPolygon > border_polygons_;
     };
 
-    CLASS_DIMENSION_ALIASES( CommonDataFromGeoModelSurfaces );
+    ALIAS_2D_AND_3D( CommonDataFromGeoModelSurfaces );
+
     /*!
      * @brief Utility class to sort a set of oriented polygons around a common edge
      */
@@ -852,7 +853,6 @@ namespace RINGMesh {
                     first_corner );
                 topology.add_mesh_entity_boundary_relation( line_index,
                     second_corner );
-
             } else {
                 bool same_geometry = line_equal(
                     geomodel_.line( line_index.index() ), vertices );
@@ -996,12 +996,10 @@ namespace RINGMesh {
     }
 
     template class RINGMESH_API GeoModelBuilderBase< 2 > ;
-    template class RINGMESH_API GeoModelBuilder< 2 > ;
     template class RINGMESH_API GeoModelBuilderInfo< 2 > ;
     template class RINGMESH_API GeoModelBuilderCopy< 2 > ;
 
     template class RINGMESH_API GeoModelBuilderBase< 3 > ;
-    template class RINGMESH_API GeoModelBuilder< 3 > ;
     template class RINGMESH_API GeoModelBuilderInfo< 3 > ;
     template class RINGMESH_API GeoModelBuilderCopy< 3 > ;
 

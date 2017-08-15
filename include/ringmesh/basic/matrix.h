@@ -286,6 +286,8 @@ namespace RINGMesh {
          */
         T get_element_in_line( index_t i, index_t e ) const
         {
+            ringmesh_unused( i );
+            ringmesh_unused( e );
             ringmesh_assert_not_reached;
             return T();
         }
@@ -465,15 +467,14 @@ namespace RINGMesh {
     {
         ringmesh_assert( mat1.nj() == mat2.size() );
         std::vector< T > result( mat1.ni(), 0 );
-        RINGMESH_PARALLEL_LOOP
-        for( index_t i = 0; i < mat1.ni(); ++i ) {
+        parallel_for( mat1.ni(), [&mat1, &mat2, &result]( index_t i ) {
             for( index_t e : range( mat1.get_nb_elements_in_line( i ) ) ) {
                 index_t j = mat1.get_column_in_line( i, e );
                 T i_j_result = mat1.get_element_in_line( i, e );
                 i_j_result *= mat2[j];
                 result[i] += i_j_result;
             }
-        }
+        } );
         return result;
     }
 

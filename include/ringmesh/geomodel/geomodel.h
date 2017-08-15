@@ -40,7 +40,6 @@
 #include <vector>
 
 #include <ringmesh/basic/algorithm.h>
-
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
@@ -55,28 +54,28 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class WellGroup;
-    template< index_t DIMENSION > class GeoModelGeologicalEntity;
-    template< index_t DIMENSION > class GeoModelMeshEntity;
-    template< index_t DIMENSION > class Corner;
-    template< index_t DIMENSION > class Surface;
-    template< index_t DIMENSION > class Line;
-    template< index_t DIMENSION > class Region;
-    template< index_t DIMENSION > class GeoModelAccess;
-    template< index_t DIMENSION > class EntityTypeManager;
-    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
-    template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderGeometryBase;
-    template< index_t DIMENSION > class GeoModelBuilderGeometry;
-    template< index_t DIMENSION > class GeoModelBuilderGeology;
-    template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
-    template< index_t DIMENSION > class GeoModelBuilderRemoval;
-    template< index_t DIMENSION > class GeoModelBuilderRepair;
-    template< index_t DIMENSION > class GeoModelBuilderCopy;
-    template< index_t DIMENSION > class GeoModelBuilderInfo;
-    template< index_t DIMENSION > class GeoModelBuilderBase;
-    template< index_t DIMENSION > class GeoModelBuilder;
-    template< index_t DIMENSION > class GeoModelBuilderGM;
+    FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Line );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
+    FORWARD_DECLARATION_DIMENSION_STRUCT( EntityTypeManager );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometry );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRepair );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderCopy );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
 }
 
 namespace RINGMesh {
@@ -132,6 +131,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( geological_entities( type ).size() );
         }
+
         /*!
          * @brief Returns the index of the geological entity type storage
          * @details Default value is NO_ID
@@ -147,6 +147,7 @@ namespace RINGMesh {
             return entity_type_manager_.geological_entity_manager.geological_entity_type(
                 index );
         }
+
         /*!
          * @brief Returns a const reference the identified GeoModelGeologicalEntity
          * @param[in] id Type and index of the entity.
@@ -157,6 +158,7 @@ namespace RINGMesh {
         {
             return *geological_entities( id.type() )[id.index()];
         }
+
         /*!
          * Convenient overload of entity( gmge_id id )
          */
@@ -166,12 +168,14 @@ namespace RINGMesh {
         {
             return geological_entity( gmge_id( entity_type, entity_index ) );
         }
+
         /*!
          * @brief Generic access to a meshed entity
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION
          */
         virtual const GeoModelMeshEntity< DIMENSION >& mesh_entity(
             gmme_id id ) const;
+
         /*!
          * Convenient overload of mesh_entity( gmme_id id )
          */
@@ -181,6 +185,7 @@ namespace RINGMesh {
         {
             return mesh_entity( gmme_id( entity_type, entity_index ) );
         }
+
         /*! @}
          * \name Specialized accessors.
          * @{
@@ -296,8 +301,7 @@ namespace RINGMesh {
          */
         const WellGroup< DIMENSION >* wells_ { nullptr };
     };
-
-    CLASS_DIMENSION_ALIASES( GeoModelBase );
+    ALIAS_2D_AND_3D( GeoModelBase );
 
     template< index_t DIMENSION >
     class GeoModel final: public GeoModelBase< DIMENSION > {
@@ -320,7 +324,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModel< 3 > final: public GeoModelBase< 3 > {
+    class RINGMESH_API GeoModel< 3 > final: public GeoModelBase< 3 > {
         friend class GeoModelAccess< 3 > ;
     public:
         GeoModel();
@@ -373,7 +377,6 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< GeoModelMeshEntity3D > > regions_;
     };
 
-
     template< >
     class GeoModel< 2 > final: public GeoModelBase< 2 > {
         friend class GeoModelAccess< 2 > ;
@@ -395,7 +398,7 @@ namespace RINGMesh {
         SurfaceSide get_voi_surfaces() const final;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModel );
+    ALIAS_2D_AND_3D( GeoModel );
 
     template< index_t DIMENSION >
     class GeoModelAccess {
@@ -472,5 +475,4 @@ namespace RINGMesh {
     private:
         GeoModel< DIMENSION >& geomodel_;
     };
-
 }

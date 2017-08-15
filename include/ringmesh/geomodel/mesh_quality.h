@@ -44,9 +44,9 @@
  */
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
-    CLASS_DIMENSION_ALIASES( GeoModel );
+    ALIAS_3D( GeoModel );
 }
 
 namespace RINGMesh {
