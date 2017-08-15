@@ -987,13 +987,11 @@ namespace RINGMesh {
     template class RINGMESH_API Corner< 2 > ;
     template class RINGMESH_API Line< 2 > ;
     template class RINGMESH_API SurfaceBase< 2 > ;
-    template class RINGMESH_API Surface< 2 > ;
 
     template class RINGMESH_API GeoModelMeshEntity< 3 > ;
     template class RINGMESH_API GeoModelMeshEntityAccess< 3 > ;
     template class RINGMESH_API Corner< 3 > ;
     template class RINGMESH_API Line< 3 > ;
     template class RINGMESH_API SurfaceBase< 3 > ;
-    template class RINGMESH_API Surface< 3 > ;
     template class RINGMESH_API Region< 3 > ;
 }

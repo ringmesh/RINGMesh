@@ -50,22 +50,23 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class GeoModelGeologicalEntity;
-    template< index_t DIMENSION > class GeoModelMeshEntityConstAccess;
-    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
-    template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderGeometryBase;
-    template< index_t DIMENSION > class GeoModelBuilderGeometry;
-    template< index_t DIMENSION > class GeoModelBuilderGeology;
-    template< index_t DIMENSION > class GeoModelBuilderRemovalBase;
-    template< index_t DIMENSION > class GeoModelBuilderRemoval;
-    template< index_t DIMENSION > class GeoModelBuilderInfo;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntityConstAccess );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometry );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
-    CLASS_DIMENSION_ALIASES( GeoModel );
+    ALIAS_2D_AND_3D( GeoModel );
 }
 
 namespace RINGMesh {
+
     /*!
      * @brief Abstract base class for GeoModelMeshEntity.
      * @details The GeoModelMeshEntity geometrical representation
@@ -88,7 +89,6 @@ namespace RINGMesh {
         {
             return gmme_id( type_name(), this->index() );
         }
-
         MeshEntityType mesh_entity_type() const
         {
             return gmme().type();
@@ -150,6 +150,7 @@ namespace RINGMesh {
         {
             return nb_parents() != 0;
         }
+
         /*!
          * @brief Check if the entity has a parent of the given type
          */
@@ -157,11 +158,14 @@ namespace RINGMesh {
         {
             return could_be_undefined_parent_gmge( parent_type ).is_defined();
         }
+
         index_t nb_parents() const
         {
             return static_cast< index_t >( parents_.size() );
         }
+
         const gmge_id& parent_gmge( index_t id ) const;
+
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
          * @pre The code assumes that this entity has a parent of the given type
@@ -199,6 +203,7 @@ namespace RINGMesh {
          * \name Local access to the GeoModelMeshEntity geometry
          * @{
          */
+
         index_t nb_vertices() const
         {
             return mesh_->nb_vertices();
@@ -248,6 +253,7 @@ namespace RINGMesh {
          * \name Geometrical request on Entity
          * @{
          */
+
         virtual double mesh_element_size( index_t mesh_element_index ) const = 0;
         virtual vecn< DIMENSION > mesh_element_barycenter(
             index_t mesh_element_index ) const = 0;
@@ -260,6 +266,7 @@ namespace RINGMesh {
             ringmesh_assert( nb_vertices() > 0 );
             return result / static_cast< double >( nb_vertices() );
         }
+
         virtual double size() const
         {
             double size = 0.0;
@@ -281,6 +288,7 @@ namespace RINGMesh {
             : GeoModelEntity< DIMENSION >( geomodel, id )
         {
         }
+
         virtual void copy_mesh_entity( const GeoModelMeshEntity< DIMENSION >& from )
         {
             this->copy_name( from );
@@ -289,6 +297,7 @@ namespace RINGMesh {
             incident_entities_ = from.incident_entities_;
             parents_ = from.parents_;
         }
+
         virtual bool is_index_valid() const final;
         virtual bool is_mesh_valid() const
         {
@@ -323,11 +332,13 @@ namespace RINGMesh {
         void bind_vertex_mapping_attribute() const;
 
         virtual void change_mesh_data_structure( const MeshType& type ) = 0;
+
     private:
         gmge_id defined_parent_gmge( const GeologicalEntityType& parent_type ) const;
 
         gmge_id could_be_undefined_parent_gmge(
             const GeologicalEntityType& parent_type ) const;
+
     protected:
 
         /// Boundary relations of this entity
@@ -338,11 +349,12 @@ namespace RINGMesh {
 
         /// Parents relations of this entity
         std::vector< index_t > parents_;
+
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
         std::shared_ptr< MeshBase< DIMENSION > > mesh_;
     };
-    CLASS_DIMENSION_ALIASES( GeoModelMeshEntity );
+    ALIAS_2D_AND_3D( GeoModelMeshEntity );
 
     /*!
      * @brief A GeoModelEntity of type CORNER
@@ -383,6 +395,7 @@ namespace RINGMesh {
         {
             return 0;
         }
+
         /*!
          * @return the number of vertices of the Corner
          */
@@ -393,6 +406,7 @@ namespace RINGMesh {
             ringmesh_assert( nb_vertices < 2 );
             return nb_vertices;
         }
+
         const Line< DIMENSION >& incident_entity( index_t x ) const;
 
         /*! @}
@@ -404,10 +418,12 @@ namespace RINGMesh {
             ringmesh_unused( mesh_element );
             return 0.0;
         }
+
         double size() const final
         {
             return 0.0;
         }
+
         vecn< DIMENSION > mesh_element_barycenter( index_t mesh_element = 0 ) const final
         {
             ringmesh_unused( mesh_element );
@@ -421,6 +437,7 @@ namespace RINGMesh {
         {
             return *point_set_mesh_;
         }
+
     protected:
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
@@ -459,12 +476,13 @@ namespace RINGMesh {
             point_set_mesh_ = std::move( mesh );
             GeoModelMeshEntity< DIMENSION >::set_mesh( point_set_mesh_ );
         }
+
         void change_mesh_data_structure( const MeshType& type ) final;
 
     private:
         std::shared_ptr< PointSetMesh< DIMENSION > > point_set_mesh_;
     };
-    CLASS_DIMENSION_ALIASES( Corner );
+    ALIAS_2D_AND_3D( Corner );
 
     /*!
      * @brief A GeoModelEntity of type LINE
@@ -581,6 +599,7 @@ namespace RINGMesh {
         {
             return *line_mesh_;
         }
+
     protected:
         Line(
             const GeoModel< DIMENSION >& geomodel,
@@ -612,12 +631,13 @@ namespace RINGMesh {
             line_mesh_ = std::move( mesh );
             GeoModelMeshEntity< DIMENSION >::set_mesh( line_mesh_ );
         }
+
         void change_mesh_data_structure( const MeshType& type ) final;
 
     private:
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_;
     };
-    CLASS_DIMENSION_ALIASES( Line );
+    ALIAS_2D_AND_3D( Line );
 
     /*!
      * @brief A GeoModelEntity of type SURFACE
@@ -755,6 +775,7 @@ namespace RINGMesh {
         {
             return *surface_mesh_;
         }
+
     protected:
         SurfaceBase(
             const GeoModel< DIMENSION >& geomodel,
@@ -796,16 +817,18 @@ namespace RINGMesh {
             surface_mesh_ = std::move( mesh );
             GeoModelMeshEntity< DIMENSION >::set_mesh( surface_mesh_ );
         }
+
         void change_mesh_data_structure( const MeshType& type ) final;
     private:
         std::shared_ptr< SurfaceMesh< DIMENSION > > surface_mesh_;
     };
+
     template< index_t DIMENSION >
     class Surface final: public SurfaceBase< DIMENSION > {
     };
 
     template< >
-    class Surface< 2 > final: public SurfaceBase< 2 > {
+    class RINGMESH_API Surface< 2 > final: public SurfaceBase< 2 > {
         friend class GeoModelMeshEntityAccess< 2 > ;
     private:
         Surface( const GeoModel2D& geomodel, index_t id, const MeshType type )
@@ -825,8 +848,9 @@ namespace RINGMesh {
          */
         std::vector< bool > sides_;
     };
+
     template< >
-    class Surface< 3 > final: public SurfaceBase< 3 > {
+    class RINGMESH_API Surface< 3 > final: public SurfaceBase< 3 > {
         friend class GeoModelMeshEntityAccess< 3 > ;
     private:
         Surface( const GeoModel3D& geomodel, index_t id, const MeshType type )
@@ -837,8 +861,7 @@ namespace RINGMesh {
     public:
         const Region< 3 >& incident_entity( index_t x ) const;
     };
-
-    CLASS_DIMENSION_ALIASES( Surface );
+    ALIAS_2D_AND_3D( Surface );
 
     /*!
      * @brief A GeoModelEntity of type REGION
@@ -1047,6 +1070,7 @@ namespace RINGMesh {
             ringmesh_assert_not_reached;
             return NO_ID;
         }
+
         ElementLocalVertex find_cell_from_colocated_vertex_if_any(
             const vecn< DIMENSION >& vertex_vec ) const;
 
@@ -1153,17 +1177,19 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >::copy_mesh_entity( from );
             sides_ = region_from.sides_;
         }
+
     protected:
         /*! Additional information to store oriented boundary Surfaces
          * Side: + (true) or - (false)
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_;
+
     private:
         std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_;
     };
 
-    CLASS_3D_ALIAS( Region );
+    ALIAS_3D( Region );
 
     template< index_t DIMENSION >
     class GeoModelMeshEntityConstAccess {
@@ -1194,6 +1220,7 @@ namespace RINGMesh {
         {
             return gmme_.boundaries_;
         }
+
     private:
         const GeoModelMeshEntity< DIMENSION >& gmme_;
     };
@@ -1269,5 +1296,5 @@ namespace RINGMesh {
     private:
         GeoModelMeshEntity< DIMENSION >& gmme_;
     };
-    CLASS_DIMENSION_ALIASES( GeoModelMeshEntityAccess );
+    ALIAS_2D_AND_3D( GeoModelMeshEntityAccess );
 }

@@ -122,7 +122,7 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( GeogramPointSetMeshBuilder );
+    ALIAS_2D_AND_3D( GeogramPointSetMeshBuilder );
 
     template< index_t DIMENSION >
     class GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
@@ -173,7 +173,7 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( GeogramLineMeshBuilder );
+    ALIAS_2D_AND_3D( GeogramLineMeshBuilder );
 
     template< index_t DIMENSION >
     class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder< DIMENSION > {
@@ -195,7 +195,7 @@ namespace RINGMesh {
         }
         virtual void invert_normals()
         {
-            GEO::invert_normals( *( mesh_->mesh_ ) ) ;
+            GEO::invert_normals( *( mesh_.mesh_ ) ) ;
         }
 
         void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) override
@@ -277,7 +277,7 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( GeogramSurfaceMeshBuilder );
+    ALIAS_2D_AND_3D( GeogramSurfaceMeshBuilder );
 
     template< index_t DIMENSION >
     class GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {

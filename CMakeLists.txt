@@ -120,7 +120,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                 -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
                 -DMG_TETRA:STRING=${MG_TETRA}
-                -DUSE_OPENMP:BOOL=${USE_OPENMP}
                 -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_TEST_GRAPHICS:BOOL=${RINGMESH_TEST_GRAPHICS}
@@ -134,7 +133,8 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}  
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
                 -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY} 
-                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}                     
+                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}           
+                -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}                               
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -142,7 +142,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
       # We do not want to execute the rest of the file in that case
       return()
     endif()
-
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
@@ -155,32 +154,34 @@ include(cmake/utils.cmake)
 # Platform dependent settings
 if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
+    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion 
+        -Wsign-conversion -Wdouble-promotion -Wno-attributes)
     
     # Determine gcc version and activate additional warnings available in latest versions
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE G++_VERSION)
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
 
     # C++11 fully works on Linux from gcc/g++ 4.8 (before not fully operational).
     # On MacOS, it seems that C++11 is working since gcc/g++ 4.2.
     if(APPLE)
-        if(G++_VERSION VERSION_LESS 4.2 )
-            message(FATAL_ERROR "RINGMesh require G++ version >= 4.2")
+        if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+            message(FATAL_ERROR "RINGMesh on Apple requires Clang compiler")
         endif()
         set(CMAKE_MACOSX_RPATH 1)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-    else(APPLE)
-        # Linux
-        if(G++_VERSION VERSION_LESS 4.8 )
+    endif(APPLE)
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        if(COMPILER_VERSION VERSION_LESS 3.3 )
+            message(FATAL_ERROR "RINGMesh require Clang version >= 3.3")
+        endif()
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        if(COMPILER_VERSION VERSION_LESS 4.8 )
             message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
         endif()
-    endif(APPLE)
+    endif()
     # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    add_compile_options(-Wsign-conversion)
-    add_compile_options(-Wdouble-promotion)
-    add_compile_options(-Wno-attributes)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 
-     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+    if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
        set(COVERALLS ON)
        set(COVERALLS_UPLOAD ON)
@@ -229,24 +230,6 @@ if(MG_TETRA)
    
   set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
 endif()
-
-#------------------------------------------------------------------------------------------------
-# Add compiler options for OpenMP
-if(APPLE)
-    if(USE_OPENMP)
-        # Comment from geogram: "Compile and link with OpenMP ** NOT YET SUPPORTED in clang 3 **"
-        SET(USE_OPENMP FALSE)
-	message(WARNING "OPENMP has been desactivated since not supported by clang." )
-    endif(USE_OPENMP)
-endif(APPLE)
-
-if(USE_OPENMP)
-    find_package(OpenMP)
-    if (OPENMP_FOUND)
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    endif()
-endif(USE_OPENMP)
 
 #--------------------------------------------------------
 # geology.js library

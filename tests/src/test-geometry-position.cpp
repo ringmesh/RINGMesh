@@ -35,70 +35,59 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <chrono>
-#include <future>
+#include <vector>
 
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/logger.h>
+#include <geogram/basic/vecg.h>
 
-#include <ringmesh/basic/common.h>
-
-#ifdef RINGMESH_TEST_GRAPHICS
-
-#include <geogram/basic/process.h>
-
-#include <ringmesh/visualization/gfx_application.h>
+#include <ringmesh/basic/geometry.h>
 
 /*!
- * @author Pierre Anquez
+ * @author Arnaud Botella
  */
 
-namespace RINGMesh {
+using namespace RINGMesh;
 
-    void open_viewer_load_geomodel_then_close(
-        const int argc,
-        char** argv,
-        const std::string& glup_profile )
-    {
-        RINGMeshApplication app( argc, argv );
-
-        GEO::CmdLine::set_arg( "GLUP_profile", glup_profile );
-
-        // Create the tasks for launching the app window
-        // and the one for closing the window
-        std::future< void > start = std::async( std::launch::async,
-            [&app] {app.start();} );            
-        std::this_thread::sleep_for( std::chrono::seconds( 4 ) );
-        std::future< void > end = std::async( std::launch::async,
-            [&app] {app.quit();} );
+void verdict( bool condition, std::string test_name )
+{
+    if( !condition ) {
+        throw RINGMeshException( "TEST", test_name, ": KO" );
+    } else {
+        Logger::out( "TEST", test_name, ": OK" );
     }
+}
 
+template< index_t DIMENSION >
+bool are_almost_equal( const vecn< DIMENSION >& vec0, const vecn< DIMENSION >& vec1 )
+{
+    return ( vec0 - vec1 ).length2() < global_epsilon_sq;
+}
+
+void test_point_plane_side()
+{
+    Logger::out( "TEST", "Test Point-Plane side" );
+    Geometry::Plane plane { { 1., 0., 0. }, { 1., 4., -2. } };
+
+    // Test from each side
+    Sign positive_side { Position::point_side_to_plane( { 2., 2., 2. }, plane ) };
+    verdict( positive_side == POSITIVE, "True point side positive" );
+    Sign negative_side { Position::point_side_to_plane( { -2., -2., -9. }, plane ) };
+    verdict( negative_side == NEGATIVE, "True point side negative" );
+
+    // Test on the plane
+    Sign on_plane_side { Position::point_side_to_plane( { 1., 6., -6. }, plane ) };
+    verdict( on_plane_side == ZERO, "True point side on plane" );
+
+    Logger::out( "TEST", " " );
 }
 
 int main()
 {
-    using namespace RINGMesh;
-
     try {
-        char ringmesh_view[] = "ringmesh-view";
-        std::string input_model_file_name( ringmesh_test_data_path );
-        input_model_file_name += "modelA6.ml";
-        char* input_model = &input_model_file_name[0];
+        default_configure();
 
-        char* argv[2] = { ringmesh_view, input_model };
+        Logger::out( "TEST", "Test intersection algorithms" );
 
-        // Two arguments: one for 'ringmeshview' and one for the input file
-        const int argc = 2;
-
-        std::vector< std::string > GLUP_profiles( 1, "" );
-        GLUP_profiles[0] = "auto";
-//        GLUP_profiles[1] = "GLUP150" ;
-//        GLUP_profiles[2] = "GLUP440" ;
-//        GLUP_profiles[3] = "VanillaGL" ;
-
-        for( const std::string& profile : GLUP_profiles ) {
-            open_viewer_load_geomodel_then_close( argc, argv, profile );
-        }
+        test_point_plane_side();
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
@@ -110,16 +99,3 @@ int main()
     Logger::out( "TEST", "SUCCESS" );
     return 0;
 }
-
-#else
-int main() {
-
-    using namespace RINGMesh;
-
-    default_configure();
-    Logger::out( "RINGMeshView",
-        "To test RINGMesh viewer you need to configure ",
-        "the project with the RINGMESH_TEST_GRAPHICS option ON" );
-    return 0;
-}
-#endif

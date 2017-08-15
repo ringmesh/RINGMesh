@@ -1896,7 +1896,7 @@ namespace RINGMesh {
                     Surface3D::type_name_static() )][cur_child.index()] == 0 );
             ringmesh_assert(
                 mesh_entities_to_erase[mesh_entity_type_manager.mesh_entity_type_index(
-                    Surface3D::type_name_static() )] != NO_ID );
+                    Surface3D::type_name_static() )][cur_child.index()] != NO_ID );
             const Surface3D& cur_surface = geomodel_.surface( cur_child.index() );
             save_normal_on_one_surface( cur_surface );
         }
@@ -2260,7 +2260,7 @@ namespace RINGMesh {
                 || surface_to_check.nb_incident_entities() == 2 );
 
         std::vector< index_t > polygons_around =
-            surface_to_check.polygons_around_vertex( vertex_id_in_surface, false );
+            surface_to_check.low_level_mesh_storage().polygons_around_vertex( vertex_id_in_surface, false, NO_ID );
         ringmesh_assert( !polygons_around.empty() );
 
         vec3 surf_to_check_mean_normal_on_vertex( 0., 0., 0. );

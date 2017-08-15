@@ -47,19 +47,18 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/aabb.h>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class MeshBaseBuilder;
-    template< index_t DIMENSION > class PointSetMeshBuilder;
-    template< index_t DIMENSION > class LineMeshBuilder;
-    template< index_t DIMENSION > class SurfaceMeshBuilder;
-    template< index_t DIMENSION > class VolumeMeshBuilder;
-    template< index_t DIMENSION > class SurfaceMesh;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( MeshBaseBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
     struct EdgeLocalVertex;
     struct PolygonLocalEdge;
     struct CellLocalFacet;
@@ -68,6 +67,7 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     using MeshType = std::string;
+
     struct ElementLocalVertex {
         ElementLocalVertex() = default;
         ElementLocalVertex( index_t element_id, index_t local_vertex_id )
@@ -190,7 +190,8 @@ namespace RINGMesh {
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_;
     };
-    CLASS_DIMENSION_ALIASES( MeshBase );
+    ALIAS_2D_AND_3D( MeshBase );
+
     /*!
      * class for encapsulating mesh composed of points
      */
@@ -208,11 +209,11 @@ namespace RINGMesh {
     protected:
         PointSetMesh() = default;
     };
-    CLASS_DIMENSION_ALIASES( PointSetMesh );
+    ALIAS_2D_AND_3D( PointSetMesh );
 
     template< index_t DIMENSION >
     using PointSetMeshFactory = Factory< MeshType, PointSetMesh< DIMENSION > >;
-    CLASS_DIMENSION_ALIASES( PointSetMeshFactory );
+    ALIAS_2D_AND_3D( PointSetMeshFactory );
 
     /*!
      * class for encapsulating line mesh (composed of edges)
@@ -222,7 +223,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( LineMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class LineMeshBuilder< DIMENSION > ;
-
     public:
         virtual ~LineMesh() = default;
 
@@ -300,11 +300,11 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_;
         mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_;
     };
-    CLASS_DIMENSION_ALIASES( LineMesh );
+    ALIAS_2D_AND_3D( LineMesh );
 
     template< index_t DIMENSION >
     using LineMeshFactory = Factory< MeshType, LineMesh< DIMENSION > >;
-    CLASS_DIMENSION_ALIASES( LineMeshFactory );
+    ALIAS_2D_AND_3D( LineMeshFactory );
 
     /*!
      * class for encapsulating surface mesh component
@@ -328,6 +328,7 @@ namespace RINGMesh {
          */
         virtual index_t polygon_vertex(
             const ElementLocalVertex& polygon_local_vertex ) const = 0;
+
         /*!
          * @brief Gets the number of all polygons in the whole Mesh.
          */
@@ -392,6 +393,7 @@ namespace RINGMesh {
                     nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 );
             }
         }
+
         /*!
          * @brief Get the previous edge on the border
          * @details The returned border edge is the previous in the way of polygon edges
@@ -461,6 +463,7 @@ namespace RINGMesh {
          */
         virtual index_t polygon_adjacent(
             const PolygonLocalEdge& polygon_local_edge ) const = 0;
+
         virtual GEO::AttributesManager& polygon_attribute_manager() const = 0;
         /*!
          * @brief Tests whether all the polygons are triangles. when all the polygons are triangles, storage and access is optimized.
@@ -612,7 +615,7 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_;
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_;
     };
-    CLASS_DIMENSION_ALIASES( SurfaceMeshBase );
+    ALIAS_2D_AND_3D( SurfaceMeshBase );
 
     template< index_t DIMENSION >
     class SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
@@ -620,7 +623,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     using SurfaceMeshFactory = Factory< MeshType, SurfaceMesh< DIMENSION > >;
-    CLASS_DIMENSION_ALIASES( SurfaceMeshFactory );
+    ALIAS_2D_AND_3D( SurfaceMeshFactory );
 
     template< >
     class SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
@@ -726,7 +729,7 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( SurfaceMesh );
+    ALIAS_2D_AND_3D( SurfaceMesh );
 
     /*!
      * class for encapsulating volume mesh component
@@ -736,7 +739,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( VolumeMesh );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
         friend class VolumeMeshBuilder< DIMENSION > ;
-
     public:
         virtual ~VolumeMesh() = default;
 
@@ -787,6 +789,7 @@ namespace RINGMesh {
          */
         virtual index_t cell_facet(
             const CellLocalFacet& cell_local_facet ) const = 0;
+
         /*!
          * Computes the Mesh cell edge length
          * @param[in] cell_id the facet index
@@ -944,6 +947,7 @@ namespace RINGMesh {
          * @brief compute the volume of the cell \param cell_id.
          */
         virtual double cell_volume( index_t cell_id ) const = 0;
+
         std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
             index_t cell_hint ) const;
@@ -957,6 +961,7 @@ namespace RINGMesh {
             }
             return NO_ID;
         }
+
         bool find_cell_from_colocated_vertex_within_distance_if_any(
             const vecn< DIMENSION >& vertex_vec,
             double distance,
@@ -1019,6 +1024,7 @@ namespace RINGMesh {
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_;
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_;
     };
+
     using VolumeMesh3D = VolumeMesh< 3 >;
 
     template< index_t DIMENSION >
@@ -1035,12 +1041,15 @@ namespace RINGMesh {
     public:
         void create_point_set_mesh( const MeshType type );
         void create_line_mesh( const MeshType type );
+        void create_well_mesh( const MeshType type );
         void create_surface_mesh( const MeshType type );
+
     protected:
         MeshSetBase();
 
     public:
         std::unique_ptr< PointSetMesh< DIMENSION > > point_set_mesh;
+        std::unique_ptr< LineMesh< DIMENSION > > well_mesh;
         std::unique_ptr< LineMesh< DIMENSION > > line_mesh;
         std::unique_ptr< SurfaceMesh< DIMENSION > > surface_mesh;
     };
@@ -1052,7 +1061,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class MeshSet< 3 > : public MeshSetBase< 3 > {
+    class RINGMESH_API MeshSet< 3 > : public MeshSetBase< 3 > {
     public:
         MeshSet();
 

@@ -43,16 +43,16 @@
 #include <vector>
 
 namespace RINGMesh {
-    template< index_t DIMENSION > class GeoModel;
-    template< index_t DIMENSION > class GeoModelMeshEntity;
-    template< index_t DIMENSION > class Corner;
-    template< index_t DIMENSION > class Line;
-    template< index_t DIMENSION > class Surface;
-    template< index_t DIMENSION > class Region;
-    template< index_t DIMENSION > class EntityTypeManager;
-    template< index_t DIMENSION > class GeoModelBuilderTopologyBase;
-    template< index_t DIMENSION > class GeoModelBuilderTopology;
-    template< index_t DIMENSION > class GeoModelBuilderGeology;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Line );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
+    template< index_t DIMENSION > struct EntityTypeManager;
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
 }
 
 namespace RINGMesh {
@@ -155,8 +155,8 @@ namespace RINGMesh {
         const MeshEntityType& boundary_entity_type(
             const MeshEntityType& mesh_entity_type ) const
         {
-            MeshEntityTypeMap::const_iterator itr = boundary_relationships_.map.find(
-                mesh_entity_type );
+            MeshEntityTypeMap::const_iterator itr { boundary_relationships_.map.find(
+                mesh_entity_type ) };
             ringmesh_assert( itr != boundary_relationships_.map.end() );
             return itr->second;
         }
@@ -164,8 +164,8 @@ namespace RINGMesh {
         const MeshEntityType& incident_entity_type(
             const MeshEntityType& mesh_entity_type ) const
         {
-            MeshEntityTypeMap::const_iterator itr =
-                incident_entity_relationships_.map.find( mesh_entity_type );
+            MeshEntityTypeMap::const_iterator itr {
+                incident_entity_relationships_.map.find( mesh_entity_type ) };
             ringmesh_assert( itr != incident_entity_relationships_.map.end() );
             return itr->second;
         }
@@ -199,15 +199,14 @@ namespace RINGMesh {
     };
 
     template< >
-    class MeshEntityTypeManager< 3 > : public MeshEntityTypeManagerBase< 3 > {
+    class RINGMESH_API MeshEntityTypeManager< 3 > : public MeshEntityTypeManagerBase< 3 > {
     public:
         bool is_region( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[3];
         }
     };
-
-    CLASS_DIMENSION_ALIASES( MeshEntityTypeManager );
+    ALIAS_2D_AND_3D( MeshEntityTypeManager );
 
     /*!
      * @brief this class contains methods to manage the type of the
@@ -231,7 +230,7 @@ namespace RINGMesh {
         void register_geological_entity_type(
             const GeologicalEntityType& geological_type_name )
         {
-            if( find( geological_entity_types_, geological_type_name ) == NO_ID ) {
+            if( !contains( geological_entity_types_, geological_type_name ) ) {
                 geological_entity_types_.push_back( ( geological_type_name ) );
             }
         }
@@ -310,8 +309,8 @@ namespace RINGMesh {
             const gmme_id& incident_entity,
             const gmme_id& boundary )
         {
-            index_t relationship_id =
-                static_cast< index_t >( boundary_relationships_.size() );
+            index_t relationship_id {
+                static_cast< index_t >( boundary_relationships_.size() ) };
             boundary_relationships_.emplace_back( incident_entity, boundary );
             return relationship_id;
         }
@@ -364,8 +363,8 @@ namespace RINGMesh {
             const gmge_id& parent,
             const gmme_id& child )
         {
-            index_t relationship_id =
-                static_cast< index_t >( parent_child_relationships_.size() );
+            index_t relationship_id {
+                static_cast< index_t >( parent_child_relationships_.size() ) };
             parent_child_relationships_.emplace_back( parent, child );
             return relationship_id;
         }
