@@ -262,13 +262,6 @@ namespace RINGMesh {
             }
         }
 
-        void update_universe()
-        {
-            Universe< DIMENSION >& U = geomodel_access_.modifiable_universe();
-            update_universe_sided_boundaries( U );
-            delete_invalid_universe_sided_boundaries( U );
-        }
-
         //        void remove_dependencies()
         //        {
         //            std::set< gme_id > new_gmme_to_remove ;
@@ -449,12 +442,19 @@ namespace RINGMesh {
             GeoModelGeologicalEntity< DIMENSION >& GE );
         void update_mesh_entity_boundaries( GeoModelMeshEntity< DIMENSION >& ME );
 
+        void set_boundary_side( Region3D& R, index_t boundary_index, bool new_side )
+        {
+            ringmesh_assert( boundary_index < R.nb_boundaries() );
+            GeoModelMeshEntityAccess< DIMENSION > region_access(
+                geomodel_access_.modifiable_mesh_entity( R.gmme() ) );
+            region_access.modifiable_sides()[boundary_index] = new_side;
+        }
+
         void update_mesh_entity_incident_entity(
             GeoModelMeshEntity< DIMENSION >& E );
         void update_mesh_entity_parents( GeoModelMeshEntity< DIMENSION >& E );
         void update_geological_entity_children(
             GeoModelGeologicalEntity< DIMENSION >& E );
-        void update_universe_sided_boundaries( Universe< DIMENSION >& U );
 
         // --- Deletion of some values the GeoModel storage
         template< typename TEST, typename THINGS_TO_DELETE >
@@ -527,16 +527,6 @@ namespace RINGMesh {
                 E.geomodel().entity_type_manager().relationship_manager;
             remove_invalid_values( gmme_access.modifiable_parents(),
                 [ &manager](index_t i) {return manager.parent_of_gmme( i ).index() == NO_ID;} );
-        }
-
-        void delete_invalid_universe_sided_boundaries( Universe< DIMENSION >& U )
-        {
-            const MeshEntityType& b_type = Surface< DIMENSION >::type_name_static();
-            gmme_id invalid( b_type, NO_ID );
-            UniverseAccess< DIMENSION > universe_access( U );
-            remove_invalid_values( universe_access.modifiable_boundaries(),
-                [&invalid](const gmme_id& id) {return id == invalid;} );
-            universe_access.modifiable_sides().resize( U.nb_boundaries() );
         }
 
         index_t mesh_entity_type_to_index( const MeshEntityType& type ) const

@@ -729,18 +729,6 @@ int main()
         builder.topology.add_mesh_entity_boundary_relation(
             gmme_id( Region< 3 >::type_name_static(), 0 ), surface10 );
 
-        // For the Universe Boundary
-        builder.topology.add_universe_boundary( 0, true );
-        builder.topology.add_universe_boundary( 2, true );
-        builder.topology.add_universe_boundary( 3, true );
-        builder.topology.add_universe_boundary( 4, true );
-        builder.topology.add_universe_boundary( 5, true );
-        builder.topology.add_universe_boundary( 6, true );
-        builder.topology.add_universe_boundary( 7, true );
-        builder.topology.add_universe_boundary( 8, true );
-        builder.topology.add_universe_boundary( 9, true );
-        builder.topology.add_universe_boundary( 10, true );
-
         //#####################################
         // Setting the parent/child relations #
         //#####################################

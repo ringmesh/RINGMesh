@@ -38,6 +38,7 @@
 #include <ringmesh/mesh/mesh.h>
 
 #include <stack>
+#include <numeric>
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/basic/algorithm.h>
 
@@ -85,6 +86,15 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
+    std::tuple< index_t, std::vector< index_t > > PointSetMesh< DIMENSION >::get_connected_components() const
+    {
+        const index_t nb_compoments = this->nb_vertices();
+        std::vector< index_t > components( nb_compoments );
+        std::iota( components.begin(), components.end(), 0 );
+        return std::make_tuple( nb_compoments, components );
+    }
+
+    template< index_t DIMENSION >
     std::unique_ptr< LineMesh< DIMENSION > > LineMesh< DIMENSION >::create_mesh(
         const MeshType type )
     {
@@ -102,6 +112,34 @@ namespace RINGMesh {
             mesh.reset( new GeogramLineMesh< DIMENSION > );
         }
         return mesh;
+    }
+
+    template< index_t DIMENSION >
+    std::tuple< index_t, std::vector< index_t > > LineMesh< DIMENSION >::get_connected_components() const
+    {
+        std::vector< index_t > components( nb_edges(), NO_ID );
+        index_t nb_components = 0;
+        for( index_t edge : range( nb_edges() ) ) {
+            if( components[edge] == NO_ID ) {
+                std::stack< index_t > S;
+                S.push( edge );
+                components[edge] = nb_components;
+                do {
+                    index_t cur_edge = S.top();
+                    S.pop();
+                    for( index_t vertex : range( 2 ) ) {
+                        index_t adj_edge = edge_vertex(
+                            ElementLocalVertex( cur_edge, vertex ) );
+                        if( adj_edge != NO_ID && components[adj_edge] == NO_ID ) {
+                            S.push( adj_edge );
+                            components[adj_edge] = nb_components;
+                        }
+                    }
+                } while( !S.empty() );
+                nb_components++;
+            }
+        }
+        return std::make_tuple( nb_components, components );
     }
 
     template< index_t DIMENSION >
@@ -165,7 +203,6 @@ namespace RINGMesh {
             next_e = vertex_index_in_polygon( next_p, next_v_id );
             ringmesh_assert( is_edge_on_border( next_polygon_local_edge ) );
         }
-
         return next_polygon_local_edge;
     }
 
@@ -213,7 +250,6 @@ namespace RINGMesh {
                 ElementLocalVertex( prev_p, v_in_next_polygon ) ).local_vertex_id_;
             ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         }
-
         return prev_polygon_local_edge;
     }
 
@@ -358,6 +394,35 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
+    std::tuple< index_t, std::vector< index_t > > SurfaceMeshBase< DIMENSION >::get_connected_components() const
+    {
+        std::vector< index_t > components( nb_polygons(), NO_ID );
+        index_t nb_components = 0;
+        for( index_t polygon : range( nb_polygons() ) ) {
+            if( components[polygon] == NO_ID ) {
+                std::stack< index_t > S;
+                S.push( polygon );
+                components[polygon] = nb_components;
+                do {
+                    index_t cur_polygon = S.top();
+                    S.pop();
+                    for( index_t edge : range( nb_polygon_vertices( cur_polygon ) ) ) {
+                        index_t adj_polygon = polygon_adjacent(
+                            PolygonLocalEdge( cur_polygon, edge ) );
+                        if( adj_polygon != NO_ID
+                            && components[adj_polygon] == NO_ID ) {
+                            S.push( adj_polygon );
+                            components[adj_polygon] = nb_components;
+                        }
+                    }
+                } while( !S.empty() );
+                nb_components++;
+            }
+        }
+        return std::make_tuple( nb_components, components );
+    }
+
+    template< index_t DIMENSION >
     std::unique_ptr< VolumeMesh< DIMENSION > > VolumeMesh< DIMENSION >::create_mesh(
         const MeshType type )
     {
@@ -375,6 +440,34 @@ namespace RINGMesh {
             mesh.reset( new GeogramVolumeMesh< DIMENSION > );
         }
         return mesh;
+    }
+
+    template< index_t DIMENSION >
+    std::tuple< index_t, std::vector< index_t > > VolumeMesh< DIMENSION >::get_connected_components() const
+    {
+        std::vector< index_t > components( nb_cells(), NO_ID );
+        index_t nb_components = 0;
+        for( index_t cell : range( nb_cells() ) ) {
+            if( components[cell] == NO_ID ) {
+                std::stack< index_t > S;
+                S.push( cell );
+                components[cell] = nb_components;
+                do {
+                    index_t cur_cell = S.top();
+                    S.pop();
+                    for( index_t facet : range( nb_cell_facets( cur_cell ) ) ) {
+                        index_t adj_cell = cell_adjacent(
+                            CellLocalFacet( cur_cell, facet ) );
+                        if( adj_cell != NO_ID && components[adj_cell] == NO_ID ) {
+                            S.push( adj_cell );
+                            components[adj_cell] = nb_components;
+                        }
+                    }
+                } while( !S.empty() );
+                nb_components++;
+            }
+        }
+        return std::make_tuple( nb_components, components );
     }
 
     template< index_t DIMENSION >
@@ -420,9 +513,9 @@ namespace RINGMesh {
                 continue;
             }
 
-            for( index_t f = 0; f < nb_cell_facets( c ); f++ ) {
-                for( index_t v = 0;
-                    v < nb_cell_facet_vertices( CellLocalFacet( c, f ) ); v++ ) {
+            for( index_t f : range( nb_cell_facets( c ) ) ) {
+                for( index_t v : range(
+                    nb_cell_facet_vertices( CellLocalFacet( c, f ) ) ) ) {
                     index_t vertex = cell_facet_vertex( CellLocalFacet( c, f ), v );
                     if( vertex == vertex_id ) {
                         index_t adj_P = cell_adjacent( CellLocalFacet( c, f ) );
