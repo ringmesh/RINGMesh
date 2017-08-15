@@ -1,0 +1,69 @@
+#BasedOnStyle (desactivated since we want to control everything [BC])
+AccessModifierOffset: 0
+AlignAfterOpenBracket: DontAlign
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+#AlignEscapedNewlines: Right (this option provokes a clang-format error [BC])
+AlignOperands: true
+AlignTrailingComments: false
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+#AlwaysBreakAfterDefinitionReturnType (not set because deprecated [BC])
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: false
+BinPackArguments: true
+BinPackParameters: false
+#BraceWrapping
+BreakBeforeBinaryOperators: NonAssignment
+#BreakBeforeBraces
+#BreakBeforeInheritanceComma: false  (this option provokes a clang-format error [BC])
+BreakBeforeTernaryOperators: true
+#BreakConstructorInitializers: AfterColon (this option provokes a clang-format error [BC])
+#BreakStringLiterals
+ColumnLimit: 85
+#CommentPragmas
+#CompactNamespaces: false (this option provokes a clang-format error [BC])
+#ConstructorInitializerAllOnOneLineOrOnePerLine
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: false
+#DerivePointerAlignment:
+#DisableFormat
+#ExperimentalAutoDetectBinPacking (Not defined since the documentation to not use it)
+#FixNamespaceComments: false (this option provokes a clang-format error [BC])
+#ForEachMacros
+#IncludeCategories
+#IncludeIsMainRegex
+IndentCaseLabels: false
+IndentWidth: 4
+IndentWrappedFunctionNames: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+Language: Cpp
+#MacroBlockBegin
+#MacroBlockEnd
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: All
+# I missed some... [BC]
+PointerAlignment: Left
+ReflowComments: true
+#SortIncludes
+#SortUsingDeclarations
+SpaceAfterCStyleCast: true
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: Never
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: true
+SpacesInSquareBrackets: false
+Standard: Cpp11
+TabWidth: 4
+UseTab: Never
