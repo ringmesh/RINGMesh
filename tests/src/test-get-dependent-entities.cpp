@@ -301,12 +301,129 @@ void test_on_corner_on_botom_corner_voi( GeoModel3D& geomodel )
         Corner3D::type_name_static().string(), 135 );
 }
 
+void test_on_top_layer( GeoModel3D& geomodel )
+{
+    // Solution:
+    // Corners: 31, 33, 54, 55, 56, 57, 58, 93, 118, 128, 129.
+    // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 131, 135, 144, 177, 182, 203, 205, 207, 210, 233, 234, 238.
+    // Surfaces: 11, 37, 40, 60, 85, 91, 99, 110, 114.
+    // Region: 4.
+    std::set< gmme_id > solution_gmme_id = { gmme_id( Corner3D::type_name_static(),
+                                                 31 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 33 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 54 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 55 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 56 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 57 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 58 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 93 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 118 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 128 ),
+                                             gmme_id( Corner3D::type_name_static(),
+                                                 129 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 41 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 43 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 68 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 69 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 70 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 71 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 72 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 73 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 131 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 135 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 144 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 177 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 182 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 203 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 205 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 207 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 210 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 233 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 234 ),
+                                             gmme_id( Line3D::type_name_static(),
+                                                 238 ),
+                                             gmme_id( Surface3D::type_name_static(),
+                                                 11 ),
+                                             gmme_id( Surface3D::type_name_static(),
+                                                 37 ),
+                                             gmme_id( Surface3D::type_name_static(),
+                                                 40 ),
+                                             gmme_id( Surface3D::type_name_static(),
+                                                 60 ),
+                                             gmme_id( Surface3D::type_name_static(),
+                                                 85 ),
+                                             gmme_id( Surface3D::type_name_static(),
+                                                 91 ),
+                                             gmme_id( Surface3D::type_name_static(),
+                                                 99 ),
+                                             gmme_id( Surface3D::type_name_static(),
+                                                 110 ),
+                                             gmme_id( Surface3D::type_name_static(),
+                                                 114 ),
+                                             gmme_id( Region3D::type_name_static(),
+                                                 4 ) };
+
+    // Solution:
+    // Contacts: 26, 27, 28, 78, 79, 83.
+    // Interface: 21.
+    // Layer: 0.
+    std::set< gmge_id > solution_gmge_id = { gmge_id( Contact3D::type_name_static(),
+                                                 26 ),
+                                             gmge_id( Contact3D::type_name_static(),
+                                                 27 ),
+                                             gmge_id( Contact3D::type_name_static(),
+                                                 28 ),
+                                             gmge_id( Contact3D::type_name_static(),
+                                                 78 ),
+                                             gmge_id( Contact3D::type_name_static(),
+                                                 79 ),
+                                             gmge_id( Contact3D::type_name_static(),
+                                                 83 ),
+                                             gmge_id(
+                                                 Interface3D::type_name_static(),
+                                                 21 ),
+                                             gmge_id( Layer3D::type_name_static(),
+                                                 0 ), };
+
+    test_template( geomodel, solution_gmme_id, solution_gmge_id,
+        Layer3D::type_name_static().string(), 0 );
+}
+
 void run_tests( GeoModel3D& geomodel )
 {
     test_on_top_region( geomodel );
     test_on_surface_within_bottom_region_partially_connected_to_voi( geomodel );
     test_on_fault_not_connected_to_any_surface( geomodel );
     test_on_corner_on_botom_corner_voi( geomodel );
+    test_on_top_layer( geomodel ); // Should be the same as test_on_top_region
 }
 
 void load_geomodel( GeoModel3D& geomodel )
