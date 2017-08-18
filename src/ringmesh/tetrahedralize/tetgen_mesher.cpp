@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -47,28 +49,32 @@
  * @author Jeanne Pellerin
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
     bool is_mesh_tetrahedralizable( const GEO::Mesh& M )
     {
-        if( M.facets.nb() == 0 ) {
+        if( M.facets.nb() == 0 )
+        {
             Logger::err( "RING", "Mesh to tetrahedralize has no polygons " );
             return false;
         }
-        if( !M.facets.are_simplices() ) {
+        if( !M.facets.are_simplices() )
+        {
             Logger::err( "RING", "Mesh to tetrahedralize is not triangulated" );
             return false;
         }
-        if( M.cells.nb() != 0 ) {
+        if( M.cells.nb() != 0 )
+        {
             Logger::warn( "RING", "Mesh to tetrahedralize already have cells" );
         }
         return true;
     }
 }
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     TetgenMesher::~TetgenMesher()
     {
         // Take over polygon deletion of tetgen that does not set to
@@ -79,8 +85,7 @@ namespace RINGMesh {
     }
 
     void TetgenMesher::tetrahedralize(
-        const GEO::Mesh& input_mesh,
-        VolumeMeshBuilder3D& output_mesh_builder )
+        const GEO::Mesh& input_mesh, VolumeMeshBuilder3D& output_mesh_builder )
     {
         initialize();
         copy_mesh_to_tetgen_input( input_mesh );
@@ -97,58 +102,66 @@ namespace RINGMesh {
 
     void TetgenMesher::tetrahedralize()
     {
-        try {
-            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_, &tetgen_out_ );
-        } catch( int code ) {
+        try
+        {
+            GEO_3rdParty::tetrahedralize(
+                &tetgen_args_, &tetgen_in_, &tetgen_out_ );
+        }
+        catch( int code )
+        {
             Logger::err( "Tetgen", "Encountered a problem: " );
-            switch( code ) {
-                case 1:
-                    Logger::err( "Tetgen", "Out of memory" );
-                    break;
-                case 2:
-                    Logger::err( "Tetgen",
-                        "Please report this bug to Hang.Si@wias-berlin.de. Include" );
-                    Logger::err( "Tetgen",
-                        "  the message above, your input data set, and the exact" );
-                    Logger::err( "Tetgen",
-                        "  command line you used to run this program, thank you" );
-                    ;
-                    break;
-                case 3:
-                    Logger::err( "Tetgen",
-                        "A self-intersection was detected. Program stopped" );
-                    Logger::err( "Tetgen",
-                        "Hint: use -d option to detect all self-intersections" );
-                    break;
-                case 4:
-                    Logger::err( "Tetgen",
-                        "A very small input feature size was detected. Program stopped." );
-                    Logger::err( "Tetgen",
-                        "Hint: use -T option to set a smaller tolerance." );
-                    break;
-                case 5:
-                    Logger::err( "Tetgen",
-                        "Two very close input polygons were detected. Program stopped." );
-                    Logger::err( "Tetgen",
-                        "Hint: use -Y option to avoid adding Steiner points in boundary." );
-                    break;
-                case 10:
-                    Logger::err( "Tetgen",
-                        "An input error was detected. Program stopped." );
-                    break;
+            switch( code )
+            {
+            case 1:
+                Logger::err( "Tetgen", "Out of memory" );
+                break;
+            case 2:
+                Logger::err( "Tetgen", "Please report this bug to "
+                                       "Hang.Si@wias-berlin.de. Include" );
+                Logger::err( "Tetgen",
+                    "  the message above, your input data set, and the exact" );
+                Logger::err( "Tetgen",
+                    "  command line you used to run this program, thank you" );
+                ;
+                break;
+            case 3:
+                Logger::err( "Tetgen",
+                    "A self-intersection was detected. Program stopped" );
+                Logger::err( "Tetgen",
+                    "Hint: use -d option to detect all self-intersections" );
+                break;
+            case 4:
+                Logger::err( "Tetgen", "A very small input feature size was "
+                                       "detected. Program stopped." );
+                Logger::err( "Tetgen",
+                    "Hint: use -T option to set a smaller tolerance." );
+                break;
+            case 5:
+                Logger::err( "Tetgen", "Two very close input polygons were "
+                                       "detected. Program stopped." );
+                Logger::err( "Tetgen", "Hint: use -Y option to avoid adding "
+                                       "Steiner points in boundary." );
+                break;
+            case 10:
+                Logger::err(
+                    "Tetgen", "An input error was detected. Program stopped." );
+                break;
             }
         }
     }
 
     void TetgenMesher::copy_mesh_to_tetgen_input( const GEO::Mesh& M )
     {
-        if( M.vertices.nb() != 0 ) {
+        if( M.vertices.nb() != 0 )
+        {
             copy_vertices_to_tetgen_input( M );
         }
-        if( M.edges.nb() != 0 ) {
+        if( M.edges.nb() != 0 )
+        {
             copy_edges_to_tetgen_input( M );
         }
-        if( M.facets.nb() != 0 ) {
+        if( M.facets.nb() != 0 )
+        {
             copy_polygons_to_tetgen_input( M );
         }
     }
@@ -158,7 +171,7 @@ namespace RINGMesh {
         tetgen_in_.numberofpoints = static_cast< int >( M.vertices.nb() );
         tetgen_in_.pointlist = new double[3 * tetgen_in_.numberofpoints];
         GEO::Memory::copy( tetgen_in_.pointlist, M.vertices.point_ptr( 0 ),
-            M.vertices.nb() * 3 * sizeof(double) );
+            M.vertices.nb() * 3 * sizeof( double ) );
     }
 
     void TetgenMesher::copy_edges_to_tetgen_input( const GEO::Mesh& M )
@@ -166,7 +179,7 @@ namespace RINGMesh {
         tetgen_in_.numberofedges = static_cast< int >( M.edges.nb() );
         tetgen_in_.edgelist = new int[2 * tetgen_in_.numberofedges];
         GEO::Memory::copy( tetgen_in_.edgelist, M.edges.vertex_index_ptr( 0 ),
-            M.edges.nb() * 2 * sizeof(int) );
+            M.edges.nb() * 2 * sizeof( int ) );
     }
 
     void TetgenMesher::copy_polygons_to_tetgen_input( const GEO::Mesh& M )
@@ -180,9 +193,10 @@ namespace RINGMesh {
         polygon_corners_.reset( new int[M.facet_corners.nb()] );
         GEO::Memory::copy( polygon_corners_.get(),
             M.facet_corners.vertex_index_ptr( 0 ),
-            M.facet_corners.nb() * sizeof(int) );
+            M.facet_corners.nb() * sizeof( int ) );
 
-        for( index_t f : range( M.facets.nb() ) ) {
+        for( index_t f : range( M.facets.nb() ) )
+        {
             GEO_3rdParty::tetgenio::facet& F = tetgen_in_.facetlist[f];
             GEO_3rdParty::tetgenio::init( &F );
             F.numberofpolygons = 1;
@@ -202,12 +216,14 @@ namespace RINGMesh {
         tetgen_in_.numberofregions = static_cast< int >( nb_regions );
         tetgen_in_.regionlist = new double[5 * nb_regions];
 
-        for( index_t i : range( nb_regions ) ) {
+        for( index_t i : range( nb_regions ) )
+        {
             tetgen_in_.regionlist[5 * i] = one_point_in_each_region[i].x;
             tetgen_in_.regionlist[5 * i + 1] = one_point_in_each_region[i].y;
             tetgen_in_.regionlist[5 * i + 2] = one_point_in_each_region[i].z;
             tetgen_in_.regionlist[5 * i + 3] = i;
-            tetgen_in_.regionlist[5 * i + 4] = DBL_MAX; // Used only with the a switch
+            tetgen_in_.regionlist[5 * i + 4] =
+                DBL_MAX; // Used only with the a switch
         }
     }
 
@@ -230,7 +246,8 @@ namespace RINGMesh {
 
     std::vector< double > TetgenMesher::get_result_tetmesh_points() const
     {
-        index_t nb_points = static_cast< index_t >( tetgen_out_.numberofpoints );
+        index_t nb_points =
+            static_cast< index_t >( tetgen_out_.numberofpoints );
         std::vector< double > points( 3 * nb_points );
         double* points_ptr = tetgen_out_.pointlist;
         parallel_for( 3 * nb_points, [&points, &points_ptr]( index_t i ) {
@@ -248,8 +265,10 @@ namespace RINGMesh {
         int* tets_ptr = tetgen_out_.tetrahedronlist;
         parallel_for( nb_tets, [&tets_to_keep, &tets_ptr, &tets]( index_t i ) {
             index_t tetra = tets_to_keep[i];
-            for( index_t v : range( 4 ) ) {
-                tets[4 * i + v] = static_cast< index_t >( tets_ptr[4 * tetra + v] );
+            for( index_t v : range( 4 ) )
+            {
+                tets[4 * i + v] =
+                    static_cast< index_t >( tets_ptr[4 * tetra + v] );
             }
         } );
         return tets;
@@ -262,11 +281,15 @@ namespace RINGMesh {
         // The region Id of tet t is determined by:
         //  tetgen_out_.tetrahedronattributelist[t]
         std::set< double > regions_to_keep;
-        index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
-        for( index_t t : range( nb_tets ) ) {
-            for( index_t f : range( 4 ) ) {
+        index_t nb_tets =
+            static_cast< index_t >( tetgen_out_.numberoftetrahedra );
+        for( index_t t : range( nb_tets ) )
+        {
+            for( index_t f : range( 4 ) )
+            {
                 signed_index_t n = tetgen_out_.neighborlist[t * 4 + f];
-                if( n == -1 ) {
+                if( n == -1 )
+                {
                     regions_to_keep.insert(
                         tetgen_out_.tetrahedronattributelist[t] );
                     break;
@@ -281,28 +304,33 @@ namespace RINGMesh {
         std::vector< index_t > tets_to_keep;
         std::set< double > regions_to_keep = determine_tet_regions_to_keep();
 
-        index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
+        index_t nb_tets =
+            static_cast< index_t >( tetgen_out_.numberoftetrahedra );
         tets_to_keep.reserve( nb_tets );
-        for( index_t t : range( nb_tets ) ) {
+        for( index_t t : range( nb_tets ) )
+        {
             if( regions_to_keep.find( tetgen_out_.tetrahedronattributelist[t] )
-                != regions_to_keep.end() ) {
+                != regions_to_keep.end() )
+            {
                 tets_to_keep.push_back( t );
             }
         }
         return tets_to_keep;
     }
 
-    void tetrahedralize_mesh_tetgen(
-        VolumeMeshBuilder3D& out_tet_mesh,
+    void tetrahedralize_mesh_tetgen( VolumeMeshBuilder3D& out_tet_mesh,
         const GEO::Mesh& in_mesh,
         bool refine,
         double quality )
     {
-        if( !is_mesh_tetrahedralizable( in_mesh ) ) {
-            throw RINGMeshException( "TetGen", "Mesh cannot be tetrahedralized" );
+        if( !is_mesh_tetrahedralizable( in_mesh ) )
+        {
+            throw RINGMeshException(
+                "TetGen", "Mesh cannot be tetrahedralized" );
         }
         TetgenMesher mesher;
-        if( refine ) {
+        if( refine )
+        {
             mesher.add_points_to_match_quality( quality );
         }
         mesher.tetrahedralize( in_mesh, out_tet_mesh );
@@ -315,4 +343,3 @@ namespace RINGMesh {
 }
 
 #endif
-

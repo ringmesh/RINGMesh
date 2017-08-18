@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
@@ -36,8 +38,8 @@
 #include <ringmesh/io/io.h>
 
 #include <cctype>
-#include <iomanip>
 #include <deque>
+#include <iomanip>
 
 #include <tinyxml2/tinyxml2.h>
 
@@ -50,15 +52,16 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 
-#include <ringmesh/mesh/well.h>
 #include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/well.h>
 
 /*!
  * @file Implementation of classes loading GeoModels
  * @author Arnaud Botella and Antoine Mazuyer
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
 #include "geomodel/io_abaqus.cpp"
@@ -79,45 +82,51 @@ namespace {
 #include "geomodel/io_vtk.cpp"
 
 #ifdef RINGMESH_WITH_GEOLOGYJS
-#    include "boundary_geomodel/io_html.cpp"
+#include "boundary_geomodel/io_html.cpp"
 #endif
-
 }
 
-namespace RINGMesh {
-
-    template< >
+namespace RINGMesh
+{
+    template <>
     void GeoModelIOHandler< 2 >::initialize()
     {
-        GeoModelIOHandlerFactory2D::register_creator< GeoModelHandlerGM2D >( "gm" );
+        GeoModelIOHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
+            "gm" );
         GeoModelIOHandlerFactory2D::register_creator< SVGIOHandler >( "svg" );
     }
 
     /*
      * Initializes the possible handler for IO files
      */
-    template< >
+    template <>
     void GeoModelIOHandler< 3 >::initialize()
     {
-        GeoModelIOHandlerFactory3D::register_creator< TetGenIOHandler >( "tetgen" );
+        GeoModelIOHandlerFactory3D::register_creator< TetGenIOHandler >(
+            "tetgen" );
         GeoModelIOHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
         GeoModelIOHandlerFactory3D::register_creator< CSMPIOHandler >( "csmp" );
-        GeoModelIOHandlerFactory3D::register_creator< AsterIOHandler >( "mail" );
+        GeoModelIOHandlerFactory3D::register_creator< AsterIOHandler >(
+            "mail" );
         GeoModelIOHandlerFactory3D::register_creator< VTKIOHandler >( "vtk" );
         GeoModelIOHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
         GeoModelIOHandlerFactory3D::register_creator< MSHIOHandler >( "msh" );
         GeoModelIOHandlerFactory3D::register_creator< MFEMIOHandler >( "mfem" );
-        GeoModelIOHandlerFactory3D::register_creator< GeoModelHandlerGM3D >( "gm" );
-        GeoModelIOHandlerFactory3D::register_creator< AbaqusIOHandler >( "inp" );
-        GeoModelIOHandlerFactory3D::register_creator< AdeliIOHandler >( "adeli" );
-        GeoModelIOHandlerFactory3D::register_creator< FeflowIOHandler >( "fem" );
+        GeoModelIOHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
+            "gm" );
+        GeoModelIOHandlerFactory3D::register_creator< AbaqusIOHandler >(
+            "inp" );
+        GeoModelIOHandlerFactory3D::register_creator< AdeliIOHandler >(
+            "adeli" );
+        GeoModelIOHandlerFactory3D::register_creator< FeflowIOHandler >(
+            "fem" );
         GeoModelIOHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
-        GeoModelIOHandlerFactory3D::register_creator< SMESHIOHandler >( "smesh" );
+        GeoModelIOHandlerFactory3D::register_creator< SMESHIOHandler >(
+            "smesh" );
         GeoModelIOHandlerFactory3D::register_creator< STLIOHandler >( "stl" );
 
 #ifdef RINGMESH_WITH_GEOLOGYJS
         GeoModelIOHandlerFactory3D::register_creator< HTMLIOHandler >( "html" );
 #endif
     }
-
 }

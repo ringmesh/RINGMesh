@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -33,25 +35,31 @@
  *     FRANCE
  */
 
-namespace {
+namespace
+{
     void merge_colocated_vertices( double epsilon, LineMesh3D& mesh )
     {
         std::vector< index_t > old2new;
         index_t nb_colocated = NO_ID;
         std::tie( nb_colocated, old2new ) =
             mesh.vertex_nn_search().get_colocated_index_mapping( epsilon );
-        if( nb_colocated > 0 ) {
+        if( nb_colocated > 0 )
+        {
             std::unique_ptr< LineMeshBuilder3D > builder =
                 LineMeshBuilder3D::create_builder( mesh );
-            for( index_t e : range( mesh.nb_edges() ) ) {
-                for( index_t i : range( 2 ) ) {
+            for( index_t e : range( mesh.nb_edges() ) )
+            {
+                for( index_t i : range( 2 ) )
+                {
                     index_t v = mesh.edge_vertex( ElementLocalVertex( e, i ) );
                     builder->set_edge_vertex( e, i, old2new[v] );
                 }
             }
             std::vector< bool > delete_vertices( mesh.nb_vertices(), false );
-            for( index_t v : range( mesh.nb_vertices() ) ) {
-                if( old2new[v] != v ) {
+            for( index_t v : range( mesh.nb_vertices() ) )
+            {
+                if( old2new[v] != v )
+                {
                     delete_vertices[v] = true;
                 }
             }
@@ -59,12 +67,14 @@ namespace {
         }
     }
 
-    class SmeshIOHandler final: public WellGroupIOHandler {
+    class SmeshIOHandler final : public WellGroupIOHandler
+    {
     public:
         void load( const std::string& filename, WellGroup3D& wells ) final
         {
             GEO::LineInput in( filename );
-            if( !in.OK() ) {
+            if( !in.OK() )
+            {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
@@ -76,20 +86,26 @@ namespace {
 
             bool is_first_part = true;
 
-            while( !in.eof() ) {
+            while( !in.eof() )
+            {
                 in.get_line();
                 in.get_fields();
-                if( in.nb_fields() == 0 ) continue;
-                if( GEO::String::string_starts_with( in.field( 0 ), "#" ) ) {
+                if( in.nb_fields() == 0 )
+                    continue;
+                if( GEO::String::string_starts_with( in.field( 0 ), "#" ) )
+                {
                     continue;
                 }
-                if( is_first_part ) {
+                if( is_first_part )
+                {
                     index_t nb_vertices = in.field_as_uint( 0 );
                     builder->create_vertices( nb_vertices );
                     Box3D box;
 
-                    for( index_t v : range( nb_vertices ) ) {
-                        do {
+                    for( index_t v : range( nb_vertices ) )
+                    {
+                        do
+                        {
                             in.get_line();
                             in.get_fields();
                         } while( in.nb_fields() == 0 );
@@ -101,18 +117,23 @@ namespace {
                         box.add_point( point );
                     }
                     is_first_part = false;
-                } else {
+                }
+                else
+                {
                     index_t nb_edges = in.field_as_uint( 0 );
                     builder->create_edges( nb_edges );
-                    for( index_t e : range( nb_edges ) ) {
-                        do {
+                    for( index_t e : range( nb_edges ) )
+                    {
+                        do
+                        {
                             in.get_line();
                             in.get_fields();
                         } while( in.nb_fields() == 0 );
                         builder->set_edge_vertex( e, 0, in.field_as_uint( 1 ) );
                         builder->set_edge_vertex( e, 1, in.field_as_uint( 2 ) );
                     }
-                    merge_colocated_vertices( wells.geomodel()->epsilon(), *mesh );
+                    merge_colocated_vertices(
+                        wells.geomodel()->epsilon(), *mesh );
                     wells.add_well( *mesh, name );
                     break;
                 }
@@ -122,8 +143,8 @@ namespace {
         {
             ringmesh_unused( wells );
             ringmesh_unused( filename );
-            throw RINGMeshException( "I/O",
-                "Saving of a WellGroup from Smesh not implemented yet" );
+            throw RINGMeshException(
+                "I/O", "Saving of a WellGroup from Smesh not implemented yet" );
         }
     };
 }

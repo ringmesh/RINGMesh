@@ -1,7 +1,8 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,8 +13,9 @@
  *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -29,7 +31,7 @@
  *     RING Project
  *     Ecole Nationale Superieure de Geologie - GeoRessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
- *     54518 VANDOEUVRE-LES-NANCY 
+ *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
@@ -45,12 +47,13 @@
  * @author Jeanne Pellerin
  */
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * @brief Vertex in a GeoModelEntity
      */
-    struct GMEVertex {
+    struct GMEVertex
+    {
         GMEVertex( gmme_id t, index_t vertex_id_in )
             : gmme( std::move( t ) ), v_index( vertex_id_in )
         {
@@ -66,12 +69,12 @@ namespace RINGMesh {
         /// GeoModelEntity index in the GeoModel that owns it
         gmme_id gmme;
         /// Index of the vertex in the GeoModelEntity
-        index_t v_index { NO_ID };
+        index_t v_index{ NO_ID };
     };
 
-
-    template< index_t DIMENSION >
-    class RINGMESH_API entity_range: public range {
+    template < index_t DIMENSION >
+    class RINGMESH_API entity_range : public range
+    {
     protected:
         entity_range( const GeoModel< DIMENSION >& geomodel, index_t last )
             : range( last ), geomodel_( geomodel )
@@ -82,8 +85,9 @@ namespace RINGMesh {
         const GeoModel< DIMENSION >& geomodel_;
     };
 
-    template< index_t DIMENSION >
-    class RINGMESH_API corner_range: public entity_range< DIMENSION > {
+    template < index_t DIMENSION >
+    class RINGMESH_API corner_range : public entity_range< DIMENSION >
+    {
     public:
         corner_range( const GeoModel< DIMENSION >& geomodel )
             : entity_range< DIMENSION >( geomodel, geomodel.nb_corners() )
@@ -103,8 +107,9 @@ namespace RINGMesh {
         }
     };
 
-    template< index_t DIMENSION >
-    class RINGMESH_API line_range: public entity_range< DIMENSION > {
+    template < index_t DIMENSION >
+    class RINGMESH_API line_range : public entity_range< DIMENSION >
+    {
     public:
         line_range( const GeoModel< DIMENSION >& geomodel )
             : entity_range< DIMENSION >( geomodel, geomodel.nb_lines() )
@@ -124,8 +129,9 @@ namespace RINGMesh {
         }
     };
 
-    template< index_t DIMENSION >
-    class RINGMESH_API surface_range: public entity_range< DIMENSION > {
+    template < index_t DIMENSION >
+    class RINGMESH_API surface_range : public entity_range< DIMENSION >
+    {
     public:
         surface_range( const GeoModel< DIMENSION >& geomodel )
             : entity_range< DIMENSION >( geomodel, geomodel.nb_surfaces() )
@@ -145,8 +151,9 @@ namespace RINGMesh {
         }
     };
 
-    template< index_t DIMENSION >
-    class RINGMESH_API region_range: public entity_range< DIMENSION > {
+    template < index_t DIMENSION >
+    class RINGMESH_API region_range : public entity_range< DIMENSION >
+    {
     public:
         region_range( const GeoModel< DIMENSION >& geomodel )
             : entity_range< DIMENSION >( geomodel, geomodel.nb_regions() )

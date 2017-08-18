@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -33,11 +35,12 @@
  *     FRANCE
  */
 
-namespace {
-    class XMLStratigraphicColumnIOHandler: public StratigraphicColumnIOHandler {
+namespace
+{
+    class XMLStratigraphicColumnIOHandler : public StratigraphicColumnIOHandler
+    {
     public:
-        void load(
-            const std::string& filename,
+        void load( const std::string& filename,
             StratigraphicColumn& column,
             GeoModel3D& geomodel ) final
         {
@@ -47,19 +50,16 @@ namespace {
             StratigraphicColumnBuilderXML builder( column, geomodel,
                 GEO::FileSystem::base_name( filename, false ) );
             builder.load_file();
-            Logger::out( "I/O", " Loaded stratigraphic column ", geomodel.name(),
-                " from ", filename );
+            Logger::out( "I/O", " Loaded stratigraphic column ",
+                geomodel.name(), " from ", filename );
             GEO::FileSystem::set_current_working_directory( pwd );
         }
 
-        void save(
-            const StratigraphicColumn& column,
+        void save( const StratigraphicColumn& column,
             const std::string& filename ) final
         {
-            throw RINGMeshException( "I/O",
-                "Saving of a StratigraphicColumn not implemented yet" );
+            throw RINGMeshException(
+                "I/O", "Saving of a StratigraphicColumn not implemented yet" );
         }
-
     };
-
 }

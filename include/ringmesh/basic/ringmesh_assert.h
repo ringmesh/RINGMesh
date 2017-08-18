@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -45,23 +47,25 @@
  * @file Custom assertions
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     void RINGMESH_API ringmesh_assertion_failed(
         const std::string& condition_string,
         const std::string& file,
         int line );
 
     void RINGMESH_API ringmesh_should_not_have_reached(
-        const std::string& file,
-        int line );
+        const std::string& file, int line );
 }
 
 #ifdef RINGMESH_DEBUG
-#  define ringmesh_assert( x )  \
-        if( !( x ) )  RINGMesh::ringmesh_assertion_failed( # x, __FILE__, __LINE__ )
-#  define ringmesh_assert_not_reached \
-        if( true ) RINGMesh::ringmesh_should_not_have_reached( __FILE__, __LINE__ )
+#define ringmesh_assert( x )                                                   \
+    if( !( x ) )                                                               \
+    RINGMesh::ringmesh_assertion_failed( #x, __FILE__, __LINE__ )
+#define ringmesh_assert_not_reached                                            \
+    if( true )                                                                 \
+    RINGMesh::ringmesh_should_not_have_reached( __FILE__, __LINE__ )
 #else
-#  define ringmesh_assert( x )
-#  define ringmesh_assert_not_reached
+#define ringmesh_assert( x )
+#define ringmesh_assert_not_reached
 #endif

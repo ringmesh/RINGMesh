@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -35,34 +37,33 @@
 
 /*!
  * @file Implementation of all GeoModelEntities classes
- * @author Jeanne Pellerin and Arnaud Botella 
+ * @author Jeanne Pellerin and Arnaud Botella
  */
 
 #include <ringmesh/geomodel/geomodel_entity.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
     Universe< DIMENSION >::Universe( const GeoModel< DIMENSION >& geomodel )
         : GeoModelEntity< DIMENSION >( geomodel, NO_ID )
     {
         this->name_ = universe_type_name().string();
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     bool Universe< DIMENSION >::is_valid() const
     {
         return true;
     }
 
-    template class RINGMESH_API GeoModelEntity< 2 > ;
-    template class RINGMESH_API Universe< 2 > ;
-    template class RINGMESH_API UniverseAccess< 2 > ;
+    template class RINGMESH_API GeoModelEntity< 2 >;
+    template class RINGMESH_API Universe< 2 >;
+    template class RINGMESH_API UniverseAccess< 2 >;
 
-    template class RINGMESH_API GeoModelEntity< 3 > ;
-    template class RINGMESH_API Universe< 3 > ;
-    template class RINGMESH_API UniverseAccess< 3 > ;
-
+    template class RINGMESH_API GeoModelEntity< 3 >;
+    template class RINGMESH_API Universe< 3 >;
+    template class RINGMESH_API UniverseAccess< 3 >;
 }

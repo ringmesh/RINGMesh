@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -52,61 +54,65 @@
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
+#define COMMON_GEOGRAM_GFX_IMPLEMENTATION( Class )                             \
+public:                                                                        \
+    virtual ~Class() = default;                                                \
+    void draw_vertices() override                                              \
+    {                                                                          \
+        mesh_gfx_.draw_vertices();                                             \
+    }                                                                          \
+    void set_vertex_color( float r, float g, float b ) override                \
+    {                                                                          \
+        mesh_gfx_.set_points_color( r, g, b );                                 \
+    }                                                                          \
+    void set_vertex_size( index_t s ) override                                 \
+    {                                                                          \
+        mesh_gfx_.set_points_size( static_cast< float >( s ) );                \
+    }                                                                          \
+    void set_scalar_attribute( GEO::MeshElementsFlags subelements,             \
+        const std::string& name, double attr_min, double attr_max,             \
+        GLuint colormap_texture ) override                                     \
+    {                                                                          \
+        mesh_gfx_.set_scalar_attribute(                                        \
+            subelements, name, attr_min, attr_max, colormap_texture );         \
+    }                                                                          \
+    void unset_scalar_attribute() override                                     \
+    {                                                                          \
+        mesh_gfx_.unset_scalar_attribute();                                    \
+    }                                                                          \
+                                                                               \
+private:                                                                       \
+    GEO::MeshGfx mesh_gfx_
 
-#define COMMON_GEOGRAM_GFX_IMPLEMENTATION( Class )                              \
-    public:                                                                     \
-    virtual ~Class() = default;                                                 \
-    void draw_vertices() override                                               \
-    {                                                                           \
-        mesh_gfx_.draw_vertices();                                              \
-    }                                                                           \
-    void set_vertex_color( float r, float g, float b ) override                 \
-    {                                                                           \
-        mesh_gfx_.set_points_color( r, g, b );                                  \
-    }                                                                           \
-    void set_vertex_size( index_t s ) override                                  \
-    {                                                                           \
-        mesh_gfx_.set_points_size( static_cast< float >( s ) );                 \
-    }                                                                           \
-    void set_scalar_attribute(                                                  \
-        GEO::MeshElementsFlags subelements,                                     \
-        const std::string& name,                                                \
-        double attr_min,                                                        \
-        double attr_max,                                                        \
-        GLuint colormap_texture ) override                                      \
-    {                                                                           \
-        mesh_gfx_.set_scalar_attribute( subelements, name, attr_min, attr_max,  \
-            colormap_texture );                                                 \
-    }                                                                           \
-    void unset_scalar_attribute() override                                      \
-    {                                                                           \
-        mesh_gfx_.unset_scalar_attribute();                                     \
-    }                                                                           \
-    private:                                                                    \
-        GEO::MeshGfx mesh_gfx_
+    template < index_t DIMENSION >
+    class GeogramPointSetMeshGfx : public PointSetMeshGfx< DIMENSION >
+    {
+        COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramPointSetMeshGfx );
 
-    template< index_t DIMENSION >
-    class GeogramPointSetMeshGfx: public PointSetMeshGfx< DIMENSION > {
-    COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramPointSetMeshGfx );
     public:
         GeogramPointSetMeshGfx( const PointSetMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
-                &dynamic_cast< const GeogramPointSetMesh< DIMENSION >& >( mesh ).gfx_mesh() );
+                &dynamic_cast< const GeogramPointSetMesh< DIMENSION >& >( mesh )
+                     .gfx_mesh() );
             set_vertex_color( 1, 0, 0 );
         }
     };
     ALIAS_2D_AND_3D( GeogramPointSetMeshGfx );
 
-    template< index_t DIMENSION >
-    class GeogramLineMeshGfx: public LineMeshGfx< DIMENSION > {
-    COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramLineMeshGfx );
+    template < index_t DIMENSION >
+    class GeogramLineMeshGfx : public LineMeshGfx< DIMENSION >
+    {
+        COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramLineMeshGfx );
+
     public:
         GeogramLineMeshGfx( const LineMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
-                &dynamic_cast< const GeogramLineMesh< DIMENSION >& >( mesh ).gfx_mesh() );
+                &dynamic_cast< const GeogramLineMesh< DIMENSION >& >( mesh )
+                     .gfx_mesh() );
             set_vertex_color( 1, 1, 1 );
             set_edge_color( 1, 1, 1 );
         }
@@ -125,18 +131,20 @@ namespace RINGMesh {
         {
             mesh_gfx_.set_mesh_width( s );
         }
-
     };
     ALIAS_2D_AND_3D( GeogramLineMeshGfx );
 
-    template< index_t DIMENSION >
-    class GeogramSurfaceMeshGfx: public SurfaceMeshGfx< DIMENSION > {
-    COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramSurfaceMeshGfx );
+    template < index_t DIMENSION >
+    class GeogramSurfaceMeshGfx : public SurfaceMeshGfx< DIMENSION >
+    {
+        COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramSurfaceMeshGfx );
+
     public:
         GeogramSurfaceMeshGfx( const SurfaceMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
-                &dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( mesh ).gfx_mesh() );
+                &dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( mesh )
+                     .gfx_mesh() );
         }
 
         void draw_surface() override
@@ -171,14 +179,17 @@ namespace RINGMesh {
     };
     ALIAS_2D_AND_3D( GeogramSurfaceMeshGfx );
 
-    template< index_t DIMENSION >
-    class GeogramVolumeMeshGfx: public VolumeMeshGfx< DIMENSION > {
-    COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramVolumeMeshGfx );
+    template < index_t DIMENSION >
+    class GeogramVolumeMeshGfx : public VolumeMeshGfx< DIMENSION >
+    {
+        COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramVolumeMeshGfx );
+
     public:
         GeogramVolumeMeshGfx( const VolumeMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
-                &dynamic_cast< const GeogramVolumeMesh< DIMENSION >& >( mesh ).gfx_mesh() );
+                &dynamic_cast< const GeogramVolumeMesh< DIMENSION >& >( mesh )
+                     .gfx_mesh() );
         }
 
         void draw_volume() override
@@ -188,7 +199,8 @@ namespace RINGMesh {
 
         void set_draw_cells( CellType type, bool x ) override
         {
-            mesh_gfx_.set_draw_cells( static_cast< GEO::MeshCellType >( type ), x );
+            mesh_gfx_.set_draw_cells(
+                static_cast< GEO::MeshCellType >( type ), x );
         }
 
         void set_cell_colors_by_type() override

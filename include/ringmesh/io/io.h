@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -39,8 +41,8 @@
 
 #include <memory>
 
-#include <zlib/zip.h>
 #include <zlib/unzip.h>
+#include <zlib/zip.h>
 
 #include <geogram/basic/string.h>
 
@@ -59,7 +61,8 @@ const char TAB = '\t';
  * @author Various
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     class StratigraphicColumn;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
@@ -68,53 +71,53 @@ namespace RINGMesh {
     ALIAS_3D( WellGroup );
 }
 
-namespace GEO {
+namespace GEO
+{
     class MeshSubElementsStore;
 }
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * Compares the contains of two files
      * @param[in] f1 the first filename
      * @param[in] f2 the second filename
      * @return return True if the files are identical
      */
-    bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 );
+    bool RINGMESH_API compare_files(
+        const std::string& f1, const std::string& f2 );
     /*!
      * Loads a GeoModel from a file
      * @param[out] geomodel the geomodel to fill
      * @param[in] filename the file to load
      */
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     bool geomodel_load(
-        GeoModel< DIMENSION >& geomodel,
-        const std::string& filename );
+        GeoModel< DIMENSION >& geomodel, const std::string& filename );
     /*!
      * Saves a GeoModel to a file
      * @param[in] geomodel the geomodel to save
      * @param[in] filename the file to save
      */
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void geomodel_save(
-        const GeoModel< DIMENSION >& geomodel,
-        const std::string& filename );
+        const GeoModel< DIMENSION >& geomodel, const std::string& filename );
     /*!
      * Loads a WellGroup from a file
      * @param[in] filename the file to load
      * @param][in,out] wells the wells to fill
      */
     void RINGMESH_API well_load(
-        const std::string& filename,
-        WellGroup3D& wells );
+        const std::string& filename, WellGroup3D& wells );
 
     /*!
      * Returns the dimension of the GeoModel in the \p filename
      */
     index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
 
-    template< index_t DIMENSION >
-    class GeoModelIOHandler {
+    template < index_t DIMENSION >
+    class GeoModelIOHandler
+    {
     public:
         virtual ~GeoModelIOHandler() = default;
 
@@ -124,11 +127,9 @@ namespace RINGMesh {
             const std::string& filename );
 
         bool load_geomodel(
-            const std::string& filename,
-            GeoModel< DIMENSION >& geomodel );
+            const std::string& filename, GeoModel< DIMENSION >& geomodel );
 
-        void save_geomodel(
-            const GeoModel< DIMENSION >& geomodel,
+        void save_geomodel( const GeoModel< DIMENSION >& geomodel,
             const std::string& filename );
 
         virtual index_t dimension( const std::string& filename ) const
@@ -140,11 +141,9 @@ namespace RINGMesh {
     protected:
         GeoModelIOHandler() = default;
         virtual void load(
-            const std::string& filename,
-            GeoModel< DIMENSION >& geomodel ) = 0;
+            const std::string& filename, GeoModel< DIMENSION >& geomodel ) = 0;
 
-        virtual void save(
-            const GeoModel< DIMENSION >& geomodel,
+        virtual void save( const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) = 0;
 
     private:
@@ -154,13 +153,15 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( GeoModelIOHandler );
 
-    template< index_t DIMENSION >
-    using GeoModelIOHandlerFactory = Factory< std::string, GeoModelIOHandler< DIMENSION > >;
+    template < index_t DIMENSION >
+    using GeoModelIOHandlerFactory =
+        Factory< std::string, GeoModelIOHandler< DIMENSION > >;
 
     ALIAS_2D_AND_3D( GeoModelIOHandlerFactory );
 
     /***************************************************************************/
-    class RINGMESH_API WellGroupIOHandler {
+    class RINGMESH_API WellGroupIOHandler
+    {
     public:
         virtual ~WellGroupIOHandler() = default;
 
@@ -172,8 +173,7 @@ namespace RINGMesh {
         virtual void load( const std::string& filename, WellGroup3D& mesh ) = 0;
 
         virtual void save(
-            const WellGroup3D& mesh,
-            const std::string& filename ) = 0;
+            const WellGroup3D& mesh, const std::string& filename ) = 0;
 
     protected:
         WellGroupIOHandler() = default;
@@ -182,7 +182,8 @@ namespace RINGMesh {
         static std::unique_ptr< WellGroupIOHandler > create(
             const std::string& format );
     };
-    using WellGroupIOHandlerFactory = Factory< std::string, WellGroupIOHandler >;
+    using WellGroupIOHandlerFactory =
+        Factory< std::string, WellGroupIOHandler >;
 
     /***************************************************************************/
 
@@ -190,14 +191,15 @@ namespace RINGMesh {
 
     void RINGMESH_API zip_file( zipFile zf, const std::string& name );
 
-    void RINGMESH_API unzip_file( unzFile uz, const char filename[MAX_FILENAME] );
+    void RINGMESH_API unzip_file(
+        unzFile uz, const char filename[MAX_FILENAME] );
 
     void RINGMESH_API unzip_current_file(
-        unzFile uz,
-        const char filename[MAX_FILENAME] );
+        unzFile uz, const char filename[MAX_FILENAME] );
 
     /*********************************************************************************************/
-    class RINGMESH_API StratigraphicColumnIOHandler {
+    class RINGMESH_API StratigraphicColumnIOHandler
+    {
     public:
         virtual ~StratigraphicColumnIOHandler() = default;
 
@@ -206,13 +208,11 @@ namespace RINGMesh {
         static std::unique_ptr< StratigraphicColumnIOHandler > get_handler(
             const std::string& filename );
 
-        virtual void load(
-            const std::string& filename,
+        virtual void load( const std::string& filename,
             StratigraphicColumn& column,
             GeoModel3D& geomodel ) = 0;
 
-        virtual void save(
-            const StratigraphicColumn& column,
+        virtual void save( const StratigraphicColumn& column,
             const std::string& filename ) = 0;
 
     protected:
@@ -221,7 +221,7 @@ namespace RINGMesh {
     private:
         static std::unique_ptr< StratigraphicColumnIOHandler > create(
             const std::string& format );
-
     };
-    using StratigraphicColumnIOHandlerFactory = Factory< std::string, StratigraphicColumnIOHandler >;
+    using StratigraphicColumnIOHandlerFactory =
+        Factory< std::string, StratigraphicColumnIOHandler >;
 }

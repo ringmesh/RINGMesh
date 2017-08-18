@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -44,32 +46,35 @@
  * @author Pierre Anquez
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
     gmme_id find_corner( const GeoModel3D& geomodel, const vec3& point )
     {
-        for( const auto& corner : geomodel.corners() ) {
-            if( corner.vertex( 0 ) == point ) {
+        for( const auto& corner : geomodel.corners() )
+        {
+            if( corner.vertex( 0 ) == point )
+            {
                 return corner.gmme();
             }
         }
         return gmme_id();
     }
 
-    std::string read_name_with_spaces( index_t field_id, const GEO::LineInput& line )
+    std::string read_name_with_spaces(
+        index_t field_id, const GEO::LineInput& line )
     {
         std::ostringstream oss;
-        do {
+        do
+        {
             oss << line.field( field_id++ );
         } while( field_id < line.nb_fields() );
         return oss.str();
     }
 
     vec3 read_vertex_coordinates(
-        GEO::LineInput& in,
-        index_t start_field,
-        int z_sign )
+        GEO::LineInput& in, index_t start_field, int z_sign )
     {
         vec3 vertex;
         vertex.x = in.field_as_double( start_field++ );
@@ -90,12 +95,13 @@ namespace {
      * @return Index of the interface in the geomodel, NO_ID if not found.
      */
     gmge_id find_interface(
-        const GeoModel3D& geomodel,
-        const std::string& interface_name )
+        const GeoModel3D& geomodel, const std::string& interface_name )
     {
         GeologicalEntityType type = Interface3D::type_name_static();
-        for( index_t i : range( geomodel.nb_geological_entities( type ) ) ) {
-            if( geomodel.geological_entity( type, i ).name() == interface_name ) {
+        for( index_t i : range( geomodel.nb_geological_entities( type ) ) )
+        {
+            if( geomodel.geological_entity( type, i ).name() == interface_name )
+            {
                 return geomodel.geological_entity( type, i ).gmge();
             }
         }
@@ -105,7 +111,8 @@ namespace {
     /*!
      * @brief Structure used to build Line by GeoModelBuilderGocad
      */
-    struct Border {
+    struct Border
+    {
         Border( index_t part, index_t corner, index_t p0, index_t p1 )
             : part_id_( part ), corner_id_( corner ), p0_( p0 ), p1_( p1 )
         {
@@ -117,7 +124,8 @@ namespace {
         // Id of p0 in the GeoModel corner vector
         index_t corner_id_;
 
-        // Ids of the starting corner and second vertex on the border in the Surface
+        // Ids of the starting corner and second vertex on the border in the
+        // Surface
         // to which this Border belong
         index_t p0_;
         index_t p1_;
@@ -130,8 +138,7 @@ namespace {
      * @param[in] point_gocad_id Gocad index of the point to get
      * @return Coordinates of the point
      */
-    vec3 get_point_from_gocad_id(
-        const GeoModel3D& geomodel,
+    vec3 get_point_from_gocad_id( const GeoModel3D& geomodel,
         const VertexMap& vertex_map,
         index_t point_gocad_id )
     {
@@ -163,19 +170,23 @@ namespace {
         std::vector< vec3 >& cur_surf_points,
         std::vector< index_t >& cur_surf_polygons )
     {
-        if( vertex_gocad_id >= gocad_vertices2cur_surf_points.size() ) {
+        if( vertex_gocad_id >= gocad_vertices2cur_surf_points.size() )
+        {
             gocad_vertices2cur_surf_points.resize( vertex_gocad_id + 1, NO_ID );
         }
 
-        if( gocad_vertices2cur_surf_points[vertex_gocad_id] == NO_ID ) {
+        if( gocad_vertices2cur_surf_points[vertex_gocad_id] == NO_ID )
+        {
             // First time this polygon corner is met in polygon_corners
-            vec3 point = get_point_from_gocad_id( geomodel, load_storage.vertex_map_,
-                vertex_gocad_id );
+            vec3 point = get_point_from_gocad_id(
+                geomodel, load_storage.vertex_map_, vertex_gocad_id );
             index_t index = static_cast< index_t >( cur_surf_points.size() );
             cur_surf_polygons.push_back( index );
             gocad_vertices2cur_surf_points[vertex_gocad_id] = index;
             cur_surf_points.push_back( point );
-        } else {
+        }
+        else
+        {
             // If this polygon corner has already been met in polygon_corners
             cur_surf_polygons.push_back(
                 gocad_vertices2cur_surf_points[vertex_gocad_id] );
@@ -199,7 +210,9 @@ namespace {
         std::vector< index_t >& cur_surf_polygons )
     {
         std::vector< index_t > gocad_vertices2cur_surf_points;
-        for( index_t corner_gocad_id : load_storage.cur_surf_polygon_corners_gocad_id_ ) {
+        for( index_t corner_gocad_id :
+            load_storage.cur_surf_polygon_corners_gocad_id_ )
+        {
             get_surface_point_and_polygon_from_gocad_index( corner_gocad_id,
                 geomodel, load_storage, gocad_vertices2cur_surf_points,
                 cur_surf_points, cur_surf_polygons );
@@ -211,17 +224,17 @@ namespace {
      * @param[in] geomodel GeoModel to consider
      * @param[in] load_storage Set of tools useful for loading a GeoModel
      */
-    void build_surface(
-        GeoModelBuilderGocad& builder,
+    void build_surface( GeoModelBuilderGocad& builder,
         GeoModel3D& geomodel,
         TSolidLoadingStorage& load_storage )
     {
         std::vector< vec3 > cur_surf_points;
         std::vector< index_t > cur_surf_polygons;
-        get_surface_points_and_polygons_from_gocad_indices( geomodel, load_storage,
-            cur_surf_points, cur_surf_polygons );
+        get_surface_points_and_polygons_from_gocad_indices(
+            geomodel, load_storage, cur_surf_points, cur_surf_polygons );
         builder.geometry.set_surface_geometry( load_storage.cur_surface_,
-            cur_surf_points, cur_surf_polygons, load_storage.cur_surf_polygon_ptr_ );
+            cur_surf_points, cur_surf_polygons,
+            load_storage.cur_surf_polygon_ptr_ );
         load_storage.cur_surf_polygon_corners_gocad_id_.clear();
         load_storage.cur_surf_polygon_ptr_.clear();
         load_storage.cur_surf_polygon_ptr_.push_back( 0 );
@@ -239,8 +252,7 @@ namespace {
      * @param[in] region_id Index of the region
      * @param[out] cell_facet_centers Vector of cell facet centers
      */
-    void compute_region_cell_facet_centers(
-        const GeoModel3D& geomodel,
+    void compute_region_cell_facet_centers( const GeoModel3D& geomodel,
         index_t region_id,
         std::vector< vec3 >& cell_facet_centers )
     {
@@ -248,8 +260,10 @@ namespace {
         const VolumeMesh3D& mesh = region.low_level_mesh_storage();
         const index_t nb_cells = region.nb_mesh_elements();
         cell_facet_centers.reserve( 4 * nb_cells );
-        for( index_t c : range( nb_cells ) ) {
-            for( index_t f : range( region.nb_cell_facets( c ) ) ) {
+        for( index_t c : range( nb_cells ) )
+        {
+            for( index_t f : range( region.nb_cell_facets( c ) ) )
+            {
                 cell_facet_centers.push_back(
                     mesh.cell_facet_barycenter( CellLocalFacet( c, f ) ) );
             }
@@ -262,15 +276,19 @@ namespace {
      * @param[in] geomodel GeoModel to consider
      * @return Pointers to the NNSearchs of regions
      */
-    std::vector< std::unique_ptr< NNSearch3D > > compute_cell_facet_centers_region_nn_searchs(
-        const GeoModel3D& geomodel )
+    std::vector< std::unique_ptr< NNSearch3D > >
+        compute_cell_facet_centers_region_nn_searchs(
+            const GeoModel3D& geomodel )
     {
         std::vector< std::unique_ptr< NNSearch3D > > region_nn_searchs(
             geomodel.nb_regions() );
-        for( index_t r : range( geomodel.nb_regions() ) ) {
+        for( index_t r : range( geomodel.nb_regions() ) )
+        {
             std::vector< vec3 > cell_facet_centers;
-            compute_region_cell_facet_centers( geomodel, r, cell_facet_centers );
-            region_nn_searchs[r].reset( new NNSearch3D( cell_facet_centers, true ) );
+            compute_region_cell_facet_centers(
+                geomodel, r, cell_facet_centers );
+            region_nn_searchs[r].reset(
+                new NNSearch3D( cell_facet_centers, true ) );
         }
         return region_nn_searchs;
     }
@@ -285,9 +303,9 @@ namespace {
      * - The number of surface sides bounding the region.
      * - Vector of colocated cell facet centers.
      */
-    std::tuple< index_t, std::vector< index_t > > are_surface_sides_region_boundaries(
-        const Surface3D& surface,
-        const NNSearch3D& region_nn_search )
+    std::tuple< index_t, std::vector< index_t > >
+        are_surface_sides_region_boundaries(
+            const Surface3D& surface, const NNSearch3D& region_nn_search )
     {
         vec3 first_polygon_center = surface.mesh_element_barycenter( 0 );
         std::vector< index_t > colocated_cell_facet_centers;
@@ -310,8 +328,7 @@ namespace {
      * i.e. true for the '+' side (normal size) and false for the
      * '-' side (other side)
      */
-    bool determine_surface_side_to_add(
-        const GeoModel3D& geomodel,
+    bool determine_surface_side_to_add( const GeoModel3D& geomodel,
         index_t region_id,
         index_t surface_id,
         index_t cell_facet_center_id )
@@ -319,11 +336,12 @@ namespace {
         index_t local_facet_id = cell_facet_center_id % 4;
         index_t cell_id = ( cell_facet_center_id - local_facet_id ) / 4;
         vec3 cell_facet_normal =
-            geomodel.region( region_id ).low_level_mesh_storage().cell_facet_normal(
-                CellLocalFacet( cell_id, local_facet_id ) );
-        vec3 first_polygon_normal =
-            geomodel.surface( surface_id ).low_level_mesh_storage().polygon_normal(
-                0 );
+            geomodel.region( region_id )
+                .low_level_mesh_storage()
+                .cell_facet_normal( CellLocalFacet( cell_id, local_facet_id ) );
+        vec3 first_polygon_normal = geomodel.surface( surface_id )
+                                        .low_level_mesh_storage()
+                                        .polygon_normal( 0 );
         return dot( first_polygon_normal, cell_facet_normal ) > 0;
     }
 
@@ -335,8 +353,7 @@ namespace {
      * @param[in] surf_side Side of the surface bounding the region
      * @param[in] geomodel_builder Builder of the GeoModel to consider
      */
-    void fill_region_and_surface_boundaries_links(
-        index_t region_id,
+    void fill_region_and_surface_boundaries_links( index_t region_id,
         index_t surface_id,
         bool surf_side,
         GeoModelBuilderTSolid& geomodel_builder )
@@ -354,16 +371,15 @@ namespace {
      * @param[in] surface_id Index of the surface
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
-    void add_both_surface_sides_to_region_boundaries(
-        index_t region_id,
+    void add_both_surface_sides_to_region_boundaries( index_t region_id,
         index_t surface_id,
         GeoModelBuilderTSolid& geomodel_builder )
 
     {
-        fill_region_and_surface_boundaries_links( region_id, surface_id, true,
-            geomodel_builder );
-        fill_region_and_surface_boundaries_links( region_id, surface_id, false,
-            geomodel_builder );
+        fill_region_and_surface_boundaries_links(
+            region_id, surface_id, true, geomodel_builder );
+        fill_region_and_surface_boundaries_links(
+            region_id, surface_id, false, geomodel_builder );
     }
 
     /*!
@@ -377,17 +393,16 @@ namespace {
      * (i.e., cell_id * 4 + local_facet_id)
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
-    void add_one_surface_side_to_region_boundaries(
-        index_t region_id,
+    void add_one_surface_side_to_region_boundaries( index_t region_id,
         index_t surface_id,
         index_t cell_facet_center_id,
         GeoModelBuilderTSolid& geomodel_builder,
         const GeoModel3D& geomodel )
     {
-        bool side = determine_surface_side_to_add( geomodel, region_id, surface_id,
-            cell_facet_center_id );
-        fill_region_and_surface_boundaries_links( region_id, surface_id, side,
-            geomodel_builder );
+        bool side = determine_surface_side_to_add(
+            geomodel, region_id, surface_id, cell_facet_center_id );
+        fill_region_and_surface_boundaries_links(
+            region_id, surface_id, side, geomodel_builder );
     }
 
     /*!
@@ -400,24 +415,24 @@ namespace {
      * facet centers
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
-    void add_surface_sides_to_region_boundaries(
-        index_t surface_id,
+    void add_surface_sides_to_region_boundaries( index_t surface_id,
         index_t region_id,
         const std::vector< index_t >& colocated_cell_facet_centers,
         const GeoModel3D& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
-        switch( colocated_cell_facet_centers.size() ) {
-            case 1:
-                add_one_surface_side_to_region_boundaries( region_id, surface_id,
-                    colocated_cell_facet_centers[0], geomodel_builder, geomodel );
-                break;
-            case 2:
-                add_both_surface_sides_to_region_boundaries( region_id, surface_id,
-                    geomodel_builder );
-                break;
-            default:
-                ringmesh_assert_not_reached;
+        switch( colocated_cell_facet_centers.size() )
+        {
+        case 1:
+            add_one_surface_side_to_region_boundaries( region_id, surface_id,
+                colocated_cell_facet_centers[0], geomodel_builder, geomodel );
+            break;
+        case 2:
+            add_both_surface_sides_to_region_boundaries(
+                region_id, surface_id, geomodel_builder );
+            break;
+        default:
+            ringmesh_assert_not_reached;
         }
     }
 
@@ -430,8 +445,7 @@ namespace {
      * @param[in] region_nn_searchs Vector of NNSearchs of the geomodel regions
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
-    void add_surface_to_region_boundaries(
-        index_t surface_id,
+    void add_surface_to_region_boundaries( index_t surface_id,
         const std::vector< std::unique_ptr< NNSearch3D > >& region_nn_searchs,
         const GeoModel3D& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
@@ -439,20 +453,25 @@ namespace {
         index_t cur_region = 0;
         index_t nb_added_surf_sides = 0;
         // Maximum 2 regions could be bounded by a single surface
-        while( cur_region < geomodel.nb_regions() && nb_added_surf_sides < 2 ) {
+        while( cur_region < geomodel.nb_regions() && nb_added_surf_sides < 2 )
+        {
             index_t nb_surf_sides_are_boundary = NO_ID;
             std::vector< index_t > colocated_cell_facet_centers;
-            std::tie( nb_surf_sides_are_boundary, colocated_cell_facet_centers ) =
-                are_surface_sides_region_boundaries( geomodel.surface( surface_id ),
+            std::tie(
+                nb_surf_sides_are_boundary, colocated_cell_facet_centers ) =
+                are_surface_sides_region_boundaries(
+                    geomodel.surface( surface_id ),
                     *region_nn_searchs[cur_region] );
-            if( nb_surf_sides_are_boundary > 0 ) {
+            if( nb_surf_sides_are_boundary > 0 )
+            {
                 add_surface_sides_to_region_boundaries( surface_id, cur_region,
                     colocated_cell_facet_centers, geomodel, geomodel_builder );
                 nb_added_surf_sides += nb_surf_sides_are_boundary;
             }
             ++cur_region;
         }
-        if( nb_added_surf_sides == 0 ) {
+        if( nb_added_surf_sides == 0 )
+        {
             ringmesh_assert_not_reached;
         }
     }
@@ -462,14 +481,14 @@ namespace {
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void compute_boundaries_of_geomodel_regions(
-        GeoModelBuilderTSolid& geomodel_builder,
-        const GeoModel3D& geomodel )
+        GeoModelBuilderTSolid& geomodel_builder, const GeoModel3D& geomodel )
     {
         std::vector< std::unique_ptr< NNSearch3D > > reg_nn_searchs =
             compute_cell_facet_centers_region_nn_searchs( geomodel );
-        for( const auto& surface : geomodel.surfaces() ) {
-            add_surface_to_region_boundaries( surface.index(), reg_nn_searchs,
-                geomodel, geomodel_builder );
+        for( const auto& surface : geomodel.surfaces() )
+        {
+            add_surface_to_region_boundaries(
+                surface.index(), reg_nn_searchs, geomodel, geomodel_builder );
         }
     }
 
@@ -486,10 +505,14 @@ namespace {
         index_t nb_surfaces,
         GeoModelBuilderTSolid& geomodel_builder )
     {
-        for( index_t s : range( nb_surfaces ) ) {
-            if( surface_sides[2 * s] && !surface_sides[2 * s + 1] ) {
+        for( index_t s : range( nb_surfaces ) )
+        {
+            if( surface_sides[2 * s] && !surface_sides[2 * s + 1] )
+            {
                 geomodel_builder.topology.add_universe_boundary( s, false );
-            } else if( !surface_sides[2 * s] && surface_sides[2 * s + 1] ) {
+            }
+            else if( !surface_sides[2 * s] && surface_sides[2 * s + 1] )
+            {
                 geomodel_builder.topology.add_universe_boundary( s, true );
             }
         }
@@ -508,13 +531,20 @@ namespace {
         const GeoModel3D& geomodel )
     {
         std::vector< bool > surface_sides( 2 * geomodel.nb_surfaces(), false );
-        for( const auto& region : geomodel.regions() ) {
-            for( index_t s : range( region.nb_boundaries() ) ) {
-                if( region.side( s ) ) {
+        for( const auto& region : geomodel.regions() )
+        {
+            for( index_t s : range( region.nb_boundaries() ) )
+            {
+                if( region.side( s ) )
+                {
                     surface_sides[2 * region.boundary( s ).index() + 1] = true;
-                } else if( !region.side( s ) ) {
+                }
+                else if( !region.side( s ) )
+                {
                     surface_sides[2 * region.boundary( s ).index()] = true;
-                } else {
+                }
+                else
+                {
                     ringmesh_assert_not_reached;
                 }
             }
@@ -529,15 +559,14 @@ namespace {
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void compute_universe_boundaries(
-        const GeoModel3D& geomodel,
-        GeoModelBuilderTSolid& geomodel_builder )
+        const GeoModel3D& geomodel, GeoModelBuilderTSolid& geomodel_builder )
     {
         // The universe boundaries are the surfaces with only one side in all
         // the boundaries of the other regions
-        std::vector< bool > surface_sides = determine_if_surface_sides_bound_regions(
-            geomodel );
-        add_surfaces_to_universe_boundaries( surface_sides, geomodel.nb_surfaces(),
-            geomodel_builder );
+        std::vector< bool > surface_sides =
+            determine_if_surface_sides_bound_regions( geomodel );
+        add_surfaces_to_universe_boundaries(
+            surface_sides, geomodel.nb_surfaces(), geomodel_builder );
     }
 
     /*! @}
@@ -556,8 +585,7 @@ namespace {
      * @param[in] surface_boxes Bounding Box of surfaces
      * @return True is the edge is found in at least another surface
      */
-    bool is_edge_in_several_surfaces(
-        const GeoModel3D& geomodel,
+    bool is_edge_in_several_surfaces( const GeoModel3D& geomodel,
         index_t surface_id,
         index_t polygon,
         index_t edge,
@@ -566,14 +594,16 @@ namespace {
     {
         const Surface3D& surface = geomodel.surface( surface_id );
         const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
-        const vec3 barycenter = mesh.polygon_edge_barycenter(
-            PolygonLocalEdge( polygon, edge ) );
+        const vec3 barycenter =
+            mesh.polygon_edge_barycenter( PolygonLocalEdge( polygon, edge ) );
         std::vector< index_t > result;
         index_t tested_surf = 0;
-        while( result.empty() && tested_surf < surface_nns.size() ) {
-            if( surface_boxes[tested_surf].contains( barycenter ) ) {
-                result = surface_nns[tested_surf]->get_neighbors( barycenter,
-                    geomodel.epsilon() );
+        while( result.empty() && tested_surf < surface_nns.size() )
+        {
+            if( surface_boxes[tested_surf].contains( barycenter ) )
+            {
+                result = surface_nns[tested_surf]->get_neighbors(
+                    barycenter, geomodel.epsilon() );
             }
             ++tested_surf;
         }
@@ -588,17 +618,20 @@ namespace {
      * edge barycenters of the surface
      */
     std::vector< vec3 > get_surface_border_edge_barycenters(
-        const GeoModel3D& geomodel,
-        index_t surface_id )
+        const GeoModel3D& geomodel, index_t surface_id )
     {
         std::vector< vec3 > border_edge_barycenters;
         const Surface3D& surface = geomodel.surface( surface_id );
         const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
-        for( index_t p : range( surface.nb_mesh_elements() ) ) {
-            for( index_t e : range( surface.nb_mesh_element_vertices( p ) ) ) {
-                if( mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) ) {
+        for( index_t p : range( surface.nb_mesh_elements() ) )
+        {
+            for( index_t e : range( surface.nb_mesh_element_vertices( p ) ) )
+            {
+                if( mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) )
+                {
                     border_edge_barycenters.push_back(
-                        mesh.polygon_edge_barycenter( PolygonLocalEdge( p, e ) ) );
+                        mesh.polygon_edge_barycenter(
+                            PolygonLocalEdge( p, e ) ) );
                 }
             }
         }
@@ -606,17 +639,17 @@ namespace {
     }
 
     void assign_mesh_surface(
-        GeoModelBuilderGocad& builder,
-        MLLoadingStorage& load_storage )
+        GeoModelBuilderGocad& builder, MLLoadingStorage& load_storage )
     {
         std::vector< vec3 > vertices(
             load_storage.vertices_.begin() + load_storage.tface_vertex_ptr_,
             load_storage.vertices_.end() );
-        for( index_t& id : load_storage.cur_surf_polygon_corners_gocad_id_ ) {
+        for( index_t& id : load_storage.cur_surf_polygon_corners_gocad_id_ )
+        {
             id -= load_storage.tface_vertex_ptr_;
         }
-        builder.geometry.set_surface_geometry( load_storage.cur_surface_, vertices,
-            load_storage.cur_surf_polygon_corners_gocad_id_,
+        builder.geometry.set_surface_geometry( load_storage.cur_surface_,
+            vertices, load_storage.cur_surf_polygon_corners_gocad_id_,
             load_storage.cur_surf_polygon_ptr_ );
         load_storage.cur_surf_polygon_corners_gocad_id_.clear();
         load_storage.cur_surf_polygon_ptr_.clear();
@@ -627,60 +660,79 @@ namespace {
     // Indices begin to 1 in Gocad
     index_t GOCAD_OFFSET = 1;
 
-    class LoadZSign final : public GocadLineParser {
+    class LoadZSign final : public GocadLineParser
+    {
     public:
         LoadZSign( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
             : GocadLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, GocadLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, GocadLoadingStorage& load_storage ) final
         {
-            if( line.field_matches( 1, "Elevation" ) ) {
+            if( line.field_matches( 1, "Elevation" ) )
+            {
                 load_storage.z_sign_ = 1;
-            } else if( line.field_matches( 1, "Depth" ) ) {
+            }
+            else if( line.field_matches( 1, "Depth" ) )
+            {
                 load_storage.z_sign_ = -1;
-            } else {
+            }
+            else
+            {
                 ringmesh_assert_not_reached;
             }
         }
     };
 
-    class LoadTSurf final : public MLLineParser {
+    class LoadTSurf final : public MLLineParser
+    {
     public:
         LoadTSurf( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             ringmesh_unused( load_storage );
             std::string interface_name = read_name_with_spaces( 1, line );
             // Create an interface and set its name
             gmge_id interface_id = builder_.geology.create_geological_entity(
                 Interface3D::type_name_static() );
-            builder_.info.set_geological_entity_name( interface_id, interface_name );
+            builder_.info.set_geological_entity_name(
+                interface_id, interface_name );
         }
     };
 
-    class LoadMLSurface final : public MLLineParser {
+    class LoadMLSurface final : public MLLineParser
+    {
     public:
         LoadMLSurface( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
-            if( !load_storage.is_header_read_ ) {
+            if( !load_storage.is_header_read_ )
+            {
                 /// Create Surface from the name of its parent Interface
                 /// and its geological feature
                 std::string geol = line.field( 2 );
                 std::string interface_name = read_name_with_spaces( 3, line );
                 create_surface( interface_name, geol );
-            } else {
-                if( !load_storage.vertices_.empty() ) {
+            }
+            else
+            {
+                if( !load_storage.vertices_.empty() )
+                {
                     assign_mesh_surface( builder_, load_storage );
                     index_t nb_vertices =
                         static_cast< index_t >( load_storage.vertices_.size() );
@@ -690,71 +742,87 @@ namespace {
         }
 
         void create_surface(
-            const std::string& interface_name,
-            const std::string& type )
+            const std::string& interface_name, const std::string& type )
         {
             gmge_id parent = find_interface( geomodel_, interface_name );
-            if( interface_name != "" ) {
+            if( interface_name != "" )
+            {
                 ringmesh_assert( parent.is_defined() );
             }
 
-            gmme_id children = builder_.topology.create_mesh_entity< Surface >();
+            gmme_id children =
+                builder_.topology.create_mesh_entity< Surface >();
             builder_.geology.add_parent_children_relation( parent, children );
             builder_.geology.set_geological_entity_geol_feature( parent,
                 GeoModelGeologicalEntity3D::determine_geological_type( type ) );
         }
     };
 
-    class LoadLayer final : public MLLineParser {
+    class LoadLayer final : public MLLineParser
+    {
     public:
         LoadLayer( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             ringmesh_unused( load_storage );
             /// Build the volumetric layers from their name and
             /// the ids of the regions they contain
             gmge_id layer_id = builder_.geology.create_geological_entity(
                 Layer3D::type_name_static() );
-            builder_.info.set_geological_entity_name( layer_id, line.field( 1 ) );
+            builder_.info.set_geological_entity_name(
+                layer_id, line.field( 1 ) );
             bool end_layer = false;
-            while( !end_layer ) {
+            while( !end_layer )
+            {
                 line.get_line();
                 line.get_fields();
-                for( index_t i : range( 5 ) ) {
+                for( index_t i : range( 5 ) )
+                {
                     index_t region_id = line.field_as_uint( i );
-                    if( region_id == 0 ) {
+                    if( region_id == 0 )
+                    {
                         end_layer = true;
                         break;
-                    } else {
+                    }
+                    else
+                    {
                         // Remove Universe region
                         region_id -= geomodel_.nb_surfaces() + 1;
                         // Correction because ids begin at 1 in the file
-                        builder_.geology.add_parent_children_relation( layer_id,
-                            gmme_id( Region3D::type_name_static(),
-                                region_id - GOCAD_OFFSET ) );
+                        builder_.geology.add_parent_children_relation(
+                            layer_id, gmme_id( Region3D::type_name_static(),
+                                          region_id - GOCAD_OFFSET ) );
                     }
                 }
             }
         }
     };
 
-    class MLEndSection final : public MLLineParser {
+    class MLEndSection final : public MLLineParser
+    {
     public:
         MLEndSection( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             ringmesh_unused( line );
-            if( !load_storage.is_header_read_ ) {
+            if( !load_storage.is_header_read_ )
+            {
                 load_storage.is_header_read_ = true;
-            } else {
+            }
+            else
+            {
                 assign_mesh_surface( builder_, load_storage );
                 load_storage.vertices_.clear();
                 load_storage.tface_vertex_ptr_ = 0;
@@ -762,34 +830,42 @@ namespace {
         }
     };
 
-    class LoadCorner final : public MLLineParser {
+    class LoadCorner final : public MLLineParser
+    {
     public:
         LoadCorner( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             index_t v_id = line.field_as_uint( 1 ) - GOCAD_OFFSET;
-            if( !find_corner( geomodel_, load_storage.vertices_[v_id] ).is_defined() ) {
+            if( !find_corner( geomodel_, load_storage.vertices_[v_id] )
+                     .is_defined() )
+            {
                 // Create the corner
                 gmme_id corner_gme =
                     builder_.topology.create_mesh_entity< Corner >();
-                builder_.geometry.set_corner( corner_gme.index(),
-                    load_storage.vertices_[v_id] );
+                builder_.geometry.set_corner(
+                    corner_gme.index(), load_storage.vertices_[v_id] );
             }
         }
     };
 
-    class LoadMLRegion final : public MLLineParser {
+    class LoadMLRegion final : public MLLineParser
+    {
     public:
         LoadMLRegion( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             ringmesh_unused( load_storage );
             /// Read Region information and create them from their name,
@@ -801,18 +877,27 @@ namespace {
 
             // Create the entity if it is not the universe
             // Set the region name and boundaries
-            if( name != Universe3D::universe_type_name().string() ) {
-                gmme_id region_id = builder_.topology.create_mesh_entity< Region >();
+            if( name != Universe3D::universe_type_name().string() )
+            {
+                gmme_id region_id =
+                    builder_.topology.create_mesh_entity< Region >();
                 builder_.info.set_mesh_entity_name( region_id, name );
-                for( const std::pair< index_t, bool >& info : region_boundaries ) {
-                    gmme_id surface_id( Surface3D::type_name_static(), info.first );
-                    builder_.topology.add_mesh_entity_boundary_relation( region_id,
-                        surface_id, info.second );
+                for( const std::pair< index_t, bool >& info :
+                    region_boundaries )
+                {
+                    gmme_id surface_id(
+                        Surface3D::type_name_static(), info.first );
+                    builder_.topology.add_mesh_entity_boundary_relation(
+                        region_id, surface_id, info.second );
                 }
-            } else {
-                for( const std::pair< index_t, bool >& info : region_boundaries ) {
-                    builder_.topology.add_universe_boundary( info.first,
-                        info.second );
+            }
+            else
+            {
+                for( const std::pair< index_t, bool >& info :
+                    region_boundaries )
+                {
+                    builder_.topology.add_universe_boundary(
+                        info.first, info.second );
                 }
             }
         }
@@ -822,18 +907,21 @@ namespace {
         {
             std::vector< std::pair< index_t, bool > > region_boundaries;
             bool end_region = false;
-            while( !end_region ) {
+            while( !end_region )
+            {
                 line.get_line();
                 line.get_fields();
-                for( index_t i : range( 5 ) ) {
+                for( index_t i : range( 5 ) )
+                {
                     signed_index_t signed_id = line.field_as_int( i );
-                    if( signed_id == 0 ) {
+                    if( signed_id == 0 )
+                    {
                         end_region = true;
                         break;
                     }
                     bool side = signed_id > 0;
                     index_t id = static_cast< index_t >( std::abs( signed_id ) )
-                        - GOCAD_OFFSET;
+                                 - GOCAD_OFFSET;
                     region_boundaries.push_back(
                         std::pair< index_t, bool >( id, side ) );
                 }
@@ -842,65 +930,77 @@ namespace {
         }
     };
 
-    class LoadRegion final: public TSolidLineParser {
+    class LoadRegion final : public TSolidLineParser
+    {
     public:
         LoadRegion( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
-            if( !load_storage.vertices_.empty() ) {
+            if( !load_storage.vertices_.empty() )
+            {
                 builder_.geometry.set_region_geometry( load_storage.cur_region_,
                     load_storage.vertices_, load_storage.tetra_corners_ );
             }
-            load_storage.cur_region_ = initialize_region( line.field( 1 ),
-                builder_ );
+            load_storage.cur_region_ =
+                initialize_region( line.field( 1 ), builder_ );
             load_storage.vertices_.clear();
             load_storage.tetra_corners_.clear();
         }
 
         /*!
-         * @brief Creates an empty entity of type GeoModelEntity::REGION and sets
+         * @brief Creates an empty entity of type GeoModelEntity::REGION and
+         * sets
          * its name from .so file
          * @param[in] region_name Name of the new region
          * @param[in] geomodel_builder Builder of the geomodel
          * @return The index of the initialized region
          */
-        index_t initialize_region(
-            const std::string& region_name,
+        index_t initialize_region( const std::string& region_name,
             GeoModelBuilderGocad& geomodel_builder )
         {
             gmme_id cur_region =
                 geomodel_builder.topology.create_mesh_entity< Region >();
-            geomodel_builder.info.set_mesh_entity_name( cur_region, region_name );
+            geomodel_builder.info.set_mesh_entity_name(
+                cur_region, region_name );
             return cur_region.index();
         }
     };
 
-    class LoadVertex final : public GocadLineParser {
+    class LoadVertex final : public GocadLineParser
+    {
     public:
         LoadVertex( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
             : GocadLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, GocadLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, GocadLoadingStorage& load_storage ) final
         {
-            vec3 vertex = read_vertex_coordinates( line, 2, load_storage.z_sign_ );
+            vec3 vertex =
+                read_vertex_coordinates( line, 2, load_storage.z_sign_ );
             load_storage.vertices_.push_back( vertex );
         }
     };
 
-    class LoadMLAtom final : public MLLineParser {
+    class LoadMLAtom final : public MLLineParser
+    {
     public:
         LoadMLAtom( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
             : MLLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, MLLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             index_t vertex_id = line.field_as_uint( 2 ) - GOCAD_OFFSET;
             const vec3& vertex = load_storage.vertices_[vertex_id];
@@ -908,32 +1008,39 @@ namespace {
         }
     };
 
-    class LoadTSolidVertex final: public TSolidLineParser {
+    class LoadTSolidVertex final : public TSolidLineParser
+    {
     public:
-        LoadTSolidVertex( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
+        LoadTSolidVertex(
+            GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             index_t vertex_id =
                 static_cast< index_t >( load_storage.vertices_.size() );
-            load_storage.vertex_map_.add_vertex( vertex_id,
-                load_storage.cur_region_ );
-            GocadLineFactory::create( "VRTX", builder_, geomodel_ )->execute( line,
-                load_storage );
+            load_storage.vertex_map_.add_vertex(
+                vertex_id, load_storage.cur_region_ );
+            GocadLineFactory::create( "VRTX", builder_, geomodel_ )
+                ->execute( line, load_storage );
         }
     };
 
-    class LoadTSAtomic final : public TSolidLineParser {
+    class LoadTSAtomic final : public TSolidLineParser
+    {
     public:
         LoadTSAtomic( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             read_and_add_atom_to_region_vertices( geomodel_, line,
                 load_storage.cur_region_, load_storage.vertices_,
@@ -949,47 +1056,55 @@ namespace {
          * vertices of the region
          * @param[in] vertex_map Map between Gocad and GeoModel vertex indices
          */
-        void read_and_add_atom_to_region_vertices(
-            const GeoModel3D& geomodel,
+        void read_and_add_atom_to_region_vertices( const GeoModel3D& geomodel,
             GEO::LineInput& line,
             index_t region_id,
             std::vector< vec3 >& region_vertices,
             VertexMap& vertex_map )
         {
-            const index_t referring_vertex = line.field_as_uint( 2 ) - GOCAD_OFFSET;
-            const index_t referred_vertex_local_id = vertex_map.local_id(
-                referring_vertex );
-            const index_t referred_vertex_region_id = vertex_map.region(
-                referring_vertex );
-            if( referred_vertex_region_id < region_id ) {
+            const index_t referring_vertex =
+                line.field_as_uint( 2 ) - GOCAD_OFFSET;
+            const index_t referred_vertex_local_id =
+                vertex_map.local_id( referring_vertex );
+            const index_t referred_vertex_region_id =
+                vertex_map.region( referring_vertex );
+            if( referred_vertex_region_id < region_id )
+            {
                 // If the atom referred to a vertex of another region,
                 // acting like for a vertex
-                index_t index = static_cast< index_t >( region_vertices.size() );
+                index_t index =
+                    static_cast< index_t >( region_vertices.size() );
                 vertex_map.add_vertex( index, region_id );
                 region_vertices.push_back(
-                    geomodel.region( referred_vertex_region_id ).vertex(
-                        referred_vertex_local_id ) );
-            } else {
+                    geomodel.region( referred_vertex_region_id )
+                        .vertex( referred_vertex_local_id ) );
+            }
+            else
+            {
                 // If the atom referred to an atom of the same region
-                vertex_map.add_vertex( referred_vertex_local_id,
-                    referred_vertex_region_id );
+                vertex_map.add_vertex(
+                    referred_vertex_local_id, referred_vertex_region_id );
             }
         }
     };
 
-    class LoadTetra final : public TSolidLineParser {
+    class LoadTetra final : public TSolidLineParser
+    {
     public:
         LoadTetra( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
-            std::vector< index_t > corners = read_tetraedra( line,
-                load_storage.vertex_map_ );
-            load_storage.tetra_corners_.insert( load_storage.tetra_corners_.end(),
-                corners.begin(), corners.end() );
+            std::vector< index_t > corners =
+                read_tetraedra( line, load_storage.vertex_map_ );
+            load_storage.tetra_corners_.insert(
+                load_storage.tetra_corners_.end(), corners.begin(),
+                corners.end() );
         }
 
         /*!
@@ -997,56 +1112,67 @@ namespace {
          * @details Reads gocad indices (from .so file) and transforms
          * them to vertex local (region) indices
          * @param[in] in ACSII file reader
-         * @param[out] gocad_vertices2region_vertices Vector which maps the indices
-         * of vertices from Gocad .so file to the local (in region) indices of vertices
+         * @param[out] gocad_vertices2region_vertices Vector which maps the
+         * indices
+         * of vertices from Gocad .so file to the local (in region) indices of
+         * vertices
          * @return Indices of the four vertices
          */
         std::vector< index_t > read_tetraedra(
-            GEO::LineInput& in,
-            const VertexMap& vertex_map )
+            GEO::LineInput& in, const VertexMap& vertex_map )
         {
             std::vector< index_t > corners_id( 4 );
             ringmesh_assert( corners_id.size() == 4 );
-            corners_id[0] = vertex_map.local_id(
-                in.field_as_uint( 1 ) - GOCAD_OFFSET );
-            corners_id[1] = vertex_map.local_id(
-                in.field_as_uint( 2 ) - GOCAD_OFFSET );
-            corners_id[2] = vertex_map.local_id(
-                in.field_as_uint( 3 ) - GOCAD_OFFSET );
-            corners_id[3] = vertex_map.local_id(
-                in.field_as_uint( 4 ) - GOCAD_OFFSET );
+            corners_id[0] =
+                vertex_map.local_id( in.field_as_uint( 1 ) - GOCAD_OFFSET );
+            corners_id[1] =
+                vertex_map.local_id( in.field_as_uint( 2 ) - GOCAD_OFFSET );
+            corners_id[2] =
+                vertex_map.local_id( in.field_as_uint( 3 ) - GOCAD_OFFSET );
+            corners_id[3] =
+                vertex_map.local_id( in.field_as_uint( 4 ) - GOCAD_OFFSET );
             return corners_id;
         }
     };
 
-    class LoadName final : public GocadLineParser {
+    class LoadName final : public GocadLineParser
+    {
     public:
         LoadName( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
             : GocadLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, GocadLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, GocadLoadingStorage& load_storage ) final
         {
             ringmesh_unused( load_storage );
             // Set to the GeoModel name if empty
-            if( geomodel_.name().empty() ) {
-                builder_.info.set_geomodel_name( read_name_with_spaces( 1, line ) );
+            if( geomodel_.name().empty() )
+            {
+                builder_.info.set_geomodel_name(
+                    read_name_with_spaces( 1, line ) );
             }
         }
     };
 
-    class LoadLastRegion final : public TSolidLineParser {
+    class LoadLastRegion final : public TSolidLineParser
+    {
     public:
-        LoadLastRegion( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
+        LoadLastRegion(
+            GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             ringmesh_unused( line );
-            if( !load_storage.vertices_.empty() ) {
+            if( !load_storage.vertices_.empty() )
+            {
                 builder_.geometry.set_region_geometry( load_storage.cur_region_,
                     load_storage.vertices_, load_storage.tetra_corners_ );
                 load_storage.vertices_.clear();
@@ -1055,73 +1181,92 @@ namespace {
         }
     };
 
-    class LoadInterface final : public TSolidLineParser {
+    class LoadInterface final : public TSolidLineParser
+    {
     public:
         LoadInterface( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
-            gmge_id created_interface = builder_.geology.create_geological_entity(
-                Interface3D::type_name_static() );
+            gmge_id created_interface =
+                builder_.geology.create_geological_entity(
+                    Interface3D::type_name_static() );
             load_storage.cur_interface_ = created_interface.index();
-            builder_.info.set_geological_entity_name( created_interface,
-                line.field( 1 ) );
+            builder_.info.set_geological_entity_name(
+                created_interface, line.field( 1 ) );
         }
     };
 
-    class LoadSurface final : public TSolidLineParser {
+    class LoadSurface final : public TSolidLineParser
+    {
     public:
         LoadSurface( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             ringmesh_unused( line );
             // Compute the surface
-            if( !load_storage.cur_surf_polygon_corners_gocad_id_.empty() ) {
+            if( !load_storage.cur_surf_polygon_corners_gocad_id_.empty() )
+            {
                 build_surface( builder_, geomodel_, load_storage );
             }
             // Create a new surface
-            gmme_id new_surface = builder_.topology.create_mesh_entity< Surface >();
+            gmme_id new_surface =
+                builder_.topology.create_mesh_entity< Surface >();
             load_storage.cur_surface_ = new_surface.index();
             builder_.geology.add_parent_children_relation(
                 gmge_id( Interface3D::type_name_static(),
-                    load_storage.cur_interface_ ), new_surface );
+                    load_storage.cur_interface_ ),
+                new_surface );
         }
     };
 
-    class LoadLastSurface final : public TSolidLineParser {
+    class LoadLastSurface final : public TSolidLineParser
+    {
     public:
-        LoadLastSurface( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
+        LoadLastSurface(
+            GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
             : TSolidLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             ringmesh_unused( line );
             // Compute the last surface
-            if( !load_storage.cur_surf_polygon_corners_gocad_id_.empty() ) {
+            if( !load_storage.cur_surf_polygon_corners_gocad_id_.empty() )
+            {
                 build_surface( builder_, geomodel_, load_storage );
             }
         }
     };
 
-    class LoadTriangle final : public GocadLineParser {
+    class LoadTriangle final : public GocadLineParser
+    {
     public:
         LoadTriangle( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
             : GocadLineParser( gm_builder, geomodel )
         {
         }
+
     private:
-        void execute( GEO::LineInput& line, GocadLoadingStorage& load_storage ) final
+        void execute(
+            GEO::LineInput& line, GocadLoadingStorage& load_storage ) final
         {
-            read_triangle( line, load_storage.cur_surf_polygon_corners_gocad_id_ );
+            read_triangle(
+                line, load_storage.cur_surf_polygon_corners_gocad_id_ );
             load_storage.end_polygon();
         }
 
@@ -1134,8 +1279,7 @@ namespace {
          * to build polygons
          */
         void read_triangle(
-            GEO::LineInput& in,
-            std::vector< index_t >& cur_surf_polygons )
+            GEO::LineInput& in, std::vector< index_t >& cur_surf_polygons )
         {
             cur_surf_polygons.push_back( in.field_as_uint( 1 ) - GOCAD_OFFSET );
             cur_surf_polygons.push_back( in.field_as_uint( 2 ) - GOCAD_OFFSET );
@@ -1169,28 +1313,35 @@ namespace {
     }
 }
 
-namespace RINGMesh {
-
-    Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > ml_factory;
-    Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&, GeoModel3D& > tsolid_factory;
+namespace RINGMesh
+{
+    Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& >
+        ml_factory;
+    Factory< std::string,
+        TSolidLineParser,
+        GeoModelBuilderTSolid&,
+        GeoModel3D& >
+        tsolid_factory;
 
     TSolidLineParser::TSolidLineParser(
-        GeoModelBuilderTSolid& gm_builder,
-        GeoModel3D& geomodel )
+        GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
         : GocadBaseParser( gm_builder, geomodel )
     {
     }
 
-    MLLineParser::MLLineParser( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
+    MLLineParser::MLLineParser(
+        GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
         : GocadBaseParser( gm_builder, geomodel )
     {
     }
 
     void GeoModelBuilderGocad::read_file()
     {
-        while( !file_line_.eof() && file_line_.get_line() ) {
+        while( !file_line_.eof() && file_line_.get_line() )
+        {
             file_line_.get_fields();
-            if( file_line_.nb_fields() > 0 ) {
+            if( file_line_.nb_fields() > 0 )
+            {
                 read_line();
             }
         }
@@ -1224,12 +1375,16 @@ namespace RINGMesh {
         std::string keyword = file_line_.field( 0 );
         std::unique_ptr< TSolidLineParser > tsolid_parser =
             TSolidLineFactory::create( keyword, *this, geomodel_ );
-        if( tsolid_parser ) {
+        if( tsolid_parser )
+        {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ );
-        } else {
+        }
+        else
+        {
             std::unique_ptr< GocadLineParser > gocad_parser =
                 GocadLineFactory::create( keyword, *this, geomodel_ );
-            if( gocad_parser ) {
+            if( gocad_parser )
+            {
                 gocad_parser->execute( file_line_, tsolid_load_storage_ );
             }
         }
@@ -1243,37 +1398,46 @@ namespace RINGMesh {
         const Surface3D& surface = geomodel_.surface( surface_id );
         const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
 
-        for( index_t p : range( surface.nb_mesh_elements() ) ) {
+        for( index_t p : range( surface.nb_mesh_elements() ) )
+        {
             std::vector< index_t > adjacent_polygons_id( 3 );
-            for( index_t e : range( 3 ) ) {
-                adjacent_polygons_id[e] = surface.polygon_adjacent_index(
-                    PolygonLocalEdge( p, e ) );
-                if( !mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) ) {
-                    bool internal_border = is_edge_in_several_surfaces( geomodel_,
-                        surface_id, p, e, surface_nns, surface_boxes );
-                    if( internal_border ) {
+            for( index_t e : range( 3 ) )
+            {
+                adjacent_polygons_id[e] =
+                    surface.polygon_adjacent_index( PolygonLocalEdge( p, e ) );
+                if( !mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) )
+                {
+                    bool internal_border =
+                        is_edge_in_several_surfaces( geomodel_, surface_id, p,
+                            e, surface_nns, surface_boxes );
+                    if( internal_border )
+                    {
                         adjacent_polygons_id[e] = NO_ID;
                     }
                 }
             }
-            geometry.set_surface_element_adjacency( surface_id, p,
-                adjacent_polygons_id );
+            geometry.set_surface_element_adjacency(
+                surface_id, p, adjacent_polygons_id );
         }
     }
 
-    void GeoModelBuilderTSolid::compute_polygon_edge_centers_nn_and_surface_boxes(
-        std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
-        std::vector< Box3D >& surface_boxes ) const
+    void GeoModelBuilderTSolid::
+        compute_polygon_edge_centers_nn_and_surface_boxes(
+            std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
+            std::vector< Box3D >& surface_boxes ) const
     {
         surface_nns.resize( geomodel_.nb_surfaces() );
         surface_boxes.resize( geomodel_.nb_surfaces() );
 
-        for( const auto& surface : geomodel_.surfaces() ) {
-            for( index_t v : range( surface.nb_vertices() ) ) {
+        for( const auto& surface : geomodel_.surfaces() )
+        {
+            for( index_t v : range( surface.nb_vertices() ) )
+            {
                 surface_boxes[surface.index()].add_point( surface.vertex( v ) );
             }
             std::vector< vec3 > border_edge_barycenters =
-                get_surface_border_edge_barycenters( geomodel_, surface.index() );
+                get_surface_border_edge_barycenters(
+                    geomodel_, surface.index() );
             surface_nns[surface.index()].reset(
                 new NNSearch3D( border_edge_barycenters, true ) );
         }
@@ -1284,8 +1448,10 @@ namespace RINGMesh {
         std::vector< std::unique_ptr< NNSearch3D > > nn_searchs;
         std::vector< Box3D > boxes;
         compute_polygon_edge_centers_nn_and_surface_boxes( nn_searchs, boxes );
-        for( const auto& surface : geomodel_.surfaces() ) {
-            compute_surface_internal_borders( surface.index(), nn_searchs, boxes );
+        for( const auto& surface : geomodel_.surfaces() )
+        {
+            compute_surface_internal_borders(
+                surface.index(), nn_searchs, boxes );
         }
     }
 
@@ -1309,12 +1475,16 @@ namespace RINGMesh {
         std::string keyword = file_line_.field( 0 );
         std::unique_ptr< MLLineParser > tsolid_parser(
             MLLineFactory::create( keyword, *this, geomodel_ ) );
-        if( tsolid_parser ) {
+        if( tsolid_parser )
+        {
             tsolid_parser->execute( file_line_, ml_load_storage_ );
-        } else {
+        }
+        else
+        {
             std::unique_ptr< GocadLineParser > gocad_parser =
                 GocadLineFactory::create( keyword, *this, geomodel_ );
-            if( gocad_parser ) {
+            if( gocad_parser )
+            {
                 gocad_parser->execute( file_line_, ml_load_storage_ );
             }
         }

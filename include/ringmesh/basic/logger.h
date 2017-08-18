@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -46,9 +48,10 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh {
-
-    class RINGMESH_API Logger {
+namespace RINGMesh
+{
+    class RINGMESH_API Logger
+    {
     public:
         static void div( const std::string& title )
         {
@@ -56,22 +59,22 @@ namespace RINGMesh {
             GEO::Logger::div( title );
         }
 
-        template< typename ...Args >
-        static void out( const std::string& feature, const Args& ... args )
+        template < typename... Args >
+        static void out( const std::string& feature, const Args&... args )
         {
             std::lock_guard< std::mutex > lock( lock_ );
             log( GEO::Logger::out( feature ), args... );
         }
 
-        template< typename ...Args >
-        static void err( const std::string& feature, const Args& ... args )
+        template < typename... Args >
+        static void err( const std::string& feature, const Args&... args )
         {
             std::lock_guard< std::mutex > lock( lock_ );
             log( GEO::Logger::err( feature ), args... );
         }
 
-        template< typename ...Args >
-        static void warn( const std::string& feature, const Args& ... args )
+        template < typename... Args >
+        static void warn( const std::string& feature, const Args&... args )
         {
             std::lock_guard< std::mutex > lock( lock_ );
             log( GEO::Logger::warn( feature ), args... );
@@ -88,8 +91,8 @@ namespace RINGMesh {
             os << std::endl;
         }
 
-        template< class A0, class ...Args >
-        static void log( std::ostream& os, const A0& a0, const Args& ...args )
+        template < class A0, class... Args >
+        static void log( std::ostream& os, const A0& a0, const Args&... args )
         {
             os << a0;
             log( os, args... );
@@ -98,5 +101,4 @@ namespace RINGMesh {
     private:
         static std::mutex lock_;
     };
-
 }

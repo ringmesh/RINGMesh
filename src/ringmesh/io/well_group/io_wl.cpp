@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -33,14 +35,16 @@
  *     FRANCE
  */
 
-namespace {
-
-    class WLIOHandler final: public WellGroupIOHandler {
+namespace
+{
+    class WLIOHandler final : public WellGroupIOHandler
+    {
     public:
         void load( const std::string& filename, WellGroup3D& wells ) final
         {
             GEO::LineInput in( filename );
-            if( !in.OK() ) {
+            if( !in.OK() )
+            {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
@@ -52,33 +56,46 @@ namespace {
             double z_sign = 1.0;
             vec3 vertex_ref;
 
-            while( !in.eof() ) {
+            while( !in.eof() )
+            {
                 in.get_line();
                 in.get_fields();
-                if( in.nb_fields() == 0 ) continue;
-                if( in.field_matches( 0, "name:" ) ) {
+                if( in.nb_fields() == 0 )
+                    continue;
+                if( in.field_matches( 0, "name:" ) )
+                {
                     name = in.field( 1 );
-                } else if( in.field_matches( 0, "ZPOSITIVE" ) ) {
-                    if( in.field_matches( 1, "Depth" ) ) {
+                }
+                else if( in.field_matches( 0, "ZPOSITIVE" ) )
+                {
+                    if( in.field_matches( 1, "Depth" ) )
+                    {
                         z_sign = -1.0;
                     }
-                } else if( in.field_matches( 0, "WREF" ) ) {
+                }
+                else if( in.field_matches( 0, "WREF" ) )
+                {
                     vertex_ref[0] = in.field_as_double( 1 );
                     vertex_ref[1] = in.field_as_double( 2 );
                     vertex_ref[2] = z_sign * in.field_as_double( 3 );
                     builder->create_vertex( vertex_ref );
-                } else if( in.field_matches( 0, "PATH" ) ) {
-                    if( in.field_as_double( 1 ) == 0. ) continue;
+                }
+                else if( in.field_matches( 0, "PATH" ) )
+                {
+                    if( in.field_as_double( 1 ) == 0. )
+                        continue;
                     vec3 vertex;
                     vertex[2] = z_sign * in.field_as_double( 2 );
                     vertex[0] = in.field_as_double( 3 ) + vertex_ref[0];
                     vertex[1] = in.field_as_double( 4 ) + vertex_ref[1];
                     index_t id = builder->create_vertex( vertex );
                     builder->create_edge( id - 1, id );
-                } else if( in.field_matches( 0, "END" ) ) {
+                }
+                else if( in.field_matches( 0, "END" ) )
+                {
                     wells.add_well( *mesh, name );
-                    mesh = LineMesh < 3
-                        > ::create_mesh( GeogramLineMesh3D::type_name_static() );
+                    mesh = LineMesh< 3 >::create_mesh(
+                        GeogramLineMesh3D::type_name_static() );
                     builder = LineMeshBuilder3D::create_builder( *mesh );
                 }
             }
@@ -87,9 +104,8 @@ namespace {
         {
             ringmesh_unused( wells );
             ringmesh_unused( filename );
-            throw RINGMeshException( "I/O",
-                "Saving of a WellGroup from Gocad not implemented yet" );
+            throw RINGMeshException(
+                "I/O", "Saving of a WellGroup from Gocad not implemented yet" );
         }
     };
-
 }

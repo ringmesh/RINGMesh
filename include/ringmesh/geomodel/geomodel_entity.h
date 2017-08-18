@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -35,7 +37,7 @@
 
 /*!
  * @file Declaration of GeoModelEntity and all its children classes
- * @author Jeanne Pellerin and Arnaud Botella 
+ * @author Jeanne Pellerin and Arnaud Botella
  */
 
 #pragma once
@@ -45,7 +47,8 @@
 #include <ringmesh/geomodel/entity_type_manager.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( UniverseAccess );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
@@ -53,15 +56,17 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
 }
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     /*!
      * @brief Abstract base class describing one entity of a GeoModel
      */
-    template< index_t DIMENSION >
-    class GeoModelEntity {
-    ringmesh_disable_copy( GeoModelEntity );
-    public:
+    template < index_t DIMENSION >
+    class GeoModelEntity
+    {
+        ringmesh_disable_copy( GeoModelEntity );
 
+    public:
         virtual ~GeoModelEntity() = default;
 
         virtual bool is_on_voi() const = 0;
@@ -86,9 +91,11 @@ namespace RINGMesh {
          * GeoModelBuilderTopology class.
          *
          * @param[in] geomodel Geomodel owning the Entity to create
-         * @param[in] id Index of the entity in the corresponding vector in the geomodel
+         * @param[in] id Index of the entity in the corresponding vector in the
+         * geomodel
          * @param[in] name Name of the entity
-         * @param[in] geological_feature Geological feature of the entity, none by default.
+         * @param[in] geological_feature Geological feature of the entity, none
+         * by default.
          */
         GeoModelEntity( const GeoModel< DIMENSION >& geomodel, index_t id )
             : geomodel_( geomodel ), id_( id )
@@ -105,19 +112,21 @@ namespace RINGMesh {
         /// Reference to the GeoModel owning this entity
         const GeoModel< DIMENSION >& geomodel_;
         /// Name of the entity - default is "Unnamed"
-        std::string name_ = std::string { "Unnamed" };
+        std::string name_ = std::string{ "Unnamed" };
 
         /// Index of the entity
-        index_t id_ { NO_ID };
+        index_t id_{ NO_ID };
     };
 
     ALIAS_2D_AND_3D( GeoModelEntity );
 
-    template< index_t DIMENSION >
-    class Universe: public GeoModelEntity< DIMENSION > {
-    ringmesh_disable_copy( Universe );
+    template < index_t DIMENSION >
+    class Universe : public GeoModelEntity< DIMENSION >
+    {
+        ringmesh_disable_copy( Universe );
+
     public:
-        friend class UniverseAccess< DIMENSION > ;
+        friend class UniverseAccess< DIMENSION >;
 
         Universe( const GeoModel< DIMENSION >& geomodel );
 
@@ -174,17 +183,17 @@ namespace RINGMesh {
     private:
         std::vector< gmme_id > universe_boundaries_;
         std::vector< bool > universe_boundary_sides_;
-
     };
 
     ALIAS_2D_AND_3D( Universe );
 
-    template< index_t DIMENSION >
-    class UniverseAccess {
-    ringmesh_disable_copy( UniverseAccess );
-        friend class GeoModelBuilderTopologyBase< DIMENSION > ;
-        friend class GeoModelBuilderTopology< DIMENSION > ;
-        friend class GeoModelBuilderRemovalBase< DIMENSION > ;
+    template < index_t DIMENSION >
+    class UniverseAccess
+    {
+        ringmesh_disable_copy( UniverseAccess );
+        friend class GeoModelBuilderTopologyBase< DIMENSION >;
+        friend class GeoModelBuilderTopology< DIMENSION >;
+        friend class GeoModelBuilderRemovalBase< DIMENSION >;
 
     private:
         UniverseAccess( Universe< DIMENSION >& universe )
@@ -214,5 +223,4 @@ namespace RINGMesh {
     };
 
     ALIAS_2D_AND_3D( UniverseAccess );
-
 }

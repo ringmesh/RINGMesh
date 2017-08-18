@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
@@ -33,15 +35,18 @@
  *     FRANCE
  */
 
-namespace {
-    class TetGenIOHandler final: public GeoModelIOHandler< 3 > {
+namespace
+{
+    class TetGenIOHandler final : public GeoModelIOHandler< 3 >
+    {
     public:
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from TetGen not implemented yet" );
         }
-        void save( const GeoModel3D& geomodel, const std::string& filename ) final
+        void save(
+            const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::string directory = GEO::FileSystem::dir_name( filename );
             std::string file = GEO::FileSystem::base_name( filename );
@@ -53,7 +58,8 @@ namespace {
 
             const GeoModelMesh3D& mesh = geomodel.mesh;
             node << mesh.vertices.nb() << " 3 0 0" << EOL;
-            for( index_t v : range( mesh.vertices.nb() ) ) {
+            for( index_t v : range( mesh.vertices.nb() ) )
+            {
                 node << v << SPACE << mesh.vertices.vertex( v ) << EOL;
             }
 
@@ -67,8 +73,10 @@ namespace {
             ele << mesh.cells.nb() << " 4 1" << EOL;
             neigh << mesh.cells.nb() << " 4" << EOL;
             index_t nb_tet_exported = 0;
-            for( index_t m : range( geomodel.nb_regions() ) ) {
-                for( index_t tet : range( mesh.cells.nb_tet( m ) ) ) {
+            for( index_t m : range( geomodel.nb_regions() ) )
+            {
+                for( index_t tet : range( mesh.cells.nb_tet( m ) ) )
+                {
                     index_t cell = mesh.cells.tet( m, tet );
                     ele << nb_tet_exported << SPACE
                         << mesh.cells.vertex( ElementLocalVertex( cell, 0 ) )
@@ -80,12 +88,16 @@ namespace {
                         << mesh.cells.vertex( ElementLocalVertex( cell, 3 ) )
                         << SPACE << m + 1 << EOL;
                     neigh << nb_tet_exported;
-                    for( index_t f : range( mesh.cells.nb_facets( tet ) ) ) {
+                    for( index_t f : range( mesh.cells.nb_facets( tet ) ) )
+                    {
                         neigh << SPACE;
                         index_t adj = mesh.cells.adjacent( cell, f );
-                        if( adj == GEO::NO_CELL ) {
+                        if( adj == GEO::NO_CELL )
+                        {
                             neigh << -1;
-                        } else {
+                        }
+                        else
+                        {
                             neigh << adj;
                         }
                     }
@@ -98,5 +110,4 @@ namespace {
             node << std::flush;
         }
     };
-
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -49,16 +51,16 @@
  * @author Arnaud Botella
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
 #include "well_group/io_smesh.cpp"
 #include "well_group/io_wl.cpp"
-
 }
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     void well_load( const std::string& filename, WellGroup< 3 >& wells )
     {
         Logger::out( "I/O", "Loading file ", filename, "..." );
@@ -72,13 +74,17 @@ namespace RINGMesh {
         const std::string& format )
     {
         auto handler = WellGroupIOHandlerFactory::create( format );
-        if( !handler ) {
+        if( !handler )
+        {
             Logger::err( "I/O", "Currently supported file formats are: " );
-            for( const std::string& name : WellGroupIOHandlerFactory::list_creators() ) {
+            for( const std::string& name :
+                WellGroupIOHandlerFactory::list_creators() )
+            {
                 Logger::err( "I/O", " ", name );
             }
 
-            throw RINGMeshException( "I/O", "Unsupported file format: ", format );
+            throw RINGMeshException(
+                "I/O", "Unsupported file format: ", format );
         }
         return handler;
     }
@@ -95,6 +101,7 @@ namespace RINGMesh {
     void WellGroupIOHandler::initialize()
     {
         WellGroupIOHandlerFactory::register_creator< WLIOHandler >( "wl" );
-        WellGroupIOHandlerFactory::register_creator< SmeshIOHandler >( "smesh" );
+        WellGroupIOHandlerFactory::register_creator< SmeshIOHandler >(
+            "smesh" );
     }
 }

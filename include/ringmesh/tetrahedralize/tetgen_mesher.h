@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -44,23 +46,27 @@
 #include <geogram/third_party/tetgen/tetgen.h>
 
 /*!
- * @file Interface GEO::Mesh with Tetgen 
+ * @file Interface GEO::Mesh with Tetgen
  */
-namespace GEO {
+namespace GEO
+{
     class Mesh;
 }
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
 }
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * @brief Tetgen wrapper
      * @author Jeanne Pellerin
      */
-    class TetgenMesher {
-    ringmesh_disable_copy( TetgenMesher );
+    class TetgenMesher
+    {
+        ringmesh_disable_copy( TetgenMesher );
+
     public:
         TetgenMesher()
         {
@@ -77,8 +83,7 @@ namespace RINGMesh {
         }
         ~TetgenMesher();
 
-        void tetrahedralize(
-            const GEO::Mesh& input_mesh,
+        void tetrahedralize( const GEO::Mesh& input_mesh,
             VolumeMeshBuilder< 3 >& output_mesh_builder );
 
         void add_points_to_match_quality( double quality );
@@ -113,7 +118,8 @@ namespace RINGMesh {
     };
 
     /*!
-     * @brief Constrained tetrahedralize of the volumes defined by a triangulated surface mesh
+     * @brief Constrained tetrahedralize of the volumes defined by a
+     * triangulated surface mesh
      * @details Does not require this mesh to be a closed manifold
      * as the equivalent in Geogram function does.
      */
@@ -122,6 +128,5 @@ namespace RINGMesh {
         const GEO::Mesh& in_mesh,
         bool refine,
         double quality );
-
 }
 #endif

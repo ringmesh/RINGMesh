@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -45,16 +47,19 @@
  * @author Jeanne Pellerin
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     // Implementation class
     class GeoModelEntityFromMesh;
 
     /*!
      * @brief To build a GeoModel from a set of disconnected polygonal surfaces
      */
-    class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder< 3 > {
+    class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder< 3 >
+    {
     public:
-        GeoModelBuilderSurfaceMesh( GeoModel3D& geomodel, const GEO::Mesh& mesh )
+        GeoModelBuilderSurfaceMesh(
+            GeoModel3D& geomodel, const GEO::Mesh& mesh )
             : GeoModelBuilder( geomodel ), mesh_( mesh )
         {
         }
@@ -62,10 +67,12 @@ namespace RINGMesh {
         /*!
          * @details Adds separately each connected component of the mesh
          *          as a Surface of the geomodel under construction.
-         *          All the polygons of the input mesh are visited and added to a
+         *          All the polygons of the input mesh are visited and added to
+         * a
          *          Surface of the GeoModel.
          *          Connected components of the mesh are determined with a
-         *          propagation (or "coloriage" algorithm) using the adjacent_facet
+         *          propagation (or "coloriage" algorithm) using the
+         * adjacent_facet
          *          information provided on the input GEO::Mesh.
          *
          * @todo Old code - old building - to delimit connected components

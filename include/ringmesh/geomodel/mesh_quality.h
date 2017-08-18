@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -43,15 +45,17 @@
  * http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
     ALIAS_3D( GeoModel );
 }
 
-namespace RINGMesh {
-
-    enum MeshQualityMode {
+namespace RINGMesh
+{
+    enum MeshQualityMode
+    {
         INSPHERE_RADIUS_BY_CIRCUMSPHERE_RADIUS,
         INSPHERE_RADIUS_BY_MAX_EDGE_LENGTH,
         VOLUME_BY_SUM_SQUARE_EDGE,
@@ -69,7 +73,8 @@ namespace RINGMesh {
      * The quality is between 0 and 1. 0 corresponds to a bad tetrahedron, and
      * 1 to a good tetrahedron (equilaterality).
      * For more information about the mesh quality, see
-     * <a href="http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html">
+     * <a
+     * href="http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html">
      * TET_MESH_QUALITY Interactive Program for Tet Mesh Quality</a>
      *
      * @param[in] mesh_qual_mode mesh quality to compute.
@@ -80,6 +85,5 @@ namespace RINGMesh {
      * must be meshed by simplexes (tetrahedra).
      */
     void RINGMESH_API compute_prop_tet_mesh_quality(
-        MeshQualityMode mesh_qual_mode,
-        const GeoModel3D& geomodel );
+        MeshQualityMode mesh_qual_mode, const GeoModel3D& geomodel );
 }

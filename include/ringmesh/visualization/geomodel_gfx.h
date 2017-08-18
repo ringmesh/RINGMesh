@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -51,16 +53,19 @@
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 }
 
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
-    class GeoModelGfxBase {
-    ringmesh_disable_copy( GeoModelGfxBase );
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
+    class GeoModelGfxBase
+    {
+        ringmesh_disable_copy( GeoModelGfxBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
+
     public:
         virtual ~GeoModelGfxBase() = default;
 
@@ -85,7 +90,7 @@ namespace RINGMesh {
 
     private:
         /// The GeoModel associated to the graphics
-        const GeoModel< DIMENSION >* geomodel_ { nullptr };
+        const GeoModel< DIMENSION >* geomodel_{ nullptr };
 
     public:
         CornerGfxEntity< DIMENSION > corners;
@@ -96,14 +101,16 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( GeoModelGfxBase );
 
-    template< index_t DIMENSION >
-    class GeoModelGfx final: public GeoModelGfxBase< DIMENSION > {
+    template < index_t DIMENSION >
+    class GeoModelGfx final : public GeoModelGfxBase< DIMENSION >
+    {
     public:
         GeoModelGfx();
     };
 
-    template< >
-    class RINGMESH_API GeoModelGfx< 3 > final: public GeoModelGfxBase< 3 > {
+    template <>
+    class RINGMESH_API GeoModelGfx< 3 > final : public GeoModelGfxBase< 3 >
+    {
     public:
         GeoModelGfx();
 

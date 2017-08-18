@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -42,28 +44,32 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/stratigraphic_column.h>
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/stratigraphic_column.h>
 
-namespace RINGMesh {
-    class RINGMESH_API StratigraphicColumnBuilder {
-    ringmesh_disable_copy(StratigraphicColumnBuilder);
+namespace RINGMesh
+{
+    class RINGMESH_API StratigraphicColumnBuilder
+    {
+        ringmesh_disable_copy( StratigraphicColumnBuilder );
+
     public:
         StratigraphicColumnBuilder(
-            StratigraphicColumn& column,
-            GeoModel3D& model );
+            StratigraphicColumn& column, GeoModel3D& model );
         virtual ~StratigraphicColumnBuilder()
         {
         }
+
     protected:
         StratigraphicColumn& column_;
         GeoModel3D& model_;
     };
 
-    class RINGMESH_API StratigraphicColumnBuilderFile: public StratigraphicColumnBuilder {
+    class RINGMESH_API StratigraphicColumnBuilderFile
+        : public StratigraphicColumnBuilder
+    {
     public:
-        StratigraphicColumnBuilderFile(
-            StratigraphicColumn& column,
+        StratigraphicColumnBuilderFile( StratigraphicColumn& column,
             GeoModel3D& model,
             std::string filename );
         virtual ~StratigraphicColumnBuilderFile() = default;
@@ -71,6 +77,7 @@ namespace RINGMesh {
         {
             load_file();
         }
+
     private:
         virtual void load_file() = 0;
 
@@ -78,10 +85,11 @@ namespace RINGMesh {
         std::string filename_;
     };
 
-    class RINGMESH_API StratigraphicColumnBuilderXML: public StratigraphicColumnBuilderFile {
+    class RINGMESH_API StratigraphicColumnBuilderXML
+        : public StratigraphicColumnBuilderFile
+    {
     public:
-        StratigraphicColumnBuilderXML(
-            StratigraphicColumn& column,
+        StratigraphicColumnBuilderXML( StratigraphicColumn& column,
             GeoModel3D& model,
             const std::string& filename )
             : StratigraphicColumnBuilderFile( column, model, filename )

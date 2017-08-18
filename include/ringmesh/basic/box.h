@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -42,10 +44,11 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
-    class Box {
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
+    class Box
+    {
     public:
         bool initialized() const
         {
@@ -81,7 +84,8 @@ namespace RINGMesh {
 
         void add_box( const Box< DIMENSION >& b )
         {
-            if( b.initialized() ) {
+            if( b.initialized() )
+            {
                 add_point( b.min() );
                 add_point( b.max() );
             }
@@ -89,11 +93,14 @@ namespace RINGMesh {
 
         bool bboxes_overlap( const Box< DIMENSION >& B ) const
         {
-            for( index_t c : range( DIMENSION ) ) {
-                if( max()[c] < B.min()[c] ) {
+            for( index_t c : range( DIMENSION ) )
+            {
+                if( max()[c] < B.min()[c] )
+                {
                     return false;
                 }
-                if( min()[c] > B.max()[c] ) {
+                if( min()[c] > B.max()[c] )
+                {
                     return false;
                 }
             }
@@ -102,7 +109,7 @@ namespace RINGMesh {
 
         Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const
         {
-            Box< DIMENSION > result { *this };
+            Box< DIMENSION > result{ *this };
             result.add_box( B );
             return result;
         }
@@ -117,14 +124,16 @@ namespace RINGMesh {
         std::tuple< bool, Box< DIMENSION > > bbox_intersection(
             const Box< DIMENSION >& B ) const
         {
-            if( !bboxes_overlap( B ) ) {
+            if( !bboxes_overlap( B ) )
+            {
                 return std::make_tuple( false, Box() );
             }
 
             Box< DIMENSION > result;
             vecn< DIMENSION > minimal_max;
             vecn< DIMENSION > maximal_min;
-            for( index_t c : range( DIMENSION ) ) {
+            for( index_t c : range( DIMENSION ) )
+            {
                 minimal_max[c] = std::min( this->max()[c], B.max()[c] );
                 maximal_min[c] = std::max( this->min()[c], B.min()[c] );
             }
@@ -135,11 +144,14 @@ namespace RINGMesh {
 
         bool contains( const vecn< DIMENSION >& b ) const
         {
-            for( index_t c : range( DIMENSION ) ) {
-                if( b[c] < min()[c] ) {
+            for( index_t c : range( DIMENSION ) )
+            {
+                if( b[c] < min()[c] )
+                {
                     return false;
                 }
-                if( b[c] > max()[c] ) {
+                if( b[c] > max()[c] )
+                {
                     return false;
                 }
             }
@@ -151,11 +163,9 @@ namespace RINGMesh {
         double signed_distance( const vecn< DIMENSION >& p ) const;
 
     private:
-        bool initialized_ { false };
+        bool initialized_{ false };
         vecn< DIMENSION > min_;
         vecn< DIMENSION > max_;
-
     };
     ALIAS_2D_AND_3D( Box );
-
 }

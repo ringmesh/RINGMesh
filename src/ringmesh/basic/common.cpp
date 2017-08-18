@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -40,12 +42,12 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
+#include <geogram/basic/common.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
-#   include <geogram_gfx/basic/common.h>
+#include <geogram_gfx/basic/common.h>
 #endif
 
 #include <ringmesh/basic/command_line.h>
@@ -57,8 +59,8 @@
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 #include <ringmesh/visualization/geogram_gfx.h>
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * This function configures geogram by setting some geogram options.
      * \pre This function should be call after GEO::initialize().
@@ -108,8 +110,8 @@ namespace RINGMesh {
         Logger::div( "RINGMesh" );
         Logger::out( "", "This project is developed by the RINGMesh",
             " developers team:" );
-        Logger::out( "",
-            "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> " );
+        Logger::out(
+            "", "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> " );
         Logger::out( "", "You can have access to the full open-source ",
             "code through its Bitbucket repository: " );
         Logger::out( "", "https://bitbucket.org/ring_team/ringmesh" );
