@@ -229,8 +229,9 @@ namespace RINGMesh {
             const std::map< index_t, index_t >& lighttsolid_atom_map,
             std::vector< std::vector< double > >& region_tetra_attributes ) const
         {
-            index_t gocad_id { 0 };
-            for( const std::vector< double >& attrib : stored_attributes ) {
+            ringmesh_assert(
+                stored_attributes.size() == gocad_ids2region_ids_.size() );
+            for( index_t gocad_id : range( stored_attributes.size() ) ) {
                 if( gocad_ids2region_ids_[gocad_id] == region_id ) {
                     if( lighttsolid_atom_map.find( gocad_id )
                         == lighttsolid_atom_map.end() ) {
@@ -259,8 +260,9 @@ namespace RINGMesh {
         {
             local_ids.clear();
 
-            index_t gocad_id { 0 };
-            for( const vec3& vertex : stored_vertices ) {
+            ringmesh_assert(
+                stored_vertices.size() == gocad_ids2region_ids_.size() );
+            for( index_t gocad_id : range( stored_vertices.size() ) ) {
                 if( gocad_ids2region_ids_[gocad_id] == region_id ) {
                     if( lighttsolid_atom_map.find( gocad_id )
                         == lighttsolid_atom_map.end() ) {
