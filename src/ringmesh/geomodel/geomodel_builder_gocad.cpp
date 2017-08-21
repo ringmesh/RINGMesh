@@ -875,7 +875,7 @@ namespace {
                     load_storage.attributes_ );
             }
 
-            std::string region_name = NULL;
+            std::string region_name;
             if( line.nb_fields() == 1 ) {
                 region_name = "Unnamed";
             } else {
@@ -1459,7 +1459,6 @@ namespace RINGMesh {
         : GocadBaseParser( gm_builder, geomodel )
     {
     }
-
     MLLineParser::MLLineParser( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel )
         : GocadBaseParser( gm_builder, geomodel )
     {
@@ -1481,7 +1480,7 @@ namespace RINGMesh {
     }
 
     GeoModelBuilderTSolid::GeoModelBuilderTSolid(
-        GeoModel< 3 >& geomodel,
+        GeoModel3D& geomodel,
         std::string filename )
         : GeoModelBuilderGocad( geomodel, std::move( filename ) )
     {
@@ -1516,32 +1515,28 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::load_file()
     {
         read_file();
-
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
         compute_surfaces_internal_borders();
-
         geomodel_.mesh.vertices.test_and_initialize();
         build_lines_and_corners_from_surfaces();
-
         compute_boundaries_of_geomodel_regions( *this, ( *this ).geomodel_ );
-
         compute_universe_boundaries( ( *this ).geomodel_, *this );
-
         geology.build_contacts();
     }
 
     void GeoModelBuilderTSolid::read_type()
     {
-        while( !file_line_.eof() && file_line_.get_line() ) {
-            file_line_.get_fields();
-            if( file_line_.nb_fields() > 0 ) {
-                if( file_line_.field_matches( 0, "GOCAD" ) ) {
-                    if( strcmp( file_line_.field( 1 ), "TSolid" ) == 0 ) {
+        GEO::LineInput line( filename_ );
+        while( !line.eof() && line.get_line() ) {
+            line.get_fields();
+            if( line.nb_fields() > 0 ) {
+                if( line.field_matches( 0, "GOCAD" ) ) {
+                    if( strcmp( line.field( 1 ), "TSolid" ) == 0 ) {
                         file_type_ = TSolidType::TSOLID;
                     } else {
                         ringmesh_assert(
-                            strcmp( file_line_.field( 1 ), "LightTSolid" ) == 0 );
+                            strcmp( line.field( 1 ), "LightTSolid" ) == 0 );
                         file_type_ = TSolidType::LIGHT_TSOLID;
                     }
                     break;
