@@ -84,10 +84,10 @@ namespace {
         index_t nb_attribute_fields )
     {
         std::vector< double > vertex( nb_attribute_fields );
-        for( index_t i : range( nb_attribute_fields ) ) {
+        for( auto& cur_attribute : vertex ) {
             ringmesh_assert( !in.field_matches( start_field, "CNXYZ" ) );
             ringmesh_assert( !in.field_matches( start_field, "XYZ" ) );
-            vertex[i] = in.field_as_double( start_field++ );
+            cur_attribute = in.field_as_double( start_field++ );
         }
         return vertex;
     }
@@ -107,10 +107,12 @@ namespace {
         const GeoModel3D& geomodel,
         const std::string& interface_name )
     {
-        GeologicalEntityType type = Interface3D::type_name_static();
-        for( index_t i : range( geomodel.nb_geological_entities( type ) ) ) {
-            if( geomodel.geological_entity( type, i ).name() == interface_name ) {
-                return geomodel.geological_entity( type, i ).gmge();
+        GeologicalEntityType interface_type = Interface3D::type_name_static();
+        for( index_t interface_id : range(
+            geomodel.nb_geological_entities( interface_type ) ) ) {
+            if( geomodel.geological_entity( interface_type, interface_id ).name()
+                == interface_name ) {
+                return geomodel.geological_entity( interface_type, interface_id ).gmge();
             }
         }
         return gmge_id();
