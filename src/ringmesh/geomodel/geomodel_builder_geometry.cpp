@@ -852,10 +852,10 @@ namespace RINGMesh {
             region_mesh_builder->set_vertex( vertex_id, p );
             vertex_id++;
 
-            for( int i : range( attr_nb ) ){
-                if( names[i] != "model_vertex_map" && names[i] != "point" ){
+            for( const auto& name : names ){
+                if( name != "model_vertex_map" && name != "point" ){
                     GEO::Attribute< double > attr( geomodel_.region( region_id )
-                        .vertex_attribute_manager(), names[i] );
+                        .vertex_attribute_manager(), name );
                     index_t dim_nb = attr.dimension();
                     for( index_t dim : range( dim_nb ) ){
                         attr[( vertices_nb + v ) * dim_nb + dim]
