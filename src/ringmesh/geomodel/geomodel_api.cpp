@@ -178,7 +178,7 @@ namespace {
     {
         Logger::out( "GeoModel", "Model ", geomodel.name(), " is made of\n",
             std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
-            std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
+			std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
 
         index_t nb_triangles { geomodel.mesh.polygons.nb_triangle() };
         index_t nb_quads { geomodel.mesh.polygons.nb_quad() };
@@ -225,9 +225,9 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void print_geomodel( const GeoModel< DIMENSION >& geomodel )
-    {
+	{
         Logger::out( "GeoModel", "Model ", geomodel.name(), " has\n",
-            std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
+			std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
             std::setw( 10 ), std::left, count_geomodel_polygons( geomodel ),
             " polygons" );
         index_t nb_cells { count_geomodel_cells( geomodel ) };
