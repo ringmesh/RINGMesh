@@ -160,10 +160,10 @@ namespace {
                 " has no Interface" );
             return false;
         }
-        for( auto& interface : geomodel.geol_entities(
+        for( auto& cur_interface : geomodel.geol_entities(
             Interface3D::type_name_static() ) ) {
-            if( !interface.has_geological_feature() ) {
-                Logger::err( "", interface.gmge(), " has no geological feature" );
+            if( !cur_interface.has_geological_feature() ) {
+                Logger::err( "", cur_interface.gmge(), " has no geological feature" );
                 return false;
             }
         }
@@ -220,9 +220,9 @@ namespace {
         save_coordinate_system( out );
 
         // Gocad::TSurf = RINGMesh::Interface
-        for( auto& interface : geomodel.geol_entities(
+        for( auto& tsurf : geomodel.geol_entities(
             Interface3D::type_name_static() ) ) {
-            out << "TSURF " << interface.name() << EOL;
+            out << "TSURF " << tsurf.name() << EOL;
         }
 
         index_t count = 1;
