@@ -616,12 +616,12 @@ namespace {
             int tface_count = 1;
 
             const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
-            for( auto& interface : geomodel.geol_entities(
+            for( auto& cur_interface : geomodel.geol_entities(
                         Interface3D::type_name_static() ) ) {
-                out_ << "SURFACE " << interface.name() << EOL;
-                for( index_t s = 0; s < interface.nb_children(); s++ ) {
+                out_ << "SURFACE " << cur_interface.name() << EOL;
+                for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
                     out_ << "TFACE " << tface_count++ << EOL;
-                    index_t surface_id = interface.child_gmme( s ).index();
+                    index_t surface_id = cur_interface.child_gmme( s ).index();
                     out_ << "KEYVERTICES";
                     index_t key_polygon_id = polygons.polygon( surface_id, 0 );
                     for( index_t v = 0; v < polygons.nb_vertices( key_polygon_id );
