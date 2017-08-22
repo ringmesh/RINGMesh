@@ -519,9 +519,9 @@ namespace {
                     if( type == "NAME" ) {
                         std::string name = parser.field( 2 );
                         GeologicalEntityType type = Interface3D::type_name_static();
-                        for( auto& interface : geomodel.geol_entities( type ) ) {
-                            if( interface.name() == name ) {
-                                interface_id = interface.index();
+                        for( auto& cur_interface : geomodel.geol_entities( type ) ) {
+                            if( cur_interface.name() == name ) {
+                                interface_id = cur_interface.index();
                                 break;
                             }
                         }
