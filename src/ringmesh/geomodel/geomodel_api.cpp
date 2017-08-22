@@ -350,9 +350,7 @@ namespace RINGMesh {
         const std::string& name )
     {
         index_t geological_entity_id { NO_ID };
-        for( index_t elt_i : range( geomodel.nb_geological_entities( gmge_type ) ) ) {
-            const GeoModelGeologicalEntity< DIMENSION >& cur_gme =
-                geomodel.geological_entity( gmge_type, elt_i );
+        for( auto& cur_gme : geomodel.geol_entities( gmge_type ) ) {
             if( cur_gme.name() == name ) {
                 if( geological_entity_id != NO_ID ) {
                     throw RINGMeshException( "GeoModel",

@@ -173,11 +173,11 @@ namespace RINGMesh {
     public:
         geol_entity_range(
             const GeoModel< DIMENSION >& geomodel,
-            const GeologicalEntityType& geological_entity_type )
+            const GeologicalEntityType geological_entity_type )
             :
                 entity_range< DIMENSION >( geomodel,
                     geomodel.nb_geological_entities( geological_entity_type ) ),
-                type_( geological_entity_type )
+                type_( std::move(geological_entity_type) )
         {
         }
         const geol_entity_range< DIMENSION >& begin() const
@@ -194,6 +194,6 @@ namespace RINGMesh {
         }
 
     protected:
-        const GeologicalEntityType& type_;
+        const GeologicalEntityType type_;
     };
 }
