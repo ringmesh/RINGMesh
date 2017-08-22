@@ -520,11 +520,9 @@ namespace {
                         std::string name = parser.field( 2 );
                         GeologicalEntityType type = Interface < 3
                             > ::type_name_static();
-                        for( index_t i : range(
-                            geomodel.nb_geological_entities( type ) ) ) {
-                            if( geomodel.geological_entity( type, i ).name()
-                                == name ) {
-                                interface_id = i;
+                        for( auto& interface : geomodel.geol_entities( type ) ) {
+                            if( interface.name() == name ) {
+                                interface_id = interface.index();
                                 break;
                             }
                         }

@@ -183,18 +183,16 @@ namespace RINGMesh {
                 geomodel_.entity_type_manager().geological_entity_manager.geological_entity_type(
                     i );
 
-            for( index_t j : range( geomodel_.nb_geological_entities( type ) ) ) {
+            for( auto& geol_entity : geomodel_.geol_entities( type ) ) {
                 bool no_child = true;
-                const GeoModelGeologicalEntity< DIMENSION >& E =
-                    geomodel_.geological_entity( type, j );
-                for( index_t k : range( E.nb_children() ) ) {
-                    if( mesh_entities.count( E.child_gmme( k ) ) == 0 ) {
+                for( index_t k : range( geol_entity.nb_children() ) ) {
+                    if( mesh_entities.count( geol_entity.child_gmme( k ) ) == 0 ) {
                         no_child = false;
                         break;
                     }
                 }
                 if( no_child ) {
-                    geological_entities.insert( E.gmge() );
+                    geological_entities.insert( geol_entity.gmge() );
                 }
             }
         }
@@ -494,13 +492,11 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderTopology< 2 >::add_universe_boundary(
-        index_t boundary_id,
-        bool side )
+    void GeoModelBuilderTopology< 2 >::add_universe_boundary( index_t boundary_id,
+    bool side )
     {
         gmme_id boundary( Line2D::type_name_static(), boundary_id );
-        UniverseAccess2D universe_access(
-            geomodel_access_.modifiable_universe() );
+        UniverseAccess2D universe_access( geomodel_access_.modifiable_universe() );
         universe_access.modifiable_boundaries().push_back( boundary );
         universe_access.modifiable_sides().push_back( side );
     }
@@ -512,19 +508,16 @@ namespace RINGMesh {
     {
         ringmesh_assert( id < geomodel_.universe().nb_boundaries() );
         gmme_id boundary( Line2D::type_name_static(), boundary_id );
-        UniverseAccess2D universe_access(
-            geomodel_access_.modifiable_universe() );
+        UniverseAccess2D universe_access( geomodel_access_.modifiable_universe() );
         universe_access.modifiable_boundaries()[id] = boundary;
         universe_access.modifiable_sides()[id] = side;
     }
 
-    void GeoModelBuilderTopology< 3 >::add_universe_boundary(
-        index_t boundary_id,
-        bool side )
+    void GeoModelBuilderTopology< 3 >::add_universe_boundary( index_t boundary_id,
+    bool side )
     {
         gmme_id boundary( Surface3D::type_name_static(), boundary_id );
-        UniverseAccess3D universe_access(
-            geomodel_access_.modifiable_universe() );
+        UniverseAccess3D universe_access( geomodel_access_.modifiable_universe() );
         universe_access.modifiable_boundaries().push_back( boundary );
         universe_access.modifiable_sides().push_back( side );
     }
@@ -536,8 +529,7 @@ namespace RINGMesh {
     {
         ringmesh_assert( id < geomodel_.universe().nb_boundaries() );
         gmme_id boundary( Surface3D::type_name_static(), boundary_id );
-        UniverseAccess3D universe_access(
-            geomodel_access_.modifiable_universe() );
+        UniverseAccess3D universe_access( geomodel_access_.modifiable_universe() );
         universe_access.modifiable_boundaries()[id] = boundary;
         universe_access.modifiable_sides()[id] = side;
     }
@@ -567,7 +559,7 @@ namespace RINGMesh {
     {
         if( geomodel_.universe().nb_boundaries() != 0 ) return;
         std::vector< bool > is_surface_universe_boundary( geomodel_.nb_surfaces(),
-            false );
+        false );
         std::vector< bool > surface_side( geomodel_.nb_surfaces() );
         for( const auto& region : geomodel_.regions() ) {
             for( index_t s : range( region.nb_boundaries() ) ) {
@@ -616,8 +608,8 @@ namespace RINGMesh {
         GeoModelBuilderTopologyBase2D::set_mesh_entity_boundary( gmme, id,
             boundary_id );
 
-        GeoModelMeshEntity2D& mesh_entity =
-            geomodel_access_.modifiable_mesh_entity( gmme );
+        GeoModelMeshEntity2D& mesh_entity = geomodel_access_.modifiable_mesh_entity(
+            gmme );
         GeoModelMeshEntityAccess2D gme_access( mesh_entity );
         if( gmme.type() == Surface2D::type_name_static() ) {
             gme_access.modifiable_sides()[id] = side;
@@ -649,8 +641,8 @@ namespace RINGMesh {
         GeoModelBuilderTopologyBase3D::set_mesh_entity_boundary( gmme, id,
             boundary_id );
 
-        GeoModelMeshEntity3D& mesh_entity =
-            geomodel_access_.modifiable_mesh_entity( gmme );
+        GeoModelMeshEntity3D& mesh_entity = geomodel_access_.modifiable_mesh_entity(
+            gmme );
         GeoModelMeshEntityAccess3D gme_access( mesh_entity );
         if( gmme.type() == Region3D::type_name_static() ) {
             gme_access.modifiable_sides()[id] = side;
