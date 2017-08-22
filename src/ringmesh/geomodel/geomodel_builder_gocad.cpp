@@ -103,16 +103,15 @@ namespace {
      * @param[in] interface_name Name of the interface to find
      * @return Index of the interface in the geomodel, NO_ID if not found.
      */
-    gmge_id find_interface(
-        const GeoModel3D& geomodel,
-        const std::string& interface_name )
+    template< index_t DIMENSION >
+    gmge_id find_geological_entity(
+        const GeoModel< DIMENSION >& geomodel,
+        const GeologicalEntityType& geol_entity_type,
+        const std::string& geol_entity_name )
     {
-        GeologicalEntityType interface_type = Interface3D::type_name_static();
-        for( index_t interface_id : range(
-            geomodel.nb_geological_entities( interface_type ) ) ) {
-            if( geomodel.geological_entity( interface_type, interface_id ).name()
-                == interface_name ) {
-                return geomodel.geological_entity( interface_type, interface_id ).gmge();
+        for( auto& geol_entity : geomodel.geol_entities( geol_entity_type ) ) {
+            if( geol_entity.name() == geol_entity_name ) {
+                return geol_entity.gmge();
             }
         }
         return gmge_id();
@@ -711,7 +710,8 @@ namespace {
             const std::string& interface_name,
             const std::string& type )
         {
-            gmge_id parent = find_interface( geomodel_, interface_name );
+            gmge_id parent = find_geological_entity( geomodel_,
+                Interface3D::type_name_static(), interface_name );
             if( interface_name != "" ) {
                 ringmesh_assert( parent.is_defined() );
             }
