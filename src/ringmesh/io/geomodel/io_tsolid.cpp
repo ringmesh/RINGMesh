@@ -533,8 +533,8 @@ namespace {
         {
             ringmesh_assert( out_.is_open() );
             const GeoModelMesh3D& mesh = geomodel_mesh( region );
-            for( index_t v = 0; v < region.geomodel().mesh.cells.nb_vertices( cell );
-                v++ ) {
+            for( index_t v : range(
+                region.geomodel().mesh.cells.nb_vertices( cell ) ) ) {
                 index_t atom_id = mesh.cells.duplicated_corner_index(
                     ElementLocalVertex( cell, v ) );
                 if( atom_id == NO_ID ) {
@@ -558,9 +558,8 @@ namespace {
                 region.cell_nn_search().get_neighbors( center,
                     region.geomodel().epsilon() );
             ringmesh_assert( c_in_reg.size() == 1 );
-            for( index_t attr_dbl_itr = 0;
-                attr_dbl_itr < numeric_like_cell_attribute_names_.size();
-                ++attr_dbl_itr ) {
+            for( index_t attr_dbl_itr : range(
+                numeric_like_cell_attribute_names_.size() ) ) {
                 if( reg_cell_attr_mgr.is_defined(
                     numeric_like_cell_attribute_names_[attr_dbl_itr] ) ) {
                     ringmesh_assert(
@@ -577,9 +576,8 @@ namespace {
                                 numeric_like_cell_attribute_names_[attr_dbl_itr] ) ) );
                     GEO::ReadOnlyScalarAttributeAdapter cur_attr( reg_cell_attr_mgr,
                         numeric_like_cell_attribute_names_[attr_dbl_itr] );
-                    for( index_t dim_itr = 0;
-                        dim_itr < cell_attribute_dimensions_[attr_dbl_itr];
-                        ++dim_itr ) {
+                    for( index_t dim_itr : range(
+                        cell_attribute_dimensions_[attr_dbl_itr] ) ) {
                         out_ << " "
                             << cur_attr[c_in_reg[0]
                                 * cell_attribute_dimensions_[attr_dbl_itr] + dim_itr];
@@ -594,7 +592,7 @@ namespace {
         {
             ringmesh_assert( out_.is_open() );
             const GeoModelMesh3D& mesh = geomodel_mesh( region );
-            for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+            for( index_t f : range( mesh.cells.nb_facets( c ) ) ) {
                 out_ << " ";
                 index_t polygon = NO_ID;
                 bool side;
@@ -617,26 +615,23 @@ namespace {
 
             const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
             for( auto& cur_interface : geomodel.geol_entities(
-                        Interface3D::type_name_static() ) ) {
+                Interface3D::type_name_static() ) ) {
                 out_ << "SURFACE " << cur_interface.name() << EOL;
-                for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
+                for( index_t s : range( cur_interface.nb_children() ) ) {
                     out_ << "TFACE " << tface_count++ << EOL;
                     index_t surface_id = cur_interface.child_gmme( s ).index();
                     out_ << "KEYVERTICES";
                     index_t key_polygon_id = polygons.polygon( surface_id, 0 );
-                    for( index_t v = 0; v < polygons.nb_vertices( key_polygon_id );
-                        v++ ) {
+                    for( index_t v : range( polygons.nb_vertices( key_polygon_id ) ) ) {
                         out_ << " "
                             << vertex_exported_id_[polygons.vertex(
                                 ElementLocalVertex( key_polygon_id, v ) )];
                     }
                     out_ << EOL;
-                    for( index_t p = 0; p < polygons.nb_polygons( surface_id );
-                        p++ ) {
+                    for( index_t p : range( polygons.nb_polygons( surface_id ) ) ) {
                         index_t polygon_id = polygons.polygon( surface_id, p );
                         out_ << "TRGL";
-                        for( index_t v = 0; v < polygons.nb_vertices( polygon_id );
-                            v++ ) {
+                        for( index_t v : range( polygons.nb_vertices( polygon_id ) ) ) {
                             out_ << " "
                                 << vertex_exported_id_[polygons.vertex(
                                     ElementLocalVertex( polygon_id, v ) )];
@@ -649,8 +644,7 @@ namespace {
         void export_model_region( const GeoModel3D& geomodel )
         {
             ringmesh_assert( out_.is_open() );
-            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                const RINGMesh::Region3D& region = geomodel.region( r );
+            for( auto& region : geomodel.regions() ) {
                 out_ << "MODEL_REGION " << region.name() << " ";
                 region.side( 0 ) ? out_ << "+" : out_ << "-";
                 out_ << region.boundary_gmme( 0 ).index() + 1 << EOL;
@@ -659,7 +653,8 @@ namespace {
 
         void write_no_data_value( index_t nb )
         {
-            for( index_t i = 0; i < nb; ++i ) {
+            for( auto i : range( nb ) ) {
+                ringmesh_unused( i );
                 out_ << " " << GEO::String::to_string( gocad_no_data_value_ );
             }
         }
