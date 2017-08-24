@@ -476,6 +476,24 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
+    gmme_id GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entity(
+        const MeshEntityType& type )
+    {
+        const MeshEntityTypeManager< DIMENSION >& manager =
+            geomodel_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_corner( type ) ) {
+            return this->create_mesh_entity< Corner >();
+        } else if( manager.is_line( type ) ) {
+            return create_mesh_entity< Line >();
+        } else if( manager.is_surface( type ) ) {
+            return create_mesh_entity< Surface >();
+        } else {
+            ringmesh_assert_not_reached;
+            return gmme_id();
+        }
+    }
+
+    template< index_t DIMENSION >
     bool GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entities(
         const MeshEntityType& type,
         index_t nb_additional_entities )

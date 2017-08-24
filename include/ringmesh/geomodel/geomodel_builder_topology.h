@@ -84,6 +84,9 @@ namespace RINGMesh {
         template< template< index_t > class ENTITY >
         gmme_id create_mesh_entity( const MeshType mesh_type = "" );
 
+        gmme_id create_mesh_entity(
+            const MeshEntityType& type );
+
         virtual bool create_mesh_entities(
             const MeshEntityType& type,
             index_t nb_additional_entities );
