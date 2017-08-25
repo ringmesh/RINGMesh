@@ -228,20 +228,6 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    template< template< index_t > class ENTITY >
-    gmme_id GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entity(
-        const MeshType mesh_type )
-    {
-        const MeshEntityType entity_type = ENTITY< DIMENSION >::type_name_static();
-        index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) );
-        index_t new_id( nb_entities );
-        geomodel_access_.modifiable_mesh_entities( entity_type ).emplace_back(
-            GeoModelMeshEntityAccess< DIMENSION >::template create_entity< ENTITY >(
-                geomodel_, new_id, mesh_type ) );
-        return geomodel_access_.modifiable_mesh_entities( entity_type ).back()->gmme();
-    }
-
-    template< index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_corner(
         const vecn< DIMENSION >& point )
     {
@@ -339,6 +325,20 @@ namespace RINGMesh {
             incident_entity_access.modifiable_boundaries();
         std::remove_if( boundaries.begin(), boundaries.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
+    }
+
+    template< index_t DIMENSION >
+    template< template< index_t > class ENTITY >
+    gmme_id GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entity(
+        const MeshType mesh_type )
+    {
+        const MeshEntityType entity_type = ENTITY< DIMENSION >::type_name_static();
+        index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) );
+        index_t new_id( nb_entities );
+        geomodel_access_.modifiable_mesh_entities( entity_type ).emplace_back(
+            GeoModelMeshEntityAccess< DIMENSION >::template create_entity< ENTITY >(
+                geomodel_, new_id, mesh_type ) );
+        return geomodel_access_.modifiable_mesh_entities( entity_type ).back()->gmme();
     }
 
     template< index_t DIMENSION >

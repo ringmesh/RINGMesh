@@ -95,7 +95,8 @@ namespace RINGMesh {
                     cc_facets_ptr.push_back( nb_cc_corners );
                 }
 
-                gmme_id surface_gme { topology.create_mesh_entity< Surface >() };
+                gmme_id surface_gme { topology.create_mesh_entity(
+                    Surface3D::type_name_static() ) };
                 geometry.set_surface_geometry( surface_gme.index(), cc_vertices,
                     cc_corners, cc_facets_ptr );
             }
