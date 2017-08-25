@@ -81,7 +81,7 @@ namespace RINGMesh {
             std::set< gmme_id >& in_mesh_entities,
             std::set< gmge_id >& in_geological_entities ) const;
 
-        gmme_id create_mesh_entity(
+        virtual gmme_id create_mesh_entity(
             const MeshEntityType& type );
 
         virtual bool create_mesh_entities(
@@ -226,6 +226,9 @@ namespace RINGMesh {
         void set_universe_boundary( index_t id, index_t boundary_id, bool side );
 
         void compute_universe();
+
+        gmme_id create_mesh_entity(
+            const MeshEntityType& type ) override;
 
         bool create_mesh_entities(
             const MeshEntityType& type,

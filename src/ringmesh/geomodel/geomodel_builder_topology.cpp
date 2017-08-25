@@ -332,7 +332,7 @@ namespace RINGMesh {
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entity(
         const MeshType mesh_type )
     {
-        const MeshEntityType entity_type = ENTITY< DIMENSION >::type_name_static();
+        const auto& entity_type = ENTITY< DIMENSION >::type_name_static();
         index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) );
         index_t new_id( nb_entities );
         geomodel_access_.modifiable_mesh_entities( entity_type ).emplace_back(
@@ -347,7 +347,7 @@ namespace RINGMesh {
         index_t nb_additionnal_entities,
         const MeshType type )
     {
-        const MeshEntityType& entity_type = ENTITY< DIMENSION >::type_name_static();
+        const auto& entity_type = ENTITY< DIMENSION >::type_name_static();
         std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& store =
             geomodel_access_.modifiable_mesh_entities( entity_type );
         index_t old_size = static_cast< index_t >( store.size() );
@@ -604,6 +604,17 @@ namespace RINGMesh {
         }
     }
 
+    gmme_id GeoModelBuilderTopology< 3 >::create_mesh_entity(
+        const MeshEntityType& type )
+    {
+        const MeshEntityTypeManager3D& manager =
+            geomodel_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_region( type ) ) {
+            return GeoModelBuilderTopologyBase3D::create_mesh_entity< Region >();
+        } else {
+            return GeoModelBuilderTopologyBase3D::create_mesh_entity( type );
+        }
+    }
     bool GeoModelBuilderTopology< 3 >::create_mesh_entities(
         const MeshEntityType& type,
         index_t nb_additional_entities )
