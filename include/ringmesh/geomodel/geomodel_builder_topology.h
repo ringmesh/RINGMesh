@@ -81,9 +81,6 @@ namespace RINGMesh {
             std::set< gmme_id >& in_mesh_entities,
             std::set< gmge_id >& in_geological_entities ) const;
 
-        template< template< index_t > class ENTITY >
-        gmme_id create_mesh_entity( const MeshType mesh_type = "" );
-
         gmme_id create_mesh_entity(
             const MeshEntityType& type );
 
@@ -141,6 +138,9 @@ namespace RINGMesh {
         GeoModelBuilderTopologyBase(
             GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
+
+        template< template< index_t > class ENTITY >
+        gmme_id create_mesh_entity( const MeshType mesh_type = "" );
 
         template< template< index_t > class ENTITY >
         bool create_mesh_entities(

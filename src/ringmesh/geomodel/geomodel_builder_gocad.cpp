@@ -698,7 +698,8 @@ namespace {
                 ringmesh_assert( parent.is_defined() );
             }
 
-            gmme_id children = builder_.topology.create_mesh_entity< Surface >();
+            gmme_id children = builder_.topology.create_mesh_entity(
+                Surface3D::type_name_static() );
             builder_.geology.add_parent_children_relation( parent, children );
             builder_.geology.set_geological_entity_geol_feature( parent,
                 GeoModelGeologicalEntity3D::determine_geological_type( type ) );
@@ -774,8 +775,8 @@ namespace {
             index_t v_id = line.field_as_uint( 1 ) - GOCAD_OFFSET;
             if( !find_corner( geomodel_, load_storage.vertices_[v_id] ).is_defined() ) {
                 // Create the corner
-                gmme_id corner_gme =
-                    builder_.topology.create_mesh_entity< Corner >();
+                gmme_id corner_gme = builder_.topology.create_mesh_entity(
+                    Corner3D::type_name_static() );
                 builder_.geometry.set_corner( corner_gme.index(),
                     load_storage.vertices_[v_id] );
             }
@@ -802,7 +803,8 @@ namespace {
             // Create the entity if it is not the universe
             // Set the region name and boundaries
             if( name != Universe3D::universe_type_name().string() ) {
-                gmme_id region_id = builder_.topology.create_mesh_entity< Region >();
+                gmme_id region_id = builder_.topology.create_mesh_entity(
+                    Region3D::type_name_static() );
                 builder_.info.set_mesh_entity_name( region_id, name );
                 for( const std::pair< index_t, bool >& info : region_boundaries ) {
                     gmme_id surface_id( Surface3D::type_name_static(), info.first );
@@ -872,8 +874,8 @@ namespace {
             const std::string& region_name,
             GeoModelBuilderGocad& geomodel_builder )
         {
-            gmme_id cur_region =
-                geomodel_builder.topology.create_mesh_entity< Region >();
+            gmme_id cur_region = geomodel_builder.topology.create_mesh_entity(
+                Region3D::type_name_static() );
             geomodel_builder.info.set_mesh_entity_name( cur_region, region_name );
             return cur_region.index();
         }
@@ -1087,7 +1089,8 @@ namespace {
                 build_surface( builder_, geomodel_, load_storage );
             }
             // Create a new surface
-            gmme_id new_surface = builder_.topology.create_mesh_entity< Surface >();
+            gmme_id new_surface = builder_.topology.create_mesh_entity(
+                Surface3D::type_name_static() );
             load_storage.cur_surface_ = new_surface.index();
             builder_.geology.add_parent_children_relation(
                 gmge_id( Interface3D::type_name_static(),
