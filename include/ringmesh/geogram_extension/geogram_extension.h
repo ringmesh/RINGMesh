@@ -226,4 +226,4 @@ namespace RINGMesh {
     private:
         std::mutex lock_;
     };
-}
+} // namespace RINGMesh

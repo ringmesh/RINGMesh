@@ -615,6 +615,6 @@ namespace RINGMesh {
     template class RINGMESH_API LineGfxEntity< 3 > ;
     template class RINGMESH_API SurfaceGfxEntity< 3 > ;
     template class RINGMESH_API RegionGfxEntity< 3 > ;
-}
+} // namespace RINGMesh
 
 #endif

@@ -1399,4 +1399,4 @@ namespace RINGMesh {
     template bool RINGMESH_API are_geomodel_geological_entities_valid(
         const GeoModel3D& );
 
-}
+} // namespace RINGMesh

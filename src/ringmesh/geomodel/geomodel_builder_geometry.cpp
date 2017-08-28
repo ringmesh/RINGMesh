@@ -228,7 +228,7 @@ namespace {
                 gmme_id( Corner< DIMENSION >::type_name_static(), corner_id ), 1 );
         }
     }
-}
+} // namespace
 
 namespace RINGMesh {
     template< index_t DIMENSION >
@@ -987,4 +987,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderGeometryBase< 2 > ;
 
     template class RINGMESH_API GeoModelBuilderGeometryBase< 3 > ;
-}
+} // namespace RINGMesh

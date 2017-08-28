@@ -368,7 +368,8 @@ namespace {
             quality > -1 * global_epsilon && quality < 1 + global_epsilon );
         return quality;
     }
-}
+} // namespace
+
 namespace RINGMesh {
 
     void compute_prop_tet_mesh_quality(

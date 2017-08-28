@@ -164,4 +164,4 @@ namespace RINGMesh {
         column_ = StratigraphicColumn( name_of_column, units_vec, paradigm_upper );
     }
 
-}
+} // namespace RINGMesh

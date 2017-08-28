@@ -57,8 +57,6 @@ namespace RINGMesh {
     public:
         GeoModelBuilderFile( GeoModel< DIMENSION >& geomodel, std::string filename );
 
-        virtual ~GeoModelBuilderFile() = default;
-
         void build_geomodel()
         {
             if( find_geomodel_dimension( filename_ ) != DIMENSION ) {
@@ -73,6 +71,6 @@ namespace RINGMesh {
         virtual void load_file() = 0;
 
     protected:
-        std::string filename_;
+        std::string filename_ { };
     };
-}
+} // namespace RINGMesh
