@@ -196,7 +196,10 @@ namespace {
     {
         int nb_added { -1 * static_cast< int >( mesh_entities.size() ) };
         for( auto mesh_type : geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types() ) {
-            ringmesh_assert( mesh_type != Region3D::type_name_static() );
+            if( mesh_type == Region3D::type_name_static() ) {
+                // A Region3D cannot be a boundary.
+                continue;
+            }
             for( index_t mesh_entity_i : range(
                 geomodel.nb_mesh_entities( mesh_type ) ) ) {
                 bool no_incident = true;
