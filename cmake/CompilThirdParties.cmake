@@ -195,7 +195,7 @@ ExternalProject_Add_Step(zlib_ext forcebuild
   )
 
 # Add zlib include directories to the current ones
-# same as zlib
+include_directories(SYSTEM ${ZLIB_PATH_BIN}/install/include)
 
 # Add zlib project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} z)
