@@ -53,7 +53,7 @@ namespace {
     {
         return value < global_epsilon && value > -global_epsilon;
     }
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -188,15 +188,13 @@ namespace RINGMesh {
             point_segment_projection( p, p0, p1 );
         if( is_point_segment_projection_possible ) {
             return std::make_tuple( length( nearest_p - p ), nearest_p );
-        } else {
-            double p0_distance_sq { length2( p0 - p ) };
-            double p1_distance_sq { length2( p1 - p ) };
-            if( p0_distance_sq < p1_distance_sq ) {
-                return std::make_tuple( std::sqrt( p0_distance_sq ), p0 );
-            } else {
-                return std::make_tuple( std::sqrt( p1_distance_sq ), p1 );
-            }
         }
+        double p0_distance_sq { length2( p0 - p ) };
+        double p1_distance_sq { length2( p1 - p ) };
+        if( p0_distance_sq < p1_distance_sq ) {
+            return std::make_tuple( std::sqrt( p0_distance_sq ), p0 );
+        }
+        return std::make_tuple( std::sqrt( p1_distance_sq ), p1 );
     }
 
     GEO::Matrix< 4, double > rotation_matrix_about_arbitrary_axis(
@@ -437,4 +435,4 @@ namespace RINGMesh {
         const vecn< 3 >&,
         const vecn< 3 >&,
         const vecn< 3 >& );
-}
+} // namespace RINGMesh

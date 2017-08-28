@@ -705,4 +705,4 @@ namespace RINGMesh {
     template class RINGMESH_API WellPart< 3 > ;
     template class RINGMESH_API Well< 3 > ;
     template class RINGMESH_API WellGroup< 3 > ;
-}
+} // namespace RINGMesh

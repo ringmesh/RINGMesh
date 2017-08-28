@@ -53,7 +53,7 @@ namespace RINGMesh {
 
     ALIAS_3D( Interface );
     ALIAS_3D( Layer );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
     // @todo To develop
@@ -79,12 +79,11 @@ namespace RINGMesh {
          * @brief Simple constructor of RockFeature
          * @param[in] name Name of the feature
          */
-        RockFeature( std::string name )
+        explicit RockFeature( std::string name )
             : RockFeature( std::move( name ), ROCKTYPE::NONE )
         {
         }
 
-        ~RockFeature() = default;
         /*!
          *@return name of the feature
          */
@@ -107,7 +106,7 @@ namespace RINGMesh {
             type_ = type;
         }
     private:
-        std::string name_;
+        std::string name_ { };
         ROCKTYPE type_ { ROCKTYPE::NONE };
 
     };
@@ -128,7 +127,7 @@ namespace RINGMesh {
      * a minimum thickness and a maximum thickness. A StratigraphicColumn can be a StratigraphicUnit.
      */
     class RINGMESH_API StratigraphicUnit {
-    ringmesh_disable_copy( StratigraphicUnit );
+    ringmesh_disable_copy_and_move( StratigraphicUnit );
     public:
 
         /*!
@@ -182,7 +181,7 @@ namespace RINGMesh {
         StratigraphicUnit();
 
     protected:
-        std::string name_;
+        std::string name_ { };
         RockFeature rock_;
     };
 
@@ -198,8 +197,6 @@ namespace RINGMesh {
             RockFeature rock,
             double min_thick,
             double max_thick );
-
-        virtual ~UnsubdividedStratigraphicUnit() = default;
 
         bool is_conformable_base() const final
         {
@@ -263,8 +260,6 @@ namespace RINGMesh {
         {
         }
 
-        virtual ~SubdividedStratigraphicUnit() = default;
-
         bool is_conformable_base() const final
         {
             return ( units_.back()->is_conformable_base() );
@@ -314,7 +309,7 @@ namespace RINGMesh {
         }
 
     private:
-        std::vector< const StratigraphicUnit* > units_;
+        std::vector< const StratigraphicUnit* > units_ { };
     };
 
     enum struct STRATIGRAPHIC_PARADIGM {
@@ -348,8 +343,6 @@ namespace RINGMesh {
             : StratigraphicColumn( std::move( name ), { }, type )
         {
         }
-
-        ~StratigraphicColumn() = default;
 
         /*!
          * \name Stratigraphic Column edition
@@ -512,9 +505,9 @@ namespace RINGMesh {
 
     private:
 
-        std::string name_;
-        std::vector< const StratigraphicUnit* > units_;
+        std::string name_ { };
+        std::vector< const StratigraphicUnit* > units_ { };
         STRATIGRAPHIC_PARADIGM type_ { STRATIGRAPHIC_PARADIGM::UNSPECIFIED };
 
     };
-}
+} // namespace RINGMesh

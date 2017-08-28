@@ -60,4 +60,4 @@ namespace RINGMesh {
 #endif
         GEO::geo_should_not_have_reached( file, line );
     }
-}
+} // namespace RINGMesh

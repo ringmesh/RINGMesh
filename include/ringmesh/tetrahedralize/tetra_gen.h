@@ -67,12 +67,12 @@ namespace RINGMesh {
 
     ALIAS_3D( Region );
     ALIAS_3D( WellGroup );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     class RINGMESH_API TetraGen {
-    ringmesh_disable_copy( TetraGen );
+    ringmesh_disable_copy_and_move( TetraGen );
     public:
         virtual ~TetraGen() = default;
         static std::unique_ptr< TetraGen > create(
@@ -121,4 +121,4 @@ namespace RINGMesh {
     };
 
     using TetraGenFactory = Factory< std::string, TetraGen, GeoModel3D&, index_t >;
-}
+} // namespace RINGMesh

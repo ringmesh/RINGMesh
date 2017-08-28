@@ -345,12 +345,31 @@ if(BUILD_DOCUMENTATION)
 endif()
 
 
-if (COVERALLS)
 set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
+if(COVERALLS)
     coveralls_setup(
     "${ringmesh_files}" 
         ${COVERALLS_UPLOAD}                 
         "${PROJECT_SOURCE_DIR}/cmake")
+endif()
+
+# additional target to perform clang-tidy run, requires clang-tidy
+find_program(CLANG_TIDY "clang-tidy")
+if(CLANG_TIDY)
+    message(STATUS "Configuring RINGMesh with clang-tidy")
+    get_directory_property(dirs INCLUDE_DIRECTORIES)
+    foreach(dir ${dirs})
+        set(include_dirs -I${dir} ${include_dirs})
+    endforeach()
+    add_custom_target(
+        tidy
+        COMMAND ${CLANG_TIDY}
+        ${ringmesh_include}
+        -config=''
+        --
+        -std=c++11
+        ${ringmesh_files}
+    )
 endif()
 
 #------------------------------------------------------------------------------------------------

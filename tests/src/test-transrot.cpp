@@ -46,9 +46,9 @@
 
 using namespace RINGMesh;
 
-void build_geomodel( GeoModel< 3 >& geomodel )
+void build_geomodel( GeoModel3D& geomodel )
 {
-    GeoModelBuilder< 3 > builder( geomodel );
+    GeoModelBuilder3D builder( geomodel );
 
     vec3 v0( 0, 0, 0 );
     vec3 v1( 1, 0, 0 );
@@ -75,7 +75,7 @@ void build_geomodel( GeoModel< 3 >& geomodel )
     std::vector< vec3 > vertices( 4 );
     gmme_id id;
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v0;
     vertices[1] = v1;
     vertices[2] = v2;
@@ -83,7 +83,7 @@ void build_geomodel( GeoModel< 3 >& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v1;
     vertices[1] = v5;
     vertices[2] = v6;
@@ -91,7 +91,7 @@ void build_geomodel( GeoModel< 3 >& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v4;
     vertices[1] = v5;
     vertices[2] = v6;
@@ -99,7 +99,7 @@ void build_geomodel( GeoModel< 3 >& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v0;
     vertices[1] = v3;
     vertices[2] = v7;
@@ -107,7 +107,7 @@ void build_geomodel( GeoModel< 3 >& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v3;
     vertices[1] = v2;
     vertices[2] = v6;
@@ -115,7 +115,7 @@ void build_geomodel( GeoModel< 3 >& geomodel )
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >();
+    id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v0;
     vertices[1] = v1;
     vertices[2] = v5;
@@ -131,13 +131,13 @@ void check_vertex( const vec3& in, const vec3& result )
     }
 }
 
-void test_translate( GeoModel< 3 >& geomodel )
+void test_translate( GeoModel3D& geomodel )
 {
     Logger::out( "TEST", "Test translation" );
     vec3 translation_vector( 1., 2.5, -3.5 );
     translate( geomodel, translation_vector );
 
-    const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
+    const GeoModelMeshVertices3D& vertices = geomodel.mesh.vertices;
     check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) );
     check_vertex( vertices.vertex( 1 ), vec3( 2., 2.5, -3.5 ) );
     check_vertex( vertices.vertex( 2 ), vec3( 2., 3.5, -3.5 ) );
@@ -148,14 +148,14 @@ void test_translate( GeoModel< 3 >& geomodel )
     check_vertex( vertices.vertex( 7 ), vec3( 1., 3.5, -2.5 ) );
 }
 
-void test_rotation( GeoModel< 3 >& geomodel )
+void test_rotation( GeoModel3D& geomodel )
 {
     Logger::out( "TEST", "Test rotation" );
     vec3 origin( 1., 2.5, -3.5 );
     vec3 axis( 0, 0, 1 );
     rotate( geomodel, origin, axis, 90, true );
 
-    const GeoModelMeshVertices< 3 >& vertices = geomodel.mesh.vertices;
+    const GeoModelMeshVertices3D& vertices = geomodel.mesh.vertices;
     check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) );
     check_vertex( vertices.vertex( 1 ), vec3( 1., 3.5, -3.5 ) );
     check_vertex( vertices.vertex( 2 ), vec3( 0., 3.5, -3.5 ) );
@@ -201,7 +201,7 @@ void test_rotation_matrix()
     vec3 axis( 1, 0, 0 );
     for( double angle = 0.; angle <= 360.; angle += step ) {
         rot_mat_degree = rotation_matrix_about_arbitrary_axis( origin, axis, angle,
-            true );
+        true );
         double angle_rad = angle * pi / 180.;
         rot_mat_radian = rotation_matrix_about_arbitrary_axis( origin, axis,
             angle_rad, false );
@@ -225,7 +225,7 @@ void test_rotation_matrix()
     axis = vec3( 0, 1, 0 );
     for( double angle = 0.; angle <= 360.; angle += step ) {
         rot_mat_degree = rotation_matrix_about_arbitrary_axis( origin, axis, angle,
-            true );
+        true );
         double angle_rad = angle * pi / 180.;
         rot_mat_radian = rotation_matrix_about_arbitrary_axis( origin, axis,
             angle_rad, false );
@@ -249,7 +249,7 @@ void test_rotation_matrix()
     axis = vec3( 0, 0, 1 );
     for( double angle = 0.; angle <= 360.; angle += step ) {
         rot_mat_degree = rotation_matrix_about_arbitrary_axis( origin, axis, angle,
-            true );
+        true );
         double angle_rad = angle * pi / 180.;
         rot_mat_radian = rotation_matrix_about_arbitrary_axis( origin, axis,
             angle_rad, false );
@@ -277,7 +277,7 @@ int main()
     try {
         default_configure();
 
-        GeoModel< 3 > geomodel;
+        GeoModel3D geomodel;
         build_geomodel( geomodel );
         test_translate( geomodel );
         test_rotation_matrix();

@@ -72,4 +72,4 @@ namespace RINGMesh {
         StratigraphicColumnIOHandlerFactory::register_creator<
             XMLStratigraphicColumnIOHandler >( "xml" );
     }
-}
+} // namespace RINGMesh
