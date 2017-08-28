@@ -142,8 +142,8 @@ ExternalProject_Add_Step(tinyxml2_ext forcebuild
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
 
 # Add tinyxml2 project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} tinyxml2)
-    
+set(EXTRA_LIBS ${EXTRA_LIBS} debug tinyxml2d optimized tinyxml2)
+
 # Add tinyxml2 bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
 link_directories(${TINYXML2_PATH_BIN})
@@ -175,7 +175,7 @@ ExternalProject_Add(zlib_ext
   SOURCE_DIR ${ZLIB_PATH}
       CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
           -G ${CMAKE_GENERATOR}
-          -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_PATH_BIN}
+          -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_PATH_BIN}/install
           -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -186,7 +186,7 @@ ExternalProject_Add(zlib_ext
   BUILD_COMMAND ${CMAKE_COMMAND} --build ${ZLIB_PATH_BIN} ${COMPILATION_OPTION}
 
   #--Install step---------------
-  INSTALL_DIR ${ZLIB_PATH_BIN}
+  INSTALL_DIR ${ZLIB_PATH_BIN}/install
 )
 
 ExternalProject_Add_Step(zlib_ext forcebuild
@@ -195,14 +195,14 @@ ExternalProject_Add_Step(zlib_ext forcebuild
   )
 
 # Add zlib include directories to the current ones
-# same as zlib
+include_directories(SYSTEM ${ZLIB_PATH_BIN}/install/include)
 
 # Add zlib project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} z)
     
 # Add zlib bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
-link_directories(${ZLIB_PATH_BIN}/lib)
+link_directories(${ZLIB_PATH_BIN}/install/lib)
 
 
 #------------------------------------------------------------------------------------------------
@@ -234,7 +234,7 @@ ExternalProject_Add(minizip_ext
           -G ${CMAKE_GENERATOR} 
           -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
           -DUSE_AES:BOOL=OFF
-          -DZLIB_ROOT:PATH=${ZLIB_PATH_BIN}
+          -DZLIB_ROOT:PATH=${ZLIB_PATH_BIN}/install
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
@@ -258,7 +258,7 @@ add_dependencies(minizip_ext zlib_ext)
 # same as minizip
 
 # Add minizip project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} minizip)
+set(EXTRA_LIBS ${EXTRA_LIBS} debug minizipd optimized minizip)
     
 # Add minizip bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
