@@ -25,6 +25,7 @@ Improvements:
       involving the output of string, double, int etc.
  * Simplify GeoModel io file hierarchy.
  * Add exact predicates into 2d geometric intersections.
+ * Convert tinyxml2 and zlib into corresponding hgsub
 
 #### Release: 4.1.0 ####
 
