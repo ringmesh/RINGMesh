@@ -120,6 +120,7 @@ ExternalProject_Add(tinyxml2_ext
       CONFIGURE_COMMAND ${CMAKE_COMMAND} ${TINYXML2_PATH}
           -G ${CMAKE_GENERATOR} 
           -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+          -DBUILD_TESTING:BOOL=OFF
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
@@ -145,7 +146,7 @@ set(EXTRA_LIBS ${EXTRA_LIBS} tinyxml2)
     
 # Add tinyxml2 bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
-link_directories(${TINYXML2_PATH_BIN}/lib)
+link_directories(${TINYXML2_PATH_BIN})
 
 #------------------------------------------------------------------------------------------------
 # zlib 
@@ -186,7 +187,6 @@ ExternalProject_Add(zlib_ext
 
   #--Install step---------------
   INSTALL_DIR ${ZLIB_PATH_BIN}
-  #INSTALL_COMMAND ${CMAKE_COMMAND} install
 )
 
 ExternalProject_Add_Step(zlib_ext forcebuild
@@ -251,8 +251,7 @@ ExternalProject_Add_Step(minizip_ext forcebuild
     DEPENDERS build
     ALWAYS 1
   )
-  
-  
+    
 add_dependencies(minizip_ext zlib_ext)
 
 # Add minizip include directories to the current ones
