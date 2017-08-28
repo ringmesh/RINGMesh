@@ -101,7 +101,7 @@ namespace RINGMesh {
         GeoModel3D& geomodel_;
     };
 
-    struct GocadLoadingStorage {
+    struct RINGMESH_API GocadLoadingStorage {
         GocadLoadingStorage();
 
         /*!
@@ -134,7 +134,7 @@ namespace RINGMesh {
         std::vector< index_t > cur_surf_polygon_ptr_;
     };
 
-    class GocadLineParser: public GocadBaseParser {
+    class RINGMESH_API GocadLineParser: public GocadBaseParser {
     public:
         virtual void execute(
             GEO::LineInput& line,
