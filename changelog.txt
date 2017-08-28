@@ -19,6 +19,7 @@ Bug fix:
  * Crash when removing the first object in RINGMeshView object tree
 
 Improvements:
+ * Include new geogram release 1.4.10
  * Export attributes to TSolid file.
  * Use std::tuple for output only values, these values are no longer taken as parameter.
  * Use of variadic template for RINGMesh Exceptions. Useful to write long description messages
