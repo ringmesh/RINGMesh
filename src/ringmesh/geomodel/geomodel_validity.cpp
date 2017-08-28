@@ -1057,7 +1057,7 @@ namespace {
          */
         void test_finite_extension()
         {
-            if( DIMENSION == 2 || DIMENSION == 3 )
+            if( DIMENSION == 2 )
             {
                 return; /// @TODO to handle [BC]
             }
@@ -1111,13 +1111,19 @@ namespace {
             }
 
             builder->connect_polygons();
+            // As the geomodel surfaces are independent meshes, they have different
+            // orientations (normal directions). So, the merge of these surfaces may
+            // produce several connected components with colocated vertices.
+            // The following repair merges such vertices and enables a homogeneous
+            // surface orientation [BC].
+            builder->repair( GEO::MESH_REPAIR_COLOCATE, global_epsilon );
             index_t nb_connected_components = NO_ID;
             std::tie( nb_connected_components, std::ignore ) =
                 surface->get_connected_components();
 
             DEBUG( nb_connected_components );
-            surface->save_mesh( "toto.geogram" );
             if( nb_connected_components != 1 ) {
+                surface->save_mesh( "toto.geogram" );
                 set_invalid_model();
             }
         }
