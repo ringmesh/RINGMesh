@@ -35,8 +35,9 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
 #include <array>
+
+#include <ringmesh/basic/common.h>
 
 /*!
  * @file Basic geometrical requests
@@ -111,8 +112,8 @@ namespace RINGMesh {
             {
                 return ( p1 - p0 ).length();
             }
-            vecn< DIMENSION > p0;
-            vecn< DIMENSION > p1;
+            vecn< DIMENSION > p0 { };
+            vecn< DIMENSION > p1 { };
         };
         ALIAS_2D_AND_3D( Segment );
 
@@ -125,12 +126,12 @@ namespace RINGMesh {
                     direction( normalize( direction ) )
             {
             }
-            Line( Segment< DIMENSION > segment )
+            explicit Line( Segment< DIMENSION > segment )
                 : Line( segment.direction(), std::move( segment.p0 ) )
             {
             }
-            vecn< DIMENSION > origin;
-            vecn< DIMENSION > direction;
+            vecn< DIMENSION > origin { };
+            vecn< DIMENSION > direction { };
         };
         ALIAS_2D_AND_3D( Line );
 
@@ -148,8 +149,8 @@ namespace RINGMesh {
                 }
                 return plane_constant;
             }
-            vec3 normal;
-            vec3 origin;
+            vec3 normal { };
+            vec3 origin { };
         };
 
         template< index_t DIMENSION >
@@ -165,9 +166,9 @@ namespace RINGMesh {
                     p2( std::move( p2 ) )
             {
             }
-            vecn< DIMENSION > p0;
-            vecn< DIMENSION > p1;
-            vecn< DIMENSION > p2;
+            vecn< DIMENSION > p0 { };
+            vecn< DIMENSION > p1 { };
+            vecn< DIMENSION > p2 { };
         };
         template< >
         struct Triangle< 3 > {
@@ -183,9 +184,9 @@ namespace RINGMesh {
             {
                 return {cross( p1 - p0, p2 - p0 ), p0};
             }
-            vec3 p0;
-            vec3 p1;
-            vec3 p2;
+            vec3 p0 { };
+            vec3 p1 { };
+            vec3 p2 { };
         };
         ALIAS_2D_AND_3D( Triangle );
 
@@ -199,10 +200,10 @@ namespace RINGMesh {
                     p3( std::move( p3 ) )
             {
             }
-            vec3 p0;
-            vec3 p1;
-            vec3 p2;
-            vec3 p3;
+            vec3 p0 { };
+            vec3 p1 { };
+            vec3 p2 { };
+            vec3 p3 { };
         };
 
         struct Sphere {
@@ -211,7 +212,7 @@ namespace RINGMesh {
                 : origin( std::move( origin ) ), radius( std::move( radius ) )
             {
             }
-            vec3 origin;
+            vec3 origin { };
             double radius { 0 };
         };
 
@@ -228,7 +229,7 @@ namespace RINGMesh {
         };
 
         using Disk = Circle;
-    }
+    } // namespace Geometry
 
     namespace Distance {
         /*!
@@ -271,7 +272,7 @@ namespace RINGMesh {
         std::tuple< double, vec3 > RINGMESH_API point_to_plane(
             const Geometry::Point3D& point,
             const Geometry::Plane& plane );
-    }
+    } // namespace Distance
 
     namespace Intersection {
         /*!
@@ -385,7 +386,7 @@ namespace RINGMesh {
         std::tuple< bool, vec2 > RINGMESH_API segment_line(
             const Geometry::Segment2D& segment,
             const Geometry::Line2D& line );
-    }
+    } // namespace Intersection
 
     namespace Position {
 
@@ -429,7 +430,7 @@ namespace RINGMesh {
             const Geometry::Point3D& point,
             const Geometry::Plane& plane );
 
-    }
+    } // namespace Position
 
     double RINGMESH_API triangle_signed_area(
         const vec3& p0,
@@ -522,4 +523,4 @@ namespace RINGMesh {
         double theta,
         bool degrees );
 
-}
+} // namespace RINGMesh

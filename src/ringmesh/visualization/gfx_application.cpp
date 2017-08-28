@@ -220,17 +220,19 @@ namespace RINGMesh {
             if( selected_entity_type_casted
                 < GM_.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types()
                     + 1 ) {
+                MeshEntityType mesh_type { type };
                 selected_entity_id_ = std::min(
-                    static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
+                    static_cast< int >( GM_.nb_mesh_entities( mesh_type ) - 1 ),
                     selected_entity_id_ );
-                gmme_id entity_id( type,
+                gmme_id entity_id( mesh_type,
                     static_cast< index_t >( selected_entity_id_ ) );
                 toggle_mesh_entity_and_boundaries_visibility( entity_id );
             } else {
+                GeologicalEntityType geol_type { type };
                 selected_entity_id_ = std::min(
-                    static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
+                    static_cast< int >( GM_.nb_geological_entities( geol_type ) - 1 ),
                     selected_entity_id_ );
-                gmge_id entity_id( type,
+                gmge_id entity_id( geol_type,
                     static_cast< index_t >( selected_entity_id_ ) );
                 toggle_geological_entity_visibility( entity_id );
             }
@@ -350,17 +352,19 @@ namespace RINGMesh {
             if( selected_entity_type_casted
                 < GM_.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types()
                     + 1 ) {
+                MeshEntityType mesh_type { type };
                 selected_entity_id_ = std::min(
-                    static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
+                    static_cast< int >( GM_.nb_mesh_entities( mesh_type ) - 1 ),
                     selected_entity_id_ );
-                gmme_id entity_id( type,
+                gmme_id entity_id( mesh_type,
                     static_cast< index_t >( selected_entity_id_ ) );
                 toggle_mesh_entity_and_boundaries_visibility( entity_id );
             } else {
+                GeologicalEntityType geol_type { type };
                 selected_entity_id_ = std::min(
-                    static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
+                    static_cast< int >( GM_.nb_geological_entities( geol_type ) - 1 ),
                     selected_entity_id_ );
-                gmge_id entity_id( type,
+                gmge_id entity_id( geol_type,
                     static_cast< index_t >( selected_entity_id_ ) );
                 toggle_geological_entity_visibility( entity_id );
             }
@@ -1518,6 +1522,6 @@ namespace RINGMesh {
     }
 
     ColorTable RINGMeshApplication::color_table_ = create_color_table();
-}
+} // namespace RINGMesh
 
 #endif
