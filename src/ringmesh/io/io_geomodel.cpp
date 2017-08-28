@@ -77,8 +77,6 @@ namespace {
 #include "geomodel/io_tetgen.cpp"
 #include "geomodel/io_tsolid.cpp"
 #include "geomodel/io_vtk.cpp"
-#include "geomodel/io_geogram.cpp"
-
 
 #ifdef RINGMESH_WITH_GEOLOGYJS
 #    include "boundary_geomodel/io_html.cpp"
