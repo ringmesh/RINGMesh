@@ -1057,55 +1057,51 @@ namespace {
          */
         void test_finite_extension()
         {
-            if( DIMENSION == 2 )
-            {
+            if( DIMENSION == 2 ) {
                 return; /// @TODO to handle [BC]
             }
-            const GeoModelMesh< DIMENSION >& geomodelmesh = geomodel_.mesh;
-            const GeoModelMeshVertices< DIMENSION >& geomodelmesh_vertices =
-                geomodelmesh.vertices;
+            const auto& geomodelmesh = geomodel_.mesh;
+            const auto& geomodelmesh_vertices = geomodelmesh.vertices;
 
             std::vector< vecn< DIMENSION > > all_points;
             all_points.reserve( geomodelmesh_vertices.nb() );
-            for( index_t v_i :range(geomodelmesh_vertices.nb()) ) {
+            for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
                 all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
             }
 
-            std::unique_ptr< SurfaceMesh< DIMENSION > > surface = SurfaceMesh<
-                DIMENSION >::create_mesh();
+            auto surface = SurfaceMesh< DIMENSION >::create_mesh();
             ringmesh_assert( surface != nullptr );
-            std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
-                SurfaceMeshBuilder< DIMENSION >::create_builder( *surface );
+            auto builder = SurfaceMeshBuilder< DIMENSION >::create_builder(
+                *surface );
             ringmesh_assert( builder != nullptr );
-            index_t start = builder->create_vertices(
+            auto start = builder->create_vertices(
                 static_cast< index_t >( all_points.size() ) );
             ringmesh_unused( start );
             ringmesh_assert( start == 0 );
-            for( index_t v_i : range( all_points.size() ) ) {
+            for( auto v_i : range( all_points.size() ) ) {
                 builder->set_vertex( v_i, all_points[v_i] );
             }
 
             SurfaceSide voi_surfaces = geomodel_.get_voi_surfaces();
-            const GeoModelMeshPolygons< DIMENSION >& geomodelmesh_polygons =
-                geomodelmesh.polygons;
-            for( index_t polygon_i : range( geomodelmesh_polygons.nb() ) ) {
+            const auto& geomodelmesh_polygons = geomodelmesh.polygons;
+            for( auto polygon_i : range( geomodelmesh_polygons.nb() ) ) {
 
-                const index_t cur_surface_id = geomodelmesh_polygons.surface(
+                const auto cur_surface_id = geomodelmesh_polygons.surface(
                     polygon_i );
                 if( contains( voi_surfaces.surfaces_, cur_surface_id ) ) {
                     std::vector< index_t > polygon_vertices(
                         geomodelmesh_polygons.nb_vertices( polygon_i ) );
-                    for( index_t v_i : range(
+                    for( auto v_i : range(
                         geomodelmesh_polygons.nb_vertices( polygon_i ) ) ) {
-                        polygon_vertices[v_i] = geomodelmesh_polygons.vertex(
-                            ElementLocalVertex( polygon_i, v_i ) );
+                        polygon_vertices[v_i] = geomodelmesh_polygons.vertex( {
+                            polygon_i, v_i } );
                     }
                     builder->create_polygon( polygon_vertices );
                 }
             }
 
-            for( index_t p : range( surface->nb_polygons() ) ) {
-                for( index_t v : range( surface->nb_polygon_vertices( p ) ) ) {
+            for( auto p : range( surface->nb_polygons() ) ) {
+                for( auto v : range( surface->nb_polygon_vertices( p ) ) ) {
                     builder->set_polygon_adjacent( p, v, NO_ID );
                 }
             }
@@ -1121,9 +1117,7 @@ namespace {
             std::tie( nb_connected_components, std::ignore ) =
                 surface->get_connected_components();
 
-            DEBUG( nb_connected_components );
             if( nb_connected_components != 1 ) {
-                surface->save_mesh( "toto.geogram" );
                 set_invalid_model();
             }
         }
