@@ -54,7 +54,7 @@ namespace RINGMesh {
     void RINGMESH_API ringmesh_should_not_have_reached(
         const std::string& file,
         int line );
-}
+} // namespace RINGMesh
 
 #ifdef RINGMESH_DEBUG
 #  define ringmesh_assert( x )  \

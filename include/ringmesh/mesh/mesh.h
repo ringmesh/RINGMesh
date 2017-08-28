@@ -47,7 +47,6 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/aabb.h>
@@ -63,12 +62,13 @@ namespace RINGMesh {
     struct EdgeLocalVertex;
     struct PolygonLocalEdge;
     struct CellLocalFacet;
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     using MeshType = std::string;
-    struct ElementLocalVertex {
+
+    struct RINGMESH_API ElementLocalVertex {
         ElementLocalVertex() = default;
         ElementLocalVertex( index_t element_id, index_t local_vertex_id )
             : element_id_( element_id ), local_vertex_id_( local_vertex_id )
@@ -77,11 +77,11 @@ namespace RINGMesh {
         ElementLocalVertex( EdgeLocalVertex edge_local_vertex );
         ElementLocalVertex( PolygonLocalEdge polygon_local_edge );
         ElementLocalVertex( CellLocalFacet cell_local_facet );
-        index_t element_id_{ NO_ID };
-        index_t local_vertex_id_{ NO_ID };
+        index_t element_id_ { NO_ID };
+        index_t local_vertex_id_ { NO_ID };
     };
 
-    struct EdgeLocalVertex {
+    struct RINGMESH_API EdgeLocalVertex {
         EdgeLocalVertex() = default;
         EdgeLocalVertex( index_t edge_id, index_t local_vertex_id )
             : edge_id_( edge_id ), local_vertex_id_( local_vertex_id )
@@ -93,11 +93,11 @@ namespace RINGMesh {
                 local_vertex_id_( std::move( edge_local_vertex.local_vertex_id_ ) )
         {
         }
-        index_t edge_id_{ NO_ID };
-        index_t local_vertex_id_{ NO_ID };
+        index_t edge_id_ { NO_ID };
+        index_t local_vertex_id_ { NO_ID };
     };
 
-    struct PolygonLocalEdge {
+    struct RINGMESH_API PolygonLocalEdge {
         PolygonLocalEdge() = default;
         PolygonLocalEdge( index_t polygon_id, index_t local_edge_id )
             : polygon_id_( polygon_id ), local_edge_id_( local_edge_id )
@@ -109,18 +109,18 @@ namespace RINGMesh {
                 local_edge_id_( std::move( polygon_local_vertex.local_vertex_id_ ) )
         {
         }
-        index_t polygon_id_{ NO_ID };
-        index_t local_edge_id_{ NO_ID };
+        index_t polygon_id_ { NO_ID };
+        index_t local_edge_id_ { NO_ID };
     };
 
-    struct CellLocalFacet {
+    struct RINGMESH_API CellLocalFacet {
         CellLocalFacet() = default;
         CellLocalFacet( index_t cell_id, index_t local_facet_id )
             : cell_id_( cell_id ), local_facet_id_( local_facet_id )
         {
         }
-        index_t cell_id_{ NO_ID };
-        index_t local_facet_id_{ NO_ID };
+        index_t cell_id_ { NO_ID };
+        index_t local_facet_id_ { NO_ID };
     };
 
     /*!
@@ -131,7 +131,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class MeshBase {
-    ringmesh_disable_copy( MeshBase );
+    ringmesh_disable_copy_and_move( MeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class MeshBaseBuilder< DIMENSION > ;
 
@@ -190,7 +190,7 @@ namespace RINGMesh {
         MeshBase() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_ { };
     };
     ALIAS_2D_AND_3D( MeshBase );
 
@@ -199,13 +199,9 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class PointSetMesh: public MeshBase< DIMENSION > {
-    ringmesh_disable_copy( PointSetMesh );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class PointSetMeshBuilder< DIMENSION > ;
 
     public:
-        virtual ~PointSetMesh() = default;
-
         static std::unique_ptr< PointSetMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
         std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
@@ -223,13 +219,9 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class LineMesh: public MeshBase< DIMENSION > {
-    ringmesh_disable_copy( LineMesh );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class LineMeshBuilder< DIMENSION > ;
 
     public:
-        virtual ~LineMesh() = default;
-
         static std::unique_ptr< LineMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
 
@@ -302,8 +294,8 @@ namespace RINGMesh {
         LineMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_;
-        mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_ { };
+        mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_ { };
     };
     ALIAS_2D_AND_3D( LineMesh );
 
@@ -316,13 +308,9 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class SurfaceMeshBase: public MeshBase< DIMENSION > {
-    ringmesh_disable_copy( SurfaceMeshBase );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class SurfaceMeshBuilder< DIMENSION > ;
 
     public:
-        virtual ~SurfaceMeshBase() = default;
-
         static std::unique_ptr< SurfaceMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
 
@@ -454,10 +442,8 @@ namespace RINGMesh {
          * force algorithm, and then the other by propagation
          * @todo Try to use a AABB tree to remove @param first_polygon. [PA]
          */
-        std::vector< index_t > polygons_around_vertex(
-            index_t vertex_id,
-            bool border_only,
-            index_t first_polygon ) const;
+        std::vector< index_t > polygons_around_vertex( index_t vertex_id,
+        bool border_only, index_t first_polygon ) const;
 
         /*!
          * @brief Gets an adjacent polygon index by polygon index and local edge index.
@@ -613,14 +599,13 @@ namespace RINGMesh {
             }
             return *polygon_aabb_;
         }
-
         std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         SurfaceMeshBase() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_;
-        mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_ { };
+        mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_ { };
     };
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
@@ -700,7 +685,7 @@ namespace RINGMesh {
             }
 
             std::vector< index_t > polygon_ids = polygons_around_vertex( vertex_id,
-                false, p0 );
+            false, p0 );
             vec3 norm;
             for( index_t polygon_id : polygon_ids ) {
                 norm += polygon_normal( polygon_id );
@@ -743,13 +728,9 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class VolumeMesh: public MeshBase< DIMENSION > {
-    ringmesh_disable_copy( VolumeMesh );
-        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
+        ringmesh_template_assert_3d( DIMENSION );
         friend class VolumeMeshBuilder< DIMENSION > ;
-
     public:
-        virtual ~VolumeMesh() = default;
-
         static std::unique_ptr< VolumeMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
 
@@ -955,6 +936,7 @@ namespace RINGMesh {
          * @brief compute the volume of the cell \param cell_id.
          */
         virtual double cell_volume( index_t cell_id ) const = 0;
+
         std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
             index_t cell_hint ) const;
@@ -968,6 +950,7 @@ namespace RINGMesh {
             }
             return NO_ID;
         }
+
         bool find_cell_from_colocated_vertex_within_distance_if_any(
             const vecn< DIMENSION >& vertex_vec,
             double distance,
@@ -1028,10 +1011,11 @@ namespace RINGMesh {
         VolumeMesh() = default;
 
     protected:
-        mutable std::unique_ptr< NNSearch< DIMENSION > > cell_facet_nn_search_;
-        mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_;
-        mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_;
+        mutable std::unique_ptr< NNSearch< DIMENSION > > cell_facet_nn_search_ { };
+        mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_ { };
+        mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_ { };
     };
+
     using VolumeMesh3D = VolumeMesh< 3 >;
 
     template< index_t DIMENSION >
@@ -1043,21 +1027,23 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class MeshSetBase {
-    ringmesh_disable_copy( MeshSetBase );
+    ringmesh_disable_copy_and_move( MeshSetBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        void create_point_set_mesh( const MeshType type );
-        void create_line_mesh( const MeshType type );
-        void create_well_mesh( const MeshType type );
-        void create_surface_mesh( const MeshType type );
+        void create_point_set_mesh( MeshType type );
+        void create_line_mesh( MeshType type );
+        void create_well_mesh( MeshType type );
+        void create_surface_mesh( MeshType type );
+
     protected:
         MeshSetBase();
+        virtual ~MeshSetBase() = default;
 
     public:
-        std::unique_ptr< PointSetMesh< DIMENSION > > point_set_mesh;
-        std::unique_ptr< LineMesh< DIMENSION > > well_mesh;
-        std::unique_ptr< LineMesh< DIMENSION > > line_mesh;
-        std::unique_ptr< SurfaceMesh< DIMENSION > > surface_mesh;
+        std::unique_ptr< PointSetMesh< DIMENSION > > point_set_mesh { };
+        std::unique_ptr< LineMesh< DIMENSION > > well_mesh { };
+        std::unique_ptr< LineMesh< DIMENSION > > line_mesh { };
+        std::unique_ptr< SurfaceMesh< DIMENSION > > surface_mesh { };
     };
 
     template< index_t DIMENSION >
@@ -1071,9 +1057,9 @@ namespace RINGMesh {
     public:
         MeshSet();
 
-        void create_volume_mesh( const MeshType type );
+        void create_volume_mesh( MeshType type );
 
     public:
-        std::unique_ptr< VolumeMesh3D > volume_mesh;
+        std::unique_ptr< VolumeMesh3D > volume_mesh { };
     };
-}
+} // namespace RINGMesh

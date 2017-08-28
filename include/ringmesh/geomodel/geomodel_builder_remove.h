@@ -49,7 +49,7 @@
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -58,7 +58,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class GeoModelBuilderRemovalBase {
-    ringmesh_disable_copy( GeoModelBuilderRemovalBase );
+    ringmesh_disable_copy_and_move( GeoModelBuilderRemovalBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
@@ -369,9 +369,8 @@ namespace RINGMesh {
             if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
                 b_type ) ) {
                 return NO_ID;
-            } else {
-                return mesh_entity_type_to_index( b_type );
             }
+            return mesh_entity_type_to_index( b_type );
         }
 
         const MeshEntityType& boundary_entity_type(
@@ -389,9 +388,8 @@ namespace RINGMesh {
             if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
                 in_ent_type ) ) {
                 return NO_ID;
-            } else {
-                return mesh_entity_type_to_index( in_ent_type );
             }
+            return mesh_entity_type_to_index( in_ent_type );
         }
 
         const MeshEntityType& incident_entity_type(
@@ -475,15 +473,14 @@ namespace RINGMesh {
         {
             if( E.nb_children() == 0 ) {
                 return;
-            } else {
-                GeoModelGeologicalEntityAccess< DIMENSION > gmge_access( E );
-                const RelationshipManager& manager =
-                    E.geomodel().entity_type_manager().relationship_manager;
-                const MeshEntityType& child_type = children_type( E.entity_type() );
-                gmme_id invalid_child( child_type, NO_ID );
-                remove_invalid_values( gmge_access.modifiable_children(),
-                    [&invalid_child, &manager](index_t i) {return manager.boundary_gmme( i ) == invalid_child;} );
             }
+            GeoModelGeologicalEntityAccess< DIMENSION > gmge_access( E );
+            const RelationshipManager& manager =
+                E.geomodel().entity_type_manager().relationship_manager;
+            const MeshEntityType& child_type = children_type( E.entity_type() );
+            gmme_id invalid_child( child_type, NO_ID );
+            remove_invalid_values( gmge_access.modifiable_children(),
+                [&invalid_child, &manager](index_t i) {return manager.boundary_gmme( i ) == invalid_child;} );
         }
 
         void delete_invalid_boundaries( GeoModelMeshEntity< DIMENSION >& E )
@@ -494,13 +491,12 @@ namespace RINGMesh {
             if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
                 b_type ) ) {
                 return;
-            } else {
-                GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
-                const RelationshipManager& manager =
-                    E.geomodel().entity_type_manager().relationship_manager;
-                remove_invalid_values( gmme_access.modifiable_boundaries(),
-                    [&invalid, &manager](index_t i) {return manager.boundary_gmme( i ) == invalid;} );
             }
+            GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
+            const RelationshipManager& manager =
+                E.geomodel().entity_type_manager().relationship_manager;
+            remove_invalid_values( gmme_access.modifiable_boundaries(),
+                [&invalid, &manager](index_t i) {return manager.boundary_gmme( i ) == invalid;} );
         }
 
         void delete_invalid_incident_entity( GeoModelMeshEntity< DIMENSION >& E )
@@ -511,13 +507,12 @@ namespace RINGMesh {
             if( !geomodel_.entity_type_manager().mesh_entity_manager.is_valid_type(
                 in_ent_type ) ) {
                 return;
-            } else {
-                GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
-                const RelationshipManager& manager =
-                    E.geomodel().entity_type_manager().relationship_manager;
-                remove_invalid_values( gmme_access.modifiable_incident_entities(),
-                    [&invalid, &manager](index_t i) {return manager.incident_entity_gmme( i ) == invalid;} );
             }
+            GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
+            const RelationshipManager& manager =
+                E.geomodel().entity_type_manager().relationship_manager;
+            remove_invalid_values( gmme_access.modifiable_incident_entities(),
+                [&invalid, &manager](index_t i) {return manager.incident_entity_gmme( i ) == invalid;} );
         }
 
         void delete_invalid_parents( GeoModelMeshEntity< DIMENSION >& E )
@@ -593,17 +588,16 @@ namespace RINGMesh {
         GeoModelBuilderRemoval(
             GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
-        virtual ~GeoModelBuilderRemoval() = default;
     };
 
     template< >
-    class RINGMESH_API GeoModelBuilderRemoval< 3 > : public GeoModelBuilderRemovalBase< 3 > {
+    class RINGMESH_API GeoModelBuilderRemoval< 3 > : public GeoModelBuilderRemovalBase<
+        3 > {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
         using GeoModelBuilder3D = GeoModelBuilder< 3 >;
     private:
         GeoModelBuilderRemoval( GeoModelBuilder3D& builder, GeoModel3D& geomodel );
-        virtual ~GeoModelBuilderRemoval() = default;
 
         void update_mesh_entity( GeoModelMeshEntity3D& ME ) override;
 
@@ -639,4 +633,4 @@ namespace RINGMesh {
             region_access.modifiable_sides().resize( R.nb_boundaries() );
         }
     };
-}
+} // namespace RINGMesh

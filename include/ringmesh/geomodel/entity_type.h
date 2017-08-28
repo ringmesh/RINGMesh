@@ -44,7 +44,7 @@
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntityAccess );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntityAccess );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -80,9 +80,9 @@ namespace RINGMesh {
         }
 
     private:
-        std::string type_;
+        std::string type_ { };
     protected:
-        EntityType( std::string type )
+        explicit EntityType( std::string type )
             : type_( std::move( type ) )
         {
         }
@@ -112,7 +112,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API MeshEntityType: public EntityType {
     public:
-        MeshEntityType( std::string type )
+        explicit MeshEntityType( std::string type )
             : EntityType( std::move( type ) )
         {
         }
@@ -129,7 +129,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeologicalEntityType: public EntityType {
     public:
-        GeologicalEntityType( std::string type )
+        explicit GeologicalEntityType( std::string type )
             : EntityType( std::move( type ) )
         {
         }
@@ -210,11 +210,14 @@ namespace RINGMesh {
                 /// @warning Is this now enough for EntityType = std::string?
                 /// Did any code relied on that sorting? Maybe mine ... [JP]
                 return type_ < rhs.type_;
-            } else {
-                if( index_ == NO_ID ) return true;
-                if( rhs.index_ == NO_ID ) return false;
-                return index_ < rhs.index_;
             }
+            if( index_ == NO_ID ) {
+                return true;
+            }
+            if( rhs.index_ == NO_ID ) {
+                return false;
+            }
+            return index_ < rhs.index_;
         }
 
     protected:
@@ -260,8 +263,10 @@ namespace RINGMesh {
     struct gmme_id: public gme_id< MeshEntityType > {
     public:
         gmme_id()
+            :
+                gme_id< MeshEntityType >(
+                    ForbiddenMeshEntityType::type_name_static(), NO_ID )
         {
-            type_ = ForbiddenMeshEntityType::type_name_static();
         }
 
         gmme_id( MeshEntityType entity_type, index_t index )
@@ -275,4 +280,4 @@ namespace RINGMesh {
                 && index_ != NO_ID;
         }
     };
-}
+} // namespace RINGMesh

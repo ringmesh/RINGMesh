@@ -51,7 +51,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
     /*!
@@ -59,7 +59,8 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class GeoModelEntity {
-    ringmesh_disable_copy( GeoModelEntity );
+    ringmesh_disable_copy_and_move( GeoModelEntity );
+    ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
 
         virtual ~GeoModelEntity() = default;

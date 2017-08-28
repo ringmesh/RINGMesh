@@ -337,7 +337,7 @@ namespace {
                                 entity_id );
                             index_t id = NO_ID;
                             GEO::String::from_string( entity_id, id );
-                            load_mesh_entity( entity_type, file_name, id );
+                            load_mesh_entity( MeshEntityType {entity_type}, file_name, id );
                             GEO::FileSystem::delete_file( file_name );
                         } ) );
             } while( unzGoToNextFile( uz ) == UNZ_OK );
@@ -349,12 +349,12 @@ namespace {
         }
 
         void load_mesh_entity(
-            const std::string& entity_type,
+            const MeshEntityType& entity_type,
             const std::string& file_name,
             index_t id );
 
         bool load_mesh_entity_base(
-            const std::string& entity_type,
+            const MeshEntityType& entity_type,
             const std::string& file_name,
             index_t id )
         {
@@ -450,7 +450,7 @@ namespace {
 
     template< >
     void GeoModelBuilderGM< 2 >::load_mesh_entity(
-        const std::string& entity_type,
+        const MeshEntityType& entity_type,
         const std::string& file_name,
         index_t id )
     {
@@ -459,7 +459,7 @@ namespace {
 
     template< >
     void GeoModelBuilderGM< 3 >::load_mesh_entity(
-        const std::string& entity_type,
+        const MeshEntityType& entity_type,
         const std::string& file_name,
         index_t id )
     {
