@@ -142,8 +142,8 @@ ExternalProject_Add_Step(tinyxml2_ext forcebuild
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
 
 # Add tinyxml2 project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} tinyxml2)
-    
+set(EXTRA_LIBS ${EXTRA_LIBS} tinyxml2$<$<CONFIG:Debug>:d>)
+
 # Add tinyxml2 bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
 link_directories(${TINYXML2_PATH_BIN})
@@ -258,7 +258,7 @@ add_dependencies(minizip_ext zlib_ext)
 # same as minizip
 
 # Add minizip project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} minizip)
+set(EXTRA_LIBS ${EXTRA_LIBS} minizip$<$<CONFIG:Debug>:d>)
     
 # Add minizip bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
