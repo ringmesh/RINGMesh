@@ -199,7 +199,7 @@ include_directories(SYSTEM ${ZLIB_PATH_BIN}/install/include)
 
 # Add zlib project libs to the libs with which RINGMesh will link
 if(UNIX)
-    set(EXTRA_LIBS ${EXTRA_LIBS} debug zd optimized z)
+    set(EXTRA_LIBS ${EXTRA_LIBS} z)
 else()
     set(EXTRA_LIBS ${EXTRA_LIBS} debug zlibd optimized zlib)
 endif()
