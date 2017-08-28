@@ -474,28 +474,6 @@ namespace {
     }
 
     /*
-     * @brief Adds the right surface sides in universe boundaries
-     * @param[in] surf_side_minus Vector indicating if the '-' side of
-     * surfaces are in the boundaries of geomodel regions
-     * @param[in] surf_side_plus Vector indicating if the '+' side of
-     * surfaces are in the boundaries of geomodel regions
-     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
-     */
-    void add_surfaces_to_universe_boundaries(
-        const std::vector< bool >& surface_sides,
-        index_t nb_surfaces,
-        GeoModelBuilderTSolid& geomodel_builder )
-    {
-        for( index_t s : range( nb_surfaces ) ) {
-            if( surface_sides[2 * s] && !surface_sides[2 * s + 1] ) {
-                geomodel_builder.topology.add_universe_boundary( s, false );
-            } else if( !surface_sides[2 * s] && surface_sides[2 * s + 1] ) {
-                geomodel_builder.topology.add_universe_boundary( s, true );
-            }
-        }
-    }
-
-    /*
      * @brief Determines if each side of the surfaces are
      * in the boundaries of geomodel regions
      * @param[in] geomodel GeoModel to consider
@@ -520,24 +498,6 @@ namespace {
             }
         }
         return surface_sides;
-    }
-
-    /*!
-     * @brief Sets the boundaries of region Universe
-     * @details A surface is set in the boundaries of region Universe if
-     * only one of its sides belongs to the boundaries of other regions.
-     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
-     */
-    void compute_universe_boundaries(
-        const GeoModel3D& geomodel,
-        GeoModelBuilderTSolid& geomodel_builder )
-    {
-        // The universe boundaries are the surfaces with only one side in all
-        // the boundaries of the other regions
-        std::vector< bool > surface_sides = determine_if_surface_sides_bound_regions(
-            geomodel );
-        add_surfaces_to_universe_boundaries( surface_sides, geomodel.nb_surfaces(),
-            geomodel_builder );
     }
 
     /*! @}
@@ -802,7 +762,7 @@ namespace {
 
             // Create the entity if it is not the universe
             // Set the region name and boundaries
-            if( name != Universe3D::universe_type_name().string() ) {
+            if( name != "Universe" ) {
                 gmme_id region_id = builder_.topology.create_mesh_entity(
                     Region3D::type_name_static() );
                 builder_.info.set_mesh_entity_name( region_id, name );
@@ -810,11 +770,6 @@ namespace {
                     gmme_id surface_id( Surface3D::type_name_static(), info.first );
                     builder_.topology.add_mesh_entity_boundary_relation( region_id,
                         surface_id, info.second );
-                }
-            } else {
-                for( const std::pair< index_t, bool >& info : region_boundaries ) {
-                    builder_.topology.add_universe_boundary( info.first,
-                        info.second );
                 }
             }
         }
@@ -1216,8 +1171,6 @@ namespace RINGMesh {
         build_lines_and_corners_from_surfaces();
 
         compute_boundaries_of_geomodel_regions( *this, ( *this ).geomodel_ );
-
-        compute_universe_boundaries( ( *this ).geomodel_, *this );
 
         geology.build_contacts();
     }
