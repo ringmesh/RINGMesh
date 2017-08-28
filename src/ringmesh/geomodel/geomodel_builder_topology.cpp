@@ -495,6 +495,17 @@ namespace RINGMesh {
         }
     }
 
+    gmme_id GeoModelBuilderTopology< 3 >::create_mesh_entity(
+        const MeshEntityType& type )
+    {
+        const auto& manager = geomodel_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_region( type ) ) {
+            return GeoModelBuilderTopologyBase3D::create_mesh_entity< Region >();
+        } else {
+            return GeoModelBuilderTopologyBase3D::create_mesh_entity( type );
+        }
+    }
+
     bool GeoModelBuilderTopology< 3 >::create_mesh_entities(
         const MeshEntityType& type,
         index_t nb_additional_entities )
