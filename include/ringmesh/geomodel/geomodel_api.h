@@ -50,7 +50,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
     ALIAS_3D( GeoModel );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -172,4 +172,4 @@ namespace RINGMesh {
         const vec3& axis,
         double angle,
         bool degrees = false );
-}
+} // namespace RINGMesh

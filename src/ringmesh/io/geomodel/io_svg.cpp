@@ -76,7 +76,8 @@ namespace {
                     std::string data = path->Attribute( "d" );
                     std::vector< vec2 > vertices = get_path_vertices( data,
                         translation );
-                    index_t line_id = topology.create_mesh_entity< Line >().index();
+                    index_t line_id = topology.create_mesh_entity(
+                        Line2D::type_name_static() ).index();
                     geometry.set_line( line_id, vertices );
                     path = path->NextSiblingElement( "path" );
                 }

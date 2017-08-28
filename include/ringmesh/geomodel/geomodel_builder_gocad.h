@@ -50,7 +50,7 @@ namespace RINGMesh {
     class GeoModelBuilderML;
     struct VertexMap;
     struct TSolidLoadingStorage;
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -87,7 +87,7 @@ namespace RINGMesh {
     };
 
     class GocadBaseParser {
-    ringmesh_disable_copy(GocadBaseParser);
+    ringmesh_disable_copy_and_move(GocadBaseParser);
     public:
         virtual ~GocadBaseParser() = default;
     protected:
@@ -101,7 +101,7 @@ namespace RINGMesh {
         GeoModel3D& geomodel_;
     };
 
-    struct GocadLoadingStorage {
+    struct RINGMESH_API GocadLoadingStorage {
         GocadLoadingStorage();
 
         /*!
@@ -134,9 +134,8 @@ namespace RINGMesh {
         std::vector< index_t > cur_surf_polygon_ptr_;
     };
 
-    class GocadLineParser: public GocadBaseParser {
+    class RINGMESH_API GocadLineParser: public GocadBaseParser {
     public:
-        virtual ~GocadLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage ) = 0;
@@ -207,12 +206,11 @@ namespace RINGMesh {
         VertexMap vertex_map_;
 
         // Region tetrahedron corners
-        std::vector< index_t > tetra_corners_;
+        std::vector< index_t > tetra_corners_ { };
 
     };
     class TSolidLineParser: public GocadBaseParser {
     public:
-        virtual ~TSolidLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) = 0;
@@ -231,7 +229,6 @@ namespace RINGMesh {
             : GeoModelBuilderGocad( geomodel, std::move( filename ) )
         {
         }
-        virtual ~GeoModelBuilderTSolid() = default;
 
     private:
         void load_file() final;
@@ -292,7 +289,6 @@ namespace RINGMesh {
     };
     class MLLineParser: public GocadBaseParser {
     public:
-        virtual ~MLLineParser() = default;
         virtual void execute(
             GEO::LineInput& line,
             MLLoadingStorage& load_storage ) = 0;
@@ -310,7 +306,6 @@ namespace RINGMesh {
             : GeoModelBuilderGocad( geomodel, std::move( filename ) )
         {
         }
-        virtual ~GeoModelBuilderML() = default;
 
     private:
         /*!
@@ -340,4 +335,4 @@ namespace RINGMesh {
         MLLoadingStorage ml_load_storage_;
     };
 
-}
+} // namespace RINGMesh
