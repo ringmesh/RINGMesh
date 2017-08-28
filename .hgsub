@@ -1,0 +1,1 @@
+third_party/minizip = [git]https://github.com/nmoinvaz/minizip.git
