@@ -77,4 +77,4 @@ namespace RINGMesh {
     private:
         const GEO::Mesh& mesh_;
     };
-}
+} // namespace RINGMesh

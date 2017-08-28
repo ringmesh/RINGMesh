@@ -435,4 +435,4 @@ namespace RINGMesh {
     }
     template class RINGMESH_API GeoModelBuilderRepair< 2 > ;
     template class RINGMESH_API GeoModelBuilderRepair< 3 > ;
-}
+} // namespace RINGMesh

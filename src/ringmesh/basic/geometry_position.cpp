@@ -172,12 +172,14 @@ namespace {
                 return true;
             }
             return s2 == s3;
-        } else if( s2 == ZERO ) {
+        }
+        if( s2 == ZERO ) {
             if( s1 == ZERO || s3 == ZERO ) {
                 return true;
             }
             return s1 == s3;
-        } else if( s3 == ZERO ) {
+        }
+        if( s3 == ZERO ) {
             if( s1 == ZERO || s2 == ZERO ) {
                 return true;
             }
@@ -232,7 +234,7 @@ namespace {
     bool point_inside_tetra_approx( const vec3& p, std::array< vec3, 4 >& vertices )
     {
         std::array< Sign, 4 > signs;
-        for( index_t f : range( 4 ) ) {
+        for( const index_t f : range( 4 ) ) {
             double volume {
                 GEO::Geom::tetra_signed_volume( p,
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
@@ -246,7 +248,7 @@ namespace {
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
     }
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -317,5 +319,5 @@ namespace RINGMesh {
         template bool RINGMESH_API point_inside_triangle(
             const Geometry::Point< 3 >&,
             const Geometry::Triangle< 3 >& );
-    }
-}
+    } // namespace Position
+} // namespace RINGMesh

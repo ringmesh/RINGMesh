@@ -1167,7 +1167,7 @@ namespace {
         MLLineFactory::register_creator< LoadMLAtom >( "ATOM" );
         MLLineFactory::register_creator< LoadMLAtom >( "PATOM" );
     }
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -1330,4 +1330,4 @@ namespace RINGMesh {
         tsolid_import_factory_initialize();
         ml_import_factory_initialize();
     }
-}
+} // namespace RINGMesh

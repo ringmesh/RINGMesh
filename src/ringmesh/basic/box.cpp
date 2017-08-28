@@ -34,6 +34,7 @@
  */
 
 #include <ringmesh/basic/box.h>
+
 #include <algorithm>
 
 /*!
@@ -48,7 +49,7 @@ namespace {
     {
         return x * x;
     }
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -107,5 +108,5 @@ namespace RINGMesh {
     template class RINGMESH_API Box< 2 > ;
     template class RINGMESH_API Box< 3 > ;
 
-}
+} // namespace RINGMesh
 
