@@ -198,7 +198,12 @@ ExternalProject_Add_Step(zlib_ext forcebuild
 include_directories(SYSTEM ${ZLIB_PATH_BIN}/install/include)
 
 # Add zlib project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} debug zd optimized z)
+if(UNIX)
+    set(EXTRA_LIBS ${EXTRA_LIBS} debug zd optimized z)
+else()
+    set(EXTRA_LIBS ${EXTRA_LIBS} debug zlibd optimized zlib)
+endif()
+
     
 # Add zlib bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
