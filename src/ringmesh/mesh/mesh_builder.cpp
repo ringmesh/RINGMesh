@@ -93,7 +93,7 @@ namespace {
         }
         return {};
     }
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -196,4 +196,4 @@ namespace RINGMesh {
         3 >::create_builder( SurfaceMesh< 3 >& );
     template std::unique_ptr< VolumeMeshBuilder< 3 > > RINGMESH_API VolumeMeshBuilder<
         3 >::create_builder( VolumeMesh< 3 >& );
-}
+} // namespace RINGMesh

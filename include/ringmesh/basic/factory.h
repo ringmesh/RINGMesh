@@ -78,7 +78,9 @@ namespace RINGMesh {
             }
         }
 
-        static std::unique_ptr< BaseClass > create( const Key& key, const Args&... args )
+        static std::unique_ptr< BaseClass > create(
+            const Key& key,
+            const Args&... args )
         {
             Factory& self = instance();
             auto creator = self.creators_.find( key );
@@ -119,6 +121,6 @@ namespace RINGMesh {
         }
 
         using Creator = typename std::add_pointer< std::unique_ptr< BaseClass >( const Args&... ) >::type;
-        std::map< Key, Creator > creators_;
+        std::map< Key, Creator > creators_ { };
     };
-}
+} // namespace RINGMesh

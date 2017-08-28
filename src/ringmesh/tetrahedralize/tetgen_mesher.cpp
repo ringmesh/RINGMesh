@@ -65,7 +65,7 @@ namespace {
         }
         return true;
     }
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -213,10 +213,10 @@ namespace RINGMesh {
 
     void TetgenMesher::initialize_tetgen_args()
     {
-        std::unique_ptr< char[] > copy(
-            new char[tetgen_command_line_.length() + 1] );
-        std::strcpy( copy.get(), tetgen_command_line_.c_str() );
-        tetgen_args_.parse_commandline( copy.get() );
+        std::vector< char > copy( tetgen_command_line_.begin(),
+            tetgen_command_line_.end() );
+        copy.push_back( '\0' );
+        tetgen_args_.parse_commandline( copy.data() );
     }
 
     void TetgenMesher::assign_result_tetmesh_to_mesh(
@@ -230,7 +230,7 @@ namespace RINGMesh {
 
     std::vector< double > TetgenMesher::get_result_tetmesh_points() const
     {
-        index_t nb_points = static_cast< index_t >( tetgen_out_.numberofpoints );
+        auto nb_points = static_cast< index_t >( tetgen_out_.numberofpoints );
         std::vector< double > points( 3 * nb_points );
         double* points_ptr = tetgen_out_.pointlist;
         parallel_for( 3 * nb_points, [&points, &points_ptr]( index_t i ) {
@@ -243,7 +243,7 @@ namespace RINGMesh {
     {
         std::vector< index_t > tets_to_keep = determine_tets_to_keep();
 
-        index_t nb_tets = static_cast< index_t >( tets_to_keep.size() );
+        auto nb_tets = static_cast< index_t >( tets_to_keep.size() );
         std::vector< index_t > tets( 4 * nb_tets );
         int* tets_ptr = tetgen_out_.tetrahedronlist;
         parallel_for( nb_tets, [&tets_to_keep, &tets_ptr, &tets]( index_t i ) {
@@ -262,7 +262,7 @@ namespace RINGMesh {
         // The region Id of tet t is determined by:
         //  tetgen_out_.tetrahedronattributelist[t]
         std::set< double > regions_to_keep;
-        index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
+        auto nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
         for( index_t t : range( nb_tets ) ) {
             for( index_t f : range( 4 ) ) {
                 signed_index_t n = tetgen_out_.neighborlist[t * 4 + f];
@@ -281,7 +281,7 @@ namespace RINGMesh {
         std::vector< index_t > tets_to_keep;
         std::set< double > regions_to_keep = determine_tet_regions_to_keep();
 
-        index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
+        auto nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
         tets_to_keep.reserve( nb_tets );
         for( index_t t : range( nb_tets ) ) {
             if( regions_to_keep.find( tetgen_out_.tetrahedronattributelist[t] )
@@ -312,7 +312,7 @@ namespace RINGMesh {
     {
         tetgen_command_line_ += "q" + std::to_string( quality );
     }
-}
+} // namespace RINGMesh
 
 #endif
 

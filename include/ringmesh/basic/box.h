@@ -152,10 +152,10 @@ namespace RINGMesh {
 
     private:
         bool initialized_ { false };
-        vecn< DIMENSION > min_;
-        vecn< DIMENSION > max_;
+        vecn< DIMENSION > min_ { };
+        vecn< DIMENSION > max_ { };
 
     };
     ALIAS_2D_AND_3D( Box );
 
-}
+} // namespace RINGMesh

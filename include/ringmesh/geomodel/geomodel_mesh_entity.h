@@ -42,8 +42,8 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/entity_type.h>
+#include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 #include <ringmesh/mesh/mesh.h>
@@ -63,7 +63,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
     ALIAS_2D_AND_3D( GeoModel );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -75,7 +75,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class GeoModelMeshEntity: public GeoModelEntity< DIMENSION > {
-    ringmesh_disable_copy( GeoModelMeshEntity );
+    ringmesh_disable_copy_and_move( GeoModelMeshEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
         friend class GeoModelMeshEntityConstAccess< DIMENSION > ;
@@ -342,17 +342,17 @@ namespace RINGMesh {
     protected:
 
         /// Boundary relations of this entity
-        std::vector< index_t > boundaries_;
+        std::vector< index_t > boundaries_ { };
 
         /// Incident-entity relations of this entity
-        std::vector< index_t > incident_entities_;
+        std::vector< index_t > incident_entities_ { };
 
         /// Parents relations of this entity
-        std::vector< index_t > parents_;
+        std::vector< index_t > parents_ { };
 
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
-        std::shared_ptr< MeshBase< DIMENSION > > mesh_;
+        std::shared_ptr< MeshBase< DIMENSION > > mesh_ { };
     };
     ALIAS_2D_AND_3D( GeoModelMeshEntity );
 
@@ -362,6 +362,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class Corner final: public GeoModelMeshEntity< DIMENSION > {
+    ringmesh_disable_copy_and_move( Corner );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -456,8 +457,9 @@ namespace RINGMesh {
          * @brief Get the index of the unique vertex constituting of the Corner.
          * @return 0.
          */
-        index_t mesh_element_vertex_index( const ElementLocalVertex& element_local_vertex =
-            ElementLocalVertex( 0, 0 ) ) const final
+        index_t mesh_element_vertex_index(
+            const ElementLocalVertex& element_local_vertex = ElementLocalVertex( 0,
+                0 ) ) const final
         {
             ringmesh_unused( element_local_vertex );
             return 0;
@@ -480,7 +482,7 @@ namespace RINGMesh {
         void change_mesh_data_structure( const MeshType& type ) final;
 
     private:
-        std::shared_ptr< PointSetMesh< DIMENSION > > point_set_mesh_;
+        std::shared_ptr< PointSetMesh< DIMENSION > > point_set_mesh_ { };
     };
     ALIAS_2D_AND_3D( Corner );
 
@@ -492,6 +494,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class Line final: public GeoModelMeshEntity< DIMENSION > {
+    ringmesh_disable_copy_and_move( Line );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -635,7 +638,7 @@ namespace RINGMesh {
         void change_mesh_data_structure( const MeshType& type ) final;
 
     private:
-        std::shared_ptr< LineMesh< DIMENSION > > line_mesh_;
+        std::shared_ptr< LineMesh< DIMENSION > > line_mesh_ { };
     };
     ALIAS_2D_AND_3D( Line );
 
@@ -647,6 +650,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class SurfaceBase: public GeoModelMeshEntity< DIMENSION > {
+    ringmesh_disable_copy_and_move( SurfaceBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -726,7 +730,8 @@ namespace RINGMesh {
         {
             ringmesh_assert( element_local_vertex.element_id_ < nb_mesh_elements() );
             ringmesh_assert(
-                element_local_vertex.local_vertex_id_ < nb_mesh_element_vertices( element_local_vertex.element_id_ ) );
+                element_local_vertex.local_vertex_id_
+                    < nb_mesh_element_vertices( element_local_vertex.element_id_ ) );
             return surface_mesh_->polygon_vertex( element_local_vertex );
         }
 
@@ -820,7 +825,7 @@ namespace RINGMesh {
 
         void change_mesh_data_structure( const MeshType& type ) final;
     private:
-        std::shared_ptr< SurfaceMesh< DIMENSION > > surface_mesh_;
+        std::shared_ptr< SurfaceMesh< DIMENSION > > surface_mesh_ { };
     };
 
     template< index_t DIMENSION >
@@ -846,7 +851,7 @@ namespace RINGMesh {
          * Side: + (true) or - (false)
          * The size of this vector must be the same than boundary_
          */
-        std::vector< bool > sides_;
+        std::vector< bool > sides_ { };
     };
 
     template< >
@@ -873,6 +878,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class Region final: public GeoModelMeshEntity< DIMENSION > {
+    ringmesh_disable_copy_and_move( Region );
         ringmesh_template_assert_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -1126,7 +1132,8 @@ namespace RINGMesh {
 
         std::vector< index_t > cells_around_vertex(
             index_t vertex_id,
-            index_t cell_hint ) const {
+            index_t cell_hint ) const
+        {
             return volume_mesh_->cells_around_vertex( vertex_id, cell_hint );
         }
 
@@ -1167,8 +1174,8 @@ namespace RINGMesh {
 
         void copy_mesh_entity( const GeoModelMeshEntity< DIMENSION >& from ) final
         {
-            const Region< DIMENSION >& region_from = dynamic_cast< const Region<
-                DIMENSION >& >( from );
+            const auto& region_from =
+                dynamic_cast< const Region< DIMENSION >& >( from );
             GeoModelMeshEntity< DIMENSION >::copy_mesh_entity( from );
             sides_ = region_from.sides_;
         }
@@ -1178,17 +1185,17 @@ namespace RINGMesh {
          * Side: + (true) or - (false)
          * The size of this vector must be the same than boundary_
          */
-        std::vector< bool > sides_;
+        std::vector< bool > sides_ { };
 
     private:
-        std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_;
+        std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_ { };
     };
 
     ALIAS_3D( Region );
 
     template< index_t DIMENSION >
     class GeoModelMeshEntityConstAccess {
-    ringmesh_disable_copy( GeoModelMeshEntityConstAccess );
+    ringmesh_disable_copy_and_move( GeoModelMeshEntityConstAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderGeometryBase< DIMENSION > ;
         friend class GeoModelBuilderGeometry< DIMENSION > ;
@@ -1196,10 +1203,13 @@ namespace RINGMesh {
         friend class GeoModelBuilderTopology< DIMENSION > ;
 
     private:
-        GeoModelMeshEntityConstAccess( const GeoModelMeshEntity< DIMENSION >& gme )
+        explicit GeoModelMeshEntityConstAccess(
+            const GeoModelMeshEntity< DIMENSION >& gme )
             : gmme_( gme )
         {
         }
+
+        ~GeoModelMeshEntityConstAccess() = default;
 
         const std::shared_ptr< MeshBase< DIMENSION > >& mesh() const
         {
@@ -1222,7 +1232,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshEntityAccess {
-    ringmesh_disable_copy( GeoModelMeshEntityAccess );
+    ringmesh_disable_copy_and_move( GeoModelMeshEntityAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderTopologyBase< DIMENSION > ;
         friend class GeoModelBuilderTopology< DIMENSION > ;
@@ -1234,10 +1244,12 @@ namespace RINGMesh {
         friend class GeoModelBuilderRemoval< DIMENSION > ;
 
     private:
-        GeoModelMeshEntityAccess( GeoModelMeshEntity< DIMENSION >& gme )
+        explicit GeoModelMeshEntityAccess( GeoModelMeshEntity< DIMENSION >& gme )
             : gmme_( gme )
         {
         }
+
+        ~GeoModelMeshEntityAccess() = default;
 
         std::string& modifiable_name()
         {
@@ -1292,4 +1304,4 @@ namespace RINGMesh {
         GeoModelMeshEntity< DIMENSION >& gmme_;
     };
     ALIAS_2D_AND_3D( GeoModelMeshEntityAccess );
-}
+} // namespace RINGMesh
