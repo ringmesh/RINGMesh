@@ -194,23 +194,16 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         std::set< gmme_id >& mesh_entities )
     {
-        int nb_added = -1 * static_cast< int >( mesh_entities.size() );
-        for( index_t mesh_entity_type_i = 0;
-            mesh_entity_type_i
-                < geomodel.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types()
-                    - 1; ++mesh_entity_type_i ) {
-            const MeshEntityType& mesh_type =
-                geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types()[mesh_entity_type_i];
+        int nb_added { -1 * static_cast< int >( mesh_entities.size() ) };
+        for( auto mesh_type : geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types() ) {
             ringmesh_assert( mesh_type != Region3D::type_name_static() );
-            for( index_t mesh_entity_i = 0;
-                mesh_entity_i < geomodel.nb_mesh_entities( mesh_type );
-                ++mesh_entity_i ) {
+            for( index_t mesh_entity_i : range(
+                geomodel.nb_mesh_entities( mesh_type ) ) ) {
                 bool no_incident = true;
-                const GeoModelMeshEntity< DIMENSION >& cur_mesh_entity = geomodel.mesh_entity(
-                    mesh_type, mesh_entity_i );
-                for( index_t incident_entity_i = 0;
-                    incident_entity_i < cur_mesh_entity.nb_incident_entities();
-                    ++incident_entity_i ) {
+                const GeoModelMeshEntity< DIMENSION >& cur_mesh_entity =
+                    geomodel.mesh_entity( mesh_type, mesh_entity_i );
+                for( index_t incident_entity_i : range(
+                    cur_mesh_entity.nb_incident_entities() ) ) {
                     if( mesh_entities.count(
                         cur_mesh_entity.incident_entity_gmme( incident_entity_i ) )
                         == 0 ) {
