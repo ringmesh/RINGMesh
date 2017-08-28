@@ -214,6 +214,8 @@ namespace RINGMesh {
     public:
         virtual ~GeoModelBuilderTopology() = default;
 
+        gmme_id create_mesh_entity( const MeshEntityType& type ) override;
+
         bool create_mesh_entities(
             const MeshEntityType& type,
             index_t nb_additional_entities ) override;
