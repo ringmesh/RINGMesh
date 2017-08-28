@@ -995,4 +995,4 @@ namespace RINGMesh {
     template class RINGMESH_API Line< 3 > ;
     template class RINGMESH_API SurfaceBase< 3 > ;
     template class RINGMESH_API Region< 3 > ;
-}
+} // namespace RINGMesh

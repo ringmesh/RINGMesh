@@ -514,5 +514,5 @@ namespace RINGMesh {
     template class RINGMESH_API LineAABBTree< 3 > ;
     template class RINGMESH_API SurfaceAABBTree< 3 > ;
     template class RINGMESH_API VolumeAABBTree< 3 > ;
-}
+} // namespace RINGMesh
 

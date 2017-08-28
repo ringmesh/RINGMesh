@@ -48,10 +48,11 @@
  */
 namespace GEO {
     class Mesh;
-}
+} // namespace GEO
+
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -60,21 +61,9 @@ namespace RINGMesh {
      * @author Jeanne Pellerin
      */
     class TetgenMesher {
-    ringmesh_disable_copy( TetgenMesher );
+    ringmesh_disable_copy_and_move( TetgenMesher );
     public:
-        TetgenMesher()
-        {
-            // Quiet (no output)
-            tetgen_command_line_ += "Q";
-            // Use a piecewise linear complex
-            tetgen_command_line_ += "p";
-            // Save tetrahedron neighbors
-            tetgen_command_line_ += "n";
-            // Do not add points on boundaries
-            tetgen_command_line_ += "Y";
-            // Save tetrahedron regions
-            tetgen_command_line_ += "AA";
-        }
+        TetgenMesher() = default;
         ~TetgenMesher();
 
         void tetrahedralize(
@@ -105,11 +94,19 @@ namespace RINGMesh {
     private:
         GEO_3rdParty::tetgenio tetgen_in_;
         GEO_3rdParty::tetgenio tetgen_out_;
-        std::string tetgen_command_line_;
+        /*!
+         * Command line options:
+         * Q = Quiet (no output)
+         * p = Use a piecewise linear complex
+         * n = Save tetrahedron neighbors
+         * Y = Do not add points on boundaries
+         * AA = Save tetrahedron regions
+         */
+        std::string tetgen_command_line_ = std::string( "QpnYAA" );
         GEO_3rdParty::tetgenbehavior tetgen_args_;
 
-        std::unique_ptr< GEO_3rdParty::tetgenio::polygon[] > polygons_;
-        std::unique_ptr< int[] > polygon_corners_;
+        std::unique_ptr< GEO_3rdParty::tetgenio::polygon[] > polygons_ { };
+        std::unique_ptr< int[] > polygon_corners_ { };
     };
 
     /*!
@@ -123,5 +120,5 @@ namespace RINGMesh {
         bool refine,
         double quality );
 
-}
+} // namespace RINGMesh
 #endif

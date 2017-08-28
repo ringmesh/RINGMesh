@@ -285,4 +285,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelGeologicalEntity< 3 > ;
     template class RINGMESH_API GeoModelGeologicalEntityAccess< 3 > ;
 
-}
+} // namespace RINGMesh
