@@ -97,4 +97,4 @@ namespace RINGMesh {
         WellGroupIOHandlerFactory::register_creator< WLIOHandler >( "wl" );
         WellGroupIOHandlerFactory::register_creator< SmeshIOHandler >( "smesh" );
     }
-}
+} // namespace RINGMesh

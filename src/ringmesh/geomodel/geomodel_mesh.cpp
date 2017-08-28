@@ -2847,4 +2847,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelMeshPolygonsBase< 3 > ;
     template class RINGMESH_API GeoModelMeshCells< 3 > ;
 
-}
+} // namespace RINGMesh

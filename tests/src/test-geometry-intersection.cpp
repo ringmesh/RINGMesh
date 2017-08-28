@@ -73,7 +73,7 @@ void test_line_plane_intersection()
     vec3 result1;
     std::tie( does_line1_intersect_plane, result1 ) = Intersection::line_plane(
         line1, plane );
-    vec3 answer1 { line1.origin_ };
+    vec3 answer1 { line1.origin };
     verdict( does_line1_intersect_plane && result1 == answer1,
         "True intersection1" );
 
@@ -125,7 +125,7 @@ void test_segment_plane_intersection()
     vec3 result2;
     std::tie( does_seg2_intersect_plane, result2 ) = Intersection::segment_plane(
         seg2, plane );
-    vec3 answer2 { seg2.p1_ };
+    vec3 answer2 { seg2.p1 };
     verdict( does_seg2_intersect_plane && are_almost_equal( result2, answer2 ),
         "Intersection at segment extremity" );
 
@@ -183,7 +183,7 @@ void test_segment_triangle_intersection()
     vec3 result3;
     std::tie( does_seg3_intersect_triangle, result3 ) =
         Intersection::segment_triangle( seg3, triangle );
-    vec3 answer3 { triangle.p1_ };
+    vec3 answer3 { triangle.p1 };
     verdict( does_seg3_intersect_triangle && are_almost_equal( result3, answer3 ),
         "Test3" );
 
@@ -205,7 +205,7 @@ void test_segment_triangle_intersection()
     verdict( !does_seg5_intersect_triangle, "Test5" );
 
     // Segment is a triangle edge
-    Geometry::Segment3D seg6 { triangle.p0_, triangle.p1_ };
+    Geometry::Segment3D seg6 { triangle.p0, triangle.p1 };
     bool does_seg6_intersect_triangle;
     std::tie( does_seg6_intersect_triangle, std::ignore ) =
         Intersection::segment_triangle( seg6, triangle );
@@ -252,11 +252,11 @@ void test_circle_plane_intersection()
     std::vector< vec3 > results3;
     std::tie( does_circle3_intersect_plane, results3 ) = Intersection::circle_plane(
         circle3, plane );
-    vec3 answer31 { circle3.plane_.origin_
+    vec3 answer31 { circle3.plane.origin
         + vec3 { std::sqrt( 2 ) * std::cos( M_PI / 6 ), std::sqrt( 2 )
                      * std::cos( M_PI / 6 ),
                  -1. } };
-    vec3 answer32 { circle3.plane_.origin_
+    vec3 answer32 { circle3.plane.origin
         + vec3 { -std::sqrt( 2 ) * std::cos( M_PI / 6 ), -std::sqrt( 2 )
                      * std::cos( M_PI / 6 ),
                  -1. } };
@@ -371,9 +371,9 @@ void test_plane_plane_intersection()
     vec3 D_inter_answer3 { 0., 2., 1. };
     verdict(
         does_P3_intersect_plane
-            && are_almost_equal( normalize( D_inter_answer3 ), result3.direction_ )
+            && are_almost_equal( normalize( D_inter_answer3 ), result3.direction )
             && are_almost_equal( normalize( D_inter_answer3 ),
-                normalize( result3.origin_ - O_inter_answer3 ) ),
+                normalize( result3.origin - O_inter_answer3 ) ),
         "Test intersecting planes" );
     Logger::out( "TEST", " " );
 }

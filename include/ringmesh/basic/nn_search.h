@@ -48,16 +48,18 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class NNSearch {
-    ringmesh_disable_copy( NNSearch );
+    ringmesh_disable_copy_and_move( NNSearch );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        NNSearch(
+        explicit NNSearch(
             const std::vector< vecn< DIMENSION > >& vertices,
             bool copy = true );
 
         ~NNSearch()
         {
-            if( delete_points_ ) delete[] nn_points_;
+            if( delete_points_ ) {
+                delete[] nn_points_;
+            }
         }
 
         /*!
@@ -184,4 +186,4 @@ namespace RINGMesh {
     };
     ALIAS_2D_AND_3D( NNSearch );
 
-}
+} // namespace RINGMesh
