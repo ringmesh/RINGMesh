@@ -149,6 +149,11 @@ extern "C" {
      * \brief Gets the screen size from the arglist and sends it to GLUP.
      */
     void GLUP_VIEWER_API glup_viewer_set_screen_size_from_args();
+
+
+    void GLUP_VIEWER_API glup_viewer_effect_begin_frame();
+    
+    void GLUP_VIEWER_API glup_viewer_effect_end_frame();
     
 #ifdef __cplusplus
 }
