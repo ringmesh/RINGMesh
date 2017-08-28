@@ -103,4 +103,4 @@ namespace RINGMesh {
         }
     }
 
-}
+} // namespace RINGMesh

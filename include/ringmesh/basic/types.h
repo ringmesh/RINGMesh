@@ -156,4 +156,4 @@ namespace RINGMesh {
     {                                       \
         static const bool enable = true;    \
     }
-}
+} // namespace RINGMesh

@@ -300,5 +300,5 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderRemoval< 2 > ;
 
     template class RINGMESH_API GeoModelBuilderRemovalBase< 3 > ;
-}
+} // namespace RINGMesh
 

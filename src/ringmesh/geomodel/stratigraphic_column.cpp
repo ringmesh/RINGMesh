@@ -152,4 +152,4 @@ namespace RINGMesh {
         ringmesh_assert_not_reached;
         return NO_ID;
     }
-}
+} // namespace RINGMesh
