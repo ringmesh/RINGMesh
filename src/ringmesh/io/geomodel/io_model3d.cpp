@@ -60,7 +60,7 @@ namespace {
         out << "REGION " << count << "  " << region.name() << " " << EOL;
         index_t it = 0;
 
-        for( index_t i : range( region.nb_boundaries() ) ) {
+        for( auto i : range( region.nb_boundaries() ) ) {
             out << "  ";
             if( region.side( i ) ) {
                 out << "+";
@@ -88,7 +88,7 @@ namespace {
             << EOL;
         index_t it = 0;
 
-        for( index_t i : range( surface_region_sides.surfaces_.size() ) ) {
+        for( auto i : range( surface_region_sides.surfaces_.size() ) ) {
             out << "  ";
             if( surface_region_sides.sides_[ i ] ) {
                 out << "+";
@@ -123,7 +123,7 @@ namespace {
         out << "LAYER " << layer.name() << " " << EOL;
         index_t it = 0;
 
-        for( index_t i : range( layer.nb_children() ) ) {
+        for( auto i : range( layer.nb_children() ) ) {
             out << "  " << layer.child_gmme( i ).index() + offset + 1;
             it++;
             if( it == 5 ) {
@@ -156,14 +156,14 @@ namespace {
      */
     bool check_gocad_validity( const GeoModel3D& geomodel )
     {
-        index_t nb_interfaces = geomodel.nb_geological_entities(
+        auto nb_interfaces = geomodel.nb_geological_entities(
             Interface3D::type_name_static() );
         if( nb_interfaces == 0 ) {
             Logger::err( "", " The GeoModel ", geomodel.name(),
                 " has no Interface" );
             return false;
         }
-        for( index_t i : range( nb_interfaces ) ) {
+        for( auto i : range( nb_interfaces ) ) {
             const GeoModelGeologicalEntity3D& E = geomodel.geological_entity(
                 Interface3D::type_name_static(), i );
             if( !E.has_geological_feature() ) {
@@ -191,13 +191,13 @@ namespace {
         index_t v0_in,
         index_t v1_in )
     {
-        for( index_t i : range( surface.nb_mesh_elements() ) ) {
-            for( index_t j : range( surface.nb_mesh_element_vertices( i ) ) ) {
-                index_t v0 = surface.mesh_element_vertex_index(
-                    ElementLocalVertex( i, j ) );
-                index_t v1 = surface.mesh_element_vertex_index(
+        for( auto i : range( surface.nb_mesh_elements() ) ) {
+            for( auto j : range( surface.nb_mesh_element_vertices( i ) ) ) {
+                auto v0 = surface.mesh_element_vertex_index(
+                    { i, j } );
+                auto v1 = surface.mesh_element_vertex_index(
                     surface.low_level_mesh_storage().next_polygon_vertex(
-                        ElementLocalVertex( i, j ) ) );
+                        { i, j } ) );
                 if( ( v0 == v0_in && v1 == v1_in )
                     || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true;
@@ -227,9 +227,9 @@ namespace {
         save_coordinate_system( out );
 
         // Gocad::TSurf = RINGMesh::Interface
-        index_t nb_interfaces = geomodel.nb_geological_entities(
+        auto nb_interfaces = geomodel.nb_geological_entities(
             Interface3D ::type_name_static() );
-        for( index_t i : range( nb_interfaces ) ) {
+        for( auto i : range( nb_interfaces ) ) {
             out << "TSURF "
                 << geomodel.geological_entity( Interface3D ::type_name_static(),
                     i ).name() << EOL;
@@ -246,7 +246,7 @@ namespace {
                     " in .ml Gocad format because Surface ", surface.index(),
                     " has no Interface parent)" );
             }
-            const GeoModelGeologicalEntity3D::GEOL_FEATURE& cur_geol_feature =
+            const auto& cur_geol_feature =
                 geomodel.geological_entity( parent_interface ).geological_feature();
 
             out << "TFACE " << count << "  ";
@@ -258,19 +258,19 @@ namespace {
             // Print the key polygon which is the first three
             // vertices of the first polygon
             out << "  "
-                << surface.mesh_element_vertex( ElementLocalVertex( 0, 0 ) )
+                << surface.mesh_element_vertex( { 0, 0 } )
                 << EOL;
             out << "  "
-                << surface.mesh_element_vertex( ElementLocalVertex( 0, 1 ) )
+                << surface.mesh_element_vertex( { 0, 1 } )
                 << EOL;
             out << "  "
-                << surface.mesh_element_vertex( ElementLocalVertex( 0, 2 ) )
+                << surface.mesh_element_vertex( { 0, 2 } )
                 << EOL;
 
             ++count;
         }
         // Universe
-        index_t offset_layer = count;
+        auto offset_layer = count;
         save_universe( count, geomodel, out );
         ++count;
         // Regions
@@ -281,9 +281,9 @@ namespace {
         // Layers
         if( geomodel.entity_type_manager().geological_entity_manager.is_valid_type(
             Layer3D ::type_name_static() ) ) {
-            index_t nb_layers = geomodel.nb_geological_entities(
+            auto nb_layers = geomodel.nb_geological_entities(
                 Layer3D ::type_name_static() );
-            for( index_t i : range( nb_layers ) ) {
+            for( auto i : range( nb_layers ) ) {
                 save_layer( count, offset_layer,
                     geomodel.geological_entity( Layer3D ::type_name_static(),
                         i ), out );
@@ -292,9 +292,9 @@ namespace {
         }
         out << "END" << EOL;
 
-        const GeoModelMeshVertices3D& geomodel_vertices = geomodel.mesh.vertices;
+        const auto& geomodel_vertices = geomodel.mesh.vertices;
         // Save the geometry of the Surfaces, Interface per Interface
-        for( index_t i : range( nb_interfaces ) ) {
+        for( auto i : range( nb_interfaces ) ) {
             const GeoModelGeologicalEntity3D& tsurf = geomodel.geological_entity(
                 Interface3D ::type_name_static(), i );
             // TSurf beginning header
@@ -313,49 +313,49 @@ namespace {
 
             index_t vertex_count = 1;
             // TFace vertex index = Surface vertex index + offset
-            index_t offset = vertex_count;
+            auto offset = vertex_count;
 
             // To collect Corners(BStones) indexes
             // and boundary (Line) first and second vertex indexes
             std::set< index_t > corners;
             std::set< std::pair< index_t, index_t > > lineindices;
-            for( index_t j : range( tsurf.nb_children() ) ) {
+            for( auto j : range( tsurf.nb_children() ) ) {
                 offset = vertex_count;
-                const Surface3D& surface =
+                const auto& surface =
                     dynamic_cast< const Surface3D& >( tsurf.child( j ) );
 
                 out << "TFACE" << EOL;
-                for( index_t k : range( surface.nb_vertices() ) ) {
+                for( auto k : range( surface.nb_vertices() ) ) {
                     out << "VRTX " << vertex_count << " " << surface.vertex( k )
                         << EOL;
                     vertex_count++;
                 }
-                for( index_t k : range( surface.nb_mesh_elements() ) ) {
+                for( auto k : range( surface.nb_mesh_elements() ) ) {
                     out << "TRGL "
                         << surface.mesh_element_vertex_index(
-                            ElementLocalVertex( k, 0 ) ) + offset << " "
+                            { k, 0 } ) + offset << " "
                         << surface.mesh_element_vertex_index(
-                            ElementLocalVertex( k, 1 ) ) + offset << " "
+                            { k, 1 } ) + offset << " "
                         << surface.mesh_element_vertex_index(
-                            ElementLocalVertex( k, 2 ) ) + offset << EOL;
+                            { k, 2 } ) + offset << EOL;
                 }
-                for( index_t k : range( surface.nb_boundaries() ) ) {
-                    const Line3D& line = surface.boundary( k );
-                    index_t v0_model_id = geomodel_vertices.geomodel_vertex_id(
+                for( auto k : range( surface.nb_boundaries() ) ) {
+                    const auto& line = surface.boundary( k );
+                    auto v0_model_id = geomodel_vertices.geomodel_vertex_id(
                         line.gmme(), 0 );
-                    index_t v1_model_id = geomodel_vertices.geomodel_vertex_id(
+                    auto v1_model_id = geomodel_vertices.geomodel_vertex_id(
                         line.gmme(), 1 );
 
-                    std::vector< index_t > v0_surface_ids =
+                    auto v0_surface_ids =
                         geomodel_vertices.mesh_entity_vertex_id( surface.gmme(),
                             v0_model_id );
-                    std::vector< index_t > v1_surface_ids =
+                    auto v1_surface_ids =
                         geomodel_vertices.mesh_entity_vertex_id( surface.gmme(),
                             v1_model_id );
 
                     if( !surface.has_inside_border() ) {
-                        index_t v0 = v0_surface_ids[0];
-                        index_t v1 = v1_surface_ids[0];
+                        auto v0 = v0_surface_ids[0];
+                        auto v1 = v1_surface_ids[0];
                         v0 += offset;
                         v1 += offset;
 
@@ -367,8 +367,8 @@ namespace {
                         // corner and a border
                         int count = 0;
                         bool to_break = false;
-                        for( index_t v0 : v0_surface_ids ) {
-                            for( index_t v1 : v1_surface_ids ) {
+                        for( auto v0 : v0_surface_ids ) {
+                            for( auto v1 : v1_surface_ids ) {
                                 if( has_surface_edge( surface, v0, v1 ) ) {
                                     lineindices.insert(
                                         std::pair< index_t, index_t >( v0 + offset,
@@ -391,8 +391,8 @@ namespace {
                         }
                     }
                     // Set a BSTONE at the line other extremity
-                    const gmme_id& c1_id = line.boundary_gmme( 1 );
-                    std::vector< index_t > gme_vertices =
+                    const auto& c1_id = line.boundary_gmme( 1 );
+                    auto gme_vertices =
                         geomodel_vertices.mesh_entity_vertex_id( surface.gmme(),
                             geomodel_vertices.geomodel_vertex_id( c1_id ) );
                     corners.insert( gme_vertices.front() + offset );
