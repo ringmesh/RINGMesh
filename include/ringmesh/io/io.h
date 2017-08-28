@@ -39,8 +39,8 @@
 
 #include <memory>
 
-#include <zlib/zip.h>
-#include <zlib/unzip.h>
+#include <minizip/zip.h>
+#include <minizip/unzip.h>
 
 #include <geogram/basic/string.h>
 

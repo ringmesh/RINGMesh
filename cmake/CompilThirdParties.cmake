@@ -173,7 +173,8 @@ ExternalProject_Add(zlib_ext
   #--Configure step-------------
   SOURCE_DIR ${ZLIB_PATH}
       CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
-          -G ${CMAKE_GENERATOR} 
+          -G ${CMAKE_GENERATOR}
+          -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_PATH_BIN}
           -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -184,7 +185,8 @@ ExternalProject_Add(zlib_ext
   BUILD_COMMAND ${CMAKE_COMMAND} --build ${ZLIB_PATH_BIN} ${COMPILATION_OPTION}
 
   #--Install step---------------
-  INSTALL_COMMAND "" 
+  INSTALL_DIR ${ZLIB_PATH_BIN}
+  #INSTALL_COMMAND ${CMAKE_COMMAND} install
 )
 
 ExternalProject_Add_Step(zlib_ext forcebuild
@@ -196,7 +198,7 @@ ExternalProject_Add_Step(zlib_ext forcebuild
 # same as zlib
 
 # Add zlib project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} zlib)
+set(EXTRA_LIBS ${EXTRA_LIBS} z)
     
 # Add zlib bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
@@ -232,6 +234,7 @@ ExternalProject_Add(minizip_ext
           -G ${CMAKE_GENERATOR} 
           -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
           -DUSE_AES:BOOL=OFF
+          -DZLIB_ROOT:PATH=${ZLIB_PATH_BIN}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   
@@ -248,6 +251,9 @@ ExternalProject_Add_Step(minizip_ext forcebuild
     DEPENDERS build
     ALWAYS 1
   )
+  
+  
+add_dependencies(minizip_ext zlib_ext)
 
 # Add minizip include directories to the current ones
 # same as minizip
@@ -257,4 +263,4 @@ set(EXTRA_LIBS ${EXTRA_LIBS} minizip)
     
 # Add minizip bin directories to the current ones 
 # It would be preferable to set the imported library location [JP]
-link_directories(${MINIZIP_PATH_BIN}/lib)
+link_directories(${MINIZIP_PATH_BIN})
