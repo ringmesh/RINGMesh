@@ -481,4 +481,4 @@ namespace RINGMesh {
         const std::string& );
     template void RINGMESH_API translate( GeoModel3D&, const vec3& );
 
-}
+} // namespace RINGMesh

@@ -51,7 +51,7 @@ namespace RINGMesh {
     class GeoModelBuilderML;
     struct VertexMap;
     struct TSolidLoadingStorage;
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -86,7 +86,7 @@ namespace RINGMesh {
     };
 
     class GocadBaseParser {
-    ringmesh_disable_copy(GocadBaseParser);
+    ringmesh_disable_copy_and_move(GocadBaseParser);
     public:
         virtual ~GocadBaseParser() = default;
     protected:
@@ -100,7 +100,7 @@ namespace RINGMesh {
         GeoModel3D& geomodel_;
     };
 
-    struct GocadLoadingStorage {
+    struct RINGMESH_API GocadLoadingStorage {
         GocadLoadingStorage();
 
         /*!
@@ -138,7 +138,7 @@ namespace RINGMesh {
         std::vector< index_t > cur_surf_polygon_ptr_;
     };
 
-    class GocadLineParser: public GocadBaseParser {
+    class RINGMESH_API GocadLineParser: public GocadBaseParser {
     public:
         virtual void execute(
             GEO::LineInput& line,
@@ -691,4 +691,4 @@ namespace RINGMesh {
         MLLoadingStorage ml_load_storage_;
     };
 
-}
+} // namespace RINGMesh

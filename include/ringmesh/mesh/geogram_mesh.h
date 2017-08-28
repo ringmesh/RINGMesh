@@ -51,7 +51,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeogramLineMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeogramSurfaceMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeogramVolumeMeshBuilder );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -292,4 +292,4 @@ namespace RINGMesh {
     using GeogramVolumeMesh3D = GeogramVolumeMesh< 3 >;
 
     void register_geogram_mesh();
-}
+} // namespace RINGMesh

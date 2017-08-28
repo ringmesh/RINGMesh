@@ -90,7 +90,7 @@ namespace RINGMesh {
             return true;
         }
 
-    }
+    } // namespace CmdLine
 
-}
+} // namespace RINGMesh
 

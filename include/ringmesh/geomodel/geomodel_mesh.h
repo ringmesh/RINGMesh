@@ -39,8 +39,8 @@
 
 #include <memory>
 
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/entity_type_manager.h>
+#include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
@@ -71,7 +71,7 @@ namespace RINGMesh {
 
     ALIAS_3D( GeoModel );
     ALIAS_3D( GeoModelMesh );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -79,12 +79,14 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshCommon {
-    ringmesh_disable_copy( GeoModelMeshCommon );
+    ringmesh_disable_copy_and_move( GeoModelMeshCommon );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     protected:
         GeoModelMeshCommon(
             GeoModelMesh< DIMENSION >& gmm,
             GeoModel< DIMENSION >& geomodel );
+
+        virtual ~GeoModelMeshCommon() = default;
 
         void set_mesh( MeshBase< DIMENSION >* mesh )
         {
@@ -106,15 +108,11 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshVerticesBase: public GeoModelMeshCommon< DIMENSION > {
-    ringmesh_disable_copy( GeoModelMeshVerticesBase );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshWells< DIMENSION > ;
         friend class GeoModelMeshEdges< DIMENSION > ;
         friend class GeoModelMeshPolygonsBase< DIMENSION > ;
         friend class GeoModelMeshCells< DIMENSION > ;
-
-        virtual ~GeoModelMeshVerticesBase() = default;
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -282,11 +280,13 @@ namespace RINGMesh {
          * of GeoModelMeshEntites (entity_index) and GeoModelMeshVerticesBase (global index)
          */
         class GeoModelVertexMapper {
-        ringmesh_disable_copy( GeoModelVertexMapper );
+        ringmesh_disable_copy_and_move( GeoModelVertexMapper );
         public:
             GeoModelVertexMapper(
                 GeoModelMeshVerticesBase& geomodel_vertices,
                 const GeoModel< DIMENSION >& geomodel );
+
+            ~GeoModelVertexMapper() = default;
 
             /*!
              * \name Query
@@ -517,9 +517,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
-    ringmesh_disable_copy( GeoModelMeshPolygonsBase );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
-
+        ringmesh_disable_copy_and_move( GeoModelMeshPolygonsBase );
         static const std::string surface_att_name;
         static const std::string polygon_surface_att_name;
 
@@ -798,8 +796,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
-    ringmesh_disable_copy( GeoModelMeshEdges );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        ringmesh_disable_copy_and_move( GeoModelMeshEdges );
         static const std::string line_att_name;
         static const std::string edge_line_att_name;
 
@@ -940,14 +937,11 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshWells final: public GeoModelMeshCommon< DIMENSION > {
-    ringmesh_disable_copy( GeoModelMeshWells );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        GeoModelMeshWells(
+        explicit GeoModelMeshWells(
             GeoModelMesh< DIMENSION >& gmm,
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< LineMesh< DIMENSION > >& mesh );
-        ~GeoModelMeshWells() = default;
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -1017,8 +1011,6 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
-    ringmesh_disable_copy( GeoModelMeshCells );
-        ringmesh_template_assert_3d( DIMENSION );
         static const std::string region_att_name;
         static const std::string cell_region_att_name;
 
@@ -1483,7 +1475,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshBase {
-    ringmesh_disable_copy( GeoModelMeshBase );
+    ringmesh_disable_copy_and_move( GeoModelMeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         virtual ~GeoModelMeshBase();
@@ -1543,13 +1535,14 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelMesh final: public GeoModelMeshBase< DIMENSION > {
     public:
-        GeoModelMesh( GeoModel< DIMENSION >& geomodel );
+        explicit GeoModelMesh( GeoModel< DIMENSION >& geomodel );
     };
 
     template< >
     class RINGMESH_API GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
+    ringmesh_disable_copy_and_move( GeoModelMesh );
     public:
-        GeoModelMesh( GeoModel3D& geomodel );
+        explicit GeoModelMesh( GeoModel3D& geomodel );
         virtual ~GeoModelMesh();
 
         /*! @}
@@ -1601,4 +1594,4 @@ namespace RINGMesh {
         GeoModelMeshCells3D cells;
     };
 
-}
+} // namespace RINGMesh

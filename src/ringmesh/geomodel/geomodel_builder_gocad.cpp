@@ -1742,4 +1742,4 @@ namespace RINGMesh {
         tsolid_import_factory_initialize();
         ml_import_factory_initialize();
     }
-}
+} // namespace RINGMesh

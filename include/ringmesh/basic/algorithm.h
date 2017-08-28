@@ -139,4 +139,4 @@ namespace RINGMesh {
         container.erase( std::unique( container.begin(), container.end() ),
             container.end() );
     }
-}
+} // namespace RINGMesh
