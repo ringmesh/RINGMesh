@@ -534,14 +534,19 @@ namespace {
         return is_vertex_valid< Surface >( geomodel, entities );
     }
 
-    template< index_t DIMENSION >
+	template< index_t DIMENSION >
+	bool is_line_vertex_valid(
+		const GeoModel< DIMENSION >& geomodel,
+		const std::map< MeshEntityType, std::vector< index_t > >& entities);
+
+    template< >
     bool is_line_vertex_valid(
-        const GeoModel< DIMENSION >& geomodel,
+        const GeoModel3D& geomodel,
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
-        const std::vector< index_t >& lines = entities.find(
-            Line< DIMENSION >::type_name_static() )->second;
-        if( entities.find( Corner< DIMENSION >::type_name_static() )->second.empty() ) {
+        const auto& lines = entities.find(
+            Line3D::type_name_static() )->second;
+        if( entities.find( Corner3D::type_name_static() )->second.empty() ) {
             if( !lines.empty() ) {
                 if( lines.size() != 1 ) {
                     print_error( lines, "Lines" );
@@ -555,13 +560,13 @@ namespace {
             }
         } else {
             if( lines.size() < 2 ) {
-                print_error( lines, "Lines" );
+                print_error( lines, "Line" );
                 Logger::warn( "GeoModel", "It should be in at least 2 Lines" );
                 return false;
             } else {
-                for( index_t line : lines ) {
-                    index_t nb = static_cast< index_t >( std::count( lines.begin(),
-                        lines.end(), line ) );
+                for( const auto line : lines ) {
+					index_t nb{ static_cast<index_t>(std::count(lines.begin(),
+						lines.end(), line)) };
                     if( nb == 2 ) {
                         if( !geomodel.line( line ).is_closed() ) {
                             Logger::warn( "GeoModel", " Vertex"
@@ -575,10 +580,10 @@ namespace {
                     }
                 }
                 // Check that all the lines are in incident_entity of this corner
-                gmme_id corner_id( Corner< DIMENSION >::type_name_static(),
-                    entities.find( Corner< DIMENSION >::type_name_static() )->second.front() );
-                for( index_t line : lines ) {
-                    gmme_id line_id( Line< DIMENSION >::type_name_static(), line );
+                gmme_id corner_id( Corner3D::type_name_static(),
+                    entities.find( Corner3D::type_name_static() )->second.front() );
+                for( const auto line : lines ) {
+                    gmme_id line_id( Line3D::type_name_static(), line );
                     if( !is_boundary_entity( geomodel, line_id, corner_id ) ) {
                         Logger::warn( "GeoModel",
                             " Inconsistent Line-Corner connectivity ",
@@ -591,6 +596,69 @@ namespace {
             }
         }
     }
+
+	template< >
+	bool is_line_vertex_valid(
+		const GeoModel2D& geomodel,
+		const std::map< MeshEntityType, std::vector< index_t > >& entities)
+	{
+		const std::vector< index_t >& lines = entities.find(
+			Line2D::type_name_static())->second;
+		if (entities.find(Corner2D::type_name_static())->second.empty()) {
+			if (!lines.empty()) {
+				if (lines.size() != 1) {
+					print_error(lines, "Lines");
+					Logger::warn("GeoModel", "It should be in only one Line");
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+			else {
+				return true;
+			}
+		}
+		else {
+			if (lines.size() < 1) {
+				print_error(lines, "Lines");
+				Logger::warn("GeoModel", "It should be in at least one Line");
+				return false;
+			}
+			else {
+				for (index_t line : lines) {
+					index_t nb = static_cast< index_t >(std::count(lines.begin(),
+						lines.end(), line));
+					if (nb == 2) {
+						if (!geomodel.line(line).is_closed()) {
+							Logger::warn("GeoModel", " Vertex"
+								" is twice in Line ", line);
+							return false;
+						}
+					}
+					else if (nb > 2) {
+						Logger::warn("GeoModel", " Vertex appears ", nb,
+							" times in Line ", line);
+						return false;
+					}
+				}
+				// Check that all the lines are in incident_entity of this corner
+				gmme_id corner_id(Corner2D::type_name_static(),
+					entities.find(Corner2D::type_name_static())->second.front());
+				for (index_t line : lines) {
+					gmme_id line_id(Line2D::type_name_static(), line);
+					if (!is_boundary_entity(geomodel, line_id, corner_id)) {
+						Logger::warn("GeoModel",
+							" Inconsistent Line-Corner connectivity ",
+							" vertex shows that ", line_id,
+							" must be in the boundary of ", corner_id);
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+	}
 
     template< index_t DIMENSION >
     bool is_corner_valid(
