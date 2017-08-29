@@ -1365,14 +1365,11 @@ namespace RINGMesh {
     bool are_geomodel_geological_entities_valid(
         const GeoModel< DIMENSION >& geomodel )
     {
-        const std::vector< GeologicalEntityType >& geological_types =
+        const auto& geological_types =
             geomodel.entity_type_manager().geological_entity_manager.geological_entity_types();
-        index_t count_invalid = 0;
-        for( const GeologicalEntityType& type : geological_types ) {
-            index_t nb_entities = geomodel.nb_geological_entities( type );
-            for( index_t i : range( nb_entities ) ) {
-                const GeoModelGeologicalEntity< DIMENSION >& E =
-                    geomodel.geological_entity( type, i );
+        index_t count_invalid = { 0 };
+        for( const auto& type : geological_types ) {
+            for( auto& E : geomodel.geol_entities( type ) ) {
                 if( !E.is_valid() ) {
                     count_invalid++;
                 }
