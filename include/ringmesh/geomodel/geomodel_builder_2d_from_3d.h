@@ -51,11 +51,36 @@ namespace RINGMesh {
                 geomodel3d_from_( geomodel3d_from ),
                 plane_( plane )
         {
+            auto upward_point = plane_.origin + vec3 { 0., 0., 1. };
+            vec3 v_axis_point_direction;
+            std::tie( std::ignore, v_axis_point_direction ) =
+                Distance::point_to_plane( upward_point, plane_ );
+            if( ( plane_.origin - v_axis_point_direction ).length()
+                < geomodel3d_from.epsilon() ) {
+                // Case where plane is sub-horizontal
+                auto towards_x_point = plane_.origin + vec3 { 1., 0., 0. };
+                std::tie( std::ignore, v_axis_point_direction ) =
+                    Distance::point_to_plane( towards_x_point, plane_ );
+                ringmesh_assert(
+                    ( plane_.origin - v_axis_point_direction ).length()
+                        < geomodel3d_from.epsilon() );
+            }
+            v_axis = normalize( v_axis_point_direction - plane_.origin );
+            u_axis = cross( v_axis, plane_.normal );
+            DEBUG( u_axis.length() );
+        }
+    protected:
+        vec2 get_2d_coord( const vec3& coord3d )
+        {
+            return vec2 { dot( coord3d, u_axis ), dot( coord3d, v_axis ) };
+
         }
 
     protected:
         const GeoModel3D& geomodel3d_from_;
         Geometry::Plane plane_;
+        vec3 u_axis { };
+        vec3 v_axis { };
     };
 
     class RINGMESH_API GeoModelBuilder2DProjection: public GeoModelBuilder2DFrom3D {
@@ -69,5 +94,13 @@ namespace RINGMesh {
         }
 
         void build_geomodel();
+
+    private:
+        void copy_geomodel_3d_topology();
+
+        void project_geomodel_3d_mesh_entities();
+
+        std::vector< vec2 > compute_projected_vertices(
+            const GeoModelMeshEntity3D& entity );
     };
 }
