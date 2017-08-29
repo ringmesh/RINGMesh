@@ -252,7 +252,7 @@ namespace {
                 index_t v20 = polygons.vertex( ElementLocalVertex( p2, v2 ) );
                 index_t v21 = polygons.vertex(
                     ElementLocalVertex( p2,
-                        ( v2 + 1 ) % polygons.nb_vertices( p2 ) ) );
+                    ( v2 + 1 ) % polygons.nb_vertices( p2 ) ) );
 
                 if( ( v10 == v20 && v11 == v21 ) || ( v10 == v21 && v11 == v20 ) ) {
                     if( is_edge_on_line( geomodel, v20, v21 ) ) {
@@ -299,9 +299,9 @@ namespace {
             const GeoModel< DIMENSION >& geomodel,
             std::vector< bool >& has_isect )
             :
-                geomodel_( geomodel ),
-                polygons_( geomodel.mesh.polygons ),
-                has_intersection_( has_isect )
+            geomodel_( geomodel ),
+            polygons_( geomodel.mesh.polygons ),
+            has_intersection_( has_isect )
         {
             has_intersection_.assign( polygons_.nb(), 0 );
         }
@@ -459,7 +459,7 @@ namespace {
         MeshEntityType type = ENTITY< DIMENSION >::type_name_static();
         MeshEntityType boundary_type =
             geomodel.entity_type_manager().mesh_entity_manager.boundary_entity_type(
-                type );
+            type );
         const std::vector< index_t >& type_entities = entities.find( type )->second;
         if( entities.find( boundary_type )->second.empty() ) {
             if( !type_entities.empty() ) {
@@ -534,10 +534,10 @@ namespace {
         return is_vertex_valid< Surface >( geomodel, entities );
     }
 
-	template< index_t DIMENSION >
-	bool is_line_vertex_valid(
-		const GeoModel< DIMENSION >& geomodel,
-		const std::map< MeshEntityType, std::vector< index_t > >& entities);
+    template< index_t DIMENSION >
+    bool is_line_vertex_valid(
+        const GeoModel< DIMENSION >& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities );
 
     template< >
     bool is_line_vertex_valid(
@@ -565,8 +565,8 @@ namespace {
                 return false;
             } else {
                 for( const auto line : lines ) {
-					index_t nb{ static_cast<index_t>(std::count(lines.begin(),
-						lines.end(), line)) };
+                    index_t nb{ static_cast< index_t >( std::count( lines.begin(),
+                        lines.end(), line ) ) };
                     if( nb == 2 ) {
                         if( !geomodel.line( line ).is_closed() ) {
                             Logger::warn( "GeoModel", " Vertex"
@@ -597,68 +597,63 @@ namespace {
         }
     }
 
-	template< >
-	bool is_line_vertex_valid(
-		const GeoModel2D& geomodel,
-		const std::map< MeshEntityType, std::vector< index_t > >& entities)
-	{
-		const std::vector< index_t >& lines = entities.find(
-			Line2D::type_name_static())->second;
-		if (entities.find(Corner2D::type_name_static())->second.empty()) {
-			if (!lines.empty()) {
-				if (lines.size() != 1) {
-					print_error(lines, "Lines");
-					Logger::warn("GeoModel", "It should be in only one Line");
-					return false;
-				}
-				else {
-					return true;
-				}
-			}
-			else {
-				return true;
-			}
-		}
-		else {
-			if (lines.size() < 1) {
-				print_error(lines, "Lines");
-				Logger::warn("GeoModel", "It should be in at least one Line");
-				return false;
-			}
-			else {
-				for (index_t line : lines) {
-					index_t nb = static_cast< index_t >(std::count(lines.begin(),
-						lines.end(), line));
-					if (nb == 2) {
-						if (!geomodel.line(line).is_closed()) {
-							Logger::warn("GeoModel", " Vertex"
-								" is twice in Line ", line);
-							return false;
-						}
-					}
-					else if (nb > 2) {
-						Logger::warn("GeoModel", " Vertex appears ", nb,
-							" times in Line ", line);
-						return false;
-					}
-				}
-				// Check that all the lines are in incident_entity of this corner
-				gmme_id corner_id(Corner2D::type_name_static(),
-					entities.find(Corner2D::type_name_static())->second.front());
-				for (index_t line : lines) {
-					gmme_id line_id(Line2D::type_name_static(), line);
-					if (!is_boundary_entity(geomodel, line_id, corner_id)) {
-						Logger::warn("GeoModel",
-							" Inconsistent Line-Corner connectivity ",
-							" vertex shows that ", line_id,
-							" must be in the boundary of ", corner_id);
-						return false;
-					}
-				}
-				return true;
-			}
-		}
-	}
+    template< >
+    bool is_line_vertex_valid(
+        const GeoModel2D& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities )
+    {
+        const std::vector< index_t >& lines = entities.find(
+            Line2D::type_name_static() )->second;
+        if( entities.find( Corner2D::type_name_static() )->second.empty() ) {
+            if( !lines.empty() ) {
+                if( lines.size() != 1 ) {
+                    print_error( lines, "Lines" );
+                    Logger::warn( "GeoModel", "It should be in only one Line" );
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        } else {
+            if( lines.size() < 1 ) {
+                print_error( lines, "Lines" );
+                Logger::warn( "GeoModel", "It should be in at least one Line" );
+                return false;
+            } else {
+                for( index_t line : lines ) {
+                    index_t nb = static_cast< index_t >( std::count( lines.begin(),
+                        lines.end(), line ) );
+                    if( nb == 2 ) {
+                        if( !geomodel.line( line ).is_closed() ) {
+                            Logger::warn( "GeoModel", " Vertex"
+                                " is twice in Line ", line );
+                            return false;
+                        }
+                    } else if( nb > 2 ) {
+                        Logger::warn( "GeoModel", " Vertex appears ", nb,
+                            " times in Line ", line );
+                        return false;
+                    }
+                }
+                // Check that all the lines are in incident_entity of this corner
+                gmme_id corner_id( Corner2D::type_name_static(),
+                    entities.find( Corner2D::type_name_static() )->second.front() );
+                for( index_t line : lines ) {
+                    gmme_id line_id( Line2D::type_name_static(), line );
+                    if( !is_boundary_entity( geomodel, line_id, corner_id ) ) {
+                        Logger::warn( "GeoModel",
+                            " Inconsistent Line-Corner connectivity ",
+                            " vertex shows that ", line_id,
+                            " must be in the boundary of ", corner_id );
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+    }
 
     template< index_t DIMENSION >
     bool is_corner_valid(
@@ -803,7 +798,7 @@ namespace {
             for( index_t v : range( nb_vertices_in_polygon ) ) {
                 index_t new_vertex = mesh.vertices.create_vertex(
                     surface.mesh_element_vertex(
-                        ElementLocalVertex( cur_polygon, v ) ).data() );
+                    ElementLocalVertex( cur_polygon, v ) ).data() );
                 vertices.push_back( new_vertex );
             }
             mesh.facets.create_polygon( vertices );
@@ -829,18 +824,18 @@ namespace {
                 if( surface.polygon_adjacent_index( PolygonLocalEdge( p, v ) )
                     == NO_ID
                     && !is_edge_on_line( surface.geomodel(),
-                        geomodel_vertices.geomodel_vertex_id( S_id,
-                            ElementLocalVertex( p, v ) ),
-                        geomodel_vertices.geomodel_vertex_id( S_id,
-                            surface.low_level_mesh_storage().next_polygon_vertex(
-                                ElementLocalVertex( p, v ) ) ) ) ) {
+                    geomodel_vertices.geomodel_vertex_id( S_id,
+                    ElementLocalVertex( p, v ) ),
+                    geomodel_vertices.geomodel_vertex_id( S_id,
+                    surface.low_level_mesh_storage().next_polygon_vertex(
+                    ElementLocalVertex( p, v ) ) ) ) ) {
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id,
-                            ElementLocalVertex( p, v ) ) );
+                        ElementLocalVertex( p, v ) ) );
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id,
-                            surface.low_level_mesh_storage().next_polygon_vertex(
-                                ElementLocalVertex( p, v ) ) ) );
+                        surface.low_level_mesh_storage().next_polygon_vertex(
+                        ElementLocalVertex( p, v ) ) ) );
                 }
             }
         }
@@ -900,7 +895,7 @@ namespace {
             vecn< DIMENSION > center = surface.mesh_element_barycenter( p );
             std::vector< index_t > result =
                 cell_facet_barycenter_nn_search.get_neighbors( center,
-                    surface.geomodel().epsilon() );
+                surface.geomodel().epsilon() );
             if( result.empty() ) {
                 unconformal_polygons.push_back( p );
             }
@@ -943,7 +938,7 @@ namespace {
                             % polygons.nb_vertices( polygon_id );
                         edge_indices.push_back(
                             polygons.vertex(
-                                ElementLocalVertex( polygon_id, next_v ) ) );
+                            ElementLocalVertex( polygon_id, next_v ) ) );
                     }
                 }
             }
@@ -1032,41 +1027,41 @@ namespace {
             if( enum_contains( mode_, ValidityCheckMode::FINITE_EXTENSION ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                        &GeoModelValidityCheck::test_finite_extension, this ) );
+                    &GeoModelValidityCheck::test_finite_extension, this ) );
             }
             if( enum_contains( mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                        &GeoModelValidityCheck::test_geomodel_connectivity_validity,
-                        this ) );
+                    &GeoModelValidityCheck::test_geomodel_connectivity_validity,
+                    this ) );
             }
             if( enum_contains( mode_, ValidityCheckMode::GEOLOGICAL_ENTITIES ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                        &GeoModelValidityCheck::test_geomodel_geological_validity,
-                        this ) );
+                    &GeoModelValidityCheck::test_geomodel_geological_validity,
+                    this ) );
             }
             if( enum_contains( mode_,
                 ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                        &GeoModelValidityCheck::test_surface_line_mesh_conformity,
-                        this ) );
+                    &GeoModelValidityCheck::test_surface_line_mesh_conformity,
+                    this ) );
             }
             if( enum_contains( mode_, ValidityCheckMode::MESH_ENTITIES ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                        &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
-                        this ) );
+                    &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
+                    this ) );
                 /// TODO: find a way to add this test for Model3d. See BC.
-//                threads.emplace_back(
-//                    &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
-//                    this );
+                //                threads.emplace_back(
+                //                    &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
+                //                    this );
             }
             if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                        &GeoModelValidityCheck::test_non_manifold_edges, this ) );
+                    &GeoModelValidityCheck::test_non_manifold_edges, this ) );
             }
         }
 
@@ -1086,7 +1081,7 @@ namespace {
             }
         }
 
-        /*! 
+        /*!
          * @brief Verify the validity of all GeoModelMeshEntities
          */
         void test_geomodel_mesh_entities_validity()
@@ -1178,7 +1173,7 @@ namespace {
 
                 const index_t first_interface_id =
                     line.incident_entity( 0 ).parent_gmge(
-                        Interface< DIMENSION >::type_name_static() ).index();
+                    Interface< DIMENSION >::type_name_static() ).index();
                 ringmesh_assert( first_interface_id != NO_ID );
                 bool at_least_two_different_interfaces = false;
                 for( index_t in_boundary_i : range( 1, line.nb_incident_entities() ) ) {
@@ -1236,7 +1231,7 @@ namespace {
         {
             if( geomodel_.mesh.polygons.nb()
                 == geomodel_.mesh.polygons.nb_triangle()
-                    + geomodel_.mesh.polygons.nb_quad() ) {
+                + geomodel_.mesh.polygons.nb_quad() ) {
                 std::vector< bool > has_intersection;
                 StoreIntersections< DIMENSION > action( geomodel_,
                     has_intersection );
@@ -1257,8 +1252,8 @@ namespace {
                             geomodel_.mesh.polygons.nb_vertices( p ) ) ) {
                             index_t id = mesh.vertices.create_vertex(
                                 geomodel_.mesh.vertices.vertex(
-                                    geomodel_.mesh.polygons.vertex(
-                                        ElementLocalVertex( p, v ) ) ).data() );
+                                geomodel_.mesh.polygons.vertex(
+                                ElementLocalVertex( p, v ) ) ).data() );
                             vertices.push_back( id );
                         }
                         mesh.facets.create_polygon( vertices );
@@ -1284,7 +1279,7 @@ namespace {
         }
 
     private:
-        const GeoModel< DIMENSION >& geomodel_;bool valid_;
+        const GeoModel< DIMENSION >& geomodel_; bool valid_;
         ValidityCheckMode mode_;
     };
     template< >
@@ -1294,14 +1289,14 @@ namespace {
         if( enum_contains( mode_, ValidityCheckMode::POLYGON_INTERSECTIONS ) ) {
             tasks.push_back(
                 std::async( std::launch::async,
-                    &GeoModelValidityCheck::test_polygon_intersections, this ) );
+                &GeoModelValidityCheck::test_polygon_intersections, this ) );
         }
         if( enum_contains( mode_,
             ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY ) ) {
             tasks.emplace_back(
                 std::async( std::launch::async,
-                    &GeoModelValidityCheck::test_region_surface_mesh_conformity,
-                    this ) );
+                &GeoModelValidityCheck::test_region_surface_mesh_conformity,
+                this ) );
         }
         add_base_checks( tasks );
     }
