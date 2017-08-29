@@ -60,7 +60,7 @@ namespace {
     public:
         GeoModelMeshPolygonsBaseSort(
             const SurfaceMesh< DIMENSION >& mesh,
-            const GEO::Attribute< index_t >& surface_id )
+            const std::vector< index_t >& surface_id )
             : mesh_( mesh ), surface_id_( surface_id )
         {
         }
@@ -76,7 +76,7 @@ namespace {
         }
     private:
         const SurfaceMesh< DIMENSION >& mesh_;
-        const GEO::Attribute< index_t >& surface_id_;
+        const std::vector< index_t >& surface_id_;
     };
 
     template< index_t DIMENSION >
