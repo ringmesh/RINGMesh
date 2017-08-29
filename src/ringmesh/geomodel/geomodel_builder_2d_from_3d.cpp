@@ -80,13 +80,7 @@ namespace RINGMesh {
         std::vector< vec2 > projected_vertices;
         projected_vertices.resize( entity.nb_vertices() );
         for( const auto v : range( entity.nb_vertices() ) ) {
-            vec3 projection_3d_on_plane;
-            std::tie( std::ignore, projection_3d_on_plane ) =
-                Distance::point_to_plane( entity.vertex( v ), plane_ );
-            DEBUG( projection_3d_on_plane );
-            DEBUG( get_2d_coord( projection_3d_on_plane ) );
-            DEBUG( entity.vertex( v ) );
-            projected_vertices.push_back( get_2d_coord( projection_3d_on_plane ) );
+            projected_vertices.push_back( get_2d_coord( entity.vertex( v ) ) );
 
         }
         return projected_vertices;

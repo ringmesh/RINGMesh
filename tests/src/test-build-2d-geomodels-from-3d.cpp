@@ -49,7 +49,8 @@ int main()
 
     try {
         default_configure();
-        std::string input_geomodel3d_file_name = ringmesh_test_data_path + "todo.gm";
+        std::string input_geomodel3d_file_name = ringmesh_test_data_path
+            + "seg_overthrust_afault.gm";
 
         Logger::out( "TEST", "Loading GeoModel3D input file ",
             input_geomodel3d_file_name );
