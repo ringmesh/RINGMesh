@@ -67,7 +67,6 @@ namespace RINGMesh {
             }
             v_axis = normalize( v_axis_point_direction - plane_.origin );
             u_axis = cross( v_axis, plane_.normal );
-            DEBUG( u_axis.length() );
         }
     protected:
         vec2 get_2d_coord( const vec3& coord3d )
@@ -91,6 +90,7 @@ namespace RINGMesh {
             Geometry::Plane plane )
             : GeoModelBuilder2DFrom3D( geomodel2d, geomodel3d_from, plane )
         {
+            info.set_geomodel_name( geomodel3d_from_.name() + "_projected" );
         }
 
         void build_geomodel();
