@@ -1310,10 +1310,7 @@ namespace RINGMesh {
             geomodel.entity_type_manager().geological_entity_manager.geological_entity_types();
         index_t count_invalid = 0;
         for( const GeologicalEntityType& type : geological_types ) {
-            index_t nb_entities = geomodel.nb_geological_entities( type );
-            for( index_t i : range( nb_entities ) ) {
-                const GeoModelGeologicalEntity< DIMENSION >& E =
-                    geomodel.geological_entity( type, i );
+            for( auto& E : geomodel.geol_entities( type ) ) {
                 if( !E.is_valid() ) {
                     count_invalid++;
                 }
