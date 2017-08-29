@@ -35,6 +35,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
 
+#include <ringmesh/geomodel/geomodel_validity.h>
+
 namespace {
     using namespace RINGMesh;
 
@@ -49,7 +51,11 @@ namespace RINGMesh {
     void GeoModelBuilder2DProjection::build_geomodel()
     {
         copy_geomodel_3d_topology();
+        DEBUG( "Check topo validity:" );
+        is_geomodel_valid( geomodel_, ValidityCheckMode::TOPOLOGY );
         project_geomodel_3d_mesh_entities();
+        DEBUG( "Check all model validity:" );
+        is_geomodel_valid( geomodel_, ValidityCheckMode::ALL );
     }
 
     void GeoModelBuilder2DProjection::copy_geomodel_3d_topology()
@@ -58,19 +64,54 @@ namespace RINGMesh {
             topology.create_mesh_entities( entity_type,
                 geomodel3d_from_.nb_mesh_entities( entity_type ) );
         }
-        //@todo boundary relations
+        for( const auto& entity_type : projectable_entity_types ) {
+            for( const auto entity_id : range(
+                geomodel3d_from_.nb_mesh_entities( entity_type ) ) ) {
+                const auto& entity = geomodel3d_from_.mesh_entity( entity_type,
+                    entity_id );
+                for( const auto& boundary_id : range( entity.nb_boundaries() ) ) {
+                    topology.add_mesh_entity_boundary_relation( entity.gmme(),
+                        entity.boundary( boundary_id ).gmme() );
+                }
+            }
+        }
     }
 
     void GeoModelBuilder2DProjection::project_geomodel_3d_mesh_entities()
     {
-        for( const auto& entity_type : projectable_entity_types ) {
-            for( const auto entity_id : range(
-                geomodel3d_from_.nb_mesh_entities( entity_type ) ) ) {
-                std::vector< vec2 > projected_vertices = compute_projected_vertices(
-                    geomodel3d_from_.mesh_entity( entity_type, entity_id ) );
-                geometry.set_mesh_entity_vertices(
-                    gmme_id { entity_type, entity_id }, projected_vertices, false );
+
+        // Corner
+        for( const auto& corner : geomodel3d_from_.corners() ) {
+            auto projected_vertices = compute_projected_vertices( corner );
+            ringmesh_assert( projected_vertices.size() == 1 );
+            geometry.set_corner( corner.index(), projected_vertices[0] );
+        }
+
+        // Line
+        for( const auto& line : geomodel3d_from_.lines() ) {
+            auto projected_vertices = compute_projected_vertices( line );
+            geometry.set_line( line.index(), projected_vertices );
+        }
+
+        // Surface
+        for( const auto& surface : geomodel3d_from_.surfaces() ) {
+            auto projected_vertices = compute_projected_vertices( surface );
+            std::vector< index_t > surface_polygons;
+            surface_polygons.reserve( 4 * surface.nb_mesh_elements() );
+            std::vector< index_t > surface_polygon_ptr( 1, 0 );
+            surface_polygon_ptr.reserve( surface.nb_mesh_elements() + 1 );
+            for( const auto& polygon_id : range( surface.nb_mesh_elements() ) ) {
+                for( const auto& v_id : range(
+                    surface.nb_mesh_element_vertices( polygon_id ) ) ) {
+                    surface_polygons.push_back( surface.mesh_element_vertex_index( {
+                        polygon_id, v_id } ) );
+                }
+                surface_polygon_ptr.push_back(
+                    surface_polygon_ptr.back()
+                        + surface.nb_mesh_element_vertices( polygon_id ) );
             }
+            geometry.set_surface_geometry( surface.index(), projected_vertices,
+                surface_polygons, surface_polygon_ptr );
         }
     }
 
@@ -78,10 +119,9 @@ namespace RINGMesh {
         const GeoModelMeshEntity3D& entity )
     {
         std::vector< vec2 > projected_vertices;
-        projected_vertices.resize( entity.nb_vertices() );
+        projected_vertices.reserve( entity.nb_vertices() );
         for( const auto v : range( entity.nb_vertices() ) ) {
             projected_vertices.push_back( get_2d_coord( entity.vertex( v ) ) );
-
         }
         return projected_vertices;
     }
