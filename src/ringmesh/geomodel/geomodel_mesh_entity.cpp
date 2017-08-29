@@ -518,8 +518,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool Corner< DIMENSION >::is_on_voi() const
     {
-        // True if one of the incident surface define the universe
-        for( index_t i : range( this->nb_incident_entities() ) ) {
+        // True if one of the incident lines defines the universe
+        for( auto i : range( this->nb_incident_entities() ) ) {
             if( incident_entity( i ).is_on_voi() ) {
                 return true;
             }
@@ -550,7 +550,7 @@ namespace RINGMesh {
     /***************************************************************/
 
     template< index_t DIMENSION >
-    bool Line< DIMENSION >::is_mesh_valid() const
+    bool LineBase< DIMENSION >::is_mesh_valid() const
     {
         bool valid = true;
 
@@ -636,7 +636,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool Line< DIMENSION >::is_connectivity_valid() const
+    bool LineBase< DIMENSION >::is_connectivity_valid() const
     {
         bool line_valid = GeoModelMeshEntity< DIMENSION >::is_connectivity_valid();
 
@@ -649,7 +649,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool Line< DIMENSION >::is_first_corner_first_vertex() const
+    bool LineBase< DIMENSION >::is_first_corner_first_vertex() const
     {
         if( this->nb_boundaries() != 2 || this->nb_vertices() < 2 ) {
             return false;
@@ -662,29 +662,28 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool Line< DIMENSION >::is_on_voi() const
+    const Corner< DIMENSION >& LineBase< DIMENSION >::boundary( index_t x ) const
     {
-        // True if one of the incident surface define the universe
-        for( index_t i : range( this->nb_incident_entities() ) ) {
-            if( incident_entity( i ).is_on_voi() ) {
+        return static_cast< const Corner< DIMENSION >& >( GeoModelMeshEntity<
+            DIMENSION >::boundary( x ) );
+    }
+
+    bool Line< 2 >::is_on_voi() const
+    {
+        ringmesh_assert(
+            this->nb_incident_entities() == 1 || this->nb_incident_entities() == 2 );
+        return this->nb_incident_entities() == 1;
+    }
+
+    bool Line< 3 >::is_on_voi() const
+    {
+        // True if one of the incident surfaces defines the universe
+        for( auto i : range( this->nb_incident_entities() ) ) {
+            if( this->incident_entity( i ).is_on_voi() ) {
                 return true;
             }
         }
         return false;
-    }
-
-    template< index_t DIMENSION >
-    const Surface< DIMENSION >& Line< DIMENSION >::incident_entity( index_t x ) const
-    {
-        return static_cast< const Surface< DIMENSION >& >( GeoModelMeshEntity<
-            DIMENSION >::incident_entity( x ) );
-    }
-
-    template< index_t DIMENSION >
-    const Corner< DIMENSION >& Line< DIMENSION >::boundary( index_t x ) const
-    {
-        return static_cast< const Corner< DIMENSION >& >( GeoModelMeshEntity<
-            DIMENSION >::boundary( x ) );
     }
 
     /********************************************************************/
@@ -753,24 +752,33 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool SurfaceBase< DIMENSION >::is_on_voi() const
-    {
-        ringmesh_assert(
-            this->nb_incident_entities() == 1 || this->nb_incident_entities() == 2 );
-        return this->nb_incident_entities() == 1;
-    }
-
-    template< index_t DIMENSION >
     const Line< DIMENSION >& SurfaceBase< DIMENSION >::boundary( index_t x ) const
     {
         return static_cast< const Line< DIMENSION >& >( GeoModelMeshEntity< DIMENSION >::boundary(
             x ) );
     }
 
+    bool Surface< 2 >::is_on_voi() const
+    {
+        // True if one of the boundary lines defines the universe
+        for( auto i : range( this->nb_boundaries() ) ) {
+            if( this->boundary( i ).is_on_voi() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Surface< 3 >::is_on_voi() const
+    {
+        ringmesh_assert(
+            this->nb_incident_entities() == 1 || this->nb_incident_entities() == 2 );
+        return this->nb_incident_entities() == 1;
+    }
+
     const Region3D& Surface< 3 >::incident_entity( index_t x ) const
     {
-        return static_cast< const Region3D& >( GeoModelMeshEntity3D::incident_entity(
-            x ) );
+        return static_cast< const Region3D& >( GeoModelMeshEntity3D::incident_entity( x ) );
     }
 
     /********************************************************************/
@@ -875,7 +883,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void Line< DIMENSION >::change_mesh_data_structure( const MeshType& type )
+    void LineBase< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< LineMesh< DIMENSION > > new_mesh =
             LineMesh< DIMENSION >::create_mesh( type );
