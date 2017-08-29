@@ -214,7 +214,7 @@ namespace RINGMesh {
             double dot_directions { dot( line.direction, plane.normal ) };
             if( std::fabs( dot_directions ) > global_epsilon ) {
                 double signed_distance { dot( plane.normal, line.origin )
-                    - plane.plane_constant() };
+                    + plane.plane_constant() };
                 vec3 result { line.origin
                     - signed_distance * line.direction / dot_directions };
                 return std::make_tuple( true, result );
