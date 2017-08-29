@@ -80,6 +80,11 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+    struct LineSide {
+        LineSide() = default;
+        std::vector< index_t > lines_;
+        std::vector< bool > sides_;
+    };
     struct SurfaceSide {
         SurfaceSide() = default;
         std::vector< index_t > surfaces_;
@@ -229,8 +234,6 @@ namespace RINGMesh {
             return wells_;
         }
 
-        virtual SurfaceSide get_voi_surfaces() const = 0;
-
     public:
         GeoModelMesh< DIMENSION > mesh;
 
@@ -378,7 +381,7 @@ namespace RINGMesh {
         {
             return epsilon2() * epsilon();
         }
-        SurfaceSide get_voi_surfaces() const final;
+        SurfaceSide get_voi_surfaces() const;
     private:
         const std::vector< std::unique_ptr< GeoModelMeshEntity3D > >& mesh_entities(
             const MeshEntityType& type ) const override;
@@ -410,7 +413,7 @@ namespace RINGMesh {
         {
             return geol_entity_range< 2 >( *this, geol_type );
         }
-        SurfaceSide get_voi_surfaces() const final;
+        LineSide get_voi_lines() const;
     };
 
     ALIAS_2D_AND_3D( GeoModel );
