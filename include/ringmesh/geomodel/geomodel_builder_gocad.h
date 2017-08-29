@@ -191,15 +191,14 @@ namespace RINGMesh {
         std::tuple< bool, index_t > find_region_id_from_name(
             const std::string& region_name )
         {
-            index_t region_id;
-            for( size_t i : range( region_names_.size() ) ) {
+            index_t region_id { NO_ID };
+            for( auto i : range( region_names_.size() ) ) {
                 if( region_name.compare( region_names_[i] ) == 0 ) {
                     region_id = region_ids_[i];
                     ringmesh_assert( region_id != NO_ID );
                     return std::make_tuple( true, region_id );
                 }
             }
-            region_id = NO_ID;
             return std::make_tuple( false, region_id );
         }
 
@@ -213,10 +212,10 @@ namespace RINGMesh {
             std::vector< index_t >& region_tetra_corners_local ) const
         {
             index_t counter { 0 };
-            for( index_t tetra_region_id : vertices_region_id_ ) {
+            for( auto tetra_region_id : vertices_region_id_ ) {
                 if( tetra_region_id == region_id ) {
-                    index_t local_i = local_id( vertices_gocad_id_[counter] );
-                    region_tetra_corners_local.push_back( local_i );
+                    region_tetra_corners_local.push_back(
+                        local_id( vertices_gocad_id_[counter] ) );
                 }
                 counter++;
             }
@@ -230,15 +229,15 @@ namespace RINGMesh {
         {
             ringmesh_assert(
                 stored_attributes.size() == gocad_ids2region_ids_.size() );
-            for( index_t gocad_id : range( stored_attributes.size() ) ) {
+            for( auto gocad_id : range( stored_attributes.size() ) ) {
                 if( gocad_ids2region_ids_[gocad_id] == region_id ) {
                     if( lighttsolid_atom_map.find( gocad_id )
                         == lighttsolid_atom_map.end() ) {
                         region_tetra_attributes.push_back(
                             stored_attributes[gocad_id] );
                     } else {
-                        index_t corresponding_gocad_id = lighttsolid_atom_map.find(
-                            gocad_id )->second;
+                        index_t corresponding_gocad_id { lighttsolid_atom_map.find(
+                            gocad_id )->second };
                         if( region( corresponding_gocad_id )
                             != region( gocad_id ) ) {
                             region_tetra_attributes.push_back(
@@ -269,15 +268,15 @@ namespace RINGMesh {
             ringmesh_assert(
                 stored_vertices.size() == gocad_ids2region_ids_.size() );
             std::vector< RegionLocalVertex > region_tetra_vertices;
-            for( index_t gocad_id : range( stored_vertices.size() ) ) {
+            for( auto gocad_id : range( stored_vertices.size() ) ) {
                 if( gocad_ids2region_ids_[gocad_id] == region_id ) {
                     if( lighttsolid_atom_map.find( gocad_id )
                         == lighttsolid_atom_map.end() ) {
                         region_tetra_vertices.emplace_back(
                             stored_vertices[gocad_id], gocad_id );
                     } else {
-                        index_t corresponding_gocad_id = lighttsolid_atom_map.find(
-                            gocad_id )->second;
+                        index_t corresponding_gocad_id { lighttsolid_atom_map.find(
+                            gocad_id )->second };
                         if( region( corresponding_gocad_id )
                             != region( gocad_id ) ) {
                             region_tetra_vertices.emplace_back(
@@ -330,12 +329,11 @@ namespace RINGMesh {
             // For every region ...
             for( auto region_index : range( lighttsolid_region_nb ) ) {
                 // we want to record the region ids of the LightTSolid vertices ...
-                for( index_t lighttsolid_vertices_id : range(
-                    lighttsolid_vertices_nb ) ) {
+                for( auto lighttsolid_vertices_id : range( lighttsolid_vertices_nb ) ) {
                     // that are in this region.
                     if( region_id( lighttsolid_vertices_id ) == region_index ) {
-                        index_t gocad_vertex_i = gocad_vertex_id(
-                            lighttsolid_vertices_id );
+                        index_t gocad_vertex_i { gocad_vertex_id(
+                            lighttsolid_vertices_id ) };
 
                         gocad_ids2region_ids_[gocad_vertex_i] = region_id(
                             lighttsolid_vertices_id );
@@ -352,17 +350,16 @@ namespace RINGMesh {
             size_t lighttsolid_region_nb = nb_regions();
 
             // For every region ...
-            for( index_t rgion_id : range( lighttsolid_region_nb ) ) {
+            for( auto rgion_id : range( lighttsolid_region_nb ) ) {
                 // we want to record the local ids of the LightTSolid vertices ...
-                std::vector< index_t > local_ids = local_ids_[rgion_id];
-                for( index_t lighttsolid_vertices_id : range(
-                    lighttsolid_vertices_nb ) ) {
+                const auto& local_ids = local_ids_[rgion_id];
+                for( auto lighttsolid_vertices_id : range( lighttsolid_vertices_nb ) ) {
                     // that are in this region.
                     if( region_id( lighttsolid_vertices_id ) == rgion_id ) {
-                        index_t gocad_vertex_i = gocad_vertex_id(
-                            lighttsolid_vertices_id );
+                        index_t gocad_vertex_i { gocad_vertex_id(
+                            lighttsolid_vertices_id ) };
                         for( index_t local_id : range( local_ids.size() ) ) {
-                            index_t gocad_id = local_ids[local_id];
+                            index_t gocad_id { local_ids[local_id] };
                             if( gocad_id == gocad_vertex_i ) {
                                 gocad_ids2local_ids_[gocad_vertex_i] = local_id;
                             }
