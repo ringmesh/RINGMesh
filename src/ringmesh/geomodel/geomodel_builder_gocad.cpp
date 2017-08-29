@@ -986,10 +986,11 @@ namespace {
             std::string region_name = line.field( 2 );
 
             // Record new regions
-            auto output = load_storage.vertex_map_.find_region_id_from_name(
-                region_name );
-            auto region_id = std::get< 1 >( output );
-            if( !std::get< 0 >( output ) ) {
+            bool found;
+            index_t region_id;
+            std::tie( found, region_id ) =
+                load_storage.vertex_map_.find_region_id_from_name( region_name );
+            if( !found ) {
                 region_id = initialize_region( region_name, builder_ );
                 load_storage.vertex_map_.add_new_region( region_id, region_name );
             }
@@ -1135,18 +1136,12 @@ namespace {
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
-            load_storage.lighttsolid_atom_map_.insert(
-                load_storage.lighttsolid_atom_map_.end(),
-                std::pair< index_t, index_t >(
-                    line.field_as_uint( 1 ) - GOCAD_OFFSET,
-                    line.field_as_uint( 2 ) - GOCAD_OFFSET ) );
+            load_storage.lighttsolid_atom_map_.emplace(
+                line.field_as_uint( 1 ) - GOCAD_OFFSET,
+                line.field_as_uint( 2 ) - GOCAD_OFFSET );
             load_storage.vertex_map_.add_vertex(
                 line.field_as_uint( 1 ) - GOCAD_OFFSET, load_storage.cur_region_ );
-            vec3 null;
-            null.x = 0;
-            null.y = 0;
-            null.z = 0;
-            load_storage.vertices_.push_back( null );
+            load_storage.vertices_.push_back( vec3 { } );
             if( load_storage.nb_attribute_fields_ > 0 ) {
                 std::vector< double > null_attrib( load_storage.nb_attribute_fields_,
                     0 );
@@ -1600,6 +1595,8 @@ namespace RINGMesh {
                 }
             }
         }
+        tsolid_load_storage_.attributes_.reserve(
+            tsolid_load_storage_.nb_vertices_ );
     }
 
     void GeoModelBuilderTSolid::load_file()
