@@ -91,7 +91,7 @@ namespace {
                     }
                 }
                 return result;
-        } );
+            } );
         return std::make_tuple( result, polygon, edge );
     }
 
@@ -139,8 +139,8 @@ namespace {
                     }
                 }
                 return result;
-        } );
-        return std::make_tuple( result, cell,cell_facet );
+            } );
+        return std::make_tuple( result, cell, cell_facet );
     }
 
     template< index_t DIMENSION >
@@ -164,7 +164,7 @@ namespace {
                     }
                 }
                 return result;
-        } );
+            } );
         return result;
     }
 
@@ -228,7 +228,7 @@ namespace {
                 gmme_id( Corner< DIMENSION >::type_name_static(), corner_id ), 1 );
         }
     }
-}
+} // namespace
 
 namespace RINGMesh {
     template< index_t DIMENSION >
@@ -662,7 +662,7 @@ namespace RINGMesh {
         const Line< DIMENSION >& line = geomodel_.line( line_id );
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
             create_surface_builder( surface_id );
-        index_t nb_disconnected_edges = 0;
+        index_t nb_disconnected_edges { 0 };
         for( index_t i : range( line.nb_mesh_elements() ) ) {
             const vecn< DIMENSION >& p0 = line.vertex( i );
             const vecn< DIMENSION >& p1 = line.vertex( i + 1 );
@@ -780,7 +780,7 @@ namespace RINGMesh {
         const Surface3D& surface = geomodel_.surface( surface_id );
         std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
-        index_t nb_disconnected_polygons = 0;
+        index_t nb_disconnected_polygons { 0 };
         for( index_t polygon : range( surface.nb_mesh_elements() ) ) {
             bool found = false;
             index_t cell = NO_ID;
@@ -826,11 +826,19 @@ namespace RINGMesh {
             cell_vertex = element_local_vertex.local_vertex_id_;
 
             ringmesh_assert( cell != NO_ID && cell_vertex != NO_ID );
-
         }
+
+        GEO::vector< std::string > names;
+        geomodel_.region( region_id ).vertex_attribute_manager().list_attribute_names(
+            names );
+
+        GeoModelMeshEntity3D& E = geomodel_access_.modifiable_mesh_entity(
+            region_gme );
+        index_t vertices_nb = E.nb_vertices();
 
         index_t vertex_id = create_mesh_entity_vertices( region_gme,
             surface.nb_vertices() );
+
         std::unique_ptr< VolumeMeshBuilder3D > region_mesh_builder =
             create_region_builder( region_id );
         const VolumeMesh3D& mesh = region.low_level_mesh_storage();
@@ -844,6 +852,19 @@ namespace RINGMesh {
             update_cell_vertex( region_id, cells, cell_vertex, vertex_id );
             region_mesh_builder->set_vertex( vertex_id, p );
             vertex_id++;
+
+            for( const auto& name : names ) {
+                if( name != "model_vertex_map" && name != "point" ) {
+                    GEO::Attribute< double > attr(
+                        geomodel_.region( region_id ).vertex_attribute_manager(),
+                        name );
+                    index_t dim_nb = attr.dimension();
+                    for( index_t dim : range( dim_nb ) ) {
+                        attr[( vertices_nb + v ) * dim_nb + dim] = attr[cell_vertex
+                            * dim_nb + dim];
+                    }
+                }
+            }
         }
     }
 
@@ -879,14 +900,13 @@ namespace RINGMesh {
         const std::vector< vec3 >& points,
         const std::vector< index_t >& tetras )
     {
-        set_mesh_entity_vertices(
-            gmme_id( Region3D::type_name_static(), region_id ), points, true );
+        set_mesh_entity_vertices( gmme_id( Region3D::type_name_static(), region_id ),
+            points, true );
         assign_region_tet_mesh( region_id, tetras );
     }
 
-    void GeoModelBuilderGeometry< 3 >::compute_region_adjacencies(
-        index_t region_id,
-        bool recompute_adjacency )
+    void GeoModelBuilderGeometry< 3 >::compute_region_adjacencies( index_t region_id,
+    bool recompute_adjacency )
     {
         const Region3D& region = geomodel_.region( region_id );
         std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
@@ -937,8 +957,8 @@ namespace RINGMesh {
     {
         if( geomodel_.entity_type_manager().mesh_entity_manager.is_region(
             E_id.type() ) ) {
-            std::unique_ptr< VolumeMeshBuilder3D > builder =
-                create_region_builder( E_id.index() );
+            std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
+                E_id.index() );
             builder->remove_isolated_vertices();
         } else {
             GeoModelBuilderGeometryBase< 3 >::delete_mesh_entity_isolated_vertices(
@@ -967,5 +987,4 @@ namespace RINGMesh {
     template class RINGMESH_API GeoModelBuilderGeometryBase< 2 > ;
 
     template class RINGMESH_API GeoModelBuilderGeometryBase< 3 > ;
-    template class RINGMESH_API GeoModelBuilderGeometry< 3 > ;
-}
+} // namespace RINGMesh

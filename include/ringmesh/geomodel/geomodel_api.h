@@ -47,8 +47,10 @@
 namespace RINGMesh {
     class MeshEntityType;
     class GeologicalEntityType;
-    FORWARD_DECLARATION_3D_CLASS( GeoModel );
-}
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+
+    ALIAS_3D( GeoModel );
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -170,4 +172,4 @@ namespace RINGMesh {
         const vec3& axis,
         double angle,
         bool degrees = false );
-}
+} // namespace RINGMesh

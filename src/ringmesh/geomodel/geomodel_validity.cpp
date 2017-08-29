@@ -901,23 +901,23 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    std::vector< bool > compute_edge_on_lines(
+    std::vector< bool > are_border_edges_on_line(
         const GeoModel< DIMENSION >& geomodel,
-        const std::vector< vecn< DIMENSION > >& edge_barycenters )
+        const std::vector< vecn< DIMENSION > >& barycenters )
     {
-        std::vector< bool > edge_on_lines( edge_barycenters.size(), false );
-        NNSearch< DIMENSION > nn( edge_barycenters );
-        for( const auto& line : geomodel.lines() ) {
-            for( index_t e : range( line.nb_mesh_elements() ) ) {
-                const vecn< DIMENSION > query = line.mesh_element_barycenter( e );
-                std::vector< index_t > results = nn.get_neighbors( query,
-                    geomodel.epsilon() );
-                for( index_t edge : results ) {
-                    edge_on_lines[edge] = true;
-                }
+        const LineAABBTree< DIMENSION >& abbb = geomodel.mesh.edges.aabb();
+        std::vector< bool > border_edges_on_line( barycenters.size(), true );
+        double distance = 0;
+
+        for( index_t border_edge : range( barycenters.size() ) ) {
+            const vecn< DIMENSION >& barycenter = barycenters[border_edge];
+            std::tie( std::ignore, std::ignore, distance ) = abbb.closest_edge(
+                barycenter );
+            if( distance > geomodel.epsilon() ) {
+                border_edges_on_line[border_edge] = false;
             }
         }
-        return edge_on_lines;
+        return border_edges_on_line;
     }
 
     std::vector< index_t > compute_non_manifold_edges(
@@ -1142,12 +1142,12 @@ namespace {
         void test_non_manifold_edges()
         {
             std::vector< index_t > edge_indices = compute_border_edges( geomodel_ );
-            std::vector< vecn< DIMENSION > > edge_barycenters =
+            std::vector< vecn< DIMENSION > > barycenters =
                 compute_border_edge_barycenters( geomodel_, edge_indices );
-            std::vector< bool > edge_on_lines = compute_edge_on_lines( geomodel_,
-                edge_barycenters );
+            std::vector< bool > border_edges_on_line = are_border_edges_on_line(
+                geomodel_, barycenters );
             std::vector< index_t > non_manifold_edges = compute_non_manifold_edges(
-                edge_on_lines );
+                border_edges_on_line );
 
             if( !non_manifold_edges.empty() ) {
                 Logger::warn( "GeoModel", non_manifold_edges.size(),
@@ -1310,10 +1310,7 @@ namespace RINGMesh {
             geomodel.entity_type_manager().geological_entity_manager.geological_entity_types();
         index_t count_invalid = 0;
         for( const GeologicalEntityType& type : geological_types ) {
-            index_t nb_entities = geomodel.nb_geological_entities( type );
-            for( index_t i : range( nb_entities ) ) {
-                const GeoModelGeologicalEntity< DIMENSION >& E =
-                    geomodel.geological_entity( type, i );
+            for( auto& E : geomodel.geol_entities( type ) ) {
                 if( !E.is_valid() ) {
                     count_invalid++;
                 }
@@ -1402,4 +1399,4 @@ namespace RINGMesh {
     template bool RINGMESH_API are_geomodel_geological_entities_valid(
         const GeoModel3D& );
 
-}
+} // namespace RINGMesh

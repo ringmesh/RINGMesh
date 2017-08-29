@@ -49,8 +49,8 @@ namespace RINGMesh {
             Surface3D::type_name_static() );
     }
 
-    template< index_t DIMENSION >
-    MeshEntityTypeBoundaryMap< DIMENSION >::MeshEntityTypeBoundaryMap()
+    template< >
+    MeshEntityTypeBoundaryMap< 2 >::MeshEntityTypeBoundaryMap()
     {
         initialize_base();
     }
@@ -175,12 +175,11 @@ namespace RINGMesh {
     template class RINGMESH_API MeshEntityTypes< 2 > ;
     template class RINGMESH_API MeshEntityTypeManagerBase< 2 > ;
     template class RINGMESH_API MeshEntityTypeManager< 2 > ;
-    template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 2 > ;
-    template class RINGMESH_API MeshEntityTypeBoundaryMap< 2 > ;
+    template struct RINGMESH_API MeshEntityTypeIncidentEntityMap< 2 > ;
+    template struct RINGMESH_API MeshEntityTypeBoundaryMap< 2 > ;
 
     template class RINGMESH_API MeshEntityTypes< 3 > ;
     template class RINGMESH_API MeshEntityTypeManagerBase< 3 > ;
-    template class RINGMESH_API MeshEntityTypeManager< 3 > ;
-    template class RINGMESH_API MeshEntityTypeIncidentEntityMap< 3 > ;
-    template class RINGMESH_API MeshEntityTypeBoundaryMap< 3 > ;
-}
+    template struct RINGMESH_API MeshEntityTypeIncidentEntityMap< 3 > ;
+    template struct RINGMESH_API MeshEntityTypeBoundaryMap< 3 > ;
+} // namespace RINGMesh

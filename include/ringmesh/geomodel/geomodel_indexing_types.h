@@ -41,9 +41,12 @@
 /*!
  * @brief Structures and classes used to index elements in a GeoModel,
  * in the meshes of its entities etc.
- * @note Goal: decrease dependencies between header files.
- * @author Jeanne Pellerin
+ * @author Jeanne Pellerin & Arnaud Botella
  */
+
+namespace RINGMesh {
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
+}
 
 namespace RINGMesh {
 
@@ -69,7 +72,6 @@ namespace RINGMesh {
         index_t v_index { NO_ID };
     };
 
-
     template< index_t DIMENSION >
     class RINGMESH_API entity_range: public range {
     protected:
@@ -85,7 +87,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API corner_range: public entity_range< DIMENSION > {
     public:
-        corner_range( const GeoModel< DIMENSION >& geomodel )
+        explicit corner_range( const GeoModel< DIMENSION >& geomodel )
             : entity_range< DIMENSION >( geomodel, geomodel.nb_corners() )
         {
         }
@@ -106,7 +108,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API line_range: public entity_range< DIMENSION > {
     public:
-        line_range( const GeoModel< DIMENSION >& geomodel )
+        explicit line_range( const GeoModel< DIMENSION >& geomodel )
             : entity_range< DIMENSION >( geomodel, geomodel.nb_lines() )
         {
         }
@@ -127,7 +129,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API surface_range: public entity_range< DIMENSION > {
     public:
-        surface_range( const GeoModel< DIMENSION >& geomodel )
+        explicit surface_range( const GeoModel< DIMENSION >& geomodel )
             : entity_range< DIMENSION >( geomodel, geomodel.nb_surfaces() )
         {
         }
@@ -148,7 +150,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RINGMESH_API region_range: public entity_range< DIMENSION > {
     public:
-        region_range( const GeoModel< DIMENSION >& geomodel )
+        explicit region_range( const GeoModel< DIMENSION >& geomodel )
             : entity_range< DIMENSION >( geomodel, geomodel.nb_regions() )
         {
         }
@@ -165,4 +167,33 @@ namespace RINGMesh {
             return this->geomodel_.region( this->iter_ );
         }
     };
-}
+
+    template< index_t DIMENSION >
+    class RINGMESH_API geol_entity_range: public entity_range< DIMENSION > {
+    public:
+        geol_entity_range(
+            const GeoModel< DIMENSION >& geomodel,
+            GeologicalEntityType geological_entity_type )
+            :
+                entity_range< DIMENSION >( geomodel,
+                    geomodel.nb_geological_entities( geological_entity_type ) ),
+                type_( std::move(geological_entity_type) )
+        {
+        }
+        const geol_entity_range< DIMENSION >& begin() const
+        {
+            return *this;
+        }
+        const geol_entity_range< DIMENSION >& end() const
+        {
+            return *this;
+        }
+        const GeoModelGeologicalEntity< DIMENSION >& operator*() const
+        {
+            return this->geomodel_.geological_entity( this->type_, this->iter_ );
+        }
+
+    protected:
+        const GeologicalEntityType type_{ };
+    };
+} // namespace RINGMesh

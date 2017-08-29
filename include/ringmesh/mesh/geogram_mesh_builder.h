@@ -114,7 +114,7 @@ namespace RINGMesh {
     class GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        GeogramPointSetMeshBuilder( PointSetMesh< DIMENSION >& mesh )
+        explicit GeogramPointSetMeshBuilder( PointSetMesh< DIMENSION >& mesh )
             :
                 PointSetMeshBuilder< DIMENSION >( mesh ),
                 mesh_( dynamic_cast< GeogramPointSetMesh< DIMENSION >& >( mesh ) )
@@ -122,13 +122,13 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( GeogramPointSetMeshBuilder );
+    ALIAS_2D_AND_3D( GeogramPointSetMeshBuilder );
 
     template< index_t DIMENSION >
     class GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        GeogramLineMeshBuilder( LineMesh< DIMENSION >& mesh )
+        explicit GeogramLineMeshBuilder( LineMesh< DIMENSION >& mesh )
             :
                 LineMeshBuilder< DIMENSION >( mesh ),
                 mesh_( dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) )
@@ -173,13 +173,13 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( GeogramLineMeshBuilder );
+    ALIAS_2D_AND_3D( GeogramLineMeshBuilder );
 
     template< index_t DIMENSION >
     class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        GeogramSurfaceMeshBuilder( SurfaceMesh< DIMENSION >& mesh )
+        explicit GeogramSurfaceMeshBuilder( SurfaceMesh< DIMENSION >& mesh )
             :
                 SurfaceMeshBuilder< DIMENSION >( mesh ),
                 mesh_( dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) )
@@ -273,13 +273,13 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( GeogramSurfaceMeshBuilder );
+    ALIAS_2D_AND_3D( GeogramSurfaceMeshBuilder );
 
     template< index_t DIMENSION >
     class GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {
     COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );ringmesh_template_assert_3d( DIMENSION );
     public:
-        GeogramVolumeMeshBuilder( VolumeMesh< DIMENSION >& mesh )
+        explicit GeogramVolumeMeshBuilder( VolumeMesh< DIMENSION >& mesh )
             :
                 VolumeMeshBuilder< DIMENSION >( mesh ),
                 mesh_( dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) )
@@ -349,4 +349,4 @@ namespace RINGMesh {
 
     using GeogramVolumeMeshBuilder3D = GeogramVolumeMeshBuilder< 3 >;
 
-}
+} // namespace RINGMesh

@@ -86,7 +86,7 @@ namespace {
         }
         return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" );
     }
-}
+} // namespace
 
 namespace RINGMesh {
     template< index_t DIMENSION >
@@ -115,7 +115,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     const GeoModelMeshEntity< DIMENSION >& GeoModelBase< DIMENSION >::mesh_entity(
-        gmme_id id ) const
+        const gmme_id& id ) const
     {
         const MeshEntityTypeManager< DIMENSION >& manager =
             entity_type_manager().mesh_entity_manager;
@@ -140,14 +140,15 @@ namespace RINGMesh {
             entity_type_manager().mesh_entity_manager;
         if( manager.is_corner( type ) ) {
             return corners_;
-        } else if( manager.is_line( type ) ) {
+        }
+        if( manager.is_line( type ) ) {
             return lines_;
-        } else if( manager.is_surface( type ) ) {
-            return surfaces_;
-        } else {
-            ringmesh_assert_not_reached;
+        }
+        if( manager.is_surface( type ) ) {
             return surfaces_;
         }
+        ringmesh_assert_not_reached;
+        return surfaces_;
     }
 
     template< index_t DIMENSION >
@@ -208,20 +209,18 @@ namespace RINGMesh {
     {
         if( entity_type_manager().mesh_entity_manager.is_region( type ) ) {
             return regions_;
-        } else {
-            return GeoModelBase3D::mesh_entities( type );
         }
+        return GeoModelBase3D::mesh_entities( type );
     }
 
-    const GeoModelMeshEntity3D& GeoModel< 3 >::mesh_entity( gmme_id id ) const
+    const GeoModelMeshEntity3D& GeoModel< 3 >::mesh_entity( const gmme_id& id ) const
     {
         const MeshEntityType& type = id.type();
         index_t index = id.index();
         if( entity_type_manager().mesh_entity_manager.is_region( type ) ) {
             return region( index );
-        } else {
-            return GeoModelBase3D::mesh_entity( id );
         }
+        return GeoModelBase3D::mesh_entity( id );
         ringmesh_assert_not_reached;
         return surface( 0 );
     }
@@ -230,17 +229,15 @@ namespace RINGMesh {
     {
         if( entity_type_manager().mesh_entity_manager.is_region( type ) ) {
             return nb_regions();
-        } else {
-            return GeoModelBase3D::nb_mesh_entities( type );
         }
+        return GeoModelBase3D::nb_mesh_entities( type );
     }
 
     template class RINGMESH_API GeoModel< 2 > ;
     template class RINGMESH_API GeoModelBase< 2 > ;
     template class RINGMESH_API GeoModelAccess< 2 > ;
 
-    template class RINGMESH_API GeoModel< 3 > ;
     template class RINGMESH_API GeoModelBase< 3 > ;
     template class RINGMESH_API GeoModelAccess< 3 > ;
 
-}
+} // namespace RINGMesh

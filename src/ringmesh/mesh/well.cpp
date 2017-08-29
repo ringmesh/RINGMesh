@@ -75,10 +75,8 @@ namespace {
      * @param[in] side Side of the Surface
      * @return The region index or NO_ID if none found.
      */
-    index_t find_region(
-        const GeoModel3D& geomodel,
-        index_t surface_part_id,
-        bool side )
+    index_t find_region( const GeoModel3D& geomodel, index_t surface_part_id,
+    bool side )
     {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() );
         gmme_id cur_surface( Surface3D::type_name_static(), surface_part_id );
@@ -221,8 +219,7 @@ namespace {
             std::vector< LineInstersection >& intersections )
             :
                 surface_( surface ),
-                v_from_( v_from ),
-                v_to_( v_to ),
+                segment_( v_from, v_to ),
                 intersections_( intersections )
         {
         }
@@ -232,10 +229,10 @@ namespace {
             bool does_seg_intersect_triangle = false;
             vec3 result;
             std::tie( does_seg_intersect_triangle, result ) =
-                Intersection::segment_triangle( v_from_, v_to_,
-                    surface_.mesh_element_vertex( ElementLocalVertex( trgl, 0 ) ),
-                    surface_.mesh_element_vertex( ElementLocalVertex( trgl, 1 ) ),
-                    surface_.mesh_element_vertex( ElementLocalVertex( trgl, 2 ) ) );
+                Intersection::segment_triangle( segment_,
+                    { surface_.mesh_element_vertex( { trgl, 0 } ),
+                      surface_.mesh_element_vertex( { trgl, 1 } ),
+                      surface_.mesh_element_vertex( { trgl, 2 } ) } );
             if( does_seg_intersect_triangle ) {
                 intersections_.push_back(
                     LineInstersection( result, surface_.index(), trgl ) );
@@ -244,8 +241,7 @@ namespace {
 
     private:
         const Surface3D& surface_;
-        const vec3& v_from_;
-        const vec3& v_to_;
+        Geometry::Segment3D segment_;
 
         std::vector< LineInstersection >& intersections_;
     };
@@ -607,9 +603,7 @@ namespace RINGMesh {
     }
 
     template< >
-    void WellGroup< 3 >::add_well(
-        const LineMesh3D& mesh,
-        const std::string& name )
+    void WellGroup< 3 >::add_well( const LineMesh3D& mesh, const std::string& name )
     {
         ringmesh_assert( geomodel() );
         if( find_well( name ) != NO_ID ) return;
@@ -711,4 +705,4 @@ namespace RINGMesh {
     template class RINGMESH_API WellPart< 3 > ;
     template class RINGMESH_API Well< 3 > ;
     template class RINGMESH_API WellGroup< 3 > ;
-}
+} // namespace RINGMesh

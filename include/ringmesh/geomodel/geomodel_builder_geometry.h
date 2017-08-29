@@ -48,14 +48,16 @@
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
-    FORWARD_DECLARATION_2D_3D_CLASS( GeoModelBuilder );
-}
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
+
+    ALIAS_2D_AND_3D( GeoModelBuilder );
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelBuilderGeometryBase {
-    ringmesh_disable_copy( GeoModelBuilderGeometryBase );
+    ringmesh_disable_copy_and_move( GeoModelBuilderGeometryBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
@@ -91,8 +93,8 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >& corner =
                 geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess< DIMENSION > corner_access( corner );
-            PointSetMesh< DIMENSION >& corner_mesh = dynamic_cast< PointSetMesh<
-                DIMENSION >& >( *corner_access.modifiable_mesh() );
+            auto& corner_mesh =
+                dynamic_cast< PointSetMesh< DIMENSION >& >( *corner_access.modifiable_mesh() );
             return PointSetMeshBuilder< DIMENSION >::create_builder( corner_mesh );
         }
 
@@ -110,7 +112,7 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >& line =
                 geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess< DIMENSION > line_access( line );
-            LineMesh< DIMENSION >& line_mesh =
+            auto& line_mesh =
                 dynamic_cast< LineMesh< DIMENSION >& >( *line_access.modifiable_mesh() );
             return LineMeshBuilder< DIMENSION >::create_builder( line_mesh );
         }
@@ -129,7 +131,7 @@ namespace RINGMesh {
             GeoModelMeshEntity< DIMENSION >& surface =
                 geomodel_access_.modifiable_mesh_entity( id );
             GeoModelMeshEntityAccess< DIMENSION > surface_access( surface );
-            SurfaceMesh< DIMENSION >& surface_mesh =
+            auto& surface_mesh =
                 dynamic_cast< SurfaceMesh< DIMENSION >& >( *surface_access.modifiable_mesh() );
             return SurfaceMeshBuilder< DIMENSION >::create_builder( surface_mesh );
         }
@@ -339,9 +341,8 @@ namespace RINGMesh {
          * @param[in] surface_id Index of the surface
          * @param[in] recompute_adjacency If true, recompute the existing adjacencies
          */
-        void compute_surface_adjacencies(
-            index_t surface_id,
-            bool recompute_adjacency = true );
+        void compute_surface_adjacencies( index_t surface_id,
+        bool recompute_adjacency = true );
 
         void cut_surfaces_by_internal_lines();
 
@@ -385,16 +386,13 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelBuilderGeometryBase );
+    ALIAS_2D_AND_3D( GeoModelBuilderGeometryBase );
 
     template< index_t DIMENSION >
     class GeoModelBuilderGeometry final: public GeoModelBuilderGeometryBase<
         DIMENSION > {
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
-    public:
-        virtual ~GeoModelBuilderGeometry() = default;
-
     protected:
         GeoModelBuilderGeometry(
             GeoModelBuilder< DIMENSION >& builder,
@@ -405,12 +403,11 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelBuilderGeometry< 3 > final: public GeoModelBuilderGeometryBase< 3 > {
+    class RINGMESH_API GeoModelBuilderGeometry< 3 > final: public GeoModelBuilderGeometryBase<
+        3 > {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
     public:
-        virtual ~GeoModelBuilderGeometry() = default;
-
         /*!
          * @brief Create a Mesh3DBuilder for a given region
          * @param[in] region_id the region index
@@ -422,8 +419,8 @@ namespace RINGMesh {
             index_t region_id )
         {
             gmme_id id( Region3D::type_name_static(), region_id );
-            GeoModelMeshEntity3D& region =
-                geomodel_access_.modifiable_mesh_entity( id );
+            GeoModelMeshEntity3D& region = geomodel_access_.modifiable_mesh_entity(
+                id );
             GeoModelMeshEntityAccess3D region_access( region );
             VolumeMesh3D& region_mesh =
                 dynamic_cast< VolumeMesh3D& >( *region_access.modifiable_mesh() );
@@ -479,9 +476,8 @@ namespace RINGMesh {
          * @param[in] region_id Index of the region
          * @param[in] recompute_adjacency If true, recompute the existing adjacencies
          */
-        void compute_region_adjacencies(
-            index_t region_id,
-            bool recompute_adjacency = true );
+        void compute_region_adjacencies( index_t region_id,
+        bool recompute_adjacency = true );
 
         void cut_regions_by_internal_surfaces();
 
@@ -490,9 +486,7 @@ namespace RINGMesh {
         void delete_mesh_entity_isolated_vertices( const gmme_id& E_id ) override;
 
     protected:
-        GeoModelBuilderGeometry(
-            GeoModelBuilder3D& builder,
-            GeoModel3D& geomodel )
+        GeoModelBuilderGeometry( GeoModelBuilder3D& builder, GeoModel3D& geomodel )
             : GeoModelBuilderGeometryBase< 3 >( builder, geomodel )
         {
         }
@@ -515,4 +509,4 @@ namespace RINGMesh {
             index_t region_id,
             index_t surface_id );
     };
-}
+} // namespace RINGMesh

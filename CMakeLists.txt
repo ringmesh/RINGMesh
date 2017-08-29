@@ -130,7 +130,8 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}  
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
                 -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY} 
-                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}                     
+                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}           
+                -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}                               
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -151,32 +152,34 @@ include(cmake/utils.cmake)
 # Platform dependent settings
 if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
+    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion 
+        -Wsign-conversion -Wdouble-promotion -Wno-attributes)
     
     # Determine gcc version and activate additional warnings available in latest versions
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE G++_VERSION)
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
 
     # C++11 fully works on Linux from gcc/g++ 4.8 (before not fully operational).
     # On MacOS, it seems that C++11 is working since gcc/g++ 4.2.
     if(APPLE)
-        if(G++_VERSION VERSION_LESS 4.2 )
-            message(FATAL_ERROR "RINGMesh require G++ version >= 4.2")
+        if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+            message(FATAL_ERROR "RINGMesh on Apple requires Clang compiler")
         endif()
         set(CMAKE_MACOSX_RPATH 1)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-    else(APPLE)
-        # Linux
-        if(G++_VERSION VERSION_LESS 4.8 )
+    endif(APPLE)
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        if(COMPILER_VERSION VERSION_LESS 3.3 )
+            message(FATAL_ERROR "RINGMesh require Clang version >= 3.3")
+        endif()
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        if(COMPILER_VERSION VERSION_LESS 4.8 )
             message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
         endif()
-    endif(APPLE)
+    endif()
     # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
-    add_compile_options(-Wsign-conversion)
-    add_compile_options(-Wdouble-promotion)
-    add_compile_options(-Wno-attributes)
 
-     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+    if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
        set(COVERALLS ON)
        set(COVERALLS_UPLOAD ON)
@@ -342,12 +345,31 @@ if(BUILD_DOCUMENTATION)
 endif()
 
 
-if (COVERALLS)
 set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
+if(COVERALLS)
     coveralls_setup(
     "${ringmesh_files}" 
         ${COVERALLS_UPLOAD}                 
         "${PROJECT_SOURCE_DIR}/cmake")
+endif()
+
+# additional target to perform clang-tidy run, requires clang-tidy
+find_program(CLANG_TIDY "clang-tidy")
+if(CLANG_TIDY)
+    message(STATUS "Configuring RINGMesh with clang-tidy")
+    get_directory_property(dirs INCLUDE_DIRECTORIES)
+    foreach(dir ${dirs})
+        set(include_dirs -I${dir} ${include_dirs})
+    endforeach()
+    add_custom_target(
+        tidy
+        COMMAND ${CLANG_TIDY}
+        ${ringmesh_include}
+        -config=''
+        --
+        -std=c++11
+        ${ringmesh_files}
+    )
 endif()
 
 #------------------------------------------------------------------------------------------------

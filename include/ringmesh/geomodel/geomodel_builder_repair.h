@@ -48,7 +48,7 @@
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -61,7 +61,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class RINGMESH_API GeoModelBuilderRepair {
-    ringmesh_disable_copy( GeoModelBuilderRepair );
+    ringmesh_disable_copy_and_move( GeoModelBuilderRepair );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
@@ -88,6 +88,8 @@ namespace RINGMesh {
         GeoModelBuilderRepair(
             GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
+
+        ~GeoModelBuilderRepair() = default;
 
         /*!
          * All implemented repair for a GeoModel.
@@ -204,6 +206,6 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelBuilderRepair );
+    ALIAS_2D_AND_3D( GeoModelBuilderRepair );
 
-}
+} // namespace RINGMesh

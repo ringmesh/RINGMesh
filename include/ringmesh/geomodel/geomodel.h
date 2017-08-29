@@ -41,9 +41,9 @@
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/geomodel/entity_type.h>
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
@@ -62,7 +62,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( Line );
     FORWARD_DECLARATION_DIMENSION_CLASS( Region );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
-    FORWARD_DECLARATION_DIMENSION_CLASS( EntityTypeManager );
+    template< index_t DIMENSION > struct EntityTypeManager;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
@@ -76,8 +76,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
-
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
     /*!
@@ -86,7 +85,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class GeoModelBase {
-    ringmesh_disable_copy( GeoModelBase );
+    ringmesh_disable_copy_and_move( GeoModelBase );
         ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelAccess< DIMENSION > ;
 
@@ -168,7 +167,7 @@ namespace RINGMesh {
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION
          */
         virtual const GeoModelMeshEntity< DIMENSION >& mesh_entity(
-            gmme_id id ) const;
+            const gmme_id& id ) const;
 
         /*!
          * Convenient overload of mesh_entity( gmme_id id )
@@ -234,7 +233,7 @@ namespace RINGMesh {
         /*!
          * @brief Constructs an empty GeoModel
          */
-        GeoModelBase( GeoModel< DIMENSION >& geomodel );
+        explicit GeoModelBase( GeoModel< DIMENSION >& geomodel );
         /*!
          * Access to the position of the entity of that type in storage.
          */
@@ -302,8 +301,7 @@ namespace RINGMesh {
          */
         const WellGroup< DIMENSION >* wells_ { nullptr };
     };
-
-    CLASS_DIMENSION_ALIASES( GeoModelBase );
+    ALIAS_2D_AND_3D( GeoModelBase );
 
     template< index_t DIMENSION >
     class GeoModel final: public GeoModelBase< DIMENSION > {
@@ -323,10 +321,15 @@ namespace RINGMesh {
         {
             return surface_range< DIMENSION >( *this );
         }
+        geol_entity_range< DIMENSION > geol_entities(
+            const GeologicalEntityType& geol_type ) const
+        {
+            return geol_entity_range< DIMENSION >( *this, geol_type );
+        }
     };
 
     template< >
-    class GeoModel< 3 > final: public GeoModelBase< 3 > {
+    class RINGMESH_API GeoModel< 3 > final: public GeoModelBase< 3 > {
         friend class GeoModelAccess< 3 > ;
     public:
         GeoModel();
@@ -347,6 +350,11 @@ namespace RINGMesh {
         {
             return region_range< 3 >( *this );
         }
+        geol_entity_range< 3 > geol_entities(
+            const GeologicalEntityType& geol_type ) const
+        {
+            return geol_entity_range< 3 >( *this, geol_type );
+        }
 
         index_t nb_regions() const
         {
@@ -362,7 +370,7 @@ namespace RINGMesh {
             return GeoModelBase3D::mesh_entity( entity_type, entity_index );
         }
 
-        const GeoModelMeshEntity3D& mesh_entity( gmme_id id ) const override;
+        const GeoModelMeshEntity3D& mesh_entity( const gmme_id& id ) const override;
 
         index_t nb_mesh_entities( const MeshEntityType& type ) const override;
 
@@ -377,12 +385,11 @@ namespace RINGMesh {
     private:
         std::vector< std::unique_ptr< GeoModelMeshEntity3D > > regions_;
     };
-
-    CLASS_DIMENSION_ALIASES( GeoModel );
+    ALIAS_2D_AND_3D( GeoModel );
 
     template< index_t DIMENSION >
     class GeoModelAccess {
-    ringmesh_disable_copy( GeoModelAccess );
+    ringmesh_disable_copy_and_move( GeoModelAccess );
         ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
@@ -399,10 +406,11 @@ namespace RINGMesh {
         friend class GeoModelBuilderInfo< DIMENSION > ;
 
     private:
-        GeoModelAccess( GeoModel< DIMENSION >& geomodel )
+        explicit GeoModelAccess( GeoModel< DIMENSION >& geomodel )
             : geomodel_( geomodel )
         {
         }
+        ~GeoModelAccess() = default;
 
         std::string& modifiable_name()
         {
@@ -460,4 +468,4 @@ namespace RINGMesh {
     private:
         GeoModel< DIMENSION >& geomodel_;
     };
-}
+} // namespace RINGMesh

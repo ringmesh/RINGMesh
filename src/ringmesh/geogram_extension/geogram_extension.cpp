@@ -531,7 +531,7 @@ namespace {
         }
     };
 
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -651,4 +651,4 @@ namespace RINGMesh {
         ::print_bounded_attributes( M.cell_facets.attributes(), "cell_facets" );
     }
 
-}
+} // namespace RINGMesh

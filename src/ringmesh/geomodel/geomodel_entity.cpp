@@ -65,4 +65,4 @@ namespace RINGMesh {
     template class RINGMESH_API Universe< 3 > ;
     template class RINGMESH_API UniverseAccess< 3 > ;
 
-}
+} // namespace RINGMesh

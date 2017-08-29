@@ -39,8 +39,8 @@
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/geomodel/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
@@ -56,13 +56,13 @@
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelBuilderInfo {
-    ringmesh_disable_copy( GeoModelBuilderInfo );
+    ringmesh_disable_copy_and_move( GeoModelBuilderInfo );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
@@ -103,6 +103,7 @@ namespace RINGMesh {
         GeoModelBuilderInfo(
             GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
+        ~GeoModelBuilderInfo() = default;
 
     private:
         GeoModelBuilder< DIMENSION >& builder_;
@@ -113,7 +114,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelBuilderCopy {
-    ringmesh_disable_copy( GeoModelBuilderCopy );
+    ringmesh_disable_copy_and_move( GeoModelBuilderCopy );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
@@ -124,6 +125,7 @@ namespace RINGMesh {
         GeoModelBuilderCopy(
             GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
+        ~GeoModelBuilderCopy() = default;
 
     private:
         GeoModelBuilder< DIMENSION >& builder_;
@@ -139,7 +141,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class GeoModelBuilderBase {
-    ringmesh_disable_copy( GeoModelBuilderBase );
+    ringmesh_disable_copy_and_move( GeoModelBuilderBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         virtual ~GeoModelBuilderBase() = default;
@@ -179,20 +181,18 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 > {
+    class RINGMESH_API GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 > {
     public:
-        GeoModelBuilder( GeoModel2D& geomodel );
-        virtual ~GeoModelBuilder() = default;
+        explicit GeoModelBuilder( GeoModel2D& geomodel );
     };
 
     template< >
-    class GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 > {
+    class RINGMESH_API GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 > {
     public:
-        GeoModelBuilder( GeoModel3D& geomodel );
-        virtual ~GeoModelBuilder() = default;
+        explicit GeoModelBuilder( GeoModel3D& geomodel );
 
         void build_regions_from_lines_and_surfaces();
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelBuilder );
-}
+    ALIAS_2D_AND_3D( GeoModelBuilder );
+} // namespace RINGMesh

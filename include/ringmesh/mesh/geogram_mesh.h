@@ -51,7 +51,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeogramLineMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeogramSurfaceMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeogramVolumeMeshBuilder );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -120,7 +120,7 @@ namespace RINGMesh {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
     };
 
-    CLASS_DIMENSION_ALIASES( GeogramPointSetMesh );
+    ALIAS_2D_AND_3D( GeogramPointSetMesh );
 
     template< index_t DIMENSION >
     class GeogramLineMesh: public LineMesh< DIMENSION > {
@@ -143,7 +143,7 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( GeogramLineMesh );
+    ALIAS_2D_AND_3D( GeogramLineMesh );
 
     template< index_t DIMENSION >
     class GeogramSurfaceMesh: public SurfaceMesh< DIMENSION > {
@@ -182,7 +182,7 @@ namespace RINGMesh {
         }
     };
 
-    CLASS_DIMENSION_ALIASES( GeogramSurfaceMesh );
+    ALIAS_2D_AND_3D( GeogramSurfaceMesh );
 
     template< index_t DIMENSION >
     class GeogramVolumeMesh: public VolumeMesh< DIMENSION > {
@@ -292,4 +292,4 @@ namespace RINGMesh {
     using GeogramVolumeMesh3D = GeogramVolumeMesh< 3 >;
 
     void register_geogram_mesh();
-}
+} // namespace RINGMesh

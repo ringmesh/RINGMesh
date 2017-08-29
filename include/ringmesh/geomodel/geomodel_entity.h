@@ -51,7 +51,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
     /*!
@@ -59,9 +59,9 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class GeoModelEntity {
-    ringmesh_disable_copy( GeoModelEntity );
+    ringmesh_disable_copy_and_move( GeoModelEntity );
+    ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-
         virtual ~GeoModelEntity() = default;
 
         virtual bool is_on_voi() const = 0;
@@ -111,22 +111,19 @@ namespace RINGMesh {
         index_t id_ { NO_ID };
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelEntity );
+    ALIAS_2D_AND_3D( GeoModelEntity );
 
     template< index_t DIMENSION >
     class Universe: public GeoModelEntity< DIMENSION > {
-    ringmesh_disable_copy( Universe );
     public:
         friend class UniverseAccess< DIMENSION > ;
 
-        Universe( const GeoModel< DIMENSION >& geomodel );
+        explicit Universe( const GeoModel< DIMENSION >& geomodel );
 
         static const UniverseType universe_type_name()
         {
             return UniverseType();
         }
-
-        virtual ~Universe() = default;
 
         bool is_valid() const override;
         bool is_on_voi() const override
@@ -177,17 +174,17 @@ namespace RINGMesh {
 
     };
 
-    CLASS_DIMENSION_ALIASES( Universe );
+    ALIAS_2D_AND_3D( Universe );
 
     template< index_t DIMENSION >
     class UniverseAccess {
-    ringmesh_disable_copy( UniverseAccess );
+    ringmesh_disable_copy_and_move( UniverseAccess );
         friend class GeoModelBuilderTopologyBase< DIMENSION > ;
         friend class GeoModelBuilderTopology< DIMENSION > ;
         friend class GeoModelBuilderRemovalBase< DIMENSION > ;
 
     private:
-        UniverseAccess( Universe< DIMENSION >& universe )
+        explicit UniverseAccess( Universe< DIMENSION >& universe )
             : universe_( universe )
         {
         }
@@ -213,6 +210,6 @@ namespace RINGMesh {
         Universe< DIMENSION >& universe_;
     };
 
-    CLASS_DIMENSION_ALIASES( UniverseAccess );
+    ALIAS_2D_AND_3D( UniverseAccess );
 
-}
+} // namespace RINGMesh

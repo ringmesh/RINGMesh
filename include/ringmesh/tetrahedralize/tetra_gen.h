@@ -62,13 +62,17 @@ extern "C" {
 
 namespace RINGMesh {
     class TetraGen;
-    FORWARD_DECLARATION_3D_CLASS( WellGroup );
-}
+    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
+    FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
+
+    ALIAS_3D( Region );
+    ALIAS_3D( WellGroup );
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     class RINGMESH_API TetraGen {
-    ringmesh_disable_copy( TetraGen );
+    ringmesh_disable_copy_and_move( TetraGen );
     public:
         virtual ~TetraGen() = default;
         static std::unique_ptr< TetraGen > create(
@@ -117,4 +121,4 @@ namespace RINGMesh {
     };
 
     using TetraGenFactory = Factory< std::string, TetraGen, GeoModel3D&, index_t >;
-}
+} // namespace RINGMesh

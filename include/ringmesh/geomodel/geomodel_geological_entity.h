@@ -46,8 +46,8 @@
 
 #include <ringmesh/basic/factory.h>
 
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
@@ -57,13 +57,11 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
     template< index_t DIMENSION >
     class GeoModelGeologicalEntity: public GeoModelEntity< DIMENSION > {
-    ringmesh_disable_copy( GeoModelGeologicalEntity );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelGeologicalEntityAccess< DIMENSION > ;
 
@@ -130,8 +128,6 @@ namespace RINGMesh {
 
         static void initialize();
 
-        virtual ~GeoModelGeologicalEntity() = default;
-
         gmge_id gmge() const
         {
             return gmge_id( type_name(), this->index() );
@@ -164,7 +160,7 @@ namespace RINGMesh {
         virtual bool is_identification_valid() const;
 
     protected:
-        GeoModelGeologicalEntity( const GeoModel< DIMENSION >& geomodel )
+        explicit GeoModelGeologicalEntity( const GeoModel< DIMENSION >& geomodel )
             : GeoModelEntity< DIMENSION >( geomodel, NO_ID )
         {
         }
@@ -182,28 +178,26 @@ namespace RINGMesh {
 
     protected:
         /// Children relations of this entity
-        std::vector< index_t > children_;
+        std::vector< index_t > children_ { };
 
         /// Geological feature of this object - default is NO_GEOL
         GEOL_FEATURE geol_feature_ { GEOL_FEATURE::NO_GEOL };
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelGeologicalEntity );
+    ALIAS_2D_AND_3D( GeoModelGeologicalEntity );
 
     template< index_t DIMENSION >
     using GeoModelGeologicalEntityFactory = Factory< GeologicalEntityType, GeoModelGeologicalEntity< DIMENSION >, const GeoModel < DIMENSION >& >;
 
-    CLASS_DIMENSION_ALIASES( GeoModelGeologicalEntityFactory );
+    ALIAS_2D_AND_3D( GeoModelGeologicalEntityFactory );
 
     template< index_t DIMENSION >
     class Contact: public GeoModelGeologicalEntity< DIMENSION > {
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        Contact( const GeoModel< DIMENSION >& geomodel )
+        explicit Contact( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
         {
         }
-        virtual ~Contact() = default;
 
         static GeologicalEntityType type_name_static()
         {
@@ -216,17 +210,15 @@ namespace RINGMesh {
         MeshEntityType child_type_name() const override;
     };
 
-    CLASS_DIMENSION_ALIASES( Contact );
+    ALIAS_2D_AND_3D( Contact );
 
     template< index_t DIMENSION >
     class Interface: public GeoModelGeologicalEntity< DIMENSION > {
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        Interface( const GeoModel< DIMENSION >& geomodel )
+        explicit Interface( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
         {
         }
-        virtual ~Interface() = default;
 
         static GeologicalEntityType type_name_static()
         {
@@ -239,17 +231,15 @@ namespace RINGMesh {
         MeshEntityType child_type_name() const override;
     };
 
-    CLASS_DIMENSION_ALIASES( Interface );
+    ALIAS_2D_AND_3D( Interface );
 
     template< index_t DIMENSION >
     class Layer: public GeoModelGeologicalEntity< DIMENSION > {
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        Layer( const GeoModel< DIMENSION >& geomodel )
+        explicit Layer( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
         {
         }
-        virtual ~Layer() = default;
 
         static GeologicalEntityType type_name_static()
         {
@@ -262,21 +252,23 @@ namespace RINGMesh {
         MeshEntityType child_type_name() const override;
     };
 
-    CLASS_DIMENSION_ALIASES( Layer );
+    ALIAS_2D_AND_3D( Layer );
 
     template< index_t DIMENSION >
     class GeoModelGeologicalEntityAccess {
-    ringmesh_disable_copy( GeoModelGeologicalEntityAccess );
+    ringmesh_disable_copy_and_move( GeoModelGeologicalEntityAccess );
         friend class GeoModelBuilderTopology< DIMENSION > ;
         friend class GeoModelBuilderGeology< DIMENSION > ;
         friend class GeoModelBuilderInfo< DIMENSION > ;
         friend class GeoModelBuilderRemovalBase< DIMENSION > ;
 
     private:
-        GeoModelGeologicalEntityAccess( GeoModelGeologicalEntity< DIMENSION >& gmge )
+        explicit GeoModelGeologicalEntityAccess(
+            GeoModelGeologicalEntity< DIMENSION >& gmge )
             : gmge_( gmge )
         {
         }
+        ~GeoModelGeologicalEntityAccess() = default;
 
         std::string& modifiable_name()
         {
@@ -312,4 +304,4 @@ namespace RINGMesh {
         GeoModelGeologicalEntity< DIMENSION >& gmge_;
     };
 
-}
+} // namespace RINGMesh

@@ -48,14 +48,16 @@
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
-    FORWARD_DECLARATION_2D_3D_CLASS( GeoModelBuilder );
-}
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
+
+    ALIAS_2D_AND_3D( GeoModelBuilder );
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelBuilderTopologyBase {
-    ringmesh_disable_copy( GeoModelBuilderTopologyBase );
+    ringmesh_disable_copy_and_move( GeoModelBuilderTopologyBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
@@ -79,8 +81,7 @@ namespace RINGMesh {
             std::set< gmme_id >& in_mesh_entities,
             std::set< gmge_id >& in_geological_entities ) const;
 
-        template< template< index_t > class ENTITY >
-        gmme_id create_mesh_entity( const MeshType mesh_type = "" );
+        virtual gmme_id create_mesh_entity( const MeshEntityType& type );
 
         virtual bool create_mesh_entities(
             const MeshEntityType& type,
@@ -138,9 +139,12 @@ namespace RINGMesh {
             GeoModel< DIMENSION >& geomodel );
 
         template< template< index_t > class ENTITY >
+        gmme_id create_mesh_entity( const MeshType& mesh_type = "" );
+
+        template< template< index_t > class ENTITY >
         bool create_mesh_entities(
             index_t nb_additionnal_entities,
-            const MeshType type = "" );
+            const MeshType& type = "" );
 
         template< template< index_t > class ENTITY >
         void copy_mesh_entity_topology( const GeoModel< DIMENSION >& from )
@@ -154,7 +158,7 @@ namespace RINGMesh {
                     GeoModelMeshEntityAccess< DIMENSION > gmme_access(
                         geomodel_access_.modifiable_mesh_entity( id ) );
                     gmme_access.copy( from.mesh_entity( id ) );
-            } );
+                } );
         }
 
         index_t check_if_boundary_incident_entity_relation_already_exists(
@@ -170,19 +174,18 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-    CLASS_DIMENSION_ALIASES( GeoModelBuilderTopologyBase );
+    ALIAS_2D_AND_3D( GeoModelBuilderTopologyBase );
 
     template< index_t DIMENSION >
     class GeoModelBuilderTopology: public GeoModelBuilderTopologyBase< DIMENSION > {
     };
 
     template< >
-    class GeoModelBuilderTopology< 2 > : public GeoModelBuilderTopologyBase< 2 > {
+    class RINGMESH_API GeoModelBuilderTopology< 2 > : public GeoModelBuilderTopologyBase<
+        2 > {
         friend class GeoModelBuilderBase< 2 > ;
         friend class GeoModelBuilder< 2 > ;
     public:
-        virtual ~GeoModelBuilderTopology() = default;
-
         void add_universe_boundary( index_t boundary_id, bool side );
 
         void set_universe_boundary( index_t id, index_t boundary_id, bool side );
@@ -201,26 +204,25 @@ namespace RINGMesh {
             bool side = false ) override;
 
     private:
-        GeoModelBuilderTopology(
-            GeoModelBuilder2D& builder,
-            GeoModel2D& geomodel )
+        GeoModelBuilderTopology( GeoModelBuilder2D& builder, GeoModel2D& geomodel )
             : GeoModelBuilderTopologyBase< 2 >( builder, geomodel )
         {
         }
     };
 
     template< >
-    class GeoModelBuilderTopology< 3 > : public GeoModelBuilderTopologyBase< 3 > {
+    class RINGMESH_API GeoModelBuilderTopology< 3 > : public GeoModelBuilderTopologyBase<
+        3 > {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
     public:
-        virtual ~GeoModelBuilderTopology() = default;
-
         void add_universe_boundary( index_t boundary_id, bool side );
 
         void set_universe_boundary( index_t id, index_t boundary_id, bool side );
 
         void compute_universe();
+
+        gmme_id create_mesh_entity( const MeshEntityType& type ) override;
 
         bool create_mesh_entities(
             const MeshEntityType& type,
@@ -238,9 +240,7 @@ namespace RINGMesh {
             bool side = false ) override;
 
     private:
-        GeoModelBuilderTopology(
-            GeoModelBuilder3D& builder,
-            GeoModel3D& geomodel )
+        GeoModelBuilderTopology( GeoModelBuilder3D& builder, GeoModel3D& geomodel )
             : GeoModelBuilderTopologyBase< 3 >( builder, geomodel )
         {
         }
@@ -248,4 +248,4 @@ namespace RINGMesh {
         void copy_all_mesh_entity_topology( const GeoModel3D& from ) override;
     };
 
-}
+} // namespace RINGMesh

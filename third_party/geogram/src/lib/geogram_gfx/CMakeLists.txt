@@ -12,6 +12,8 @@ aux_source_directories(SOURCES "Source Files\\basic"         basic)
 aux_source_directories(SOURCES "Source Files\\mesh"          mesh)
 aux_source_directories(SOURCES "Source Files\\GLUP"          GLUP)
 aux_source_directories(SOURCES "Source Files\\GLUP\\shaders" GLUP/shaders)
+aux_source_directories(SOURCES "Source Files\\full_screen_effects" full_screen_effects)
+
 
 if(GEOGRAM_WITH_LUA)
    aux_source_directories(SOURCES "Source Files\\lua"           lua)

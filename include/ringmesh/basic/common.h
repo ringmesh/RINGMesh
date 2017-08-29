@@ -64,50 +64,50 @@
 
 #define ringmesh_disable_copy( Class )                                          \
     public:                                                                     \
-    Class( const Class & ) = delete ;                                           \
+    Class( const Class& ) = delete ;                                        \
     Class& operator=( const Class& ) = delete
 
+#define ringmesh_disable_move( Class )                                          \
+    public:                                                                     \
+    Class( const Class&& ) = delete ;                                           \
+    Class& operator= ( Class&& ) = delete
+
+#define ringmesh_disable_copy_and_move( Class )                                  \
+    ringmesh_disable_copy( Class );                                              \
+    ringmesh_disable_move( Class )
+
 #define ringmesh_template_assert_2d_or_3d( type )                               \
-    static_assert( type == 2 || type == 3, #type " template should be 2 or 3" )
+    static_assert( ( type ) == 2 || type == 3, #type " template should be 2 or 3" )
 
 #define ringmesh_template_assert_3d( type )                                     \
-    static_assert( type == 3, #type " template should be 3" )
+    static_assert( ( type ) == 3, #type " template should be 3" )
 
-#define CLASS_2D_ALIAS( Class )                                                 \
+#define ALIAS_2D( Class )                                                 \
     using Class ## 2D = Class< 2 >
 
-#define CLASS_3D_ALIAS( Class )                                                 \
+#define ALIAS_3D( Class )                                                 \
     using Class ## 3D = Class< 3 >
 
-#define CLASS_DIMENSION_ALIASES( Class )                                        \
-    CLASS_2D_ALIAS( Class );                                                    \
-    CLASS_3D_ALIAS( Class )
+#define ALIAS_2D_AND_3D( Class )                                        \
+    ALIAS_2D( Class );                                                    \
+    ALIAS_3D( Class )
 
 #define FORWARD_DECLARATION_DIMENSION_CLASS( Class )                            \
     template< index_t > class Class;
 
-#define FORWARD_DECLARATION_2D_CLASS( Class )                                   \
-    FORWARD_DECLARATION_DIMENSION_CLASS( Class )                                \
-    CLASS_2D_ALIAS( Class )
-
-#define FORWARD_DECLARATION_3D_CLASS( Class )                                   \
-    FORWARD_DECLARATION_DIMENSION_CLASS( Class )                                \
-    CLASS_3D_ALIAS( Class )
-
-#define FORWARD_DECLARATION_2D_3D_CLASS( Class )                                \
-    FORWARD_DECLARATION_DIMENSION_CLASS( Class )                                \
-    CLASS_DIMENSION_ALIASES( Class )
+#define FORWARD_DECLARATION_DIMENSION_STRUCT( Struct )                           \
+    template< index_t > struct Struct;
 
 // To avoid unused argument warning in function definition
-template< typename T > void ringmesh_unused( T const& )
+template< typename T > void ringmesh_unused( const T& /*unused*/)
 {
 }
 
 #include <future>
 
-#include <ringmesh/basic/types.h>
-#include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/logger.h>
+#include <ringmesh/basic/ringmesh_assert.h>
+#include <ringmesh/basic/types.h>
 
 #include <geogram/basic/string.h>
 
@@ -179,7 +179,7 @@ namespace RINGMesh {
             return GEO::String::to_string( a0 ) + string_concatener( a1, args... );
         }
     protected:
-        std::string category_;
+        std::string category_ { };
     };
 
     /*!
@@ -205,7 +205,7 @@ namespace RINGMesh {
         {
         }
         template< typename T >
-        range( T end )
+        explicit range( T end )
             : last_( static_cast< index_t >( end ) )
         {
         }
@@ -219,7 +219,7 @@ namespace RINGMesh {
             return *this;
         }
         // Iterator functions
-        bool operator!=( const range& ) const
+        bool operator!=( const range& /*unused*/) const
         {
             return iter_ < last_;
         }
@@ -266,4 +266,4 @@ namespace RINGMesh {
             future.get();
         }
     }
-}
+} // namespace RINGMesh

@@ -471,23 +471,30 @@ namespace RINGMesh {
     {
         create_point_set_mesh( "" );
         create_line_mesh( "" );
+        create_well_mesh( "" );
         create_surface_mesh( "" );
     }
 
     template< index_t DIMENSION >
-    void MeshSetBase< DIMENSION >::create_point_set_mesh( const MeshType type )
+    void MeshSetBase< DIMENSION >::create_point_set_mesh( MeshType type )
     {
         point_set_mesh = PointSetMesh< DIMENSION >::create_mesh( type );
     }
 
     template< index_t DIMENSION >
-    void MeshSetBase< DIMENSION >::create_line_mesh( const MeshType type )
+    void MeshSetBase< DIMENSION >::create_line_mesh( MeshType type )
     {
         line_mesh = LineMesh< DIMENSION >::create_mesh( type );
     }
 
     template< index_t DIMENSION >
-    void MeshSetBase< DIMENSION >::create_surface_mesh( const MeshType type )
+    void MeshSetBase< DIMENSION >::create_well_mesh( MeshType type )
+    {
+        well_mesh = LineMesh< DIMENSION >::create_mesh( type );
+    }
+
+    template< index_t DIMENSION >
+    void MeshSetBase< DIMENSION >::create_surface_mesh( MeshType type )
     {
         surface_mesh = SurfaceMesh< DIMENSION >::create_mesh( type );
     }
@@ -497,7 +504,7 @@ namespace RINGMesh {
         create_volume_mesh( "" );
     }
 
-    void MeshSet< 3 >::create_volume_mesh( const MeshType type )
+    void MeshSet< 3 >::create_volume_mesh( MeshType type )
     {
         volume_mesh = VolumeMesh3D::create_mesh( type );
     }
@@ -513,5 +520,4 @@ namespace RINGMesh {
     template class RINGMESH_API SurfaceMeshBase< 3 > ;
     template class RINGMESH_API VolumeMesh< 3 > ;
     template class RINGMESH_API MeshSetBase< 3 > ;
-    template class RINGMESH_API MeshSet< 3 > ;
-}
+} // namespace RINGMesh

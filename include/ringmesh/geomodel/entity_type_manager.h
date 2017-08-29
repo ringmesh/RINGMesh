@@ -36,7 +36,9 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+
 #include <ringmesh/basic/algorithm.h>
+
 #include <ringmesh/geomodel/entity_type.h>
 
 #include <deque>
@@ -49,11 +51,11 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( Line );
     FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
     FORWARD_DECLARATION_DIMENSION_CLASS( Region );
-    FORWARD_DECLARATION_DIMENSION_CLASS( EntityTypeManager );
+    template< index_t DIMENSION > struct EntityTypeManager;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -194,15 +196,14 @@ namespace RINGMesh {
     };
 
     template< >
-    class MeshEntityTypeManager< 3 > : public MeshEntityTypeManagerBase< 3 > {
+    class RINGMESH_API MeshEntityTypeManager< 3 > : public MeshEntityTypeManagerBase< 3 > {
     public:
         bool is_region( const MeshEntityType& type ) const
         {
             return type == mesh_entity_types_.container()[3];
         }
     };
-
-    CLASS_DIMENSION_ALIASES( MeshEntityTypeManager );
+    ALIAS_2D_AND_3D( MeshEntityTypeManager );
 
     /*!
      * @brief this class contains methods to manage the type of the
@@ -418,4 +419,4 @@ namespace RINGMesh {
         GeologicalTypeManager geological_entity_manager;
         RelationshipManager relationship_manager;
     };
-}
+} // namespace RINGMesh

@@ -75,9 +75,8 @@ namespace RINGMesh {
     class RowImpl {
     public:
         using Element = ElementImpl< T >;
-
         RowImpl()
-            : elements_( new Element[4] ), nb_elements_( 0 ), capacity_( 4 )
+            : elements_( new Element[4] )
         {
         }
 
@@ -157,7 +156,7 @@ namespace RINGMesh {
     private:
         void reallocate( index_t new_capacity )
         {
-            Element* new_elements = new Element[new_capacity];
+            auto new_elements = new Element[new_capacity];
             std::copy( elements_.get(), elements_.get() + nb_elements_,
                 new_elements );
             elements_.reset( new_elements );
@@ -171,9 +170,9 @@ namespace RINGMesh {
         }
 
     private:
-        std::unique_ptr< Element[] > elements_;
-        index_t nb_elements_;
-        index_t capacity_;
+        std::unique_ptr< Element[] > elements_ { };
+        index_t nb_elements_ { 0 };
+        index_t capacity_ { 4 };
     };
 
     /*!
@@ -182,12 +181,15 @@ namespace RINGMesh {
      */
     template< typename T, typename RowType >
     class SparseMatrixImpl {
+    ringmesh_disable_copy_and_move( SparseMatrixImpl );
     public:
         using Row = RowImpl< RowType >;
-        SparseMatrixImpl( bool is_symmetrical = false )
-            : ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
+        explicit SparseMatrixImpl( bool is_symmetrical = false )
+            : is_symmetrical_( is_symmetrical )
         {
         }
+
+        ~SparseMatrixImpl() = default;
 
         /*!
          * Test the existence of a given i-j element
@@ -286,13 +288,15 @@ namespace RINGMesh {
          */
         T get_element_in_line( index_t i, index_t e ) const
         {
+            ringmesh_unused( i );
+            ringmesh_unused( e );
             ringmesh_assert_not_reached;
             return T();
         }
 
     protected:
-        std::unique_ptr< Row[] > rows_;
-        index_t ni_, nj_; // matrix dimensions
+        std::unique_ptr< Row[] > rows_ { };
+        index_t ni_ { 0 }, nj_ { 0 }; // matrix dimensions
         bool is_symmetrical_;
     };
 
@@ -302,7 +306,6 @@ namespace RINGMesh {
     template< typename T, MatrixType Light = MatrixType(
         2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
     class SparseMatrix: public SparseMatrixImpl< T, T > {
-    ringmesh_disable_copy( SparseMatrix );
     };
 
     /*!
@@ -312,7 +315,7 @@ namespace RINGMesh {
     class SparseMatrix< T, light > : public SparseMatrixImpl< T, T > {
     public:
         using thisclass = SparseMatrix< T, light >;
-        SparseMatrix( bool is_symetrical = false )
+        explicit SparseMatrix( bool is_symetrical = false )
             : SparseMatrixImpl< T, T >( is_symetrical )
         {
         }
@@ -369,10 +372,6 @@ namespace RINGMesh {
         { // valeur du e_ieme element stocke sur la ligne
             return this->rows_[i][e];
         }
-
-    private:
-        SparseMatrix( const thisclass& rhs );
-        thisclass& operator=( const thisclass& rhs );
     };
 
     /*!
@@ -386,7 +385,7 @@ namespace RINGMesh {
     class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t > {
     public:
         using thisclass = SparseMatrix< T, heavy >;
-        SparseMatrix( bool is_symetrical = false )
+        explicit SparseMatrix( bool is_symetrical = false )
             : SparseMatrixImpl< T, index_t >( is_symetrical )
         {
         }
@@ -422,7 +421,7 @@ namespace RINGMesh {
          */
         T get_element( index_t i, index_t j ) const
         {
-            bool value_exists{ false };
+            bool value_exists { false };
             index_t value_id;
             std::tie( value_exists, value_id ) = this->rows_[i].get_element( j );
             if( !value_exists ) {
@@ -448,12 +447,8 @@ namespace RINGMesh {
         {
             return this->rows_[i].find( j );
         }
-
-        SparseMatrix( const thisclass& rhs );
-        thisclass& operator=( const thisclass& rhs );
-
     private:
-        std::deque< T > values_;
+        std::deque< T > values_ { };
     };
 
     // Note: without light or heavy, it does not compile on Windows.
@@ -476,4 +471,4 @@ namespace RINGMesh {
         return result;
     }
 
-}
+} // namespace RINGMesh
