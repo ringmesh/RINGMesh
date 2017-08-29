@@ -723,13 +723,13 @@ namespace RINGMesh {
         void initialize();
 
         /*!
-         * Bind attribute to the polygons attribute manager
+         * resize the polygons data
          */
-        void bind_attribute();
+        void resize_polygones_data();
         /*!
-         * Unbind attribute to the polygons attribute manager
+         * Clear the polygone data
          */
-        void unbind_attribute();
+        void clear_polygones_data();
         /*!
          * @brief Removes polygon adjacencies along lines
          */
@@ -746,9 +746,9 @@ namespace RINGMesh {
         std::unique_ptr< SurfaceMesh< DIMENSION > >& mesh_;
 
         /// Attribute storing the surface index per polygon
-        GEO::Attribute< index_t > surface_id_;
+        std::vector< index_t > surface_id_;
         /// Attribute storing the polygon index in surface per polygon
-        GEO::Attribute< index_t > polygon_id_;
+        std::vector< index_t > polygon_id_;
 
         /*!
          * Vector storing the index of the starting polygon index

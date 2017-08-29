@@ -1883,31 +1883,21 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     GeoModelMeshPolygonsBase< DIMENSION >::~GeoModelMeshPolygonsBase()
     {
-        unbind_attribute();
+        clear_polygones_data();
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshPolygonsBase< DIMENSION >::bind_attribute()
+    void GeoModelMeshPolygonsBase< DIMENSION >::resize_polygones_data()
     {
-        if( !surface_id_.is_bound() ) {
-            surface_id_.bind( attribute_manager(), surface_att_name );
-        }
-        if( !polygon_id_.is_bound() ) {
-            polygon_id_.bind( attribute_manager(), polygon_surface_att_name );
-        }
-
+        surface_id_.resize( mesh_->nb_polygons() );
+        polygon_id_.resize( mesh_->nb_polygons() );
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshPolygonsBase< DIMENSION >::unbind_attribute()
+    void GeoModelMeshPolygonsBase< DIMENSION >::clear_polygones_data()
     {
-        if( surface_id_.is_bound() ) {
-            surface_id_.unbind();
-        }
-        if( polygon_id_.is_bound() ) {
-            polygon_id_.unbind();
-        }
-
+        surface_id_.clear();
+        polygon_id_.clear();
     }
 
     template< index_t DIMENSION >
@@ -2252,7 +2242,7 @@ namespace RINGMesh {
 
         // Fill the triangles and quads created above
         // Create and fill polygons
-        bind_attribute();
+        resize_polygones_data();
         const GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices =
             this->gmm_.vertices;
         std::vector< index_t > cur_polygon_per_type(
@@ -2511,7 +2501,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     GeoModelMeshBase< DIMENSION >::~GeoModelMeshBase()
     {
-        polygons.unbind_attribute();
+        polygons.clear_polygones_data();
     }
 
     template< index_t DIMENSION >
