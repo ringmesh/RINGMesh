@@ -42,55 +42,54 @@ namespace {
         Corner3D::type_name_static(), Line3D::type_name_static(),
         Surface3D::type_name_static() };
 
-    void copy_geomodel_3d_topology(
-        const GeoModel3D& geomodel_from,
-        GeoModelBuilder2D& geomodel_to_builder )
-    {
-        for( const auto& entity_type : projectable_entity_types ) {
-            geomodel_to_builder.topology.create_mesh_entities( entity_type,
-                geomodel_from.nb_mesh_entities( entity_type ) );
-        }
-        //@todo boundary relations
-    }
-
-    std::vector< vec2 > compute_projected_vertices(
-        const GeoModelMeshEntity3D& entity,
-        Geometry::Plane projection_plane )
-    {
-        std::vector< vec2 > projected_vertices;
-        projected_vertices.resize( entity.nb_vertices() );
-        for( const auto v : range( entity.nb_vertices() ) ) {
-            vec3 projection_3d_on_plane;
-            std::tie( std::ignore, projection_3d_on_plane ) =
-                Distance::point_to_plane( entity.vertex( v ), projection_plane );
-        }
-        return projected_vertices;
-    }
-
-    void project_geomodel_3d_mesh_entities(
-        const GeoModel3D& geomodel_from,
-        const Geometry::Plane& projection_plane,
-        GeoModelBuilder2D& geomodel_to_builder )
-    {
-        for( const auto& entity_type : projectable_entity_types ) {
-            for( const auto entity_id : range(
-                geomodel_from.nb_mesh_entities( entity_type ) ) ) {
-                std::vector< vec2 > projected_vertices = compute_projected_vertices(
-                    geomodel_from.mesh_entity( entity_type, entity_id ),
-                    projection_plane );
-                geomodel_to_builder.geometry.set_mesh_entity_vertices( gmme_id {
-                    entity_type, entity_id }, projected_vertices );
-            }
-        }
-    }
 }
 
 namespace RINGMesh {
 
     void GeoModelBuilder2DProjection::build_geomodel()
     {
-        copy_geomodel_3d_topology( geomodel3d_from_, *this );
-        project_geomodel_3d_mesh_entities( geomodel3d_from_, plane_, *this );
+        copy_geomodel_3d_topology();
+        project_geomodel_3d_mesh_entities();
+    }
+
+    void GeoModelBuilder2DProjection::copy_geomodel_3d_topology()
+    {
+        for( const auto& entity_type : projectable_entity_types ) {
+            topology.create_mesh_entities( entity_type,
+                geomodel3d_from_.nb_mesh_entities( entity_type ) );
+        }
+        //@todo boundary relations
+    }
+
+    void GeoModelBuilder2DProjection::project_geomodel_3d_mesh_entities()
+    {
+        for( const auto& entity_type : projectable_entity_types ) {
+            for( const auto entity_id : range(
+                geomodel3d_from_.nb_mesh_entities( entity_type ) ) ) {
+                std::vector< vec2 > projected_vertices = compute_projected_vertices(
+                    geomodel3d_from_.mesh_entity( entity_type, entity_id ) );
+                geometry.set_mesh_entity_vertices(
+                    gmme_id { entity_type, entity_id }, projected_vertices, false );
+            }
+        }
+    }
+
+    std::vector< vec2 > GeoModelBuilder2DProjection::compute_projected_vertices(
+        const GeoModelMeshEntity3D& entity )
+    {
+        std::vector< vec2 > projected_vertices;
+        projected_vertices.resize( entity.nb_vertices() );
+        for( const auto v : range( entity.nb_vertices() ) ) {
+            vec3 projection_3d_on_plane;
+            std::tie( std::ignore, projection_3d_on_plane ) =
+                Distance::point_to_plane( entity.vertex( v ), plane_ );
+            DEBUG( projection_3d_on_plane );
+            DEBUG( get_2d_coord( projection_3d_on_plane ) );
+            DEBUG( entity.vertex( v ) );
+            projected_vertices.push_back( get_2d_coord( projection_3d_on_plane ) );
+
+        }
+        return projected_vertices;
     }
 
 }
