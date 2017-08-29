@@ -1082,7 +1082,7 @@ namespace {
                 builder->set_vertex( v_i, all_points[v_i] );
             }
 
-            SurfaceSide voi_surfaces = geomodel_.get_voi_surfaces();
+            const auto voi_surfaces = geomodel_.get_voi_surfaces();
             const auto& geomodelmesh_polygons = geomodelmesh.polygons;
             for( auto polygon_i : range( geomodelmesh_polygons.nb() ) ) {
 
@@ -1113,7 +1113,7 @@ namespace {
             // The following repair merges such vertices and enables a homogeneous
             // surface orientation [BC].
             builder->repair( GEO::MESH_REPAIR_COLOCATE, global_epsilon );
-            index_t nb_connected_components = NO_ID;
+            index_t nb_connected_components { NO_ID };
             std::tie( nb_connected_components, std::ignore ) =
                 surface->get_connected_components();
 

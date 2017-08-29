@@ -235,19 +235,19 @@ namespace RINGMesh {
     SurfaceSide GeoModel< 3 >::get_voi_surfaces() const
     {
         SurfaceSide surface_side;
-        std::vector< index_t >& voi_surfaces = surface_side.surfaces_;
+        auto& voi_surfaces = surface_side.surfaces_;
         voi_surfaces.reserve( nb_surfaces() );
-        std::vector< bool >& voi_surface_region_side = surface_side.sides_;
+        auto& voi_surface_region_side = surface_side.sides_;
         voi_surface_region_side.reserve( nb_surfaces() );
 
         for( const auto& cur_surface : surfaces() ) {
             if( cur_surface.is_on_voi() ) {
                 ringmesh_assert( cur_surface.nb_incident_entities() == 1 );
                 voi_surfaces.push_back( cur_surface.index() );
-                const Region3D& incident_region = cur_surface.incident_entity( 0 );
+                const auto& incident_region = cur_surface.incident_entity( 0 );
 
-                index_t local_boundary_id = NO_ID;
-                for( index_t region_boundary_i : range(
+                index_t local_boundary_id { NO_ID };
+                for( auto region_boundary_i : range(
                     incident_region.nb_boundaries() ) ) {
                     if( incident_region.boundary_gmme( region_boundary_i ).index()
                         == cur_surface.index() ) {
@@ -265,8 +265,37 @@ namespace RINGMesh {
         return surface_side;
     }
 
-    SurfaceSide GeoModel< 2 >::get_voi_surfaces() const{
-        return SurfaceSide();// TODO
+    LineSide GeoModel< 2 >::get_voi_lines() const
+    {
+        LineSide line_side;
+        auto& voi_lines = line_side.lines_;
+        voi_lines.reserve( nb_lines() );
+        auto& voi_line_surface_side = line_side.sides_;
+        voi_line_surface_side.reserve( nb_lines() );
+
+        for( const auto& cur_line : lines() ) {
+            if( cur_line.is_on_voi() ) {
+                ringmesh_assert( cur_line.nb_incident_entities() == 1 );
+                voi_lines.push_back( cur_line.index() );
+                const auto& incident_surface = cur_line.incident_entity( 0 );
+
+                index_t local_boundary_id { NO_ID };
+                for( auto surface_boundary_i : range(
+                    incident_surface.nb_boundaries() ) ) {
+                    if( incident_surface.boundary_gmme( surface_boundary_i ).index()
+                        == cur_line.index() ) {
+                        local_boundary_id = surface_boundary_i;
+                        break;
+                    }
+                }
+                ringmesh_assert( local_boundary_id != NO_ID );
+
+                voi_line_surface_side.push_back(
+                    incident_surface.side( local_boundary_id ) );
+            }
+        }
+
+        return line_side;
     }
 
     template class RINGMESH_API GeoModel< 2 > ;
