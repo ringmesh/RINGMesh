@@ -40,8 +40,9 @@
 #include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
 #include <ringmesh/io/io.h>
 
-/*! Tests the loading a svg file.
- * @author Arnaud Botella
+/*! Tests the creation of a GeoModel2D from the projection of a 
+ * GeoModel3D in a plane.
+ * @author Pierre Anquez
  */
 int main()
 {
