@@ -321,6 +321,11 @@ namespace RINGMesh {
         {
             return surface_range< DIMENSION >( *this );
         }
+        geol_entity_range< DIMENSION > geol_entities(
+            const GeologicalEntityType& geol_type ) const
+        {
+            return geol_entity_range< DIMENSION >( *this, geol_type );
+        }
     };
 
     template< >
@@ -344,6 +349,11 @@ namespace RINGMesh {
         region_range< 3 > regions() const
         {
             return region_range< 3 >( *this );
+        }
+        geol_entity_range< 3 > geol_entities(
+            const GeologicalEntityType& geol_type ) const
+        {
+            return geol_entity_range< 3 >( *this, geol_type );
         }
 
         index_t nb_regions() const
@@ -394,6 +404,11 @@ namespace RINGMesh {
         surface_range< 2 > surfaces() const
         {
             return surface_range< 2 >( *this );
+        }
+        geol_entity_range< 2 > geol_entities(
+            const GeologicalEntityType& geol_type ) const
+        {
+            return geol_entity_range< 2 >( *this, geol_type );
         }
         SurfaceSide get_voi_surfaces() const final;
     };

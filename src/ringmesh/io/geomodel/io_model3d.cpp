@@ -163,11 +163,10 @@ namespace {
                 " has no Interface" );
             return false;
         }
-        for( auto i : range( nb_interfaces ) ) {
-            const GeoModelGeologicalEntity3D& E = geomodel.geological_entity(
-                Interface3D::type_name_static(), i );
-            if( !E.has_geological_feature() ) {
-                Logger::err( "", E.gmge(), " has no geological feature" );
+        for( auto& cur_interface : geomodel.geol_entities(
+            Interface3D::type_name_static() ) ) {
+            if( !cur_interface.has_geological_feature() ) {
+                Logger::err( "", cur_interface.gmge(), " has no geological feature" );
                 return false;
             }
         }
@@ -227,12 +226,9 @@ namespace {
         save_coordinate_system( out );
 
         // Gocad::TSurf = RINGMesh::Interface
-        auto nb_interfaces = geomodel.nb_geological_entities(
-            Interface3D ::type_name_static() );
-        for( auto i : range( nb_interfaces ) ) {
-            out << "TSURF "
-                << geomodel.geological_entity( Interface3D ::type_name_static(),
-                    i ).name() << EOL;
+        for( auto& tsurf : geomodel.geol_entities(
+            Interface3D::type_name_static() ) ) {
+            out << "TSURF " << tsurf.name() << EOL;
         }
 
         index_t count = 1;
@@ -240,7 +236,7 @@ namespace {
         // Gocad::TFace = RINGMesh::Surface
         for( const auto& surface : geomodel.surfaces() ) {
             const gmge_id& parent_interface = surface.parent_gmge(
-                Interface3D ::type_name_static() );
+                Interface3D::type_name_static() );
             if( !parent_interface.is_defined() ) {
                 throw RINGMeshException( "I/O", "Failed to save GeoModel",
                     " in .ml Gocad format because Surface ", surface.index(),
@@ -250,9 +246,8 @@ namespace {
                 geomodel.geological_entity( parent_interface ).geological_feature();
 
             out << "TFACE " << count << "  ";
-            out << GeoModelGeologicalEntity3D ::geol_name( cur_geol_feature );
-            out << " "
-                << surface.parent( Interface3D ::type_name_static() ).name()
+            out << GeoModelGeologicalEntity3D::geol_name( cur_geol_feature );
+            out << " " << surface.parent( Interface3D::type_name_static() ).name()
                 << EOL;
 
             // Print the key polygon which is the first three
@@ -280,13 +275,9 @@ namespace {
         }
         // Layers
         if( geomodel.entity_type_manager().geological_entity_manager.is_valid_type(
-            Layer3D ::type_name_static() ) ) {
-            auto nb_layers = geomodel.nb_geological_entities(
-                Layer3D ::type_name_static() );
-            for( auto i : range( nb_layers ) ) {
-                save_layer( count, offset_layer,
-                    geomodel.geological_entity( Layer3D ::type_name_static(),
-                        i ), out );
+            Layer3D::type_name_static() ) ) {
+            for( auto& layer : geomodel.geol_entities( Layer3D::type_name_static() ) ) {
+                save_layer( count, offset_layer, layer, out );
                 ++count;
             }
         }
@@ -294,9 +285,7 @@ namespace {
 
         const auto& geomodel_vertices = geomodel.mesh.vertices;
         // Save the geometry of the Surfaces, Interface per Interface
-        for( auto i : range( nb_interfaces ) ) {
-            const GeoModelGeologicalEntity3D& tsurf = geomodel.geological_entity(
-                Interface3D ::type_name_static(), i );
+        for( auto& tsurf : geomodel.geol_entities( Interface3D::type_name_static() ) ) {
             // TSurf beginning header
             out << "GOCAD TSurf 1" << EOL << "HEADER {" << EOL << "name:"
                 << tsurf.name() << EOL << "name_in_model_list:" << tsurf.name()

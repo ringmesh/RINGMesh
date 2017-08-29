@@ -87,11 +87,8 @@ namespace {
             const GeoModel& geomodel,
             GEOLOGYJS::JSWriter& js ) const
         {
-            for( index_t interface_itr : range(
-                geomodel.nb_geological_entities( Interface::type_name_static() ) ) ) {
-                const GeoModelGeologicalEntity& cur_interface =
-                    geomodel.geological_entity( Interface::type_name_static(),
-                        interface_itr );
+            for( auto& cur_interface : geomodel.geol_entities(
+                Interface::type_name_static() ) ) {
                 if( !GeoModelGeologicalEntity::is_stratigraphic_limit(
                     cur_interface.geological_feature() )
                     && !GeoModelGeologicalEntity::is_fault(
