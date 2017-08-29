@@ -128,22 +128,18 @@ namespace {
         const std::set< gmge_id >& geological_entities,
         std::set< gmme_id >& mesh_entities )
     {
-        int nb_added =
-            -1
-                * static_cast< int >( mesh_entities.size()
-                    + geological_entities.size() );
-        for( const gmge_id& cur_gmge_id : geological_entities ) {
-            const GeoModelGeologicalEntity< DIMENSION >& cur_geol_entity =
-                geomodel.geological_entity( cur_gmge_id );
-            for( index_t child_i = 0; child_i < cur_geol_entity.nb_children();
-                ++child_i ) {
+        const auto old_number_of_entities =
+            static_cast< index_t >( mesh_entities.size() + geological_entities.size() );
+        for( const auto& cur_gmge_id : geological_entities ) {
+            const auto& cur_geol_entity = geomodel.geological_entity( cur_gmge_id );
+            for( auto child_i : range( cur_geol_entity.nb_children() ) ) {
                 mesh_entities.insert( cur_geol_entity.child_gmme( child_i ) );
             }
         }
-        nb_added += static_cast< int >( mesh_entities.size()
-            + geological_entities.size() );
-        ringmesh_assert( nb_added >= 0 );
-        return static_cast< index_t >( nb_added );
+        const auto new_number_of_entities =
+            static_cast< index_t >( mesh_entities.size() + geological_entities.size() );
+        ringmesh_assert( new_number_of_entities >= old_number_of_entities );
+        return new_number_of_entities - old_number_of_entities;
     }
 
     template< index_t DIMENSION >
@@ -152,26 +148,21 @@ namespace {
         const std::set< gmme_id >& mesh_entities,
         std::set< gmge_id >& geological_entities )
     {
-        int nb_added =
-            -1
-                * static_cast< int >( mesh_entities.size()
-                    + geological_entities.size() );
-        const index_t nb_geological_entity_types =
+        const auto old_number_of_entities =
+            static_cast< index_t >( mesh_entities.size() + geological_entities.size() );
+        const auto nb_geological_entity_types =
             geomodel.entity_type_manager().geological_entity_manager.nb_geological_entity_types();
-        for( index_t geol_entity_type_i = 0;
-            geol_entity_type_i < nb_geological_entity_types; ++geol_entity_type_i ) {
-            const GeologicalEntityType& geol_type =
+        for( auto geol_entity_type_i : range( nb_geological_entity_types ) ) {
+            const auto& geol_type =
                 geomodel.entity_type_manager().geological_entity_manager.geological_entity_type(
                     geol_entity_type_i );
 
-            for( index_t geol_entity_i = 0;
-                geol_entity_i < geomodel.nb_geological_entities( geol_type );
-                ++geol_entity_i ) {
-                bool no_child = true;
-                const GeoModelGeologicalEntity< DIMENSION >& cur_geol_entity =
-                    geomodel.geological_entity( geol_type, geol_entity_i );
-                for( index_t child_i = 0; child_i < cur_geol_entity.nb_children();
-                    ++child_i ) {
+            for( auto geol_entity_i : range(
+                geomodel.nb_geological_entities( geol_type ) ) ) {
+                bool no_child { true };
+                const auto& cur_geol_entity = geomodel.geological_entity( geol_type,
+                    geol_entity_i );
+                for( auto child_i : range( cur_geol_entity.nb_children() ) ) {
                     if( mesh_entities.count( cur_geol_entity.child_gmme( child_i ) )
                         == 0 ) {
                         no_child = false;
@@ -183,10 +174,10 @@ namespace {
                 }
             }
         }
-        nb_added += static_cast< int >( mesh_entities.size()
-            + geological_entities.size() );
-        ringmesh_assert( nb_added >= 0 );
-        return static_cast< index_t >( nb_added );
+        const auto new_number_of_entities =
+            static_cast< index_t >( mesh_entities.size() + geological_entities.size() );
+        ringmesh_assert( new_number_of_entities >= old_number_of_entities );
+        return new_number_of_entities - old_number_of_entities;
     }
 
     template< index_t DIMENSION >
@@ -194,18 +185,18 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         std::set< gmme_id >& mesh_entities )
     {
-        int nb_added { -1 * static_cast< int >( mesh_entities.size() ) };
+        const auto old_number_of_entities =
+            static_cast< index_t >( mesh_entities.size() );
         for( auto mesh_type : geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types() ) {
             if( mesh_type == Region3D::type_name_static() ) {
                 // A Region3D cannot be a boundary.
                 continue;
             }
-            for( index_t mesh_entity_i : range(
-                geomodel.nb_mesh_entities( mesh_type ) ) ) {
-                bool no_incident = true;
-                const GeoModelMeshEntity< DIMENSION >& cur_mesh_entity =
-                    geomodel.mesh_entity( mesh_type, mesh_entity_i );
-                for( index_t incident_entity_i : range(
+            for( auto mesh_entity_i : range( geomodel.nb_mesh_entities( mesh_type ) ) ) {
+                bool no_incident { true };
+                const auto& cur_mesh_entity = geomodel.mesh_entity( mesh_type,
+                    mesh_entity_i );
+                for( auto incident_entity_i : range(
                     cur_mesh_entity.nb_incident_entities() ) ) {
                     if( mesh_entities.count(
                         cur_mesh_entity.incident_entity_gmme( incident_entity_i ) )
@@ -219,9 +210,10 @@ namespace {
                 }
             }
         }
-        nb_added += static_cast< int >( mesh_entities.size() );
-        ringmesh_assert( nb_added >= 0 );
-        return static_cast< index_t >( nb_added );
+        const auto new_number_of_entities =
+            static_cast< index_t >( mesh_entities.size() );
+        ringmesh_assert( new_number_of_entities >= old_number_of_entities );
+        return new_number_of_entities - old_number_of_entities;
     }
 
 }
@@ -265,7 +257,7 @@ namespace RINGMesh {
         std::set< gmme_id >& mesh_entities,
         std::set< gmge_id >& geological_entities ) const
     {
-        index_t nb_added = add_to_set_children_of_geological_entities( geomodel_,
+        auto nb_added = add_to_set_children_of_geological_entities( geomodel_,
             geological_entities, mesh_entities );
         nb_added += add_to_set_geological_entities_which_have_no_child( geomodel_,
             mesh_entities, geological_entities );
