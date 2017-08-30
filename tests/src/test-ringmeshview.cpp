@@ -67,10 +67,10 @@ namespace RINGMesh {
         // Create the tasks for launching the app window
         // and the one for closing the window
         std::future< void > start = std::async( std::launch::async,
-            [&app] {app.start();} );            
-        std::this_thread::sleep_for( std::chrono::seconds( 4 ) );
+            &RINGMeshApplication::start, &app );
+        std::this_thread::sleep_for( std::chrono::seconds( 3 ) );
         std::future< void > end = std::async( std::launch::async,
-            [&app] {app.quit();} );
+            &RINGMeshApplication::quit, &app );
     }
 
 }
