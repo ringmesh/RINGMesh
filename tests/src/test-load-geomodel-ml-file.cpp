@@ -52,9 +52,8 @@ int main()
     try {
         default_configure();
         //model filename to test
-        //TODO It appears that cloudspin is not valid
-        std::vector< std::string > input_model_file_name_list = { /*"CloudSpin.ml",*/
-        "modelA6.ml" };
+        std::vector< std::string > input_model_file_name_list = {
+            "CloudSpin_fixed.ml", "modelA6.ml" };
         for( const std::string& input_model_name : input_model_file_name_list ) {
             std::string input_model_file_name = ringmesh_test_data_path
                 + input_model_name;
