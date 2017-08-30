@@ -295,7 +295,7 @@ namespace RINGMesh {
                 plane );
 
             vec3 point_on_plane { projected_point };
-            double translation { std::max( 10., distance ) };
+            double translation { std::max( 1.0, distance ) };
             for( index_t d : range( 3 ) ) {
                 if( std::fabs( plane.normal[d] ) > global_epsilon ) {
                     index_t d1 { ( d + 1 ) % 3 };
