@@ -63,7 +63,9 @@ namespace {
         }
         const index_t max_itr { 5 };
         for( auto i : range( 1, max_itr + 1 ) ) {
-            point_set_builder->create_vertex( vec3( i, i, i ) );
+            point_set_builder->create_vertex( { static_cast< double >( i ),
+                                                static_cast< double >( i ),
+                                                static_cast< double >( i ) } );
             nb_connected_components = NO_ID;
             connected_components.clear();
             std::tie( nb_connected_components, connected_components ) =
@@ -96,6 +98,7 @@ namespace {
                 "Line mesh should have 0 connected component." );
         }
 
+        nb_connected_components = NO_ID;
         auto v0 = line_mesh_builder->create_vertex( { 0., 0., 0. } );
         auto v1 = line_mesh_builder->create_vertex( { 0., 0., 1. } );
         line_mesh_builder->create_edge( v0, v1 );
@@ -107,6 +110,7 @@ namespace {
                 "Line mesh should have 1 connected component with index 0." );
         }
 
+        nb_connected_components = NO_ID;
         auto v2 = line_mesh_builder->create_vertex( { 0., 0., 2. } );
         line_mesh_builder->create_edge( v1, v2 );
         std::tie( nb_connected_components, connected_components ) =
@@ -117,6 +121,7 @@ namespace {
                 "Line mesh should have 1 connected component with index 0." );
         }
 
+        nb_connected_components = NO_ID;
         auto v3 = line_mesh_builder->create_vertex( { 0., 0., 3. } );
         auto v4 = line_mesh_builder->create_vertex( { 0., 0., 4. } );
         line_mesh_builder->create_edge( v3, v4 );
@@ -128,6 +133,7 @@ namespace {
                 "Line mesh should have 2 connected components: 0 0 1." );
         }
 
+        nb_connected_components = NO_ID;
         auto v5 = line_mesh_builder->create_vertex( { 1., 0., 0. } );
         line_mesh_builder->create_edge( v5, v0 );
         std::tie( nb_connected_components, connected_components ) =
@@ -138,6 +144,7 @@ namespace {
                 "Line mesh should have 2 connected components: 0 0 1 0." );
         }
 
+        nb_connected_components = NO_ID;
         auto v6 = line_mesh_builder->create_vertex( { 0., 0., 5. } );
         auto v7 = line_mesh_builder->create_vertex( { 0., 0., 6. } );
         line_mesh_builder->create_edge( v6, v7 );
@@ -151,6 +158,7 @@ namespace {
                 "Line mesh should have 2 connected components: 0 0 1 0 1 1." );
         }
 
+        nb_connected_components = NO_ID;
         line_mesh_builder->create_edge( v2, v3 );
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->connected_components();
@@ -163,6 +171,7 @@ namespace {
                 "Line mesh should have 1 connected component: 0 0 0 0 0 0 0." );
         }
 
+        nb_connected_components = NO_ID;
         auto v8 = line_mesh_builder->create_vertex( { 0., 0., 7. } );
         auto v9 = line_mesh_builder->create_vertex( { 0., 0., 8. } );
         line_mesh_builder->create_edge( v8, v9 );
@@ -207,6 +216,7 @@ namespace {
                 "Surface mesh should have 0 connected component." );
         }
 
+        nb_connected_components = NO_ID;
         std::vector< index_t > polygon_vertices = {
             surface_mesh_builder->create_vertex( { 0., 0., 0. } ),
             surface_mesh_builder->create_vertex( { 1., 0., 0. } ),
@@ -222,6 +232,7 @@ namespace {
                 "Surface mesh should have 1 connected component with an index at 0." );
         }
 
+        nb_connected_components = NO_ID;
         polygon_vertices[0] = surface_mesh_builder->create_vertex( { 1., 1., 1. } );
         polygon_id = surface_mesh_builder->create_polygon( polygon_vertices );
         update_polygon_adjacencies_after_adding_a_new_polygon( *surface_mesh_builder,
