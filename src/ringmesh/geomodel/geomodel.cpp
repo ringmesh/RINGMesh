@@ -62,26 +62,18 @@ namespace {
     double compute_percentage_bbox_diagonal( const GeoModelBase< DIMENSION >& gm )
     {
         Box< DIMENSION > bbox;
-        if( gm.universe().nb_boundaries() > 0 ) {
-            const Universe< DIMENSION >& universe = gm.universe();
-            for( index_t b : range( universe.nb_boundaries() ) ) {
-                compute_mesh_entity_bbox(
-                    gm.mesh_entity( universe.boundary_gmme( b ) ), bbox );
+        if( gm.nb_surfaces() > 0 ) {
+            for( index_t s : range( gm.nb_surfaces() ) ) {
+                compute_mesh_entity_bbox( gm.surface( s ), bbox );
+            }
+        } else if( gm.nb_lines() > 0 ) {
+            for( index_t l : range( gm.nb_lines() ) ) {
+                compute_mesh_entity_bbox( gm.line( l ), bbox );
             }
         } else {
-            if( gm.nb_surfaces() > 0 ) {
-                for( index_t s : range( gm.nb_surfaces() ) ) {
-                    compute_mesh_entity_bbox( gm.surface( s ), bbox );
-                }
-            } else if( gm.nb_lines() > 0 ) {
-                for( index_t l : range( gm.nb_lines() ) ) {
-                    compute_mesh_entity_bbox( gm.line( l ), bbox );
-                }
-            } else {
-                ringmesh_assert( gm.nb_corners() > 0 );
-                for( index_t c : range( gm.nb_corners() ) ) {
-                    bbox.add_point( gm.corner( c ).vertex( 0 ) );
-                }
+            ringmesh_assert( gm.nb_corners() > 0 );
+             for( index_t c : range( gm.nb_corners() ) ) {
+                bbox.add_point( gm.corner( c ).vertex( 0 ) );
             }
         }
         return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" );
@@ -89,9 +81,10 @@ namespace {
 } // namespace
 
 namespace RINGMesh {
+
     template< index_t DIMENSION >
     GeoModelBase< DIMENSION >::GeoModelBase( GeoModel< DIMENSION >& geomodel )
-        : mesh( geomodel ), universe_( geomodel )
+        : mesh( geomodel )
     {
     }
 
@@ -198,6 +191,11 @@ namespace RINGMesh {
     {
     }
 
+    GeoModel< 2 >::GeoModel()
+        : GeoModelBase< 2 >( *this )
+    {
+    }
+
     const Region3D& GeoModel< 3 >::region( index_t index ) const
     {
         ringmesh_assert( index < regions_.size() );
@@ -231,6 +229,72 @@ namespace RINGMesh {
             return nb_regions();
         }
         return GeoModelBase3D::nb_mesh_entities( type );
+    }
+
+    SurfaceSide GeoModel< 3 >::voi_surfaces() const
+    {
+        SurfaceSide surface_side;
+        auto& voi_surfaces = surface_side.surfaces_;
+        voi_surfaces.reserve( nb_surfaces() );
+        auto& voi_surface_region_side = surface_side.sides_;
+        voi_surface_region_side.reserve( nb_surfaces() );
+
+        for( const auto& cur_surface : surfaces() ) {
+            if( cur_surface.is_on_voi() ) {
+                ringmesh_assert( cur_surface.nb_incident_entities() == 1 );
+                voi_surfaces.push_back( cur_surface.index() );
+                const auto& incident_region = cur_surface.incident_entity( 0 );
+
+                index_t local_boundary_id { NO_ID };
+                for( auto region_boundary_i : range(
+                    incident_region.nb_boundaries() ) ) {
+                    if( incident_region.boundary_gmme( region_boundary_i ).index()
+                        == cur_surface.index() ) {
+                        local_boundary_id = region_boundary_i;
+                        break;
+                    }
+                }
+                ringmesh_assert( local_boundary_id != NO_ID );
+
+                voi_surface_region_side.push_back(
+                    incident_region.side( local_boundary_id ) );
+            }
+        }
+
+        return surface_side;
+    }
+
+    LineSide GeoModel< 2 >::voi_lines() const
+    {
+        LineSide line_side;
+        auto& voi_lines = line_side.lines_;
+        voi_lines.reserve( nb_lines() );
+        auto& voi_line_surface_side = line_side.sides_;
+        voi_line_surface_side.reserve( nb_lines() );
+
+        for( const auto& cur_line : lines() ) {
+            if( cur_line.is_on_voi() ) {
+                ringmesh_assert( cur_line.nb_incident_entities() == 1 );
+                voi_lines.push_back( cur_line.index() );
+                const auto& incident_surface = cur_line.incident_entity( 0 );
+
+                index_t local_boundary_id { NO_ID };
+                for( auto surface_boundary_i : range(
+                    incident_surface.nb_boundaries() ) ) {
+                    if( incident_surface.boundary_gmme( surface_boundary_i ).index()
+                        == cur_line.index() ) {
+                        local_boundary_id = surface_boundary_i;
+                        break;
+                    }
+                }
+                ringmesh_assert( local_boundary_id != NO_ID );
+
+                voi_line_surface_side.push_back(
+                    incident_surface.side( local_boundary_id ) );
+            }
+        }
+
+        return line_side;
     }
 
     template class RINGMESH_API GeoModel< 2 > ;

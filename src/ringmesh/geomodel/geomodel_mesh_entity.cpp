@@ -75,75 +75,27 @@ namespace {
 
     /*!
      * @brief Computes and returns the surface connected components
-     * @details In Debug mode, the connected components are saved into 
-     * an Attribute on surface polygons.
      */
     template< index_t DIMENSION >
     index_t compute_nb_surface_connected_components(
         const SurfaceBase< DIMENSION >& surface )
     {
-        const index_t NO_COMPONENT = index_t( -1 );
-        std::vector< index_t > component( surface.nb_mesh_elements(), NO_COMPONENT );
-        index_t nb_components = 0;
-        for( index_t polygon : range( surface.nb_mesh_elements() ) ) {
-            if( component[polygon] == NO_COMPONENT ) {
-                std::stack< index_t > S;
-                S.push( polygon );
-                component[polygon] = nb_components;
-                do {
-                    index_t cur_polygon = S.top();
-                    S.pop();
-                    for( index_t edge : range(
-                        surface.nb_mesh_element_vertices( cur_polygon ) ) ) {
-                        index_t adj_polygon = surface.polygon_adjacent_index(
-                            PolygonLocalEdge( cur_polygon, edge ) );
-                        if( adj_polygon != NO_ID
-                            && component[adj_polygon] == NO_COMPONENT ) {
-                            S.push( adj_polygon );
-                            component[adj_polygon] = nb_components;
-                        }
-                    }
-                } while( !S.empty() );
-                nb_components++;
-            }
-        }
-        return nb_components;
+        index_t nb_connected_components = NO_ID;
+        std::tie( nb_connected_components, std::ignore ) =
+            surface.low_level_mesh_storage().connected_components();
+        return nb_connected_components;
     }
 
     /*!
      * @brief Computes and returns the region connected components
-     * @details In Debug mode, the connected components are saved into 
-     * an Attribute on region cells.
      */
     template< index_t DIMENSION >
-    index_t compute_nb_volume_connected_components(
-        const Region< DIMENSION >& region )
+    index_t compute_nb_volume_connected_components( const Region< DIMENSION >& region )
     {
-        const index_t NO_COMPONENT = index_t( -1 );
-        std::vector< index_t > component( region.nb_mesh_elements(), NO_COMPONENT );
-        index_t nb_components = 0;
-        for( index_t cell : range( region.nb_mesh_elements() ) ) {
-            if( component[cell] == NO_COMPONENT ) {
-                std::stack< index_t > S;
-                S.push( cell );
-                component[cell] = nb_components;
-                do {
-                    index_t cur_cell = S.top();
-                    S.pop();
-                    for( index_t facet : range( region.nb_cell_facets( cur_cell ) ) ) {
-                        index_t adj_cell = region.cell_adjacent_index( cur_cell,
-                            facet );
-                        if( adj_cell != NO_ID
-                            && component[adj_cell] == NO_COMPONENT ) {
-                            S.push( adj_cell );
-                            component[adj_cell] = nb_components;
-                        }
-                    }
-                } while( !S.empty() );
-                nb_components++;
-            }
-        }
-        return nb_components;
+        index_t nb_connected_components;
+        std::tie( nb_connected_components, std::ignore ) =
+            region.low_level_mesh_storage().connected_components();
+        return nb_connected_components;
     }
 
     /*!
@@ -566,8 +518,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool Corner< DIMENSION >::is_on_voi() const
     {
-        // True if one of the incident surface define the universe
-        for( index_t i : range( this->nb_incident_entities() ) ) {
+        // True if one of the incident lines defines the universe
+        for( auto i : range( this->nb_incident_entities() ) ) {
             if( incident_entity( i ).is_on_voi() ) {
                 return true;
             }
@@ -710,29 +662,30 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool Line< DIMENSION >::is_on_voi() const
-    {
-        // True if one of the incident surface define the universe
-        for( index_t i : range( this->nb_incident_entities() ) ) {
-            if( incident_entity( i ).is_on_voi() ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    template< index_t DIMENSION >
-    const Surface< DIMENSION >& Line< DIMENSION >::incident_entity( index_t x ) const
-    {
-        return static_cast< const Surface< DIMENSION >& >( GeoModelMeshEntity<
-            DIMENSION >::incident_entity( x ) );
-    }
-
-    template< index_t DIMENSION >
     const Corner< DIMENSION >& Line< DIMENSION >::boundary( index_t x ) const
     {
         return static_cast< const Corner< DIMENSION >& >( GeoModelMeshEntity<
             DIMENSION >::boundary( x ) );
+    }
+
+    template<>
+    bool Line< 2 >::is_on_voi() const
+    {
+        ringmesh_assert(
+            this->nb_incident_entities() == 1 || this->nb_incident_entities() == 2 );
+        return this->nb_incident_entities() == 1;
+    }
+
+    template<>
+    bool Line< 3 >::is_on_voi() const
+    {
+        // True if one of the incident surfaces defines the universe
+        for( auto i : range( this->nb_incident_entities() ) ) {
+            if( this->incident_entity( i ).is_on_voi() ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /********************************************************************/
@@ -801,27 +754,27 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool SurfaceBase< DIMENSION >::is_on_voi() const
-    {
-        for( index_t i : range( this->geomodel().universe().nb_boundaries() ) ) {
-            if( this->geomodel().universe().boundary_gmme( i ) == this->gmme() ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    template< index_t DIMENSION >
     const Line< DIMENSION >& SurfaceBase< DIMENSION >::boundary( index_t x ) const
     {
         return static_cast< const Line< DIMENSION >& >( GeoModelMeshEntity< DIMENSION >::boundary(
             x ) );
     }
 
+    bool Surface< 2 >::is_on_voi() const
+    {
+        return false;
+    }
+
+    bool Surface< 3 >::is_on_voi() const
+    {
+        ringmesh_assert(
+            this->nb_incident_entities() == 1 || this->nb_incident_entities() == 2 );
+        return this->nb_incident_entities() == 1;
+    }
+
     const Region3D& Surface< 3 >::incident_entity( index_t x ) const
     {
-        return static_cast< const Region3D& >( GeoModelMeshEntity3D::incident_entity(
-            x ) );
+        return static_cast< const Region3D& >( GeoModelMeshEntity3D::incident_entity( x ) );
     }
 
     /********************************************************************/
@@ -946,7 +899,6 @@ namespace RINGMesh {
         builder->copy( *surface_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
-
 
     template< index_t DIMENSION >
     ElementLocalVertex Region< DIMENSION >::find_cell_from_colocated_vertex_if_any(

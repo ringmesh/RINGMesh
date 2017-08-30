@@ -52,6 +52,7 @@ Bug fix:
  * GeoModelMeshVertices was not cleared after a tetrahedralize step
 
 Improvements:
+ * Removal of the Universe (only necessary for Gocad import/export).
  * Refactoring of the io to have smaller files
  * Explicit distinction between the denomination of GeoModelMeshEntity and GeoModelGeologicalEntity:
       Now, gmme_t are used to identify a GeoModelMeshEntity (with and index and a type)

@@ -192,12 +192,6 @@ namespace RINGMesh {
         friend class GeoModelBuilderBase< 2 > ;
         friend class GeoModelBuilder< 2 > ;
     public:
-        void add_universe_boundary( index_t boundary_id, bool side );
-
-        void set_universe_boundary( index_t id, index_t boundary_id, bool side );
-
-        void compute_universe();
-
         void add_mesh_entity_boundary_relation(
             const gmme_id& boundary,
             const gmme_id& incident_entity,
@@ -222,11 +216,7 @@ namespace RINGMesh {
         friend class GeoModelBuilderBase< 3 > ;
         friend class GeoModelBuilder< 3 > ;
     public:
-        void add_universe_boundary( index_t boundary_id, bool side );
-
-        void set_universe_boundary( index_t id, index_t boundary_id, bool side );
-
-        void compute_universe();
+        virtual ~GeoModelBuilderTopology() = default;
 
         gmme_id create_mesh_entity( const MeshEntityType& type ) override;
 
