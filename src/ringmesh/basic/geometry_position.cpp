@@ -104,12 +104,14 @@ namespace {
                 return true;
             }
             return s2 == s3;
-        } else if( s2 == ZERO ) {
+        }
+        if( s2 == ZERO ) {
             if( s1 == ZERO || s3 == ZERO ) {
                 return true;
             }
             return s1 == s3;
-        } else if( s3 == ZERO ) {
+        }
+        if( s3 == ZERO ) {
             if( s1 == ZERO || s2 == ZERO ) {
                 return true;
             }

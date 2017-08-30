@@ -364,11 +364,11 @@ if(CLANG_TIDY)
     add_custom_target(
         tidy
         COMMAND ${CLANG_TIDY}
-        ${ringmesh_include}
+        ${ringmesh_files}
         -config=''
         --
         -std=c++11
-        ${ringmesh_files}
+        ${include_dirs}
     )
 endif()
 

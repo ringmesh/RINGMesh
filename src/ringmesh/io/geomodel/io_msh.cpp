@@ -92,6 +92,8 @@ namespace {
     public:
         void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GMSH not implemented yet" );
         }
