@@ -550,7 +550,7 @@ namespace RINGMesh {
     /***************************************************************/
 
     template< index_t DIMENSION >
-    bool LineBase< DIMENSION >::is_mesh_valid() const
+    bool Line< DIMENSION >::is_mesh_valid() const
     {
         bool valid = true;
 
@@ -636,7 +636,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool LineBase< DIMENSION >::is_connectivity_valid() const
+    bool Line< DIMENSION >::is_connectivity_valid() const
     {
         bool line_valid = GeoModelMeshEntity< DIMENSION >::is_connectivity_valid();
 
@@ -649,7 +649,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool LineBase< DIMENSION >::is_first_corner_first_vertex() const
+    bool Line< DIMENSION >::is_first_corner_first_vertex() const
     {
         if( this->nb_boundaries() != 2 || this->nb_vertices() < 2 ) {
             return false;
@@ -662,12 +662,13 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const Corner< DIMENSION >& LineBase< DIMENSION >::boundary( index_t x ) const
+    const Corner< DIMENSION >& Line< DIMENSION >::boundary( index_t x ) const
     {
         return static_cast< const Corner< DIMENSION >& >( GeoModelMeshEntity<
             DIMENSION >::boundary( x ) );
     }
 
+    template<>
     bool Line< 2 >::is_on_voi() const
     {
         ringmesh_assert(
@@ -675,6 +676,7 @@ namespace RINGMesh {
         return this->nb_incident_entities() == 1;
     }
 
+    template<>
     bool Line< 3 >::is_on_voi() const
     {
         // True if one of the incident surfaces defines the universe
@@ -883,7 +885,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void LineBase< DIMENSION >::change_mesh_data_structure( const MeshType& type )
+    void Line< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
         std::unique_ptr< LineMesh< DIMENSION > > new_mesh =
             LineMesh< DIMENSION >::create_mesh( type );

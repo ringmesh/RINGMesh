@@ -493,13 +493,13 @@ namespace RINGMesh {
      * a 1-manifold (Line with no T intersections).
      */
     template< index_t DIMENSION >
-    class LineBase: public GeoModelMeshEntity< DIMENSION > {
-    ringmesh_disable_copy_and_move( LineBase );
+    class Line final: public GeoModelMeshEntity< DIMENSION > {
+    ringmesh_disable_copy_and_move( Line );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
 
-        virtual ~LineBase()
+        virtual ~Line()
         {
             this->unbind_vertex_mapping_attribute();
         }
@@ -513,6 +513,8 @@ namespace RINGMesh {
         {
             return type_name_static();
         }
+
+        bool is_on_voi() const final;
 
         const Corner< DIMENSION >& boundary( index_t x ) const;
 
@@ -606,7 +608,7 @@ namespace RINGMesh {
         }
 
     protected:
-        LineBase(
+        Line(
             const GeoModel< DIMENSION >& geomodel,
             index_t id,
             const MeshType& type )
@@ -641,36 +643,6 @@ namespace RINGMesh {
 
     private:
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_ { };
-    };
-
-    template< index_t DIMENSION >
-    class Line final: public LineBase< DIMENSION > {
-    };
-
-    template< >
-    class RINGMESH_API Line< 2 > final: public LineBase< 2 > {
-        friend class GeoModelMeshEntityAccess< 2 > ;
-    private:
-        Line( const GeoModel2D& geomodel, index_t id, const MeshType type )
-            : LineBase< 2 >( geomodel, id, type )
-        {
-        }
-
-    public:
-        bool is_on_voi() const final;
-    };
-
-    template< >
-    class RINGMESH_API Line< 3 > final: public LineBase< 3 > {
-        friend class GeoModelMeshEntityAccess< 3 > ;
-    private:
-        Line( const GeoModel3D& geomodel, index_t id, const MeshType type )
-            : LineBase< 3 >( geomodel, id, type )
-        {
-        }
-
-    public:
-        bool is_on_voi() const final;
     };
 
     ALIAS_2D_AND_3D( Line );
