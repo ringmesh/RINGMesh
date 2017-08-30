@@ -128,15 +128,56 @@ namespace {
                 "Line mesh should have 2 connected components: 0 0 1." );
         }
 
-        line_mesh_builder->create_vertex( { 0., 0., 5. } );
-        auto v6 = line_mesh_builder->create_vertex( { 1., 0., 0. } );
-        line_mesh_builder->create_edge( v6, v0 );
+        auto v5 = line_mesh_builder->create_vertex( { 1., 0., 0. } );
+        line_mesh_builder->create_edge( v5, v0 );
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->connected_components();
         solution.push_back( 0 );
         if( nb_connected_components != 2 || connected_components != solution ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Line mesh should have 2 connected components: 0 0 1 0." );
+        }
+
+        auto v6 = line_mesh_builder->create_vertex( { 0., 0., 5. } );
+        auto v7 = line_mesh_builder->create_vertex( { 0., 0., 6. } );
+        line_mesh_builder->create_edge( v6, v7 );
+        line_mesh_builder->create_edge( v4, v6 );
+        std::tie( nb_connected_components, connected_components ) =
+            line_mesh->connected_components();
+        solution.push_back( 1 );
+        solution.push_back( 1 );
+        if( nb_connected_components != 2 || connected_components != solution ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Line mesh should have 2 connected components: 0 0 1 0 1 1." );
+        }
+
+        line_mesh_builder->create_edge( v2, v3 );
+        std::tie( nb_connected_components, connected_components ) =
+            line_mesh->connected_components();
+        solution[2] = 0;
+        solution[4] = 0;
+        solution[5] = 0;
+        solution.push_back( 0 );
+        if( nb_connected_components != 1 || connected_components != solution ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Line mesh should have 1 connected component: 0 0 0 0 0 0 0." );
+        }
+
+        auto v8 = line_mesh_builder->create_vertex( { 0., 0., 7. } );
+        auto v9 = line_mesh_builder->create_vertex( { 0., 0., 8. } );
+        line_mesh_builder->create_edge( v8, v9 );
+        auto v10 = line_mesh_builder->create_vertex( { 0., 0., 9. } );
+        auto v11 = line_mesh_builder->create_vertex( { 0., 0., 10. } );
+        line_mesh_builder->create_edge( v10, v11 );
+        line_mesh_builder->create_edge( v7, v8 );
+        std::tie( nb_connected_components, connected_components ) =
+            line_mesh->connected_components();
+        solution.push_back( 0 );
+        solution.push_back( 1 );
+        solution.push_back( 0 );
+        if( nb_connected_components != 2 || connected_components != solution ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Line mesh should have 2 connected components: 0 0 0 0 0 0 0 0 1 0." );
         }
     }
 

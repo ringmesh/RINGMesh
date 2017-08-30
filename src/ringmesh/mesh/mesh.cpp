@@ -148,12 +148,18 @@ namespace RINGMesh {
                     auto min_connected_components = std::min(
                         vertex_components[v0], vertex_components[v1] );
                     auto max_connected_components = std::max(
-                        vertex_components[v0], vertex_components[v1] );
+                        vertex_components[v0],
+                        vertex_components[v1] );
                     for( auto previous_edge : range( edge ) ) {
-                        ringmesh_assert( components[edge] != NO_ID );
+                        ringmesh_assert( components[previous_edge] != NO_ID );
+                        ringmesh_assert( vertex_components[edge_vertex( {
+                            previous_edge, 0 } )] != NO_ID );
+                        ringmesh_assert( vertex_components[edge_vertex( {
+                            previous_edge, 1 } )] != NO_ID );
                         if( components[previous_edge] == max_connected_components ) {
                             components[previous_edge] = min_connected_components;
-                            vertex_components[edge_vertex( { previous_edge, 0 } )] = min_connected_components;
+                            vertex_components[edge_vertex( { previous_edge, 0 } )] =
+                                min_connected_components;
                             vertex_components[edge_vertex( { previous_edge, 1 } )] = min_connected_components;
                         } else if( components[previous_edge]
                             > max_connected_components ) {
