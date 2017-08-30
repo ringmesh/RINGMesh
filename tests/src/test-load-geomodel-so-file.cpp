@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <future>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
@@ -45,6 +47,30 @@
  * @author Pierre Anquez
  */
 
+void test_mesh( const std::string& file_name )
+{
+    using namespace RINGMesh;
+
+    GeoModel3D model;
+    bool loaded_model_is_valid { geomodel_load( model, file_name ) };
+
+    if( !loaded_model_is_valid ) {
+        throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
+            model.name(), ": the loaded model is not valid." );
+    }
+
+    // Check number of entities of the imported GeoModel (from TSolid or LightTSolid file)
+    if( model.nb_corners() != 52 || model.nb_lines() != 98
+        || model.nb_surfaces() != 55 || model.nb_regions() != 8
+        || model.nb_geological_entities( Interface3D::type_name_static() ) != 11
+        || model.nb_geological_entities( Contact3D::type_name_static() ) != 38
+        || model.mesh.vertices.nb() != 6691 || model.mesh.polygons.nb() != 10049
+        || model.mesh.cells.nb() != 34540 ) {
+        throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
+            model.name(), ": wrong number of entities." );
+    }
+}
+
 int main()
 {
     using namespace RINGMesh;
@@ -52,36 +78,22 @@ int main()
     try {
         default_configure();
 
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path + "log.txt" );
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
+        Logger::out( "TEST",
+            "Import two meshed GeoModels (1 TSolid & 1 LightTSolid) from .so" );
 
-        Logger::out( "TEST", "Import a meshed GeoModel from .so" );
+        std::vector< std::future< void > > futures;
 
-        std::string file_name( ringmesh_test_data_path );
-        file_name += "modelA4.so";
+        futures.emplace_back(
+            std::async( std::launch::async, &test_mesh,
+                ringmesh_test_data_path + "modelA4.so" ) );
 
-        GeoModel3D model;
-        bool loaded_model_is_valid = geomodel_load( model, file_name );
+        futures.emplace_back(
+            std::async( std::launch::async, &test_mesh,
+                ringmesh_test_data_path + "modelA4_lts.so" ) );
 
-        if( !loaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
-                model.name(), ": the loaded model is not valid." );
+        for( auto& future : futures ) {
+            future.get();
         }
-
-        // Check number of entities of the imported GeoModel (from TSolid file)
-        if( model.nb_corners() != 52 || model.nb_lines() != 98
-            || model.nb_surfaces() != 55 || model.nb_regions() != 8
-            || model.nb_geological_entities( Interface3D::type_name_static() )
-                != 11
-            || model.nb_geological_entities( Contact3D::type_name_static() ) != 38
-            || model.mesh.vertices.nb() != 6691 || model.mesh.polygons.nb() != 10049
-            || model.mesh.cells.nb() != 34540 ) {
-            throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
-                model.name(), ": wrong number of entities." );
-        }
-
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
