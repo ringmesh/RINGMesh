@@ -40,7 +40,7 @@ namespace {
      */
     index_t nb_polygons( const GeoModel3D& geomodel )
     {
-        index_t result = 0;
+        index_t result { 0 };
         for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
             result += surface.nb_mesh_elements();
         }
@@ -58,7 +58,7 @@ namespace {
     void save_region( index_t count, const Region3D& region, std::ostream& out )
     {
         out << "REGION " << count << "  " << region.name() << " " << EOL;
-        index_t it = 0;
+        index_t it { 0 };
 
         for( auto i : range( region.nb_boundaries() ) ) {
             out << "  ";
@@ -79,14 +79,14 @@ namespace {
 
     void save_universe(
         index_t count,
-        const GeoModel3D& GM,
+        const GeoModel3D& geomodel,
         std::ostream& out )
     {
-        const SurfaceSide surface_region_sides = GM.voi_surfaces();
+        const SurfaceSide surface_region_sides = geomodel.voi_surfaces();
 
         out << "REGION " << count << "  Universe "
             << EOL;
-        index_t it = 0;
+        index_t it { 0 };
 
         for( auto i : range( surface_region_sides.surfaces_.size() ) ) {
             out << "  ";
@@ -121,7 +121,7 @@ namespace {
         std::ostream& out )
     {
         out << "LAYER " << layer.name() << " " << EOL;
-        index_t it = 0;
+        index_t it { 0 };
 
         for( auto i : range( layer.nb_children() ) ) {
             out << "  " << layer.child_gmme( i ).index() + offset + 1;
@@ -231,7 +231,7 @@ namespace {
             out << "TSURF " << tsurf.name() << EOL;
         }
 
-        index_t count = 1;
+        index_t count { 1 };
 
         // Gocad::TFace = RINGMesh::Surface
         for( const auto& surface : geomodel.surfaces() ) {
@@ -300,7 +300,7 @@ namespace {
             out << "PROPERTY_CLASS_HEADER Z {" << EOL << "is_z:on" << EOL
                 << "}" << EOL;
 
-            index_t vertex_count = 1;
+            index_t vertex_count { 1 };
             // TFace vertex index = Surface vertex index + offset
             auto offset = vertex_count;
 

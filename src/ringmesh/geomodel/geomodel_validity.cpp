@@ -175,12 +175,12 @@ namespace {
         index_t v1 )
     {
         auto line_type = Line< DIMENSION >::type_name_static();
-        std::vector< GMEVertex > v0_line_bme =
+        auto v0_line_bme =
             geomodel.mesh.vertices.gme_type_vertices( line_type, v0 );
         if( v0_line_bme.empty() ) {
             return false;
         }
-        std::vector< GMEVertex > v1_line_bme =
+        auto v1_line_bme =
             geomodel.mesh.vertices.gme_type_vertices( line_type, v1 );
         if( v1_line_bme.empty() ) {
             return false;
@@ -252,7 +252,7 @@ namespace {
         if( p1 == p2 ) {
             return true;
         }
-        for( index_t v : range( polygons.nb_vertices( p1 ) ) ) {
+        for( auto v : range( polygons.nb_vertices( p1 ) ) ) {
             if( polygons.adjacent( { p1, v } ) == p2 ) {
                 return true;
             }
@@ -422,7 +422,7 @@ namespace {
     {
         std::ostringstream oss;
         oss << " Vertex is in " << entities.size() << " " << entity_name << ": ";
-        for( index_t entity : entities ) {
+        for( auto entity : entities ) {
             oss << entity << " ; ";
         }
         Logger::warn( "GeoModel", oss.str() );
@@ -596,7 +596,7 @@ namespace {
                 Logger::warn( "GeoModel", "It should be in at least one Line" );
                 return false;
             } else {
-                for( index_t line : lines ) {
+                for( auto line : lines ) {
                     auto nb = std::count( lines.begin(), lines.end(), line );
                     if( nb == 2 ) {
                         if( !geomodel.line( line ).is_closed() ) {
@@ -613,7 +613,7 @@ namespace {
                 // Check that all the lines are in incident_entity of this corner
                 gmme_id corner_id( Corner2D::type_name_static(),
                     entities.find( Corner2D::type_name_static() )->second.front() );
-                for( index_t line : lines ) {
+                for( auto line : lines ) {
                     gmme_id line_id( Line2D::type_name_static(), line );
                     if( !is_boundary_entity( geomodel, line_id, corner_id ) ) {
                         Logger::warn( "GeoModel",
@@ -739,9 +739,9 @@ namespace {
         const std::vector< index_t >& e )
     {
         GEO::Mesh edge_mesh;
-        index_t previous_vertex_id = NO_ID;
+        index_t previous_vertex_id { NO_ID };
         for( auto i : range( e.size() ) ) {
-            index_t cur_vertex_id { edge_mesh.vertices.create_vertex(
+            auto cur_vertex_id { edge_mesh.vertices.create_vertex(
                 geomodel.mesh.vertices.vertex( e[i] ).data() ) };
             if( i % 2 == 0 ) {
                 ringmesh_assert( previous_vertex_id == NO_ID );
@@ -768,7 +768,7 @@ namespace {
             GEO::vector< index_t > vertices;
             vertices.reserve( nb_vertices_in_polygon );
             for( auto v : range( nb_vertices_in_polygon ) ) {
-                index_t new_vertex { mesh.vertices.create_vertex(
+                auto new_vertex { mesh.vertices.create_vertex(
                     surface.mesh_element_vertex( { cur_polygon, v } ).data() ) };
                 vertices.push_back( new_vertex );
             }
@@ -788,7 +788,7 @@ namespace {
     {
         const auto& geomodel_vertices = surface.geomodel().mesh.vertices;
         std::vector< index_t > invalid_corners;
-        gmme_id S_id = surface.gmme();
+        auto S_id = surface.gmme();
         for( auto p : range( surface.nb_mesh_elements() ) ) {
             for( auto v : range( surface.nb_mesh_element_vertices( p ) ) ) {
                 if( surface.polygon_adjacent_index( { p, v } ) == NO_ID
@@ -835,12 +835,12 @@ namespace {
     {
         GeogramLineMesh< DIMENSION > mesh;
         GeogramLineMeshBuilder< DIMENSION > builder( mesh );
-        index_t nb_edges { static_cast< index_t >( non_manifold_edges.size() ) };
+        auto nb_edges { static_cast< index_t >( non_manifold_edges.size() ) };
         builder.create_vertices( 2 * nb_edges );
         builder.create_edges( nb_edges );
         const auto& vertices = geomodel.mesh.vertices;
         for( auto e : range( non_manifold_edges.size() ) ) {
-            index_t edge_id { non_manifold_edges[e] };
+            auto edge_id { non_manifold_edges[e] };
             const auto& v0 = vertices.vertex( edge_indices[edge_id] );
             const auto& v1 = vertices.vertex( edge_indices[edge_id + 1] );
             builder.set_vertex( 2 * e, v0 );
@@ -892,13 +892,13 @@ namespace {
         const auto& polygons = geomodel.mesh.polygons;
         for( const auto& surface : geomodel.surfaces() ) {
             for( auto p : range( polygons.nb_polygons( surface.index() ) ) ) {
-                index_t polygon_id { polygons.polygon( surface.index(), p ) };
+                auto polygon_id { polygons.polygon( surface.index(), p ) };
                 for( auto v : range( polygons.nb_vertices( polygon_id ) ) ) {
-                    index_t adj { polygons.adjacent( { polygon_id, v } ) };
+                    auto adj { polygons.adjacent( { polygon_id, v } ) };
                     if( adj == NO_ID ) {
                         edge_indices.push_back(
                             polygons.vertex( ElementLocalVertex( polygon_id, v ) ) );
-                        index_t next_v { ( v + 1 )
+                        auto next_v { ( v + 1 )
                             % polygons.nb_vertices( polygon_id ) };
                         edge_indices.push_back(
                             polygons.vertex( { polygon_id, next_v } ) );
@@ -1117,13 +1117,13 @@ namespace {
                     continue;
                 }
 
-                const index_t first_interface_id {
+                const auto first_interface_id {
                     line.incident_entity( 0 ).parent_gmge(
                         Interface< DIMENSION >::type_name_static() ).index() };
                 ringmesh_assert( first_interface_id != NO_ID );
                 bool at_least_two_different_interfaces { false };
                 for( auto in_boundary_i : range( 1, line.nb_incident_entities() ) ) {
-                    const index_t cur_interface_id { line.incident_entity(
+                    const auto cur_interface_id { line.incident_entity(
                         in_boundary_i ).parent_gmge(
                         Interface< DIMENSION >::type_name_static() ).index() };
                     ringmesh_assert( cur_interface_id != NO_ID );
@@ -1195,7 +1195,7 @@ namespace {
                         vertices.reserve( geomodel_.mesh.polygons.nb_vertices( p ) );
                         for( auto v : range(
                             geomodel_.mesh.polygons.nb_vertices( p ) ) ) {
-                            index_t id =
+                            auto id =
                                 mesh.vertices.create_vertex(
                                     geomodel_.mesh.vertices.vertex(
                                         geomodel_.mesh.polygons.vertex( { p, v } ) ).data() );
@@ -1270,7 +1270,7 @@ namespace RINGMesh {
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
         index_t count_invalid { 0 };
         for( const auto& type : meshed_types ) {
-            index_t nb_entities { geomodel.nb_mesh_entities( type ) };
+            auto nb_entities { geomodel.nb_mesh_entities( type ) };
             for( auto i : range( nb_entities ) ) {
                 const auto& entity = geomodel.mesh_entity( type, i );
                 if( !entity.is_valid() ) {
@@ -1293,7 +1293,7 @@ namespace RINGMesh {
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
         index_t count_invalid { 0 };
         for( const auto& type : meshed_types ) {
-            index_t nb_entities { geomodel.nb_mesh_entities( type ) };
+            auto nb_entities { geomodel.nb_mesh_entities( type ) };
             for( auto i : range( nb_entities ) ) {
                 const auto& entity = geomodel.mesh_entity( type, i );
                 if( !entity.is_connectivity_valid() ) {
@@ -1337,7 +1337,7 @@ namespace RINGMesh {
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
         index_t count_invalid { 0 };
         for( const auto& type : meshed_types ) {
-            index_t nb_entities { geomodel.nb_mesh_entities( type ) };
+            auto nb_entities { geomodel.nb_mesh_entities( type ) };
             for( auto i : range( nb_entities ) ) {
                 const auto& geol_entity = geomodel.mesh_entity( type, i );
                 if( !geol_entity.is_parent_connectivity_valid() ) {
@@ -1429,7 +1429,7 @@ namespace RINGMesh {
         // The following repair merges such vertices and enables a homogeneous
         // line orientation [BC].
         builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
-        index_t nb_connected_components { NO_ID };
+        index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
             line->connected_components();
 
@@ -1489,7 +1489,7 @@ namespace RINGMesh {
         // The following repair merges such vertices and enables a homogeneous
         // surface orientation [BC].
         builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
-        index_t nb_connected_components { NO_ID };
+        index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
             surface->connected_components();
 
