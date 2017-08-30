@@ -65,20 +65,14 @@ namespace {
     {
         ringmesh_assert( polygons.nb_vertices( triangle1 ) == 3 );
         ringmesh_assert( polygons.nb_vertices( triangle2 ) == 3 );
-        const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
-        const vecn< DIMENSION >& p1 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( triangle1, 0 ) ) );
-        const vecn< DIMENSION >& p2 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( triangle1, 1 ) ) );
-        const vecn< DIMENSION >& p3 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( triangle1, 2 ) ) );
+        const auto& vertices = geomodel.mesh.vertices;
+        const auto& p1 = vertices.vertex( polygons.vertex( { triangle1, 0 } ) );
+        const auto& p2 = vertices.vertex( polygons.vertex( { triangle1, 1 } ) );
+        const auto& p3 = vertices.vertex( polygons.vertex( { triangle1, 2 } ) );
 
-        const vecn< DIMENSION >& q1 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( triangle2, 0 ) ) );
-        const vecn< DIMENSION >& q2 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( triangle2, 1 ) ) );
-        const vecn< DIMENSION >& q3 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( triangle2, 2 ) ) );
+        const auto& q1 = vertices.vertex( polygons.vertex( { triangle2, 0 } ) );
+        const auto& q2 = vertices.vertex( polygons.vertex( { triangle2, 1 } ) );
+        const auto& q3 = vertices.vertex( polygons.vertex( { triangle2, 2 } ) );
         GEO::vector< GEO::TriangleIsect > sym;
         return triangles_intersections( p1, p2, p3, q1, q2, q3, sym );
     }
@@ -92,22 +86,15 @@ namespace {
     {
         ringmesh_assert( polygons.nb_vertices( triangle ) == 3 );
         ringmesh_assert( polygons.nb_vertices( quad ) == 4 );
-        const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
-        const vecn< DIMENSION >& p1 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( triangle, 0 ) ) );
-        const vecn< DIMENSION >& p2 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( triangle, 1 ) ) );
-        const vecn< DIMENSION >& p3 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( triangle, 2 ) ) );
+        const auto& vertices = geomodel.mesh.vertices;
+        const auto& p1 = vertices.vertex( polygons.vertex( { triangle, 0 } ) );
+        const auto& p2 = vertices.vertex( polygons.vertex( { triangle, 1 } ) );
+        const auto& p3 = vertices.vertex( polygons.vertex( { triangle, 2 } ) );
 
-        const vecn< DIMENSION >& q1 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad, 0 ) ) );
-        const vecn< DIMENSION >& q2 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad, 1 ) ) );
-        const vecn< DIMENSION >& q3 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad, 2 ) ) );
-        const vecn< DIMENSION >& q4 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad, 3 ) ) );
+        const auto& q1 = vertices.vertex( polygons.vertex( { quad, 0 } ) );
+        const auto& q2 = vertices.vertex( polygons.vertex( { quad, 1 } ) );
+        const auto& q3 = vertices.vertex( polygons.vertex( { quad, 2 } ) );
+        const auto& q4 = vertices.vertex( polygons.vertex( { quad, 3 } ) );
         GEO::vector< GEO::TriangleIsect > sym;
         if( triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ) {
             return true;
@@ -127,24 +114,16 @@ namespace {
     {
         ringmesh_assert( polygons.nb_vertices( quad1 ) == 4 );
         ringmesh_assert( polygons.nb_vertices( quad2 ) == 4 );
-        const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
-        const vecn< DIMENSION >& p1 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad1, 0 ) ) );
-        const vecn< DIMENSION >& p2 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad1, 1 ) ) );
-        const vecn< DIMENSION >& p3 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad1, 2 ) ) );
-        const vecn< DIMENSION >& p4 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad1, 3 ) ) );
+        const auto& vertices = geomodel.mesh.vertices;
+        const auto& p1 = vertices.vertex( polygons.vertex( { quad1, 0 } ) );
+        const auto& p2 = vertices.vertex( polygons.vertex( { quad1, 1 } ) );
+        const auto& p3 = vertices.vertex( polygons.vertex( { quad1, 2 } ) );
+        const auto& p4 = vertices.vertex( polygons.vertex( { quad1, 3 } ) );
 
-        const vecn< DIMENSION >& q1 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad2, 0 ) ) );
-        const vecn< DIMENSION >& q2 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad2, 1 ) ) );
-        const vecn< DIMENSION >& q3 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad2, 2 ) ) );
-        const vecn< DIMENSION >& q4 = vertices.vertex(
-            polygons.vertex( ElementLocalVertex( quad2, 3 ) ) );
+        const auto& q1 = vertices.vertex( polygons.vertex( { quad2, 0 } ) );
+        const auto& q2 = vertices.vertex( polygons.vertex( { quad2, 1 } ) );
+        const auto& q3 = vertices.vertex( polygons.vertex( { quad2, 2 } ) );
+        const auto& q4 = vertices.vertex( polygons.vertex( { quad2, 3 } ) );
         GEO::vector< GEO::TriangleIsect > sym;
         if( triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ) {
             return true;
@@ -167,7 +146,7 @@ namespace {
         if( v0 > v1 ) {
             std::swap( v0, v1 );
         }
-        index_t delta_i = v1 - v0;
+        index_t delta_i { v1 - v0 };
 
         if( delta_i == 1 ) {
             // There is an edge if their indices in the Line are i and i+1
@@ -195,7 +174,7 @@ namespace {
         index_t v0,
         index_t v1 )
     {
-        MeshEntityType line_type = Line< DIMENSION >::type_name_static();
+        auto line_type = Line< DIMENSION >::type_name_static();
         std::vector< GMEVertex > v0_line_bme =
             geomodel.mesh.vertices.gme_type_vertices( line_type, v0 );
         if( v0_line_bme.empty() ) {
@@ -207,10 +186,10 @@ namespace {
             return false;
         }
 
-        bool found_line = false;
-        for( const GMEVertex& vertex0 : v0_line_bme ) {
-            index_t line0_id = vertex0.gmme.index();
-            for( const GMEVertex& vertex1 : v1_line_bme ) {
+        bool found_line { false };
+        for( const auto& vertex0 : v0_line_bme ) {
+            index_t line0_id { vertex0.gmme.index() };
+            for( const auto& vertex1 : v1_line_bme ) {
                 if( line0_id == vertex1.gmme.index() ) {
                     if( !is_edge_on_line( geomodel.line( line0_id ), vertex0.v_index,
                         vertex1.v_index ) ) {
@@ -238,21 +217,20 @@ namespace {
         index_t p2 )
     {
         // Only test the edges on boundary
-        for( index_t v1 : range( polygons.nb_vertices( p1 ) ) ) {
-            if( polygons.adjacent( PolygonLocalEdge( p1, v1 ) ) != NO_ID ) {
+        for( auto v1 : range( polygons.nb_vertices( p1 ) ) ) {
+            if( polygons.adjacent( { p1, v1 } ) != NO_ID ) {
                 continue;
             }
-            index_t v10 = polygons.vertex( ElementLocalVertex( p1, v1 ) );
-            index_t v11 = polygons.vertex(
-                ElementLocalVertex( p1, ( v1 + 1 ) % polygons.nb_vertices( p1 ) ) );
-            for( index_t v2 : range( polygons.nb_vertices( p2 ) ) ) {
-                if( polygons.adjacent( PolygonLocalEdge( p2, v2 ) ) != NO_ID ) {
+            index_t v10 { polygons.vertex( { p1, v1 } ) };
+            index_t v11 { polygons.vertex(
+                { p1, ( v1 + 1 ) % polygons.nb_vertices( p1 ) } ) };
+            for( auto v2 : range( polygons.nb_vertices( p2 ) ) ) {
+                if( polygons.adjacent( { p2, v2 } ) != NO_ID ) {
                     continue;
                 }
-                index_t v20 = polygons.vertex( ElementLocalVertex( p2, v2 ) );
-                index_t v21 = polygons.vertex(
-                    ElementLocalVertex( p2,
-                    ( v2 + 1 ) % polygons.nb_vertices( p2 ) ) );
+                index_t v20 { polygons.vertex( { p2, v2 } ) };
+                index_t v21 { polygons.vertex(
+                    { p2, ( v2 + 1 ) % polygons.nb_vertices( p2 ) } ) };
 
                 if( ( v10 == v20 && v11 == v21 ) || ( v10 == v21 && v11 == v20 ) ) {
                     if( is_edge_on_line( geomodel, v20, v21 ) ) {
@@ -275,7 +253,7 @@ namespace {
             return true;
         }
         for( index_t v : range( polygons.nb_vertices( p1 ) ) ) {
-            if( polygons.adjacent( PolygonLocalEdge( p1, v ) ) == p2 ) {
+            if( polygons.adjacent( { p1, v } ) == p2 ) {
                 return true;
             }
         }
@@ -299,9 +277,9 @@ namespace {
             const GeoModel< DIMENSION >& geomodel,
             std::vector< bool >& has_isect )
             :
-            geomodel_( geomodel ),
-            polygons_( geomodel.mesh.polygons ),
-            has_intersection_( has_isect )
+                geomodel_( geomodel ),
+                polygons_( geomodel.mesh.polygons ),
+                has_intersection_( has_isect )
         {
             has_intersection_.assign( polygons_.nb(), 0 );
         }
@@ -392,8 +370,8 @@ namespace {
         const gmme_id& entity,
         const gmme_id& boundary )
     {
-        const GeoModelMeshEntity< DIMENSION >& E = geomodel.mesh_entity( entity );
-        for( index_t i : range( E.nb_boundaries() ) ) {
+        const auto& E = geomodel.mesh_entity( entity );
+        for( auto i : range( E.nb_boundaries() ) ) {
             if( E.boundary_gmme( i ) == boundary ) {
                 return true;
             }
@@ -408,9 +386,9 @@ namespace {
         const std::vector< bool >& valid )
     {
         GEO::Mesh point_mesh;
-        for( index_t i : range( valid.size() ) ) {
+        for( auto i : range( valid.size() ) ) {
             if( !valid[i] ) {
-                const vecn< DIMENSION >& V = geomodel.mesh.vertices.vertex( i );
+                const auto& V = geomodel.mesh.vertices.vertex( i );
                 point_mesh.vertices.create_vertex( V.data() );
             }
         }
@@ -423,17 +401,16 @@ namespace {
         index_t i )
     {
         std::map< MeshEntityType, std::vector< index_t > > entities;
-        const std::vector< MeshEntityType >& types =
+        const auto& types =
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
-        for( const MeshEntityType& type : types ) {
+        for( const auto& type : types ) {
             entities[type];
         }
 
-        const std::vector< GMEVertex >& bmes = geomodel.mesh.vertices.gme_vertices(
-            i );
-        for( const GMEVertex& vertex : bmes ) {
-            const MeshEntityType& T = vertex.gmme.type();
-            index_t id = vertex.gmme.index();
+        const auto& bmes = geomodel.mesh.vertices.gme_vertices( i );
+        for( const auto& vertex : bmes ) {
+            const auto& T = vertex.gmme.type();
+            index_t id { vertex.gmme.index() };
             entities[T].push_back( id );
         }
         return entities;
@@ -456,11 +433,11 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
-        MeshEntityType type = ENTITY< DIMENSION >::type_name_static();
-        MeshEntityType boundary_type =
+        auto type = ENTITY< DIMENSION >::type_name_static();
+        auto boundary_type =
             geomodel.entity_type_manager().mesh_entity_manager.boundary_entity_type(
-            type );
-        const std::vector< index_t >& type_entities = entities.find( type )->second;
+                type );
+        const auto& type_entities = entities.find( type )->second;
         if( entities.find( boundary_type )->second.empty() ) {
             if( !type_entities.empty() ) {
                 if( type_entities.size() != 1 ) {
@@ -481,12 +458,12 @@ namespace {
                     " but in no ", type );
                 return false;
             } else {
-                const std::vector< index_t >& boundary_entities = entities.find(
-                    boundary_type )->second;
+                const auto& boundary_entities =
+                    entities.find( boundary_type )->second;
                 // Check that one point is no more than twice in a SURFACE
-                for( index_t entity : type_entities ) {
-                    index_t nb = static_cast< index_t >( std::count(
-                        type_entities.begin(), type_entities.end(), entity ) );
+                for( auto entity : type_entities ) {
+                    auto nb = std::count( type_entities.begin(), type_entities.end(),
+                        entity );
                     if( nb > 2 ) {
                         Logger::warn( "GeoModel", " Vertex is ", nb, " times in ",
                             geomodel.mesh_entity( type, entity ).gmme() );
@@ -494,8 +471,8 @@ namespace {
                     } else if( nb == 2 ) {
                         // If a point is twice in a SURFACE, it must be
                         // on an internal boundary Line.
-                        bool internal_boundary = false;
-                        for( index_t line : boundary_entities ) {
+                        bool internal_boundary { false };
+                        for( auto line : boundary_entities ) {
                             if( geomodel.mesh_entity( boundary_type, line ).is_inside_border(
                                 geomodel.mesh_entity( type, entity ) ) ) {
                                 internal_boundary = true;
@@ -544,8 +521,7 @@ namespace {
         const GeoModel3D& geomodel,
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
-        const auto& lines = entities.find(
-            Line3D::type_name_static() )->second;
+        const auto& lines = entities.find( Line3D::type_name_static() )->second;
         if( entities.find( Corner3D::type_name_static() )->second.empty() ) {
             if( !lines.empty() ) {
                 if( lines.size() != 1 ) {
@@ -565,8 +541,7 @@ namespace {
                 return false;
             } else {
                 for( const auto line : lines ) {
-                    index_t nb{ static_cast< index_t >( std::count( lines.begin(),
-                        lines.end(), line ) ) };
+                    auto nb = std::count( lines.begin(), lines.end(), line );
                     if( nb == 2 ) {
                         if( !geomodel.line( line ).is_closed() ) {
                             Logger::warn( "GeoModel", " Vertex"
@@ -602,8 +577,7 @@ namespace {
         const GeoModel2D& geomodel,
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
-        const std::vector< index_t >& lines = entities.find(
-            Line2D::type_name_static() )->second;
+        const auto& lines = entities.find( Line2D::type_name_static() )->second;
         if( entities.find( Corner2D::type_name_static() )->second.empty() ) {
             if( !lines.empty() ) {
                 if( lines.size() != 1 ) {
@@ -623,8 +597,7 @@ namespace {
                 return false;
             } else {
                 for( index_t line : lines ) {
-                    index_t nb = static_cast< index_t >( std::count( lines.begin(),
-                        lines.end(), line ) );
+                    auto nb = std::count( lines.begin(), lines.end(), line );
                     if( nb == 2 ) {
                         if( !geomodel.line( line ).is_closed() ) {
                             Logger::warn( "GeoModel", " Vertex"
@@ -659,7 +632,7 @@ namespace {
     bool is_corner_valid(
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
-        const std::vector< index_t >& corners = entities.find(
+        const auto& corners = entities.find(
             Corner< DIMENSION >::type_name_static() )->second;
         if( corners.size() > 1 ) {
             print_error( corners, "Corners" );
@@ -735,14 +708,13 @@ namespace {
         // We check that the entities in which they are are consistent 
         // to have a valid B-Rep geomodel
         std::vector< bool > valid( geomodel.mesh.vertices.nb(), true );
-        for( index_t i : range( geomodel.mesh.vertices.nb() ) ) {
+        for( auto i : range( geomodel.mesh.vertices.nb() ) ) {
             valid[i] = is_geomodel_vertex_valid( geomodel, i );
             if( !valid[i] ) {
                 Logger::warn( "GeoModel", " Vertex ", i, " is not valid" );
             }
         }
-        index_t nb_invalid = static_cast< index_t >( std::count( valid.begin(),
-            valid.end(), false ) );
+        auto nb_invalid = std::count( valid.begin(), valid.end(), false );
 
         if( nb_invalid > 0 ) {
             std::ostringstream file;
@@ -768,9 +740,9 @@ namespace {
     {
         GEO::Mesh edge_mesh;
         index_t previous_vertex_id = NO_ID;
-        for( index_t i : range( e.size() ) ) {
-            index_t cur_vertex_id = edge_mesh.vertices.create_vertex(
-                geomodel.mesh.vertices.vertex( e[i] ).data() );
+        for( auto i : range( e.size() ) ) {
+            index_t cur_vertex_id { edge_mesh.vertices.create_vertex(
+                geomodel.mesh.vertices.vertex( e[i] ).data() ) };
             if( i % 2 == 0 ) {
                 ringmesh_assert( previous_vertex_id == NO_ID );
                 previous_vertex_id = cur_vertex_id;
@@ -790,15 +762,14 @@ namespace {
         const std::vector< index_t >& polygons )
     {
         GEO::Mesh mesh;
-        for( index_t cur_polygon : polygons ) {
-            index_t nb_vertices_in_polygon = surface.nb_mesh_element_vertices(
-                cur_polygon );
+        for( auto cur_polygon : polygons ) {
+            index_t nb_vertices_in_polygon { surface.nb_mesh_element_vertices(
+                cur_polygon ) };
             GEO::vector< index_t > vertices;
             vertices.reserve( nb_vertices_in_polygon );
-            for( index_t v : range( nb_vertices_in_polygon ) ) {
-                index_t new_vertex = mesh.vertices.create_vertex(
-                    surface.mesh_element_vertex(
-                    ElementLocalVertex( cur_polygon, v ) ).data() );
+            for( auto v : range( nb_vertices_in_polygon ) ) {
+                index_t new_vertex { mesh.vertices.create_vertex(
+                    surface.mesh_element_vertex( { cur_polygon, v } ).data() ) };
                 vertices.push_back( new_vertex );
             }
             mesh.facets.create_polygon( vertices );
@@ -815,27 +786,23 @@ namespace {
     template< index_t DIMENSION >
     bool surface_boundary_valid( const Surface< DIMENSION >& surface )
     {
-        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-            surface.geomodel().mesh.vertices;
+        const auto& geomodel_vertices = surface.geomodel().mesh.vertices;
         std::vector< index_t > invalid_corners;
         gmme_id S_id = surface.gmme();
-        for( index_t p : range( surface.nb_mesh_elements() ) ) {
-            for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
-                if( surface.polygon_adjacent_index( PolygonLocalEdge( p, v ) )
-                    == NO_ID
+        for( auto p : range( surface.nb_mesh_elements() ) ) {
+            for( auto v : range( surface.nb_mesh_element_vertices( p ) ) ) {
+                if( surface.polygon_adjacent_index( { p, v } ) == NO_ID
                     && !is_edge_on_line( surface.geomodel(),
-                    geomodel_vertices.geomodel_vertex_id( S_id,
-                    ElementLocalVertex( p, v ) ),
-                    geomodel_vertices.geomodel_vertex_id( S_id,
-                    surface.low_level_mesh_storage().next_polygon_vertex(
-                    ElementLocalVertex( p, v ) ) ) ) ) {
+                        geomodel_vertices.geomodel_vertex_id( S_id, { p, v } ),
+                        geomodel_vertices.geomodel_vertex_id( S_id,
+                            surface.low_level_mesh_storage().next_polygon_vertex( {
+                                p, v } ) ) ) ) {
+                    invalid_corners.push_back(
+                        geomodel_vertices.geomodel_vertex_id( S_id, { p, v } ) );
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id,
-                        ElementLocalVertex( p, v ) ) );
-                    invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( S_id,
-                        surface.low_level_mesh_storage().next_polygon_vertex(
-                        ElementLocalVertex( p, v ) ) ) );
+                            surface.low_level_mesh_storage().next_polygon_vertex( {
+                                p, v } ) ) );
                 }
             }
         }
@@ -868,15 +835,14 @@ namespace {
     {
         GeogramLineMesh< DIMENSION > mesh;
         GeogramLineMeshBuilder< DIMENSION > builder( mesh );
-        index_t nb_edges = static_cast< index_t >( non_manifold_edges.size() );
+        index_t nb_edges { static_cast< index_t >( non_manifold_edges.size() ) };
         builder.create_vertices( 2 * nb_edges );
         builder.create_edges( nb_edges );
-        const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
-        for( index_t e : range( non_manifold_edges.size() ) ) {
-            index_t edge_id = non_manifold_edges[e];
-            const vecn< DIMENSION >& v0 = vertices.vertex( edge_indices[edge_id] );
-            const vecn< DIMENSION >& v1 = vertices.vertex(
-                edge_indices[edge_id + 1] );
+        const auto& vertices = geomodel.mesh.vertices;
+        for( auto e : range( non_manifold_edges.size() ) ) {
+            index_t edge_id { non_manifold_edges[e] };
+            const auto& v0 = vertices.vertex( edge_indices[edge_id] );
+            const auto& v1 = vertices.vertex( edge_indices[edge_id + 1] );
             builder.set_vertex( 2 * e, v0 );
             builder.set_vertex( 2 * e + 1, v1 );
             builder.set_edge_vertex( e, 0, 2 * e );
@@ -891,10 +857,9 @@ namespace {
         const NNSearch< DIMENSION >& cell_facet_barycenter_nn_search )
     {
         std::vector< index_t > unconformal_polygons;
-        for( index_t p : range( surface.nb_mesh_elements() ) ) {
-            vecn< DIMENSION > center = surface.mesh_element_barycenter( p );
-            std::vector< index_t > result =
-                cell_facet_barycenter_nn_search.get_neighbors( center,
+        for( auto p : range( surface.nb_mesh_elements() ) ) {
+            auto center = surface.mesh_element_barycenter( p );
+            auto result = cell_facet_barycenter_nn_search.get_neighbors( center,
                 surface.geomodel().epsilon() );
             if( result.empty() ) {
                 unconformal_polygons.push_back( p );
@@ -924,21 +889,19 @@ namespace {
         const GeoModel< DIMENSION >& geomodel )
     {
         std::vector< index_t > edge_indices;
-        const GeoModelMeshPolygons< DIMENSION >& polygons = geomodel.mesh.polygons;
+        const auto& polygons = geomodel.mesh.polygons;
         for( const auto& surface : geomodel.surfaces() ) {
-            for( index_t p : range( polygons.nb_polygons( surface.index() ) ) ) {
-                index_t polygon_id = polygons.polygon( surface.index(), p );
-                for( index_t v : range( polygons.nb_vertices( polygon_id ) ) ) {
-                    index_t adj = polygons.adjacent(
-                        PolygonLocalEdge( polygon_id, v ) );
+            for( auto p : range( polygons.nb_polygons( surface.index() ) ) ) {
+                index_t polygon_id { polygons.polygon( surface.index(), p ) };
+                for( auto v : range( polygons.nb_vertices( polygon_id ) ) ) {
+                    index_t adj { polygons.adjacent( { polygon_id, v } ) };
                     if( adj == NO_ID ) {
                         edge_indices.push_back(
                             polygons.vertex( ElementLocalVertex( polygon_id, v ) ) );
-                        index_t next_v = ( v + 1 )
-                            % polygons.nb_vertices( polygon_id );
+                        index_t next_v { ( v + 1 )
+                            % polygons.nb_vertices( polygon_id ) };
                         edge_indices.push_back(
-                            polygons.vertex(
-                            ElementLocalVertex( polygon_id, next_v ) ) );
+                            polygons.vertex( { polygon_id, next_v } ) );
                     }
                 }
             }
@@ -951,13 +914,12 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         const std::vector< index_t >& edge_indices )
     {
-        const GeoModelMeshVertices< DIMENSION >& vertices = geomodel.mesh.vertices;
-        index_t nb_edges = static_cast< index_t >( edge_indices.size() / 2 );
+        const auto& vertices = geomodel.mesh.vertices;
         std::vector< vecn< DIMENSION > > edge_barycenters;
-        edge_barycenters.reserve( nb_edges );
+        edge_barycenters.reserve( edge_indices.size() / 2 );
         for( index_t e = 0; e < edge_indices.size(); e += 2 ) {
-            const vecn< DIMENSION >& v0 = vertices.vertex( edge_indices[e] );
-            const vecn< DIMENSION >& v1 = vertices.vertex( edge_indices[e + 1] );
+            const auto& v0 = vertices.vertex( edge_indices[e] );
+            const auto& v1 = vertices.vertex( edge_indices[e + 1] );
             edge_barycenters.push_back( ( v0 + v1 ) * 0.5 );
         }
         return edge_barycenters;
@@ -968,13 +930,13 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         const std::vector< vecn< DIMENSION > >& barycenters )
     {
-        const LineAABBTree< DIMENSION >& abbb = geomodel.mesh.edges.aabb();
+        const auto& line_abbb = geomodel.mesh.edges.aabb();
         std::vector< bool > border_edges_on_line( barycenters.size(), true );
-        double distance = 0;
+        double distance { 0 };
 
-        for( index_t border_edge : range( barycenters.size() ) ) {
-            const vecn< DIMENSION >& barycenter = barycenters[border_edge];
-            std::tie( std::ignore, std::ignore, distance ) = abbb.closest_edge(
+        for( auto border_edge : range( barycenters.size() ) ) {
+            const auto& barycenter = barycenters[border_edge];
+            std::tie( std::ignore, std::ignore, distance ) = line_abbb.closest_edge(
                 barycenter );
             if( distance > geomodel.epsilon() ) {
                 border_edges_on_line[border_edge] = false;
@@ -987,7 +949,7 @@ namespace {
         const std::vector< bool >& edge_on_lines )
     {
         std::vector< index_t > non_manifold_edges;
-        for( index_t e : range( edge_on_lines.size() ) ) {
+        for( auto e : range( edge_on_lines.size() ) ) {
             if( !edge_on_lines[e] ) {
                 non_manifold_edges.push_back( e );
             }
@@ -1027,41 +989,41 @@ namespace {
             if( enum_contains( mode_, ValidityCheckMode::FINITE_EXTENSION ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                    &GeoModelValidityCheck::test_finite_extension, this ) );
+                        &GeoModelValidityCheck::test_finite_extension, this ) );
             }
             if( enum_contains( mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                    &GeoModelValidityCheck::test_geomodel_connectivity_validity,
-                    this ) );
+                        &GeoModelValidityCheck::test_geomodel_connectivity_validity,
+                        this ) );
             }
             if( enum_contains( mode_, ValidityCheckMode::GEOLOGICAL_ENTITIES ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                    &GeoModelValidityCheck::test_geomodel_geological_validity,
-                    this ) );
+                        &GeoModelValidityCheck::test_geomodel_geological_validity,
+                        this ) );
             }
             if( enum_contains( mode_,
                 ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                    &GeoModelValidityCheck::test_surface_line_mesh_conformity,
-                    this ) );
+                        &GeoModelValidityCheck::test_surface_line_mesh_conformity,
+                        this ) );
             }
             if( enum_contains( mode_, ValidityCheckMode::MESH_ENTITIES ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                    &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
-                    this ) );
+                        &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
+                        this ) );
                 /// TODO: find a way to add this test for Model3d. See BC.
-                //                threads.emplace_back(
-                //                    &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
-                //                    this );
+                //  threads.emplace_back(
+                //      &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
+                //          this );
             }
             if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
-                    &GeoModelValidityCheck::test_non_manifold_edges, this ) );
+                        &GeoModelValidityCheck::test_non_manifold_edges, this ) );
             }
         }
 
@@ -1076,7 +1038,7 @@ namespace {
             tasks.reserve( 8 );
             add_checks( tasks );
 
-            for( std::future< void >& task : tasks ) {
+            for( auto& task : tasks ) {
                 task.get();
             }
         }
@@ -1150,8 +1112,7 @@ namespace {
         {
             if( geomodel_.mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface polygons and Region cell facets
-                const NNSearch< DIMENSION >& nn_search =
-                    geomodel_.mesh.cells.cell_facet_nn_search();
+                const auto& nn_search = geomodel_.mesh.cells.cell_facet_nn_search();
                 for( const auto& surface : geomodel_.surfaces() ) {
                     if( !is_surface_conformal_to_volume( surface, nn_search ) ) {
                         set_invalid_model();
@@ -1171,15 +1132,15 @@ namespace {
                     continue;
                 }
 
-                const index_t first_interface_id =
+                const index_t first_interface_id {
                     line.incident_entity( 0 ).parent_gmge(
-                    Interface< DIMENSION >::type_name_static() ).index();
+                        Interface< DIMENSION >::type_name_static() ).index() };
                 ringmesh_assert( first_interface_id != NO_ID );
-                bool at_least_two_different_interfaces = false;
-                for( index_t in_boundary_i : range( 1, line.nb_incident_entities() ) ) {
-                    const index_t cur_interface_id = line.incident_entity(
+                bool at_least_two_different_interfaces { false };
+                for( auto in_boundary_i : range( 1, line.nb_incident_entities() ) ) {
+                    const index_t cur_interface_id { line.incident_entity(
                         in_boundary_i ).parent_gmge(
-                        Interface< DIMENSION >::type_name_static() ).index();
+                        Interface< DIMENSION >::type_name_static() ).index() };
                     ringmesh_assert( cur_interface_id != NO_ID );
                     if( cur_interface_id != first_interface_id ) {
                         at_least_two_different_interfaces = true;
@@ -1204,12 +1165,12 @@ namespace {
          */
         void test_non_manifold_edges()
         {
-            std::vector< index_t > edge_indices = compute_border_edges( geomodel_ );
-            std::vector< vecn< DIMENSION > > barycenters =
-                compute_border_edge_barycenters( geomodel_, edge_indices );
-            std::vector< bool > border_edges_on_line = are_border_edges_on_line(
-                geomodel_, barycenters );
-            std::vector< index_t > non_manifold_edges = compute_non_manifold_edges(
+            auto edge_indices = compute_border_edges( geomodel_ );
+            auto barycenters = compute_border_edge_barycenters( geomodel_,
+                edge_indices );
+            auto border_edges_on_line = are_border_edges_on_line( geomodel_,
+                barycenters );
+            auto non_manifold_edges = compute_non_manifold_edges(
                 border_edges_on_line );
 
             if( !non_manifold_edges.empty() ) {
@@ -1231,29 +1192,28 @@ namespace {
         {
             if( geomodel_.mesh.polygons.nb()
                 == geomodel_.mesh.polygons.nb_triangle()
-                + geomodel_.mesh.polygons.nb_quad() ) {
+                    + geomodel_.mesh.polygons.nb_quad() ) {
                 std::vector< bool > has_intersection;
                 StoreIntersections< DIMENSION > action( geomodel_,
                     has_intersection );
-                const SurfaceAABBTree< DIMENSION >& AABB =
-                    geomodel_.mesh.polygons.aabb();
+                const auto& AABB = geomodel_.mesh.polygons.aabb();
                 AABB.compute_self_element_bbox_intersections( action );
 
-                index_t nb_intersections = static_cast< index_t >( std::count(
-                    has_intersection.begin(), has_intersection.end(), 1 ) );
+                auto nb_intersections = std::count( has_intersection.begin(),
+                    has_intersection.end(), 1 );
 
                 if( nb_intersections > 0 ) {
                     GEO::Mesh mesh;
-                    for( index_t p : range( has_intersection.size() ) ) {
+                    for( auto p : range( has_intersection.size() ) ) {
                         if( !has_intersection[p] ) continue;
                         GEO::vector< index_t > vertices;
                         vertices.reserve( geomodel_.mesh.polygons.nb_vertices( p ) );
-                        for( index_t v : range(
+                        for( auto v : range(
                             geomodel_.mesh.polygons.nb_vertices( p ) ) ) {
-                            index_t id = mesh.vertices.create_vertex(
-                                geomodel_.mesh.vertices.vertex(
-                                geomodel_.mesh.polygons.vertex(
-                                ElementLocalVertex( p, v ) ) ).data() );
+                            index_t id =
+                                mesh.vertices.create_vertex(
+                                    geomodel_.mesh.vertices.vertex(
+                                        geomodel_.mesh.polygons.vertex( { p, v } ) ).data() );
                             vertices.push_back( id );
                         }
                         mesh.facets.create_polygon( vertices );
@@ -1279,7 +1239,7 @@ namespace {
         }
 
     private:
-        const GeoModel< DIMENSION >& geomodel_; bool valid_;
+        const GeoModel< DIMENSION >& geomodel_;bool valid_;
         ValidityCheckMode mode_;
     };
     template< >
@@ -1289,14 +1249,14 @@ namespace {
         if( enum_contains( mode_, ValidityCheckMode::POLYGON_INTERSECTIONS ) ) {
             tasks.push_back(
                 std::async( std::launch::async,
-                &GeoModelValidityCheck::test_polygon_intersections, this ) );
+                    &GeoModelValidityCheck::test_polygon_intersections, this ) );
         }
         if( enum_contains( mode_,
             ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY ) ) {
             tasks.emplace_back(
                 std::async( std::launch::async,
-                &GeoModelValidityCheck::test_region_surface_mesh_conformity,
-                this ) );
+                    &GeoModelValidityCheck::test_region_surface_mesh_conformity,
+                    this ) );
         }
         add_base_checks( tasks );
     }
@@ -1321,15 +1281,14 @@ namespace RINGMesh {
     bool are_geomodel_mesh_entities_mesh_valid(
         const GeoModel< DIMENSION >& geomodel )
     {
-        const std::vector< MeshEntityType >& meshed_types =
+        const auto& meshed_types =
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
-        index_t count_invalid = 0;
-        for( const MeshEntityType& type : meshed_types ) {
-            index_t nb_entities = geomodel.nb_mesh_entities( type );
-            for( index_t i : range( nb_entities ) ) {
-                const GeoModelMeshEntity< DIMENSION >& E = geomodel.mesh_entity(
-                    type, i );
-                if( !E.is_valid() ) {
+        index_t count_invalid { 0 };
+        for( const auto& type : meshed_types ) {
+            index_t nb_entities { geomodel.nb_mesh_entities( type ) };
+            for( auto i : range( nb_entities ) ) {
+                const auto& entity = geomodel.mesh_entity( type, i );
+                if( !entity.is_valid() ) {
                     count_invalid++;
                 }
             }
@@ -1345,15 +1304,14 @@ namespace RINGMesh {
     bool are_geomodel_mesh_entities_connectivity_valid(
         const GeoModel< DIMENSION >& geomodel )
     {
-        const std::vector< MeshEntityType >& meshed_types =
+        const auto& meshed_types =
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
-        index_t count_invalid = 0;
-        for( const MeshEntityType& type : meshed_types ) {
-            index_t nb_entities = geomodel.nb_mesh_entities( type );
-            for( index_t i : range( nb_entities ) ) {
-                const GeoModelMeshEntity< DIMENSION >& E = geomodel.mesh_entity(
-                    type, i );
-                if( !E.is_connectivity_valid() ) {
+        index_t count_invalid { 0 };
+        for( const auto& type : meshed_types ) {
+            index_t nb_entities { geomodel.nb_mesh_entities( type ) };
+            for( auto i : range( nb_entities ) ) {
+                const auto& entity = geomodel.mesh_entity( type, i );
+                if( !entity.is_connectivity_valid() ) {
                     count_invalid++;
                 }
             }
@@ -1369,12 +1327,12 @@ namespace RINGMesh {
     bool are_geomodel_geological_entities_valid(
         const GeoModel< DIMENSION >& geomodel )
     {
-        const std::vector< GeologicalEntityType >& geological_types =
+        const auto& geological_types =
             geomodel.entity_type_manager().geological_entity_manager.geological_entity_types();
-        index_t count_invalid = 0;
-        for( const GeologicalEntityType& type : geological_types ) {
-            for( auto& E : geomodel.geol_entities( type ) ) {
-                if( !E.is_valid() ) {
+        index_t count_invalid { 0 };
+        for( const auto& type : geological_types ) {
+            for( auto& geol_entity : geomodel.geol_entities( type ) ) {
+                if( !geol_entity.is_valid() ) {
                     count_invalid++;
                 }
             }
@@ -1390,15 +1348,14 @@ namespace RINGMesh {
     bool are_geomodel_mesh_entities_parent_valid(
         const GeoModel< DIMENSION >& geomodel )
     {
-        const std::vector< MeshEntityType >& meshed_types =
+        const auto& meshed_types =
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
-        index_t count_invalid = 0;
-        for( const MeshEntityType& type : meshed_types ) {
-            index_t nb_entities = geomodel.nb_mesh_entities( type );
-            for( index_t i : range( nb_entities ) ) {
-                const GeoModelMeshEntity< DIMENSION >& E = geomodel.mesh_entity(
-                    type, i );
-                if( !E.is_parent_connectivity_valid() ) {
+        index_t count_invalid { 0 };
+        for( const auto& type : meshed_types ) {
+            index_t nb_entities { geomodel.nb_mesh_entities( type ) };
+            for( auto i : range( nb_entities ) ) {
+                const auto& geol_entity = geomodel.mesh_entity( type, i );
+                if( !geol_entity.is_parent_connectivity_valid() ) {
                     count_invalid++;
                 }
             }
@@ -1424,7 +1381,7 @@ namespace RINGMesh {
         GeoModelValidityCheck< DIMENSION > validity_checker( geomodel,
             validity_check_mode );
 
-        bool valid = validity_checker.is_geomodel_valid();
+        bool valid { validity_checker.is_geomodel_valid() };
 
         if( valid ) {
             Logger::out( "GeoModel", "Model ", geomodel.name(), " is valid " );
