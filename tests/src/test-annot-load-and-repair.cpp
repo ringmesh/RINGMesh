@@ -58,7 +58,7 @@ int main()
 
         // Load the geomodel
         GeoModel3D geomodel;
-        bool init_model_is_valid = geomodel_load( geomodel, file_name );
+        bool init_model_is_valid { geomodel_load( geomodel, file_name ) };
         if( init_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test", "Input test model ",
                 geomodel.name(),

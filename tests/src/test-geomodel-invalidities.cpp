@@ -80,9 +80,9 @@ int main()
         futures.emplace_back(
             std::async( std::launch::async,
                 [] {
-                    std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml";
+                    std::string input_model_file_name {ringmesh_test_data_path + "modelA6.ml"};
                     GeoModel3D in;
-                    bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
+                    bool loaded_model_is_valid {geomodel_load( in, input_model_file_name )};
 
                     if( !loaded_model_is_valid ) {
                         throw RINGMeshException( "RINGMesh Test",
