@@ -295,7 +295,7 @@ namespace RINGMesh {
                 plane );
 
             vec3 point_on_plane { projected_point };
-            double translation { std::max( 1.0, distance ) };
+            double translation { std::max( 10., distance ) };
             for( index_t d : range( 3 ) ) {
                 if( std::fabs( plane.normal[d] ) > global_epsilon ) {
                     index_t d1 { ( d + 1 ) % 3 };
@@ -314,10 +314,10 @@ namespace RINGMesh {
             vec3 u { normalize( point_on_plane ) };
             vec3 v { cross( plane.normal, u ) };
 
-            vec3 p0 { distance * u };
-            vec3 p1 { distance
+            vec3 p0 { projected_point + distance * u };
+            vec3 p1 { projected_point + distance
                 * ( std::cos( 2 * M_PI / 3 ) * u - std::sin( 2 * M_PI / 3 ) * v ) };
-            vec3 p2 { distance
+            vec3 p2 { projected_point + distance
                 * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
 
             return sign(
