@@ -231,7 +231,6 @@ namespace RINGMesh {
         return GeoModelBase3D::nb_mesh_entities( type );
     }
 
-
     SurfaceSide GeoModel< 3 >::get_voi_surfaces() const
     {
         SurfaceSide surface_side;
