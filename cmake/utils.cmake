@@ -61,6 +61,21 @@ if(WIN32)
             "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
             "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
             COMMENT "Copy geogram binaries")
+    add_custom_command(TARGET RINGMesh POST_BUILD 
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+            "${ZLIB_PATH_BIN}/bin/$<CONFIGURATION>"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+            COMMENT "Copy zlib binaries")
+    add_custom_command(TARGET RINGMesh POST_BUILD 
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+            "${TINYXML2_PATH_BIN}/bin/$<CONFIGURATION>"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+            COMMENT "Copy tinyxml2 binaries")
+    add_custom_command(TARGET RINGMesh POST_BUILD 
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+            "${MINIZIP_PATH_BIN}/bin/$<CONFIGURATION>"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+            COMMENT "Copy minizip binaries")
     if(RINGMESH_WITH_GEOLOGYJS)
         add_custom_command(TARGET RINGMesh POST_BUILD 
             COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
