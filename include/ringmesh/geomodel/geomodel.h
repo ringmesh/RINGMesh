@@ -381,7 +381,7 @@ namespace RINGMesh {
         {
             return epsilon2() * epsilon();
         }
-        SurfaceSide get_voi_surfaces() const;
+        SurfaceSide voi_surfaces() const;
     private:
         const std::vector< std::unique_ptr< GeoModelMeshEntity3D > >& mesh_entities(
             const MeshEntityType& type ) const override;
@@ -413,7 +413,7 @@ namespace RINGMesh {
         {
             return geol_entity_range< 2 >( *this, geol_type );
         }
-        LineSide get_voi_lines() const;
+        LineSide voi_lines() const;
     };
 
     ALIAS_2D_AND_3D( GeoModel );

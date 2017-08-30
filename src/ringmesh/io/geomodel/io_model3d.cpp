@@ -82,7 +82,7 @@ namespace {
         const GeoModel3D& GM,
         std::ostream& out )
     {
-        const SurfaceSide surface_region_sides = GM.get_voi_surfaces();
+        const SurfaceSide surface_region_sides = GM.voi_surfaces();
 
         out << "REGION " << count << "  Universe "
             << EOL;

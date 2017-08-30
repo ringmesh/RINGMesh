@@ -1284,7 +1284,7 @@ namespace {
             builder->set_vertex( v_i, all_points[v_i] );
         }
 
-        const auto voi_lines = geomodel_.get_voi_lines();
+        const auto voi_lines = geomodel_.voi_lines();
         const auto& geomodelmesh_edges = geomodelmesh.edges;
         for( auto edge_i : range( geomodelmesh_edges.nb() ) ) {
             const auto cur_line_id = geomodelmesh_edges.line( edge_i );
@@ -1333,7 +1333,7 @@ namespace {
             builder->set_vertex( v_i, all_points[v_i] );
         }
 
-        const auto voi_surfaces = geomodel_.get_voi_surfaces();
+        const auto voi_surfaces = geomodel_.voi_surfaces();
         const auto& geomodelmesh_polygons = geomodelmesh.polygons;
         for( auto polygon_i : range( geomodelmesh_polygons.nb() ) ) {
 
