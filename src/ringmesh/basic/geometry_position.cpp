@@ -294,10 +294,23 @@ namespace RINGMesh {
             std::tie( distance, projected_point ) = Distance::point_to_plane( point,
                 plane );
 
-            vec3 point_on_plane { projected_point.x + 1, projected_point.y + 1, 0 };
-            point_on_plane.z = -( plane.plane_constant()
-                + plane.normal.x * projected_point.x
-                + plane.normal.y * projected_point.y );
+            vec3 point_on_plane { projected_point };
+            double translation { std::max( 1.0, distance ) };
+            for( index_t d : range( 3 ) ) {
+                if( std::fabs( plane.normal[d] ) > global_epsilon ) {
+                    index_t d1 { ( d + 1 ) % 3 };
+                    index_t d2 { ( d + 2 ) % 3 };
+                    point_on_plane[d1] += translation;
+                    point_on_plane[d2] += translation;
+
+                    point_on_plane[d] = -( plane.plane_constant()
+                        + plane.normal[d1] * point_on_plane[d1]
+                        + plane.normal[d2] * point_on_plane[d2] ) / plane.normal[d];
+                    break;
+                }
+            }
+            ringmesh_assert( point_on_plane != projected_point );
+
             vec3 u { normalize( point_on_plane ) };
             vec3 v { cross( plane.normal, u ) };
 
