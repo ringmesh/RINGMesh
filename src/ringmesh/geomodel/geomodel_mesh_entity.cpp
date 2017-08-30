@@ -92,7 +92,7 @@ namespace {
     template< index_t DIMENSION >
     index_t compute_nb_volume_connected_components( const Region< DIMENSION >& region )
     {
-        index_t nb_connected_components = NO_ID;
+        index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
             region.low_level_mesh_storage().get_connected_components();
         return nb_connected_components;

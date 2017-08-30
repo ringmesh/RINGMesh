@@ -1277,11 +1277,10 @@ namespace {
         ringmesh_assert( line != nullptr );
         auto builder = LineMeshBuilder2D::create_builder( *line );
         ringmesh_assert( builder != nullptr );
-        auto start = builder->create_vertices(
-            static_cast< index_t >( all_points.size() ) );
+        auto start = builder->create_vertices( geomodelmesh_vertices.nb() );
         ringmesh_unused( start );
         ringmesh_assert( start == 0 );
-        for( auto v_i : range( all_points.size() ) ) {
+        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
             builder->set_vertex( v_i, all_points[v_i] );
         }
 
@@ -1296,19 +1295,12 @@ namespace {
             }
         }
 
-        /*for( auto e : range( line->nb_edges() ) ) {
-            for( auto v : range( line->nb_edge_vertices( e ) ) ) {
-                builder->set_edge_adjacent( e, v, NO_ID );
-            }
-        }
-
-        builder->connect_edges();*/
         // As the geomodel surfaces are independent meshes, they have different
         // orientations (normal directions). So, the merge of these surfaces may
         // produce several connected components with colocated vertices.
         // The following repair merges such vertices and enables a homogeneous
         // surface orientation [BC].
-        builder->repair( GEO::MESH_REPAIR_COLOCATE, global_epsilon );
+        builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components { NO_ID };
         std::tie( nb_connected_components, std::ignore ) =
             line->get_connected_components();
@@ -1334,11 +1326,10 @@ namespace {
         ringmesh_assert( surface != nullptr );
         auto builder = SurfaceMeshBuilder3D::create_builder( *surface );
         ringmesh_assert( builder != nullptr );
-        auto start = builder->create_vertices(
-            static_cast< index_t >( all_points.size() ) );
+        auto start = builder->create_vertices( geomodelmesh_vertices.nb() );
         ringmesh_unused( start );
         ringmesh_assert( start == 0 );
-        for( auto v_i : range( all_points.size() ) ) {
+        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
             builder->set_vertex( v_i, all_points[v_i] );
         }
 
@@ -1371,7 +1362,7 @@ namespace {
         // produce several connected components with colocated vertices.
         // The following repair merges such vertices and enables a homogeneous
         // surface orientation [BC].
-        builder->repair( GEO::MESH_REPAIR_COLOCATE, global_epsilon );
+        builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components { NO_ID };
         std::tie( nb_connected_components, std::ignore ) =
             surface->get_connected_components();
