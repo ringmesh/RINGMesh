@@ -50,51 +50,36 @@ int main()
     try {
         default_configure();
 
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path );
-        log_file += "log.txt";
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
-
-        GeoModel3D geomodel;
         std::string file_name( ringmesh_test_data_path );
         file_name += "annot.ml";
 
         Logger::out( "RINGMesh Test", "Loading and fixing structural geomodel:",
             file_name );
 
-        // Set the debug directory for the validity checks
-        set_validity_errors_directory( ringmesh_test_output_path );
-
         // Load the geomodel
+        GeoModel3D geomodel;
         bool init_model_is_valid = geomodel_load( geomodel, file_name );
         if( init_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test", "Input test model ", geomodel.name(),
+            throw RINGMeshException( "RINGMesh Test", "Input test model ",
+                geomodel.name(),
                 " must be invalid to check the repair functionalities." );
         }
 
         Logger::out( "RINGMesh Test", "Repairing" );
-        // Repair the geomodel
 
+        // Repair the geomodel
         GeoModelBuilder3D model_builder( geomodel );
         model_builder.repair.repair( GeoModelBuilderRepair3D::ALL );
 
         // Test the validity again
-        if( is_geomodel_valid( geomodel ) ) {
-            std::string fixed_file_name( ringmesh_test_output_path );
-            fixed_file_name += geomodel.name() + "_repaired.ml";
-            geomodel_save( geomodel, fixed_file_name );
-            Logger::out( "RINGMesh Test", "Invalid geological model ",
-                geomodel.name(), " has been successfully fixed and is saved under: ",
-                fixed_file_name );
-            Logger::out( "TEST", "SUCCESS" );
-            return 0;
-        } else {
+        if( !is_geomodel_valid( geomodel ) ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Fixing the invalid geological model " + geomodel.name()
                     + " failed." );
         }
 
+        Logger::out( "TEST", "SUCCESS" );
+        return 0;
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
