@@ -762,12 +762,6 @@ namespace RINGMesh {
 
     bool Surface< 2 >::is_on_voi() const
     {
-        // True if one of the boundary lines defines the universe
-        for( auto i : range( this->nb_boundaries() ) ) {
-            if( this->boundary( i ).is_on_voi() ) {
-                return true;
-            }
-        }
         return false;
     }
 
