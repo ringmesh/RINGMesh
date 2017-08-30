@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <future>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
@@ -60,8 +62,7 @@ void test_mesh( const std::string& file_name )
     // Check number of entities of the imported GeoModel (from TSolid or LightTSolid file)
     if( model.nb_corners() != 52 || model.nb_lines() != 98
         || model.nb_surfaces() != 55 || model.nb_regions() != 8
-        || model.nb_geological_entities( Interface3D::type_name_static() )
-        != 11
+        || model.nb_geological_entities( Interface3D::type_name_static() ) != 11
         || model.nb_geological_entities( Contact3D::type_name_static() ) != 38
         || model.mesh.vertices.nb() != 6691 || model.mesh.polygons.nb() != 10049
         || model.mesh.cells.nb() != 34540 ) {
@@ -77,21 +78,22 @@ int main()
     try {
         default_configure();
 
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path + "log.txt" );
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
+        Logger::out( "TEST",
+            "Import two meshed GeoModels (1 TSolid & 1 LightTSolid) from .so" );
 
-        Logger::out( "TEST", "Import two meshed GeoModels (1 TSolid & 1 LightTSolid) from .so" );
+        std::vector< std::future< void > > futures;
 
-        std::string file_name_tsolid( ringmesh_test_data_path );
-        file_name_tsolid += "modelA4.so";
-        test_mesh( file_name_tsolid );
+        futures.emplace_back(
+            std::async( std::launch::async, &test_mesh,
+                ringmesh_test_data_path + "modelA4.so" ) );
 
-        std::string file_name_lighttsolid( ringmesh_test_data_path );
-        file_name_lighttsolid += "modelA4_lts.so";
-        test_mesh( file_name_lighttsolid );
-        
+        futures.emplace_back(
+            std::async( std::launch::async, &test_mesh,
+                ringmesh_test_data_path + "modelA4_lts.so" ) );
+
+        for( auto& future : futures ) {
+            future.get();
+        }
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;

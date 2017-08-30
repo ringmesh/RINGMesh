@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <future>
+
 #include <geogram/basic/command_line.h>
 
 #include <geogram/mesh/mesh_io.h>
@@ -58,19 +60,12 @@ int main()
     try {
         default_configure();
 
-        std::string file_name = ringmesh_test_data_path;
-        file_name += "modelA6.mesh";
-
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path );
-        log_file += "log.txt";
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
-
         Logger::out( "TEST", "Test GeoModel building from Surface" );
 
+        std::vector< std::future< void > > futures;
+
         GEO::Mesh in;
-        GEO::mesh_load( file_name, in );
+        GEO::mesh_load( ringmesh_test_data_path + "modelA6.mesh", in );
         GeoModel3D geomodel;
 
         GeoModelBuilderSurfaceMesh builder( geomodel, in );
@@ -87,19 +82,25 @@ int main()
         GEO::CmdLine::set_arg( "in:intersection_check", false );
 #endif
 
-        if( !is_geomodel_valid( geomodel ) ) {
-            throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
-                geomodel.name(), ": the loaded model is not valid." );
-        }
+        futures.emplace_back(
+            std::async( std::launch::async,
+                [&geomodel] {
+                    if( !is_geomodel_valid( geomodel ) ) {
+                        throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
+                            geomodel.name(), ": the loaded model is not valid." );
+                    }
+                } ) );
 
-        // Save and reload the model
-        std::string output_file( ringmesh_test_output_path );
-        output_file += "saved_modelA6.gm";
-        geomodel_save( geomodel, output_file );
+        futures.emplace_back( std::async( std::launch::async, [&geomodel] {
+            // Save and reload the model
+            std::string output_file( ringmesh_test_output_path );
+            output_file += "saved_modelA6.gm";
+            geomodel_save( geomodel, output_file );
+        } ) );
 
+        GEO::Mesh surface_meshes;
         // Compute mesh with duplicated points to compares number
         // of mesh elements and mesh entities
-        GEO::Mesh surface_meshes;
         for( const auto& surface : geomodel.surfaces() ) {
             index_t vertex_it = surface_meshes.vertices.create_vertices(
                 surface.nb_vertices() );
@@ -119,13 +120,14 @@ int main()
         }
         surface_meshes.facets.connect();
 
-        // Save computed mesh
-        std::string output_file2( ringmesh_test_output_path );
-        output_file2 += "saved_modelA6_dupl_points.mesh";
-        GEO::mesh_save( surface_meshes, output_file2 );
+        futures.emplace_back( std::async( std::launch::async, [&surface_meshes] {
+            // Save computed mesh
+            std::string output_file2( ringmesh_test_output_path );
+            output_file2 += "saved_modelA6_dupl_points.mesh";
+            GEO::mesh_save( surface_meshes, output_file2 );
+        } ) );
 
         GeoModel3D reloaded_model;
-
         GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes );
         builder2.build_polygonal_surfaces_from_connected_components();
         builder2.build_lines_and_corners_from_surfaces();
@@ -133,11 +135,14 @@ int main()
         builder2.end_geomodel();
         print_geomodel( reloaded_model );
 
-        // Checking if building has been successfully done
-        if( !is_geomodel_valid( reloaded_model ) ) {
-            throw RINGMeshException( "RINGMesh Test", "Failed when reloading model ",
-                reloaded_model.name(), ": the reloaded model is not valid." );
-        }
+        futures.emplace_back(
+            std::async( std::launch::async, [&reloaded_model] {
+                // Checking if building has been successfully done
+                if( !is_geomodel_valid( reloaded_model ) ) {
+                    throw RINGMeshException( "RINGMesh Test", "Failed when reloading model ",
+                        reloaded_model.name(), ": the reloaded model is not valid." );
+                }
+            } ) );
 
         // Checking number of mesh elements
         if( surface_meshes.vertices.nb() != in.vertices.nb() ) {
@@ -178,6 +183,9 @@ int main()
                 "between saved model and reload model." );
         }
 
+        for( auto& future : futures ) {
+            future.get();
+        }
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
