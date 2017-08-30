@@ -986,11 +986,6 @@ namespace {
     private:
         void add_base_checks( std::vector< std::future< void > >& tasks )
         {
-            if( enum_contains( mode_, ValidityCheckMode::FINITE_EXTENSION ) ) {
-                tasks.emplace_back(
-                    std::async( std::launch::async,
-                        &GeoModelValidityCheck::test_finite_extension, this ) );
-            }
             if( enum_contains( mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) ) {
                 tasks.emplace_back(
                     std::async( std::launch::async,
@@ -1060,6 +1055,8 @@ namespace {
         {
             if( !are_geomodel_mesh_entities_connectivity_valid( geomodel_ ) ) {
                 set_invalid_model();
+            } else if( !has_geomodel_finite_extension( geomodel_ ) ) {
+                set_invalid_model();
             }
         }
 
@@ -1072,18 +1069,6 @@ namespace {
                 set_invalid_model();
             }
             if( !are_geomodel_mesh_entities_parent_valid( geomodel_ ) ) {
-                set_invalid_model();
-            }
-        }
-        /*!
-         * @brief Check that the geomodel has a finite extension
-         * @details The boundary of the universe region is a one connected component
-         * manifold closed surface.
-         * @todo Implement this check
-         */
-        void test_finite_extension()
-        {
-            if( !geomodel_.universe().is_valid() ) {
                 set_invalid_model();
             }
         }
@@ -1261,117 +1246,6 @@ namespace {
         add_base_checks( tasks );
     }
 
-    template< >
-    void GeoModelValidityCheck< 2 >::test_finite_extension()
-    {
-        const auto& geomodelmesh = geomodel_.mesh;
-        const auto& geomodelmesh_vertices = geomodelmesh.vertices;
-
-        std::vector< vec2 > all_points;
-        all_points.reserve( geomodelmesh_vertices.nb() );
-        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
-            all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
-        }
-
-        auto line = LineMesh2D::create_mesh();
-        ringmesh_assert( line != nullptr );
-        auto builder = LineMeshBuilder2D::create_builder( *line );
-        ringmesh_assert( builder != nullptr );
-        auto start = builder->create_vertices( geomodelmesh_vertices.nb() );
-        ringmesh_unused( start );
-        ringmesh_assert( start == 0 );
-        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
-            builder->set_vertex( v_i, all_points[v_i] );
-        }
-
-        const auto voi_lines = geomodel_.voi_lines();
-        const auto& geomodelmesh_edges = geomodelmesh.edges;
-        for( auto edge_i : range( geomodelmesh_edges.nb() ) ) {
-            const auto cur_line_id = geomodelmesh_edges.line( edge_i );
-            if( contains( voi_lines.lines_, cur_line_id ) ) {
-                auto v0 = geomodelmesh_edges.vertex( { edge_i, 0 } );
-                auto v1 = geomodelmesh_edges.vertex( { edge_i, 1 } );
-                builder->create_edge( v0, v1 );
-            }
-        }
-
-        // As the geomodel lines are independent meshes, they have different
-        // orientations (normal directions). So, the merge of these surfaces may
-        // produce several connected components with colocated vertices.
-        // The following repair merges such vertices and enables a homogeneous
-        // line orientation [BC].
-        builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
-        index_t nb_connected_components { NO_ID };
-        std::tie( nb_connected_components, std::ignore ) =
-            line->connected_components();
-
-        if( nb_connected_components != 1 ) {
-            set_invalid_model();
-        }
-    }
-
-    template< >
-    void GeoModelValidityCheck< 3 >::test_finite_extension()
-    {
-        const auto& geomodelmesh = geomodel_.mesh;
-        const auto& geomodelmesh_vertices = geomodelmesh.vertices;
-
-        std::vector< vec3 > all_points;
-        all_points.reserve( geomodelmesh_vertices.nb() );
-        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
-            all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
-        }
-
-        auto surface = SurfaceMesh3D::create_mesh();
-        ringmesh_assert( surface != nullptr );
-        auto builder = SurfaceMeshBuilder3D::create_builder( *surface );
-        ringmesh_assert( builder != nullptr );
-        auto start = builder->create_vertices( geomodelmesh_vertices.nb() );
-        ringmesh_unused( start );
-        ringmesh_assert( start == 0 );
-        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
-            builder->set_vertex( v_i, all_points[v_i] );
-        }
-
-        const auto voi_surfaces = geomodel_.voi_surfaces();
-        const auto& geomodelmesh_polygons = geomodelmesh.polygons;
-        for( auto polygon_i : range( geomodelmesh_polygons.nb() ) ) {
-
-            const auto cur_surface_id = geomodelmesh_polygons.surface( polygon_i );
-            if( contains( voi_surfaces.surfaces_, cur_surface_id ) ) {
-                std::vector< index_t > polygon_vertices(
-                    geomodelmesh_polygons.nb_vertices( polygon_i ) );
-                for( auto v_i : range(
-                    geomodelmesh_polygons.nb_vertices( polygon_i ) ) ) {
-                    polygon_vertices[v_i] = geomodelmesh_polygons.vertex( {
-                        polygon_i, v_i } );
-                }
-                builder->create_polygon( polygon_vertices );
-            }
-        }
-
-        for( auto p : range( surface->nb_polygons() ) ) {
-            for( auto v : range( surface->nb_polygon_vertices( p ) ) ) {
-                builder->set_polygon_adjacent( p, v, NO_ID );
-            }
-        }
-
-        builder->connect_polygons();
-        // As the geomodel surfaces are independent meshes, they have different
-        // orientations (normal directions). So, the merge of these surfaces may
-        // produce several connected components with colocated vertices.
-        // The following repair merges such vertices and enables a homogeneous
-        // surface orientation [BC].
-        builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
-        index_t nb_connected_components { NO_ID };
-        std::tie( nb_connected_components, std::ignore ) =
-            surface->connected_components();
-
-        if( nb_connected_components != 1 ) {
-            set_invalid_model();
-        }
-    }
-
 }
 
 namespace RINGMesh {
@@ -1504,6 +1378,122 @@ namespace RINGMesh {
             }
         }
         return valid;
+    }
+
+    /*!
+     * @brief Check that the geomodel has a finite extension
+     * @details The boundary of the universe region is a one connected component
+     * manifold closed surface.
+     * @todo Implement this check
+     */
+    template< index_t DIMENSION >
+    bool has_geomodel_finite_extension( const GeoModel< DIMENSION >& geomodel );
+
+    template<>
+    bool RINGMESH_API has_geomodel_finite_extension< 2 >( const GeoModel2D& geomodel )
+    {
+        const auto& geomodelmesh = geomodel.mesh;
+        const auto& geomodelmesh_vertices = geomodelmesh.vertices;
+
+        std::vector< vec2 > all_points;
+        all_points.reserve( geomodelmesh_vertices.nb() );
+        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
+            all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
+        }
+
+        auto line = LineMesh2D::create_mesh();
+        ringmesh_assert( line != nullptr );
+        auto builder = LineMeshBuilder2D::create_builder( *line );
+        ringmesh_assert( builder != nullptr );
+        auto start = builder->create_vertices( geomodelmesh_vertices.nb() );
+        ringmesh_unused( start );
+        ringmesh_assert( start == 0 );
+        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
+            builder->set_vertex( v_i, all_points[v_i] );
+        }
+
+        const auto voi_lines = geomodel.voi_lines();
+        const auto& geomodelmesh_edges = geomodelmesh.edges;
+        for( auto edge_i : range( geomodelmesh_edges.nb() ) ) {
+            const auto cur_line_id = geomodelmesh_edges.line( edge_i );
+            if( contains( voi_lines.lines_, cur_line_id ) ) {
+                auto v0 = geomodelmesh_edges.vertex( { edge_i, 0 } );
+                auto v1 = geomodelmesh_edges.vertex( { edge_i, 1 } );
+                builder->create_edge( v0, v1 );
+            }
+        }
+
+        // As the geomodel lines are independent meshes, they have different
+        // orientations (normal directions). So, the merge of these surfaces may
+        // produce several connected components with colocated vertices.
+        // The following repair merges such vertices and enables a homogeneous
+        // line orientation [BC].
+        builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
+        index_t nb_connected_components { NO_ID };
+        std::tie( nb_connected_components, std::ignore ) =
+            line->connected_components();
+
+        return nb_connected_components == 1;
+    }
+
+    template<>
+    bool RINGMESH_API has_geomodel_finite_extension< 3 >( const GeoModel3D& geomodel )
+    {
+        const auto& geomodelmesh = geomodel.mesh;
+        const auto& geomodelmesh_vertices = geomodelmesh.vertices;
+
+        std::vector< vec3 > all_points;
+        all_points.reserve( geomodelmesh_vertices.nb() );
+        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
+            all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
+        }
+
+        auto surface = SurfaceMesh3D::create_mesh();
+        ringmesh_assert( surface != nullptr );
+        auto builder = SurfaceMeshBuilder3D::create_builder( *surface );
+        ringmesh_assert( builder != nullptr );
+        auto start = builder->create_vertices( geomodelmesh_vertices.nb() );
+        ringmesh_unused( start );
+        ringmesh_assert( start == 0 );
+        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
+            builder->set_vertex( v_i, all_points[v_i] );
+        }
+
+        const auto voi_surfaces = geomodel.voi_surfaces();
+        const auto& geomodelmesh_polygons = geomodelmesh.polygons;
+        for( auto polygon_i : range( geomodelmesh_polygons.nb() ) ) {
+
+            const auto cur_surface_id = geomodelmesh_polygons.surface( polygon_i );
+            if( contains( voi_surfaces.surfaces_, cur_surface_id ) ) {
+                std::vector< index_t > polygon_vertices(
+                    geomodelmesh_polygons.nb_vertices( polygon_i ) );
+                for( auto v_i : range(
+                    geomodelmesh_polygons.nb_vertices( polygon_i ) ) ) {
+                    polygon_vertices[v_i] = geomodelmesh_polygons.vertex( {
+                        polygon_i, v_i } );
+                }
+                builder->create_polygon( polygon_vertices );
+            }
+        }
+
+        for( auto p : range( surface->nb_polygons() ) ) {
+            for( auto v : range( surface->nb_polygon_vertices( p ) ) ) {
+                builder->set_polygon_adjacent( p, v, NO_ID );
+            }
+        }
+
+        builder->connect_polygons();
+        // As the geomodel surfaces are independent meshes, they have different
+        // orientations (normal directions). So, the merge of these surfaces may
+        // produce several connected components with colocated vertices.
+        // The following repair merges such vertices and enables a homogeneous
+        // surface orientation [BC].
+        builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
+        index_t nb_connected_components { NO_ID };
+        std::tie( nb_connected_components, std::ignore ) =
+            surface->connected_components();
+
+        return nb_connected_components == 1;
     }
 
     template bool RINGMESH_API is_geomodel_valid< 2 >(
