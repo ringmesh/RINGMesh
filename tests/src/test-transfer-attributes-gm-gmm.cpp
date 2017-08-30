@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <future>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
 #include <ringmesh/io/io.h>
@@ -49,6 +51,8 @@ namespace {
     const std::string attribute_names[6] = { "long_int_attr", "bool_attr",
                                              "double_attr", "vec3_attr",
                                              "dim_6_double_attr", "char_attr" };
+
+    std::mutex lock;
 
     void load_geomodel( GeoModel3D& in, const std::string& filename )
     {
@@ -591,10 +595,16 @@ namespace {
 
     }
 
+    void load_file( GeoModel3D& geomodel )
+    {
+        std::lock_guard< std::mutex > locking( lock );
+        load_geomodel( geomodel, "modelA1_volume_meshed.gm" );
+    }
+
     void tests_transfer_from_geomodel_regions_to_geomodelmesh()
     {
         GeoModel3D geomodel;
-        load_geomodel( geomodel, "modelA1_volume_meshed.gm" );
+        load_file( geomodel );
 
         set_vertex_attributes_on_geomodel_regions( geomodel );
         set_cell_attributes_on_geomodel_regions( geomodel );
@@ -606,7 +616,7 @@ namespace {
     void tests_transfer_from_geomodelmesh_to_geomodel_regions()
     {
         GeoModel3D geomodel;
-        load_geomodel( geomodel, "modelA1_volume_meshed.gm" );
+        load_file( geomodel );
 
         set_vertex_attributes_on_geomodelmesh( geomodel );
         set_cell_attributes_on_geomodelmesh( geomodel );
@@ -619,8 +629,19 @@ namespace {
     {
         // long int is not a default attribute type in geogram.
         GEO::geo_register_attribute_type< long int >( "long int" );
-        tests_transfer_from_geomodel_regions_to_geomodelmesh();
-        tests_transfer_from_geomodelmesh_to_geomodel_regions();
+
+        std::vector< std::future< void > > futures;
+
+        futures.emplace_back(
+            std::async( std::launch::async,
+                &tests_transfer_from_geomodel_regions_to_geomodelmesh ) );
+        futures.emplace_back(
+            std::async( std::launch::async,
+                &tests_transfer_from_geomodelmesh_to_geomodel_regions ) );
+
+        for( auto& future : futures ) {
+            future.get();
+        }
     }
 
 }

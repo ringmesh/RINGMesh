@@ -145,7 +145,7 @@ namespace RINGMesh {
             {
                 double plane_constant { 0.0 };
                 for( index_t i : range( 3 ) ) {
-                    plane_constant += origin[i] * normal[i];
+                    plane_constant -= origin[i] * normal[i];
                 }
                 return plane_constant;
             }
