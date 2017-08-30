@@ -192,8 +192,6 @@ namespace RINGMesh {
         friend class GeoModelBuilderBase< 2 > ;
         friend class GeoModelBuilder< 2 > ;
     public:
-        virtual ~GeoModelBuilderTopology() = default;
-
         void add_mesh_entity_boundary_relation(
             const gmme_id& boundary,
             const gmme_id& incident_entity,

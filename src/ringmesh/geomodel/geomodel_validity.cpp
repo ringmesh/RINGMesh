@@ -1295,11 +1295,11 @@ namespace {
             }
         }
 
-        // As the geomodel surfaces are independent meshes, they have different
+        // As the geomodel lines are independent meshes, they have different
         // orientations (normal directions). So, the merge of these surfaces may
         // produce several connected components with colocated vertices.
         // The following repair merges such vertices and enables a homogeneous
-        // surface orientation [BC].
+        // line orientation [BC].
         builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components { NO_ID };
         std::tie( nb_connected_components, std::ignore ) =
