@@ -35,6 +35,7 @@
 
 #include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
 
+#include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 
 namespace {
@@ -44,6 +45,26 @@ namespace {
         Corner3D::type_name_static(), Line3D::type_name_static(),
         Surface3D::type_name_static() };
 
+    struct GeologicalEntityTypeMapFrom2DTo3DInitializer {
+        static std::map< GeologicalEntityType, GeologicalEntityType > initialize_map()
+        {
+            std::map< GeologicalEntityType, GeologicalEntityType > map;
+            map[Contact3D::type_name_static()] = Interface2D::type_name_static();
+            map[Interface3D::type_name_static()] = Layer2D::type_name_static();
+            return map;
+        }
+
+    };
+
+    template< typename U, typename T >
+    static const T& mapped_value( const std::map< U, T > map, const U& key )
+    {
+        return map.find( key )->second;
+    }
+
+    static const std::map< GeologicalEntityType, GeologicalEntityType > geol_entity_type_2d_to_3d_map =
+        GeologicalEntityTypeMapFrom2DTo3DInitializer::initialize_map();
+
 }
 
 namespace RINGMesh {
@@ -51,11 +72,9 @@ namespace RINGMesh {
     void GeoModelBuilder2DProjection::build_geomodel()
     {
         copy_geomodel_3d_topology();
-        DEBUG( "Check topo validity:" );
-        is_geomodel_valid( geomodel_, ValidityCheckMode::TOPOLOGY );
+        copy_geomodel_3d_geological_informations();
         project_geomodel_3d_mesh_entities();
-        DEBUG( "Check all model validity:" );
-        is_geomodel_valid( geomodel_, ValidityCheckMode::ALL );
+        print_geomodel( geomodel_ );
     }
 
     void GeoModelBuilder2DProjection::copy_geomodel_3d_topology()
@@ -72,6 +91,32 @@ namespace RINGMesh {
                 for( const auto& boundary_id : range( entity.nb_boundaries() ) ) {
                     topology.add_mesh_entity_boundary_relation( entity.gmme(),
                         entity.boundary( boundary_id ).gmme() );
+                }
+            }
+        }
+    }
+
+    void GeoModelBuilder2DProjection::copy_geomodel_3d_geological_informations()
+    {
+        for( const auto& geol_entity_id : range(
+            geomodel3d_from_.nb_geological_entity_types() ) ) {
+            const auto& cur_type = geomodel3d_from_.geological_entity_type(
+                geol_entity_id );
+            geology.create_geological_entities(
+                mapped_value( geol_entity_type_2d_to_3d_map, cur_type ),
+                geomodel3d_from_.nb_geological_entities( cur_type ) );
+        }
+        for( const auto& geol_entity_id : range(
+            geomodel3d_from_.nb_geological_entity_types() ) ) {
+            const auto& cur_type = geomodel3d_from_.geological_entity_type(
+                geol_entity_id );
+            for( const auto& cur_geol_entity : geomodel3d_from_.geol_entities(
+                cur_type ) ) {
+                for( const auto& child_id : range( cur_geol_entity.nb_children() ) ) {
+                    geology.add_parent_children_relation(
+                        { mapped_value( geol_entity_type_2d_to_3d_map, cur_type ),
+                          cur_geol_entity.index() },
+                        cur_geol_entity.child_gmme( child_id ) );
                 }
             }
         }
