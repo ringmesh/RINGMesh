@@ -88,7 +88,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     std::tuple< index_t, std::vector< index_t > > PointSetMesh< DIMENSION >::get_connected_components() const
     {
-        const index_t nb_compoments = this->nb_vertices();
+        const auto nb_compoments = this->nb_vertices();
         std::vector< index_t > components( nb_compoments );
         std::iota( components.begin(), components.end(), 0 );
         return std::make_tuple( nb_compoments, components );
@@ -118,18 +118,18 @@ namespace RINGMesh {
     std::tuple< index_t, std::vector< index_t > > LineMesh< DIMENSION >::get_connected_components() const
     {
         std::vector< index_t > components( nb_edges(), NO_ID );
-        index_t nb_components = 0;
-        for( index_t edge : range( nb_edges() ) ) {
+        index_t nb_components { 0 };
+        for( auto edge : range( nb_edges() ) ) {
             if( components[edge] == NO_ID ) {
                 std::stack< index_t > S;
                 S.push( edge );
                 components[edge] = nb_components;
                 do {
-                    index_t cur_edge = S.top();
+                    auto cur_edge = S.top();
                     S.pop();
-                    for( index_t vertex : range( 2 ) ) {
-                        index_t adj_edge = edge_vertex(
-                            ElementLocalVertex( cur_edge, vertex ) );
+                    for( auto vertex : range( 2 ) ) {
+                        auto adj_edge = edge_vertex(
+                            { cur_edge, vertex } );
                         if( adj_edge != NO_ID && components[adj_edge] == NO_ID ) {
                             S.push( adj_edge );
                             components[adj_edge] = nb_components;
@@ -397,18 +397,18 @@ namespace RINGMesh {
     std::tuple< index_t, std::vector< index_t > > SurfaceMeshBase< DIMENSION >::get_connected_components() const
     {
         std::vector< index_t > components( nb_polygons(), NO_ID );
-        index_t nb_components = 0;
-        for( index_t polygon : range( nb_polygons() ) ) {
+        index_t nb_components { 0 };
+        for( auto polygon : range( nb_polygons() ) ) {
             if( components[polygon] == NO_ID ) {
                 std::stack< index_t > S;
                 S.push( polygon );
                 components[polygon] = nb_components;
                 do {
-                    index_t cur_polygon = S.top();
+                    auto cur_polygon = S.top();
                     S.pop();
-                    for( index_t edge : range( nb_polygon_vertices( cur_polygon ) ) ) {
-                        index_t adj_polygon = polygon_adjacent(
-                            PolygonLocalEdge( cur_polygon, edge ) );
+                    for( auto edge : range( nb_polygon_vertices( cur_polygon ) ) ) {
+                        auto adj_polygon = polygon_adjacent(
+                            { cur_polygon, edge } );
                         if( adj_polygon != NO_ID
                             && components[adj_polygon] == NO_ID ) {
                             S.push( adj_polygon );
@@ -446,18 +446,18 @@ namespace RINGMesh {
     std::tuple< index_t, std::vector< index_t > > VolumeMesh< DIMENSION >::get_connected_components() const
     {
         std::vector< index_t > components( nb_cells(), NO_ID );
-        index_t nb_components = 0;
-        for( index_t cell : range( nb_cells() ) ) {
+        index_t nb_components { 0 };
+        for( auto cell : range( nb_cells() ) ) {
             if( components[cell] == NO_ID ) {
                 std::stack< index_t > S;
                 S.push( cell );
                 components[cell] = nb_components;
                 do {
-                    index_t cur_cell = S.top();
+                    auto cur_cell = S.top();
                     S.pop();
-                    for( index_t facet : range( nb_cell_facets( cur_cell ) ) ) {
-                        index_t adj_cell = cell_adjacent(
-                            CellLocalFacet( cur_cell, facet ) );
+                    for( auto facet : range( nb_cell_facets( cur_cell ) ) ) {
+                        auto adj_cell = cell_adjacent(
+                            { cur_cell, facet } );
                         if( adj_cell != NO_ID && components[adj_cell] == NO_ID ) {
                             S.push( adj_cell );
                             components[adj_cell] = nb_components;
