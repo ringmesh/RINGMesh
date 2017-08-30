@@ -52,7 +52,7 @@ void test_mesh( const std::string& file_name )
     using namespace RINGMesh;
 
     GeoModel3D model;
-    bool loaded_model_is_valid = geomodel_load( model, file_name );
+    bool loaded_model_is_valid { geomodel_load( model, file_name ) };
 
     if( !loaded_model_is_valid ) {
         throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
