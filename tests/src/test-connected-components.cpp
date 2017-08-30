@@ -51,8 +51,7 @@ namespace {
     void point_set_mesh_connected_component_test()
     {
         auto point_set = PointSetMesh3D::create_mesh();
-        auto point_set_builder =
-            PointSetMeshBuilder3D::create_builder( *point_set );
+        auto point_set_builder = PointSetMeshBuilder3D::create_builder( *point_set );
 
         index_t nb_connected_components { NO_ID };
         std::vector< index_t > connected_components;
@@ -86,8 +85,7 @@ namespace {
     void line_mesh_connected_component_test()
     {
         auto line_mesh = LineMesh3D::create_mesh();
-        auto line_mesh_builder =
-            LineMeshBuilder3D::create_builder( *line_mesh );
+        auto line_mesh_builder = LineMeshBuilder3D::create_builder( *line_mesh );
 
         index_t nb_connected_components { NO_ID };
         std::vector< index_t > connected_components;
@@ -142,11 +140,22 @@ namespace {
         }
     }
 
+    void update_polygon_adjacencies_after_adding_a_new_polygon(
+        SurfaceMeshBuilder3D& surface_mesh_builder,
+        index_t new_polygon_id )
+    {
+        surface_mesh_builder.set_polygon_adjacent( new_polygon_id, 0, NO_ID );
+        surface_mesh_builder.set_polygon_adjacent( new_polygon_id, 1, NO_ID );
+        surface_mesh_builder.set_polygon_adjacent( new_polygon_id, 2, NO_ID );
+        surface_mesh_builder.connect_polygons();
+        surface_mesh_builder.repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
+    }
+
     void surface_mesh_connected_component_test()
     {
         auto surface_mesh = SurfaceMesh3D::create_mesh();
-        auto surface_mesh_builder =
-            SurfaceMeshBuilder3D::create_builder( *surface_mesh );
+        auto surface_mesh_builder = SurfaceMeshBuilder3D::create_builder(
+            *surface_mesh );
 
         index_t nb_connected_components { NO_ID };
         std::vector< index_t > connected_components;
@@ -161,7 +170,9 @@ namespace {
             surface_mesh_builder->create_vertex( { 0., 0., 0. } ),
             surface_mesh_builder->create_vertex( { 1., 0., 0. } ),
             surface_mesh_builder->create_vertex( { 0., 1., 0. } ) };
-        surface_mesh_builder->create_polygon( polygon_vertices );
+        auto polygon_id = surface_mesh_builder->create_polygon( polygon_vertices );
+        update_polygon_adjacencies_after_adding_a_new_polygon( *surface_mesh_builder,
+            polygon_id );
         std::tie( nb_connected_components, connected_components ) =
             surface_mesh->get_connected_components();
         std::vector< index_t > solution( 1, 0 );
@@ -170,19 +181,18 @@ namespace {
                 "Surface mesh should have 1 connected component with an index at 0." );
         }
 
-        polygon_vertices[0] = surface_mesh_builder->create_vertex(
-            { 1., 1., 1. } );
-        surface_mesh_builder->create_polygon( polygon_vertices );
-        polygon_vertices[0] = surface_mesh_builder->create_vertex(
-            { 5., 5., 0. } );
-        polygon_vertices[1] = surface_mesh_builder->create_vertex(
-            { 5., 6., 0. } );
-        polygon_vertices[2] = surface_mesh_builder->create_vertex(
-            { 6., 5., 0. } );
-        surface_mesh_builder->create_polygon( polygon_vertices );
+        polygon_vertices[0] = surface_mesh_builder->create_vertex( { 1., 1., 1. } );
+        polygon_id = surface_mesh_builder->create_polygon( polygon_vertices );
+        update_polygon_adjacencies_after_adding_a_new_polygon( *surface_mesh_builder,
+            polygon_id );
+        polygon_vertices[0] = surface_mesh_builder->create_vertex( { 5., 5., 0. } );
+        polygon_vertices[1] = surface_mesh_builder->create_vertex( { 5., 6., 0. } );
+        polygon_vertices[2] = surface_mesh_builder->create_vertex( { 6., 5., 0. } );
+        polygon_id = surface_mesh_builder->create_polygon( polygon_vertices );
+        update_polygon_adjacencies_after_adding_a_new_polygon( *surface_mesh_builder,
+            polygon_id );
         std::tie( nb_connected_components, connected_components ) =
             surface_mesh->get_connected_components();
-        surface_mesh_builder->connect_polygons();
         solution.push_back( 0 );
         solution.push_back( 1 );
         if( nb_connected_components != 2 || connected_components != solution ) {
@@ -194,8 +204,8 @@ namespace {
     void volume_mesh_connected_component_test()
     {
         auto volume_mesh = VolumeMesh3D::create_mesh();
-        auto volume_mesh_builder =
-            VolumeMeshBuilder3D::create_builder( *volume_mesh );
+        auto volume_mesh_builder = VolumeMeshBuilder3D::create_builder(
+            *volume_mesh );
 
         index_t nb_connected_components { NO_ID };
         std::vector< index_t > connected_components;
