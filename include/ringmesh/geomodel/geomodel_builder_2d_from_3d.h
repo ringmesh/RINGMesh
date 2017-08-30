@@ -98,6 +98,8 @@ namespace RINGMesh {
     private:
         void copy_geomodel_3d_topology();
 
+        void copy_geomodel_3d_geological_informations();
+
         void project_geomodel_3d_mesh_entities();
 
         std::vector< vec2 > compute_projected_vertices(
