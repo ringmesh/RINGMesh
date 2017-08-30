@@ -892,12 +892,12 @@ namespace {
         const auto& polygons = geomodel.mesh.polygons;
         for( const auto& surface : geomodel.surfaces() ) {
             for( auto p : range( polygons.nb_polygons( surface.index() ) ) ) {
-                auto polygon_id { polygons.polygon( surface.index(), p ) };
+                auto polygon_id = polygons.polygon( surface.index(), p );
                 for( auto v : range( polygons.nb_vertices( polygon_id ) ) ) {
-                    auto adj { polygons.adjacent( { polygon_id, v } ) };
+                    auto adj = polygons.adjacent( { polygon_id, v } );
                     if( adj == NO_ID ) {
                         edge_indices.push_back(
-                            polygons.vertex( ElementLocalVertex( polygon_id, v ) ) );
+                            polygons.vertex( { polygon_id, v } ) );
                         auto next_v { ( v + 1 )
                             % polygons.nb_vertices( polygon_id ) };
                         edge_indices.push_back(

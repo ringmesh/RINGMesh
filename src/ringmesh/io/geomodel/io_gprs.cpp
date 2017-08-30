@@ -46,6 +46,8 @@ namespace {
         };
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" );
         }
@@ -138,17 +140,17 @@ namespace {
                 }
             }
 
-            index_t nb_pipes = pipes.size();
-            for( const std::vector< index_t >& vertices : edges ) {
-                nb_pipes += binomial_coef( vertices.size() );
+            auto nb_pipes = static_cast< index_t > ( pipes.size() );
+            for( const auto& vertices : edges ) {
+                nb_pipes += binomial_coef( static_cast< index_t > ( vertices.size() ) );
             }
             out_pipes << nb_pipes << EOL;
-            for( const Pipe& pipe : pipes ) {
+            for( const auto& pipe : pipes ) {
                 out_pipes << pipe.v0 << SPACE << pipe.v1 << EOL;
             }
-            for( const std::vector< index_t >& vertices : edges ) {
-                for( index_t v0 : range( vertices.size() - 1 ) ) {
-                    for( index_t v1 : range( v0 + 1, vertices.size() ) ) {
+            for( const auto& vertices : edges ) {
+                for( auto v0 : range( vertices.size() - 1 ) ) {
+                    for( auto v1 : range( v0 + 1, vertices.size() ) ) {
                         out_pipes << vertices[v0] << SPACE << vertices[v1]
                             << EOL;
                     }
@@ -158,11 +160,11 @@ namespace {
             out_xyz
                 << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
                 << EOL;
-            for( index_t c : range( mesh.cells.nb() ) ) {
+            for( auto c : range( mesh.cells.nb() ) ) {
                 out_xyz << mesh.cells.barycenter( c ) << EOL;
                 out_vol << mesh.cells.volume( c ) << EOL;
             }
-            for( index_t p : range( polygons.nb() ) ) {
+            for( auto p : range( polygons.nb() ) ) {
                 out_xyz << polygons.center( p ) << EOL;
                 out_vol << polygons.area( p ) << EOL;
             }
