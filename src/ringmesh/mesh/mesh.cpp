@@ -118,27 +118,58 @@ namespace RINGMesh {
     std::tuple< index_t, std::vector< index_t > > LineMesh< DIMENSION >::get_connected_components() const
     {
         std::vector< index_t > components( nb_edges(), NO_ID );
+        std::vector< index_t > vertex_components( this->nb_vertices(), NO_ID );
         index_t nb_components { 0 };
+
         for( auto edge : range( nb_edges() ) ) {
-            if( components[edge] == NO_ID ) {
-                std::stack< index_t > S;
-                S.push( edge );
+            ringmesh_assert( components[edge] == NO_ID );
+            const auto v0 = edge_vertex( { edge, 0 } );
+            const auto v1 = edge_vertex( { edge, 1 } );
+            if( vertex_components[v0] == NO_ID && vertex_components[v1] == NO_ID ) {
+                vertex_components[v0] = nb_components;
+                vertex_components[v1] = nb_components;
                 components[edge] = nb_components;
-                do {
-                    auto cur_edge = S.top();
-                    S.pop();
-                    for( auto vertex : range( 2 ) ) {
-                        auto adj_edge = edge_vertex(
-                            { cur_edge, vertex } );
-                        if( adj_edge != NO_ID && components[adj_edge] == NO_ID ) {
-                            S.push( adj_edge );
-                            components[adj_edge] = nb_components;
+                ++nb_components;
+            } else if( vertex_components[v0] != NO_ID
+                && vertex_components[v1] == NO_ID ) {
+                vertex_components[v1] = vertex_components[v0];
+                components[edge] = vertex_components[v0];
+            } else if( vertex_components[v0] == NO_ID
+                && vertex_components[v1] != NO_ID ) {
+                vertex_components[v0] = vertex_components[v1];
+                components[edge] = vertex_components[v1];
+            } else {
+                // Case both nodes have already a connected component.
+                if( vertex_components[v0] == vertex_components[v1] ) {
+                    components[edge] = vertex_components[v0];
+                } else {
+                    // It appears that 2 previously identified connected components
+                    // correspond in fact to a unique connected component.
+                    auto min_connected_components = std::min(
+                        vertex_components[v0], vertex_components[v1] );
+                    auto max_connected_components = std::max(
+                        vertex_components[v0], vertex_components[v1] );
+                    for( auto previous_edge : range( edge ) ) {
+                        ringmesh_assert( components[edge] != NO_ID );
+                        if( components[previous_edge] == max_connected_components ) {
+                            components[previous_edge] = min_connected_components;
+                            vertex_components[edge_vertex( { previous_edge, 0 } )] = min_connected_components;
+                            vertex_components[edge_vertex( { previous_edge, 1 } )] = min_connected_components;
+                        } else if( components[previous_edge]
+                            > max_connected_components ) {
+                            --components[previous_edge];
+                            --vertex_components[edge_vertex( { previous_edge, 0 } )];
+                            --vertex_components[edge_vertex( { previous_edge, 1 } )];
                         }
                     }
-                } while( !S.empty() );
-                nb_components++;
+                    components[edge] = min_connected_components;
+                    vertex_components[v0] = min_connected_components;
+                    vertex_components[v1] = min_connected_components;
+                    --nb_components;
+                }
             }
         }
+
         return std::make_tuple( nb_components, components );
     }
 
