@@ -1303,7 +1303,7 @@ namespace {
         builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components { NO_ID };
         std::tie( nb_connected_components, std::ignore ) =
-            line->get_connected_components();
+            line->connected_components();
 
         if( nb_connected_components != 1 ) {
             set_invalid_model();
@@ -1365,7 +1365,7 @@ namespace {
         builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components { NO_ID };
         std::tie( nb_connected_components, std::ignore ) =
-            surface->get_connected_components();
+            surface->connected_components();
 
         if( nb_connected_components != 1 ) {
             set_invalid_model();

@@ -86,7 +86,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, std::vector< index_t > > PointSetMesh< DIMENSION >::get_connected_components() const
+    std::tuple< index_t, std::vector< index_t > > PointSetMesh< DIMENSION >::connected_components() const
     {
         const auto nb_compoments = this->nb_vertices();
         std::vector< index_t > components( nb_compoments );
@@ -115,7 +115,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, std::vector< index_t > > LineMesh< DIMENSION >::get_connected_components() const
+    std::tuple< index_t, std::vector< index_t > > LineMesh< DIMENSION >::connected_components() const
     {
         std::vector< index_t > components( nb_edges(), NO_ID );
         std::vector< index_t > vertex_components( this->nb_vertices(), NO_ID );
@@ -425,7 +425,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, std::vector< index_t > > SurfaceMeshBase< DIMENSION >::get_connected_components() const
+    std::tuple< index_t, std::vector< index_t > > SurfaceMeshBase< DIMENSION >::connected_components() const
     {
         std::vector< index_t > components( nb_polygons(), NO_ID );
         index_t nb_components { 0 };
@@ -474,7 +474,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    std::tuple< index_t, std::vector< index_t > > VolumeMesh< DIMENSION >::get_connected_components() const
+    std::tuple< index_t, std::vector< index_t > > VolumeMesh< DIMENSION >::connected_components() const
     {
         std::vector< index_t > components( nb_cells(), NO_ID );
         index_t nb_components { 0 };
