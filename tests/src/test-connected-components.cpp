@@ -98,8 +98,8 @@ namespace {
                 "Line mesh should have 0 connected component." );
         }
 
-        auto v0 = line_mesh_builder->create_vertex( vec3( 0., 0., 0. ) );
-        auto v1 = line_mesh_builder->create_vertex( vec3( 0., 0., 1. ) );
+        auto v0 = line_mesh_builder->create_vertex( { 0., 0., 0. } );
+        auto v1 = line_mesh_builder->create_vertex( { 0., 0., 1. } );
         line_mesh_builder->create_edge( v0, v1 );
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->get_connected_components();
@@ -109,7 +109,7 @@ namespace {
                 "Line mesh should have 1 connected component with index 0." );
         }
 
-        auto v2 = line_mesh_builder->create_vertex( vec3( 0., 0., 2. ) );
+        auto v2 = line_mesh_builder->create_vertex( { 0., 0., 2. } );
         line_mesh_builder->create_edge( v1, v2 );
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->get_connected_components();
@@ -119,8 +119,8 @@ namespace {
                 "Line mesh should have 1 connected component with index 0." );
         }
 
-        auto v3 = line_mesh_builder->create_vertex( vec3( 0., 0., 3. ) );
-        auto v4 = line_mesh_builder->create_vertex( vec3( 0., 0., 4. ) );
+        auto v3 = line_mesh_builder->create_vertex( { 0., 0., 3. } );
+        auto v4 = line_mesh_builder->create_vertex( { 0., 0., 4. } );
         line_mesh_builder->create_edge( v3, v4 );
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->get_connected_components();
@@ -130,9 +130,11 @@ namespace {
                 "Line mesh should have 2 connected components: 0 0 1." );
         }
 
-        line_mesh_builder->create_vertex( vec3( 0., 0., 5. ) );
-        auto v6 = line_mesh_builder->create_vertex( vec3( 1., 0., 0. ) );
+        line_mesh_builder->create_vertex( { 0., 0., 5. } );
+        auto v6 = line_mesh_builder->create_vertex( { 1., 0., 0. } );
         line_mesh_builder->create_edge( v6, v0 );
+        std::tie( nb_connected_components, connected_components ) =
+            line_mesh->get_connected_components();
         solution.push_back( 0 );
         if( nb_connected_components != 2 || connected_components != solution ) {
             throw RINGMeshException( "RINGMesh Test",
@@ -156,9 +158,9 @@ namespace {
         }
 
         std::vector< index_t > polygon_vertices = {
-            surface_mesh_builder->create_vertex( vec3( 0., 0., 0. ) ),
-            surface_mesh_builder->create_vertex( vec3( 1., 0., 0. ) ),
-            surface_mesh_builder->create_vertex( vec3( 0., 1., 0. ) ) };
+            surface_mesh_builder->create_vertex( { 0., 0., 0. } ),
+            surface_mesh_builder->create_vertex( { 1., 0., 0. } ),
+            surface_mesh_builder->create_vertex( { 0., 1., 0. } ) };
         surface_mesh_builder->create_polygon( polygon_vertices );
         std::tie( nb_connected_components, connected_components ) =
             surface_mesh->get_connected_components();
