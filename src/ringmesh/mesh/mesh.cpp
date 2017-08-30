@@ -343,7 +343,7 @@ namespace RINGMesh {
         index_t result { 0 };
         double dist { DBL_MAX };
         for( auto v_id : range( nb_polygon_vertices( p ) ) ) {
-            auto distance = length2(
+            double distance = length2(
                 v - this->vertex( polygon_vertex( { p, v_id } ) ) );
             if( dist > distance ) {
                 dist = distance;

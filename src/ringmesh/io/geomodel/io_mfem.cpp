@@ -61,6 +61,8 @@ namespace {
     public:
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from MFEM not implemented yet" );
         }
@@ -68,8 +70,8 @@ namespace {
             const GeoModel3D& geomodel,
             const std::string& filename ) final
         {
-            const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
-            index_t nb_cells = geomodel_mesh.cells.nb();
+            const auto& geomodel_mesh = geomodel.mesh;
+            auto nb_cells = geomodel_mesh.cells.nb();
             if( geomodel_mesh.cells.nb_tet() != nb_cells
                 && geomodel_mesh.cells.nb_hex() != nb_cells ) {
                 throw RINGMeshException( "I/O",
@@ -78,7 +80,7 @@ namespace {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
 
-            write_header( geomodel_mesh, out );
+            write_header( out );
             write_cells( geomodel_mesh, out );
             write_polygons( geomodel_mesh, out );
             write_vertices( geomodel_mesh, out );
@@ -92,7 +94,6 @@ namespace {
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
         void write_header(
-            const GeoModelMesh3D& geomodel_mesh,
             std::ofstream& out ) const
         {
             // MFEM mesh version

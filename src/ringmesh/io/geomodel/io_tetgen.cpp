@@ -38,6 +38,8 @@ namespace {
     public:
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from TetGen not implemented yet" );
         }

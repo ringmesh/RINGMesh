@@ -115,7 +115,6 @@ namespace {
      * @param[in,out] out The output file stream
      */
     void save_layer(
-        index_t count,
         index_t offset,
         const GeoModelGeologicalEntity3D& layer,
         std::ostream& out )
@@ -277,7 +276,7 @@ namespace {
         if( geomodel.entity_type_manager().geological_entity_manager.is_valid_type(
             Layer3D::type_name_static() ) ) {
             for( auto& layer : geomodel.geol_entities( Layer3D::type_name_static() ) ) {
-                save_layer( count, offset_layer, layer, out );
+                save_layer( offset_layer, layer, out );
                 ++count;
             }
         }

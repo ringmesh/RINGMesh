@@ -120,6 +120,8 @@ namespace {
     public:
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from STL mesh not yet implemented" );
         }

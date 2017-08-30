@@ -123,7 +123,7 @@ namespace {
                     geomodel_.epsilon() );
 
             topology.create_mesh_entities( Corner2D::type_name_static(),
-                unique_points.size() );
+                static_cast< index_t > ( unique_points.size() ) );
             for( index_t c : range( geomodel_.nb_corners() ) ) {
                 geometry.set_corner( c, unique_points[c] );
             }
@@ -236,6 +236,8 @@ namespace {
         }
         void save( const GeoModel2D& geomodel, const std::string& filename ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Saving a GeoModel in svg not implemented yet" );
         }
