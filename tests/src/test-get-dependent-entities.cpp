@@ -46,7 +46,7 @@
 
 using namespace RINGMesh;
 
-template< class GME >
+template< typename GME >
 void check_element_of_a_set_are_in_another_set(
     const std::set< GME >& to_compare,
     const std::set< GME >& with,
