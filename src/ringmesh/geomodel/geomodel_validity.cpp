@@ -1261,6 +1261,126 @@ namespace {
         add_base_checks( tasks );
     }
 
+    template< >
+    void GeoModelValidityCheck< 2 >::test_finite_extension()
+    {
+        const auto& geomodelmesh = geomodel_.mesh;
+        const auto& geomodelmesh_vertices = geomodelmesh.vertices;
+
+        std::vector< vec2 > all_points;
+        all_points.reserve( geomodelmesh_vertices.nb() );
+        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
+            all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
+        }
+
+        auto line = LineMesh2D::create_mesh();
+        ringmesh_assert( line != nullptr );
+        auto builder = LineMeshBuilder2D::create_builder( *line );
+        ringmesh_assert( builder != nullptr );
+        auto start = builder->create_vertices(
+            static_cast< index_t >( all_points.size() ) );
+        ringmesh_unused( start );
+        ringmesh_assert( start == 0 );
+        for( auto v_i : range( all_points.size() ) ) {
+            builder->set_vertex( v_i, all_points[v_i] );
+        }
+
+        const auto voi_lines = geomodel_.get_voi_lines();
+        const auto& geomodelmesh_edges = geomodelmesh.edges;
+        for( auto edge_i : range( geomodelmesh_edges.nb() ) ) {
+            const auto cur_line_id = geomodelmesh_edges.line( edge_i );
+            if( contains( voi_lines.lines_, cur_line_id ) ) {
+                auto v0 = geomodelmesh_edges.vertex( { edge_i, 0 } );
+                auto v1 = geomodelmesh_edges.vertex( { edge_i, 1 } );
+                builder->create_edge( v0, v1 );
+            }
+        }
+
+        /*for( auto e : range( line->nb_edges() ) ) {
+            for( auto v : range( line->nb_edge_vertices( e ) ) ) {
+                builder->set_edge_adjacent( e, v, NO_ID );
+            }
+        }
+
+        builder->connect_edges();*/
+        // As the geomodel surfaces are independent meshes, they have different
+        // orientations (normal directions). So, the merge of these surfaces may
+        // produce several connected components with colocated vertices.
+        // The following repair merges such vertices and enables a homogeneous
+        // surface orientation [BC].
+        builder->repair( GEO::MESH_REPAIR_COLOCATE, global_epsilon );
+        index_t nb_connected_components { NO_ID };
+        std::tie( nb_connected_components, std::ignore ) =
+            line->get_connected_components();
+
+        if( nb_connected_components != 1 ) {
+            set_invalid_model();
+        }
+    }
+
+    template< >
+    void GeoModelValidityCheck< 3 >::test_finite_extension()
+    {
+        const auto& geomodelmesh = geomodel_.mesh;
+        const auto& geomodelmesh_vertices = geomodelmesh.vertices;
+
+        std::vector< vec3 > all_points;
+        all_points.reserve( geomodelmesh_vertices.nb() );
+        for( auto v_i : range( geomodelmesh_vertices.nb() ) ) {
+            all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
+        }
+
+        auto surface = SurfaceMesh3D::create_mesh();
+        ringmesh_assert( surface != nullptr );
+        auto builder = SurfaceMeshBuilder3D::create_builder( *surface );
+        ringmesh_assert( builder != nullptr );
+        auto start = builder->create_vertices(
+            static_cast< index_t >( all_points.size() ) );
+        ringmesh_unused( start );
+        ringmesh_assert( start == 0 );
+        for( auto v_i : range( all_points.size() ) ) {
+            builder->set_vertex( v_i, all_points[v_i] );
+        }
+
+        const auto voi_surfaces = geomodel_.get_voi_surfaces();
+        const auto& geomodelmesh_polygons = geomodelmesh.polygons;
+        for( auto polygon_i : range( geomodelmesh_polygons.nb() ) ) {
+
+            const auto cur_surface_id = geomodelmesh_polygons.surface( polygon_i );
+            if( contains( voi_surfaces.surfaces_, cur_surface_id ) ) {
+                std::vector< index_t > polygon_vertices(
+                    geomodelmesh_polygons.nb_vertices( polygon_i ) );
+                for( auto v_i : range(
+                    geomodelmesh_polygons.nb_vertices( polygon_i ) ) ) {
+                    polygon_vertices[v_i] = geomodelmesh_polygons.vertex( {
+                        polygon_i, v_i } );
+                }
+                builder->create_polygon( polygon_vertices );
+            }
+        }
+
+        for( auto p : range( surface->nb_polygons() ) ) {
+            for( auto v : range( surface->nb_polygon_vertices( p ) ) ) {
+                builder->set_polygon_adjacent( p, v, NO_ID );
+            }
+        }
+
+        builder->connect_polygons();
+        // As the geomodel surfaces are independent meshes, they have different
+        // orientations (normal directions). So, the merge of these surfaces may
+        // produce several connected components with colocated vertices.
+        // The following repair merges such vertices and enables a homogeneous
+        // surface orientation [BC].
+        builder->repair( GEO::MESH_REPAIR_COLOCATE, global_epsilon );
+        index_t nb_connected_components { NO_ID };
+        std::tie( nb_connected_components, std::ignore ) =
+            surface->get_connected_components();
+
+        if( nb_connected_components != 1 ) {
+            set_invalid_model();
+        }
+    }
+
 }
 
 namespace RINGMesh {

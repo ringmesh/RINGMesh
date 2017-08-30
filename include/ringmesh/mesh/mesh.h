@@ -140,6 +140,8 @@ namespace RINGMesh {
 
         virtual void save_mesh( const std::string& filename ) const = 0;
 
+        virtual std::tuple< index_t, std::vector< index_t > > get_connected_components() const = 0;
+
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         virtual void print_mesh_bounded_attributes() const = 0;
         /*!
@@ -202,6 +204,7 @@ namespace RINGMesh {
     public:
         static std::unique_ptr< PointSetMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         PointSetMesh() = default;
     };
@@ -217,6 +220,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class LineMesh: public MeshBase< DIMENSION > {
         friend class LineMeshBuilder< DIMENSION > ;
+
     public:
         static std::unique_ptr< LineMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
@@ -285,6 +289,7 @@ namespace RINGMesh {
         }
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         LineMesh() = default;
 
@@ -594,6 +599,7 @@ namespace RINGMesh {
             }
             return *polygon_aabb_;
         }
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         SurfaceMeshBase() = default;
 
@@ -999,6 +1005,8 @@ namespace RINGMesh {
             }
             return *cell_aabb_.get();
         }
+
+        std::tuple< index_t, std::vector< index_t > > get_connected_components() const final;
     protected:
         VolumeMesh() = default;
 
