@@ -76,7 +76,8 @@ namespace RINGMesh {
             COLOCATED_VERTICES,
             DEGENERATE_FACETS_EDGES,
             LINE_BOUNDARY_ORDER,
-            CONTACTS
+            CONTACTS,
+            ISOLATED_VERTICES
         };
 
         /*!
@@ -114,6 +115,18 @@ namespace RINGMesh {
          * if the way of their indices does not follow the way of the vertex indices.
          */
         void repair_line_boundary_vertex_order();
+        /*!
+         * @brief remove isolated vertices on GeoModelMeshEntities
+         */
+        void remove_isolated_vertices();
+        void remove_isolated_vertices_base();
+
+        /*!
+         * @brief remove isolated vertices on a GeoModelMeshEntity
+         * @param[in] geomodel_mesh_entity The GeoModelMeshEntity to repair
+         */
+        void remove_isolated_vertices_on_a_mesh_entity(
+            const GeoModelMeshEntity< DIMENSION >& geomodel_mesh_entity );
         /*!
          * @brief Detect and remove degenerate edges in a \param line.
          * @return the number of degenerate edges that have been removed from the line.
@@ -180,8 +193,7 @@ namespace RINGMesh {
          * @param[in] E_id GeoModelMeshEntity to check.
          * @return vector of the vertex indexes on an inside boundary.
          */
-        std::set< index_t > vertices_on_inside_boundary(
-            const gmme_id& E_id );
+        std::set< index_t > vertices_on_inside_boundary( const gmme_id& E_id );
 
         /*!
          * @brief Checks if an edge is degenerate.

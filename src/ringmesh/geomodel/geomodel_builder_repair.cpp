@@ -78,6 +78,9 @@ namespace RINGMesh {
             case CONTACTS:
                 build_contacts();
                 break;
+            case ISOLATED_VERTICES:
+                remove_isolated_vertices();
+                break;
             default:
                 ringmesh_assert_not_reached;
         }
@@ -101,6 +104,9 @@ namespace RINGMesh {
 
         // Builds the contacts
         build_contacts();
+
+        // Remove isolated vertices on mesh entities
+        remove_isolated_vertices();
 
         builder_.end_geomodel();
     }
@@ -149,6 +155,50 @@ namespace RINGMesh {
                     first_boundary_index );
             }
         }
+    }
+
+    template< >
+    void GeoModelBuilderRepair< 2 >::remove_isolated_vertices()
+    {
+        remove_isolated_vertices_base();
+    }
+
+    template< >
+    void GeoModelBuilderRepair< 3 >::remove_isolated_vertices()
+    {
+        remove_isolated_vertices_base();
+        for( const auto& region : region_range< 3 >( geomodel_ ) ) {
+            remove_isolated_vertices_on_a_mesh_entity( region );
+        }
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderRepair< DIMENSION >::remove_isolated_vertices_base()
+    {
+        for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
+            remove_isolated_vertices_on_a_mesh_entity( line );
+        }
+        for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
+            remove_isolated_vertices_on_a_mesh_entity( surface );
+        }
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderRepair< DIMENSION >::remove_isolated_vertices_on_a_mesh_entity(
+        const GeoModelMeshEntity< DIMENSION >& geomodel_mesh_entity )
+    {
+        std::vector< bool > vertices_to_delete( geomodel_mesh_entity.nb_vertices(),
+        true );
+        for( index_t mesh_element_index : range(
+            geomodel_mesh_entity.nb_mesh_elements() ) ) {
+            for( index_t vertex : range(
+                geomodel_mesh_entity.nb_mesh_element_vertices( mesh_element_index ) ) ) {
+                vertices_to_delete[geomodel_mesh_entity.mesh_element_vertex_index(
+                    ElementLocalVertex( mesh_element_index, vertex ) )] = false;
+            }
+        }
+        builder_.geometry.delete_mesh_entity_vertices( geomodel_mesh_entity.gmme(),
+            vertices_to_delete );
     }
 
     template< index_t DIMENSION >
@@ -229,8 +279,8 @@ namespace RINGMesh {
             colocated );
         index_t nb = static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) );
-        /// We have a problem if some vertices are left isolated
-        /// If we remove them here we can kill all indices correspondances
+/// We have a problem if some vertices are left isolated
+/// If we remove them here we can kill all indices correspondances
         builder_.geometry.delete_line_edges( line.index(), degenerate, false );
         return nb;
     }
@@ -251,7 +301,7 @@ namespace RINGMesh {
                 }
             }
         }
-        // The builder might be needed
+// The builder might be needed
 
         double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon();
         for( const auto& surface : geomodel_.surfaces() ) {
@@ -337,7 +387,7 @@ namespace RINGMesh {
         std::set< gmme_id >& to_remove )
     {
         to_remove.clear();
-        // For all Lines and Surfaces
+// For all Lines and Surfaces
         std::array< const MeshEntityType, 2 > types { {
             Line< DIMENSION >::type_name_static(),
             Surface< DIMENSION >::type_name_static() } };
