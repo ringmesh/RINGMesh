@@ -51,6 +51,10 @@ namespace {
     /// MFEM works with Surface and Region index begin with 1
     static const index_t mfem_offset = 1;
 
+    enum MFEM_geometry_type {
+        POINT = 0, SEGMENT = 1, TRIANGLE = 2, SQUARE = 3, TETRAHEDRON = 4, CUBE = 5
+    };
+
     /*!
      * Export for the MFEM format http://mfem.org/
      * Mesh file description : http://mfem.org/mesh-formats/#mfem-mesh-v10
@@ -99,8 +103,6 @@ namespace {
             // MFEM mesh version
             out << "MFEM mesh v1.0" << EOL;
             out << EOL;
-
-            // Dimension is always 3 in our case
             out << "dimension" << EOL;
             out << DIMENSION << EOL;
             out << EOL;
@@ -134,13 +136,11 @@ namespace {
         }
     };
 
-    ALIAS_2D_AND_3D(MFEMIOHandler);
-
     template< >
     void MFEMIOHandler< 3 >::test_if_mesh_is_valid(
-        const GeoModelMesh< 3 >& geomodel_mesh )
+        const GeoModelMesh3D& geomodel_mesh )
     {
-        index_t nb_cells = geomodel_mesh.cells.nb();
+        index_t nb_cells { geomodel_mesh.cells.nb() };
         if( geomodel_mesh.cells.nb_tet() != nb_cells
             && geomodel_mesh.cells.nb_hex() != nb_cells ) {
             throw RINGMeshException( "I/O",
@@ -170,10 +170,10 @@ namespace {
      */
     template< >
     void MFEMIOHandler< 3 >::write_elements(
-        const GeoModelMesh< 3 >& geomodel_mesh,
+        const GeoModelMesh3D& geomodel_mesh,
         std::ofstream& out ) const
     {
-        index_t nb_cells = geomodel_mesh.cells.nb();
+        index_t nb_cells { geomodel_mesh.cells.nb() };
         out << "elements" << EOL;
         out << nb_cells << EOL;
         for( index_t c : range( nb_cells ) ) {
@@ -196,12 +196,12 @@ namespace {
         const GeoModelMesh< 2 >& geomodel_mesh,
         std::ofstream& out ) const
     {
-        index_t nb_triangles = geomodel_mesh.polygons.nb_triangle();
+        index_t nb_triangles { geomodel_mesh.polygons.nb_triangle() };
         out << "elements" << EOL;
         out << nb_triangles << EOL;
         for( index_t c : range( nb_triangles ) ) {
             out << geomodel_mesh.polygons.surface( c ) + mfem_offset << " ";
-            out << "2" // MFEM Geometry Types : TRIANGLE = 2
+            out << TRIANGLE
                 << " ";
             for( index_t v : range( geomodel_mesh.polygons.nb_vertices( c ) ) ) {
                 out << geomodel_mesh.polygons.vertex( ElementLocalVertex( c, v ) )
@@ -224,7 +224,7 @@ namespace {
      */
     template< >
     void MFEMIOHandler< 3 >::write_boundaries(
-        const GeoModelMesh< 3 >& geomodel_mesh,
+        const GeoModelMesh3D& geomodel_mesh,
         std::ofstream& out ) const
     {
         const GeoModelMeshPolygons3D& polygons = geomodel_mesh.polygons;
@@ -253,7 +253,7 @@ namespace {
         out << edges.nb() << EOL;
         for( index_t p : range( edges.nb() ) ) {
             out << edges.line( p ) + mfem_offset << " ";
-            out << "1" << " "; // MFEM Geometry Types : SEGMENT = 1
+            out << SEGMENT << " ";
             for( index_t v : range( 2 ) ) {
                 out << edges.vertex( ElementLocalVertex( p, v ) ) << " ";
             }
@@ -261,4 +261,6 @@ namespace {
         }
         out << EOL;
     }
+
+    ALIAS_2D_AND_3D (MFEMIOHandler);
 }
