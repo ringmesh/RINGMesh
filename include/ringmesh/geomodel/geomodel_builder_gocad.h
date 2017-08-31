@@ -488,7 +488,6 @@ namespace RINGMesh {
             TSOLID, LIGHT_TSOLID
         };
         GeoModelBuilderTSolid( GeoModel3D& geomodel, std::string filename );
-        virtual ~GeoModelBuilderTSolid() = default;
 
     private:
         void read_number_of_vertices();

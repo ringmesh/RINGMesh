@@ -42,8 +42,8 @@
 
 #include <geogram/basic/command_line.h>
 
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 namespace {
     using namespace RINGMesh;
@@ -116,9 +116,11 @@ namespace RINGMesh {
         index_t index = id.index();
         if( manager.is_line( type ) ) {
             return line( index );
-        } else if( manager.is_corner( type ) ) {
+        }
+        if( manager.is_corner( type ) ) {
             return corner( index );
-        } else if( manager.is_surface( type ) ) {
+        }
+        if( manager.is_surface( type ) ) {
             return surface( index );
         }
         ringmesh_assert_not_reached;

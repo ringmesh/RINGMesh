@@ -56,7 +56,6 @@ namespace RINGMesh {
 
 #define COMMON_GEOGRAM_GFX_IMPLEMENTATION( Class )                              \
     public:                                                                     \
-    virtual ~Class() = default;                                                 \
     void draw_vertices() override                                               \
     {                                                                           \
         mesh_gfx_.draw_vertices();                                              \
@@ -90,7 +89,7 @@ namespace RINGMesh {
     class GeogramPointSetMeshGfx: public PointSetMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramPointSetMeshGfx );
     public:
-        GeogramPointSetMeshGfx( const PointSetMesh< DIMENSION >& mesh )
+        explicit GeogramPointSetMeshGfx( const PointSetMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramPointSetMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -103,7 +102,7 @@ namespace RINGMesh {
     class GeogramLineMeshGfx: public LineMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramLineMeshGfx );
     public:
-        GeogramLineMeshGfx( const LineMesh< DIMENSION >& mesh )
+        explicit GeogramLineMeshGfx( const LineMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramLineMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -133,7 +132,7 @@ namespace RINGMesh {
     class GeogramSurfaceMeshGfx: public SurfaceMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramSurfaceMeshGfx );
     public:
-        GeogramSurfaceMeshGfx( const SurfaceMesh< DIMENSION >& mesh )
+        explicit GeogramSurfaceMeshGfx( const SurfaceMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -175,7 +174,7 @@ namespace RINGMesh {
     class GeogramVolumeMeshGfx: public VolumeMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramVolumeMeshGfx );
     public:
-        GeogramVolumeMeshGfx( const VolumeMesh< DIMENSION >& mesh )
+        explicit GeogramVolumeMeshGfx( const VolumeMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramVolumeMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -224,6 +223,6 @@ namespace RINGMesh {
     using GeogramVolumeMeshGfx3D = GeogramVolumeMeshGfx< 3 >;
 
     void register_geogram_mesh_gfx();
-}
+} // namespace RINGMesh
 
 #endif
