@@ -45,6 +45,10 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/${CMAKE_BUILD_TYPE}/lib)
     find_library(GEOGRAM_LIBRARY NAMES geogram
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/${CMAKE_BUILD_TYPE}/lib)
+    unset(ZLIB_LIBRARY CACHE)
+    find_library(ZLIB_LIBRARY NAMES z
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/zlib/${CMAKE_BUILD_TYPE}
+        NO_DEFAULT_PATH)
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     find_path(RINGMesh_CONFIG_INCLUDE_DIR NAMES ringmesh
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh)
@@ -56,6 +60,12 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/lib/Debug)
     find_library(GEOGRAM_RELEASE_LIBRARY NAMES geogram
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/lib/Release)
+    unset(ZLIB_DEBUG_LIBRARY CACHE)
+    find_library(ZLIB_DEBUG_LIBRARY NAMES zlib
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/zlib/Debug NO_DEFAULT_PATH)
+    unset(ZLIB_RELEASE_LIBRARY CACHE)
+    find_library(ZLIB_RELEASE_LIBRARY NAMES zlib
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/zlib/Release NO_DEFAULT_PATH)
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 find_path(GEOGRAM_INCLUDE_DIR NAMES geogram
     PATHS ${RINGMESH_ROOT_DIRECTORY}/third_party/geogram/src/lib)
@@ -74,19 +84,19 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Else error message in during cmake configuration.
     find_package_handle_standard_args(RINGMesh DEFAULT_MSG RINGMesh_INCLUDE_DIR
         RINGMesh_CONFIG_INCLUDE_DIR GEOGRAM_INCLUDE_DIR RINGMesh_LIBRARY
-        GEOGRAM_LIBRARY THIRD_PARTY_INCLUDE_DIR)
-    set(RINGMesh_LIBRARIES ${RINGMesh_LIBRARY} ${GEOGRAM_LIBRARY} )
+        GEOGRAM_LIBRARY ZLIB_LIBRARY THIRD_PARTY_INCLUDE_DIR)
+    set(RINGMesh_LIBRARIES ${RINGMesh_LIBRARY} ${GEOGRAM_LIBRARY} ${ZLIB_LIBRARY} )
     # Local variables are not displayed in the cmake-gui.
     # RINGMesh_DIR is defined by cmake implicitly.
     mark_as_advanced(RINGMesh_DIR RINGMesh_INCLUDE_DIR RINGMesh_CONFIG_INCLUDE_DIR
-        GEOGRAM_INCLUDE_DIR THIRD_PARTY_INCLUDE_DIR RINGMesh_LIBRARY GEOGRAM_LIBRARY)
+        GEOGRAM_INCLUDE_DIR THIRD_PARTY_INCLUDE_DIR RINGMesh_LIBRARY GEOGRAM_LIBRARY ZLIB_LIBRARY)
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Check that all the paths and libraries have been found.
     # Else error message in during cmake configuration.
     find_package_handle_standard_args(RINGMesh DEFAULT_MSG RINGMesh_INCLUDE_DIR
         RINGMesh_CONFIG_INCLUDE_DIR GEOGRAM_INCLUDE_DIR RINGMesh_RELEASE_LIBRARY
         RINGMesh_DEBUG_LIBRARY GEOGRAM_RELEASE_LIBRARY GEOGRAM_DEBUG_LIBRARY
-        THIRD_PARTY_INCLUDE_DIR)
+        THIRD_PARTY_INCLUDE_DIR ZLIB_RELEASE_LIBRARY ZLIB_DEBUG_LIBRARY)
     # When the linking is done in RINGMesh dependent code, debug will just select
     # ${RINGMesh_DEBUG_LIBRARY} in RINGMesh_LIBRARIES for the Debug mode,
     # else (optimized) ${RINGMesh_RELEASE_LIBRARY} will be selected
@@ -95,12 +105,15 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
         debug ${RINGMesh_DEBUG_LIBRARY}
         optimized ${RINGMesh_RELEASE_LIBRARY}
         debug ${GEOGRAM_DEBUG_LIBRARY}
-        optimized ${GEOGRAM_RELEASE_LIBRARY})
+        optimized ${GEOGRAM_RELEASE_LIBRARY}
+        debug ${ZLIB_DEBUG_LIBRARY}
+        optimized ${ZLIB_DEBUG_LIBRARY} )
     # Local variables are not displayed in the cmake-gui.
     # RINGMesh_DIR is defined by cmake implicitly.
     mark_as_advanced(RINGMesh_DIR RINGMesh_INCLUDE_DIR RINGMesh_CONFIG_INCLUDE_DIR
         GEOGRAM_INCLUDE_DIR RINGMesh_RELEASE_LIBRARY RINGMesh_DEBUG_LIBRARY
-        GEOGRAM_RELEASE_LIBRARY GEOGRAM_DEBUG_LIBRARY THIRD_PARTY_INCLUDE_DIR)
+        GEOGRAM_RELEASE_LIBRARY GEOGRAM_DEBUG_LIBRARY THIRD_PARTY_INCLUDE_DIR
+        ZLIB_RELEASE_LIBRARY ZLIB_DEBUG_LIBRARY)
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 function(set_ringmesh_includes_and_libs extra_libs)
@@ -113,11 +126,14 @@ if(RINGMesh_FOUND)
     if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
         message(STATUS "RINGMesh library ${RINGMesh_LIBRARY}")
         message(STATUS "geogram library ${GEOGRAM_LIBRARY}")
+        message(STATUS "zlib library ${ZLIB_LIBRARY}")
     else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
         message(STATUS "RINGMesh release library ${RINGMesh_RELEASE_LIBRARY}")
         message(STATUS "geogram release library ${GEOGRAM_RELEASE_LIBRARY}")
+        message(STATUS "zlib release library ${ZLIB_RELEASE_LIBRARY}")
         message(STATUS "RINGMesh debug library ${RINGMesh_DEBUG_LIBRARY}")
         message(STATUS "geogram debug library ${GEOGRAM_DEBUG_LIBRARY}")
+        message(STATUS "zlib debug library ${ZLIB_DEBUG_LIBRARY}")
     endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     message(STATUS "RINGMesh libraries ${RINGMesh_LIBRARIES}")
 	
