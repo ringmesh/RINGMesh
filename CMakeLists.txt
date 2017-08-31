@@ -1,6 +1,6 @@
 # Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #     * Redistributions of source code must retain the above copyright
@@ -11,7 +11,7 @@
 #     * Neither the name of ASGA nor the
 #       names of its contributors may be used to endorse or promote products
 #       derived from this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,9 +22,9 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 #     http://www.ring-team.org
-# 
+#
 #     RING Project
 #     Ecole Nationale Superieure de Geologie - GeoRessources
 #     2 Rue du Doyen Marcel Roubault - TSA 70605
@@ -37,11 +37,11 @@
 cmake_minimum_required(VERSION 2.8)
 set(USER_CONFIG "${CMAKE_SOURCE_DIR}/cmake/UserConfig.cmake" CACHE PATH
   "Path to optional user configuration file.")
-    
+
 #------------------------------------------------------------------------------------------------
-# Options of the RINGMesh project 
+# Options of the RINGMesh project
 # They can be set
-# 1 - using CMake GUI, 
+# 1 - using CMake GUI,
 # 2 - in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 # 3 - by creating a UserConfig.cmake file in the cmake directory (see DefaultConfig.cmake)
 
@@ -65,7 +65,7 @@ CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
 # option is ON.
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
     "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
-	
+
 #------------------------------------------------------------------------------------------------
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
@@ -81,10 +81,10 @@ include(ExternalProject)
 enable_testing()
 
 #------------------------------------------------------------------------------------------------
-# Define the project RINGMesh      
+# Define the project RINGMesh
 project(RINGMesh)
 
-# Define version number 
+# Define version number
 # It is then exported to the configuration file
 set (RINGMesh_VERSION_MAJOR 4)
 set (RINGMesh_VERSION_MINOR 1)
@@ -95,21 +95,21 @@ set (RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RING
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")    
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # If the CMAKE_BUILD_TYPE is no defined
     # i.e. at first run of that file
     if(CMAKE_BUILD_TYPE STREQUAL "")
-    
-      # For all configuration types  
+
+      # For all configuration types
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
           # The binary directory for this configuration
           set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/ringmesh/${config})
-    
+
           # Create the directory
           file(MAKE_DIRECTORY ${project_binary_dir_config})
-          
+
           # Launch cmake for this configuration
-          # by specifying the CMAKE_BUILD_TYPE and the PROJECT _BINARY_DIR, 
+          # by specifying the CMAKE_BUILD_TYPE and the PROJECT _BINARY_DIR,
           # and pass on all the options
           execute_process(
              COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
@@ -117,24 +117,24 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                 -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
                 -DMG_TETRA:STRING=${MG_TETRA}
-                -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
+                -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN}
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_TEST_GRAPHICS:BOOL=${RINGMESH_TEST_GRAPHICS}
                 -DBUILD_RINGMESH_VIEW:BOOL=${BUILD_RINGMESH_VIEW}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
                 -DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
-                -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}        
+                -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}
                 -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
                 -DTUTORIALS_DATA_INPUT_DIRECTORY:STRING=${TUTORIALS_DATA_INPUT_DIRECTORY}
-                -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}  
+                -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
-                -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY} 
-                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}           
-                -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}                               
-                WORKING_DIRECTORY ${project_binary_dir_config})                
+                -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY}
+                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
+                -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}
+                WORKING_DIRECTORY ${project_binary_dir_config})
       endforeach()
-      
+
       # Get out when all configurations have been run
       # We do not want to execute the rest of the file in that case
       return()
@@ -143,8 +143,8 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
-message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}") 
-message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}") 
+message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}")
+message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 
 include(cmake/utils.cmake)
 
@@ -154,7 +154,7 @@ if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion 
         -Wsign-conversion -Wdouble-promotion -Wno-attributes)
-    
+
     # Determine gcc version and activate additional warnings available in latest versions
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
 
@@ -187,7 +187,7 @@ if(UNIX)
        coveralls_turn_on_coverage()
     endif()
 endif(UNIX)
-    
+
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Enable parallel computation
     set(cpuinfo_file "/proc/cpuinfo")
@@ -208,24 +208,24 @@ endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 include("${CMAKE_SOURCE_DIR}/cmake/CompilThirdParties.cmake")
 
 
-#------------------------------------------------------------------------------------------------    
+#------------------------------------------------------------------------------------------------
 # Get MG-Tetra if a path is given
-if(MG_TETRA)   
+if(MG_TETRA)
   include_directories(SYSTEM ${MG_TETRA}/include)
- 
+
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PLATFORM _64)
   else(CMAKE_SIZEOF_VOID_P EQUAL 8)
     SET(PLATFORM)
   endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  
+
   # Is there not a nice way to import this library? [JP]
   if(WIN32)
     link_directories(${MG_TETRA}/lib/WIN7${PLATFORM}_VC10)
   else(WIN32)
     link_directories(${MG_TETRA}/lib/Linux${PLATFORM})
   endif(WIN32)
-   
+
   set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
 endif()
 
@@ -266,9 +266,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED
-    ${ringmesh_include} 
+    ${ringmesh_include}
     ${ringmesh_src})
-	
+
 # RINGMesh depends on Geogram Tinyxml2 and zlib
 add_dependencies(RINGMesh geogram_ext tinyxml2_ext zlib_ext minizip_ext)
 
@@ -348,8 +348,8 @@ endif()
 set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
 if(COVERALLS)
     coveralls_setup(
-    "${ringmesh_files}" 
-        ${COVERALLS_UPLOAD}                 
+    "${ringmesh_files}"
+        ${COVERALLS_UPLOAD}
         "${PROJECT_SOURCE_DIR}/cmake")
 endif()
 
