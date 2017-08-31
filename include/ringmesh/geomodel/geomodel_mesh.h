@@ -69,8 +69,8 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
-    ALIAS_3D( GeoModel );
-    ALIAS_3D( GeoModelMesh );
+    ALIAS_2D_AND_3D( GeoModel );
+    ALIAS_2D_AND_3D( GeoModelMesh );
 } // namespace RINGMesh
 
 namespace RINGMesh {
@@ -934,6 +934,8 @@ namespace RINGMesh {
         /// Number of edges in the GeoModelMesh
         index_t nb_edges_ { 0 };
     };
+
+    ALIAS_2D_AND_3D( GeoModelMeshEdges );
 
     template< index_t DIMENSION >
     class GeoModelMeshWells final: public GeoModelMeshCommon< DIMENSION > {

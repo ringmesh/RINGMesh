@@ -81,7 +81,7 @@ namespace {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
 
-            write_header( geomodel_mesh, out );
+            write_header( out );
             write_elements( geomodel_mesh, out );
             write_boundaries( geomodel_mesh, out );
             write_vertices( geomodel_mesh, out );
@@ -96,11 +96,8 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_header(
-            const GeoModelMesh< DIMENSION >& geomodel_mesh,
-            std::ofstream& out ) const
+        void write_header( std::ofstream& out ) const
         {
-            // MFEM mesh version
             out << "MFEM mesh v1.0" << EOL;
             out << EOL;
             out << "dimension" << EOL;
@@ -136,8 +133,10 @@ namespace {
         }
     };
 
+    ALIAS_2D_AND_3D (MFEMIOHandler);
+
     template< >
-    void MFEMIOHandler< 3 >::test_if_mesh_is_valid(
+    void MFEMIOHandler3D::test_if_mesh_is_valid(
         const GeoModelMesh3D& geomodel_mesh )
     {
         index_t nb_cells { geomodel_mesh.cells.nb() };
@@ -149,8 +148,8 @@ namespace {
     }
 
     template< >
-    void MFEMIOHandler< 2 >::test_if_mesh_is_valid(
-        const GeoModelMesh< 2 >& geomodel_mesh )
+    void MFEMIOHandler2D::test_if_mesh_is_valid(
+        const GeoModelMesh2D& geomodel_mesh )
     {
         if( geomodel_mesh.polygons.nb() != geomodel_mesh.polygons.nb_triangle() ) {
             throw RINGMeshException( "I/O",
@@ -169,7 +168,7 @@ namespace {
      * @param[in] out the ofstream that wrote the MFEM mesh file
      */
     template< >
-    void MFEMIOHandler< 3 >::write_elements(
+    void MFEMIOHandler3D::write_elements(
         const GeoModelMesh3D& geomodel_mesh,
         std::ofstream& out ) const
     {
@@ -192,8 +191,8 @@ namespace {
     }
 
     template< >
-    void MFEMIOHandler< 2 >::write_elements(
-        const GeoModelMesh< 2 >& geomodel_mesh,
+    void MFEMIOHandler2D::write_elements(
+        const GeoModelMesh2D& geomodel_mesh,
         std::ofstream& out ) const
     {
         index_t nb_triangles { geomodel_mesh.polygons.nb_triangle() };
@@ -201,8 +200,7 @@ namespace {
         out << nb_triangles << EOL;
         for( index_t c : range( nb_triangles ) ) {
             out << geomodel_mesh.polygons.surface( c ) + mfem_offset << " ";
-            out << TRIANGLE
-                << " ";
+            out << TRIANGLE << " ";
             for( index_t v : range( geomodel_mesh.polygons.nb_vertices( c ) ) ) {
                 out << geomodel_mesh.polygons.vertex( ElementLocalVertex( c, v ) )
                     << " ";
@@ -223,7 +221,7 @@ namespace {
      * @param[in] out the ofstream that wrote the MFEM mesh file
      */
     template< >
-    void MFEMIOHandler< 3 >::write_boundaries(
+    void MFEMIOHandler3D::write_boundaries(
         const GeoModelMesh3D& geomodel_mesh,
         std::ofstream& out ) const
     {
@@ -244,11 +242,11 @@ namespace {
     }
 
     template< >
-    void MFEMIOHandler< 2 >::write_boundaries(
-        const GeoModelMesh< 2 >& geomodel_mesh,
+    void MFEMIOHandler2D::write_boundaries(
+        const GeoModelMesh2D& geomodel_mesh,
         std::ofstream& out ) const
     {
-        const GeoModelMeshEdges< 2 >& edges = geomodel_mesh.edges;
+        const GeoModelMeshEdges2D& edges = geomodel_mesh.edges;
         out << "boundary" << EOL;
         out << edges.nb() << EOL;
         for( index_t p : range( edges.nb() ) ) {
@@ -261,6 +259,4 @@ namespace {
         }
         out << EOL;
     }
-
-    ALIAS_2D_AND_3D (MFEMIOHandler);
 }
