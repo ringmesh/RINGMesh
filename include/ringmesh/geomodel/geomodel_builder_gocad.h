@@ -82,7 +82,7 @@ namespace RINGMesh {
         virtual void read_line() = 0;
 
     protected:
-        GEO::LineInput file_line_;
+        GEO::LineInput file_line_ { filename_ };
     };
 
     class GocadBaseParser {
@@ -254,8 +254,8 @@ namespace RINGMesh {
                 : tetra_vertex( std::move( vertex ) ), local_id( local_id )
             {
             }
-            vec3 tetra_vertex;
-            index_t local_id;
+            vec3 tetra_vertex { };
+            index_t local_id { NO_ID };
         };
 
         std::vector< RegionLocalVertex > get_vertices_list_and_local_ids_from_gocad_ids(
@@ -442,13 +442,13 @@ namespace RINGMesh {
         VertexMap vertex_map_;
 
         // Region tetrahedron corners
-        std::vector< index_t > tetra_corners_;
+        std::vector< index_t > tetra_corners_ { };
 
         // Names of the attributes for the TSolid
-        std::vector< std::string > vertex_attribute_names_;
+        std::vector< std::string > vertex_attribute_names_ { };
 
         // Dimensions of the attributes for the TSolid
-        std::vector< index_t > vertex_attribute_dims_;
+        std::vector< index_t > vertex_attribute_dims_ { };
 
         //// Current lighttsolid gocad vertex index 1
         index_t cur_gocad_vrtx_id1_ { NO_ID };
@@ -457,10 +457,10 @@ namespace RINGMesh {
         index_t cur_gocad_vrtx_id4_ { NO_ID };
 
         //// LightTSolid map between atoms and vertex
-        std::map< index_t, index_t > lighttsolid_atom_map_;
+        std::map< index_t, index_t > lighttsolid_atom_map_ { };
 
         // The vertices and the atoms
-        index_t nb_vertices_;
+        index_t nb_vertices_ { 0 };
     };
 
     class TSolidLineParser: public GocadBaseParser {
@@ -547,6 +547,7 @@ namespace RINGMesh {
     };
 
     class GeoModelBuilderTSolidImpl {
+    ringmesh_disable_copy_and_move( GeoModelBuilderTSolidImpl );
     public:
         GeoModelBuilderTSolidImpl(
             GeoModelBuilderTSolid& builder,

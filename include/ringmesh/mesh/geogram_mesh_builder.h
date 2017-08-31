@@ -52,7 +52,7 @@ namespace RINGMesh {
     public:                                                                             \
         void do_copy( const MeshBase< DIMENSION>& rhs, bool copy_attributes ) override  \
         {                                                                               \
-            const Class< DIMENSION >& geogrammesh =                                     \
+            const auto& geogrammesh =                                                   \
                 dynamic_cast< const Class< DIMENSION >& >( rhs );                       \
             mesh_.mesh_->copy( *geogrammesh.mesh_, copy_attributes,                     \
                 GEO::MESH_ALL_ELEMENTS );                                               \
