@@ -290,7 +290,7 @@ configure_file(${input_configure_file} ${generated_configure_file})
 set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 
 #generate macros for API export and add itbto include directories
-include (GenerateExportHeader) 
+include (GenerateExportHeader)
 set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
 set(ringmesh_include ${ringmesh_include} ${generated_export_file})
 generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
@@ -300,12 +300,13 @@ include_directories(${PROJECT_BINARY_DIR})
 
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
+set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     include(${CMAKE_SOURCE_DIR}/third_party/geogram/cmake/opengl.cmake)
-    add_ringmesh_binary(ringmesh-view geogram_gfx ${OPENGL_LIBRARIES})
+    add_ringmesh_binary(${binary_source_dir}/ringmesh-view geogram_gfx ${OPENGL_LIBRARIES})
     copy_for_windows()
 endif(BUILD_RINGMESH_VIEW)
 
@@ -313,13 +314,12 @@ if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
     message(STATUS "RINGMesh utilities directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    add_ringmesh_binary(ringmesh-convert)
-    add_ringmesh_binary(ringmesh-surface-convert)
-    add_ringmesh_binary(ringmesh-stats)
-    add_ringmesh_binary(ringmesh-repair)
-    add_ringmesh_binary(ringmesh-mesh-quality)
-    add_ringmesh_binary(ringmesh-rotate)
-    add_ringmesh_binary(ringmesh-translate)
+
+    # Get the paths of the utility files
+    file(GLOB utility_sources "${binary_source_dir}/utilities/*.cpp")
+    foreach(utility_src ${utility_sources})
+        add_ringmesh_binary(${utility_src})
+    endforeach(utility_src ${utility_sources})
     copy_for_windows()
 endif(RINGMESH_WITH_UTILITIES)
 

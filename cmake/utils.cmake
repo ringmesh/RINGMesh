@@ -86,16 +86,35 @@ if(WIN32)
 endif(WIN32)
 endfunction()
 
-function(add_ringmesh_binary name)
+function(add_ringmesh_binary bin_path)
+    get_filename_component(bin_name ${bin_path} NAME_WE)
     # Set the target as an executable
-    add_executable(${name} ${PROJECT_SOURCE_DIR}/src/bin/${name}.cpp)
+    add_executable(${bin_name} ${bin_path})
 
     set(BINARY_DEPENDANCIES RINGMesh geogram)
     foreach(arg ${ARGN})
         set(BINARY_DEPENDANCIES ${BINARY_DEPENDANCIES} ${arg})
     endforeach()
-    target_link_libraries(${name} ${BINARY_DEPENDANCIES})
+    target_link_libraries(${bin_name} ${BINARY_DEPENDANCIES})
 
     # Add the project to a folder of projects for the tests
-    set_property(TARGET ${name} PROPERTY FOLDER "Utilities")
+    set_property(TARGET ${bin_name} PROPERTY FOLDER "Utilities")
+endfunction()
+
+function(add_ringmesh_test cpp_file_path folder_name)
+    get_filename_component(cpp_file_name ${cpp_file_path} NAME_WE)
+
+    # Add the target for that file
+    add_executable(${cpp_file_name} ${cpp_file_path})
+
+    # Link RINGMesh Make sure YourLib is linked to each app
+    target_link_libraries(${cpp_file_name} geogram RINGMesh)
+
+    add_dependencies(${cpp_file_name} RINGMesh)
+
+    # Add the project to a folder of projects for the tests
+    set_property(TARGET ${cpp_file_name} PROPERTY FOLDER ${folder_name})
+
+    # Add the test to CTest
+    add_test(NAME ${cpp_file_name} COMMAND ${cpp_file_name})
 endfunction()

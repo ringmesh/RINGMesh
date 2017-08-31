@@ -55,22 +55,6 @@ file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
 
 # For all the test files found
 foreach(testsourcefile ${TESTS})
-    # Get the name of the file without extension
-    get_filename_component(testname ${testsourcefile} NAME_WE)
-
-    # Add the target for that file
-    add_executable(${testname} ${testsourcefile} ${test_config_file} ${test_config_file_in})
-
-    # Link RINGMesh Make sure YourLib is linked to each app
-    target_link_libraries(${testname} geogram RINGMesh)
-
-    add_dependencies(${testname} RINGMesh)
-
-    # Add the project to a folder of projects for the tests
-    set_property(TARGET ${testname} PROPERTY FOLDER "Tests")
-
-    # Add the test to CTest
-    add_test(NAME ${testname} COMMAND ${testname})
-
+    add_ringmesh_test(${testsourcefile} "Tests")
 endforeach(testsourcefile ${TESTS})
 
