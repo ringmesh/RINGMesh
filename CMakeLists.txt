@@ -364,7 +364,8 @@ if(CLANG_TIDY)
     add_custom_target(
         tidy
         COMMAND ${CLANG_TIDY}
-        ${ringmesh_files}
+        #${ringmesh_files}
+        /users/j0479294/programming/RINGMesh/src/ringmesh/geomodel/geomodel_builder*
         -config=''
         --
         -std=c++11

@@ -264,8 +264,7 @@ namespace RINGMesh {
                 if( surface.nb_vertices() > 0 ) {
                     // Colocated vertices must be processed before
                     // MESH_REPAIR_DUP_F 2 ;
-                    GEO::MeshRepairMode mode =
-                        static_cast< GEO::MeshRepairMode >( 2 );
+                    auto mode = static_cast< GEO::MeshRepairMode >( 2 );
                     std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
                         builder_.geometry.create_surface_builder( surface.index() );
                     builder->repair( mode, 0.0 );
@@ -373,43 +372,43 @@ namespace RINGMesh {
                 if( nb_todelete == 0 ) {
                     // Nothing to do there
                     continue;
-                } else if( nb_todelete == E.nb_vertices() ) {
+                }
+                if( nb_todelete == E.nb_vertices() ) {
                     // The complete entity should be removed
                     to_remove.insert( E.gmme() );
                     continue;
-                } else {
-                    if( type == Surface< DIMENSION >::type_name_static() ) {
-                        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
-                            builder_.geometry.create_surface_builder( e );
-                        for( index_t p_itr : range( E.nb_mesh_elements() ) ) {
-                            for( index_t fpv_itr : range(
-                                E.nb_mesh_element_vertices( p_itr ) ) ) {
-                                builder->set_polygon_vertex( p_itr, fpv_itr,
-                                    colocated[E.mesh_element_vertex_index(
-                                        ElementLocalVertex( p_itr, fpv_itr ) )] );
-                            }
-                        }
-                        builder->delete_vertices( to_delete );
-                        Logger::out( "Repair", nb_todelete,
-                            " colocated vertices deleted in ", entity_id );
-
-                    } else if( type == Line< DIMENSION >::type_name_static() ) {
-                        std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
-                            builder_.geometry.create_line_builder( e );
-                        for( index_t e_itr : range( E.nb_mesh_elements() ) ) {
-                            builder->set_edge_vertex( e_itr, 0,
+                }
+                if( type == Surface< DIMENSION >::type_name_static() ) {
+                    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
+                        builder_.geometry.create_surface_builder( e );
+                    for( index_t p_itr : range( E.nb_mesh_elements() ) ) {
+                        for( index_t fpv_itr : range(
+                            E.nb_mesh_element_vertices( p_itr ) ) ) {
+                            builder->set_polygon_vertex( p_itr, fpv_itr,
                                 colocated[E.mesh_element_vertex_index(
-                                    ElementLocalVertex( e_itr, 0 ) )] );
-                            builder->set_edge_vertex( e_itr, 1,
-                                colocated[E.mesh_element_vertex_index(
-                                    ElementLocalVertex( e_itr, 1 ) )] );
+                                    ElementLocalVertex( p_itr, fpv_itr ) )] );
                         }
-                        builder->delete_vertices( to_delete );
-                        Logger::out( "Repair", nb_todelete,
-                            " colocated vertices deleted in ", entity_id );
-                    } else {
-                        ringmesh_assert_not_reached;
                     }
+                    builder->delete_vertices( to_delete );
+                    Logger::out( "Repair", nb_todelete,
+                        " colocated vertices deleted in ", entity_id );
+
+                } else if( type == Line< DIMENSION >::type_name_static() ) {
+                    std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
+                        builder_.geometry.create_line_builder( e );
+                    for( index_t e_itr : range( E.nb_mesh_elements() ) ) {
+                        builder->set_edge_vertex( e_itr, 0,
+                            colocated[E.mesh_element_vertex_index(
+                                ElementLocalVertex( e_itr, 0 ) )] );
+                        builder->set_edge_vertex( e_itr, 1,
+                            colocated[E.mesh_element_vertex_index(
+                                ElementLocalVertex( e_itr, 1 ) )] );
+                    }
+                    builder->delete_vertices( to_delete );
+                    Logger::out( "Repair", nb_todelete,
+                        " colocated vertices deleted in ", entity_id );
+                } else {
+                    ringmesh_assert_not_reached;
                 }
             }
         }

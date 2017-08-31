@@ -266,8 +266,7 @@ namespace {
             vec3 B_A_;
 
             // Values filled by sorting function in GeoModelRegionFromSurfaces
-            double angle_;
-            bool side_;
+            double angle_;bool side_;
         };
 
         void add_polygon_edge(
@@ -324,7 +323,7 @@ namespace {
 
         void sort()
         {
-            ringmesh_assert( polygons_.size() > 0 );
+            ringmesh_assert( !polygons_.empty() );
 
             std::pair< index_t, bool > default_pair( index_t( -1 ), false );
             sorted_polygons_.resize( 2 * polygons_.size(), default_pair );
@@ -358,9 +357,11 @@ namespace {
                 // polygon
                 double cos = dot( B_A_ref, cur.B_A_ );
                 // Remove invalid values
-                if( cos < -1 )
+                if( cos < -1 ) {
                     cos = -1;
-                else if( cos > 1 ) cos = 1;
+                } else if( cos > 1 ) {
+                    cos = 1;
+                }
                 cur.angle_ = std::acos( cos );
                 // Put the angle between PI and 2PI if necessary
                 if( dot( cross( B_A_ref, cur.B_A_ ), Ax_ref ) < 0. ) {
@@ -370,7 +371,7 @@ namespace {
                 // Get the side of the surface first encountered
                 // when rotating in the N_ref direction
                 vec3 N_rotate = rotate( Ax_ref, -cur.angle_, cur.N_ );
-                cur.side_ = dot( N_rotate, N_ref ) > 0 ? false : true;
+                cur.side_ = dot( N_rotate, N_ref ) < 0;
             }
 
             // Sorts the Surfaces according to the angle
@@ -409,9 +410,12 @@ namespace {
         {
             for( index_t i : range( sorted_polygons_.size() ) ) {
                 if( sorted_polygons_[i] == in ) {
-                    if( i == sorted_polygons_.size() - 1 )
+                    if( i == sorted_polygons_.size() - 1 ) {
                         return sorted_polygons_[sorted_polygons_.size() - 2];
-                    if( i == 0 ) return sorted_polygons_[1];
+                    }
+                    if( i == 0 ) {
+                        return sorted_polygons_[1];
+                    }
 
                     if( sorted_polygons_[i + 1].first
                         == sorted_polygons_[i].first ) {
@@ -419,10 +423,9 @@ namespace {
                         if( sorted_polygons_[i + 1].second
                             != sorted_polygons_[i].second ) {
                             return sorted_polygons_[i - 1];
-                        } else {
-                            // Sign is the same
-                            return sorted_polygons_[i + 1];
                         }
+                        // Sign is the same
+                        return sorted_polygons_[i + 1];
                     } else {
                         ringmesh_assert(
                             sorted_polygons_[i - 1].first
@@ -430,9 +433,8 @@ namespace {
                         if( sorted_polygons_[i - 1].second
                             != sorted_polygons_[i].second ) {
                             return sorted_polygons_[i + 1];
-                        } else {
-                            return sorted_polygons_[i - 1];
                         }
+                        return sorted_polygons_[i - 1];
                     }
                 }
             }
@@ -449,7 +451,7 @@ namespace {
     class RegionTopologyFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces<
         3 > {
     public:
-        RegionTopologyFromGeoModelSurfaces( const GeoModel3D& geomodel )
+        explicit RegionTopologyFromGeoModelSurfaces( const GeoModel3D& geomodel )
             :
                 CommonDataFromGeoModelSurfaces3D( geomodel ),
                 region_info_( geomodel.nb_lines() )
@@ -525,7 +527,8 @@ namespace {
          * @param collect_region_info If true, information needed to determine closed Regions
          *  from a GeoModel Surfaces are collected for each Line< DIMENSION >.
          */
-        LineGeometryFromGeoModelSurfaces( const GeoModel< DIMENSION >& geomodel )
+        explicit LineGeometryFromGeoModelSurfaces(
+            const GeoModel< DIMENSION >& geomodel )
             :
                 CommonDataFromGeoModelSurfaces< DIMENSION >( geomodel ),
                 cur_border_polygon_( 0 )
@@ -617,9 +620,8 @@ namespace {
             }
         }
 
-        void add_border_polygon_vertices_to_line(
-            index_t polygon_index,
-            bool backward )
+        void add_border_polygon_vertices_to_line( index_t polygon_index,
+        bool backward )
         {
             const BorderPolygon& border_polygon =
                 this->border_polygons_[polygon_index];
@@ -926,7 +928,7 @@ namespace RINGMesh {
             std::pair< index_t, bool > cur = S.top();
             S.pop();
             // This side is already assigned
-            if( surf_2_region[cur.second == true ? 2 * cur.first : 2 * cur.first + 1]
+            if( surf_2_region[cur.second ? 2 * cur.first : 2 * cur.first + 1]
                 != NO_ID ) {
                 continue;
             }
@@ -940,7 +942,7 @@ namespace RINGMesh {
             while( !SR.empty() ) {
                 std::pair< index_t, bool > s = SR.top();
                 SR.pop();
-                index_t s_id = s.second == true ? 2 * s.first : 2 * s.first + 1;
+                index_t s_id = s.second ? 2 * s.first : 2 * s.first + 1;
                 // This oriented surface has already been visited
                 if( surf_2_region[s_id] != NO_ID ) {
                     continue;
@@ -951,7 +953,7 @@ namespace RINGMesh {
                 surf_2_region[s_id] = cur_region_id.index();
 
                 // Check the other side of the surface and push it in S
-                index_t s_id_opp = !s.second == true ? 2 * s.first : 2 * s.first + 1;
+                index_t s_id_opp = !s.second ? 2 * s.first : 2 * s.first + 1;
                 if( surf_2_region[s_id_opp] == NO_ID ) {
                     S.emplace( s.first, !s.second );
                 }
@@ -960,7 +962,7 @@ namespace RINGMesh {
                 for( index_t i : range( surface.nb_boundaries() ) ) {
                     const std::pair< index_t, bool >& n =
                         region_info[surface.boundary_gmme( i ).index()].next( s );
-                    index_t n_id = n.second == true ? 2 * n.first : 2 * n.first + 1;
+                    index_t n_id = n.second ? 2 * n.first : 2 * n.first + 1;
 
                     if( surf_2_region[n_id] == NO_ID ) {
                         SR.push( n );

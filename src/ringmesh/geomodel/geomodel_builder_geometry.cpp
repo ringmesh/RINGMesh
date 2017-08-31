@@ -177,19 +177,17 @@ namespace {
     {
         const SurfaceMesh< DIMENSION >& mesh = surface.low_level_mesh_storage();
         for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
-            if( !inexact_equal(
-                surface.mesh_element_vertex( ElementLocalVertex( p, v ) ), v0,
-                surface.geomodel().epsilon() ) ) continue;
-            index_t prev_v =
-                mesh.prev_polygon_vertex( ElementLocalVertex( p, v ) ).local_vertex_id_;
-            index_t next_v =
-                mesh.next_polygon_vertex( ElementLocalVertex( p, v ) ).local_vertex_id_;
-            if( inexact_equal(
-                surface.mesh_element_vertex( ElementLocalVertex( p, prev_v ) ), v1,
+            if( !inexact_equal( surface.mesh_element_vertex( { p, v } ), v0,
+                surface.geomodel().epsilon() ) ) {
+                continue;
+            }
+            index_t prev_v = mesh.prev_polygon_vertex( { p, v } ).local_vertex_id_;
+            index_t next_v = mesh.next_polygon_vertex( { p, v } ).local_vertex_id_;
+            if( inexact_equal( surface.mesh_element_vertex( { p, prev_v } ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return prev_v;
-            } else if( inexact_equal(
-                surface.mesh_element_vertex( ElementLocalVertex( p, next_v ) ), v1,
+            }
+            if( inexact_equal( surface.mesh_element_vertex( { p, next_v } ), v1,
                 surface.geomodel().epsilon() ) ) {
                 return v;
             }
@@ -309,7 +307,7 @@ namespace RINGMesh {
             builder->clear( true, true );
         }
         if( !points.empty() ) {
-            index_t nb_points = static_cast< index_t >( points.size() );
+            auto nb_points = static_cast< index_t >( points.size() );
             index_t start = builder->create_vertices( nb_points );
             for( index_t v : range( nb_points ) ) {
                 builder->set_vertex( start + v, points[v] );
@@ -345,8 +343,7 @@ namespace RINGMesh {
         if( clear ) {
             builder->clear( true, true );
         }
-        index_t nb_model_vertices =
-            static_cast< index_t >( geomodel_vertices.size() );
+        auto nb_model_vertices = static_cast< index_t >( geomodel_vertices.size() );
         index_t start = builder->create_vertices( nb_model_vertices );
         for( index_t v : range( nb_model_vertices ) ) {
             set_mesh_entity_vertex( entity_id, start + v, geomodel_vertices[v] );
@@ -373,7 +370,7 @@ namespace RINGMesh {
             gmme_id( Line< DIMENSION >::type_name_static(), line_id ), vertices,
             true );
 
-        Line< DIMENSION >& line =
+        auto& line =
             dynamic_cast< Line< DIMENSION >& >( geomodel_access_.modifiable_mesh_entity(
                 gmme_id( Line< DIMENSION >::type_name_static(), line_id ) ) );
         std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
@@ -882,7 +879,9 @@ namespace RINGMesh {
     void GeoModelBuilderGeometry< 3 >::cut_regions_by_internal_surfaces()
     {
         for( const auto& region : geomodel_.regions() ) {
-            if( region.nb_mesh_elements() == 0 ) continue;
+            if( region.nb_mesh_elements() == 0 ) {
+                continue;
+            }
             std::set< index_t > cutting_surfaces = get_internal_borders( region );
             for( index_t surface_id : cutting_surfaces ) {
                 cut_region_by_surface( region.index(), surface_id );
