@@ -935,6 +935,8 @@ namespace RINGMesh {
         index_t nb_edges_ { 0 };
     };
 
+    ALIAS_2D_AND_3D( GeoModelMeshEdges );
+
     template< index_t DIMENSION >
     class GeoModelMeshWells final: public GeoModelMeshCommon< DIMENSION > {
     public:
@@ -1593,5 +1595,7 @@ namespace RINGMesh {
     public:
         GeoModelMeshCells3D cells;
     };
+
+    ALIAS_2D_AND_3D( GeoModelMesh );
 
 } // namespace RINGMesh

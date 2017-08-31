@@ -62,7 +62,6 @@ namespace RINGMesh {
             : mesh_( new GEO::Mesh( DIMENSION, false ) )                     \
         {                                                                    \
         }                                                                    \
-        virtual ~Class() = default;                                          \
         static MeshType type_name_static()                                   \
         {                                                                    \
             return #Class;                                                   \

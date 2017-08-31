@@ -197,7 +197,7 @@ namespace RINGMesh {
         void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) override
         {
             Logger::instance()->set_minimal( true );
-            const GeogramSurfaceMesh< DIMENSION >& geogram_surf_in =
+            const auto& geogram_surf_in =
                 dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( surface_in );
             GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_.get(), 3,
                 GEO::CmdLine::get_arg( "algo:delaunay" ) );

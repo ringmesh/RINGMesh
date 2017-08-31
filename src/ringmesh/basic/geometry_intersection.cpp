@@ -214,14 +214,13 @@ namespace RINGMesh {
             double dot_directions { dot( line.direction, plane.normal ) };
             if( std::fabs( dot_directions ) > global_epsilon ) {
                 double signed_distance { dot( plane.normal, line.origin )
-                    - plane.plane_constant() };
+                    + plane.plane_constant() };
                 vec3 result { line.origin
                     - signed_distance * line.direction / dot_directions };
                 return std::make_tuple( true, result );
-            } else {
-                // line is parallel to the plane
-                return std::make_tuple( false, vec3() );
             }
+            // line is parallel to the plane
+            return std::make_tuple( false, vec3() );
         }
 
         std::tuple< bool, vec3 > segment_plane(
@@ -236,12 +235,10 @@ namespace RINGMesh {
                 if( Position::point_inside_segment( line_plane_result, segment ) ) {
                     // result inside the segment
                     return std::make_tuple( true, line_plane_result );
-                } else {
-                    return std::make_tuple( false, vec3() );
                 }
-            } else {
                 return std::make_tuple( false, vec3() );
             }
+            return std::make_tuple( false, vec3() );
         }
 
         std::tuple< bool, vec3 > segment_disk(
@@ -387,5 +384,5 @@ namespace RINGMesh {
             return std::make_tuple( !segment_intersections.empty(),
                 segment_intersections );
         }
-    }
-}
+    } // namespace Intersection
+} // namespace RINGMesh

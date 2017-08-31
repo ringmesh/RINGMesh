@@ -53,7 +53,7 @@ namespace RINGMesh {
 namespace RINGMesh {
     template< index_t DIMENSION >
     class MeshBaseBuilder {
-    ringmesh_disable_copy( MeshBaseBuilder );
+    ringmesh_disable_copy_and_move( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
@@ -284,8 +284,6 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
-    ringmesh_disable_copy( PointSetMeshBuilder );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > > create_builder(
             PointSetMesh< DIMENSION >& mesh );
@@ -320,8 +318,6 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
-    ringmesh_disable_copy( LineMeshBuilder );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         static std::unique_ptr< LineMeshBuilder > create_builder(
             LineMesh< DIMENSION >& mesh );
@@ -494,8 +490,6 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
-    ringmesh_disable_copy( SurfaceMeshBuilder );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > create_builder(
             SurfaceMesh< DIMENSION >& mesh );
@@ -852,11 +846,8 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {
-    ringmesh_disable_copy( VolumeMeshBuilder );
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
-        virtual ~VolumeMeshBuilder() = default;
-
         static std::unique_ptr< VolumeMeshBuilder< DIMENSION > > create_builder(
             VolumeMesh< DIMENSION >& mesh );
 
