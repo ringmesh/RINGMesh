@@ -99,6 +99,10 @@ function(add_ringmesh_binary bin_path)
 
     # Add the project to a folder of projects for the tests
     set_property(TARGET ${bin_name} PROPERTY FOLDER "Utilities")
+
+    # ringmesh_files is defined in the root RINGMesh CMakeLists.txt.
+    # This line is for clang utilities.
+    set(ringmesh_files ${ringmesh_files} ${bin_path} PARENT_SCOPE)
 endfunction()
 
 function(add_ringmesh_test cpp_file_path folder_name)
