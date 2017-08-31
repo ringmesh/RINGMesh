@@ -202,7 +202,7 @@ namespace {
     private:
         const std::string& old_2_new_name( const std::string& old_name )
         {
-            index_t new_name_pos = GEO::String::to_int(
+            index_t new_name_pos = GEO::String::to_uint(
                 GEO::String::to_string( old_name.at( old_name.length() - 2 ) ) );
             return new_names[new_name_pos];
         }

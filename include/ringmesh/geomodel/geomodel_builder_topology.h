@@ -84,8 +84,8 @@ namespace RINGMesh {
          * But the incident entities which shared the removed mesh entity must be merged... [BC].
          */
         bool get_dependent_entities(
-            std::set< gmme_id >& in_mesh_entities,
-            std::set< gmge_id >& in_geological_entities ) const;
+            std::set< gmme_id >& mesh_entities,
+            std::set< gmge_id >& geological_entities ) const;
 
         virtual gmme_id create_mesh_entity( const MeshEntityType& type );
 

@@ -80,7 +80,7 @@ namespace {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
 
-            write_header( geomodel_mesh, out );
+            write_header( out );
             write_cells( geomodel_mesh, out );
             write_polygons( geomodel_mesh, out );
             write_vertices( geomodel_mesh, out );
@@ -90,11 +90,9 @@ namespace {
     private:
         /*!
          * @brief Write the header for the MFEM mesh file
-         * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
         void write_header(
-            const GeoModelMesh3D& geomodel_mesh,
             std::ofstream& out ) const
         {
             // MFEM mesh version

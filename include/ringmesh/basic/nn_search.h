@@ -169,7 +169,7 @@ namespace RINGMesh {
 
     private:
         void fill_nn_search_points(
-            index_t index_in_nn,
+            index_t index_in_nn_search,
             const vecn< DIMENSION >& center );
 
     private:
