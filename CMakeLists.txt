@@ -303,6 +303,7 @@ include_directories(${PROJECT_BINARY_DIR})
 
 # ringmesh_files definition must be before the binaries (utilities, ringmesh-viewm, etc.).
 # Thus this variable can be updated by the called cmake files.
+# This line is for clang utilities.
 set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
 
 set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
@@ -326,7 +327,6 @@ if(RINGMESH_WITH_UTILITIES)
         add_ringmesh_binary(${utility_src})
     endforeach(utility_src ${utility_sources})
     copy_for_windows()
-    set(ringmesh_files ${ringmesh_files} ${utility_sources})
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TUTORIALS)

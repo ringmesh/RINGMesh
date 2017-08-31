@@ -50,8 +50,9 @@ configure_file(${tutorial_config_file_in} ${tutorial_config_file})
 
 # Get the name of the tutorial files
 file(GLOB TUTORIALS "${TUTORIALS_SOURCE_DIRECTORY}/*.cpp")
-# ringmesh_files is defined in the root RINGMesh CMakeLists.txt
-set(ringmesh_files ${ringmesh_files} ${TUTORIALS})
+# ringmesh_files is defined in the root RINGMesh CMakeLists.txt.
+# This line is for clang utilities.
+set(ringmesh_files ${ringmesh_files} ${TUTORIALS} PARENT_SCOPE)
 
 # For all the test files found
 foreach(tutorialsourcefile ${TUTORIALS})
