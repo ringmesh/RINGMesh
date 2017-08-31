@@ -52,24 +52,8 @@ configure_file(${tutorial_config_file_in} ${tutorial_config_file})
 file(GLOB TUTORIAL "${TUTORIALS_SOURCE_DIRECTORY}/*.cpp")
 
 # For all the test files found
-foreach(tutuorialsourcefile ${TUTORIAL})
-    # Get the name of the file without extension
-    get_filename_component(tutorialname ${tutuorialsourcefile} NAME_WE)
-
-    # Add the target for that file
-    add_executable(${tutorialname} ${tutuorialsourcefile})
-
-    # Link RINGMesh Make sure YourLib is linked to each app
-    target_link_libraries(${tutorialname} geogram RINGMesh)
-
-    add_dependencies(${tutorialname} RINGMesh)
-
-    # Add the project to a folder of projects for the tests
-    set_property(TARGET ${tutorialname} PROPERTY FOLDER "Tutorials")
-
-    # Add the test to CTest
-    add_test(NAME ${tutorialname} COMMAND ${tutorialname})
-
-endforeach(tutuorialsourcefile ${TUTORIAL})
+foreach(tutorialsourcefile ${TUTORIAL})
+    add_ringmesh_test(${tutorialsourcefile} "Tutorials")
+endforeach(tutorialsourcefile ${TUTORIAL})
 
 
