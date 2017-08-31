@@ -93,9 +93,8 @@ namespace {
         {
             if( region_id_[i] != region_id_[j] ) {
                 return region_id_[i] < region_id_[j];
-            } else {
-                return mesh_.cell_type( i ) < mesh_.cell_type( j );
             }
+            return mesh_.cell_type( i ) < mesh_.cell_type( j );
         }
     private:
         const VolumeMesh< DIMENSION >& mesh_;
@@ -139,7 +138,7 @@ namespace {
             builder->set_vertex( v, mesh.vertex( v ) );
         }
     }
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -435,11 +434,10 @@ namespace RINGMesh {
         const MeshEntityType& entity_type,
         index_t& count )
     {
-        std::unique_ptr< PointSetMeshBuilder< DIMENSION > > mesh_builder =
-            PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
+        auto mesh_builder = PointSetMeshBuilder< DIMENSION >::create_builder(
+            *mesh_ );
         for( index_t i : range( geomodel.nb_mesh_entities( entity_type ) ) ) {
-            GeoModelMeshEntity< DIMENSION >& E = const_cast< GeoModelMeshEntity<
-                DIMENSION >& >( geomodel.mesh_entity( entity_type, i ) );
+            const auto& E = geomodel.mesh_entity( entity_type, i );
             if( E.nb_vertices() == 0 ) {
                 continue;
             }
@@ -562,10 +560,9 @@ namespace RINGMesh {
             this->geomodel_.epsilon() );
         if( vertices.empty() ) {
             return NO_ID;
-        } else {
-            ringmesh_assert( vertices.size() == 1 );
-            return vertices[0];
         }
+        ringmesh_assert( vertices.size() == 1 );
+        return vertices[0];
     }
 
     template< index_t DIMENSION >
@@ -1344,7 +1341,9 @@ namespace RINGMesh {
         {
             NNSearch< DIMENSION > nn_search( corner_vertices, false );
             for( const auto& surface : this->geomodel_.surfaces() ) {
-                if( !is_surface_to_duplicate( surface.index() ) ) continue;
+                if( !is_surface_to_duplicate( surface.index() ) ) {
+                    continue;
+                }
                 actions_on_surfaces[surface.index()] = TO_PROCESS;
                 for( index_t v : range( surface.nb_vertices() ) ) {
                     std::vector< index_t > colocated_corners =
@@ -1530,9 +1529,10 @@ namespace RINGMesh {
     bool GeoModelMeshCells< DIMENSION >::is_surface_to_duplicate(
         index_t surface_id ) const
     {
-        const Surface< DIMENSION >& cur_surface = this->geomodel_.surface(
-            surface_id );
-        if( cur_surface.is_on_voi() ) return false;
+        const auto& cur_surface = this->geomodel_.surface( surface_id );
+        if( cur_surface.is_on_voi() ) {
+            return false;
+        }
         switch( this->gmm_.duplicate_mode() ) {
             case ALL:
                 return true;
@@ -1577,9 +1577,8 @@ namespace RINGMesh {
         index_t corner_value = mesh_->cell_vertex( cell_local_vertex );
         if( corner_value < mesh_->nb_vertices() ) {
             return NO_ID;
-        } else {
-            return corner_value - mesh_->nb_vertices();
         }
+        return corner_value - mesh_->nb_vertices();
     }
 
     template< index_t DIMENSION >
@@ -1982,7 +1981,7 @@ namespace RINGMesh {
         index_t s = surface( p );
         for( index_t t : range( to_underlying_type( PolygonType::TRIANGLE ),
             to_underlying_type( PolygonType::UNDEFINED ) ) ) {
-            PolygonType T = static_cast< PolygonType >( t );
+            auto T = static_cast< PolygonType >( t );
             if( polygon < nb_polygons( s, T ) ) {
                 return std::make_tuple( T, polygon );
             }
@@ -2264,7 +2263,7 @@ namespace RINGMesh {
                 index_t nb_vertices = surface.nb_mesh_element_vertices( p );
                 index_t cur_polygon = NO_ID;
                 if( nb_vertices < 5 ) {
-                    PolygonType T = static_cast< PolygonType >( nb_vertices - 3 );
+                    auto T = static_cast< PolygonType >( nb_vertices - 3 );
                     cur_polygon = polygon_offset_per_type[T]
                         + cur_polygon_per_type[to_underlying_type( T )]++;
                     for( index_t v : range( nb_vertices ) ) {
@@ -2441,7 +2440,9 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshWells< DIMENSION >::initialize()
     {
-        if( !this->geomodel_.wells() ) return;
+        if( !this->geomodel_.wells() ) {
+            return;
+        }
         this->gmm_.vertices.test_and_initialize();
         std::unique_ptr< LineMeshBuilder< DIMENSION > > mesh_builder =
             LineMeshBuilder< DIMENSION >::create_builder( *mesh_ );

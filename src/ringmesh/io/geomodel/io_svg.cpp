@@ -236,6 +236,8 @@ namespace {
         }
         void save( const GeoModel2D& geomodel, const std::string& filename ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Saving a GeoModel in svg not implemented yet" );
         }

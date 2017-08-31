@@ -61,13 +61,13 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
     ALIAS_2D_AND_3D( GeoModelGfx );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
     class MeshEntityGfx {
-    ringmesh_disable_copy( MeshEntityGfx );
+    ringmesh_disable_copy_and_move( MeshEntityGfx );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         virtual ~MeshEntityGfx() = default;
@@ -104,8 +104,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class PointSetMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual ~PointSetMeshGfx() = default;
-
         static std::unique_ptr< PointSetMeshGfx< DIMENSION > > create_gfx(
             const PointSetMesh< DIMENSION >& mesh );
 
@@ -124,8 +122,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class LineMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual ~LineMeshGfx() = default;
-
         static std::unique_ptr< LineMeshGfx< DIMENSION > > create_gfx(
             const LineMesh< DIMENSION >& mesh );
 
@@ -159,8 +155,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class SurfaceMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual ~SurfaceMeshGfx() = default;
-
         static std::unique_ptr< SurfaceMeshGfx< DIMENSION > > create_gfx(
             const SurfaceMesh< DIMENSION >& mesh );
 
@@ -199,8 +193,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class VolumeMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual ~VolumeMeshGfx() = default;
-
         static std::unique_ptr< VolumeMeshGfx< DIMENSION > > create_gfx(
             const VolumeMesh< DIMENSION >& mesh );
 
@@ -244,7 +236,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class AttributeGfxManagerBase {
-    ringmesh_disable_copy( AttributeGfxManagerBase );
+    ringmesh_disable_copy_and_move( AttributeGfxManagerBase );
     public:
         virtual ~AttributeGfxManagerBase() = default;
 
@@ -341,7 +333,7 @@ namespace RINGMesh {
         std::vector< std::string > get_attribute_names();
 
     protected:
-        AttributeGfxManagerBase( GeoModelGfx< DIMENSION >& gfx );
+        explicit AttributeGfxManagerBase( GeoModelGfx< DIMENSION >& gfx );
 
     protected:
         GeoModelGfx< DIMENSION >& gfx_;
@@ -361,25 +353,21 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class AttributeGfxManager final: public AttributeGfxManagerBase< DIMENSION > {
     public:
-        AttributeGfxManager( GeoModelGfx< DIMENSION >& gfx )
+        explicit AttributeGfxManager( GeoModelGfx< DIMENSION >& gfx )
             : AttributeGfxManagerBase< DIMENSION >( gfx )
         {
         }
-
-        virtual ~AttributeGfxManager() = default;
     };
 
     template< >
     class RINGMESH_API AttributeGfxManager< 3 > final: public AttributeGfxManagerBase< 3 > {
     public:
-        AttributeGfxManager( GeoModelGfx3D& gfx );
-
-        virtual ~AttributeGfxManager() = default;
+        explicit AttributeGfxManager( GeoModelGfx3D& gfx );
     };
 
     template< index_t DIMENSION >
     class AttributeGfx {
-    ringmesh_disable_copy( AttributeGfx );
+    ringmesh_disable_copy_and_move( AttributeGfx );
     public:
         AttributeGfx() = default;
 
@@ -427,6 +415,6 @@ namespace RINGMesh {
     protected:
         AttributeGfxManagerBase< DIMENSION >* manager_ { nullptr };
     };
-}
+} // namespace RINGMesh
 
 #endif
