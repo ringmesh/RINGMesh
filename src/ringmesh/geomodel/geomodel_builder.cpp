@@ -144,13 +144,14 @@ namespace {
         {
             if( std::min( v0_, v1_ ) != std::min( rhs.v0_, rhs.v1_ ) ) {
                 return std::min( v0_, v1_ ) < std::min( rhs.v0_, rhs.v1_ );
-            } else if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) ) {
-                return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ );
-            } else if( surface_ != rhs.surface_ ) {
-                return surface_ < rhs.surface_;
-            } else {
-                return polygon_ < rhs.polygon_;
             }
+            if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) ) {
+                return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ );
+            }
+            if( surface_ != rhs.surface_ ) {
+                return surface_ < rhs.surface_;
+            }
+            return polygon_ < rhs.polygon_;
         }
 
         bool same_edge( const BorderPolygon& rhs ) const
@@ -171,10 +172,11 @@ namespace {
 
     template< index_t DIMENSION >
     class CommonDataFromGeoModelSurfaces {
-    ringmesh_disable_copy( CommonDataFromGeoModelSurfaces );
+    ringmesh_disable_copy_and_move( CommonDataFromGeoModelSurfaces );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     protected:
-        CommonDataFromGeoModelSurfaces( const GeoModel< DIMENSION >& geomodel )
+        explicit CommonDataFromGeoModelSurfaces(
+            const GeoModel< DIMENSION >& geomodel )
             : geomodel_( geomodel )
         {
             const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
@@ -199,6 +201,7 @@ namespace {
             }
             std::sort( border_polygons_.begin(), border_polygons_.end() );
         }
+        ~CommonDataFromGeoModelSurfaces() = default;
 
         bool have_border_polygons_same_boundary_edge( index_t t0, index_t t1 ) const
         {
@@ -275,7 +278,7 @@ namespace {
             const vec3& p0,
             const vec3& p1 )
         {
-            index_t polygon_id = static_cast< index_t >( polygons_.size() );
+            auto polygon_id = static_cast< index_t >( polygons_.size() );
             polygons_.emplace_back( polygon_id, surface_index, normal, p0, p1 );
         }
 
@@ -318,7 +321,7 @@ namespace {
 
             ringmesh_assert( std::fabs( result.w ) > global_epsilon );
             double inv_w = 1.0 / result.w;
-            return vec3( result.x * inv_w, result.y * inv_w, result.z * inv_w );
+            return {result.x * inv_w, result.y * inv_w, result.z * inv_w};
         }
 
         void sort()
@@ -426,16 +429,14 @@ namespace {
                         }
                         // Sign is the same
                         return sorted_polygons_[i + 1];
-                    } else {
-                        ringmesh_assert(
-                            sorted_polygons_[i - 1].first
-                                == sorted_polygons_[i].first );
-                        if( sorted_polygons_[i - 1].second
-                            != sorted_polygons_[i].second ) {
-                            return sorted_polygons_[i + 1];
-                        }
-                        return sorted_polygons_[i - 1];
                     }
+                    ringmesh_assert(
+                        sorted_polygons_[i - 1].first == sorted_polygons_[i].first );
+                    if( sorted_polygons_[i - 1].second
+                        != sorted_polygons_[i].second ) {
+                        return sorted_polygons_[i + 1];
+                    }
+                    return sorted_polygons_[i - 1];
                 }
             }
             ringmesh_assert_not_reached;
@@ -614,10 +615,9 @@ namespace {
             std::vector< index_t > input = get_adjacent_surfaces( t );
             if( input.size() != cur_line_.adjacent_surfaces_.size() ) {
                 return false;
-            } else {
-                return std::equal( input.begin(), input.end(),
-                    cur_line_.adjacent_surfaces_.begin() );
             }
+            return std::equal( input.begin(), input.end(),
+                cur_line_.adjacent_surfaces_.begin() );
         }
 
         void add_border_polygon_vertices_to_line( index_t polygon_index,

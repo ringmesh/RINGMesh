@@ -51,9 +51,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" );
         }
-        void save(
-            const GeoModel3D& geomodel,
-            const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::string path = GEO::FileSystem::dir_name( filename );
             std::string directory = GEO::FileSystem::base_name( filename );
@@ -82,7 +80,7 @@ namespace {
             const GeoModelMesh3D& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
-            for( index_t c :range( mesh.cells.nb() ) ) {
+            for( index_t c : range( mesh.cells.nb() ) ) {
                 for( index_t f : range( mesh.cells.nb_facets( c ) ) ) {
                     index_t facet = NO_ID;
                     bool not_used;
@@ -140,9 +138,10 @@ namespace {
                 }
             }
 
-            index_t nb_pipes = pipes.size();
-            for( const std::vector< index_t >& vertices : edges ) {
-                nb_pipes += binomial_coef( vertices.size() );
+            auto nb_pipes = static_cast< index_t >( pipes.size() );
+            for( const auto& vertices : edges ) {
+                nb_pipes += binomial_coef(
+                    static_cast< index_t >( vertices.size() ) );
             }
             out_pipes << nb_pipes << EOL;
             for( const Pipe& pipe : pipes ) {
@@ -151,8 +150,7 @@ namespace {
             for( const std::vector< index_t >& vertices : edges ) {
                 for( index_t v0 : range( vertices.size() - 1 ) ) {
                     for( index_t v1 : range( v0 + 1, vertices.size() ) ) {
-                        out_pipes << vertices[v0] << SPACE << vertices[v1]
-                            << EOL;
+                        out_pipes << vertices[v0] << SPACE << vertices[v1] << EOL;
                     }
                 }
             }

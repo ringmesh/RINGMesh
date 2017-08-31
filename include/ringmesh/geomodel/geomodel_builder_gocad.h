@@ -37,6 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <array>
 #include <memory>
 
 #include <geogram/basic/line_stream.h>
@@ -541,7 +542,7 @@ namespace RINGMesh {
 
     private:
         TSolidType file_type_ { TSolidType::TSOLID };
-        std::unique_ptr< GeoModelBuilderTSolidImpl > type_impl_[NB_TYPE];
+        std::array< std::unique_ptr< GeoModelBuilderTSolidImpl >, NB_TYPE > type_impl_;
 
         friend class RINGMesh::GocadLineParser;
     };
