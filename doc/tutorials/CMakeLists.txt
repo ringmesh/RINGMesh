@@ -49,11 +49,13 @@ set(tutorial_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tutorials_confi
 configure_file(${tutorial_config_file_in} ${tutorial_config_file})
 
 # Get the name of the tutorial files
-file(GLOB TUTORIAL "${TUTORIALS_SOURCE_DIRECTORY}/*.cpp")
+file(GLOB TUTORIALS "${TUTORIALS_SOURCE_DIRECTORY}/*.cpp")
+# ringmesh_files is defined in the root RINGMesh CMakeLists.txt
+set(ringmesh_files ${ringmesh_files} ${TUTORIALS})
 
 # For all the test files found
-foreach(tutorialsourcefile ${TUTORIAL})
+foreach(tutorialsourcefile ${TUTORIALS})
     add_ringmesh_test(${tutorialsourcefile} "Tutorials")
-endforeach(tutorialsourcefile ${TUTORIAL})
+endforeach(tutorialsourcefile ${TUTORIALS})
 
 
