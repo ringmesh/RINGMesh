@@ -259,7 +259,7 @@ namespace RINGMesh {
             const Geometry::Point2D& point,
             const Geometry::Triangle2D& triangle )
         {
-            double result { max_float64() };
+            double result ;
             vec2 closest_point;
             if( Position::point_inside_triangle( point, triangle ) ) {
                 closest_point = point;
@@ -298,8 +298,8 @@ namespace RINGMesh {
             const Geometry::Point3D& point,
             const Geometry::Tetra& tetra )
         {
-            std::array< vec3, 4 > vertices { { tetra.p0, tetra.p1, tetra.p2,
-                                               tetra.p3 } };
+            std::array< vec3, 4 > vertices {
+                { tetra.p0, tetra.p1, tetra.p2, tetra.p3 } };
             double dist { max_float64() };
             vec3 nearest_p;
             for( index_t f : range(
@@ -331,15 +331,13 @@ namespace RINGMesh {
                 point, segment.p0, segment.p1 );
             if( can_point_be_projected ) {
                 return std::make_tuple( length( nearest_p - point ), nearest_p );
-            } else {
-                double p0_sq { length2( segment.p0 - point ) };
-                double p1_sq { length2( segment.p1 - point ) };
-                if( p0_sq < p1_sq ) {
-                    return std::make_tuple( std::sqrt( p0_sq ), segment.p0 );
-                } else {
-                    return std::make_tuple( std::sqrt( p1_sq ), segment.p1 );
-                }
             }
+            double p0_sq { length2( segment.p0 - point ) };
+            double p1_sq { length2( segment.p1 - point ) };
+            if( p0_sq < p1_sq ) {
+                return std::make_tuple( std::sqrt( p0_sq ), segment.p0 );
+            }
+            return std::make_tuple( std::sqrt( p1_sq ), segment.p1 );
         }
 
         std::tuple< double, vec3 > point_to_plane(
@@ -365,6 +363,6 @@ namespace RINGMesh {
         template std::tuple< double, vecn< 3 > > RINGMESH_API point_to_triangle(
             const Geometry::Point< 3 >&,
             const Geometry::Triangle< 3 >& );
-    }
-}
+    } // namespace Distance
+} // namespace RINGMesh
 

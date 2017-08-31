@@ -60,6 +60,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class AABBTree {
+        ringmesh_disable_copy_and_move( AABBTree );
         ringmesh_template_assert_2d_or_3d (DIMENSION);
     public:
         /// The index where to store the root. It starts to one for algorithm trick.
@@ -138,6 +139,7 @@ namespace RINGMesh {
                 ROOT_INDEX, 0, nb_bboxes(), action );
         }
     protected:
+        AABBTree() = default;
         virtual ~AABBTree() = default;
 
         /*!
@@ -293,7 +295,7 @@ namespace RINGMesh {
          */
         class DistanceToEdge {
         public:
-            DistanceToEdge( const LineMesh< DIMENSION >& mesh )
+            explicit DistanceToEdge( const LineMesh< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }
@@ -342,7 +344,7 @@ namespace RINGMesh {
          */
         class DistanceToTriangle {
         public:
-            DistanceToTriangle( const SurfaceMeshBase< DIMENSION >& mesh )
+            explicit DistanceToTriangle( const SurfaceMeshBase< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }

@@ -346,11 +346,10 @@ namespace RINGMesh {
                     < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
             if( local_vertex_id
                 != nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 ) {
-                return ElementLocalVertex( polygon_local_vertex.element_id_,
-                    local_vertex_id + 1 );
-            } else {
-                return ElementLocalVertex( polygon_local_vertex.element_id_, 0 );
+                return {polygon_local_vertex.element_id_,
+                    local_vertex_id + 1};
             }
+            return {polygon_local_vertex.element_id_, 0};
         }
         /*!
          * @brief Get the next edge on the border
@@ -379,12 +378,11 @@ namespace RINGMesh {
                 polygon_local_vertex.local_vertex_id_
                     < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
             if( polygon_local_vertex.local_vertex_id_ > 0 ) {
-                return ElementLocalVertex( polygon_local_vertex.element_id_,
-                    polygon_local_vertex.local_vertex_id_ - 1 );
-            } else {
-                return ElementLocalVertex( polygon_local_vertex.element_id_,
-                    nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 );
+                return {polygon_local_vertex.element_id_,
+                    polygon_local_vertex.local_vertex_id_ - 1};
             }
+            return {polygon_local_vertex.element_id_,
+                nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1};
         }
 
         /*!
@@ -473,11 +471,11 @@ namespace RINGMesh {
         {
             if( is_triangle( polygon_id ) ) {
                 return PolygonType::TRIANGLE;
-            } else if( nb_polygon_vertices( polygon_id ) == 4 ) {
-                return PolygonType::QUAD;
-            } else {
-                return PolygonType::UNDEFINED;
             }
+            if( nb_polygon_vertices( polygon_id ) == 4 ) {
+                return PolygonType::QUAD;
+            }
+            return PolygonType::UNDEFINED;
         }
 
         /*!
@@ -543,13 +541,12 @@ namespace RINGMesh {
             ringmesh_assert( vertex_id < 2 );
             if( vertex_id == 0 ) {
                 return polygon_vertex( polygon_local_edge );
-            } else {
-                return polygon_vertex(
-                    ElementLocalVertex( polygon_local_edge.polygon_id_,
-                        ( polygon_local_edge.local_edge_id_ + vertex_id )
-                            % nb_polygon_vertices(
-                                polygon_local_edge.polygon_id_ ) ) );
             }
+            return polygon_vertex(
+                ElementLocalVertex( polygon_local_edge.polygon_id_,
+                    ( polygon_local_edge.local_edge_id_ + vertex_id )
+                        % nb_polygon_vertices( polygon_local_edge.polygon_id_ ) ) );
+
         }
 
         /*!
