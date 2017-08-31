@@ -1600,7 +1600,6 @@ namespace RINGMesh {
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
         compute_surfaces_internal_borders();
-        geomodel_.mesh.vertices.test_and_initialize();
         build_lines_and_corners_from_surfaces();
         compute_boundaries_of_geomodel_regions( *this, ( *this ).geomodel_ );
         compute_universe_boundaries( ( *this ).geomodel_, *this );
