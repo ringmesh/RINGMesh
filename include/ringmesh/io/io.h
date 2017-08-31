@@ -39,8 +39,8 @@
 
 #include <memory>
 
-#include <zlib/zip.h>
-#include <zlib/unzip.h>
+#include <minizip/unzip.h>
+#include <minizip/zip.h>
 
 #include <geogram/basic/string.h>
 
@@ -66,11 +66,11 @@ namespace RINGMesh {
 
     ALIAS_3D( GeoModel );
     ALIAS_3D( WellGroup );
-}
+} // namespace RINGMesh
 
 namespace GEO {
     class MeshSubElementsStore;
-}
+} // namespace GEO
 
 namespace RINGMesh {
 
@@ -104,9 +104,7 @@ namespace RINGMesh {
      * @param[in] filename the file to load
      * @param][in,out] wells the wells to fill
      */
-    void RINGMESH_API well_load(
-        const std::string& filename,
-        WellGroup3D& wells );
+    void RINGMESH_API well_load( const std::string& filename, WellGroup3D& wells );
 
     /*!
      * Returns the dimension of the GeoModel in the \p filename
@@ -115,6 +113,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelIOHandler {
+    ringmesh_disable_copy_and_move( GeoModelIOHandler );
     public:
         virtual ~GeoModelIOHandler() = default;
 
@@ -161,6 +160,7 @@ namespace RINGMesh {
 
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler {
+    ringmesh_disable_copy_and_move( WellGroupIOHandler );
     public:
         virtual ~WellGroupIOHandler() = default;
 
@@ -198,6 +198,7 @@ namespace RINGMesh {
 
     /*********************************************************************************************/
     class RINGMESH_API StratigraphicColumnIOHandler {
+    ringmesh_disable_copy_and_move( StratigraphicColumnIOHandler );
     public:
         virtual ~StratigraphicColumnIOHandler() = default;
 
@@ -224,4 +225,4 @@ namespace RINGMesh {
 
     };
     using StratigraphicColumnIOHandlerFactory = Factory< std::string, StratigraphicColumnIOHandler >;
-}
+} // namespace RINGMesh

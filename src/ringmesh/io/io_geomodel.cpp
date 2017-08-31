@@ -121,4 +121,4 @@ namespace RINGMesh {
 #endif
     }
 
-}
+} // namespace RINGMesh

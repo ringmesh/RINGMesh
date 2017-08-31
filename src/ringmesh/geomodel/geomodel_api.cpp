@@ -178,7 +178,7 @@ namespace {
     {
         Logger::out( "GeoModel", "Model ", geomodel.name(), " is made of\n",
             std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
-            std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
+			std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
 
         index_t nb_triangles { geomodel.mesh.polygons.nb_triangle() };
         index_t nb_quads { geomodel.mesh.polygons.nb_quad() };
@@ -225,9 +225,9 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void print_geomodel( const GeoModel< DIMENSION >& geomodel )
-    {
+	{
         Logger::out( "GeoModel", "Model ", geomodel.name(), " has\n",
-            std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
+			std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
             std::setw( 10 ), std::left, count_geomodel_polygons( geomodel ),
             " polygons" );
         index_t nb_cells { count_geomodel_cells( geomodel ) };
@@ -350,9 +350,7 @@ namespace RINGMesh {
         const std::string& name )
     {
         index_t geological_entity_id { NO_ID };
-        for( index_t elt_i : range( geomodel.nb_geological_entities( gmge_type ) ) ) {
-            const GeoModelGeologicalEntity< DIMENSION >& cur_gme =
-                geomodel.geological_entity( gmge_type, elt_i );
+        for( auto& cur_gme : geomodel.geol_entities( gmge_type ) ) {
             if( cur_gme.name() == name ) {
                 if( geological_entity_id != NO_ID ) {
                     throw RINGMeshException( "GeoModel",
@@ -483,4 +481,4 @@ namespace RINGMesh {
         const std::string& );
     template void RINGMESH_API translate( GeoModel3D&, const vec3& );
 
-}
+} // namespace RINGMesh

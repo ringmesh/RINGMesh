@@ -2049,6 +2049,7 @@ namespace GEO {
 
         bool lighting_;
         bool white_bg_;
+	GLenum effect_;
 
         GLUPclipMode clip_mode_;
         GLuint geogram_logo_texture_;

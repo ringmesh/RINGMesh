@@ -39,8 +39,8 @@
 
 #include <mutex>
 
-#include <geogram/basic/memory.h>
 #include <geogram/basic/attributes.h>
+#include <geogram/basic/memory.h>
 #include <geogram/mesh/mesh.h>
 
 /*!
@@ -137,11 +137,11 @@ namespace RINGMesh {
      */
     template< typename T >
     class AttributeVector: public std::vector< GEO::Attribute< T >* > {
-    ringmesh_disable_copy( AttributeVector );
+    ringmesh_disable_copy_and_move( AttributeVector );
     public:
         using base_class = std::vector< GEO::Attribute< T >* >;
         AttributeVector() = default;
-        AttributeVector( index_t size )
+        explicit AttributeVector( index_t size )
             : base_class( size, nullptr )
         {
         }
@@ -226,4 +226,4 @@ namespace RINGMesh {
     private:
         std::mutex lock_;
     };
-}
+} // namespace RINGMesh
