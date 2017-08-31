@@ -652,9 +652,9 @@ namespace RINGMesh {
         // No zero edge length
         index_t nb_degenerated { 0 };
         for( auto e : range( nb_mesh_elements() ) ) {
-            double l = length(
+            double l = (
                 this->mesh_element_vertex( { e, 1 } ) - this->mesh_element_vertex( {
-                    e, 0 } ) );
+                    e, 0 } ) ).length() ;
             if( l < this->geomodel().epsilon() ) {
                 nb_degenerated++;
             }

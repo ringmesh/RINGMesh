@@ -186,7 +186,7 @@ namespace {
             // First time this polygon corner is met in polygon_corners
             vec3 point = get_point_from_gocad_id( geomodel, load_storage.vertex_map_,
                 vertex_gocad_id );
-            index_t index = static_cast< index_t >( cur_surf_points.size() );
+            auto index = static_cast< index_t >( cur_surf_points.size() );
             cur_surf_polygons.push_back( index );
             gocad_vertices2cur_surf_points[vertex_gocad_id] = index;
             cur_surf_points.push_back( point );
@@ -733,7 +733,7 @@ namespace {
             } else {
                 if( !load_storage.vertices_.empty() ) {
                     assign_mesh_surface( builder_, load_storage );
-                    index_t nb_vertices =
+                    auto nb_vertices =
                         static_cast< index_t >( load_storage.vertices_.size() );
                     load_storage.tface_vertex_ptr_ = nb_vertices;
                 }
@@ -746,7 +746,7 @@ namespace {
         {
             gmge_id parent = find_geological_entity( geomodel_,
                 Interface3D::type_name_static(), interface_name );
-            if( interface_name != "" ) {
+            if( !interface_name.empty() ) {
                 ringmesh_assert( parent.is_defined() );
             }
 
@@ -782,14 +782,13 @@ namespace {
                     if( region_id == 0 ) {
                         end_layer = true;
                         break;
-                    } else {
-                        // Remove Universe region
-                        region_id -= geomodel_.nb_surfaces() + 1;
-                        // Correction because ids begin at 1 in the file
-                        builder_.geology.add_parent_children_relation( layer_id,
-                            gmme_id( Region3D::type_name_static(),
-                                region_id - GOCAD_OFFSET ) );
                     }
+                    // Remove Universe region
+                    region_id -= geomodel_.nb_surfaces() + 1;
+                    // Correction because ids begin at 1 in the file
+                    builder_.geology.add_parent_children_relation( layer_id,
+                        gmme_id( Region3D::type_name_static(),
+                            region_id - GOCAD_OFFSET ) );
                 }
             }
         }
@@ -886,10 +885,9 @@ namespace {
                         break;
                     }
                     bool side = signed_id > 0;
-                    index_t id = static_cast< index_t >( std::abs( signed_id ) )
+                    auto id = static_cast< index_t >( std::abs( signed_id ) )
                         - GOCAD_OFFSET;
-                    region_boundaries.push_back(
-                        std::pair< index_t, bool >( id, side ) );
+                    region_boundaries.emplace_back( id, side );
                 }
             }
             return region_boundaries;
@@ -952,7 +950,7 @@ namespace {
             load_storage.vertices_.clear();
             load_storage.tetra_corners_.clear();
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -971,15 +969,13 @@ namespace {
         {
         }
     private:
-        virtual void execute(
-            GEO::LineInput& line,
-            TSolidLoadingStorage& load_storage ) final
+        void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             ringmesh_unused( line );
             ringmesh_unused( load_storage );
             // Nothing
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1053,11 +1049,11 @@ namespace {
         {
             load_storage.vertex_attribute_names_.reserve( line.nb_fields() - 1 );
             for( index_t attrib_name_itr : range( 1, line.nb_fields() ) ) {
-                load_storage.vertex_attribute_names_.push_back(
+                load_storage.vertex_attribute_names_.emplace_back(
                     line.field( attrib_name_itr ) );
             }
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1084,7 +1080,7 @@ namespace {
                     attrib_size_itr );
             }
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1101,14 +1097,13 @@ namespace {
     private:
         void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
-            index_t vertex_id =
-                static_cast< index_t >( load_storage.vertices_.size() );
+            auto vertex_id = static_cast< index_t >( load_storage.vertices_.size() );
             load_storage.vertex_map_.add_vertex( vertex_id,
                 load_storage.cur_region_ );
             GocadLineFactory::create( "VRTX", builder_, geomodel_ )->execute( line,
                 load_storage );
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1132,7 +1127,7 @@ namespace {
                 load_storage.vertices_, load_storage.attributes_,
                 load_storage.vertex_map_ );
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1141,7 +1136,7 @@ namespace {
                 line.field_as_uint( 2 ) - GOCAD_OFFSET );
             load_storage.vertex_map_.add_vertex(
                 line.field_as_uint( 1 ) - GOCAD_OFFSET, load_storage.cur_region_ );
-            load_storage.vertices_.push_back( vec3 { } );
+            load_storage.vertices_.emplace_back( vec3 { } );
             if( load_storage.nb_attribute_fields_ > 0 ) {
                 std::vector< double > null_attrib( load_storage.nb_attribute_fields_,
                     0 );
@@ -1177,7 +1172,7 @@ namespace {
             if( referred_vertex_region_id < load_storage.cur_region_ ) {
                 // If the atom referred to a vertex of another region,
                 // acting like for a vertex
-                index_t index = static_cast< index_t >( region_vertices.size() );
+                auto index = static_cast< index_t >( region_vertices.size() );
                 vertex_map.add_vertex( index, load_storage.cur_region_ );
 
                 region_vertices.push_back(
@@ -1222,7 +1217,7 @@ namespace {
             load_storage.tetra_corners_.insert( load_storage.tetra_corners_.end(),
                 corners.begin(), corners.end() );
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1302,7 +1297,7 @@ namespace {
                 load_storage.tetra_corners_.clear();
             }
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1406,7 +1401,7 @@ namespace {
             builder_.info.set_geological_entity_name( created_interface,
                 line.field( 1 ) );
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1437,7 +1432,7 @@ namespace {
                 gmge_id( Interface3D::type_name_static(),
                     load_storage.cur_interface_ ), new_surface );
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1461,7 +1456,7 @@ namespace {
                 build_surface( builder_, geomodel_, load_storage );
             }
         }
-        virtual void execute_light(
+        void execute_light(
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) final
         {
@@ -1532,7 +1527,7 @@ namespace {
         MLLineFactory::register_creator< LoadMLAtom >( "PATOM" );
     }
 
-}
+} // namespace
 
 namespace RINGMesh {
 

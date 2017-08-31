@@ -63,16 +63,15 @@ namespace RINGMesh {
     {
         if( entities.empty() ) {
             return;
-        } else {
-            initialize_for_removal( entities );
-            do_delete_flagged_mesh_entities();
-            geomodel_.mesh.vertices.clear();
-            update_mesh_entity_connectivity();
-            flag_geological_entities_without_children();
-            do_delete_flagged_geological_entities();
-            update_geological_entity_connectivity();
-            update_universe();
         }
+        initialize_for_removal( entities );
+        do_delete_flagged_mesh_entities();
+        geomodel_.mesh.vertices.clear();
+        update_mesh_entity_connectivity();
+        flag_geological_entities_without_children();
+        do_delete_flagged_geological_entities();
+        update_geological_entity_connectivity();
+        update_universe();
     }
 
     template< index_t DIMENSION >
@@ -141,7 +140,6 @@ namespace RINGMesh {
         GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
             dynamic_cast< GeoModelGeologicalEntity< DIMENSION >& >( E ) );
         gmge_access.modifiable_index() = new_index_in_geomodel;
-        return;
     }
 
     template< index_t DIMENSION >
@@ -284,13 +282,12 @@ namespace RINGMesh {
     {
     }
 
-    void GeoModelBuilderRemoval< 3 >::update_mesh_entity(
-        GeoModelMeshEntity3D& ME )
+    void GeoModelBuilderRemoval< 3 >::update_mesh_entity( GeoModelMeshEntity3D& ME )
     {
         GeoModelBuilderRemovalBase3D::update_mesh_entity( ME );
 
         if( ME.mesh_entity_type() == Region3D::type_name_static() ) {
-            Region3D& R = dynamic_cast< Region3D& >( ME );
+            auto& R = dynamic_cast< Region3D& >( ME );
             update_region_boundary_signs( R );
             delete_invalid_signs( R );
         }

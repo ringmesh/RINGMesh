@@ -133,7 +133,7 @@ namespace {
         }
     }
 
-}
+} // namespace
 
 namespace RINGMesh {
 
@@ -163,7 +163,7 @@ namespace RINGMesh {
         find_or_create_geological_entity_type( type );
         std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >& store =
             geomodel_access_.modifiable_geological_entities( type );
-        index_t old_size = static_cast< index_t >( store.size() );
+        auto old_size = static_cast< index_t >( store.size() );
         index_t new_size = old_size + nb_additional_entities;
         store.reserve( new_size );
         for( index_t i : range( old_size, new_size ) ) {
@@ -185,9 +185,8 @@ namespace RINGMesh {
             ringmesh_assert(
                 parent == children_mesh_entity.parent_gmge( parent.type() ) );
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     template< index_t DIMENSION >
@@ -273,8 +272,7 @@ namespace RINGMesh {
         const GeologicalEntityType& type )
     {
         index_t index = find_or_create_geological_entity_type( type );
-        index_t id =
-            static_cast< index_t >( geomodel_.nb_geological_entities( type ) );
+        auto id = static_cast< index_t >( geomodel_.nb_geological_entities( type ) );
         geomodel_access_.modifiable_geological_entities()[index].emplace_back(
             GeoModelGeologicalEntityAccess< DIMENSION >::create_geological_entity(
                 type, geomodel_, id ) );
@@ -328,7 +326,7 @@ namespace RINGMesh {
                 GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
                     geomodel_access_.modifiable_geological_entity( id ) );
                 gmge_access.copy( from.geological_entity( id ) );
-        } );
+            } );
     }
 
     template< index_t DIMENSION >
