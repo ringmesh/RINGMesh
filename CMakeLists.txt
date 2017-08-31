@@ -312,7 +312,7 @@ if(BUILD_RINGMESH_VIEW)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     include(${CMAKE_SOURCE_DIR}/third_party/geogram/cmake/opengl.cmake)
-    add_ringmesh_binary(${binary_source_dir}/ringmesh-view geogram_gfx ${OPENGL_LIBRARIES})
+    add_ringmesh_binary(${binary_source_dir}/ringmesh-view.cpp geogram_gfx ${OPENGL_LIBRARIES})
     copy_for_windows()
 endif(BUILD_RINGMESH_VIEW)
 
