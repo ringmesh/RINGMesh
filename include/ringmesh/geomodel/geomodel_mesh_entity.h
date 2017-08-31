@@ -178,7 +178,7 @@ namespace RINGMesh {
          *
          */
         const gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
-        const GeoModelGeologicalEntity< DIMENSION >& parent( index_t id ) const;
+        const GeoModelGeologicalEntity< DIMENSION >& parent( index_t parent_index ) const;
         const GeoModelGeologicalEntity< DIMENSION >& parent(
             const GeologicalEntityType& parent_type ) const;
 

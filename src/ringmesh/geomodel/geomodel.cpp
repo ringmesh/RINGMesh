@@ -103,14 +103,15 @@ namespace RINGMesh {
             entity_type_manager().mesh_entity_manager;
         if( manager.is_line( type ) ) {
             return nb_lines();
-        } else if( manager.is_corner( type ) ) {
-            return nb_corners();
-        } else if( manager.is_surface( type ) ) {
-            return nb_surfaces();
-        } else {
-            ringmesh_assert_not_reached;
-            return 0;
         }
+        if( manager.is_corner( type ) ) {
+            return nb_corners();
+        }
+        if( manager.is_surface( type ) ) {
+            return nb_surfaces();
+        }
+        ringmesh_assert_not_reached;
+        return 0;
     }
 
     template< index_t DIMENSION >

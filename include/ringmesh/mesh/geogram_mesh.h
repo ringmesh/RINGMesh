@@ -112,7 +112,7 @@ namespace RINGMesh {
             return *( vecn< DIMENSION >* )( vertex_ptr );                    \
         }                                                                    \
     protected:                                                               \
-        std::unique_ptr< GEO::Mesh > mesh_ { new GEO::Mesh( DIMENSION, false ) }
+        std::unique_ptr< GEO::Mesh > mesh_
 
     template< index_t DIMENSION >
     class GeogramPointSetMesh: public PointSetMesh< DIMENSION > {
