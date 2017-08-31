@@ -43,14 +43,14 @@ Available Input/Output file formats
 In RINGMesh you can import and export \link ringmesh_geo_model GeoModel \endlink from files in the following formats:
 
  ### Import File Formats ###
- 
+
 - .ml: Model3D format from [SKUA-GOCAD](http://www.pdgm.com/products/skua-gocad/).
 - .so: TSolid volumetric mesh (tetrahedra) format from [SKUA-GOCAD](http://www.pdgm.com/products/skua-gocad/).
 Gocad/Skua Model3D information must be inside the .so file.
 - .gm: RINGMesh internal format (boundary representation or volumetric model).
 
  ### Export File Formats ###
- 
+
 - .obj: surface mesh format.
 - .csmp: [CSMP++](http://www.orefluids.ethz.ch/software/csmp.html) format (export 3 files: .asc, .dat, -regions.txt).
 - .gmsh: [Gmsh](http://gmsh.info/) format (can also export additional information for [Kine3D](http://www.pdgm.com/products/kine3d/)).
@@ -91,7 +91,7 @@ then unzip.
  - Line_5.geogram is the .geogram file of the RINGMesh::Line with id 5 in the RINGMesh::GeoModel.
  - Surface_10.geogram is the .geogram file of the RINGMesh::Surface with id 10 in the RINGMesh::GeoModel.
  - Region_3.geogram is the .geogram file of the RINGMesh::Region with id 3 in the RINGMesh::GeoModel.
-  
+
  ### Connectivity of GeoModel Meshed Entities ###
  The text file mesh_entities.txt stores information relative to the
  RINGMesh::GeoModelMeshEntity.
@@ -108,7 +108,7 @@ then unzip.
 
  The text file mesh_entities.txt stores for each mesh entity:
  its id, its name, its geological features and the indexes of its boundary mesh entities.
- 
+
 - For each RINGMesh::Corner there is no boundary. Boundary id list is kept empty.
 In the example below the corner has the id 10 in the GeoModel, does not have a name
 nor a geological feature.
@@ -122,7 +122,7 @@ nor a geological feature. Its boundaries are the corner 8 and the corner 10 in t
 GeoModel.
 
         Line 22 No_name no_geological_feature
-        boundary 8 10 
+        boundary 8 10
 
 - For each RINGMesh::Surface are stored the indexes of its boundaries (RINGMesh::Line). 
 In the example below the surface has the id 1 in the GeoModel, does not have a name.
@@ -142,7 +142,7 @@ It does not have any geological feature. Its boundaries are the surface 7, the s
 the surface 25 and the surface 29 in the GeoModel. Normals of surfaces 7 and 14 are oriented
 toward the region volume. Normals of surfaces 25 and 29 are oriented toward outside the region
 volume.
-        
+
         Region 3 r3 no_geological_feature
         +7 +14 -25 -29
 
@@ -151,7 +151,7 @@ The syntax for its boundaries (RINGMesh::Surface) is the same as for the regions
 
         Universe
         +5 -7 -0 +9 +3 -12
-  
+
 ### Topology of the GeoModel Geological Entities ###
 
 The file geological_entities.txt links the RINGMesh::GeoModelGeologicalEntity to the
@@ -167,19 +167,19 @@ Then information identifying the CONTACTS, INTERFACES and LAYERS (if any) is ent
 - Each Contact is identified by its id, its name, its geological feature, and the indexes of the Lines that constitute this Contact.
 
         Contact 13 the_name_of_the_contact geological_feature
-        13 14 16 
-  
+        13 14 16
+
 - Each Interface is identified by its id, its name, its geological feature, and the indexes of the Surfaces that constitute this Interface.
-  The geological feature gives information on the interface type from a geological point of view. 
+  The geological feature gives information on the interface type from a geological point of view.
   @todo Give the possible for geological features: no_geological_feature, boundary, fault, ......
- 
+
         Interface 4 the_name_of_the_interface geological_feature
         6 7 8
 
 - Each Layer is identified by its id, its name and the indexes of the Regions that constitute this Layer.
- 
+
         Layer 2 the_name_of_this_layer
         1 10 9 8 5 14
- 
+
 */
 
