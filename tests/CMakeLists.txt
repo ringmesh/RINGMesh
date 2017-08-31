@@ -52,6 +52,8 @@ configure_file(${test_config_file_in} ${test_config_file})
 
 # Get the name of the test files
 file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
+# ringmesh_files is defined in the root RINGMesh CMakeLists.txt
+set(ringmesh_files ${ringmesh_files} ${TESTS})
 
 # For all the test files found
 foreach(testsourcefile ${TESTS})

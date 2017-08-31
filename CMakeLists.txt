@@ -300,6 +300,11 @@ include_directories(${PROJECT_BINARY_DIR})
 
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
+
+# ringmesh_files definition must be before the binaries (utilities, ringmesh-viewm, etc.).
+# Thus this variable can be updated by the called cmake files.
+set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
+
 set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
@@ -321,6 +326,7 @@ if(RINGMESH_WITH_UTILITIES)
         add_ringmesh_binary(${utility_src})
     endforeach(utility_src ${utility_sources})
     copy_for_windows()
+    set(ringmesh_files ${ringmesh_files} ${utility_sources})
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TUTORIALS)
@@ -347,7 +353,6 @@ if(BUILD_DOCUMENTATION)
 endif()
 
 
-set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
 if(COVERALLS)
     coveralls_setup(
     "${ringmesh_files}"
