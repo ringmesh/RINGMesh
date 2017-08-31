@@ -58,7 +58,7 @@ namespace RINGMesh {
     {
         if( model_.nb_geological_entities( GeologicalEntityType( "Layer" ) ) == 0 ) {
             throw RINGMeshException( "I/O",
-                "The GeoModel have to be defined with layer." );
+                "The GeoModel have to be defined with layers." );
         }
     }
 
@@ -164,4 +164,4 @@ namespace RINGMesh {
         column_ = StratigraphicColumn( name_of_column, units_vec, paradigm_upper );
     }
 
-}
+} // namespace RINGMesh

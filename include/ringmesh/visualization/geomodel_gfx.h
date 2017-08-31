@@ -53,13 +53,13 @@
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelGfxBase {
-    ringmesh_disable_copy( GeoModelGfxBase );
+    ringmesh_disable_copy_and_move( GeoModelGfxBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         virtual ~GeoModelGfxBase() = default;
@@ -81,7 +81,7 @@ namespace RINGMesh {
          */
         virtual void initialize();
 
-        GeoModelGfxBase( GeoModelGfx< DIMENSION >& gfx );
+        explicit GeoModelGfxBase( GeoModelGfx< DIMENSION >& gfx );
 
     private:
         /// The GeoModel associated to the graphics
@@ -114,6 +114,6 @@ namespace RINGMesh {
     };
 
     ALIAS_2D_AND_3D( GeoModelGfx );
-}
+} // namespace RINGMesh
 
 #endif

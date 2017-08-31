@@ -43,7 +43,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
@@ -60,6 +60,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class AABBTree {
+        ringmesh_disable_copy_and_move( AABBTree );
         ringmesh_template_assert_2d_or_3d (DIMENSION);
     public:
         /// The index where to store the root. It starts to one for algorithm trick.
@@ -95,7 +96,7 @@ namespace RINGMesh {
             const EvalDistance& action ) const
         {
             index_t nearest_box = NO_ID;
-            vecn < DIMENSION > nearest_point;
+            vecn< DIMENSION > nearest_point;
             double distance;
             std::tie( nearest_box, nearest_point, distance ) =
                 get_nearest_element_box_hint( query );
@@ -138,6 +139,7 @@ namespace RINGMesh {
                 ROOT_INDEX, 0, nb_bboxes(), action );
         }
     protected:
+        AABBTree() = default;
         virtual ~AABBTree() = default;
 
         /*!
@@ -243,16 +245,14 @@ namespace RINGMesh {
             index_t element_id ) const = 0;
 
     protected:
-        std::vector< Box< DIMENSION > > tree_;
-        std::vector< index_t > mapping_morton_;
+        std::vector< Box< DIMENSION > > tree_ { };
+        std::vector< index_t > mapping_morton_ { };
     };
 
     template< index_t DIMENSION >
     class BoxAABBTree: public AABBTree< DIMENSION > {
-        ringmesh_template_assert_2d_or_3d (DIMENSION);
     public:
-        BoxAABBTree( const std::vector< Box< DIMENSION > >& boxes );
-        virtual ~BoxAABBTree() = default;
+        explicit BoxAABBTree( const std::vector< Box< DIMENSION > >& boxes );
 
     private:
         /*!
@@ -268,10 +268,8 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class LineAABBTree: public AABBTree< DIMENSION > {
-        ringmesh_template_assert_2d_or_3d (DIMENSION);
     public:
-        LineAABBTree( const LineMesh< DIMENSION >& mesh );
-        virtual ~LineAABBTree() = default;
+        explicit LineAABBTree( const LineMesh< DIMENSION >& mesh );
 
         /*!
          * @brief Gets the closest edge to a given point
@@ -297,7 +295,7 @@ namespace RINGMesh {
          */
         class DistanceToEdge {
         public:
-            DistanceToEdge( const LineMesh< DIMENSION >& mesh )
+            explicit DistanceToEdge( const LineMesh< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }
@@ -318,10 +316,8 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class SurfaceAABBTree: public AABBTree< DIMENSION > {
-        ringmesh_template_assert_2d_or_3d (DIMENSION);
     public:
-        SurfaceAABBTree( const SurfaceMeshBase< DIMENSION >& mesh );
-        virtual ~SurfaceAABBTree() = default;
+        explicit SurfaceAABBTree( const SurfaceMeshBase< DIMENSION >& mesh );
 
         /*!
          * @brief Gets the closest triangle to a given point
@@ -348,7 +344,7 @@ namespace RINGMesh {
          */
         class DistanceToTriangle {
         public:
-            DistanceToTriangle( const SurfaceMeshBase< DIMENSION >& mesh )
+            explicit DistanceToTriangle( const SurfaceMeshBase< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }
@@ -369,10 +365,9 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class VolumeAABBTree: public AABBTree< DIMENSION > {
-        static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
+        ringmesh_template_assert_3d (DIMENSION);
     public:
-        VolumeAABBTree( const VolumeMesh< DIMENSION >& mesh );
-        virtual ~VolumeAABBTree() = default;
+        explicit VolumeAABBTree( const VolumeMesh< DIMENSION >& mesh );
 
         /*!
          * @brief Gets the cell contining a point
@@ -431,7 +426,7 @@ namespace RINGMesh {
         // and replace current if nearer
         if( is_leaf( box_begin, box_end ) ) {
             index_t cur_box = mapping_morton_[box_begin];
-            vecn < DIMENSION > cur_nearest_point;
+            vecn< DIMENSION > cur_nearest_point;
             double cur_distance;
             std::tie( cur_distance, cur_nearest_point ) = action( query, cur_box );
             if( cur_distance < distance ) {
@@ -572,4 +567,4 @@ namespace RINGMesh {
                 element_end1, node_index2, element_begin2, element_end2, action );
         }
     }
-}
+} // namespace RINGMesh

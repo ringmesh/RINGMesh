@@ -57,7 +57,7 @@ namespace RINGMesh {
         VolumeMeshGfxFactory3D::register_creator< GeogramVolumeMeshGfx3D >(
             GeogramVolumeMesh3D::type_name_static() );
     }
-}
+} // namespace RINGMesh
 
 #endif
 

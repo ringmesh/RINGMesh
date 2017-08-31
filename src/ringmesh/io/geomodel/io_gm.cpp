@@ -337,7 +337,7 @@ namespace {
                                 entity_id );
                             index_t id = NO_ID;
                             GEO::String::from_string( entity_id, id );
-                            load_mesh_entity( entity_type, file_name, id );
+                            load_mesh_entity( MeshEntityType {entity_type}, file_name, id );
                             GEO::FileSystem::delete_file( file_name );
                         } ) );
             } while( unzGoToNextFile( uz ) == UNZ_OK );
@@ -349,12 +349,12 @@ namespace {
         }
 
         void load_mesh_entity(
-            const std::string& entity_type,
+            const MeshEntityType& entity_type,
             const std::string& file_name,
             index_t id );
 
         bool load_mesh_entity_base(
-            const std::string& entity_type,
+            const MeshEntityType& entity_type,
             const std::string& file_name,
             index_t id )
         {
@@ -466,7 +466,7 @@ namespace {
 
     template< >
     void GeoModelBuilderGM< 2 >::load_mesh_entity(
-        const std::string& entity_type,
+        const MeshEntityType& entity_type,
         const std::string& file_name,
         index_t id )
     {
@@ -475,7 +475,7 @@ namespace {
 
     template< >
     void GeoModelBuilderGM< 3 >::load_mesh_entity(
-        const std::string& entity_type,
+        const MeshEntityType& entity_type,
         const std::string& file_name,
         index_t id )
     {
@@ -567,10 +567,9 @@ namespace {
         }
     }
 
-    template< index_t DIMENSION >
-    void save_dimension( const GeoModel< DIMENSION >& geomodel, std::ofstream& out )
+    void save_dimension( index_t dimension, std::ofstream& out )
     {
-        out << "Dimension " << DIMENSION << EOL;
+        out << "Dimension " << dimension << EOL;
     }
 
     template< index_t DIMENSION >
@@ -729,7 +728,7 @@ namespace {
             throw RINGMeshException( "I/O", "Error when opening the file: ",
                 file_name );
         }
-        save_dimension( geomodel, out );
+        save_dimension( DIMENSION, out );
         save_version_and_name( geomodel, out );
         save_number_of_mesh_entities( geomodel, out );
         save_mesh_entities_topology( geomodel, out );
@@ -878,7 +877,7 @@ namespace {
             file_line.get_fields();
             if( file_line.nb_fields() == 2 ) {
                 if( file_line.field_matches( 0, "Dimension" ) ) {
-                    return file_line.field_as_int( 1 );
+                    return file_line.field_as_uint( 1 );
                 }
             }
         }

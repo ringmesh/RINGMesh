@@ -161,23 +161,21 @@ if(UNIX)
     # C++11 fully works on Linux from gcc/g++ 4.8 (before not fully operational).
     # On MacOS, it seems that C++11 is working since gcc/g++ 4.2.
     if(APPLE)
-        if(G++_VERSION VERSION_LESS 4.2 )
-            message(FATAL_ERROR "RINGMesh require G++ version >= 4.2")
+        if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+            message(FATAL_ERROR "RINGMesh on Apple requires Clang compiler")
         endif()
         set(CMAKE_MACOSX_RPATH 1)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-    else(APPLE)
-        # Linux
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-            if(COMPILER_VERSION VERSION_LESS 3.3 )
-               message(FATAL_ERROR "RINGMesh require Clang version >= 3.3")
-            endif()
-        elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            if(COMPILER_VERSION VERSION_LESS 4.8 )
-               message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
-            endif()
-        endif()
     endif(APPLE)
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        if(COMPILER_VERSION VERSION_LESS 3.3 )
+            message(FATAL_ERROR "RINGMesh require Clang version >= 3.3")
+        endif()
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        if(COMPILER_VERSION VERSION_LESS 4.8 )
+            message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
+        endif()
+    endif()
     # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 
@@ -272,7 +270,7 @@ add_library(RINGMesh SHARED
     ${ringmesh_src})
 	
 # RINGMesh depends on Geogram Tinyxml2 and zlib
-add_dependencies(RINGMesh geogram_ext tinyxml2_ext zlib_ext)
+add_dependencies(RINGMesh geogram_ext tinyxml2_ext zlib_ext minizip_ext)
 
 # Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
@@ -347,12 +345,31 @@ if(BUILD_DOCUMENTATION)
 endif()
 
 
-if (COVERALLS)
 set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
+if(COVERALLS)
     coveralls_setup(
     "${ringmesh_files}" 
         ${COVERALLS_UPLOAD}                 
         "${PROJECT_SOURCE_DIR}/cmake")
+endif()
+
+# additional target to perform clang-tidy run, requires clang-tidy
+find_program(CLANG_TIDY "clang-tidy")
+if(CLANG_TIDY)
+    message(STATUS "Configuring RINGMesh with clang-tidy")
+    get_directory_property(dirs INCLUDE_DIRECTORIES)
+    foreach(dir ${dirs})
+        set(include_dirs -I${dir} ${include_dirs})
+    endforeach()
+    add_custom_target(
+        tidy
+        COMMAND ${CLANG_TIDY}
+        ${ringmesh_files}
+        -config=''
+        --
+        -std=c++11
+        ${include_dirs}
+    )
 endif()
 
 #------------------------------------------------------------------------------------------------

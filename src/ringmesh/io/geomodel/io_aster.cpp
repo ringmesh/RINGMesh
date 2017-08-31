@@ -68,6 +68,8 @@ namespace {
     public:
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Code_Aster mesh not implemented yet" );
         }
@@ -101,8 +103,7 @@ namespace {
         {
             out << "COOR_3D" << EOL;
             for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
-                out << "V" << v << " " << geomodel_mesh.vertices.vertex( v )
-                    << EOL;
+                out << "V" << v << " " << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
             out << "FINSF" << EOL;
         }
@@ -121,9 +122,7 @@ namespace {
             }
         }
 
-        void write_polygons(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        void write_polygons( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
             for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
@@ -200,16 +199,10 @@ namespace {
             }
         }
 
-        void write_interfaces(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        void write_interfaces( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            for( index_t inter : range(
-                geomodel.nb_geological_entities(
-                    Interface3D::type_name_static() ) ) ) {
-                const GeoModelGeologicalEntity3D& cur_interface =
-                    geomodel.geological_entity( Interface3D::type_name_static(),
-                        inter );
+            for( auto& cur_interface : geomodel.geol_entities(
+                Interface3D::type_name_static() ) ) {
                 for( index_t s : range( cur_interface.nb_children() ) ) {
                     index_t surface_id = cur_interface.child( s ).index();
                     out << "GROUP_MA" << EOL;

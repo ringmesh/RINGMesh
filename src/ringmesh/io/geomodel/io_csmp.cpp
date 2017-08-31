@@ -84,6 +84,8 @@ namespace {
 
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" );
         }
@@ -518,13 +520,10 @@ namespace {
                     index_t interface_id = NO_ID;
                     if( type == "NAME" ) {
                         std::string name = parser.field( 2 );
-                        GeologicalEntityType type = Interface < 3
-                            > ::type_name_static();
-                        for( index_t i : range(
-                            geomodel.nb_geological_entities( type ) ) ) {
-                            if( geomodel.geological_entity( type, i ).name()
-                                == name ) {
-                                interface_id = i;
+                        GeologicalEntityType type = Interface3D::type_name_static();
+                        for( auto& cur_interface : geomodel.geol_entities( type ) ) {
+                            if( cur_interface.name() == name ) {
+                                interface_id = cur_interface.index();
                                 break;
                             }
                         }
