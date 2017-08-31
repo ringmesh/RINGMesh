@@ -372,6 +372,19 @@ if(CLANG_TIDY)
     )
 endif()
 
+# additional target to perform clang-format run, requires clang-format
+find_program(CLANG_FORMAT "clang-format")
+if(CLANG_FORMAT)
+    message(STATUS "Configuring RINGMesh with clang-format")
+    add_custom_target(
+        format
+        COMMAND ${CLANG_FORMAT}
+        -style=file
+        -i
+        ${ringmesh_files}
+    )
+endif()
+
 #------------------------------------------------------------------------------------------------
 # Configure CPack
 
