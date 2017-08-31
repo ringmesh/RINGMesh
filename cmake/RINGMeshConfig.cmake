@@ -61,7 +61,7 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     find_library(GEOGRAM_RELEASE_LIBRARY NAMES geogram
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/geogram/lib/Release)
     unset(ZLIB_DEBUG_LIBRARY CACHE)
-    find_library(ZLIB_DEBUG_LIBRARY NAMES zlib
+    find_library(ZLIB_DEBUG_LIBRARY NAMES zlibd
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/zlib/Debug NO_DEFAULT_PATH)
     unset(ZLIB_RELEASE_LIBRARY CACHE)
     find_library(ZLIB_RELEASE_LIBRARY NAMES zlib
@@ -71,7 +71,9 @@ find_path(GEOGRAM_INCLUDE_DIR NAMES geogram
     PATHS ${RINGMESH_ROOT_DIRECTORY}/third_party/geogram/src/lib)
 find_path(THIRD_PARTY_INCLUDE_DIR NAMES zlib
     PATHS ${RINGMESH_ROOT_DIRECTORY}/third_party)
-
+set(THIRD_PARTY_INCLUDE_DIR 
+	${THIRD_PARTY_INCLUDE_DIR} 
+	${RINGMESH_ROOT_DIRECTORY}/third_party/zlib)
 
 include(FindPackageHandleStandardArgs)
 set(RINGMesh_INCLUDE_DIRS
