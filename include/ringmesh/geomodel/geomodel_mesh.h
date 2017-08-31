@@ -69,8 +69,8 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
-    ALIAS_2D_AND_3D( GeoModel );
-    ALIAS_2D_AND_3D( GeoModelMesh );
+    ALIAS_3D( GeoModel );
+    ALIAS_3D( GeoModelMesh );
 } // namespace RINGMesh
 
 namespace RINGMesh {
@@ -1595,5 +1595,7 @@ namespace RINGMesh {
     public:
         GeoModelMeshCells3D cells;
     };
+
+    ALIAS_2D_AND_3D( GeoModelMesh );
 
 } // namespace RINGMesh
