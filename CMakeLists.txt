@@ -358,13 +358,14 @@ find_program(CLANG_TIDY "clang-tidy")
 if(CLANG_TIDY)
     message(STATUS "Configuring RINGMesh with clang-tidy")
     get_directory_property(dirs INCLUDE_DIRECTORIES)
+    message(STATUS ${dirs})
     foreach(dir ${dirs})
         set(include_dirs -I${dir} ${include_dirs})
     endforeach()
     add_custom_target(
         tidy
         COMMAND ${CLANG_TIDY}
-        ${ringmesh_files}
+        ${ringmesh_include}
         -config=''
         --
         -std=c++11
