@@ -87,9 +87,9 @@ int main()
             std::async( std::launch::async, &test_mesh,
                 ringmesh_test_data_path + "modelA4.so" ) );
 
-        futures.emplace_back(
-            std::async( std::launch::async, &test_mesh,
-                ringmesh_test_data_path + "modelA4_lts.so" ) );
+//        futures.emplace_back(
+//            std::async( std::launch::async, &test_mesh,
+//                ringmesh_test_data_path + "modelA4_lts.so" ) );
 
         for( auto& future : futures ) {
             future.get();
