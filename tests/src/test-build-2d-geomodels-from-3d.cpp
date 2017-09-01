@@ -61,21 +61,23 @@ int main()
         GeoModel3D geomodel3d;
         geomodel_load( geomodel3d, input_geomodel3d_file_name );
 
-        GeoModel2D projection_geomodel2d;
-        Geometry::Plane projection_plane( { 987., 0., 2150. },
-        { 6300., 10500., -3200. } );
+        vec3 plane_origin { 987., 0., 2150. };
+        vec3 plane_normal { 6300., 10500., -3200. };
+        Geometry::Plane projection_plane( plane_origin, plane_normal );
+        Frame3D plane_frame( plane_origin, plane_normal );
+        GeoModel2D projection_geomodel2d( plane_frame );
         GeoModelBuilder2DProjection geomodel2d_builder( projection_geomodel2d,
             geomodel3d, projection_plane );
         geomodel2d_builder.build_geomodel();
 
         std::vector< std::future< void > > checks;
-        checks.emplace_back( std::async( std::launch::async,
-            [&projection_geomodel2d] {
-            if( !is_geomodel_valid( projection_geomodel2d ) ) {
-                throw RINGMeshException( "TEST",
-                    "FAILED : built GeoModel2D is not valid" );
-            }
-        } ) );
+        checks.emplace_back(
+            std::async( std::launch::async, [&projection_geomodel2d] {
+                if( !is_geomodel_valid( projection_geomodel2d ) ) {
+                    throw RINGMeshException( "TEST",
+                        "FAILED : built GeoModel2D is not valid" );
+                }
+            } ) );
 
         std::string output_model_file_name( ringmesh_test_output_path );
         output_model_file_name += projection_geomodel2d.name() + "_saved_out.gm";

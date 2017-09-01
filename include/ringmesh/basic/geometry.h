@@ -83,6 +83,30 @@ namespace RINGMesh {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
 
+    struct Frame3D {
+        Frame3D() = default;
+
+        Frame3D(
+            const vec3 origin,
+            const vec3 normal,
+            const vec3 u_axis,
+            const vec3 v_axis )
+            :
+                origin( std::move( origin ) ),
+                normal( std::move( normal ) ),
+                u_axis( std::move( u_axis ) ),
+                v_axis( std::move( v_axis ) )
+        {
+        }
+
+        Frame3D( const vec3 origin, const vec3 normal );
+
+        vec3 origin { };
+        vec3 normal { };
+        vec3 u_axis { };
+        vec3 v_axis { };
+    };
+
     namespace Geometry {
 
         template< index_t DIMENSION >
@@ -121,9 +145,7 @@ namespace RINGMesh {
         struct Line {
             Line() = default;
             Line( const vecn< DIMENSION >& direction, vecn< DIMENSION > origin )
-                :
-                    origin( std::move( origin ) ),
-                    direction( normalize( direction ) )
+                : origin( std::move( origin ) ), direction( normalize( direction ) )
             {
             }
             explicit Line( Segment< DIMENSION > segment )
@@ -160,10 +182,7 @@ namespace RINGMesh {
                 vecn< DIMENSION > p0,
                 vecn< DIMENSION > p1,
                 vecn< DIMENSION > p2 )
-                :
-                    p0( std::move( p0 ) ),
-                    p1( std::move( p1 ) ),
-                    p2( std::move( p2 ) )
+                : p0( std::move( p0 ) ), p1( std::move( p1 ) ), p2( std::move( p2 ) )
             {
             }
             vecn< DIMENSION > p0 { };
@@ -174,10 +193,7 @@ namespace RINGMesh {
         struct Triangle< 3 > {
             Triangle() = default;
             Triangle( vec3 p0, vec3 p1, vec3 p2 )
-                :
-                    p0( std::move( p0 ) ),
-                    p1( std::move( p1 ) ),
-                    p2( std::move( p2 ) )
+                : p0( std::move( p0 ) ), p1( std::move( p1 ) ), p2( std::move( p2 ) )
             {
             }
             Plane plane() const

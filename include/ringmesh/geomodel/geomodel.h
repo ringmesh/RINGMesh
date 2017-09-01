@@ -40,6 +40,7 @@
 #include <vector>
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/geometry.h>
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
@@ -326,6 +327,37 @@ namespace RINGMesh {
         {
             return geol_entity_range< DIMENSION >( *this, geol_type );
         }
+    };
+
+    template< >
+    class RINGMESH_API GeoModel< 2 > final: public GeoModelBase< 2 > {
+        friend class GeoModelAccess< 2 > ;
+    public:
+        GeoModel();
+
+        GeoModel( const Frame3D plane_reference_frame );
+
+        corner_range< 2 > corners() const
+        {
+            return corner_range< 2 >( *this );
+        }
+        line_range< 2 > lines() const
+        {
+            return line_range< 2 >( *this );
+        }
+        surface_range< 2 > surfaces() const
+        {
+            return surface_range< 2 >( *this );
+        }
+        geol_entity_range< 2 > geol_entities(
+            const GeologicalEntityType& geol_type ) const
+        {
+            return geol_entity_range< 2 >( *this, geol_type );
+        }
+
+    private:
+        Frame3D reference_frame_ { { 0., 0., 0. }, { 0., 0., 1. }, { 1., 0., 0. }, {
+            0., 1., 0. } };
     };
 
     template< >
