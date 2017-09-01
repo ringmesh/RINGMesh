@@ -84,7 +84,7 @@ namespace {
     {
         save_normal( geomodel, triangle_id, out );
         begin_triangle( out );
-        for( index_t vertex : range( 3 ) ) {
+        for( auto vertex : range( 3 ) ) {
             save_triangle_vertex( geomodel, triangle_id, vertex, out );
         }
         end_triangle( out );
@@ -92,7 +92,7 @@ namespace {
 
     void save_triangles( const GeoModel3D& geomodel, std::ostream& out )
     {
-        for( index_t triangle : range( geomodel.mesh.polygons.nb_triangle() ) ) {
+        for( auto triangle : range( geomodel.mesh.polygons.nb_triangle() ) ) {
             save_triangle( geomodel, triangle, out );
         }
     }

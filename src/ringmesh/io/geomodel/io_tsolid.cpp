@@ -154,8 +154,8 @@ namespace {
                 }
             }
 
-            const index_t nb_numeric_like_vertex_attribute_names =
-                numeric_like_vertex_attribute_names_.size();
+            const auto nb_numeric_like_vertex_attribute_names =
+                static_cast< index_t >( numeric_like_vertex_attribute_names_.size() );
             if( !numeric_like_vertex_attribute_names_.empty() ) {
                 ringmesh_assert( nb_numeric_like_vertex_attribute_names > 0 );
                 out_ << "PROPERTIES";
@@ -267,8 +267,8 @@ namespace {
                 }
             }
 
-            const index_t nb_numeric_like_cell_attribute_names =
-                numeric_like_cell_attribute_names_.size();
+            const auto nb_numeric_like_cell_attribute_names =
+                static_cast< index_t >( numeric_like_cell_attribute_names_.size() );
             if( !numeric_like_cell_attribute_names_.empty() ) {
                 out_ << "TETRA_PROPERTIES";
                 for( const std::string& cur_num_like_c_att_name : numeric_like_cell_attribute_names_ ) {

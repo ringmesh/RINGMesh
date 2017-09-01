@@ -302,7 +302,7 @@ namespace RINGMesh {
                 { tetra.p0, tetra.p1, tetra.p2, tetra.p3 } };
             double dist { max_float64() };
             vec3 nearest_p;
-            for( index_t f : range(
+            for( auto f : range(
                 GEO::MeshCellDescriptors::tet_descriptor.nb_facets ) ) {
                 double distance { max_float64() };
                 vec3 cur_p;

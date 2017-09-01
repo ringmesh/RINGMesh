@@ -400,8 +400,8 @@ namespace RINGMesh {
         void remove_isolated_vertices()
         {
             std::vector< bool > to_delete( line_mesh_.nb_vertices(), true );
-            for( index_t e : range( line_mesh_.nb_edges() ) ) {
-                for( index_t v : range( 2 ) ) {
+            for( auto e : range( line_mesh_.nb_edges() ) ) {
+                for( auto v : range( 2 ) ) {
                     index_t vertex_id = line_mesh_.edge_vertex(
                         ElementLocalVertex( e, v ) );
                     to_delete[vertex_id] = false;
@@ -601,15 +601,15 @@ namespace RINGMesh {
         void connect_polygons( const std::vector< index_t >& polygons_to_connect )
         {
             index_t nb_local_vertices = 0;
-            for( index_t polygon : polygons_to_connect ) {
+            for( auto polygon : polygons_to_connect ) {
                 nb_local_vertices += this->surface_mesh_.nb_polygon_vertices(
                     polygon );
             }
 
             std::vector< ElementLocalVertex > polygon_vertices;
             polygon_vertices.reserve( nb_local_vertices );
-            for( index_t polygon : polygons_to_connect ) {
-                for( index_t v : range(
+            for( auto polygon : polygons_to_connect ) {
+                for( auto v : range(
                     this->surface_mesh_.nb_polygon_vertices( polygon ) ) ) {
                     polygon_vertices.emplace_back( polygon, v );
                 }
@@ -620,8 +620,8 @@ namespace RINGMesh {
             std::vector< index_t > vertex2polygon_local_vertex(
                 this->surface_mesh_.nb_vertices(), NO_ID );
             index_t local_vertex_count = 0;
-            for( index_t polygon : polygons_to_connect ) {
-                for( index_t v = 0;
+            for( auto polygon : polygons_to_connect ) {
+                for( auto v = 0;
                     v < this->surface_mesh_.nb_polygon_vertices( polygon );
                     v++, local_vertex_count++ ) {
                     index_t vertex = this->surface_mesh_.polygon_vertex(
@@ -633,7 +633,7 @@ namespace RINGMesh {
             }
 
             local_vertex_count = 0;
-            for( index_t polygon : polygons_to_connect ) {
+            for( auto polygon : polygons_to_connect ) {
                 for( index_t v = 0;
                     v < this->surface_mesh_.nb_polygon_vertices( polygon );
                     v++, local_vertex_count++ ) {
@@ -646,7 +646,7 @@ namespace RINGMesh {
                     index_t next_vertex = this->surface_mesh_.polygon_vertex(
                         this->surface_mesh_.next_polygon_vertex(
                             ElementLocalVertex( polygon, v ) ) );
-                    for( index_t local_vertex =
+                    for( auto local_vertex =
                         vertex2polygon_local_vertex[next_vertex];
                         local_vertex != NO_ID; local_vertex =
                             next_local_vertex_around_vertex[local_vertex] ) {
@@ -719,8 +719,8 @@ namespace RINGMesh {
         void remove_isolated_vertices()
         {
             std::vector< bool > to_delete( surface_mesh_.nb_vertices(), true );
-            for( index_t p : range( surface_mesh_.nb_polygons() ) ) {
-                for( index_t v : range( surface_mesh_.nb_polygon_vertices( p ) ) ) {
+            for( auto p : range( surface_mesh_.nb_polygons() ) ) {
+                for( auto v : range( surface_mesh_.nb_polygon_vertices( p ) ) ) {
                     index_t vertex_id = surface_mesh_.polygon_vertex(
                         ElementLocalVertex( p, v ) );
                     to_delete[vertex_id] = false;
@@ -974,8 +974,8 @@ namespace RINGMesh {
         void remove_isolated_vertices()
         {
             std::vector< bool > to_delete( volume_mesh_.nb_vertices(), true );
-            for( index_t c : range( volume_mesh_.nb_cells() ) ) {
-                for( index_t v : range( volume_mesh_.nb_cell_vertices( c ) ) ) {
+            for( auto c : range( volume_mesh_.nb_cells() ) ) {
+                for( auto v : range( volume_mesh_.nb_cell_vertices( c ) ) ) {
                     index_t vertex_id = volume_mesh_.cell_vertex(
                         ElementLocalVertex( c, v ) );
                     to_delete[vertex_id] = false;

@@ -89,7 +89,7 @@ namespace RINGMesh {
 
         bool bboxes_overlap( const Box< DIMENSION >& B ) const
         {
-            for( index_t c : range( DIMENSION ) ) {
+            for( auto c : range( DIMENSION ) ) {
                 if( max()[c] < B.min()[c] ) {
                     return false;
                 }
@@ -124,7 +124,7 @@ namespace RINGMesh {
             Box< DIMENSION > result;
             vecn< DIMENSION > minimal_max;
             vecn< DIMENSION > maximal_min;
-            for( index_t c : range( DIMENSION ) ) {
+            for( auto c : range( DIMENSION ) ) {
                 minimal_max[c] = std::min( this->max()[c], B.max()[c] );
                 maximal_min[c] = std::max( this->min()[c], B.min()[c] );
             }
@@ -135,7 +135,7 @@ namespace RINGMesh {
 
         bool contains( const vecn< DIMENSION >& b ) const
         {
-            for( index_t c : range( DIMENSION ) ) {
+            for( auto c : range( DIMENSION ) ) {
                 if( b[c] < min()[c] ) {
                     return false;
                 }

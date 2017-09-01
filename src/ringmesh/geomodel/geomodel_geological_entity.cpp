@@ -143,7 +143,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelGeologicalEntity< DIMENSION >::is_on_voi() const
     {
-        for( index_t i : range( nb_children() ) ) {
+        for( auto i : range( nb_children() ) ) {
             if( !child( i ).is_on_voi() ) {
                 return false;
             }
@@ -167,7 +167,7 @@ namespace RINGMesh {
         } else {
             // All children must have this entity as a parent
             const GeologicalEntityType entity_type = type_name();
-            for( index_t i : range( nb_children() ) ) {
+            for( auto i : range( nb_children() ) ) {
                 const GeoModelMeshEntity< DIMENSION >& one_child = child( i );
                 if( one_child.parent_gmge( entity_type ) != gmge() ) {
                     Logger::warn( "GeoModelEntity",

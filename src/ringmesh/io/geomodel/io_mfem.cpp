@@ -127,7 +127,7 @@ namespace {
             out << "vertices" << EOL;
             out << geomodel_mesh.vertices.nb() << EOL;
             out << DIMENSION << EOL;
-            for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
+            for( auto v : range( geomodel_mesh.vertices.nb() ) ) {
                 out << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
         }
@@ -175,12 +175,12 @@ namespace {
         index_t nb_cells { geomodel_mesh.cells.nb() };
         out << "elements" << EOL;
         out << nb_cells << EOL;
-        for( index_t c : range( nb_cells ) ) {
+        for( auto c : range( nb_cells ) ) {
             out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
             out
                 << cell_type_mfem[to_underlying_type( geomodel_mesh.cells.type( c ) )]
                 << " ";
-            for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
+            for( auto v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
                 out
                     << geomodel_mesh.cells.vertex(
                         ElementLocalVertex( c, cell2mfem[v] ) ) << " ";
@@ -198,10 +198,10 @@ namespace {
         index_t nb_triangles { geomodel_mesh.polygons.nb_triangle() };
         out << "elements" << EOL;
         out << nb_triangles << EOL;
-        for( index_t c : range( nb_triangles ) ) {
+        for( auto c : range( nb_triangles ) ) {
             out << geomodel_mesh.polygons.surface( c ) + mfem_offset << " ";
             out << TRIANGLE << " ";
-            for( index_t v : range( geomodel_mesh.polygons.nb_vertices( c ) ) ) {
+            for( auto v : range( geomodel_mesh.polygons.nb_vertices( c ) ) ) {
                 out << geomodel_mesh.polygons.vertex( ElementLocalVertex( c, v ) )
                     << " ";
             }
@@ -228,12 +228,12 @@ namespace {
         const GeoModelMeshPolygons3D& polygons = geomodel_mesh.polygons;
         out << "boundary" << EOL;
         out << polygons.nb() << EOL;
-        for( index_t p : range( polygons.nb() ) ) {
+        for( auto p : range( polygons.nb() ) ) {
             out << polygons.surface( p ) + mfem_offset << " ";
             PolygonType polygon_type;
             std::tie( polygon_type, std::ignore ) = polygons.type( p );
             out << polygon_type_mfem[to_underlying_type( polygon_type )] << " ";
-            for( index_t v : range( polygons.nb_vertices( p ) ) ) {
+            for( auto v : range( polygons.nb_vertices( p ) ) ) {
                 out << polygons.vertex( ElementLocalVertex( p, v ) ) << " ";
             }
             out << EOL;
@@ -249,10 +249,10 @@ namespace {
         const GeoModelMeshEdges2D& edges = geomodel_mesh.edges;
         out << "boundary" << EOL;
         out << edges.nb() << EOL;
-        for( index_t p : range( edges.nb() ) ) {
+        for( auto p : range( edges.nb() ) ) {
             out << edges.line( p ) + mfem_offset << " ";
             out << SEGMENT << " ";
-            for( index_t v : range( 2 ) ) {
+            for( auto v : range( 2 ) ) {
                 out << edges.vertex( ElementLocalVertex( p, v ) ) << " ";
             }
             out << EOL;

@@ -49,7 +49,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
     {
-        for( index_t i : range( DIMENSION ) ) {
+        for( auto i : range( DIMENSION ) ) {
             if( u[i] != v[i] ) return false;
         }
         return true;
@@ -144,7 +144,7 @@ namespace RINGMesh {
             double plane_constant() const
             {
                 double plane_constant { 0.0 };
-                for( index_t i : range( 3 ) ) {
+                for( auto i : range( 3 ) ) {
                     plane_constant -= origin[i] * normal[i];
                 }
                 return plane_constant;

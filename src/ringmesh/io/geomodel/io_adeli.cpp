@@ -92,7 +92,7 @@ namespace {
         {
             out << "$NOD" << EOL;
             out << geomodel_mesh.vertices.nb() << EOL;
-            for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
+            for( auto v : range( geomodel_mesh.vertices.nb() ) ) {
                 out << v + id_offset_adeli << " "
                     << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
@@ -126,9 +126,9 @@ namespace {
             const std::vector< MeshEntityType >& mesh_entity_types =
                 manager.mesh_entity_types();
             // Corners are already written so we start this loop at 1
-            for( index_t geomodel_mesh_entities : range( 1,
+            for( auto geomodel_mesh_entities : range( 1,
                 manager.nb_mesh_entity_types() ) ) {
-                for( index_t entity : range(
+                for( auto entity : range(
                     geomodel.nb_mesh_entities(
                         mesh_entity_types[geomodel_mesh_entities] ) ) ) {
                     write_mesh_elements_for_a_mesh_entity(
@@ -150,9 +150,9 @@ namespace {
             // in adeli, we have to count the vertex of each corner in a different
             // way
             index_t nb_mesh_entities = geomodel.nb_corners();
-            for( index_t geomodel_mesh_entities : range( 1,
+            for( auto geomodel_mesh_entities : range( 1,
                 manager.nb_mesh_entity_types() ) ) {
-                for( index_t entity : range(
+                for( auto entity : range(
                     geomodel.nb_mesh_entities(
                         mesh_entity_types[geomodel_mesh_entities] ) ) ) {
                     nb_mesh_entities +=
@@ -169,11 +169,11 @@ namespace {
             index_t& elt_id,
             std::ofstream& out ) const
         {
-            for( index_t elt : range( geomodel_mesh_entity.nb_mesh_elements() ) ) {
+            for( auto elt : range( geomodel_mesh_entity.nb_mesh_elements() ) ) {
                 out << elt_id++ << " " << cell_descriptor << " " << reg_phys << " "
                     << geomodel_mesh_entity.index() + id_offset_adeli << " "
                     << geomodel_mesh_entity.nb_mesh_element_vertices( elt ) << " ";
-                for( index_t v : range(
+                for( auto v : range(
                     geomodel_mesh_entity.nb_mesh_element_vertices( elt ) ) ) {
                     out
                         << geomodel_mesh_entity.geomodel().mesh.vertices.geomodel_vertex_id(

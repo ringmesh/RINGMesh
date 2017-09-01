@@ -154,10 +154,10 @@ namespace RINGMesh {
 
         /*!
          * @brief Detect and remove degenerated polygons in a Surface
-         * @param[in,out] S Surface to check for potential degenerate polygons.
-         * @return the number of degenerate polygons in \p S.
+         * @param[in,out] surface Surface to check for potential degenerate polygons.
+         * @return the number of degenerate polygons in \p surface.
          */
-        index_t detect_degenerate_polygons( const Surface< DIMENSION >& S );
+        index_t detect_degenerate_polygons( const Surface< DIMENSION >& surface );
 
         /*!
          * @brief Remove degenerate polygons and edges from the Surface
@@ -188,14 +188,14 @@ namespace RINGMesh {
          *
          * An edge is degenerate if both vertices are colocated.
          *
-         * @param[in] L Line to check the edge \p e.
-         * @param[in] e edge index in Line \p L.
+         * @param[in] line Line to check the edge \p edge.
+         * @param[in] edge edge index in Line \p line.
          * @param[in] colocated_vertices contains the colocated mapping of the Line.
          * @return true if the edge is degenerate. Else false.
          */
         bool edge_is_degenerate(
             const Line< DIMENSION >& line,
-            index_t e,
+            index_t edge,
             const std::vector< index_t >& colocated_vertices );
 
         void build_contacts();

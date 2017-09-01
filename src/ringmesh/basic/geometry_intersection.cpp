@@ -118,8 +118,7 @@ namespace RINGMesh {
             double c1 { ( const_P1 - norm_d * const_P0 ) * invDet };
             vec3 O_inter { c0 * plane0.normal + c1 * plane1.normal };
             vec3 D_inter { cross( plane0.normal, plane1.normal ) };
-            return std::make_tuple( true, Geometry::Line3D { std::move( D_inter ),
-                                                             std::move( O_inter ) } );
+            return std::make_tuple( true, Geometry::Line3D { D_inter, O_inter } );
         }
 
         std::tuple< bool, vec2 > line_line(
@@ -377,7 +376,7 @@ namespace RINGMesh {
                 segment_intersections.reserve( line_intersections.size() );
                 for( auto& point : line_intersections ) {
                     if( Position::point_inside_segment( point, segment ) ) {
-                        segment_intersections.emplace_back( std::move( point ) );
+                        segment_intersections.emplace_back( point );
                     }
                 }
             }

@@ -248,12 +248,12 @@ namespace RINGMesh {
         futures.reserve( nb_threads );
         index_t start { 0 };
         auto action_per_thread = [&action] ( index_t start, index_t end ) {
-            for( index_t i : range( start, end ) ) {
+            for( auto i : range( start, end ) ) {
                 action( i );
             }
         };
         index_t nb_tasks_per_thread { size / nb_threads };
-        for( index_t thread : range( nb_threads - 1 ) ) {
+        for( auto thread : range( nb_threads - 1 ) ) {
             ringmesh_unused( thread );
             futures.emplace_back(
                 std::async( std::launch::async, action_per_thread, start,

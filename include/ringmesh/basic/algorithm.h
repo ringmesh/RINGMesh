@@ -99,10 +99,10 @@ namespace RINGMesh {
         if( input.size() < 2 ) {
             return;
         }
-        for( index_t it1 : range( input.size() - 1) ) {
+        for( auto it1 : range( input.size() - 1) ) {
             index_t ref_index = it1;
             T1 ref_value = input[it1];
-            for( index_t it2 : range( it1 + 1, input.size() ) ) {
+            for( auto it2 : range( it1 + 1, input.size() ) ) {
                 index_t new_index = it2;
                 T1 new_value = input[it2];
                 if( ref_value > new_value ) {
