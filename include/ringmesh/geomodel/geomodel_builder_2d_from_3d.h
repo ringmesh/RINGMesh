@@ -45,7 +45,7 @@ namespace RINGMesh {
         GeoModelBuilder2DFrom3D(
             GeoModel2D& geomodel2d,
             const GeoModel3D& geomodel3d_from,
-            Geometry::Plane plane )
+            const Geometry::Plane& plane )
             :
                 GeoModelBuilder( geomodel2d ),
                 geomodel3d_from_( geomodel3d_from ),
@@ -71,13 +71,13 @@ namespace RINGMesh {
     protected:
         vec2 get_2d_coord( const vec3& coord3d )
         {
-            return vec2 { dot( coord3d, u_axis ), dot( coord3d, v_axis ) };
+            return { dot( coord3d, u_axis ), dot( coord3d, v_axis ) };
 
         }
 
     protected:
         const GeoModel3D& geomodel3d_from_;
-        Geometry::Plane plane_;
+        const Geometry::Plane& plane_;
         vec3 u_axis { };
         vec3 v_axis { };
     };
@@ -87,7 +87,7 @@ namespace RINGMesh {
         GeoModelBuilder2DProjection(
             GeoModel2D& geomodel2d,
             const GeoModel3D& geomodel3d_from,
-            Geometry::Plane plane )
+            const Geometry::Plane& plane )
             : GeoModelBuilder2DFrom3D( geomodel2d, geomodel3d_from, plane )
         {
             info.set_geomodel_name( geomodel3d_from_.name() + "_projected" );
