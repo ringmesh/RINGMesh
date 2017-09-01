@@ -41,7 +41,7 @@
 namespace {
     using namespace RINGMesh;
 
-    static const MeshEntityType projectable_entity_types[3] = {
+    const MeshEntityType projectable_entity_types[3] = {
         Corner3D::type_name_static(), Line3D::type_name_static(),
         Surface3D::type_name_static() };
 
@@ -57,12 +57,12 @@ namespace {
     };
 
     template< typename U, typename T >
-    static const T& mapped_value( const std::map< U, T >& map, const U& key )
+    const T& mapped_value( const std::map< U, T >& map, const U& key )
     {
         return map.find( key )->second;
     }
 
-    static const std::map< GeologicalEntityType, GeologicalEntityType > geol_entity_type_2d_to_3d_map =
+    const std::map< GeologicalEntityType, GeologicalEntityType > geol_entity_type_2d_to_3d_map =
         GeologicalEntityTypeMapFrom2DTo3DInitializer::initialize_map();
 
 }
@@ -124,21 +124,17 @@ namespace RINGMesh {
 
     void GeoModelBuilder2DProjection::project_geomodel_3d_mesh_entities()
     {
-
-        // Corner
         for( const auto& corner : geomodel3d_from_.corners() ) {
             auto projected_vertices = compute_projected_vertices( corner );
             ringmesh_assert( projected_vertices.size() == 1 );
-            geometry.set_corner( corner.index(), projected_vertices[0] );
+            geometry.set_corner( corner.index(), projected_vertices.front() );
         }
 
-        // Line
         for( const auto& line : geomodel3d_from_.lines() ) {
             auto projected_vertices = compute_projected_vertices( line );
             geometry.set_line( line.index(), projected_vertices );
         }
 
-        // Surface
         for( const auto& surface : geomodel3d_from_.surfaces() ) {
             auto projected_vertices = compute_projected_vertices( surface );
             std::vector< index_t > surface_polygons;
