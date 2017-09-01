@@ -383,7 +383,7 @@ namespace RINGMesh {
             GEO::AttributesManager& reg_attr_mgr = region.cell_attribute_manager();
             GEO::Attribute< double > attr( reg_attr_mgr,
                 mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
-            for( index_t cell_itr : range( region.nb_mesh_elements() ) ) {
+            for( auto cell_itr : range( region.nb_mesh_elements() ) ) {
                 attr[cell_itr] = get_tet_quality(
                     region.mesh_element_vertex( ElementLocalVertex( cell_itr, 0 ) ),
                     region.mesh_element_vertex( ElementLocalVertex( cell_itr, 1 ) ),
