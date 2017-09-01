@@ -278,7 +278,9 @@ namespace RINGMesh {
         ringmesh_assert(
             mesh_entity_id.index() < vertex_maps_[mesh_entity_id.type()]->size() );
         if( geomodel_vertices_.is_initialized() ) {
-            vertex_maps_.at( mesh_entity_id.type() )->at( mesh_entity_id.index() ).resize( geomodel_vertices_.nb(), NO_ID );
+            const GeoModelMeshEntity< DIMENSION >& mesh_entity = geomodel_.mesh_entity(
+                mesh_entity_id );
+            vertex_maps_.at( mesh_entity_id.type() )->at( mesh_entity_id.index() ).resize( mesh_entity.nb_vertices(), NO_ID );
         }
         return vertex_map( mesh_entity_id );
     }
@@ -1609,7 +1611,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshCells< DIMENSION >::test_and_initialize_cell_facet() const
     {
-        if( !polygon_id_.empty() ) {
+        if( polygon_id_.empty() ) {
             const_cast< GeoModelMeshCells* >( this )->initialize_cell_facet();
         }
     }
