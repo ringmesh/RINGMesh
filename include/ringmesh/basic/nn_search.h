@@ -131,7 +131,7 @@ namespace RINGMesh {
                     std::vector< index_t > neighbors = get_neighbors( v,
                         cur_neighbor );
                     nb_neighbors = static_cast< index_t >( neighbors.size() );
-                    for( index_t i : range( prev_neighbor, cur_neighbor ) ) {
+                    for( auto i : range( prev_neighbor, cur_neighbor ) ) {
                         if( test( neighbors[i] ) ) {
                             break;
                         }
@@ -156,7 +156,7 @@ namespace RINGMesh {
         vecn< DIMENSION > point( index_t v ) const
         {
             vecn< DIMENSION > result;
-            for( index_t i : range( DIMENSION ) ) {
+            for( auto i : range( DIMENSION ) ) {
                 result[i] = nn_points_[DIMENSION * v + i];
             }
             return result;
@@ -169,7 +169,7 @@ namespace RINGMesh {
 
     private:
         void fill_nn_search_points(
-            index_t index_in_nn,
+            index_t index_in_nn_search,
             const vecn< DIMENSION >& center );
 
     private:
