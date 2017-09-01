@@ -726,15 +726,15 @@ namespace RINGMesh {
          * |          surface 0           |             surface 1           |
          */
         void initialize();
-
         /*!
-         * resize the polygons data
-         */
+        * Resize edge data: surface_id_ and polygon_id_
+        */
         void resize_polygones_data();
         /*!
-         * Clear the polygone data
-         */
+        * Clear edge data: surface_id_ and polygon_id_
+        */
         void clear_polygones_data();
+
         /*!
          * @brief Removes polygon adjacencies along lines
          */
@@ -902,13 +902,12 @@ namespace RINGMesh {
          * |        line 0        |        line 1         |
          */
         void initialize();
-
         /*!
-         * Resize edge data
-         */
+        * Resize edge data: line_id_ and edge_id_
+        */
         void resize_edge_data();
         /*!
-         * Clear edge data
+         * Clear edge data: line_id_ and edge_id_
          */
         void clear_edge_data();
 
