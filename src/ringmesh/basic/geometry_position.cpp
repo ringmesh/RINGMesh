@@ -104,12 +104,14 @@ namespace {
                 return true;
             }
             return s2 == s3;
-        } else if( s2 == ZERO ) {
+        }
+        if( s2 == ZERO ) {
             if( s1 == ZERO || s3 == ZERO ) {
                 return true;
             }
             return s1 == s3;
-        } else if( s3 == ZERO ) {
+        }
+        if( s3 == ZERO ) {
             if( s1 == ZERO || s2 == ZERO ) {
                 return true;
             }
@@ -314,10 +316,10 @@ namespace RINGMesh {
             vec3 u { normalize( point_on_plane ) };
             vec3 v { cross( plane.normal, u ) };
 
-            vec3 p0 { distance * u };
-            vec3 p1 { distance
+            vec3 p0 { projected_point + distance * u };
+            vec3 p1 { projected_point + distance
                 * ( std::cos( 2 * M_PI / 3 ) * u - std::sin( 2 * M_PI / 3 ) * v ) };
-            vec3 p2 { distance
+            vec3 p2 { projected_point + distance
                 * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
 
             return sign(

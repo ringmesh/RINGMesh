@@ -126,7 +126,7 @@ void test_segment_plane_intersection()
     std::tie( does_seg2_intersect_plane, result2 ) = Intersection::segment_plane(
         seg2, plane );
     vec3 answer2 { seg2.p1 };
-    verdict( !does_seg2_intersect_plane,
+    verdict( does_seg2_intersect_plane && are_almost_equal( result2, answer2 ),
         "Intersection at segment extremity" );
 
     // Line intersects but not the segment
