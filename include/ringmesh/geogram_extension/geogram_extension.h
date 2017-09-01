@@ -146,15 +146,6 @@ namespace RINGMesh {
         {
         }
 
-        void bind_one_attribute(
-            index_t i,
-            GEO::AttributesManager& manager,
-            const std::string& attribute_name )
-        {
-            base_class::operator[]( i ) = new GEO::Attribute< T >( manager,
-                attribute_name );
-        }
-
         GEO::Attribute< T >& operator[]( index_t i )
         {
             return *base_class::operator[]( i );

@@ -84,7 +84,7 @@ namespace {
     public:
         GeoModelMeshCellsSort(
             const VolumeMesh< DIMENSION >& mesh,
-            const GEO::Attribute< index_t >& region_id )
+            const std::vector< index_t >& region_id )
             : mesh_( mesh ), region_id_( region_id )
         {
         }
@@ -98,7 +98,7 @@ namespace {
         }
     private:
         const VolumeMesh< DIMENSION >& mesh_;
-        const GEO::Attribute< index_t >& region_id_;
+        const std::vector< index_t >& region_id_;
     };
 
     std::string vertex_map_name()
@@ -221,7 +221,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    const GEO::Attribute< index_t >&
+    const std::vector< index_t >&
     GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::vertex_map(
         const gmme_id& mesh_entity_id ) const
     {
@@ -229,7 +229,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    GEO::Attribute< index_t >& GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::vertex_map(
+    std::vector< index_t >& GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::vertex_map(
         const gmme_id& mesh_entity_id )
     {
         return ( *vertex_maps_[mesh_entity_id.type()] )[mesh_entity_id.index()];
@@ -265,24 +265,21 @@ namespace RINGMesh {
             vertex_maps_.at( cur_entity_type )->clear();
             vertex_maps_.at( cur_entity_type )->resize( nb_cur_type_entities );
             for( index_t e : range( nb_cur_type_entities ) ) {
-                bind_vertex_map( { cur_entity_type, e } );
+                resize_vertex_map( { cur_entity_type, e } );
             }
         }
     }
 
     template< index_t DIMENSION >
-    GEO::Attribute< index_t >&
-    GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::bind_vertex_map(
+    std::vector< index_t >&
+    GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::resize_vertex_map(
         const gmme_id& mesh_entity_id )
     {
         ringmesh_assert(
             mesh_entity_id.index() < vertex_maps_[mesh_entity_id.type()]->size() );
         if( geomodel_vertices_.is_initialized() ) {
-            vertex_maps_.at( mesh_entity_id.type() )->bind_one_attribute(
-                mesh_entity_id.index(),
-                mesh_entity_vertex_attribute_manager( mesh_entity_id ),
-                vertex_map_name() );
-            vertex_map( mesh_entity_id ).fill( NO_ID );
+            vertex_maps_.at( mesh_entity_id.type() )->at( mesh_entity_id.index() ).resize( geomodel_vertices_.nb() );
+            //vertex_map( mesh_entity_id ).fill( NO_ID );
         }
         return vertex_map( mesh_entity_id );
     }
@@ -314,14 +311,12 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::unbind_vertex_map(
+    void GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::clear_vertex_map(
         const gmme_id& mesh_entity_id )
     {
         resize_all_mesh_entity_vertex_maps( mesh_entity_id.type() );
-        if( vertex_maps_.at( mesh_entity_id.type() )->is_attribute_bound(
-            mesh_entity_id.index() ) ) {
-            vertex_maps_.at( mesh_entity_id.type() )->unbind(
-                mesh_entity_id.index() );
+        if( !vertex_maps_.at(mesh_entity_id.type())->at(mesh_entity_id.index()).empty() ) {
+            vertex_maps_.at( mesh_entity_id.type() )->at( mesh_entity_id.index() ).clear( );
         }
     }
 
@@ -330,7 +325,7 @@ namespace RINGMesh {
         const gmme_id& mesh_entity_id )
     {
 
-        GEO::Attribute< index_t >& mesh_entity_vertex_map = bind_vertex_map(
+        std::vector< index_t >& mesh_entity_vertex_map = resize_vertex_map(
             mesh_entity_id );
 
         const GeoModelMeshEntity< DIMENSION >& E = geomodel_.mesh_entity(
@@ -357,8 +352,8 @@ namespace RINGMesh {
     bool GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::is_mesh_entity_vertex_map_initialized(
         const gmme_id& mesh_entity_id ) const
     {
-        return ( vertex_maps_.find( mesh_entity_id.type() )->second )->is_attribute_bound(
-            mesh_entity_id.index() );
+        return ( !vertex_maps_.find( mesh_entity_id.type() )->second->at(
+            mesh_entity_id.index()).empty() );
     }
 
     template< index_t DIMENSION >
@@ -366,7 +361,7 @@ namespace RINGMesh {
     {
         for( auto& vertex_map : vertex_maps_ ) {
             for( index_t e : range( vertex_map.second->size() ) ) {
-                vertex_map.second->unbind( e );
+                vertex_map.second->at( e ).clear();
             }
             vertex_map.second->clear();
         }
@@ -376,8 +371,7 @@ namespace RINGMesh {
     void GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::resize_all_mesh_entity_vertex_maps(
         const MeshEntityType& type )
     {
-        vertex_maps_.at( type )->resize( geomodel_.nb_mesh_entities( type ),
-            nullptr );
+        vertex_maps_.at( type )->resize( geomodel_.nb_mesh_entities( type ) );
     }
 
     template< index_t DIMENSION >
@@ -524,14 +518,14 @@ namespace RINGMesh {
     void GeoModelMeshVerticesBase< DIMENSION >::unbind_geomodel_vertex_map(
         const gmme_id& mesh_entity_id )
     {
-        vertex_mapper_.unbind_vertex_map( mesh_entity_id );
+        vertex_mapper_.clear_vertex_map( mesh_entity_id );
     }
 
     template< index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::bind_geomodel_vertex_map(
         const gmme_id& mesh_entity_id )
     {
-        vertex_mapper_.bind_vertex_map( mesh_entity_id );
+        vertex_mapper_.resize_vertex_map( mesh_entity_id );
     }
 
     template< index_t DIMENSION >
@@ -792,11 +786,6 @@ namespace RINGMesh {
         vertex_maps_[Region3D::type_name_static()] = &region_vertex_maps_;
     }
     /*******************************************************************************/
-    template< index_t DIMENSION >
-    const std::string GeoModelMeshCells< DIMENSION >::region_att_name = "region";
-    template< index_t DIMENSION >
-    const std::string GeoModelMeshCells< DIMENSION >::cell_region_att_name =
-        "cell_region";
 
     template< index_t DIMENSION >
     GeoModelMeshCells< DIMENSION >::GeoModelMeshCells(
@@ -908,7 +897,7 @@ namespace RINGMesh {
         }
 
         // Fill the cells with vertices
-        bind_attribute();
+        resize_cell_data();
         std::vector< index_t > cur_cell_per_type(
             to_underlying_type( CellType::UNDEFINED ), 0 );
         const GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices =
@@ -951,28 +940,18 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshCells< DIMENSION >::bind_attribute()
+    void GeoModelMeshCells< DIMENSION >::resize_cell_data()
     {
-        if( !region_id_.is_bound() ) {
-            region_id_.bind( attribute_manager(), region_att_name );
-        }
-        if( !cell_id_.is_bound() ) {
-            cell_id_.bind( attribute_manager(), cell_region_att_name );
-        }
+        region_id_.resize( mesh_->nb_cells() ) ;
+        cell_id_.resize( mesh_->nb_cells() );
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshCells< DIMENSION >::unbind_attribute()
+    void GeoModelMeshCells< DIMENSION >::clear_cell_data()
     {
-        if( region_id_.is_bound() ) {
-            region_id_.unbind();
-        }
-        if( cell_id_.is_bound() ) {
-            cell_id_.unbind();
-        }
-        if( polygon_id_.is_bound() ) {
-            polygon_id_.unbind();
-        }
+        region_id_.clear();
+        cell_id_.clear();
+        polygon_id_.clear();
     }
 
     template< index_t DIMENSION >
@@ -1631,7 +1610,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshCells< DIMENSION >::test_and_initialize_cell_facet() const
     {
-        if( !polygon_id_.is_bound() ) {
+        if( !polygon_id_.empty() ) {
             const_cast< GeoModelMeshCells* >( this )->initialize_cell_facet();
         }
     }
@@ -1641,8 +1620,8 @@ namespace RINGMesh {
     {
         this->gmm_.polygons.test_and_initialize();
 
-        polygon_id_.bind( mesh_->cell_facet_attribute_manager(), "polygon_id" );
-        polygon_id_.fill( NO_ID );
+        polygon_id_.resize( mesh_->nb_cell_facets() );
+       // polygon_id_.( NO_ID );
         const NNSearch< DIMENSION >& nn_search = this->gmm_.polygons.nn_search();
         for( index_t c : range( mesh_->nb_cells() ) ) {
             for( index_t f : range( mesh_->nb_cell_facets( c ) ) ) {
@@ -1701,29 +1680,21 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     GeoModelMeshEdges< DIMENSION >::~GeoModelMeshEdges()
     {
-        unbind_attribute();
+        clear_edge_data();
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshEdges< DIMENSION >::bind_attribute()
+    void GeoModelMeshEdges< DIMENSION >::resize_edge_data()
     {
-        if( !line_id_.is_bound() ) {
-            line_id_.bind( attribute_manager(), line_att_name );
-        }
-        if( !edge_id_.is_bound() ) {
-            edge_id_.bind( attribute_manager(), edge_line_att_name );
-        }
+        line_id_.resize( mesh_->nb_edges() );
+        edge_id_.resize( mesh_->nb_edges() );
     }
 
     template< index_t DIMENSION >
-    void GeoModelMeshEdges< DIMENSION >::unbind_attribute()
+    void GeoModelMeshEdges< DIMENSION >::clear_edge_data()
     {
-        if( line_id_.is_bound() ) {
-            line_id_.unbind();
-        }
-        if( edge_id_.is_bound() ) {
-            edge_id_.unbind();
-        }
+        line_id_.clear();
+        edge_id_.clear();
     }
 
     template< index_t DIMENSION >
@@ -1819,7 +1790,7 @@ namespace RINGMesh {
 
         // Create  edges
         mesh_builder->create_edges( nb_edges_ );
-        bind_attribute();
+        resize_edge_data();
         const GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices =
             this->gmm_.vertices;
         index_t cur_edge { 0 };
@@ -2563,7 +2534,6 @@ namespace RINGMesh {
 
     GeoModelMesh< 3 >::~GeoModelMesh()
     {
-        cells.unbind_attribute();
     }
 
     void GeoModelMesh< 3 >::change_volume_mesh_data_structure( const MeshType& type )
