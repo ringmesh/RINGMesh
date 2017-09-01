@@ -8,6 +8,7 @@ New Features:
        with the internal eclipse project.
  * Add import of SVG file for GeoModel2D. 
        We only read pathes and they should be flat. There is a command to flatten pathes in Inkscape.
+ * Add a GeoModel2D builder from projection of GeoModel3D on a given plane.
  * Add objects to iterate using range-loop like for integers and GeoModelMeshEntities:
        objects are range for integers, region_range for Regions etc.
  * Generic factory:

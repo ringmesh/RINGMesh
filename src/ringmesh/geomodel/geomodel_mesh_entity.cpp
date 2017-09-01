@@ -57,11 +57,10 @@ namespace {
     template< index_t DIMENSION >
     bool check_range_model_vertex_ids( const GeoModelMeshEntity< DIMENSION >& E )
     {
-        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-            E.geomodel().mesh.vertices;
+        const auto& geomodel_vertices = E.geomodel().mesh.vertices;
         /// Check that the stored geomodel vertex indices are in a valid range
-        gmme_id id = E.gmme();
-        for( index_t i : range( E.nb_vertices() ) ) {
+        auto id = E.gmme();
+        for( auto i : range( E.nb_vertices() ) ) {
             if( geomodel_vertices.geomodel_vertex_id( id, i ) == NO_ID
                 && geomodel_vertices.geomodel_vertex_id( id, i )
                     >= E.geomodel().mesh.vertices.nb() ) {
@@ -80,7 +79,7 @@ namespace {
     index_t compute_nb_surface_connected_components(
         const SurfaceBase< DIMENSION >& surface )
     {
-        index_t nb_connected_components = NO_ID;
+        index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
             surface.low_level_mesh_storage().connected_components();
         return nb_connected_components;
@@ -111,11 +110,10 @@ namespace {
         const GeoModelMeshEntity< DIMENSION >& E )
     {
         std::vector< index_t > nb( E.nb_vertices(), 0 );
-        for( index_t mesh_element_index : range( E.nb_mesh_elements() ) ) {
-            for( index_t vertex : range(
+        for( auto mesh_element_index : range( E.nb_mesh_elements() ) ) {
+            for( auto vertex : range(
                 E.nb_mesh_element_vertices( mesh_element_index ) ) ) {
-                ++nb[E.mesh_element_vertex_index(
-                    ElementLocalVertex( mesh_element_index, vertex ) )];
+                ++nb[E.mesh_element_vertex_index( { mesh_element_index, vertex } )];
             }
         }
         return nb;
@@ -124,7 +122,7 @@ namespace {
     template< index_t DIMENSION >
     index_t count_nb_isolated_vertices( const GeoModelMeshEntity< DIMENSION >& mesh )
     {
-        std::vector< index_t > nb = count_vertex_occurences( mesh );
+        auto nb = count_vertex_occurences( mesh );
         return static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) );
     }
 
@@ -160,21 +158,18 @@ namespace {
         const gmme_id& id,
         index_t p )
     {
-        index_t nb_polygon_vertices = S.nb_mesh_element_vertices( p );
+        index_t nb_polygon_vertices { S.nb_mesh_element_vertices( p ) };
         std::vector< index_t > corners( nb_polygon_vertices, NO_ID );
         std::vector< index_t > corners_global( nb_polygon_vertices, NO_ID );
-        index_t v = 0;
-        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-            S.geomodel().mesh.vertices;
-        for( index_t c : range( S.nb_mesh_element_vertices( p ) ) ) {
-            index_t polygon_vertex_index = S.mesh_element_vertex_index(
-                ElementLocalVertex( p, c ) );
+        index_t v { 0 };
+        const auto& geomodel_vertices = S.geomodel().mesh.vertices;
+        for( auto c : range( S.nb_mesh_element_vertices( p ) ) ) {
+            index_t polygon_vertex_index { S.mesh_element_vertex_index( { p, c } ) };
             corners[v] = polygon_vertex_index;
-            corners_global[v] = geomodel_vertices.geomodel_vertex_id( id,
-                ElementLocalVertex( p, v ) );
+            corners_global[v] = geomodel_vertices.geomodel_vertex_id( id, { p, v } );
             v++;
         }
-        double area = S.mesh_element_size( p );
+        double area { S.mesh_element_size( p ) };
         return check_mesh_entity_vertices_are_different( corners, corners_global )
             || area < S.geomodel().epsilon2();
     }
@@ -186,32 +181,30 @@ namespace {
     template< index_t DIMENSION >
     bool cell_is_degenerate( const Region< DIMENSION >& region, index_t cell_index )
     {
-        index_t nb_vertices_in_cell = region.nb_mesh_element_vertices( cell_index );
+        index_t nb_vertices_in_cell { region.nb_mesh_element_vertices( cell_index ) };
         std::vector< index_t > vertices( nb_vertices_in_cell, NO_ID );
         std::vector< index_t > vertices_global( nb_vertices_in_cell, NO_ID );
-        gmme_id id = region.gmme();
-        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-            region.geomodel().mesh.vertices;
-        for( index_t v : range( nb_vertices_in_cell ) ) {
-            vertices[v] = region.mesh_element_vertex_index(
-                ElementLocalVertex( cell_index, v ) );
-            vertices_global[v] = geomodel_vertices.geomodel_vertex_id( id,
-                ElementLocalVertex( cell_index, v ) );
+        auto id = region.gmme();
+        const auto& geomodel_vertices = region.geomodel().mesh.vertices;
+        for( auto v : range( nb_vertices_in_cell ) ) {
+            vertices[v] = region.mesh_element_vertex_index( { cell_index, v } );
+            vertices_global[v] = geomodel_vertices.geomodel_vertex_id( id, {
+                cell_index, v } );
         }
-        double volume = region.mesh_element_size( cell_index );
+        double volume { region.mesh_element_size( cell_index ) };
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
             || volume < region.geomodel().epsilon3();
     }
-}
-/******************************************************************************/
+} // namespace
+
 namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::is_inside_border(
         const GeoModelMeshEntity& rhs ) const
     {
         // Find out if this surface is twice in the incident_entity vector
-        gmme_id rhs_id = rhs.gmme();
-        const RelationshipManager& manager =
+        auto rhs_id = rhs.gmme();
+        const auto& manager =
             this->geomodel().entity_type_manager().relationship_manager;
         return std::count_if( incident_entities_.begin(), incident_entities_.end(),
             [&rhs_id, &manager](index_t i) {return manager.incident_entity_gmme( i ) == rhs_id;} )
@@ -221,7 +214,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::has_inside_border() const
     {
-        for( index_t i : range( nb_boundaries() ) ) {
+        for( auto i : range( nb_boundaries() ) ) {
             if( boundary( i ).is_inside_border( *this ) ) {
                 return true;
             }
@@ -241,7 +234,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshEntity< DIMENSION >::unbind_vertex_mapping_attribute() const
     {
-        GeoModel< DIMENSION >& modifiable_model =
+        auto& modifiable_model =
             const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
         modifiable_model.mesh.vertices.unbind_geomodel_vertex_map( gmme() );
     }
@@ -249,7 +242,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshEntity< DIMENSION >::bind_vertex_mapping_attribute() const
     {
-        GeoModel< DIMENSION >& modifiable_model =
+        auto& modifiable_model =
             const_cast< GeoModel< DIMENSION >& >( this->geomodel() );
         modifiable_model.mesh.vertices.bind_geomodel_vertex_map( gmme() );
     }
@@ -257,15 +250,14 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::are_geomodel_vertex_indices_valid() const
     {
-        bool valid = true;
+        bool valid { true };
         // For all vertices
         // Check that the global vertex has an index backward to 
         // the vertex of this entity
-        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-            this->geomodel().mesh.vertices;
-        gmme_id id = gmme();
-        for( index_t v : range( nb_vertices() ) ) {
-            index_t geomodel_v = geomodel_vertices.geomodel_vertex_id( id, v );
+        const auto& geomodel_vertices = this->geomodel().mesh.vertices;
+        auto id = gmme();
+        for( auto v : range( nb_vertices() ) ) {
+            index_t geomodel_v { geomodel_vertices.geomodel_vertex_id( id, v ) };
 
             if( geomodel_v == NO_ID ) {
                 Logger::warn( "GeoModelEntity", id, " vertex ", v,
@@ -273,10 +265,10 @@ namespace RINGMesh {
                 valid = false;
             }
 
-            std::vector< index_t > backward_vertices =
-                geomodel_vertices.mesh_entity_vertex_id( id, geomodel_v );
-            bool found_in_backward = false;
-            for( index_t bv : backward_vertices ) {
+            auto backward_vertices = geomodel_vertices.mesh_entity_vertex_id( id,
+                geomodel_v );
+            bool found_in_backward { false };
+            for( auto bv : backward_vertices ) {
                 if( bv == v ) {
                     found_in_backward = true;
                 }
@@ -300,19 +292,18 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::is_boundary_connectivity_valid() const
     {
-        const MeshEntityTypeManager< DIMENSION >& family =
+        const auto& family =
             this->geomodel().entity_type_manager().mesh_entity_manager;
-        const MeshEntityType entity_type = type_name();
-        const MeshEntityType& boundary_type = family.boundary_entity_type(
-            entity_type );
+        const auto entity_type = type_name();
+        const auto& boundary_type = family.boundary_entity_type( entity_type );
 
-        bool valid = true;
-        gmme_id id = gmme();
+        bool valid { true };
+        auto id = gmme();
         if( family.is_valid_type( boundary_type ) ) {
-            for( index_t i : range( nb_boundaries() ) ) {
-                const GeoModelMeshEntity& E = boundary( i );
-                bool found = false;
-                index_t j = 0;
+            for( auto i : range( nb_boundaries() ) ) {
+                const auto& E = boundary( i );
+                bool found { false };
+                index_t j { 0 };
                 while( !found && j < E.nb_incident_entities() ) {
                     if( E.incident_entity_gmme( j ) == id ) {
                         found = true;
@@ -333,24 +324,24 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::is_incident_entity_connectivity_valid() const
     {
-        const MeshEntityTypeManager< DIMENSION >& family =
+        const auto& family =
             this->geomodel().entity_type_manager().mesh_entity_manager;
-        const MeshEntityType entity_type = type_name();
-        const MeshEntityType& incident_entity_type = family.incident_entity_type(
+        const auto entity_type = type_name();
+        const auto& incident_entity_type = family.incident_entity_type(
             entity_type );
 
-        bool valid = true;
-        gmme_id id = gmme();
+        bool valid { true };
+        auto id = gmme();
         if( family.is_valid_type( incident_entity_type ) ) {
             if( nb_incident_entities() == 0 ) {
                 Logger::warn( "GeoModelEntity", id,
                     " is in the boundary of no entity " );
                 valid = false;
             }
-            for( index_t i : range( nb_incident_entities() ) ) {
-                const GeoModelMeshEntity< DIMENSION >& E = incident_entity( i );
-                bool found = false;
-                index_t j = 0;
+            for( auto i : range( nb_incident_entities() ) ) {
+                const auto& E = incident_entity( i );
+                bool found { false };
+                index_t j { 0 };
                 while( !found && j < E.nb_boundaries() ) {
                     if( E.boundary_gmme( j ) == id ) {
                         found = true;
@@ -371,51 +362,49 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::is_parent_connectivity_valid() const
     {
-        const RelationshipManager& family =
+        const auto& family =
             this->geomodel().entity_type_manager().relationship_manager;
-        const MeshEntityType entity_type = type_name();
+        const auto entity_type = type_name();
 
-        bool valid = true;
-        const std::vector< GeologicalEntityType > parent_types = family.parent_types(
-            entity_type );
-        gmme_id id = gmme();
-        for( const GeologicalEntityType& parent_type : parent_types ) {
-            index_t nb_parent_entities_in_geomodel =
-                this->geomodel_.nb_geological_entities( parent_type );
+        bool valid { true };
+        const auto parent_types = family.parent_types( entity_type );
+        auto id = gmme();
+        for( const auto& parent_type : parent_types ) {
+            index_t nb_parent_entities_in_geomodel {
+                this->geomodel_.nb_geological_entities( parent_type ) };
             if( nb_parent_entities_in_geomodel == 0 ) {
                 continue;
-            } else {
-                // There must be one and only one parent of that type in this entity
-                // And this parent must have this entity in its children
-                index_t nb_found_parents = 0;
-                for( index_t i : range( nb_parents() ) ) {
-                    const GeoModelGeologicalEntity< DIMENSION >& E = parent( i );
-                    if( E.type_name() == parent_type ) {
-                        nb_found_parents++;
+            }
+            // There must be one and only one parent of that type in this entity
+            // And this parent must have this entity in its children
+            index_t nb_found_parents { 0 };
+            for( auto i : range( nb_parents() ) ) {
+                const auto& E = parent( i );
+                if( E.type_name() == parent_type ) {
+                    nb_found_parents++;
 
-                        // The parent must have this entity in its children
-                        bool found = false;
-                        index_t j = 0;
-                        while( !found && j < E.nb_children() ) {
-                            if( E.child_gmme( j ) == id ) {
-                                found = true;
-                            }
-                            j++;
+                    // The parent must have this entity in its children
+                    bool found { false };
+                    index_t j { 0 };
+                    while( !found && j < E.nb_children() ) {
+                        if( E.child_gmme( j ) == id ) {
+                            found = true;
                         }
-                        if( !found ) {
-                            Logger::warn( "GeoModelEntity",
-                                "Inconsistency parent-child between ", id, " and ",
-                                E.gmge() );
-                            valid = false;
-                        }
+                        j++;
+                    }
+                    if( !found ) {
+                        Logger::warn( "GeoModelEntity",
+                            "Inconsistency parent-child between ", id, " and ",
+                            E.gmge() );
+                        valid = false;
                     }
                 }
-                if( nb_found_parents != 1 ) {
-                    Logger::warn( "GeoModelEntity", id, " has ", nb_found_parents,
-                        " geological parent entity of type ", parent_type,
-                        " (expected one)" );
-                    valid = false;
-                }
+            }
+            if( nb_found_parents != 1 ) {
+                Logger::warn( "GeoModelEntity", id, " has ", nb_found_parents,
+                    " geological parent entity of type ", parent_type,
+                    " (expected one)" );
+                valid = false;
             }
         }
         return valid;
@@ -432,33 +421,33 @@ namespace RINGMesh {
     const GeoModelGeologicalEntity< DIMENSION >& GeoModelMeshEntity< DIMENSION >::parent(
         index_t parent_index ) const
     {
-        gmge_id parent = parent_gmge( parent_index );
+        auto parent = parent_gmge( parent_index );
         ringmesh_assert( parent.is_defined() );
         return this->geomodel().geological_entity( parent );
     }
 
     template< index_t DIMENSION >
     const GeoModelGeologicalEntity< DIMENSION >& GeoModelMeshEntity< DIMENSION >::parent(
-        const GeologicalEntityType& parent_type_name ) const
+        const GeologicalEntityType& parent_type ) const
     {
-        gmge_id id = parent_gmge( parent_type_name );
+        auto id = parent_gmge( parent_type );
         ringmesh_assert( id.is_defined() );
         return this->geomodel().geological_entity( id );
     }
 
     template< index_t DIMENSION >
     const gmge_id GeoModelMeshEntity< DIMENSION >::parent_gmge(
-        const GeologicalEntityType& parent_type_name ) const
+        const GeologicalEntityType& parent_type ) const
     {
-        return defined_parent_gmge( parent_type_name );
+        return defined_parent_gmge( parent_type );
     }
 
     template< index_t DIMENSION >
     gmge_id GeoModelMeshEntity< DIMENSION >::could_be_undefined_parent_gmge(
-        const GeologicalEntityType& parent_type_name ) const
+        const GeologicalEntityType& parent_type ) const
     {
-        for( index_t i : range( nb_parents() ) ) {
-            if( parent_gmge( i ).type() == parent_type_name ) {
+        for( auto i : range( nb_parents() ) ) {
+            if( parent_gmge( i ).type() == parent_type ) {
                 return parent_gmge( i );
             }
         }
@@ -467,10 +456,9 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     gmge_id GeoModelMeshEntity< DIMENSION >::defined_parent_gmge(
-        const GeologicalEntityType& parent_type_name ) const
+        const GeologicalEntityType& parent_type ) const
     {
-        const gmge_id parent_gmge = could_be_undefined_parent_gmge(
-            parent_type_name );
+        const auto parent_gmge = could_be_undefined_parent_gmge( parent_type );
         ringmesh_assert( parent_gmge.is_defined() );
         return parent_gmge;
     }
@@ -531,7 +519,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool Corner< DIMENSION >::is_mesh_valid() const
     {
-        bool valid = true;
+        bool valid { true };
         if( this->nb_vertices() != 1 ) {
             Logger::err( "GeoModelEntity", "Corner ", this->index(), " mesh has ",
                 point_set_mesh_->nb_vertices(), " vertices " );
@@ -552,7 +540,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool Line< DIMENSION >::is_mesh_valid() const
     {
-        bool valid = true;
+        bool valid { true };
 
         // Check that the GEO::Mesh has the expected entities
         if( this->nb_vertices() < 2 ) {
@@ -571,16 +559,18 @@ namespace RINGMesh {
 
         if( this->nb_vertices() > 1 ) {
             // Count the number of edges in which each vertex is
-            std::vector< index_t > nb = count_vertex_occurences( *this );
-            index_t nb0 = 0;
-            index_t nb1 = 0;
-            index_t nb2 = 0;
-            for( index_t i : nb ) {
-                if( i == 0 )
+            auto nb = count_vertex_occurences( *this );
+            index_t nb0 { 0 };
+            index_t nb1 { 0 };
+            index_t nb2 { 0 };
+            for( auto i : nb ) {
+                if( i == 0 ) {
                     ++nb0;
-                else if( i == 1 )
+                } else if( i == 1 ) {
                     ++nb1;
-                else if( i == 2 ) ++nb2;
+                } else if( i == 2 ) {
+                    ++nb2;
+                }
             }
 
             // Vertices at extremitites must be in only one edge
@@ -612,11 +602,11 @@ namespace RINGMesh {
         }
 
         // No zero edge length
-        index_t nb_degenerated = 0;
-        for( index_t e : range( nb_mesh_elements() ) ) {
-            double l = length(
-                this->mesh_element_vertex( ElementLocalVertex( e, 1 ) )
-                    - this->mesh_element_vertex( ElementLocalVertex( e, 0 ) ) );
+        index_t nb_degenerated { 0 };
+        for( auto e : range( nb_mesh_elements() ) ) {
+            double l = (
+                this->mesh_element_vertex( { e, 1 } ) - this->mesh_element_vertex( {
+                    e, 0 } ) ).length() ;
             if( l < this->geomodel().epsilon() ) {
                 nb_degenerated++;
             }
@@ -638,7 +628,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool Line< DIMENSION >::is_connectivity_valid() const
     {
-        bool line_valid = GeoModelMeshEntity< DIMENSION >::is_connectivity_valid();
+        bool line_valid { GeoModelMeshEntity< DIMENSION >::is_connectivity_valid() };
 
         // A Line must have 2 corners - they are identical if the Line is closed
         if( this->nb_boundaries() != 2 ) {
@@ -653,12 +643,11 @@ namespace RINGMesh {
     {
         if( this->nb_boundaries() != 2 || this->nb_vertices() < 2 ) {
             return false;
-        } else {
-            // Geometric comparison - not great at all
-            return this->boundary( 0 ).vertex( 0 ) == this->vertex( 0 )
-                && this->boundary( 1 ).vertex( 0 )
-                    == this->vertex( this->nb_vertices() - 1 );
         }
+        // Geometric comparison - not great at all
+        return this->boundary( 0 ).vertex( 0 ) == this->vertex( 0 )
+            && this->boundary( 1 ).vertex( 0 )
+                == this->vertex( this->nb_vertices() - 1 );
     }
 
     template< index_t DIMENSION >
@@ -693,8 +682,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     bool SurfaceBase< DIMENSION >::is_mesh_valid() const
     {
-        bool valid = true;
-        gmme_id id = this->gmme();
+        bool valid { true };
+        auto id = this->gmme();
         // Check that the GEO::Mesh has the expected entities
         // at least 3 vertices and one polygon.
         if( this->nb_vertices() < 3 ) {
@@ -707,7 +696,7 @@ namespace RINGMesh {
         }
 
         // No isolated vertices
-        index_t nb_isolated_vertices = count_nb_isolated_vertices( *this );
+        index_t nb_isolated_vertices { count_nb_isolated_vertices( *this ) };
         if( nb_isolated_vertices > 0 ) {
             Logger::warn( "GeoModelEntity", id, " mesh has ", nb_isolated_vertices,
                 " isolated vertices " );
@@ -716,8 +705,8 @@ namespace RINGMesh {
 
         // No zero area polygon
         // No polygon incident to the same vertex check local and global indices
-        index_t nb_degenerate = 0;
-        for( index_t p : range( surface_mesh_->nb_polygons() ) ) {
+        index_t nb_degenerate { 0 };
+        for( auto p : range( surface_mesh_->nb_polygons() ) ) {
             if( polygon_is_degenerate( *this, id, p ) ) {
                 nb_degenerate++;
             }
@@ -731,8 +720,8 @@ namespace RINGMesh {
         // No duplicated polygon
         GEO::vector< index_t > colocated;
         // GEO::mesh_detect_duplicated_facets( mesh_, colocated ) ; // not implemented yet 
-        index_t nb_duplicated_p = 0;
-        for( index_t p : range( colocated.size() ) ) {
+        index_t nb_duplicated_p { 0 };
+        for( auto p : range( colocated.size() ) ) {
             if( colocated[p] != p ) {
                 nb_duplicated_p++;
             }
@@ -744,7 +733,7 @@ namespace RINGMesh {
         }
 
         // One connected component  
-        index_t cc = compute_nb_surface_connected_components( *this );
+        index_t cc { compute_nb_surface_connected_components( *this ) };
         if( cc != 1 ) {
             Logger::warn( "GeoModelEntity", id, " mesh has ", cc,
                 " connected components " );
@@ -800,7 +789,7 @@ namespace RINGMesh {
                 " boundary sides are invalid " );
             return false;
         }
-        bool region_valid = GeoModelMeshEntity< DIMENSION >::is_connectivity_valid();
+        bool region_valid { GeoModelMeshEntity< DIMENSION >::is_connectivity_valid() };
         if( this->nb_boundaries() == 0 ) {
             Logger::warn( "Connectivity", this->gmme(), " has no boundaries " );
             region_valid = false;
@@ -813,47 +802,46 @@ namespace RINGMesh {
     {
         if( !is_meshed() ) {
             return true;
-        } else {
-            bool valid = true;
-            // Check that the GEO::Mesh has the expected entities
-            // at least 4 vertices and one cell.
-            if( volume_mesh_->nb_vertices() < 4 ) {
-                Logger::warn( "GeoModelEntity", this->gmme(),
-                    " has less than 4 vertices " );
-                valid = false;
-            }
-
-            // No isolated vertices
-            index_t nb_isolated_vertices = count_nb_isolated_vertices( *this );
-            if( nb_isolated_vertices > 0 ) {
-                Logger::warn( "GeoModelEntity", this->gmme(), " mesh has ",
-                    nb_isolated_vertices, " isolated vertices " );
-                valid = false;
-            }
-
-            // No cell with negative volume
-            // No cell incident to the same vertex check local and global indices
-            index_t nb_degenerate = 0;
-            for( index_t c : range( volume_mesh_->nb_cells() ) ) {
-                if( cell_is_degenerate( *this, c ) ) {
-                    nb_degenerate++;
-                }
-            }
-            if( nb_degenerate != 0 ) {
-                Logger::warn( "GeoModelEntity", this->gmme(), " mesh has ",
-                    nb_degenerate, " degenerate cells " );
-                valid = false;
-            }
-
-            // One connected component
-            index_t cc = compute_nb_volume_connected_components( *this );
-            if( cc != 1 ) {
-                Logger::warn( "GeoModelEntity", this->gmme(), " mesh has ", cc,
-                    " connected components " );
-                valid = false;
-            }
-            return valid;
         }
+        bool valid { true };
+        // Check that the GEO::Mesh has the expected entities
+        // at least 4 vertices and one cell.
+        if( volume_mesh_->nb_vertices() < 4 ) {
+            Logger::warn( "GeoModelEntity", this->gmme(),
+                " has less than 4 vertices " );
+            valid = false;
+        }
+
+        // No isolated vertices
+        index_t nb_isolated_vertices { count_nb_isolated_vertices( *this ) };
+        if( nb_isolated_vertices > 0 ) {
+            Logger::warn( "GeoModelEntity", this->gmme(), " mesh has ",
+                nb_isolated_vertices, " isolated vertices " );
+            valid = false;
+        }
+
+        // No cell with negative volume
+        // No cell incident to the same vertex check local and global indices
+        index_t nb_degenerate { 0 };
+        for( auto c : range( volume_mesh_->nb_cells() ) ) {
+            if( cell_is_degenerate( *this, c ) ) {
+                nb_degenerate++;
+            }
+        }
+        if( nb_degenerate != 0 ) {
+            Logger::warn( "GeoModelEntity", this->gmme(), " mesh has ",
+                nb_degenerate, " degenerate cells " );
+            valid = false;
+        }
+
+        // One connected component
+        index_t cc { compute_nb_volume_connected_components( *this ) };
+        if( cc != 1 ) {
+            Logger::warn( "GeoModelEntity", this->gmme(), " mesh has ", cc,
+                " connected components " );
+            valid = false;
+        }
+        return valid;
     }
 
     template< index_t DIMENSION >
@@ -870,10 +858,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void Corner< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
-        std::unique_ptr< PointSetMesh< DIMENSION > > new_mesh = PointSetMesh<
-            DIMENSION >::create_mesh( type );
-        std::unique_ptr< PointSetMeshBuilder< DIMENSION > > builder =
-            PointSetMeshBuilder< DIMENSION >::create_builder( *new_mesh );
+        auto new_mesh = PointSetMesh< DIMENSION >::create_mesh( type );
+        auto builder = PointSetMeshBuilder< DIMENSION >::create_builder( *new_mesh );
         builder->copy( *point_set_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
@@ -881,10 +867,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void Line< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
-        std::unique_ptr< LineMesh< DIMENSION > > new_mesh =
-            LineMesh< DIMENSION >::create_mesh( type );
-        std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = LineMeshBuilder<
-            DIMENSION >::create_builder( *new_mesh );
+        auto new_mesh = LineMesh< DIMENSION >::create_mesh( type );
+        auto builder = LineMeshBuilder< DIMENSION >::create_builder( *new_mesh );
         builder->copy( *line_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
@@ -892,10 +876,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void SurfaceBase< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
-        std::unique_ptr< SurfaceMesh< DIMENSION > > new_mesh =
-            SurfaceMesh< DIMENSION >::create_mesh( type );
-        std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
-            SurfaceMeshBuilder< DIMENSION >::create_builder( *new_mesh );
+        auto new_mesh = SurfaceMesh< DIMENSION >::create_mesh( type );
+        auto builder = SurfaceMeshBuilder< DIMENSION >::create_builder( *new_mesh );
         builder->copy( *surface_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
@@ -914,10 +896,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void Region< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
-        std::unique_ptr< VolumeMesh< DIMENSION > > new_mesh =
-            VolumeMesh< DIMENSION >::create_mesh( type );
-        std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
-            VolumeMeshBuilder< DIMENSION >::create_builder( *new_mesh );
+        auto new_mesh = VolumeMesh< DIMENSION >::create_mesh( type );
+        auto builder = VolumeMeshBuilder< DIMENSION >::create_builder( *new_mesh );
         builder->copy( *volume_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }

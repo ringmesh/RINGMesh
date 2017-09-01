@@ -105,11 +105,11 @@ namespace {
             GEO::LineInput& file_line )
         {
             for( auto c : range( file_line.nb_fields() ) ) {
-                bool side { false };
+                bool side = false;
                 if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                     side = true;
                 }
-                index_t s { NO_ID };
+                index_t s = NO_ID;
                 GEO::String::from_string( &file_line.field( c )[1], s );
 
                 this->builder_.topology.add_mesh_entity_boundary_relation( entity,
@@ -121,9 +121,9 @@ namespace {
             const gmme_id& entity,
             GEO::LineInput& file_line )
         {
-            const auto& manager =
+            const MeshEntityTypeManager< DIMENSION >& manager =
                 this->geomodel_.entity_type_manager().mesh_entity_manager;
-            auto type = manager.boundary_entity_type( entity.type() );
+            MeshEntityType type = manager.boundary_entity_type( entity.type() );
             // Second line : indices of boundaries
             for( auto c : range( 1, file_line.nb_fields() ) ) {
                 gmme_id boundary( type, file_line.field_as_uint( c ) );
@@ -140,7 +140,7 @@ namespace {
     {
         file_line.get_line();
         file_line.get_fields();
-        const auto& manager =
+        const MeshEntityTypeManager2D& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_surface( entity.type() ) ) {
             add_relation_for_entities_with_sides< Line >( entity, file_line );
@@ -156,7 +156,7 @@ namespace {
     {
         file_line.get_line();
         file_line.get_fields();
-        const auto& manager =
+        const MeshEntityTypeManager3D& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_region( entity.type() ) ) {
             add_relation_for_entities_with_sides< Surface >( entity, file_line );
@@ -202,8 +202,8 @@ namespace {
     private:
         const std::string& old_2_new_name( const std::string& old_name )
         {
-            auto new_name_pos = static_cast< index_t >( GEO::String::to_int(
-                std::to_string( old_name.at( old_name.length() - 2 ) ) ) );
+            index_t new_name_pos = GEO::String::to_uint(
+                GEO::String::to_string( old_name.at( old_name.length() - 2 ) ) );
             return new_names[new_name_pos];
         }
     private:
@@ -282,7 +282,7 @@ namespace {
                             file_line.field_as_uint( 2 ) );
                     } else {
                         GeologicalEntityType type( file_line.field( 0 ) );
-                        auto id = file_line.field_as_uint( 1 );
+                        index_t id = file_line.field_as_uint( 1 );
                         gmge_id entity( type, id );
                         this->info.set_geological_entity_name( entity,
                             file_line.field( 2 ) );
@@ -865,6 +865,7 @@ namespace {
             builder.build_geomodel();
             GEO::FileSystem::set_current_working_directory( pwd );
         }
+
         void save(
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
@@ -904,6 +905,7 @@ namespace {
             zipClose( zf, NULL );
             GEO::FileSystem::set_current_working_directory( pwd );
         }
+
         index_t dimension( const std::string& filename ) const final
         {
             unzFile uz = unzOpen( filename.c_str() );
