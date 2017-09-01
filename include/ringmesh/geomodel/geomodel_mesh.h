@@ -53,8 +53,8 @@
  * @author Arnaud Botella and Jeanne Pellerin
  */
 
-/*! @todo URGENT : Rename all parameters of all the function in this file. 
- *                 A lot of comments could then be removed.  
+/*! @todo URGENT : Rename all parameters of all the function in this file.
+ *                 A lot of comments could then be removed.
  */
 
 namespace RINGMesh {
@@ -79,7 +79,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshCommon {
-    ringmesh_disable_copy_and_move( GeoModelMeshCommon );
+        ringmesh_disable_copy_and_move( GeoModelMeshCommon );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     protected:
         GeoModelMeshCommon(
@@ -107,12 +107,12 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshVerticesBase: public GeoModelMeshCommon< DIMENSION > {
+    class GeoModelMeshVerticesBase: public GeoModelMeshCommon < DIMENSION > {
     public:
-        friend class GeoModelMeshWells< DIMENSION > ;
-        friend class GeoModelMeshEdges< DIMENSION > ;
-        friend class GeoModelMeshPolygonsBase< DIMENSION > ;
-        friend class GeoModelMeshCells< DIMENSION > ;
+        friend class GeoModelMeshWells < DIMENSION > ;
+        friend class GeoModelMeshEdges < DIMENSION > ;
+        friend class GeoModelMeshPolygonsBase < DIMENSION > ;
+        friend class GeoModelMeshCells < DIMENSION > ;
 
         GEO::AttributesManager& attribute_manager() const
         {
@@ -285,7 +285,7 @@ namespace RINGMesh {
          * of GeoModelMeshEntites (entity_index) and GeoModelMeshVerticesBase (global index)
          */
         class GeoModelVertexMapper {
-        ringmesh_disable_copy_and_move( GeoModelVertexMapper );
+            ringmesh_disable_copy_and_move( GeoModelVertexMapper );
         public:
             GeoModelVertexMapper(
                 GeoModelMeshVerticesBase& geomodel_vertices,
@@ -497,7 +497,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshVerticesBase );
 
     template< index_t DIMENSION >
-    class GeoModelMeshVertices final: public GeoModelMeshVerticesBase< DIMENSION > {
+    class GeoModelMeshVertices final: public GeoModelMeshVerticesBase < DIMENSION > {
     public:
         GeoModelMeshVertices(
             GeoModelMesh< DIMENSION >& gmm,
@@ -506,7 +506,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelMeshVertices< 3 > final: public GeoModelMeshVerticesBase< 3 > {
+    class GeoModelMeshVertices< 3 > final: public GeoModelMeshVerticesBase < 3 > {
     public:
         GeoModelMeshVertices(
             GeoModelMesh3D& gmm,
@@ -521,14 +521,14 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshVertices );
 
     template< index_t DIMENSION >
-    class GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
+    class GeoModelMeshPolygonsBase: public GeoModelMeshCommon < DIMENSION > {
         ringmesh_disable_copy_and_move( GeoModelMeshPolygonsBase );
         static const std::string surface_att_name;
         static const std::string polygon_surface_att_name;
 
     public:
-        friend class GeoModelMeshBase< DIMENSION > ;
-        friend class GeoModelMesh< DIMENSION > ;
+        friend class GeoModelMeshBase < DIMENSION > ;
+        friend class GeoModelMesh < DIMENSION > ;
 
         virtual ~GeoModelMeshPolygonsBase();
 
@@ -765,15 +765,15 @@ namespace RINGMesh {
         std::vector< index_t > surface_polygon_ptr_;
 
         /// Number of triangles in the GeoModelMesh
-        index_t nb_triangles_ { 0 };
+        index_t nb_triangles_{ 0 };
         /// Number of quads in the GeoModelMesh
-        index_t nb_quads_ { 0 };
+        index_t nb_quads_{ 0 };
         /// Number of unclassified polygons in the GeoModelMesh
-        index_t nb_unclassified_polygons_ { 0 };
+        index_t nb_unclassified_polygons_{ 0 };
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshPolygons final: public GeoModelMeshPolygonsBase< DIMENSION > {
+    class GeoModelMeshPolygons final: public GeoModelMeshPolygonsBase < DIMENSION > {
 
     public:
         GeoModelMeshPolygons(
@@ -783,7 +783,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelMeshPolygons< 3 > final: public GeoModelMeshPolygonsBase< 3 > {
+    class GeoModelMeshPolygons< 3 > final: public GeoModelMeshPolygonsBase < 3 > {
     public:
         GeoModelMeshPolygons(
             GeoModelMesh3D& gmm,
@@ -800,14 +800,14 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshPolygons );
 
     template< index_t DIMENSION >
-    class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
+    class GeoModelMeshEdges final: public GeoModelMeshCommon < DIMENSION > {
         ringmesh_disable_copy_and_move( GeoModelMeshEdges );
         static const std::string line_att_name;
         static const std::string edge_line_att_name;
 
     public:
-        friend class GeoModelMeshBase< DIMENSION > ;
-        friend class GeoModelMesh< DIMENSION > ;
+        friend class GeoModelMeshBase < DIMENSION > ;
+        friend class GeoModelMesh < DIMENSION > ;
 
         virtual ~GeoModelMeshEdges();
 
@@ -937,13 +937,13 @@ namespace RINGMesh {
         std::vector< index_t > line_edge_ptr_;
 
         /// Number of edges in the GeoModelMesh
-        index_t nb_edges_ { 0 };
+        index_t nb_edges_{ 0 };
     };
 
     ALIAS_2D_AND_3D( GeoModelMeshEdges );
 
     template< index_t DIMENSION >
-    class GeoModelMeshWells final: public GeoModelMeshCommon< DIMENSION > {
+    class GeoModelMeshWells final: public GeoModelMeshCommon < DIMENSION > {
     public:
         explicit GeoModelMeshWells(
             GeoModelMesh< DIMENSION >& gmm,
@@ -1017,13 +1017,13 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshWells );
 
     template< index_t DIMENSION >
-    class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
+    class GeoModelMeshCells final: public GeoModelMeshCommon < DIMENSION > {
         static const std::string region_att_name;
         static const std::string cell_region_att_name;
 
     public:
-        friend class GeoModelMeshBase< DIMENSION > ;
-        friend class GeoModelMesh< DIMENSION > ;
+        friend class GeoModelMeshBase < DIMENSION > ;
+        friend class GeoModelMesh < DIMENSION > ;
 
         /*!
          * Several modes for vertex duplication algorithm:
@@ -1377,7 +1377,7 @@ namespace RINGMesh {
             POS_SIDE = 1
         };
         /// Action to do according a surface index
-        using action_on_surface = std::pair< index_t, ActionOnSurface >;
+        using action_on_surface = std::pair < index_t, ActionOnSurface > ;
 
         /*!
          * @brief Initialize the  cells from the cells
@@ -1451,18 +1451,18 @@ namespace RINGMesh {
         std::vector< index_t > region_cell_ptr_;
 
         /// Number of tet in the GeoModelMesh
-        index_t nb_tets_ { 0 };
+        index_t nb_tets_{ 0 };
         /// Number of hex in the GeoModelMesh
-        index_t nb_hexs_ { 0 };
+        index_t nb_hexs_{ 0 };
         /// Number of prism in the GeoModelMesh
-        index_t nb_prisms_ { 0 };
+        index_t nb_prisms_{ 0 };
         /// Number of pyramid in the GeoModelMesh
-        index_t nb_pyramids_ { 0 };
+        index_t nb_pyramids_{ 0 };
         /// Number of connector in the GeoModelMesh
-        index_t nb_connectors_ { 0 };
+        index_t nb_connectors_{ 0 };
 
         /// Current duplicate mode applied on the mesh
-        DuplicateMode mode_ { NONE };
+        DuplicateMode mode_{ NONE };
         /*!
          * @brief Vector of duplicated vertices
          * @details Each value is a duplicated vertex, the index corresponds to
@@ -1482,7 +1482,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshBase {
-    ringmesh_disable_copy_and_move( GeoModelMeshBase );
+        ringmesh_disable_copy_and_move( GeoModelMeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         virtual ~GeoModelMeshBase();
@@ -1540,14 +1540,14 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMesh final: public GeoModelMeshBase< DIMENSION > {
+    class GeoModelMesh final: public GeoModelMeshBase < DIMENSION > {
     public:
         explicit GeoModelMesh( GeoModel< DIMENSION >& geomodel );
     };
 
     template< >
-    class RINGMESH_API GeoModelMesh< 3 > final: public GeoModelMeshBase< 3 > {
-    ringmesh_disable_copy_and_move( GeoModelMesh );
+    class RINGMESH_API GeoModelMesh< 3 > final: public GeoModelMeshBase < 3 > {
+        ringmesh_disable_copy_and_move( GeoModelMesh );
     public:
         explicit GeoModelMesh( GeoModel3D& geomodel );
         virtual ~GeoModelMesh();
@@ -1595,7 +1595,7 @@ namespace RINGMesh {
 
     private:
         /// Optional duplication mode to compute the duplication of cells on surfaces
-        mutable GeoModelMeshCells3D::DuplicateMode mode_ { GeoModelMeshCells3D::NONE };
+        mutable GeoModelMeshCells3D::DuplicateMode mode_{ GeoModelMeshCells3D::NONE };
 
     public:
         GeoModelMeshCells3D cells;
