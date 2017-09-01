@@ -229,9 +229,10 @@ namespace RINGMesh {
                 toggle_mesh_entity_and_boundaries_visibility( entity_id );
             } else {
                 GeologicalEntityType geol_type { type };
-                selected_entity_id_ = std::min(
-                    static_cast< int >( GM_.nb_geological_entities( geol_type ) - 1 ),
-                    selected_entity_id_ );
+                selected_entity_id_ =
+                    std::min(
+                        static_cast< int >( GM_.nb_geological_entities( geol_type )
+                            - 1 ), selected_entity_id_ );
                 gmge_id entity_id( geol_type,
                     static_cast< index_t >( selected_entity_id_ ) );
                 toggle_geological_entity_visibility( entity_id );
@@ -361,9 +362,10 @@ namespace RINGMesh {
                 toggle_mesh_entity_and_boundaries_visibility( entity_id );
             } else {
                 GeologicalEntityType geol_type { type };
-                selected_entity_id_ = std::min(
-                    static_cast< int >( GM_.nb_geological_entities( geol_type ) - 1 ),
-                    selected_entity_id_ );
+                selected_entity_id_ =
+                    std::min(
+                        static_cast< int >( GM_.nb_geological_entities( geol_type )
+                            - 1 ), selected_entity_id_ );
                 gmge_id entity_id( geol_type,
                     static_cast< index_t >( selected_entity_id_ ) );
                 toggle_geological_entity_visibility( entity_id );
@@ -1108,6 +1110,10 @@ namespace RINGMesh {
 
         Logger::div( "RINGMesh-View" );
         Logger::out( "", "Welcome to RINGMesh-View !" );
+    }
+
+    RINGMeshApplication::~RINGMeshApplication()
+    {
     }
 
     void RINGMeshApplication::quit()
