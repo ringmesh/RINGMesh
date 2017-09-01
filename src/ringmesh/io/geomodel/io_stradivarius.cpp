@@ -69,6 +69,7 @@ namespace {
             for( index_t p : range( nb_points ) ) {
                 file.get_line();
                 file.get_fields();
+                // convert coordinates from depth to elevation
                 points_[p] = {file.field_as_double( 1 ), - file.field_as_double( 2 )};
             }
         }
