@@ -62,7 +62,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( Line );
     FORWARD_DECLARATION_DIMENSION_CLASS( Region );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
-    template< index_t DIMENSION > struct EntityTypeManager;
+    FORWARD_DECLARATION_DIMENSION_STRUCT( EntityTypeManager );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );

@@ -313,8 +313,8 @@ namespace RINGMesh {
     {
         std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_edges() );
-        for( index_t i : range( mesh.nb_edges() ) ) {
-            for( index_t v : range( 2 ) ) {
+        for( auto i : range( mesh.nb_edges() ) ) {
+            for( auto v : range( 2 ) ) {
                 bboxes[i].add_point(
                     mesh.vertex( mesh.edge_vertex( ElementLocalVertex( i, v ) ) ) );
             }
@@ -360,8 +360,8 @@ namespace RINGMesh {
     {
         std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_polygons() );
-        for( index_t i : range( mesh.nb_polygons() ) ) {
-            for( index_t v : range( mesh.nb_polygon_vertices( i ) ) ) {
+        for( auto i : range( mesh.nb_polygons() ) ) {
+            for( auto v : range( mesh.nb_polygon_vertices( i ) ) ) {
                 bboxes[i].add_point(
                     mesh.vertex(
                         mesh.polygon_vertex( ElementLocalVertex( i, v ) ) ) );
@@ -409,8 +409,8 @@ namespace RINGMesh {
     {
         std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_cells() );
-        for( index_t i : range( mesh.nb_cells() ) ) {
-            for( index_t v : range( mesh.nb_cell_vertices( i ) ) ) {
+        for( auto i : range( mesh.nb_cells() ) ) {
+            for( auto v : range( mesh.nb_cell_vertices( i ) ) ) {
                 bboxes[i].add_point(
                     mesh.vertex( mesh.cell_vertex( ElementLocalVertex( i, v ) ) ) );
             }
@@ -476,7 +476,7 @@ namespace RINGMesh {
         ringmesh_assert( B.contains( p ) );
         double result = std::abs( p[0] - B.min()[0] );
         result = std::min( result, std::abs( p[0] - B.max()[0] ) );
-        for( index_t c : range( 1, DIMENSION ) ) {
+        for( auto c : range( 1, DIMENSION ) ) {
             result = std::min( result, std::abs( p[c] - B.min()[c] ) );
             result = std::min( result, std::abs( p[c] - B.max()[c] ) );
         }
@@ -489,7 +489,7 @@ namespace RINGMesh {
     {
         bool inside = true;
         vecn< DIMENSION > result;
-        for( index_t c : range( DIMENSION ) ) {
+        for( auto c : range( DIMENSION ) ) {
             if( p[c] < B.min()[c] ) {
                 inside = false;
                 result[c] = p[c] - B.min()[c];

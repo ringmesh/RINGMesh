@@ -123,8 +123,8 @@ namespace {
                     geomodel_.epsilon() );
 
             topology.create_mesh_entities( Corner2D::type_name_static(),
-                unique_points.size() );
-            for( index_t c : range( geomodel_.nb_corners() ) ) {
+                static_cast< index_t >( unique_points.size() ) );
+            for( auto c : range( geomodel_.nb_corners() ) ) {
                 geometry.set_corner( c, unique_points[c] );
             }
             index_t index = 0;
