@@ -214,7 +214,7 @@ namespace {
         std::vector< index_t >& cur_surf_polygons )
     {
         std::vector< index_t > gocad_vertices2cur_surf_points;
-        for( index_t corner_gocad_id : load_storage.cur_surf_polygon_corners_gocad_id_ ) {
+        for( auto corner_gocad_id : load_storage.cur_surf_polygon_corners_gocad_id_ ) {
             get_surface_point_and_polygon_from_gocad_index( corner_gocad_id,
                 geomodel, load_storage, gocad_vertices2cur_surf_points,
                 cur_surf_points, cur_surf_polygons );
@@ -263,8 +263,8 @@ namespace {
         const VolumeMesh3D& mesh = region.low_level_mesh_storage();
         const index_t nb_cells = region.nb_mesh_elements();
         cell_facet_centers.reserve( 4 * nb_cells );
-        for( index_t c : range( nb_cells ) ) {
-            for( index_t f : range( region.nb_cell_facets( c ) ) ) {
+        for( auto c : range( nb_cells ) ) {
+            for( auto f : range( region.nb_cell_facets( c ) ) ) {
                 cell_facet_centers.push_back(
                     mesh.cell_facet_barycenter( CellLocalFacet( c, f ) ) );
             }
@@ -282,7 +282,7 @@ namespace {
     {
         std::vector< std::unique_ptr< NNSearch3D > > region_nn_searchs(
             geomodel.nb_regions() );
-        for( index_t r : range( geomodel.nb_regions() ) ) {
+        for( auto r : range( geomodel.nb_regions() ) ) {
             std::vector< vec3 > cell_facet_centers;
             compute_region_cell_facet_centers( geomodel, r, cell_facet_centers );
             region_nn_searchs[r].reset( new NNSearch3D( cell_facet_centers, true ) );
@@ -501,7 +501,7 @@ namespace {
         index_t nb_surfaces,
         GeoModelBuilderTSolid& geomodel_builder )
     {
-        for( index_t s : range( nb_surfaces ) ) {
+        for( auto s : range( nb_surfaces ) ) {
             if( surface_sides[2 * s] && !surface_sides[2 * s + 1] ) {
                 geomodel_builder.topology.add_universe_boundary( s, false );
             } else if( !surface_sides[2 * s] && surface_sides[2 * s + 1] ) {
@@ -524,7 +524,7 @@ namespace {
     {
         std::vector< bool > surface_sides( 2 * geomodel.nb_surfaces(), false );
         for( const auto& region : geomodel.regions() ) {
-            for( index_t s : range( region.nb_boundaries() ) ) {
+            for( auto s : range( region.nb_boundaries() ) ) {
                 if( region.side( s ) ) {
                     surface_sides[2 * region.boundary( s ).index() + 1] =
                     true;
@@ -611,8 +611,8 @@ namespace {
         std::vector< vec3 > border_edge_barycenters;
         const Surface3D& surface = geomodel.surface( surface_id );
         const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
-        for( index_t p : range( surface.nb_mesh_elements() ) ) {
-            for( index_t e : range( surface.nb_mesh_element_vertices( p ) ) ) {
+        for( auto p : range( surface.nb_mesh_elements() ) ) {
+            for( auto e : range( surface.nb_mesh_element_vertices( p ) ) ) {
                 if( mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) ) {
                     border_edge_barycenters.push_back(
                         mesh.polygon_edge_barycenter( PolygonLocalEdge( p, e ) ) );
@@ -647,7 +647,7 @@ namespace {
         const std::vector< std::vector< double > >& region_attributes )
     {
         index_t read_fields { 0 };
-        for( index_t attrib_itr : range(
+        for( auto attrib_itr : range(
             load_storage.vertex_attribute_names_.size() ) ) {
             std::string name = load_storage.vertex_attribute_names_[attrib_itr];
 
@@ -665,8 +665,8 @@ namespace {
             region.vertex_attribute_manager().resize(
                 static_cast< index_t >( region_attributes.size() ) * nb_dimensions
                     + nb_dimensions );
-            for( index_t v_itr : range( region_attributes.size() ) ) {
-                for( index_t attrib_dim_itr : range( nb_dimensions ) ) {
+            for( auto v_itr : range( region_attributes.size() ) ) {
+                for( auto attrib_dim_itr : range( nb_dimensions ) ) {
                     attr[v_itr * nb_dimensions + attrib_dim_itr] =
                         region_attributes[v_itr][read_fields + attrib_dim_itr];
                 }
@@ -777,7 +777,7 @@ namespace {
             while( !end_layer ) {
                 line.get_line();
                 line.get_fields();
-                for( index_t i : range( 5 ) ) {
+                for( auto i : range( 5 ) ) {
                     index_t region_id = line.field_as_uint( i );
                     if( region_id == 0 ) {
                         end_layer = true;
@@ -878,7 +878,7 @@ namespace {
             while( !end_region ) {
                 line.get_line();
                 line.get_fields();
-                for( index_t i : range( 5 ) ) {
+                for( auto i : range( 5 ) ) {
                     signed_index_t signed_id = line.field_as_int( i );
                     if( signed_id == 0 ) {
                         end_region = true;
@@ -1048,7 +1048,7 @@ namespace {
         void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             load_storage.vertex_attribute_names_.reserve( line.nb_fields() - 1 );
-            for( index_t attrib_name_itr : range( 1, line.nb_fields() ) ) {
+            for( auto attrib_name_itr : range( 1, line.nb_fields() ) ) {
                 load_storage.vertex_attribute_names_.emplace_back(
                     line.field( attrib_name_itr ) );
             }
@@ -1073,7 +1073,7 @@ namespace {
         void execute( GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             load_storage.vertex_attribute_dims_.reserve( line.nb_fields() - 1 );
-            for( index_t attrib_size_itr : range( 1, line.nb_fields() ) ) {
+            for( auto attrib_size_itr : range( 1, line.nb_fields() ) ) {
                 load_storage.vertex_attribute_dims_.push_back(
                     line.field_as_uint( attrib_size_itr ) );
                 load_storage.nb_attribute_fields_ += line.field_as_uint(
@@ -1180,7 +1180,7 @@ namespace {
                         referred_vertex_local_id ) );
 
                 std::vector< double > attribute_v;
-                for( index_t attrib_itr : range(
+                for( auto attrib_itr : range(
                     load_storage.vertex_attribute_names_.size() ) ) {
                     std::string name =
                         load_storage.vertex_attribute_names_[attrib_itr];
@@ -1188,7 +1188,7 @@ namespace {
                     GEO::Attribute< double > attr(
                         geomodel.region( referred_vertex_region_id ).vertex_attribute_manager(),
                         name );
-                    for( index_t dim_itr : range( dim ) ) {
+                    for( auto dim_itr : range( dim ) ) {
                         attribute_v.push_back(
                             attr[referred_vertex_local_id * dim + dim_itr] );
                     }
@@ -1344,7 +1344,7 @@ namespace {
             load_storage.vertex_map_.local_ids_.resize(
                 load_storage.vertex_map_.nb_regions() );
 
-            for( index_t region_id : load_storage.vertex_map_.get_regions() ) {
+            for( auto region_id : load_storage.vertex_map_.get_regions() ) {
                 ringmesh_assert( !load_storage.vertices_.empty() );
                 /// Fill the region_vertices and local_ids
                 std::vector< VertexMap::RegionLocalVertex > region_local_indices =
@@ -1367,7 +1367,7 @@ namespace {
             load_storage.vertex_map_.deal_with_same_region_atoms(
                 load_storage.lighttsolid_atom_map_ );
 
-            for( index_t region_id : load_storage.vertex_map_.get_regions() ) {
+            for( auto region_id : load_storage.vertex_map_.get_regions() ) {
                 /// Fill the region_tetra_corners
                 load_storage.vertex_map_.get_tetra_corners_with_this_region_id(
                     region_id, region_tetra_corners_local[region_id] );
@@ -1649,9 +1649,9 @@ namespace RINGMesh {
         const Surface3D& surface = geomodel_.surface( surface_id );
         const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
 
-        for( index_t p : range( surface.nb_mesh_elements() ) ) {
+        for( auto p : range( surface.nb_mesh_elements() ) ) {
             std::vector< index_t > adjacent_polygons_id( 3 );
-            for( index_t e : range( 3 ) ) {
+            for( auto e : range( 3 ) ) {
                 adjacent_polygons_id[e] = surface.polygon_adjacent_index(
                     PolygonLocalEdge( p, e ) );
                 if( !mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) ) {
@@ -1675,7 +1675,7 @@ namespace RINGMesh {
         surface_boxes.resize( geomodel_.nb_surfaces() );
 
         for( const auto& surface : geomodel_.surfaces() ) {
-            for( index_t v : range( surface.nb_vertices() ) ) {
+            for( auto v : range( surface.nb_vertices() ) ) {
                 surface_boxes[surface.index()].add_point( surface.vertex( v ) );
             }
             std::vector< vec3 > border_edge_barycenters =

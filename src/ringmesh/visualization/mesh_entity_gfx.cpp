@@ -66,7 +66,7 @@ namespace {
         double& max )
     {
         if( attribute.is_bound() ) {
-            for( index_t i : range( attribute.size() ) ) {
+            for( auto i : range( attribute.size() ) ) {
                 double value = attribute[i];
                 min = GEO::geo_min( min, value );
                 max = GEO::geo_max( max, value );

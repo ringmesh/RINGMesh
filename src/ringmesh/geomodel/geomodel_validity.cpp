@@ -252,7 +252,7 @@ namespace {
         if( p1 == p2 ) {
             return true;
         }
-        for( index_t v : range( polygons.nb_vertices( p1 ) ) ) {
+        for( auto v : range( polygons.nb_vertices( p1 ) ) ) {
             if( polygons.adjacent( { p1, v } ) == p2 ) {
                 return true;
             }
@@ -422,7 +422,7 @@ namespace {
     {
         std::ostringstream oss;
         oss << " Vertex is in " << entities.size() << " " << entity_name << ": ";
-        for( index_t entity : entities ) {
+        for( auto entity : entities ) {
             oss << entity << " ; ";
         }
         Logger::warn( "GeoModel", oss.str() );
@@ -584,7 +584,7 @@ namespace {
             Logger::warn( "GeoModel", "It should be in at least one Line" );
             return false;
         }
-        for( index_t line : lines ) {
+        for( auto line : lines ) {
             auto nb = std::count( lines.begin(), lines.end(), line );
             if( nb == 2 ) {
                 if( !geomodel.line( line ).is_closed() ) {
@@ -601,7 +601,7 @@ namespace {
         // Check that all the lines are in incident_entity of this corner
         gmme_id corner_id( Corner2D::type_name_static(),
             entities.find( Corner2D::type_name_static() )->second.front() );
-        for( index_t line : lines ) {
+        for( auto line : lines ) {
             gmme_id line_id( Line2D::type_name_static(), line );
             if( !is_boundary_entity( geomodel, line_id, corner_id ) ) {
                 Logger::warn( "GeoModel", " Inconsistent Line-Corner connectivity ",

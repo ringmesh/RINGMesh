@@ -260,7 +260,7 @@ namespace RINGMesh {
         vecn< DIMENSION > entity_barycenter() const
         {
             vecn< DIMENSION > result;
-            for( index_t v : range( nb_vertices() ) ) {
+            for( auto v : range( nb_vertices() ) ) {
                 result += vertex( v );
             }
             ringmesh_assert( nb_vertices() > 0 );
@@ -270,7 +270,7 @@ namespace RINGMesh {
         virtual double size() const
         {
             double size = 0.0;
-            for( index_t i : range( nb_mesh_elements() ) ) {
+            for( auto i : range( nb_mesh_elements() ) ) {
                 size += mesh_element_size( i );
             }
             return size;
@@ -1098,12 +1098,12 @@ namespace RINGMesh {
         double size() const final
         {
             double result = 0.;
-            for( index_t i : range( this->nb_boundaries() ) ) {
+            for( auto i : range( this->nb_boundaries() ) ) {
                 const Surface< DIMENSION >& surface = boundary( i );
-                for( index_t t : range( surface.nb_mesh_elements() ) ) {
+                for( auto t : range( surface.nb_mesh_elements() ) ) {
                     const vecn< DIMENSION >& p0 = surface.mesh_element_vertex(
                         ElementLocalVertex( t, 0 ) );
-                    for( index_t v : range( 1,
+                    for( auto v : range( 1,
                         surface.nb_mesh_element_vertices( t ) - 1 ) ) {
                         double cur_volume = ( dot( p0,
                             cross(

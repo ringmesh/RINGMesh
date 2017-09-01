@@ -80,8 +80,8 @@ namespace {
             const GeoModelMesh3D& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
-            for( index_t c : range( mesh.cells.nb() ) ) {
-                for( index_t f : range( mesh.cells.nb_facets( c ) ) ) {
+            for( auto c : range( mesh.cells.nb() ) ) {
+                for( auto f : range( mesh.cells.nb_facets( c ) ) ) {
                     index_t facet = NO_ID;
                     bool not_used;
                     if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
@@ -106,7 +106,7 @@ namespace {
             std::vector< vec3 > edge_vertices( nb_edges );
             index_t count_edge = 0;
             for( const auto& line : geomodel.lines() ) {
-                for( index_t e : range( line.nb_mesh_elements() ) ) {
+                for( auto e : range( line.nb_mesh_elements() ) ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
                 }
@@ -114,8 +114,8 @@ namespace {
             NNSearch3D nn_search( edge_vertices, false );
 
             const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
-            for( index_t p : range( polygons.nb() ) ) {
-                for( index_t e : range( polygons.nb_vertices( p ) ) ) {
+            for( auto p : range( polygons.nb() ) ) {
+                for( auto e : range( polygons.nb_vertices( p ) ) ) {
                     index_t adj = polygons.adjacent( PolygonLocalEdge( p, e ) );
                     if( adj != GEO::NO_CELL && adj < p ) {
                         pipes.emplace_back( p + cell_offset, adj + cell_offset );
@@ -148,8 +148,8 @@ namespace {
                 out_pipes << pipe.v0 << SPACE << pipe.v1 << EOL;
             }
             for( const std::vector< index_t >& vertices : edges ) {
-                for( index_t v0 : range( vertices.size() - 1 ) ) {
-                    for( index_t v1 : range( v0 + 1, vertices.size() ) ) {
+                for( auto v0 : range( vertices.size() - 1 ) ) {
+                    for( auto v1 : range( v0 + 1, vertices.size() ) ) {
                         out_pipes << vertices[v0] << SPACE << vertices[v1] << EOL;
                     }
                 }
@@ -158,11 +158,11 @@ namespace {
             out_xyz
                 << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
                 << EOL;
-            for( index_t c : range( mesh.cells.nb() ) ) {
+            for( auto c : range( mesh.cells.nb() ) ) {
                 out_xyz << mesh.cells.barycenter( c ) << EOL;
                 out_vol << mesh.cells.volume( c ) << EOL;
             }
-            for( index_t p : range( polygons.nb() ) ) {
+            for( auto p : range( polygons.nb() ) ) {
                 out_xyz << polygons.center( p ) << EOL;
                 out_vol << polygons.area( p ) << EOL;
             }

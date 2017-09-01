@@ -359,7 +359,7 @@ namespace RINGMesh {
                     if( region_id( lighttsolid_vertices_id ) == rgion_id ) {
                         index_t gocad_vertex_i { gocad_vertex_id(
                             lighttsolid_vertices_id ) };
-                        for( index_t local_id : range( local_ids.size() ) ) {
+                        for( auto local_id : range( local_ids.size() ) ) {
                             index_t gocad_id { local_ids[local_id] };
                             if( gocad_id == gocad_vertex_i ) {
                                 gocad_ids2local_ids_[gocad_vertex_i] = local_id;

@@ -84,10 +84,10 @@ namespace {
         {
             const GeoModelMeshVertices3D& vertices = geomodel.mesh.vertices;
             out << "*NODE" << EOL;
-            for( index_t v : range( vertices.nb() ) ) {
+            for( auto v : range( vertices.nb() ) ) {
                 out << v + 1;
                 const vec3& vertex = vertices.vertex( v );
-                for( index_t i : range( 3 ) ) {
+                for( auto i : range( 3 ) ) {
                     out << COMMA << SPACE << vertex[i];
                 }
                 out << EOL;
@@ -100,7 +100,7 @@ namespace {
         {
             const GeologicalEntityType& type = Interface3D ::type_name_static();
             index_t nb_interfaces = geomodel.nb_geological_entities( type );
-            for( index_t i : range( nb_interfaces ) ) {
+            for( auto i : range( nb_interfaces ) ) {
                 save_interface( geomodel, i, out );
             }
         }
@@ -117,11 +117,11 @@ namespace {
             std::vector< bool > vertex_exported( geomodel.mesh.vertices.nb(),
                 false );
             out << "*NSET, nset=" << entity.name() << EOL;
-            for( index_t s : range( entity.nb_children() ) ) {
+            for( auto s : range( entity.nb_children() ) ) {
                 index_t surface_id = entity.child_gmme( s ).index();
-                for( index_t p : range( polygons.nb_polygons( surface_id ) ) ) {
+                for( auto p : range( polygons.nb_polygons( surface_id ) ) ) {
                     index_t polygon_id = polygons.polygon( surface_id, p );
-                    for( index_t v : range( polygons.nb_vertices( polygon_id ) ) ) {
+                    for( auto v : range( polygons.nb_vertices( polygon_id ) ) ) {
                         index_t vertex_id = polygons.vertex(
                             ElementLocalVertex( polygon_id, v ) );
                         if( vertex_exported[vertex_id] ) continue;
@@ -141,11 +141,11 @@ namespace {
             if( cells.nb_tet() > 0 ) {
                 out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type
                     << EOL;
-                for( index_t r : range( geomodel.nb_regions() ) ) {
-                    for( index_t c : range( cells.nb_tet( r ) ) ) {
+                for( auto r : range( geomodel.nb_regions() ) ) {
+                    for( auto c : range( cells.nb_tet( r ) ) ) {
                         index_t tetra = cells.tet( r, c );
                         out << tetra + 1;
-                        for( index_t v : range( 4 ) ) {
+                        for( auto v : range( 4 ) ) {
                             index_t vertex_id = tet_descriptor_abaqus.vertices[v];
                             out << COMMA << SPACE
                                 << cells.vertex(
@@ -162,11 +162,11 @@ namespace {
             if( cells.nb_hex() > 0 ) {
                 out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type
                     << EOL;
-                for( index_t r : range( geomodel.nb_regions() ) ) {
-                    for( index_t c : range( cells.nb_hex( r ) ) ) {
+                for( auto r : range( geomodel.nb_regions() ) ) {
+                    for( auto c : range( cells.nb_hex( r ) ) ) {
                         index_t hex = cells.hex( r, c );
                         out << hex + 1;
-                        for( index_t v : range( 8 ) ) {
+                        for( auto v : range( 8 ) ) {
                             index_t vertex_id = hex_descriptor_abaqus.vertices[v];
                             out << COMMA << SPACE
                                 << cells.vertex(
@@ -180,19 +180,19 @@ namespace {
         void save_regions( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshCells3D& cells = geomodel.mesh.cells;
-            for( index_t r : range( geomodel.nb_regions() ) ) {
+            for( auto r : range( geomodel.nb_regions() ) ) {
                 const std::string& name = geomodel.region( r ).name();
                 out << "*ELSET, elset=" << name << EOL;
                 index_t count = 0;
                 std::string sep;
-                for( index_t c : range( cells.nb_tet( r ) ) ) {
+                for( auto c : range( cells.nb_tet( r ) ) ) {
                     index_t tetra = cells.tet( r, c );
                     out << sep << tetra + 1;
                     sep = COMMA + SPACE;
                     new_line_if_needed( count, out, sep );
 
                 }
-                for( index_t c : range( cells.nb_hex( r ) ) ) {
+                for( auto c : range( cells.nb_hex( r ) ) ) {
                     index_t hex = cells.hex( r, c );
                     out << sep << hex + 1;
                     sep = COMMA + SPACE;
