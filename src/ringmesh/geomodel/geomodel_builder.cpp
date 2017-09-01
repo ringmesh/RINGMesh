@@ -81,7 +81,7 @@ namespace {
         const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             line.geomodel().mesh.vertices;
         bool equal = true;
-        for( index_t i : range( line.nb_vertices() ) ) {
+        for( auto i : range( line.nb_vertices() ) ) {
             if( rhs_vertices[i]
                 != geomodel_vertices.geomodel_vertex_id( line.gmme(), i ) ) {
                 equal = false;
@@ -93,7 +93,7 @@ namespace {
         }
         // If the order is the other one
         equal = true;
-        for( index_t i : range( line.nb_vertices() ) ) {
+        for( auto i : range( line.nb_vertices() ) ) {
             if( rhs_vertices[i]
                 != geomodel_vertices.geomodel_vertex_id( line.gmme(),
                     line.nb_vertices() - i - 1 ) ) {
@@ -116,7 +116,7 @@ namespace {
         if( geomodel.nb_corners() == 0 || line_vertices.empty() ) {
             return;
         }
-        for( index_t i : range( 1, line_vertices.size() - 1 ) ) {
+        for( auto i : range( 1, line_vertices.size() - 1 ) ) {
             gmme_id corner = find_corner( geomodel, line_vertices[i] );
             if( corner.is_defined() ) {
                 line_vertices.pop_back();
@@ -184,8 +184,8 @@ namespace {
             for( const auto& surface : geomodel_.surfaces() ) {
                 const auto& mesh = surface.low_level_mesh_storage();
                 gmme_id S_id = surface.gmme();
-                for( index_t p : range( surface.nb_mesh_elements() ) ) {
-                    for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
+                for( auto p : range( surface.nb_mesh_elements() ) ) {
+                    for( auto v : range( surface.nb_mesh_element_vertices( p ) ) ) {
                         if( mesh.is_edge_on_border( PolygonLocalEdge( p, v ) ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
                                 S_id, ElementLocalVertex( p, v ) );
@@ -354,7 +354,7 @@ namespace {
             polygons_[0].angle_ = 2 * M_PI;
             polygons_[0].side_ = false;
 
-            for( index_t i : range( 1, polygons_.size() ) ) {
+            for( auto i : range( 1, polygons_.size() ) ) {
                 PolygonToSort& cur = polygons_[i];
                 // Computes the angle RADIANS between the reference and the current
                 // polygon
@@ -411,7 +411,7 @@ namespace {
         const std::pair< index_t, bool >& next(
             const std::pair< index_t, bool >& in ) const
         {
-            for( index_t i : range( sorted_polygons_.size() ) ) {
+            for( auto i : range( sorted_polygons_.size() ) ) {
                 if( sorted_polygons_[i] == in ) {
                     if( i == sorted_polygons_.size() - 1 ) {
                         return sorted_polygons_[sorted_polygons_.size() - 2];
@@ -671,7 +671,7 @@ namespace {
                     border_polygon.v0_ );
             ringmesh_assert( !possible_v0_id.empty() );
             index_t v0_id = NO_ID;
-            for( index_t id : possible_v0_id ) {
+            for( auto id : possible_v0_id ) {
                 if( mesh.vertex_index_in_polygon( p, id ) != NO_ID ) {
                     v0_id = id;
                 }
@@ -718,13 +718,13 @@ namespace {
         void visit_border_polygons_on_same_edge( index_t border_id )
         {
             visited_[border_id] = true;
-            for( index_t next_border_id = border_id + 1;
+            for( auto next_border_id = border_id + 1;
                 next_border_id < this->border_polygons_.size()
                     && this->have_border_polygons_same_boundary_edge( border_id,
                         next_border_id ); next_border_id++ ) {
                 visited_[next_border_id] = true;
             }
-            for( index_t prev_border_id = border_id - 1;
+            for( auto prev_border_id = border_id - 1;
                 prev_border_id != NO_ID
                     && this->have_border_polygons_same_boundary_edge( border_id,
                         prev_border_id ); prev_border_id-- ) {
@@ -744,7 +744,7 @@ namespace {
             adjacent_surfaces.push_back(
                 this->border_polygons_[border_id].surface_ );
 
-            for( index_t next_border_id = border_id + 1;
+            for( auto next_border_id = border_id + 1;
                 next_border_id < this->border_polygons_.size()
                     && this->have_border_polygons_same_boundary_edge( border_id,
                         next_border_id ); next_border_id++ ) {
@@ -752,7 +752,7 @@ namespace {
                     this->border_polygons_[next_border_id].surface_ );
             }
 
-            for( index_t prev_border_id = border_id - 1;
+            for( auto prev_border_id = border_id - 1;
                 prev_border_id != NO_ID
                     && this->have_border_polygons_same_boundary_edge( border_id,
                         prev_border_id ); prev_border_id-- ) {
@@ -845,7 +845,7 @@ namespace RINGMesh {
             if( created_line ) {
                 geometry.set_line( line_index.index(), vertices );
 
-                for( index_t j : adjacent_surfaces ) {
+                for( auto j : adjacent_surfaces ) {
                     gmme_id surface_index( Surface< DIMENSION >::type_name_static(),
                         j );
                     topology.add_mesh_entity_boundary_relation( surface_index,
@@ -957,7 +957,7 @@ namespace RINGMesh {
                 }
                 // For each contact, push the next oriented surface that is in the same region
                 const Surface3D& surface = geomodel_.surface( s.first );
-                for( index_t i : range( surface.nb_boundaries() ) ) {
+                for( auto i : range( surface.nb_boundaries() ) ) {
                     const std::pair< index_t, bool >& n =
                         region_info[surface.boundary_gmme( i ).index()].next( s );
                     index_t n_id = n.second ? 2 * n.first : 2 * n.first + 1;
@@ -992,7 +992,7 @@ namespace RINGMesh {
             }
         }
         const Region3D& cur_region = geomodel_.region( universe_id );
-        for( index_t i : range( cur_region.nb_boundaries() ) ) {
+        for( auto i : range( cur_region.nb_boundaries() ) ) {
             // Fill the Universe region boundaries
             // They are supposed to be empty
             topology.add_universe_boundary( cur_region.boundary( i ).index(),

@@ -221,7 +221,7 @@ namespace {
     bool point_inside_tetra_exact( const vec3& p, std::array< vec3, 4 >& vertices )
     {
         std::array< Sign, 4 > signs;
-        for( index_t f : range( 4 ) ) {
+        for( auto f : range( 4 ) ) {
             signs[f] =
                 sign(
                     GEO::PCK::orient_3d( p.data(),
@@ -298,7 +298,7 @@ namespace RINGMesh {
 
             vec3 point_on_plane { projected_point };
             double translation { std::max( 1.0, distance ) };
-            for( index_t d : range( 3 ) ) {
+            for( auto d : range( 3 ) ) {
                 if( std::fabs( plane.normal[d] ) > global_epsilon ) {
                     index_t d1 { ( d + 1 ) % 3 };
                     index_t d2 { ( d + 2 ) % 3 };

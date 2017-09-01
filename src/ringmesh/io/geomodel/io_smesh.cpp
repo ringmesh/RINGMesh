@@ -65,7 +65,7 @@ namespace {
                 << EOL;
             out << geomodel.mesh.vertices.nb() << " 3 0 0" << EOL;
             out << "# node index, node coordinates " << EOL;
-            for( index_t p : range( geomodel.mesh.vertices.nb() ) ) {
+            for( auto p : range( geomodel.mesh.vertices.nb() ) ) {
                 const vec3& V = geomodel.mesh.vertices.vertex( p );
                 out << p << " " << " " << V.x << " " << V.y << " " << V.z
                     << EOL;
@@ -77,9 +77,9 @@ namespace {
             out << nb_polygons( geomodel ) << "  0 " << EOL;
 
             for( const auto& surface : geomodel.surfaces() ) {
-                for( index_t p : range( surface.nb_mesh_elements() ) ) {
+                for( auto p : range( surface.nb_mesh_elements() ) ) {
                     out << surface.nb_mesh_element_vertices( p ) << " ";
-                    for( index_t v : range( surface.nb_mesh_element_vertices( p ) ) ) {
+                    for( auto v : range( surface.nb_mesh_element_vertices( p ) ) ) {
                         out
                             << geomodel.mesh.vertices.geomodel_vertex_id(
                                 surface.gmme(), ElementLocalVertex( p, v ) ) << " ";

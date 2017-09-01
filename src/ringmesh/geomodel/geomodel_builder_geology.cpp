@@ -81,7 +81,7 @@ namespace {
         const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
             line.geomodel().mesh.vertices;
         bool equal = true;
-        for( index_t i : range( line.nb_vertices() ) ) {
+        for( auto i : range( line.nb_vertices() ) ) {
             if( rhs_vertices[i]
                 != geomodel_vertices.geomodel_vertex_id( line.gmme(), i ) ) {
                 equal = false;
@@ -93,7 +93,7 @@ namespace {
         }
         // If the order is the other one
         equal = true;
-        for( index_t i : range( line.nb_vertices() ) ) {
+        for( auto i : range( line.nb_vertices() ) ) {
             if( rhs_vertices[i]
                 != geomodel_vertices.geomodel_vertex_id( line.gmme(),
                     line.nb_vertices() - i - 1 ) ) {
@@ -121,7 +121,7 @@ namespace {
         if( line_vertices.empty() ) {
             return;
         }
-        for( index_t i : range( 1, line_vertices.size() - 1 ) ) {
+        for( auto i : range( 1, line_vertices.size() - 1 ) ) {
             gmme_id corner = find_corner( geomodel, line_vertices[i] );
             if( corner.is_defined() ) {
                 line_vertices.pop_back();
@@ -149,7 +149,7 @@ namespace RINGMesh {
     void GeoModelBuilderGeology< DIMENSION >::copy_geology(
         const GeoModel< DIMENSION >& from )
     {
-        for( index_t t : range( from.nb_geological_entity_types() ) ) {
+        for( auto t : range( from.nb_geological_entity_types() ) ) {
             builder_.geology.copy_geological_entity_topology( from,
                 from.geological_entity_type( t ) );
         }
@@ -166,7 +166,7 @@ namespace RINGMesh {
         auto old_size = static_cast< index_t >( store.size() );
         index_t new_size = old_size + nb_additional_entities;
         store.reserve( new_size );
-        for( index_t i : range( old_size, new_size ) ) {
+        for( auto i : range( old_size, new_size ) ) {
             store.emplace_back(
                 GeoModelGeologicalEntityAccess< DIMENSION >::create_geological_entity(
                     type, geomodel_, i ) );
@@ -342,7 +342,7 @@ namespace RINGMesh {
         std::vector< std::set< gmge_id > > interfaces;
         for( const auto& line : geomodel_.lines() ) {
             std::set< gmge_id > cur_interfaces;
-            for( index_t j : range( line.nb_incident_entities() ) ) {
+            for( auto j : range( line.nb_incident_entities() ) ) {
                 const GeoModelMeshEntity< DIMENSION >& surface =
                     line.incident_entity( j );
                 gmge_id parent_interface = surface.parent_gmge(
@@ -350,7 +350,7 @@ namespace RINGMesh {
                 cur_interfaces.insert( parent_interface );
             }
             gmge_id contact_id;
-            for( index_t j : range( interfaces.size() ) ) {
+            for( auto j : range( interfaces.size() ) ) {
                 if( cur_interfaces.size() == interfaces[j].size()
                     && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
                         interfaces[j].begin() ) ) {

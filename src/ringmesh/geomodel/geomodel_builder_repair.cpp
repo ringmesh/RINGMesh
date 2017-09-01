@@ -160,7 +160,7 @@ namespace RINGMesh {
         index_t nb_vertices = surface.nb_mesh_element_vertices( polygon_id );
         if( nb_vertices != 3 ) {
             std::vector< index_t > vertices( nb_vertices );
-            for( index_t v : range( nb_vertices ) ) {
+            for( auto v : range( nb_vertices ) ) {
                 vertices[v] = colocated_vertices[surface.mesh_element_vertex_index(
                     ElementLocalVertex( polygon_id, v ) )];
             }
@@ -182,7 +182,7 @@ namespace RINGMesh {
         std::vector< index_t >& colocated_vertices )
     {
         std::vector< index_t > f_is_degenerate( surface.nb_mesh_elements() );
-        for( index_t p : range( surface.nb_mesh_elements() ) ) {
+        for( auto p : range( surface.nb_mesh_elements() ) ) {
             f_is_degenerate[p] = polygon_is_degenerate( surface, p,
                 colocated_vertices );
         }
@@ -210,7 +210,7 @@ namespace RINGMesh {
         std::vector< index_t >& colocated_vertices )
     {
         std::vector< bool > e_is_degenerate( line.nb_mesh_elements() );
-        for( index_t e : range( line.nb_mesh_elements() ) ) {
+        for( auto e : range( line.nb_mesh_elements() ) ) {
             e_is_degenerate[e] = edge_is_degenerate( line, e, colocated_vertices );
         }
         return e_is_degenerate;
@@ -300,7 +300,7 @@ namespace RINGMesh {
             return vertices;
         }
         std::vector< const GeoModelMeshEntity< DIMENSION >* > inside_border;
-        for( index_t i : range( E.nb_boundaries() ) ) {
+        for( auto i : range( E.nb_boundaries() ) ) {
             if( E.boundary( i ).is_inside_border( E ) ) {
                 inside_border.push_back(
                     dynamic_cast< const GeoModelMeshEntity< DIMENSION >* >( &E.boundary(
@@ -314,7 +314,7 @@ namespace RINGMesh {
             const NNSearch< DIMENSION >& nn_search = E.vertex_nn_search();
 
             for( const GeoModelMeshEntity< DIMENSION >*& entity : inside_border ) {
-                for( index_t v : range( entity->nb_vertices() ) ) {
+                for( auto v : range( entity->nb_vertices() ) ) {
                     std::vector< index_t > colocated_indices =
                         nn_search.get_neighbors( entity->vertex( v ),
                             geomodel_.epsilon() );
@@ -341,7 +341,7 @@ namespace RINGMesh {
             Line< DIMENSION >::type_name_static(),
             Surface< DIMENSION >::type_name_static() } };
         for( const MeshEntityType& type : types ) {
-            for( index_t e : range( geomodel_.nb_mesh_entities( type ) ) ) {
+            for( auto e : range( geomodel_.nb_mesh_entities( type ) ) ) {
                 gmme_id entity_id( type, e );
                 const GeoModelMeshEntity< DIMENSION >& E = geomodel_.mesh_entity(
                     entity_id );
@@ -357,7 +357,7 @@ namespace RINGMesh {
 
                 std::vector< bool > to_delete( colocated.size(), false );
                 index_t nb_todelete = 0;
-                for( index_t v : range( colocated.size() ) ) {
+                for( auto v : range( colocated.size() ) ) {
                     if( colocated[v] == v
                         || inside_border.find( v ) != inside_border.end() ) {
                         // This point is kept
@@ -381,8 +381,8 @@ namespace RINGMesh {
                 if( type == Surface< DIMENSION >::type_name_static() ) {
                     std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
                         builder_.geometry.create_surface_builder( e );
-                    for( index_t p_itr : range( E.nb_mesh_elements() ) ) {
-                        for( index_t fpv_itr : range(
+                    for( auto p_itr : range( E.nb_mesh_elements() ) ) {
+                        for( auto fpv_itr : range(
                             E.nb_mesh_element_vertices( p_itr ) ) ) {
                             builder->set_polygon_vertex( p_itr, fpv_itr,
                                 colocated[E.mesh_element_vertex_index(
@@ -396,7 +396,7 @@ namespace RINGMesh {
                 } else if( type == Line< DIMENSION >::type_name_static() ) {
                     std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
                         builder_.geometry.create_line_builder( e );
-                    for( index_t e_itr : range( E.nb_mesh_elements() ) ) {
+                    for( auto e_itr : range( E.nb_mesh_elements() ) ) {
                         builder->set_edge_vertex( e_itr, 0,
                             colocated[E.mesh_element_vertex_index(
                                 ElementLocalVertex( e_itr, 0 ) )] );

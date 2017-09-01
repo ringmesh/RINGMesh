@@ -211,7 +211,7 @@ namespace RINGMesh {
             const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr ) override
         {
-            for( index_t p : range( polygon_ptr.size() - 1 ) ) {
+            for( auto p : range( polygon_ptr.size() - 1 ) ) {
                 index_t start = polygon_ptr[p];
                 index_t end = polygon_ptr[p + 1];
                 GEO::vector< index_t > polygon_vertices =
