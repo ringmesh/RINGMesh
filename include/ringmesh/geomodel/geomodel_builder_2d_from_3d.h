@@ -40,6 +40,9 @@
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 namespace RINGMesh {
+    /*!
+     * @brief Base class for GeoModel2D building from GeoModel3D.
+     */
     class RINGMESH_API GeoModelBuilder2DFrom3D: public GeoModelBuilder< 2 > {
     public:
         GeoModelBuilder2DFrom3D(
@@ -51,6 +54,7 @@ namespace RINGMesh {
                 geomodel3d_from_( geomodel3d_from ),
                 plane_( plane )
         {
+            // Definition of v axis (upward) of the 2D space (along the plane)
             auto upward_point = plane_.origin + vec3 { 0., 0., 1. };
             vec3 v_axis_point_direction;
             std::tie( std::ignore, v_axis_point_direction ) =
@@ -58,6 +62,7 @@ namespace RINGMesh {
             if( ( plane_.origin - v_axis_point_direction ).length()
                 < geomodel3d_from.epsilon() ) {
                 // Case where plane is sub-horizontal
+                // (v axis is set towards 3D x direction)
                 auto towards_x_point = plane_.origin + vec3 { 1., 0., 0. };
                 std::tie( std::ignore, v_axis_point_direction ) =
                     Distance::point_to_plane( towards_x_point, plane_ );
@@ -82,6 +87,14 @@ namespace RINGMesh {
         vec3 v_axis { };
     };
 
+    /*!
+     * @brief Builder of GeoModel2D which project a GeoModel3D onto a plane.
+     * @note This builder is dedicated to planar or sub-planar
+     * GeoModel3D without volume, i.e. cross-sections, map-view models
+     * or GeoModel3D only made of 1 fault or 1 horizon.
+     * @warning The result GeoModel2D is not guaranteed to be valid.
+     * It depends of the projection.
+     */
     class RINGMESH_API GeoModelBuilder2DProjection: public GeoModelBuilder2DFrom3D {
     public:
         GeoModelBuilder2DProjection(
