@@ -131,7 +131,7 @@ namespace RINGMesh {
                 throw RINGMeshException( "ZLIB", "Invalid error: ", error );
             }
             if( error > 0 ) {
-                fwrite( read_buffer, error, 1, out );
+                fwrite( read_buffer, error, std::size_t{ 1 }, out );
             }
         } while( error > 0 );
         fclose( out );

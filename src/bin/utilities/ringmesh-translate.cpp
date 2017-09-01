@@ -84,7 +84,7 @@ namespace {
                 ") has not exactly ", DIMENSION, " components" );
         }
         vecn< DIMENSION > coords_vec;
-        for( index_t split_coords_itr : range( DIMENSION ) ) {
+        for( auto split_coords_itr : range( DIMENSION ) ) {
             coords_vec[split_coords_itr] = GEO::String::to_double(
                 split_coords[split_coords_itr] );
         }

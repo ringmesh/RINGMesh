@@ -135,7 +135,7 @@ namespace {
         const GeoModelMeshEntity< DIMENSION >& entity,
         Box< DIMENSION >& bbox )
     {
-        for( index_t v : range( entity.nb_vertices() ) ) {
+        for( auto v : range( entity.nb_vertices() ) ) {
             bbox.add_point( entity.vertex( v ) );
         }
     }
@@ -194,7 +194,7 @@ namespace RINGMesh {
         for( const MeshEntityType& type : types ) {
             entity_types_.emplace_back( type.string() );
         }
-        for( index_t i : range( GM_.nb_geological_entity_types() ) ) {
+        for( auto i : range( GM_.nb_geological_entity_types() ) ) {
             entity_types_.emplace_back( GM_.geological_entity_type( i ).string() );
         }
         GM_gfx_.set_geomodel( GM_ );
@@ -403,7 +403,7 @@ namespace RINGMesh {
         GM_gfx_.lines.set_vertex_visibility( line_id,
             line_style_.visible_vertices_ );
         const Line< DIMENSION >& line = GM_.line( line_id );
-        for( index_t i : range( line.nb_boundaries() ) ) {
+        for( auto i : range( line.nb_boundaries() ) ) {
             toggle_corner_visibility( line.boundary_gmme( i ).index() );
         }
     }
@@ -416,7 +416,7 @@ namespace RINGMesh {
         GM_gfx_.surfaces.set_vertex_visibility( surface_id,
             surface_style_.visible_vertices_ );
         const Surface< DIMENSION >& surface = GM_.surface( surface_id );
-        for( index_t i : range( surface.nb_boundaries() ) ) {
+        for( auto i : range( surface.nb_boundaries() ) ) {
             toggle_line_and_boundaries_visibility(
                 surface.boundary_gmme( i ).index() );
         }
@@ -428,7 +428,7 @@ namespace RINGMesh {
     {
         const GeoModelGeologicalEntity< DIMENSION >& entity = GM_.geological_entity(
             entity_id );
-        for( index_t i : range( entity.nb_children() ) ) {
+        for( auto i : range( entity.nb_children() ) ) {
             const gmme_id& child_id = entity.child_gmme( i );
             toggle_mesh_entity_and_boundaries_visibility( child_id );
         }
@@ -484,7 +484,7 @@ namespace RINGMesh {
                     ImGui::OpenPopup( "##Coordinates" );
                 }
                 if( ImGui::BeginPopup( "##Coordinates" ) ) {
-                    for( index_t i : range( GM_gfx_.attribute.nb_coordinates() ) ) {
+                    for( auto i : range( GM_gfx_.attribute.nb_coordinates() ) ) {
                         if( ImGui::Button( std::to_string( i ).c_str() ) ) {
                             GM_gfx_.attribute.set_coordinate( i );
                             autorange();
@@ -712,7 +712,7 @@ namespace RINGMesh {
     {
         colored_cells_.new_status = false;
         show_colored_layers_.new_status = false;
-        for( index_t r : range( GM_.nb_regions() ) ) {
+        for( auto r : range( GM_.nb_regions() ) ) {
             GM_gfx_.regions.set_region_color( r,
                 std::fmod( GEO::Numeric::random_float32(), 1.f ),
                 std::fmod( GEO::Numeric::random_float32(), 1.f ),
@@ -731,14 +731,14 @@ namespace RINGMesh {
         }
         colored_cells_.new_status = false;
         show_colored_regions_.new_status = false;
-        for( index_t l : range(
+        for( auto l : range(
             GM_.nb_geological_entities( Layer3D::type_name_static() ) ) ) {
             float red = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float green = std::fmod( GEO::Numeric::random_float32(), 1.f );
             float blue = std::fmod( GEO::Numeric::random_float32(), 1.f );
             const GeoModelGeologicalEntity3D& cur_layer = GM_.geological_entity(
                 Layer3D::type_name_static(), l );
-            for( index_t r : range( cur_layer.nb_children() ) )
+            for( auto r : range( cur_layer.nb_children() ) )
                 GM_gfx_.regions.set_region_color( cur_layer.child( r ).index(), red,
                     green, blue );
         }
@@ -816,7 +816,7 @@ namespace RINGMesh {
         GM_gfx_.regions.set_vertex_visibility( region_id,
             volume_style_.visible_vertices_ );
         const Region3D& region = GM_.region( region_id );
-        for( index_t i : range( region.nb_boundaries() ) ) {
+        for( auto i : range( region.nb_boundaries() ) ) {
             toggle_surface_and_boundaries_visibility(
                 region.boundary_gmme( i ).index() );
         }
@@ -880,7 +880,7 @@ namespace RINGMesh {
         }
         mesh_gfx_.set_mesh( &mesh_ );
 
-        for( index_t v : range( mesh_.vertices.nb() ) ) {
+        for( auto v : range( mesh_.vertices.nb() ) ) {
             bbox_.add_point( mesh_.vertices.point( v ) );
         }
     }
@@ -1055,7 +1055,7 @@ namespace RINGMesh {
             if( attribute.is_bound() ) {
                 attribute_min_ = GEO::Numeric::max_float32();
                 attribute_max_ = GEO::Numeric::min_float32();
-                for( index_t i : range( subelements.nb() ) ) {
+                for( auto i : range( subelements.nb() ) ) {
                     attribute_min_ = GEO::geo_min( attribute_min_,
                         float( attribute[i] ) );
                     attribute_max_ = GEO::geo_max( attribute_max_,
@@ -1320,7 +1320,7 @@ namespace RINGMesh {
     {
         int id = 0;
         for( const auto& colors : color_table_ ) {
-            for( index_t j : range( colors.size() ) ) {
+            for( auto j : range( colors.size() ) ) {
                 if( j > 0 ) {
                     ImGui::SameLine();
                 }
@@ -1438,7 +1438,7 @@ namespace RINGMesh {
             std::ostringstream oss;
             oss << "GeoModel" << DIMENSION << "D";
             ImGui::Text( "%s", oss.str().c_str() );
-            for( index_t i : range( geomodels.size() ) ) {
+            for( auto i : range( geomodels.size() ) ) {
                 GeoModelViewer< DIMENSION >& viewer = *geomodels[i];
                 ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.GM_.name().c_str(),
@@ -1475,7 +1475,7 @@ namespace RINGMesh {
         if( !meshes_.empty() ) {
             ImGui::Separator();
             ImGui::Text( "Mesh" );
-            for( index_t i : range( meshes_.size() ) ) {
+            for( auto i : range( meshes_.size() ) ) {
                 MeshViewer& viewer = *meshes_[i];
                 ImGui::PushID( id++ );
                 if( ImGui::Checkbox( viewer.name_.c_str(), &viewer.is_visible_ ) ) {

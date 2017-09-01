@@ -144,7 +144,7 @@ namespace RINGMesh {
 
     index_t StratigraphicColumn::get_index( const std::string& name ) const
     {
-        for( index_t i : range( units_.size() ) ) {
+        for( auto i : range( units_.size() ) ) {
             if( units_[i]->get_name() == name ) {
                 return i;
             }
