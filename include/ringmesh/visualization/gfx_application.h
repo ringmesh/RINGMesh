@@ -43,6 +43,7 @@
 
 #include <ringmesh/basic/box.h>
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/visualization/geomodel_gfx.h>
 
@@ -61,7 +62,7 @@ namespace RINGMesh {
         };
 
         RINGMeshApplication( int argc, char** argv );
-        ~RINGMeshApplication() = default;
+        ~RINGMeshApplication();
 
         virtual void quit();
 

@@ -38,6 +38,7 @@
 #include <stack>
 
 #include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!
@@ -259,6 +260,28 @@ namespace RINGMesh {
         std::remove_if( parents.begin(), parents.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderGeology< DIMENSION >::set_geological_entity_child(
+        const gmge_id& parent_gmge,
+        index_t id,
+        index_t child_id )
+    {
+        /// No check on the validity of the index of the entity child_index
+        /// NO_ID is used to flag entities to delete
+        GeoModelGeologicalEntity< DIMENSION >& geol_entity =
+            geomodel_access_.modifiable_geological_entity( parent_gmge );
+        const MeshEntityType& child_type =
+            geomodel_.entity_type_manager().relationship_manager.child_type(
+                parent_gmge.type() );
+        gmme_id child( child_type, child_id );
+        GeoModelGeologicalEntityAccess< DIMENSION > gmge_access( geol_entity );
+        index_t relationship_id = gmge_access.modifiable_children()[id];
+        RelationshipManager& manager =
+            geomodel_access_.modifiable_entity_type_manager().relationship_manager;
+        manager.set_child_to_parent_child_relationship( relationship_id, child );
+    }
+
     template< index_t DIMENSION >
     void GeoModelBuilderGeology< DIMENSION >::delete_geological_entity(
         const GeologicalEntityType& type,
