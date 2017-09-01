@@ -861,6 +861,7 @@ namespace RINGMesh {
                 }
             }
         }
+        geometry.clear_geomodel_mesh();
     }
 
     template< index_t DIMENSION >
@@ -872,9 +873,6 @@ namespace RINGMesh {
 
         cut_geomodel_on_internal_boundaries();
         topology.compute_universe();
-
-        // Deliberate clear of the geomodel vertices used for geomodel building
-        geometry.clear_geomodel_mesh();
 
         print_geomodel( geomodel_ );
     }

@@ -57,16 +57,16 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGfx );
 
     ALIAS_3D( GeoModelGfx );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelGfxEntity {
-    ringmesh_disable_copy( GeoModelGfxEntity );
+    ringmesh_disable_copy_and_move( GeoModelGfxEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        GeoModelGfxEntity( GeoModelGfx< DIMENSION >& gfx );
+        explicit GeoModelGfxEntity( GeoModelGfx< DIMENSION >& gfx );
         virtual ~GeoModelGfxEntity() = default;
 
         virtual void draw() = 0;
@@ -129,8 +129,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class CornerGfxEntity final: public GeoModelGfxEntity< DIMENSION > {
     public:
-        CornerGfxEntity( GeoModelGfx< DIMENSION >& gfx );
-        virtual ~CornerGfxEntity() = default;
+        explicit CornerGfxEntity( GeoModelGfx< DIMENSION >& gfx );
 
         PointSetMeshGfx< DIMENSION >& corner( index_t corner_id );
 
@@ -144,8 +143,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class LineGfxEntity final: public GeoModelGfxEntity< DIMENSION > {
     public:
-        LineGfxEntity( GeoModelGfx< DIMENSION >& gfx );
-        virtual ~LineGfxEntity() = default;
+        explicit LineGfxEntity( GeoModelGfx< DIMENSION >& gfx );
 
         LineMeshGfx< DIMENSION >& line( index_t line_id );
 
@@ -198,8 +196,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class SurfaceGfxEntity final: public GeoModelGfxEntity< DIMENSION > {
     public:
-        SurfaceGfxEntity( GeoModelGfx< DIMENSION >& gfx );
-        virtual ~SurfaceGfxEntity() = default;
+        explicit SurfaceGfxEntity( GeoModelGfx< DIMENSION >& gfx );
 
         SurfaceMeshGfx< DIMENSION >& surface( index_t surface_id );
 
@@ -303,8 +300,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class RegionGfxEntity final: public GeoModelGfxEntity< 3 > {
     public:
-        RegionGfxEntity( GeoModelGfx3D& gfx );
-        virtual ~RegionGfxEntity() = default;
+        explicit RegionGfxEntity( GeoModelGfx3D& gfx );
 
         VolumeMeshGfx< DIMENSION >& region( index_t region_id );
 
@@ -418,6 +414,6 @@ namespace RINGMesh {
     };
 
     ALIAS_2D_AND_3D( RegionGfxEntity );
-}
+} // namespace RINGMesh
 
 #endif
