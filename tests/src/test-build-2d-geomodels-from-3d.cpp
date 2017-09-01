@@ -77,24 +77,21 @@ int main()
             }
         } ) );
 
-        checks.emplace_back( std::async( std::launch::async,
-            [&projection_geomodel2d] {
-            std::string output_model_file_name( ringmesh_test_output_path );
-            output_model_file_name += projection_geomodel2d.name() + "_saved_out.gm";
-            geomodel_save( projection_geomodel2d, output_model_file_name );
+        std::string output_model_file_name( ringmesh_test_output_path );
+        output_model_file_name += projection_geomodel2d.name() + "_saved_out.gm";
+        geomodel_save( projection_geomodel2d, output_model_file_name );
 
-            GeoModel2D reloaded_geomodel2d;
-            auto is_reloaded_model_valid = geomodel_load( reloaded_geomodel2d,
-                output_model_file_name );
-            if( !is_reloaded_model_valid ) {
-                std::string output_model_file_name_bis( ringmesh_test_output_path );
-                output_model_file_name_bis += reloaded_geomodel2d.name()
-                    + "_saved_out_bis.gm";
-                geomodel_save( reloaded_geomodel2d, output_model_file_name_bis );
-                throw RINGMeshException( "TEST",
-                    "FAILED : reloaded GeoModel2D is not valid" );
-            }
-        } ) );
+        GeoModel2D reloaded_geomodel2d;
+        auto is_reloaded_model_valid = geomodel_load( reloaded_geomodel2d,
+            output_model_file_name );
+        if( !is_reloaded_model_valid ) {
+            std::string output_model_file_name_bis( ringmesh_test_output_path );
+            output_model_file_name_bis += reloaded_geomodel2d.name()
+                + "_saved_out_bis.gm";
+            geomodel_save( reloaded_geomodel2d, output_model_file_name_bis );
+            throw RINGMeshException( "TEST",
+                "FAILED : reloaded GeoModel2D is not valid" );
+        }
 
         for( auto& check : checks ) {
             check.get();
