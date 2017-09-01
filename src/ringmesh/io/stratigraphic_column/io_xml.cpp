@@ -56,6 +56,8 @@ namespace {
             const StratigraphicColumn& column,
             const std::string& filename ) final
         {
+            ringmesh_unused( column );
+            ringmesh_unused( filename );
             throw RINGMeshException( "I/O",
                 "Saving of a StratigraphicColumn not implemented yet" );
         }

@@ -102,7 +102,7 @@ namespace RINGMesh {
 
         index_t find( index_t j ) const
         {
-            for( index_t e : range( nb_elements_ ) ) {
+            for( auto e : range( nb_elements_ ) ) {
                 if( elements_[e].index == j ) {
                     return e;
                 }
@@ -112,7 +112,7 @@ namespace RINGMesh {
 
         bool exist( index_t j )
         {
-            for( index_t e : range( nb_elements_ ) ) {
+            for( auto e : range( nb_elements_ ) ) {
                 if( elements_[e].index == j ) {
                     return true;
                 }
@@ -461,7 +461,7 @@ namespace RINGMesh {
         ringmesh_assert( mat1.nj() == mat2.size() );
         std::vector< T > result( mat1.ni(), 0 );
         parallel_for( mat1.ni(), [&mat1, &mat2, &result]( index_t i ) {
-            for( index_t e : range( mat1.get_nb_elements_in_line( i ) ) ) {
+            for( auto e : range( mat1.get_nb_elements_in_line( i ) ) ) {
                 index_t j = mat1.get_column_in_line( i, e );
                 T i_j_result = mat1.get_element_in_line( i, e );
                 i_j_result *= mat2[j];

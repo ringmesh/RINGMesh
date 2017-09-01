@@ -84,6 +84,8 @@ namespace {
 
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" );
         }
@@ -120,8 +122,8 @@ namespace {
             signed_index_t conversion_sign[3] = { 1, 1, -1 };
             index_t conversion_axis[3] = { 0, 2, 1 };
             data << mesh.vertices.nb() << " # PX, PY, PZ" << EOL;
-            for( index_t dim : range( 3 ) ) {
-                for( index_t v : range( mesh.vertices.nb() ) ) {
+            for( auto dim : range( 3 ) ) {
+                for( auto v : range( mesh.vertices.nb() ) ) {
                     data << " "
                         << conversion_sign[dim]
                             * mesh.vertices.vertex( v )[conversion_axis[dim]];
@@ -136,10 +138,10 @@ namespace {
                 Interface3D::type_name_static() );
             std::vector< index_t > nb_triangle_interface( nb_interfaces, 0 );
             std::vector< index_t > nb_quad_interface( nb_interfaces, 0 );
-            for( index_t i : range( nb_interfaces ) ) {
+            for( auto i : range( nb_interfaces ) ) {
                 const GeoModelGeologicalEntity3D& interf =
                     geomodel.geological_entity( Interface3D::type_name_static(), i );
-                for( index_t s : range( interf.nb_children() ) ) {
+                for( auto s : range( interf.nb_children() ) ) {
                     index_t s_id = interf.child_gmme( s ).index();
                     nb_triangle_interface[i] += polygons.nb_triangle( s_id );
                     nb_quad_interface[i] += polygons.nb_quad( s_id );
@@ -147,7 +149,7 @@ namespace {
                 if( nb_triangle_interface[i] > 0 ) nb_families++;
                 if( nb_quad_interface[i] > 0 ) nb_families++;
             }
-            for( index_t r : range( geomodel.nb_regions() ) ) {
+            for( auto r : range( geomodel.nb_regions() ) ) {
                 if( mesh.cells.nb_tet( r ) > 0 ) nb_families++;
                 if( mesh.cells.nb_pyramid( r ) > 0 ) nb_families++;
                 if( mesh.cells.nb_prism( r ) > 0 ) nb_families++;
@@ -162,7 +164,7 @@ namespace {
                 regions << region.name() << EOL;
                 std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
                                                "PYRA_5" };
-                for( index_t type : range(
+                for( auto type : range(
                     to_underlying_type( CellType::TETRAHEDRON ),
                     to_underlying_type( CellType::UNCLASSIFIED ) ) ) {
                     CellType T = static_cast< CellType >( type );
@@ -173,7 +175,7 @@ namespace {
                     }
                 }
             }
-            for( index_t i : range( nb_interfaces ) ) {
+            for( auto i : range( nb_interfaces ) ) {
                 regions << interface_csmp_name( i, geomodel ) << EOL;
                 if( nb_triangle_interface[i] > 0 ) {
                     ascii << interface_csmp_name( i, geomodel ) << TAB << "TRI_3"
@@ -185,7 +187,7 @@ namespace {
                 }
             }
             if( geomodel.wells() ) {
-                for( index_t w : range( geomodel.wells()->nb_wells() ) ) {
+                for( auto w : range( geomodel.wells()->nb_wells() ) ) {
                     const Well3D& well = geomodel.wells()->well( w );
                     regions << well.name() << EOL;
                     ascii << well.name() << TAB << "BAR_2" << TAB << 0 << TAB
@@ -194,14 +196,14 @@ namespace {
             }
 
             data << "# PBFLAGS" << EOL;
-            for( index_t p : range( mesh.vertices.nb() ) ) {
+            for( auto p : range( mesh.vertices.nb() ) ) {
                 data << " " << std::setw( 3 ) << point_boundary( p );
                 new_line( count, 20, data );
             }
             reset_line( count, data );
 
             data << "# PBVALS" << EOL;
-            for( index_t p : range( mesh.vertices.nb() ) ) {
+            for( auto p : range( mesh.vertices.nb() ) ) {
                 ringmesh_unused( p );
                 data << " " << std::setw( 3 ) << 0;
                 new_line( count, 20, data );
@@ -211,35 +213,35 @@ namespace {
             index_t nb_total_entities = mesh.cells.nb_cells()
                 + polygons.nb_polygons() + mesh.wells.nb_edges();
             data << nb_total_entities << " # PELEMENT" << EOL;
-            for( index_t r : range( geomodel.nb_regions() ) ) {
+            for( auto r : range( geomodel.nb_regions() ) ) {
                 index_t entity_type[4] = { 4, 6, 12, 18 };
-                for( index_t type : range(
+                for( auto type : range(
                     to_underlying_type( CellType::TETRAHEDRON ),
                     to_underlying_type( CellType::UNCLASSIFIED ) ) ) {
                     CellType T = static_cast< CellType >( type );
-                    for( index_t el : range( mesh.cells.nb_cells( r, T ) ) ) {
+                    for( auto el : range( mesh.cells.nb_cells( r, T ) ) ) {
                         ringmesh_unused( el );
                         data << " " << std::setw( 3 ) << entity_type[type];
                         new_line( count, 20, data );
                     }
                 }
             }
-            for( index_t i : range( nb_interfaces ) ) {
-                for( index_t el : range( nb_triangle_interface[i] ) ) {
+            for( auto i : range( nb_interfaces ) ) {
+                for( auto el : range( nb_triangle_interface[i] ) ) {
                     ringmesh_unused( el );
                     data << " " << std::setw( 3 ) << 8;
                     new_line( count, 20, data );
                 }
-                for( index_t el : range( nb_quad_interface[i] ) ) {
+                for( auto el : range( nb_quad_interface[i] ) ) {
                     ringmesh_unused( el );
                     data << " " << std::setw( 3 ) << 14;
                     new_line( count, 20, data );
                 }
             }
             if( geomodel.wells() ) {
-                for( index_t w : range( geomodel.wells()->nb_wells() ) ) {
+                for( auto w : range( geomodel.wells()->nb_wells() ) ) {
                     const Well3D& well = geomodel.wells()->well( w );
-                    for( index_t e : range( well.nb_edges() ) ) {
+                    for( auto e : range( well.nb_edges() ) ) {
                         ringmesh_unused( e );
                         data << " " << std::setw( 3 ) << 2;
                         new_line( count, 20, data );
@@ -252,18 +254,18 @@ namespace {
                 << "# now the entities which make up each object are listed in sequence"
                 << EOL;
             index_t cur_cell = 0;
-            for( index_t r : range( geomodel.nb_regions() ) ) {
+            for( auto r : range( geomodel.nb_regions() ) ) {
                 const RINGMesh::GeoModelEntity3D& region = geomodel.region( r );
                 std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
                                                "PYRA_5" };
-                for( index_t type : range(
+                for( auto type : range(
                     to_underlying_type( CellType::TETRAHEDRON ),
                     to_underlying_type( CellType::UNCLASSIFIED ) ) ) {
                     CellType T = static_cast< CellType >( type );
                     if( mesh.cells.nb_cells( r, T ) > 0 ) {
                         ascii << region.name() << " " << entity_type[type] << " "
                             << mesh.cells.nb_cells( r, T ) << EOL;
-                        for( index_t el : range( mesh.cells.nb_cells( r, T ) ) ) {
+                        for( auto el : range( mesh.cells.nb_cells( r, T ) ) ) {
                             ringmesh_unused( el );
                             ascii << cur_cell++ << " ";
                             new_line( count, 10, ascii );
@@ -272,11 +274,11 @@ namespace {
                     }
                 }
             }
-            for( index_t i : range( nb_interfaces ) ) {
+            for( auto i : range( nb_interfaces ) ) {
                 if( nb_triangle_interface[i] > 0 ) {
                     ascii << interface_csmp_name( i, geomodel ) << " " << "TRI_3"
                         << " " << nb_triangle_interface[i] << EOL;
-                    for( index_t el : range( nb_triangle_interface[i] ) ) {
+                    for( auto el : range( nb_triangle_interface[i] ) ) {
                         ringmesh_unused( el );
                         ascii << cur_cell++ << " ";
                         new_line( count, 10, ascii );
@@ -286,7 +288,7 @@ namespace {
                 if( nb_quad_interface[i] > 0 ) {
                     ascii << interface_csmp_name( i, geomodel ) << " " << "QUAD_4"
                         << " " << nb_quad_interface[i] << EOL;
-                    for( index_t el : range( nb_quad_interface[i] ) ) {
+                    for( auto el : range( nb_quad_interface[i] ) ) {
                         ringmesh_unused( el );
                         ascii << cur_cell++ << " ";
                         new_line( count, 10, ascii );
@@ -295,11 +297,11 @@ namespace {
                 }
             }
             if( geomodel.wells() ) {
-                for( index_t w : range( geomodel.wells()->nb_wells() ) ) {
+                for( auto w : range( geomodel.wells()->nb_wells() ) ) {
                     const Well3D& well = geomodel.wells()->well( w );
                     ascii << well.name() << " " << "BAR_2" << " " << well.nb_edges()
                         << EOL;
-                    for( index_t e : range( well.nb_edges() ) ) {
+                    for( auto e : range( well.nb_edges() ) ) {
                         ringmesh_unused( e );
                         ascii << cur_cell++ << " ";
                         new_line( count, 10, ascii );
@@ -313,15 +315,15 @@ namespace {
                 + 6 * mesh.cells.nb_prism() + 8 * mesh.cells.nb_hex()
                 + 2 * mesh.wells.nb_edges();
             data << nb_plist << " # PLIST" << EOL;
-            for( index_t r : range( geomodel.nb_regions() ) ) {
-                for( index_t type : range(
+            for( auto r : range( geomodel.nb_regions() ) ) {
+                for( auto type : range(
                     to_underlying_type( CellType::TETRAHEDRON ),
                     to_underlying_type( CellType::UNCLASSIFIED ) ) ) {
                     CellType T = static_cast< CellType >( type );
                     RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[type];
-                    for( index_t el : range( mesh.cells.nb_cells( r, T ) ) ) {
+                    for( auto el : range( mesh.cells.nb_cells( r, T ) ) ) {
                         index_t cell = mesh.cells.cell( r, el, T );
-                        for( index_t p : range( descriptor.nb_vertices ) ) {
+                        for( auto p : range( descriptor.nb_vertices ) ) {
                             index_t csmp_p = descriptor.vertices[p];
                             index_t vertex_id = mesh.cells.vertex(
                                 ElementLocalVertex( cell, csmp_p ) );
@@ -331,23 +333,23 @@ namespace {
                     }
                 }
             }
-            for( index_t i : range( nb_interfaces ) ) {
+            for( auto i : range( nb_interfaces ) ) {
                 const GeoModelGeologicalEntity3D& interf =
                     geomodel.geological_entity( Interface3D::type_name_static(), i );
-                for( index_t s : range( interf.nb_children() ) ) {
+                for( auto s : range( interf.nb_children() ) ) {
                     index_t s_id = interf.child_gmme( s ).index();
-                    for( index_t el : range( polygons.nb_triangle( s_id ) ) ) {
+                    for( auto el : range( polygons.nb_triangle( s_id ) ) ) {
                         index_t tri = polygons.triangle( s_id, el );
-                        for( index_t p : range( polygons.nb_vertices( tri ) ) ) {
+                        for( auto p : range( polygons.nb_vertices( tri ) ) ) {
                             index_t vertex_id = polygons.vertex(
                                 ElementLocalVertex( tri, p ) );
                             data << " " << std::setw( 7 ) << vertex_id;
                             new_line( count, 10, data );
                         }
                     }
-                    for( index_t el : range( polygons.nb_quad( s_id ) ) ) {
+                    for( auto el : range( polygons.nb_quad( s_id ) ) ) {
                         index_t quad = polygons.quad( s_id, el );
-                        for( index_t p : range( polygons.nb_vertices( quad ) ) ) {
+                        for( auto p : range( polygons.nb_vertices( quad ) ) ) {
                             index_t vertex_id = polygons.vertex(
                                 ElementLocalVertex( quad, p ) );
                             data << " " << std::setw( 7 ) << vertex_id;
@@ -356,9 +358,9 @@ namespace {
                     }
                 }
             }
-            for( index_t w : range( mesh.wells.nb_wells() ) ) {
-                for( index_t e : range( mesh.wells.nb_edges( w ) ) ) {
-                    for( index_t v : range( 2 ) ) {
+            for( auto w : range( mesh.wells.nb_wells() ) ) {
+                for( auto e : range( mesh.wells.nb_edges( w ) ) ) {
+                    for( auto v : range( 2 ) ) {
                         index_t vertex_id = mesh.wells.vertex( w, e, v );
                         data << " " << std::setw( 7 ) << vertex_id;
                         new_line( count, 10, data );
@@ -372,15 +374,15 @@ namespace {
                 + 5 * mesh.cells.nb_prism() + 6 * mesh.cells.nb_hex()
                 + 2 * mesh.wells.nb_edges();
             data << nb_polygons << " # PFVERTS" << EOL;
-            for( index_t r : range( geomodel.nb_regions() ) ) {
-                for( index_t type : range(
+            for( auto r : range( geomodel.nb_regions() ) ) {
+                for( auto type : range(
                     to_underlying_type( CellType::TETRAHEDRON ),
                     to_underlying_type( CellType::UNCLASSIFIED ) ) ) {
                     CellType T = static_cast< CellType >( type );
                     RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[type];
-                    for( index_t el : range( mesh.cells.nb_cells( r, T ) ) ) {
+                    for( auto el : range( mesh.cells.nb_cells( r, T ) ) ) {
                         index_t cell = mesh.cells.cell( r, el );
-                        for( index_t p : range( descriptor.nb_polygons ) ) {
+                        for( auto p : range( descriptor.nb_polygons ) ) {
                             index_t csmp_f = descriptor.polygon[p];
                             index_t adj = mesh.cells.adjacent( cell, csmp_f );
                             if( adj == GEO::NO_CELL ) {
@@ -393,14 +395,14 @@ namespace {
                     }
                 }
             }
-            for( index_t i : range( nb_interfaces ) ) {
+            for( auto i : range( nb_interfaces ) ) {
                 const GeoModelGeologicalEntity3D& interf =
                     geomodel.geological_entity( Interface3D::type_name_static(), i );
-                for( index_t s : range( interf.nb_children() ) ) {
+                for( auto s : range( interf.nb_children() ) ) {
                     index_t s_id = interf.child_gmme( s ).index();
-                    for( index_t el : range( polygons.nb_triangle( s_id ) ) ) {
+                    for( auto el : range( polygons.nb_triangle( s_id ) ) ) {
                         index_t tri = polygons.triangle( s_id, el );
-                        for( index_t e : range( polygons.nb_vertices( tri ) ) ) {
+                        for( auto e : range( polygons.nb_vertices( tri ) ) ) {
                             index_t adj = polygons.adjacent(
                                 PolygonLocalEdge( tri, e ) );
                             if( adj == GEO::NO_FACET ) {
@@ -411,9 +413,9 @@ namespace {
                             new_line( count, 10, data );
                         }
                     }
-                    for( index_t el : range( polygons.nb_quad( s_id ) ) ) {
+                    for( auto el : range( polygons.nb_quad( s_id ) ) ) {
                         index_t quad = polygons.quad( s_id, el );
-                        for( index_t e : range( polygons.nb_vertices( quad ) ) ) {
+                        for( auto e : range( polygons.nb_vertices( quad ) ) ) {
                             index_t adj = polygons.adjacent(
                                 PolygonLocalEdge( quad, e ) );
                             if( adj == GEO::NO_FACET ) {
@@ -428,7 +430,7 @@ namespace {
             }
             index_t edge_offset = polygons.nb() + mesh.cells.nb();
             index_t cur_edge = 0;
-            for( index_t w : range( mesh.wells.nb_wells() ) ) {
+            for( auto w : range( mesh.wells.nb_wells() ) ) {
                 data << " " << std::setw( 7 ) << -28;
                 new_line( count, 10, data );
                 if( mesh.wells.nb_edges( w ) > 1 ) {
@@ -452,7 +454,7 @@ namespace {
             reset_line( count, data );
 
             data << nb_total_entities << " # PMATERIAL" << EOL;
-            for( index_t i : range( nb_total_entities ) ) {
+            for( auto i : range( nb_total_entities ) ) {
                 ringmesh_unused( i );
                 data << " " << std::setw( 3 ) << 0;
                 new_line( count, 20, data );
@@ -518,13 +520,10 @@ namespace {
                     index_t interface_id = NO_ID;
                     if( type == "NAME" ) {
                         std::string name = parser.field( 2 );
-                        GeologicalEntityType type = Interface < 3
-                            > ::type_name_static();
-                        for( index_t i : range(
-                            geomodel.nb_geological_entities( type ) ) ) {
-                            if( geomodel.geological_entity( type, i ).name()
-                                == name ) {
-                                interface_id = i;
+                        GeologicalEntityType type = Interface3D::type_name_static();
+                        for( auto& cur_interface : geomodel.geol_entities( type ) ) {
+                            if( cur_interface.name() == name ) {
+                                interface_id = cur_interface.index();
                                 break;
                             }
                         }
@@ -662,10 +661,10 @@ namespace {
             point_boundaries_.resize( gm.mesh.vertices.nb() );
             for( const auto& surface : surface_range < 3 > ( gm ) ) {
                 index_t interface_id = surface.parent_gmge( 0 ).index();
-                for( index_t p : range(
+                for( auto p : range(
                     gm.mesh.polygons.nb_polygons( surface.index() ) ) ) {
                     index_t p_id = gm.mesh.polygons.polygon( surface.index(), p );
-                    for( index_t v : range( gm.mesh.polygons.nb_vertices( p_id ) ) ) {
+                    for( auto v : range( gm.mesh.polygons.nb_vertices( p_id ) ) ) {
                         index_t vertex_id = gm.mesh.polygons.vertex(
                             ElementLocalVertex( p_id, v ) );
                         point_boundaries_[vertex_id].insert( interface_id );

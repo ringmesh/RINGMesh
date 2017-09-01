@@ -42,8 +42,8 @@
 
 #include <geogram/basic/command_line.h>
 
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 namespace {
     using namespace RINGMesh;
@@ -53,7 +53,7 @@ namespace {
         const GeoModelMeshEntity< DIMENSION >& entity,
         Box< DIMENSION >& bbox )
     {
-        for( index_t v : range( entity.nb_vertices() ) ) {
+        for( auto v : range( entity.nb_vertices() ) ) {
             bbox.add_point( entity.vertex( v ) );
         }
     }
@@ -64,22 +64,22 @@ namespace {
         Box< DIMENSION > bbox;
         if( gm.universe().nb_boundaries() > 0 ) {
             const Universe< DIMENSION >& universe = gm.universe();
-            for( index_t b : range( universe.nb_boundaries() ) ) {
+            for( auto b : range( universe.nb_boundaries() ) ) {
                 compute_mesh_entity_bbox(
                     gm.mesh_entity( universe.boundary_gmme( b ) ), bbox );
             }
         } else {
             if( gm.nb_surfaces() > 0 ) {
-                for( index_t s : range( gm.nb_surfaces() ) ) {
+                for( auto s : range( gm.nb_surfaces() ) ) {
                     compute_mesh_entity_bbox( gm.surface( s ), bbox );
                 }
             } else if( gm.nb_lines() > 0 ) {
-                for( index_t l : range( gm.nb_lines() ) ) {
+                for( auto l : range( gm.nb_lines() ) ) {
                     compute_mesh_entity_bbox( gm.line( l ), bbox );
                 }
             } else {
                 ringmesh_assert( gm.nb_corners() > 0 );
-                for( index_t c : range( gm.nb_corners() ) ) {
+                for( auto c : range( gm.nb_corners() ) ) {
                     bbox.add_point( gm.corner( c ).vertex( 0 ) );
                 }
             }
@@ -103,14 +103,15 @@ namespace RINGMesh {
             entity_type_manager().mesh_entity_manager;
         if( manager.is_line( type ) ) {
             return nb_lines();
-        } else if( manager.is_corner( type ) ) {
-            return nb_corners();
-        } else if( manager.is_surface( type ) ) {
-            return nb_surfaces();
-        } else {
-            ringmesh_assert_not_reached;
-            return 0;
         }
+        if( manager.is_corner( type ) ) {
+            return nb_corners();
+        }
+        if( manager.is_surface( type ) ) {
+            return nb_surfaces();
+        }
+        ringmesh_assert_not_reached;
+        return 0;
     }
 
     template< index_t DIMENSION >
@@ -123,9 +124,11 @@ namespace RINGMesh {
         index_t index = id.index();
         if( manager.is_line( type ) ) {
             return line( index );
-        } else if( manager.is_corner( type ) ) {
+        }
+        if( manager.is_corner( type ) ) {
             return corner( index );
-        } else if( manager.is_surface( type ) ) {
+        }
+        if( manager.is_surface( type ) ) {
             return surface( index );
         }
         ringmesh_assert_not_reached;

@@ -68,6 +68,8 @@ namespace {
     public:
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Code_Aster mesh not implemented yet" );
         }
@@ -100,9 +102,8 @@ namespace {
             const RINGMesh::GeoModelMesh3D& geomodel_mesh ) const
         {
             out << "COOR_3D" << EOL;
-            for( index_t v : range( geomodel_mesh.vertices.nb() ) ) {
-                out << "V" << v << " " << geomodel_mesh.vertices.vertex( v )
-                    << EOL;
+            for( auto v : range( geomodel_mesh.vertices.nb() ) ) {
+                out << "V" << v << " " << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
             out << "FINSF" << EOL;
         }
@@ -110,9 +111,9 @@ namespace {
         void write_cells( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
-            for( index_t r : range( geomodel.nb_regions() ) ) {
+            for( auto r : range( geomodel.nb_regions() ) ) {
                 // -1 Because connectors doesn't exist in aster
-                for( index_t ct : range( GEO::MESH_NB_CELL_TYPES - 1 ) ) {
+                for( auto ct : range( GEO::MESH_NB_CELL_TYPES - 1 ) ) {
                     if( geomodel_mesh.cells.nb_cells( r, CellType( ct ) ) > 0 ) {
                         write_cells_in_region( CellType( ct ), r, geomodel_mesh,
                             out );
@@ -121,14 +122,12 @@ namespace {
             }
         }
 
-        void write_polygons(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        void write_polygons( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
             for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
                 // -1 because polygons doesn' t exist in aster
-                for( index_t pt : range(
+                for( auto pt : range(
                     to_underlying_type( PolygonType::UNDEFINED ) - 1 ) ) {
                     if( geomodel_mesh.polygons.nb_polygons( surface.index(),
                         PolygonType( pt ) ) > 0 ) {
@@ -146,11 +145,11 @@ namespace {
         {
             out << *cell_name_in_aster_mail_file[to_underlying_type( cell_type )]
                 << EOL;
-            for( index_t c : range(
+            for( auto c : range(
                 geomodel_mesh.cells.nb_cells( region, cell_type ) ) ) {
                 index_t global_id = geomodel_mesh.cells.cell( region, c, cell_type );
                 out << "C" << global_id << " ";
-                for( index_t v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
+                for( auto v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
                     out << "V"
                         << geomodel_mesh.cells.vertex(
                             ElementLocalVertex( global_id, v ) ) << " ";
@@ -169,12 +168,12 @@ namespace {
             out
                 << *polygon_name_in_aster_mail_file[to_underlying_type(
                     polygon_type )] << EOL;
-            for( index_t p : range(
+            for( auto p : range(
                 mesh.polygons.nb_polygons( surface, polygon_type ) ) ) {
                 index_t global_id = mesh.polygons.polygon( surface, p,
                     polygon_type );
                 out << "F" << global_id << " ";
-                for( index_t v : range( mesh.polygons.nb_vertices( p ) ) ) {
+                for( auto v : range( mesh.polygons.nb_vertices( p ) ) ) {
                     out << "V"
                         << mesh.polygons.vertex( ElementLocalVertex( global_id, v ) )
                         << " ";
@@ -190,7 +189,7 @@ namespace {
                 if( region.is_meshed() ) {
                     out << "GROUP_MA" << EOL;
                     out << region.name() << EOL;
-                    for( index_t c : range(
+                    for( auto c : range(
                         geomodel.mesh.cells.nb_cells( region.index() ) ) ) {
                         out << "C" << geomodel.mesh.cells.cell( region.index(), c )
                             << EOL;
@@ -200,21 +199,15 @@ namespace {
             }
         }
 
-        void write_interfaces(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        void write_interfaces( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            for( index_t inter : range(
-                geomodel.nb_geological_entities(
-                    Interface3D::type_name_static() ) ) ) {
-                const GeoModelGeologicalEntity3D& cur_interface =
-                    geomodel.geological_entity( Interface3D::type_name_static(),
-                        inter );
-                for( index_t s : range( cur_interface.nb_children() ) ) {
+            for( auto& cur_interface : geomodel.geol_entities(
+                Interface3D::type_name_static() ) ) {
+                for( auto s : range( cur_interface.nb_children() ) ) {
                     index_t surface_id = cur_interface.child( s ).index();
                     out << "GROUP_MA" << EOL;
                     out << cur_interface.name() << "_" << s << EOL;
-                    for( index_t p : range(
+                    for( auto p : range(
                         geomodel.mesh.polygons.nb_polygons( surface_id ) ) ) {
                         out << "F" << geomodel.mesh.polygons.polygon( surface_id, p )
                             << EOL;
@@ -224,9 +217,9 @@ namespace {
 
                 out << "GROUP_MA" << EOL;
                 out << cur_interface.name() << EOL;
-                for( index_t s : range( cur_interface.nb_children() ) ) {
+                for( auto s : range( cur_interface.nb_children() ) ) {
                     index_t surface_id = cur_interface.child( s ).index();
-                    for( index_t p : range(
+                    for( auto p : range(
                         geomodel.mesh.polygons.nb_polygons( surface_id ) ) ) {
                         out << "F" << geomodel.mesh.polygons.polygon( surface_id, p )
                             << EOL;

@@ -62,7 +62,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( Line );
     FORWARD_DECLARATION_DIMENSION_CLASS( Region );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
-    template< index_t DIMENSION > struct EntityTypeManager;
+    FORWARD_DECLARATION_DIMENSION_STRUCT( EntityTypeManager );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
@@ -321,6 +321,11 @@ namespace RINGMesh {
         {
             return surface_range< DIMENSION >( *this );
         }
+        geol_entity_range< DIMENSION > geol_entities(
+            const GeologicalEntityType& geol_type ) const
+        {
+            return geol_entity_range< DIMENSION >( *this, geol_type );
+        }
     };
 
     template< >
@@ -344,6 +349,11 @@ namespace RINGMesh {
         region_range< 3 > regions() const
         {
             return region_range< 3 >( *this );
+        }
+        geol_entity_range< 3 > geol_entities(
+            const GeologicalEntityType& geol_type ) const
+        {
+            return geol_entity_range< 3 >( *this, geol_type );
         }
 
         index_t nb_regions() const

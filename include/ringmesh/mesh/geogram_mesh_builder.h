@@ -52,7 +52,7 @@ namespace RINGMesh {
     public:                                                                             \
         void do_copy( const MeshBase< DIMENSION>& rhs, bool copy_attributes ) override  \
         {                                                                               \
-            const Class< DIMENSION >& geogrammesh =                                     \
+            const auto& geogrammesh =                                                   \
                 dynamic_cast< const Class< DIMENSION >& >( rhs );                       \
             mesh_.mesh_->copy( *geogrammesh.mesh_, copy_attributes,                     \
                 GEO::MESH_ALL_ELEMENTS );                                               \
@@ -197,7 +197,7 @@ namespace RINGMesh {
         void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) override
         {
             Logger::instance()->set_minimal( true );
-            const GeogramSurfaceMesh< DIMENSION >& geogram_surf_in =
+            const auto& geogram_surf_in =
                 dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( surface_in );
             GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_.get(), 3,
                 GEO::CmdLine::get_arg( "algo:delaunay" ) );
@@ -211,7 +211,7 @@ namespace RINGMesh {
             const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr ) override
         {
-            for( index_t p : range( polygon_ptr.size() - 1 ) ) {
+            for( auto p : range( polygon_ptr.size() - 1 ) ) {
                 index_t start = polygon_ptr[p];
                 index_t end = polygon_ptr[p + 1];
                 GEO::vector< index_t > polygon_vertices =

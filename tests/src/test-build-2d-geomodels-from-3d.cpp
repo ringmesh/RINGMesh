@@ -38,62 +38,65 @@
 #include <future>
 
 #include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
 #include <ringmesh/io/io.h>
 
-/*!
- * @file Test GeoModel building from a mesh loaded from a .so file
+/*! Tests the creation of a GeoModel2D from the projection of a
+ * GeoModel3D in a plane.
  * @author Pierre Anquez
  */
-
-void test_mesh( const std::string& file_name )
-{
-    using namespace RINGMesh;
-
-    GeoModel3D model;
-    bool loaded_model_is_valid { geomodel_load( model, file_name ) };
-
-    if( !loaded_model_is_valid ) {
-        throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
-            model.name(), ": the loaded model is not valid." );
-    }
-
-    // Check number of entities of the imported GeoModel (from TSolid or LightTSolid file)
-    if( model.nb_corners() != 52 || model.nb_lines() != 98
-        || model.nb_surfaces() != 55 || model.nb_regions() != 8
-        || model.nb_geological_entities( Interface3D::type_name_static() ) != 11
-        || model.nb_geological_entities( Contact3D::type_name_static() ) != 38
-        || model.mesh.vertices.nb() != 6691 || model.mesh.polygons.nb() != 10049
-        || model.mesh.cells.nb() != 34540 ) {
-        throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
-            model.name(), ": wrong number of entities." );
-    }
-}
-
 int main()
 {
     using namespace RINGMesh;
 
     try {
         default_configure();
+        std::string input_geomodel3d_file_name = ringmesh_test_data_path
+            + "seg_overthrust_afault.gm";
 
-        Logger::out( "TEST",
-            "Import two meshed GeoModels (1 TSolid & 1 LightTSolid) from .so" );
+        Logger::out( "TEST", "Loading GeoModel3D input file ",
+            input_geomodel3d_file_name );
 
-        std::vector< std::future< void > > futures;
+        GeoModel3D geomodel3d;
+        geomodel_load( geomodel3d, input_geomodel3d_file_name );
 
-        futures.emplace_back(
-            std::async( std::launch::async, &test_mesh,
-                ringmesh_test_data_path + "modelA4.so" ) );
+        GeoModel2D projection_geomodel2d;
+        Geometry::Plane projection_plane( { 987., 0., 2150. },
+        { 6300., 10500., -3200. } );
+        GeoModelBuilder2DProjection geomodel2d_builder( projection_geomodel2d,
+            geomodel3d, projection_plane );
+        geomodel2d_builder.build_geomodel();
 
-        futures.emplace_back(
-            std::async( std::launch::async, &test_mesh,
-                ringmesh_test_data_path + "modelA4_lts.so" ) );
+        std::vector< std::future< void > > checks;
+        checks.emplace_back( std::async( std::launch::async,
+            [&projection_geomodel2d] {
+            if( !is_geomodel_valid( projection_geomodel2d ) ) {
+                throw RINGMeshException( "TEST",
+                    "FAILED : built GeoModel2D is not valid" );
+            }
+        } ) );
 
-        for( auto& future : futures ) {
-            future.get();
+        std::string output_model_file_name( ringmesh_test_output_path );
+        output_model_file_name += projection_geomodel2d.name() + "_saved_out.gm";
+        geomodel_save( projection_geomodel2d, output_model_file_name );
+
+        GeoModel2D reloaded_geomodel2d;
+        auto is_reloaded_model_valid = geomodel_load( reloaded_geomodel2d,
+            output_model_file_name );
+        if( !is_reloaded_model_valid ) {
+            std::string output_model_file_name_bis( ringmesh_test_output_path );
+            output_model_file_name_bis += reloaded_geomodel2d.name()
+                + "_saved_out_bis.gm";
+            geomodel_save( reloaded_geomodel2d, output_model_file_name_bis );
+            throw RINGMeshException( "TEST",
+                "FAILED : reloaded GeoModel2D is not valid" );
         }
+
+        for( auto& check : checks ) {
+            check.get();
+        }
+
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
@@ -103,4 +106,5 @@ int main()
     }
     Logger::out( "TEST", "SUCCESS" );
     return 0;
+
 }

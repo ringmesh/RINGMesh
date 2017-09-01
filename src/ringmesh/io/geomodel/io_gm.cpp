@@ -104,7 +104,7 @@ namespace {
             const gmme_id& entity,
             GEO::LineInput& file_line )
         {
-            for( index_t c : range( file_line.nb_fields() ) ) {
+            for( auto c : range( file_line.nb_fields() ) ) {
                 bool side = false;
                 if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                     side = true;
@@ -125,7 +125,7 @@ namespace {
                 this->geomodel_.entity_type_manager().mesh_entity_manager;
             MeshEntityType type = manager.boundary_entity_type( entity.type() );
             // Second line : indices of boundaries
-            for( index_t c : range( 1, file_line.nb_fields() ) ) {
+            for( auto c : range( 1, file_line.nb_fields() ) ) {
                 gmme_id boundary( type, file_line.field_as_uint( c ) );
                 this->builder_.topology.add_mesh_entity_boundary_relation( entity,
                     boundary );
@@ -202,7 +202,7 @@ namespace {
     private:
         const std::string& old_2_new_name( const std::string& old_name )
         {
-            index_t new_name_pos = GEO::String::to_int(
+            index_t new_name_pos = GEO::String::to_uint(
                 GEO::String::to_string( old_name.at( old_name.length() - 2 ) ) );
             return new_names[new_name_pos];
         }
@@ -291,7 +291,7 @@ namespace {
                                 file_line.field( 3 ) ) );
                         file_line.get_line();
                         file_line.get_fields();
-                        for( index_t in_b : range( file_line.nb_fields() ) ) {
+                        for( auto in_b : range( file_line.nb_fields() ) ) {
                             this->geology.add_parent_children_relation( entity,
                                 { this->geomodel_.entity_type_manager().relationship_manager.child_type(
                                       type ),
@@ -439,7 +439,7 @@ namespace {
                         // Second line: signed indices of boundaries
                         file_line.get_line();
                         file_line.get_fields();
-                        for( index_t c : range( file_line.nb_fields() ) ) {
+                        for( auto c : range( file_line.nb_fields() ) ) {
                             bool side = false;
                             if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                                 side = true;
@@ -505,7 +505,7 @@ namespace {
                 E.geological_feature() ) << EOL;
 
         /// Second line:  IDS of children
-        for( index_t j : range( E.nb_children() ) ) {
+        for( auto j : range( E.nb_children() ) ) {
             out << E.child_gmme( j ).index() << " ";
         }
         out << EOL;
@@ -533,15 +533,15 @@ namespace {
             out << "No geological entity in the geomodel" << EOL;
             return;
         }
-        for( index_t i : range( geomodel.nb_geological_entity_types() ) ) {
+        for( auto i : range( geomodel.nb_geological_entity_types() ) ) {
             const GeologicalEntityType& type = geomodel.geological_entity_type( i );
             index_t nb = geomodel.nb_geological_entities( type );
             out << "Nb " << type << " " << nb << EOL;
         }
-        for( index_t i : range( geomodel.nb_geological_entity_types() ) ) {
+        for( auto i : range( geomodel.nb_geological_entity_types() ) ) {
             const GeologicalEntityType& type = geomodel.geological_entity_type( i );
             index_t nb = geomodel.nb_geological_entities( type );
-            for( index_t j : range( nb ) ) {
+            for( auto j : range( nb ) ) {
                 save_geological_entity( out, geomodel.geological_entity( type, j ) );
             }
         }
@@ -554,23 +554,22 @@ namespace {
         std::ofstream& out )
     {
         const MeshEntityType& type = ENTITY::type_name_static();
-        for( index_t e : range( geomodel.nb_mesh_entities( type ) ) ) {
+        for( auto e : range( geomodel.nb_mesh_entities( type ) ) ) {
             const ENTITY& cur_mesh_entity =
                 dynamic_cast< const ENTITY& >( geomodel.mesh_entity( type, e ) );
             out << type << " " << e << " " << cur_mesh_entity.name() << " "
                 << cur_mesh_entity.low_level_mesh_storage().type_name() << EOL;
             out << "boundary ";
-            for( index_t b : range( cur_mesh_entity.nb_boundaries() ) ) {
+            for( auto b : range( cur_mesh_entity.nb_boundaries() ) ) {
                 out << cur_mesh_entity.boundary_gmme( b ).index() << " ";
             }
             out << EOL;
         }
     }
 
-    template< index_t DIMENSION >
-    void save_dimension( const GeoModel< DIMENSION >& geomodel, std::ofstream& out )
+    void save_dimension( index_t dimension, std::ofstream& out )
     {
-        out << "Dimension " << DIMENSION << EOL;
+        out << "Dimension " << dimension << EOL;
     }
 
     template< index_t DIMENSION >
@@ -629,7 +628,7 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         std::ofstream& out )
     {
-        for( index_t i : range(
+        for( auto i : range(
             geomodel.nb_mesh_entities( ENTITY< DIMENSION >::type_name_static() ) ) ) {
             const ENTITY< DIMENSION >& E =
                 static_cast< const ENTITY< DIMENSION >& >( geomodel.mesh_entity(
@@ -638,7 +637,7 @@ namespace {
             out << E.gmme() << " " << E.name() << " "
                 << E.low_level_mesh_storage().type_name() << EOL;
             // Second line Signed ids of boundary surfaces
-            for( index_t j : range( E.nb_boundaries() ) ) {
+            for( auto j : range( E.nb_boundaries() ) ) {
                 if( E.side( j ) ) {
                     out << "+";
                 } else {
@@ -702,7 +701,7 @@ namespace {
     void save_universe( const GeoModel< DIMENSION >& M, std::ofstream& out )
     {
         out << "Universe " << EOL;
-        for( index_t j : range( M.universe().nb_boundaries() ) ) {
+        for( auto j : range( M.universe().nb_boundaries() ) ) {
             if( M.universe().side( j ) ) {
                 out << "+";
             } else {
@@ -729,7 +728,7 @@ namespace {
             throw RINGMeshException( "I/O", "Error when opening the file: ",
                 file_name );
         }
-        save_dimension( geomodel, out );
+        save_dimension( DIMENSION, out );
         save_version_and_name( geomodel, out );
         save_number_of_mesh_entities( geomodel, out );
         save_mesh_entities_topology( geomodel, out );
@@ -878,7 +877,7 @@ namespace {
             file_line.get_fields();
             if( file_line.nb_fields() == 2 ) {
                 if( file_line.field_matches( 0, "Dimension" ) ) {
-                    return file_line.field_as_int( 1 );
+                    return file_line.field_as_uint( 1 );
                 }
             }
         }

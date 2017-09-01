@@ -308,7 +308,7 @@ void test_load_from_gocad_xml_file()
 {
 
     std::string input_geomodel_file_name( ringmesh_test_data_path );
-    input_geomodel_file_name += "CloudSpin.ml";
+    input_geomodel_file_name += "CloudSpin_fixed.ml";
     GeoModel3D in;
     geomodel_load( in, input_geomodel_file_name );
 
@@ -337,7 +337,7 @@ int main()
 
         //build geomodel
         std::string input_model_file_name( ringmesh_test_data_path );
-        input_model_file_name += "CloudSpin.ml";
+        input_model_file_name += "CloudSpin_fixed.ml";
         GeoModel3D in;
         geomodel_load( in, input_model_file_name );
 

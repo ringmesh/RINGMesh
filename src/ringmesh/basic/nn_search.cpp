@@ -93,7 +93,7 @@ namespace RINGMesh {
         std::vector< vecn< DIMENSION > > unique_points;
         unique_points.reserve( nb_points() - nb_colocalised_vertices );
         index_t offset { 0 };
-        for( index_t p : range( index_map.size() ) ) {
+        for( auto p : range( index_map.size() ) ) {
             if( index_map[p] == p ) {
                 unique_points.push_back( point( p ) );
                 index_map[p] = p - offset;
@@ -138,7 +138,7 @@ namespace RINGMesh {
         index_t index_in_nn_search,
         const vecn< DIMENSION >& center )
     {
-        for( index_t i : range( DIMENSION ) ) {
+        for( auto i : range( DIMENSION ) ) {
             nn_points_[index_in_nn_search + i] = center[i];
         }
     }

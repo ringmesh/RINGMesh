@@ -58,6 +58,8 @@ namespace {
 
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Feflow not implemented yet" );
         }
@@ -127,12 +129,12 @@ namespace {
             out << SPACE << min_nb_vertices_per_element << SPACE
                 << max_nb_vertices_per_element << "\n";
 
-            for( index_t c : range( cells.nb() ) ) {
+            for( auto c : range( cells.nb() ) ) {
                 const RINGMesh2Feflow& descriptor =
                     *cell_type_to_feflow_cell_descriptor[to_underlying_type(
                         cells.type( c ) )];
                 out << SPACE << descriptor.entity_type;
-                for( index_t v : range( cells.nb_vertices( c ) ) ) {
+                for( auto v : range( cells.nb_vertices( c ) ) ) {
                     out << SPACE
                         << cells.vertex(
                             ElementLocalVertex( c, descriptor.vertices[v] ) )
@@ -145,10 +147,10 @@ namespace {
         {
             const GeoModelMeshVertices3D& vertices = geomodel.mesh.vertices;
             out << "XYZCOOR\n" << std::scientific;
-            for( index_t v : range( vertices.nb() ) ) {
+            for( auto v : range( vertices.nb() ) ) {
                 const vec3& point = vertices.vertex( v );
                 std::string sep = "";
-                for( index_t i : range( 3 ) ) {
+                for( auto i : range( 3 ) ) {
                     out << sep << SPACE << point[i];
                     sep = ",";
                 }
@@ -187,8 +189,8 @@ namespace {
             const GeoModelMeshWells3D& wells = geomodel.mesh.wells;
             out << " <nop count=\"" << wells.nb_edges() << "\">\n";
             out << " <![CDATA[";
-            for( index_t w : range( wells.nb_wells() ) ) {
-                for( index_t e : range( wells.nb_edges( w ) ) ) {
+            for( auto w : range( wells.nb_wells() ) ) {
+                for( auto e : range( wells.nb_edges( w ) ) ) {
                     out << "\n 0, 2, " << wells.vertex( w, e, 0 ) + STARTING_OFFSET
                         << ", " << wells.vertex( w, e, 1 ) + STARTING_OFFSET;
                 }
@@ -204,7 +206,7 @@ namespace {
             const WellGroup3D* wells = geomodel.wells();
             index_t offset = 0;
             out << " <groups count=\"" << well_edges.nb_wells() << "\">\n";
-            for( index_t w : range( well_edges.nb_wells() ) ) {
+            for( auto w : range( well_edges.nb_wells() ) ) {
                 out << " <group name=\"" << wells->well( w ).name()
                     << "\" mode=\"unstructured\">\n";
                 out << " <elements count=\"" << well_edges.nb_edges( w ) << "\">\n";

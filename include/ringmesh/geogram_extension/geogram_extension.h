@@ -39,8 +39,8 @@
 
 #include <mutex>
 
-#include <geogram/basic/memory.h>
 #include <geogram/basic/attributes.h>
+#include <geogram/basic/memory.h>
 #include <geogram/mesh/mesh.h>
 
 /*!
@@ -65,7 +65,7 @@ namespace RINGMesh {
         ringmesh_assert( from < to );
         index_t nb_to_copy( to - from );
         GEO::vector< U > out( nb_to_copy );
-        for( index_t i : range( nb_to_copy ) ) {
+        for( auto i : range( nb_to_copy ) ) {
             out[i] = in[from + i];
         }
         return out;
@@ -136,12 +136,12 @@ namespace RINGMesh {
      * @todo Probably extremely prone to bugs. Is it worth the risk?
      */
     template< typename T >
-    class AttributeVector: public std::vector< GEO::Attribute< T >* > {
-    ringmesh_disable_copy( AttributeVector );
+    class AttributeVector: public std::vector < GEO::Attribute< T >* > {
+        ringmesh_disable_copy_and_move( AttributeVector );
     public:
-        using base_class = std::vector< GEO::Attribute< T >* >;
+        using base_class = std::vector < GEO::Attribute< T >* > ;
         AttributeVector() = default;
-        AttributeVector( index_t size )
+        explicit AttributeVector( index_t size )
             : base_class( size, nullptr )
         {
         }
@@ -182,7 +182,7 @@ namespace RINGMesh {
 
         ~AttributeVector()
         {
-            for( index_t i : range( base_class::size() ) ) {
+            for( auto i : range( base_class::size() ) ) {
                 unbind( i );
             }
         }
@@ -224,6 +224,6 @@ namespace RINGMesh {
         }
 
     private:
-        std::mutex lock_;
+        std::mutex lock_ { };
     };
 } // namespace RINGMesh

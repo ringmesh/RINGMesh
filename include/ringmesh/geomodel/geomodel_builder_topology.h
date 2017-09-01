@@ -76,10 +76,16 @@ namespace RINGMesh {
          * @brief Add to the vector the entities which cannot exist if
          *        an entity in the set does not exist.
          * @return True if at least one entity was added.
+         * @todo I do not think that it work for only else than region and layer
+         * because if you remove something else, for instance a corner or a line
+         * or a surface, the incident boundaries may still exist but you removed
+         * one of its boundaries... to handle in the future.
+         * In fact, the model can be still be valid since there is everything geometrically.
+         * But the incident entities which shared the removed mesh entity must be merged... [BC].
          */
         bool get_dependent_entities(
-            std::set< gmme_id >& in_mesh_entities,
-            std::set< gmge_id >& in_geological_entities ) const;
+            std::set< gmme_id >& mesh_entities,
+            std::set< gmge_id >& geological_entities ) const;
 
         virtual gmme_id create_mesh_entity( const MeshEntityType& type );
 
@@ -92,18 +98,18 @@ namespace RINGMesh {
             const gmme_id& boundary );
 
         virtual void add_mesh_entity_boundary_relation(
-            const gmme_id& boundary,
-            const gmme_id& incident_entity,
+            const gmme_id& incident_entity_id,
+            const gmme_id& boundary_id,
             bool side = false );
 
         virtual void set_mesh_entity_boundary(
-            const gmme_id& gme_id,
+            const gmme_id& gmme,
             index_t id,
             index_t boundary_id,
             bool side = false );
 
         void set_mesh_entity_incident_entity(
-            const gmme_id& gme_id,
+            const gmme_id& gmme,
             index_t id,
             index_t incident_entity_id );
 
@@ -129,7 +135,7 @@ namespace RINGMesh {
          * @brief Finds or creates a line knowing its topological adjacencies
          */
         gmme_id find_or_create_line(
-            const std::vector< index_t >& incident_surfaces,
+            const std::vector< index_t >& sorted_adjacent_surfaces,
             const gmme_id& first_corner,
             const gmme_id& second_corner );
 
@@ -193,8 +199,8 @@ namespace RINGMesh {
         void compute_universe();
 
         void add_mesh_entity_boundary_relation(
-            const gmme_id& boundary,
-            const gmme_id& incident_entity,
+            const gmme_id& incident_entity_id,
+            const gmme_id& boundary_id,
             bool side = false ) override;
 
         void set_mesh_entity_boundary(
@@ -229,8 +235,8 @@ namespace RINGMesh {
             index_t nb_additional_entities ) override;
 
         void add_mesh_entity_boundary_relation(
-            const gmme_id& boundary,
-            const gmme_id& incident_entity,
+            const gmme_id& incident_entity_id,
+            const gmme_id& boundary_id,
             bool side = false ) override;
 
         void set_mesh_entity_boundary(

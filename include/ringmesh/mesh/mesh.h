@@ -168,7 +168,7 @@ namespace RINGMesh {
         {
             if( !vertex_nn_search_ ) {
                 std::vector< vecn< DIMENSION > > vec_vertices( nb_vertices() );
-                for( index_t v : range( nb_vertices() ) ) {
+                for( auto v : range( nb_vertices() ) ) {
                     vec_vertices[v] = vertex( v );
                 }
                 vertex_nn_search_.reset(
@@ -265,7 +265,7 @@ namespace RINGMesh {
         {
             if( !edge_nn_search_ ) {
                 std::vector< vecn< DIMENSION > > edge_centers( nb_edges() );
-                for( index_t e : range( nb_edges() ) ) {
+                for( auto e : range( nb_edges() ) ) {
                     edge_centers[e] = edge_barycenter( e );
                 }
                 edge_nn_search_.reset(
@@ -341,11 +341,10 @@ namespace RINGMesh {
                     < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
             if( local_vertex_id
                 != nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 ) {
-                return ElementLocalVertex( polygon_local_vertex.element_id_,
-                    local_vertex_id + 1 );
-            } else {
-                return ElementLocalVertex( polygon_local_vertex.element_id_, 0 );
+                return {polygon_local_vertex.element_id_,
+                    local_vertex_id + 1};
             }
+            return {polygon_local_vertex.element_id_, 0};
         }
         /*!
          * @brief Get the next edge on the border
@@ -374,12 +373,11 @@ namespace RINGMesh {
                 polygon_local_vertex.local_vertex_id_
                     < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
             if( polygon_local_vertex.local_vertex_id_ > 0 ) {
-                return ElementLocalVertex( polygon_local_vertex.element_id_,
-                    polygon_local_vertex.local_vertex_id_ - 1 );
-            } else {
-                return ElementLocalVertex( polygon_local_vertex.element_id_,
-                    nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 );
+                return {polygon_local_vertex.element_id_,
+                    polygon_local_vertex.local_vertex_id_ - 1};
             }
+            return {polygon_local_vertex.element_id_,
+                nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1};
         }
 
         /*!
@@ -468,11 +466,11 @@ namespace RINGMesh {
         {
             if( is_triangle( polygon_id ) ) {
                 return PolygonType::TRIANGLE;
-            } else if( nb_polygon_vertices( polygon_id ) == 4 ) {
-                return PolygonType::QUAD;
-            } else {
-                return PolygonType::UNDEFINED;
             }
+            if( nb_polygon_vertices( polygon_id ) == 4 ) {
+                return PolygonType::QUAD;
+            }
+            return PolygonType::UNDEFINED;
         }
 
         /*!
@@ -488,7 +486,7 @@ namespace RINGMesh {
          */
         bool is_polygon_on_border( index_t polygon_index ) const
         {
-            for( index_t v : range( nb_polygon_vertices( polygon_index ) ) ) {
+            for( auto v : range( nb_polygon_vertices( polygon_index ) ) ) {
                 if( is_edge_on_border( PolygonLocalEdge( polygon_index, v ) ) ) {
                     return true;
                 }
@@ -538,13 +536,12 @@ namespace RINGMesh {
             ringmesh_assert( vertex_id < 2 );
             if( vertex_id == 0 ) {
                 return polygon_vertex( polygon_local_edge );
-            } else {
-                return polygon_vertex(
-                    ElementLocalVertex( polygon_local_edge.polygon_id_,
-                        ( polygon_local_edge.local_edge_id_ + vertex_id )
-                            % nb_polygon_vertices(
-                                polygon_local_edge.polygon_id_ ) ) );
             }
+            return polygon_vertex(
+                ElementLocalVertex( polygon_local_edge.polygon_id_,
+                    ( polygon_local_edge.local_edge_id_ + vertex_id )
+                        % nb_polygon_vertices( polygon_local_edge.polygon_id_ ) ) );
+
         }
 
         /*!
@@ -556,7 +553,7 @@ namespace RINGMesh {
         {
             vecn< DIMENSION > result;
             ringmesh_assert( nb_polygon_vertices( polygon_id ) >= 1 );
-            for( index_t v : range( nb_polygon_vertices( polygon_id ) ) ) {
+            for( auto v : range( nb_polygon_vertices( polygon_id ) ) ) {
                 result += this->vertex(
                     polygon_vertex( ElementLocalVertex( polygon_id, v ) ) );
             }
@@ -576,7 +573,7 @@ namespace RINGMesh {
         {
             if( !nn_search_ ) {
                 std::vector< vecn< DIMENSION > > polygon_centers( nb_polygons() );
-                for( index_t p : range( nb_polygons() ) ) {
+                for( auto p : range( nb_polygons() ) ) {
                     polygon_centers[p] = polygon_barycenter( p );
                 }
                 nn_search_.reset(
@@ -628,7 +625,7 @@ namespace RINGMesh {
             }
             const vec3& p1 = vertex(
                 polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
-            for( index_t i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
+            for( auto i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
                 const vec3& p2 = vertex(
                     polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
                 const vec3& p3 = vertex(
@@ -668,7 +665,7 @@ namespace RINGMesh {
             ringmesh_assert( vertex_id < nb_vertices() );
             index_t p = 0;
             while( p0 == NO_ID && p < nb_polygons() ) {
-                for( index_t lv : range( nb_polygon_vertices( p ) ) ) {
+                for( auto lv : range( nb_polygon_vertices( p ) ) ) {
                     if( polygon_vertex( ElementLocalVertex( p, lv ) )
                         == vertex_id ) {
                         p0 = p;
@@ -681,7 +678,7 @@ namespace RINGMesh {
             std::vector< index_t > polygon_ids = polygons_around_vertex( vertex_id,
             false, p0 );
             vec3 norm;
-            for( index_t polygon_id : polygon_ids ) {
+            for( auto polygon_id : polygon_ids ) {
                 norm += polygon_normal( polygon_id );
             }
             return normalize( norm );
@@ -704,7 +701,7 @@ namespace RINGMesh {
             }
             const vec2& p1 = vertex(
                 polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
-            for( index_t i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
+            for( auto i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
                 const vec2& p2 = vertex(
                     polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
                 const vec2& p3 = vertex(
@@ -882,7 +879,7 @@ namespace RINGMesh {
         {
             vecn< DIMENSION > result;
             index_t nb_vertices = nb_cell_facet_vertices( cell_local_facet );
-            for( index_t v : range( nb_vertices ) ) {
+            for( auto v : range( nb_vertices ) ) {
                 result += this->vertex( cell_facet_vertex( cell_local_facet, v ) );
             }
             ringmesh_assert( nb_vertices > 0 );
@@ -896,7 +893,7 @@ namespace RINGMesh {
         {
             vecn< DIMENSION > result;
             ringmesh_assert( nb_cell_vertices( cell_id ) >= 1 );
-            for( index_t v : range( nb_cell_vertices( cell_id ) ) ) {
+            for( auto v : range( nb_cell_vertices( cell_id ) ) ) {
                 result += this->vertex(
                     cell_vertex( ElementLocalVertex( cell_id, v ) ) );
             }
@@ -937,7 +934,7 @@ namespace RINGMesh {
 
         index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const
         {
-            for( index_t v : range( nb_cell_vertices( cell_id ) ) ) {
+            for( auto v : range( nb_cell_vertices( cell_id ) ) ) {
                 if( cell_vertex( ElementLocalVertex( cell_id, v ) ) == vertex_id ) {
                     return v;
                 }
@@ -962,8 +959,8 @@ namespace RINGMesh {
                 std::vector< vecn< DIMENSION > > cell_facet_centers(
                     nb_cell_facets() );
                 index_t cf = 0;
-                for( index_t c : range( nb_cells() ) ) {
-                    for( index_t f : range( nb_cell_facets( c ) ) ) {
+                for( auto c : range( nb_cells() ) ) {
+                    for( auto f : range( nb_cell_facets( c ) ) ) {
                         cell_facet_centers[cf] = cell_facet_barycenter(
                             CellLocalFacet( c, f ) );
                         ++cf;
@@ -981,7 +978,7 @@ namespace RINGMesh {
         {
             if( !cell_nn_search_ ) {
                 std::vector< vecn< DIMENSION > > cell_centers( nb_cells() );
-                for( index_t c : range( nb_cells() ) ) {
+                for( auto c : range( nb_cells() ) ) {
                     cell_centers[c] = cell_barycenter( c );
                 }
                 cell_nn_search_.reset(
