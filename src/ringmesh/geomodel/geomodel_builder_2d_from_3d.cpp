@@ -57,7 +57,7 @@ namespace {
     };
 
     template< typename U, typename T >
-    static const T& mapped_value( const std::map< U, T > map, const U& key )
+    static const T& mapped_value( const std::map< U, T >& map, const U& key )
     {
         return map.find( key )->second;
     }
