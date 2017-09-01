@@ -41,6 +41,29 @@
 This very short guidelines are non-exhaustive and the developer is invited to
 read the very nice core C++ guidelines proposed [here](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#main)
  by Mr Stroustrup and Sutter.
+ 
+Code formating tool
+--------------------------------------
+### clang-format ###
+[clang-format](http://releases.llvm.org/3.8.0/tools/clang/docs/ClangFormat.html)
+is a tool which formats the code according to specific rules. These rules are listed in the file
+.clang-format at the RINGMesh root directory. More information about these rules can be found
+[here](http://releases.llvm.org/3.8.0/tools/clang/docs/ClangFormatStyleOptions.html).
+The current clamg-format version used in RINGMesh is 3.8 (should be compatible with newer versions).
+
+### Install clang-format ###
+In Linux, just install clang package. Binaries for Windows are [here](http://llvm.org/builds/).
+
+### How to run clang-format ###
+For Eclipde IDE users, there is a build configuration, called clang-format, to run clang-format.
+For VisualStudio users, make sure that clang binary directory is in the system path.
+This path should look like: C:\Program Files (x86)\LLVM\bin.
+
+### Editor integration ###
+For VisualStudio users, there is a [tool](http://llvm.org/builds/)
+to use clang-format directly within this IDE. In VisualStudio, just select the code that you want to
+format, then press ctrl-R, and finally press ctrl-F.
+For Vim users, TODO
 
 Style and naming conventions
 --------------------------------------
