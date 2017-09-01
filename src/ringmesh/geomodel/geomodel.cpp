@@ -53,7 +53,7 @@ namespace {
         const GeoModelMeshEntity< DIMENSION >& entity,
         Box< DIMENSION >& bbox )
     {
-        for( index_t v : range( entity.nb_vertices() ) ) {
+        for( auto v : range( entity.nb_vertices() ) ) {
             bbox.add_point( entity.vertex( v ) );
         }
     }
@@ -96,14 +96,14 @@ namespace RINGMesh {
             entity_type_manager().mesh_entity_manager;
         if( manager.is_line( type ) ) {
             return nb_lines();
-        } else if( manager.is_corner( type ) ) {
+        }
+        if( manager.is_corner( type ) ) {
             return nb_corners();
         } else if( manager.is_surface( type ) ) {
             return nb_surfaces();
-        } else {
-            ringmesh_assert_not_reached;
-            return 0;
         }
+        ringmesh_assert_not_reached;
+        return 0;
     }
 
     template< index_t DIMENSION >

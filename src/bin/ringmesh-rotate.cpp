@@ -86,7 +86,7 @@ namespace {
                 " has not exactly 3 components" );
         }
         vec3 coords_vec;
-        for( index_t split_coords_itr : range( 3 ) ) {
+        for( auto split_coords_itr : range( 3 ) ) {
             coords_vec[split_coords_itr] = GEO::String::to_double(
                 split_coords[split_coords_itr] );
         }

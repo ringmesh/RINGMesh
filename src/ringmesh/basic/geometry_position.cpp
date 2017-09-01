@@ -80,11 +80,11 @@ namespace {
         double point_distance { length( point - segment_center ) };
         if( point_distance < half_length - global_epsilon ) {
             return true;
-        } else if( point_distance > half_length + global_epsilon ) {
-            return false;
-        } else {
-            return point_inside_segment_exact( point, segment );
         }
+        if( point_distance > half_length + global_epsilon ) {
+            return false;
+        }
+        return point_inside_segment_exact( point, segment );
     }
 
     bool point_inside_triangle_exact(
@@ -221,7 +221,7 @@ namespace {
     bool point_inside_tetra_exact( const vec3& p, std::array< vec3, 4 >& vertices )
     {
         std::array< Sign, 4 > signs;
-        for( index_t f : range( 4 ) ) {
+        for( auto f : range( 4 ) ) {
             signs[f] =
                 sign(
                     GEO::PCK::orient_3d( p.data(),
@@ -260,8 +260,8 @@ namespace RINGMesh {
             const Geometry::Point3D& point,
             const Geometry::Tetra& tetra )
         {
-            std::array< vec3, 4 > vertices { { tetra.p0, tetra.p1, tetra.p2,
-                                               tetra.p3 } };
+            std::array< vec3, 4 > vertices {
+                { tetra.p0, tetra.p1, tetra.p2, tetra.p3 } };
             return point_inside_tetra_approx( point, vertices );
         }
 
@@ -298,7 +298,7 @@ namespace RINGMesh {
 
             vec3 point_on_plane { projected_point };
             double translation { std::max( 1.0, distance ) };
-            for( index_t d : range( 3 ) ) {
+            for( auto d : range( 3 ) ) {
                 if( std::fabs( plane.normal[d] ) > global_epsilon ) {
                     index_t d1 { ( d + 1 ) % 3 };
                     index_t d2 { ( d + 2 ) % 3 };
@@ -317,10 +317,12 @@ namespace RINGMesh {
             vec3 v { cross( plane.normal, u ) };
 
             vec3 p0 { projected_point + distance * u };
-            vec3 p1 { projected_point + distance
-                * ( std::cos( 2 * M_PI / 3 ) * u - std::sin( 2 * M_PI / 3 ) * v ) };
-            vec3 p2 { projected_point + distance
-                * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
+            vec3 p1 { projected_point
+                + distance
+                    * ( std::cos( 2 * M_PI / 3 ) * u - std::sin( 2 * M_PI / 3 ) * v ) };
+            vec3 p2 { projected_point
+                + distance
+                    * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
 
             return sign(
                 GEO::PCK::orient_3d( point.data(), p0.data(), p1.data(),

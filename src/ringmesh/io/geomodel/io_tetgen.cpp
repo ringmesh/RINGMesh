@@ -55,7 +55,7 @@ namespace {
 
             const GeoModelMesh3D& mesh = geomodel.mesh;
             node << mesh.vertices.nb() << " 3 0 0" << EOL;
-            for( index_t v : range( mesh.vertices.nb() ) ) {
+            for( auto v : range( mesh.vertices.nb() ) ) {
                 node << v << SPACE << mesh.vertices.vertex( v ) << EOL;
             }
 
@@ -69,8 +69,8 @@ namespace {
             ele << mesh.cells.nb() << " 4 1" << EOL;
             neigh << mesh.cells.nb() << " 4" << EOL;
             index_t nb_tet_exported = 0;
-            for( index_t m : range( geomodel.nb_regions() ) ) {
-                for( index_t tet : range( mesh.cells.nb_tet( m ) ) ) {
+            for( auto m : range( geomodel.nb_regions() ) ) {
+                for( auto tet : range( mesh.cells.nb_tet( m ) ) ) {
                     index_t cell = mesh.cells.tet( m, tet );
                     ele << nb_tet_exported << SPACE
                         << mesh.cells.vertex( ElementLocalVertex( cell, 0 ) )
@@ -82,7 +82,7 @@ namespace {
                         << mesh.cells.vertex( ElementLocalVertex( cell, 3 ) )
                         << SPACE << m + 1 << EOL;
                     neigh << nb_tet_exported;
-                    for( index_t f : range( mesh.cells.nb_facets( tet ) ) ) {
+                    for( auto f : range( mesh.cells.nb_facets( tet ) ) ) {
                         neigh << SPACE;
                         index_t adj = mesh.cells.adjacent( cell, f );
                         if( adj == GEO::NO_CELL ) {
