@@ -278,8 +278,7 @@ namespace RINGMesh {
         ringmesh_assert(
             mesh_entity_id.index() < vertex_maps_[mesh_entity_id.type()]->size() );
         if( geomodel_vertices_.is_initialized() ) {
-            vertex_maps_.at( mesh_entity_id.type() )->at( mesh_entity_id.index() ).resize( geomodel_vertices_.nb() );
-            //vertex_map( mesh_entity_id ).fill( NO_ID );
+            vertex_maps_.at( mesh_entity_id.type() )->at( mesh_entity_id.index() ).resize( geomodel_vertices_.nb(), NO_ID );
         }
         return vertex_map( mesh_entity_id );
     }
@@ -942,8 +941,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshCells< DIMENSION >::resize_cell_data()
     {
-        region_id_.resize( mesh_->nb_cells() );
-        cell_id_.resize( mesh_->nb_cells() );
+        region_id_.resize( mesh_->nb_cells(), NO_ID );
+        cell_id_.resize( mesh_->nb_cells(), NO_ID );
     }
 
     template< index_t DIMENSION >
@@ -1620,8 +1619,7 @@ namespace RINGMesh {
     {
         this->gmm_.polygons.test_and_initialize();
 
-        polygon_id_.resize( mesh_->nb_cell_facets() );
-        // polygon_id_.( NO_ID );
+        polygon_id_.resize( mesh_->nb_cell_facets(), NO_ID );
         const NNSearch< DIMENSION >& nn_search = this->gmm_.polygons.nn_search();
         for( index_t c : range( mesh_->nb_cells() ) ) {
             for( index_t f : range( mesh_->nb_cell_facets( c ) ) ) {
@@ -1686,8 +1684,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshEdges< DIMENSION >::resize_edge_data()
     {
-        line_id_.resize( mesh_->nb_edges() );
-        edge_id_.resize( mesh_->nb_edges() );
+        line_id_.resize( mesh_->nb_edges(), NO_ID );
+        edge_id_.resize( mesh_->nb_edges(), NO_ID );
     }
 
     template< index_t DIMENSION >
@@ -1859,8 +1857,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelMeshPolygonsBase< DIMENSION >::resize_polygones_data()
     {
-        surface_id_.resize( mesh_->nb_polygons() );
-        polygon_id_.resize( mesh_->nb_polygons() );
+        surface_id_.resize( mesh_->nb_polygons(), NO_ID );
+        polygon_id_.resize( mesh_->nb_polygons(), NO_ID );
     }
 
     template< index_t DIMENSION >
