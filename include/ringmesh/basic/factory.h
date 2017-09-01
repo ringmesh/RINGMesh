@@ -37,10 +37,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <memory>
-
-#include <geogram/basic/factory.h>
-
 /*!
  * @file  Factory class
  * @author Arnaud Botella
@@ -60,7 +56,7 @@ namespace RINGMesh {
      *      std::unique_ptr< A > c = MyFactory::create( "C", 2, 8.6 );
      */
     template< typename Key, typename BaseClass, typename ...Args >
-    class Factory: public GEO::InstanceRepo::Instance {
+    class Factory {
         static_assert( std::has_virtual_destructor< BaseClass >::value,
             "BaseClass must have a virtual destructor" );
     public:
@@ -71,8 +67,7 @@ namespace RINGMesh {
                 "DerivedClass must be a subclass of BaseClass" );
             static_assert( std::is_constructible< DerivedClass, Args... >::value,
                 "DerivedClass must be constructible with Args..." );
-            Factory& self = instance();
-            if( !self.creators_.emplace( key,
+            if( !store.emplace( key,
                 Creator( create_function_impl< DerivedClass > ) ).second ) {
                 Logger::warn( "Factory", "Trying to register twice the same key" );
             }
@@ -82,9 +77,8 @@ namespace RINGMesh {
             const Key& key,
             const Args&... args )
         {
-            Factory& self = instance();
-            auto creator = self.creators_.find( key );
-            if( creator != self.creators_.end() ) {
+            auto creator = store.find( key );
+            if( creator != store.end() ) {
                 return creator->second( std::forward< const Args& >( args )... );
             }
             return {};
@@ -92,10 +86,9 @@ namespace RINGMesh {
 
         static std::vector< Key > list_creators()
         {
-            Factory& self = instance();
             std::vector< Key > creators;
-            creators.reserve( self.creators_.size() );
-            for( const auto& creator : self.creators_ ) {
+            creators.reserve( store.size() );
+            for( const auto& creator : store ) {
                 creators.emplace_back( creator.first );
             }
             return creators;
@@ -103,15 +96,12 @@ namespace RINGMesh {
 
         static bool has_creator( const Key& key )
         {
-            Factory& self = instance();
-            return self.creators_.find( key ) != self.creators_.end();
+            return store.find( key ) != store.end();
         }
 
+        using Creator = typename std::add_pointer< std::unique_ptr< BaseClass >( const Args&... ) >::type;
+        using FactoryStore = std::map< Key, Creator >;
     private:
-        static Factory& instance()
-        {
-            return GEO::InstanceRepo::instance< Factory >();
-        }
 
         template< typename DerivedClass >
         static std::unique_ptr< BaseClass > create_function_impl( Args&&... args )
@@ -120,7 +110,11 @@ namespace RINGMesh {
                 std::forward< Args >( args )... } };
         }
 
-        using Creator = typename std::add_pointer< std::unique_ptr< BaseClass >( const Args&... ) >::type;
-        std::map< Key, Creator > creators_ { };
+        static FactoryStore store;
     };
-} // namespace RINGMesh
+
+    template< typename Key, typename BaseClass, typename ...Args >
+    typename Factory< Key, BaseClass, Args... >::FactoryStore Factory< Key,
+        BaseClass, Args... >::store { };
+}
+// namespace RINGMesh
