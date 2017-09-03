@@ -147,7 +147,8 @@ namespace {
             }
             if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) ) {
                 return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ );
-            } else if( surface_ != rhs.surface_ ) {
+            }
+            if( surface_ != rhs.surface_ ) {
                 return surface_ < rhs.surface_;
             }
             return polygon_ < rhs.polygon_;
@@ -619,9 +620,8 @@ namespace {
                 cur_line_.adjacent_surfaces_.begin() );
         }
 
-        void add_border_polygon_vertices_to_line(
-            index_t polygon_index,
-            bool backward )
+        void add_border_polygon_vertices_to_line( index_t polygon_index,
+        bool backward )
         {
             const BorderPolygon& border_polygon =
                 this->border_polygons_[polygon_index];
@@ -874,7 +874,6 @@ namespace RINGMesh {
         }
 
         cut_geomodel_on_internal_boundaries();
-
         print_geomodel( geomodel_ );
     }
 

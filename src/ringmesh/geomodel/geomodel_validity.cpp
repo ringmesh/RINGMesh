@@ -40,8 +40,8 @@
 #include <geogram/mesh/triangle_intersection.h>
 
 #include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/mesh/geogram_mesh_builder.h>
@@ -151,14 +151,14 @@ namespace {
         if( delta_i == 1 ) {
             // There is an edge if their indices in the Line are i and i+1
             return true;
-        } else if( line.is_closed() && delta_i == line.nb_vertices() - 2 ) {
+        }
+        if( line.is_closed() && delta_i == line.nb_vertices() - 2 ) {
             // If the Line is closed we can also have 0; n-2 or n-1; 1
             return true;
-        } else {
-            // The two points are on the same line but
-            // do not define an edge
-            return false;
         }
+        // The two points are on the same line but
+        // do not define an edge
+        return false;
     }
 
     /*!
@@ -445,51 +445,46 @@ namespace {
                     Logger::warn( "GeoModel", "It should be in only one ",
                         boundary_type );
                     return false;
-                } else {
-                    return true;
                 }
-            } else {
                 return true;
             }
+            return true;
 
-        } else {
-            if( type_entities.empty() ) {
-                Logger::warn( "GeoModel", " Vertex is in a ", boundary_type,
-                    " but in no ", type );
+        }
+        if( type_entities.empty() ) {
+            Logger::warn( "GeoModel", " Vertex is in a ", boundary_type,
+                " but in no ", type );
+            return false;
+        }
+        const auto& boundary_entities = entities.find( boundary_type )->second;
+        // Check that one point is no more than twice in a SURFACE
+        for( auto entity : type_entities ) {
+            auto nb = std::count( type_entities.begin(), type_entities.end(),
+                entity );
+            if( nb > 2 ) {
+                Logger::warn( "GeoModel", " Vertex is ", nb, " times in ",
+                    geomodel.mesh_entity( type, entity ).gmme() );
                 return false;
-            } else {
-                const auto& boundary_entities =
-                    entities.find( boundary_type )->second;
-                // Check that one point is no more than twice in a SURFACE
-                for( auto entity : type_entities ) {
-                    auto nb = std::count( type_entities.begin(), type_entities.end(),
-                        entity );
-                    if( nb > 2 ) {
-                        Logger::warn( "GeoModel", " Vertex is ", nb, " times in ",
-                            geomodel.mesh_entity( type, entity ).gmme() );
-                        return false;
-                    } else if( nb == 2 ) {
-                        // If a point is twice in a SURFACE, it must be
-                        // on an internal boundary Line.
-                        bool internal_boundary { false };
-                        for( auto line : boundary_entities ) {
-                            if( geomodel.mesh_entity( boundary_type, line ).is_inside_border(
-                                geomodel.mesh_entity( type, entity ) ) ) {
-                                internal_boundary = true;
-                                break;
-                            }
-                        }
-                        if( !internal_boundary ) {
-                            Logger::warn( "GeoModel", " Vertex appears ", nb,
-                                " times in ",
-                                geomodel.mesh_entity( type, entity ).gmme() );
-                            return false;
-                        }
+            }
+            if( nb == 2 ) {
+                // If a point is twice in a SURFACE, it must be
+                // on an internal boundary Line.
+                bool internal_boundary { false };
+                for( auto line : boundary_entities ) {
+                    if( geomodel.mesh_entity( boundary_type, line ).is_inside_border(
+                        geomodel.mesh_entity( type, entity ) ) ) {
+                        internal_boundary = true;
+                        break;
                     }
                 }
+                if( !internal_boundary ) {
+                    Logger::warn( "GeoModel", " Vertex appears ", nb, " times in ",
+                        geomodel.mesh_entity( type, entity ).gmme() );
+                    return false;
+                }
             }
-            return true;
         }
+        return true;
     }
 
     template< index_t DIMENSION >
@@ -528,48 +523,43 @@ namespace {
                     print_error( lines, "Lines" );
                     Logger::warn( "GeoModel", "It should be in only one Line" );
                     return false;
-                } else {
-                    return true;
                 }
-            } else {
                 return true;
             }
-        } else {
-            if( lines.size() < 2 ) {
-                print_error( lines, "Line" );
-                Logger::warn( "GeoModel", "It should be in at least 2 Lines" );
+            return true;
+        }
+        if( lines.size() < 2 ) {
+            print_error( lines, "Line" );
+            Logger::warn( "GeoModel", "It should be in at least 2 Lines" );
+            return false;
+        }
+        for( const auto line : lines ) {
+            auto nb = std::count( lines.begin(), lines.end(), line );
+            if( nb == 2 ) {
+                if( !geomodel.line( line ).is_closed() ) {
+                    Logger::warn( "GeoModel", " Vertex"
+                        " is twice in Line ", line );
+                    return false;
+                }
+            } else if( nb > 2 ) {
+                Logger::warn( "GeoModel", " Vertex appears ", nb, " times in Line ",
+                    line );
                 return false;
-            } else {
-                for( const auto line : lines ) {
-                    auto nb = std::count( lines.begin(), lines.end(), line );
-                    if( nb == 2 ) {
-                        if( !geomodel.line( line ).is_closed() ) {
-                            Logger::warn( "GeoModel", " Vertex"
-                                " is twice in Line ", line );
-                            return false;
-                        }
-                    } else if( nb > 2 ) {
-                        Logger::warn( "GeoModel", " Vertex appears ", nb,
-                            " times in Line ", line );
-                        return false;
-                    }
-                }
-                // Check that all the lines are in incident_entity of this corner
-                gmme_id corner_id( Corner3D::type_name_static(),
-                    entities.find( Corner3D::type_name_static() )->second.front() );
-                for( const auto line : lines ) {
-                    gmme_id line_id( Line3D::type_name_static(), line );
-                    if( !is_boundary_entity( geomodel, line_id, corner_id ) ) {
-                        Logger::warn( "GeoModel",
-                            " Inconsistent Line-Corner connectivity ",
-                            " vertex shows that ", line_id,
-                            " must be in the boundary of ", corner_id );
-                        return false;
-                    }
-                }
-                return true;
             }
         }
+        // Check that all the lines are in incident_entity of this corner
+        gmme_id corner_id( Corner3D::type_name_static(),
+            entities.find( Corner3D::type_name_static() )->second.front() );
+        for( const auto line : lines ) {
+            gmme_id line_id( Line3D::type_name_static(), line );
+            if( !is_boundary_entity( geomodel, line_id, corner_id ) ) {
+                Logger::warn( "GeoModel", " Inconsistent Line-Corner connectivity ",
+                    " vertex shows that ", line_id, " must be in the boundary of ",
+                    corner_id );
+                return false;
+            }
+        }
+        return true;
     }
 
     template< >
@@ -584,48 +574,43 @@ namespace {
                     print_error( lines, "Lines" );
                     Logger::warn( "GeoModel", "It should be in only one Line" );
                     return false;
-                } else {
-                    return true;
                 }
-            } else {
                 return true;
             }
-        } else {
-            if( lines.size() < 1 ) {
-                print_error( lines, "Lines" );
-                Logger::warn( "GeoModel", "It should be in at least one Line" );
+            return true;
+        }
+        if( lines.empty() ) {
+            print_error( lines, "Lines" );
+            Logger::warn( "GeoModel", "It should be in at least one Line" );
+            return false;
+        }
+        for( auto line : lines ) {
+            auto nb = std::count( lines.begin(), lines.end(), line );
+            if( nb == 2 ) {
+                if( !geomodel.line( line ).is_closed() ) {
+                    Logger::warn( "GeoModel", " Vertex"
+                        " is twice in Line ", line );
+                    return false;
+                }
+            } else if( nb > 2 ) {
+                Logger::warn( "GeoModel", " Vertex appears ", nb, " times in Line ",
+                    line );
                 return false;
-            } else {
-                for( auto line : lines ) {
-                    auto nb = std::count( lines.begin(), lines.end(), line );
-                    if( nb == 2 ) {
-                        if( !geomodel.line( line ).is_closed() ) {
-                            Logger::warn( "GeoModel", " Vertex"
-                                " is twice in Line ", line );
-                            return false;
-                        }
-                    } else if( nb > 2 ) {
-                        Logger::warn( "GeoModel", " Vertex appears ", nb,
-                            " times in Line ", line );
-                        return false;
-                    }
-                }
-                // Check that all the lines are in incident_entity of this corner
-                gmme_id corner_id( Corner2D::type_name_static(),
-                    entities.find( Corner2D::type_name_static() )->second.front() );
-                for( auto line : lines ) {
-                    gmme_id line_id( Line2D::type_name_static(), line );
-                    if( !is_boundary_entity( geomodel, line_id, corner_id ) ) {
-                        Logger::warn( "GeoModel",
-                            " Inconsistent Line-Corner connectivity ",
-                            " vertex shows that ", line_id,
-                            " must be in the boundary of ", corner_id );
-                        return false;
-                    }
-                }
-                return true;
             }
         }
+        // Check that all the lines are in incident_entity of this corner
+        gmme_id corner_id( Corner2D::type_name_static(),
+            entities.find( Corner2D::type_name_static() )->second.front() );
+        for( auto line : lines ) {
+            gmme_id line_id( Line2D::type_name_static(), line );
+            if( !is_boundary_entity( geomodel, line_id, corner_id ) ) {
+                Logger::warn( "GeoModel", " Inconsistent Line-Corner connectivity ",
+                    " vertex shows that ", line_id, " must be in the boundary of ",
+                    corner_id );
+                return false;
+            }
+        }
+        return true;
     }
 
     template< index_t DIMENSION >
@@ -727,9 +712,8 @@ namespace {
             }
 
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
 
     template< index_t DIMENSION >
@@ -819,9 +803,8 @@ namespace {
                 Logger::warn( "GeoModel", " Saved in file: ", file.str() );
             }
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
 
     /*!
@@ -879,9 +862,8 @@ namespace {
             }
 
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
 
     template< index_t DIMENSION >
@@ -1190,7 +1172,9 @@ namespace {
                 if( nb_intersections > 0 ) {
                     GEO::Mesh mesh;
                     for( auto p : range( has_intersection.size() ) ) {
-                        if( !has_intersection[p] ) continue;
+                        if( !has_intersection[p] ) {
+                            continue;
+                        }
                         GEO::vector< index_t > vertices;
                         vertices.reserve( geomodel_.mesh.polygons.nb_vertices( p ) );
                         for( auto v : range(
@@ -1246,7 +1230,7 @@ namespace {
         add_base_checks( tasks );
     }
 
-}
+} // namespace
 
 namespace RINGMesh {
 
