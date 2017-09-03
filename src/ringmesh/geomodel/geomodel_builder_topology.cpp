@@ -101,7 +101,7 @@ namespace {
         }
 
         equal = true;
-        for( auto v : range( line.nb_vertices() ) ) {
+        for( index_t v : range( line.nb_vertices() ) ) {
             if( rhs_vertices[v] != line.vertex( line.nb_vertices() - v - 1 ) ) {
                 equal = false;
                 break;
@@ -255,7 +255,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool GeoModelBuilderTopologyBase< DIMENSION >::get_dependent_entities(
+    void GeoModelBuilderTopologyBase< DIMENSION >::get_dependent_entities(
         std::set< gmme_id >& mesh_entities,
         std::set< gmge_id >& geological_entities ) const
     {
@@ -268,9 +268,8 @@ namespace RINGMesh {
 
         // Recursive call till nothing is added
         if( nb_added > 0 ) {
-            return get_dependent_entities( mesh_entities, geological_entities );
+            get_dependent_entities( mesh_entities, geological_entities );
         }
-        return false;
     }
 
     template< index_t DIMENSION >
@@ -544,16 +543,16 @@ namespace RINGMesh {
         }
         if( manager.is_line( type ) ) {
             return create_mesh_entities< Line >( nb_additional_entities );
-        }
-        if( manager.is_surface( type ) ) {
+        } else if( manager.is_surface( type ) ) {
             return create_mesh_entities< Surface >( nb_additional_entities );
         }
         ringmesh_assert_not_reached;
         return false;
     }
 
-    void GeoModelBuilderTopology< 2 >::add_universe_boundary( index_t boundary_id,
-    bool side )
+    void GeoModelBuilderTopology< 2 >::add_universe_boundary(
+        index_t boundary_id,
+        bool side )
     {
         gmme_id boundary( Line2D::type_name_static(), boundary_id );
         UniverseAccess2D universe_access( geomodel_access_.modifiable_universe() );
