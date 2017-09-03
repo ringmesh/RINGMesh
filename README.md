@@ -8,6 +8,14 @@ RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 2.8.11). There is no other dependency (everything
 you need is shipped with RINGMesh). Follow the Linux, Mac OS or Windows instructions below.
 
+To clone RINGMesh you need Mercurial (https://www.mercurial-scm.org/).
+You also need to have Git (https://git-scm.com/) for RINGMesh subrepositories (without it the cloning will fail).
+Make sure that Git binary directory is in your computer path (environment variable).
+Under Windows, after installing Git you should have in your path environment variable:
+C:\Program Files\Git\cmd.
+Warning: TortoiseGit (https://tortoisegit.org/) does not install Git, whereas
+TortoiseHg (https://www.mercurial-scm.org/wiki/TortoiseHg) installs Mercurial (tested on Windows 10).
+
 Linux
 ===========================
 
@@ -91,10 +99,12 @@ RINGMesh has previously been compiled with:
 * Visual Studio 11 2012 Win64
 * Visual Studio 12 2013 Win64
 * Visual Studio 14 2015 Win64
+* Visual Studio 15 2017 Win64
 
 Compiling RINGMesh
 ------------------
 
+Make sure that you have installed C++ package for VisualStudio through the VisualStudio installer.
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step:
 
