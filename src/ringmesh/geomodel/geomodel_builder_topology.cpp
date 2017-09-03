@@ -522,7 +522,8 @@ namespace RINGMesh {
         }
         if( manager.is_line( type ) ) {
             return create_mesh_entity< Line >();
-        } else if( manager.is_surface( type ) ) {
+        }
+        if( manager.is_surface( type ) ) {
             return create_mesh_entity< Surface >();
         }
         ringmesh_assert_not_reached;
@@ -540,7 +541,8 @@ namespace RINGMesh {
         }
         if( manager.is_line( type ) ) {
             return create_mesh_entities< Line >( nb_additional_entities );
-        } else if( manager.is_surface( type ) ) {
+        }
+        if( manager.is_surface( type ) ) {
             return create_mesh_entities< Surface >( nb_additional_entities );
         }
         ringmesh_assert_not_reached;
@@ -556,7 +558,6 @@ namespace RINGMesh {
         }
         return GeoModelBuilderTopologyBase3D::create_mesh_entity( type );
     }
-
     bool GeoModelBuilderTopology< 3 >::create_mesh_entities(
         const MeshEntityType& type,
         index_t nb_additional_entities )

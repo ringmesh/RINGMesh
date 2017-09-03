@@ -220,7 +220,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class LineMesh: public MeshBase< DIMENSION > {
         friend class LineMeshBuilder< DIMENSION > ;
-
     public:
         static std::unique_ptr< LineMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
@@ -1002,7 +1001,6 @@ namespace RINGMesh {
             }
             return *cell_aabb_.get();
         }
-
         std::tuple< index_t, std::vector< index_t > > connected_components() const final;
     protected:
         VolumeMesh() = default;

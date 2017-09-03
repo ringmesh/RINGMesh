@@ -63,16 +63,16 @@ namespace {
     {
         Box< DIMENSION > bbox;
         if( gm.nb_surfaces() > 0 ) {
-            for( index_t s : range( gm.nb_surfaces() ) ) {
+            for( auto s : range( gm.nb_surfaces() ) ) {
                 compute_mesh_entity_bbox( gm.surface( s ), bbox );
             }
         } else if( gm.nb_lines() > 0 ) {
-            for( index_t l : range( gm.nb_lines() ) ) {
+            for( auto l : range( gm.nb_lines() ) ) {
                 compute_mesh_entity_bbox( gm.line( l ), bbox );
             }
         } else {
             ringmesh_assert( gm.nb_corners() > 0 );
-             for( index_t c : range( gm.nb_corners() ) ) {
+             for( auto c : range( gm.nb_corners() ) ) {
                 bbox.add_point( gm.corner( c ).vertex( 0 ) );
             }
         }
@@ -81,7 +81,6 @@ namespace {
 } // namespace
 
 namespace RINGMesh {
-
     template< index_t DIMENSION >
     GeoModelBase< DIMENSION >::GeoModelBase( GeoModel< DIMENSION >& geomodel )
         : mesh( geomodel )
@@ -99,7 +98,8 @@ namespace RINGMesh {
         }
         if( manager.is_corner( type ) ) {
             return nb_corners();
-        } else if( manager.is_surface( type ) ) {
+        }
+        if( manager.is_surface( type ) ) {
             return nb_surfaces();
         }
         ringmesh_assert_not_reached;

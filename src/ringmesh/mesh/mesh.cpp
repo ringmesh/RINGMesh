@@ -38,7 +38,6 @@
 #include <ringmesh/mesh/mesh.h>
 
 #include <stack>
-#include <numeric>
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/basic/algorithm.h>
 
@@ -240,6 +239,7 @@ namespace RINGMesh {
             next_e = vertex_index_in_polygon( next_p, next_v_id );
             ringmesh_assert( is_edge_on_border( next_polygon_local_edge ) );
         }
+
         return next_polygon_local_edge;
     }
 
@@ -287,6 +287,7 @@ namespace RINGMesh {
                 { prev_p, v_in_next_polygon } ).local_vertex_id_;
             ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         }
+
         return prev_polygon_local_edge;
     }
 

@@ -644,7 +644,6 @@ namespace RINGMesh {
     private:
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_ { };
     };
-
     ALIAS_2D_AND_3D( Line );
 
     /*!
