@@ -57,13 +57,14 @@ In Linux, just install clang package. Binaries for Windows are [here](http://llv
 ### How to run clang-format ###
 For Eclipde IDE users, there is a build configuration, called clang-format, to run clang-format.
 For VisualStudio users, make sure that clang binary directory is in the system path.
-This path should look like: C:\Program Files (x86)\LLVM\bin.
+This path should look like: C:\Program Files (x86)\LLVM\bin. Use CMake to generate the VisualStudio
+project and launch VisualStudio. Then build the project called format.
 
 ### Editor integration ###
 For VisualStudio users, there is a [tool](http://llvm.org/builds/)
 to use clang-format directly within this IDE. In VisualStudio, just select the code that you want to
 format, then press ctrl-R, and finally press ctrl-F.
-For Vim users, TODO
+For other integration, see the [clang-format documentation](http://clang.llvm.org/docs/ClangFormat.html).
 
 Style and naming conventions
 --------------------------------------
