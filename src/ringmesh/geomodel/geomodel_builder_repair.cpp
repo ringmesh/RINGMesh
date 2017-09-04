@@ -398,10 +398,12 @@ namespace RINGMesh {
                     std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
                         builder_.geometry.create_line_builder( e );
                     for( auto e_itr : range( E.nb_mesh_elements() ) ) {
-                        builder->set_edge_vertex( e_itr, 0,
+                        builder->set_edge_vertex( 
+                            EdgeLocalVertex( e_itr, 0 ),
                             colocated[E.mesh_element_vertex_index(
                             ElementLocalVertex( e_itr, 0 ) )] );
-                        builder->set_edge_vertex( e_itr, 1,
+                        builder->set_edge_vertex( 
+                            EdgeLocalVertex( e_itr, 1 ),
                             colocated[E.mesh_element_vertex_index(
                             ElementLocalVertex( e_itr, 1 ) )] );
                     }

@@ -106,8 +106,8 @@ void add_edges( LineMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_edges( size - 1 );
     for( index_t i : range( size - 1 ) ) {
-        builder->set_edge_vertex( i, 0, i );
-        builder->set_edge_vertex( i, 1, i + 1 );
+        builder->set_edge_vertex( EdgeLocalVertex( i, 0 ), i );
+        builder->set_edge_vertex( EdgeLocalVertex( i, 1 ), i + 1 );
     }
 }
 

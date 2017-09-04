@@ -1793,7 +1793,9 @@ namespace RINGMesh {
                     auto v_id = geomodel_vertices.geomodel_vertex_id( line_id,
                         ElementLocalVertex( e, v ) );
                     ringmesh_assert( v_id != NO_ID );
-                    mesh_builder->set_edge_vertex( cur_edge, v, v_id );
+                    mesh_builder->set_edge_vertex(
+                        EdgeLocalVertex( cur_edge, v ),
+                        v_id );
                 }
                 line_id_[cur_edge] = l;
                 edge_id_[cur_edge] = e;
@@ -2437,10 +2439,12 @@ namespace RINGMesh {
             for( auto p : range( well.nb_parts() ) ) {
                 for( auto e : range( well.part( p ).nb_edges() ) ) {
                     const auto& e0 = well.part( p ).edge_vertex( { e, 0 } );
-                    mesh_builder->set_edge_vertex( cur_edge, 0,
+                    mesh_builder->set_edge_vertex( 
+                        EdgeLocalVertex( cur_edge, 0 ),
                         this->gmm_.vertices.index( e0 ) );
                     const auto& e1 = well.part( p ).edge_vertex( { e, 1 } );
-                    mesh_builder->set_edge_vertex( cur_edge, 1,
+                    mesh_builder->set_edge_vertex(
+                        EdgeLocalVertex( cur_edge, 1 ),
                         this->gmm_.vertices.index( e1 ) );
                     cur_edge++;
                 }
