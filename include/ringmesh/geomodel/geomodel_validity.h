@@ -37,8 +37,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/basic/file_system.h>
-
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 /*!
@@ -72,19 +70,18 @@ namespace RINGMesh {
     };
     ENABLE_BITMASK_OPERATORS( ValidityCheckMode );
 
-    /*! 
-     * @brief Set the global default directory to store invalid entities of 
-     *  geomodels to be the current working directory
-     */
-static    std::string validity_errors_directory =
-        GEO::FileSystem::get_current_working_directory();
-
     /*!
      * @brief Set the directory where debugging information on 
      * invalid entities shall be stored
      * @details If directory does not exist keep the previous value.
      */
-    void RINGMESH_API set_validity_errors_directory( const std::string& directory );
+void    RINGMESH_API set_validity_errors_directory( const std::string& directory );
+
+    /*!
+     * @brief Get the directory where debugging information on
+     * invalid entities shall be stored
+     */
+    std::string RINGMESH_API get_validity_errors_directory();
 
     /*!
      * @brief Check global geomodel validity
