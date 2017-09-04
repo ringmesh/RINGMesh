@@ -728,7 +728,7 @@ namespace {
         GEO::Mesh edge_mesh;
         index_t previous_vertex_id { NO_ID };
         for( auto i : range( e.size() ) ) {
-            auto cur_vertex_id { edge_mesh.vertices.create_vertex(
+            index_t cur_vertex_id { edge_mesh.vertices.create_vertex(
                 geomodel.mesh.vertices.vertex( e[i] ).data() ) };
             if( i % 2 == 0 ) {
                 ringmesh_assert( previous_vertex_id == NO_ID );
@@ -755,7 +755,7 @@ namespace {
             GEO::vector< index_t > vertices;
             vertices.reserve( nb_vertices_in_polygon );
             for( auto v : range( nb_vertices_in_polygon ) ) {
-                auto new_vertex { mesh.vertices.create_vertex(
+                index_t new_vertex { mesh.vertices.create_vertex(
                     surface.mesh_element_vertex( { cur_polygon, v } ).data() ) };
                 vertices.push_back( new_vertex );
             }
