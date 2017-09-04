@@ -2764,16 +2764,14 @@ namespace RINGMesh {
                     auto c_in_geom_model_mesh = nn_search.get_neighbors( center,
                         geomodel_.epsilon() );
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 );
-                    for( auto dim_itr : range( dim ) ) {
-                        GEO::Memory::copy(
-                            static_cast< GEO::Memory::pointer >( cur_c_att_store->data() )
-                                + c_in_geom_model_mesh[0] * dim
-                                    * cur_c_att_store->element_size(),
-                            static_cast< GEO::Memory::pointer >( cur_c_att_store_in_reg->data() )
-                                + c_in_reg_itr * dim
-                                    * cur_c_att_store_in_reg->element_size(),
-                            dim * cur_c_att_store->element_size() );
-                    }
+                    GEO::Memory::copy(
+                        static_cast< GEO::Memory::pointer >( cur_c_att_store->data() )
+                            + c_in_geom_model_mesh[0] * dim
+                                * cur_c_att_store->element_size(),
+                        static_cast< GEO::Memory::pointer >( cur_c_att_store_in_reg->data() )
+                            + c_in_reg_itr * dim
+                                * cur_c_att_store_in_reg->element_size(),
+                        dim * cur_c_att_store->element_size() );
                 }
             }
         }
