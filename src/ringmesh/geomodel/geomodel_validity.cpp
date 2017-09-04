@@ -1263,7 +1263,7 @@ namespace RINGMesh {
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
         index_t count_invalid { 0 };
         for( const auto& type : meshed_types ) {
-            auto nb_entities { geomodel.nb_mesh_entities( type ) };
+            index_t nb_entities { geomodel.nb_mesh_entities( type ) };
             for( auto i : range( nb_entities ) ) {
                 const auto& entity = geomodel.mesh_entity( type, i );
                 if( !entity.is_valid() ) {
