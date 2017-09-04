@@ -878,9 +878,9 @@ namespace {
         const auto& polygons = geomodel.mesh.polygons;
         for( const auto& surface : geomodel.surfaces() ) {
             for( auto p : range( polygons.nb_polygons( surface.index() ) ) ) {
-				index_t polygon_id { polygons.polygon(surface.index(), p) };
+				index_t polygon_id { polygons.polygon(surface.index(), p ) };
                 for( auto v : range( polygons.nb_vertices( polygon_id ) ) ) {
-					index_t adj { polygons.adjacent({ polygon_id, v }) };
+					index_t adj { polygons.adjacent({ polygon_id, v } ) };
                     if( adj == NO_ID ) {
                         edge_indices.push_back(
                             polygons.vertex( { polygon_id, v } ) );
@@ -1103,13 +1103,13 @@ namespace {
                     continue;
                 }
 
-                const auto first_interface_id {
+                const index_t first_interface_id {
                     line.incident_entity( 0 ).parent_gmge(
                         Interface< DIMENSION >::type_name_static() ).index() };
                 ringmesh_assert( first_interface_id != NO_ID );
                 bool at_least_two_different_interfaces { false };
                 for( auto in_boundary_i : range( 1, line.nb_incident_entities() ) ) {
-                    const auto cur_interface_id { line.incident_entity(
+                    const index_t cur_interface_id { line.incident_entity(
                         in_boundary_i ).parent_gmge(
                         Interface< DIMENSION >::type_name_static() ).index() };
                     ringmesh_assert( cur_interface_id != NO_ID );
@@ -1183,7 +1183,7 @@ namespace {
                         vertices.reserve( geomodel_.mesh.polygons.nb_vertices( p ) );
                         for( auto v : range(
                             geomodel_.mesh.polygons.nb_vertices( p ) ) ) {
-                            auto id =
+                            index_t id =
                                 mesh.vertices.create_vertex(
                                     geomodel_.mesh.vertices.vertex(
                                         geomodel_.mesh.polygons.vertex( { p, v } ) ).data() );
@@ -1286,7 +1286,7 @@ namespace RINGMesh {
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
         index_t count_invalid { 0 };
         for( const auto& type : meshed_types ) {
-            auto nb_entities { geomodel.nb_mesh_entities( type ) };
+            index_t nb_entities { geomodel.nb_mesh_entities( type ) };
             for( auto i : range( nb_entities ) ) {
                 const auto& entity = geomodel.mesh_entity( type, i );
                 if( !entity.is_connectivity_valid() ) {
@@ -1330,7 +1330,7 @@ namespace RINGMesh {
             geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
         index_t count_invalid { 0 };
         for( const auto& type : meshed_types ) {
-            auto nb_entities { geomodel.nb_mesh_entities( type ) };
+            index_t nb_entities { geomodel.nb_mesh_entities( type ) };
             for( auto i : range( nb_entities ) ) {
                 const auto& geol_entity = geomodel.mesh_entity( type, i );
                 if( !geol_entity.is_parent_connectivity_valid() ) {
