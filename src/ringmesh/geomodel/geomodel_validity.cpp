@@ -1251,7 +1251,8 @@ namespace {
 
     std::string& validity_errors_directory()
     {
-        static std::string directory;
+        static std::string directory =
+            GEO::FileSystem::get_current_working_directory();
         return directory;
     }
 
