@@ -113,7 +113,7 @@ namespace RINGMesh {
             const TEST& test ) const
         {
             std::vector< index_t > result;
-            index_t nb_points = this->nb_points();
+            auto nb_points = this->nb_points();
             if( nb_points != 0 ) {
                 index_t nb_neighbors { std::min( index_t( 5 ), nb_points ) };
                 index_t cur_neighbor { 0 };
@@ -122,8 +122,7 @@ namespace RINGMesh {
                     prev_neighbor = cur_neighbor;
                     cur_neighbor += nb_neighbors;
                     result.reserve( cur_neighbor );
-                    std::vector< index_t > neighbors = get_neighbors( v,
-                        cur_neighbor );
+                    auto neighbors = get_neighbors( v, cur_neighbor );
                     nb_neighbors = static_cast< index_t >( neighbors.size() );
                     for( auto i : range( prev_neighbor, cur_neighbor ) ) {
                         if( test( neighbors[i] ) ) {

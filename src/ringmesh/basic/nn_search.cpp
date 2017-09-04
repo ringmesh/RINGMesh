@@ -138,7 +138,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     vecn< DIMENSION > NNSearch< DIMENSION >::point( index_t v ) const
     {
-        return this->impl_->point( v );
+        return impl_->point( v );
     }
 
     template< index_t DIMENSION >
@@ -155,7 +155,7 @@ namespace RINGMesh {
         std::atomic< index_t > nb_colocalised_vertices { 0 };
         parallel_for( nb_points(),
             [this, &index_map, &nb_colocalised_vertices, &epsilon](index_t i) {
-                std::vector< index_t > results = get_neighbors( point( i ), epsilon );
+                auto results = get_neighbors( point( i ), epsilon );
                 index_t id {*std::min_element( results.begin(), results.end() )};
                 index_map[i] = id;
                 if( id < i ) {
@@ -170,7 +170,7 @@ namespace RINGMesh {
         DIMENSION >::get_colocated_index_mapping_and_unique_points(
         double epsilon ) const
     {
-        index_t nb_colocalised_vertices { NO_ID };
+        index_t nb_colocalised_vertices;
         std::vector< index_t > index_map;
         std::tie( nb_colocalised_vertices, index_map ) = get_colocated_index_mapping(
             epsilon );
@@ -213,5 +213,4 @@ namespace RINGMesh {
     template class RINGMESH_API EXPORT_IMPLEMENTATION (NNSearch< 2 > );
 
     template class RINGMESH_API NNSearch< 3 > ;
-    template class RINGMESH_API EXPORT_IMPLEMENTATION (NNSearch< 3 > );
-} // namespace RINGMesh
+    template class RINGMESH_API EXPORT_IMPLEMENTATION (NNSearch< 3 > );} // namespace RINGMesh
