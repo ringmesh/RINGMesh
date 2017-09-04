@@ -37,6 +37,8 @@
 
 #include <future>
 
+#include <geogram/basic/file_system.h>
+
 #include <geogram/mesh/triangle_intersection.h>
 
 #include <ringmesh/geomodel/geomodel.h>
@@ -703,7 +705,8 @@ namespace {
 
         if( nb_invalid > 0 ) {
             std::ostringstream file;
-            file << validity_errors_directory << "/invalid_global_vertices.geogram";
+            file << get_validity_errors_directory()
+                << "/invalid_global_vertices.geogram";
             save_invalid_points( file, geomodel, valid );
 
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
@@ -792,7 +795,7 @@ namespace {
         }
         if( !invalid_corners.empty() ) {
             std::ostringstream file;
-            file << validity_errors_directory << "/invalid_boundary_surface_"
+            file << get_validity_errors_directory() << "/invalid_boundary_surface_"
                 << surface.index() << ".geogram";
             save_edges( file, surface.geomodel(), invalid_corners );
 
@@ -831,7 +834,8 @@ namespace {
             builder.set_edge_vertex( e, 0, 2 * e );
             builder.set_edge_vertex( e, 1, 2 * e + 1 );
         }
-        mesh.save_mesh( validity_errors_directory + "/non_manifold_edges.geogram" );
+        mesh.save_mesh(
+            get_validity_errors_directory() + "/non_manifold_edges.geogram" );
     }
 
     template< index_t DIMENSION >
@@ -850,7 +854,7 @@ namespace {
         }
         if( !unconformal_polygons.empty() ) {
             std::ostringstream file;
-            file << validity_errors_directory << "/unconformal_surface_"
+            file << get_validity_errors_directory() << "/unconformal_surface_"
                 << surface.index() << ".geogram";
             save_polygons( file.str(), surface, unconformal_polygons );
 
@@ -1203,7 +1207,7 @@ namespace {
                         mesh.facets.create_polygon( vertices );
                     }
                     std::ostringstream file;
-                    file << validity_errors_directory
+                    file << get_validity_errors_directory()
                         << "/intersected_polygons.geogram";
                     save_mesh_locating_geomodel_inconsistencies( mesh, file );
                     Logger::out( "I/O" );
@@ -1257,8 +1261,13 @@ namespace RINGMesh {
             copy.erase( copy.end() - 1 );
         }
         if( GEO::FileSystem::is_directory( copy ) ) {
-            validity_errors_directory = copy + '/';
+            GEO::CmdLine::set_arg( "validity_directory", copy + '/' );
         }
+    }
+
+    std::string get_validity_errors_directory()
+    {
+        return GEO::CmdLine::get_arg( "validity_directory" );
     }
 
     template< index_t DIMENSION >
