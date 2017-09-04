@@ -1249,13 +1249,6 @@ namespace {
         add_base_checks( tasks );
     }
 
-    std::string& validity_errors_directory()
-    {
-        static std::string directory =
-            GEO::FileSystem::get_current_working_directory();
-        return directory;
-    }
-
 } // namespace
 
 namespace RINGMesh {
@@ -1268,13 +1261,13 @@ namespace RINGMesh {
             copy.erase( copy.end() - 1 );
         }
         if( GEO::FileSystem::is_directory( copy ) ) {
-            validity_errors_directory() = copy + '/';
+            GEO::CmdLine::set_arg( "validity_directory", copy + '/' );
         }
     }
 
     std::string get_validity_errors_directory()
     {
-        return validity_errors_directory();
+        return GEO::CmdLine::get_arg( "validity_directory" );
     }
 
     template< index_t DIMENSION >
