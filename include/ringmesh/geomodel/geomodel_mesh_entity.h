@@ -517,7 +517,11 @@ namespace RINGMesh {
 
         const Corner< DIMENSION >& boundary( index_t x ) const;
 
-        const Surface< DIMENSION >& incident_entity( index_t x ) const;
+        const Surface< DIMENSION >& incident_entity( index_t x ) const
+        {
+            return static_cast< const Surface< DIMENSION >& >( GeoModelMeshEntity<
+                DIMENSION >::incident_entity( x ) );
+        }
 
         bool is_connectivity_valid() const final;
 
@@ -668,8 +672,6 @@ namespace RINGMesh {
         {
             return MeshEntityType( "Surface" );
         }
-
-        bool is_on_voi() const final;
 
         const Line< DIMENSION >& boundary( index_t x ) const;
 
@@ -841,6 +843,7 @@ namespace RINGMesh {
         }
 
     public:
+        bool is_on_voi() const final;
         bool side( index_t i ) const
         {
             return sides_[i];
@@ -863,6 +866,7 @@ namespace RINGMesh {
         }
 
     public:
+        bool is_on_voi() const final;
         const Region< 3 >& incident_entity( index_t x ) const;
     };
     ALIAS_2D_AND_3D( Surface );
