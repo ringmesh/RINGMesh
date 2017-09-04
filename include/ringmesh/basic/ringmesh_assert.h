@@ -37,10 +37,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <string>
-
-#include <geogram/basic/assert.h>
-
 /*!
  * @file Custom assertions
  */
