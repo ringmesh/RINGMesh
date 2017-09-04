@@ -47,7 +47,6 @@
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 #include <ringmesh/mesh/mesh.h>
-#include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
