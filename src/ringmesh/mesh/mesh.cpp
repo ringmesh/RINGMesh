@@ -170,8 +170,10 @@ namespace RINGMesh {
                             ringmesh_assert( vertex_components[edge_vertex( {
                                 previous_edge, 1 } )] - 1 >= 0 );
                             --components[previous_edge];
-                            --vertex_components[edge_vertex( { previous_edge, 0 } )];
-                            --vertex_components[edge_vertex( { previous_edge, 1 } )];
+                            vertex_components[edge_vertex( { previous_edge, 0 } )] =
+                                components[previous_edge];
+                            vertex_components[edge_vertex( { previous_edge, 1 } )] =
+                                components[previous_edge];
                             ringmesh_assert( components[previous_edge] != NO_ID );
                             ringmesh_assert( vertex_components[edge_vertex( {
                                 previous_edge, 0 } )] != NO_ID );
