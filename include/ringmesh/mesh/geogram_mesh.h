@@ -115,14 +115,14 @@ namespace RINGMesh {
         std::unique_ptr< GEO::Mesh > mesh_
 
     template< index_t DIMENSION >
-    class GeogramPointSetMesh: public PointSetMesh< DIMENSION > {
+    class GeogramPointSetMesh: public PointSetMesh < DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
     };
 
     ALIAS_2D_AND_3D( GeogramPointSetMesh );
 
     template< index_t DIMENSION >
-    class GeogramLineMesh: public LineMesh< DIMENSION > {
+    class GeogramLineMesh: public LineMesh < DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
     public:
         index_t edge_vertex( const ElementLocalVertex& edge_local_vertex ) const override
@@ -145,7 +145,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeogramLineMesh );
 
     template< index_t DIMENSION >
-    class GeogramSurfaceMesh: public SurfaceMesh< DIMENSION > {
+    class GeogramSurfaceMesh: public SurfaceMesh < DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
     public:
         index_t polygon_vertex( const ElementLocalVertex& polygon_local_vertex ) const override
@@ -184,7 +184,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeogramSurfaceMesh );
 
     template< index_t DIMENSION >
-    class GeogramVolumeMesh: public VolumeMesh< DIMENSION > {
+    class GeogramVolumeMesh: public VolumeMesh < DIMENSION > {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramVolumeMesh );
     public:
         index_t cell_vertex( const ElementLocalVertex& cell_local_vertex ) const override
@@ -274,7 +274,7 @@ namespace RINGMesh {
 
         CellType cell_type( index_t cell_id ) const override
         {
-            return static_cast<CellType>( mesh_->cells.type( cell_id ) );
+            return static_cast< CellType >( mesh_->cells.type( cell_id ) );
         }
 
         bool cells_are_simplicies() const override
@@ -288,7 +288,7 @@ namespace RINGMesh {
         }
     };
 
-    using GeogramVolumeMesh3D = GeogramVolumeMesh< 3 >;
+    using GeogramVolumeMesh3D = GeogramVolumeMesh < 3 > ;
 
     void register_geogram_mesh();
 } // namespace RINGMesh

@@ -96,7 +96,7 @@ namespace {
         for( auto i : range( line.nb_vertices() ) ) {
             if( rhs_vertices[i]
                 != geomodel_vertices.geomodel_vertex_id( line.gmme(),
-                    line.nb_vertices() - i - 1 ) ) {
+                line.nb_vertices() - i - 1 ) ) {
                 equal = false;
                 break;
             }
@@ -172,7 +172,7 @@ namespace {
 
     template< index_t DIMENSION >
     class CommonDataFromGeoModelSurfaces {
-    ringmesh_disable_copy_and_move( CommonDataFromGeoModelSurfaces );
+        ringmesh_disable_copy_and_move( CommonDataFromGeoModelSurfaces );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     protected:
         explicit CommonDataFromGeoModelSurfaces(
@@ -191,8 +191,8 @@ namespace {
                                 S_id, ElementLocalVertex( p, v ) );
                             index_t next_vertex =
                                 geomodel_vertices.geomodel_vertex_id( S_id,
-                                    mesh.next_polygon_vertex(
-                                        ElementLocalVertex( p, v ) ) );
+                                mesh.next_polygon_vertex(
+                                ElementLocalVertex( p, v ) ) );
                             border_polygons_.emplace_back( surface.index(), p,
                                 vertex, next_vertex );
                         }
@@ -239,11 +239,11 @@ namespace {
                 const vec3& p0,
                 const vec3& p1 )
                 :
-                    index_( index ),
-                    surface_index_( surface_index ),
-                    N_( normal ),
-                    angle_( -max_float64() ),
-                    side_( false )
+                index_( index ),
+                surface_index_( surface_index ),
+                N_( normal ),
+                angle_( -max_float64() ),
+                side_( false )
             {
                 ringmesh_assert( p0 != p1 );
 
@@ -269,7 +269,7 @@ namespace {
             vec3 B_A_;
 
             // Values filled by sorting function in GeoModelRegionFromSurfaces
-            double angle_;bool side_;
+            double angle_; bool side_;
         };
 
         void add_polygon_edge(
@@ -321,7 +321,7 @@ namespace {
 
             ringmesh_assert( std::fabs( result.w ) > global_epsilon );
             double inv_w = 1.0 / result.w;
-            return {result.x * inv_w, result.y * inv_w, result.z * inv_w};
+            return{ result.x * inv_w, result.y * inv_w, result.z * inv_w };
         }
 
         void sort()
@@ -397,7 +397,7 @@ namespace {
             // All the surfaces must have been sorted
             ringmesh_assert(
                 std::count( sorted_polygons_.begin(), sorted_polygons_.end(),
-                    default_pair ) == 0 );
+                default_pair ) == 0 );
         }
 
         void clear()
@@ -449,13 +449,13 @@ namespace {
         std::vector< std::pair< index_t, bool > > sorted_polygons_;
     };
 
-    class RegionTopologyFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces<
+    class RegionTopologyFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces <
         3 > {
     public:
         explicit RegionTopologyFromGeoModelSurfaces( const GeoModel3D& geomodel )
             :
-                CommonDataFromGeoModelSurfaces3D( geomodel ),
-                region_info_( geomodel.nb_lines() )
+            CommonDataFromGeoModelSurfaces3D( geomodel ),
+            region_info_( geomodel.nb_lines() )
         {
         }
 
@@ -471,7 +471,7 @@ namespace {
                         index_t surface_id = border.surface_;
                         region_info_[line.index()].add_polygon_edge( surface_id,
                             this->geomodel_.surface( surface_id ).low_level_mesh_storage().polygon_normal(
-                                border.polygon_ ), vertices.vertex( border.v0_ ),
+                            border.polygon_ ), vertices.vertex( border.v0_ ),
                             vertices.vertex( border.v1_ ) );
                     }
                 }
@@ -520,7 +520,7 @@ namespace {
      * are the same.
      */
     template< index_t DIMENSION >
-    class LineGeometryFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces<
+    class LineGeometryFromGeoModelSurfaces: public CommonDataFromGeoModelSurfaces <
         DIMENSION > {
     public:
         /*!
@@ -531,8 +531,8 @@ namespace {
         explicit LineGeometryFromGeoModelSurfaces(
             const GeoModel< DIMENSION >& geomodel )
             :
-                CommonDataFromGeoModelSurfaces< DIMENSION >( geomodel ),
-                cur_border_polygon_( 0 )
+            CommonDataFromGeoModelSurfaces< DIMENSION >( geomodel ),
+            cur_border_polygon_( 0 )
         {
             visited_.resize( this->border_polygons_.size(), false );
         }
@@ -621,7 +621,7 @@ namespace {
         }
 
         void add_border_polygon_vertices_to_line( index_t polygon_index,
-        bool backward )
+            bool backward )
         {
             const BorderPolygon& border_polygon =
                 this->border_polygons_[polygon_index];
@@ -668,7 +668,7 @@ namespace {
             index_t p = border_polygon.polygon_;
             std::vector< index_t > possible_v0_id =
                 geomodel_vertices.mesh_entity_vertex_id( surface_id,
-                    border_polygon.v0_ );
+                border_polygon.v0_ );
             ringmesh_assert( !possible_v0_id.empty() );
             index_t v0_id = NO_ID;
             for( auto id : possible_v0_id ) {
@@ -683,8 +683,8 @@ namespace {
             const PolygonLocalEdge cur_polygon_local_edge( p, v0_id_in_polygon );
             PolygonLocalEdge next_polygon_local_edge0_on_border =
                 backward ?
-                    mesh.prev_on_border( cur_polygon_local_edge ) :
-                    mesh.next_on_border( cur_polygon_local_edge );
+                mesh.prev_on_border( cur_polygon_local_edge ) :
+                mesh.next_on_border( cur_polygon_local_edge );
             ringmesh_assert(
                 next_polygon_local_edge0_on_border.polygon_id_ != NO_ID );
             ringmesh_assert(
@@ -702,9 +702,9 @@ namespace {
             BorderPolygon bait( border_polygon.surface_,
                 next_polygon_local_edge0_on_border.polygon_id_,
                 geomodel_vertices.geomodel_vertex_id( surface_id,
-                    next_polygon_local_edge0_on_border ),
+                next_polygon_local_edge0_on_border ),
                 geomodel_vertices.geomodel_vertex_id( surface_id,
-                    next_polygon_local_edge1_on_border ) );
+                next_polygon_local_edge1_on_border ) );
             index_t result = find_sorted( this->border_polygons_, bait );
 
             ringmesh_assert( result != NO_ID );
@@ -720,14 +720,14 @@ namespace {
             visited_[border_id] = true;
             for( auto next_border_id = border_id + 1;
                 next_border_id < this->border_polygons_.size()
-                    && this->have_border_polygons_same_boundary_edge( border_id,
-                        next_border_id ); next_border_id++ ) {
+                && this->have_border_polygons_same_boundary_edge( border_id,
+                next_border_id ); next_border_id++ ) {
                 visited_[next_border_id] = true;
             }
             for( auto prev_border_id = border_id - 1;
                 prev_border_id != NO_ID
-                    && this->have_border_polygons_same_boundary_edge( border_id,
-                        prev_border_id ); prev_border_id-- ) {
+                && this->have_border_polygons_same_boundary_edge( border_id,
+                prev_border_id ); prev_border_id-- ) {
                 visited_[prev_border_id] = true;
             }
         }
@@ -746,16 +746,16 @@ namespace {
 
             for( auto next_border_id = border_id + 1;
                 next_border_id < this->border_polygons_.size()
-                    && this->have_border_polygons_same_boundary_edge( border_id,
-                        next_border_id ); next_border_id++ ) {
+                && this->have_border_polygons_same_boundary_edge( border_id,
+                next_border_id ); next_border_id++ ) {
                 adjacent_surfaces.push_back(
                     this->border_polygons_[next_border_id].surface_ );
             }
 
             for( auto prev_border_id = border_id - 1;
                 prev_border_id != NO_ID
-                    && this->have_border_polygons_same_boundary_edge( border_id,
-                        prev_border_id ); prev_border_id-- ) {
+                && this->have_border_polygons_same_boundary_edge( border_id,
+                prev_border_id ); prev_border_id-- ) {
                 adjacent_surfaces.push_back(
                     this->border_polygons_[prev_border_id].surface_ );
             }
@@ -806,15 +806,15 @@ namespace RINGMesh {
         GeoModelBuilder< DIMENSION >& builder,
         GeoModel< DIMENSION >& geomodel )
         :
-            topology( builder, geomodel ),
-            geometry( builder, geomodel ),
-            geology( builder, geomodel ),
-            removal( builder, geomodel ),
-            repair( builder, geomodel ),
-            copy( builder, geomodel ),
-            info( builder, geomodel ),
-            geomodel_( geomodel ),
-            geomodel_access_( geomodel )
+        topology( builder, geomodel ),
+        geometry( builder, geomodel ),
+        geology( builder, geomodel ),
+        removal( builder, geomodel ),
+        repair( builder, geomodel ),
+        copy( builder, geomodel ),
+        info( builder, geomodel ),
+        geomodel_( geomodel ),
+        geomodel_access_( geomodel )
     {
     }
 
@@ -1003,12 +1003,12 @@ namespace RINGMesh {
         removal.remove_mesh_entities( to_erase );
     }
 
-    template class RINGMESH_API GeoModelBuilderBase< 2 > ;
-    template class RINGMESH_API GeoModelBuilderInfo< 2 > ;
-    template class RINGMESH_API GeoModelBuilderCopy< 2 > ;
+    template class RINGMESH_API GeoModelBuilderBase < 2 > ;
+    template class RINGMESH_API GeoModelBuilderInfo < 2 > ;
+    template class RINGMESH_API GeoModelBuilderCopy < 2 > ;
 
-    template class RINGMESH_API GeoModelBuilderBase< 3 > ;
-    template class RINGMESH_API GeoModelBuilderInfo< 3 > ;
-    template class RINGMESH_API GeoModelBuilderCopy< 3 > ;
+    template class RINGMESH_API GeoModelBuilderBase < 3 > ;
+    template class RINGMESH_API GeoModelBuilderInfo < 3 > ;
+    template class RINGMESH_API GeoModelBuilderCopy < 3 > ;
 
 } // namespace RINGMesh
