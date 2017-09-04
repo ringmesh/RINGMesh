@@ -38,6 +38,7 @@
 #include <ringmesh/mesh/mesh.h>
 
 #include <stack>
+#include <numeric>
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/basic/algorithm.h>
 
