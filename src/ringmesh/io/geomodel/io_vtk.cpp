@@ -80,7 +80,7 @@ namespace {
             out << "ASCII" << EOL;
             out << "DATASET UNSTRUCTURED_GRID" << EOL;
 
-            const GeoModelMesh3D& mesh = geomodel.mesh;
+            const auto& mesh = geomodel.mesh;
             out << "POINTS " << mesh.vertices.nb() << " double" << EOL;
             for( auto v : range( mesh.vertices.nb() ) ) {
                 out << mesh.vertices.vertex( v ) << EOL;
@@ -95,19 +95,19 @@ namespace {
                 << EOL;
             for( auto c : range( mesh.cells.nb() ) ) {
                 out << mesh.cells.nb_vertices( c );
-                const RINGMesh2VTK& descriptor =
+                const auto& descriptor =
                     *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
                 for( auto v : range( mesh.cells.nb_vertices( c ) ) ) {
-                    index_t vertex_id = descriptor.vertices[v];
+                    auto vertex_id = descriptor.vertices[v];
                     out << SPACE
-                        << mesh.cells.vertex( ElementLocalVertex( c, vertex_id ) );
+                        << mesh.cells.vertex( { c, vertex_id } );
                 }
                 out << EOL;
             }
 
             out << "CELL_TYPES " << mesh.cells.nb() << EOL;
             for( auto c : range( mesh.cells.nb() ) ) {
-                const RINGMesh2VTK& descriptor =
+                const auto& descriptor =
                     *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
                 out << descriptor.entity_type << EOL;
             }
