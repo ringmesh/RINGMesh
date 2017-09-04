@@ -2221,7 +2221,9 @@ namespace RINGMesh {
                         auto v_id = geomodel_vertices.geomodel_vertex_id( surface_id,
                             ElementLocalVertex( p, v ) );
                         ringmesh_assert( v_id != NO_ID );
-                        mesh_builder->set_polygon_vertex( cur_polygon, v, v_id );
+                        mesh_builder->set_polygon_vertex( 
+                            PolygonLocalEdge( cur_polygon, v),
+                            v_id );
                     }
                 } else {
                     std::vector< index_t > vertices( nb_vertices );
@@ -2280,7 +2282,9 @@ namespace RINGMesh {
                     auto adj = surface.polygon_adjacent_index(
                         PolygonLocalEdge( surface_polygon_id, v ) );
                     if( adj == NO_ID ) {
-                        mesh_builder->set_polygon_adjacent( polygon_id, v, NO_ID );
+                        mesh_builder->set_polygon_adjacent( 
+                            PolygonLocalEdge( polygon_id, v),
+                            NO_ID );
                     }
                 }
             }
