@@ -57,9 +57,16 @@
 namespace {
     using namespace RINGMesh;
 
-    /*!
-     * @brief Total number of polygons in the geomodel Surfaces
-     */
+    template< index_t DIMENSION >
+    index_t count_geomodel_edges( const GeoModel< DIMENSION >& geomodel )
+    {
+        index_t result { 0 };
+        for( const auto& line : geomodel.lines() ) {
+            result += line.nb_mesh_elements();
+        }
+        return result;
+    }
+
     template< index_t DIMENSION >
     index_t count_geomodel_polygons( const GeoModel< DIMENSION >& geomodel )
     {
@@ -88,16 +95,6 @@ namespace {
             nb_cells += region.nb_mesh_elements();
         }
         return nb_cells;
-    }
-
-    template< index_t DIMENSION >
-    index_t count_geomodel_edges( const GeoModel< DIMENSION >& geomodel )
-    {
-        index_t nb_edges { 0 };
-        for( const auto& line : geomodel.lines() ) {
-            nb_edges += line.nb_mesh_elements();
-        }
-        return nb_edges;
     }
 
     template< index_t DIMENSION >
@@ -178,7 +175,7 @@ namespace {
     {
         Logger::out( "GeoModel", "Model ", geomodel.name(), " is made of\n",
             std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
-			std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
+            std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
 
         index_t nb_triangles { geomodel.mesh.polygons.nb_triangle() };
         index_t nb_quads { geomodel.mesh.polygons.nb_quad() };
@@ -225,9 +222,10 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void print_geomodel( const GeoModel< DIMENSION >& geomodel )
-	{
+    {
         Logger::out( "GeoModel", "Model ", geomodel.name(), " has\n",
-			std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
+            std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
+            std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges\n",
             std::setw( 10 ), std::left, count_geomodel_polygons( geomodel ),
             " polygons" );
         index_t nb_cells { count_geomodel_cells( geomodel ) };
