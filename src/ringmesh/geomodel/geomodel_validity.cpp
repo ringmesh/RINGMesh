@@ -821,12 +821,12 @@ namespace {
     {
         GeogramLineMesh< DIMENSION > mesh;
         GeogramLineMeshBuilder< DIMENSION > builder( mesh );
-        auto nb_edges { static_cast< index_t >( non_manifold_edges.size() ) };
+        index_t nb_edges { static_cast< index_t >( non_manifold_edges.size() ) };
         builder.create_vertices( 2 * nb_edges );
         builder.create_edges( nb_edges );
         const auto& vertices = geomodel.mesh.vertices;
         for( auto e : range( non_manifold_edges.size() ) ) {
-            auto edge_id { non_manifold_edges[e] };
+            index_t edge_id { non_manifold_edges[e] };
             const auto& v0 = vertices.vertex( edge_indices[edge_id] );
             const auto& v1 = vertices.vertex( edge_indices[edge_id + 1] );
             builder.set_vertex( 2 * e, v0 );
@@ -878,13 +878,13 @@ namespace {
         const auto& polygons = geomodel.mesh.polygons;
         for( const auto& surface : geomodel.surfaces() ) {
             for( auto p : range( polygons.nb_polygons( surface.index() ) ) ) {
-                auto polygon_id = polygons.polygon( surface.index(), p );
+				index_t polygon_id { polygons.polygon(surface.index(), p) };
                 for( auto v : range( polygons.nb_vertices( polygon_id ) ) ) {
-                    auto adj = polygons.adjacent( { polygon_id, v } );
+					index_t adj { polygons.adjacent({ polygon_id, v }) };
                     if( adj == NO_ID ) {
                         edge_indices.push_back(
                             polygons.vertex( { polygon_id, v } ) );
-                        auto next_v { ( v + 1 )
+                        index_t next_v { ( v + 1 )
                             % polygons.nb_vertices( polygon_id ) };
                         edge_indices.push_back(
                             polygons.vertex( { polygon_id, next_v } ) );

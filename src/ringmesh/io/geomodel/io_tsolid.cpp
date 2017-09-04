@@ -590,10 +590,10 @@ namespace {
             const auto& mesh = geomodel_mesh( region );
             for( auto f : range( mesh.cells.nb_facets( c ) ) ) {
                 out_ << " ";
-                auto polygon { NO_ID };
+                index_t polygon { NO_ID };
                 bool side;
                 if( mesh.cells.is_cell_facet_on_surface( c, f, polygon, side ) ) {
-                    auto surface_id = mesh.polygons.surface( polygon );
+                    index_t surface_id { mesh.polygons.surface( polygon ) };
                     side ? out_ << "+" : out_ << "-";
                     out_
                         << region.geomodel().surface( surface_id ).parent( 0 ).name();
