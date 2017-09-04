@@ -149,6 +149,8 @@ namespace RINGMesh {
                     auto max_connected_components = std::max(
                         vertex_components[v0],
                         vertex_components[v1] );
+                    ringmesh_assert( min_connected_components != NO_ID );
+                    ringmesh_assert( max_connected_components != NO_ID );
                     for( auto previous_edge : range( edge ) ) {
                         ringmesh_assert( components[previous_edge] != NO_ID );
                         ringmesh_assert( vertex_components[edge_vertex( {
@@ -162,9 +164,27 @@ namespace RINGMesh {
                             vertex_components[edge_vertex( { previous_edge, 1 } )] = min_connected_components;
                         } else if( components[previous_edge]
                             > max_connected_components ) {
+                            ringmesh_assert( components[previous_edge] - 1 >= 0 );
+                            ringmesh_assert( vertex_components[edge_vertex( {
+                                previous_edge, 0 } )] - 1 >= 0 );
+                            ringmesh_assert( vertex_components[edge_vertex( {
+                                previous_edge, 1 } )] - 1 >= 0 );
                             --components[previous_edge];
                             --vertex_components[edge_vertex( { previous_edge, 0 } )];
                             --vertex_components[edge_vertex( { previous_edge, 1 } )];
+                            ringmesh_assert( components[previous_edge] != NO_ID );
+                            ringmesh_assert( vertex_components[edge_vertex( {
+                                previous_edge, 0 } )] != NO_ID );
+                            ringmesh_assert( vertex_components[edge_vertex( {
+                                previous_edge, 1 } )] != NO_ID );
+                            ringmesh_assert(
+                                components[previous_edge]
+                                    == vertex_components[edge_vertex( {
+                                        previous_edge, 0 } )] );
+                            ringmesh_assert(
+                                components[previous_edge]
+                                    == vertex_components[edge_vertex( {
+                                        previous_edge, 1 } )] );
                         }
                     }
                     components[edge] = min_connected_components;
@@ -173,6 +193,11 @@ namespace RINGMesh {
                     --nb_components;
                 }
             }
+            ringmesh_assert( components[edge] != NO_ID );
+            ringmesh_assert( vertex_components[v0] != NO_ID );
+            ringmesh_assert( vertex_components[v1] != NO_ID );
+            ringmesh_assert( components[edge] == vertex_components[v0] );
+            ringmesh_assert( components[edge] == vertex_components[v1] );
         }
 
         return std::make_tuple( nb_components, components );
