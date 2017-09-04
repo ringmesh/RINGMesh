@@ -37,8 +37,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <memory>
-
 #include <ringmesh/geomodel/entity_type_manager.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
