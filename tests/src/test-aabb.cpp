@@ -118,13 +118,13 @@ void add_triangles( SurfaceMeshBuilder< DIMENSION >* builder, index_t size )
     index_t id = 0;
     for( index_t i : range( size - 1 ) ) {
         for( index_t j : range( size - 1 ) ) {
-            builder->set_polygon_vertex( id, 0, i * size + j );
-            builder->set_polygon_vertex( id, 1, i * size + j + 1 );
-            builder->set_polygon_vertex( id, 2, ( i + 1 ) * size + j );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 0 ), i * size + j );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 1 ), i * size + j + 1 );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 2 ), ( i + 1 ) * size + j );
             id++;
-            builder->set_polygon_vertex( id, 0, i * size + j + 1 );
-            builder->set_polygon_vertex( id, 1, ( i + 1 ) * size + j + 1 );
-            builder->set_polygon_vertex( id, 2, ( i + 1 ) * size + j );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 0 ), i * size + j + 1 );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 1 ), ( i + 1 ) * size + j + 1 );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 2 ), ( i + 1 ) * size + j );
             id++;
         }
     }
@@ -247,8 +247,8 @@ void decompose_in_tet(
     GeogramVolumeMesh< DIMENSION >& tet_mesh,
     index_t size )
 {
-    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder<
-        DIMENSION >::create_builder( tet_mesh );
+    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder <
+        DIMENSION > ::create_builder( tet_mesh );
     builder->create_cells( hex_mesh.nb_cells() * 5, CellType::TETRAHEDRON );
     add_vertices( builder.get(), size );
     for( index_t hex : range( hex_mesh.nb_cells() ) ) {
@@ -262,8 +262,8 @@ void test_SurfaceAABB()
 {
     Logger::out( "TEST", "Test Surface AABB ", DIMENSION, "D" );
     GeogramSurfaceMesh< DIMENSION > geogram_mesh;
-    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = SurfaceMeshBuilder<
-        DIMENSION >::create_builder( geogram_mesh );
+    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = SurfaceMeshBuilder <
+        DIMENSION > ::create_builder( geogram_mesh );
 
     index_t size = 10;
     add_vertices( builder.get(), size );
@@ -292,8 +292,8 @@ void test_VolumeAABB()
 {
     Logger::out( "TEST", "Test Volume AABB ", DIMENSION, "D" );
     GeogramVolumeMesh< DIMENSION > geogram_mesh_hex;
-    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder<
-        DIMENSION >::create_builder( geogram_mesh_hex );
+    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder <
+        DIMENSION > ::create_builder( geogram_mesh_hex );
 
     index_t size = 10;
     add_vertices( builder.get(), size );
@@ -324,8 +324,8 @@ void test_LineAABB()
 {
     Logger::out( "TEST", "Test Line AABB ", DIMENSION, "D" );
     GeogramLineMesh< DIMENSION > geogram_mesh;
-    std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = LineMeshBuilder<
-        DIMENSION >::create_builder( geogram_mesh );
+    std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = LineMeshBuilder <
+        DIMENSION > ::create_builder( geogram_mesh );
 
     index_t size = 10;
     add_vertices( builder.get(), size );

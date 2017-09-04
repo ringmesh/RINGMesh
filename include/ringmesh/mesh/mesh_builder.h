@@ -53,7 +53,7 @@ namespace RINGMesh {
 namespace RINGMesh {
     template< index_t DIMENSION >
     class MeshBaseBuilder {
-    ringmesh_disable_copy_and_move( MeshBaseBuilder );
+        ringmesh_disable_copy_and_move( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
@@ -283,7 +283,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( MeshBaseBuilder );
 
     template< index_t DIMENSION >
-    class PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    class PointSetMeshBuilder: public MeshBaseBuilder < DIMENSION > {
     public:
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > > create_builder(
             PointSetMesh< DIMENSION >& mesh );
@@ -312,12 +312,12 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( PointSetMeshBuilder );
 
     template< index_t DIMENSION >
-    using PointSetMeshBuilderFactory = Factory< MeshType, PointSetMeshBuilder< DIMENSION >, PointSetMesh< DIMENSION >& >;
+    using PointSetMeshBuilderFactory = Factory < MeshType, PointSetMeshBuilder< DIMENSION >, PointSetMesh< DIMENSION >& > ;
 
     ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
     template< index_t DIMENSION >
-    class LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    class LineMeshBuilder: public MeshBaseBuilder < DIMENSION > {
     public:
         static std::unique_ptr< LineMeshBuilder > create_builder(
             LineMesh< DIMENSION >& mesh );
@@ -484,12 +484,12 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( LineMeshBuilder );
 
     template< index_t DIMENSION >
-    using LineMeshBuilderFactory = Factory< MeshType, LineMeshBuilder< DIMENSION >, LineMesh< DIMENSION >& >;
+    using LineMeshBuilderFactory = Factory < MeshType, LineMeshBuilder< DIMENSION >, LineMesh< DIMENSION >& > ;
 
     ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
     template< index_t DIMENSION >
-    class SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    class SurfaceMeshBuilder: public MeshBaseBuilder < DIMENSION > {
     public:
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > create_builder(
             SurfaceMesh< DIMENSION >& mesh );
@@ -546,35 +546,31 @@ namespace RINGMesh {
         }
         /*!
          * @brief Sets a vertex of a polygon by local vertex index.
-         * @param[in] polygon_id index of the polygon, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the polygon.
+         * @param[in] polygon_local_edge the polygon index and local index of an edge.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the vertex \param local_vertex_id of the
          * polygon \param polygon_id. Index between 0 and @function nb() - 1.
          */
         void set_polygon_vertex(
-            index_t polygon_id,
-            index_t local_vertex_id,
+            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
             index_t vertex_id )
         {
-            do_set_polygon_vertex( polygon_id, local_vertex_id, vertex_id );
+            do_set_polygon_vertex( polygon_local_edge, vertex_id );
             clear_polygon_linked_objects();
         }
         /*!
          * @brief Sets an adjacent polygon by both its polygon \param polygon_id
          * and its local edge index \param edge_id.
-         * @param[in] polygon_id the polygon index
-         * @param[in] edge_id the local index of an edge in polygon \p polygon_id
+         * @param[in] polygon_local_edge the polygon index and local index of an edge.
          * @param[in] specifies the polygon adjacent to \param polygon_id along edge
          * \param edge_id or GEO::NO_FACET if the parameter \param edge_id is
          * on the border.
          */
         void set_polygon_adjacent(
-            index_t polygon_id,
-            index_t edge_id,
+            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
             index_t specifies )
         {
-            do_set_polygon_adjacent( polygon_id, edge_id, specifies );
+            do_set_polygon_adjacent( polygon_local_edge, specifies );
         }
         /*!
          * @brief Removes all the polygons and attributes.
@@ -645,11 +641,11 @@ namespace RINGMesh {
                         ElementLocalVertex( polygon, v ) );
                     index_t next_vertex = this->surface_mesh_.polygon_vertex(
                         this->surface_mesh_.next_polygon_vertex(
-                            ElementLocalVertex( polygon, v ) ) );
+                        ElementLocalVertex( polygon, v ) ) );
                     for( auto local_vertex =
                         vertex2polygon_local_vertex[next_vertex];
                         local_vertex != NO_ID; local_vertex =
-                            next_local_vertex_around_vertex[local_vertex] ) {
+                        next_local_vertex_around_vertex[local_vertex] ) {
                         if( local_vertex == local_vertex_count ) {
                             continue;
                         }
@@ -658,12 +654,15 @@ namespace RINGMesh {
                             polygon_vertices[local_vertex].local_vertex_id_;
                         index_t adj_next_vertex = this->surface_mesh_.polygon_vertex(
                             this->surface_mesh_.next_polygon_vertex(
-                                ElementLocalVertex( adj_polygon,
-                                    adj_local_vertex ) ) );
+                            ElementLocalVertex( adj_polygon,
+                            adj_local_vertex ) ) );
                         if( adj_next_vertex == vertex ) {
-                            this->set_polygon_adjacent( polygon, v, adj_polygon );
-                            this->set_polygon_adjacent( adj_polygon,
-                                adj_local_vertex, polygon );
+                            this->set_polygon_adjacent(
+                                PolygonLocalEdge( polygon, v ),
+                                adj_polygon );
+                            this->set_polygon_adjacent(
+                                PolygonLocalEdge( adj_polygon, adj_local_vertex ),
+                                polygon );
                             break;
                         }
                     }
@@ -792,28 +791,24 @@ namespace RINGMesh {
         virtual index_t do_create_quads( index_t nb_quads ) = 0;
         /*!
          * @brief Sets a vertex of a polygon by local vertex index.
-         * @param[in] polygon_id index of the polygon, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the polygon.
+         * @param[in] polygon_local_edge the polygon index and the local index of an edge.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the vertex \param local_vertex_id of the
          * polygon \param polygon_id. Index between 0 and @function nb() - 1.
          */
         virtual void do_set_polygon_vertex(
-            index_t polygon_id,
-            index_t local_vertex_id,
+            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
             index_t vertex_id ) = 0;
         /*!
          * @brief Sets an adjacent polygon by both its polygon \param polygon_id
          * and its local edge index \param edge_id.
-         * @param[in] polygon_id the polygon index
-         * @param[in] edge_id the local index of an edge in polygon \p polygon_id
+         * @param[in] polygon_local_edge the polygon index and the local index of an edge.
          * @param[in] specifies the polygon adjacent to \param polygon_id along edge
          * \param edge_id or GEO::NO_FACET if the parameter \param edge_id is
          * on the border.
          */
         virtual void do_set_polygon_adjacent(
-            index_t polygon_id,
-            index_t edge_id,
+            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
             index_t specifies ) = 0;
         /*!
          * @brief Removes all the polygons and attributes.
@@ -840,12 +835,12 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( SurfaceMeshBuilder );
 
     template< index_t DIMENSION >
-    using SurfaceMeshBuilderFactory = Factory< MeshType, SurfaceMeshBuilder< DIMENSION >, SurfaceMesh< DIMENSION >& >;
+    using SurfaceMeshBuilderFactory = Factory < MeshType, SurfaceMeshBuilder< DIMENSION >, SurfaceMesh< DIMENSION >& > ;
 
     ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template< index_t DIMENSION >
-    class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    class VolumeMeshBuilder: public MeshBaseBuilder < DIMENSION > {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
         static std::unique_ptr< VolumeMeshBuilder< DIMENSION > > create_builder(
@@ -1100,10 +1095,10 @@ namespace RINGMesh {
         VolumeMesh< DIMENSION >& volume_mesh_;
     };
 
-    using VolumeMeshBuilder3D = VolumeMeshBuilder< 3 >;
+    using VolumeMeshBuilder3D = VolumeMeshBuilder < 3 > ;
 
     template< index_t DIMENSION >
-    using VolumeMeshBuilderFactory = Factory< MeshType, VolumeMeshBuilder< DIMENSION >, VolumeMesh< DIMENSION >& >;
+    using VolumeMeshBuilderFactory = Factory < MeshType, VolumeMeshBuilder< DIMENSION >, VolumeMesh< DIMENSION >& > ;
 
-    using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory< 3 >;
+    using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory < 3 > ;
 } // namespace RINGMesh
