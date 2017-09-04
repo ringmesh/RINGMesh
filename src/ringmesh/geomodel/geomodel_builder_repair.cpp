@@ -116,6 +116,7 @@ namespace RINGMesh {
             builder_.topology.get_dependent_entities( empty_mesh_entities,
                 empty_geological_entities );
             builder_.removal.remove_mesh_entities( empty_mesh_entities );
+            builder_.removal.remove_geological_entities( empty_geological_entities );
         }
     }
 

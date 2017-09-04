@@ -68,10 +68,10 @@ namespace RINGMesh {
         do_delete_flagged_mesh_entities();
         geomodel_.mesh.vertices.clear();
         update_mesh_entity_connectivity();
-        flag_geological_entities_without_children();
+        /*flag_geological_entities_without_children();
         do_delete_flagged_geological_entities();
         update_geological_entity_connectivity();
-        update_universe();
+        update_universe();*/
     }
 
     template< index_t DIMENSION >
@@ -79,40 +79,14 @@ namespace RINGMesh {
         const std::set< gmge_id >& entities )
     {
         std::set< gmme_id > mesh_entities;
-        for( const gmge_id& it : entities ) {
-            const GeoModelGeologicalEntity< DIMENSION >& cur_gmge =
+        for( const auto& it : entities ) {
+            const auto& cur_gmge =
                 geomodel_.geological_entity( it );
             for( auto i : range( cur_gmge.nb_children() ) ) {
                 mesh_entities.insert( cur_gmge.child( i ).gmme() );
             }
         }
         remove_mesh_entities( mesh_entities );
-    }
-
-    template< index_t DIMENSION >
-    void GeoModelBuilderRemovalBase< DIMENSION >::remove_mesh_entity_and_dependencies(
-        const gmme_id& mesh_entity_to_remove )
-    {
-        std::set< gmme_id > mesh_entities_to_delete;
-        mesh_entities_to_delete.insert( mesh_entity_to_remove );
-        std::set< gmge_id > geological_entities_to_delete;
-        builder_.topology.get_dependent_entities( mesh_entities_to_delete,
-            geological_entities_to_delete );
-        remove_mesh_entities( mesh_entities_to_delete );
-        remove_geological_entities( geological_entities_to_delete );
-    }
-
-    template< index_t DIMENSION >
-    void GeoModelBuilderRemovalBase< DIMENSION >::remove_geological_entity_and_dependencies(
-        const gmge_id& geological_entity_to_remove )
-    {
-        std::set< gmme_id > mesh_entities_to_delete;
-        std::set< gmge_id > geological_entities_to_delete;
-        geological_entities_to_delete.insert( geological_entity_to_remove );
-        builder_.topology.get_dependent_entities( mesh_entities_to_delete,
-            geological_entities_to_delete );
-        remove_mesh_entities( mesh_entities_to_delete );
-        remove_geological_entities( geological_entities_to_delete );
     }
 
     template< index_t DIMENSION >
@@ -135,7 +109,7 @@ namespace RINGMesh {
         index_t type,
         index_t index )
     {
-        const MeshEntityType& type_name = index_to_mesh_entity_type( type );
+        const auto& type_name = index_to_mesh_entity_type( type );
         gmme_id id( type_name, index );
         builder_.topology.delete_mesh_entity( type_name, index );
     }
@@ -253,29 +227,6 @@ namespace RINGMesh {
                 index_t new_id = old_2_new_mesh_entity_[child_type][old_id];
                 builder_.geology.set_geological_entity_child( E.gmge(), i, new_id );
             }
-        }
-    }
-    template< index_t DIMENSION >
-    void GeoModelBuilderRemovalBase< DIMENSION >::update_universe_sided_boundaries(
-        Universe< DIMENSION >& U )
-    {
-        index_t b_type_index = mesh_entity_type_to_index(
-            Surface< DIMENSION >::type_name_static() );
-        index_t side_offset = 0;
-        for( auto i : range( U.nb_boundaries() ) ) {
-            index_t old_id = U.boundary_gmme( i ).index();
-            index_t new_id = old_2_new_mesh_entity_[b_type_index][old_id];
-
-            bool new_side = false;
-            // Mechanism to update the sides is not the same than to update
-            // the boundary indices -- annoying
-            if( new_id == NO_ID ) {
-                side_offset++;
-            } else if( i + side_offset < U.nb_boundaries() ) {
-                // After that we do not care the values will be dropped
-                new_side = U.side( i + side_offset );
-            }
-            builder_.topology.set_universe_boundary( i, new_id, new_side );
         }
     }
 

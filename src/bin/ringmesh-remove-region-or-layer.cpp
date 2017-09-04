@@ -54,60 +54,42 @@ namespace {
     void hello()
     {
         print_header_information();
-        Logger::div( "RINGMesh-Repair" );
-        Logger::out( "", "Welcome to RINGMesh-Remove-GME !" );
+        Logger::div( "RINGMesh-Remove-VOI-Region-or-Layer" );
+        Logger::out( "", "Welcome to RINGMesh-Remove-VOI-Region-or-Layer !" );
     }
 
-    void import_arg_group_remove_gme()
+    void import_arg_group_remove_region_or_layer()
     {
-        GEO::CmdLine::declare_arg_group( "remove", "GeoModel repair processes" );
-        GEO::CmdLine::declare_arg( "remove:type", Region3D::type_name_static().string(),
+        GEO::CmdLine::declare_arg_group( "remove",
+            "Remove a region or a layer (on the voi)" );
+        GEO::CmdLine::declare_arg( "remove:is_region", true,
             "Type name of the GeoModelEntity to remove" );
         GEO::CmdLine::declare_arg( "remove:index", 0,
-            "Index of the entity to remove" );
+            "Index of the region or layer to remove" );
     }
 
     void import_arg_groups()
     {
         CmdLine::import_arg_group( "in" );
         CmdLine::import_arg_group( "out" );
-        import_arg_group_remove_gme();
+        import_arg_group_remove_region_or_layer();
     }
 
-    template< index_t DIMENSION >
-    void remove_gme( const std::string& in_model_file_name )
+    void get_dependent_entities_and_remove_them(
+        std::set< gmme_id >& mesh_entities_to_delete,
+        std::set< gmge_id >& geological_entities_to_delete,
+        GeoModel3D& geomodel )
     {
-        GeoModel< DIMENSION > geomodel;
-        geomodel_load( geomodel, in_model_file_name );
+        GeoModelBuilder3D builder( geomodel );
+        builder.topology.get_dependent_entities( mesh_entities_to_delete,
+            geological_entities_to_delete );
+        builder.removal.remove_mesh_entities( mesh_entities_to_delete );
+        builder.removal.remove_geological_entities( geological_entities_to_delete );
+    }
 
-        const std::string gme_type = GEO::CmdLine::get_arg( "remove:type" );
-        index_t gme_index = GEO::CmdLine::get_arg_uint( "remove:index" );
-
-        GeoModelBuilder< DIMENSION > builder( geomodel );
-        MeshEntityType mesh_entity_type( gme_type );
-        GeologicalEntityType geological_entity_type( gme_type );
-        if( geomodel.entity_type_manager().mesh_entity_manager.is_valid_type(
-            mesh_entity_type ) ) {
-            if( gme_index >= geomodel.nb_mesh_entities( mesh_entity_type ) ) {
-                throw RINGMeshException( "I/O",
-                    "Gme index higher than number of entities of the given type" );
-            }
-            builder.removal.remove_mesh_entity_and_dependencies(
-                gmme_id( mesh_entity_type, gme_index ) );
-        } else if( geomodel.entity_type_manager().geological_entity_manager.is_valid_type(
-            geological_entity_type ) ) {
-            if( gme_index
-                >= geomodel.nb_geological_entities( geological_entity_type ) ) {
-                throw RINGMeshException( "I/O",
-                    "Gme index higher than number of entities of the given type" );
-            }
-            builder.removal.remove_geological_entity_and_dependencies(
-                gmge_id( geological_entity_type, gme_index ) );
-        } else {
-            throw RINGMeshException( "I/O", "invalid mesh type" );
-        }
-
-        std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" );
+    void save_output_geomodel( const GeoModel3D& geomodel )
+    {
+        const auto& out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( out_model_file_name.empty() ) {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in out:geomodel" );
@@ -115,23 +97,55 @@ namespace {
         geomodel_save( geomodel, out_model_file_name );
     }
 
+    void remove_a_voi_region_or_a_voi_layer( const std::string& in_model_file_name )
+    {
+        GeoModel3D geomodel;
+        geomodel_load( geomodel, in_model_file_name );
+
+        const auto is_region = GEO::CmdLine::get_arg_bool( "remove:is_region" );
+        const auto gme_index = GEO::CmdLine::get_arg_uint( "remove:index" );
+
+        std::set< gmme_id > mesh_entities_to_delete;
+        std::set< gmge_id > geological_entities_to_delete;
+        if( is_region ) {
+            if( gme_index
+                >= geomodel.nb_mesh_entities( Region3D::type_name_static() ) ) {
+                throw RINGMeshException( "I/O",
+                    "Gme index higher than number of entities of the given type" );
+            }
+            // TODO check it is on the voi
+            mesh_entities_to_delete.insert(
+                { Region3D::type_name_static(), gme_index } );
+        } else {
+            if( gme_index
+                >= geomodel.nb_geological_entities( Layer3D::type_name_static() ) ) {
+                throw RINGMeshException( "I/O",
+                    "Gme index higher than number of entities of the given type" );
+            }
+            // TODO check it is on the voi
+            geological_entities_to_delete.insert( { Layer3D::type_name_static(),
+                                                    gme_index } );
+        }
+        get_dependent_entities_and_remove_them( mesh_entities_to_delete,
+            geological_entities_to_delete, geomodel );
+
+        save_output_geomodel( geomodel );
+    }
+
     void run()
     {
         GEO::Stopwatch total( "Total time" );
 
-        const std::string in_model_file_name = GEO::CmdLine::get_arg(
-            "in:geomodel" );
+        const auto& in_model_file_name = GEO::CmdLine::get_arg( "in:geomodel" );
         if( in_model_file_name.empty() ) {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
-        index_t dimension = find_geomodel_dimension( in_model_file_name );
-        if( dimension == 2 ) {
-            remove_gme< 2 >( in_model_file_name );
-        } else if( dimension == 3 ) {
-            remove_gme< 3 >( in_model_file_name );
+        const auto dimension = find_geomodel_dimension( in_model_file_name );
+        if( dimension == 3 ) {
+            remove_a_voi_region_or_a_voi_layer( in_model_file_name );
         } else {
-            throw RINGMeshException( "I/O", "Forbidden dimension", dimension );
+            throw RINGMeshException( "I/O", "Dimension must be 3, not ", dimension );
         }
     }
 }
