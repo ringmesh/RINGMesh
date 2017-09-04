@@ -345,23 +345,21 @@ namespace RINGMesh {
         }
         /*!
          * @brief Sets a vertex of a edge by local vertex index.
-         * @param[in] edge_id index of the edge, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the edge.
+         * @param[in] edge_local_vertex index of the edge and local index of the vertex in the edge.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the vertex \param local_vertex_id of edge
          * \param edge_id. Index between 0 and @function nb() - 1.
          */
         void set_edge_vertex(
-            index_t edge_id,
-            index_t local_vertex_id,
+            const EdgeLocalVertex& edge_local_vertex,
             index_t vertex_id )
         {
-            do_set_edge_vertex( edge_id, local_vertex_id, vertex_id );
+            do_set_edge_vertex( edge_local_vertex, vertex_id );
             clear_edge_linked_objects();
         }
         /*!
          * @brief Deletes a set of edges.
-         * @param[in] to_delete     a vector of size @function nb().
+         * @param[in] to_delete a vector of size @function nb().
          * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
          * @param[in] remove_isolated_vertices if true, then the vertices
          * that are no longer incident to any entity are deleted.
@@ -450,15 +448,13 @@ namespace RINGMesh {
         virtual index_t do_create_edges( index_t nb_edges ) = 0;
         /*!
          * @brief Sets a vertex of a edge by local vertex index.
-         * @param[in] edge_id index of the edge, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the edge.
+         * @param[in] edge_local_vertex index of the edge and local index of the vertex in the edge.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the vertex \param local_vertex_id of edge
          * \param edge_id. Index between 0 and @function nb() - 1.
          */
         virtual void do_set_edge_vertex(
-            index_t edge_id,
-            index_t local_vertex_id,
+            const EdgeLocalVertex& edge_local_vertex,
             index_t vertex_id ) = 0;
         /*!
          * @brief Deletes a set of edges.

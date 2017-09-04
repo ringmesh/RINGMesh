@@ -146,11 +146,10 @@ namespace RINGMesh {
         }
 
         void do_set_edge_vertex(
-            index_t edge_id,
-            index_t local_vertex_id,
+            const EdgeLocalVertex& edge_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->edges.set_vertex( edge_id, local_vertex_id, vertex_id );
+            mesh_.mesh_->edges.set_vertex( edge_local_vertex.edge_id_, edge_local_vertex.local_vertex_id_, vertex_id );
         }
 
         void do_delete_edges( const std::vector< bool >& to_delete ) override
