@@ -42,10 +42,8 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @file ringmesh/geomodel.h
@@ -76,6 +74,9 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
+
+    ALIAS_2D_AND_3D( GeoModelMeshEntity );
+    ALIAS_2D_AND_3D( Region );
 } // namespace RINGMesh
 
 namespace RINGMesh {
@@ -102,7 +103,7 @@ namespace RINGMesh {
         friend class GeoModelAccess< DIMENSION > ;
 
     public:
-        virtual ~GeoModelBase() = default;
+        virtual ~GeoModelBase();
 
         /*!
          * @brief Gets the name of the GeoModel
@@ -336,6 +337,7 @@ namespace RINGMesh {
         friend class GeoModelAccess< 3 > ;
     public:
         GeoModel();
+        ~GeoModel() override;
 
         corner_range< 3 > corners() const
         {
@@ -395,6 +397,7 @@ namespace RINGMesh {
         friend class GeoModelAccess< 2 > ;
     public:
         GeoModel();
+        ~GeoModel() override;
 
         corner_range< 2 > corners() const
         {

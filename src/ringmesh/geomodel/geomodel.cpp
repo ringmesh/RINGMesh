@@ -88,6 +88,11 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
+    GeoModelBase< DIMENSION >::~GeoModelBase()
+    {
+    }
+
+    template< index_t DIMENSION >
     index_t GeoModelBase< DIMENSION >::nb_mesh_entities(
         const MeshEntityType& type ) const
     {
@@ -193,8 +198,16 @@ namespace RINGMesh {
     {
     }
 
+    GeoModel< 3 >::~GeoModel()
+    {
+    }
+
     GeoModel< 2 >::GeoModel()
         : GeoModelBase< 2 >( *this )
+    {
+    }
+
+    GeoModel< 2 >::~GeoModel()
     {
     }
 

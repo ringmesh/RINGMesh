@@ -18,6 +18,7 @@ New Features:
 Bug fix:
  * Error in computation of polygon area (for 3D concave polygons)
  * Crash when removing the first object in RINGMeshView object tree
+ * Crash when calling mesh entity removal for the second time
 
 Improvements:
  * Include new geogram release 1.4.10

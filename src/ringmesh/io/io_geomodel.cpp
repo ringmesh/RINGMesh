@@ -42,6 +42,7 @@
 #include <tinyxml2/tinyxml2.h>
 
 #include <geogram/basic/command_line.h>
+#include <geogram/basic/file_system.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
