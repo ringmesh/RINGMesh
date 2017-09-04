@@ -2241,7 +2241,6 @@ namespace RINGMesh {
         // Compute polygon adjacencies
         mesh_builder->connect_polygons();
         disconnect_along_lines();
-        mesh_->save_mesh( "surface.geogram" );
 
         // Cache some values
         nb_triangles_ = nb_polygon_per_type[PolygonType::TRIANGLE];
