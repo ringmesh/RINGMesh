@@ -919,6 +919,7 @@ namespace {
             auto dimension = find_dimension( mesh_entity_file );
             bool ok = GEO::FileSystem::delete_file( mesh_entity_file );
             ringmesh_unused( ok );
+            unzClose( uz );
             return dimension;
         }
 
