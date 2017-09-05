@@ -606,7 +606,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( SurfaceMeshFactory );
 
     template< >
-    class SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
+    class RINGMESH_API SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
     public:
 
         /*!
@@ -666,7 +666,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class SurfaceMesh< 2 > : public SurfaceMeshBase< 2 > {
+    class RINGMESH_API SurfaceMesh< 2 > : public SurfaceMeshBase< 2 > {
     public:
         /*!
          * Computes the Mesh polygon area
