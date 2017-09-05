@@ -918,6 +918,11 @@ namespace RINGMesh {
             return volume_mesh_->cell_aabb();
         }
 
+        const NNSearch< DIMENSION >& cell_facets_nn_search() const
+        {
+            return volume_mesh_->cell_facet_nn_search();
+        }
+
         /*!
          * @brief Return the NNSearch for the cells of the region
          * @details The barycenter of the cells is used.

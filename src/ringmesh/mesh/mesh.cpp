@@ -165,7 +165,6 @@ namespace RINGMesh {
             next_e = vertex_index_in_polygon( next_p, next_v_id );
             ringmesh_assert( is_edge_on_border( next_polygon_local_edge ) );
         }
-
         return next_polygon_local_edge;
     }
 
@@ -213,7 +212,6 @@ namespace RINGMesh {
                 ElementLocalVertex( prev_p, v_in_next_polygon ) ).local_vertex_id_;
             ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         }
-
         return prev_polygon_local_edge;
     }
 
