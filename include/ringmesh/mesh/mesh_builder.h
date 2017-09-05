@@ -548,7 +548,7 @@ namespace RINGMesh {
          * polygon \param polygon_id. Index between 0 and @function nb() - 1.
          */
         void set_polygon_vertex(
-            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t vertex_id )
         {
             do_set_polygon_vertex( polygon_local_edge, vertex_id );
@@ -563,7 +563,7 @@ namespace RINGMesh {
          * on the border.
          */
         void set_polygon_adjacent(
-            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t specifies )
         {
             do_set_polygon_adjacent( polygon_local_edge, specifies );
@@ -793,7 +793,7 @@ namespace RINGMesh {
          * polygon \param polygon_id. Index between 0 and @function nb() - 1.
          */
         virtual void do_set_polygon_vertex(
-            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t vertex_id ) = 0;
         /*!
          * @brief Sets an adjacent polygon by both its polygon \param polygon_id
@@ -804,7 +804,7 @@ namespace RINGMesh {
          * on the border.
          */
         virtual void do_set_polygon_adjacent(
-            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t specifies ) = 0;
         /*!
          * @brief Removes all the polygons and attributes.
