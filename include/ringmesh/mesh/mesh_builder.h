@@ -869,19 +869,17 @@ namespace RINGMesh {
         }
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
-         * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the cell.
+         * @param[in] cell_local_vertex index of the cell, and local index of the vertex in the cell.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the global index of the vertex \param
          * local_vertex_id in the cell \param cell_id. Index between 0 and
          * @function nb() - 1.
          */
         void set_cell_vertex(
-            index_t cell_id,
-            index_t local_vertex_id,
+            const ElementLocalVertex & cell_local_vertex,
             index_t vertex_id )
         {
-            do_set_cell_vertex( cell_id, local_vertex_id, vertex_id );
+            do_set_cell_vertex( cell_local_vertex, vertex_id );
             clear_cell_linked_objects();
         }
         /*!
@@ -899,16 +897,14 @@ namespace RINGMesh {
         }
         /*!
          * \brief Sets the cell adjacent
-         * \param[in] cell_index index of the cell
-         * \param[in] facet_index local index of the cell facet
+         * \param[in] cell_local_facet index of the cell, and local index of the cell facet
          * \param[in] cell_adjacent adjacent value to set
          */
         void set_cell_adjacent(
-            index_t cell_index,
-            index_t facet_index,
+            const CellLocalFacet& cell_local_facet,
             index_t cell_adjacent )
         {
-            do_set_cell_adjacent( cell_index, facet_index, cell_adjacent );
+            do_set_cell_adjacent( cell_local_facet, cell_adjacent );
         }
 
         /*!
@@ -1029,16 +1025,14 @@ namespace RINGMesh {
             const std::vector< index_t >& tets ) = 0;
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
-         * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the cell.
+         * @param[in] cell_local_vertex index of the cell,and local index of the vertex in the cell.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the global index of the vertex \param
          * local_vertex_id in the cell \param cell_id. Index between 0 and
          * @function nb() - 1.
          */
         virtual void do_set_cell_vertex(
-            index_t cell_id,
-            index_t local_vertex_id,
+            const ElementLocalVertex & cell_local_vertex,
             index_t vertex_id ) = 0;
         /*!
          * \brief Sets the vertex that a corner is incident to
@@ -1051,13 +1045,11 @@ namespace RINGMesh {
             index_t vertex_index ) = 0;
         /*!
          * \brief Sets the cell adjacent
-         * \param[in] cell_index index of the cell
-         * \param[in] facet_index local index of the cell facet
+         * \param[in] cell_local_facet index of the cell, and local index of the cell facet
          * \param[in] cell_adjacent adjacent value to set
          */
         virtual void do_set_cell_adjacent(
-            index_t cell_index,
-            index_t facet_index,
+            const CellLocalFacet& cell_local_facet,
             index_t cell_adjacent ) = 0;
         /*!
          * @brief Removes all the cells and attributes.

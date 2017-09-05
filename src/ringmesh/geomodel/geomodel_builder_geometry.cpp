@@ -750,7 +750,9 @@ namespace RINGMesh {
             for( auto cur_v : range( region.nb_mesh_element_vertices( cur_c ) ) ) {
                 if( region.mesh_element_vertex_index(
                     ElementLocalVertex( cur_c, cur_v ) ) == old_vertex ) {
-                    builder->set_cell_vertex( cur_c, cur_v, new_vertex );
+                    builder->set_cell_vertex( 
+                        ElementLocalVertex( cur_c, cur_v),
+                        new_vertex );
                 }
             }
         }
@@ -792,8 +794,8 @@ namespace RINGMesh {
                 index_t adj_cell_facet = cell_facet_index_from_cell_and_polygon(
                     region, adj_cell, surface, polygon );
                 ringmesh_assert( adj_cell_facet != NO_ID );
-                builder->set_cell_adjacent( cell, cell_facet, NO_ID );
-                builder->set_cell_adjacent( adj_cell, adj_cell_facet, NO_ID );
+                builder->set_cell_adjacent( CellLocalFacet( cell, cell_facet ), NO_ID );
+                builder->set_cell_adjacent( CellLocalFacet( adj_cell, adj_cell_facet ), NO_ID );
                 nb_disconnected_polygons++;
             }
         }
@@ -913,7 +915,7 @@ namespace RINGMesh {
         if( recompute_adjacency ) {
             for( auto c : range( region.nb_mesh_elements() ) ) {
                 for( auto f : range( region.nb_cell_facets( c ) ) ) {
-                    builder->set_cell_adjacent( c, f, NO_ID );
+                    builder->set_cell_adjacent( CellLocalFacet( c, f ), NO_ID );
                 }
             }
         }
@@ -948,7 +950,8 @@ namespace RINGMesh {
         std::unique_ptr< VolumeMeshBuilder3D > builder = create_region_builder(
             region_id );
         for( auto cell_vertex : range( corners.size() ) ) {
-            builder->set_cell_vertex( cell_id, cell_vertex, corners[cell_vertex] );
+            builder->set_cell_vertex( ElementLocalVertex( cell_id, cell_vertex ),
+                corners[cell_vertex] );
         }
     }
     void GeoModelBuilderGeometry< 3 >::delete_mesh_entity_isolated_vertices(
