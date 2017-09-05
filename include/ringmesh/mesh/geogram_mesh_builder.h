@@ -296,11 +296,10 @@ namespace RINGMesh {
         }
 
         void do_set_cell_vertex(
-            index_t cell_id,
-            index_t local_vertex_id,
+            const ElementLocalVertex& cell_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->cells.set_vertex( cell_id, local_vertex_id, vertex_id );
+            mesh_.mesh_->cells.set_vertex( cell_local_vertex.element_id_, cell_local_vertex.local_vertex_id_ , vertex_id );
         }
 
         void do_set_cell_corner_vertex_index(
@@ -311,11 +310,10 @@ namespace RINGMesh {
         }
 
         void do_set_cell_adjacent(
-            index_t cell_index,
-            index_t facet_index,
+            const CellLocalFacet& cell_local_facet,
             index_t cell_adjacent ) override
         {
-            mesh_.mesh_->cells.set_adjacent( cell_index, facet_index,
+            mesh_.mesh_->cells.set_adjacent( cell_local_facet.cell_id_, cell_local_facet.local_facet_id_,
                 cell_adjacent );
         }
 

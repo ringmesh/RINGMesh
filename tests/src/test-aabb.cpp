@@ -140,14 +140,14 @@ void add_hexs( VolumeMeshBuilder< DIMENSION >* builder, index_t size )
         for( index_t j : range( size - 1 ) ) {
             for( index_t k : range( size - 1 ) ) {
                 index_t corner = i + j * size + k * size * size;
-                builder->set_cell_vertex( id, 0, corner );
-                builder->set_cell_vertex( id, 4, corner + size * size );
-                builder->set_cell_vertex( id, 6, corner + size * size + 1 );
-                builder->set_cell_vertex( id, 2, corner + 1 );
-                builder->set_cell_vertex( id, 1, corner + size );
-                builder->set_cell_vertex( id, 5, corner + size * size + size );
-                builder->set_cell_vertex( id, 7, corner + size * size + size + 1 );
-                builder->set_cell_vertex( id, 3, corner + size + 1 );
+                builder->set_cell_vertex( ElementLocalVertex( id, 0 ), corner );
+                builder->set_cell_vertex( ElementLocalVertex( id, 4 ), corner + size * size );
+                builder->set_cell_vertex( ElementLocalVertex( id, 6 ), corner + size * size + 1 );
+                builder->set_cell_vertex( ElementLocalVertex( id, 2 ), corner + 1 );
+                builder->set_cell_vertex( ElementLocalVertex( id, 1 ), corner + size );
+                builder->set_cell_vertex( ElementLocalVertex( id, 5 ), corner + size * size + size );
+                builder->set_cell_vertex( ElementLocalVertex( id, 7 ), corner + size * size + size + 1 );
+                builder->set_cell_vertex( ElementLocalVertex( id, 3 ), corner + size + 1 );
                 id++;
             }
 
@@ -215,30 +215,30 @@ void create_5_tets_from_hex(
     for( index_t v : range( 8 ) ) {
         vertices_in_hex[v] = mesh_hex.cell_vertex( ElementLocalVertex( hex, v ) );
     }
-    builder.set_cell_vertex( 5 * hex, 0, vertices_in_hex[0] );
-    builder.set_cell_vertex( 5 * hex, 1, vertices_in_hex[4] );
-    builder.set_cell_vertex( 5 * hex, 2, vertices_in_hex[5] );
-    builder.set_cell_vertex( 5 * hex, 3, vertices_in_hex[6] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex, 0 ), vertices_in_hex[0] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex, 1 ), vertices_in_hex[4] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex, 2 ), vertices_in_hex[5] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex, 3 ), vertices_in_hex[6] );
 
-    builder.set_cell_vertex( 5 * hex + 1, 0, vertices_in_hex[0] );
-    builder.set_cell_vertex( 5 * hex + 1, 1, vertices_in_hex[2] );
-    builder.set_cell_vertex( 5 * hex + 1, 2, vertices_in_hex[3] );
-    builder.set_cell_vertex( 5 * hex + 1, 3, vertices_in_hex[6] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 1, 0 ), vertices_in_hex[0] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 1, 1 ), vertices_in_hex[2] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 1, 2 ), vertices_in_hex[3] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 1, 3 ), vertices_in_hex[6] );
 
-    builder.set_cell_vertex( 5 * hex + 2, 0, vertices_in_hex[7] );
-    builder.set_cell_vertex( 5 * hex + 2, 1, vertices_in_hex[6] );
-    builder.set_cell_vertex( 5 * hex + 2, 2, vertices_in_hex[3] );
-    builder.set_cell_vertex( 5 * hex + 2, 3, vertices_in_hex[5] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 2, 0 ), vertices_in_hex[7] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 2, 1 ), vertices_in_hex[6] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 2, 2 ), vertices_in_hex[3] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 2, 3 ), vertices_in_hex[5] );
 
-    builder.set_cell_vertex( 5 * hex + 3, 0, vertices_in_hex[1] );
-    builder.set_cell_vertex( 5 * hex + 3, 1, vertices_in_hex[0] );
-    builder.set_cell_vertex( 5 * hex + 3, 2, vertices_in_hex[5] );
-    builder.set_cell_vertex( 5 * hex + 3, 3, vertices_in_hex[3] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 3, 0 ), vertices_in_hex[1] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 3, 1 ), vertices_in_hex[0] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 3, 2 ), vertices_in_hex[5] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 3, 3 ), vertices_in_hex[3] );
 
-    builder.set_cell_vertex( 5 * hex + 4, 0, vertices_in_hex[0] );
-    builder.set_cell_vertex( 5 * hex + 4, 1, vertices_in_hex[5] );
-    builder.set_cell_vertex( 5 * hex + 4, 2, vertices_in_hex[6] );
-    builder.set_cell_vertex( 5 * hex + 4, 3, vertices_in_hex[3] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 4, 0 ), vertices_in_hex[0] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 4, 1 ), vertices_in_hex[5] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 4, 2 ), vertices_in_hex[6] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 4, 3 ), vertices_in_hex[3] );
 }
 
 template< index_t DIMENSION >
