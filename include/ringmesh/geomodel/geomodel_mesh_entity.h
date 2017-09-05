@@ -846,6 +846,15 @@ namespace RINGMesh {
         {
             return sides_[i];
         }
+
+        /*!
+         * @brief Tells whether the Surface2D is meshed or not
+         */
+        bool is_meshed() const
+        {
+            return low_level_mesh_storage().nb_polygons() > 0;
+
+        }
     private:
         /*! Additional information to store oriented boundary Lines
          * Side: + (true) or - (false)

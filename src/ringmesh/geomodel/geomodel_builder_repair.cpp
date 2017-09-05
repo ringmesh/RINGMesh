@@ -158,17 +158,27 @@ namespace RINGMesh {
     }
 
     template< >
-    void GeoModelBuilderRepair< 2 >::remove_isolated_vertices()
-    {
-        remove_isolated_vertices_base();
-    }
-
-    template< >
     void GeoModelBuilderRepair< 3 >::remove_isolated_vertices()
     {
         remove_isolated_vertices_base();
+        for( const auto& surface : surface_range< 3 >( geomodel_ ) ) {
+            remove_isolated_vertices_on_a_mesh_entity( surface );
+        }
         for( const auto& region : region_range< 3 >( geomodel_ ) ) {
-            remove_isolated_vertices_on_a_mesh_entity( region );
+            if( region.is_meshed() ) {
+                remove_isolated_vertices_on_a_mesh_entity( region );
+            }
+        }
+    }
+
+    template< >
+    void GeoModelBuilderRepair< 2 >::remove_isolated_vertices()
+    {
+        remove_isolated_vertices_base();
+        for( const auto& surface : surface_range< 2 >( geomodel_ ) ) {
+            if( surface.is_meshed() ) {
+                remove_isolated_vertices_on_a_mesh_entity( surface );
+            }
         }
     }
 
@@ -177,9 +187,6 @@ namespace RINGMesh {
     {
         for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
             remove_isolated_vertices_on_a_mesh_entity( line );
-        }
-        for( const auto& surface : surface_range< DIMENSION >( geomodel_ ) ) {
-            remove_isolated_vertices_on_a_mesh_entity( surface );
         }
     }
 

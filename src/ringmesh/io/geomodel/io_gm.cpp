@@ -764,6 +764,13 @@ namespace {
         const GeoModelMeshEntity2D& geomodel_entity_mesh,
         const std::string& name )
     {
+        if( geomodel_entity_mesh.type_name() == Surface2D::type_name_static() ) {
+            const Surface2D& surface = geomodel_entity_mesh.geomodel().surface(
+                geomodel_entity_mesh.index() );
+            if( !surface.is_meshed() ) {
+                return false;
+            }
+        }
         geomodel_entity_mesh.save( name );
         return true;
     }
