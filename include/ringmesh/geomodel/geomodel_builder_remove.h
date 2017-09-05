@@ -480,7 +480,7 @@ namespace RINGMesh {
             const MeshEntityType& child_type = children_type( E.entity_type() );
             gmme_id invalid_child( child_type, NO_ID );
             remove_invalid_values( gmge_access.modifiable_children(),
-                [&invalid_child, &manager](index_t i) {return manager.boundary_gmme( i ) == invalid_child;} );
+                [&invalid_child, &manager](index_t i) {return manager.child_of_gmge( i ) == invalid_child;} );
         }
 
         void delete_invalid_boundaries( GeoModelMeshEntity< DIMENSION >& E )

@@ -229,9 +229,10 @@ namespace RINGMesh {
                 toggle_mesh_entity_and_boundaries_visibility( entity_id );
             } else {
                 GeologicalEntityType geol_type { type };
-                selected_entity_id_ = std::min(
-                    static_cast< int >( GM_.nb_geological_entities( geol_type ) - 1 ),
-                    selected_entity_id_ );
+                selected_entity_id_ =
+                    std::min(
+                        static_cast< int >( GM_.nb_geological_entities( geol_type )
+                            - 1 ), selected_entity_id_ );
                 gmge_id entity_id( geol_type,
                     static_cast< index_t >( selected_entity_id_ ) );
                 toggle_geological_entity_visibility( entity_id );
@@ -361,9 +362,10 @@ namespace RINGMesh {
                 toggle_mesh_entity_and_boundaries_visibility( entity_id );
             } else {
                 GeologicalEntityType geol_type { type };
-                selected_entity_id_ = std::min(
-                    static_cast< int >( GM_.nb_geological_entities( geol_type ) - 1 ),
-                    selected_entity_id_ );
+                selected_entity_id_ =
+                    std::min(
+                        static_cast< int >( GM_.nb_geological_entities( geol_type )
+                            - 1 ), selected_entity_id_ );
                 gmge_id entity_id( geol_type,
                     static_cast< index_t >( selected_entity_id_ ) );
                 toggle_geological_entity_visibility( entity_id );
@@ -1380,9 +1382,12 @@ namespace RINGMesh {
             }
         }
 
-        glup_viewer_set_region_of_interest( float( bbox.min()[0] ),
-            float( bbox.min()[1] ), float( bbox.min()[2] ), float( bbox.max()[0] ),
-            float( bbox.max()[1] ), float( bbox.max()[2] ) );
+        if( bbox.initialized() ) {
+            glup_viewer_set_region_of_interest( float( bbox.min()[0] ),
+                float( bbox.min()[1] ), float( bbox.min()[2] ),
+                float( bbox.max()[0] ), float( bbox.max()[1] ),
+                float( bbox.max()[2] ) );
+        }
     }
 
     void RINGMeshApplication::draw_scene()

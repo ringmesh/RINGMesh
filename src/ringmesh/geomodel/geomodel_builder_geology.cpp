@@ -38,6 +38,7 @@
 #include <stack>
 
 #include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!
@@ -54,16 +55,14 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         index_t geomodel_point_id )
     {
-        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-            geomodel.mesh.vertices;
-        const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
-            geomodel_point_id );
-        for( const GMEVertex& vertex : vertices ) {
+        const auto& geomodel_vertices = geomodel.mesh.vertices;
+        const auto& vertices = geomodel_vertices.gme_vertices( geomodel_point_id );
+        for( const auto& vertex : vertices ) {
             if( vertex.gmme.type() == Corner< DIMENSION >::type_name_static() ) {
                 return vertex.gmme;
             }
         }
-        return gmme_id();
+        return gmme_id { };
     }
 
     /*!
@@ -78,8 +77,7 @@ namespace {
         if( line.nb_vertices() != rhs_vertices.size() ) {
             return false;
         }
-        const GeoModelMeshVertices< DIMENSION >& geomodel_vertices =
-            line.geomodel().mesh.vertices;
+        const auto& geomodel_vertices = line.geomodel().mesh.vertices;
         bool equal = true;
         for( auto i : range( line.nb_vertices() ) ) {
             if( rhs_vertices[i]
@@ -122,7 +120,7 @@ namespace {
             return;
         }
         for( auto i : range( 1, line_vertices.size() - 1 ) ) {
-            gmme_id corner = find_corner( geomodel, line_vertices[i] );
+            auto corner = find_corner( geomodel, line_vertices[i] );
             if( corner.is_defined() ) {
                 line_vertices.pop_back();
                 std::rotate( line_vertices.begin(), line_vertices.begin() + i,
@@ -161,10 +159,9 @@ namespace RINGMesh {
         index_t nb_additional_entities )
     {
         find_or_create_geological_entity_type( type );
-        std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >& store =
-            geomodel_access_.modifiable_geological_entities( type );
+        auto& store = geomodel_access_.modifiable_geological_entities( type );
         auto old_size = static_cast< index_t >( store.size() );
-        index_t new_size = old_size + nb_additional_entities;
+        auto new_size = old_size + nb_additional_entities;
         store.reserve( new_size );
         for( auto i : range( old_size, new_size ) ) {
             store.emplace_back(
@@ -179,8 +176,7 @@ namespace RINGMesh {
         const gmge_id& parent,
         const gmme_id& children )
     {
-        const GeoModelMeshEntity< DIMENSION >& children_mesh_entity =
-            geomodel_.mesh_entity( children );
+        const auto& children_mesh_entity = geomodel_.mesh_entity( children );
         if( children_mesh_entity.has_parent( parent.type() ) ) {
             ringmesh_assert(
                 parent == children_mesh_entity.parent_gmge( parent.type() ) );
@@ -194,9 +190,9 @@ namespace RINGMesh {
         const gmge_id& parent,
         const gmme_id& children )
     {
-        GeoModelGeologicalEntity< DIMENSION >& parent_entity =
-            geomodel_access_.modifiable_geological_entity( parent );
-        const std::vector< GeologicalEntityType >& parent_entity_types =
+        auto& parent_entity = geomodel_access_.modifiable_geological_entity(
+            parent );
+        const auto& parent_entity_types =
             geomodel_.entity_type_manager().relationship_manager.parent_types(
                 children.type() );
         if( !contains( parent_entity_types, parent.type() ) ) {
@@ -210,26 +206,23 @@ namespace RINGMesh {
             return;
         }
 
-        GeoModelMeshEntity< DIMENSION >& children_entity =
-            geomodel_access_.modifiable_mesh_entity( children );
-        const MeshEntityType& children_type =
+        auto& children_entity = geomodel_access_.modifiable_mesh_entity( children );
+        const auto& children_type =
             geomodel_.entity_type_manager().relationship_manager.child_type(
                 parent.type() );
 
         if( children_type != children.type() ) {
-            std::ostringstream message;
             throw RINGMeshException( "Entity",
                 "Wrong children type in the parent children relation between ",
                 parent, " and ", children );
         }
 
-        RelationshipManager& manager =
+        auto& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-        index_t relation_id = manager.add_parent_child_relationship( parent,
-            children );
-        GeoModelGeologicalEntityAccess< DIMENSION > parent_access( parent_entity );
+        auto relation_id = manager.add_parent_child_relationship( parent, children );
+        GeoModelGeologicalEntityAccess< DIMENSION > parent_access { parent_entity };
         parent_access.modifiable_children().push_back( relation_id );
-        GeoModelMeshEntityAccess< DIMENSION > children_access( children_entity );
+        GeoModelMeshEntityAccess< DIMENSION > children_access { children_entity };
         children_access.modifiable_parents().push_back( relation_id );
     }
 
@@ -238,27 +231,49 @@ namespace RINGMesh {
         const gmge_id& parent,
         const gmme_id& children )
     {
-        RelationshipManager& manager =
+        auto& manager =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-        index_t relation_id = manager.find_parent_child_relationship( parent,
+        auto relation_id = manager.find_parent_child_relationship( parent,
             children );
         if( relation_id == NO_ID ) {
             std::ostringstream message;
-            message << "No parent children relation found between " << parent
-                << " and " << children;
-            throw RINGMeshException( "Entity", message.str() );
+            throw RINGMeshException( "Entity",
+                "No parent children relation found between ", parent, " and ",
+                children );
         }
-        GeoModelGeologicalEntityAccess< DIMENSION > parent_access(
-            geomodel_access_.modifiable_geological_entity( parent ) );
-        std::vector< index_t >& childs = parent_access.modifiable_children();
+        GeoModelGeologicalEntityAccess< DIMENSION > parent_access {
+            geomodel_access_.modifiable_geological_entity( parent ) };
+        auto& childs = parent_access.modifiable_children();
         std::remove_if( childs.begin(), childs.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
-        GeoModelMeshEntityAccess< DIMENSION > children_access(
-            geomodel_access_.modifiable_mesh_entity( children ) );
-        std::vector< index_t >& parents = children_access.modifiable_parents();
+        GeoModelMeshEntityAccess< DIMENSION > children_access {
+            geomodel_access_.modifiable_mesh_entity( children ) };
+        auto& parents = children_access.modifiable_parents();
         std::remove_if( parents.begin(), parents.end(),
             [relation_id](index_t relation) {return relation == relation_id;} );
     }
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderGeology< DIMENSION >::set_geological_entity_child(
+        const gmge_id& parent_gmge,
+        index_t id,
+        index_t child_id )
+    {
+        /// No check on the validity of the index of the entity child_index
+        /// NO_ID is used to flag entities to delete
+        auto& geol_entity = geomodel_access_.modifiable_geological_entity(
+            parent_gmge );
+        const auto& child_type =
+            geomodel_.entity_type_manager().relationship_manager.child_type(
+                parent_gmge.type() );
+        gmme_id child { child_type, child_id };
+        GeoModelGeologicalEntityAccess< DIMENSION > gmge_access { geol_entity };
+        auto relationship_id = gmge_access.modifiable_children()[id];
+        auto& manager =
+            geomodel_access_.modifiable_entity_type_manager().relationship_manager;
+        manager.set_child_to_parent_child_relationship( relationship_id, child );
+    }
+
     template< index_t DIMENSION >
     void GeoModelBuilderGeology< DIMENSION >::delete_geological_entity(
         const GeologicalEntityType& type,
@@ -271,7 +286,7 @@ namespace RINGMesh {
     gmge_id GeoModelBuilderGeology< DIMENSION >::create_geological_entity(
         const GeologicalEntityType& type )
     {
-        index_t index = find_or_create_geological_entity_type( type );
+        auto index = find_or_create_geological_entity_type( type );
         auto id = static_cast< index_t >( geomodel_.nb_geological_entities( type ) );
         geomodel_access_.modifiable_geological_entities()[index].emplace_back(
             GeoModelGeologicalEntityAccess< DIMENSION >::create_geological_entity(
@@ -283,7 +298,7 @@ namespace RINGMesh {
     index_t GeoModelBuilderGeology< DIMENSION >::find_or_create_geological_entity_type(
         const GeologicalEntityType& type )
     {
-        index_t type_index =
+        auto type_index =
             geomodel_.entity_type_manager().geological_entity_manager.geological_entity_type_index(
                 type );
         if( type_index == NO_ID ) {
@@ -305,8 +320,8 @@ namespace RINGMesh {
         auto geol_entity = GeoModelGeologicalEntityFactory< DIMENSION >::create(
             type, geomodel_ );
 
-        const MeshEntityType child_type = geol_entity->child_type_name();
-        RelationshipManager& parentage =
+        const auto child_type = geol_entity->child_type_name();
+        auto& parentage =
             geomodel_access_.modifiable_entity_type_manager().relationship_manager;
         parentage.register_geology_relationship( type, child_type );
 
@@ -322,9 +337,9 @@ namespace RINGMesh {
         create_geological_entities( type, from.nb_geological_entities( type ) );
         parallel_for( geomodel_.nb_geological_entities( type ),
             [&type, &from, this]( index_t i ) {
-                gmge_id id( type, i );
-                GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
-                    geomodel_access_.modifiable_geological_entity( id ) );
+                gmge_id id {type, i};
+                GeoModelGeologicalEntityAccess< DIMENSION > gmge_access {
+                    geomodel_access_.modifiable_geological_entity( id )};
                 gmge_access.copy( from.geological_entity( id ) );
             } );
     }
@@ -343,9 +358,8 @@ namespace RINGMesh {
         for( const auto& line : geomodel_.lines() ) {
             std::set< gmge_id > cur_interfaces;
             for( auto j : range( line.nb_incident_entities() ) ) {
-                const GeoModelMeshEntity< DIMENSION >& surface =
-                    line.incident_entity( j );
-                gmge_id parent_interface = surface.parent_gmge(
+                const auto& surface = line.incident_entity( j );
+                auto parent_interface = surface.parent_gmge(
                     Interface< DIMENSION >::type_name_static() );
                 cur_interfaces.insert( parent_interface );
             }
@@ -354,8 +368,8 @@ namespace RINGMesh {
                 if( cur_interfaces.size() == interfaces[j].size()
                     && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
                         interfaces[j].begin() ) ) {
-                    contact_id = gmge_id( Contact< DIMENSION >::type_name_static(),
-                        j );
+                    contact_id = gmge_id { Contact< DIMENSION >::type_name_static(),
+                                           j };
                     break;
                 }
             }
@@ -366,7 +380,7 @@ namespace RINGMesh {
                 interfaces.push_back( cur_interfaces );
                 // Create a name for this contact
                 std::string name = "contact";
-                for( const gmge_id& it : cur_interfaces ) {
+                for( const auto& it : cur_interfaces ) {
                     name += "_";
                     name += geomodel_.geological_entity( it ).name();
                 }
@@ -380,8 +394,8 @@ namespace RINGMesh {
         const gmge_id& gmge_id,
         typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE geol_feature )
     {
-        GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
-            geomodel_access_.modifiable_geological_entity( gmge_id ) );
+        GeoModelGeologicalEntityAccess< DIMENSION > gmge_access{
+            geomodel_access_.modifiable_geological_entity( gmge_id ) };
         gmge_access.modifiable_geol_feature() = geol_feature;
     }
 

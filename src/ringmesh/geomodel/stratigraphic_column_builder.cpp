@@ -38,6 +38,7 @@
 #include <tinyxml2/tinyxml2.h>
 
 #include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
 
 namespace RINGMesh {
 

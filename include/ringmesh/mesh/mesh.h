@@ -42,8 +42,6 @@
 
 #include <geogram/basic/attributes.h>
 
-#include <geogram/mesh/mesh.h>
-
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/geometry.h>

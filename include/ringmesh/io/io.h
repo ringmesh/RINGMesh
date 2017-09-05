@@ -42,8 +42,6 @@
 #include <minizip/unzip.h>
 #include <minizip/zip.h>
 
-#include <geogram/basic/string.h>
-
 #include <ringmesh/basic/factory.h>
 
 #define MAX_FILENAME 512

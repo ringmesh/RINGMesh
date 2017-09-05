@@ -41,12 +41,15 @@
 
 #include <geogram/basic/attributes.h>
 #include <geogram/basic/memory.h>
-#include <geogram/mesh/mesh.h>
 
 /*!
  * @file Helper functions on classes defined in Geogram
  * @author Various
  */
+
+namespace GEO {
+    class Mesh;
+}
 
 namespace RINGMesh {
 

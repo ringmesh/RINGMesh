@@ -38,6 +38,7 @@
 #include <vector>
 
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/io/io.h>
 

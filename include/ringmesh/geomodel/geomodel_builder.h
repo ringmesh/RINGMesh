@@ -37,11 +37,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
-
 #include <ringmesh/geomodel/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/geomodel_builder_remove.h>
