@@ -1382,9 +1382,12 @@ namespace RINGMesh {
             }
         }
 
-        glup_viewer_set_region_of_interest( float( bbox.min()[0] ),
-            float( bbox.min()[1] ), float( bbox.min()[2] ), float( bbox.max()[0] ),
-            float( bbox.max()[1] ), float( bbox.max()[2] ) );
+        if( bbox.min() != bbox.max() ) {
+            glup_viewer_set_region_of_interest( float( bbox.min()[0] ),
+                float( bbox.min()[1] ), float( bbox.min()[2] ),
+                float( bbox.max()[0] ), float( bbox.max()[1] ),
+                float( bbox.max()[2] ) );
+        }
     }
 
     void RINGMeshApplication::draw_scene()
