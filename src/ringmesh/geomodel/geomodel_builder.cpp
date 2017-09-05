@@ -961,9 +961,9 @@ namespace RINGMesh {
         }
 
         // We need to remove from the regions_ the one corresponding
-        // to the universe_, the one with the biggest volume
-        double max_volume = -1.;
-        index_t universe_id = NO_ID;
+        // to the "universe", i.e., the one with the biggest volume.
+        double max_volume { -1.};
+        index_t universe_id { NO_ID };
         for( const auto& region : geomodel_.regions() ) {
             double cur_volume = region.size();
             if( cur_volume > max_volume ) {
@@ -971,7 +971,7 @@ namespace RINGMesh {
                 universe_id = region.index();
             }
         }
-        const Region3D& cur_region = geomodel_.region( universe_id );
+        const auto& cur_region = geomodel_.region( universe_id );
         std::set< gmme_id > to_erase;
         to_erase.insert( cur_region.gmme() );
         removal.remove_mesh_entities( to_erase );
