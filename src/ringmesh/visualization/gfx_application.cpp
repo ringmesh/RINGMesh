@@ -1382,7 +1382,7 @@ namespace RINGMesh {
             }
         }
 
-        if( bbox.min() != bbox.max() ) {
+        if( bbox.initialized() ) {
             glup_viewer_set_region_of_interest( float( bbox.min()[0] ),
                 float( bbox.min()[1] ), float( bbox.min()[2] ),
                 float( bbox.max()[0] ), float( bbox.max()[1] ),
