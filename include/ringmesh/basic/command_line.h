@@ -37,10 +37,10 @@
 
 #include <ringmesh/basic/common.h>
 
-namespace RINGMesh {
-
-    namespace CmdLine {
-
+namespace RINGMesh
+{
+    namespace CmdLine
+    {
         bool RINGMESH_API import_arg_group( const std::string& name );
 
     } // namespace CmdLine

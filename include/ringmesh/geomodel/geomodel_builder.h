@@ -48,19 +48,21 @@
  * @author Jeanne Pellerin
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
 } // namespace RINGMesh
 
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
-    class GeoModelBuilderInfo {
-    ringmesh_disable_copy_and_move( GeoModelBuilderInfo );
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
+    class GeoModelBuilderInfo
+    {
+        ringmesh_disable_copy_and_move( GeoModelBuilderInfo );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilderBase< DIMENSION > ;
-        friend class GeoModelBuilder< DIMENSION > ;
+        friend class GeoModelBuilderBase< DIMENSION >;
+        friend class GeoModelBuilder< DIMENSION >;
 
     public:
         /*!
@@ -74,20 +76,19 @@ namespace RINGMesh {
         /*!
          *@brief Set the name of a geomodel mesh entity
          */
-        void set_mesh_entity_name( const gmme_id& gmme_id, const std::string& name )
+        void set_mesh_entity_name(
+            const gmme_id& gmme_id, const std::string& name )
         {
             GeoModelMeshEntityAccess< DIMENSION > gmme_access(
                 geomodel_access_.modifiable_mesh_entity( gmme_id ) );
             gmme_access.modifiable_name() = name;
-
         }
 
         /*!
          *@brief Set the name of a geomodel geological entity
          */
         void set_geological_entity_name(
-            const gmge_id& gmge_id,
-            const std::string& name )
+            const gmge_id& gmge_id, const std::string& name )
         {
             GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
                 geomodel_access_.modifiable_geological_entity( gmge_id ) );
@@ -95,8 +96,7 @@ namespace RINGMesh {
         }
 
     protected:
-        GeoModelBuilderInfo(
-            GeoModelBuilder< DIMENSION >& builder,
+        GeoModelBuilderInfo( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
         ~GeoModelBuilderInfo() = default;
 
@@ -104,21 +104,21 @@ namespace RINGMesh {
         GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
         GeoModelAccess< DIMENSION > geomodel_access_;
-
     };
 
-    template< index_t DIMENSION >
-    class GeoModelBuilderCopy {
-    ringmesh_disable_copy_and_move( GeoModelBuilderCopy );
+    template < index_t DIMENSION >
+    class GeoModelBuilderCopy
+    {
+        ringmesh_disable_copy_and_move( GeoModelBuilderCopy );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilderBase< DIMENSION > ;
-        friend class GeoModelBuilder< DIMENSION > ;
+        friend class GeoModelBuilderBase< DIMENSION >;
+        friend class GeoModelBuilder< DIMENSION >;
+
     public:
         void copy_geomodel( const GeoModel< DIMENSION >& from );
 
     private:
-        GeoModelBuilderCopy(
-            GeoModelBuilder< DIMENSION >& builder,
+        GeoModelBuilderCopy( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
         ~GeoModelBuilderCopy() = default;
 
@@ -132,12 +132,15 @@ namespace RINGMesh {
      * @brief Base class to build or edit a GeoModel
      * @details All needed functions are organized in several specific builder
      * in accordance with the kind of edition operation (copy, repair, ...) or
-     * with the GeoModel part which is edited (topology, geometry, geology, info)
+     * with the GeoModel part which is edited (topology, geometry, geology,
+     * info)
      */
-    template< index_t DIMENSION >
-    class GeoModelBuilderBase {
-    ringmesh_disable_copy_and_move( GeoModelBuilderBase );
+    template < index_t DIMENSION >
+    class GeoModelBuilderBase
+    {
+        ringmesh_disable_copy_and_move( GeoModelBuilderBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
+
     public:
         virtual ~GeoModelBuilderBase() = default;
 
@@ -149,8 +152,7 @@ namespace RINGMesh {
         void build_lines_and_corners_from_surfaces();
 
     protected:
-        GeoModelBuilderBase(
-            GeoModelBuilder< DIMENSION >& builder,
+        GeoModelBuilderBase( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
         void cut_geomodel_on_internal_boundaries();
@@ -169,18 +171,21 @@ namespace RINGMesh {
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-    template< index_t DIMENSION >
-    class GeoModelBuilder: public GeoModelBuilderBase< DIMENSION > {
+    template < index_t DIMENSION >
+    class GeoModelBuilder : public GeoModelBuilderBase< DIMENSION >
+    {
     };
 
-    template< >
-    class RINGMESH_API GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 > {
+    template <>
+    class RINGMESH_API GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 >
+    {
     public:
         explicit GeoModelBuilder( GeoModel2D& geomodel );
     };
 
-    template< >
-    class RINGMESH_API GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 > {
+    template <>
+    class RINGMESH_API GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 >
+    {
     public:
         explicit GeoModelBuilder( GeoModel3D& geomodel );
 

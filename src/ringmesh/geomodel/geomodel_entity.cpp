@@ -35,34 +35,34 @@
 
 /*!
  * @file Implementation of all GeoModelEntities classes
- * @author Jeanne Pellerin and Arnaud Botella 
+ * @author Jeanne Pellerin and Arnaud Botella
  */
 
 #include <ringmesh/geomodel/geomodel_entity.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
     Universe< DIMENSION >::Universe( const GeoModel< DIMENSION >& geomodel )
         : GeoModelEntity< DIMENSION >( geomodel, NO_ID )
     {
         this->name_ = universe_type_name().string();
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     bool Universe< DIMENSION >::is_valid() const
     {
         return true;
     }
 
-    template class RINGMESH_API GeoModelEntity< 2 > ;
-    template class RINGMESH_API Universe< 2 > ;
-    template class RINGMESH_API UniverseAccess< 2 > ;
+    template class RINGMESH_API GeoModelEntity< 2 >;
+    template class RINGMESH_API Universe< 2 >;
+    template class RINGMESH_API UniverseAccess< 2 >;
 
-    template class RINGMESH_API GeoModelEntity< 3 > ;
-    template class RINGMESH_API Universe< 3 > ;
-    template class RINGMESH_API UniverseAccess< 3 > ;
+    template class RINGMESH_API GeoModelEntity< 3 >;
+    template class RINGMESH_API Universe< 3 >;
+    template class RINGMESH_API UniverseAccess< 3 >;
 
 } // namespace RINGMesh

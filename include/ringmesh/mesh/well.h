@@ -45,11 +45,12 @@
 #include <ringmesh/basic/geometry.h>
 
 /*!
- * @file Well related classe declarations 
+ * @file Well related classe declarations
  * @author Arnaud Botella
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( Well );
     FORWARD_DECLARATION_DIMENSION_CLASS( NNSearch );
@@ -58,12 +59,14 @@ namespace RINGMesh {
     struct ElementLocalVertex;
 } // namespace RINGMesh
 
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
-    class WellEntity {
-    ringmesh_disable_copy_and_move( WellEntity );
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
+    class WellEntity
+    {
+        ringmesh_disable_copy_and_move( WellEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
+
     protected:
         explicit WellEntity( const Well< DIMENSION >* well );
         virtual ~WellEntity() = default;
@@ -84,13 +87,16 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( WellEntity );
 
-// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
-    template< index_t DIMENSION >
-    class WellCorner: public WellEntity< DIMENSION > {
+    template < index_t DIMENSION >
+    class WellCorner : public WellEntity< DIMENSION >
+    {
     public:
-        WellCorner( const Well< DIMENSION >* well, const vecn< DIMENSION >& point,
-        bool is_on_surface, index_t id );
+        WellCorner( const Well< DIMENSION >* well,
+            const vecn< DIMENSION >& point,
+            bool is_on_surface,
+            index_t id );
 
         const vecn< DIMENSION >& point() const;
 
@@ -116,15 +122,17 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( WellCorner );
 
-// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
-    template< index_t DIMENSION >
-    class WellPart: public WellEntity< DIMENSION > {
+    template < index_t DIMENSION >
+    class WellPart : public WellEntity< DIMENSION >
+    {
     public:
         /*!
          * Create a WellPart
          * @param[in] well the associated well
-         * @param[in] id the position in the parts_ vector of the associated well
+         * @param[in] id the position in the parts_ vector of the associated
+         * well
          */
         WellPart( const Well< DIMENSION >* well, index_t id );
 
@@ -167,7 +175,8 @@ namespace RINGMesh {
         double length() const;
 
         /*!
-         * Sets the id of the part corresponding to the position in the parts_ vector of the well
+         * Sets the id of the part corresponding to the position in the parts_
+         * vector of the well
          * @param[in] id the id to set
          */
         void set_id( index_t id )
@@ -191,7 +200,8 @@ namespace RINGMesh {
         const NNSearch< DIMENSION >& vertices_nn_search() const;
 
     private:
-        /// id of the part corresponding to the position in the parts_ vector of the well
+        /// id of the part corresponding to the position in the parts_ vector of
+        /// the well
         index_t id_;
         /// id in the corners_ vector the the well
         std::array< index_t, 2 > corners_;
@@ -200,10 +210,11 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( WellPart );
 
-// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
-    template< index_t DIMENSION >
-    class Edge {
+    template < index_t DIMENSION >
+    class Edge
+    {
     public:
         Edge( const vecn< DIMENSION >& v0, const vecn< DIMENSION >& v1 )
         {
@@ -220,24 +231,28 @@ namespace RINGMesh {
         {
             return ( vertices_[0] + vertices_[1] ) * 0.5;
         }
+
     private:
         std::array< vecn< DIMENSION >, 2 > vertices_;
     };
 
     ALIAS_2D_AND_3D( Edge );
 
-// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
-    template< index_t DIMENSION >
-    class Well {
-    ringmesh_disable_copy_and_move( Well );
+    template < index_t DIMENSION >
+    class Well
+    {
+        ringmesh_disable_copy_and_move( Well );
+
     public:
         Well();
         ~Well() = default;
 
         /*!
          * Copies information and resize the number of parts and corners
-         * @param[in,out] well the current well information will be copied into this one
+         * @param[in,out] well the current well information will be copied into
+         * this one
          */
         void copy_corners_and_informations( Well< DIMENSION >& well ) const;
 
@@ -247,38 +262,40 @@ namespace RINGMesh {
          * @param[in,out] edges the edges of the part
          */
         void get_part_edges(
-            index_t part_id,
-            std::vector< Edge< DIMENSION > >& edges ) const;
+            index_t part_id, std::vector< Edge< DIMENSION > >& edges ) const;
         /*!
          * Gets all the edges of a corresponding region
          * @param[in] region the region id
          * @param[in,out] edges the corresponding edges
          */
         void get_region_edges(
-            index_t part_id,
-            std::vector< Edge< DIMENSION > >& edges ) const;
+            index_t part_id, std::vector< Edge< DIMENSION > >& edges ) const;
 
         /*!
          * Creates a new corner
          * @param[in] vertex the geometric position of the corner
-         * @param[in] corner_info the corner_info_t corresponding to the corner to create
+         * @param[in] corner_info the corner_info_t corresponding to the corner
+         * to create
          * @return the id of the created corner
          */
-        index_t create_corner( const vecn< DIMENSION >& vertex,
-        bool is_on_surface, index_t id )
+        index_t create_corner(
+            const vecn< DIMENSION >& vertex, bool is_on_surface, index_t id )
         {
             index_t corner_id = static_cast< index_t >( corners_.size() );
-            corners_.emplace_back(
-                new WellCorner< DIMENSION >( this, vertex, is_on_surface, id ) );
+            corners_.emplace_back( new WellCorner< DIMENSION >(
+                this, vertex, is_on_surface, id ) );
             return corner_id;
         }
         /*!
          * Finds if a corner at a given geometric position exist
          * @param[in] vertex the geometric position to test
-         * @param[in] epsilon the numerical précision used to compare the vertices
-         * @return the id of the corner or NO_ID if not found any corresponding to \p p
+         * @param[in] epsilon the numerical précision used to compare the
+         * vertices
+         * @return the id of the corner or NO_ID if not found any corresponding
+         * to \p p
          */
-        index_t find_corner( const vecn< DIMENSION >& vertex, double epsilon ) const;
+        index_t find_corner(
+            const vecn< DIMENSION >& vertex, double epsilon ) const;
         /*!
          * Gets a corner
          * @param[in] c the id of the corner
@@ -379,14 +396,16 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( Well );
 
-// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
-    /*! 
+    /*!
      * @todo Comment
      */
-    template< index_t DIMENSION >
-    class WellGroup {
-    ringmesh_disable_copy_and_move( WellGroup );
+    template < index_t DIMENSION >
+    class WellGroup
+    {
+        ringmesh_disable_copy_and_move( WellGroup );
+
     public:
         WellGroup();
         virtual ~WellGroup() = default;
@@ -397,16 +416,14 @@ namespace RINGMesh {
          * @param[in,out] edges the edges of the region
          */
         void get_region_edges(
-            index_t region,
-            std::vector< Edge< DIMENSION > >& edges ) const;
+            index_t region, std::vector< Edge< DIMENSION > >& edges ) const;
 
         /*!
          * Gets all the edges contained in a region
          * @param[in] region the region id
          * @param[in,out] edges the edges of the region, one vector per well
          */
-        void get_region_edges(
-            index_t region,
+        void get_region_edges( index_t region,
             std::vector< std::vector< Edge< DIMENSION > > >& edges ) const;
 
         /*!
@@ -438,11 +455,13 @@ namespace RINGMesh {
         void create_wells( index_t nb_wells );
 
         /*!
-         * Add a well from its mesh and makes it conformal to the associated GeoModel
+         * Add a well from its mesh and makes it conformal to the associated
+         * GeoModel
          * @param[in] mesh the mesh of the well
          * @param[in] name the name of the well
          */
-        void add_well( const LineMesh< DIMENSION >& mesh, const std::string& name );
+        void add_well(
+            const LineMesh< DIMENSION >& mesh, const std::string& name );
 
         /*!
          * Gets the number of wells
@@ -463,8 +482,7 @@ namespace RINGMesh {
 
     private:
         void compute_conformal_mesh(
-            const LineMesh< DIMENSION >& in,
-            LineMesh< DIMENSION >& out );
+            const LineMesh< DIMENSION >& in, LineMesh< DIMENSION >& out );
 
     protected:
         /// Vector of the wells

@@ -42,10 +42,11 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
-    class Box {
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
+    class Box
+    {
     public:
         bool initialized() const
         {
@@ -81,7 +82,8 @@ namespace RINGMesh {
 
         void add_box( const Box< DIMENSION >& b )
         {
-            if( b.initialized() ) {
+            if( b.initialized() )
+            {
                 add_point( b.min() );
                 add_point( b.max() );
             }
@@ -89,11 +91,14 @@ namespace RINGMesh {
 
         bool bboxes_overlap( const Box< DIMENSION >& B ) const
         {
-            for( auto c : range( DIMENSION ) ) {
-                if( max()[c] < B.min()[c] ) {
+            for( auto c : range( DIMENSION ) )
+            {
+                if( max()[c] < B.min()[c] )
+                {
                     return false;
                 }
-                if( min()[c] > B.max()[c] ) {
+                if( min()[c] > B.max()[c] )
+                {
                     return false;
                 }
             }
@@ -102,7 +107,7 @@ namespace RINGMesh {
 
         Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const
         {
-            Box< DIMENSION > result { *this };
+            Box< DIMENSION > result{ *this };
             result.add_box( B );
             return result;
         }
@@ -117,14 +122,16 @@ namespace RINGMesh {
         std::tuple< bool, Box< DIMENSION > > bbox_intersection(
             const Box< DIMENSION >& B ) const
         {
-            if( !bboxes_overlap( B ) ) {
+            if( !bboxes_overlap( B ) )
+            {
                 return std::make_tuple( false, Box() );
             }
 
             Box< DIMENSION > result;
             vecn< DIMENSION > minimal_max;
             vecn< DIMENSION > maximal_min;
-            for( auto c : range( DIMENSION ) ) {
+            for( auto c : range( DIMENSION ) )
+            {
                 minimal_max[c] = std::min( this->max()[c], B.max()[c] );
                 maximal_min[c] = std::max( this->min()[c], B.min()[c] );
             }
@@ -135,11 +142,14 @@ namespace RINGMesh {
 
         bool contains( const vecn< DIMENSION >& b ) const
         {
-            for( auto c : range( DIMENSION ) ) {
-                if( b[c] < min()[c] ) {
+            for( auto c : range( DIMENSION ) )
+            {
+                if( b[c] < min()[c] )
+                {
                     return false;
                 }
-                if( b[c] > max()[c] ) {
+                if( b[c] > max()[c] )
+                {
                     return false;
                 }
             }
@@ -151,10 +161,9 @@ namespace RINGMesh {
         double signed_distance( const vecn< DIMENSION >& p ) const;
 
     private:
-        bool initialized_ { false };
-        vecn< DIMENSION > min_ { };
-        vecn< DIMENSION > max_ { };
-
+        bool initialized_{ false };
+        vecn< DIMENSION > min_{};
+        vecn< DIMENSION > max_{};
     };
     ALIAS_2D_AND_3D( Box );
 

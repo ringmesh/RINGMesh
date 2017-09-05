@@ -46,7 +46,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder_file.h>
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     class GeoModelBuilderTSolid;
     class GeoModelBuilderTSolidImpl;
     class GeoModelBuilderML;
@@ -54,19 +55,21 @@ namespace RINGMesh {
     struct TSolidLoadingStorage;
 } // namespace RINGMesh
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     void RINGMESH_API initialize_gocad_import_factories();
 
-    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile< 3 > {
+    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilderFile< 3 >
+    {
     public:
         GeoModelBuilderGocad( GeoModel3D& geomodel, std::string filename )
-            :
-                GeoModelBuilderFile( geomodel, std::move( filename ) ),
-                file_line_( filename_ )
+            : GeoModelBuilderFile( geomodel, std::move( filename ) ),
+              file_line_( filename_ )
         {
-            if( !file_line_.OK() ) {
-                throw RINGMeshException( "I/O", "Failed to open file ", filename_ );
+            if( !file_line_.OK() )
+            {
+                throw RINGMeshException(
+                    "I/O", "Failed to open file ", filename_ );
             }
         }
 
@@ -83,15 +86,19 @@ namespace RINGMesh {
         virtual void read_line() = 0;
 
     protected:
-        GEO::LineInput file_line_ { filename_ };
+        GEO::LineInput file_line_{ filename_ };
     };
 
-    class GocadBaseParser {
-    ringmesh_disable_copy_and_move(GocadBaseParser);
+    class GocadBaseParser
+    {
+        ringmesh_disable_copy_and_move( GocadBaseParser );
+
     public:
         virtual ~GocadBaseParser() = default;
+
     protected:
-        GocadBaseParser( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        GocadBaseParser(
+            GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
             : builder_( gm_builder ), geomodel_( geomodel )
         {
         }
@@ -101,35 +108,37 @@ namespace RINGMesh {
         GeoModel3D& geomodel_;
     };
 
-    struct RINGMESH_API GocadLoadingStorage {
+    struct RINGMESH_API GocadLoadingStorage
+    {
         GocadLoadingStorage();
 
         /*!
-         * @brief Ends a polygon (by adding the size of list of polygon corners at the
+         * @brief Ends a polygon (by adding the size of list of polygon corners
+         * at the
          * end of the vector)
          */
         void end_polygon()
         {
-            index_t nb_polygon_corners =
-                static_cast< index_t >( cur_surf_polygon_corners_gocad_id_.size() );
+            index_t nb_polygon_corners = static_cast< index_t >(
+                cur_surf_polygon_corners_gocad_id_.size() );
             cur_surf_polygon_ptr_.push_back( nb_polygon_corners );
         }
 
         // The orientation of positive Z
-        int z_sign_ { 1 };
+        int z_sign_{ 1 };
 
         std::vector< vec3 > vertices_;
 
         std::vector< std::vector< double > > attributes_;
 
         // The vertices and the atoms
-        index_t nb_attribute_fields_ { 0 };
+        index_t nb_attribute_fields_{ 0 };
 
         // Current interface index
-        index_t cur_interface_ { NO_ID };
+        index_t cur_interface_{ NO_ID };
 
         // Current surface index
-        index_t cur_surface_ { NO_ID };
+        index_t cur_surface_{ NO_ID };
 
         // List of polygon corners for the current surface (gocad indices)
         std::vector< index_t > cur_surf_polygon_corners_gocad_id_;
@@ -139,24 +148,30 @@ namespace RINGMesh {
         std::vector< index_t > cur_surf_polygon_ptr_;
     };
 
-    class RINGMESH_API GocadLineParser: public GocadBaseParser {
+    class RINGMESH_API GocadLineParser : public GocadBaseParser
+    {
     public:
         virtual void execute(
-            GEO::LineInput& line,
-            GocadLoadingStorage& load_storage ) = 0;
+            GEO::LineInput& line, GocadLoadingStorage& load_storage ) = 0;
+
     protected:
-        GocadLineParser( GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
+        GocadLineParser(
+            GeoModelBuilderGocad& gm_builder, GeoModel3D& geomodel )
             : GocadBaseParser( gm_builder, geomodel )
         {
         }
     };
-    using GocadLineFactory = Factory< std::string, GocadLineParser, GeoModelBuilderGocad&, GeoModel3D& >;
+    using GocadLineFactory = Factory< std::string,
+        GocadLineParser,
+        GeoModelBuilderGocad&,
+        GeoModel3D& >;
 
     /*!
      * @brief Structure which maps the vertex indices in Gocad::TSolid to the
      * pair (region, index in region) in the RINGMesh::GeoModel
      */
-    struct VertexMap {
+    struct VertexMap
+    {
         index_t gocad_vertex_id( index_t id ) const
         {
             ringmesh_assert( id < vertices_gocad_id_.size() );
@@ -176,8 +191,7 @@ namespace RINGMesh {
         }
 
         void record_vertex_with_its_region(
-            index_t gocad_vertex_id,
-            index_t region_id )
+            index_t gocad_vertex_id, index_t region_id )
         {
             vertices_gocad_id_.push_back( gocad_vertex_id );
             vertices_region_id_.push_back( region_id );
@@ -192,9 +206,11 @@ namespace RINGMesh {
         std::tuple< bool, index_t > find_region_id_from_name(
             const std::string& region_name )
         {
-            index_t region_id { NO_ID };
-            for( auto i : range( region_names_.size() ) ) {
-                if( region_name.compare( region_names_[i] ) == 0 ) {
+            index_t region_id{ NO_ID };
+            for( auto i : range( region_names_.size() ) )
+            {
+                if( region_name.compare( region_names_[i] ) == 0 )
+                {
                     region_id = region_ids_[i];
                     ringmesh_assert( region_id != NO_ID );
                     return std::make_tuple( true, region_id );
@@ -208,13 +224,14 @@ namespace RINGMesh {
             return region_ids_;
         }
 
-        void get_tetra_corners_with_this_region_id(
-            index_t region_id,
+        void get_tetra_corners_with_this_region_id( index_t region_id,
             std::vector< index_t >& region_tetra_corners_local ) const
         {
-            index_t counter { 0 };
-            for( auto tetra_region_id : vertices_region_id_ ) {
-                if( tetra_region_id == region_id ) {
+            index_t counter{ 0 };
+            for( auto tetra_region_id : vertices_region_id_ )
+            {
+                if( tetra_region_id == region_id )
+                {
                     region_tetra_corners_local.push_back(
                         local_id( vertices_gocad_id_[counter] ) );
                 }
@@ -226,21 +243,29 @@ namespace RINGMesh {
             const std::vector< std::vector< double > >& stored_attributes,
             index_t region_id,
             const std::map< index_t, index_t >& lighttsolid_atom_map,
-            std::vector< std::vector< double > >& region_tetra_attributes ) const
+            std::vector< std::vector< double > >& region_tetra_attributes )
+            const
         {
             ringmesh_assert(
                 stored_attributes.size() == gocad_ids2region_ids_.size() );
-            for( auto gocad_id : range( stored_attributes.size() ) ) {
-                if( gocad_ids2region_ids_[gocad_id] == region_id ) {
+            for( auto gocad_id : range( stored_attributes.size() ) )
+            {
+                if( gocad_ids2region_ids_[gocad_id] == region_id )
+                {
                     if( lighttsolid_atom_map.find( gocad_id )
-                        == lighttsolid_atom_map.end() ) {
+                        == lighttsolid_atom_map.end() )
+                    {
                         region_tetra_attributes.push_back(
                             stored_attributes[gocad_id] );
-                    } else {
-                        index_t corresponding_gocad_id { lighttsolid_atom_map.find(
-                            gocad_id )->second };
+                    }
+                    else
+                    {
+                        index_t corresponding_gocad_id{
+                            lighttsolid_atom_map.find( gocad_id )->second
+                        };
                         if( region( corresponding_gocad_id )
-                            != region( gocad_id ) ) {
+                            != region( gocad_id ) )
+                        {
                             region_tetra_attributes.push_back(
                                 stored_attributes[corresponding_gocad_id] );
                         }
@@ -250,38 +275,48 @@ namespace RINGMesh {
             }
         }
 
-        struct RegionLocalVertex {
+        struct RegionLocalVertex
+        {
             RegionLocalVertex( vec3 vertex, index_t local_id )
                 : tetra_vertex( std::move( vertex ) ), local_id( local_id )
             {
             }
-            vec3 tetra_vertex { };
-            index_t local_id { NO_ID };
+            vec3 tetra_vertex{};
+            index_t local_id{ NO_ID };
         };
 
-        std::vector< RegionLocalVertex > get_vertices_list_and_local_ids_from_gocad_ids(
-            const std::vector< vec3 >& stored_vertices,
-            const index_t region_id,
-            const std::map< index_t, index_t >& lighttsolid_atom_map/*,
+        std::vector< RegionLocalVertex >
+            get_vertices_list_and_local_ids_from_gocad_ids(
+                const std::vector< vec3 >& stored_vertices,
+                const index_t region_id,
+                const std::map< index_t, index_t >& lighttsolid_atom_map /*,
              std::vector< vec3 >& region_tetra_vertices,
-             std::vector< index_t >& local_ids */) const
+             std::vector< index_t >& local_ids */ ) const
         {
             ringmesh_assert(
                 stored_vertices.size() == gocad_ids2region_ids_.size() );
             std::vector< RegionLocalVertex > region_tetra_vertices;
-            for( auto gocad_id : range( stored_vertices.size() ) ) {
-                if( gocad_ids2region_ids_[gocad_id] == region_id ) {
+            for( auto gocad_id : range( stored_vertices.size() ) )
+            {
+                if( gocad_ids2region_ids_[gocad_id] == region_id )
+                {
                     if( lighttsolid_atom_map.find( gocad_id )
-                        == lighttsolid_atom_map.end() ) {
+                        == lighttsolid_atom_map.end() )
+                    {
                         region_tetra_vertices.emplace_back(
                             stored_vertices[gocad_id], gocad_id );
-                    } else {
-                        index_t corresponding_gocad_id { lighttsolid_atom_map.find(
-                            gocad_id )->second };
+                    }
+                    else
+                    {
+                        index_t corresponding_gocad_id{
+                            lighttsolid_atom_map.find( gocad_id )->second
+                        };
                         if( region( corresponding_gocad_id )
-                            != region( gocad_id ) ) {
+                            != region( gocad_id ) )
+                        {
                             region_tetra_vertices.emplace_back(
-                                stored_vertices[corresponding_gocad_id], gocad_id );
+                                stored_vertices[corresponding_gocad_id],
+                                gocad_id );
                         }
                     }
                 }
@@ -328,16 +363,21 @@ namespace RINGMesh {
             size_t lighttsolid_region_nb = nb_regions();
 
             // For every region ...
-            for( auto region_index : range( lighttsolid_region_nb ) ) {
-                // we want to record the region ids of the LightTSolid vertices ...
-                for( auto lighttsolid_vertices_id : range( lighttsolid_vertices_nb ) ) {
+            for( auto region_index : range( lighttsolid_region_nb ) )
+            {
+                // we want to record the region ids of the LightTSolid vertices
+                // ...
+                for( auto lighttsolid_vertices_id :
+                    range( lighttsolid_vertices_nb ) )
+                {
                     // that are in this region.
-                    if( region_id( lighttsolid_vertices_id ) == region_index ) {
-                        index_t gocad_vertex_i { gocad_vertex_id(
+                    if( region_id( lighttsolid_vertices_id ) == region_index )
+                    {
+                        index_t gocad_vertex_i{ gocad_vertex_id(
                             lighttsolid_vertices_id ) };
 
-                        gocad_ids2region_ids_[gocad_vertex_i] = region_id(
-                            lighttsolid_vertices_id );
+                        gocad_ids2region_ids_[gocad_vertex_i] =
+                            region_id( lighttsolid_vertices_id );
                     }
                 }
             }
@@ -351,17 +391,24 @@ namespace RINGMesh {
             size_t lighttsolid_region_nb = nb_regions();
 
             // For every region ...
-            for( auto rgion_id : range( lighttsolid_region_nb ) ) {
-                // we want to record the local ids of the LightTSolid vertices ...
+            for( auto rgion_id : range( lighttsolid_region_nb ) )
+            {
+                // we want to record the local ids of the LightTSolid vertices
+                // ...
                 const auto& local_ids = local_ids_[rgion_id];
-                for( auto lighttsolid_vertices_id : range( lighttsolid_vertices_nb ) ) {
+                for( auto lighttsolid_vertices_id :
+                    range( lighttsolid_vertices_nb ) )
+                {
                     // that are in this region.
-                    if( region_id( lighttsolid_vertices_id ) == rgion_id ) {
-                        index_t gocad_vertex_i { gocad_vertex_id(
+                    if( region_id( lighttsolid_vertices_id ) == rgion_id )
+                    {
+                        index_t gocad_vertex_i{ gocad_vertex_id(
                             lighttsolid_vertices_id ) };
-                        for( auto local_id : range( local_ids.size() ) ) {
-                            index_t gocad_id { local_ids[local_id] };
-                            if( gocad_id == gocad_vertex_i ) {
+                        for( auto local_id : range( local_ids.size() ) )
+                        {
+                            index_t gocad_id{ local_ids[local_id] };
+                            if( gocad_id == gocad_vertex_i )
+                            {
                                 gocad_ids2local_ids_[gocad_vertex_i] = local_id;
                             }
                         }
@@ -373,8 +420,11 @@ namespace RINGMesh {
         void deal_with_same_region_atoms(
             const std::map< index_t, index_t >& lighttsolid_atom_map )
         {
-            for( const std::pair< index_t, index_t >& pair : lighttsolid_atom_map ) {
-                if( region( pair.first ) == region( pair.second ) ) {
+            for( const std::pair< index_t, index_t >& pair :
+                lighttsolid_atom_map )
+            {
+                if( region( pair.first ) == region( pair.second ) )
+                {
                     gocad_ids2local_ids_[pair.first] =
                         gocad_ids2local_ids_[pair.second];
                 }
@@ -384,23 +434,30 @@ namespace RINGMesh {
     public:
         /*!
          * LightTSolids
-         * One std::vector< index_t > per region. Regions vector are recorded in the same order as region_ids_.
-         * Mapping the indices of vertices from Gocad .so file to the local (in region) indices of vertices.
-         * No duplicates: Only the Vertex and the Atoms linking to a different region Vertex are recorded here.
+         * One std::vector< index_t > per region. Regions vector are recorded in
+         * the same order as region_ids_.
+         * Mapping the indices of vertices from Gocad .so file to the local (in
+         * region) indices of vertices.
+         * No duplicates: Only the Vertex and the Atoms linking to a different
+         * region Vertex are recorded here.
          */
         std::vector< std::vector< index_t > > local_ids_;
 
     private:
         /*!
          * LightTSolids
-         * The gocad IDs of the vertices of the LightTSolid as read in the Tetra lines of the file.
-         * Duplicates: One vertex is recorded multiple times due to its presence in multiple tetras.
+         * The gocad IDs of the vertices of the LightTSolid as read in the Tetra
+         * lines of the file.
+         * Duplicates: One vertex is recorded multiple times due to its presence
+         * in multiple tetras.
          */
         std::vector< index_t > vertices_gocad_id_;
         /*!
          * LightTSolids
-         * The region IDs of the vertices of the LightTSolid as read in the # CTETRA lines of the file.
-         * Duplicates: One vertex is recorded multiple times due to its presence in multiple tetras.
+         * The region IDs of the vertices of the LightTSolid as read in the #
+         * CTETRA lines of the file.
+         * Duplicates: One vertex is recorded multiple times due to its presence
+         * in multiple tetras.
          */
         std::vector< index_t > vertices_region_id_;
 
@@ -435,58 +492,64 @@ namespace RINGMesh {
     /*!
      * @brief Structure used to load a GeoModel by GeoModelBuilderTSolid
      */
-    struct TSolidLoadingStorage: public GocadLoadingStorage {
+    struct TSolidLoadingStorage : public GocadLoadingStorage
+    {
         // Current region index
-        index_t cur_region_ { NO_ID };
+        index_t cur_region_{ NO_ID };
 
         // Map between gocad and GeoModel vertex indices
         VertexMap vertex_map_;
 
         // Region tetrahedron corners
-        std::vector< index_t > tetra_corners_ { };
+        std::vector< index_t > tetra_corners_{};
 
         // Names of the attributes for the TSolid
-        std::vector< std::string > vertex_attribute_names_ { };
+        std::vector< std::string > vertex_attribute_names_{};
 
         // Dimensions of the attributes for the TSolid
-        std::vector< index_t > vertex_attribute_dims_ { };
+        std::vector< index_t > vertex_attribute_dims_{};
 
         //// Current lighttsolid gocad vertex index 1
-        index_t cur_gocad_vrtx_id1_ { NO_ID };
-        index_t cur_gocad_vrtx_id2_ { NO_ID };
-        index_t cur_gocad_vrtx_id3_ { NO_ID };
-        index_t cur_gocad_vrtx_id4_ { NO_ID };
+        index_t cur_gocad_vrtx_id1_{ NO_ID };
+        index_t cur_gocad_vrtx_id2_{ NO_ID };
+        index_t cur_gocad_vrtx_id3_{ NO_ID };
+        index_t cur_gocad_vrtx_id4_{ NO_ID };
 
         //// LightTSolid map between atoms and vertex
-        std::map< index_t, index_t > lighttsolid_atom_map_ { };
+        std::map< index_t, index_t > lighttsolid_atom_map_{};
 
         // The vertices and the atoms
-        index_t nb_vertices_ { 0 };
+        index_t nb_vertices_{ 0 };
     };
 
-    class TSolidLineParser: public GocadBaseParser {
+    class TSolidLineParser : public GocadBaseParser
+    {
     public:
-
         virtual void execute(
-            GEO::LineInput& line,
-            TSolidLoadingStorage& load_storage ) = 0;
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) = 0;
         virtual void execute_light(
-            GEO::LineInput& line,
-            TSolidLoadingStorage& load_storage ) = 0;
+            GEO::LineInput& line, TSolidLoadingStorage& load_storage ) = 0;
+
     protected:
-        TSolidLineParser( GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel );
+        TSolidLineParser(
+            GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel );
     };
-    using TSolidLineFactory = Factory< std::string, TSolidLineParser, GeoModelBuilderTSolid&,
-    GeoModel3D& >;
+    using TSolidLineFactory = Factory< std::string,
+        TSolidLineParser,
+        GeoModelBuilderTSolid&,
+        GeoModel3D& >;
 
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
      */
-    class RINGMESH_API GeoModelBuilderTSolid final : public GeoModelBuilderGocad {
+    class RINGMESH_API GeoModelBuilderTSolid final : public GeoModelBuilderGocad
+    {
     public:
         static const index_t NB_TYPE = 2;
-        enum struct TSolidType {
-            TSOLID, LIGHT_TSOLID
+        enum struct TSolidType
+        {
+            TSOLID,
+            LIGHT_TSOLID
         };
         GeoModelBuilderTSolid( GeoModel3D& geomodel, std::string filename );
 
@@ -512,8 +575,7 @@ namespace RINGMesh {
          * @param[in] surface_id Index of the surface
          * @param[in] surface_nns Unique pointers to the NNSearchs of surfaces
          */
-        void compute_surface_internal_borders(
-            index_t surface_id,
+        void compute_surface_internal_borders( index_t surface_id,
             const std::vector< std::unique_ptr< NNSearch3D > >& surface_nns,
             const std::vector< Box3D >& surface_boxes );
 
@@ -530,7 +592,8 @@ namespace RINGMesh {
 
         /*!
          * @brief Computes internal borders of the geomodel surfaces
-         * @details An surface polygon edge is an internal border if it is shared
+         * @details An surface polygon edge is an internal border if it is
+         * shared
          * by at least two surfaces. Adjacency of such a polygon edge is set to
          * GEO::NO_FACET.
          * @param[in] geomodel GeoModel to consider
@@ -541,25 +604,26 @@ namespace RINGMesh {
         TSolidLoadingStorage tsolid_load_storage_;
 
     private:
-        TSolidType file_type_ { TSolidType::TSOLID };
-        std::array< std::unique_ptr< GeoModelBuilderTSolidImpl >, NB_TYPE > type_impl_;
+        TSolidType file_type_{ TSolidType::TSOLID };
+        std::array< std::unique_ptr< GeoModelBuilderTSolidImpl >, NB_TYPE >
+            type_impl_;
 
         friend class RINGMesh::GocadLineParser;
     };
 
-    class GeoModelBuilderTSolidImpl {
-    ringmesh_disable_copy_and_move( GeoModelBuilderTSolidImpl );
+    class GeoModelBuilderTSolidImpl
+    {
+        ringmesh_disable_copy_and_move( GeoModelBuilderTSolidImpl );
+
     public:
-        GeoModelBuilderTSolidImpl(
-            GeoModelBuilderTSolid& builder,
+        GeoModelBuilderTSolidImpl( GeoModelBuilderTSolid& builder,
             GeoModel3D& geomodel,
             GEO::LineInput& file_line,
             TSolidLoadingStorage& tsolid_load_storage )
-            :
-                builder_( builder ),
-                geomodel_( geomodel ),
-                file_line_( file_line ),
-                tsolid_load_storage_( tsolid_load_storage )
+            : builder_( builder ),
+              geomodel_( geomodel ),
+              file_line_( file_line ),
+              tsolid_load_storage_( tsolid_load_storage )
         {
         }
         virtual ~GeoModelBuilderTSolidImpl() = default;
@@ -573,16 +637,16 @@ namespace RINGMesh {
         TSolidLoadingStorage& tsolid_load_storage_;
     };
 
-    class GeoModelBuilderTSolidImpl_TSolid final: public GeoModelBuilderTSolidImpl {
+    class GeoModelBuilderTSolidImpl_TSolid final
+        : public GeoModelBuilderTSolidImpl
+    {
     public:
-        GeoModelBuilderTSolidImpl_TSolid(
-            GeoModelBuilderTSolid& builder,
+        GeoModelBuilderTSolidImpl_TSolid( GeoModelBuilderTSolid& builder,
             GeoModel3D& geomodel,
             GEO::LineInput& file_line,
             TSolidLoadingStorage& tsolid_load_storage )
-            :
-                GeoModelBuilderTSolidImpl( builder, geomodel, file_line,
-                    tsolid_load_storage )
+            : GeoModelBuilderTSolidImpl(
+                  builder, geomodel, file_line, tsolid_load_storage )
         {
         }
 
@@ -591,28 +655,33 @@ namespace RINGMesh {
             std::string keyword = file_line_.field( 0 );
             std::unique_ptr< TSolidLineParser > tsolid_parser =
                 TSolidLineFactory::create( keyword, this->builder_, geomodel_ );
-            if( tsolid_parser ) {
+            if( tsolid_parser )
+            {
                 tsolid_parser->execute( file_line_, tsolid_load_storage_ );
-            } else {
+            }
+            else
+            {
                 std::unique_ptr< GocadLineParser > gocad_parser =
-                    GocadLineFactory::create( keyword, this->builder_, geomodel_ );
-                if( gocad_parser ) {
+                    GocadLineFactory::create(
+                        keyword, this->builder_, geomodel_ );
+                if( gocad_parser )
+                {
                     gocad_parser->execute( file_line_, tsolid_load_storage_ );
                 }
             }
         }
     };
 
-    class GeoModelBuilderTSolidImpl_LightTSolid final: public GeoModelBuilderTSolidImpl {
+    class GeoModelBuilderTSolidImpl_LightTSolid final
+        : public GeoModelBuilderTSolidImpl
+    {
     public:
-        GeoModelBuilderTSolidImpl_LightTSolid(
-            GeoModelBuilderTSolid& builder,
+        GeoModelBuilderTSolidImpl_LightTSolid( GeoModelBuilderTSolid& builder,
             GeoModel3D& geomodel,
             GEO::LineInput& file_line,
             TSolidLoadingStorage& tsolid_load_storage )
-            :
-                GeoModelBuilderTSolidImpl( builder, geomodel, file_line,
-                    tsolid_load_storage )
+            : GeoModelBuilderTSolidImpl(
+                  builder, geomodel, file_line, tsolid_load_storage )
         {
         }
 
@@ -621,40 +690,50 @@ namespace RINGMesh {
             std::string keyword = file_line_.field( 0 );
             std::unique_ptr< TSolidLineParser > tsolid_parser =
                 TSolidLineFactory::create( keyword, this->builder_, geomodel_ );
-            if( tsolid_parser ) {
-                tsolid_parser->execute_light( file_line_, tsolid_load_storage_ );
-            } else {
+            if( tsolid_parser )
+            {
+                tsolid_parser->execute_light(
+                    file_line_, tsolid_load_storage_ );
+            }
+            else
+            {
                 std::unique_ptr< GocadLineParser > gocad_parser =
-                    GocadLineFactory::create( keyword, this->builder_, geomodel_ );
-                if( gocad_parser ) {
+                    GocadLineFactory::create(
+                        keyword, this->builder_, geomodel_ );
+                if( gocad_parser )
+                {
                     gocad_parser->execute( file_line_, tsolid_load_storage_ );
                 }
             }
         }
     };
 
-    struct MLLoadingStorage: public GocadLoadingStorage {
+    struct MLLoadingStorage : public GocadLoadingStorage
+    {
         MLLoadingStorage();
 
-        bool is_header_read_ { false };
+        bool is_header_read_{ false };
 
         /// Offset to read in the tface vertices in the tsurf vertices
-        index_t tface_vertex_ptr_ { 0 };
+        index_t tface_vertex_ptr_{ 0 };
     };
-    class MLLineParser: public GocadBaseParser {
+    class MLLineParser : public GocadBaseParser
+    {
     public:
         virtual void execute(
-            GEO::LineInput& line,
-            MLLoadingStorage& load_storage ) = 0;
+            GEO::LineInput& line, MLLoadingStorage& load_storage ) = 0;
+
     protected:
         MLLineParser( GeoModelBuilderML& gm_builder, GeoModel3D& geomodel );
     };
-    using MLLineFactory = Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& >;
+    using MLLineFactory =
+        Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& >;
 
     /*!
      * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
      */
-    class RINGMESH_API GeoModelBuilderML final : public GeoModelBuilderGocad {
+    class RINGMESH_API GeoModelBuilderML final : public GeoModelBuilderGocad
+    {
     public:
         GeoModelBuilderML( GeoModel3D& geomodel, std::string filename )
             : GeoModelBuilderGocad( geomodel, std::move( filename ) )
@@ -664,7 +743,8 @@ namespace RINGMesh {
     private:
         /*!
          * @brief Loads and builds a GeoModel from a Gocad .ml file
-         * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
+         * @warning Pretty unstable. Crashes if the file is not exactly what is
+         * expected.
          * @details Correspondance between Gocad::Model3D entities
          * and GeoModel entities is :
          *  - Gocad TSurf  <-> GeoModel Interface
@@ -672,8 +752,10 @@ namespace RINGMesh {
          *  - Gocad Region <-> GeoModel Region
          *  - Gocad Layer  <-> GeoModel Layer
          * @param[in] ml_file_name Input .ml file stream
-         * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in the files
-         * are ignored and the Lines and Corners of the GeoModel are deduced from the
+         * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in
+         * the files
+         * are ignored and the Lines and Corners of the GeoModel are deduced
+         * from the
          * connectivity of its Surfaces. By default set to false.
          */
         void load_file() final;

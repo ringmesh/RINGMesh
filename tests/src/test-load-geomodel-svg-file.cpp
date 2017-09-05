@@ -46,53 +46,59 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
-        std::string input_model_file_name = ringmesh_test_data_path
-            + "sketch_conform.svg";
+        std::string input_model_file_name =
+            ringmesh_test_data_path + "sketch_conform.svg";
 
         Logger::out( "TEST", "Geomodel input test. Loading file ",
             input_model_file_name );
 
         GeoModel2D in;
-        /*bool loaded_model_is_valid =*/geomodel_load( in, input_model_file_name );
+        /*bool loaded_model_is_valid =*/geomodel_load(
+            in, input_model_file_name );
 
-//        if( !loaded_model_is_valid ) {
-//            throw RINGMeshException( "RINGMesh Test",
-//                "Failed when loading model " +,in.name()
-//                    , ": the loaded model is not valid." );
-//        }
+        //        if( !loaded_model_is_valid ) {
+        //            throw RINGMeshException( "RINGMesh Test",
+        //                "Failed when loading model " +,in.name()
+        //                    , ": the loaded model is not valid." );
+        //        }
 
         std::string output_model_file_name( ringmesh_test_output_path );
         output_model_file_name += in.name() + "_saved_out.gm";
         geomodel_save( in, output_model_file_name );
 
         GeoModel2D in2;
-        /*bool reloaded_model_is_valid =*/geomodel_load( in2,
-            output_model_file_name );
+        /*bool reloaded_model_is_valid =*/geomodel_load(
+            in2, output_model_file_name );
 
-//        if( !reloaded_model_is_valid ) {
-//            throw RINGMeshException( "RINGMesh Test",
-//                "Failed when reloading model " , in2.name()
-//                    , ": the reloaded model is not valid." );
-//        }
+        //        if( !reloaded_model_is_valid ) {
+        //            throw RINGMeshException( "RINGMesh Test",
+        //                "Failed when reloading model " , in2.name()
+        //                    , ": the reloaded model is not valid." );
+        //        }
 
         std::string output_model_file_name_bis( ringmesh_test_output_path );
         output_model_file_name_bis += in.name() + "_saved_out_bis.gm";
         geomodel_save( in2, output_model_file_name_bis );
 
-        if( !compare_files( output_model_file_name, output_model_file_name_bis ) ) {
+        if( !compare_files(
+                output_model_file_name, output_model_file_name_bis ) )
+        {
             throw RINGMeshException( "TEST", "FAILED" );
         }
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
     Logger::out( "TEST", "SUCCESS" );
     return 0;
-
 }

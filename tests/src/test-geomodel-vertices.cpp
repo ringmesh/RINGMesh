@@ -44,8 +44,7 @@
 
 using namespace RINGMesh;
 
-void error(
-    index_t vertex_id_in_mesh_entity,
+void error( index_t vertex_id_in_mesh_entity,
     index_t vertex_id_in_geomodel_mesh,
     const gmme_id& mesh_entity_gmme_id )
 {
@@ -57,42 +56,55 @@ void error(
 }
 void test_geomodel_vertices( const GeoModel3D& geomodel )
 {
-    const GeoModelMeshVertices3D& geomodel_mesh_vertices = geomodel.mesh.vertices;
-    for( const MeshEntityType& mesh_entity_type : geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types() ) {
-        for( index_t mesh_entity_id : range(
-            geomodel.nb_mesh_entities( mesh_entity_type ) ) ) {
+    const GeoModelMeshVertices3D& geomodel_mesh_vertices =
+        geomodel.mesh.vertices;
+    for( const MeshEntityType& mesh_entity_type :
+        geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types() )
+    {
+        for( index_t mesh_entity_id :
+            range( geomodel.nb_mesh_entities( mesh_entity_type ) ) )
+        {
             const GeoModelMeshEntity3D& cur_geomodel_mesh_entity =
-                geomodel.mesh_entity( gmme_id( mesh_entity_type, mesh_entity_id ) );
-            for( index_t vertex_id_in_mesh_entity : range(
-                cur_geomodel_mesh_entity.nb_vertices() ) ) {
+                geomodel.mesh_entity(
+                    gmme_id( mesh_entity_type, mesh_entity_id ) );
+            for( index_t vertex_id_in_mesh_entity :
+                range( cur_geomodel_mesh_entity.nb_vertices() ) )
+            {
                 index_t vertex_id_in_geomodel_mesh =
                     geomodel_mesh_vertices.geomodel_vertex_id(
-                        cur_geomodel_mesh_entity.gmme(), vertex_id_in_mesh_entity );
+                        cur_geomodel_mesh_entity.gmme(),
+                        vertex_id_in_mesh_entity );
                 if( geomodel_mesh_vertices.vertex( vertex_id_in_geomodel_mesh )
                     != cur_geomodel_mesh_entity.vertex(
-                        vertex_id_in_mesh_entity ) ) {
+                           vertex_id_in_mesh_entity ) )
+                {
                     error( vertex_id_in_mesh_entity, vertex_id_in_geomodel_mesh,
                         cur_geomodel_mesh_entity.gmme() );
                 }
             }
-
         }
     }
 }
 
 void test_GMEVertex( const GeoModel3D& geomodel )
 {
-    const GeoModelMeshVertices3D& geomodel_mesh_vertices = geomodel.mesh.vertices;
+    const GeoModelMeshVertices3D& geomodel_mesh_vertices =
+        geomodel.mesh.vertices;
 
-    for( index_t vertex_id_in_geomodel_mesh : range( geomodel_mesh_vertices.nb() ) ) {
+    for( index_t vertex_id_in_geomodel_mesh :
+        range( geomodel_mesh_vertices.nb() ) )
+    {
         std::vector< GMEVertex > vertices_on_geomodel_mesh_entity =
             geomodel_mesh_vertices.gme_vertices( vertex_id_in_geomodel_mesh );
-        for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_mesh_entity ) {
+        for( const GMEVertex& cur_vertex_on_geomodel :
+            vertices_on_geomodel_mesh_entity )
+        {
             const GeoModelMeshEntity3D& cur_geomodel_mesh_entity =
                 geomodel.mesh_entity( cur_vertex_on_geomodel.gmme );
             index_t vertex_id_in_mesh_entity = cur_vertex_on_geomodel.v_index;
             if( geomodel_mesh_vertices.vertex( vertex_id_in_geomodel_mesh )
-                != cur_geomodel_mesh_entity.vertex( vertex_id_in_mesh_entity ) ) {
+                != cur_geomodel_mesh_entity.vertex( vertex_id_in_mesh_entity ) )
+            {
                 error( vertex_id_in_mesh_entity, vertex_id_in_geomodel_mesh,
                     cur_geomodel_mesh_entity.gmme() );
             }
@@ -104,27 +116,32 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
         Logger::out( "TEST", "Test GeoModelMeshVertices" );
 
-        std::string input_model_file_name = ringmesh_test_data_path
-            + "unit_cube_volume_meshed.gm";
+        std::string input_model_file_name =
+            ringmesh_test_data_path + "unit_cube_volume_meshed.gm";
 
         GeoModel3D in;
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
 
-        if( !loaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
-                in.name() );
+        if( !loaded_model_is_valid )
+        {
+            throw RINGMeshException(
+                "RINGMesh Test", "Failed when loading model ", in.name() );
         }
         test_geomodel_vertices( in );
         test_GMEVertex( in );
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
