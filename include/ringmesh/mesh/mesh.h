@@ -128,7 +128,7 @@ namespace RINGMesh {
      * @note For now, we encapsulate the GEO::Mesh class.
      */
     template< index_t DIMENSION >
-    class MeshBase {
+    class RINGMESH_API MeshBase {
     ringmesh_disable_copy_and_move( MeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class MeshBaseBuilder< DIMENSION > ;
@@ -194,7 +194,7 @@ namespace RINGMesh {
      * class for encapsulating mesh composed of points
      */
     template< index_t DIMENSION >
-    class PointSetMesh: public MeshBase< DIMENSION > {
+    class RINGMESH_API PointSetMesh: public MeshBase< DIMENSION > {
         friend class PointSetMeshBuilder< DIMENSION > ;
 
     public:
@@ -213,7 +213,7 @@ namespace RINGMesh {
      * class for encapsulating line mesh (composed of edges)
      */
     template< index_t DIMENSION >
-    class LineMesh: public MeshBase< DIMENSION > {
+    class RINGMESH_API LineMesh: public MeshBase< DIMENSION > {
         friend class LineMeshBuilder< DIMENSION > ;
     public:
         static std::unique_ptr< LineMesh< DIMENSION > > create_mesh(
@@ -300,7 +300,7 @@ namespace RINGMesh {
      * class for encapsulating surface mesh component
      */
     template< index_t DIMENSION >
-    class SurfaceMeshBase: public MeshBase< DIMENSION > {
+    class RINGMESH_API SurfaceMeshBase: public MeshBase< DIMENSION > {
         friend class SurfaceMeshBuilder< DIMENSION > ;
 
     public:
@@ -599,7 +599,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
     template< index_t DIMENSION >
-    class SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
+    class RINGMESH_API SurfaceMesh: public SurfaceMeshBase< DIMENSION > {
     };
 
     template< index_t DIMENSION >
@@ -607,7 +607,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( SurfaceMeshFactory );
 
     template< >
-    class SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
+    class RINGMESH_API SurfaceMesh< 3 >: public SurfaceMeshBase< 3 >{
     public:
 
         /*!
@@ -684,7 +684,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class SurfaceMesh< 2 > : public SurfaceMeshBase< 2 > {
+    class RINGMESH_API SurfaceMesh< 2 >: public SurfaceMeshBase< 2 >{
     public:
         /*!
          * Computes the Mesh polygon area
@@ -716,7 +716,7 @@ namespace RINGMesh {
      * class for encapsulating volume mesh component
      */
     template< index_t DIMENSION >
-    class VolumeMesh: public MeshBase< DIMENSION > {
+    class RINGMESH_API VolumeMesh: public MeshBase< DIMENSION > {
         ringmesh_template_assert_3d( DIMENSION );
         friend class VolumeMeshBuilder< DIMENSION > ;
     public:
@@ -1013,7 +1013,7 @@ namespace RINGMesh {
      * class composed of meshes from all the dimensions
      */
     template< index_t DIMENSION >
-    class MeshSetBase {
+    class RINGMESH_API MeshSetBase {
     ringmesh_disable_copy_and_move( MeshSetBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -1031,10 +1031,10 @@ namespace RINGMesh {
         std::unique_ptr< LineMesh< DIMENSION > > well_mesh { };
         std::unique_ptr< LineMesh< DIMENSION > > line_mesh { };
         std::unique_ptr< SurfaceMesh< DIMENSION > > surface_mesh { };
-    };
+    };    
 
     template< index_t DIMENSION >
-    class MeshSet: public MeshSetBase< DIMENSION > {
+    class RINGMESH_API MeshSet: public MeshSetBase< DIMENSION > {
     public:
         MeshSet() = default;
     };
