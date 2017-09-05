@@ -41,6 +41,8 @@
 
 #include <memory>
 
+#include <geogram/basic/factory.h>
+
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 #include <ringmesh/basic/factory.h>
