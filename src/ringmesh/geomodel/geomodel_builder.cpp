@@ -858,8 +858,6 @@ namespace RINGMesh {
         }
 
         cut_geomodel_on_internal_boundaries();
-        topology.compute_universe();
-
         print_geomodel( geomodel_ );
     }
 
@@ -958,29 +956,22 @@ namespace RINGMesh {
             Logger::err( "GeoModel",
                 "Small bubble regions were skipped at geomodel building " );
             // Or, most probably, we have a problem before
-            ringmesh_assert( false );
+            ringmesh_assert_not_reached;
             /// @todo handle the region building of small bubble regions
         }
 
-        topology.compute_universe();
         // We need to remove from the regions_ the one corresponding
         // to the universe_, the one with the biggest volume
-        double max_volume { -1. };
-        index_t universe_id { NO_ID };
+        double max_volume = -1.;
+        index_t universe_id = NO_ID;
         for( const auto& region : geomodel_.regions() ) {
-            auto cur_volume = region.size();
+            double cur_volume = region.size();
             if( cur_volume > max_volume ) {
                 max_volume = cur_volume;
                 universe_id = region.index();
             }
         }
-        const auto& cur_region = geomodel_.region( universe_id );
-        for( auto i : range( cur_region.nb_boundaries() ) ) {
-            // Fill the Universe region boundaries
-            // They are supposed to be empty
-            topology.add_universe_boundary( cur_region.boundary( i ).index(),
-                cur_region.side( i ) );
-        }
+        const Region3D& cur_region = geomodel_.region( universe_id );
         std::set< gmme_id > to_erase;
         to_erase.insert( cur_region.gmme() );
         removal.remove_mesh_entities( to_erase );

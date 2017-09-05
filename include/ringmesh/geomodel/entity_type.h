@@ -167,18 +167,6 @@ namespace RINGMesh {
     };
 
     /*!
-     * @brief This entity type stands only for the special case of the
-     * Universe which is not a GeomodelGeologicalEntity nor a GeomodelMeshEntity
-     */
-    class RINGMESH_API UniverseType: public EntityType {
-    public:
-        UniverseType()
-            : EntityType( "Universe" )
-        {
-        }
-    };
-
-    /*!
      * @brief Unique identification of a GeoModelEntity in a GeoModel
      * It contains the EntityType and the index of the entity.
      * It is widely used in the code to easily access/modify/set a GeoModelEntity

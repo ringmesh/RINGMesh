@@ -489,28 +489,6 @@ namespace {
     }
 
     /*
-     * @brief Adds the right surface sides in universe boundaries
-     * @param[in] surf_side_minus Vector indicating if the '-' side of
-     * surfaces are in the boundaries of geomodel regions
-     * @param[in] surf_side_plus Vector indicating if the '+' side of
-     * surfaces are in the boundaries of geomodel regions
-     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
-     */
-    void add_surfaces_to_universe_boundaries(
-        const std::vector< bool >& surface_sides,
-        index_t nb_surfaces,
-        GeoModelBuilderTSolid& geomodel_builder )
-    {
-        for( auto s : range( nb_surfaces ) ) {
-            if( surface_sides[2 * s] && !surface_sides[2 * s + 1] ) {
-                geomodel_builder.topology.add_universe_boundary( s, false );
-            } else if( !surface_sides[2 * s] && surface_sides[2 * s + 1] ) {
-                geomodel_builder.topology.add_universe_boundary( s, true );
-            }
-        }
-    }
-
-    /*
      * @brief Determines if each side of the surfaces are
      * in the boundaries of geomodel regions
      * @param[in] geomodel GeoModel to consider
@@ -537,24 +515,6 @@ namespace {
             }
         }
         return surface_sides;
-    }
-
-    /*!
-     * @brief Sets the boundaries of region Universe
-     * @details A surface is set in the boundaries of region Universe if
-     * only one of its sides belongs to the boundaries of other regions.
-     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
-     */
-    void compute_universe_boundaries(
-        const GeoModel3D& geomodel,
-        GeoModelBuilderTSolid& geomodel_builder )
-    {
-        // The universe boundaries are the surfaces with only one side in all
-        // the boundaries of the other regions
-        std::vector< bool > surface_sides = determine_if_surface_sides_bound_regions(
-            geomodel );
-        add_surfaces_to_universe_boundaries( surface_sides, geomodel.nb_surfaces(),
-            geomodel_builder );
     }
 
     /*! @}
@@ -853,7 +813,7 @@ namespace {
 
             // Create the entity if it is not the universe
             // Set the region name and boundaries
-            if( name != Universe3D::universe_type_name().string() ) {
+            if( name != "Universe" ) {
                 gmme_id region_id = builder_.topology.create_mesh_entity(
                     Region3D::type_name_static() );
                 builder_.info.set_mesh_entity_name( region_id, name );
@@ -861,11 +821,6 @@ namespace {
                     gmme_id surface_id( Surface3D::type_name_static(), info.first );
                     builder_.topology.add_mesh_entity_boundary_relation( region_id,
                         surface_id, info.second );
-                }
-            } else {
-                for( const std::pair< index_t, bool >& info : region_boundaries ) {
-                    builder_.topology.add_universe_boundary( info.first,
-                        info.second );
                 }
             }
         }
@@ -1528,7 +1483,6 @@ namespace {
     }
 
 } // namespace
-
 namespace RINGMesh {
 
     Factory< std::string, MLLineParser, GeoModelBuilderML&, GeoModel3D& > ml_factory;
@@ -1602,7 +1556,6 @@ namespace RINGMesh {
         compute_surfaces_internal_borders();
         build_lines_and_corners_from_surfaces();
         compute_boundaries_of_geomodel_regions( *this, ( *this ).geomodel_ );
-        compute_universe_boundaries( ( *this ).geomodel_, *this );
         geology.build_contacts();
     }
 
@@ -1649,9 +1602,9 @@ namespace RINGMesh {
         const Surface3D& surface = geomodel_.surface( surface_id );
         const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
 
-        for( auto p : range( surface.nb_mesh_elements() ) ) {
+        for( index_t p : range( surface.nb_mesh_elements() ) ) {
             std::vector< index_t > adjacent_polygons_id( 3 );
-            for( auto e : range( 3 ) ) {
+            for( index_t e : range( 3 ) ) {
                 adjacent_polygons_id[e] = surface.polygon_adjacent_index(
                     PolygonLocalEdge( p, e ) );
                 if( !mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) ) {
@@ -1675,7 +1628,7 @@ namespace RINGMesh {
         surface_boxes.resize( geomodel_.nb_surfaces() );
 
         for( const auto& surface : geomodel_.surfaces() ) {
-            for( auto v : range( surface.nb_vertices() ) ) {
+            for( index_t v : range( surface.nb_vertices() ) ) {
                 surface_boxes[surface.index()].add_point( surface.vertex( v ) );
             }
             std::vector< vec3 > border_edge_barycenters =

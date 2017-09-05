@@ -75,7 +75,7 @@ namespace {
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
         {
-            const GeoModelMesh< DIMENSION >& geomodel_mesh = geomodel.mesh;
+            const auto& geomodel_mesh = geomodel.mesh;
             test_if_mesh_is_valid( geomodel.mesh );
 
             std::ofstream out( filename.c_str() );

@@ -71,7 +71,6 @@ namespace RINGMesh {
         flag_geological_entities_without_children();
         do_delete_flagged_geological_entities();
         update_geological_entity_connectivity();
-        update_universe();
     }
 
     template< index_t DIMENSION >
@@ -229,30 +228,6 @@ namespace RINGMesh {
                 index_t new_id = old_2_new_mesh_entity_[child_type][old_id];
                 builder_.geology.set_geological_entity_child( E.gmge(), i, new_id );
             }
-        }
-    }
-
-    template< index_t DIMENSION >
-    void GeoModelBuilderRemovalBase< DIMENSION >::update_universe_sided_boundaries(
-        Universe< DIMENSION >& U )
-    {
-        index_t b_type_index = mesh_entity_type_to_index(
-            Surface< DIMENSION >::type_name_static() );
-        index_t side_offset = 0;
-        for( auto i : range( U.nb_boundaries() ) ) {
-            index_t old_id = U.boundary_gmme( i ).index();
-            index_t new_id = old_2_new_mesh_entity_[b_type_index][old_id];
-
-            bool new_side = false;
-            // Mechanism to update the sides is not the same than to update
-            // the boundary indices -- annoying
-            if( new_id == NO_ID ) {
-                side_offset++;
-            } else if( i + side_offset < U.nb_boundaries() ) {
-                // After that we do not care the values will be dropped
-                new_side = U.side( i + side_offset );
-            }
-            builder_.topology.set_universe_boundary( i, new_id, new_side );
         }
     }
 
