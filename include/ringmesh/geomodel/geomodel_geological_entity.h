@@ -61,7 +61,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     template< index_t DIMENSION >
-    class GeoModelGeologicalEntity: public GeoModelEntity< DIMENSION > {
+    class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity< DIMENSION > {
     public:
         friend class GeoModelGeologicalEntityAccess< DIMENSION > ;
 
@@ -192,7 +192,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelGeologicalEntityFactory );
 
     template< index_t DIMENSION >
-    class Contact: public GeoModelGeologicalEntity< DIMENSION > {
+    class RINGMESH_API Contact: public GeoModelGeologicalEntity< DIMENSION > {
     public:
         explicit Contact( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -213,7 +213,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( Contact );
 
     template< index_t DIMENSION >
-    class Interface: public GeoModelGeologicalEntity< DIMENSION > {
+    class RINGMESH_API Interface: public GeoModelGeologicalEntity< DIMENSION > {
     public:
         explicit Interface( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -234,7 +234,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( Interface );
 
     template< index_t DIMENSION >
-    class Layer: public GeoModelGeologicalEntity< DIMENSION > {
+    class RINGMESH_API Layer: public GeoModelGeologicalEntity< DIMENSION > {
     public:
         explicit Layer( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -255,7 +255,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( Layer );
 
     template< index_t DIMENSION >
-    class GeoModelGeologicalEntityAccess {
+    class RINGMESH_API GeoModelGeologicalEntityAccess {
     ringmesh_disable_copy_and_move( GeoModelGeologicalEntityAccess );
         friend class GeoModelBuilderTopology< DIMENSION > ;
         friend class GeoModelBuilderGeology< DIMENSION > ;

@@ -56,7 +56,7 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class GeoModelBuilderGeometryBase {
+    class RINGMESH_API GeoModelBuilderGeometryBase {
     ringmesh_disable_copy_and_move( GeoModelBuilderGeometryBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
@@ -389,7 +389,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelBuilderGeometryBase );
 
     template< index_t DIMENSION >
-    class GeoModelBuilderGeometry final: public GeoModelBuilderGeometryBase<
+    class RINGMESH_API GeoModelBuilderGeometry final: public GeoModelBuilderGeometryBase<
         DIMENSION > {
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
