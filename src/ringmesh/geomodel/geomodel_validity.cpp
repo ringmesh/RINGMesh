@@ -1001,11 +1001,6 @@ namespace {
                 //      &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
                 //          this );
             }
-            if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) ) {
-                tasks.emplace_back(
-                    std::async( std::launch::async,
-                        &GeoModelValidityCheck::test_non_manifold_edges, this ) );
-            }
         }
 
         void add_checks( std::vector< std::future< void > >& tasks )
@@ -1230,6 +1225,11 @@ namespace {
                 std::async( std::launch::async,
                     &GeoModelValidityCheck::test_region_surface_mesh_conformity,
                     this ) );
+        }
+        if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) ) {
+            tasks.emplace_back(
+                std::async( std::launch::async,
+                    &GeoModelValidityCheck::test_non_manifold_edges, this ) );
         }
         add_base_checks( tasks );
     }
