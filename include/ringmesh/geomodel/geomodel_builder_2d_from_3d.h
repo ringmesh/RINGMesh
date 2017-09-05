@@ -54,7 +54,7 @@ namespace RINGMesh {
                 geomodel3d_from_( geomodel3d_from ),
                 plane_( plane )
         {
-            Frame3D plane2d_frame( plane.normal, plane_.origin );
+            Frame3D plane2d_frame( plane_.origin, plane_.normal );
             u_axis = plane2d_frame.u_axis;
             v_axis = plane2d_frame.v_axis;
         }
