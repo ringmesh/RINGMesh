@@ -56,7 +56,7 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class GeoModelBuilderInfo {
+    class RINGMESH_API GeoModelBuilderInfo {
     ringmesh_disable_copy_and_move( GeoModelBuilderInfo );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
@@ -108,7 +108,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelBuilderCopy {
+    class RINGMESH_API GeoModelBuilderCopy {
     ringmesh_disable_copy_and_move( GeoModelBuilderCopy );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
@@ -135,7 +135,7 @@ namespace RINGMesh {
      * with the GeoModel part which is edited (topology, geometry, geology, info)
      */
     template< index_t DIMENSION >
-    class GeoModelBuilderBase {
+    class RINGMESH_API GeoModelBuilderBase {
     ringmesh_disable_copy_and_move( GeoModelBuilderBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -170,7 +170,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelBuilder: public GeoModelBuilderBase< DIMENSION > {
+    class RINGMESH_API GeoModelBuilder: public GeoModelBuilderBase< DIMENSION > {
     };
 
     template< >

@@ -85,7 +85,7 @@ namespace RINGMesh {
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     template< index_t DIMENSION >
-    class GeoModelBase {
+    class RINGMESH_API GeoModelBase {
     ringmesh_disable_copy_and_move( GeoModelBase );
         ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelAccess< DIMENSION > ;
@@ -305,7 +305,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelBase );
 
     template< index_t DIMENSION >
-    class GeoModel final: public GeoModelBase< DIMENSION > {
+    class RINGMESH_API GeoModel final: public GeoModelBase< DIMENSION >{
         friend class GeoModelAccess< DIMENSION > ;
     public:
         GeoModel();
@@ -390,7 +390,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModel );
 
     template< index_t DIMENSION >
-    class GeoModelAccess {
+    class RINGMESH_API GeoModelAccess {
     ringmesh_disable_copy_and_move( GeoModelAccess );
         ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelBuilderBase< DIMENSION > ;

@@ -58,7 +58,7 @@ namespace RINGMesh {
      * @brief Abstract base class describing one entity of a GeoModel
      */
     template< index_t DIMENSION >
-    class GeoModelEntity {
+    class RINGMESH_API GeoModelEntity {
     ringmesh_disable_copy_and_move( GeoModelEntity );
     ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -114,7 +114,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelEntity );
 
     template< index_t DIMENSION >
-    class Universe: public GeoModelEntity< DIMENSION > {
+    class RINGMESH_API Universe: public GeoModelEntity< DIMENSION > {
     public:
         friend class UniverseAccess< DIMENSION > ;
 
@@ -177,7 +177,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( Universe );
 
     template< index_t DIMENSION >
-    class UniverseAccess {
+    class RINGMESH_API UniverseAccess {
     ringmesh_disable_copy_and_move( UniverseAccess );
         friend class GeoModelBuilderTopologyBase< DIMENSION > ;
         friend class GeoModelBuilderTopology< DIMENSION > ;
