@@ -65,7 +65,7 @@ namespace RINGMesh {
 
         virtual void quit();
 
-    private:
+    protected:
         static RINGMeshApplication* instance();
 
         std::string supported_read_file_extensions() override;
@@ -84,6 +84,7 @@ namespace RINGMesh {
 
         static void show_color_table_popup( ImColor& color );
 
+    private:
         void create_point(
             std::string name = "debug",
             double x = 0,
@@ -227,7 +228,7 @@ namespace RINGMesh {
         void draw_geomodel_viewer_properties(
             std::vector< std::unique_ptr< GeoModelViewer< DIMENSION > > >& geomodels,
             int& id );
-    private:
+    protected:
         std::vector< std::unique_ptr< GeoModelViewer3D > > geomodels3d_;
         std::vector< std::unique_ptr< GeoModelViewer2D > > geomodels2d_;
         std::vector< std::unique_ptr< MeshViewer > > meshes_;
