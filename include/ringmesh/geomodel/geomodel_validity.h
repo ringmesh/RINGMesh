@@ -37,8 +37,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
-
 /*!
  * @file ringmesh/geomodel_validity.h
  * @brief Functions to check the validity of GeoModels
