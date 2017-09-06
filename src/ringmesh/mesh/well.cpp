@@ -336,8 +336,10 @@ namespace RINGMesh {
         index_t nb_edges = nb_points - 1;
         builder->create_edges( nb_edges );
         for( auto e : range( nb_edges ) ) {
-            builder->set_edge_vertex( e, 0, e );
-            builder->set_edge_vertex( e, 1, e + 1 );
+            builder->set_edge_vertex( 
+                EdgeLocalVertex( e, 0 ), e );
+            builder->set_edge_vertex( 
+                EdgeLocalVertex( e, 1 ), e + 1 );
         }
     }
 

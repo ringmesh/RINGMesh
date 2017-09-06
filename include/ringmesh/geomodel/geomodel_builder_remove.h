@@ -57,7 +57,7 @@ namespace RINGMesh {
      * @brief Builder tools to remove entities from a GeoModel
      */
     template< index_t DIMENSION >
-    class GeoModelBuilderRemovalBase {
+    class RINGMESH_API GeoModelBuilderRemovalBase {
     ringmesh_disable_copy_and_move( GeoModelBuilderRemovalBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
@@ -581,7 +581,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelBuilderRemovalBase );
 
     template< index_t DIMENSION >
-    class GeoModelBuilderRemoval: public GeoModelBuilderRemovalBase< DIMENSION > {
+    class RINGMESH_API GeoModelBuilderRemoval: public GeoModelBuilderRemovalBase< DIMENSION > {
         friend class GeoModelBuilderBase< DIMENSION > ;
         friend class GeoModelBuilder< DIMENSION > ;
     private:

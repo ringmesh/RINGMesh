@@ -905,7 +905,9 @@ namespace RINGMesh {
                         { c, v } );
                     auto global_vertex_id = geomodel_vertices.geomodel_vertex_id(
                         region.gmme(), region_vertex_index );
-                    mesh_builder->set_cell_vertex( cur_cell, v, global_vertex_id );
+                    mesh_builder->set_cell_vertex( 
+                        ElementLocalVertex( cur_cell, v),
+                        global_vertex_id );
                 }
                 region_id_[cur_cell] = region.index();
                 cell_id_[cur_cell] = c;
@@ -1793,7 +1795,7 @@ namespace RINGMesh {
                     auto v_id = geomodel_vertices.geomodel_vertex_id( line_id,
                         ElementLocalVertex( e, v ) );
                     ringmesh_assert( v_id != NO_ID );
-                    mesh_builder->set_edge_vertex( cur_edge, v, v_id );
+                    mesh_builder->set_edge_vertex( ElementLocalVertex( cur_edge, v ), v_id );
                 }
                 line_id_[cur_edge] = l;
                 edge_id_[cur_edge] = e;
@@ -2221,7 +2223,8 @@ namespace RINGMesh {
                         auto v_id = geomodel_vertices.geomodel_vertex_id( surface_id,
                             ElementLocalVertex( p, v ) );
                         ringmesh_assert( v_id != NO_ID );
-                        mesh_builder->set_polygon_vertex( cur_polygon, v, v_id );
+                        mesh_builder->set_polygon_vertex( 
+                            ElementLocalVertex( cur_polygon, v), v_id );
                     }
                 } else {
                     std::vector< index_t > vertices( nb_vertices );
@@ -2280,7 +2283,8 @@ namespace RINGMesh {
                     auto adj = surface.polygon_adjacent_index(
                         PolygonLocalEdge( surface_polygon_id, v ) );
                     if( adj == NO_ID ) {
-                        mesh_builder->set_polygon_adjacent( polygon_id, v, NO_ID );
+                        mesh_builder->set_polygon_adjacent(
+                            ElementLocalVertex( polygon_id, v ), NO_ID );
                     }
                 }
             }
@@ -2433,10 +2437,12 @@ namespace RINGMesh {
             for( auto p : range( well.nb_parts() ) ) {
                 for( auto e : range( well.part( p ).nb_edges() ) ) {
                     const auto& e0 = well.part( p ).edge_vertex( { e, 0 } );
-                    mesh_builder->set_edge_vertex( cur_edge, 0,
+                    mesh_builder->set_edge_vertex( 
+                        ElementLocalVertex( cur_edge, 0 ),
                         this->gmm_.vertices.index( e0 ) );
                     const auto& e1 = well.part( p ).edge_vertex( { e, 1 } );
-                    mesh_builder->set_edge_vertex( cur_edge, 1,
+                    mesh_builder->set_edge_vertex( 
+                        ElementLocalVertex( cur_edge, 1 ),
                         this->gmm_.vertices.index( e1 ) );
                     cur_edge++;
                 }

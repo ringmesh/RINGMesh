@@ -57,7 +57,7 @@ namespace RINGMesh {
      * @brief Abstract base class describing one entity of a GeoModel
      */
     template< index_t DIMENSION >
-    class GeoModelEntity {
+    class RINGMESH_API GeoModelEntity {
     ringmesh_disable_copy_and_move( GeoModelEntity );
     ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
