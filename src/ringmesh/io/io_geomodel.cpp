@@ -54,6 +54,11 @@
 #include <ringmesh/mesh/well.h>
 #include <ringmesh/mesh/geogram_mesh.h>
 
+#include <ringmesh/io/zip_file.h>
+
+#include <minizip/unzip.h>
+#include <minizip/zip.h>
+
 /*!
  * @file Implementation of classes loading GeoModels
  * @author Arnaud Botella and Antoine Mazuyer

@@ -52,14 +52,9 @@ namespace RINGMesh {
     class ZipFile::Impl {
     public:
         Impl( const std::string& filename )
-            : zip_directory_ { GEO::FileSystem::dir_name( filename ) }
         {
-            std::string pwd { set_working_directory() };
-            zip_file_ = zipOpen(
-                GEO::FileSystem::base_name( filename, false ).c_str(),
-                APPEND_STATUS_CREATE );
+            zip_file_ = zipOpen( filename.c_str(), APPEND_STATUS_CREATE );
             ringmesh_assert( zip_file_ != nil );
-            unset_working_directory( pwd );
         }
 
         ~Impl()
@@ -69,7 +64,6 @@ namespace RINGMesh {
 
         void add_file( const std::string& filename )
         {
-            std::string pwd { set_working_directory() };
             std::fstream file( filename.c_str(), std::ios::in | std::ios::binary );
             file.seekg( 0, std::ios::end );
             auto size = static_cast< index_t >( file.tellg() );
@@ -81,34 +75,18 @@ namespace RINGMesh {
             zipWriteInFileInZip( zip_file_, size == 0 ? "" : &buffer[0], size );
             zipCloseFileInZip( zip_file_ );
             file.close();
-            unset_working_directory( pwd );
         }
 
     private:
-        std::string set_working_directory()
-        {
-            std::string pwd { GEO::FileSystem::get_current_working_directory() };
-            bool valid_new_working_directory {
-                GEO::FileSystem::set_current_working_directory( zip_directory_ ) };
-            if( !valid_new_working_directory ) {
-                throw RINGMeshException( "ZipFile",
-                    "Output directory does not exist" );
-            }
-            return pwd;
-        }
-
-        void unset_working_directory( const std::string& directory )
-        {
-            GEO::FileSystem::set_current_working_directory( directory );
-        }
-
-    private:
-        std::string zip_directory_;
         zipFile zip_file_ { nullptr };
     };
 
     ZipFile::ZipFile( const std::string& filename )
         : impl_ { filename }
+    {
+    }
+
+    ZipFile::~ZipFile()
     {
     }
 
