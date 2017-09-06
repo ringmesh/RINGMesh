@@ -33,26 +33,13 @@
  *     FRANCE
  */
 
+#include <ringmesh/io/zip_file.h>
+
 #include <minizip/unzip.h>
 #include <minizip/zip.h>
 
 namespace {
     using namespace RINGMesh;
-
-    void zip_file( zipFile zf, const std::string& name )
-    {
-        std::fstream file( name.c_str(), std::ios::in | std::ios::binary );
-        file.seekg( 0, std::ios::end );
-        long size = file.tellg();
-        file.seekg( 0, std::ios::beg );
-        std::vector< char > buffer( size );
-        file.read( &buffer[0], size );
-        zipOpenNewFileInZip( zf, name.c_str(), nullptr, nullptr, 0, nullptr, 0,
-            nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION );
-        zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size );
-        zipCloseFileInZip( zf );
-        file.close();
-    }
 
     void unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] )
     {
@@ -850,10 +837,10 @@ namespace {
         }
     }
 
-    void zip_files( const std::vector< std::string >& filenames, zipFile& zf )
+    void zip_files( const std::vector< std::string >& filenames, ZipFile& zf )
     {
         for( const std::string& name : filenames ) {
-            zip_file( zf, name );
+            zf.add_file( name );
             GEO::FileSystem::delete_file( name );
         }
     }
@@ -956,27 +943,16 @@ namespace {
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
         {
-            const std::string pwd = GEO::FileSystem::get_current_working_directory();
-            bool valid_new_working_directory =
-                GEO::FileSystem::set_current_working_directory(
-                    GEO::FileSystem::dir_name( filename ) );
-            if( !valid_new_working_directory ) {
-                throw RINGMeshException( "I/O", "Output directory does not exist" );
-            }
-
-            zipFile zf = zipOpen(
-                GEO::FileSystem::base_name( filename, false ).c_str(),
-                APPEND_STATUS_CREATE );
-            ringmesh_assert( zf != nil );
+            ZipFile zf{ filename };
 
             const std::string mesh_entity_file( "mesh_entities.txt" );
             save_mesh_entities( geomodel, mesh_entity_file );
-            zip_file( zf, mesh_entity_file );
+            zf.add_file( mesh_entity_file );
             GEO::FileSystem::delete_file( mesh_entity_file );
 
             const std::string geological_entity_file( "geological_entities.txt" );
             save_geological_entities( geomodel, geological_entity_file );
-            zip_file( zf, geological_entity_file );
+            zf.add_file( geological_entity_file );
             GEO::FileSystem::delete_file( geological_entity_file );
 
             index_t nb_mesh_entites = nb_mesh_entities( geomodel );
@@ -987,9 +963,6 @@ namespace {
             Logger::instance()->set_quiet( false );
             std::sort( filenames.begin(), filenames.end() );
             zip_files( filenames, zf );
-
-            zipClose( zf, NULL );
-            GEO::FileSystem::set_current_working_directory( pwd );
         }
 
         index_t dimension( const std::string& filename ) const final
