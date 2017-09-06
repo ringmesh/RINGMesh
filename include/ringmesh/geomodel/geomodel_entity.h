@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -42,8 +42,7 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/entity_type_manager.h>
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
+#include <ringmesh/geomodel/entity_type.h>
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
@@ -58,7 +57,7 @@ namespace RINGMesh {
      * @brief Abstract base class describing one entity of a GeoModel
      */
     template< index_t DIMENSION >
-    class GeoModelEntity {
+    class RINGMESH_API GeoModelEntity {
     ringmesh_disable_copy_and_move( GeoModelEntity );
     ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -114,7 +113,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelEntity );
 
     template< index_t DIMENSION >
-    class Universe: public GeoModelEntity< DIMENSION > {
+    class RINGMESH_API Universe: public GeoModelEntity< DIMENSION > {
     public:
         friend class UniverseAccess< DIMENSION > ;
 
@@ -177,7 +176,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( Universe );
 
     template< index_t DIMENSION >
-    class UniverseAccess {
+    class RINGMESH_API UniverseAccess {
     ringmesh_disable_copy_and_move( UniverseAccess );
         friend class GeoModelBuilderTopologyBase< DIMENSION > ;
         friend class GeoModelBuilderTopology< DIMENSION > ;

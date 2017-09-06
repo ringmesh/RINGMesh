@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -56,7 +56,7 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class GeoModelBuilderTopologyBase {
+    class RINGMESH_API GeoModelBuilderTopologyBase {
     ringmesh_disable_copy_and_move( GeoModelBuilderTopologyBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
@@ -76,10 +76,16 @@ namespace RINGMesh {
          * @brief Add to the vector the entities which cannot exist if
          *        an entity in the set does not exist.
          * @return True if at least one entity was added.
+         * @todo I do not think that it work for only else than region and layer
+         * because if you remove something else, for instance a corner or a line
+         * or a surface, the incident boundaries may still exist but you removed
+         * one of its boundaries... to handle in the future.
+         * In fact, the model can be still be valid since there is everything geometrically.
+         * But the incident entities which shared the removed mesh entity must be merged... [BC].
          */
         bool get_dependent_entities(
-            std::set< gmme_id >& in_mesh_entities,
-            std::set< gmge_id >& in_geological_entities ) const;
+            std::set< gmme_id >& mesh_entities,
+            std::set< gmge_id >& geological_entities ) const;
 
         virtual gmme_id create_mesh_entity( const MeshEntityType& type );
 
@@ -92,18 +98,18 @@ namespace RINGMesh {
             const gmme_id& boundary );
 
         virtual void add_mesh_entity_boundary_relation(
-            const gmme_id& boundary,
-            const gmme_id& incident_entity,
+            const gmme_id& incident_entity_id,
+            const gmme_id& boundary_id,
             bool side = false );
 
         virtual void set_mesh_entity_boundary(
-            const gmme_id& gme_id,
+            const gmme_id& gmme,
             index_t id,
             index_t boundary_id,
             bool side = false );
 
         void set_mesh_entity_incident_entity(
-            const gmme_id& gme_id,
+            const gmme_id& gmme,
             index_t id,
             index_t incident_entity_id );
 
@@ -129,7 +135,7 @@ namespace RINGMesh {
          * @brief Finds or creates a line knowing its topological adjacencies
          */
         gmme_id find_or_create_line(
-            const std::vector< index_t >& incident_surfaces,
+            const std::vector< index_t >& sorted_adjacent_surfaces,
             const gmme_id& first_corner,
             const gmme_id& second_corner );
 
@@ -177,7 +183,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelBuilderTopologyBase );
 
     template< index_t DIMENSION >
-    class GeoModelBuilderTopology: public GeoModelBuilderTopologyBase< DIMENSION > {
+    class RINGMESH_API GeoModelBuilderTopology: public GeoModelBuilderTopologyBase< DIMENSION > {
     };
 
     template< >
@@ -193,8 +199,8 @@ namespace RINGMesh {
         void compute_universe();
 
         void add_mesh_entity_boundary_relation(
-            const gmme_id& boundary,
-            const gmme_id& incident_entity,
+            const gmme_id& incident_entity_id,
+            const gmme_id& boundary_id,
             bool side = false ) override;
 
         void set_mesh_entity_boundary(
@@ -229,8 +235,8 @@ namespace RINGMesh {
             index_t nb_additional_entities ) override;
 
         void add_mesh_entity_boundary_relation(
-            const gmme_id& boundary,
-            const gmme_id& incident_entity,
+            const gmme_id& incident_entity_id,
+            const gmme_id& boundary_id,
             bool side = false ) override;
 
         void set_mesh_entity_boundary(

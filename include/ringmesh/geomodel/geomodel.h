@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -42,10 +42,8 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @file ringmesh/geomodel.h
@@ -62,7 +60,7 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( Line );
     FORWARD_DECLARATION_DIMENSION_CLASS( Region );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
-    template< index_t DIMENSION > struct EntityTypeManager;
+    FORWARD_DECLARATION_DIMENSION_STRUCT( EntityTypeManager );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
@@ -76,6 +74,9 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
+
+    ALIAS_2D_AND_3D( GeoModelMeshEntity );
+    ALIAS_2D_AND_3D( Region );
 } // namespace RINGMesh
 
 namespace RINGMesh {
@@ -84,13 +85,13 @@ namespace RINGMesh {
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     template< index_t DIMENSION >
-    class GeoModelBase {
+    class RINGMESH_API GeoModelBase {
     ringmesh_disable_copy_and_move( GeoModelBase );
         ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelAccess< DIMENSION > ;
 
     public:
-        virtual ~GeoModelBase() = default;
+        virtual ~GeoModelBase();
 
         /*!
          * @brief Gets the name of the GeoModel
@@ -304,7 +305,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelBase );
 
     template< index_t DIMENSION >
-    class GeoModel final: public GeoModelBase< DIMENSION > {
+    class RINGMESH_API GeoModel final: public GeoModelBase< DIMENSION >{
         friend class GeoModelAccess< DIMENSION > ;
     public:
         GeoModel();
@@ -333,6 +334,7 @@ namespace RINGMesh {
         friend class GeoModelAccess< 3 > ;
     public:
         GeoModel();
+        ~GeoModel();
 
         corner_range< 3 > corners() const
         {
@@ -388,7 +390,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModel );
 
     template< index_t DIMENSION >
-    class GeoModelAccess {
+    class RINGMESH_API GeoModelAccess {
     ringmesh_disable_copy_and_move( GeoModelAccess );
         ringmesh_template_assert_2d_or_3d (DIMENSION);
         friend class GeoModelBuilderBase< DIMENSION > ;

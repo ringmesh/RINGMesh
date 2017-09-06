@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -35,8 +35,13 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <future>
+
+#include <geogram/basic/attributes.h>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -49,6 +54,8 @@ namespace {
     const std::string attribute_names[6] = { "long_int_attr", "bool_attr",
                                              "double_attr", "vec3_attr",
                                              "dim_6_double_attr", "char_attr" };
+
+    std::mutex lock;
 
     void load_geomodel( GeoModel3D& in, const std::string& filename )
     {
@@ -591,10 +598,16 @@ namespace {
 
     }
 
+    void load_file( GeoModel3D& geomodel )
+    {
+        std::lock_guard< std::mutex > locking( lock );
+        load_geomodel( geomodel, "modelA1_volume_meshed.gm" );
+    }
+
     void tests_transfer_from_geomodel_regions_to_geomodelmesh()
     {
         GeoModel3D geomodel;
-        load_geomodel( geomodel, "modelA1_volume_meshed.gm" );
+        load_file( geomodel );
 
         set_vertex_attributes_on_geomodel_regions( geomodel );
         set_cell_attributes_on_geomodel_regions( geomodel );
@@ -606,7 +619,7 @@ namespace {
     void tests_transfer_from_geomodelmesh_to_geomodel_regions()
     {
         GeoModel3D geomodel;
-        load_geomodel( geomodel, "modelA1_volume_meshed.gm" );
+        load_file( geomodel );
 
         set_vertex_attributes_on_geomodelmesh( geomodel );
         set_cell_attributes_on_geomodelmesh( geomodel );
@@ -619,8 +632,19 @@ namespace {
     {
         // long int is not a default attribute type in geogram.
         GEO::geo_register_attribute_type< long int >( "long int" );
-        tests_transfer_from_geomodel_regions_to_geomodelmesh();
-        tests_transfer_from_geomodelmesh_to_geomodel_regions();
+
+        std::vector< std::future< void > > futures;
+
+        futures.emplace_back(
+            std::async( std::launch::async,
+                &tests_transfer_from_geomodel_regions_to_geomodelmesh ) );
+        futures.emplace_back(
+            std::async( std::launch::async,
+                &tests_transfer_from_geomodelmesh_to_geomodel_regions ) );
+
+        for( auto& future : futures ) {
+            future.get();
+        }
     }
 
 }

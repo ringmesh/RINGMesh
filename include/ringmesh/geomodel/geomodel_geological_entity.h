@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -46,8 +46,8 @@
 
 #include <ringmesh/basic/factory.h>
 
+#include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
@@ -61,7 +61,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     template< index_t DIMENSION >
-    class GeoModelGeologicalEntity: public GeoModelEntity< DIMENSION > {
+    class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity< DIMENSION > {
     public:
         friend class GeoModelGeologicalEntityAccess< DIMENSION > ;
 
@@ -192,7 +192,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelGeologicalEntityFactory );
 
     template< index_t DIMENSION >
-    class Contact: public GeoModelGeologicalEntity< DIMENSION > {
+    class RINGMESH_API Contact: public GeoModelGeologicalEntity< DIMENSION > {
     public:
         explicit Contact( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -213,7 +213,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( Contact );
 
     template< index_t DIMENSION >
-    class Interface: public GeoModelGeologicalEntity< DIMENSION > {
+    class RINGMESH_API Interface: public GeoModelGeologicalEntity< DIMENSION > {
     public:
         explicit Interface( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -234,7 +234,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( Interface );
 
     template< index_t DIMENSION >
-    class Layer: public GeoModelGeologicalEntity< DIMENSION > {
+    class RINGMESH_API Layer: public GeoModelGeologicalEntity< DIMENSION > {
     public:
         explicit Layer( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -255,7 +255,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( Layer );
 
     template< index_t DIMENSION >
-    class GeoModelGeologicalEntityAccess {
+    class RINGMESH_API GeoModelGeologicalEntityAccess {
     ringmesh_disable_copy_and_move( GeoModelGeologicalEntityAccess );
         friend class GeoModelBuilderTopology< DIMENSION > ;
         friend class GeoModelBuilderGeology< DIMENSION > ;

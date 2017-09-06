@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -9,20 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -41,6 +41,30 @@
 This very short guidelines are non-exhaustive and the developer is invited to
 read the very nice core C++ guidelines proposed [here](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#main)
  by Mr Stroustrup and Sutter.
+ 
+Code formating tool
+--------------------------------------
+### clang-format ###
+[clang-format](http://releases.llvm.org/3.8.0/tools/clang/docs/ClangFormat.html)
+is a tool which formats the code according to specific rules. These rules are listed in the file
+.clang-format at the RINGMesh root directory. More information about these rules can be found
+[here](http://releases.llvm.org/3.8.0/tools/clang/docs/ClangFormatStyleOptions.html).
+The current clamg-format version used in RINGMesh is 3.8 (should be compatible with newer versions).
+
+### Install clang-format ###
+In Linux, just install clang package. Binaries for Windows are [here](http://llvm.org/builds/).
+
+### How to run clang-format ###
+For Eclipde IDE users, there is a build configuration, called clang-format, to run clang-format.
+For VisualStudio users, make sure that clang binary directory is in the system path.
+This path should look like: C:\Program Files (x86)\LLVM\bin. Use CMake to generate the VisualStudio
+project and launch VisualStudio. Then build the project called format.
+
+### Editor integration ###
+For VisualStudio users, there is a [tool](http://llvm.org/builds/)
+to use clang-format directly within this IDE. In VisualStudio, just select the code that you want to
+format, then press ctrl-R, and finally press ctrl-F.
+For other integration, see the [clang-format documentation](http://clang.llvm.org/docs/ClangFormat.html).
 
 Style and naming conventions
 --------------------------------------

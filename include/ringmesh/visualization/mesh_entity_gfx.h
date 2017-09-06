@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -40,6 +40,8 @@
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <memory>
+
+#include <geogram/basic/factory.h>
 
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
@@ -61,13 +63,13 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
     ALIAS_2D_AND_3D( GeoModelGfx );
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
     class MeshEntityGfx {
-    ringmesh_disable_copy( MeshEntityGfx );
+    ringmesh_disable_copy_and_move( MeshEntityGfx );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         virtual ~MeshEntityGfx() = default;
@@ -104,8 +106,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class PointSetMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual ~PointSetMeshGfx() = default;
-
         static std::unique_ptr< PointSetMeshGfx< DIMENSION > > create_gfx(
             const PointSetMesh< DIMENSION >& mesh );
 
@@ -124,8 +124,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class LineMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual ~LineMeshGfx() = default;
-
         static std::unique_ptr< LineMeshGfx< DIMENSION > > create_gfx(
             const LineMesh< DIMENSION >& mesh );
 
@@ -159,8 +157,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class SurfaceMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual ~SurfaceMeshGfx() = default;
-
         static std::unique_ptr< SurfaceMeshGfx< DIMENSION > > create_gfx(
             const SurfaceMesh< DIMENSION >& mesh );
 
@@ -199,8 +195,6 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class VolumeMeshGfx: public MeshEntityGfx< DIMENSION > {
     public:
-        virtual ~VolumeMeshGfx() = default;
-
         static std::unique_ptr< VolumeMeshGfx< DIMENSION > > create_gfx(
             const VolumeMesh< DIMENSION >& mesh );
 
@@ -244,7 +238,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class AttributeGfxManagerBase {
-    ringmesh_disable_copy( AttributeGfxManagerBase );
+    ringmesh_disable_copy_and_move( AttributeGfxManagerBase );
     public:
         virtual ~AttributeGfxManagerBase() = default;
 
@@ -341,7 +335,7 @@ namespace RINGMesh {
         std::vector< std::string > get_attribute_names();
 
     protected:
-        AttributeGfxManagerBase( GeoModelGfx< DIMENSION >& gfx );
+        explicit AttributeGfxManagerBase( GeoModelGfx< DIMENSION >& gfx );
 
     protected:
         GeoModelGfx< DIMENSION >& gfx_;
@@ -361,25 +355,21 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class AttributeGfxManager final: public AttributeGfxManagerBase< DIMENSION > {
     public:
-        AttributeGfxManager( GeoModelGfx< DIMENSION >& gfx )
+        explicit AttributeGfxManager( GeoModelGfx< DIMENSION >& gfx )
             : AttributeGfxManagerBase< DIMENSION >( gfx )
         {
         }
-
-        virtual ~AttributeGfxManager() = default;
     };
 
     template< >
     class RINGMESH_API AttributeGfxManager< 3 > final: public AttributeGfxManagerBase< 3 > {
     public:
-        AttributeGfxManager( GeoModelGfx3D& gfx );
-
-        virtual ~AttributeGfxManager() = default;
+        explicit AttributeGfxManager( GeoModelGfx3D& gfx );
     };
 
     template< index_t DIMENSION >
     class AttributeGfx {
-    ringmesh_disable_copy( AttributeGfx );
+    ringmesh_disable_copy_and_move( AttributeGfx );
     public:
         AttributeGfx() = default;
 
@@ -427,6 +417,6 @@ namespace RINGMesh {
     protected:
         AttributeGfxManagerBase< DIMENSION >* manager_ { nullptr };
     };
-}
+} // namespace RINGMesh
 
 #endif

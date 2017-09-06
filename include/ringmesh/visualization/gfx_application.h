@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -54,60 +54,57 @@
 namespace RINGMesh {
 
     class RINGMESH_API RINGMeshApplication: public GEO::Application {
-    ringmesh_disable_copy( RINGMeshApplication );
+    ringmesh_disable_copy_and_move( RINGMeshApplication );
     public:
         enum struct ViewerType {
             GEOMODEL2D, GEOMODEL3D, MESH, NONE
         };
 
         RINGMeshApplication( int argc, char** argv );
-        virtual ~RINGMeshApplication() = default;
+        ~RINGMeshApplication() = default;
 
         virtual void quit();
 
-    private:
+    protected:
         static RINGMeshApplication* instance();
 
         std::string supported_read_file_extensions() override;
         std::string supported_geogram_read_file_extensions();
-        void init_graphics() override;
-        bool load( const std::string& filename ) override;
+        void init_graphics() override;bool load( const std::string& filename )
+            override;
         void draw_scene() override;
         void draw_object_properties() override;
         void draw_viewer_properties() override;
         void draw_application_menus() override;
 
-        bool load_geogram( const std::string& filename );
-        bool can_load_geogram( const std::string& filename );
+        bool load_geogram( const std::string& filename );bool can_load_geogram(
+            const std::string& filename );
         void browse_geogram( const std::string& path );
         void update_region_of_interest();
 
         static void show_color_table_popup( ImColor& color );
 
+    private:
         void create_point(
             std::string name = "debug",
             double x = 0,
             double y = 0,
             double z = 0 );
 
-        void create_aabbox( std::string name = "box",
-            double xmin = 0,
-            double ymin = 0,
-            double zmin = 0,
-            double xmax = 1,
-            double ymax = 1,
-            double zmax = 1 );
+        void create_aabbox( std::string name = "box", double xmin = 0, double ymin =
+            0, double zmin = 0, double xmax = 1, double ymax = 1, double zmax = 1 );
 
     private:
         template< index_t DIMENSION >
         class GeoModelViewerBase {
-        ringmesh_disable_copy( GeoModelViewerBase );
+        ringmesh_disable_copy_and_move( GeoModelViewerBase );
         public:
             struct OldNewStatus {
-                void operator=( bool value )
+                OldNewStatus& operator=( bool value )
                 {
                     old_status = value;
                     new_status = value;
+                    return *this;
                 }
                 bool need_to_update() const
                 {
@@ -117,15 +114,13 @@ namespace RINGMesh {
                 {
                     old_status = new_status;
                 }
-                bool old_status { false };
-                bool new_status { false };
+                bool old_status { false };bool new_status { false };
             };
             struct EntityStyle {
                 ImColor color_;
-                int size_;
-                bool visible_vertices_;
+                int size_ { 1 };bool visible_vertices_ { false };
                 ImColor vertex_color_;
-                int vertex_size_;
+                int vertex_size_ { 1 };
             };
 
         public:
@@ -161,8 +156,7 @@ namespace RINGMesh {
             virtual ViewerType type() = 0;
 
         public:
-            RINGMeshApplication& app_;
-            bool is_visible_ { true };
+            RINGMeshApplication& app_;bool is_visible_ { true };
             GeoModel< DIMENSION > GM_;
             GeoModelGfx< DIMENSION > GM_gfx_;
             Box< DIMENSION > bbox_;
@@ -171,35 +165,30 @@ namespace RINGMesh {
             int selected_entity_id_ { 0 };
 
             bool show_corners_ { true };
-            EntityStyle corner_style_;
-            bool show_lines_ { true };
-            EntityStyle line_style_;
-            bool show_surface_ { true };
-            EntityStyle surface_style_;
-            bool show_voi_ { false };
-            bool show_colormap_ { false };
+            EntityStyle corner_style_;bool show_lines_ { true };
+            EntityStyle line_style_;bool show_surface_ { true };
+            EntityStyle surface_style_;bool show_voi_ { false };bool show_colormap_ {
+                false };
 
             bool mesh_visible_ { true };
-            ImColor mesh_color_;
-            bool show_attributes_ { false };
+            ImColor mesh_color_;bool show_attributes_ { false };
             float attribute_min_ { 0 };
             float attribute_max_ { 0 };
         };
 
-        ALIAS_2D_AND_3D( GeoModelViewerBase )
-        ;
+        ALIAS_2D_AND_3D( GeoModelViewerBase );
 
         template< index_t DIMENSION >
         class GeoModelViewer final: public GeoModelViewerBase< DIMENSION > {
         };
 
-        ALIAS_2D_AND_3D( GeoModelViewer )
-        ;
+        ALIAS_2D_AND_3D( GeoModelViewer );
 
         class MeshViewer {
-        ringmesh_disable_copy( MeshViewer );
+        ringmesh_disable_copy_and_move( MeshViewer );
         public:
             MeshViewer( RINGMeshApplication& app, const std::string& filename );
+            ~MeshViewer() = default;
 
             void draw_object_properties();
             void draw_scene();
@@ -209,8 +198,7 @@ namespace RINGMesh {
             void set_attribute( const std::string& attribute );
 
         public:
-            RINGMeshApplication& app_;
-            bool is_visible_ { true };
+            RINGMeshApplication& app_;bool is_visible_ { true };
             GEO::Mesh mesh_;
             GEO::MeshGfx mesh_gfx_;
             Box3D bbox_;
@@ -220,15 +208,12 @@ namespace RINGMesh {
             float vertices_size_ { 1 };
             ImColor vertices_color_;
 
-            bool show_surface_ { true };
-            bool show_surface_colors_ { true };
-            bool show_mesh_ { true };
-            bool show_surface_borders_ { false };
+            bool show_surface_ { true };bool show_surface_colors_ { true };bool show_mesh_ {
+                true };bool show_surface_borders_ { false };
 
             bool show_volume_ { false };
-            float cells_shrink_ { 0 };
-            bool show_colored_cells_ { false };
-            bool show_hexes_ { true };
+            float cells_shrink_ { 0 };bool show_colored_cells_ { false };bool show_hexes_ {
+                true };
 
             bool show_attributes_ { false };
             GLuint current_colormap_texture_ { 0 };
@@ -243,7 +228,7 @@ namespace RINGMesh {
         void draw_geomodel_viewer_properties(
             std::vector< std::unique_ptr< GeoModelViewer< DIMENSION > > >& geomodels,
             int& id );
-    private:
+    protected:
         std::vector< std::unique_ptr< GeoModelViewer3D > > geomodels3d_;
         std::vector< std::unique_ptr< GeoModelViewer2D > > geomodels2d_;
         std::vector< std::unique_ptr< MeshViewer > > meshes_;
@@ -260,7 +245,6 @@ namespace RINGMesh {
         2 > {
     public:
         GeoModelViewer( RINGMeshApplication& app, const std::string& filename );
-        virtual ~GeoModelViewer() = default;
         ViewerType type() override
         {
             return ViewerType::GEOMODEL2D;
@@ -272,7 +256,6 @@ namespace RINGMesh {
         3 > {
     public:
         GeoModelViewer( RINGMeshApplication& app, const std::string& filename );
-        virtual ~GeoModelViewer() = default;
         ViewerType type() override
         {
             return ViewerType::GEOMODEL3D;
@@ -290,20 +273,16 @@ namespace RINGMesh {
             override;
 
     public:
-        bool show_hex_ { true };
-        bool show_prism_ { true };
-        bool show_pyramid_ { true };
-        bool show_tetra_ { true };
+        bool show_hex_ { true };bool show_prism_ { true };bool show_pyramid_ { true };bool show_tetra_ {
+            true };
 
-        float shrink_ { 0 };
-        bool meshed_regions_ { false };
-        bool show_volume_ { false };
+        float shrink_ { 0 };bool meshed_regions_ { false };bool show_volume_ { false };
         EntityStyle volume_style_;
 
         OldNewStatus colored_cells_;
         OldNewStatus show_colored_regions_;
         OldNewStatus show_colored_layers_;
     };
-}
+} // namespace RINGMesh
 
 #endif

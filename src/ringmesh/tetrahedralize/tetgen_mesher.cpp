@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -182,7 +182,7 @@ namespace RINGMesh {
             M.facet_corners.vertex_index_ptr( 0 ),
             M.facet_corners.nb() * sizeof(int) );
 
-        for( index_t f : range( M.facets.nb() ) ) {
+        for( auto f : range( M.facets.nb() ) ) {
             GEO_3rdParty::tetgenio::facet& F = tetgen_in_.facetlist[f];
             GEO_3rdParty::tetgenio::init( &F );
             F.numberofpolygons = 1;
@@ -202,7 +202,7 @@ namespace RINGMesh {
         tetgen_in_.numberofregions = static_cast< int >( nb_regions );
         tetgen_in_.regionlist = new double[5 * nb_regions];
 
-        for( index_t i : range( nb_regions ) ) {
+        for( auto i : range( nb_regions ) ) {
             tetgen_in_.regionlist[5 * i] = one_point_in_each_region[i].x;
             tetgen_in_.regionlist[5 * i + 1] = one_point_in_each_region[i].y;
             tetgen_in_.regionlist[5 * i + 2] = one_point_in_each_region[i].z;
@@ -248,7 +248,7 @@ namespace RINGMesh {
         int* tets_ptr = tetgen_out_.tetrahedronlist;
         parallel_for( nb_tets, [&tets_to_keep, &tets_ptr, &tets]( index_t i ) {
             index_t tetra = tets_to_keep[i];
-            for( index_t v : range( 4 ) ) {
+            for( auto v : range( 4 ) ) {
                 tets[4 * i + v] = static_cast< index_t >( tets_ptr[4 * tetra + v] );
             }
         } );
@@ -263,8 +263,8 @@ namespace RINGMesh {
         //  tetgen_out_.tetrahedronattributelist[t]
         std::set< double > regions_to_keep;
         auto nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
-        for( index_t t : range( nb_tets ) ) {
-            for( index_t f : range( 4 ) ) {
+        for( auto t : range( nb_tets ) ) {
+            for( auto f : range( 4 ) ) {
                 signed_index_t n = tetgen_out_.neighborlist[t * 4 + f];
                 if( n == -1 ) {
                     regions_to_keep.insert(
@@ -283,7 +283,7 @@ namespace RINGMesh {
 
         auto nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
         tets_to_keep.reserve( nb_tets );
-        for( index_t t : range( nb_tets ) ) {
+        for( auto t : range( nb_tets ) ) {
             if( regions_to_keep.find( tetgen_out_.tetrahedronattributelist[t] )
                 != regions_to_keep.end() ) {
                 tets_to_keep.push_back( t );

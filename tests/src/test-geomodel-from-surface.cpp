@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -34,6 +34,8 @@
  */
 
 #include <ringmesh/ringmesh_tests_config.h>
+
+#include <future>
 
 #include <geogram/basic/command_line.h>
 
@@ -58,19 +60,12 @@ int main()
     try {
         default_configure();
 
-        std::string file_name = ringmesh_test_data_path;
-        file_name += "modelA6.mesh";
-
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path );
-        log_file += "log.txt";
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
-
         Logger::out( "TEST", "Test GeoModel building from Surface" );
 
+        std::vector< std::future< void > > futures;
+
         GEO::Mesh in;
-        GEO::mesh_load( file_name, in );
+        GEO::mesh_load( ringmesh_test_data_path + "modelA6.mesh", in );
         GeoModel3D geomodel;
 
         GeoModelBuilderSurfaceMesh builder( geomodel, in );
@@ -87,45 +82,50 @@ int main()
         GEO::CmdLine::set_arg( "in:intersection_check", false );
 #endif
 
-        if( !is_geomodel_valid( geomodel ) ) {
-            throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
-                geomodel.name(), ": the loaded model is not valid." );
-        }
+        futures.emplace_back(
+            std::async( std::launch::async,
+                [&geomodel] {
+                    if( !is_geomodel_valid( geomodel ) ) {
+                        throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
+                            geomodel.name(), ": the loaded model is not valid." );
+                    }
+                } ) );
 
-        // Save and reload the model
-        std::string output_file( ringmesh_test_output_path );
-        output_file += "saved_modelA6.gm";
-        geomodel_save( geomodel, output_file );
+        futures.emplace_back( std::async( std::launch::async, [&geomodel] {
+            // Save and reload the model
+            std::string output_file( ringmesh_test_output_path );
+            output_file += "saved_modelA6.gm";
+            geomodel_save( geomodel, output_file );
+        } ) );
 
+        GEO::Mesh surface_meshes;
         // Compute mesh with duplicated points to compares number
         // of mesh elements and mesh entities
-        GEO::Mesh surface_meshes;
         for( const auto& surface : geomodel.surfaces() ) {
-            index_t vertex_it = surface_meshes.vertices.create_vertices(
-                surface.nb_vertices() );
+            index_t vertex_it { surface_meshes.vertices.create_vertices(
+                surface.nb_vertices() ) };
             for( index_t v : range( surface.nb_vertices() ) ) {
                 surface_meshes.vertices.point( vertex_it + v ) = surface.vertex( v );
             }
-            index_t facet_it = surface_meshes.facets.create_triangles(
-                surface.nb_mesh_elements() );
+            index_t facet_it { surface_meshes.facets.create_triangles(
+                surface.nb_mesh_elements() ) };
             for( index_t f : range( surface.nb_mesh_elements() ) ) {
                 for( index_t v : range( surface.nb_mesh_element_vertices( f ) ) ) {
                     surface_meshes.facets.set_vertex( facet_it + f, v,
-                        vertex_it
-                            + surface.mesh_element_vertex_index(
-                                ElementLocalVertex( f, v ) ) );
+                        vertex_it + surface.mesh_element_vertex_index( { f, v } ) );
                 }
             }
         }
         surface_meshes.facets.connect();
 
-        // Save computed mesh
-        std::string output_file2( ringmesh_test_output_path );
-        output_file2 += "saved_modelA6_dupl_points.mesh";
-        GEO::mesh_save( surface_meshes, output_file2 );
+        futures.emplace_back( std::async( std::launch::async, [&surface_meshes] {
+            // Save computed mesh
+            std::string output_file2( ringmesh_test_output_path );
+            output_file2 += "saved_modelA6_dupl_points.mesh";
+            GEO::mesh_save( surface_meshes, output_file2 );
+        } ) );
 
         GeoModel3D reloaded_model;
-
         GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes );
         builder2.build_polygonal_surfaces_from_connected_components();
         builder2.build_lines_and_corners_from_surfaces();
@@ -133,11 +133,14 @@ int main()
         builder2.end_geomodel();
         print_geomodel( reloaded_model );
 
-        // Checking if building has been successfully done
-        if( !is_geomodel_valid( reloaded_model ) ) {
-            throw RINGMeshException( "RINGMesh Test", "Failed when reloading model ",
-                reloaded_model.name(), ": the reloaded model is not valid." );
-        }
+        futures.emplace_back(
+            std::async( std::launch::async, [&reloaded_model] {
+                // Checking if building has been successfully done
+                if( !is_geomodel_valid( reloaded_model ) ) {
+                    throw RINGMeshException( "RINGMesh Test", "Failed when reloading model ",
+                        reloaded_model.name(), ": the reloaded model is not valid." );
+                }
+            } ) );
 
         // Checking number of mesh elements
         if( surface_meshes.vertices.nb() != in.vertices.nb() ) {
@@ -178,6 +181,9 @@ int main()
                 "between saved model and reload model." );
         }
 
+        for( auto& future : futures ) {
+            future.get();
+        }
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
