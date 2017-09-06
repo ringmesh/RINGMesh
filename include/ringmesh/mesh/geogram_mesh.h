@@ -302,6 +302,7 @@ protected:                                                                     \
         }
     };
 
+    using GeogramVolumeMesh2D = GeogramVolumeMesh< 2 >;
     using GeogramVolumeMesh3D = GeogramVolumeMesh< 3 >;
 
     void register_geogram_mesh();

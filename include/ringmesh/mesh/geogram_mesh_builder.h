@@ -203,6 +203,10 @@ private:                                                                       \
             GEO::remove_small_connected_components(
                 *mesh_.mesh_, min_area, min_polygons );
         }
+        virtual void invert_normals()
+        {
+            GEO::invert_normals( *( mesh_.mesh_ ) );
+        }
 
         void triangulate(
             const SurfaceMeshBase< DIMENSION >& surface_in ) override

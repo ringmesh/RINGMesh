@@ -188,6 +188,11 @@ namespace RINGMesh
             return static_cast< index_t >( mesh_entity_types_.size() );
         }
 
+        index_t mesh_entity_type_index( const MeshEntityType& type ) const
+        {
+            return find( mesh_entity_types_.container(), type );
+        }
+
     protected:
         MeshEntityTypeManagerBase() = default;
 
