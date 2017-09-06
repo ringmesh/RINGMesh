@@ -37,6 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <algorithm>
 #include <memory>
 
 #include <ringmesh/basic/factory.h>
@@ -202,6 +203,10 @@ namespace RINGMesh {
         static std::unique_ptr< PointSetMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
         std::tuple< index_t, std::vector< index_t > > connected_components() const final;
+        bool is_mesh_valid() const override
+        {
+            return true;
+        }
     protected:
         PointSetMesh() = default;
     };
@@ -285,6 +290,37 @@ namespace RINGMesh {
         }
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
+
+        bool is_mesh_valid() const override
+        {
+            bool valid { true };
+
+            if( this->nb_vertices() < 2 ) {
+                Logger::err( "LineMesh", "Mesh has less than 2 vertices " );
+                valid = false;
+            }
+
+            if( nb_edges() == 0 ) {
+                Logger::err( "LineMesh", "Mesh has no edge" );
+                valid = false;
+            }
+
+            // No isolated vertices
+            std::vector< index_t > nb( this->nb_vertices(), 0 );
+            for( auto p : range( nb_edges() ) ) {
+                for( auto v : range( 2 ) ) {
+                    nb[edge_vertex( { p, v } )]++;
+                }
+            }
+            auto nb_isolated_vertices = static_cast< index_t >( std::count(
+                nb.begin(), nb.end(), 0 ) );
+            if( nb_isolated_vertices > 0 ) {
+                Logger::warn( "LineMesh", "Mesh has ", nb_isolated_vertices,
+                    " isolated vertices " );
+                valid = false;
+            }
+
+            return valid;
         std::tuple< index_t, std::vector< index_t > > connected_components() const final;
     protected:
         LineMesh() = default;
@@ -592,6 +628,36 @@ namespace RINGMesh {
             }
             return *polygon_aabb_;
         }
+
+        bool is_mesh_valid() const override
+        {
+            bool valid { true };
+
+            if( this->nb_vertices() < 3 ) {
+                Logger::warn( "SurfaceMesh has less than 3 vertices " );
+                valid = false;
+            }
+            if( nb_polygons() == 0 ) {
+                Logger::warn( "SurfaceMesh has no polygon" );
+                valid = false;
+            }
+
+            // No isolated vertices
+            std::vector< index_t > nb( this->nb_vertices(), 0 );
+            for( auto p : range( nb_polygons() ) ) {
+                for( auto v : range( nb_polygon_vertices( p ) ) ) {
+                    nb[polygon_vertex( { p, v } )]++;
+                }
+            }
+            auto nb_isolated_vertices = static_cast< index_t >( std::count(
+                nb.begin(), nb.end(), 0 ) );
+            if( nb_isolated_vertices > 0 ) {
+                Logger::warn( "SurfaceMesh", "Mesh has ", nb_isolated_vertices,
+                    " isolated vertices " );
+                valid = false;
+            }
+
+            return valid;
         std::tuple< index_t, std::vector< index_t > > connected_components() const final;
     protected:
         SurfaceMeshBase() = default;
@@ -981,6 +1047,36 @@ namespace RINGMesh {
             }
             return *cell_aabb_.get();
         }
+
+        bool is_mesh_valid() const override
+        {
+            bool valid { true };
+
+            if( this->nb_vertices() < 4 ) {
+                Logger::warn( "VolumeMesh has less than 4 vertices " );
+                valid = false;
+            }
+            if( nb_cells() == 0 ) {
+                Logger::warn( "VolumeMesh has no cell" );
+                valid = false;
+            }
+
+            // No isolated vertices
+            std::vector< index_t > nb( this->nb_vertices(), 0 );
+            for( auto c : range( nb_cells() ) ) {
+                for( auto v : range( nb_cell_vertices( c ) ) ) {
+                    nb[cell_vertex( { c, v } )]++;
+                }
+            }
+            auto nb_isolated_vertices = static_cast< index_t >( std::count(
+                nb.begin(), nb.end(), 0 ) );
+            if( nb_isolated_vertices > 0 ) {
+                Logger::warn( "VolumeMesh", "Mesh has ", nb_isolated_vertices,
+                    " isolated vertices " );
+                valid = false;
+            }
+
+            return valid;
         std::tuple< index_t, std::vector< index_t > > connected_components() const final;
     protected:
         VolumeMesh() = default;

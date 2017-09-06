@@ -51,6 +51,8 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 
+#include <ringmesh/io/zip_file.h>
+
 #include <ringmesh/mesh/well.h>
 #include <ringmesh/mesh/geogram_mesh.h>
 
