@@ -39,8 +39,10 @@
 
 #include <stack>
 #include <numeric>
-#include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/geometry.h>
+
+#include <ringmesh/mesh/geogram_mesh.h>
 
 namespace RINGMesh {
 
@@ -451,6 +453,25 @@ namespace RINGMesh {
         } while( !S.empty() );
 
         return result;
+    }
+
+    double SurfaceMesh< 3 >::polygon_area( index_t polygon_id ) const
+    {
+        double result = 0.0;
+        if( nb_polygon_vertices( polygon_id ) == 0 ) {
+            return result;
+        }
+        const vec3& p1 = vertex(
+            polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
+        for( auto i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
+            const vec3& p2 = vertex(
+                polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
+            const vec3& p3 = vertex(
+                polygon_vertex( ElementLocalVertex( polygon_id, i + 1 ) ) );
+            result += triangle_signed_area( p1, p2, p3,
+                polygon_normal( polygon_id ) );
+        }
+        return std::fabs( result );
     }
 
     template< index_t DIMENSION >

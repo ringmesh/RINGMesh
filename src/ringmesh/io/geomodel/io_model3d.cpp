@@ -378,6 +378,7 @@ namespace {
                             }
                         }
                     }
+
                     // Set a BSTONE at the line other extremity
                     const auto& c1_id = line.boundary_gmme( 1 );
                     auto gme_vertices =

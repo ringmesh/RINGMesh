@@ -433,7 +433,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the low level mesh data structure
          */
-        const PointSetMesh< DIMENSION >& low_level_mesh_storage() const
+        const PointSetMesh< DIMENSION >& mesh() const
         {
             return *point_set_mesh_;
         }
@@ -601,7 +601,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the low level mesh data structure
          */
-        const LineMesh< DIMENSION >& low_level_mesh_storage() const
+        const LineMesh< DIMENSION >& mesh() const
         {
             return *line_mesh_;
         }
@@ -777,7 +777,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the low level mesh data structure
          */
-        const SurfaceMesh< DIMENSION >& low_level_mesh_storage() const
+        const SurfaceMesh< DIMENSION >& mesh() const
         {
             return *surface_mesh_;
         }
@@ -1150,7 +1150,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the low level mesh data structure
          */
-        const VolumeMesh< DIMENSION >& low_level_mesh_storage() const
+        const VolumeMesh< DIMENSION >& mesh() const
         {
             return *volume_mesh_;
         }

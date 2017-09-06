@@ -38,16 +38,15 @@
 #include <ringmesh/basic/common.h>
 
 #include <memory>
-#include <stack>
 
-#include <geogram/basic/attributes.h>
-
-#include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/factory.h>
-#include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/aabb.h>
+
+namespace GEO {
+    class AttributesManager;
+}
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
@@ -612,7 +611,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( SurfaceMeshFactory );
 
     template< >
-    class SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
+    class RINGMESH_API SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
     public:
 
         /*!
@@ -620,24 +619,7 @@ namespace RINGMesh {
          * @param[in] polygon_id the polygon index
          * @return the polygon area
          */
-        double polygon_area( index_t polygon_id ) const override
-        {
-            double result = 0.0;
-            if( nb_polygon_vertices( polygon_id ) == 0 ) {
-                return result;
-            }
-            const vec3& p1 = vertex(
-                polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
-            for( auto i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
-                const vec3& p2 = vertex(
-                    polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
-                const vec3& p3 = vertex(
-                    polygon_vertex( ElementLocalVertex( polygon_id, i + 1 ) ) );
-                result += triangle_signed_area( p1, p2, p3,
-                    polygon_normal( polygon_id ) );
-            }
-            return std::fabs( result );
-        }
+        double polygon_area( index_t polygon_id ) const;
 
         /*!
          * Computes the Mesh polygon normal
@@ -689,7 +671,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class SurfaceMesh< 2 > : public SurfaceMeshBase< 2 > {
+    class RINGMESH_API SurfaceMesh< 2 > : public SurfaceMeshBase< 2 > {
     public:
         /*!
          * Computes the Mesh polygon area

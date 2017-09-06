@@ -35,6 +35,10 @@
 
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 
+#include <geogram/basic/attributes.h>
+
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 namespace {
@@ -79,7 +83,7 @@ namespace {
                 for( auto j : range( surface.nb_mesh_element_vertices( i ) ) ) {
                     if( inexact_equal( surface.mesh_element_vertex( ElementLocalVertex(i, j) ), v0,
                             surface.geomodel().epsilon() ) ) {
-                        index_t j_next = surface.low_level_mesh_storage().next_polygon_vertex(
+                        index_t j_next = surface.mesh().next_polygon_vertex(
                             ElementLocalVertex(i, j) ).local_vertex_id_;
                         if( inexact_equal( surface.mesh_element_vertex( ElementLocalVertex(i, j_next )),
                                 v1, surface.geomodel().epsilon() ) ) {
@@ -110,7 +114,7 @@ namespace {
             return false;
         }
         vec3 cell_facet_barycenter =
-            region.low_level_mesh_storage().cell_facet_barycenter(
+            region.mesh().cell_facet_barycenter(
                 CellLocalFacet( cell, cell_facet ) );
         vec3 polygon_barycenter = surface.mesh_element_barycenter( polygon );
         return inexact_equal( cell_facet_barycenter, polygon_barycenter,
@@ -175,7 +179,7 @@ namespace {
         const vecn< DIMENSION >& v0,
         const vecn< DIMENSION >& v1 )
     {
-        const SurfaceMesh< DIMENSION >& mesh = surface.low_level_mesh_storage();
+        const SurfaceMesh< DIMENSION >& mesh = surface.mesh();
         for( auto v : range( surface.nb_mesh_element_vertices( p ) ) ) {
             if( !inexact_equal( surface.mesh_element_vertex( { p, v } ), v0,
                 surface.geomodel().epsilon() ) ) {
@@ -202,7 +206,7 @@ namespace {
         const Surface< DIMENSION >& surface,
         index_t polygon )
     {
-        const VolumeMesh< DIMENSION >& mesh = region.low_level_mesh_storage();
+        const VolumeMesh< DIMENSION >& mesh = region.mesh();
         vec3 polygon_barycenter = surface.mesh_element_barycenter( polygon );
         for( auto f : range( region.nb_cell_facets( cell ) ) ) {
             vec3 cell_facet_barycenter = mesh.cell_facet_barycenter(
@@ -633,7 +637,7 @@ namespace RINGMesh {
             line.nb_vertices() );
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > surface_mesh_builder =
             create_surface_builder( surface_id );
-        const SurfaceMesh< DIMENSION >& mesh = surface.low_level_mesh_storage();
+        const SurfaceMesh< DIMENSION >& mesh = surface.mesh();
         for( auto v : range( line.nb_vertices() ) ) {
             const vecn< DIMENSION >& p = line.vertex( v );
             const index_t& polygon_vertex = polygon_vertices[v].vertex_;
@@ -838,7 +842,7 @@ namespace RINGMesh {
 
         std::unique_ptr< VolumeMeshBuilder3D > region_mesh_builder =
             create_region_builder( region_id );
-        const VolumeMesh3D& mesh = region.low_level_mesh_storage();
+        const VolumeMesh3D& mesh = region.mesh();
         for( auto v : range( surface.nb_vertices() ) ) {
             const vec3& p = surface.vertex( v );
             const index_t& cell = cell_vertices[v].element_;
