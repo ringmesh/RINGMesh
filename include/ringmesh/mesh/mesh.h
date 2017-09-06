@@ -315,7 +315,7 @@ namespace RINGMesh {
             auto nb_isolated_vertices = static_cast< index_t >( std::count(
                 nb.begin(), nb.end(), 0 ) );
             if( nb_isolated_vertices > 0 ) {
-                Logger::warn( "SurfaceMesh", "Mesh has ", nb_isolated_vertices,
+                Logger::warn( "LineMesh", "Mesh has ", nb_isolated_vertices,
                     " isolated vertices " );
                 valid = false;
             }
