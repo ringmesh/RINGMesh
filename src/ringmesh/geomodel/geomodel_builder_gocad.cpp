@@ -509,8 +509,7 @@ namespace {
                     surface_sides[2 * region.boundary( s ).index() + 1] =
                     true;
                 } else if( !region.side( s ) ) {
-                    surface_sides[2 * region.boundary( s ).index()] =
-                    true;
+                    surface_sides[2 * region.boundary( s ).index()] = true;
                 } else {
                     ringmesh_assert_not_reached;
                 }
@@ -1106,7 +1105,7 @@ namespace {
          * of region vertices only if it refers to a vertex of another region
          * @param[in] geomodel GeoModel
          * @param[in] line ACSII file reader
-         * @param[in] load_storage Load informations
+         * @param[in] region_id Index of the region
          * @param[in,out] region_vertices Vector of the coordinates of the
          * vertices of the region
          * @param[in,out] vertex_map Map between Gocad and GeoModel vertex indices

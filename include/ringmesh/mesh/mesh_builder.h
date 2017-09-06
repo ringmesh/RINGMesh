@@ -706,6 +706,8 @@ namespace RINGMesh {
             index_t min_polygons ) = 0;
         virtual void triangulate(
             const SurfaceMeshBase< DIMENSION >& surface_in ) = 0;
+        virtual void invert_normals() = 0;
+
         /*!@}
          */
         /*!

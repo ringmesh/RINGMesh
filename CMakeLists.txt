@@ -35,6 +35,7 @@
 #------------------------------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 2.8)
+
 set(USER_CONFIG "${CMAKE_SOURCE_DIR}/cmake/UserConfig.cmake" CACHE PATH
   "Path to optional user configuration file.")
 
@@ -60,13 +61,16 @@ include(CMakeDependentOption)
 # option is ON.
 CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
     "RINGMESH_WITH_GRAPHICS" OFF)
+
 # Option to test ringmesh-view. Disable when BUILD_RINGMESH_VIEW
 # is OFF. The fist time BUILD_RINGMESH_VIEW is ON, this
 # option is ON.
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
     "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
 
+	
 #------------------------------------------------------------------------------------------------
+
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
@@ -75,7 +79,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #------------------------------------------------------------------------------------------------
 # Additional cmake modules
 include(ExternalProject)
-
 
 # Enable testing with CTest
 enable_testing()
@@ -400,6 +403,7 @@ set(CPACK_PACKAGE_VERSION_MAJOR ${RINGMesh_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${RINGMesh_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${RINGMesh_VERSION_PATCH})
 set(CPACK_PACKAGE_VENDOR "RING-TEAM (www.ring-team.org)")
+
 set(CPACK_SOURCE_GENERATOR "ZIP")
 
 set(CPACK_SOURCE_IGNORE_FILES "/build/;/.hg/;/_CPack_Packages/")
