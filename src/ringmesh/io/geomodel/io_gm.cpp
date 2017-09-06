@@ -558,7 +558,7 @@ namespace {
             const ENTITY& cur_mesh_entity =
                 dynamic_cast< const ENTITY& >( geomodel.mesh_entity( type, e ) );
             out << type << " " << e << " " << cur_mesh_entity.name() << " "
-                << cur_mesh_entity.low_level_mesh_storage().type_name() << EOL;
+                << cur_mesh_entity.mesh().type_name() << EOL;
             out << "boundary ";
             for( auto b : range( cur_mesh_entity.nb_boundaries() ) ) {
                 out << cur_mesh_entity.boundary_gmme( b ).index() << " ";
@@ -635,7 +635,7 @@ namespace {
                     ENTITY< DIMENSION >::type_name_static(), i ) );
             // Save ID - NAME
             out << E.gmme() << " " << E.name() << " "
-                << E.low_level_mesh_storage().type_name() << EOL;
+                << E.mesh().type_name() << EOL;
             // Second line Signed ids of boundary surfaces
             for( auto j : range( E.nb_boundaries() ) ) {
                 if( E.side( j ) ) {
@@ -774,7 +774,7 @@ namespace {
         const gmme_id& id = entity.gmme();
         std::string base_name = id.type().string() + "_"
             + std::to_string( id.index() );
-        return base_name + "." + entity.low_level_mesh_storage().default_extension();
+        return base_name + "." + entity.mesh().default_extension();
     }
 
     /*!

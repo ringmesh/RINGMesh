@@ -143,7 +143,7 @@ namespace {
     {
         vec3 direction = vertex - on_surface;
         return dot( direction,
-            surface.low_level_mesh_storage().polygon_normal( triangle ) ) > 0;
+            surface.mesh().polygon_normal( triangle ) ) > 0;
     }
 
     index_t find_region_from_corners(
