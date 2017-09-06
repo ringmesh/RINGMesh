@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -9,20 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -82,7 +82,7 @@ namespace {
             vertex_exported_id_.resize( mesh.vertices.nb(), NO_ID );
             atom_exported_id_.resize( mesh.cells.nb_duplicated_vertices(), NO_ID );
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                const RINGMesh::Region3D& region = geomodel.region( r );
+                const auto& region = geomodel.region( r );
                 export_one_region( region );
             }
 
@@ -331,7 +331,7 @@ namespace {
             }
         }
 
-        void export_one_region( const RINGMesh::Region3D& region )
+        void export_one_region( const Region3D& region )
         {
             ringmesh_assert( out_.is_open() );
             out_ << "TVOLUME " << region.name() << EOL;
@@ -339,7 +339,7 @@ namespace {
             export_tetrahedra( region );
         }
 
-        void export_region_vertices( const RINGMesh::Region3D& region )
+        void export_region_vertices( const Region3D& region )
         {
             // Export not duplicated vertices
             for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
@@ -347,9 +347,7 @@ namespace {
             }
         }
 
-        void export_region_cell_vertices(
-            const RINGMesh::Region3D& region,
-            index_t c )
+        void export_region_cell_vertices( const Region3D& region, index_t c )
         {
             const GeoModelMesh3D& mesh = geomodel_mesh( region );
             index_t cell = mesh.cells.cell( region.gmme().index(), c );
@@ -360,7 +358,7 @@ namespace {
         }
 
         void export_region_cell_vertex(
-            const RINGMesh::Region3D& region,
+            const Region3D& region,
             index_t cell,
             index_t v,
             const vec3& cell_center )
@@ -388,7 +386,7 @@ namespace {
         }
 
         void export_region_cell_vertex_attributes(
-            const RINGMesh::Region3D& region,
+            const Region3D& region,
             index_t vertex_id,
             const vec3& cell_center )
         {
@@ -469,7 +467,7 @@ namespace {
             return NO_ID;
         }
 
-        void export_tetrahedra( const RINGMesh::Region3D& region )
+        void export_tetrahedra( const Region3D& region )
         {
             // Export duplicated vertices
             export_duplicated_vertices();

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -38,8 +38,11 @@
 #include <ringmesh/mesh/mesh.h>
 
 #include <stack>
-#include <ringmesh/mesh/geogram_mesh.h>
+
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/geometry.h>
+
+#include <ringmesh/mesh/geogram_mesh.h>
 
 namespace RINGMesh {
 
@@ -355,6 +358,25 @@ namespace RINGMesh {
         } while( !S.empty() );
 
         return result;
+    }
+
+    double SurfaceMesh< 3 >::polygon_area( index_t polygon_id ) const
+    {
+        double result = 0.0;
+        if( nb_polygon_vertices( polygon_id ) == 0 ) {
+            return result;
+        }
+        const vec3& p1 = vertex(
+            polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
+        for( auto i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
+            const vec3& p2 = vertex(
+                polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
+            const vec3& p3 = vertex(
+                polygon_vertex( ElementLocalVertex( polygon_id, i + 1 ) ) );
+            result += triangle_signed_area( p1, p2, p3,
+                polygon_normal( polygon_id ) );
+        }
+        return std::fabs( result );
     }
 
     template< index_t DIMENSION >
