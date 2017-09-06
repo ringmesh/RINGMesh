@@ -49,7 +49,8 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
 
         // Set an output log file
@@ -65,20 +66,25 @@ int main()
         GeoModel3D geomodel;
         bool loaded_model_is_valid = geomodel_load( geomodel, file_name );
 
-        if( !loaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test", "Failed when building model ",
-                geomodel.name(), ": the model is not valid." );
+        if( !loaded_model_is_valid )
+        {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when building model ", geomodel.name(),
+                ": the model is not valid." );
         }
 
 #ifdef RINGMESH_WITH_TETGEN
 
         // Tetrahedralize the GeoModel
         tetrahedralize( geomodel, "TetGen", NO_ID, false );
-        for( index_t r : range( geomodel.nb_regions() ) ) {
-            if( !geomodel.region( r ).is_meshed() ) {
+        for( index_t r : range( geomodel.nb_regions() ) )
+        {
+            if( !geomodel.region( r ).is_meshed() )
+            {
                 throw RINGMeshException( "RINGMesh Test",
-                    "Failed when tetrahedralize model ", geomodel.name(), " Region ",
-                    r, " is not meshed ", "maybe the Tetgen call have failed" );
+                    "Failed when tetrahedralize model ", geomodel.name(),
+                    " Region ", r, " is not meshed ",
+                    "maybe the Tetgen call have failed" );
             }
         }
 
@@ -89,25 +95,28 @@ int main()
 
         // Reload it and test its validity
         GeoModel3D reloaded_model;
-        bool reloaded_model_is_valid = geomodel_load( reloaded_model,
-            output_file_name );
+        bool reloaded_model_is_valid =
+            geomodel_load( reloaded_model, output_file_name );
 
-        if( !reloaded_model_is_valid ) {
+        if( !reloaded_model_is_valid )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when tetrahedralize model ", geomodel.name(),
                 ": the model becomes invalid." );
         }
 
 #endif
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
     Logger::out( "TEST", "SUCCESS" );
     return 0;
 }
-

@@ -42,29 +42,34 @@
 /*! Tests the loading and writing of a Gocad model (.ml) file.
  * Loads a .ml file generated with Gocad, saves it, loads it again, saves it
  * again and compares the two saved versions.
- * @returns 0 if success or an error code if not. 
+ * @returns 0 if success or an error code if not.
  * @author Arnaud Botella
  */
 int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
-        //model filename to test
+        // model filename to test
         std::vector< std::string > input_model_file_name_list = {
-            "CloudSpin_fixed.ml", "modelA6.ml" };
-        for( const std::string& input_model_name : input_model_file_name_list ) {
-            std::string input_model_file_name = ringmesh_test_data_path
-                + input_model_name;
+            "CloudSpin_fixed.ml", "modelA6.ml"
+        };
+        for( const std::string& input_model_name : input_model_file_name_list )
+        {
+            std::string input_model_file_name =
+                ringmesh_test_data_path + input_model_name;
 
             Logger::out( "TEST", "Geomodel input test. Loading file ",
                 input_model_file_name );
 
             GeoModel3D in;
-            bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
+            bool loaded_model_is_valid =
+                geomodel_load( in, input_model_file_name );
 
-            if( !loaded_model_is_valid ) {
+            if( !loaded_model_is_valid )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when loading model ", in.name(),
                     ": the loaded model is not valid." );
@@ -75,10 +80,11 @@ int main()
             geomodel_save( in, output_model_file_name );
 
             GeoModel3D in2;
-            bool reloaded_model_is_valid = geomodel_load( in2,
-                output_model_file_name );
+            bool reloaded_model_is_valid =
+                geomodel_load( in2, output_model_file_name );
 
-            if( !reloaded_model_is_valid ) {
+            if( !reloaded_model_is_valid )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when reloading model ", in2.name(),
                     ": the reloaded model is not valid." );
@@ -88,8 +94,9 @@ int main()
             output_model_file_name_bis += in.name() + "_saved_out_bis.ml";
             geomodel_save( in2, output_model_file_name_bis );
 
-            if( !compare_files( output_model_file_name,
-                output_model_file_name_bis ) ) {
+            if( !compare_files(
+                    output_model_file_name, output_model_file_name_bis ) )
+            {
                 throw RINGMeshException( "TEST", "FAILED" );
             }
         }
@@ -100,15 +107,17 @@ int main()
         std::string input_cube_model_file_name( ringmesh_test_data_path );
         input_cube_model_file_name += "not_sealed_cube.ml";
         geomodel_load( not_sealed_cube_geomodel, input_cube_model_file_name );
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
     Logger::out( "TEST", "SUCCESS" );
     return 0;
-
 }
