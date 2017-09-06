@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -782,13 +782,13 @@ namespace {
                     && !is_edge_on_line( surface.geomodel(),
                         geomodel_vertices.geomodel_vertex_id( S_id, { p, v } ),
                         geomodel_vertices.geomodel_vertex_id( S_id,
-                            surface.low_level_mesh_storage().next_polygon_vertex( {
+                            surface.mesh().next_polygon_vertex( {
                                 p, v } ) ) ) ) {
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id, { p, v } ) );
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id,
-                            surface.low_level_mesh_storage().next_polygon_vertex( {
+                            surface.mesh().next_polygon_vertex( {
                                 p, v } ) ) );
                 }
             }
@@ -831,8 +831,8 @@ namespace {
             const auto& v1 = vertices.vertex( edge_indices[edge_id + 1] );
             builder.set_vertex( 2 * e, v0 );
             builder.set_vertex( 2 * e + 1, v1 );
-            builder.set_edge_vertex( e, 0, 2 * e );
-            builder.set_edge_vertex( e, 1, 2 * e + 1 );
+            builder.set_edge_vertex( EdgeLocalVertex( e, 0 ), 2 * e );
+            builder.set_edge_vertex( EdgeLocalVertex( e, 1 ), 2 * e + 1 );
         }
         mesh.save_mesh(
             get_validity_errors_directory() + "/non_manifold_edges.geogram" );
