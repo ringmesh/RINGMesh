@@ -37,66 +37,38 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <mutex>
-
-#include <geogram/basic/logger.h>
+#include <ringmesh/basic/pimpl.h>
 
 /*!
- * @file Logger class declaration
+ * @file Manage zip files
  * @author Arnaud Botella
  */
 
 namespace RINGMesh {
 
-    class RINGMESH_API Logger {
+    class RINGMESH_API ZipFile {
     public:
-        static void div( const std::string& title )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            GEO::Logger::div( title );
-        }
+        ZipFile( const std::string& filename );
+        ~ZipFile();
 
-        template< typename ...Args >
-        static void out( const std::string& feature, const Args& ... args )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            log( GEO::Logger::out( feature ), args... );
-        }
-
-        template< typename ...Args >
-        static void err( const std::string& feature, const Args& ... args )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            log( GEO::Logger::err( feature ), args... );
-        }
-
-        template< typename ...Args >
-        static void warn( const std::string& feature, const Args& ... args )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            log( GEO::Logger::warn( feature ), args... );
-        }
-
-        static GEO::Logger* instance()
-        {
-            return GEO::Logger::instance();
-        }
-
+        void add_file( const std::string& filename );
     private:
-        static void log( std::ostream& os )
-        {
-            os << std::endl;
-        }
+        IMPLEMENTATION_MEMBER( impl_ );
+    };
 
-        template< class A0, class ...Args >
-        static void log( std::ostream& os, const A0& a0, const Args& ...args )
-        {
-            os << a0;
-            log( os, args... );
-        }
+    class RINGMESH_API UnZipFile {
+    public:
+        UnZipFile( const std::string& filename );
+        ~UnZipFile();
 
+        void start_extract();
+        void get_current_file();
+        std::string get_current_filename();
+        bool next_file();
+
+        void get_file( const std::string& filename );
     private:
-        static std::mutex lock_;
+        IMPLEMENTATION_MEMBER( impl_ );
     };
 
 } // namespace RINGMesh

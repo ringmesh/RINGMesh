@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -106,8 +106,8 @@ void add_edges( LineMeshBuilder< DIMENSION >* builder, index_t size )
 {
     builder->create_edges( size - 1 );
     for( index_t i : range( size - 1 ) ) {
-        builder->set_edge_vertex( i, 0, i );
-        builder->set_edge_vertex( i, 1, i + 1 );
+        builder->set_edge_vertex( EdgeLocalVertex( i, 0 ), i );
+        builder->set_edge_vertex( EdgeLocalVertex( i, 1 ), i + 1 );
     }
 }
 
@@ -118,13 +118,13 @@ void add_triangles( SurfaceMeshBuilder< DIMENSION >* builder, index_t size )
     index_t id = 0;
     for( index_t i : range( size - 1 ) ) {
         for( index_t j : range( size - 1 ) ) {
-            builder->set_polygon_vertex( id, 0, i * size + j );
-            builder->set_polygon_vertex( id, 1, i * size + j + 1 );
-            builder->set_polygon_vertex( id, 2, ( i + 1 ) * size + j );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 0 ), i * size + j );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 1 ), i * size + j + 1 );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 2 ), ( i + 1 ) * size + j );
             id++;
-            builder->set_polygon_vertex( id, 0, i * size + j + 1 );
-            builder->set_polygon_vertex( id, 1, ( i + 1 ) * size + j + 1 );
-            builder->set_polygon_vertex( id, 2, ( i + 1 ) * size + j );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 0 ), i * size + j + 1 );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 1 ), ( i + 1 ) * size + j + 1 );
+            builder->set_polygon_vertex( PolygonLocalEdge( id, 2 ), ( i + 1 ) * size + j );
             id++;
         }
     }
@@ -140,14 +140,14 @@ void add_hexs( VolumeMeshBuilder< DIMENSION >* builder, index_t size )
         for( index_t j : range( size - 1 ) ) {
             for( index_t k : range( size - 1 ) ) {
                 index_t corner = i + j * size + k * size * size;
-                builder->set_cell_vertex( id, 0, corner );
-                builder->set_cell_vertex( id, 4, corner + size * size );
-                builder->set_cell_vertex( id, 6, corner + size * size + 1 );
-                builder->set_cell_vertex( id, 2, corner + 1 );
-                builder->set_cell_vertex( id, 1, corner + size );
-                builder->set_cell_vertex( id, 5, corner + size * size + size );
-                builder->set_cell_vertex( id, 7, corner + size * size + size + 1 );
-                builder->set_cell_vertex( id, 3, corner + size + 1 );
+                builder->set_cell_vertex( ElementLocalVertex( id, 0 ), corner );
+                builder->set_cell_vertex( ElementLocalVertex( id, 4 ), corner + size * size );
+                builder->set_cell_vertex( ElementLocalVertex( id, 6 ), corner + size * size + 1 );
+                builder->set_cell_vertex( ElementLocalVertex( id, 2 ), corner + 1 );
+                builder->set_cell_vertex( ElementLocalVertex( id, 1 ), corner + size );
+                builder->set_cell_vertex( ElementLocalVertex( id, 5 ), corner + size * size + size );
+                builder->set_cell_vertex( ElementLocalVertex( id, 7 ), corner + size * size + size + 1 );
+                builder->set_cell_vertex( ElementLocalVertex( id, 3 ), corner + size + 1 );
                 id++;
             }
 
@@ -215,30 +215,30 @@ void create_5_tets_from_hex(
     for( index_t v : range( 8 ) ) {
         vertices_in_hex[v] = mesh_hex.cell_vertex( ElementLocalVertex( hex, v ) );
     }
-    builder.set_cell_vertex( 5 * hex, 0, vertices_in_hex[0] );
-    builder.set_cell_vertex( 5 * hex, 1, vertices_in_hex[4] );
-    builder.set_cell_vertex( 5 * hex, 2, vertices_in_hex[5] );
-    builder.set_cell_vertex( 5 * hex, 3, vertices_in_hex[6] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex, 0 ), vertices_in_hex[0] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex, 1 ), vertices_in_hex[4] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex, 2 ), vertices_in_hex[5] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex, 3 ), vertices_in_hex[6] );
 
-    builder.set_cell_vertex( 5 * hex + 1, 0, vertices_in_hex[0] );
-    builder.set_cell_vertex( 5 * hex + 1, 1, vertices_in_hex[2] );
-    builder.set_cell_vertex( 5 * hex + 1, 2, vertices_in_hex[3] );
-    builder.set_cell_vertex( 5 * hex + 1, 3, vertices_in_hex[6] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 1, 0 ), vertices_in_hex[0] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 1, 1 ), vertices_in_hex[2] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 1, 2 ), vertices_in_hex[3] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 1, 3 ), vertices_in_hex[6] );
 
-    builder.set_cell_vertex( 5 * hex + 2, 0, vertices_in_hex[7] );
-    builder.set_cell_vertex( 5 * hex + 2, 1, vertices_in_hex[6] );
-    builder.set_cell_vertex( 5 * hex + 2, 2, vertices_in_hex[3] );
-    builder.set_cell_vertex( 5 * hex + 2, 3, vertices_in_hex[5] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 2, 0 ), vertices_in_hex[7] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 2, 1 ), vertices_in_hex[6] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 2, 2 ), vertices_in_hex[3] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 2, 3 ), vertices_in_hex[5] );
 
-    builder.set_cell_vertex( 5 * hex + 3, 0, vertices_in_hex[1] );
-    builder.set_cell_vertex( 5 * hex + 3, 1, vertices_in_hex[0] );
-    builder.set_cell_vertex( 5 * hex + 3, 2, vertices_in_hex[5] );
-    builder.set_cell_vertex( 5 * hex + 3, 3, vertices_in_hex[3] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 3, 0 ), vertices_in_hex[1] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 3, 1 ), vertices_in_hex[0] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 3, 2 ), vertices_in_hex[5] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 3, 3 ), vertices_in_hex[3] );
 
-    builder.set_cell_vertex( 5 * hex + 4, 0, vertices_in_hex[0] );
-    builder.set_cell_vertex( 5 * hex + 4, 1, vertices_in_hex[5] );
-    builder.set_cell_vertex( 5 * hex + 4, 2, vertices_in_hex[6] );
-    builder.set_cell_vertex( 5 * hex + 4, 3, vertices_in_hex[3] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 4, 0 ), vertices_in_hex[0] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 4, 1 ), vertices_in_hex[5] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 4, 2 ), vertices_in_hex[6] );
+    builder.set_cell_vertex( ElementLocalVertex( 5 * hex + 4, 3 ), vertices_in_hex[3] );
 }
 
 template< index_t DIMENSION >
@@ -247,8 +247,8 @@ void decompose_in_tet(
     GeogramVolumeMesh< DIMENSION >& tet_mesh,
     index_t size )
 {
-    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder<
-        DIMENSION >::create_builder( tet_mesh );
+    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder <
+        DIMENSION > ::create_builder( tet_mesh );
     builder->create_cells( hex_mesh.nb_cells() * 5, CellType::TETRAHEDRON );
     add_vertices( builder.get(), size );
     for( index_t hex : range( hex_mesh.nb_cells() ) ) {
@@ -262,8 +262,8 @@ void test_SurfaceAABB()
 {
     Logger::out( "TEST", "Test Surface AABB ", DIMENSION, "D" );
     GeogramSurfaceMesh< DIMENSION > geogram_mesh;
-    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = SurfaceMeshBuilder<
-        DIMENSION >::create_builder( geogram_mesh );
+    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder = SurfaceMeshBuilder <
+        DIMENSION > ::create_builder( geogram_mesh );
 
     index_t size = 10;
     add_vertices( builder.get(), size );
@@ -292,8 +292,8 @@ void test_VolumeAABB()
 {
     Logger::out( "TEST", "Test Volume AABB ", DIMENSION, "D" );
     GeogramVolumeMesh< DIMENSION > geogram_mesh_hex;
-    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder<
-        DIMENSION >::create_builder( geogram_mesh_hex );
+    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder = VolumeMeshBuilder <
+        DIMENSION > ::create_builder( geogram_mesh_hex );
 
     index_t size = 10;
     add_vertices( builder.get(), size );
@@ -324,8 +324,8 @@ void test_LineAABB()
 {
     Logger::out( "TEST", "Test Line AABB ", DIMENSION, "D" );
     GeogramLineMesh< DIMENSION > geogram_mesh;
-    std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = LineMeshBuilder<
-        DIMENSION >::create_builder( geogram_mesh );
+    std::unique_ptr< LineMeshBuilder< DIMENSION > > builder = LineMeshBuilder <
+        DIMENSION > ::create_builder( geogram_mesh );
 
     index_t size = 10;
     add_vertices( builder.get(), size );

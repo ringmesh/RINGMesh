@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -111,13 +111,13 @@ namespace RINGMesh {
         Class< DIMENSION >& mesh_
 
     template< index_t DIMENSION >
-    class GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
+    class GeogramPointSetMeshBuilder: public PointSetMeshBuilder < DIMENSION > {
+        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh ); ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         explicit GeogramPointSetMeshBuilder( PointSetMesh< DIMENSION >& mesh )
             :
-                PointSetMeshBuilder< DIMENSION >( mesh ),
-                mesh_( dynamic_cast< GeogramPointSetMesh< DIMENSION >& >( mesh ) )
+            PointSetMeshBuilder< DIMENSION >( mesh ),
+            mesh_( dynamic_cast< GeogramPointSetMesh< DIMENSION >& >( mesh ) )
         {
         }
     };
@@ -125,13 +125,13 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeogramPointSetMeshBuilder );
 
     template< index_t DIMENSION >
-    class GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
+    class GeogramLineMeshBuilder: public LineMeshBuilder < DIMENSION > {
+        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh ); ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         explicit GeogramLineMeshBuilder( LineMesh< DIMENSION >& mesh )
             :
-                LineMeshBuilder< DIMENSION >( mesh ),
-                mesh_( dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) )
+            LineMeshBuilder< DIMENSION >( mesh ),
+            mesh_( dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) )
         {
         }
 
@@ -146,17 +146,16 @@ namespace RINGMesh {
         }
 
         void do_set_edge_vertex(
-            index_t edge_id,
-            index_t local_vertex_id,
+            const EdgeLocalVertex& edge_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->edges.set_vertex( edge_id, local_vertex_id, vertex_id );
+            mesh_.mesh_->edges.set_vertex( edge_local_vertex.edge_id_, edge_local_vertex.local_vertex_id_, vertex_id );
         }
 
         void do_delete_edges( const std::vector< bool >& to_delete ) override
         {
-            GEO::vector< index_t > edges_to_delete = copy_std_vector_to_geo_vector<
-                bool, index_t >( to_delete );
+            GEO::vector< index_t > edges_to_delete = copy_std_vector_to_geo_vector <
+                bool, index_t > ( to_delete );
             mesh_.mesh_->edges.delete_elements( edges_to_delete, false );
         }
 
@@ -176,13 +175,13 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeogramLineMeshBuilder );
 
     template< index_t DIMENSION >
-    class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder< DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );ringmesh_template_assert_2d_or_3d( DIMENSION );
+    class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder < DIMENSION > {
+        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh ); ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         explicit GeogramSurfaceMeshBuilder( SurfaceMesh< DIMENSION >& mesh )
             :
-                SurfaceMeshBuilder< DIMENSION >( mesh ),
-                mesh_( dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) )
+            SurfaceMeshBuilder< DIMENSION >( mesh ),
+            mesh_( dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) )
         {
         }
 
@@ -238,19 +237,17 @@ namespace RINGMesh {
         }
 
         void do_set_polygon_vertex(
-            index_t polygon_id,
-            index_t local_vertex_id,
+            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->facets.set_vertex( polygon_id, local_vertex_id, vertex_id );
+            mesh_.mesh_->facets.set_vertex( polygon_local_edge.polygon_id_, polygon_local_edge.local_edge_id_, vertex_id );
         }
 
         void do_set_polygon_adjacent(
-            index_t polygon_id,
-            index_t edge_id,
+            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
             index_t specifies ) override
         {
-            mesh_.mesh_->facets.set_adjacent( polygon_id, edge_id, specifies );
+            mesh_.mesh_->facets.set_adjacent( polygon_local_edge.polygon_id_, polygon_local_edge.local_edge_id_, specifies );
         }
 
         void do_clear_polygons( bool keep_attributes, bool keep_memory ) override
@@ -276,13 +273,13 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeogramSurfaceMeshBuilder );
 
     template< index_t DIMENSION >
-    class GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION > {
-    COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );ringmesh_template_assert_3d( DIMENSION );
+    class GeogramVolumeMeshBuilder: public VolumeMeshBuilder < DIMENSION > {
+        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh ); ringmesh_template_assert_3d( DIMENSION );
     public:
         explicit GeogramVolumeMeshBuilder( VolumeMesh< DIMENSION >& mesh )
             :
-                VolumeMeshBuilder< DIMENSION >( mesh ),
-                mesh_( dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) )
+            VolumeMeshBuilder< DIMENSION >( mesh ),
+            mesh_( dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) )
         {
         }
 
@@ -299,11 +296,10 @@ namespace RINGMesh {
         }
 
         void do_set_cell_vertex(
-            index_t cell_id,
-            index_t local_vertex_id,
+            const ElementLocalVertex& cell_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->cells.set_vertex( cell_id, local_vertex_id, vertex_id );
+            mesh_.mesh_->cells.set_vertex( cell_local_vertex.element_id_, cell_local_vertex.local_vertex_id_ , vertex_id );
         }
 
         void do_set_cell_corner_vertex_index(
@@ -314,11 +310,10 @@ namespace RINGMesh {
         }
 
         void do_set_cell_adjacent(
-            index_t cell_index,
-            index_t facet_index,
+            const CellLocalFacet& cell_local_facet,
             index_t cell_adjacent ) override
         {
-            mesh_.mesh_->cells.set_adjacent( cell_index, facet_index,
+            mesh_.mesh_->cells.set_adjacent( cell_local_facet.cell_id_, cell_local_facet.local_facet_id_,
                 cell_adjacent );
         }
 
@@ -341,12 +336,12 @@ namespace RINGMesh {
 
         void do_delete_cells( const std::vector< bool >& to_delete ) override
         {
-            GEO::vector< index_t > geo_to_delete = copy_std_vector_to_geo_vector<
-                bool, index_t >( to_delete );
+            GEO::vector< index_t > geo_to_delete = copy_std_vector_to_geo_vector <
+                bool, index_t > ( to_delete );
             mesh_.mesh_->cells.delete_elements( geo_to_delete, false );
         }
     };
 
-    using GeogramVolumeMeshBuilder3D = GeogramVolumeMeshBuilder< 3 >;
+    using GeogramVolumeMeshBuilder3D = GeogramVolumeMeshBuilder < 3 > ;
 
 } // namespace RINGMesh

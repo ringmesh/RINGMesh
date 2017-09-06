@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -37,17 +37,17 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <algorithm>
 #include <memory>
-#include <stack>
 
-#include <geogram/basic/attributes.h>
-
-#include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/factory.h>
-#include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/aabb.h>
+
+namespace GEO {
+    class AttributesManager;
+}
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
@@ -179,6 +179,8 @@ namespace RINGMesh {
 
         virtual std::string default_extension() const = 0;
 
+        virtual bool is_mesh_valid() const = 0;
+
         /*!
          * @}
          */
@@ -200,6 +202,11 @@ namespace RINGMesh {
     public:
         static std::unique_ptr< PointSetMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
+
+        bool is_mesh_valid() const override
+        {
+            return true;
+        }
     protected:
         PointSetMesh() = default;
     };
@@ -283,6 +290,38 @@ namespace RINGMesh {
         }
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
+
+        bool is_mesh_valid() const override
+        {
+            bool valid { true };
+
+            if( this->nb_vertices() < 2 ) {
+                Logger::err( "LineMesh", "Mesh has less than 2 vertices " );
+                valid = false;
+            }
+
+            if( nb_edges() == 0 ) {
+                Logger::err( "LineMesh", "Mesh has no edge" );
+                valid = false;
+            }
+
+            // No isolated vertices
+            std::vector< index_t > nb( this->nb_vertices(), 0 );
+            for( auto p : range( nb_edges() ) ) {
+                for( auto v : range( 2 ) ) {
+                    nb[edge_vertex( { p, v } )]++;
+                }
+            }
+            auto nb_isolated_vertices = static_cast< index_t >( std::count(
+                nb.begin(), nb.end(), 0 ) );
+            if( nb_isolated_vertices > 0 ) {
+                Logger::warn( "LineMesh", "Mesh has ", nb_isolated_vertices,
+                    " isolated vertices " );
+                valid = false;
+            }
+
+            return valid;
+        }
     protected:
         LineMesh() = default;
 
@@ -589,6 +628,37 @@ namespace RINGMesh {
             }
             return *polygon_aabb_;
         }
+
+        bool is_mesh_valid() const override
+        {
+            bool valid { true };
+
+            if( this->nb_vertices() < 3 ) {
+                Logger::warn( "SurfaceMesh has less than 3 vertices " );
+                valid = false;
+            }
+            if( nb_polygons() == 0 ) {
+                Logger::warn( "SurfaceMesh has no polygon" );
+                valid = false;
+            }
+
+            // No isolated vertices
+            std::vector< index_t > nb( this->nb_vertices(), 0 );
+            for( auto p : range( nb_polygons() ) ) {
+                for( auto v : range( nb_polygon_vertices( p ) ) ) {
+                    nb[polygon_vertex( { p, v } )]++;
+                }
+            }
+            auto nb_isolated_vertices = static_cast< index_t >( std::count(
+                nb.begin(), nb.end(), 0 ) );
+            if( nb_isolated_vertices > 0 ) {
+                Logger::warn( "SurfaceMesh", "Mesh has ", nb_isolated_vertices,
+                    " isolated vertices " );
+                valid = false;
+            }
+
+            return valid;
+        }
     protected:
         SurfaceMeshBase() = default;
 
@@ -607,7 +677,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( SurfaceMeshFactory );
 
     template< >
-    class SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
+    class RINGMESH_API SurfaceMesh< 3 > : public SurfaceMeshBase< 3 > {
     public:
 
         /*!
@@ -615,24 +685,7 @@ namespace RINGMesh {
          * @param[in] polygon_id the polygon index
          * @return the polygon area
          */
-        double polygon_area( index_t polygon_id ) const override
-        {
-            double result = 0.0;
-            if( nb_polygon_vertices( polygon_id ) == 0 ) {
-                return result;
-            }
-            const vec3& p1 = vertex(
-                polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
-            for( auto i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
-                const vec3& p2 = vertex(
-                    polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
-                const vec3& p3 = vertex(
-                    polygon_vertex( ElementLocalVertex( polygon_id, i + 1 ) ) );
-                result += triangle_signed_area( p1, p2, p3,
-                    polygon_normal( polygon_id ) );
-            }
-            return std::fabs( result );
-        }
+        double polygon_area( index_t polygon_id ) const;
 
         /*!
          * Computes the Mesh polygon normal
@@ -684,7 +737,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class SurfaceMesh< 2 > : public SurfaceMeshBase< 2 > {
+    class RINGMESH_API SurfaceMesh< 2 > : public SurfaceMeshBase< 2 > {
     public:
         /*!
          * Computes the Mesh polygon area
@@ -993,6 +1046,37 @@ namespace RINGMesh {
                 cell_aabb_.reset( new VolumeAABBTree< DIMENSION >( *this ) );
             }
             return *cell_aabb_.get();
+        }
+
+        bool is_mesh_valid() const override
+        {
+            bool valid { true };
+
+            if( this->nb_vertices() < 4 ) {
+                Logger::warn( "VolumeMesh has less than 4 vertices " );
+                valid = false;
+            }
+            if( nb_cells() == 0 ) {
+                Logger::warn( "VolumeMesh has no cell" );
+                valid = false;
+            }
+
+            // No isolated vertices
+            std::vector< index_t > nb( this->nb_vertices(), 0 );
+            for( auto c : range( nb_cells() ) ) {
+                for( auto v : range( nb_cell_vertices( c ) ) ) {
+                    nb[cell_vertex( { c, v } )]++;
+                }
+            }
+            auto nb_isolated_vertices = static_cast< index_t >( std::count(
+                nb.begin(), nb.end(), 0 ) );
+            if( nb_isolated_vertices > 0 ) {
+                Logger::warn( "VolumeMesh", "Mesh has ", nb_isolated_vertices,
+                    " isolated vertices " );
+                valid = false;
+            }
+
+            return valid;
         }
     protected:
         VolumeMesh() = default;
