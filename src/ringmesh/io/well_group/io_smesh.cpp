@@ -46,7 +46,7 @@ namespace {
             for( auto e : range( mesh.nb_edges() ) ) {
                 for( auto i : range( 2 ) ) {
                     index_t v = mesh.edge_vertex( ElementLocalVertex( e, i ) );
-                    builder->set_edge_vertex( e, i, old2new[v] );
+                    builder->set_edge_vertex( EdgeLocalVertex( e, i ), old2new[v] );
                 }
             }
             std::vector< bool > delete_vertices( mesh.nb_vertices(), false );
@@ -109,8 +109,8 @@ namespace {
                             in.get_line();
                             in.get_fields();
                         } while( in.nb_fields() == 0 );
-                        builder->set_edge_vertex( e, 0, in.field_as_uint( 1 ) );
-                        builder->set_edge_vertex( e, 1, in.field_as_uint( 2 ) );
+                        builder->set_edge_vertex( EdgeLocalVertex( e, 0 ), in.field_as_uint( 1 ) );
+                        builder->set_edge_vertex( EdgeLocalVertex( e, 1 ), in.field_as_uint( 2 ) );
                     }
                     merge_colocated_vertices( wells.geomodel()->epsilon(), *mesh );
                     wells.add_well( *mesh, name );

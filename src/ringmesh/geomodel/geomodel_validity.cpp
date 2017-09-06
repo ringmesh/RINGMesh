@@ -831,8 +831,8 @@ namespace {
             const auto& v1 = vertices.vertex( edge_indices[edge_id + 1] );
             builder.set_vertex( 2 * e, v0 );
             builder.set_vertex( 2 * e + 1, v1 );
-            builder.set_edge_vertex( e, 0, 2 * e );
-            builder.set_edge_vertex( e, 1, 2 * e + 1 );
+            builder.set_edge_vertex( EdgeLocalVertex( e, 0 ), 2 * e );
+            builder.set_edge_vertex( EdgeLocalVertex( e, 1 ), 2 * e + 1 );
         }
         mesh.save_mesh(
             get_validity_errors_directory() + "/non_manifold_edges.geogram" );
@@ -1471,7 +1471,7 @@ namespace RINGMesh {
 
         for( auto p : range( surface->nb_polygons() ) ) {
             for( auto v : range( surface->nb_polygon_vertices( p ) ) ) {
-                builder->set_polygon_adjacent( p, v, NO_ID );
+                builder->set_polygon_adjacent( { p, v }, NO_ID );
             }
         }
 

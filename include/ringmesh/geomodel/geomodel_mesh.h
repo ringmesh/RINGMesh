@@ -74,7 +74,7 @@ namespace RINGMesh {
     /*! @todo Move this global variables in a function */
 
     template< index_t DIMENSION >
-    class GeoModelMeshCommon {
+    class RINGMESH_API GeoModelMeshCommon {
     ringmesh_disable_copy_and_move( GeoModelMeshCommon );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     protected:
@@ -103,7 +103,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshVerticesBase: public GeoModelMeshCommon< DIMENSION > {
+    class RINGMESH_API GeoModelMeshVerticesBase: public GeoModelMeshCommon< DIMENSION > {
     public:
         friend class GeoModelMeshWells< DIMENSION > ;
         friend class GeoModelMeshEdges< DIMENSION > ;
@@ -493,7 +493,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshVerticesBase );
 
     template< index_t DIMENSION >
-    class GeoModelMeshVertices final: public GeoModelMeshVerticesBase< DIMENSION > {
+    class RINGMESH_API GeoModelMeshVertices final: public GeoModelMeshVerticesBase< DIMENSION >{
     public:
         GeoModelMeshVertices(
             GeoModelMesh< DIMENSION >& gmm,
@@ -502,7 +502,7 @@ namespace RINGMesh {
     };
 
     template< >
-    class GeoModelMeshVertices< 3 > final: public GeoModelMeshVerticesBase< 3 > {
+    class RINGMESH_API GeoModelMeshVertices< 3 > final: public GeoModelMeshVerticesBase< 3 >{
     public:
         GeoModelMeshVertices(
             GeoModelMesh3D& gmm,
@@ -517,7 +517,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshVertices );
 
     template< index_t DIMENSION >
-    class GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
+    class RINGMESH_API GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
     ringmesh_disable_copy_and_move( GeoModelMeshPolygonsBase );
         static const std::string surface_att_name;
         static const std::string polygon_surface_att_name;
@@ -778,7 +778,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshPolygons final: public GeoModelMeshPolygonsBase< DIMENSION > {
+    class RINGMESH_API GeoModelMeshPolygons final: public GeoModelMeshPolygonsBase< DIMENSION >{
 
     public:
         GeoModelMeshPolygons(
@@ -805,7 +805,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshPolygons );
 
     template< index_t DIMENSION >
-    class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
+    class RINGMESH_API GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION >{
     ringmesh_disable_copy_and_move( GeoModelMeshEdges );
         static const std::string line_att_name;
         static const std::string edge_line_att_name;
@@ -947,7 +947,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshEdges );
 
     template< index_t DIMENSION >
-    class GeoModelMeshWells final: public GeoModelMeshCommon< DIMENSION > {
+    class RINGMESH_API GeoModelMeshWells final: public GeoModelMeshCommon< DIMENSION >{
     public:
         explicit GeoModelMeshWells(
             GeoModelMesh< DIMENSION >& gmm,
@@ -1021,7 +1021,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshWells );
 
     template< index_t DIMENSION >
-    class GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION > {
+    class RINGMESH_API GeoModelMeshCells final: public GeoModelMeshCommon< DIMENSION >{
         static const std::string region_att_name;
         static const std::string cell_region_att_name;
 
@@ -1487,7 +1487,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( GeoModelMeshCells );
 
     template< index_t DIMENSION >
-    class GeoModelMeshBase {
+    class RINGMESH_API GeoModelMeshBase {
     ringmesh_disable_copy_and_move( GeoModelMeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -1546,7 +1546,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMesh final: public GeoModelMeshBase< DIMENSION > {
+    class RINGMESH_API GeoModelMesh final: public GeoModelMeshBase< DIMENSION >{
     public:
         explicit GeoModelMesh( GeoModel< DIMENSION >& geomodel );
     };
