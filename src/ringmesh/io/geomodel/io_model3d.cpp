@@ -194,7 +194,7 @@ namespace {
                 auto v0 = surface.mesh_element_vertex_index(
                     { i, j } );
                 auto v1 = surface.mesh_element_vertex_index(
-                    surface.low_level_mesh_storage().next_polygon_vertex(
+                    surface.mesh().next_polygon_vertex(
                         { i, j } ) );
                 if( ( v0 == v0_in && v1 == v1_in )
                     || ( v0 == v1_in && v1 == v0_in ) ) {

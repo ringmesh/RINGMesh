@@ -81,7 +81,7 @@ namespace {
     {
         index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
-            surface.low_level_mesh_storage().connected_components();
+            surface.mesh().connected_components();
         return nb_connected_components;
     }
 
@@ -93,7 +93,7 @@ namespace {
     {
         index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
-            region.low_level_mesh_storage().connected_components();
+            region.mesh().connected_components();
         return nb_connected_components;
     }
 
