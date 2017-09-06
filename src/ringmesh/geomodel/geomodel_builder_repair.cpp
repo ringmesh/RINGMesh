@@ -148,7 +148,7 @@ namespace RINGMesh {
     {
         for( const auto& line : geomodel_.lines() ) {
             if( !line.is_first_corner_first_vertex() ) {
-                const index_t first_boundary_index = line.boundary( 0 ).index();
+                const auto first_boundary_index = line.boundary( 0 ).index();
                 builder_.topology.set_mesh_entity_boundary( line.gmme(), 0,
                     line.boundary_gmme( 1 ).index() );
                 builder_.topology.set_mesh_entity_boundary( line.gmme(), 1,
@@ -175,7 +175,7 @@ namespace RINGMesh {
     void GeoModelBuilderRepair< 2 >::remove_isolated_vertices()
     {
         remove_isolated_vertices_base();
-        for( const auto& surface : surface_range< 2 >( geomodel_ ) ) {
+        for( const auto& surface : geomodel_.surfaces() ) {
             if( surface.is_meshed() ) {
                 remove_isolated_vertices_on_mesh_entity( surface );
             }
@@ -185,7 +185,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderRepair< DIMENSION >::remove_isolated_vertices_base()
     {
-        for( const auto& line : line_range< DIMENSION >( geomodel_ ) ) {
+        for( const auto& line : geomodel_.lines() ) {
             remove_isolated_vertices_on_mesh_entity( line );
         }
     }
@@ -216,7 +216,7 @@ namespace RINGMesh {
     {
         auto nb_vertices = surface.nb_mesh_element_vertices( polygon_id );
         if( nb_vertices != 3 ) {
-            std::vector< index_t > vertices { nb_vertices };
+            std::vector< index_t > vertices( nb_vertices );
             for( auto v : range( nb_vertices ) ) {
                 vertices[v] = colocated_vertices[surface.mesh_element_vertex_index(
                     ElementLocalVertex( polygon_id, v ) )];
@@ -224,12 +224,12 @@ namespace RINGMesh {
             GEO::sort_unique( vertices );
             return vertices.size() != nb_vertices;
         }
-        index_t v1 = colocated_vertices[surface.mesh_element_vertex_index(
-            ElementLocalVertex( polygon_id, 0 ) )];
-        index_t v2 = colocated_vertices[surface.mesh_element_vertex_index(
-            ElementLocalVertex( polygon_id, 1 ) )];
-        index_t v3 = colocated_vertices[surface.mesh_element_vertex_index(
-            ElementLocalVertex( polygon_id, 2 ) )];
+        auto v1 = colocated_vertices[surface.mesh_element_vertex_index( { polygon_id,
+                                                                          0 } )];
+        auto v2 = colocated_vertices[surface.mesh_element_vertex_index( { polygon_id,
+                                                                          1 } )];
+        auto v3 = colocated_vertices[surface.mesh_element_vertex_index( { polygon_id,
+                                                                          2 } )];
         return v1 == v2 || v2 == v3 || v3 == v1;
     }
 
@@ -238,7 +238,7 @@ namespace RINGMesh {
         const Surface< DIMENSION >& surface,
         std::vector< index_t >& colocated_vertices )
     {
-        std::vector< index_t > f_is_degenerate { surface.nb_mesh_elements() };
+        std::vector< index_t > f_is_degenerate( surface.nb_mesh_elements() );
         for( auto p : range( surface.nb_mesh_elements() ) ) {
             f_is_degenerate[p] = polygon_is_degenerate( surface, p,
                 colocated_vertices );
@@ -347,18 +347,18 @@ namespace RINGMesh {
         if( E_id.type() == Corner< DIMENSION >::type_name_static() ) {
             return vertices;
         }
-        const GeoModelMeshEntity< DIMENSION >& E = geomodel_.mesh_entity( E_id );
+        const auto& mesh_entity = geomodel_.mesh_entity( E_id );
         if( E_id.type() == Line< DIMENSION >::type_name_static() ) {
-            if( E.boundary( 0 ).is_inside_border( E ) ) {
-                vertices.insert( E.nb_vertices() - 1 );
+            if( mesh_entity.boundary( 0 ).is_inside_border( mesh_entity ) ) {
+                vertices.insert( mesh_entity.nb_vertices() - 1 );
             }
             return vertices;
         }
         std::vector< const GeoModelMeshEntity< DIMENSION >* > inside_border;
-        for( auto i : range( E.nb_boundaries() ) ) {
-            if( E.boundary( i ).is_inside_border( E ) ) {
+        for( auto i : range( mesh_entity.nb_boundaries() ) ) {
+            if( mesh_entity.boundary( i ).is_inside_border( mesh_entity ) ) {
                 inside_border.push_back(
-                    dynamic_cast< const GeoModelMeshEntity< DIMENSION >* >( &E.boundary(
+                    dynamic_cast< const GeoModelMeshEntity< DIMENSION >* >( &mesh_entity.boundary(
                         i ) ) );
             }
         }
@@ -366,9 +366,9 @@ namespace RINGMesh {
             // We want to get the indices of the vertices in E
             // that are colocated with those of the inside boundary
             // We assume that the geomodel vertices are not computed
-            const NNSearch< DIMENSION >& nn_search = E.vertex_nn_search();
+            const auto& nn_search = mesh_entity.vertex_nn_search();
 
-            for( const GeoModelMeshEntity< DIMENSION >*& entity : inside_border ) {
+            for( const auto& entity : inside_border ) {
                 for( auto v : range( entity->nb_vertices() ) ) {
                     auto colocated_indices = nn_search.get_neighbors(
                         entity->vertex( v ), geomodel_.epsilon() );
@@ -394,7 +394,7 @@ namespace RINGMesh {
         std::array< const MeshEntityType, 2 > types { {
             Line< DIMENSION >::type_name_static(),
             Surface< DIMENSION >::type_name_static() } };
-        for( const MeshEntityType& type : types ) {
+        for( const auto& type : types ) {
             for( auto e : range( geomodel_.nb_mesh_entities( type ) ) ) {
                 gmme_id entity_id { type, e };
                 const auto& E = geomodel_.mesh_entity( entity_id );
