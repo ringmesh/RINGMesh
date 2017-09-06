@@ -39,76 +39,80 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
+#include <ringmesh/geomodel/duplicate_fntk_builder.h>
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/io/io.h>
-#include <ringmesh/geomodel/duplicate_fntk_builder.h>
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     void hello()
     {
-        print_header_information() ;
-        GEO::Logger::div( "RINGMesh-Duplicate-Faults" ) ;
+        print_header_information();
+        GEO::Logger::div( "RINGMesh-Duplicate-Faults" );
         GEO::Logger::out( "" ) << "Welcome to RINGMesh-Duplicate-Faults !"
-            << std::endl ;
+                               << std::endl;
     }
 
     void import_arg_group_duplication_fntk()
     {
-        GEO::CmdLine::declare_arg_group( "duplication",
-            "Duplication of the fault network" ) ;
+        GEO::CmdLine::declare_arg_group(
+            "duplication", "Duplication of the fault network" );
         GEO::CmdLine::declare_arg( "duplication:gap", true,
-            "Print statistics on the number of entities" ) ;
+            "Print statistics on the number of entities" );
     }
 
     void import_arg_groups()
     {
-        CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "out" ) ;
-        import_arg_group_duplication_fntk() ;
+        CmdLine::import_arg_group( "in" );
+        CmdLine::import_arg_group( "out" );
+        import_arg_group_duplication_fntk();
     }
 
     void init()
     {
-        default_configure() ;
-        hello() ;
-        import_arg_groups() ;
+        default_configure();
+        hello();
+        import_arg_groups();
     }
 
     void load_input_geomodel( GeoModel3D& geomodel )
     {
-        std::string input_geomodel_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
-        if( input_geomodel_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel" ) ;
+        std::string input_geomodel_name =
+            GEO::CmdLine::get_arg( "in:geomodel" );
+        if( input_geomodel_name.empty() )
+        {
+            throw RINGMeshException(
+                "I/O", "Give at least a filename in in:geomodel" );
         }
-        geomodel_load( geomodel, input_geomodel_name ) ;
+        geomodel_load( geomodel, input_geomodel_name );
     }
 
     void duplicate_fntk( GeoModel3D& geomodel )
     {
-        bool gap = GEO::CmdLine::get_arg_bool( "duplication:gap" ) ;
-        DuplicateInterfaceBuilder dib( geomodel ) ;
-        dib.duplicate_fault_network( gap ) ;
+        bool gap = GEO::CmdLine::get_arg_bool( "duplication:gap" );
+        DuplicateInterfaceBuilder dib( geomodel );
+        dib.duplicate_fault_network( gap );
     }
 
     void save_duplicated_fntk_geomodel( GeoModel3D& geomodel )
     {
-        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
-        if( output_geomodel_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in out:geomodel" ) ;
+        std::string output_geomodel_name =
+            GEO::CmdLine::get_arg( "out:geomodel" );
+        if( output_geomodel_name.empty() )
+        {
+            throw RINGMeshException(
+                "I/O", "Give at least a filename in out:geomodel" );
         }
-        geomodel_save( geomodel, output_geomodel_name ) ;
+        geomodel_save( geomodel, output_geomodel_name );
     }
 
     void run()
     {
-        GEO::Stopwatch total( "Total time" ) ;
-        GeoModel3D geomodel ;
-        load_input_geomodel( geomodel ) ;
-        duplicate_fntk( geomodel ) ;
-        save_duplicated_fntk_geomodel( geomodel ) ;
+        GEO::Stopwatch total( "Total time" );
+        GeoModel3D geomodel;
+        load_input_geomodel( geomodel );
+        duplicate_fntk( geomodel );
+        save_duplicated_fntk_geomodel( geomodel );
     }
 }
 
@@ -118,28 +122,35 @@ namespace RINGMesh {
 
 int main( int argc, char** argv )
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
-    try {
-        init() ;
+    try
+    {
+        init();
 
-        if( argc == 1 ) {
-            GEO::CmdLine::show_usage() ;
-            return 0 ;
+        if( argc == 1 )
+        {
+            GEO::CmdLine::show_usage();
+            return 0;
         }
 
-        std::vector< std::string > filenames ;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-            return 1 ;
+        std::vector< std::string > filenames;
+        if( !GEO::CmdLine::parse( argc, argv, filenames ) )
+        {
+            return 1;
         }
 
-        run() ;
-    } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
-        return 1 ;
-    } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
-        return 1 ;
+        run();
     }
-    return 0 ;
+    catch( const RINGMeshException& e )
+    {
+        GEO::Logger::err( e.category() ) << e.what() << std::endl;
+        return 1;
+    }
+    catch( const std::exception& e )
+    {
+        GEO::Logger::err( "Exception" ) << e.what() << std::endl;
+        return 1;
+    }
+    return 0;
 }

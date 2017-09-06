@@ -38,37 +38,41 @@
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
     const MeshEntityType projectable_entity_types[3] = {
         Corner3D::type_name_static(), Line3D::type_name_static(),
-        Surface3D::type_name_static() };
+        Surface3D::type_name_static()
+    };
 
-    struct GeologicalEntityTypeMapFrom2DTo3DInitializer {
-        static std::map< GeologicalEntityType, GeologicalEntityType > initialize_map()
+    struct GeologicalEntityTypeMapFrom2DTo3DInitializer
+    {
+        static std::map< GeologicalEntityType, GeologicalEntityType >
+            initialize_map()
         {
             std::map< GeologicalEntityType, GeologicalEntityType > map;
-            map[Contact3D::type_name_static()] = Interface2D::type_name_static();
+            map[Contact3D::type_name_static()] =
+                Interface2D::type_name_static();
             map[Interface3D::type_name_static()] = Layer2D::type_name_static();
             return map;
         }
-
     };
 
-    template< typename U, typename T >
+    template < typename U, typename T >
     const T& mapped_value( const std::map< U, T >& map, const U& key )
     {
         return map.find( key )->second;
     }
 
-    const std::map< GeologicalEntityType, GeologicalEntityType > geol_entity_type_2d_to_3d_map =
-        GeologicalEntityTypeMapFrom2DTo3DInitializer::initialize_map();
-
+    const std::map< GeologicalEntityType, GeologicalEntityType >
+        geol_entity_type_2d_to_3d_map =
+            GeologicalEntityTypeMapFrom2DTo3DInitializer::initialize_map();
 }
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     void GeoModelBuilder2DProjection::build_geomodel()
     {
         copy_geomodel_3d_topology();
@@ -79,18 +83,22 @@ namespace RINGMesh {
 
     void GeoModelBuilder2DProjection::copy_geomodel_3d_topology()
     {
-        for( const auto& entity_type : projectable_entity_types ) {
-            topology.create_mesh_entities( entity_type,
-                geomodel3d_from_.nb_mesh_entities( entity_type ) );
+        for( const auto& entity_type : projectable_entity_types )
+        {
+            topology.create_mesh_entities(
+                entity_type, geomodel3d_from_.nb_mesh_entities( entity_type ) );
         }
-        for( const auto& entity_type : projectable_entity_types ) {
-            for( const auto entity_id : range(
-                geomodel3d_from_.nb_mesh_entities( entity_type ) ) ) {
-                const auto& entity = geomodel3d_from_.mesh_entity( entity_type,
-                    entity_id );
-                for( const auto& boundary_id : range( entity.nb_boundaries() ) ) {
-                    topology.add_mesh_entity_boundary_relation( entity.gmme(),
-                        entity.boundary( boundary_id ).gmme() );
+        for( const auto& entity_type : projectable_entity_types )
+        {
+            for( const auto entity_id :
+                range( geomodel3d_from_.nb_mesh_entities( entity_type ) ) )
+            {
+                const auto& entity =
+                    geomodel3d_from_.mesh_entity( entity_type, entity_id );
+                for( const auto& boundary_id : range( entity.nb_boundaries() ) )
+                {
+                    topology.add_mesh_entity_boundary_relation(
+                        entity.gmme(), entity.boundary( boundary_id ).gmme() );
                 }
             }
         }
@@ -98,24 +106,30 @@ namespace RINGMesh {
 
     void GeoModelBuilder2DProjection::copy_geomodel_3d_geological_informations()
     {
-        for( const auto& geol_entity_id : range(
-            geomodel3d_from_.nb_geological_entity_types() ) ) {
-            const auto& cur_type = geomodel3d_from_.geological_entity_type(
-                geol_entity_id );
+        for( const auto& geol_entity_id :
+            range( geomodel3d_from_.nb_geological_entity_types() ) )
+        {
+            const auto& cur_type =
+                geomodel3d_from_.geological_entity_type( geol_entity_id );
             geology.create_geological_entities(
                 mapped_value( geol_entity_type_2d_to_3d_map, cur_type ),
                 geomodel3d_from_.nb_geological_entities( cur_type ) );
         }
-        for( const auto& geol_entity_id : range(
-            geomodel3d_from_.nb_geological_entity_types() ) ) {
-            const auto& cur_type = geomodel3d_from_.geological_entity_type(
-                geol_entity_id );
-            for( const auto& cur_geol_entity : geomodel3d_from_.geol_entities(
-                cur_type ) ) {
-                for( const auto& child_id : range( cur_geol_entity.nb_children() ) ) {
+        for( const auto& geol_entity_id :
+            range( geomodel3d_from_.nb_geological_entity_types() ) )
+        {
+            const auto& cur_type =
+                geomodel3d_from_.geological_entity_type( geol_entity_id );
+            for( const auto& cur_geol_entity :
+                geomodel3d_from_.geol_entities( cur_type ) )
+            {
+                for( const auto& child_id :
+                    range( cur_geol_entity.nb_children() ) )
+                {
                     geology.add_parent_children_relation(
-                        { mapped_value( geol_entity_type_2d_to_3d_map, cur_type ),
-                          cur_geol_entity.index() },
+                        { mapped_value(
+                              geol_entity_type_2d_to_3d_map, cur_type ),
+                            cur_geol_entity.index() },
                         cur_geol_entity.child_gmme( child_id ) );
                 }
             }
@@ -124,32 +138,38 @@ namespace RINGMesh {
 
     void GeoModelBuilder2DProjection::project_geomodel_3d_mesh_entities()
     {
-        for( const auto& corner : geomodel3d_from_.corners() ) {
+        for( const auto& corner : geomodel3d_from_.corners() )
+        {
             auto projected_vertices = compute_projected_vertices( corner );
             ringmesh_assert( projected_vertices.size() == 1 );
             geometry.set_corner( corner.index(), projected_vertices.front() );
         }
 
-        for( const auto& line : geomodel3d_from_.lines() ) {
+        for( const auto& line : geomodel3d_from_.lines() )
+        {
             auto projected_vertices = compute_projected_vertices( line );
             geometry.set_line( line.index(), projected_vertices );
         }
 
-        for( const auto& surface : geomodel3d_from_.surfaces() ) {
+        for( const auto& surface : geomodel3d_from_.surfaces() )
+        {
             auto projected_vertices = compute_projected_vertices( surface );
             std::vector< index_t > surface_polygons;
             surface_polygons.reserve( 4 * surface.nb_mesh_elements() );
             std::vector< index_t > surface_polygon_ptr( 1, 0 );
             surface_polygon_ptr.reserve( surface.nb_mesh_elements() + 1 );
-            for( const auto& polygon_id : range( surface.nb_mesh_elements() ) ) {
-                for( const auto& v_id : range(
-                    surface.nb_mesh_element_vertices( polygon_id ) ) ) {
-                    surface_polygons.push_back( surface.mesh_element_vertex_index( {
-                        polygon_id, v_id } ) );
+            for( const auto& polygon_id : range( surface.nb_mesh_elements() ) )
+            {
+                for( const auto& v_id :
+                    range( surface.nb_mesh_element_vertices( polygon_id ) ) )
+                {
+                    surface_polygons.push_back(
+                        surface.mesh_element_vertex_index(
+                            { polygon_id, v_id } ) );
                 }
                 surface_polygon_ptr.push_back(
                     surface_polygon_ptr.back()
-                        + surface.nb_mesh_element_vertices( polygon_id ) );
+                    + surface.nb_mesh_element_vertices( polygon_id ) );
             }
             geometry.set_surface_geometry( surface.index(), projected_vertices,
                 surface_polygons, surface_polygon_ptr );
@@ -161,10 +181,10 @@ namespace RINGMesh {
     {
         std::vector< vec2 > projected_vertices;
         projected_vertices.reserve( entity.nb_vertices() );
-        for( const auto v : range( entity.nb_vertices() ) ) {
+        for( const auto v : range( entity.nb_vertices() ) )
+        {
             projected_vertices.push_back( get_2d_coord( entity.vertex( v ) ) );
         }
         return projected_vertices;
     }
-
 }

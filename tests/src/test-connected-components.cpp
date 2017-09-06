@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +14,8 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
@@ -46,38 +48,43 @@
 
 using namespace RINGMesh;
 
-namespace {
-
+namespace
+{
     void point_set_mesh_connected_component_test()
     {
         auto point_set = PointSetMesh3D::create_mesh();
-        auto point_set_builder = PointSetMeshBuilder3D::create_builder( *point_set );
+        auto point_set_builder =
+            PointSetMeshBuilder3D::create_builder( *point_set );
 
-        index_t nb_connected_components { NO_ID };
+        index_t nb_connected_components{ NO_ID };
         std::vector< index_t > connected_components;
         std::tie( nb_connected_components, connected_components ) =
             point_set->connected_components();
-        if( nb_connected_components != 0 || connected_components.size() != 0 ) {
+        if( nb_connected_components != 0 || connected_components.size() != 0 )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Point set should have 0 connected component." );
         }
-        const index_t max_itr { 5 };
-        for( auto i : range( 1, max_itr + 1 ) ) {
+        const index_t max_itr{ 5 };
+        for( auto i : range( 1, max_itr + 1 ) )
+        {
             point_set_builder->create_vertex( { static_cast< double >( i ),
-                                                static_cast< double >( i ),
-                                                static_cast< double >( i ) } );
+                static_cast< double >( i ), static_cast< double >( i ) } );
             nb_connected_components = NO_ID;
             connected_components.clear();
             std::tie( nb_connected_components, connected_components ) =
                 point_set->connected_components();
-            if( nb_connected_components != i || connected_components.size() != i ) {
-                throw RINGMeshException( "RINGMesh Test", "Point set should have ",
-                    i, " connected components." );
+            if( nb_connected_components != i
+                || connected_components.size() != i )
+            {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Point set should have ", i, " connected components." );
             }
 
             std::vector< index_t > solution( i );
             std::iota( solution.begin(), solution.end(), 0 );
-            if( connected_components != solution ) {
+            if( connected_components != solution )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Point set connected components are not correct." );
             }
@@ -87,13 +94,15 @@ namespace {
     void line_mesh_connected_component_test()
     {
         auto line_mesh = LineMesh3D::create_mesh();
-        auto line_mesh_builder = LineMeshBuilder3D::create_builder( *line_mesh );
+        auto line_mesh_builder =
+            LineMeshBuilder3D::create_builder( *line_mesh );
 
-        index_t nb_connected_components { NO_ID };
+        index_t nb_connected_components{ NO_ID };
         std::vector< index_t > connected_components;
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->connected_components();
-        if( nb_connected_components != 0 || connected_components.size() != 0 ) {
+        if( nb_connected_components != 0 || connected_components.size() != 0 )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Line mesh should have 0 connected component." );
         }
@@ -105,7 +114,8 @@ namespace {
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->connected_components();
         std::vector< index_t > solution( 1, 0 );
-        if( nb_connected_components != 1 || connected_components != solution ) {
+        if( nb_connected_components != 1 || connected_components != solution )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Line mesh should have 1 connected component with index 0." );
         }
@@ -116,7 +126,8 @@ namespace {
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->connected_components();
         solution.push_back( 0 );
-        if( nb_connected_components != 1 || connected_components != solution ) {
+        if( nb_connected_components != 1 || connected_components != solution )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Line mesh should have 1 connected component with index 0." );
         }
@@ -128,7 +139,8 @@ namespace {
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->connected_components();
         solution.push_back( 1 );
-        if( nb_connected_components != 2 || connected_components != solution ) {
+        if( nb_connected_components != 2 || connected_components != solution )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Line mesh should have 2 connected components: 0 0 1." );
         }
@@ -139,7 +151,8 @@ namespace {
         std::tie( nb_connected_components, connected_components ) =
             line_mesh->connected_components();
         solution.push_back( 0 );
-        if( nb_connected_components != 2 || connected_components != solution ) {
+        if( nb_connected_components != 2 || connected_components != solution )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Line mesh should have 2 connected components: 0 0 1 0." );
         }
@@ -153,7 +166,8 @@ namespace {
             line_mesh->connected_components();
         solution.push_back( 1 );
         solution.push_back( 1 );
-        if( nb_connected_components != 2 || connected_components != solution ) {
+        if( nb_connected_components != 2 || connected_components != solution )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Line mesh should have 2 connected components: 0 0 1 0 1 1." );
         }
@@ -166,7 +180,8 @@ namespace {
         solution[4] = 0;
         solution[5] = 0;
         solution.push_back( 0 );
-        if( nb_connected_components != 1 || connected_components != solution ) {
+        if( nb_connected_components != 1 || connected_components != solution )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Line mesh should have 1 connected component: 0 0 0 0 0 0 0." );
         }
@@ -184,34 +199,40 @@ namespace {
         solution.push_back( 0 );
         solution.push_back( 1 );
         solution.push_back( 0 );
-        if( nb_connected_components != 2 || connected_components != solution ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Line mesh should have 2 connected components: 0 0 0 0 0 0 0 0 1 0." );
+        if( nb_connected_components != 2 || connected_components != solution )
+        {
+            throw RINGMeshException( "RINGMesh Test", "Line mesh should have 2 "
+                                                      "connected components: 0 "
+                                                      "0 0 0 0 0 0 0 1 0." );
         }
     }
 
     void update_polygon_adjacencies_after_adding_a_new_polygon(
-        SurfaceMeshBuilder3D& surface_mesh_builder,
-        index_t new_polygon_id )
+        SurfaceMeshBuilder3D& surface_mesh_builder, index_t new_polygon_id )
     {
-        surface_mesh_builder.set_polygon_adjacent( { new_polygon_id, 0 }, NO_ID );
-        surface_mesh_builder.set_polygon_adjacent( { new_polygon_id, 1 }, NO_ID );
-        surface_mesh_builder.set_polygon_adjacent( { new_polygon_id, 2 }, NO_ID );
+        surface_mesh_builder.set_polygon_adjacent(
+            { new_polygon_id, 0 }, NO_ID );
+        surface_mesh_builder.set_polygon_adjacent(
+            { new_polygon_id, 1 }, NO_ID );
+        surface_mesh_builder.set_polygon_adjacent(
+            { new_polygon_id, 2 }, NO_ID );
         surface_mesh_builder.connect_polygons();
-        surface_mesh_builder.repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
+        surface_mesh_builder.repair(
+            GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
     }
 
     void surface_mesh_connected_component_test()
     {
         auto surface_mesh = SurfaceMesh3D::create_mesh();
-        auto surface_mesh_builder = SurfaceMeshBuilder3D::create_builder(
-            *surface_mesh );
+        auto surface_mesh_builder =
+            SurfaceMeshBuilder3D::create_builder( *surface_mesh );
 
-        index_t nb_connected_components { NO_ID };
+        index_t nb_connected_components{ NO_ID };
         std::vector< index_t > connected_components;
         std::tie( nb_connected_components, connected_components ) =
             surface_mesh->connected_components();
-        if( nb_connected_components != 0 || connected_components.size() != 0 ) {
+        if( nb_connected_components != 0 || connected_components.size() != 0 )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Surface mesh should have 0 connected component." );
         }
@@ -220,50 +241,61 @@ namespace {
         std::vector< index_t > polygon_vertices = {
             surface_mesh_builder->create_vertex( { 0., 0., 0. } ),
             surface_mesh_builder->create_vertex( { 1., 0., 0. } ),
-            surface_mesh_builder->create_vertex( { 0., 1., 0. } ) };
-        auto polygon_id = surface_mesh_builder->create_polygon( polygon_vertices );
-        update_polygon_adjacencies_after_adding_a_new_polygon( *surface_mesh_builder,
-            polygon_id );
+            surface_mesh_builder->create_vertex( { 0., 1., 0. } )
+        };
+        auto polygon_id =
+            surface_mesh_builder->create_polygon( polygon_vertices );
+        update_polygon_adjacencies_after_adding_a_new_polygon(
+            *surface_mesh_builder, polygon_id );
         std::tie( nb_connected_components, connected_components ) =
             surface_mesh->connected_components();
         std::vector< index_t > solution( 1, 0 );
-        if( nb_connected_components != 1 || connected_components != solution ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Surface mesh should have 1 connected component with an index at 0." );
+        if( nb_connected_components != 1 || connected_components != solution )
+        {
+            throw RINGMeshException(
+                "RINGMesh Test", "Surface mesh should have 1 connected "
+                                 "component with an index at 0." );
         }
 
         nb_connected_components = NO_ID;
-        polygon_vertices[0] = surface_mesh_builder->create_vertex( { 1., 1., 1. } );
+        polygon_vertices[0] =
+            surface_mesh_builder->create_vertex( { 1., 1., 1. } );
         polygon_id = surface_mesh_builder->create_polygon( polygon_vertices );
-        update_polygon_adjacencies_after_adding_a_new_polygon( *surface_mesh_builder,
-            polygon_id );
-        polygon_vertices[0] = surface_mesh_builder->create_vertex( { 5., 5., 0. } );
-        polygon_vertices[1] = surface_mesh_builder->create_vertex( { 5., 6., 0. } );
-        polygon_vertices[2] = surface_mesh_builder->create_vertex( { 6., 5., 0. } );
+        update_polygon_adjacencies_after_adding_a_new_polygon(
+            *surface_mesh_builder, polygon_id );
+        polygon_vertices[0] =
+            surface_mesh_builder->create_vertex( { 5., 5., 0. } );
+        polygon_vertices[1] =
+            surface_mesh_builder->create_vertex( { 5., 6., 0. } );
+        polygon_vertices[2] =
+            surface_mesh_builder->create_vertex( { 6., 5., 0. } );
         polygon_id = surface_mesh_builder->create_polygon( polygon_vertices );
-        update_polygon_adjacencies_after_adding_a_new_polygon( *surface_mesh_builder,
-            polygon_id );
+        update_polygon_adjacencies_after_adding_a_new_polygon(
+            *surface_mesh_builder, polygon_id );
         std::tie( nb_connected_components, connected_components ) =
             surface_mesh->connected_components();
         solution.push_back( 0 );
         solution.push_back( 1 );
-        if( nb_connected_components != 2 || connected_components != solution ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Surface mesh should have 2 connected component with an index at 0 0 1." );
+        if( nb_connected_components != 2 || connected_components != solution )
+        {
+            throw RINGMeshException(
+                "RINGMesh Test", "Surface mesh should have 2 connected "
+                                 "component with an index at 0 0 1." );
         }
     }
 
     void volume_mesh_connected_component_test()
     {
         auto volume_mesh = VolumeMesh3D::create_mesh();
-        auto volume_mesh_builder = VolumeMeshBuilder3D::create_builder(
-            *volume_mesh );
+        auto volume_mesh_builder =
+            VolumeMeshBuilder3D::create_builder( *volume_mesh );
 
-        index_t nb_connected_components { NO_ID };
+        index_t nb_connected_components{ NO_ID };
         std::vector< index_t > connected_components;
         std::tie( nb_connected_components, connected_components ) =
             volume_mesh->connected_components();
-        if( nb_connected_components != 0 || connected_components.size() != 0 ) {
+        if( nb_connected_components != 0 || connected_components.size() != 0 )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Volume mesh should have 0 connected component." );
         }
@@ -276,23 +308,26 @@ namespace {
         surface_mesh_connected_component_test();
         volume_mesh_connected_component_test();
     }
-
 }
 
 int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
 
         Logger::out( "TEST", "Test connected components" );
         run_tests();
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

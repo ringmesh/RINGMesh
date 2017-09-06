@@ -45,11 +45,11 @@
 /*!
  * @file Please add a file description
  * @author Arnaud Botella
- * @todo Rename the file. Could'nt the 2 functions be moved somewhere else ? 
+ * @todo Rename the file. Could'nt the 2 functions be moved somewhere else ?
  */
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * Compares the contains of two files
      * @param[in] f1 the first filename
@@ -67,12 +67,14 @@ namespace RINGMesh {
         std::unique_ptr< char[] > lBuffer( new char[MAX_LINE_LEN]() );
         std::unique_ptr< char[] > rBuffer( new char[MAX_LINE_LEN]() );
 
-        do {
+        do
+        {
             lFile.read( lBuffer.get(), MAX_LINE_LEN );
             rFile.read( rBuffer.get(), MAX_LINE_LEN );
             size_t numberOfRead = static_cast< size_t >( lFile.gcount() );
 
-            if( std::memcmp( lBuffer.get(), rBuffer.get(), numberOfRead ) != 0 ) {
+            if( std::memcmp( lBuffer.get(), rBuffer.get(), numberOfRead ) != 0 )
+            {
                 return false;
             }
         } while( lFile.good() || rFile.good() );
@@ -88,21 +90,19 @@ namespace RINGMesh {
 
     /***************************************************************************/
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     bool GeoModelIOHandler< DIMENSION >::load_geomodel(
-        const std::string& filename,
-        GeoModel< DIMENSION >& geomodel )
+        const std::string& filename, GeoModel< DIMENSION >& geomodel )
     {
         load( filename, geomodel );
-        Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from ",
-            filename );
+        Logger::out(
+            "I/O", " Loaded geomodel ", geomodel.name(), " from ", filename );
         return is_geomodel_valid( geomodel );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void GeoModelIOHandler< DIMENSION >::save_geomodel(
-        const GeoModel< DIMENSION >& geomodel,
-        const std::string& filename )
+        const GeoModel< DIMENSION >& geomodel, const std::string& filename )
     {
         save( geomodel, filename );
     }
@@ -110,24 +110,29 @@ namespace RINGMesh {
     index_t find_geomodel_dimension( const std::string& filename )
     {
         std::string ext = GEO::FileSystem::extension( filename );
-        if( GeoModelIOHandlerFactory2D::has_creator( ext ) ) {
-            return GeoModelIOHandler2D::get_handler( filename )->dimension(
-                filename );
-        } else if( GeoModelIOHandlerFactory3D::has_creator( ext ) ) {
-            return GeoModelIOHandler3D::get_handler( filename )->dimension(
-                filename );
-        } else {
+        if( GeoModelIOHandlerFactory2D::has_creator( ext ) )
+        {
+            return GeoModelIOHandler2D::get_handler( filename )
+                ->dimension( filename );
+        }
+        else if( GeoModelIOHandlerFactory3D::has_creator( ext ) )
+        {
+            return GeoModelIOHandler3D::get_handler( filename )
+                ->dimension( filename );
+        }
+        else
+        {
             ringmesh_assert_not_reached;
         }
         return 0;
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     bool geomodel_load(
-        GeoModel< DIMENSION >& geomodel,
-        const std::string& filename )
+        GeoModel< DIMENSION >& geomodel, const std::string& filename )
     {
-        if( !GEO::FileSystem::is_file( filename ) ) {
+        if( !GEO::FileSystem::is_file( filename ) )
+        {
             throw RINGMeshException( "I/O", "File does not exist: ", filename );
         }
         Logger::out( "I/O", "Loading file ", filename, "..." );
@@ -137,10 +142,9 @@ namespace RINGMesh {
         return handler->load_geomodel( filename, geomodel );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void geomodel_save(
-        const GeoModel< DIMENSION >& geomodel,
-        const std::string& filename )
+        const GeoModel< DIMENSION >& geomodel, const std::string& filename )
     {
         Logger::out( "I/O", "Saving file ", filename, "..." );
 
@@ -151,40 +155,43 @@ namespace RINGMesh {
 
     /************************************************************************/
 
-    template< index_t DIMENSION >
-    std::unique_ptr< GeoModelIOHandler< DIMENSION > > GeoModelIOHandler< DIMENSION >::create(
-        const std::string& format )
+    template < index_t DIMENSION >
+    std::unique_ptr< GeoModelIOHandler< DIMENSION > >
+        GeoModelIOHandler< DIMENSION >::create( const std::string& format )
     {
         auto handler = GeoModelIOHandlerFactory< DIMENSION >::create( format );
-        if( !handler ) {
+        if( !handler )
+        {
             Logger::err( "I/O", "Currently supported file formats are: " );
-            for( const std::string& name : GeoModelIOHandlerFactory< DIMENSION >::list_creators() ) {
+            for( const std::string& name :
+                GeoModelIOHandlerFactory< DIMENSION >::list_creators() )
+            {
                 Logger::err( "I/O", " ", name );
             }
 
-            throw RINGMeshException( "I/O", "Unsupported file format: ", format );
+            throw RINGMeshException(
+                "I/O", "Unsupported file format: ", format );
         }
         return handler;
     }
 
-    template< index_t DIMENSION >
-    std::unique_ptr< GeoModelIOHandler< DIMENSION > > GeoModelIOHandler< DIMENSION >::get_handler(
-        const std::string& filename )
+    template < index_t DIMENSION >
+    std::unique_ptr< GeoModelIOHandler< DIMENSION > >
+        GeoModelIOHandler< DIMENSION >::get_handler(
+            const std::string& filename )
     {
         return create( GEO::FileSystem::extension( filename ) );
     }
 
-    template class RINGMESH_API GeoModelIOHandler< 2 > ;
-    template class RINGMESH_API GeoModelIOHandler< 3 > ;
+    template class RINGMESH_API GeoModelIOHandler< 2 >;
+    template class RINGMESH_API GeoModelIOHandler< 3 >;
 
     template bool RINGMESH_API geomodel_load( GeoModel2D&, const std::string& );
     template void RINGMESH_API geomodel_save(
-        const GeoModel2D&,
-        const std::string& );
+        const GeoModel2D&, const std::string& );
 
     template bool RINGMESH_API geomodel_load( GeoModel3D&, const std::string& );
     template void RINGMESH_API geomodel_save(
-        const GeoModel3D&,
-        const std::string& );
+        const GeoModel3D&, const std::string& );
 
 } // namespace RINGMesh

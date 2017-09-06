@@ -49,15 +49,19 @@ using namespace RINGMesh;
 
 void verdict( bool condition, std::string test_name )
 {
-    if( !condition ) {
+    if( !condition )
+    {
         throw RINGMeshException( "TEST", test_name, ": KO" );
-    } else {
+    }
+    else
+    {
         Logger::out( "TEST", test_name, ": OK" );
     }
 }
 
-template< index_t DIMENSION >
-bool are_almost_equal( const vecn< DIMENSION >& vec0, const vecn< DIMENSION >& vec1 )
+template < index_t DIMENSION >
+bool are_almost_equal(
+    const vecn< DIMENSION >& vec0, const vecn< DIMENSION >& vec1 )
 {
     return ( vec0 - vec1 ).length2() < global_epsilon_sq;
 }
@@ -65,16 +69,19 @@ bool are_almost_equal( const vecn< DIMENSION >& vec0, const vecn< DIMENSION >& v
 void test_point_plane_side()
 {
     Logger::out( "TEST", "Test Point-Plane side" );
-    Geometry::Plane plane { { 1., 0., 0. }, { 1., 4., -2. } };
+    Geometry::Plane plane{ { 1., 0., 0. }, { 1., 4., -2. } };
 
     // Test from each side
-    Sign positive_side { Position::point_side_to_plane( { 2., 2., 2. }, plane ) };
+    Sign positive_side{ Position::point_side_to_plane(
+        { 2., 2., 2. }, plane ) };
     verdict( positive_side == POSITIVE, "True point side positive" );
-    Sign negative_side { Position::point_side_to_plane( { -2., -2., -9. }, plane ) };
+    Sign negative_side{ Position::point_side_to_plane(
+        { -2., -2., -9. }, plane ) };
     verdict( negative_side == NEGATIVE, "True point side negative" );
 
     // Test on the plane
-    Sign on_plane_side { Position::point_side_to_plane( { 1., 6., -6. }, plane ) };
+    Sign on_plane_side{ Position::point_side_to_plane(
+        { 1., 6., -6. }, plane ) };
     verdict( on_plane_side == ZERO, "True point side on plane" );
 
     Logger::out( "TEST", " " );
@@ -82,17 +89,21 @@ void test_point_plane_side()
 
 int main()
 {
-    try {
+    try
+    {
         default_configure();
 
         Logger::out( "TEST", "Test intersection algorithms" );
 
         test_point_plane_side();
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

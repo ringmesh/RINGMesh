@@ -35,7 +35,7 @@
 
 /*!
  * @file Declaration of GeoModelEntity and all its children classes
- * @author Jeanne Pellerin and Arnaud Botella 
+ * @author Jeanne Pellerin and Arnaud Botella
  */
 
 #pragma once
@@ -44,7 +44,8 @@
 
 #include <ringmesh/geomodel/entity_type.h>
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( UniverseAccess );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
@@ -52,16 +53,18 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
 } // namespace RINGMesh
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     /*!
      * @brief Abstract base class describing one entity of a GeoModel
      */
-    template< index_t DIMENSION >
-    class RINGMESH_API GeoModelEntity {
-    ringmesh_disable_copy_and_move( GeoModelEntity );
-    ringmesh_template_assert_2d_or_3d( DIMENSION );
-    public:
+    template < index_t DIMENSION >
+    class RINGMESH_API GeoModelEntity
+    {
+        ringmesh_disable_copy_and_move( GeoModelEntity );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
 
+    public:
         virtual ~GeoModelEntity() = default;
 
         virtual bool is_on_voi() const = 0;
@@ -86,9 +89,11 @@ namespace RINGMesh {
          * GeoModelBuilderTopology class.
          *
          * @param[in] geomodel Geomodel owning the Entity to create
-         * @param[in] id Index of the entity in the corresponding vector in the geomodel
+         * @param[in] id Index of the entity in the corresponding vector in the
+         * geomodel
          * @param[in] name Name of the entity
-         * @param[in] geological_feature Geological feature of the entity, none by default.
+         * @param[in] geological_feature Geological feature of the entity, none
+         * by default.
          */
         GeoModelEntity( const GeoModel< DIMENSION >& geomodel, index_t id )
             : geomodel_( geomodel ), id_( id )
@@ -105,10 +110,10 @@ namespace RINGMesh {
         /// Reference to the GeoModel owning this entity
         const GeoModel< DIMENSION >& geomodel_;
         /// Name of the entity - default is "Unnamed"
-        std::string name_ = std::string { "Unnamed" };
+        std::string name_ = std::string{ "Unnamed" };
 
         /// Index of the entity
-        index_t id_ { NO_ID };
+        index_t id_{ NO_ID };
     };
 
     ALIAS_2D_AND_3D( GeoModelEntity );
