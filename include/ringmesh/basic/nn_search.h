@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -37,7 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/points/kd_tree.h>
+#include <ringmesh/basic/pimpl.h>
 
 /*!
  * @file Nearest Neighbor requests
@@ -51,16 +51,10 @@ namespace RINGMesh {
     ringmesh_disable_copy_and_move( NNSearch );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
-        explicit NNSearch(
-            const std::vector< vecn< DIMENSION > >& vertices,
-            bool copy = true );
+        explicit NNSearch( const std::vector< vecn< DIMENSION > >& vertices,
+        bool copy = true );
 
-        ~NNSearch()
-        {
-            if( delete_points_ ) {
-                delete[] nn_points_;
-            }
-        }
+        ~NNSearch() = default;
 
         /*!
          * @brief Gets the \p index_map that link all the duplicated points
@@ -119,7 +113,7 @@ namespace RINGMesh {
             const TEST& test ) const
         {
             std::vector< index_t > result;
-            index_t nb_points = nn_tree_->nb_points();
+            auto nb_points = this->nb_points();
             if( nb_points != 0 ) {
                 index_t nb_neighbors { std::min( index_t( 5 ), nb_points ) };
                 index_t cur_neighbor { 0 };
@@ -128,8 +122,7 @@ namespace RINGMesh {
                     prev_neighbor = cur_neighbor;
                     cur_neighbor += nb_neighbors;
                     result.reserve( cur_neighbor );
-                    std::vector< index_t > neighbors = get_neighbors( v,
-                        cur_neighbor );
+                    auto neighbors = get_neighbors( v, cur_neighbor );
                     nb_neighbors = static_cast< index_t >( neighbors.size() );
                     for( auto i : range( prev_neighbor, cur_neighbor ) ) {
                         if( test( neighbors[i] ) ) {
@@ -153,36 +146,11 @@ namespace RINGMesh {
             const vecn< DIMENSION >& v,
             index_t nb_neighbors ) const;
 
-        vecn< DIMENSION > point( index_t v ) const
-        {
-            vecn< DIMENSION > result;
-            for( auto i : range( DIMENSION ) ) {
-                result[i] = nn_points_[DIMENSION * v + i];
-            }
-            return result;
-        }
+        vecn< DIMENSION > point( index_t v ) const;
 
-        index_t nb_points() const
-        {
-            return nn_tree_->nb_points();
-        }
-
+        index_t nb_points() const;
     private:
-        void fill_nn_search_points(
-            index_t index_in_nn_search,
-            const vecn< DIMENSION >& center );
-
-    private:
-        /// KdTree to compute the nearest neighbor search
-        GEO::NearestNeighborSearch_var nn_tree_;
-        /// Array of the points (size of DIMENSIONxnumber of points)
-        double* nn_points_;
-        /*!
-         * @brief Indicates if ann_points_ should be deleted.
-         * @details No need to delete nn_points_ if it is a simple pointer
-         * to the mesh vertex array.
-         */
-        bool delete_points_;
+        IMPLEMENTATION_MEMBER( impl_ );
     };
     ALIAS_2D_AND_3D( NNSearch );
 

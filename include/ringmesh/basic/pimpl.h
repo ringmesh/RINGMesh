@@ -37,66 +37,33 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <mutex>
-
-#include <geogram/basic/logger.h>
+#include <memory>
 
 /*!
- * @file Logger class declaration
+ * @file Pointer to implementation
  * @author Arnaud Botella
  */
 
 namespace RINGMesh {
 
-    class RINGMESH_API Logger {
+    template< typename T >
+    class PImpl {
     public:
-        static void div( const std::string& title )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            GEO::Logger::div( title );
-        }
-
-        template< typename ...Args >
-        static void out( const std::string& feature, const Args& ... args )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            log( GEO::Logger::out( feature ), args... );
-        }
-
-        template< typename ...Args >
-        static void err( const std::string& feature, const Args& ... args )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            log( GEO::Logger::err( feature ), args... );
-        }
-
-        template< typename ...Args >
-        static void warn( const std::string& feature, const Args& ... args )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            log( GEO::Logger::warn( feature ), args... );
-        }
-
-        static GEO::Logger* instance()
-        {
-            return GEO::Logger::instance();
-        }
-
+        template< typename ...Args > PImpl( Args&& ... );
+        ~PImpl();
+        T* operator->();
+        const T* operator->() const;
+        T& operator*();
+        const T& operator*() const;
     private:
-        static void log( std::ostream& os )
-        {
-            os << std::endl;
-        }
-
-        template< class A0, class ...Args >
-        static void log( std::ostream& os, const A0& a0, const Args& ...args )
-        {
-            os << a0;
-            log( os, args... );
-        }
-
-    private:
-        static std::mutex lock_;
+        std::unique_ptr< T > impl_;
     };
+
+#define IMPLEMENTATION_MEMBER( impl )   \
+    class Impl;                         \
+    PImpl< Impl > impl
+
+#define EXPORT_IMPLEMENTATION( Class )  \
+    PImpl< Class::Impl >
 
 } // namespace RINGMesh

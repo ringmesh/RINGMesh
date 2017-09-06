@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -34,6 +34,8 @@
  */
 
 #include <ringmesh/geomodel/geomodel_builder_gocad.h>
+
+#include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geomodel/geomodel_api.h>
@@ -260,7 +262,7 @@ namespace {
         std::vector< vec3 >& cell_facet_centers )
     {
         const Region3D& region = geomodel.region( region_id );
-        const VolumeMesh3D& mesh = region.low_level_mesh_storage();
+        const VolumeMesh3D& mesh = region.mesh();
         const index_t nb_cells = region.nb_mesh_elements();
         cell_facet_centers.reserve( 4 * nb_cells );
         for( auto c : range( nb_cells ) ) {
@@ -334,10 +336,10 @@ namespace {
         index_t local_facet_id = cell_facet_center_id % 4;
         index_t cell_id = ( cell_facet_center_id - local_facet_id ) / 4;
         vec3 cell_facet_normal =
-            geomodel.region( region_id ).low_level_mesh_storage().cell_facet_normal(
+            geomodel.region( region_id ).mesh().cell_facet_normal(
                 CellLocalFacet( cell_id, local_facet_id ) );
         vec3 first_polygon_normal =
-            geomodel.surface( surface_id ).low_level_mesh_storage().polygon_normal(
+            geomodel.surface( surface_id ).mesh().polygon_normal(
                 0 );
         return dot( first_polygon_normal, cell_facet_normal ) > 0;
     }
@@ -582,7 +584,7 @@ namespace {
         const std::vector< Box3D >& surface_boxes )
     {
         const Surface3D& surface = geomodel.surface( surface_id );
-        const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
+        const SurfaceMesh3D& mesh = surface.mesh();
         const vec3 barycenter = mesh.polygon_edge_barycenter(
             PolygonLocalEdge( polygon, edge ) );
         std::vector< index_t > result;
@@ -610,7 +612,7 @@ namespace {
     {
         std::vector< vec3 > border_edge_barycenters;
         const Surface3D& surface = geomodel.surface( surface_id );
-        const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
+        const SurfaceMesh3D& mesh = surface.mesh();
         for( auto p : range( surface.nb_mesh_elements() ) ) {
             for( auto e : range( surface.nb_mesh_element_vertices( p ) ) ) {
                 if( mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) ) {
@@ -1647,7 +1649,7 @@ namespace RINGMesh {
         const std::vector< Box3D >& surface_boxes )
     {
         const Surface3D& surface = geomodel_.surface( surface_id );
-        const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
+        const SurfaceMesh3D& mesh = surface.mesh();
 
         for( auto p : range( surface.nb_mesh_elements() ) ) {
             std::vector< index_t > adjacent_polygons_id( 3 );

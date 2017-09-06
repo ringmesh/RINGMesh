@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -150,7 +150,7 @@ namespace {
      *
      * @param[in] gmme The GeoModelMeshEntity
      * @return Resized to the number of vertices of the mesh.
-     *      Number of times one vertex appear in an mesh_element collection of 
+     *      Number of times one vertex appear in an mesh_element collection of
      *      the GeoModelMeshEntity edge or polygon of the mesh.
      */
     template< index_t DIMENSION >
@@ -165,13 +165,6 @@ namespace {
             }
         }
         return nb;
-    }
-
-    template< index_t DIMENSION >
-    index_t count_nb_isolated_vertices( const GeoModelMeshEntity< DIMENSION >& mesh )
-    {
-        auto nb = count_vertex_occurences( mesh );
-        return static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) );
     }
 
     bool check_mesh_entity_vertices_are_different(
@@ -569,8 +562,12 @@ namespace RINGMesh {
     {
         bool valid { true };
         if( this->nb_vertices() != 1 ) {
-            Logger::err( "GeoModelEntity", "Corner ", this->index(), " mesh has ",
+            Logger::err( "GeoModelEntity", this->gmme(), " mesh has ",
                 point_set_mesh_->nb_vertices(), " vertices " );
+            valid = false;
+        }
+        if( !point_set_mesh_->is_mesh_valid() ) {
+            Logger::err( "GeoModelEntity", this->gmme(), " mesh is invalid" );
             valid = false;
         }
         return valid;
@@ -590,15 +587,8 @@ namespace RINGMesh {
     {
         bool valid { true };
 
-        // Check that the GEO::Mesh has the expected entities
-        if( this->nb_vertices() < 2 ) {
-            Logger::err( "GeoModelEntity", "Line ", this->index(), " has ",
-                line_mesh_->nb_vertices(), " vertices " );
-            valid = false;
-        }
-        if( line_mesh_->nb_edges() == 0 ) {
-            Logger::err( "GeoModelEntity", "Line ", this->index(), " mesh has ",
-                line_mesh_->nb_edges(), " edges " );
+        if( !line_mesh_->is_mesh_valid() ) {
+            Logger::err( "GeoModelEntity", this->gmme(), " mesh is invalid" );
             valid = false;
         }
 
@@ -652,9 +642,8 @@ namespace RINGMesh {
         // No zero edge length
         index_t nb_degenerated { 0 };
         for( auto e : range( nb_mesh_elements() ) ) {
-            double l = (
-                this->mesh_element_vertex( { e, 1 } ) - this->mesh_element_vertex( {
-                    e, 0 } ) ).length() ;
+            double l = ( this->mesh_element_vertex( { e, 1 } )
+                - this->mesh_element_vertex( { e, 0 } ) ).length();
             if( l < this->geomodel().epsilon() ) {
                 nb_degenerated++;
             }
@@ -731,22 +720,9 @@ namespace RINGMesh {
     {
         bool valid { true };
         auto id = this->gmme();
-        // Check that the GEO::Mesh has the expected entities
-        // at least 3 vertices and one polygon.
-        if( this->nb_vertices() < 3 ) {
-            Logger::warn( "GeoModelEntity", id, " has less than 3 vertices " );
-            valid = false;
-        }
-        if( surface_mesh_->nb_polygons() == 0 ) {
-            Logger::warn( "GeoModelEntity", id, " has no polygons " );
-            valid = false;
-        }
 
-        // No isolated vertices
-        index_t nb_isolated_vertices { count_nb_isolated_vertices( *this ) };
-        if( nb_isolated_vertices > 0 ) {
-            Logger::warn( "GeoModelEntity", id, " mesh has ", nb_isolated_vertices,
-                " isolated vertices " );
+        if( !surface_mesh_->is_mesh_valid() ) {
+            Logger::err( "GeoModelEntity", this->gmme(), " mesh is invalid" );
             valid = false;
         }
 
@@ -761,21 +737,6 @@ namespace RINGMesh {
         if( nb_degenerate != 0 ) {
             Logger::warn( "GeoModelEntity", id, " mesh has ", nb_degenerate,
                 " degenerate polygons " );
-            valid = false;
-        }
-
-        // No duplicated polygon
-        GEO::vector< index_t > colocated;
-        // GEO::mesh_detect_duplicated_facets( mesh_, colocated ) ; // not implemented yet 
-        index_t nb_duplicated_p { 0 };
-        for( auto p : range( colocated.size() ) ) {
-            if( colocated[p] != p ) {
-                nb_duplicated_p++;
-            }
-        }
-        if( nb_duplicated_p > 0 ) {
-            Logger::warn( "GeoModelEntity", id, " mesh has ", nb_duplicated_p,
-                " duplicated polygons " );
             valid = false;
         }
 
@@ -851,19 +812,9 @@ namespace RINGMesh {
             return true;
         }
         bool valid { true };
-        // Check that the GEO::Mesh has the expected entities
-        // at least 4 vertices and one cell.
-        if( volume_mesh_->nb_vertices() < 4 ) {
-            Logger::warn( "GeoModelEntity", this->gmme(),
-                " has less than 4 vertices " );
-            valid = false;
-        }
 
-        // No isolated vertices
-        index_t nb_isolated_vertices { count_nb_isolated_vertices( *this ) };
-        if( nb_isolated_vertices > 0 ) {
-            Logger::warn( "GeoModelEntity", this->gmme(), " mesh has ",
-                nb_isolated_vertices, " isolated vertices " );
+        if( !volume_mesh_->is_mesh_valid() ) {
+            Logger::err( "GeoModelEntity", this->gmme(), " mesh is invalid" );
             valid = false;
         }
 
