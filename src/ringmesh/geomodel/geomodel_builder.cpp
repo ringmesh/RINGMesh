@@ -178,7 +178,7 @@ namespace {
         {
             const auto& geomodel_vertices = geomodel_.mesh.vertices;
             for( const auto& surface : geomodel_.surfaces() ) {
-                const auto& mesh = surface.low_level_mesh_storage();
+                const auto& mesh = surface.mesh();
                 auto S_id = surface.gmme();
                 for( auto p : range( surface.nb_mesh_elements() ) ) {
                     for( auto v : range( surface.nb_mesh_element_vertices( p ) ) ) {
@@ -460,7 +460,7 @@ namespace {
                     if( line_border.same_edge( border ) ) {
                         auto surface_id = border.surface_;
                         region_info_[line.index()].add_polygon_edge( surface_id,
-                            this->geomodel_.surface( surface_id ).low_level_mesh_storage().polygon_normal(
+                            this->geomodel_.surface( surface_id ).mesh().polygon_normal(
                                 border.polygon_ ), vertices.vertex( border.v0_ ),
                             vertices.vertex( border.v1_ ) );
                     }
@@ -647,7 +647,7 @@ namespace {
         {
             const auto& border_polygon = this->border_polygons_[from];
             const auto& S = this->geomodel_.surface( border_polygon.surface_ );
-            const auto& mesh = S.low_level_mesh_storage();
+            const auto& mesh = S.mesh();
             auto surface_id = S.gmme();
             const auto& geomodel_vertices = this->geomodel_.mesh.vertices;
 
