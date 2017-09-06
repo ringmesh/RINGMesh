@@ -39,13 +39,7 @@
 
 #include <memory>
 
-#include <minizip/unzip.h>
-#include <minizip/zip.h>
-
 #include <ringmesh/basic/factory.h>
-
-#define MAX_FILENAME 512
-#define READ_SIZE 8192
 
 const char COMMA = ',';
 const char EOL = '\n';
@@ -185,14 +179,6 @@ namespace RINGMesh {
     /***************************************************************************/
 
     void RINGMESH_API mesh_initialize();
-
-    void RINGMESH_API zip_file( zipFile zf, const std::string& name );
-
-    void RINGMESH_API unzip_file( unzFile uz, const char filename[MAX_FILENAME] );
-
-    void RINGMESH_API unzip_current_file(
-        unzFile uz,
-        const char filename[MAX_FILENAME] );
 
     /*********************************************************************************************/
     class RINGMESH_API StratigraphicColumnIOHandler {
