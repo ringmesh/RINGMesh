@@ -181,6 +181,8 @@ namespace RINGMesh {
 
         virtual std::string default_extension() const = 0;
 
+        virtual bool is_mesh_valid() const = 0;
+
         /*!
          * @}
          */
@@ -321,6 +323,7 @@ namespace RINGMesh {
             }
 
             return valid;
+        }
         std::tuple< index_t, std::vector< index_t > > connected_components() const final;
     protected:
         LineMesh() = default;
@@ -658,6 +661,7 @@ namespace RINGMesh {
             }
 
             return valid;
+        }
         std::tuple< index_t, std::vector< index_t > > connected_components() const final;
     protected:
         SurfaceMeshBase() = default;
@@ -1077,6 +1081,7 @@ namespace RINGMesh {
             }
 
             return valid;
+        }
         std::tuple< index_t, std::vector< index_t > > connected_components() const final;
     protected:
         VolumeMesh() = default;

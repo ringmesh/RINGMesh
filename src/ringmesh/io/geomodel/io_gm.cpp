@@ -749,7 +749,7 @@ namespace {
         }
     }
 
-    void zip_files( const std::vector< std::string >& filenames, zipFile& zf )
+    void zip_files( const std::vector< std::string >& filenames, ZipFile& zf )
     {
         for( const std::string& name : filenames ) {
             zf.add_file( name );
