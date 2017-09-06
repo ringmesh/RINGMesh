@@ -35,6 +35,10 @@
 
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 
+#include <geogram/basic/attributes.h>
+
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 namespace {
