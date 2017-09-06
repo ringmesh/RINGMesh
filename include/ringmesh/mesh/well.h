@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -37,6 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <array>
 #include <memory>
 
 #include <geogram/basic/attributes.h>
@@ -55,16 +56,16 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
     struct ElementLocalVertex;
-}
+} // namespace RINGMesh
 
 namespace RINGMesh {
 
     template< index_t DIMENSION >
     class WellEntity {
-    ringmesh_disable_copy( WellEntity );
+    ringmesh_disable_copy_and_move( WellEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     protected:
-        WellEntity( const Well< DIMENSION >* well );
+        explicit WellEntity( const Well< DIMENSION >* well );
         virtual ~WellEntity() = default;
 
     public:
@@ -88,12 +89,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class WellCorner: public WellEntity< DIMENSION > {
     public:
-        WellCorner(
-            const Well< DIMENSION >* well,
-            const vecn< DIMENSION >& point,
-            bool is_on_surface,
-            index_t id );
-        virtual ~WellCorner() = default;
+        WellCorner( const Well< DIMENSION >* well, const vecn< DIMENSION >& point,
+        bool is_on_surface, index_t id );
 
         const vecn< DIMENSION >& point() const;
 
@@ -124,14 +121,12 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     class WellPart: public WellEntity< DIMENSION > {
     public:
-
         /*!
          * Create a WellPart
          * @param[in] well the associated well
          * @param[in] id the position in the parts_ vector of the associated well
          */
         WellPart( const Well< DIMENSION >* well, index_t id );
-        ~WellPart() = default;
 
         /*!
          * Sets the corber id
@@ -199,7 +194,7 @@ namespace RINGMesh {
         /// id of the part corresponding to the position in the parts_ vector of the well
         index_t id_;
         /// id in the corners_ vector the the well
-        index_t corners_[2];
+        std::array< index_t, 2 > corners_;
         std::unique_ptr< LineMesh< DIMENSION > > mesh_;
     };
 
@@ -226,7 +221,7 @@ namespace RINGMesh {
             return ( vertices_[0] + vertices_[1] ) * 0.5;
         }
     private:
-        vecn< DIMENSION > vertices_[2];
+        std::array< vecn< DIMENSION >, 2 > vertices_;
     };
 
     ALIAS_2D_AND_3D( Edge );
@@ -235,9 +230,10 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class Well {
-    ringmesh_disable_copy( Well );
+    ringmesh_disable_copy_and_move( Well );
     public:
         Well();
+        ~Well() = default;
 
         /*!
          * Copies information and resize the number of parts and corners
@@ -268,10 +264,8 @@ namespace RINGMesh {
          * @param[in] corner_info the corner_info_t corresponding to the corner to create
          * @return the id of the created corner
          */
-        index_t create_corner(
-            const vecn< DIMENSION >& vertex,
-            bool is_on_surface,
-            index_t id )
+        index_t create_corner( const vecn< DIMENSION >& vertex,
+        bool is_on_surface, index_t id )
         {
             index_t corner_id = static_cast< index_t >( corners_.size() );
             corners_.emplace_back(
@@ -392,7 +386,7 @@ namespace RINGMesh {
      */
     template< index_t DIMENSION >
     class WellGroup {
-    ringmesh_disable_copy( WellGroup );
+    ringmesh_disable_copy_and_move( WellGroup );
     public:
         WellGroup();
         virtual ~WellGroup() = default;
@@ -480,4 +474,4 @@ namespace RINGMesh {
     };
 
     ALIAS_2D_AND_3D( WellGroup );
-}
+} // namespace RINGMesh

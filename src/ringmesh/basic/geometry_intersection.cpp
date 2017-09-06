@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -118,8 +118,7 @@ namespace RINGMesh {
             double c1 { ( const_P1 - norm_d * const_P0 ) * invDet };
             vec3 O_inter { c0 * plane0.normal + c1 * plane1.normal };
             vec3 D_inter { cross( plane0.normal, plane1.normal ) };
-            return std::make_tuple( true, Geometry::Line3D { std::move( D_inter ),
-                                                             std::move( O_inter ) } );
+            return std::make_tuple( true, Geometry::Line3D { D_inter, O_inter } );
         }
 
         std::tuple< bool, vec2 > line_line(
@@ -214,14 +213,13 @@ namespace RINGMesh {
             double dot_directions { dot( line.direction, plane.normal ) };
             if( std::fabs( dot_directions ) > global_epsilon ) {
                 double signed_distance { dot( plane.normal, line.origin )
-                    - plane.plane_constant() };
+                    + plane.plane_constant() };
                 vec3 result { line.origin
                     - signed_distance * line.direction / dot_directions };
                 return std::make_tuple( true, result );
-            } else {
-                // line is parallel to the plane
-                return std::make_tuple( false, vec3() );
             }
+            // line is parallel to the plane
+            return std::make_tuple( false, vec3() );
         }
 
         std::tuple< bool, vec3 > segment_plane(
@@ -236,12 +234,10 @@ namespace RINGMesh {
                 if( Position::point_inside_segment( line_plane_result, segment ) ) {
                     // result inside the segment
                     return std::make_tuple( true, line_plane_result );
-                } else {
-                    return std::make_tuple( false, vec3() );
                 }
-            } else {
                 return std::make_tuple( false, vec3() );
             }
+            return std::make_tuple( false, vec3() );
         }
 
         std::tuple< bool, vec3 > segment_disk(
@@ -380,12 +376,12 @@ namespace RINGMesh {
                 segment_intersections.reserve( line_intersections.size() );
                 for( auto& point : line_intersections ) {
                     if( Position::point_inside_segment( point, segment ) ) {
-                        segment_intersections.emplace_back( std::move( point ) );
+                        segment_intersections.emplace_back( point );
                     }
                 }
             }
             return std::make_tuple( !segment_intersections.empty(),
                 segment_intersections );
         }
-    }
-}
+    } // namespace Intersection
+} // namespace RINGMesh

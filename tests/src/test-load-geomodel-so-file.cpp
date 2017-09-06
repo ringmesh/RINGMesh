@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -34,6 +34,8 @@
  */
 
 #include <ringmesh/ringmesh_tests_config.h>
+
+#include <future>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
@@ -50,7 +52,7 @@ void test_mesh( const std::string& file_name )
     using namespace RINGMesh;
 
     GeoModel3D model;
-    bool loaded_model_is_valid = geomodel_load( model, file_name );
+    bool loaded_model_is_valid { geomodel_load( model, file_name ) };
 
     if( !loaded_model_is_valid ) {
         throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
@@ -60,8 +62,7 @@ void test_mesh( const std::string& file_name )
     // Check number of entities of the imported GeoModel (from TSolid or LightTSolid file)
     if( model.nb_corners() != 52 || model.nb_lines() != 98
         || model.nb_surfaces() != 55 || model.nb_regions() != 8
-        || model.nb_geological_entities( Interface3D::type_name_static() )
-        != 11
+        || model.nb_geological_entities( Interface3D::type_name_static() ) != 11
         || model.nb_geological_entities( Contact3D::type_name_static() ) != 38
         || model.mesh.vertices.nb() != 6691 || model.mesh.polygons.nb() != 10049
         || model.mesh.cells.nb() != 34540 ) {
@@ -77,21 +78,22 @@ int main()
     try {
         default_configure();
 
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path + "log.txt" );
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
+        Logger::out( "TEST",
+            "Import two meshed GeoModels (1 TSolid & 1 LightTSolid) from .so" );
 
-        Logger::out( "TEST", "Import two meshed GeoModels (1 TSolid & 1 LightTSolid) from .so" );
+        std::vector< std::future< void > > futures;
 
-        std::string file_name_tsolid( ringmesh_test_data_path );
-        file_name_tsolid += "modelA4.so";
-        test_mesh( file_name_tsolid );
+        futures.emplace_back(
+            std::async( std::launch::async, &test_mesh,
+                ringmesh_test_data_path + "modelA4.so" ) );
 
-        std::string file_name_lighttsolid( ringmesh_test_data_path );
-        file_name_lighttsolid += "modelA4_lts.so";
-        test_mesh( file_name_lighttsolid );
-        
+        futures.emplace_back(
+            std::async( std::launch::async, &test_mesh,
+                ringmesh_test_data_path + "modelA4_lts.so" ) );
+
+        for( auto& future : futures ) {
+            future.get();
+        }
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;

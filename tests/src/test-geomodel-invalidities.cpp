@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -34,6 +34,8 @@
  */
 
 #include <ringmesh/ringmesh_tests_config.h>
+
+#include <future>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
@@ -62,7 +64,7 @@ void make_geomodel_copy(
 void verdict( const GeoModel3D& invalid_model, const std::string& feature )
 {
     if( is_geomodel_valid( invalid_model ) ) {
-        throw RINGMeshException( "RINGMesh Test", "Fail to " , feature );
+        throw RINGMeshException( "RINGMesh Test", "Fail to ", feature );
     } else {
         Logger::out( "TEST", "Succeed to ", feature );
     }
@@ -73,33 +75,44 @@ int main()
     try {
         default_configure();
 
-        std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml";
+        std::vector< std::future< void > > futures;
 
-        GeoModel3D in;
-        bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
+        futures.emplace_back(
+            std::async( std::launch::async,
+                [] {
+                    std::string input_model_file_name {ringmesh_test_data_path + "modelA6.ml"};
+                    GeoModel3D in;
+                    bool loaded_model_is_valid {geomodel_load( in, input_model_file_name )};
 
-        if( !loaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when loading model " + in.name()
-                    + ": the loaded model is not valid." );
-        }
+                    if( !loaded_model_is_valid ) {
+                        throw RINGMeshException( "RINGMesh Test",
+                            "Failed when loading model " + in.name()
+                            + ": the loaded model is not valid." );
+                    }
 
-        Logger::out( "TEST", "Break geomodels:" );
+                    Logger::out( "TEST", "Break geomodels:" );
 
-        GeoModel3D invalid_model;
-        make_geomodel_copy( in, "broken model 1", invalid_model );
-        GeoModelBuilder3D geomodel_breaker( invalid_model );
-        geomodel_breaker.geology.create_geological_entity(
-            RINGMesh::Interface3D::type_name_static() );
-        verdict( invalid_model,
-            "detect addition of an isolated GeoModelGeologicalEntity" );
+                    GeoModel3D invalid_model;
+                    make_geomodel_copy( in, "broken model 1", invalid_model );
+                    GeoModelBuilder3D geomodel_breaker( invalid_model );
+                    geomodel_breaker.geology.create_geological_entity(
+                        RINGMesh::Interface3D::type_name_static() );
+                    verdict( invalid_model,
+                        "detect addition of an isolated GeoModelGeologicalEntity" );
+                } ) );
 
-        GeoModel3D cloudspin;
-        geomodel_load( cloudspin, ringmesh_test_data_path + "CloudSpin.ml" );
-        if( is_geomodel_valid( cloudspin,
-            ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Fail to SURFACE_LINE_MESH_CONFORMITY on CloudSpin" );
+        futures.emplace_back( std::async( std::launch::async, [] {
+            GeoModel3D cloudspin;
+            geomodel_load( cloudspin, ringmesh_test_data_path + "CloudSpin.ml" );
+            if( is_geomodel_valid( cloudspin,
+                    ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Fail to SURFACE_LINE_MESH_CONFORMITY on CloudSpin" );
+            }
+        } ) );
+
+        for( auto& future : futures ) {
+            future.get();
         }
 
     } catch( const RINGMeshException& e ) {

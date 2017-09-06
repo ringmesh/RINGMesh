@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -58,7 +58,8 @@ namespace RINGMesh {
      */
     bool compare_files( const std::string& f1, const std::string& f2 )
     {
-        const unsigned int MAX_LINE_LEN = std::pow( 2, 16 ) - 1;
+        const auto MAX_LINE_LEN =
+            static_cast< unsigned int >( std::pow( 2, 16 ) - 1 );
 
         std::ifstream lFile( f1.c_str() );
         std::ifstream rFile( f2.c_str() );
@@ -83,59 +84,6 @@ namespace RINGMesh {
         GeoModelIOHandler2D::initialize();
         GeoModelIOHandler3D::initialize();
         WellGroupIOHandler::initialize();
-    }
-
-    /***************************************************************************/
-
-    void zip_file( zipFile zf, const std::string& name )
-    {
-        std::fstream file( name.c_str(), std::ios::in | std::ios::binary );
-        file.seekg( 0, std::ios::end );
-        long size = file.tellg();
-        file.seekg( 0, std::ios::beg );
-        std::vector< char > buffer( size );
-        file.read( &buffer[0], size );
-        zipOpenNewFileInZip( zf, name.c_str(), nullptr, nullptr, 0, nullptr, 0,
-            nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION );
-        zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size );
-        zipCloseFileInZip( zf );
-        file.close();
-    }
-
-    void unzip_file( unzFile uz, const char filename[MAX_FILENAME] )
-    {
-        unzLocateFile( uz, filename, 0 );
-        unzip_current_file( uz, filename );
-    }
-
-    void unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] )
-    {
-        char read_buffer[READ_SIZE];
-        if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
-            unzClose( uz );
-            throw RINGMeshException( "ZLIB", "Could not open file" );
-        }
-        FILE *out = fopen( filename, "wb" );
-        if( out == nullptr ) {
-            unzCloseCurrentFile( uz );
-            unzClose( uz );
-            throw RINGMeshException( "ZLIB", "Could not open destination file" );
-        }
-        int error = UNZ_OK;
-        do {
-            error = unzReadCurrentFile( uz, read_buffer, READ_SIZE );
-            if( error < 0 ) {
-                unzCloseCurrentFile( uz );
-                unzClose( uz );
-                fclose( out );
-                throw RINGMeshException( "ZLIB", "Invalid error: ", error );
-            }
-            if( error > 0 ) {
-                fwrite( read_buffer, error, 1, out );
-            }
-        } while( error > 0 );
-        fclose( out );
-        unzCloseCurrentFile( uz );
     }
 
     /***************************************************************************/

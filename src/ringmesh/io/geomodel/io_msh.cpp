@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -9,20 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -92,6 +92,8 @@ namespace {
     public:
         void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GMSH not implemented yet" );
         }
@@ -106,7 +108,7 @@ namespace {
 
             out << "$Nodes" << EOL;
             out << geomodel.mesh.vertices.nb() << EOL;
-            for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
+            for( auto v : range( geomodel.mesh.vertices.nb() ) ) {
                 out << v + gmsh_offset << SPACE << geomodel.mesh.vertices.vertex( v )
                     << EOL;
             }
@@ -118,16 +120,16 @@ namespace {
                 geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
 
             index_t element_index = 1;
-            for( index_t gmme_type_index : range(
+            for( auto gmme_type_index : range(
                 geomodel.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types() ) ) {
                 MeshEntityType cur_mesh_entity_type = gmme_types[gmme_type_index];
-                for( index_t index_of_gmme_of_the_current_type : range(
+                for( auto index_of_gmme_of_the_current_type : range(
                     geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) ) {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
                         index_of_gmme_of_the_current_type );
                     const GeoModelMeshEntity< 3 >& cur_gmme = geomodel.mesh_entity(
                         cur_gmme_id );
-                    for( index_t elem_in_cur_gmme : range(
+                    for( auto elem_in_cur_gmme : range(
                         cur_gmme.nb_mesh_elements() ) ) {
                         index_t nb_vertices_in_cur_element =
                             cur_gmme.nb_mesh_element_vertices( elem_in_cur_gmme );
@@ -137,7 +139,7 @@ namespace {
                             << nb_of_tags << SPACE << physical_id << SPACE
                             << index_of_gmme_of_the_current_type + gmsh_offset
                             << SPACE /*<< nb_vertices_in_cur_element << SPACE*/;
-                        for( index_t v_index_in_cur_element : range(
+                        for( auto v_index_in_cur_element : range(
                             nb_vertices_in_cur_element ) ) {
                             out
                                 << geomodel.mesh.vertices.geomodel_vertex_id(
@@ -202,7 +204,7 @@ namespace {
             const std::vector< MeshEntityType >& gmme_types =
                 geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
             for( const MeshEntityType& cur_mesh_entity_type : gmme_types ) {
-                for( index_t index_of_gmme_of_the_current_type : range(
+                for( auto index_of_gmme_of_the_current_type : range(
                     geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) ) {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
                         index_of_gmme_of_the_current_type );

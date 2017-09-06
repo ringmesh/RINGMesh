@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -9,20 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -46,12 +46,12 @@ namespace {
         };
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
+            ringmesh_unused( filename );
+            ringmesh_unused( geomodel );
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" );
         }
-        void save(
-            const GeoModel3D& geomodel,
-            const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::string path = GEO::FileSystem::dir_name( filename );
             std::string directory = GEO::FileSystem::base_name( filename );
@@ -80,8 +80,8 @@ namespace {
             const GeoModelMesh3D& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
-            for( index_t c :range( mesh.cells.nb() ) ) {
-                for( index_t f : range( mesh.cells.nb_facets( c ) ) ) {
+            for( auto c : range( mesh.cells.nb() ) ) {
+                for( auto f : range( mesh.cells.nb_facets( c ) ) ) {
                     index_t facet = NO_ID;
                     bool not_used;
                     if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
@@ -106,7 +106,7 @@ namespace {
             std::vector< vec3 > edge_vertices( nb_edges );
             index_t count_edge = 0;
             for( const auto& line : geomodel.lines() ) {
-                for( index_t e : range( line.nb_mesh_elements() ) ) {
+                for( auto e : range( line.nb_mesh_elements() ) ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
                 }
@@ -114,8 +114,8 @@ namespace {
             NNSearch3D nn_search( edge_vertices, false );
 
             const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
-            for( index_t p : range( polygons.nb() ) ) {
-                for( index_t e : range( polygons.nb_vertices( p ) ) ) {
+            for( auto p : range( polygons.nb() ) ) {
+                for( auto e : range( polygons.nb_vertices( p ) ) ) {
                     index_t adj = polygons.adjacent( PolygonLocalEdge( p, e ) );
                     if( adj != GEO::NO_CELL && adj < p ) {
                         pipes.emplace_back( p + cell_offset, adj + cell_offset );
@@ -138,19 +138,19 @@ namespace {
                 }
             }
 
-            index_t nb_pipes = pipes.size();
-            for( const std::vector< index_t >& vertices : edges ) {
-                nb_pipes += binomial_coef( vertices.size() );
+            auto nb_pipes = static_cast< index_t >( pipes.size() );
+            for( const auto& vertices : edges ) {
+                nb_pipes += binomial_coef(
+                    static_cast< index_t >( vertices.size() ) );
             }
             out_pipes << nb_pipes << EOL;
             for( const Pipe& pipe : pipes ) {
                 out_pipes << pipe.v0 << SPACE << pipe.v1 << EOL;
             }
             for( const std::vector< index_t >& vertices : edges ) {
-                for( index_t v0 : range( vertices.size() - 1 ) ) {
-                    for( index_t v1 : range( v0 + 1, vertices.size() ) ) {
-                        out_pipes << vertices[v0] << SPACE << vertices[v1]
-                            << EOL;
+                for( auto v0 : range( vertices.size() - 1 ) ) {
+                    for( auto v1 : range( v0 + 1, vertices.size() ) ) {
+                        out_pipes << vertices[v0] << SPACE << vertices[v1] << EOL;
                     }
                 }
             }
@@ -158,11 +158,11 @@ namespace {
             out_xyz
                 << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
                 << EOL;
-            for( index_t c : range( mesh.cells.nb() ) ) {
+            for( auto c : range( mesh.cells.nb() ) ) {
                 out_xyz << mesh.cells.barycenter( c ) << EOL;
                 out_vol << mesh.cells.volume( c ) << EOL;
             }
-            for( index_t p : range( polygons.nb() ) ) {
+            for( auto p : range( polygons.nb() ) ) {
                 out_xyz << polygons.center( p ) << EOL;
                 out_vol << polygons.area( p ) << EOL;
             }

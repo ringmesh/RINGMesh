@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -56,7 +56,6 @@ namespace RINGMesh {
 
 #define COMMON_GEOGRAM_GFX_IMPLEMENTATION( Class )                              \
     public:                                                                     \
-    virtual ~Class() = default;                                                 \
     void draw_vertices() override                                               \
     {                                                                           \
         mesh_gfx_.draw_vertices();                                              \
@@ -90,7 +89,7 @@ namespace RINGMesh {
     class GeogramPointSetMeshGfx: public PointSetMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramPointSetMeshGfx );
     public:
-        GeogramPointSetMeshGfx( const PointSetMesh< DIMENSION >& mesh )
+        explicit GeogramPointSetMeshGfx( const PointSetMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramPointSetMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -103,7 +102,7 @@ namespace RINGMesh {
     class GeogramLineMeshGfx: public LineMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramLineMeshGfx );
     public:
-        GeogramLineMeshGfx( const LineMesh< DIMENSION >& mesh )
+        explicit GeogramLineMeshGfx( const LineMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramLineMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -133,7 +132,7 @@ namespace RINGMesh {
     class GeogramSurfaceMeshGfx: public SurfaceMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramSurfaceMeshGfx );
     public:
-        GeogramSurfaceMeshGfx( const SurfaceMesh< DIMENSION >& mesh )
+        explicit GeogramSurfaceMeshGfx( const SurfaceMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -175,7 +174,7 @@ namespace RINGMesh {
     class GeogramVolumeMeshGfx: public VolumeMeshGfx< DIMENSION > {
     COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramVolumeMeshGfx );
     public:
-        GeogramVolumeMeshGfx( const VolumeMesh< DIMENSION >& mesh )
+        explicit GeogramVolumeMeshGfx( const VolumeMesh< DIMENSION >& mesh )
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramVolumeMesh< DIMENSION >& >( mesh ).gfx_mesh() );
@@ -224,6 +223,6 @@ namespace RINGMesh {
     using GeogramVolumeMeshGfx3D = GeogramVolumeMeshGfx< 3 >;
 
     void register_geogram_mesh_gfx();
-}
+} // namespace RINGMesh
 
 #endif

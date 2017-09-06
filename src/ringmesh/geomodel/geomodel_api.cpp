@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -57,9 +57,16 @@
 namespace {
     using namespace RINGMesh;
 
-    /*!
-     * @brief Total number of polygons in the geomodel Surfaces
-     */
+    template< index_t DIMENSION >
+    index_t count_geomodel_edges( const GeoModel< DIMENSION >& geomodel )
+    {
+        index_t result { 0 };
+        for( const auto& line : geomodel.lines() ) {
+            result += line.nb_mesh_elements();
+        }
+        return result;
+    }
+
     template< index_t DIMENSION >
     index_t count_geomodel_polygons( const GeoModel< DIMENSION >& geomodel )
     {
@@ -91,16 +98,6 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    index_t count_geomodel_edges( const GeoModel< DIMENSION >& geomodel )
-    {
-        index_t nb_edges { 0 };
-        for( const auto& line : geomodel.lines() ) {
-            nb_edges += line.nb_mesh_elements();
-        }
-        return nb_edges;
-    }
-
-    template< index_t DIMENSION >
     std::tuple< double, double, double, double, double > compute_region_volumes_per_cell_type(
         const Region< DIMENSION >& region )
     {
@@ -109,9 +106,9 @@ namespace {
         double prism_volume { 0 };
         double hex_volume { 0 };
         double poly_volume { 0 };
-        for( index_t c : range( region.nb_mesh_elements() ) ) {
+        for( auto c : range( region.nb_mesh_elements() ) ) {
             index_t nb_vertices { region.nb_mesh_element_vertices( c ) };
-            double volume { region.low_level_mesh_storage().cell_volume( c ) };
+            double volume { region.mesh().cell_volume( c ) };
             switch( nb_vertices ) {
                 case 4:
                     tet_volume += volume;
@@ -178,7 +175,7 @@ namespace {
     {
         Logger::out( "GeoModel", "Model ", geomodel.name(), " is made of\n",
             std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
-			std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
+            std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges" );
 
         index_t nb_triangles { geomodel.mesh.polygons.nb_triangle() };
         index_t nb_quads { geomodel.mesh.polygons.nb_quad() };
@@ -225,9 +222,10 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     void print_geomodel( const GeoModel< DIMENSION >& geomodel )
-	{
+    {
         Logger::out( "GeoModel", "Model ", geomodel.name(), " has\n",
-			std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
+            std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
+            std::setw( 10 ), std::left, count_geomodel_edges( geomodel ), " edges\n",
             std::setw( 10 ), std::left, count_geomodel_polygons( geomodel ),
             " polygons" );
         index_t nb_cells { count_geomodel_cells( geomodel ) };
@@ -324,7 +322,7 @@ namespace RINGMesh {
         const std::string& name )
     {
         index_t mesh_entity_id { NO_ID };
-        for( index_t elt_i : range( geomodel.nb_mesh_entities( gmme_type ) ) ) {
+        for( auto elt_i : range( geomodel.nb_mesh_entities( gmme_type ) ) ) {
             const GeoModelMeshEntity< DIMENSION >& cur_gme = geomodel.mesh_entity(
                 gmme_type, elt_i );
             if( cur_gme.name() == name ) {
@@ -374,7 +372,7 @@ namespace RINGMesh {
         GeoModel< DIMENSION >& geomodel,
         const vecn< DIMENSION >& translation_vector )
     {
-        for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
+        for( auto v : range( geomodel.mesh.vertices.nb() ) ) {
             // Coordinates are not directly modified to
             // update the matching vertices in geomodel entities
             const vecn< DIMENSION >& p = geomodel.mesh.vertices.vertex( v );
@@ -397,7 +395,7 @@ namespace RINGMesh {
         GEO::Matrix< 4, double > rot_mat { rotation_matrix_about_arbitrary_axis(
             origin, axis, theta, degrees ) };
 
-        for( index_t v : range( geomodel.mesh.vertices.nb() ) ) {
+        for( auto v : range( geomodel.mesh.vertices.nb() ) ) {
             const vec3& p = geomodel.mesh.vertices.vertex( v );
             std::array< double, 4 > old { { p[0], p[1], p[2], 1. } };
             std::array< double, 4 > new_p { { 0, 0, 0, 1. } };
@@ -436,7 +434,7 @@ namespace RINGMesh {
         if( region_id == NO_ID ) {
             Logger::out( "Info", "Using ", method );
             GEO::ProgressTask progress( "Compute", geomodel.nb_regions() );
-            for( index_t i : range( geomodel.nb_regions() ) ) {
+            for( auto i : range( geomodel.nb_regions() ) ) {
                 tetrahedralize( geomodel, method, i, add_steiner_points,
                     internal_vertices );
                 progress.next();

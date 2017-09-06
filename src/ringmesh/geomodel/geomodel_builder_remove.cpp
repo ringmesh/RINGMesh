@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -63,16 +63,15 @@ namespace RINGMesh {
     {
         if( entities.empty() ) {
             return;
-        } else {
-            initialize_for_removal( entities );
-            do_delete_flagged_mesh_entities();
-            geomodel_.mesh.vertices.clear();
-            update_mesh_entity_connectivity();
-            flag_geological_entities_without_children();
-            do_delete_flagged_geological_entities();
-            update_geological_entity_connectivity();
-            update_universe();
         }
+        initialize_for_removal( entities );
+        do_delete_flagged_mesh_entities();
+        geomodel_.mesh.vertices.clear();
+        update_mesh_entity_connectivity();
+        flag_geological_entities_without_children();
+        do_delete_flagged_geological_entities();
+        update_geological_entity_connectivity();
+        update_universe();
     }
 
     template< index_t DIMENSION >
@@ -83,7 +82,7 @@ namespace RINGMesh {
         for( const gmge_id& it : entities ) {
             const GeoModelGeologicalEntity< DIMENSION >& cur_gmge =
                 geomodel_.geological_entity( it );
-            for( index_t i : range( cur_gmge.nb_children() ) ) {
+            for( auto i : range( cur_gmge.nb_children() ) ) {
                 mesh_entities.insert( cur_gmge.child( i ).gmme() );
             }
         }
@@ -93,10 +92,10 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderRemovalBase< DIMENSION >::do_delete_flagged_geological_entities()
     {
-        for( index_t i : range( nb_geological_entity_types_ ) ) {
+        for( auto i : range( nb_geological_entity_types_ ) ) {
             const GeologicalEntityType& entity_type =
                 index_to_geological_entity_type( i );
-            for( index_t j : range( geomodel_.nb_geological_entities( entity_type ) ) ) {
+            for( auto j : range( geomodel_.nb_geological_entities( entity_type ) ) ) {
                 if( old_2_new_geological_entity_[i][j] == NO_ID ) {
                     builder_.geology.delete_geological_entity( entity_type, j );
                 }
@@ -141,7 +140,6 @@ namespace RINGMesh {
         GeoModelGeologicalEntityAccess< DIMENSION > gmge_access(
             dynamic_cast< GeoModelGeologicalEntity< DIMENSION >& >( E ) );
         gmge_access.modifiable_index() = new_index_in_geomodel;
-        return;
     }
 
     template< index_t DIMENSION >
@@ -174,7 +172,7 @@ namespace RINGMesh {
         if( type_index == NO_ID ) {
             return;
         }
-        for( index_t i : range( ME.nb_boundaries() ) ) {
+        for( auto i : range( ME.nb_boundaries() ) ) {
             index_t old_boundary = ME.boundary_gmme( i ).index();
             index_t new_boundary = old_2_new_mesh_entity_[type_index][old_boundary];
             builder_.topology.set_mesh_entity_boundary( ME.gmme(), i, new_boundary );
@@ -195,7 +193,7 @@ namespace RINGMesh {
         }
         index_t incident_entity_type_index = mesh_entity_type_to_index(
             incident_entity_type );
-        for( index_t i : range( E.nb_incident_entities() ) ) {
+        for( auto i : range( E.nb_incident_entities() ) ) {
             index_t old_id = E.incident_entity_gmme( i ).index();
             index_t new_id =
                 old_2_new_mesh_entity_[incident_entity_type_index][old_id];
@@ -208,7 +206,7 @@ namespace RINGMesh {
         GeoModelMeshEntity< DIMENSION >& E )
     {
         gmme_id id = E.gmme();
-        for( index_t p : range( E.nb_parents() ) ) {
+        for( auto p : range( E.nb_parents() ) ) {
             const GeologicalEntityType& parent_type = E.parent_gmge( p ).type();
             index_t parent_type_index = geological_entity_type_to_index(
                 parent_type );
@@ -226,7 +224,7 @@ namespace RINGMesh {
     {
         if( E.nb_children() > 0 ) {
             index_t child_type = children_type_index( E.entity_type() );
-            for( index_t i : range( E.nb_children() ) ) {
+            for( auto i : range( E.nb_children() ) ) {
                 index_t old_id = E.child_gmme( i ).index();
                 index_t new_id = old_2_new_mesh_entity_[child_type][old_id];
                 builder_.geology.set_geological_entity_child( E.gmge(), i, new_id );
@@ -241,7 +239,7 @@ namespace RINGMesh {
         index_t b_type_index = mesh_entity_type_to_index(
             Surface< DIMENSION >::type_name_static() );
         index_t side_offset = 0;
-        for( index_t i : range( U.nb_boundaries() ) ) {
+        for( auto i : range( U.nb_boundaries() ) ) {
             index_t old_id = U.boundary_gmme( i ).index();
             index_t new_id = old_2_new_mesh_entity_[b_type_index][old_id];
 
@@ -261,8 +259,8 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelBuilderRemovalBase< DIMENSION >::fill_nb_children_vector()
     {
-        for( index_t i : range( nb_childs_.size() ) ) {
-            for( index_t j : range( nb_childs_[i].size() ) ) {
+        for( auto i : range( nb_childs_.size() ) ) {
+            for( auto j : range( nb_childs_[i].size() ) ) {
                 nb_childs_[i][j] = geomodel_.geological_entity(
                     index_to_geological_entity_type( i ), j ).nb_children();
             }
@@ -284,13 +282,12 @@ namespace RINGMesh {
     {
     }
 
-    void GeoModelBuilderRemoval< 3 >::update_mesh_entity(
-        GeoModelMeshEntity3D& ME )
+    void GeoModelBuilderRemoval< 3 >::update_mesh_entity( GeoModelMeshEntity3D& ME )
     {
         GeoModelBuilderRemovalBase3D::update_mesh_entity( ME );
 
         if( ME.mesh_entity_type() == Region3D::type_name_static() ) {
-            Region3D& R = dynamic_cast< Region3D& >( ME );
+            auto& R = dynamic_cast< Region3D& >( ME );
             update_region_boundary_signs( R );
             delete_invalid_signs( R );
         }

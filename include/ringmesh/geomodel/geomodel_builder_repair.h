@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -154,10 +154,10 @@ namespace RINGMesh {
 
         /*!
          * @brief Detect and remove degenerated polygons in a Surface
-         * @param[in,out] S Surface to check for potential degenerate polygons.
-         * @return the number of degenerate polygons in \p S.
+         * @param[in,out] surface Surface to check for potential degenerate polygons.
+         * @return the number of degenerate polygons in \p surface.
          */
-        index_t detect_degenerate_polygons( const Surface< DIMENSION >& S );
+        index_t detect_degenerate_polygons( const Surface< DIMENSION >& surface );
 
         /*!
          * @brief Remove degenerate polygons and edges from the Surface
@@ -188,14 +188,14 @@ namespace RINGMesh {
          *
          * An edge is degenerate if both vertices are colocated.
          *
-         * @param[in] L Line to check the edge \p e.
-         * @param[in] e edge index in Line \p L.
+         * @param[in] line Line to check the edge \p edge.
+         * @param[in] edge edge index in Line \p line.
          * @param[in] colocated_vertices contains the colocated mapping of the Line.
          * @return true if the edge is degenerate. Else false.
          */
         bool edge_is_degenerate(
             const Line< DIMENSION >& line,
-            index_t e,
+            index_t edge,
             const std::vector< index_t >& colocated_vertices );
 
         void build_contacts();

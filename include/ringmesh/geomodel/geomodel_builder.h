@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -36,11 +36,6 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/geomodel/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
@@ -61,7 +56,7 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     template< index_t DIMENSION >
-    class GeoModelBuilderInfo {
+    class RINGMESH_API GeoModelBuilderInfo {
     ringmesh_disable_copy_and_move( GeoModelBuilderInfo );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
@@ -113,7 +108,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelBuilderCopy {
+    class RINGMESH_API GeoModelBuilderCopy {
     ringmesh_disable_copy_and_move( GeoModelBuilderCopy );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderBase< DIMENSION > ;
@@ -140,7 +135,7 @@ namespace RINGMesh {
      * with the GeoModel part which is edited (topology, geometry, geology, info)
      */
     template< index_t DIMENSION >
-    class GeoModelBuilderBase {
+    class RINGMESH_API GeoModelBuilderBase {
     ringmesh_disable_copy_and_move( GeoModelBuilderBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -177,7 +172,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelBuilder: public GeoModelBuilderBase< DIMENSION > {
+    class RINGMESH_API GeoModelBuilder: public GeoModelBuilderBase< DIMENSION > {
     };
 
     template< >

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -80,11 +80,11 @@ namespace {
         double point_distance { length( point - segment_center ) };
         if( point_distance < half_length - global_epsilon ) {
             return true;
-        } else if( point_distance > half_length + global_epsilon ) {
-            return false;
-        } else {
-            return point_inside_segment_exact( point, segment );
         }
+        if( point_distance > half_length + global_epsilon ) {
+            return false;
+        }
+        return point_inside_segment_exact( point, segment );
     }
 
     bool point_inside_triangle_exact(
@@ -104,12 +104,14 @@ namespace {
                 return true;
             }
             return s2 == s3;
-        } else if( s2 == ZERO ) {
+        }
+        if( s2 == ZERO ) {
             if( s1 == ZERO || s3 == ZERO ) {
                 return true;
             }
             return s1 == s3;
-        } else if( s3 == ZERO ) {
+        }
+        if( s3 == ZERO ) {
             if( s1 == ZERO || s2 == ZERO ) {
                 return true;
             }
@@ -219,7 +221,7 @@ namespace {
     bool point_inside_tetra_exact( const vec3& p, std::array< vec3, 4 >& vertices )
     {
         std::array< Sign, 4 > signs;
-        for( index_t f : range( 4 ) ) {
+        for( auto f : range( 4 ) ) {
             signs[f] =
                 sign(
                     GEO::PCK::orient_3d( p.data(),
@@ -258,8 +260,8 @@ namespace RINGMesh {
             const Geometry::Point3D& point,
             const Geometry::Tetra& tetra )
         {
-            std::array< vec3, 4 > vertices { { tetra.p0, tetra.p1, tetra.p2,
-                                               tetra.p3 } };
+            std::array< vec3, 4 > vertices {
+                { tetra.p0, tetra.p1, tetra.p2, tetra.p3 } };
             return point_inside_tetra_approx( point, vertices );
         }
 
@@ -294,18 +296,33 @@ namespace RINGMesh {
             std::tie( distance, projected_point ) = Distance::point_to_plane( point,
                 plane );
 
-            vec3 point_on_plane { projected_point.x + 1, projected_point.y + 1, 0 };
-            point_on_plane.z = -( plane.plane_constant()
-                + plane.normal.x * projected_point.x
-                + plane.normal.y * projected_point.y );
+            vec3 point_on_plane { projected_point };
+            double translation { std::max( 1.0, distance ) };
+            for( auto d : range( 3 ) ) {
+                if( std::fabs( plane.normal[d] ) > global_epsilon ) {
+                    index_t d1 { ( d + 1 ) % 3 };
+                    index_t d2 { ( d + 2 ) % 3 };
+                    point_on_plane[d1] += translation;
+                    point_on_plane[d2] += translation;
+
+                    point_on_plane[d] = -( plane.plane_constant()
+                        + plane.normal[d1] * point_on_plane[d1]
+                        + plane.normal[d2] * point_on_plane[d2] ) / plane.normal[d];
+                    break;
+                }
+            }
+            ringmesh_assert( point_on_plane != projected_point );
+
             vec3 u { normalize( point_on_plane ) };
             vec3 v { cross( plane.normal, u ) };
 
-            vec3 p0 { distance * u };
-            vec3 p1 { distance
-                * ( std::cos( 2 * M_PI / 3 ) * u - std::sin( 2 * M_PI / 3 ) * v ) };
-            vec3 p2 { distance
-                * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
+            vec3 p0 { projected_point + distance * u };
+            vec3 p1 { projected_point
+                + distance
+                    * ( std::cos( 2 * M_PI / 3 ) * u - std::sin( 2 * M_PI / 3 ) * v ) };
+            vec3 p2 { projected_point
+                + distance
+                    * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
 
             return sign(
                 GEO::PCK::orient_3d( point.data(), p0.data(), p1.data(),

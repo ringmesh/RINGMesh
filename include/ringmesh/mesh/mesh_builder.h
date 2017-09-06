@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -53,7 +53,7 @@ namespace RINGMesh {
 namespace RINGMesh {
     template< index_t DIMENSION >
     class MeshBaseBuilder {
-    ringmesh_disable_copy( MeshBaseBuilder );
+        ringmesh_disable_copy_and_move( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
@@ -283,9 +283,7 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( MeshBaseBuilder );
 
     template< index_t DIMENSION >
-    class PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
-    ringmesh_disable_copy( PointSetMeshBuilder );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+    class PointSetMeshBuilder: public MeshBaseBuilder < DIMENSION > {
     public:
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > > create_builder(
             PointSetMesh< DIMENSION >& mesh );
@@ -314,14 +312,12 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( PointSetMeshBuilder );
 
     template< index_t DIMENSION >
-    using PointSetMeshBuilderFactory = Factory< MeshType, PointSetMeshBuilder< DIMENSION >, PointSetMesh< DIMENSION >& >;
+    using PointSetMeshBuilderFactory = Factory < MeshType, PointSetMeshBuilder< DIMENSION >, PointSetMesh< DIMENSION >& > ;
 
     ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
     template< index_t DIMENSION >
-    class LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
-    ringmesh_disable_copy( LineMeshBuilder );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+    class LineMeshBuilder: public MeshBaseBuilder < DIMENSION > {
     public:
         static std::unique_ptr< LineMeshBuilder > create_builder(
             LineMesh< DIMENSION >& mesh );
@@ -349,23 +345,21 @@ namespace RINGMesh {
         }
         /*!
          * @brief Sets a vertex of a edge by local vertex index.
-         * @param[in] edge_id index of the edge, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the edge.
+         * @param[in] edge_local_vertex index of the edge and local index of the vertex in the edge.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the vertex \param local_vertex_id of edge
          * \param edge_id. Index between 0 and @function nb() - 1.
          */
         void set_edge_vertex(
-            index_t edge_id,
-            index_t local_vertex_id,
+            const EdgeLocalVertex& edge_local_vertex,
             index_t vertex_id )
         {
-            do_set_edge_vertex( edge_id, local_vertex_id, vertex_id );
+            do_set_edge_vertex( edge_local_vertex, vertex_id );
             clear_edge_linked_objects();
         }
         /*!
          * @brief Deletes a set of edges.
-         * @param[in] to_delete     a vector of size @function nb().
+         * @param[in] to_delete a vector of size @function nb().
          * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
          * @param[in] remove_isolated_vertices if true, then the vertices
          * that are no longer incident to any entity are deleted.
@@ -404,8 +398,8 @@ namespace RINGMesh {
         void remove_isolated_vertices()
         {
             std::vector< bool > to_delete( line_mesh_.nb_vertices(), true );
-            for( index_t e : range( line_mesh_.nb_edges() ) ) {
-                for( index_t v : range( 2 ) ) {
+            for( auto e : range( line_mesh_.nb_edges() ) ) {
+                for( auto v : range( 2 ) ) {
                     index_t vertex_id = line_mesh_.edge_vertex(
                         ElementLocalVertex( e, v ) );
                     to_delete[vertex_id] = false;
@@ -454,15 +448,13 @@ namespace RINGMesh {
         virtual index_t do_create_edges( index_t nb_edges ) = 0;
         /*!
          * @brief Sets a vertex of a edge by local vertex index.
-         * @param[in] edge_id index of the edge, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the edge.
+         * @param[in] edge_local_vertex index of the edge and local index of the vertex in the edge.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the vertex \param local_vertex_id of edge
          * \param edge_id. Index between 0 and @function nb() - 1.
          */
         virtual void do_set_edge_vertex(
-            index_t edge_id,
-            index_t local_vertex_id,
+            const EdgeLocalVertex& edge_local_vertex,
             index_t vertex_id ) = 0;
         /*!
          * @brief Deletes a set of edges.
@@ -488,14 +480,12 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( LineMeshBuilder );
 
     template< index_t DIMENSION >
-    using LineMeshBuilderFactory = Factory< MeshType, LineMeshBuilder< DIMENSION >, LineMesh< DIMENSION >& >;
+    using LineMeshBuilderFactory = Factory < MeshType, LineMeshBuilder< DIMENSION >, LineMesh< DIMENSION >& > ;
 
     ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
     template< index_t DIMENSION >
-    class SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
-    ringmesh_disable_copy( SurfaceMeshBuilder );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+    class SurfaceMeshBuilder: public MeshBaseBuilder < DIMENSION > {
     public:
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > create_builder(
             SurfaceMesh< DIMENSION >& mesh );
@@ -552,35 +542,31 @@ namespace RINGMesh {
         }
         /*!
          * @brief Sets a vertex of a polygon by local vertex index.
-         * @param[in] polygon_id index of the polygon, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the polygon.
+         * @param[in] polygon_local_edge the polygon index and local index of an edge.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the vertex \param local_vertex_id of the
          * polygon \param polygon_id. Index between 0 and @function nb() - 1.
          */
         void set_polygon_vertex(
-            index_t polygon_id,
-            index_t local_vertex_id,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t vertex_id )
         {
-            do_set_polygon_vertex( polygon_id, local_vertex_id, vertex_id );
+            do_set_polygon_vertex( polygon_local_edge, vertex_id );
             clear_polygon_linked_objects();
         }
         /*!
          * @brief Sets an adjacent polygon by both its polygon \param polygon_id
          * and its local edge index \param edge_id.
-         * @param[in] polygon_id the polygon index
-         * @param[in] edge_id the local index of an edge in polygon \p polygon_id
+         * @param[in] polygon_local_edge the polygon index and local index of an edge.
          * @param[in] specifies the polygon adjacent to \param polygon_id along edge
          * \param edge_id or GEO::NO_FACET if the parameter \param edge_id is
          * on the border.
          */
         void set_polygon_adjacent(
-            index_t polygon_id,
-            index_t edge_id,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t specifies )
         {
-            do_set_polygon_adjacent( polygon_id, edge_id, specifies );
+            do_set_polygon_adjacent( polygon_local_edge, specifies );
         }
         /*!
          * @brief Removes all the polygons and attributes.
@@ -607,15 +593,15 @@ namespace RINGMesh {
         void connect_polygons( const std::vector< index_t >& polygons_to_connect )
         {
             index_t nb_local_vertices = 0;
-            for( index_t polygon : polygons_to_connect ) {
+            for( auto polygon : polygons_to_connect ) {
                 nb_local_vertices += this->surface_mesh_.nb_polygon_vertices(
                     polygon );
             }
 
             std::vector< ElementLocalVertex > polygon_vertices;
             polygon_vertices.reserve( nb_local_vertices );
-            for( index_t polygon : polygons_to_connect ) {
-                for( index_t v : range(
+            for( auto polygon : polygons_to_connect ) {
+                for( auto v : range(
                     this->surface_mesh_.nb_polygon_vertices( polygon ) ) ) {
                     polygon_vertices.emplace_back( polygon, v );
                 }
@@ -626,8 +612,8 @@ namespace RINGMesh {
             std::vector< index_t > vertex2polygon_local_vertex(
                 this->surface_mesh_.nb_vertices(), NO_ID );
             index_t local_vertex_count = 0;
-            for( index_t polygon : polygons_to_connect ) {
-                for( index_t v = 0;
+            for( auto polygon : polygons_to_connect ) {
+                for( auto v = 0;
                     v < this->surface_mesh_.nb_polygon_vertices( polygon );
                     v++, local_vertex_count++ ) {
                     index_t vertex = this->surface_mesh_.polygon_vertex(
@@ -639,7 +625,7 @@ namespace RINGMesh {
             }
 
             local_vertex_count = 0;
-            for( index_t polygon : polygons_to_connect ) {
+            for( auto polygon : polygons_to_connect ) {
                 for( index_t v = 0;
                     v < this->surface_mesh_.nb_polygon_vertices( polygon );
                     v++, local_vertex_count++ ) {
@@ -651,11 +637,11 @@ namespace RINGMesh {
                         ElementLocalVertex( polygon, v ) );
                     index_t next_vertex = this->surface_mesh_.polygon_vertex(
                         this->surface_mesh_.next_polygon_vertex(
-                            ElementLocalVertex( polygon, v ) ) );
-                    for( index_t local_vertex =
+                        ElementLocalVertex( polygon, v ) ) );
+                    for( auto local_vertex =
                         vertex2polygon_local_vertex[next_vertex];
                         local_vertex != NO_ID; local_vertex =
-                            next_local_vertex_around_vertex[local_vertex] ) {
+                        next_local_vertex_around_vertex[local_vertex] ) {
                         if( local_vertex == local_vertex_count ) {
                             continue;
                         }
@@ -664,12 +650,15 @@ namespace RINGMesh {
                             polygon_vertices[local_vertex].local_vertex_id_;
                         index_t adj_next_vertex = this->surface_mesh_.polygon_vertex(
                             this->surface_mesh_.next_polygon_vertex(
-                                ElementLocalVertex( adj_polygon,
-                                    adj_local_vertex ) ) );
+                            ElementLocalVertex( adj_polygon,
+                            adj_local_vertex ) ) );
                         if( adj_next_vertex == vertex ) {
-                            this->set_polygon_adjacent( polygon, v, adj_polygon );
-                            this->set_polygon_adjacent( adj_polygon,
-                                adj_local_vertex, polygon );
+                            this->set_polygon_adjacent(
+                                PolygonLocalEdge( polygon, v ),
+                                adj_polygon );
+                            this->set_polygon_adjacent(
+                                PolygonLocalEdge( adj_polygon, adj_local_vertex ),
+                                polygon );
                             break;
                         }
                     }
@@ -725,8 +714,8 @@ namespace RINGMesh {
         void remove_isolated_vertices()
         {
             std::vector< bool > to_delete( surface_mesh_.nb_vertices(), true );
-            for( index_t p : range( surface_mesh_.nb_polygons() ) ) {
-                for( index_t v : range( surface_mesh_.nb_polygon_vertices( p ) ) ) {
+            for( auto p : range( surface_mesh_.nb_polygons() ) ) {
+                for( auto v : range( surface_mesh_.nb_polygon_vertices( p ) ) ) {
                     index_t vertex_id = surface_mesh_.polygon_vertex(
                         ElementLocalVertex( p, v ) );
                     to_delete[vertex_id] = false;
@@ -798,28 +787,24 @@ namespace RINGMesh {
         virtual index_t do_create_quads( index_t nb_quads ) = 0;
         /*!
          * @brief Sets a vertex of a polygon by local vertex index.
-         * @param[in] polygon_id index of the polygon, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the polygon.
+         * @param[in] polygon_local_edge the polygon index and the local index of an edge.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the vertex \param local_vertex_id of the
          * polygon \param polygon_id. Index between 0 and @function nb() - 1.
          */
         virtual void do_set_polygon_vertex(
-            index_t polygon_id,
-            index_t local_vertex_id,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t vertex_id ) = 0;
         /*!
          * @brief Sets an adjacent polygon by both its polygon \param polygon_id
          * and its local edge index \param edge_id.
-         * @param[in] polygon_id the polygon index
-         * @param[in] edge_id the local index of an edge in polygon \p polygon_id
+         * @param[in] polygon_local_edge the polygon index and the local index of an edge.
          * @param[in] specifies the polygon adjacent to \param polygon_id along edge
          * \param edge_id or GEO::NO_FACET if the parameter \param edge_id is
          * on the border.
          */
         virtual void do_set_polygon_adjacent(
-            index_t polygon_id,
-            index_t edge_id,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t specifies ) = 0;
         /*!
          * @brief Removes all the polygons and attributes.
@@ -846,17 +831,14 @@ namespace RINGMesh {
     ALIAS_2D_AND_3D( SurfaceMeshBuilder );
 
     template< index_t DIMENSION >
-    using SurfaceMeshBuilderFactory = Factory< MeshType, SurfaceMeshBuilder< DIMENSION >, SurfaceMesh< DIMENSION >& >;
+    using SurfaceMeshBuilderFactory = Factory < MeshType, SurfaceMeshBuilder< DIMENSION >, SurfaceMesh< DIMENSION >& > ;
 
     ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template< index_t DIMENSION >
-    class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {
-    ringmesh_disable_copy( VolumeMeshBuilder );
+    class VolumeMeshBuilder: public MeshBaseBuilder < DIMENSION > {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
     public:
-        virtual ~VolumeMeshBuilder() = default;
-
         static std::unique_ptr< VolumeMeshBuilder< DIMENSION > > create_builder(
             VolumeMesh< DIMENSION >& mesh );
 
@@ -887,19 +869,17 @@ namespace RINGMesh {
         }
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
-         * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the cell.
+         * @param[in] cell_local_vertex index of the cell, and local index of the vertex in the cell.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the global index of the vertex \param
          * local_vertex_id in the cell \param cell_id. Index between 0 and
          * @function nb() - 1.
          */
         void set_cell_vertex(
-            index_t cell_id,
-            index_t local_vertex_id,
+            const ElementLocalVertex & cell_local_vertex,
             index_t vertex_id )
         {
-            do_set_cell_vertex( cell_id, local_vertex_id, vertex_id );
+            do_set_cell_vertex( cell_local_vertex, vertex_id );
             clear_cell_linked_objects();
         }
         /*!
@@ -917,16 +897,14 @@ namespace RINGMesh {
         }
         /*!
          * \brief Sets the cell adjacent
-         * \param[in] cell_index index of the cell
-         * \param[in] facet_index local index of the cell facet
+         * \param[in] cell_local_facet index of the cell, and local index of the cell facet
          * \param[in] cell_adjacent adjacent value to set
          */
         void set_cell_adjacent(
-            index_t cell_index,
-            index_t facet_index,
+            const CellLocalFacet& cell_local_facet,
             index_t cell_adjacent )
         {
-            do_set_cell_adjacent( cell_index, facet_index, cell_adjacent );
+            do_set_cell_adjacent( cell_local_facet, cell_adjacent );
         }
 
         /*!
@@ -983,8 +961,8 @@ namespace RINGMesh {
         void remove_isolated_vertices()
         {
             std::vector< bool > to_delete( volume_mesh_.nb_vertices(), true );
-            for( index_t c : range( volume_mesh_.nb_cells() ) ) {
-                for( index_t v : range( volume_mesh_.nb_cell_vertices( c ) ) ) {
+            for( auto c : range( volume_mesh_.nb_cells() ) ) {
+                for( auto v : range( volume_mesh_.nb_cell_vertices( c ) ) ) {
                     index_t vertex_id = volume_mesh_.cell_vertex(
                         ElementLocalVertex( c, v ) );
                     to_delete[vertex_id] = false;
@@ -1047,16 +1025,14 @@ namespace RINGMesh {
             const std::vector< index_t >& tets ) = 0;
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
-         * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the cell.
+         * @param[in] cell_local_vertex index of the cell,and local index of the vertex in the cell.
          * Local index between 0 and @function nb_vertices(cell_id) - 1.
          * @param[in] vertex_id specifies the global index of the vertex \param
          * local_vertex_id in the cell \param cell_id. Index between 0 and
          * @function nb() - 1.
          */
         virtual void do_set_cell_vertex(
-            index_t cell_id,
-            index_t local_vertex_id,
+            const ElementLocalVertex & cell_local_vertex,
             index_t vertex_id ) = 0;
         /*!
          * \brief Sets the vertex that a corner is incident to
@@ -1069,13 +1045,11 @@ namespace RINGMesh {
             index_t vertex_index ) = 0;
         /*!
          * \brief Sets the cell adjacent
-         * \param[in] cell_index index of the cell
-         * \param[in] facet_index local index of the cell facet
+         * \param[in] cell_local_facet index of the cell, and local index of the cell facet
          * \param[in] cell_adjacent adjacent value to set
          */
         virtual void do_set_cell_adjacent(
-            index_t cell_index,
-            index_t facet_index,
+            const CellLocalFacet& cell_local_facet,
             index_t cell_adjacent ) = 0;
         /*!
          * @brief Removes all the cells and attributes.
@@ -1109,10 +1083,10 @@ namespace RINGMesh {
         VolumeMesh< DIMENSION >& volume_mesh_;
     };
 
-    using VolumeMeshBuilder3D = VolumeMeshBuilder< 3 >;
+    using VolumeMeshBuilder3D = VolumeMeshBuilder < 3 > ;
 
     template< index_t DIMENSION >
-    using VolumeMeshBuilderFactory = Factory< MeshType, VolumeMeshBuilder< DIMENSION >, VolumeMesh< DIMENSION >& >;
+    using VolumeMeshBuilderFactory = Factory < MeshType, VolumeMeshBuilder< DIMENSION >, VolumeMesh< DIMENSION >& > ;
 
-    using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory< 3 >;
+    using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory < 3 > ;
 } // namespace RINGMesh
