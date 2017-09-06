@@ -782,13 +782,13 @@ namespace {
                     && !is_edge_on_line( surface.geomodel(),
                         geomodel_vertices.geomodel_vertex_id( S_id, { p, v } ),
                         geomodel_vertices.geomodel_vertex_id( S_id,
-                            surface.low_level_mesh_storage().next_polygon_vertex( {
+                            surface.mesh().next_polygon_vertex( {
                                 p, v } ) ) ) ) {
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id, { p, v } ) );
                     invalid_corners.push_back(
                         geomodel_vertices.geomodel_vertex_id( S_id,
-                            surface.low_level_mesh_storage().next_polygon_vertex( {
+                            surface.mesh().next_polygon_vertex( {
                                 p, v } ) ) );
                 }
             }

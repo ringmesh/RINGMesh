@@ -262,7 +262,7 @@ namespace {
         std::vector< vec3 >& cell_facet_centers )
     {
         const Region3D& region = geomodel.region( region_id );
-        const VolumeMesh3D& mesh = region.low_level_mesh_storage();
+        const VolumeMesh3D& mesh = region.mesh();
         const index_t nb_cells = region.nb_mesh_elements();
         cell_facet_centers.reserve( 4 * nb_cells );
         for( auto c : range( nb_cells ) ) {
@@ -336,10 +336,10 @@ namespace {
         index_t local_facet_id = cell_facet_center_id % 4;
         index_t cell_id = ( cell_facet_center_id - local_facet_id ) / 4;
         vec3 cell_facet_normal =
-            geomodel.region( region_id ).low_level_mesh_storage().cell_facet_normal(
+            geomodel.region( region_id ).mesh().cell_facet_normal(
                 CellLocalFacet( cell_id, local_facet_id ) );
         vec3 first_polygon_normal =
-            geomodel.surface( surface_id ).low_level_mesh_storage().polygon_normal(
+            geomodel.surface( surface_id ).mesh().polygon_normal(
                 0 );
         return dot( first_polygon_normal, cell_facet_normal ) > 0;
     }
@@ -584,7 +584,7 @@ namespace {
         const std::vector< Box3D >& surface_boxes )
     {
         const Surface3D& surface = geomodel.surface( surface_id );
-        const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
+        const SurfaceMesh3D& mesh = surface.mesh();
         const vec3 barycenter = mesh.polygon_edge_barycenter(
             PolygonLocalEdge( polygon, edge ) );
         std::vector< index_t > result;
@@ -612,7 +612,7 @@ namespace {
     {
         std::vector< vec3 > border_edge_barycenters;
         const Surface3D& surface = geomodel.surface( surface_id );
-        const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
+        const SurfaceMesh3D& mesh = surface.mesh();
         for( auto p : range( surface.nb_mesh_elements() ) ) {
             for( auto e : range( surface.nb_mesh_element_vertices( p ) ) ) {
                 if( mesh.is_edge_on_border( PolygonLocalEdge( p, e ) ) ) {
@@ -1649,7 +1649,7 @@ namespace RINGMesh {
         const std::vector< Box3D >& surface_boxes )
     {
         const Surface3D& surface = geomodel_.surface( surface_id );
-        const SurfaceMesh3D& mesh = surface.low_level_mesh_storage();
+        const SurfaceMesh3D& mesh = surface.mesh();
 
         for( auto p : range( surface.nb_mesh_elements() ) ) {
             std::vector< index_t > adjacent_polygons_id( 3 );
