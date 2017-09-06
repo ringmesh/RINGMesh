@@ -76,6 +76,7 @@ namespace {
 #include "geomodel/io_msh.cpp"
 #include "geomodel/io_smesh.cpp"
 #include "geomodel/io_stl.cpp"
+#include "geomodel/io_stradivarius.cpp"
 #include "geomodel/io_svg.cpp"
 #include "geomodel/io_tetgen.cpp"
 #include "geomodel/io_tsolid.cpp"
@@ -93,6 +94,7 @@ namespace RINGMesh {
     void GeoModelIOHandler< 2 >::initialize()
     {
         GeoModelIOHandlerFactory2D::register_creator< GeoModelHandlerGM2D >( "gm" );
+        GeoModelIOHandlerFactory2D::register_creator< StradivariusIOHandler >( "model" );
         GeoModelIOHandlerFactory2D::register_creator< SVGIOHandler >( "svg" );
         GeoModelIOHandlerFactory2D::register_creator< MFEMIOHandler2D >( "mfem" );
     }

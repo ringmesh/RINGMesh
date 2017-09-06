@@ -429,30 +429,30 @@ namespace RINGMesh {
         }
 
         void set_mesh_entity_index(
-            GeoModelMeshEntity< DIMENSION >& E,
+            GeoModelMeshEntity< DIMENSION >& mesh_entity,
             index_t new_index_in_geomodel );
         void set_geological_entity_index(
-            GeoModelGeologicalEntity< DIMENSION >& E,
+            GeoModelGeologicalEntity< DIMENSION >& geological_entity,
             index_t new_index_in_geomodel );
 
-        void update_mesh_entity_index( GeoModelMeshEntity< DIMENSION >& ME );
+        void update_mesh_entity_index( GeoModelMeshEntity< DIMENSION >& mesh_entity );
         void update_geological_entity_index(
-            GeoModelGeologicalEntity< DIMENSION >& GE );
-        void update_mesh_entity_boundaries( GeoModelMeshEntity< DIMENSION >& ME );
+            GeoModelGeologicalEntity< DIMENSION >& geological_entity );
+        void update_mesh_entity_boundaries( GeoModelMeshEntity< DIMENSION >& mesh_entity );
 
-        void set_boundary_side( Region3D& R, index_t boundary_index, bool new_side )
+        void set_boundary_side( Region3D& region, index_t boundary_index, bool new_side )
         {
-            ringmesh_assert( boundary_index < R.nb_boundaries() );
+            ringmesh_assert( boundary_index < region.nb_boundaries() );
             GeoModelMeshEntityAccess< DIMENSION > region_access(
-                geomodel_access_.modifiable_mesh_entity( R.gmme() ) );
+                geomodel_access_.modifiable_mesh_entity( region.gmme() ) );
             region_access.modifiable_sides()[boundary_index] = new_side;
         }
 
         void update_mesh_entity_incident_entity(
-            GeoModelMeshEntity< DIMENSION >& E );
-        void update_mesh_entity_parents( GeoModelMeshEntity< DIMENSION >& E );
+            GeoModelMeshEntity< DIMENSION >& mesh_entity );
+        void update_mesh_entity_parents( GeoModelMeshEntity< DIMENSION >& mesh_entity );
         void update_geological_entity_children(
-            GeoModelGeologicalEntity< DIMENSION >& E );
+            GeoModelGeologicalEntity< DIMENSION >& geological_entity );
 
         // --- Deletion of some values the GeoModel storage
         template< typename TEST, typename THINGS_TO_DELETE >

@@ -82,9 +82,9 @@ namespace {
             const GeoModelMesh3D& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
-            for( index_t c :range( mesh.cells.nb() ) ) {
-                for( index_t f : range( mesh.cells.nb_facets( c ) ) ) {
-                    index_t facet = NO_ID;
+            for( auto c :range( mesh.cells.nb() ) ) {
+                for( auto f : range( mesh.cells.nb_facets( c ) ) ) {
+                    index_t facet { NO_ID };
                     bool not_used;
                     if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
                         not_used ) ) {
