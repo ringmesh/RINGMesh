@@ -73,7 +73,7 @@ namespace RINGMesh {
      * the RINGMesh::Mesh geometry.
      */
     template< index_t DIMENSION >
-    class GeoModelMeshEntity: public GeoModelEntity< DIMENSION > {
+    class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity< DIMENSION > {
     ringmesh_disable_copy_and_move( GeoModelMeshEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelMeshEntityAccess< DIMENSION > ;
@@ -360,7 +360,7 @@ namespace RINGMesh {
      * @details It is a unique point.
      */
     template< index_t DIMENSION >
-    class Corner final: public GeoModelMeshEntity< DIMENSION > {
+    class RINGMESH_API Corner final: public GeoModelMeshEntity< DIMENSION >{
     ringmesh_disable_copy_and_move( Corner );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -492,7 +492,7 @@ namespace RINGMesh {
      * a 1-manifold (Line with no T intersections).
      */
     template< index_t DIMENSION >
-    class Line final: public GeoModelMeshEntity< DIMENSION > {
+    class RINGMESH_API Line final: public GeoModelMeshEntity< DIMENSION >{
     ringmesh_disable_copy_and_move( Line );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -648,7 +648,7 @@ namespace RINGMesh {
      * (all edges of the polygons are in at most 2 polygons)
      */
     template< index_t DIMENSION >
-    class SurfaceBase: public GeoModelMeshEntity< DIMENSION > {
+    class RINGMESH_API SurfaceBase: public GeoModelMeshEntity< DIMENSION > {
     ringmesh_disable_copy_and_move( SurfaceBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
@@ -828,7 +828,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class Surface final: public SurfaceBase< DIMENSION > {
+    class RINGMESH_API Surface final: public SurfaceBase< DIMENSION >{
     };
 
     template< >
@@ -885,7 +885,7 @@ namespace RINGMesh {
      * Its volumetric mesh is optional.
      */
     template< index_t DIMENSION >
-    class Region final: public GeoModelMeshEntity< DIMENSION > {
+    class RINGMESH_API Region final: public GeoModelMeshEntity< DIMENSION >{
     ringmesh_disable_copy_and_move( Region );
         ringmesh_template_assert_3d( DIMENSION );
     public:
@@ -1202,7 +1202,7 @@ namespace RINGMesh {
     ALIAS_3D( Region );
 
     template< index_t DIMENSION >
-    class GeoModelMeshEntityConstAccess {
+    class RINGMESH_API GeoModelMeshEntityConstAccess {
     ringmesh_disable_copy_and_move( GeoModelMeshEntityConstAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderGeometryBase< DIMENSION > ;
@@ -1239,7 +1239,7 @@ namespace RINGMesh {
     };
 
     template< index_t DIMENSION >
-    class GeoModelMeshEntityAccess {
+    class RINGMESH_API GeoModelMeshEntityAccess {
     ringmesh_disable_copy_and_move( GeoModelMeshEntityAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
         friend class GeoModelBuilderTopologyBase< DIMENSION > ;
