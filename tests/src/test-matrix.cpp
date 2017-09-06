@@ -35,8 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/basic/matrix.h>
 #include <geogram/basic/string.h>
+#include <ringmesh/basic/matrix.h>
 
 /*!
  * @author Benjamin Chauvin
@@ -49,20 +49,25 @@ void set_get_test( SparseMatrix< double, light >& matrix )
     matrix.set_element( 0, 0, 1. );
     matrix.set_element( 1, 1, 1. );
     matrix.set_element( 2, 2, 1. );
-    for( index_t i = 0; i < matrix.ni(); ++i ) {
+    for( index_t i = 0; i < matrix.ni(); ++i )
+    {
         bool exists = false;
         double elt;
         std::tie( exists, elt ) = matrix.get_element( i, i );
-        if( !exists || std::abs( elt - 1. ) > global_epsilon ) {
+        if( !exists || std::abs( elt - 1. ) > global_epsilon )
+        {
             throw RINGMeshException( "TEST", "Matrix element at (", i, ",", i,
                 ") should exist and be correct!" );
         }
-        for( index_t j = 0; j < matrix.nj(); ++j ) {
-            if( i != j ) {
+        for( index_t j = 0; j < matrix.nj(); ++j )
+        {
+            if( i != j )
+            {
                 std::tie( exists, std::ignore ) = matrix.get_element( i, j );
-                if( exists ) {
-                    throw RINGMeshException( "TEST", "Matrix element at (", i, ",",
-                        i, ") should not exist!" );
+                if( exists )
+                {
+                    throw RINGMeshException( "TEST", "Matrix element at (", i,
+                        ",", i, ") should not exist!" );
                 }
             }
         }
@@ -75,41 +80,46 @@ void symmetry_test( SparseMatrix< double, light >& matrix )
     bool exists = false;
     double elt;
     std::tie( exists, elt ) = matrix.get_element( 0, 1 );
-    if( !exists || std::abs( elt - 3. ) > global_epsilon ) {
-        throw RINGMeshException( "TEST",
-            "Matrix element at (0,1) should exist and be correct!" );
+    if( !exists || std::abs( elt - 3. ) > global_epsilon )
+    {
+        throw RINGMeshException(
+            "TEST", "Matrix element at (0,1) should exist and be correct!" );
     }
-    if( matrix.is_symmetrical() ) {
+    if( matrix.is_symmetrical() )
+    {
         std::tie( exists, elt ) = matrix.get_element( 1, 0 );
-        if( !exists || std::abs( elt - 3. ) > global_epsilon ) {
+        if( !exists || std::abs( elt - 3. ) > global_epsilon )
+        {
             throw RINGMeshException( "TEST",
                 "Matrix element at (1,0) should exist and be correct!" );
         }
-    } else {
+    }
+    else
+    {
         std::tie( exists, elt ) = matrix.get_element( 1, 0 );
-        if( exists ) {
-            throw RINGMeshException( "TEST",
-                "Matrix element at (1,0) should not exist!" );
+        if( exists )
+        {
+            throw RINGMeshException(
+                "TEST", "Matrix element at (1,0) should not exist!" );
         }
     }
 }
 
-void product_by_vector_test(
-    SparseMatrix< double, light >& matrix,
+void product_by_vector_test( SparseMatrix< double, light >& matrix,
     const std::vector< double >& product_result )
 {
     std::vector< double > vect_to_multiply = { 5., 2., 9. };
-    std::vector< double > result = product_matrix_by_vector< double >( matrix,
-        vect_to_multiply );
+    std::vector< double > result =
+        product_matrix_by_vector< double >( matrix, vect_to_multiply );
     if( std::abs( result[0] - product_result[0] ) > global_epsilon
         || std::abs( result[1] - product_result[1] ) > global_epsilon
-        || std::abs( result[2] - product_result[2] ) > global_epsilon ) {
+        || std::abs( result[2] - product_result[2] ) > global_epsilon )
+    {
         throw RINGMeshException( "TEST", "Product matrix by vector failed!" );
     }
 }
 
-void one_test_sequence(
-    SparseMatrix< double, light >& matrix,
+void one_test_sequence( SparseMatrix< double, light >& matrix,
     const std::vector< double >& product_result )
 {
     matrix.build_matrix( 3, 3 );
@@ -127,23 +137,26 @@ void run_tests()
     SparseMatrix< double, light > asymmetrical_matrix( false );
     product_result[1] = 2.;
     one_test_sequence( asymmetrical_matrix, product_result );
-
 }
 
 int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
 
         Logger::out( "TEST", "Test Matrix" );
         run_tests();
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

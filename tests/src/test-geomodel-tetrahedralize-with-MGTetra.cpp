@@ -49,7 +49,8 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
 
         // Set an output log file
@@ -65,9 +66,11 @@ int main()
         GeoModel3D geomodel;
         bool loaded_model_is_valid = geomodel_load( geomodel, file_name );
 
-        if( !loaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test", "Failed when building model ",
-                geomodel.name(), ": the model is not valid." );
+        if( !loaded_model_is_valid )
+        {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when building model ", geomodel.name(),
+                ": the model is not valid." );
         }
 
 #ifdef USE_MG_TETRA
@@ -75,30 +78,35 @@ int main()
         // Tetrahedralize the GeoModel
         tetrahedralize( geomodel, "MG_Tetra", NO_ID, false );
 
-        for( index_t r : range( geomodel.nb_regions() ) ) {
-            if( !geomodel.region( r ).is_meshed() ) {
+        for( index_t r : range( geomodel.nb_regions() ) )
+        {
+            if( !geomodel.region( r ).is_meshed() )
+            {
                 throw RINGMeshException( "RINGMesh Test",
-                    "Failed when tetrahedralize model ", geomodel.name(), " Region ",
-                    r, " is not meshed ",
+                    "Failed when tetrahedralize model ", geomodel.name(),
+                    " Region ", r, " is not meshed ",
                     "maybe the MG Tetra Licence can not be reached" );
             }
         }
-        if( !is_geomodel_valid( geomodel ) ) {
+        if( !is_geomodel_valid( geomodel ) )
+        {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when tetrahedralize model ", geomodel.name(),
                 ": the model becomes invalid." );
         }
 
 #endif
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
     Logger::out( "TEST", "SUCCESS" );
     return 0;
 }
-

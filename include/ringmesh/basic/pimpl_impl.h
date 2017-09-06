@@ -42,39 +42,39 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh {
-
-    template< typename T >
-    template< typename ...Args >
-    PImpl< T >::PImpl( Args&& ...args )
-        : impl_ { new T { std::forward<Args>(args)... } }
+namespace RINGMesh
+{
+    template < typename T >
+    template < typename... Args >
+    PImpl< T >::PImpl( Args&&... args )
+        : impl_{ new T{ std::forward< Args >( args )... } }
     {
     }
 
-    template< typename T >
+    template < typename T >
     PImpl< T >::~PImpl()
     {
     }
 
-    template< typename T >
+    template < typename T >
     const T* PImpl< T >::operator->() const
     {
         return impl_.get();
     }
 
-    template< typename T >
+    template < typename T >
     T* PImpl< T >::operator->()
     {
         return impl_.get();
     }
 
-    template< typename T >
+    template < typename T >
     T& PImpl< T >::operator*()
     {
         return *impl_.get();
     }
 
-    template< typename T >
+    template < typename T >
     const T& PImpl< T >::operator*() const
     {
         return *impl_.get();

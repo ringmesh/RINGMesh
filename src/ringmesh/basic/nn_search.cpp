@@ -46,22 +46,25 @@
 
 #include <geogram/points/kd_tree.h>
 
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
-    class NNSearch< DIMENSION >::Impl {
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
+    class NNSearch< DIMENSION >::Impl
+    {
     public:
-        Impl( const std::vector< vecn< DIMENSION > >& vertices,
-        bool copy )
+        Impl( const std::vector< vecn< DIMENSION > >& vertices, bool copy )
             : nn_tree_( GEO::NearestNeighborSearch::create( DIMENSION, "BNN" ) )
         {
             auto nb_vertices = static_cast< index_t >( vertices.size() );
-            if( copy ) {
+            if( copy )
+            {
                 nn_points_ = new double[nb_vertices * DIMENSION];
                 delete_points_ = true;
                 GEO::Memory::copy( nn_points_, vertices.data()->data(),
-                    DIMENSION * nb_vertices * sizeof(double) );
-            } else {
+                    DIMENSION * nb_vertices * sizeof( double ) );
+            }
+            else
+            {
                 nn_points_ = const_cast< double* >( vertices.data()->data() );
                 delete_points_ = false;
             }
@@ -70,16 +73,17 @@ namespace RINGMesh {
 
         ~Impl()
         {
-            if( delete_points_ ) {
+            if( delete_points_ )
+            {
                 delete[] nn_points_;
             }
         }
 
         void fill_nn_search_points(
-            index_t index_in_nn_search,
-            const vecn< DIMENSION >& center )
+            index_t index_in_nn_search, const vecn< DIMENSION >& center )
         {
-            for( auto i : range( DIMENSION ) ) {
+            for( auto i : range( DIMENSION ) )
+            {
                 nn_points_[index_in_nn_search + i] = center[i];
             }
         }
@@ -87,7 +91,8 @@ namespace RINGMesh {
         vecn< DIMENSION > point( index_t v ) const
         {
             vecn< DIMENSION > result;
-            for( auto i : range( DIMENSION ) ) {
+            for( auto i : range( DIMENSION ) )
+            {
                 result[i] = nn_points_[DIMENSION * v + i];
             }
             return result;
@@ -99,16 +104,16 @@ namespace RINGMesh {
         }
 
         std::vector< index_t > get_neighbors(
-            const vecn< DIMENSION >& v,
-            index_t nb_neighbors ) const
+            const vecn< DIMENSION >& v, index_t nb_neighbors ) const
         {
             std::vector< index_t > result;
-            if( nb_points() != 0 ) {
+            if( nb_points() != 0 )
+            {
                 nb_neighbors = std::min( nb_neighbors, nb_points() );
                 std::vector< double > distances( nb_neighbors );
                 result.resize( nb_neighbors );
-                nn_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
-                    &distances[0] );
+                nn_tree_->get_nearest_neighbors(
+                    nb_neighbors, v.data(), &result[0], &distances[0] );
             }
             return result;
         }
@@ -124,64 +129,70 @@ namespace RINGMesh {
          * to the mesh vertex array.
          */
         bool delete_points_;
-
     };
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     NNSearch< DIMENSION >::NNSearch(
-        const std::vector< vecn< DIMENSION > >& vertices,
-        bool copy )
+        const std::vector< vecn< DIMENSION > >& vertices, bool copy )
         : impl_( vertices, copy )
     {
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     vecn< DIMENSION > NNSearch< DIMENSION >::point( index_t v ) const
     {
         return impl_->point( v );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     index_t NNSearch< DIMENSION >::nb_points() const
     {
         return impl_->nb_points();
     }
 
-    template< index_t DIMENSION >
-    std::tuple< index_t, std::vector< index_t > > NNSearch< DIMENSION >::get_colocated_index_mapping(
-        double epsilon ) const
+    template < index_t DIMENSION >
+    std::tuple< index_t, std::vector< index_t > >
+        NNSearch< DIMENSION >::get_colocated_index_mapping(
+            double epsilon ) const
     {
         std::vector< index_t > index_map( nb_points() );
-        std::atomic< index_t > nb_colocalised_vertices { 0 };
-        parallel_for( nb_points(),
-            [this, &index_map, &nb_colocalised_vertices, &epsilon](index_t i) {
-                auto results = get_neighbors( point( i ), epsilon );
-                index_t id {*std::min_element( results.begin(), results.end() )};
-                index_map[i] = id;
-                if( id < i ) {
-                    nb_colocalised_vertices++;
-                }
-            } );
+        std::atomic< index_t > nb_colocalised_vertices{ 0 };
+        parallel_for( nb_points(), [this, &index_map, &nb_colocalised_vertices,
+                                       &epsilon]( index_t i ) {
+            auto results = get_neighbors( point( i ), epsilon );
+            index_t id{ *std::min_element( results.begin(), results.end() ) };
+            index_map[i] = id;
+            if( id < i )
+            {
+                nb_colocalised_vertices++;
+            }
+        } );
         return std::make_tuple( nb_colocalised_vertices.load(), index_map );
     }
 
-    template< index_t DIMENSION >
-    std::tuple< index_t, std::vector< index_t >, std::vector< vecn< DIMENSION > > > NNSearch<
-        DIMENSION >::get_colocated_index_mapping_and_unique_points(
-        double epsilon ) const
+    template < index_t DIMENSION >
+    std::tuple< index_t,
+        std::vector< index_t >,
+        std::vector< vecn< DIMENSION > > >
+        NNSearch< DIMENSION >::get_colocated_index_mapping_and_unique_points(
+            double epsilon ) const
     {
         index_t nb_colocalised_vertices;
         std::vector< index_t > index_map;
-        std::tie( nb_colocalised_vertices, index_map ) = get_colocated_index_mapping(
-            epsilon );
+        std::tie( nb_colocalised_vertices, index_map ) =
+            get_colocated_index_mapping( epsilon );
         std::vector< vecn< DIMENSION > > unique_points;
         unique_points.reserve( nb_points() - nb_colocalised_vertices );
-        index_t offset { 0 };
-        for( auto p : range( index_map.size() ) ) {
-            if( index_map[p] == p ) {
+        index_t offset{ 0 };
+        for( auto p : range( index_map.size() ) )
+        {
+            if( index_map[p] == p )
+            {
                 unique_points.push_back( point( p ) );
                 index_map[p] = p - offset;
-            } else {
+            }
+            else
+            {
                 offset++;
                 index_map[p] = index_map[index_map[p]];
             }
@@ -190,27 +201,27 @@ namespace RINGMesh {
         return std::make_tuple( offset, index_map, unique_points );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     std::vector< index_t > NNSearch< DIMENSION >::get_neighbors(
-        const vecn< DIMENSION >& v,
-        double threshold_distance ) const
+        const vecn< DIMENSION >& v, double threshold_distance ) const
     {
-        double threshold_distance_sq { threshold_distance * threshold_distance };
-        return get_neighbors( v, [this, &v, threshold_distance_sq]( index_t i ) {
-            return length2( v - point( i ) ) > threshold_distance_sq;
-        } );
+        double threshold_distance_sq{ threshold_distance * threshold_distance };
+        return get_neighbors(
+            v, [this, &v, threshold_distance_sq]( index_t i ) {
+                return length2( v - point( i ) ) > threshold_distance_sq;
+            } );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     std::vector< index_t > NNSearch< DIMENSION >::get_neighbors(
-        const vecn< DIMENSION >& v,
-        index_t nb_neighbors ) const
+        const vecn< DIMENSION >& v, index_t nb_neighbors ) const
     {
         return impl_->get_neighbors( v, nb_neighbors );
     }
 
-    template class RINGMESH_API NNSearch< 2 > ;
-    template class RINGMESH_API EXPORT_IMPLEMENTATION (NNSearch< 2 > );
+    template class RINGMESH_API NNSearch< 2 >;
+    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 2 > );
 
-    template class RINGMESH_API NNSearch< 3 > ;
-    template class RINGMESH_API EXPORT_IMPLEMENTATION (NNSearch< 3 > );} // namespace RINGMesh
+    template class RINGMESH_API NNSearch< 3 >;
+    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 3 > );
+} // namespace RINGMesh

@@ -45,16 +45,19 @@
  * @author Jeanne Pellerin
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     // Implementation class
     class GeoModelEntityFromMesh;
 
     /*!
      * @brief To build a GeoModel from a set of disconnected polygonal surfaces
      */
-    class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder< 3 > {
+    class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder< 3 >
+    {
     public:
-        GeoModelBuilderSurfaceMesh( GeoModel3D& geomodel, const GEO::Mesh& mesh )
+        GeoModelBuilderSurfaceMesh(
+            GeoModel3D& geomodel, const GEO::Mesh& mesh )
             : GeoModelBuilder( geomodel ), mesh_( mesh )
         {
         }
@@ -62,10 +65,12 @@ namespace RINGMesh {
         /*!
          * @details Adds separately each connected component of the mesh
          *          as a Surface of the geomodel under construction.
-         *          All the polygons of the input mesh are visited and added to a
+         *          All the polygons of the input mesh are visited and added to
+         * a
          *          Surface of the GeoModel.
          *          Connected components of the mesh are determined with a
-         *          propagation (or "coloriage" algorithm) using the adjacent_facet
+         *          propagation (or "coloriage" algorithm) using the
+         * adjacent_facet
          *          information provided on the input GEO::Mesh.
          *
          * @todo Old code - old building - to delimit connected components

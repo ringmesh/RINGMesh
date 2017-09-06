@@ -46,92 +46,101 @@
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 
-namespace RINGMesh {
+namespace RINGMesh
+{
+#define COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( Class )                    \
+public:                                                                        \
+    void do_copy( const MeshBase< DIMENSION >& rhs, bool copy_attributes )     \
+        override                                                               \
+    {                                                                          \
+        const auto& geogrammesh =                                              \
+            dynamic_cast< const Class< DIMENSION >& >( rhs );                  \
+        mesh_.mesh_->copy(                                                     \
+            *geogrammesh.mesh_, copy_attributes, GEO::MESH_ALL_ELEMENTS );     \
+    }                                                                          \
+    void load_mesh( const std::string& filename ) override                     \
+    {                                                                          \
+        GEO::MeshIOFlags ioflags;                                              \
+        ioflags.set_attribute( GEO::MESH_ALL_ATTRIBUTES );                     \
+        GEO::mesh_load( filename, *mesh_.mesh_, ioflags );                     \
+    }                                                                          \
+    void do_clear( bool keep_attributes, bool keep_memory ) override           \
+    {                                                                          \
+        mesh_.mesh_->clear( keep_attributes, keep_memory );                    \
+    }                                                                          \
+    void do_repair( GEO::MeshRepairMode mode, double colocate_epsilon )        \
+        override                                                               \
+    {                                                                          \
+        GEO::mesh_repair( *mesh_.mesh_, mode, colocate_epsilon );              \
+    }                                                                          \
+    void do_set_vertex( index_t v_id, const vecn< DIMENSION >& vertex )        \
+        override                                                               \
+    {                                                                          \
+        mesh_.ref_vertex( v_id ) = vertex;                                     \
+    }                                                                          \
+    index_t do_create_vertex() override                                        \
+    {                                                                          \
+        return mesh_.mesh_->vertices.create_vertex();                          \
+    }                                                                          \
+    index_t do_create_vertices( index_t nb ) override                          \
+    {                                                                          \
+        return mesh_.mesh_->vertices.create_vertices( nb );                    \
+    }                                                                          \
+    void do_assign_vertices( const std::vector< double >& point_coordinates )  \
+        override                                                               \
+    {                                                                          \
+        GEO::vector< double > point_coordinates_cp =                           \
+            copy_std_vector_to_geo_vector( point_coordinates );                \
+        mesh_.mesh_->vertices.assign_points(                                   \
+            point_coordinates_cp, DIMENSION, false );                          \
+    }                                                                          \
+    void do_delete_vertices( const std::vector< bool >& to_delete ) override   \
+    {                                                                          \
+        GEO::vector< index_t > vertices_to_delete =                            \
+            copy_std_vector_to_geo_vector< bool, index_t >( to_delete );       \
+        mesh_.mesh_->vertices.delete_elements( vertices_to_delete, false );    \
+    }                                                                          \
+    void do_clear_vertices( bool keep_attributes, bool keep_memory ) override  \
+    {                                                                          \
+        mesh_.mesh_->vertices.clear( keep_attributes, keep_memory );           \
+    }                                                                          \
+    void do_permute_vertices( const std::vector< index_t >& permutation )      \
+        override                                                               \
+    {                                                                          \
+        GEO::vector< index_t > geo_vector_permutation =                        \
+            copy_std_vector_to_geo_vector( permutation );                      \
+        mesh_.mesh_->vertices.permute_elements( geo_vector_permutation );      \
+    }                                                                          \
+                                                                               \
+private:                                                                       \
+    Class< DIMENSION >& mesh_
 
-#define COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( Class )                             \
-    public:                                                                             \
-        void do_copy( const MeshBase< DIMENSION>& rhs, bool copy_attributes ) override  \
-        {                                                                               \
-            const auto& geogrammesh =                                                   \
-                dynamic_cast< const Class< DIMENSION >& >( rhs );                       \
-            mesh_.mesh_->copy( *geogrammesh.mesh_, copy_attributes,                     \
-                GEO::MESH_ALL_ELEMENTS );                                               \
-        }                                                                               \
-        void load_mesh( const std::string& filename ) override                          \
-        {                                                                               \
-            GEO::MeshIOFlags ioflags;                                                   \
-            ioflags.set_attribute( GEO::MESH_ALL_ATTRIBUTES );                          \
-            GEO::mesh_load( filename, *mesh_.mesh_, ioflags );                          \
-        }                                                                               \
-        void do_clear( bool keep_attributes, bool keep_memory ) override                \
-        {                                                                               \
-            mesh_.mesh_->clear( keep_attributes, keep_memory );                         \
-        }                                                                               \
-        void do_repair( GEO::MeshRepairMode mode, double colocate_epsilon ) override    \
-        {                                                                               \
-            GEO::mesh_repair( *mesh_.mesh_, mode, colocate_epsilon );                   \
-        }                                                                               \
-        void do_set_vertex( index_t v_id, const vecn< DIMENSION >& vertex ) override    \
-        {                                                                               \
-            mesh_.ref_vertex( v_id ) = vertex;                                          \
-        }                                                                               \
-        index_t do_create_vertex() override                                             \
-        {                                                                               \
-            return mesh_.mesh_->vertices.create_vertex();                               \
-        }                                                                               \
-        index_t do_create_vertices( index_t nb ) override                               \
-        {                                                                               \
-            return mesh_.mesh_->vertices.create_vertices( nb );                         \
-        }                                                                               \
-        void do_assign_vertices(                                                        \
-            const std::vector< double >& point_coordinates ) override                   \
-        {                                                                               \
-            GEO::vector< double > point_coordinates_cp =                                \
-                copy_std_vector_to_geo_vector( point_coordinates );                     \
-            mesh_.mesh_->vertices.assign_points( point_coordinates_cp, DIMENSION,       \
-                false );                                                                \
-        }                                                                               \
-        void do_delete_vertices( const std::vector< bool >& to_delete ) override        \
-        {                                                                               \
-            GEO::vector< index_t > vertices_to_delete =                                 \
-                copy_std_vector_to_geo_vector< bool, index_t >( to_delete );            \
-            mesh_.mesh_->vertices.delete_elements( vertices_to_delete, false );         \
-        }                                                                               \
-        void do_clear_vertices( bool keep_attributes, bool keep_memory ) override       \
-        {                                                                               \
-            mesh_.mesh_->vertices.clear( keep_attributes, keep_memory );                \
-        }                                                                               \
-        void do_permute_vertices( const std::vector< index_t >& permutation ) override  \
-        {                                                                               \
-            GEO::vector< index_t > geo_vector_permutation =                             \
-                copy_std_vector_to_geo_vector( permutation );                           \
-            mesh_.mesh_->vertices.permute_elements( geo_vector_permutation );           \
-        }                                                                               \
-    private:                                                                            \
-        Class< DIMENSION >& mesh_
+    template < index_t DIMENSION >
+    class GeogramPointSetMeshBuilder : public PointSetMeshBuilder< DIMENSION >
+    {
+        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
 
-    template< index_t DIMENSION >
-    class GeogramPointSetMeshBuilder: public PointSetMeshBuilder < DIMENSION > {
-        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh ); ringmesh_template_assert_2d_or_3d( DIMENSION );
     public:
         explicit GeogramPointSetMeshBuilder( PointSetMesh< DIMENSION >& mesh )
-            :
-            PointSetMeshBuilder< DIMENSION >( mesh ),
-            mesh_( dynamic_cast< GeogramPointSetMesh< DIMENSION >& >( mesh ) )
+            : PointSetMeshBuilder< DIMENSION >( mesh ),
+              mesh_( dynamic_cast< GeogramPointSetMesh< DIMENSION >& >( mesh ) )
         {
         }
     };
 
     ALIAS_2D_AND_3D( GeogramPointSetMeshBuilder );
 
-    template< index_t DIMENSION >
-    class GeogramLineMeshBuilder: public LineMeshBuilder < DIMENSION > {
-        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh ); ringmesh_template_assert_2d_or_3d( DIMENSION );
+    template < index_t DIMENSION >
+    class GeogramLineMeshBuilder : public LineMeshBuilder< DIMENSION >
+    {
+        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+
     public:
         explicit GeogramLineMeshBuilder( LineMesh< DIMENSION >& mesh )
-            :
-            LineMeshBuilder< DIMENSION >( mesh ),
-            mesh_( dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) )
+            : LineMeshBuilder< DIMENSION >( mesh ),
+              mesh_( dynamic_cast< GeogramLineMesh< DIMENSION >& >( mesh ) )
         {
         }
 
@@ -145,17 +154,17 @@ namespace RINGMesh {
             return mesh_.mesh_->edges.create_edges( nb_edges );
         }
 
-        void do_set_edge_vertex(
-            const EdgeLocalVertex& edge_local_vertex,
+        void do_set_edge_vertex( const EdgeLocalVertex& edge_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->edges.set_vertex( edge_local_vertex.edge_id_, edge_local_vertex.local_vertex_id_, vertex_id );
+            mesh_.mesh_->edges.set_vertex( edge_local_vertex.edge_id_,
+                edge_local_vertex.local_vertex_id_, vertex_id );
         }
 
         void do_delete_edges( const std::vector< bool >& to_delete ) override
         {
-            GEO::vector< index_t > edges_to_delete = copy_std_vector_to_geo_vector <
-                bool, index_t > ( to_delete );
+            GEO::vector< index_t > edges_to_delete =
+                copy_std_vector_to_geo_vector< bool, index_t >( to_delete );
             mesh_.mesh_->edges.delete_elements( edges_to_delete, false );
         }
 
@@ -164,7 +173,8 @@ namespace RINGMesh {
             mesh_.mesh_->edges.clear( keep_attributes, keep_memory );
         }
 
-        void do_permute_edges( const std::vector< index_t >& permutation ) override
+        void do_permute_edges(
+            const std::vector< index_t >& permutation ) override
         {
             GEO::vector< index_t > geo_vector_permutation =
                 copy_std_vector_to_geo_vector( permutation );
@@ -174,43 +184,46 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( GeogramLineMeshBuilder );
 
-    template< index_t DIMENSION >
-    class GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder < DIMENSION > {
-        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh ); ringmesh_template_assert_2d_or_3d( DIMENSION );
+    template < index_t DIMENSION >
+    class GeogramSurfaceMeshBuilder : public SurfaceMeshBuilder< DIMENSION >
+    {
+        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );
+        ringmesh_template_assert_2d_or_3d( DIMENSION );
+
     public:
         explicit GeogramSurfaceMeshBuilder( SurfaceMesh< DIMENSION >& mesh )
-            :
-            SurfaceMeshBuilder< DIMENSION >( mesh ),
-            mesh_( dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) )
+            : SurfaceMeshBuilder< DIMENSION >( mesh ),
+              mesh_( dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) )
         {
         }
 
         void remove_small_connected_components(
-            double min_area,
-            index_t min_polygons ) override
+            double min_area, index_t min_polygons ) override
         {
-            GEO::remove_small_connected_components( *mesh_.mesh_, min_area,
-                min_polygons );
+            GEO::remove_small_connected_components(
+                *mesh_.mesh_, min_area, min_polygons );
         }
 
-        void triangulate( const SurfaceMeshBase< DIMENSION >& surface_in ) override
+        void triangulate(
+            const SurfaceMeshBase< DIMENSION >& surface_in ) override
         {
             Logger::instance()->set_minimal( true );
             const auto& geogram_surf_in =
-                dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( surface_in );
-            GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_.get(), 3,
-                GEO::CmdLine::get_arg( "algo:delaunay" ) );
-            CVT.set_points( mesh_.nb_vertices(),
-                mesh_.mesh_->vertices.point_ptr( 0 ) );
+                dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >(
+                    surface_in );
+            GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_.get(),
+                3, GEO::CmdLine::get_arg( "algo:delaunay" ) );
+            CVT.set_points(
+                mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) );
             CVT.compute_surface( mesh_.mesh_.get(), false );
             Logger::instance()->set_minimal( false );
         }
 
-        void do_create_polygons(
-            const std::vector< index_t >& polygons,
+        void do_create_polygons( const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr ) override
         {
-            for( auto p : range( polygon_ptr.size() - 1 ) ) {
+            for( auto p : range( polygon_ptr.size() - 1 ) )
+            {
                 index_t start = polygon_ptr[p];
                 index_t end = polygon_ptr[p + 1];
                 GEO::vector< index_t > polygon_vertices =
@@ -219,10 +232,11 @@ namespace RINGMesh {
             }
         }
 
-        index_t do_create_polygon( const std::vector< index_t >& vertices ) override
+        index_t do_create_polygon(
+            const std::vector< index_t >& vertices ) override
         {
-            GEO::vector< index_t > polygon_vertices = copy_std_vector_to_geo_vector(
-                vertices );
+            GEO::vector< index_t > polygon_vertices =
+                copy_std_vector_to_geo_vector( vertices );
             return mesh_.mesh_->facets.create_polygon( polygon_vertices );
         }
 
@@ -240,22 +254,26 @@ namespace RINGMesh {
             const RINGMesh::PolygonLocalEdge& polygon_local_edge,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->facets.set_vertex( polygon_local_edge.polygon_id_, polygon_local_edge.local_edge_id_, vertex_id );
+            mesh_.mesh_->facets.set_vertex( polygon_local_edge.polygon_id_,
+                polygon_local_edge.local_edge_id_, vertex_id );
         }
 
         void do_set_polygon_adjacent(
             const RINGMesh::PolygonLocalEdge& polygon_local_edge,
             index_t specifies ) override
         {
-            mesh_.mesh_->facets.set_adjacent( polygon_local_edge.polygon_id_, polygon_local_edge.local_edge_id_, specifies );
+            mesh_.mesh_->facets.set_adjacent( polygon_local_edge.polygon_id_,
+                polygon_local_edge.local_edge_id_, specifies );
         }
 
-        void do_clear_polygons( bool keep_attributes, bool keep_memory ) override
+        void do_clear_polygons(
+            bool keep_attributes, bool keep_memory ) override
         {
             mesh_.mesh_->facets.clear( keep_attributes, keep_memory );
         }
 
-        void do_permute_polygons( const std::vector< index_t >& permutation ) override
+        void do_permute_polygons(
+            const std::vector< index_t >& permutation ) override
         {
             GEO::vector< index_t > geo_vector_permutation =
                 copy_std_vector_to_geo_vector( permutation );
@@ -272,49 +290,50 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( GeogramSurfaceMeshBuilder );
 
-    template< index_t DIMENSION >
-    class GeogramVolumeMeshBuilder: public VolumeMeshBuilder < DIMENSION > {
-        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh ); ringmesh_template_assert_3d( DIMENSION );
+    template < index_t DIMENSION >
+    class GeogramVolumeMeshBuilder : public VolumeMeshBuilder< DIMENSION >
+    {
+        COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );
+        ringmesh_template_assert_3d( DIMENSION );
+
     public:
         explicit GeogramVolumeMeshBuilder( VolumeMesh< DIMENSION >& mesh )
-            :
-            VolumeMeshBuilder< DIMENSION >( mesh ),
-            mesh_( dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) )
+            : VolumeMeshBuilder< DIMENSION >( mesh ),
+              mesh_( dynamic_cast< GeogramVolumeMesh< DIMENSION >& >( mesh ) )
         {
         }
 
         index_t do_create_cells( index_t nb_cells, CellType type ) override
         {
-            return mesh_.mesh_->cells.create_cells( nb_cells,
-                static_cast< GEO::MeshCellType >( type ) );
+            return mesh_.mesh_->cells.create_cells(
+                nb_cells, static_cast< GEO::MeshCellType >( type ) );
         }
 
-        void do_assign_cell_tet_mesh( const std::vector< index_t >& tets ) override
+        void do_assign_cell_tet_mesh(
+            const std::vector< index_t >& tets ) override
         {
             GEO::vector< index_t > copy = copy_std_vector_to_geo_vector( tets );
             mesh_.mesh_->cells.assign_tet_mesh( copy, false );
         }
 
-        void do_set_cell_vertex(
-            const ElementLocalVertex& cell_local_vertex,
+        void do_set_cell_vertex( const ElementLocalVertex& cell_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->cells.set_vertex( cell_local_vertex.element_id_, cell_local_vertex.local_vertex_id_ , vertex_id );
+            mesh_.mesh_->cells.set_vertex( cell_local_vertex.element_id_,
+                cell_local_vertex.local_vertex_id_, vertex_id );
         }
 
         void do_set_cell_corner_vertex_index(
-            index_t corner_index,
-            index_t vertex_index ) override
+            index_t corner_index, index_t vertex_index ) override
         {
             mesh_.mesh_->cell_corners.set_vertex( corner_index, vertex_index );
         }
 
-        void do_set_cell_adjacent(
-            const CellLocalFacet& cell_local_facet,
+        void do_set_cell_adjacent( const CellLocalFacet& cell_local_facet,
             index_t cell_adjacent ) override
         {
-            mesh_.mesh_->cells.set_adjacent( cell_local_facet.cell_id_, cell_local_facet.local_facet_id_,
-                cell_adjacent );
+            mesh_.mesh_->cells.set_adjacent( cell_local_facet.cell_id_,
+                cell_local_facet.local_facet_id_, cell_adjacent );
         }
 
         void connect_cells() override
@@ -327,7 +346,8 @@ namespace RINGMesh {
             mesh_.mesh_->cells.clear( keep_attributes, keep_memory );
         }
 
-        void do_permute_cells( const std::vector< index_t >& permutation ) override
+        void do_permute_cells(
+            const std::vector< index_t >& permutation ) override
         {
             GEO::vector< index_t > geo_vector_permutation =
                 copy_std_vector_to_geo_vector( permutation );
@@ -336,12 +356,12 @@ namespace RINGMesh {
 
         void do_delete_cells( const std::vector< bool >& to_delete ) override
         {
-            GEO::vector< index_t > geo_to_delete = copy_std_vector_to_geo_vector <
-                bool, index_t > ( to_delete );
+            GEO::vector< index_t > geo_to_delete =
+                copy_std_vector_to_geo_vector< bool, index_t >( to_delete );
             mesh_.mesh_->cells.delete_elements( geo_to_delete, false );
         }
     };
 
-    using GeogramVolumeMeshBuilder3D = GeogramVolumeMeshBuilder < 3 > ;
+    using GeogramVolumeMeshBuilder3D = GeogramVolumeMeshBuilder< 3 >;
 
 } // namespace RINGMesh

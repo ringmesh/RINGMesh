@@ -37,8 +37,8 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     void register_geogram_mesh_gfx()
     {
         PointSetMeshGfxFactory2D::register_creator< GeogramPointSetMeshGfx2D >(
@@ -60,4 +60,3 @@ namespace RINGMesh {
 } // namespace RINGMesh
 
 #endif
-

@@ -49,18 +49,19 @@
 
 /*!
  * @file ringmesh/tetragen.h
- * @brief API class interfacing GeoModel with external tetrahedral meshers 
+ * @brief API class interfacing GeoModel with external tetrahedral meshers
  * @author Arnaud Botella
  */
 
 #ifdef USE_MG_TETRA
 extern "C" {
-#   include <meshgems/meshgems.h>
-#   include <meshgems/tetra.h>
+#include <meshgems/meshgems.h>
+#include <meshgems/tetra.h>
 }
 #endif
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     class TetraGen;
     FORWARD_DECLARATION_DIMENSION_CLASS( Region );
     FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
@@ -69,16 +70,16 @@ namespace RINGMesh {
     ALIAS_3D( WellGroup );
 } // namespace RINGMesh
 
-namespace RINGMesh {
+namespace RINGMesh
+{
+    class RINGMESH_API TetraGen
+    {
+        ringmesh_disable_copy_and_move( TetraGen );
 
-    class RINGMESH_API TetraGen {
-    ringmesh_disable_copy_and_move( TetraGen );
     public:
         virtual ~TetraGen() = default;
         static std::unique_ptr< TetraGen > create(
-            GeoModel3D& M,
-            index_t region_id,
-            const std::string& algo_name );
+            GeoModel3D& M, index_t region_id, const std::string& algo_name );
         static void initialize();
 
         /*!
@@ -86,8 +87,8 @@ namespace RINGMesh {
          * @param[in] region The Region of the GeoModel to mesh
          * @param[in] wells the wells to be conformal to
          */
-        void set_boundaries( const Region3D& region, const WellGroup3D* wells =
-            nullptr );
+        void set_boundaries(
+            const Region3D& region, const WellGroup3D* wells = nullptr );
 
         /*!
          * Set additional points to be in the output tetrahedral mesh
@@ -97,10 +98,13 @@ namespace RINGMesh {
 
         /*!
          * @brief Send the set of points/edges/triangles to MGTetra or TetGen
-         * @details A set of points/edges/triangles are given to MGtetra or Tetgen
-         * The two mesh generators are configurated. Then check and repair functions
+         * @details A set of points/edges/triangles are given to MGtetra or
+         * Tetgen
+         * The two mesh generators are configurated. Then check and repair
+         * functions
          * are launched in order to control the outputs
-         * @param[in] refine tells whether or not there are refined options to set (true by defaults)
+         * @param[in] refine tells whether or not there are refined options to
+         * set (true by defaults)
          */
         bool tetrahedralize( bool refine = true );
 
@@ -114,11 +118,12 @@ namespace RINGMesh {
 
     protected:
         GeoModelBuilder3D builder_;
-        index_t output_region_ { NO_ID };
+        index_t output_region_{ NO_ID };
         GEO::Mesh tetmesh_constraint_;
-        const Region3D* region_ { nullptr };
-        const WellGroup3D* wells_ { nullptr };
+        const Region3D* region_{ nullptr };
+        const WellGroup3D* wells_{ nullptr };
     };
 
-    using TetraGenFactory = Factory< std::string, TetraGen, GeoModel3D&, index_t >;
+    using TetraGenFactory =
+        Factory< std::string, TetraGen, GeoModel3D&, index_t >;
 } // namespace RINGMesh
