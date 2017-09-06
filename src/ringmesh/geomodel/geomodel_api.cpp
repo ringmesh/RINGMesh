@@ -108,7 +108,7 @@ namespace {
         double poly_volume { 0 };
         for( auto c : range( region.nb_mesh_elements() ) ) {
             index_t nb_vertices { region.nb_mesh_element_vertices( c ) };
-            double volume { region.low_level_mesh_storage().cell_volume( c ) };
+            double volume { region.mesh().cell_volume( c ) };
             switch( nb_vertices ) {
                 case 4:
                     tet_volume += volume;
