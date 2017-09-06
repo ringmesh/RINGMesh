@@ -125,7 +125,7 @@ namespace RINGMesh {
          * @brief remove isolated vertices on a GeoModelMeshEntity
          * @param[in] geomodel_mesh_entity The GeoModelMeshEntity to repair
          */
-        void remove_isolated_vertices_on_a_mesh_entity(
+        void remove_isolated_vertices_on_mesh_entity(
             const GeoModelMeshEntity< DIMENSION >& geomodel_mesh_entity );
         /*!
          * @brief Detect and remove degenerate edges in a \param line.

@@ -851,7 +851,7 @@ namespace RINGMesh {
          */
         bool is_meshed() const
         {
-            return low_level_mesh_storage().nb_polygons() > 0;
+            return mesh().nb_polygons() > 0;
 
         }
     private:
