@@ -41,11 +41,10 @@
  * @file Custom assertions
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     void ringmesh_assertion_failed(
-        const std::string& condition_string,
-        const std::string& file,
-        int line )
+        const std::string& condition_string, const std::string& file, int line )
     {
 #ifdef WIN32
         DebugBreak();

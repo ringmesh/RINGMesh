@@ -45,21 +45,25 @@
  * @author Jeanne Pellerin
  */
 
-namespace RINGMesh {
-
-    void GeoModelBuilderSurfaceMesh::build_polygonal_surfaces_from_connected_components()
+namespace RINGMesh
+{
+    void GeoModelBuilderSurfaceMesh::
+        build_polygonal_surfaces_from_connected_components()
     {
-        std::vector< index_t > global_vertex_id_to_id_in_cc( mesh_.vertices.nb(),
-            NO_ID );
+        std::vector< index_t > global_vertex_id_to_id_in_cc(
+            mesh_.vertices.nb(), NO_ID );
 
         std::vector< bool > visited( mesh_.facets.nb(), false );
-        for( auto i : range( mesh_.facets.nb() ) ) {
-            if( !visited[i] ) {
+        for( auto i : range( mesh_.facets.nb() ) )
+        {
+            if( !visited[i] )
+            {
                 std::vector< index_t > cc_corners;
                 std::vector< index_t > cc_facets_ptr;
                 std::vector< vec3 > cc_vertices;
 
-                /// @todo Review : This should not be necessary as each vertex should
+                /// @todo Review : This should not be necessary as each vertex
+                /// should
                 /// be in one and only one connected component. To test. [JP]
                 std::fill( global_vertex_id_to_id_in_cc.begin(),
                     global_vertex_id_to_id_in_cc.end(), NO_ID );
@@ -67,37 +71,41 @@ namespace RINGMesh {
                 // First facet begin at corner 0
                 cc_facets_ptr.push_back( 0 );
 
-                // Propagate from facet #i 
+                // Propagate from facet #i
                 std::stack< index_t > S;
                 S.push( i );
-                while( !S.empty() ) {
-                    index_t f { S.top() };
+                while( !S.empty() )
+                {
+                    index_t f{ S.top() };
                     S.pop();
                     visited[f] = true;
 
                     for( auto c : range( mesh_.facets.corners_begin( f ),
-                        mesh_.facets.corners_end( f ) ) ) {
-                        index_t v { mesh_.facet_corners.vertex( c ) };
-                        if( global_vertex_id_to_id_in_cc[v] == NO_ID ) {
-                            index_t index {
-                                static_cast< index_t >( cc_vertices.size() ) };
+                             mesh_.facets.corners_end( f ) ) )
+                    {
+                        index_t v{ mesh_.facet_corners.vertex( c ) };
+                        if( global_vertex_id_to_id_in_cc[v] == NO_ID )
+                        {
+                            index_t index{ static_cast< index_t >(
+                                cc_vertices.size() ) };
                             global_vertex_id_to_id_in_cc[v] = index;
                             cc_vertices.push_back( mesh_.vertices.point( v ) );
                         }
                         cc_corners.push_back( global_vertex_id_to_id_in_cc[v] );
 
-                        index_t n { mesh_.facet_corners.adjacent_facet( c ) };
-                        if( n != NO_ID && !visited[n] ) {
+                        index_t n{ mesh_.facet_corners.adjacent_facet( c ) };
+                        if( n != NO_ID && !visited[n] )
+                        {
                             visited[n] = true;
                             S.push( n );
                         }
                     }
-                    index_t nb_cc_corners {
-                        static_cast< index_t >( cc_corners.size() ) };
+                    index_t nb_cc_corners{ static_cast< index_t >(
+                        cc_corners.size() ) };
                     cc_facets_ptr.push_back( nb_cc_corners );
                 }
 
-                gmme_id surface_gme { topology.create_mesh_entity(
+                gmme_id surface_gme{ topology.create_mesh_entity(
                     Surface3D::type_name_static() ) };
                 geometry.set_surface_geometry( surface_gme.index(), cc_vertices,
                     cc_corners, cc_facets_ptr );

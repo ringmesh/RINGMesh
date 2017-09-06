@@ -44,62 +44,65 @@
 #include <ringmesh/ringmesh_export.h>
 
 #if defined( _WIN32 )
-#    ifndef WIN32
-#        define WIN32
-#    endif
+#ifndef WIN32
+#define WIN32
+#endif
 #endif
 
 #ifndef NDEBUG
-#   define RINGMESH_DEBUG
+#define RINGMESH_DEBUG
 #else
-#   undef RINGMESH_DEBUG
+#undef RINGMESH_DEBUG
 #endif
 
 #ifdef WIN32
-#   pragma warning( disable: 4267 ) // conversion between long unsigned int and unsigned int
-#   pragma warning( disable: 4250 ) // warning about diamond inheritance
-#   pragma warning( disable: 4251 ) // dll interface warnings
-#   pragma warning( disable: 4275 ) // let's pray we have no issues
+#pragma warning(                                                               \
+    disable : 4267 ) // conversion between long unsigned int and unsigned int
+#pragma warning( disable : 4250 ) // warning about diamond inheritance
+#pragma warning( disable : 4251 ) // dll interface warnings
+#pragma warning( disable : 4275 ) // let's pray we have no issues
 #endif
 
-#define ringmesh_disable_copy( Class )                                          \
-    public:                                                                     \
-    Class( const Class& ) = delete ;                                        \
+#define ringmesh_disable_copy( Class )                                         \
+public:                                                                        \
+    Class( const Class& ) = delete;                                            \
     Class& operator=( const Class& ) = delete
 
-#define ringmesh_disable_move( Class )                                          \
-    public:                                                                     \
-    Class( const Class&& ) = delete ;                                           \
-    Class& operator= ( Class&& ) = delete
+#define ringmesh_disable_move( Class )                                         \
+public:                                                                        \
+    Class( const Class&& ) = delete;                                           \
+    Class& operator=( Class&& ) = delete
 
-#define ringmesh_disable_copy_and_move( Class )                                  \
-    ringmesh_disable_copy( Class );                                              \
+#define ringmesh_disable_copy_and_move( Class )                                \
+    ringmesh_disable_copy( Class );                                            \
     ringmesh_disable_move( Class )
 
-#define ringmesh_template_assert_2d_or_3d( type )                               \
-    static_assert( ( type ) == 2 || type == 3, #type " template should be 2 or 3" )
+#define ringmesh_template_assert_2d_or_3d( type )                              \
+    static_assert(                                                             \
+        ( type ) == 2 || type == 3, #type " template should be 2 or 3" )
 
-#define ringmesh_template_assert_3d( type )                                     \
+#define ringmesh_template_assert_3d( type )                                    \
     static_assert( ( type ) == 3, #type " template should be 3" )
 
-#define ALIAS_2D( Class )                                                 \
-    using Class ## 2D = Class< 2 >
+#define ALIAS_2D( Class ) using Class##2D = Class< 2 >
 
-#define ALIAS_3D( Class )                                                 \
-    using Class ## 3D = Class< 3 >
+#define ALIAS_3D( Class ) using Class##3D = Class< 3 >
 
-#define ALIAS_2D_AND_3D( Class )                                        \
-    ALIAS_2D( Class );                                                    \
+#define ALIAS_2D_AND_3D( Class )                                               \
+    ALIAS_2D( Class );                                                         \
     ALIAS_3D( Class )
 
-#define FORWARD_DECLARATION_DIMENSION_CLASS( Class )                            \
-    template< index_t > class Class;
+#define FORWARD_DECLARATION_DIMENSION_CLASS( Class )                           \
+    template < index_t >                                                       \
+    class Class;
 
-#define FORWARD_DECLARATION_DIMENSION_STRUCT( Struct )                           \
-    template< index_t > struct Struct;
+#define FORWARD_DECLARATION_DIMENSION_STRUCT( Struct )                         \
+    template < index_t >                                                       \
+    struct Struct;
 
 // To avoid unused argument warning in function definition
-template< typename T > void ringmesh_unused( const T& /*unused*/)
+template < typename T >
+void ringmesh_unused( const T& /*unused*/ )
 {
 }
 
@@ -111,13 +114,12 @@ template< typename T > void ringmesh_unused( const T& /*unused*/)
 
 #include <geogram/basic/string.h>
 
-#define DEBUG( a )                                                              \
-    Logger::out( "Debug", #a, " = ", a )
+#define DEBUG( a ) Logger::out( "Debug", #a, " = ", a )
 
 #include <stdexcept>
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * This function configures geogram by setting some geogram options.
      * \pre This function should be call after GEO::initialize().
@@ -134,7 +136,8 @@ namespace RINGMesh {
     /*!
      * RINGMesh exception class.
      * Example:
-     *       throw RINGMeshException( "I/O", "Error while loading the GeoModel" ) ;
+     *       throw RINGMeshException( "I/O", "Error while loading the GeoModel"
+     * ) ;
      *
      *       try {
      *          ...
@@ -145,13 +148,14 @@ namespace RINGMesh {
      *          Logger::err( "Exception", e.what() );
      *       }
      */
-    class RINGMESH_API RINGMeshException: public std::runtime_error {
+    class RINGMESH_API RINGMeshException : public std::runtime_error
+    {
     public:
-        template< typename ...Args >
-        explicit RINGMeshException( std::string category, const Args& ...messages )
-            :
-                std::runtime_error( string_concatener( messages... ) ),
-                category_( std::move( category ) )
+        template < typename... Args >
+        explicit RINGMeshException(
+            std::string category, const Args&... messages )
+            : std::runtime_error( string_concatener( messages... ) ),
+              category_( std::move( category ) )
         {
         }
         virtual ~RINGMeshException() throw()
@@ -164,22 +168,22 @@ namespace RINGMesh {
         }
 
     private:
-        template< typename A0 >
+        template < typename A0 >
         std::string string_concatener( const A0& a0 )
         {
             return GEO::String::to_string( a0 );
         }
 
-        template< typename A0, typename A1, typename ...Args >
+        template < typename A0, typename A1, typename... Args >
         std::string string_concatener(
-            const A0& a0,
-            const A1& a1,
-            const Args& ...args )
+            const A0& a0, const A1& a1, const Args&... args )
         {
-            return GEO::String::to_string( a0 ) + string_concatener( a1, args... );
+            return GEO::String::to_string( a0 )
+                   + string_concatener( a1, args... );
         }
+
     protected:
-        std::string category_ { };
+        std::string category_{};
     };
 
     /*!
@@ -195,18 +199,17 @@ namespace RINGMesh {
      *      // do something
      *    }
      */
-    class RINGMESH_API range {
+    class RINGMESH_API range
+    {
     public:
-        template< typename T1, typename T2 >
+        template < typename T1, typename T2 >
         range( T1 begin, T2 end )
-            :
-                iter_( static_cast< index_t >( begin ) ),
-                last_( static_cast< index_t >( end ) )
+            : iter_( static_cast< index_t >( begin ) ),
+              last_( static_cast< index_t >( end ) )
         {
         }
-        template< typename T >
-        explicit range( T end )
-            : last_( static_cast< index_t >( end ) )
+        template < typename T >
+        explicit range( T end ) : last_( static_cast< index_t >( end ) )
         {
         }
         // Iterable functions
@@ -219,7 +222,7 @@ namespace RINGMesh {
             return *this;
         }
         // Iterator functions
-        bool operator!=( const range& /*unused*/) const
+        bool operator!=( const range& /*unused*/ ) const
         {
             return iter_ < last_;
         }
@@ -233,36 +236,40 @@ namespace RINGMesh {
         }
 
     protected:
-        index_t iter_ { 0 };
-        index_t last_ { 0 };
+        index_t iter_{ 0 };
+        index_t last_{ 0 };
     };
 
-    template< typename ACTION >
+    template < typename ACTION >
     void parallel_for( index_t size, const ACTION& action )
     {
-        if( size == 0 ) {
+        if( size == 0 )
+        {
             return;
         }
-        index_t nb_threads { std::min( size, std::thread::hardware_concurrency() ) };
+        index_t nb_threads{ std::min(
+            size, std::thread::hardware_concurrency() ) };
         std::vector< std::future< void > > futures;
         futures.reserve( nb_threads );
-        index_t start { 0 };
-        auto action_per_thread = [&action] ( index_t start, index_t end ) {
-            for( auto i : range( start, end ) ) {
+        index_t start{ 0 };
+        auto action_per_thread = [&action]( index_t start, index_t end ) {
+            for( auto i : range( start, end ) )
+            {
                 action( i );
             }
         };
-        index_t nb_tasks_per_thread { size / nb_threads };
-        for( auto thread : range( nb_threads - 1 ) ) {
+        index_t nb_tasks_per_thread{ size / nb_threads };
+        for( auto thread : range( nb_threads - 1 ) )
+        {
             ringmesh_unused( thread );
-            futures.emplace_back(
-                std::async( std::launch::async, action_per_thread, start,
-                    start + nb_tasks_per_thread ) );
+            futures.emplace_back( std::async( std::launch::async,
+                action_per_thread, start, start + nb_tasks_per_thread ) );
             start += nb_tasks_per_thread;
         }
         futures.emplace_back(
             std::async( std::launch::async, action_per_thread, start, size ) );
-        for( auto& future : futures ) {
+        for( auto& future : futures )
+        {
             future.get();
         }
     }

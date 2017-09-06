@@ -35,14 +35,15 @@
 
 /*!
  * @file Implementation of all GeoModelEntities classes
- * @author Jeanne Pellerin and Arnaud Botella 
+ * @author Jeanne Pellerin and Arnaud Botella
  */
 
 #include <ringmesh/geomodel/geomodel_entity.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 
-namespace RINGMesh {
-    template class RINGMESH_API GeoModelEntity< 2 > ;
-    template class RINGMESH_API GeoModelEntity< 3 > ;
+namespace RINGMesh
+{
+    template class RINGMESH_API GeoModelEntity< 2 >;
+    template class RINGMESH_API GeoModelEntity< 3 >;
 } // namespace RINGMesh

@@ -49,16 +49,16 @@
  * @author Arnaud Botella
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
 #include "well_group/io_smesh.cpp"
 #include "well_group/io_wl.cpp"
-
 }
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     void well_load( const std::string& filename, WellGroup< 3 >& wells )
     {
         Logger::out( "I/O", "Loading file ", filename, "..." );
@@ -72,13 +72,17 @@ namespace RINGMesh {
         const std::string& format )
     {
         auto handler = WellGroupIOHandlerFactory::create( format );
-        if( !handler ) {
+        if( !handler )
+        {
             Logger::err( "I/O", "Currently supported file formats are: " );
-            for( const std::string& name : WellGroupIOHandlerFactory::list_creators() ) {
+            for( const std::string& name :
+                WellGroupIOHandlerFactory::list_creators() )
+            {
                 Logger::err( "I/O", " ", name );
             }
 
-            throw RINGMeshException( "I/O", "Unsupported file format: ", format );
+            throw RINGMeshException(
+                "I/O", "Unsupported file format: ", format );
         }
         return handler;
     }
@@ -95,6 +99,7 @@ namespace RINGMesh {
     void WellGroupIOHandler::initialize()
     {
         WellGroupIOHandlerFactory::register_creator< WLIOHandler >( "wl" );
-        WellGroupIOHandlerFactory::register_creator< SmeshIOHandler >( "smesh" );
+        WellGroupIOHandlerFactory::register_creator< SmeshIOHandler >(
+            "smesh" );
     }
 } // namespace RINGMesh
