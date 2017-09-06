@@ -13,8 +13,8 @@ New Features:
  * Generic factory:
      * the key is template
      * the instantiated classes can have different constructor arguments (type and number)
-  * Use of clang-format to format C++ code
-  * Add import of Stradivarius file for GeoModel2D. 
+ * Use of clang-format to format C++ code
+ * Add import of Stradivarius file for GeoModel2D. 
 
 Bug fix:
  * Error in computation of polygon area (for 3D concave polygons)

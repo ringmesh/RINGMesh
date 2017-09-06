@@ -266,7 +266,7 @@ namespace {
             vec3 B_A_;
 
             // Values filled by sorting function in GeoModelRegionFromSurfaces
-            double angle_;bool side_;
+            double angle_ { -max_float64() };bool side_ { false };
         };
 
         void add_polygon_edge(
