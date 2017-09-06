@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -38,8 +38,11 @@
 #include <ringmesh/mesh/mesh.h>
 
 #include <stack>
-#include <ringmesh/mesh/geogram_mesh.h>
+
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/geometry.h>
+
+#include <ringmesh/mesh/geogram_mesh.h>
 
 namespace RINGMesh {
 
@@ -228,11 +231,11 @@ namespace RINGMesh {
         // are neighbors in polygons_ and check that they are in the same polygon
 
         // Check if the edge is in one of the polygon
-        for( index_t poly : range( nb_polygons() ) ) {
+        for( auto poly : range( nb_polygons() ) ) {
             bool found = false;
             index_t prev = polygon_vertex(
                 ElementLocalVertex( poly, nb_polygon_vertices( poly ) - 1 ) );
-            for( index_t v : range( nb_polygon_vertices( poly ) ) ) {
+            for( auto v : range( nb_polygon_vertices( poly ) ) ) {
                 index_t p = polygon_vertex( ElementLocalVertex( poly, v ) );
                 if( ( prev == in0 && p == in1 ) || ( prev == in1 && p == in0 ) ) {
                     found = true;
@@ -253,7 +256,7 @@ namespace RINGMesh {
         index_t vertex_id ) const
     {
         ringmesh_assert( polygon_index < nb_polygons() );
-        for( index_t v : range( nb_polygon_vertices( polygon_index ) ) ) {
+        for( auto v : range( nb_polygon_vertices( polygon_index ) ) ) {
             if( polygon_vertex( ElementLocalVertex( polygon_index, v ) )
                 == vertex_id ) {
                 return v;
@@ -269,7 +272,7 @@ namespace RINGMesh {
     {
         index_t result = 0;
         double dist = DBL_MAX;
-        for( index_t v_id : range( nb_polygon_vertices( p ) ) ) {
+        for( auto v_id : range( nb_polygon_vertices( p ) ) ) {
             double distance = length2(
                 v
                     - this->vertex(
@@ -290,7 +293,7 @@ namespace RINGMesh {
     {
         index_t cur_p = 0;
         while( p0 == NO_ID && cur_p < nb_polygons() ) {
-            for( index_t lv : range( nb_polygon_vertices( cur_p ) ) ) {
+            for( auto lv : range( nb_polygon_vertices( cur_p ) ) ) {
                 if( polygon_vertex( ElementLocalVertex( cur_p, lv ) )
                     == surf_vertex_id ) {
                     p0 = cur_p;
@@ -316,7 +319,7 @@ namespace RINGMesh {
             index_t p = S.top();
             S.pop();
 
-            for( index_t v : range( nb_polygon_vertices( p ) ) ) {
+            for( auto v : range( nb_polygon_vertices( p ) ) ) {
                 if( polygon_vertex( ElementLocalVertex( p, v ) )
                     == surf_vertex_id ) {
                     index_t adj_P = polygon_adjacent( PolygonLocalEdge( p, v ) );
@@ -355,6 +358,25 @@ namespace RINGMesh {
         } while( !S.empty() );
 
         return result;
+    }
+
+    double SurfaceMesh< 3 >::polygon_area( index_t polygon_id ) const
+    {
+        double result = 0.0;
+        if( nb_polygon_vertices( polygon_id ) == 0 ) {
+            return result;
+        }
+        const vec3& p1 = vertex(
+            polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
+        for( auto i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) ) {
+            const vec3& p2 = vertex(
+                polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
+            const vec3& p3 = vertex(
+                polygon_vertex( ElementLocalVertex( polygon_id, i + 1 ) ) );
+            result += triangle_signed_area( p1, p2, p3,
+                polygon_normal( polygon_id ) );
+        }
+        return std::fabs( result );
     }
 
     template< index_t DIMENSION >
@@ -452,7 +474,7 @@ namespace RINGMesh {
         bool result = false;
         cell_nn_search().get_neighbors( vertex_vec,
             [this, &vertex_vec, &result, &cell_id, &cell_vertex_id, distance]( index_t i ) {
-                for( index_t j : range( nb_cell_vertices( i ) ) ) {
+                for( auto j : range( nb_cell_vertices( i ) ) ) {
                     if( inexact_equal( this->vertex( cell_vertex( ElementLocalVertex(i, j ))),
                             vertex_vec, distance ) ) {
                         cell_vertex_id = cell_vertex( ElementLocalVertex(i,

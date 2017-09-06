@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -9,20 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -82,7 +82,7 @@ namespace {
 
             const GeoModelMesh3D& mesh = geomodel.mesh;
             out << "POINTS " << mesh.vertices.nb() << " double" << EOL;
-            for( index_t v : range( mesh.vertices.nb() ) ) {
+            for( auto v : range( mesh.vertices.nb() ) ) {
                 out << mesh.vertices.vertex( v ) << EOL;
             }
             out << EOL;
@@ -93,11 +93,11 @@ namespace {
                 + ( 8 + 1 ) * mesh.cells.nb_hex();
             out << "CELLS " << mesh.cells.nb_cells() << SPACE << total_corners
                 << EOL;
-            for( index_t c : range( mesh.cells.nb() ) ) {
+            for( auto c : range( mesh.cells.nb() ) ) {
                 out << mesh.cells.nb_vertices( c );
                 const RINGMesh2VTK& descriptor =
                     *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
-                for( index_t v : range( mesh.cells.nb_vertices( c ) ) ) {
+                for( auto v : range( mesh.cells.nb_vertices( c ) ) ) {
                     index_t vertex_id = descriptor.vertices[v];
                     out << SPACE
                         << mesh.cells.vertex( ElementLocalVertex( c, vertex_id ) );
@@ -106,7 +106,7 @@ namespace {
             }
 
             out << "CELL_TYPES " << mesh.cells.nb() << EOL;
-            for( index_t c : range( mesh.cells.nb() ) ) {
+            for( auto c : range( mesh.cells.nb() ) ) {
                 const RINGMesh2VTK& descriptor =
                     *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
                 out << descriptor.entity_type << EOL;
@@ -116,7 +116,7 @@ namespace {
             out << "CELL_DATA " << mesh.cells.nb() << EOL;
             out << "SCALARS region int 1" << EOL;
             out << "LOOKUP_TABLE default" << EOL;
-            for( index_t c : range( mesh.cells.nb() ) ) {
+            for( auto c : range( mesh.cells.nb() ) ) {
                 out << mesh.cells.region( c ) << EOL;
             }
             out << EOL;

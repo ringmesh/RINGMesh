@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -47,7 +47,6 @@
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 #include <ringmesh/mesh/mesh.h>
-#include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
@@ -178,7 +177,7 @@ namespace RINGMesh {
          *
          */
         const gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const;
-        const GeoModelGeologicalEntity< DIMENSION >& parent( index_t id ) const;
+        const GeoModelGeologicalEntity< DIMENSION >& parent( index_t parent_index ) const;
         const GeoModelGeologicalEntity< DIMENSION >& parent(
             const GeologicalEntityType& parent_type ) const;
 
@@ -260,7 +259,7 @@ namespace RINGMesh {
         vecn< DIMENSION > entity_barycenter() const
         {
             vecn< DIMENSION > result;
-            for( index_t v : range( nb_vertices() ) ) {
+            for( auto v : range( nb_vertices() ) ) {
                 result += vertex( v );
             }
             ringmesh_assert( nb_vertices() > 0 );
@@ -270,7 +269,7 @@ namespace RINGMesh {
         virtual double size() const
         {
             double size = 0.0;
-            for( index_t i : range( nb_mesh_elements() ) ) {
+            for( auto i : range( nb_mesh_elements() ) ) {
                 size += mesh_element_size( i );
             }
             return size;
@@ -434,7 +433,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the low level mesh data structure
          */
-        const PointSetMesh< DIMENSION >& low_level_mesh_storage() const
+        const PointSetMesh< DIMENSION >& mesh() const
         {
             return *point_set_mesh_;
         }
@@ -598,7 +597,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the low level mesh data structure
          */
-        const LineMesh< DIMENSION >& low_level_mesh_storage() const
+        const LineMesh< DIMENSION >& mesh() const
         {
             return *line_mesh_;
         }
@@ -776,7 +775,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the low level mesh data structure
          */
-        const SurfaceMesh< DIMENSION >& low_level_mesh_storage() const
+        const SurfaceMesh< DIMENSION >& mesh() const
         {
             return *surface_mesh_;
         }
@@ -1107,12 +1106,12 @@ namespace RINGMesh {
         double size() const final
         {
             double result = 0.;
-            for( index_t i : range( this->nb_boundaries() ) ) {
+            for( auto i : range( this->nb_boundaries() ) ) {
                 const Surface< DIMENSION >& surface = boundary( i );
-                for( index_t t : range( surface.nb_mesh_elements() ) ) {
+                for( auto t : range( surface.nb_mesh_elements() ) ) {
                     const vecn< DIMENSION >& p0 = surface.mesh_element_vertex(
                         ElementLocalVertex( t, 0 ) );
-                    for( index_t v : range( 1,
+                    for( auto v : range( 1,
                         surface.nb_mesh_element_vertices( t ) - 1 ) ) {
                         double cur_volume = ( dot( p0,
                             cross(
@@ -1156,7 +1155,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the low level mesh data structure
          */
-        const VolumeMesh< DIMENSION >& low_level_mesh_storage() const
+        const VolumeMesh< DIMENSION >& mesh() const
         {
             return *volume_mesh_;
         }

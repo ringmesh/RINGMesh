@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -37,12 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <memory>
-
 #include <ringmesh/geomodel/entity_type_manager.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
-
-#include <ringmesh/geogram_extension/geogram_extension.h>
 
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
@@ -53,8 +49,8 @@
  * @author Arnaud Botella and Jeanne Pellerin
  */
 
-/*! @todo URGENT : Rename all parameters of all the function in this file. 
- *                 A lot of comments could then be removed.  
+/*! @todo URGENT : Rename all parameters of all the function in this file.
+ *                 A lot of comments could then be removed.
  */
 
 namespace RINGMesh {
@@ -130,7 +126,7 @@ namespace RINGMesh {
         void test_and_initialize() const;
 
         /*!
-         * @brief Number of vertices stored.
+         * @brief Number of non colocated vertices stored.
          */
         index_t nb() const;
 
@@ -267,6 +263,11 @@ namespace RINGMesh {
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< PointSetMesh< DIMENSION > >& mesh );
 
+        /*!
+         *@brief return the number of all vertices
+         * it is computed summing all entities.nb().
+         *@note colocated vertices are counted twice or more.
+         */
         virtual index_t nb_total_vertices() const;
         virtual index_t fill_vertices();
         void fill_vertices_for_entity_type(
@@ -338,10 +339,10 @@ namespace RINGMesh {
                 index_t v,
                 const gmme_id& mesh_entity_id ) const;
 
-            const GEO::Attribute< index_t >& vertex_map(
+            const std::vector< index_t >& vertex_map(
                 const gmme_id& mesh_entity_id ) const;
 
-            GEO::Attribute< index_t >& vertex_map( const gmme_id& mesh_entity_id );
+            std::vector< index_t >& vertex_map( const gmme_id& mesh_entity_id );
 
             /*! @}
              * \name Updating
@@ -406,7 +407,7 @@ namespace RINGMesh {
              */
 
             /*!
-             * @brief Clears all the information about vertex mapping (attribute maps
+             * @brief Clears all the information about vertex mapping (vector maps
              * and vectors of GME_Vertices
              */
             void clear();
@@ -420,9 +421,9 @@ namespace RINGMesh {
                 gme_vertices_[v].clear();
             }
 
-            void unbind_vertex_map( const gmme_id& mesh_entity_id );
+            void clear_vertex_map( const gmme_id& mesh_entity_id );
 
-            GEO::Attribute< index_t >& bind_vertex_map(
+            std::vector< index_t >& resize_vertex_map(
                 const gmme_id& mesh_entity_id );
 
             /*!
@@ -472,11 +473,11 @@ namespace RINGMesh {
             const GeoModel< DIMENSION >& geomodel_;
 
             /// Vertex maps
-            AttributeVector< index_t > corner_vertex_maps_;
-            AttributeVector< index_t > line_vertex_maps_;
-            AttributeVector< index_t > surface_vertex_maps_;
-            AttributeVector< index_t > region_vertex_maps_;
-            std::map< MeshEntityType, AttributeVector< index_t >* > vertex_maps_;
+            std::vector< std::vector< index_t > > corner_vertex_maps_;
+            std::vector< std::vector< index_t > > line_vertex_maps_;
+            std::vector< std::vector< index_t > > surface_vertex_maps_;
+            std::vector< std::vector< index_t > > region_vertex_maps_;
+            std::map< MeshEntityType, std::vector< std::vector< index_t > >* > vertex_maps_;
 
             /// GeoModelEntity Vertices for each geomodel vertex
             std::vector< std::vector< GMEVertex > > gme_vertices_;
@@ -517,7 +518,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshPolygonsBase: public GeoModelMeshCommon< DIMENSION > {
-        ringmesh_disable_copy_and_move( GeoModelMeshPolygonsBase );
+    ringmesh_disable_copy_and_move( GeoModelMeshPolygonsBase );
         static const std::string surface_att_name;
         static const std::string polygon_surface_att_name;
 
@@ -721,19 +722,28 @@ namespace RINGMesh {
          * |          surface 0           |             surface 1           |
          */
         void initialize();
+        /*!
+         * Resize edge data: surface_id_ and polygon_id_
+         */
+        void resize_polygones_data();
+        /*!
+         * Clear edge data: surface_id_ and polygon_id_
+         */
+        void clear_polygones_data();
 
-        /*!
-         * Bind attribute to the polygons attribute manager
-         */
-        void bind_attribute();
-        /*!
-         * Unbind attribute to the polygons attribute manager
-         */
-        void unbind_attribute();
         /*!
          * @brief Removes polygon adjacencies along lines
          */
         void disconnect_along_lines();
+
+        /*!
+         * @brief Sorts the polygons by surface and type
+         *  Permute polygons to sort them per surface and per type
+         * Example for a mesh with two surfaces and only triangles and quads
+         * [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
+         * |          surface 0           |             surface 1           |
+         */
+        void sort_polygons();
 
     protected:
         GeoModelMeshPolygonsBase(
@@ -745,10 +755,10 @@ namespace RINGMesh {
         /// Attached Mesh
         std::unique_ptr< SurfaceMesh< DIMENSION > >& mesh_;
 
-        /// Attribute storing the surface index per polygon
-        GEO::Attribute< index_t > surface_id_;
-        /// Attribute storing the polygon index in surface per polygon
-        GEO::Attribute< index_t > polygon_id_;
+        /// Vector storing the surface index per polygon
+        std::vector< index_t > surface_id_;
+        /// Vector storing the polygon index in surface per polygon
+        std::vector< index_t > polygon_id_;
 
         /*!
          * Vector storing the index of the starting polygon index
@@ -796,7 +806,7 @@ namespace RINGMesh {
 
     template< index_t DIMENSION >
     class GeoModelMeshEdges final: public GeoModelMeshCommon< DIMENSION > {
-        ringmesh_disable_copy_and_move( GeoModelMeshEdges );
+    ringmesh_disable_copy_and_move( GeoModelMeshEdges );
         static const std::string line_att_name;
         static const std::string edge_line_att_name;
 
@@ -897,15 +907,14 @@ namespace RINGMesh {
          * |        line 0        |        line 1         |
          */
         void initialize();
-
         /*!
-         * Bind attribute to the edge attribute manager
+         * Resize edge data: line_id_ and edge_id_
          */
-        void bind_attribute();
+        void resize_edge_data();
         /*!
-         * Unbind attribute to the edge attribute manager
+         * Clear edge data: line_id_ and edge_id_
          */
-        void unbind_attribute();
+        void clear_edge_data();
 
     protected:
         GeoModelMeshEdges(
@@ -917,10 +926,10 @@ namespace RINGMesh {
         /// Attached Mesh
         std::unique_ptr< LineMesh< DIMENSION > >& mesh_;
 
-        /// Attribute storing the line index per edge
-        GEO::Attribute< index_t > line_id_;
-        /// Attribute storing the edge index in line per edge
-        GEO::Attribute< index_t > edge_id_;
+        /// Vector storing the line index per edge
+        std::vector< index_t > line_id_;
+        /// Vector storing the edge index in line per edge
+        std::vector< index_t > edge_id_;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -934,6 +943,8 @@ namespace RINGMesh {
         /// Number of edges in the GeoModelMesh
         index_t nb_edges_ { 0 };
     };
+
+    ALIAS_2D_AND_3D( GeoModelMeshEdges );
 
     template< index_t DIMENSION >
     class GeoModelMeshWells final: public GeoModelMeshCommon< DIMENSION > {
@@ -1370,7 +1381,7 @@ namespace RINGMesh {
             POS_SIDE = 1
         };
         /// Action to do according a surface index
-        using action_on_surface = std::pair< index_t, ActionOnSurface >;
+        using action_on_surface = std::pair < index_t, ActionOnSurface >;
 
         /*!
          * @brief Initialize the  cells from the cells
@@ -1379,13 +1390,13 @@ namespace RINGMesh {
         void initialize();
 
         /*!
-         * Bind attribute to the cells attribute manager
+         * Resize region_id and cell_id
          */
-        void bind_attribute();
+        void resize_cell_data();
         /*!
-         * Unbind attribute to the cells attribute manager
+         * Clear cell_id; region_id and polygon id_
          */
-        void unbind_attribute();
+        void clear_cell_data();
 
         /*!
          * Test if the mesh cell are duplicated according
@@ -1416,23 +1427,25 @@ namespace RINGMesh {
             const std::vector< action_on_surface >& surfaces,
             std::vector< ActionOnSurface >& info );
         /*!
-         * Test if the mesh cell facet attribute is filled with
+         * Test if the mesh cell facet vector is filled with
          * the colocalised facet. If not fill it.
          */
         void test_and_initialize_cell_facet() const;
         /*!
-         * Initialize the mesh cell facet attribute of colocalised facet.
+         * Initialize the mesh cell facet vector of colocalised facet.
          */
         void initialize_cell_facet();
+
+        void sort_cells();
 
     private:
         /// Attached Mesh
         std::unique_ptr< VolumeMesh< DIMENSION > >& mesh_;
 
-        /// Attribute storing the region index per cell
-        GEO::Attribute< index_t > region_id_;
-        /// Attribute storing the cell index in region per cell
-        GEO::Attribute< index_t > cell_id_;
+        /// Vector storing the region index per cell
+        std::vector< index_t > region_id_;
+        /// Vector storing the cell index in region per cell
+        std::vector< index_t > cell_id_;
 
         /*!
          * Vector storing the index of the starting cell index
@@ -1464,11 +1477,11 @@ namespace RINGMesh {
         std::vector< index_t > duplicated_vertex_indices_;
 
         /*!
-         * @brief Attribute storing the colocalised polygon index per cell facet
-         * @detail If a cell facet is on a surface, the attribute is equal to
+         * @brief Vector storing the colocalised polygon index per cell facet
+         * @detail If a cell facet is on a surface, the vector is equal to
          * the index of the corresponding polygon.
          */
-        GEO::Attribute< index_t > polygon_id_;
+        std::vector< index_t > polygon_id_;
     };
 
     ALIAS_2D_AND_3D( GeoModelMeshCells );
@@ -1593,5 +1606,7 @@ namespace RINGMesh {
     public:
         GeoModelMeshCells3D cells;
     };
+
+    ALIAS_2D_AND_3D( GeoModelMesh );
 
 } // namespace RINGMesh

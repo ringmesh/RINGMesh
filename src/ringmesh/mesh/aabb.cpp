@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -35,8 +35,10 @@
 
 #include <ringmesh/mesh/aabb.h>
 
+#include <algorithm>
 #include <numeric>
-#include <geogram/mesh/mesh_io.h>
+
+#include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/mesh/mesh.h>
 
@@ -313,8 +315,8 @@ namespace RINGMesh {
     {
         std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_edges() );
-        for( index_t i : range( mesh.nb_edges() ) ) {
-            for( index_t v : range( 2 ) ) {
+        for( auto i : range( mesh.nb_edges() ) ) {
+            for( auto v : range( 2 ) ) {
                 bboxes[i].add_point(
                     mesh.vertex( mesh.edge_vertex( ElementLocalVertex( i, v ) ) ) );
             }
@@ -360,8 +362,8 @@ namespace RINGMesh {
     {
         std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_polygons() );
-        for( index_t i : range( mesh.nb_polygons() ) ) {
-            for( index_t v : range( mesh.nb_polygon_vertices( i ) ) ) {
+        for( auto i : range( mesh.nb_polygons() ) ) {
+            for( auto v : range( mesh.nb_polygon_vertices( i ) ) ) {
                 bboxes[i].add_point(
                     mesh.vertex(
                         mesh.polygon_vertex( ElementLocalVertex( i, v ) ) ) );
@@ -409,8 +411,8 @@ namespace RINGMesh {
     {
         std::vector< Box< DIMENSION > > bboxes;
         bboxes.resize( mesh.nb_cells() );
-        for( index_t i : range( mesh.nb_cells() ) ) {
-            for( index_t v : range( mesh.nb_cell_vertices( i ) ) ) {
+        for( auto i : range( mesh.nb_cells() ) ) {
+            for( auto v : range( mesh.nb_cell_vertices( i ) ) ) {
                 bboxes[i].add_point(
                     mesh.vertex( mesh.cell_vertex( ElementLocalVertex( i, v ) ) ) );
             }
@@ -476,7 +478,7 @@ namespace RINGMesh {
         ringmesh_assert( B.contains( p ) );
         double result = std::abs( p[0] - B.min()[0] );
         result = std::min( result, std::abs( p[0] - B.max()[0] ) );
-        for( index_t c : range( 1, DIMENSION ) ) {
+        for( auto c : range( 1, DIMENSION ) ) {
             result = std::min( result, std::abs( p[c] - B.min()[c] ) );
             result = std::min( result, std::abs( p[c] - B.max()[c] ) );
         }
@@ -489,7 +491,7 @@ namespace RINGMesh {
     {
         bool inside = true;
         vecn< DIMENSION > result;
-        for( index_t c : range( DIMENSION ) ) {
+        for( auto c : range( DIMENSION ) ) {
             if( p[c] < B.min()[c] ) {
                 inside = false;
                 result[c] = p[c] - B.min()[c];

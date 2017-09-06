@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -9,20 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -104,7 +104,7 @@ namespace {
             const gmme_id& entity,
             GEO::LineInput& file_line )
         {
-            for( index_t c : range( file_line.nb_fields() ) ) {
+            for( auto c : range( file_line.nb_fields() ) ) {
                 bool side = false;
                 if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                     side = true;
@@ -125,7 +125,7 @@ namespace {
                 this->geomodel_.entity_type_manager().mesh_entity_manager;
             MeshEntityType type = manager.boundary_entity_type( entity.type() );
             // Second line : indices of boundaries
-            for( index_t c : range( 1, file_line.nb_fields() ) ) {
+            for( auto c : range( 1, file_line.nb_fields() ) ) {
                 gmme_id boundary( type, file_line.field_as_uint( c ) );
                 this->builder_.topology.add_mesh_entity_boundary_relation( entity,
                     boundary );
@@ -202,7 +202,7 @@ namespace {
     private:
         const std::string& old_2_new_name( const std::string& old_name )
         {
-            index_t new_name_pos = GEO::String::to_int(
+            index_t new_name_pos = GEO::String::to_uint(
                 GEO::String::to_string( old_name.at( old_name.length() - 2 ) ) );
             return new_names[new_name_pos];
         }
@@ -291,7 +291,7 @@ namespace {
                                 file_line.field( 3 ) ) );
                         file_line.get_line();
                         file_line.get_fields();
-                        for( index_t in_b : range( file_line.nb_fields() ) ) {
+                        for( auto in_b : range( file_line.nb_fields() ) ) {
                             this->geology.add_parent_children_relation( entity,
                                 { this->geomodel_.entity_type_manager().relationship_manager.child_type(
                                       type ),
@@ -306,27 +306,19 @@ namespace {
          * @brief Load meshes of all the mesh entities from a zip file
          * @param[in] uz the zip file
          */
-        void load_meshes( unzFile& uz )
+        void load_meshes( UnZipFile& uz )
         {
-            if( unzGoToFirstFile( uz ) != UNZ_OK ) {
-                throw RINGMeshException( "I/O",
-                    "Unable to uncompress the first file" );
-            }
+            uz.start_extract();
 
             Logger::instance()->set_minimal( true );
             std::vector< std::future< void > > files;
             do {
-                char char_file_name[MAX_FILENAME];
-                if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
-                    MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
-                    throw RINGMeshException( "I/O", "Unable to get file name" );
-                }
-                std::string file_name( char_file_name );
+                auto file_name = uz.get_current_filename();
                 if( GEO::FileSystem::extension( file_name ) == "txt" ) {
                     continue;
                 }
 
-                unzip_current_file( uz, file_name.c_str() );
+                uz.get_current_file();
                 files.push_back(
                     std::async( std::launch::deferred,
                         [file_name, this] {
@@ -340,7 +332,7 @@ namespace {
                             load_mesh_entity( MeshEntityType {entity_type}, file_name, id );
                             GEO::FileSystem::delete_file( file_name );
                         } ) );
-            } while( unzGoToNextFile( uz ) == UNZ_OK );
+            } while( uz.next_file() );
 
             for( auto& file : files ) {
                 file.get();
@@ -381,15 +373,10 @@ namespace {
 
         void load_file() final
         {
-            unzFile uz = unzOpen( this->filename_.c_str() );
-            unz_global_info global_info;
-            if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
-                unzClose( uz );
-                throw RINGMeshException( "ZLIB", "Could not read file global info" );
-            }
+            UnZipFile uz { this->filename_ };
 
             const std::string mesh_entity_file( "mesh_entities.txt" );
-            unzip_file( uz, mesh_entity_file.c_str() );
+            uz.get_file( mesh_entity_file );
             load_mesh_entities( mesh_entity_file );
             bool ok = GEO::FileSystem::delete_file( mesh_entity_file );
             ringmesh_unused( ok ); // avoids warning in release
@@ -397,12 +384,10 @@ namespace {
             load_meshes( uz );
 
             const std::string geological_entity_file( "geological_entities.txt" );
-            unzip_file( uz, geological_entity_file.c_str() );
+            uz.get_file( geological_entity_file );
             load_geological_entities( geological_entity_file );
             ok = GEO::FileSystem::delete_file( geological_entity_file );
             ringmesh_assert( ok );
-
-            unzClose( uz );
         }
 
         void load_mesh_entities( const std::string& mesh_entity_file )
@@ -439,7 +424,7 @@ namespace {
                         // Second line: signed indices of boundaries
                         file_line.get_line();
                         file_line.get_fields();
-                        for( index_t c : range( file_line.nb_fields() ) ) {
+                        for( auto c : range( file_line.nb_fields() ) ) {
                             bool side = false;
                             if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                                 side = true;
@@ -505,7 +490,7 @@ namespace {
                 E.geological_feature() ) << EOL;
 
         /// Second line:  IDS of children
-        for( index_t j : range( E.nb_children() ) ) {
+        for( auto j : range( E.nb_children() ) ) {
             out << E.child_gmme( j ).index() << " ";
         }
         out << EOL;
@@ -533,15 +518,15 @@ namespace {
             out << "No geological entity in the geomodel" << EOL;
             return;
         }
-        for( index_t i : range( geomodel.nb_geological_entity_types() ) ) {
+        for( auto i : range( geomodel.nb_geological_entity_types() ) ) {
             const GeologicalEntityType& type = geomodel.geological_entity_type( i );
             index_t nb = geomodel.nb_geological_entities( type );
             out << "Nb " << type << " " << nb << EOL;
         }
-        for( index_t i : range( geomodel.nb_geological_entity_types() ) ) {
+        for( auto i : range( geomodel.nb_geological_entity_types() ) ) {
             const GeologicalEntityType& type = geomodel.geological_entity_type( i );
             index_t nb = geomodel.nb_geological_entities( type );
-            for( index_t j : range( nb ) ) {
+            for( auto j : range( nb ) ) {
                 save_geological_entity( out, geomodel.geological_entity( type, j ) );
             }
         }
@@ -554,13 +539,13 @@ namespace {
         std::ofstream& out )
     {
         const MeshEntityType& type = ENTITY::type_name_static();
-        for( index_t e : range( geomodel.nb_mesh_entities( type ) ) ) {
+        for( auto e : range( geomodel.nb_mesh_entities( type ) ) ) {
             const ENTITY& cur_mesh_entity =
                 dynamic_cast< const ENTITY& >( geomodel.mesh_entity( type, e ) );
             out << type << " " << e << " " << cur_mesh_entity.name() << " "
-                << cur_mesh_entity.low_level_mesh_storage().type_name() << EOL;
+                << cur_mesh_entity.mesh().type_name() << EOL;
             out << "boundary ";
-            for( index_t b : range( cur_mesh_entity.nb_boundaries() ) ) {
+            for( auto b : range( cur_mesh_entity.nb_boundaries() ) ) {
                 out << cur_mesh_entity.boundary_gmme( b ).index() << " ";
             }
             out << EOL;
@@ -628,16 +613,16 @@ namespace {
         const GeoModel< DIMENSION >& geomodel,
         std::ofstream& out )
     {
-        for( index_t i : range(
+        for( auto i : range(
             geomodel.nb_mesh_entities( ENTITY< DIMENSION >::type_name_static() ) ) ) {
             const ENTITY< DIMENSION >& E =
                 static_cast< const ENTITY< DIMENSION >& >( geomodel.mesh_entity(
                     ENTITY< DIMENSION >::type_name_static(), i ) );
             // Save ID - NAME
             out << E.gmme() << " " << E.name() << " "
-                << E.low_level_mesh_storage().type_name() << EOL;
+                << E.mesh().type_name() << EOL;
             // Second line Signed ids of boundary surfaces
-            for( index_t j : range( E.nb_boundaries() ) ) {
+            for( auto j : range( E.nb_boundaries() ) ) {
                 if( E.side( j ) ) {
                     out << "+";
                 } else {
@@ -701,7 +686,7 @@ namespace {
     void save_universe( const GeoModel< DIMENSION >& M, std::ofstream& out )
     {
         out << "Universe " << EOL;
-        for( index_t j : range( M.universe().nb_boundaries() ) ) {
+        for( auto j : range( M.universe().nb_boundaries() ) ) {
             if( M.universe().side( j ) ) {
                 out << "+";
             } else {
@@ -781,7 +766,7 @@ namespace {
         const gmme_id& id = entity.gmme();
         std::string base_name = id.type().string() + "_"
             + std::to_string( id.index() );
-        return base_name + "." + entity.low_level_mesh_storage().default_extension();
+        return base_name + "." + entity.mesh().default_extension();
     }
 
     /*!
@@ -803,10 +788,10 @@ namespace {
         }
     }
 
-    void zip_files( const std::vector< std::string >& filenames, zipFile& zf )
+    void zip_files( const std::vector< std::string >& filenames, ZipFile& zf )
     {
         for( const std::string& name : filenames ) {
-            zip_file( zf, name );
+            zf.add_file( name );
             GEO::FileSystem::delete_file( name );
         }
     }
@@ -909,27 +894,16 @@ namespace {
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
         {
-            const std::string pwd = GEO::FileSystem::get_current_working_directory();
-            bool valid_new_working_directory =
-                GEO::FileSystem::set_current_working_directory(
-                    GEO::FileSystem::dir_name( filename ) );
-            if( !valid_new_working_directory ) {
-                throw RINGMeshException( "I/O", "Output directory does not exist" );
-            }
-
-            zipFile zf = zipOpen(
-                GEO::FileSystem::base_name( filename, false ).c_str(),
-                APPEND_STATUS_CREATE );
-            ringmesh_assert( zf != nil );
+            ZipFile zf { filename };
 
             const std::string mesh_entity_file( "mesh_entities.txt" );
             save_mesh_entities( geomodel, mesh_entity_file );
-            zip_file( zf, mesh_entity_file );
+            zf.add_file( mesh_entity_file );
             GEO::FileSystem::delete_file( mesh_entity_file );
 
             const std::string geological_entity_file( "geological_entities.txt" );
             save_geological_entities( geomodel, geological_entity_file );
-            zip_file( zf, geological_entity_file );
+            zf.add_file( geological_entity_file );
             GEO::FileSystem::delete_file( geological_entity_file );
 
             index_t nb_mesh_entites = nb_mesh_entities( geomodel );
@@ -940,21 +914,13 @@ namespace {
             Logger::instance()->set_quiet( false );
             std::sort( filenames.begin(), filenames.end() );
             zip_files( filenames, zf );
-
-            zipClose( zf, NULL );
-            GEO::FileSystem::set_current_working_directory( pwd );
         }
 
         index_t dimension( const std::string& filename ) const final
         {
-            unzFile uz = unzOpen( filename.c_str() );
-            unz_global_info global_info;
-            if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
-                unzClose( uz );
-                throw RINGMeshException( "ZLIB", "Could not read file global info" );
-            }
+            UnZipFile uz { filename };
             const std::string mesh_entity_file( "mesh_entities.txt" );
-            unzip_file( uz, mesh_entity_file.c_str() );
+            uz.get_file( mesh_entity_file );
             index_t dimension = find_dimension( mesh_entity_file );
             bool ok = GEO::FileSystem::delete_file( mesh_entity_file );
             ringmesh_unused( ok );

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -85,7 +85,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelGfxEntity< DIMENSION >::set_vertex_visibility( bool is_visible )
     {
-        for( index_t e : range( entities_.size() ) ) {
+        for( auto e : range( entities_.size() ) ) {
             set_vertex_visibility( e, is_visible );
         }
     }
@@ -104,7 +104,7 @@ namespace RINGMesh {
         float green,
         float blue )
     {
-        for( index_t e : range( entities_.size() ) ) {
+        for( auto e : range( entities_.size() ) ) {
             set_vertex_color( e, red, green, blue );
         }
     }
@@ -122,7 +122,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void GeoModelGfxEntity< DIMENSION >::set_vertex_size( index_t s )
     {
-        for( index_t e : range( entities_.size() ) ) {
+        for( auto e : range( entities_.size() ) ) {
             set_vertex_size( e, s );
         }
     }
@@ -159,7 +159,7 @@ namespace RINGMesh {
             for( const auto& corner : this->gfx_.geomodel()->corners() ) {
                 this->entities_.push_back(
                     PointSetMeshGfx< DIMENSION >::create_gfx(
-                        corner.low_level_mesh_storage() ) );
+                        corner.mesh() ) );
             }
         }
     }
@@ -167,7 +167,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void CornerGfxEntity< DIMENSION >::draw()
     {
-        for( index_t c : range( this->entities_.size() ) ) {
+        for( auto c : range( this->entities_.size() ) ) {
             PointSetMeshGfx< DIMENSION >& pointset = corner( c );
             if( pointset.get_vertex_visible() ) pointset.draw_vertices();
         }
@@ -196,7 +196,7 @@ namespace RINGMesh {
             for( const auto& line : this->gfx_.geomodel()->lines() ) {
                 this->entities_.push_back(
                     LineMeshGfx< DIMENSION >::create_gfx(
-                        line.low_level_mesh_storage() ) );
+                        line.mesh() ) );
             }
         }
     }
@@ -204,7 +204,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void LineGfxEntity< DIMENSION >::draw()
     {
-        for( index_t l : range( this->entities_.size() ) ) {
+        for( auto l : range( this->entities_.size() ) ) {
             LineMeshGfx< DIMENSION >& line = this->line( l );
             if( line.get_vertex_visible() ) line.draw_vertices();
             if( line.get_edge_visible() ) line.draw_edges();
@@ -217,7 +217,7 @@ namespace RINGMesh {
         float green,
         float blue )
     {
-        for( index_t l : range( this->entities_.size() ) ) {
+        for( auto l : range( this->entities_.size() ) ) {
             set_line_color( l, red, green, blue );
         }
     }
@@ -235,7 +235,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void LineGfxEntity< DIMENSION >::set_line_visibility( bool is_visible )
     {
-        for( index_t l : range( this->entities_.size() ) ) {
+        for( auto l : range( this->entities_.size() ) ) {
             set_line_visibility( l, is_visible );
         }
     }
@@ -251,7 +251,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void LineGfxEntity< DIMENSION >::set_line_size( index_t size )
     {
-        for( index_t l : range( this->entities_.size() ) ) {
+        for( auto l : range( this->entities_.size() ) ) {
             set_line_size( l, size );
         }
     }
@@ -286,7 +286,7 @@ namespace RINGMesh {
             for( const auto& surface : this->gfx_.geomodel()->surfaces() ) {
                 this->entities_.push_back(
                     SurfaceMeshGfx< DIMENSION >::create_gfx(
-                        surface.low_level_mesh_storage() ) );
+                        surface.mesh() ) );
             }
         }
     }
@@ -294,7 +294,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void SurfaceGfxEntity< DIMENSION >::draw()
     {
-        for( index_t s : range( this->entities_.size() ) ) {
+        for( auto s : range( this->entities_.size() ) ) {
             SurfaceMeshGfx< DIMENSION >& surface = this->surface( s );
             if( surface.get_vertex_visible() ) surface.draw_vertices();
             if( surface.get_surface_visible() ) surface.draw_surface();
@@ -307,7 +307,7 @@ namespace RINGMesh {
         float green,
         float blue )
     {
-        for( index_t s : range( this->entities_.size() ) ) {
+        for( auto s : range( this->entities_.size() ) ) {
             set_surface_color( s, red, green, blue );
         }
     }
@@ -328,7 +328,7 @@ namespace RINGMesh {
         float green,
         float blue )
     {
-        for( index_t s : range( this->entities_.size() ) ) {
+        for( auto s : range( this->entities_.size() ) ) {
             set_backface_surface_color( s, red, green, blue );
         }
     }
@@ -346,7 +346,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void SurfaceGfxEntity< DIMENSION >::set_surface_visibility( bool is_visible )
     {
-        for( index_t s : range( this->entities_.size() ) ) {
+        for( auto s : range( this->entities_.size() ) ) {
             set_surface_visibility( s, is_visible );
         }
     }
@@ -365,7 +365,7 @@ namespace RINGMesh {
         float green,
         float blue )
     {
-        for( index_t s : range( this->entities_.size() ) ) {
+        for( auto s : range( this->entities_.size() ) ) {
             set_mesh_color( s, red, green, blue );
         }
     }
@@ -383,7 +383,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void SurfaceGfxEntity< DIMENSION >::set_mesh_visibility( bool is_visible )
     {
-        for( index_t s : range( this->entities_.size() ) ) {
+        for( auto s : range( this->entities_.size() ) ) {
             set_mesh_visibility( s, is_visible );
         }
     }
@@ -399,7 +399,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void SurfaceGfxEntity< DIMENSION >::set_mesh_size( index_t size )
     {
-        for( index_t s : range( this->entities_.size() ) ) {
+        for( auto s : range( this->entities_.size() ) ) {
             set_mesh_size( s, size );
         }
     }
@@ -436,7 +436,7 @@ namespace RINGMesh {
             for( const auto& region : gfx_.geomodel()->regions() ) {
                 entities_.push_back(
                     VolumeMeshGfx< DIMENSION >::create_gfx(
-                        region.low_level_mesh_storage() ) );
+                        region.mesh() ) );
             }
         }
     }
@@ -444,7 +444,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::draw()
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             VolumeMeshGfx< DIMENSION >& region = this->region( r );
             if( region.get_vertex_visible() ) region.draw_vertices();
             if( region.get_region_visible() ) region.draw_volume();
@@ -457,7 +457,7 @@ namespace RINGMesh {
         float green,
         float blue )
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             set_mesh_color( r, red, green, blue );
         }
     }
@@ -475,7 +475,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_cell_colors_by_type()
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             set_cell_colors_by_type( r );
         }
     }
@@ -483,7 +483,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_draw_cells( CellType type, bool x )
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             set_draw_cells( r, type, x );
         }
     }
@@ -506,7 +506,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_mesh_visibility( bool is_visible )
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             set_mesh_visibility( r, is_visible );
         }
     }
@@ -522,7 +522,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_mesh_size( index_t size )
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             set_mesh_size( r, size );
         }
     }
@@ -541,7 +541,7 @@ namespace RINGMesh {
         float green,
         float blue )
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             set_region_color( r, red, green, blue );
         }
     }
@@ -559,7 +559,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_region_visibility( bool is_visible )
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             set_region_visibility( r, is_visible );
         }
     }
@@ -577,7 +577,7 @@ namespace RINGMesh {
         CellType t,
         bool is_visible )
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             set_cell_type_visibility( r, t, is_visible );
         }
     }
@@ -594,7 +594,7 @@ namespace RINGMesh {
     template< index_t DIMENSION >
     void RegionGfxEntity< DIMENSION >::set_shrink( double shrink )
     {
-        for( index_t r : range( entities_.size() ) ) {
+        for( auto r : range( entities_.size() ) ) {
             set_shrink( r, shrink );
         }
     }

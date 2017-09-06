@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -60,7 +60,7 @@ namespace {
         out << "REGION " << count << "  " << region.name() << " " << EOL;
         index_t it = 0;
 
-        for( index_t i : range( region.nb_boundaries() ) ) {
+        for( auto i : range( region.nb_boundaries() ) ) {
             out << "  ";
             if( region.side( i ) ) {
                 out << "+";
@@ -85,7 +85,7 @@ namespace {
         out << "REGION " << count << "  " << universe.type_name() << " " << EOL;
         index_t it = 0;
 
-        for( index_t i : range( universe.nb_boundaries() ) ) {
+        for( auto i : range( universe.nb_boundaries() ) ) {
             out << "  ";
             if( universe.side( i ) ) {
                 out << "+";
@@ -119,7 +119,7 @@ namespace {
         out << "LAYER " << layer.name() << " " << EOL;
         index_t it = 0;
 
-        for( index_t i : range( layer.nb_children() ) ) {
+        for( auto i : range( layer.nb_children() ) ) {
             out << "  " << layer.child_gmme( i ).index() + offset + 1;
             it++;
             if( it == 5 ) {
@@ -183,12 +183,12 @@ namespace {
     /*! Brute force inefficient but I am debugging !!!! */
     bool has_surface_edge( const Surface3D& surface, index_t v0_in, index_t v1_in )
     {
-        for( index_t i : range( surface.nb_mesh_elements() ) ) {
-            for( index_t j : range( surface.nb_mesh_element_vertices( i ) ) ) {
+        for( auto i : range( surface.nb_mesh_elements() ) ) {
+            for( auto j : range( surface.nb_mesh_element_vertices( i ) ) ) {
                 index_t v0 = surface.mesh_element_vertex_index(
                     ElementLocalVertex( i, j ) );
                 index_t v1 = surface.mesh_element_vertex_index(
-                    surface.low_level_mesh_storage().next_polygon_vertex(
+                    surface.mesh().next_polygon_vertex(
                         ElementLocalVertex( i, j ) ) );
                 if( ( v0 == v0_in && v1 == v1_in )
                     || ( v0 == v1_in && v1 == v0_in ) ) {
@@ -298,18 +298,18 @@ namespace {
             // and boundary (Line) first and second vertex indexes
             std::set< index_t > corners;
             std::set< std::pair< index_t, index_t > > lineindices;
-            for( index_t j : range( tsurf.nb_children() ) ) {
+            for( auto j : range( tsurf.nb_children() ) ) {
                 offset = vertex_count;
                 const Surface3D& surface =
                     dynamic_cast< const Surface3D& >( tsurf.child( j ) );
 
                 out << "TFACE" << EOL;
-                for( index_t k : range( surface.nb_vertices() ) ) {
+                for( auto k : range( surface.nb_vertices() ) ) {
                     out << "VRTX " << vertex_count << " " << surface.vertex( k )
                         << EOL;
                     vertex_count++;
                 }
-                for( index_t k : range( surface.nb_mesh_elements() ) ) {
+                for( auto k : range( surface.nb_mesh_elements() ) ) {
                     out << "TRGL "
                         << surface.mesh_element_vertex_index(
                             ElementLocalVertex( k, 0 ) ) + offset << " "
@@ -318,7 +318,7 @@ namespace {
                         << surface.mesh_element_vertex_index(
                             ElementLocalVertex( k, 2 ) ) + offset << EOL;
                 }
-                for( index_t k : range( surface.nb_boundaries() ) ) {
+                for( auto k : range( surface.nb_boundaries() ) ) {
                     const Line3D& line = surface.boundary( k );
                     index_t v0_model_id = geomodel_vertices.geomodel_vertex_id(
                         line.gmme(), 0 );
@@ -346,8 +346,8 @@ namespace {
                         // corner and a border
                         int count = 0;
                         bool to_break = false;
-                        for( index_t v0 : v0_surface_ids ) {
-                            for( index_t v1 : v1_surface_ids ) {
+                        for( auto v0 : v0_surface_ids ) {
+                            for( auto v1 : v1_surface_ids ) {
                                 if( has_surface_edge( surface, v0, v1 ) ) {
                                     lineindices.insert(
                                         std::pair< index_t, index_t >( v0 + offset,
