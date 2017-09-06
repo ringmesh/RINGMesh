@@ -194,9 +194,9 @@ namespace {
         SurfaceMeshBuilder3D& surface_mesh_builder,
         index_t new_polygon_id )
     {
-        surface_mesh_builder.set_polygon_adjacent( new_polygon_id, 0, NO_ID );
-        surface_mesh_builder.set_polygon_adjacent( new_polygon_id, 1, NO_ID );
-        surface_mesh_builder.set_polygon_adjacent( new_polygon_id, 2, NO_ID );
+        surface_mesh_builder.set_polygon_adjacent( { new_polygon_id, 0 }, NO_ID );
+        surface_mesh_builder.set_polygon_adjacent( { new_polygon_id, 1 }, NO_ID );
+        surface_mesh_builder.set_polygon_adjacent( { new_polygon_id, 2 }, NO_ID );
         surface_mesh_builder.connect_polygons();
         surface_mesh_builder.repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
     }
