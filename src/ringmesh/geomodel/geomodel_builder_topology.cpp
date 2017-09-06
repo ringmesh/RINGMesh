@@ -101,7 +101,7 @@ namespace {
         }
 
         equal = true;
-        for( auto v : range( line.nb_vertices() ) ) {
+        for( index_t v : range( line.nb_vertices() ) ) {
             if( rhs_vertices[v] != line.vertex( line.nb_vertices() - v - 1 ) ) {
                 equal = false;
                 break;
@@ -252,7 +252,7 @@ namespace RINGMesh {
     }
 
     template< index_t DIMENSION >
-    bool GeoModelBuilderTopologyBase< DIMENSION >::get_dependent_entities(
+    void GeoModelBuilderTopologyBase< DIMENSION >::get_dependent_entities(
         std::set< gmme_id >& mesh_entities,
         std::set< gmge_id >& geological_entities ) const
     {
@@ -265,9 +265,8 @@ namespace RINGMesh {
 
         // Recursive call till nothing is added
         if( nb_added > 0 ) {
-            return get_dependent_entities( mesh_entities, geological_entities );
+            get_dependent_entities( mesh_entities, geological_entities );
         }
-        return false;
     }
 
     template< index_t DIMENSION >

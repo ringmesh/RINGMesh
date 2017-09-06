@@ -68,9 +68,10 @@ namespace RINGMesh {
         do_delete_flagged_mesh_entities();
         geomodel_.mesh.vertices.clear();
         update_mesh_entity_connectivity();
-        flag_geological_entities_without_children();
+        /*flag_geological_entities_without_children();
         do_delete_flagged_geological_entities();
         update_geological_entity_connectivity();
+        update_universe();*/
     }
 
     template< index_t DIMENSION >
@@ -78,8 +79,8 @@ namespace RINGMesh {
         const std::set< gmge_id >& entities )
     {
         std::set< gmme_id > mesh_entities;
-        for( const gmge_id& it : entities ) {
-            const GeoModelGeologicalEntity< DIMENSION >& cur_gmge =
+        for( const auto& it : entities ) {
+            const auto& cur_gmge =
                 geomodel_.geological_entity( it );
             for( auto i : range( cur_gmge.nb_children() ) ) {
                 mesh_entities.insert( cur_gmge.child( i ).gmme() );
@@ -108,7 +109,7 @@ namespace RINGMesh {
         index_t type,
         index_t index )
     {
-        const MeshEntityType& type_name = index_to_mesh_entity_type( type );
+        const auto& type_name = index_to_mesh_entity_type( type );
         gmme_id id( type_name, index );
         builder_.topology.delete_mesh_entity( type_name, index );
     }
