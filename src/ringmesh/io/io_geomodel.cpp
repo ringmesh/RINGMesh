@@ -55,6 +55,7 @@
 
 #include <ringmesh/mesh/well.h>
 #include <ringmesh/mesh/geogram_mesh.h>
+
 /*!
  * @file Implementation of classes loading GeoModels
  * @author Arnaud Botella and Antoine Mazuyer
