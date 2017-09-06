@@ -44,6 +44,7 @@ if(WIN32)
     set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
     # TODO check that it is really necessary [JP]
     add_compile_options(-DGEO_DYNAMIC_LIBS)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
 
