@@ -39,7 +39,7 @@
 #include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
-/*! 
+/*!
  * Load and fix a given structural model file.
  * @author Jeanne Pellerin
  */
@@ -47,7 +47,8 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
 
         std::string file_name( ringmesh_test_data_path );
@@ -58,8 +59,9 @@ int main()
 
         // Load the geomodel
         GeoModel3D geomodel;
-        bool init_model_is_valid { geomodel_load( geomodel, file_name ) };
-        if( init_model_is_valid ) {
+        bool init_model_is_valid{ geomodel_load( geomodel, file_name ) };
+        if( init_model_is_valid )
+        {
             throw RINGMeshException( "RINGMesh Test", "Input test model ",
                 geomodel.name(),
                 " must be invalid to check the repair functionalities." );
@@ -72,18 +74,23 @@ int main()
         model_builder.repair.repair( GeoModelBuilderRepair3D::ALL );
 
         // Test the validity again
-        if( !is_geomodel_valid( geomodel ) ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Fixing the invalid geological model " + geomodel.name()
-                    + " failed." );
+        if( !is_geomodel_valid( geomodel ) )
+        {
+            throw RINGMeshException(
+                "RINGMesh Test", "Fixing the invalid geological model "
+                                     + geomodel.name() + " failed." );
         }
 
         Logger::out( "TEST", "SUCCESS" );
         return 0;
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

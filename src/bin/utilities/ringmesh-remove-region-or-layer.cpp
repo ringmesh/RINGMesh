@@ -48,7 +48,8 @@
  * @author Benjamin Chauvin
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
     void hello()
@@ -60,12 +61,12 @@ namespace {
 
     void import_arg_group_remove_region_or_layer()
     {
-        GEO::CmdLine::declare_arg_group( "remove",
-            "Remove a region or a layer (on the voi)" );
+        GEO::CmdLine::declare_arg_group(
+            "remove", "Remove a region or a layer (on the voi)" );
         GEO::CmdLine::declare_arg( "remove:is_region", true,
             "Type name of the GeoModelEntity to remove" );
-        GEO::CmdLine::declare_arg( "remove:index", 0,
-            "Index of the region or layer to remove" );
+        GEO::CmdLine::declare_arg(
+            "remove:index", 0, "Index of the region or layer to remove" );
     }
 
     void import_arg_groups()
@@ -81,23 +82,27 @@ namespace {
         GeoModel3D& geomodel )
     {
         GeoModelBuilder3D builder( geomodel );
-        builder.topology.get_dependent_entities( mesh_entities_to_delete,
-            geological_entities_to_delete );
+        builder.topology.get_dependent_entities(
+            mesh_entities_to_delete, geological_entities_to_delete );
         builder.removal.remove_mesh_entities( mesh_entities_to_delete );
-        builder.removal.remove_geological_entities( geological_entities_to_delete );
+        builder.removal.remove_geological_entities(
+            geological_entities_to_delete );
     }
 
     void save_output_geomodel( const GeoModel3D& geomodel )
     {
-        const auto& out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" );
-        if( out_model_file_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in out:geomodel" );
+        const auto& out_model_file_name =
+            GEO::CmdLine::get_arg( "out:geomodel" );
+        if( out_model_file_name.empty() )
+        {
+            throw RINGMeshException(
+                "I/O", "Give at least a filename in out:geomodel" );
         }
         geomodel_save( geomodel, out_model_file_name );
     }
 
-    void remove_a_voi_region_or_a_voi_layer( const std::string& in_model_file_name )
+    void remove_a_voi_region_or_a_voi_layer(
+        const std::string& in_model_file_name )
     {
         GeoModel3D geomodel;
         geomodel_load( geomodel, in_model_file_name );
@@ -107,27 +112,34 @@ namespace {
 
         std::set< gmme_id > mesh_entities_to_delete;
         std::set< gmge_id > geological_entities_to_delete;
-        if( is_region ) {
+        if( is_region )
+        {
             if( gme_index
-                >= geomodel.nb_mesh_entities( Region3D::type_name_static() ) ) {
-                throw RINGMeshException( "I/O",
-                    "Gme index higher than number of entities of the given type" );
+                >= geomodel.nb_mesh_entities( Region3D::type_name_static() ) )
+            {
+                throw RINGMeshException( "I/O", "Gme index higher than number "
+                                                "of entities of the given "
+                                                "type" );
             }
             // TODO check it is on the voi
             mesh_entities_to_delete.insert(
                 { Region3D::type_name_static(), gme_index } );
-        } else {
-            if( gme_index
-                >= geomodel.nb_geological_entities( Layer3D::type_name_static() ) ) {
-                throw RINGMeshException( "I/O",
-                    "Gme index higher than number of entities of the given type" );
+        }
+        else
+        {
+            if( gme_index >= geomodel.nb_geological_entities(
+                                 Layer3D::type_name_static() ) )
+            {
+                throw RINGMeshException( "I/O", "Gme index higher than number "
+                                                "of entities of the given "
+                                                "type" );
             }
             // TODO check it is on the voi
-            geological_entities_to_delete.insert( { Layer3D::type_name_static(),
-                                                    gme_index } );
+            geological_entities_to_delete.insert(
+                { Layer3D::type_name_static(), gme_index } );
         }
-        get_dependent_entities_and_remove_them( mesh_entities_to_delete,
-            geological_entities_to_delete, geomodel );
+        get_dependent_entities_and_remove_them(
+            mesh_entities_to_delete, geological_entities_to_delete, geomodel );
 
         save_output_geomodel( geomodel );
     }
@@ -137,15 +149,20 @@ namespace {
         GEO::Stopwatch total( "Total time" );
 
         const auto& in_model_file_name = GEO::CmdLine::get_arg( "in:geomodel" );
-        if( in_model_file_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel" );
+        if( in_model_file_name.empty() )
+        {
+            throw RINGMeshException(
+                "I/O", "Give at least a filename in in:geomodel" );
         }
         const auto dimension = find_geomodel_dimension( in_model_file_name );
-        if( dimension == 3 ) {
+        if( dimension == 3 )
+        {
             remove_a_voi_region_or_a_voi_layer( in_model_file_name );
-        } else {
-            throw RINGMeshException( "I/O", "Dimension must be 3, not ", dimension );
+        }
+        else
+        {
+            throw RINGMeshException(
+                "I/O", "Dimension must be 3, not ", dimension );
         }
     }
 }
@@ -154,27 +171,33 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
         hello();
         import_arg_groups();
 
-        if( argc == 1 ) {
+        if( argc == 1 )
+        {
             GEO::CmdLine::show_usage();
             return 0;
         }
 
         std::vector< std::string > filenames;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+        if( !GEO::CmdLine::parse( argc, argv, filenames ) )
+        {
             return 1;
         }
 
         run();
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
