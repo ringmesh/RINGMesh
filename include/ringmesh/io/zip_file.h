@@ -56,4 +56,19 @@ namespace RINGMesh {
         IMPLEMENTATION_MEMBER( impl_ );
     };
 
+    class RINGMESH_API UnZipFile {
+    public:
+        UnZipFile( const std::string& filename );
+        ~UnZipFile();
+
+        void start_extract();
+        void get_current_file();
+        std::string get_current_filename();
+        bool next_file();
+
+        void get_file( const std::string& filename );
+    private:
+        IMPLEMENTATION_MEMBER( impl_ );
+    };
+
 } // namespace RINGMesh

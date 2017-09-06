@@ -36,42 +36,6 @@
 namespace {
     using namespace RINGMesh;
 
-    void unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] )
-    {
-        char read_buffer[READ_SIZE];
-        if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
-            unzClose( uz );
-            throw RINGMeshException( "ZLIB", "Could not open file" );
-        }
-        FILE *out = fopen( filename, "wb" );
-        if( out == nullptr ) {
-            unzCloseCurrentFile( uz );
-            unzClose( uz );
-            throw RINGMeshException( "ZLIB", "Could not open destination file" );
-        }
-        int error = UNZ_OK;
-        do {
-            error = unzReadCurrentFile( uz, read_buffer, READ_SIZE );
-            if( error < 0 ) {
-                unzCloseCurrentFile( uz );
-                unzClose( uz );
-                fclose( out );
-                throw RINGMeshException( "ZLIB", "Invalid error: ", error );
-            }
-            if( error > 0 ) {
-                fwrite( read_buffer, error, std::size_t{ 1 }, out );
-            }
-        } while( error > 0 );
-        fclose( out );
-        unzCloseCurrentFile( uz );
-    }
-
-    void unzip_file( unzFile uz, const char filename[MAX_FILENAME] )
-    {
-        unzLocateFile( uz, filename, 0 );
-        unzip_current_file( uz, filename );
-    }
-
     template< index_t > class GeoModelBuilderGM;
 
     bool match_mesh_entity_type( const MeshEntityType& type )
@@ -342,27 +306,19 @@ namespace {
          * @brief Load meshes of all the mesh entities from a zip file
          * @param[in] uz the zip file
          */
-        void load_meshes( unzFile& uz )
+        void load_meshes( UnZipFile& uz )
         {
-            if( unzGoToFirstFile( uz ) != UNZ_OK ) {
-                throw RINGMeshException( "I/O",
-                    "Unable to uncompress the first file" );
-            }
+            uz.start_extract();
 
             Logger::instance()->set_minimal( true );
             std::vector< std::future< void > > files;
             do {
-                char char_file_name[MAX_FILENAME];
-                if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
-                    MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
-                    throw RINGMeshException( "I/O", "Unable to get file name" );
-                }
-                std::string file_name( char_file_name );
+                auto file_name = uz.get_current_filename();
                 if( GEO::FileSystem::extension( file_name ) == "txt" ) {
                     continue;
                 }
 
-                unzip_current_file( uz, file_name.c_str() );
+                uz.get_current_file();
                 files.push_back(
                     std::async( std::launch::deferred,
                         [file_name, this] {
@@ -376,7 +332,7 @@ namespace {
                             load_mesh_entity( MeshEntityType {entity_type}, file_name, id );
                             GEO::FileSystem::delete_file( file_name );
                         } ) );
-            } while( unzGoToNextFile( uz ) == UNZ_OK );
+            } while( uz.next_file() );
 
             for( auto& file : files ) {
                 file.get();
@@ -417,15 +373,10 @@ namespace {
 
         void load_file() final
         {
-            unzFile uz = unzOpen( this->filename_.c_str() );
-            unz_global_info global_info;
-            if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
-                unzClose( uz );
-                throw RINGMeshException( "ZLIB", "Could not read file global info" );
-            }
+            UnZipFile uz { this->filename_ };
 
             const std::string mesh_entity_file( "mesh_entities.txt" );
-            unzip_file( uz, mesh_entity_file.c_str() );
+            uz.get_file( mesh_entity_file );
             load_mesh_entities( mesh_entity_file );
             bool ok = GEO::FileSystem::delete_file( mesh_entity_file );
             ringmesh_unused( ok ); // avoids warning in release
@@ -433,12 +384,10 @@ namespace {
             load_meshes( uz );
 
             const std::string geological_entity_file( "geological_entities.txt" );
-            unzip_file( uz, geological_entity_file.c_str() );
+            uz.get_file( geological_entity_file );
             load_geological_entities( geological_entity_file );
             ok = GEO::FileSystem::delete_file( geological_entity_file );
             ringmesh_assert( ok );
-
-            unzClose( uz );
         }
 
         void load_mesh_entities( const std::string& mesh_entity_file )
@@ -938,7 +887,7 @@ namespace {
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
         {
-            ZipFile zf{ filename };
+            ZipFile zf { filename };
 
             const std::string mesh_entity_file( "mesh_entities.txt" );
             save_mesh_entities( geomodel, mesh_entity_file );
@@ -962,14 +911,9 @@ namespace {
 
         index_t dimension( const std::string& filename ) const final
         {
-            unzFile uz = unzOpen( filename.c_str() );
-            unz_global_info global_info;
-            if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
-                unzClose( uz );
-                throw RINGMeshException( "ZLIB", "Could not read file global info" );
-            }
+            UnZipFile uz { filename };
             const std::string mesh_entity_file( "mesh_entities.txt" );
-            unzip_file( uz, mesh_entity_file.c_str() );
+            uz.get_file( mesh_entity_file );
             index_t dimension = find_dimension( mesh_entity_file );
             bool ok = GEO::FileSystem::delete_file( mesh_entity_file );
             ringmesh_unused( ok );
