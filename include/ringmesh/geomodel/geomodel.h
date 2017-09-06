@@ -92,10 +92,6 @@ namespace RINGMesh {
         std::vector< bool > sides_;
     };
 
-    /*!
-     * @brief The class to describe a geological structural model represented
-     * by its boundary surfaces and whose regions can be optionally meshed
-     */
     template< index_t DIMENSION >
     class RINGMESH_API GeoModelBase {
     ringmesh_disable_copy_and_move( GeoModelBase );
