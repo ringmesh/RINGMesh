@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -37,6 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <array>
 #include <memory>
 
 #include <geogram/basic/line_stream.h>
@@ -82,7 +83,7 @@ namespace RINGMesh {
         virtual void read_line() = 0;
 
     protected:
-        GEO::LineInput file_line_;
+        GEO::LineInput file_line_ { filename_ };
     };
 
     class GocadBaseParser {
@@ -254,8 +255,8 @@ namespace RINGMesh {
                 : tetra_vertex( std::move( vertex ) ), local_id( local_id )
             {
             }
-            vec3 tetra_vertex;
-            index_t local_id;
+            vec3 tetra_vertex { };
+            index_t local_id { NO_ID };
         };
 
         std::vector< RegionLocalVertex > get_vertices_list_and_local_ids_from_gocad_ids(
@@ -358,7 +359,7 @@ namespace RINGMesh {
                     if( region_id( lighttsolid_vertices_id ) == rgion_id ) {
                         index_t gocad_vertex_i { gocad_vertex_id(
                             lighttsolid_vertices_id ) };
-                        for( index_t local_id : range( local_ids.size() ) ) {
+                        for( auto local_id : range( local_ids.size() ) ) {
                             index_t gocad_id { local_ids[local_id] };
                             if( gocad_id == gocad_vertex_i ) {
                                 gocad_ids2local_ids_[gocad_vertex_i] = local_id;
@@ -442,13 +443,13 @@ namespace RINGMesh {
         VertexMap vertex_map_;
 
         // Region tetrahedron corners
-        std::vector< index_t > tetra_corners_;
+        std::vector< index_t > tetra_corners_ { };
 
         // Names of the attributes for the TSolid
-        std::vector< std::string > vertex_attribute_names_;
+        std::vector< std::string > vertex_attribute_names_ { };
 
         // Dimensions of the attributes for the TSolid
-        std::vector< index_t > vertex_attribute_dims_;
+        std::vector< index_t > vertex_attribute_dims_ { };
 
         //// Current lighttsolid gocad vertex index 1
         index_t cur_gocad_vrtx_id1_ { NO_ID };
@@ -457,10 +458,10 @@ namespace RINGMesh {
         index_t cur_gocad_vrtx_id4_ { NO_ID };
 
         //// LightTSolid map between atoms and vertex
-        std::map< index_t, index_t > lighttsolid_atom_map_;
+        std::map< index_t, index_t > lighttsolid_atom_map_ { };
 
         // The vertices and the atoms
-        index_t nb_vertices_;
+        index_t nb_vertices_ { 0 };
     };
 
     class TSolidLineParser: public GocadBaseParser {
@@ -541,12 +542,13 @@ namespace RINGMesh {
 
     private:
         TSolidType file_type_ { TSolidType::TSOLID };
-        std::unique_ptr< GeoModelBuilderTSolidImpl > type_impl_[NB_TYPE];
+        std::array< std::unique_ptr< GeoModelBuilderTSolidImpl >, NB_TYPE > type_impl_;
 
         friend class RINGMesh::GocadLineParser;
     };
 
     class GeoModelBuilderTSolidImpl {
+    ringmesh_disable_copy_and_move( GeoModelBuilderTSolidImpl );
     public:
         GeoModelBuilderTSolidImpl(
             GeoModelBuilderTSolid& builder,

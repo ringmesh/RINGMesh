@@ -1,6 +1,6 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
-# All rights reserved.
-# 
+# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Applications (ASGA). All rights reserved.
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #     * Redistributions of source code must retain the above copyright
@@ -11,20 +11,20 @@
 #     * Neither the name of ASGA nor the
 #       names of its contributors may be used to endorse or promote products
 #       derived from this software without specific prior written permission.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 #     http://www.ring-team.org
-# 
+#
 #     RING Project
 #     Ecole Nationale Superieure de Geologie - GeoRessources
 #     2 Rue du Doyen Marcel Roubault - TSA 70605
@@ -34,13 +34,13 @@
 # CMakeList for RINGMesh tutorials
 
 if(NOT IS_DIRECTORY ${TUTORIALS_DATA_INPUT_DIRECTORY})
-	message(STATUS "Defined data directory for tutorials does not exists, using default doc/tutorials/data")
-	SET(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data" FORCE)
-endif()	
-		
+    message(STATUS "Defined data directory for tutorials does not exists, using default doc/tutorials/data")
+    set(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data" FORCE)
+endif()
+
 # Create the directory for the outputs of the tests
-# It is output in the configuration file as well as the input data for tutorials 
-file(MAKE_DIRECTORY ${TUTORIALS_DATA_OUTPUT_DIRECTORY}) 
+# It is output in the configuration file as well as the input data for tutorials
+file(MAKE_DIRECTORY ${TUTORIALS_DATA_OUTPUT_DIRECTORY})
 
 # Configure a header file to pass some of the CMake settings
 # to the source code
@@ -48,28 +48,15 @@ set(tutorial_config_file_in ${TUTORIALS_SOURCE_DIRECTORY}/ringmesh_tutorials_con
 set(tutorial_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tutorials_config.h)
 configure_file(${tutorial_config_file_in} ${tutorial_config_file})
 
-# Get the name of the tutorial files 
-file(GLOB TUTORIAL "${TUTORIALS_SOURCE_DIRECTORY}/*.cpp")
+# Get the name of the tutorial files
+file(GLOB TUTORIALS "${TUTORIALS_SOURCE_DIRECTORY}/*.cpp")
+# ringmesh_files is defined in the root RINGMesh CMakeLists.txt.
+# This line is for clang utilities.
+set(ringmesh_files ${ringmesh_files} ${TUTORIALS} PARENT_SCOPE)
 
 # For all the test files found
-foreach(tutuorialsourcefile ${TUTORIAL})
-    # Get the name of the file without extension
-    get_filename_component(tutorialname ${tutuorialsourcefile} NAME_WE)
-    
-    # Add the target for that file
-    add_executable(${tutorialname} ${tutuorialsourcefile})
-    
-    # Link RINGMesh Make sure YourLib is linked to each app
-    target_link_libraries(${tutorialname} geogram RINGMesh)
-    
-    add_dependencies(${tutorialname} RINGMesh)
-    
-    # Add the project to a folder of projects for the tests 
-    set_property(TARGET ${tutorialname} PROPERTY FOLDER "Tutorials")
-		    
-    # Add the test to CTest
-    add_test(NAME ${tutorialname} COMMAND ${tutorialname}) 
-       
-endforeach(tutuorialsourcefile ${TUTORIAL})
+foreach(tutorialsourcefile ${TUTORIALS})
+    add_ringmesh_test(${tutorialsourcefile} "Tutorials")
+endforeach(tutorialsourcefile ${TUTORIALS})
 
 

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -73,7 +73,7 @@ namespace {
             for( const auto& line : geomodel.lines() ) {
                 index_t line_id = line.index();
                 xyz[line_id].reserve( 3 * line.nb_vertices() );
-                for( index_t v_itr : range( line.nb_vertices() ) ) {
+                for( auto v_itr : range( line.nb_vertices() ) ) {
                     xyz[line_id].push_back( line.vertex( v_itr ).x );
                     xyz[line_id].push_back( line.vertex( v_itr ).y );
                     xyz[line_id].push_back( line.vertex( v_itr ).z );
@@ -98,7 +98,7 @@ namespace {
 
                 index_t nb_vertices = 0;
                 index_t nb_triangles = 0;
-                for( index_t surf_itr : range( cur_interface.nb_children() ) ) {
+                for( auto surf_itr : range( cur_interface.nb_children() ) ) {
                     const Surface& cur_surface = geomodel.surface(
                         cur_interface.child( surf_itr ).index() );
                     nb_vertices += cur_surface.nb_vertices();
@@ -111,18 +111,18 @@ namespace {
                 indices.reserve( 3 * nb_triangles );
 
                 index_t vertex_count = 0;
-                for( index_t surf_itr : range( cur_interface.nb_children() ) ) {
+                for( auto surf_itr : range( cur_interface.nb_children() ) ) {
                     const Surface& cur_surface = geomodel.surface(
                         cur_interface.child( surf_itr ).index() );
 
-                    for( index_t v_itr : range( cur_surface.nb_vertices() ) ) {
+                    for( auto v_itr : range( cur_surface.nb_vertices() ) ) {
                         xyz.push_back( cur_surface.vertex( v_itr ).x );
                         xyz.push_back( cur_surface.vertex( v_itr ).y );
                         xyz.push_back( cur_surface.vertex( v_itr ).z );
                     }
 
-                    for( index_t p_itr : range( cur_surface.nb_mesh_elements() ) ) {
-                        for( index_t v_itr : range( 3 ) ) {
+                    for( auto p_itr : range( cur_surface.nb_mesh_elements() ) ) {
+                        for( auto v_itr : range( 3 ) ) {
                             indices.push_back(
                                 vertex_count
                                     + cur_surface.mesh_element_vertex_index( p_itr,

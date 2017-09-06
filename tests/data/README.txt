@@ -32,4 +32,6 @@ Model Annot
 	pages = {199--220}
 }
 
+Model AFault: modified and extracted of the SEG-EAGE Overthrust model (http://geodus1.ta.tudelft.nl/seage3dm/)
+
 Skecth.svg modified from http://newscenter.lbl.gov/2012/01/05/otway-project

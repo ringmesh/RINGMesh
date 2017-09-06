@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -38,14 +38,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
-
-#include <ringmesh/geomodel/geomodel_builder_geometry.h>
-#include <ringmesh/geomodel/geomodel_builder_remove.h>
-#include <ringmesh/geomodel/geomodel_builder_repair.h>
-#include <ringmesh/geomodel/geomodel_builder_topology.h>
 
 /*!
  * @brief Classes to build GeoModel geological entities
@@ -111,22 +104,7 @@ namespace RINGMesh {
         void set_geological_entity_child(
             const gmge_id& parent_gmge,
             index_t id,
-            index_t child_id )
-        {
-            /// No check on the validity of the index of the entity child_index
-            /// NO_ID is used to flag entities to delete
-            GeoModelGeologicalEntity< DIMENSION >& geol_entity =
-                geomodel_access_.modifiable_geological_entity( parent_gmge );
-            const MeshEntityType& child_type =
-                geomodel_.entity_type_manager().relationship_manager.child_type(
-                    parent_gmge.type() );
-            gmme_id child( child_type, child_id );
-            GeoModelGeologicalEntityAccess< DIMENSION > gmge_access( geol_entity );
-            index_t relationship_id = gmge_access.modifiable_children()[id];
-            RelationshipManager& manager =
-                geomodel_access_.modifiable_entity_type_manager().relationship_manager;
-            manager.set_child_to_parent_child_relationship( relationship_id, child );
-        }
+            index_t child_id );
 
         void delete_geological_entity(
             const GeologicalEntityType& type,

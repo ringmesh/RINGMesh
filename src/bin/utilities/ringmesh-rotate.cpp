@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
- * All rights reserved.
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -13,16 +13,16 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *     http://www.ring-team.org
  *
@@ -53,63 +53,44 @@ namespace {
     void hello()
     {
         print_header_information();
-        Logger::div( "RINGMesh-Translate" );
-        Logger::out( "", "Welcome to RINGMesh-Translate !" );
+        Logger::div( "RINGMesh-Rotate" );
+        Logger::out( "", "Welcome to RINGMesh-Rotate !" );
     }
 
-    void import_arg_group_translation()
+    void import_arg_group_rotation()
     {
-        GEO::CmdLine::declare_arg_group( "translation",
+        GEO::CmdLine::declare_arg_group( "rotation",
             "Options to rotate a GeoModel" );
-        GEO::CmdLine::declare_arg( "translation:vector", "0 0 0",
-            "Translation vector to be written between quotation marks" );
+        GEO::CmdLine::declare_arg( "rotation:origin", "0 0 0",
+            "Origin of the rotation" );
+        GEO::CmdLine::declare_arg( "rotation:axis", "0 0 1", "Axis of rotation" );
+        GEO::CmdLine::declare_arg( "rotation:angle", 90., "Angle of rotation" );
+        GEO::CmdLine::declare_arg( "rotation:unit", "deg",
+            "Angle unit (deg for degrees or rad for radians)" );
     }
 
     void import_arg_groups()
     {
         CmdLine::import_arg_group( "in" );
         CmdLine::import_arg_group( "out" );
-        import_arg_group_translation();
+        import_arg_group_rotation();
     }
 
-    template< index_t DIMENSION >
-    vecn< DIMENSION > extract_coords_from_string(
-        const std::string& coords_in_string )
+    vec3 extract_coords_from_string( const std::string& coords_in_string )
     {
         std::vector< std::string > split_coords;
-        split_coords.reserve( DIMENSION );
+        split_coords.reserve( 3 );
         GEO::String::split_string( coords_in_string, ' ', split_coords, true );
-        if( split_coords.size() != DIMENSION ) {
-            throw RINGMeshException( "I/O", "Vector (", coords_in_string,
-                ") has not exactly ", DIMENSION, " components" );
+        if( split_coords.size() != 3 ) {
+            throw RINGMeshException( "I/O", "Vector ", coords_in_string,
+                " has not exactly 3 components" );
         }
-        vecn< DIMENSION > coords_vec;
-        for( index_t split_coords_itr : range( DIMENSION ) ) {
+        vec3 coords_vec;
+        for( auto split_coords_itr : range( 3 ) ) {
             coords_vec[split_coords_itr] = GEO::String::to_double(
                 split_coords[split_coords_itr] );
         }
         return coords_vec;
-    }
-
-    template< index_t DIMENSION >
-    void translate_geomodel( const std::string& input_geomodel_name )
-    {
-        GeoModel< DIMENSION > geomodel;
-        geomodel_load( geomodel, input_geomodel_name );
-
-        std::string translation_vector_string = GEO::CmdLine::get_arg(
-            "translation:vector" );
-        vecn< DIMENSION > translation_vector =
-            extract_coords_from_string< DIMENSION >( translation_vector_string );
-
-        translate( geomodel, translation_vector );
-
-        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" );
-        if( output_geomodel_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in out:geomodel" );
-        }
-        geomodel_save( geomodel, output_geomodel_name );
     }
 
     void run()
@@ -121,13 +102,37 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" );
         }
+        GeoModel3D geomodel;
+        geomodel_load( geomodel, input_geomodel_name );
 
-        index_t dimension = find_geomodel_dimension( input_geomodel_name );
-        if( dimension == 2 ) {
-            translate_geomodel< 2 >( input_geomodel_name );
-        } else if( dimension == 3 ) {
-            translate_geomodel< 3 >( input_geomodel_name );
+        std::string rotation_origin_string = GEO::CmdLine::get_arg(
+            "rotation:origin" );
+        vec3 rotation_origin_vec = extract_coords_from_string(
+            rotation_origin_string );
+
+        std::string rotation_axis_string = GEO::CmdLine::get_arg( "rotation:axis" );
+        vec3 rotation_axis_vec = extract_coords_from_string( rotation_axis_string );
+
+        double rotation_angle = GEO::CmdLine::get_arg_double( "rotation:angle" );
+        std::string rotation_unit = GEO::CmdLine::get_arg( "rotation:unit" );
+        bool is_deg;
+        if( rotation_unit == "deg" ) {
+            is_deg = true;
+        } else if( rotation_unit == "rad" ) {
+            is_deg = false;
+        } else {
+            throw RINGMeshException( "I/O", "Unknown angle unit ", rotation_unit );
         }
+
+        rotate( geomodel, rotation_origin_vec, rotation_axis_vec, rotation_angle,
+            is_deg );
+
+        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" );
+        if( output_geomodel_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in out:geomodel" );
+        }
+        geomodel_save( geomodel, output_geomodel_name );
     }
 }
 
