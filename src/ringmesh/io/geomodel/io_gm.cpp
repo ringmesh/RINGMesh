@@ -33,11 +33,6 @@
  *     FRANCE
  */
 
-#include <ringmesh/io/zip_file.h>
-
-#include <minizip/unzip.h>
-#include <minizip/zip.h>
-
 namespace {
     using namespace RINGMesh;
 

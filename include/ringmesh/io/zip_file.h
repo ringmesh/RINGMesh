@@ -49,6 +49,7 @@ namespace RINGMesh {
     class RINGMESH_API ZipFile {
     public:
         ZipFile( const std::string& filename );
+        ~ZipFile();
 
         void add_file( const std::string& filename );
     private:
