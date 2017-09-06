@@ -58,7 +58,8 @@ namespace RINGMesh {
      */
     bool compare_files( const std::string& f1, const std::string& f2 )
     {
-        const unsigned int MAX_LINE_LEN = std::pow( 2, 16 ) - 1;
+        const auto MAX_LINE_LEN =
+            static_cast< unsigned int >( std::pow( 2, 16 ) - 1 );
 
         std::ifstream lFile( f1.c_str() );
         std::ifstream rFile( f2.c_str() );

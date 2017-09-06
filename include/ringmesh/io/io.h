@@ -41,9 +41,6 @@
 
 #include <ringmesh/basic/factory.h>
 
-#define MAX_FILENAME 512
-#define READ_SIZE 8192
-
 const char COMMA = ',';
 const char EOL = '\n';
 const char SPACE = ' ';
