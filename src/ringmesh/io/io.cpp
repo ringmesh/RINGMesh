@@ -58,7 +58,8 @@ namespace RINGMesh {
      */
     bool compare_files( const std::string& f1, const std::string& f2 )
     {
-        const unsigned int MAX_LINE_LEN = std::pow( 2, 16 ) - 1;
+        const auto MAX_LINE_LEN =
+            static_cast< unsigned int >( std::pow( 2, 16 ) - 1 );
 
         std::ifstream lFile( f1.c_str() );
         std::ifstream rFile( f2.c_str() );
@@ -83,59 +84,6 @@ namespace RINGMesh {
         GeoModelIOHandler2D::initialize();
         GeoModelIOHandler3D::initialize();
         WellGroupIOHandler::initialize();
-    }
-
-    /***************************************************************************/
-
-    void zip_file( zipFile zf, const std::string& name )
-    {
-        std::fstream file( name.c_str(), std::ios::in | std::ios::binary );
-        file.seekg( 0, std::ios::end );
-        long size = file.tellg();
-        file.seekg( 0, std::ios::beg );
-        std::vector< char > buffer( size );
-        file.read( &buffer[0], size );
-        zipOpenNewFileInZip( zf, name.c_str(), nullptr, nullptr, 0, nullptr, 0,
-            nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION );
-        zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size );
-        zipCloseFileInZip( zf );
-        file.close();
-    }
-
-    void unzip_file( unzFile uz, const char filename[MAX_FILENAME] )
-    {
-        unzLocateFile( uz, filename, 0 );
-        unzip_current_file( uz, filename );
-    }
-
-    void unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] )
-    {
-        char read_buffer[READ_SIZE];
-        if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
-            unzClose( uz );
-            throw RINGMeshException( "ZLIB", "Could not open file" );
-        }
-        FILE *out = fopen( filename, "wb" );
-        if( out == nullptr ) {
-            unzCloseCurrentFile( uz );
-            unzClose( uz );
-            throw RINGMeshException( "ZLIB", "Could not open destination file" );
-        }
-        int error = UNZ_OK;
-        do {
-            error = unzReadCurrentFile( uz, read_buffer, READ_SIZE );
-            if( error < 0 ) {
-                unzCloseCurrentFile( uz );
-                unzClose( uz );
-                fclose( out );
-                throw RINGMeshException( "ZLIB", "Invalid error: ", error );
-            }
-            if( error > 0 ) {
-                fwrite( read_buffer, error, std::size_t{ 1 }, out );
-            }
-        } while( error > 0 );
-        fclose( out );
-        unzCloseCurrentFile( uz );
     }
 
     /***************************************************************************/
