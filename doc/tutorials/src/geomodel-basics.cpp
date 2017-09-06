@@ -62,8 +62,8 @@ int main()
 
     using namespace RINGMesh;
 
-    try {
-
+    try
+    {
         // This line stands for the initialization
         // of Geogram and the factories of RINGMesh
         // IT IS MANDATORY
@@ -72,8 +72,8 @@ int main()
         // Say Hello
         print_header_information();
         Logger::div( "RINGMesh Training" );
-        Logger::out( "",
-            "Welcome to the RINGMesh training for basics functionalities on GeoModel !" );
+        Logger::out( "", "Welcome to the RINGMesh training for basics "
+                         "functionalities on GeoModel !" );
 
         // Next line is a feature of geogram which measure
         // the time of execution.
@@ -82,32 +82,38 @@ int main()
         // We instantiate the class GeoModel
         GeoModel< 3 > geomodel;
 
-        //load GeoModel
-        //here you can load whatever the model you want in the ringmesh_home/test/data directory
+        // load GeoModel
+        // here you can load whatever the model you want in the
+        // ringmesh_home/test/data directory
         std::string input_file_name( ringmesh_tutorials_data_path );
         input_file_name += "modelA1.ml";
 
-        //function to load a geomodel
+        // function to load a geomodel
         geomodel_load( geomodel, input_file_name );
 
-        //function to print the statistics of the geomodel in the command terminal
+        // function to print the statistics of the geomodel in the command
+        // terminal
         print_geomodel_mesh_stats( geomodel );
 
         // build volumetric mesh in regions
         tetrahedralize( geomodel, "TetGen" );
 
-        //function to print the statistics of the geomodel in the command terminal
+        // function to print the statistics of the geomodel in the command
+        // terminal
         print_geomodel_mesh_stats( geomodel );
 
-        //set the name of the geomodel to output
-        //you can customize the path
+        // set the name of the geomodel to output
+        // you can customize the path
         std::string output_file_name = "modelA1.gm";
         geomodel_save( geomodel, output_file_name );
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

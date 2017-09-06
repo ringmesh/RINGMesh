@@ -35,7 +35,7 @@
 
 /*!
  * @file Declaration of GeoModelGeologicalEntity and all its children classes
- * @author Jeanne Pellerin and Arnaud Botella 
+ * @author Jeanne Pellerin and Arnaud Botella
  */
 
 #pragma once
@@ -49,7 +49,8 @@
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntity );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
@@ -59,16 +60,20 @@ namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
 } // namespace RINGMesh
 
-namespace RINGMesh {
-    template< index_t DIMENSION >
-    class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity< DIMENSION > {
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
+    class RINGMESH_API GeoModelGeologicalEntity
+        : public GeoModelEntity< DIMENSION >
+    {
     public:
-        friend class GeoModelGeologicalEntityAccess< DIMENSION > ;
+        friend class GeoModelGeologicalEntityAccess< DIMENSION >;
 
         /*!
          * @brief Geological feature types for GeoModelEntity
          */
-        enum struct GEOL_FEATURE {
+        enum struct GEOL_FEATURE
+        {
             /// All geological features
             ALL_GEOL,
             /// Default value - No geological feature defined
@@ -101,7 +106,8 @@ namespace RINGMesh {
          * \li "boundary"
          * Other strings will end up in \p NO_GEOL
          * @return The geological feature index
-         * @todo Add other types of unconformity, see RINGMesh::GeoModelEntity::TYPE. --GC
+         * @todo Add other types of unconformity, see
+         * RINGMesh::GeoModelEntity::TYPE. --GC
          */
         static GEOL_FEATURE determine_geological_type( const std::string& in );
         /*!
@@ -113,7 +119,7 @@ namespace RINGMesh {
         static bool is_stratigraphic_limit( GEOL_FEATURE feature )
         {
             return feature == GEOL_FEATURE::STRATI
-                || feature == GEOL_FEATURE::UNCONFORMITY;
+                   || feature == GEOL_FEATURE::UNCONFORMITY;
         }
 
         bool has_geological_feature() const
@@ -160,7 +166,8 @@ namespace RINGMesh {
         virtual bool is_identification_valid() const;
 
     protected:
-        explicit GeoModelGeologicalEntity( const GeoModel< DIMENSION >& geomodel )
+        explicit GeoModelGeologicalEntity(
+            const GeoModel< DIMENSION >& geomodel )
             : GeoModelEntity< DIMENSION >( geomodel, NO_ID )
         {
         }
@@ -178,21 +185,24 @@ namespace RINGMesh {
 
     protected:
         /// Children relations of this entity
-        std::vector< index_t > children_ { };
+        std::vector< index_t > children_{};
 
         /// Geological feature of this object - default is NO_GEOL
-        GEOL_FEATURE geol_feature_ { GEOL_FEATURE::NO_GEOL };
+        GEOL_FEATURE geol_feature_{ GEOL_FEATURE::NO_GEOL };
     };
 
     ALIAS_2D_AND_3D( GeoModelGeologicalEntity );
 
-    template< index_t DIMENSION >
-    using GeoModelGeologicalEntityFactory = Factory< GeologicalEntityType, GeoModelGeologicalEntity< DIMENSION >, const GeoModel < DIMENSION >& >;
+    template < index_t DIMENSION >
+    using GeoModelGeologicalEntityFactory = Factory< GeologicalEntityType,
+        GeoModelGeologicalEntity< DIMENSION >,
+        const GeoModel< DIMENSION >& >;
 
     ALIAS_2D_AND_3D( GeoModelGeologicalEntityFactory );
 
-    template< index_t DIMENSION >
-    class RINGMESH_API Contact: public GeoModelGeologicalEntity< DIMENSION > {
+    template < index_t DIMENSION >
+    class RINGMESH_API Contact : public GeoModelGeologicalEntity< DIMENSION >
+    {
     public:
         explicit Contact( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -212,8 +222,9 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( Contact );
 
-    template< index_t DIMENSION >
-    class RINGMESH_API Interface: public GeoModelGeologicalEntity< DIMENSION > {
+    template < index_t DIMENSION >
+    class RINGMESH_API Interface : public GeoModelGeologicalEntity< DIMENSION >
+    {
     public:
         explicit Interface( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -233,8 +244,9 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( Interface );
 
-    template< index_t DIMENSION >
-    class RINGMESH_API Layer: public GeoModelGeologicalEntity< DIMENSION > {
+    template < index_t DIMENSION >
+    class RINGMESH_API Layer : public GeoModelGeologicalEntity< DIMENSION >
+    {
     public:
         explicit Layer( const GeoModel< DIMENSION >& geomodel )
             : GeoModelGeologicalEntity< DIMENSION >( geomodel )
@@ -254,13 +266,14 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( Layer );
 
-    template< index_t DIMENSION >
-    class RINGMESH_API GeoModelGeologicalEntityAccess {
-    ringmesh_disable_copy_and_move( GeoModelGeologicalEntityAccess );
-        friend class GeoModelBuilderTopology< DIMENSION > ;
-        friend class GeoModelBuilderGeology< DIMENSION > ;
-        friend class GeoModelBuilderInfo< DIMENSION > ;
-        friend class GeoModelBuilderRemovalBase< DIMENSION > ;
+    template < index_t DIMENSION >
+    class RINGMESH_API GeoModelGeologicalEntityAccess
+    {
+        ringmesh_disable_copy_and_move( GeoModelGeologicalEntityAccess );
+        friend class GeoModelBuilderTopology< DIMENSION >;
+        friend class GeoModelBuilderGeology< DIMENSION >;
+        friend class GeoModelBuilderInfo< DIMENSION >;
+        friend class GeoModelBuilderRemovalBase< DIMENSION >;
 
     private:
         explicit GeoModelGeologicalEntityAccess(
@@ -280,7 +293,8 @@ namespace RINGMesh {
             return gmge_.id_;
         }
 
-        typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE& modifiable_geol_feature()
+        typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE&
+            modifiable_geol_feature()
         {
             return gmge_.geol_feature_;
         }
@@ -290,10 +304,10 @@ namespace RINGMesh {
             return gmge_.children_;
         }
 
-        static std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > create_geological_entity(
-            const GeologicalEntityType& type,
-            const GeoModel< DIMENSION >& geomodel,
-            index_t index_in_geomodel );
+        static std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > >
+            create_geological_entity( const GeologicalEntityType& type,
+                const GeoModel< DIMENSION >& geomodel,
+                index_t index_in_geomodel );
 
         void copy( const GeoModelGeologicalEntity< DIMENSION >& from )
         {

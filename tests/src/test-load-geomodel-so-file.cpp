@@ -52,20 +52,23 @@ void test_mesh( const std::string& file_name )
     using namespace RINGMesh;
 
     GeoModel3D model;
-    bool loaded_model_is_valid { geomodel_load( model, file_name ) };
+    bool loaded_model_is_valid{ geomodel_load( model, file_name ) };
 
-    if( !loaded_model_is_valid ) {
+    if( !loaded_model_is_valid )
+    {
         throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
             model.name(), ": the loaded model is not valid." );
     }
 
-    // Check number of entities of the imported GeoModel (from TSolid or LightTSolid file)
+    // Check number of entities of the imported GeoModel (from TSolid or
+    // LightTSolid file)
     if( model.nb_corners() != 52 || model.nb_lines() != 98
         || model.nb_surfaces() != 55 || model.nb_regions() != 8
         || model.nb_geological_entities( Interface3D::type_name_static() ) != 11
         || model.nb_geological_entities( Contact3D::type_name_static() ) != 38
         || model.mesh.vertices.nb() != 6691 || model.mesh.polygons.nb() != 10049
-        || model.mesh.cells.nb() != 34540 ) {
+        || model.mesh.cells.nb() != 34540 )
+    {
         throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
             model.name(), ": wrong number of entities." );
     }
@@ -75,7 +78,8 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
 
         Logger::out( "TEST",
@@ -83,21 +87,24 @@ int main()
 
         std::vector< std::future< void > > futures;
 
-        futures.emplace_back(
-            std::async( std::launch::async, &test_mesh,
-                ringmesh_test_data_path + "modelA4.so" ) );
+        futures.emplace_back( std::async( std::launch::async, &test_mesh,
+            ringmesh_test_data_path + "modelA4.so" ) );
 
-        futures.emplace_back(
-            std::async( std::launch::async, &test_mesh,
-                ringmesh_test_data_path + "modelA4_lts.so" ) );
+        futures.emplace_back( std::async( std::launch::async, &test_mesh,
+            ringmesh_test_data_path + "modelA4_lts.so" ) );
 
-        for( auto& future : futures ) {
+        for( auto& future : futures )
+        {
             future.get();
         }
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

@@ -37,8 +37,8 @@
 
 #include <ringmesh/mesh/geogram_mesh_builder.h>
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     void register_geogram_mesh()
     {
         PointSetMeshFactory2D::register_creator< GeogramPointSetMesh2D >(
@@ -57,21 +57,25 @@ namespace RINGMesh {
         VolumeMeshFactory3D::register_creator< GeogramVolumeMesh3D >(
             GeogramVolumeMesh3D::type_name_static() );
 
-        PointSetMeshBuilderFactory2D::register_creator< GeogramPointSetMeshBuilder2D >(
-            GeogramPointSetMesh2D::type_name_static() );
+        PointSetMeshBuilderFactory2D::
+            register_creator< GeogramPointSetMeshBuilder2D >(
+                GeogramPointSetMesh2D::type_name_static() );
         LineMeshBuilderFactory2D::register_creator< GeogramLineMeshBuilder2D >(
             GeogramLineMesh2D::type_name_static() );
-        SurfaceMeshBuilderFactory2D::register_creator< GeogramSurfaceMeshBuilder2D >(
-            GeogramSurfaceMesh2D::type_name_static() );
+        SurfaceMeshBuilderFactory2D::
+            register_creator< GeogramSurfaceMeshBuilder2D >(
+                GeogramSurfaceMesh2D::type_name_static() );
 
-        PointSetMeshBuilderFactory3D::register_creator< GeogramPointSetMeshBuilder3D >(
-            GeogramPointSetMesh3D::type_name_static() );
+        PointSetMeshBuilderFactory3D::
+            register_creator< GeogramPointSetMeshBuilder3D >(
+                GeogramPointSetMesh3D::type_name_static() );
         LineMeshBuilderFactory3D::register_creator< GeogramLineMeshBuilder3D >(
             GeogramLineMesh3D::type_name_static() );
-        SurfaceMeshBuilderFactory3D::register_creator< GeogramSurfaceMeshBuilder3D >(
-            GeogramSurfaceMesh3D::type_name_static() );
-        VolumeMeshBuilderFactory3D::register_creator< GeogramVolumeMeshBuilder3D >(
-            GeogramVolumeMesh3D::type_name_static() );
+        SurfaceMeshBuilderFactory3D::
+            register_creator< GeogramSurfaceMeshBuilder3D >(
+                GeogramSurfaceMesh3D::type_name_static() );
+        VolumeMeshBuilderFactory3D::
+            register_creator< GeogramVolumeMeshBuilder3D >(
+                GeogramVolumeMesh3D::type_name_static() );
     }
 } // namespace RINGMesh
-

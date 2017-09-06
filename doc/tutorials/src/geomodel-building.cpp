@@ -100,8 +100,8 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
-
+    try
+    {
         // This line stands for the initialization
         // of Geogram and the factories of RINGMesh
         // IT IS MANDATORY
@@ -112,7 +112,8 @@ int main()
         Logger::div( "RINGMesh Training" );
         Logger::out( "", "Welcome to the training of RINGMesh !" );
 
-        // Measure the time between the GEO::Stopwatch creation and its destruction.
+        // Measure the time between the GEO::Stopwatch creation and its
+        // destruction.
         GEO::Stopwatch total( "Total time" );
 
         // We instantiate the class GeoModel
@@ -131,7 +132,8 @@ int main()
         // For the next section, read the documentation to understand
         // the concept of Geological Entity and Mesh Entities
         // Let's to a sum up of the GeoModel we try to build:
-        // For the Geological Entities (handle by the class GeoModelGeologicalEntity):
+        // For the Geological Entities (handle by the class
+        // GeoModelGeologicalEntity):
         // 16 Contacts
         index_t nb_contacts = 16;
         // 1 horizons + 6 boundaries = 7 Interfaces
@@ -149,9 +151,10 @@ int main()
         // 2  Regions
         index_t nb_regions = 2;
 
-        //We first create the GeoModelGeoglogicalEntity
+        // We first create the GeoModelGeoglogicalEntity
         // Create the contacts
-        for( index_t contact = 0; contact < nb_contacts; contact++ ) {
+        for( index_t contact = 0; contact < nb_contacts; contact++ )
+        {
             builder.geology.create_geological_entity(
                 Contact3D::type_name_static() );
             // the static method type_name_static() is available for each
@@ -161,35 +164,42 @@ int main()
 
         // Create the Interfaces
         for( index_t interface_itr = 0; interface_itr < nb_interfaces;
-            interface_itr++ ) {
+             interface_itr++ )
+        {
             builder.geology.create_geological_entity(
                 Interface3D::type_name_static() );
         }
 
         // Create the Layers
-        for( index_t layer = 0; layer < nb_layers; layer++ ) {
-            builder.geology.create_geological_entity( Layer3D::type_name_static() );
+        for( index_t layer = 0; layer < nb_layers; layer++ )
+        {
+            builder.geology.create_geological_entity(
+                Layer3D::type_name_static() );
         }
 
         // Then we create the GeoModelMeshEntity
         // Create the Corners
-        for( index_t corner = 0; corner < nb_corners; corner++ ) {
+        for( index_t corner = 0; corner < nb_corners; corner++ )
+        {
             builder.topology.create_mesh_entity( Corner3D::type_name_static() );
         }
 
         // Create the Lines
-        for( index_t lines = 0; lines < nb_lines; lines++ ) {
+        for( index_t lines = 0; lines < nb_lines; lines++ )
+        {
             builder.topology.create_mesh_entity( Line3D::type_name_static() );
         }
 
         // Create the Surfaces
-        for( index_t surface = 0; surface < nb_surfaces; surface++ ) {
-            builder.topology.create_mesh_entity( Surface3D::type_name_static() );
-
+        for( index_t surface = 0; surface < nb_surfaces; surface++ )
+        {
+            builder.topology.create_mesh_entity(
+                Surface3D::type_name_static() );
         }
 
         // Create the Regions
-        for( index_t region = 0; region < nb_regions; region++ ) {
+        for( index_t region = 0; region < nb_regions; region++ )
+        {
             builder.topology.create_mesh_entity( Region3D::type_name_static() );
         }
 
@@ -214,7 +224,8 @@ int main()
         corners_table[11] = vec3( 0, 5, -1 );
 
         // We associate the coordinates with the corners
-        for( index_t corner = 0; corner < nb_corners; corner++ ) {
+        for( index_t corner = 0; corner < nb_corners; corner++ )
+        {
             builder.geometry.set_corner( corner, corners_table[corner] );
         }
 
@@ -321,85 +332,86 @@ int main()
         cur_coor_surface[1] = corners_table[1];
         cur_coor_surface[2] = corners_table[2];
         cur_coor_surface[3] = corners_table[3];
-        builder.geometry.set_surface_geometry( 0, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            0, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[8];
         cur_coor_surface[1] = corners_table[9];
         cur_coor_surface[2] = corners_table[10];
         cur_coor_surface[3] = corners_table[11];
-        builder.geometry.set_surface_geometry( 1, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            1, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[4];
         cur_coor_surface[1] = corners_table[5];
         cur_coor_surface[2] = corners_table[6];
         cur_coor_surface[3] = corners_table[7];
-        builder.geometry.set_surface_geometry( 2, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            2, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[8];
         cur_coor_surface[1] = corners_table[4];
         cur_coor_surface[2] = corners_table[7];
         cur_coor_surface[3] = corners_table[11];
-        builder.geometry.set_surface_geometry( 3, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            3, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[0];
         cur_coor_surface[1] = corners_table[8];
         cur_coor_surface[2] = corners_table[11];
         cur_coor_surface[3] = corners_table[3];
-        builder.geometry.set_surface_geometry( 4, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            4, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[5];
         cur_coor_surface[1] = corners_table[6];
         cur_coor_surface[2] = corners_table[10];
         cur_coor_surface[3] = corners_table[9];
-        builder.geometry.set_surface_geometry( 5, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            5, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[9];
         cur_coor_surface[1] = corners_table[10];
         cur_coor_surface[2] = corners_table[2];
         cur_coor_surface[3] = corners_table[1];
-        builder.geometry.set_surface_geometry( 6, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            6, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[8];
         cur_coor_surface[1] = corners_table[4];
         cur_coor_surface[2] = corners_table[5];
         cur_coor_surface[3] = corners_table[9];
-        builder.geometry.set_surface_geometry( 7, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            7, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[0];
         cur_coor_surface[1] = corners_table[8];
         cur_coor_surface[2] = corners_table[9];
         cur_coor_surface[3] = corners_table[1];
-        builder.geometry.set_surface_geometry( 8, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            8, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[6];
         cur_coor_surface[1] = corners_table[10];
         cur_coor_surface[2] = corners_table[11];
         cur_coor_surface[3] = corners_table[7];
-        builder.geometry.set_surface_geometry( 9, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            9, cur_coor_surface, facet, facet_ptr );
 
         cur_coor_surface[0] = corners_table[10];
         cur_coor_surface[1] = corners_table[2];
         cur_coor_surface[2] = corners_table[3];
         cur_coor_surface[3] = corners_table[11];
-        builder.geometry.set_surface_geometry( 10, cur_coor_surface, facet,
-            facet_ptr );
+        builder.geometry.set_surface_geometry(
+            10, cur_coor_surface, facet, facet_ptr );
 
         //###################################
         // Setting the Boundaries relations #
         //###################################
 
-        //We set the Corners which are incident entities of the lines
-        // The add_mesh_entity_boundary_relation method take as first argument the
+        // We set the Corners which are incident entities of the lines
+        // The add_mesh_entity_boundary_relation method take as first argument
+        // the
         // gme_t of the boundary and in second argument
         // the id of the GeoModelMeshentity bounded by the boundary
         // Remember :
@@ -899,17 +911,22 @@ int main()
         // Then, we end the model building
         // This method will set the missing information for the boundaries
         // and parent/child relation. e. g., if you decide to use the
-        // add_parent_children_relation (like above), the child has no information of who
-        // is his parent. This method deal with that by filling the missing information
+        // add_parent_children_relation (like above), the child has no
+        // information of who
+        // is his parent. This method deal with that by filling the missing
+        // information
         builder.end_geomodel();
 
         // We save the builded model
         geomodel_save( geomodel, "builded_model.gm" );
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
