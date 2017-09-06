@@ -305,6 +305,21 @@ namespace RINGMesh {
                 valid = false;
             }
 
+            // No isolated vertices
+            std::vector< index_t > nb( this->nb_vertices(), 0 );
+            for( auto p : range( nb_edges() ) ) {
+                for( auto v : range( 2 ) ) {
+                    nb[edge_vertex( { p, v } )]++;
+                }
+            }
+            auto nb_isolated_vertices = static_cast< index_t >( std::count(
+                nb.begin(), nb.end(), 0 ) );
+            if( nb_isolated_vertices > 0 ) {
+                Logger::warn( "SurfaceMesh", "Mesh has ", nb_isolated_vertices,
+                    " isolated vertices " );
+                valid = false;
+            }
+
             return valid;
         }
     protected:
