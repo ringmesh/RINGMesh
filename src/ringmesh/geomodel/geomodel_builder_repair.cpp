@@ -304,7 +304,7 @@ namespace RINGMesh {
             if( E.boundary( i ).is_inside_border( E ) ) {
                 inside_border.push_back(
                     dynamic_cast< const GeoModelMeshEntity< DIMENSION >* >( &E.boundary(
-                        i ) ) );
+                    i ) ) );
             }
         }
         if( !inside_border.empty() ) {
@@ -317,7 +317,7 @@ namespace RINGMesh {
                 for( auto v : range( entity->nb_vertices() ) ) {
                     std::vector< index_t > colocated_indices =
                         nn_search.get_neighbors( entity->vertex( v ),
-                            geomodel_.epsilon() );
+                        geomodel_.epsilon() );
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),
                             colocated_indices.end() );
@@ -337,9 +337,9 @@ namespace RINGMesh {
     {
         to_remove.clear();
         // For all Lines and Surfaces
-        std::array< const MeshEntityType, 2 > types { {
-            Line< DIMENSION >::type_name_static(),
-            Surface< DIMENSION >::type_name_static() } };
+        std::array< const MeshEntityType, 2 > types{ {
+                Line< DIMENSION >::type_name_static(),
+                Surface< DIMENSION >::type_name_static() } };
         for( const MeshEntityType& type : types ) {
             for( auto e : range( geomodel_.nb_mesh_entities( type ) ) ) {
                 gmme_id entity_id( type, e );
@@ -384,9 +384,10 @@ namespace RINGMesh {
                     for( auto p_itr : range( E.nb_mesh_elements() ) ) {
                         for( auto fpv_itr : range(
                             E.nb_mesh_element_vertices( p_itr ) ) ) {
-                            builder->set_polygon_vertex( p_itr, fpv_itr,
+                            builder->set_polygon_vertex(
+                                PolygonLocalEdge( p_itr, fpv_itr ),
                                 colocated[E.mesh_element_vertex_index(
-                                    ElementLocalVertex( p_itr, fpv_itr ) )] );
+                                ElementLocalVertex( p_itr, fpv_itr ) )] );
                         }
                     }
                     builder->delete_vertices( to_delete );
@@ -397,12 +398,14 @@ namespace RINGMesh {
                     std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
                         builder_.geometry.create_line_builder( e );
                     for( auto e_itr : range( E.nb_mesh_elements() ) ) {
-                        builder->set_edge_vertex( e_itr, 0,
+                        builder->set_edge_vertex( 
+                            EdgeLocalVertex( e_itr, 0 ),
                             colocated[E.mesh_element_vertex_index(
-                                ElementLocalVertex( e_itr, 0 ) )] );
-                        builder->set_edge_vertex( e_itr, 1,
+                            ElementLocalVertex( e_itr, 0 ) )] );
+                        builder->set_edge_vertex( 
+                            EdgeLocalVertex( e_itr, 1 ),
                             colocated[E.mesh_element_vertex_index(
-                                ElementLocalVertex( e_itr, 1 ) )] );
+                            ElementLocalVertex( e_itr, 1 ) )] );
                     }
                     builder->delete_vertices( to_delete );
                     Logger::out( "Repair", nb_todelete,
@@ -432,6 +435,6 @@ namespace RINGMesh {
     {
         builder_.geology.build_contacts();
     }
-    template class RINGMESH_API GeoModelBuilderRepair< 2 > ;
-    template class RINGMESH_API GeoModelBuilderRepair< 3 > ;
+    template class RINGMESH_API GeoModelBuilderRepair < 2 > ;
+    template class RINGMESH_API GeoModelBuilderRepair < 3 > ;
 } // namespace RINGMesh
