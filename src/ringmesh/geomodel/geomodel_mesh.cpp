@@ -273,8 +273,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::
-        bind_all_mesh_entity_vertex_maps()
+    void GeoModelMeshVerticesBase<
+        DIMENSION >::GeoModelVertexMapper::bind_all_mesh_entity_vertex_maps()
     {
         const auto& all_mesh_entity_types =
             geomodel_.entity_type_manager()
@@ -394,8 +394,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshVerticesBase< DIMENSION >::GeoModelVertexMapper::
-        clear_all_mesh_entity_vertex_map()
+    void GeoModelMeshVerticesBase<
+        DIMENSION >::GeoModelVertexMapper::clear_all_mesh_entity_vertex_map()
     {
         for( auto& vertex_map : vertex_maps_ )
         {
@@ -2777,9 +2777,7 @@ namespace RINGMesh
     {
     }
 
-    GeoModelMesh< 3 >::~GeoModelMesh()
-    {
-    }
+    GeoModelMesh< 3 >::~GeoModelMesh() {}
 
     void GeoModelMesh< 3 >::change_volume_mesh_data_structure(
         const MeshType& type )

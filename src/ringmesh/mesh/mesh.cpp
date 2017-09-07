@@ -109,8 +109,8 @@ namespace RINGMesh
         auto mesh = LineMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
         {
-            Logger::warn( "LineMesh", "Could not create mesh data structure: ",
-                new_type );
+            Logger::warn( "LineMesh",
+                "Could not create mesh data structure: ", new_type );
             Logger::warn(
                 "LineMesh", "Falling back to GeogramLineMesh data structure" );
 
