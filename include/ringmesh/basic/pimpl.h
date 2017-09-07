@@ -66,6 +66,4 @@ namespace RINGMesh
     class Impl;                                                                \
     PImpl< Impl > impl
 
-#define EXPORT_IMPLEMENTATION( Class ) PImpl< Class::Impl >
-
 } // namespace RINGMesh

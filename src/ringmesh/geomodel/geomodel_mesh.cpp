@@ -51,6 +51,7 @@
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 #include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/well.h>
 
 /*!
@@ -3192,14 +3193,12 @@ namespace RINGMesh
     template class RINGMESH_API GeoModelMeshBase< 2 >;
     template class RINGMESH_API GeoModelMesh< 2 >;
     template class RINGMESH_API GeoModelMeshVerticesBase< 2 >;
-//    template class RINGMESH_API EXPORT_IMPLEMENTATION( GeoModelMeshVerticesBase< 2 > );
     template class RINGMESH_API GeoModelMeshWells< 2 >;
     template class RINGMESH_API GeoModelMeshEdges< 2 >;
     template class RINGMESH_API GeoModelMeshPolygonsBase< 2 >;
 
     template class RINGMESH_API GeoModelMeshBase< 3 >;
     template class RINGMESH_API GeoModelMeshVerticesBase< 3 >;
-//    template class RINGMESH_API EXPORT_IMPLEMENTATION( GeoModelMeshVerticesBase< 3 > );
     template class RINGMESH_API GeoModelMeshWells< 3 >;
     template class RINGMESH_API GeoModelMeshEdges< 3 >;
     template class RINGMESH_API GeoModelMeshPolygonsBase< 3 >;

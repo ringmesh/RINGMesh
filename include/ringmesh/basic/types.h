@@ -80,6 +80,8 @@ namespace RINGMesh
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
 
+    using MeshType = std::string;
+
     /*! enum defining the type of cell in region
      *  * CellType::UNCLASSIFIED may be either a connector or more complex cell
      * that is not specified.
