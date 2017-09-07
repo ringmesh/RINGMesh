@@ -40,39 +40,32 @@
 #include <ringmesh/geomodel/stratigraphic_column.h>
 #include <ringmesh/geomodel/stratigraphic_column_builder.h>
 
-namespace
-{
-    using namespace RINGMesh;
+namespace {
+using namespace RINGMesh;
 
 #include "stratigraphic_column/io_xml.cpp"
+}  // namespace
+
+namespace RINGMesh {
+std::unique_ptr<StratigraphicColumnIOHandler>
+StratigraphicColumnIOHandler::create(const std::string& format) {
+  auto handler = StratigraphicColumnIOHandlerFactory::create(format);
+  if (!handler) {
+    throw RINGMeshException("I/O", "Unsupported file format: ", format);
+  }
+  return handler;
 }
 
-namespace RINGMesh
-{
-    std::unique_ptr< StratigraphicColumnIOHandler >
-        StratigraphicColumnIOHandler::create( const std::string& format )
-    {
-        auto handler = StratigraphicColumnIOHandlerFactory::create( format );
-        if( !handler )
-        {
-            throw RINGMeshException(
-                "I/O", "Unsupported file format: ", format );
-        }
-        return handler;
-    }
+std::unique_ptr<StratigraphicColumnIOHandler>
+StratigraphicColumnIOHandler::get_handler(const std::string& filename) {
+  return create(GEO::FileSystem::extension(filename));
+}
 
-    std::unique_ptr< StratigraphicColumnIOHandler >
-        StratigraphicColumnIOHandler::get_handler( const std::string& filename )
-    {
-        return create( GEO::FileSystem::extension( filename ) );
-    }
-
-    /*
-     * Initializes the possible handler for IO files
-     */
-    void StratigraphicColumnIOHandler::initialize()
-    {
-        StratigraphicColumnIOHandlerFactory::
-            register_creator< XMLStratigraphicColumnIOHandler >( "xml" );
-    }
-} // namespace RINGMesh
+/*
+ * Initializes the possible handler for IO files
+ */
+void StratigraphicColumnIOHandler::initialize() {
+  StratigraphicColumnIOHandlerFactory::register_creator<
+      XMLStratigraphicColumnIOHandler>("xml");
+}
+}  // namespace RINGMesh

@@ -42,91 +42,75 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh
-{
-    /*!
-     * Generic factory
-     * Example of use with A the base class and B, C derived classes
-     *      // Instantiation
-     *      using MyFactory = Factory< std::string, A, int, double >;
-     *      // Registration
-     *      MyFactory::register_creator< B >( "B" );   // B constructor takes an
-     * int and a double
-     *      MyFactory::register_creator< C >( "C" );   // C constructor takes an
-     * int and a double
-     *      // Creation
-     *      std::unique_ptr< A > c = MyFactory::create( "C", 2, 8.6 );
-     */
-    template < typename Key, typename BaseClass, typename... Args >
-    class Factory
-    {
-        static_assert( std::has_virtual_destructor< BaseClass >::value,
-            "BaseClass must have a virtual destructor" );
+namespace RINGMesh {
+/*!
+ * Generic factory
+ * Example of use with A the base class and B, C derived classes
+ *      // Instantiation
+ *      using MyFactory = Factory< std::string, A, int, double >;
+ *      // Registration
+ *      MyFactory::register_creator< B >( "B" );   // B constructor takes an
+ * int and a double
+ *      MyFactory::register_creator< C >( "C" );   // C constructor takes an
+ * int and a double
+ *      // Creation
+ *      std::unique_ptr< A > c = MyFactory::create( "C", 2, 8.6 );
+ */
+template <typename Key, typename BaseClass, typename... Args>
+class Factory {
+  static_assert(std::has_virtual_destructor<BaseClass>::value,
+                "BaseClass must have a virtual destructor");
 
-    public:
-        template < typename DerivedClass >
-        static void register_creator( const Key& key )
-        {
-            static_assert( std::is_base_of< BaseClass, DerivedClass >::value,
-                "DerivedClass must be a subclass of BaseClass" );
-            static_assert(
-                std::is_constructible< DerivedClass, Args... >::value,
-                "DerivedClass must be constructible with Args..." );
-            if( !store_
-                     .emplace(
-                         key, Creator( create_function_impl< DerivedClass > ) )
-                     .second )
-            {
-                Logger::warn(
-                    "Factory", "Trying to register twice the same key" );
-            }
-        }
+ public:
+  template <typename DerivedClass>
+  static void register_creator(const Key& key) {
+    static_assert(std::is_base_of<BaseClass, DerivedClass>::value,
+                  "DerivedClass must be a subclass of BaseClass");
+    static_assert(std::is_constructible<DerivedClass, Args...>::value,
+                  "DerivedClass must be constructible with Args...");
+    if (!store_.emplace(key, Creator(create_function_impl<DerivedClass>))
+             .second) {
+      Logger::warn("Factory", "Trying to register twice the same key");
+    }
+  }
 
-        static std::unique_ptr< BaseClass > create(
-            const Key& key, const Args&... args )
-        {
-            auto creator = store_.find( key );
-            if( creator != store_.end() )
-            {
-                return creator->second(
-                    std::forward< const Args& >( args )... );
-            }
-            return {};
-        }
+  static std::unique_ptr<BaseClass> create(const Key& key,
+                                           const Args&... args) {
+    auto creator = store_.find(key);
+    if (creator != store_.end()) {
+      return creator->second(std::forward<const Args&>(args)...);
+    }
+    return {};
+  }
 
-        static std::vector< Key > list_creators()
-        {
-            std::vector< Key > creators;
-            creators.reserve( store_.size() );
-            for( const auto& creator : store_ )
-            {
-                creators.emplace_back( creator.first );
-            }
-            return creators;
-        }
+  static std::vector<Key> list_creators() {
+    std::vector<Key> creators;
+    creators.reserve(store_.size());
+    for (const auto& creator : store_) {
+      creators.emplace_back(creator.first);
+    }
+    return creators;
+  }
 
-        static bool has_creator( const Key& key )
-        {
-            return store_.find( key ) != store_.end();
-        }
+  static bool has_creator(const Key& key) {
+    return store_.find(key) != store_.end();
+  }
 
-        using Creator = typename std::add_pointer< std::unique_ptr< BaseClass >(
-            const Args&... ) >::type;
-        using FactoryStore = std::map< Key, Creator >;
+  using Creator = typename std::add_pointer<std::unique_ptr<BaseClass>(
+      const Args&...)>::type;
+  using FactoryStore = std::map<Key, Creator>;
 
-    private:
-        template < typename DerivedClass >
-        static std::unique_ptr< BaseClass > create_function_impl(
-            Args&&... args )
-        {
-            return std::unique_ptr< BaseClass >{ new DerivedClass{
-                std::forward< Args >( args )... } };
-        }
+ private:
+  template <typename DerivedClass>
+  static std::unique_ptr<BaseClass> create_function_impl(Args&&... args) {
+    return std::unique_ptr<BaseClass>{
+        new DerivedClass{std::forward<Args>(args)...}};
+  }
 
-        static FactoryStore store_;
-    };
+  static FactoryStore store_;
+};
 
-    template < typename Key, typename BaseClass, typename... Args >
-    typename Factory< Key, BaseClass, Args... >::FactoryStore
-        Factory< Key, BaseClass, Args... >::store_;
-} // namespace RINGMesh
+template <typename Key, typename BaseClass, typename... Args>
+typename Factory<Key, BaseClass, Args...>::FactoryStore
+    Factory<Key, BaseClass, Args...>::store_;
+}  // namespace RINGMesh

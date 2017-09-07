@@ -46,83 +46,77 @@
 /*!
  * @file Interface GEO::Mesh with Tetgen
  */
-namespace GEO
-{
-    class Mesh;
-} // namespace GEO
+namespace GEO {
+class Mesh;
+}  // namespace GEO
 
-namespace RINGMesh
-{
-    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
-} // namespace RINGMesh
+namespace RINGMesh {
+FORWARD_DECLARATION_DIMENSION_CLASS(VolumeMeshBuilder);
+}  // namespace RINGMesh
 
-namespace RINGMesh
-{
-    /*!
-     * @brief Tetgen wrapper
-     * @author Jeanne Pellerin
-     */
-    class TetgenMesher
-    {
-        ringmesh_disable_copy_and_move( TetgenMesher );
+namespace RINGMesh {
+/*!
+ * @brief Tetgen wrapper
+ * @author Jeanne Pellerin
+ */
+class TetgenMesher {
+  ringmesh_disable_copy_and_move(TetgenMesher);
 
-    public:
-        TetgenMesher() = default;
-        ~TetgenMesher();
+ public:
+  TetgenMesher() = default;
+  ~TetgenMesher();
 
-        void tetrahedralize( const GEO::Mesh& input_mesh,
-            VolumeMeshBuilder< 3 >& output_mesh_builder );
+  void tetrahedralize(const GEO::Mesh& input_mesh,
+                      VolumeMeshBuilder<3>& output_mesh_builder);
 
-        void add_points_to_match_quality( double quality );
+  void add_points_to_match_quality(double quality);
 
-    private:
-        void initialize();
-        void initialize_tetgen_args();
-        void tetrahedralize();
+ private:
+  void initialize();
+  void initialize_tetgen_args();
+  void tetrahedralize();
 
-        void copy_mesh_to_tetgen_input( const GEO::Mesh& M );
-        void copy_vertices_to_tetgen_input( const GEO::Mesh& M );
-        void copy_edges_to_tetgen_input( const GEO::Mesh& M );
-        void copy_polygons_to_tetgen_input( const GEO::Mesh& M );
+  void copy_mesh_to_tetgen_input(const GEO::Mesh& M);
+  void copy_vertices_to_tetgen_input(const GEO::Mesh& M);
+  void copy_edges_to_tetgen_input(const GEO::Mesh& M);
+  void copy_polygons_to_tetgen_input(const GEO::Mesh& M);
 
-        void set_regions( const std::vector< vec3 >& one_point_per_region );
+  void set_regions(const std::vector<vec3>& one_point_per_region);
 
-        void assign_result_tetmesh_to_mesh(
-            VolumeMeshBuilder< 3 >& output_mesh_builder ) const;
-        std::vector< double > get_result_tetmesh_points() const;
-        std::vector< index_t > get_result_tetmesh_tets() const;
-        std::set< double > determine_tet_regions_to_keep() const;
-        std::vector< index_t > determine_tets_to_keep() const;
+  void assign_result_tetmesh_to_mesh(
+      VolumeMeshBuilder<3>& output_mesh_builder) const;
+  std::vector<double> get_result_tetmesh_points() const;
+  std::vector<index_t> get_result_tetmesh_tets() const;
+  std::set<double> determine_tet_regions_to_keep() const;
+  std::vector<index_t> determine_tets_to_keep() const;
 
-    private:
-        GEO_3rdParty::tetgenio tetgen_in_;
-        GEO_3rdParty::tetgenio tetgen_out_;
-        /*!
-         * Command line options:
-         * Q = Quiet (no output)
-         * p = Use a piecewise linear complex
-         * n = Save tetrahedron neighbors
-         * Y = Do not add points on boundaries
-         * AA = Save tetrahedron regions
-         */
-        std::string tetgen_command_line_ = std::string( "QpnYAA" );
-        GEO_3rdParty::tetgenbehavior tetgen_args_;
+ private:
+  GEO_3rdParty::tetgenio tetgen_in_;
+  GEO_3rdParty::tetgenio tetgen_out_;
+  /*!
+   * Command line options:
+   * Q = Quiet (no output)
+   * p = Use a piecewise linear complex
+   * n = Save tetrahedron neighbors
+   * Y = Do not add points on boundaries
+   * AA = Save tetrahedron regions
+   */
+  std::string tetgen_command_line_ = std::string("QpnYAA");
+  GEO_3rdParty::tetgenbehavior tetgen_args_;
 
-        std::unique_ptr< GEO_3rdParty::tetgenio::polygon[] > polygons_{};
-        std::unique_ptr< int[] > polygon_corners_{};
-    };
+  std::unique_ptr<GEO_3rdParty::tetgenio::polygon[]> polygons_{};
+  std::unique_ptr<int[]> polygon_corners_{};
+};
 
-    /*!
-     * @brief Constrained tetrahedralize of the volumes defined by a
-     * triangulated surface mesh
-     * @details Does not require this mesh to be a closed manifold
-     * as the equivalent in Geogram function does.
-     */
-    void RINGMESH_API tetrahedralize_mesh_tetgen(
-        VolumeMeshBuilder< 3 >& out_mesh_builder,
-        const GEO::Mesh& in_mesh,
-        bool refine,
-        double quality );
+/*!
+ * @brief Constrained tetrahedralize of the volumes defined by a
+ * triangulated surface mesh
+ * @details Does not require this mesh to be a closed manifold
+ * as the equivalent in Geogram function does.
+ */
+void RINGMESH_API tetrahedralize_mesh_tetgen(
+    VolumeMeshBuilder<3>& out_mesh_builder, const GEO::Mesh& in_mesh,
+    bool refine, double quality);
 
-} // namespace RINGMesh
+}  // namespace RINGMesh
 #endif

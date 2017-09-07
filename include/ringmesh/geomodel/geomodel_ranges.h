@@ -44,140 +44,84 @@
  * @author Jeanne Pellerin & Arnaud Botella
  */
 
-namespace RINGMesh
-{
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
-} // namespace RINGMesh
+namespace RINGMesh {
+FORWARD_DECLARATION_DIMENSION_CLASS(GeoModelGeologicalEntity);
+}  // namespace RINGMesh
 
-namespace RINGMesh
-{
-    template < index_t DIMENSION >
-    class RINGMESH_API entity_range : public range
-    {
-    protected:
-        entity_range( const GeoModel< DIMENSION >& geomodel, index_t last )
-            : range( last ), geomodel_( geomodel )
-        {
-        }
+namespace RINGMesh {
+template <index_t DIMENSION>
+class RINGMESH_API entity_range : public range {
+ protected:
+  entity_range(const GeoModel<DIMENSION>& geomodel, index_t last)
+      : range(last), geomodel_(geomodel) {}
 
-    protected:
-        const GeoModel< DIMENSION >& geomodel_;
-    };
+ protected:
+  const GeoModel<DIMENSION>& geomodel_;
+};
 
-    template < index_t DIMENSION >
-    class RINGMESH_API corner_range : public entity_range< DIMENSION >
-    {
-    public:
-        explicit corner_range( const GeoModel< DIMENSION >& geomodel )
-            : entity_range< DIMENSION >( geomodel, geomodel.nb_corners() )
-        {
-        }
-        const corner_range< DIMENSION >& begin() const
-        {
-            return *this;
-        }
-        const corner_range< DIMENSION >& end() const
-        {
-            return *this;
-        }
-        const Corner< DIMENSION >& operator*() const
-        {
-            return this->geomodel_.corner( this->iter_ );
-        }
-    };
+template <index_t DIMENSION>
+class RINGMESH_API corner_range : public entity_range<DIMENSION> {
+ public:
+  explicit corner_range(const GeoModel<DIMENSION>& geomodel)
+      : entity_range<DIMENSION>(geomodel, geomodel.nb_corners()) {}
+  const corner_range<DIMENSION>& begin() const { return *this; }
+  const corner_range<DIMENSION>& end() const { return *this; }
+  const Corner<DIMENSION>& operator*() const {
+    return this->geomodel_.corner(this->iter_);
+  }
+};
 
-    template < index_t DIMENSION >
-    class RINGMESH_API line_range : public entity_range< DIMENSION >
-    {
-    public:
-        explicit line_range( const GeoModel< DIMENSION >& geomodel )
-            : entity_range< DIMENSION >( geomodel, geomodel.nb_lines() )
-        {
-        }
-        const line_range< DIMENSION >& begin() const
-        {
-            return *this;
-        }
-        const line_range< DIMENSION >& end() const
-        {
-            return *this;
-        }
-        const Line< DIMENSION >& operator*() const
-        {
-            return this->geomodel_.line( this->iter_ );
-        }
-    };
+template <index_t DIMENSION>
+class RINGMESH_API line_range : public entity_range<DIMENSION> {
+ public:
+  explicit line_range(const GeoModel<DIMENSION>& geomodel)
+      : entity_range<DIMENSION>(geomodel, geomodel.nb_lines()) {}
+  const line_range<DIMENSION>& begin() const { return *this; }
+  const line_range<DIMENSION>& end() const { return *this; }
+  const Line<DIMENSION>& operator*() const {
+    return this->geomodel_.line(this->iter_);
+  }
+};
 
-    template < index_t DIMENSION >
-    class RINGMESH_API surface_range : public entity_range< DIMENSION >
-    {
-    public:
-        explicit surface_range( const GeoModel< DIMENSION >& geomodel )
-            : entity_range< DIMENSION >( geomodel, geomodel.nb_surfaces() )
-        {
-        }
-        const surface_range< DIMENSION >& begin() const
-        {
-            return *this;
-        }
-        const surface_range< DIMENSION >& end() const
-        {
-            return *this;
-        }
-        const Surface< DIMENSION >& operator*() const
-        {
-            return this->geomodel_.surface( this->iter_ );
-        }
-    };
+template <index_t DIMENSION>
+class RINGMESH_API surface_range : public entity_range<DIMENSION> {
+ public:
+  explicit surface_range(const GeoModel<DIMENSION>& geomodel)
+      : entity_range<DIMENSION>(geomodel, geomodel.nb_surfaces()) {}
+  const surface_range<DIMENSION>& begin() const { return *this; }
+  const surface_range<DIMENSION>& end() const { return *this; }
+  const Surface<DIMENSION>& operator*() const {
+    return this->geomodel_.surface(this->iter_);
+  }
+};
 
-    template < index_t DIMENSION >
-    class RINGMESH_API region_range : public entity_range< DIMENSION >
-    {
-    public:
-        explicit region_range( const GeoModel< DIMENSION >& geomodel )
-            : entity_range< DIMENSION >( geomodel, geomodel.nb_regions() )
-        {
-        }
-        const region_range< DIMENSION >& begin() const
-        {
-            return *this;
-        }
-        const region_range< DIMENSION >& end() const
-        {
-            return *this;
-        }
-        const Region< DIMENSION >& operator*() const
-        {
-            return this->geomodel_.region( this->iter_ );
-        }
-    };
+template <index_t DIMENSION>
+class RINGMESH_API region_range : public entity_range<DIMENSION> {
+ public:
+  explicit region_range(const GeoModel<DIMENSION>& geomodel)
+      : entity_range<DIMENSION>(geomodel, geomodel.nb_regions()) {}
+  const region_range<DIMENSION>& begin() const { return *this; }
+  const region_range<DIMENSION>& end() const { return *this; }
+  const Region<DIMENSION>& operator*() const {
+    return this->geomodel_.region(this->iter_);
+  }
+};
 
-    template < index_t DIMENSION >
-    class RINGMESH_API geol_entity_range : public entity_range< DIMENSION >
-    {
-    public:
-        geol_entity_range( const GeoModel< DIMENSION >& geomodel,
-            GeologicalEntityType geological_entity_type )
-            : entity_range< DIMENSION >( geomodel,
-                  geomodel.nb_geological_entities( geological_entity_type ) ),
-              type_( std::move( geological_entity_type ) )
-        {
-        }
-        const geol_entity_range< DIMENSION >& begin() const
-        {
-            return *this;
-        }
-        const geol_entity_range< DIMENSION >& end() const
-        {
-            return *this;
-        }
-        const GeoModelGeologicalEntity< DIMENSION >& operator*() const
-        {
-            return this->geomodel_.geological_entity(
-                this->type_, this->iter_ );
-        }
+template <index_t DIMENSION>
+class RINGMESH_API geol_entity_range : public entity_range<DIMENSION> {
+ public:
+  geol_entity_range(const GeoModel<DIMENSION>& geomodel,
+                    GeologicalEntityType geological_entity_type)
+      : entity_range<DIMENSION>(
+            geomodel, geomodel.nb_geological_entities(geological_entity_type)),
+        type_(std::move(geological_entity_type)) {}
+  const geol_entity_range<DIMENSION>& begin() const { return *this; }
+  const geol_entity_range<DIMENSION>& end() const { return *this; }
+  const GeoModelGeologicalEntity<DIMENSION>& operator*() const {
+    return this->geomodel_.geological_entity(this->type_, this->iter_);
+  }
 
-    protected:
-        const GeologicalEntityType type_{};
-    };
-} // namespace RINGMesh
+ protected:
+  const GeologicalEntityType type_{};
+};
+}  // namespace RINGMesh

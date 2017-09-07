@@ -43,85 +43,70 @@
 
 using namespace RINGMesh;
 
-void test_triangle_barycentric_coordinates()
-{
-    Logger::out( "TEST", "Test triangle barycentric coordinates" );
-    vec3 p0( 0, 0, 0 );
-    vec3 p1( 1, 0, 0 );
-    vec3 p2( 0, 1, 0 );
+void test_triangle_barycentric_coordinates() {
+  Logger::out("TEST", "Test triangle barycentric coordinates");
+  vec3 p0(0, 0, 0);
+  vec3 p1(1, 0, 0);
+  vec3 p2(0, 1, 0);
 
-    std::array< double, 3 > lambdas;
-    std::tie( std::ignore, lambdas ) =
-        triangle_barycentric_coordinates( vec3( 0.25, 0.25, 0 ), p0, p1, p2 );
-    if( lambdas[0] != 0.5 || lambdas[1] != 0.25 || lambdas[2] != 0.25 )
-    {
-        throw RINGMeshException(
-            "TEST", "Error in triangle barycentric coordinates" );
-    }
-    std::tie( std::ignore, lambdas ) =
-        triangle_barycentric_coordinates( vec3( 0.5, 0.5, 0 ), p0, p1, p2 );
-    if( lambdas[0] != 0 || lambdas[1] != 0.5 || lambdas[2] != 0.5 )
-    {
-        throw RINGMeshException(
-            "TEST", "Error in triangle barycentric coordinates" );
-    }
-    std::tie( std::ignore, lambdas ) =
-        triangle_barycentric_coordinates( vec3( 1, 1, 0 ), p0, p1, p2 );
-    if( lambdas[0] != -1 || lambdas[1] != 1 || lambdas[2] != 1 )
-    {
-        throw RINGMeshException(
-            "TEST", "Error in triangle barycentric coordinates" );
-    }
+  std::array<double, 3> lambdas;
+  std::tie(std::ignore, lambdas) =
+      triangle_barycentric_coordinates(vec3(0.25, 0.25, 0), p0, p1, p2);
+  if (lambdas[0] != 0.5 || lambdas[1] != 0.25 || lambdas[2] != 0.25) {
+    throw RINGMeshException("TEST",
+                            "Error in triangle barycentric coordinates");
+  }
+  std::tie(std::ignore, lambdas) =
+      triangle_barycentric_coordinates(vec3(0.5, 0.5, 0), p0, p1, p2);
+  if (lambdas[0] != 0 || lambdas[1] != 0.5 || lambdas[2] != 0.5) {
+    throw RINGMeshException("TEST",
+                            "Error in triangle barycentric coordinates");
+  }
+  std::tie(std::ignore, lambdas) =
+      triangle_barycentric_coordinates(vec3(1, 1, 0), p0, p1, p2);
+  if (lambdas[0] != -1 || lambdas[1] != 1 || lambdas[2] != 1) {
+    throw RINGMeshException("TEST",
+                            "Error in triangle barycentric coordinates");
+  }
 }
 
-void test_point_plane_distance()
-{
-    Logger::out( "TEST", "Test point plane distance" );
+void test_point_plane_distance() {
+  Logger::out("TEST", "Test point plane distance");
 
-    vec3 test0{ 1, 1, 1 };
-    Geometry::Plane plane0{ { 0, 0, 2 }, { 0, 0, 0 } };
-    vec3 projected0;
-    std::tie( std::ignore, projected0 ) =
-        Distance::point_to_plane( test0, plane0 );
-    if( projected0 != vec3{ 1, 1, 0 } )
-    {
-        throw RINGMeshException( "TEST", "Error in point plane distance" );
-    }
+  vec3 test0{1, 1, 1};
+  Geometry::Plane plane0{{0, 0, 2}, {0, 0, 0}};
+  vec3 projected0;
+  std::tie(std::ignore, projected0) = Distance::point_to_plane(test0, plane0);
+  if (projected0 != vec3{1, 1, 0}) {
+    throw RINGMeshException("TEST", "Error in point plane distance");
+  }
 
-    vec3 test1{ 0, 0.5, 1 };
-    Geometry::Plane plane1{ { 1, 0, 0 }, { 1, 1, 1 } };
-    vec3 projected1;
-    std::tie( std::ignore, projected1 ) =
-        Distance::point_to_plane( test1, plane1 );
-    if( projected1 != vec3{ 1, 0.5, 1 } )
-    {
-        throw RINGMeshException( "TEST", "Error in point plane distance" );
-    }
+  vec3 test1{0, 0.5, 1};
+  Geometry::Plane plane1{{1, 0, 0}, {1, 1, 1}};
+  vec3 projected1;
+  std::tie(std::ignore, projected1) = Distance::point_to_plane(test1, plane1);
+  if (projected1 != vec3{1, 0.5, 1}) {
+    throw RINGMeshException("TEST", "Error in point plane distance");
+  }
 }
 
-int main()
-{
-    using namespace RINGMesh;
+int main() {
+  using namespace RINGMesh;
 
-    try
-    {
-        default_configure();
+  try {
+    default_configure();
 
-        Logger::out( "TEST", "Test geometric tools" );
+    Logger::out("TEST", "Test geometric tools");
 
-        test_triangle_barycentric_coordinates();
-        test_point_plane_distance();
-    }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
-    }
-    catch( const std::exception& e )
-    {
-        Logger::err( "Exception", e.what() );
-        return 1;
-    }
-    Logger::out( "TEST", "SUCCESS" );
-    return 0;
+    test_triangle_barycentric_coordinates();
+    test_point_plane_distance();
+  } catch (const RINGMeshException& e) {
+    Logger::err(e.category(), e.what());
+    return 1;
+  } catch (const std::exception& e) {
+    Logger::err("Exception", e.what());
+    return 1;
+  }
+  Logger::out("TEST", "SUCCESS");
+  return 0;
 }

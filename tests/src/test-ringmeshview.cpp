@@ -53,75 +53,64 @@
  * @author Pierre Anquez
  */
 
-namespace RINGMesh
-{
-    void open_viewer_load_geomodel_then_close(
-        const int argc, char** argv, const std::string& glup_profile )
-    {
-        RINGMeshApplication app( argc, argv );
+namespace RINGMesh {
+void open_viewer_load_geomodel_then_close(const int argc, char** argv,
+                                          const std::string& glup_profile) {
+  RINGMeshApplication app(argc, argv);
 
-        GEO::CmdLine::set_arg( "GLUP_profile", glup_profile );
+  GEO::CmdLine::set_arg("GLUP_profile", glup_profile);
 
-        // Create the tasks for launching the app window
-        // and the one for closing the window
-        std::future< void > start =
-            std::async( std::launch::async, &RINGMeshApplication::start, &app );
-        std::this_thread::sleep_for( std::chrono::seconds( 3 ) );
-        std::future< void > end =
-            std::async( std::launch::async, &RINGMeshApplication::quit, &app );
-    }
+  // Create the tasks for launching the app window
+  // and the one for closing the window
+  std::future<void> start =
+      std::async(std::launch::async, &RINGMeshApplication::start, &app);
+  std::this_thread::sleep_for(std::chrono::seconds(3));
+  std::future<void> end =
+      std::async(std::launch::async, &RINGMeshApplication::quit, &app);
 }
+}  // namespace RINGMesh
 
-int main()
-{
-    using namespace RINGMesh;
+int main() {
+  using namespace RINGMesh;
 
-    try
-    {
-        char ringmesh_view[] = "ringmesh-view";
-        std::string input_model_file_name( ringmesh_test_data_path );
-        input_model_file_name += "modelA6.ml";
-        char* input_model = &input_model_file_name[0];
+  try {
+    char ringmesh_view[] = "ringmesh-view";
+    std::string input_model_file_name(ringmesh_test_data_path);
+    input_model_file_name += "modelA6.ml";
+    char* input_model = &input_model_file_name[0];
 
-        char* argv[2] = { ringmesh_view, input_model };
+    char* argv[2] = {ringmesh_view, input_model};
 
-        // Two arguments: one for 'ringmeshview' and one for the input file
-        const int argc = 2;
+    // Two arguments: one for 'ringmeshview' and one for the input file
+    const int argc = 2;
 
-        std::vector< std::string > GLUP_profiles( 1, "" );
-        GLUP_profiles[0] = "auto";
-        //        GLUP_profiles[1] = "GLUP150" ;
-        //        GLUP_profiles[2] = "GLUP440" ;
-        //        GLUP_profiles[3] = "VanillaGL" ;
+    std::vector<std::string> GLUP_profiles(1, "");
+    GLUP_profiles[0] = "auto";
+    //        GLUP_profiles[1] = "GLUP150" ;
+    //        GLUP_profiles[2] = "GLUP440" ;
+    //        GLUP_profiles[3] = "VanillaGL" ;
 
-        for( const std::string& profile : GLUP_profiles )
-        {
-            open_viewer_load_geomodel_then_close( argc, argv, profile );
-        }
+    for (const std::string& profile : GLUP_profiles) {
+      open_viewer_load_geomodel_then_close(argc, argv, profile);
     }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
-    }
-    catch( const std::exception& e )
-    {
-        Logger::err( "Exception", e.what() );
-        return 1;
-    }
-    Logger::out( "TEST", "SUCCESS" );
-    return 0;
+  } catch (const RINGMeshException& e) {
+    Logger::err(e.category(), e.what());
+    return 1;
+  } catch (const std::exception& e) {
+    Logger::err("Exception", e.what());
+    return 1;
+  }
+  Logger::out("TEST", "SUCCESS");
+  return 0;
 }
 
 #else
-int main()
-{
-    using namespace RINGMesh;
+int main() {
+  using namespace RINGMesh;
 
-    default_configure();
-    Logger::out( "RINGMeshView",
-        "To test RINGMesh viewer you need to configure ",
-        "the project with the RINGMESH_TEST_GRAPHICS option ON" );
-    return 0;
+  default_configure();
+  Logger::out("RINGMeshView", "To test RINGMesh viewer you need to configure ",
+              "the project with the RINGMESH_TEST_GRAPHICS option ON");
+  return 0;
 }
 #endif

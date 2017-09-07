@@ -46,58 +46,45 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh
-{
-    class RINGMESH_API Logger
-    {
-    public:
-        static void div( const std::string& title )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            GEO::Logger::div( title );
-        }
+namespace RINGMesh {
+class RINGMESH_API Logger {
+ public:
+  static void div(const std::string& title) {
+    std::lock_guard<std::mutex> lock(lock_);
+    GEO::Logger::div(title);
+  }
 
-        template < typename... Args >
-        static void out( const std::string& feature, const Args&... args )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            log( GEO::Logger::out( feature ), args... );
-        }
+  template <typename... Args>
+  static void out(const std::string& feature, const Args&... args) {
+    std::lock_guard<std::mutex> lock(lock_);
+    log(GEO::Logger::out(feature), args...);
+  }
 
-        template < typename... Args >
-        static void err( const std::string& feature, const Args&... args )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            log( GEO::Logger::err( feature ), args... );
-        }
+  template <typename... Args>
+  static void err(const std::string& feature, const Args&... args) {
+    std::lock_guard<std::mutex> lock(lock_);
+    log(GEO::Logger::err(feature), args...);
+  }
 
-        template < typename... Args >
-        static void warn( const std::string& feature, const Args&... args )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            log( GEO::Logger::warn( feature ), args... );
-        }
+  template <typename... Args>
+  static void warn(const std::string& feature, const Args&... args) {
+    std::lock_guard<std::mutex> lock(lock_);
+    log(GEO::Logger::warn(feature), args...);
+  }
 
-        static GEO::Logger* instance()
-        {
-            return GEO::Logger::instance();
-        }
+  static GEO::Logger* instance() { return GEO::Logger::instance(); }
 
-    private:
-        static void log( std::ostream& os )
-        {
-            os << std::endl;
-        }
+ private:
+  static void log(std::ostream& os) { os << std::endl; }
 
-        template < class A0, class... Args >
-        static void log( std::ostream& os, const A0& a0, const Args&... args )
-        {
-            os << a0;
-            log( os, args... );
-        }
+  template <class A0, class... Args>
+  static void log(std::ostream& os, const A0& a0, const Args&... args) {
+    os << a0;
+    log(os, args...);
+  }
 
-    private:
-        static std::mutex lock_;
-    };
+ private:
+  static std::mutex lock_;
+};
 
-} // namespace RINGMesh
+}  // namespace RINGMesh

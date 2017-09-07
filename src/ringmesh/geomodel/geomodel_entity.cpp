@@ -42,8 +42,7 @@
 
 #include <ringmesh/geomodel/geomodel.h>
 
-namespace RINGMesh
-{
-    template class RINGMESH_API GeoModelEntity< 2 >;
-    template class RINGMESH_API GeoModelEntity< 3 >;
-} // namespace RINGMesh
+namespace RINGMesh {
+template class RINGMESH_API GeoModelEntity<2>;
+template class RINGMESH_API GeoModelEntity<3>;
+}  // namespace RINGMesh

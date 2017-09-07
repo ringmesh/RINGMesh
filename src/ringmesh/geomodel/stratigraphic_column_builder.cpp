@@ -40,151 +40,116 @@
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
-namespace RINGMesh
-{
-    StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(
-        StratigraphicColumn& column, GeoModel3D& model, std::string filename )
-        : StratigraphicColumnBuilder( column, model ),
-          filename_( std::move( filename ) )
-    {
+namespace RINGMesh {
+StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(
+    StratigraphicColumn& column, GeoModel3D& model, std::string filename)
+    : StratigraphicColumnBuilder(column, model),
+      filename_(std::move(filename)) {}
+
+StratigraphicColumnBuilder::StratigraphicColumnBuilder(
+    StratigraphicColumn& column, GeoModel3D& model)
+    : column_(column), model_(model) {
+  if (model_.nb_geological_entities(GeologicalEntityType("Layer")) == 0) {
+    throw RINGMeshException("I/O",
+                            "The GeoModel have to be defined with layers.");
+  }
+}
+
+void StratigraphicColumnBuilderXML::load_file() {
+  tinyxml2::XMLDocument column;
+  tinyxml2::XMLError Result = column.LoadFile(filename_.c_str());
+  if (Result != tinyxml2::XML_SUCCESS) {
+    throw RINGMeshException(
+        "I/O", "Error while loading Stratigraphic Column XML file.");
+  }
+  tinyxml2::XMLNode* root = column.FirstChild();
+  if (root == nil) {
+    throw RINGMeshException(
+        "I/O", "Error while getting root of Stratigraphic Column XML file.");
+  }
+  tinyxml2::XMLElement* local =
+      root->FirstChildElement("LocalStratigraphicColumn");
+  tinyxml2::XMLElement* name_column = local->FirstChildElement("name");
+  const std::string name_of_column = name_column->GetText();
+
+  tinyxml2::XMLElement* paradigm =
+      local->FirstChildElement("classification_type");
+  std::string paradigm_str = paradigm->GetText();
+
+  tinyxml2::XMLElement* units = local->FirstChildElement("units");
+  tinyxml2::XMLElement* unit = units->FirstChildElement("unit");
+
+  std::vector<std::string> unitList;
+  while (unit != 0) {
+    tinyxml2::XMLElement* name = unit->FirstChildElement("name");
+    unitList.push_back(name->GetText());
+    tinyxml2::XMLElement* top = unit->FirstChildElement("top");
+    if (top != 0) {
+      tinyxml2::XMLElement* name_top = top->FirstChildElement("name");
+      unitList.push_back(name_top->GetText());
+    } else {
+      unitList.push_back("none");
     }
-
-    StratigraphicColumnBuilder::StratigraphicColumnBuilder(
-        StratigraphicColumn& column, GeoModel3D& model )
-        : column_( column ), model_( model )
-    {
-        if( model_.nb_geological_entities( GeologicalEntityType( "Layer" ) )
-            == 0 )
-        {
-            throw RINGMeshException(
-                "I/O", "The GeoModel have to be defined with layers." );
-        }
+    tinyxml2::XMLElement* base = unit->FirstChildElement("base");
+    if (base != 0) {
+      tinyxml2::XMLElement* name_base = base->FirstChildElement("name");
+      unitList.push_back(name_base->GetText());
+    } else {
+      unitList.push_back("none");
     }
+    unit = unit->NextSiblingElement("unit");
+  }
 
-    void StratigraphicColumnBuilderXML::load_file()
-    {
-        tinyxml2::XMLDocument column;
-        tinyxml2::XMLError Result = column.LoadFile( filename_.c_str() );
-        if( Result != tinyxml2::XML_SUCCESS )
-        {
-            throw RINGMeshException(
-                "I/O", "Error while loading Stratigraphic Column XML file." );
-        }
-        tinyxml2::XMLNode* root = column.FirstChild();
-        if( root == nil )
-        {
-            throw RINGMeshException( "I/O",
-                "Error while getting root of Stratigraphic Column XML file." );
-        }
-        tinyxml2::XMLElement* local =
-            root->FirstChildElement( "LocalStratigraphicColumn" );
-        tinyxml2::XMLElement* name_column = local->FirstChildElement( "name" );
-        const std::string name_of_column = name_column->GetText();
+  // Creation of StratigraphicUnit
 
-        tinyxml2::XMLElement* paradigm =
-            local->FirstChildElement( "classification_type" );
-        std::string paradigm_str = paradigm->GetText();
-
-        tinyxml2::XMLElement* units = local->FirstChildElement( "units" );
-        tinyxml2::XMLElement* unit = units->FirstChildElement( "unit" );
-
-        std::vector< std::string > unitList;
-        while( unit != 0 )
-        {
-            tinyxml2::XMLElement* name = unit->FirstChildElement( "name" );
-            unitList.push_back( name->GetText() );
-            tinyxml2::XMLElement* top = unit->FirstChildElement( "top" );
-            if( top != 0 )
-            {
-                tinyxml2::XMLElement* name_top =
-                    top->FirstChildElement( "name" );
-                unitList.push_back( name_top->GetText() );
-            }
-            else
-            {
-                unitList.push_back( "none" );
-            }
-            tinyxml2::XMLElement* base = unit->FirstChildElement( "base" );
-            if( base != 0 )
-            {
-                tinyxml2::XMLElement* name_base =
-                    base->FirstChildElement( "name" );
-                unitList.push_back( name_base->GetText() );
-            }
-            else
-            {
-                unitList.push_back( "none" );
-            }
-            unit = unit->NextSiblingElement( "unit" );
-        }
-
-        // Creation of StratigraphicUnit
-
-        std::vector< const StratigraphicUnit* > units_vec_construction;
-        for( index_t i = 0; i < unitList.size(); i += 3 )
-        {
-            const std::string& name_of_unit = unitList[i];
-            if( name_of_unit != "none" )
-            {
-                index_t layer_id = find_geological_entity_id_from_name(
-                    model_, GeologicalEntityType( "Layer" ), name_of_unit );
-                const Layer< 3 >* layer = dynamic_cast< const Layer< 3 >* >(
-                    &( model_.geological_entity(
-                        GeologicalEntityType( "Layer" ), layer_id ) ) );
-                ringmesh_assert( layer != nullptr );
-                const Interface< 3 >* top_interface = nil;
-                const Interface< 3 >* base_interface = nil;
-                RockFeature rock( name_of_unit );
-                if( unitList[i + 1] != "none" )
-                {
-                    std::string name_of_interface_top = unitList[i + 1];
-                    index_t top_interface_id =
-                        find_geological_entity_id_from_name( model_,
-                            GeologicalEntityType( "Interface" ),
-                            name_of_interface_top );
-                    top_interface = dynamic_cast< const Interface< 3 >* >(
-                        &( model_.geological_entity(
-                            GeologicalEntityType( "Interface" ),
-                            top_interface_id ) ) );
-                    ringmesh_assert( layer != nullptr );
-                }
-                if( unitList[i + 2] != "none" )
-                {
-                    std::string name_of_interface_base = unitList[i + 2];
-                    index_t base_interface_id =
-                        find_geological_entity_id_from_name( model_,
-                            GeologicalEntityType( "Interface" ),
-                            name_of_interface_base );
-                    base_interface = dynamic_cast< const Interface< 3 >* >(
-                        &( model_.geological_entity(
-                            GeologicalEntityType( "Interface" ),
-                            base_interface_id ) ) );
-                    ringmesh_assert( layer != nullptr );
-                }
-                UnsubdividedStratigraphicUnit unit( name_of_unit,
-                    *top_interface, *base_interface, *layer,
-                    RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0,
-                    std::numeric_limits< double >::max() );
-                units_vec_construction.push_back( &unit );
-            }
-        }
-        const std::vector< const StratigraphicUnit* > units_vec =
-            units_vec_construction;
-        STRATIGRAPHIC_PARADIGM paradigm_upper;
-        if( paradigm_str == "chronostratigraphy" )
-        {
-            paradigm_upper = STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC;
-        }
-        else if( paradigm_str == "lithostratigraphy" )
-        {
-            paradigm_upper = STRATIGRAPHIC_PARADIGM::LITHOSTRATIGRAPHIC;
-        }
-        else
-        {
-            paradigm_upper = STRATIGRAPHIC_PARADIGM::BIOSTRATIGRAPHIC;
-        }
-        column_ =
-            StratigraphicColumn( name_of_column, units_vec, paradigm_upper );
+  std::vector<const StratigraphicUnit*> units_vec_construction;
+  for (index_t i = 0; i < unitList.size(); i += 3) {
+    const std::string& name_of_unit = unitList[i];
+    if (name_of_unit != "none") {
+      index_t layer_id = find_geological_entity_id_from_name(
+          model_, GeologicalEntityType("Layer"), name_of_unit);
+      const Layer<3>* layer = dynamic_cast<const Layer<3>*>(
+          &(model_.geological_entity(GeologicalEntityType("Layer"), layer_id)));
+      ringmesh_assert(layer != nullptr);
+      const Interface<3>* top_interface = nil;
+      const Interface<3>* base_interface = nil;
+      RockFeature rock(name_of_unit);
+      if (unitList[i + 1] != "none") {
+        std::string name_of_interface_top = unitList[i + 1];
+        index_t top_interface_id = find_geological_entity_id_from_name(
+            model_, GeologicalEntityType("Interface"), name_of_interface_top);
+        top_interface =
+            dynamic_cast<const Interface<3>*>(&(model_.geological_entity(
+                GeologicalEntityType("Interface"), top_interface_id)));
+        ringmesh_assert(layer != nullptr);
+      }
+      if (unitList[i + 2] != "none") {
+        std::string name_of_interface_base = unitList[i + 2];
+        index_t base_interface_id = find_geological_entity_id_from_name(
+            model_, GeologicalEntityType("Interface"), name_of_interface_base);
+        base_interface =
+            dynamic_cast<const Interface<3>*>(&(model_.geological_entity(
+                GeologicalEntityType("Interface"), base_interface_id)));
+        ringmesh_assert(layer != nullptr);
+      }
+      UnsubdividedStratigraphicUnit unit(
+          name_of_unit, *top_interface, *base_interface, *layer,
+          RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0,
+          std::numeric_limits<double>::max());
+      units_vec_construction.push_back(&unit);
     }
+  }
+  const std::vector<const StratigraphicUnit*> units_vec =
+      units_vec_construction;
+  STRATIGRAPHIC_PARADIGM paradigm_upper;
+  if (paradigm_str == "chronostratigraphy") {
+    paradigm_upper = STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC;
+  } else if (paradigm_str == "lithostratigraphy") {
+    paradigm_upper = STRATIGRAPHIC_PARADIGM::LITHOSTRATIGRAPHIC;
+  } else {
+    paradigm_upper = STRATIGRAPHIC_PARADIGM::BIOSTRATIGRAPHIC;
+  }
+  column_ = StratigraphicColumn(name_of_column, units_vec, paradigm_upper);
+}
 
-} // namespace RINGMesh
+}  // namespace RINGMesh

@@ -85,38 +85,31 @@
 
 #include <ringmesh/visualization/gfx_application.h>
 
-int main( int argc, char** argv )
-{
-    using namespace RINGMesh;
+int main(int argc, char** argv) {
+  using namespace RINGMesh;
 
-    try
-    {
-        RINGMeshApplication app( argc, argv );
-        app.start();
-        return 0;
-    }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
-    }
-    catch( const std::exception& e )
-    {
-        Logger::err( "Exception", e.what() );
-        return 1;
-    }
+  try {
+    RINGMeshApplication app(argc, argv);
+    app.start();
     return 0;
+  } catch (const RINGMeshException& e) {
+    Logger::err(e.category(), e.what());
+    return 1;
+  } catch (const std::exception& e) {
+    Logger::err("Exception", e.what());
+    return 1;
+  }
+  return 0;
 }
 
 #else
 #include <geogram/basic/logger.h>
-int main()
-{
-    configure_geogram();
-    configure_ringmesh();
-    Logger::out( "RINGMesh-View",
-        "To compile RINGMesh viewer you need to configure ",
-        "the project with the RINGMESH_WITH_GRAPHICS option ON" );
-    return 0;
+int main() {
+  configure_geogram();
+  configure_ringmesh();
+  Logger::out("RINGMesh-View",
+              "To compile RINGMesh viewer you need to configure ",
+              "the project with the RINGMESH_WITH_GRAPHICS option ON");
+  return 0;
 }
 #endif

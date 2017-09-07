@@ -44,125 +44,113 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh
-{
-    template < index_t DIMENSION >
-    class NNSearch
-    {
-        ringmesh_disable_copy_and_move( NNSearch );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+namespace RINGMesh {
+template <index_t DIMENSION>
+class NNSearch {
+  ringmesh_disable_copy_and_move(NNSearch);
+  ringmesh_template_assert_2d_or_3d(DIMENSION);
 
-    public:
-        explicit NNSearch( const std::vector< vecn< DIMENSION > >& vertices,
-            bool copy = true );
+ public:
+  explicit NNSearch(const std::vector<vecn<DIMENSION> >& vertices,
+                    bool copy = true);
 
-        ~NNSearch();
+  ~NNSearch();
 
-        /*!
-         * @brief Gets the \p index_map that link all the duplicated points
-         * to their first occurancy
-         * @return the number of colocated vertices
-         * Example:
-         *     vertices = [P1, P2, P1, P3, P2, P4]
-         *     index_map = [0, 1, 0, 3, 1, 5]
-         *     return 2
-         */
-        std::tuple< index_t, std::vector< index_t > >
-            get_colocated_index_mapping( double epsilon ) const;
-        /*!
-         * @brief Gets the \p index_map that link all the points
-         * to a no duplicated list of index in the list of \p unique_points.
-         * @return the number of colocated vertices
-         * Example:
-         *     vertices = [P1, P2, P1, P3, P2, P4]
-         *     unique_points = [P1, P2, P3, P4]
-         *     index_map = [0, 1, 0, 2, 1, 3]
-         *     return 2
-         */
-        std::tuple< index_t,
-            std::vector< index_t >,
-            std::vector< vecn< DIMENSION > > >
-            get_colocated_index_mapping_and_unique_points(
-                double epsilon ) const;
-        /*!
-         * Gets the closest neighbor point
-         * @param[in] v the point to test
-         * return returns the index of the closest point
-         */
-        index_t get_closest_neighbor( const vecn< DIMENSION >& v ) const
-        {
-            index_t nb_neighbors{ 1 };
-            return get_neighbors( v, nb_neighbors ).front();
+  /*!
+   * @brief Gets the \p index_map that link all the duplicated points
+   * to their first occurancy
+   * @return the number of colocated vertices
+   * Example:
+   *     vertices = [P1, P2, P1, P3, P2, P4]
+   *     index_map = [0, 1, 0, 3, 1, 5]
+   *     return 2
+   */
+  std::tuple<index_t, std::vector<index_t> > get_colocated_index_mapping(
+      double epsilon) const;
+  /*!
+   * @brief Gets the \p index_map that link all the points
+   * to a no duplicated list of index in the list of \p unique_points.
+   * @return the number of colocated vertices
+   * Example:
+   *     vertices = [P1, P2, P1, P3, P2, P4]
+   *     unique_points = [P1, P2, P3, P4]
+   *     index_map = [0, 1, 0, 2, 1, 3]
+   *     return 2
+   */
+  std::tuple<index_t, std::vector<index_t>, std::vector<vecn<DIMENSION> > >
+  get_colocated_index_mapping_and_unique_points(double epsilon) const;
+  /*!
+   * Gets the closest neighbor point
+   * @param[in] v the point to test
+   * return returns the index of the closest point
+   */
+  index_t get_closest_neighbor(const vecn<DIMENSION>& v) const {
+    index_t nb_neighbors{1};
+    return get_neighbors(v, nb_neighbors).front();
+  }
+
+  /*!
+   * Compute the neighbors of a given point, point closer than \param
+   * threshold_distance
+   * @param[in] v the point to test
+   * @param[in] threshold_distance distance defining the neighborhood
+   * @return the point indices
+   */
+  std::vector<index_t> get_neighbors(const vecn<DIMENSION>& v,
+                                     double threshold_distance) const;
+
+  /*!
+   * Compute the neighbors of a given point according the \param test
+   * @param[in] v the point to test
+   * @tparam[in] test This functor takes an index of a neighbor point as
+   * parameter
+   * and returns true to stop the search, false to continue.
+   * @return the point indices
+   */
+  template <typename TEST>
+  std::vector<index_t> get_neighbors(const vecn<DIMENSION>& v,
+                                     const TEST& test) const {
+    std::vector<index_t> result;
+    auto nb_points = this->nb_points();
+    if (nb_points != 0) {
+      index_t nb_neighbors{std::min(index_t(5), nb_points)};
+      index_t cur_neighbor{0};
+      index_t prev_neighbor{0};
+      do {
+        prev_neighbor = cur_neighbor;
+        cur_neighbor += nb_neighbors;
+        result.reserve(cur_neighbor);
+        auto neighbors = get_neighbors(v, cur_neighbor);
+        nb_neighbors = static_cast<index_t>(neighbors.size());
+        for (auto i : range(prev_neighbor, cur_neighbor)) {
+          if (test(neighbors[i])) {
+            break;
+          }
+          result.push_back(neighbors[i]);
         }
+      } while (result.size() == cur_neighbor && result.size() < nb_points);
+    }
+    return result;
+  }
 
-        /*!
-         * Compute the neighbors of a given point, point closer than \param
-         * threshold_distance
-         * @param[in] v the point to test
-         * @param[in] threshold_distance distance defining the neighborhood
-         * @return the point indices
-         */
-        std::vector< index_t > get_neighbors(
-            const vecn< DIMENSION >& v, double threshold_distance ) const;
+  /*!
+   * Gets the neighboring points of a given one sorted by increasing
+   * distance
+   * @param[in] v the point to test
+   * @param[in] nb_neighbors the number of neighbors to return
+   * @return the point indices (can be less than \p nb_neighbors
+   * if there is not enough points)
+   */
+  std::vector<index_t> get_neighbors(const vecn<DIMENSION>& v,
+                                     index_t nb_neighbors) const;
 
-        /*!
-         * Compute the neighbors of a given point according the \param test
-         * @param[in] v the point to test
-         * @tparam[in] test This functor takes an index of a neighbor point as
-         * parameter
-         * and returns true to stop the search, false to continue.
-         * @return the point indices
-         */
-        template < typename TEST >
-        std::vector< index_t > get_neighbors(
-            const vecn< DIMENSION >& v, const TEST& test ) const
-        {
-            std::vector< index_t > result;
-            auto nb_points = this->nb_points();
-            if( nb_points != 0 )
-            {
-                index_t nb_neighbors{ std::min( index_t( 5 ), nb_points ) };
-                index_t cur_neighbor{ 0 };
-                index_t prev_neighbor{ 0 };
-                do
-                {
-                    prev_neighbor = cur_neighbor;
-                    cur_neighbor += nb_neighbors;
-                    result.reserve( cur_neighbor );
-                    auto neighbors = get_neighbors( v, cur_neighbor );
-                    nb_neighbors = static_cast< index_t >( neighbors.size() );
-                    for( auto i : range( prev_neighbor, cur_neighbor ) )
-                    {
-                        if( test( neighbors[i] ) )
-                        {
-                            break;
-                        }
-                        result.push_back( neighbors[i] );
-                    }
-                } while( result.size() == cur_neighbor
-                         && result.size() < nb_points );
-            }
-            return result;
-        }
+  vecn<DIMENSION> point(index_t v) const;
 
-        /*!
-         * Gets the neighboring points of a given one sorted by increasing
-         * distance
-         * @param[in] v the point to test
-         * @param[in] nb_neighbors the number of neighbors to return
-         * @return the point indices (can be less than \p nb_neighbors
-         * if there is not enough points)
-         */
-        std::vector< index_t > get_neighbors(
-            const vecn< DIMENSION >& v, index_t nb_neighbors ) const;
+  index_t nb_points() const;
 
-        vecn< DIMENSION > point( index_t v ) const;
+ private:
+  IMPLEMENTATION_MEMBER(impl_);
+};
+ALIAS_2D_AND_3D(NNSearch);
 
-        index_t nb_points() const;
-
-    private:
-        IMPLEMENTATION_MEMBER( impl_ );
-    };
-    ALIAS_2D_AND_3D( NNSearch );
-
-} // namespace RINGMesh
+}  // namespace RINGMesh

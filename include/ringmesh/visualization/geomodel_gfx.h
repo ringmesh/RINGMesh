@@ -51,74 +51,69 @@
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
-namespace RINGMesh
-{
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-} // namespace RINGMesh
+namespace RINGMesh {
+FORWARD_DECLARATION_DIMENSION_CLASS(GeoModel);
+}  // namespace RINGMesh
 
-namespace RINGMesh
-{
-    template < index_t DIMENSION >
-    class GeoModelGfxBase
-    {
-        ringmesh_disable_copy_and_move( GeoModelGfxBase );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+namespace RINGMesh {
+template <index_t DIMENSION>
+class GeoModelGfxBase {
+  ringmesh_disable_copy_and_move(GeoModelGfxBase);
+  ringmesh_template_assert_2d_or_3d(DIMENSION);
 
-    public:
-        virtual ~GeoModelGfxBase() = default;
+ public:
+  virtual ~GeoModelGfxBase() = default;
 
-        /*!
-         * Sets the GeoModel associated to the graphics
-         * @param[in] geomodel the GeoModel
-         */
-        void set_geomodel( const GeoModel< DIMENSION >& geomodel );
-        /*!
-         * Gets the GeoModel associated to the graphics
-         * @return the GeoModel
-         */
-        const GeoModel< DIMENSION >* geomodel() const;
+  /*!
+   * Sets the GeoModel associated to the graphics
+   * @param[in] geomodel the GeoModel
+   */
+  void set_geomodel(const GeoModel<DIMENSION>& geomodel);
+  /*!
+   * Gets the GeoModel associated to the graphics
+   * @return the GeoModel
+   */
+  const GeoModel<DIMENSION>* geomodel() const;
 
-    protected:
-        /*!
-         * Initializes the database according the GeoModel dimensions
-         */
-        virtual void initialize();
+ protected:
+  /*!
+   * Initializes the database according the GeoModel dimensions
+   */
+  virtual void initialize();
 
-        explicit GeoModelGfxBase( GeoModelGfx< DIMENSION >& gfx );
+  explicit GeoModelGfxBase(GeoModelGfx<DIMENSION>& gfx);
 
-    private:
-        /// The GeoModel associated to the graphics
-        const GeoModel< DIMENSION >* geomodel_{ nullptr };
+ private:
+  /// The GeoModel associated to the graphics
+  const GeoModel<DIMENSION>* geomodel_{nullptr};
 
-    public:
-        CornerGfxEntity< DIMENSION > corners;
-        LineGfxEntity< DIMENSION > lines;
-        SurfaceGfxEntity< DIMENSION > surfaces;
-        AttributeGfxManager< DIMENSION > attribute;
-    };
+ public:
+  CornerGfxEntity<DIMENSION> corners;
+  LineGfxEntity<DIMENSION> lines;
+  SurfaceGfxEntity<DIMENSION> surfaces;
+  AttributeGfxManager<DIMENSION> attribute;
+};
 
-    ALIAS_2D_AND_3D( GeoModelGfxBase );
+ALIAS_2D_AND_3D(GeoModelGfxBase);
 
-    template < index_t DIMENSION >
-    class GeoModelGfx final : public GeoModelGfxBase< DIMENSION >
-    {
-    public:
-        GeoModelGfx();
-    };
+template <index_t DIMENSION>
+class GeoModelGfx final : public GeoModelGfxBase<DIMENSION> {
+ public:
+  GeoModelGfx();
+};
 
-    template <>
-    class RINGMESH_API GeoModelGfx< 3 > final : public GeoModelGfxBase< 3 >
-    {
-    public:
-        GeoModelGfx();
+template <>
+class RINGMESH_API GeoModelGfx<3> final : public GeoModelGfxBase<3> {
+ public:
+  GeoModelGfx();
 
-        void initialize() final;
+  void initialize() final;
 
-    public:
-        RegionGfxEntity3D regions;
-    };
+ public:
+  RegionGfxEntity3D regions;
+};
 
-    ALIAS_2D_AND_3D( GeoModelGfx );
-} // namespace RINGMesh
+ALIAS_2D_AND_3D(GeoModelGfx);
+}  // namespace RINGMesh
 
 #endif

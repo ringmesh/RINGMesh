@@ -43,81 +43,75 @@
  * @author Jeanne Pellerin
  */
 
-namespace RINGMesh
-{
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelEntity );
-} // namespace RINGMesh
+namespace RINGMesh {
+FORWARD_DECLARATION_DIMENSION_CLASS(GeoModel);
+FORWARD_DECLARATION_DIMENSION_CLASS(GeoModelEntity);
+}  // namespace RINGMesh
 
-namespace RINGMesh
-{
-    /// Option to select what are checked.
-    enum struct ValidityCheckMode
-    {
-        EMPTY = 0,
-        FINITE_EXTENSION = 1,
-        GEOMODEL_CONNECTIVITY = 1 << 1,
-        GEOLOGICAL_ENTITIES = 1 << 2,
-        SURFACE_LINE_MESH_CONFORMITY = 1 << 3,
-        REGION_SURFACE_MESH_CONFORMITY = 1 << 4,
-        MESH_ENTITIES = 1 << 5,
-        NON_MANIFOLD_EDGES = 1 << 6,
-        POLYGON_INTERSECTIONS = 1 << 7,
-        GEOLOGY = GEOLOGICAL_ENTITIES,
-        TOPOLOGY = FINITE_EXTENSION | GEOMODEL_CONNECTIVITY,
-        GEOMETRY = SURFACE_LINE_MESH_CONFORMITY | REGION_SURFACE_MESH_CONFORMITY
-                   | MESH_ENTITIES
-                   | NON_MANIFOLD_EDGES
-                   | POLYGON_INTERSECTIONS,
-        ALL = TOPOLOGY | GEOMETRY | GEOLOGY
-    };
-    ENABLE_BITMASK_OPERATORS( ValidityCheckMode );
+namespace RINGMesh {
+/// Option to select what are checked.
+enum struct ValidityCheckMode {
+  EMPTY = 0,
+  FINITE_EXTENSION = 1,
+  GEOMODEL_CONNECTIVITY = 1 << 1,
+  GEOLOGICAL_ENTITIES = 1 << 2,
+  SURFACE_LINE_MESH_CONFORMITY = 1 << 3,
+  REGION_SURFACE_MESH_CONFORMITY = 1 << 4,
+  MESH_ENTITIES = 1 << 5,
+  NON_MANIFOLD_EDGES = 1 << 6,
+  POLYGON_INTERSECTIONS = 1 << 7,
+  GEOLOGY = GEOLOGICAL_ENTITIES,
+  TOPOLOGY = FINITE_EXTENSION | GEOMODEL_CONNECTIVITY,
+  GEOMETRY = SURFACE_LINE_MESH_CONFORMITY | REGION_SURFACE_MESH_CONFORMITY |
+             MESH_ENTITIES | NON_MANIFOLD_EDGES | POLYGON_INTERSECTIONS,
+  ALL = TOPOLOGY | GEOMETRY | GEOLOGY
+};
+ENABLE_BITMASK_OPERATORS(ValidityCheckMode);
 
-    /*!
-     * @brief Set the directory where debugging information on
-     * invalid entities shall be stored
-     * @details If directory does not exist keep the previous value.
-     */
-    void RINGMESH_API set_validity_errors_directory(
-        const std::string& directory );
+/*!
+ * @brief Set the directory where debugging information on
+ * invalid entities shall be stored
+ * @details If directory does not exist keep the previous value.
+ */
+void RINGMESH_API set_validity_errors_directory(const std::string& directory);
 
-    /*!
-     * @brief Get the directory where debugging information on
-     * invalid entities shall be stored
-     */
-    std::string RINGMESH_API get_validity_errors_directory();
+/*!
+ * @brief Get the directory where debugging information on
+ * invalid entities shall be stored
+ */
+std::string RINGMESH_API get_validity_errors_directory();
 
-    /*!
-     * @brief Check global geomodel validity
-     * @param[in] geomodel GeoModel to check
-     * @param[in] validity_check_mode Mode to select what model feature should
-     * be checked. Set by default to the most complete check option.
-     */
-    template < index_t DIMENSION >
-    bool is_geomodel_valid( const GeoModel< DIMENSION >& geomodel,
-        ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL );
+/*!
+ * @brief Check global geomodel validity
+ * @param[in] geomodel GeoModel to check
+ * @param[in] validity_check_mode Mode to select what model feature should
+ * be checked. Set by default to the most complete check option.
+ */
+template <index_t DIMENSION>
+bool is_geomodel_valid(
+    const GeoModel<DIMENSION>& geomodel,
+    ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL);
 
-    /*!
-     * @brief Check the validity of all individual entity meshes
-     * @details Check that the entities belong to this geomodel,
-     *          call the check validity for each entity
-     */
-    template < index_t DIMENSION >
-    bool are_geomodel_mesh_entities_mesh_valid(
-        const GeoModel< DIMENSION >& geomodel );
+/*!
+ * @brief Check the validity of all individual entity meshes
+ * @details Check that the entities belong to this geomodel,
+ *          call the check validity for each entity
+ */
+template <index_t DIMENSION>
+bool are_geomodel_mesh_entities_mesh_valid(const GeoModel<DIMENSION>& geomodel);
 
-    /*!
-     * @brief Check the connectivity of mesh entities
-     */
-    template < index_t DIMENSION >
-    bool are_geomodel_mesh_entities_connectivity_valid(
-        const GeoModel< DIMENSION >& geomodel );
+/*!
+ * @brief Check the connectivity of mesh entities
+ */
+template <index_t DIMENSION>
+bool are_geomodel_mesh_entities_connectivity_valid(
+    const GeoModel<DIMENSION>& geomodel);
 
-    template < index_t DIMENSION >
-    bool are_geomodel_mesh_entities_parent_valid(
-        const GeoModel< DIMENSION >& geomodel );
+template <index_t DIMENSION>
+bool are_geomodel_mesh_entities_parent_valid(
+    const GeoModel<DIMENSION>& geomodel);
 
-    template < index_t DIMENSION >
-    bool are_geomodel_geological_entities_valid(
-        const GeoModel< DIMENSION >& geomodel );
-} // namespace RINGMesh
+template <index_t DIMENSION>
+bool are_geomodel_geological_entities_valid(
+    const GeoModel<DIMENSION>& geomodel);
+}  // namespace RINGMesh

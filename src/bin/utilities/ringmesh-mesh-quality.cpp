@@ -48,113 +48,90 @@
  * @author Benjamin Chauvin
  */
 
-namespace
-{
-    using namespace RINGMesh;
+namespace {
+using namespace RINGMesh;
 
-    void hello()
-    {
-        print_header_information();
-        Logger::div( "RINGMesh-Mesh-Quality" );
-        Logger::out( "", "Welcome to RINGMesh-Mesh-Quality !" );
-    }
-
-    void import_arg_group_quality()
-    {
-        GEO::CmdLine::declare_arg_group( "quality", "Mesh quality" );
-        GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" );
-    }
-
-    void import_arg_groups()
-    {
-        CmdLine::import_arg_group( "in" );
-        import_arg_group_quality();
-        CmdLine::import_arg_group( "out" );
-    }
-
-    void check_geomodel_is_3d_meshed_by_simplexes(
-        const GeoModel< 3 >& geomodel )
-    {
-        if( geomodel.nb_regions() == 0 )
-        {
-            throw RINGMeshException( "I/O", "Input geomodel has no region." );
-        }
-
-        for( const auto& region : geomodel.regions() )
-        {
-            if( !region.is_meshed() )
-            {
-                throw RINGMeshException(
-                    "I/O", "Region ", region.index(), " is not meshed." );
-            }
-            if( !region.is_simplicial() )
-            {
-                throw RINGMeshException(
-                    "I/O", "Region ", region.index(), " is not simplicial." );
-            }
-        }
-    }
-
-    void run()
-    {
-        GEO::Stopwatch total( "Total time" );
-
-        std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" );
-        if( geomodel_in_name.empty() )
-        {
-            throw RINGMeshException(
-                "I/O", "Give at least a filename in in:geomodel" );
-        }
-        GeoModel3D geomodel;
-        geomodel_load( geomodel, geomodel_in_name );
-        check_geomodel_is_3d_meshed_by_simplexes( geomodel );
-
-        index_t quality_mode = GEO::CmdLine::get_arg_uint( "quality:mode" );
-        compute_prop_tet_mesh_quality(
-            static_cast< MeshQualityMode >( quality_mode ), geomodel );
-
-        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
-        if( geomodel_out_name.empty() )
-        {
-            throw RINGMeshException(
-                "I/O", "Give at least a filename in out:geomodel" );
-        }
-        geomodel_save( geomodel, geomodel_out_name );
-    }
+void hello() {
+  print_header_information();
+  Logger::div("RINGMesh-Mesh-Quality");
+  Logger::out("", "Welcome to RINGMesh-Mesh-Quality !");
 }
 
-int main( int argc, char** argv )
-{
-    using namespace RINGMesh;
+void import_arg_group_quality() {
+  GEO::CmdLine::declare_arg_group("quality", "Mesh quality");
+  GEO::CmdLine::declare_arg("quality:mode", 0, "Mesh quality mode");
+}
 
-    try
-    {
-        default_configure();
-        hello();
-        import_arg_groups();
-        if( argc == 1 )
-        {
-            GEO::CmdLine::show_usage();
-            return 0;
-        }
+void import_arg_groups() {
+  CmdLine::import_arg_group("in");
+  import_arg_group_quality();
+  CmdLine::import_arg_group("out");
+}
 
-        std::vector< std::string > filenames;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) )
-        {
-            return 1;
-        }
+void check_geomodel_is_3d_meshed_by_simplexes(const GeoModel<3>& geomodel) {
+  if (geomodel.nb_regions() == 0) {
+    throw RINGMeshException("I/O", "Input geomodel has no region.");
+  }
 
-        run();
+  for (const auto& region : geomodel.regions()) {
+    if (!region.is_meshed()) {
+      throw RINGMeshException("I/O", "Region ", region.index(),
+                              " is not meshed.");
     }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
+    if (!region.is_simplicial()) {
+      throw RINGMeshException("I/O", "Region ", region.index(),
+                              " is not simplicial.");
     }
-    catch( const std::exception& e )
-    {
-        Logger::err( "Exception", e.what() );
-        return 1;
+  }
+}
+
+void run() {
+  GEO::Stopwatch total("Total time");
+
+  std::string geomodel_in_name = GEO::CmdLine::get_arg("in:geomodel");
+  if (geomodel_in_name.empty()) {
+    throw RINGMeshException("I/O", "Give at least a filename in in:geomodel");
+  }
+  GeoModel3D geomodel;
+  geomodel_load(geomodel, geomodel_in_name);
+  check_geomodel_is_3d_meshed_by_simplexes(geomodel);
+
+  index_t quality_mode = GEO::CmdLine::get_arg_uint("quality:mode");
+  compute_prop_tet_mesh_quality(static_cast<MeshQualityMode>(quality_mode),
+                                geomodel);
+
+  std::string geomodel_out_name = GEO::CmdLine::get_arg("out:geomodel");
+  if (geomodel_out_name.empty()) {
+    throw RINGMeshException("I/O", "Give at least a filename in out:geomodel");
+  }
+  geomodel_save(geomodel, geomodel_out_name);
+}
+}  // namespace
+
+int main(int argc, char** argv) {
+  using namespace RINGMesh;
+
+  try {
+    default_configure();
+    hello();
+    import_arg_groups();
+    if (argc == 1) {
+      GEO::CmdLine::show_usage();
+      return 0;
     }
-    return 0;
+
+    std::vector<std::string> filenames;
+    if (!GEO::CmdLine::parse(argc, argv, filenames)) {
+      return 1;
+    }
+
+    run();
+  } catch (const RINGMeshException& e) {
+    Logger::err(e.category(), e.what());
+    return 1;
+  } catch (const std::exception& e) {
+    Logger::err("Exception", e.what());
+    return 1;
+  }
+  return 0;
 }

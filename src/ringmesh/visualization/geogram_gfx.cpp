@@ -37,26 +37,24 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
-namespace RINGMesh
-{
-    void register_geogram_mesh_gfx()
-    {
-        PointSetMeshGfxFactory2D::register_creator< GeogramPointSetMeshGfx2D >(
-            GeogramPointSetMesh2D::type_name_static() );
-        LineMeshGfxFactory2D::register_creator< GeogramLineMeshGfx2D >(
-            GeogramLineMesh2D::type_name_static() );
-        SurfaceMeshGfxFactory2D::register_creator< GeogramSurfaceMeshGfx2D >(
-            GeogramSurfaceMesh2D::type_name_static() );
+namespace RINGMesh {
+void register_geogram_mesh_gfx() {
+  PointSetMeshGfxFactory2D::register_creator<GeogramPointSetMeshGfx2D>(
+      GeogramPointSetMesh2D::type_name_static());
+  LineMeshGfxFactory2D::register_creator<GeogramLineMeshGfx2D>(
+      GeogramLineMesh2D::type_name_static());
+  SurfaceMeshGfxFactory2D::register_creator<GeogramSurfaceMeshGfx2D>(
+      GeogramSurfaceMesh2D::type_name_static());
 
-        PointSetMeshGfxFactory3D::register_creator< GeogramPointSetMeshGfx3D >(
-            GeogramPointSetMesh3D::type_name_static() );
-        LineMeshGfxFactory3D::register_creator< GeogramLineMeshGfx3D >(
-            GeogramLineMesh3D::type_name_static() );
-        SurfaceMeshGfxFactory3D::register_creator< GeogramSurfaceMeshGfx3D >(
-            GeogramSurfaceMesh3D::type_name_static() );
-        VolumeMeshGfxFactory3D::register_creator< GeogramVolumeMeshGfx3D >(
-            GeogramVolumeMesh3D::type_name_static() );
-    }
-} // namespace RINGMesh
+  PointSetMeshGfxFactory3D::register_creator<GeogramPointSetMeshGfx3D>(
+      GeogramPointSetMesh3D::type_name_static());
+  LineMeshGfxFactory3D::register_creator<GeogramLineMeshGfx3D>(
+      GeogramLineMesh3D::type_name_static());
+  SurfaceMeshGfxFactory3D::register_creator<GeogramSurfaceMeshGfx3D>(
+      GeogramSurfaceMesh3D::type_name_static());
+  VolumeMeshGfxFactory3D::register_creator<GeogramVolumeMeshGfx3D>(
+      GeogramVolumeMesh3D::type_name_static());
+}
+}  // namespace RINGMesh
 
 #endif

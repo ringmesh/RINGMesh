@@ -45,46 +45,40 @@
  * @author Jeanne Pellerin
  */
 
-namespace GEO
-{
-    class Mesh;
-} // namespace GEO
+namespace GEO {
+class Mesh;
+}  // namespace GEO
 
-namespace RINGMesh
-{
-    // Implementation class
-    class GeoModelEntityFromMesh;
+namespace RINGMesh {
+// Implementation class
+class GeoModelEntityFromMesh;
 
-    /*!
-     * @brief To build a GeoModel from a set of disconnected polygonal surfaces
-     */
-    class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder< 3 >
-    {
-    public:
-        GeoModelBuilderSurfaceMesh(
-            GeoModel3D& geomodel, const GEO::Mesh& mesh )
-            : GeoModelBuilder( geomodel ), mesh_( mesh )
-        {
-        }
+/*!
+ * @brief To build a GeoModel from a set of disconnected polygonal surfaces
+ */
+class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder<3> {
+ public:
+  GeoModelBuilderSurfaceMesh(GeoModel3D& geomodel, const GEO::Mesh& mesh)
+      : GeoModelBuilder(geomodel), mesh_(mesh) {}
 
-        /*!
-         * @details Adds separately each connected component of the mesh
-         *          as a Surface of the geomodel under construction.
-         *          All the polygons of the input mesh are visited and added to
-         * a
-         *          Surface of the GeoModel.
-         *          Connected components of the mesh are determined with a
-         *          propagation (or "coloriage" algorithm) using the
-         * adjacent_facet
-         *          information provided on the input GEO::Mesh.
-         *
-         * @todo Old code - old building - to delimit connected components
-         * vertices are duplicated in the input mesh
-         *
-         */
-        void build_polygonal_surfaces_from_connected_components();
+  /*!
+   * @details Adds separately each connected component of the mesh
+   *          as a Surface of the geomodel under construction.
+   *          All the polygons of the input mesh are visited and added to
+   * a
+   *          Surface of the GeoModel.
+   *          Connected components of the mesh are determined with a
+   *          propagation (or "coloriage" algorithm) using the
+   * adjacent_facet
+   *          information provided on the input GEO::Mesh.
+   *
+   * @todo Old code - old building - to delimit connected components
+   * vertices are duplicated in the input mesh
+   *
+   */
+  void build_polygonal_surfaces_from_connected_components();
 
-    private:
-        const GEO::Mesh& mesh_;
-    };
-} // namespace RINGMesh
+ private:
+  const GEO::Mesh& mesh_;
+};
+}  // namespace RINGMesh

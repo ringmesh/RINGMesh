@@ -44,66 +44,53 @@
 #include <geogram/basic/command_line_args.h>
 #include <geogram/basic/file_system.h>
 
-namespace RINGMesh
-{
-    namespace CmdLine
-    {
-        void import_arg_group_global()
-        {
-            GEO::CmdLine::declare_arg( "epsilon", 1e-7,
-                "Threshold for numerical precision (ratio of the bbox "
-                "diagonal)",
-                GEO::CmdLine::ARG_ADVANCED );
-            GEO::CmdLine::declare_arg( "validity_save", false,
-                "Saves meshes representing geomodel inconsistencies",
-                GEO::CmdLine::ARG_ADVANCED );
-            GEO::CmdLine::declare_arg( "validity_directory",
-                GEO::FileSystem::get_current_working_directory(),
-                "Directory to save meshes representing geomodel "
-                "inconsistencies",
-                GEO::CmdLine::ARG_ADVANCED );
-        }
+namespace RINGMesh {
+namespace CmdLine {
+void import_arg_group_global() {
+  GEO::CmdLine::declare_arg(
+      "epsilon", 1e-7,
+      "Threshold for numerical precision (ratio of the bbox "
+      "diagonal)",
+      GEO::CmdLine::ARG_ADVANCED);
+  GEO::CmdLine::declare_arg(
+      "validity_save", false,
+      "Saves meshes representing geomodel inconsistencies",
+      GEO::CmdLine::ARG_ADVANCED);
+  GEO::CmdLine::declare_arg("validity_directory",
+                            GEO::FileSystem::get_current_working_directory(),
+                            "Directory to save meshes representing geomodel "
+                            "inconsistencies",
+                            GEO::CmdLine::ARG_ADVANCED);
+}
 
-        void import_arg_group_in()
-        {
-            GEO::CmdLine::declare_arg_group( "in", "Input data" );
-            GEO::CmdLine::declare_arg(
-                "in:geomodel", "", "Filename of the input geological model" );
-            GEO::CmdLine::declare_arg( "in:intersection_check", true,
-                "Toggle the surface intersection check at loading",
-                GEO::CmdLine::ARG_ADVANCED );
-            GEO::CmdLine::declare_arg(
-                "in:wells", "", "Filename of the input wells" );
-        }
+void import_arg_group_in() {
+  GEO::CmdLine::declare_arg_group("in", "Input data");
+  GEO::CmdLine::declare_arg("in:geomodel", "",
+                            "Filename of the input geological model");
+  GEO::CmdLine::declare_arg("in:intersection_check", true,
+                            "Toggle the surface intersection check at loading",
+                            GEO::CmdLine::ARG_ADVANCED);
+  GEO::CmdLine::declare_arg("in:wells", "", "Filename of the input wells");
+}
 
-        void import_arg_group_out()
-        {
-            GEO::CmdLine::declare_arg_group( "out", "Output data" );
-            GEO::CmdLine::declare_arg(
-                "out:geomodel", "", "Saves the geological model" );
-        }
+void import_arg_group_out() {
+  GEO::CmdLine::declare_arg_group("out", "Output data");
+  GEO::CmdLine::declare_arg("out:geomodel", "", "Saves the geological model");
+}
 
-        bool import_arg_group( const std::string& name )
-        {
-            if( name == "global" )
-            {
-                import_arg_group_global();
-            }
-            else if( name == "in" )
-            {
-                import_arg_group_in();
-            }
-            else if( name == "out" )
-            {
-                import_arg_group_out();
-            }
-            else
-            {
-                return GEO::CmdLine::import_arg_group( name );
-            }
-            return true;
-        }
+bool import_arg_group(const std::string& name) {
+  if (name == "global") {
+    import_arg_group_global();
+  } else if (name == "in") {
+    import_arg_group_in();
+  } else if (name == "out") {
+    import_arg_group_out();
+  } else {
+    return GEO::CmdLine::import_arg_group(name);
+  }
+  return true;
+}
 
-    } // namespace CmdLine
+}  // namespace CmdLine
 
-} // namespace RINGMesh
+}  // namespace RINGMesh

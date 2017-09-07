@@ -50,99 +50,79 @@
  * @author Arnaud Botella
  */
 
-namespace
-{
-    using namespace RINGMesh;
+namespace {
+using namespace RINGMesh;
 
-    void import_arg_group_stats()
-    {
-        GEO::CmdLine::declare_arg_group( "stats", "Statistics options" );
-        GEO::CmdLine::declare_arg(
-            "stats:volume", false, "Print statistics on the volume" );
-        GEO::CmdLine::declare_arg(
-            "stats:nb", true, "Print statistics on the number of entities" );
-    }
-
-    void print_geomodel2d_stats( const std::string& model_name )
-    {
-        GeoModel< 2 > geomodel;
-        geomodel_load( geomodel, model_name );
-        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) )
-        {
-            print_geomodel_mesh_stats( geomodel );
-        }
-    }
-
-    void print_geomodel3d_stats( const std::string& model_name )
-    {
-        GeoModel< 3 > geomodel;
-        geomodel_load( geomodel, model_name );
-        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) )
-        {
-            print_geomodel_mesh_stats( geomodel );
-        }
-        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) )
-        {
-            print_geomodel_mesh_cell_volumes( geomodel );
-        }
-    }
+void import_arg_group_stats() {
+  GEO::CmdLine::declare_arg_group("stats", "Statistics options");
+  GEO::CmdLine::declare_arg("stats:volume", false,
+                            "Print statistics on the volume");
+  GEO::CmdLine::declare_arg("stats:nb", true,
+                            "Print statistics on the number of entities");
 }
 
-int main( int argc, char** argv )
-{
-    using namespace RINGMesh;
+void print_geomodel2d_stats(const std::string& model_name) {
+  GeoModel<2> geomodel;
+  geomodel_load(geomodel, model_name);
+  if (GEO::CmdLine::get_arg_bool("stats:nb")) {
+    print_geomodel_mesh_stats(geomodel);
+  }
+}
 
-    try
-    {
-        default_configure();
+void print_geomodel3d_stats(const std::string& model_name) {
+  GeoModel<3> geomodel;
+  geomodel_load(geomodel, model_name);
+  if (GEO::CmdLine::get_arg_bool("stats:nb")) {
+    print_geomodel_mesh_stats(geomodel);
+  }
+  if (GEO::CmdLine::get_arg_bool("stats:volume")) {
+    print_geomodel_mesh_cell_volumes(geomodel);
+  }
+}
+}  // namespace
 
-        print_header_information();
-        Logger::div( "RINGMesh-Stats" );
-        Logger::out( "", "Welcome to RINGMesh-Stats !" );
+int main(int argc, char** argv) {
+  using namespace RINGMesh;
 
-        CmdLine::import_arg_group( "in" );
-        import_arg_group_stats();
+  try {
+    default_configure();
 
-        if( argc == 1 )
-        {
-            GEO::CmdLine::show_usage();
-            return 0;
-        }
+    print_header_information();
+    Logger::div("RINGMesh-Stats");
+    Logger::out("", "Welcome to RINGMesh-Stats !");
 
-        std::vector< std::string > filenames;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) )
-        {
-            return 1;
-        }
+    CmdLine::import_arg_group("in");
+    import_arg_group_stats();
 
-        GEO::Stopwatch total( "Total time" );
-
-        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" );
-        if( model_name.empty() )
-        {
-            throw RINGMeshException(
-                "I/O", "Give at least a filename in in:geomodel" );
-        }
-
-        index_t dimension = find_geomodel_dimension( model_name );
-        if( dimension == 2 )
-        {
-            print_geomodel2d_stats( model_name );
-        }
-        else if( dimension == 3 )
-        {
-            print_geomodel3d_stats( model_name );
-        }
+    if (argc == 1) {
+      GEO::CmdLine::show_usage();
+      return 0;
     }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
+
+    std::vector<std::string> filenames;
+    if (!GEO::CmdLine::parse(argc, argv, filenames)) {
+      return 1;
     }
-    catch( const std::exception& e )
-    {
-        Logger::err( "Exception", e.what() );
-        return 1;
+
+    GEO::Stopwatch total("Total time");
+
+    std::string model_name = GEO::CmdLine::get_arg("in:geomodel");
+    if (model_name.empty()) {
+      throw RINGMeshException("I/O", "Give at least a filename in in:geomodel");
     }
-    return 0;
+
+    index_t dimension = find_geomodel_dimension(model_name);
+    if (dimension == 2) {
+      print_geomodel2d_stats(model_name);
+    } else if (dimension == 3) {
+      print_geomodel3d_stats(model_name);
+    }
+  } catch (const RINGMeshException& e) {
+    Logger::err(e.category(), e.what());
+    return 1;
+  } catch (const std::exception& e) {
+    Logger::err("Exception", e.what());
+    return 1;
+  }
+  return 0;
 }

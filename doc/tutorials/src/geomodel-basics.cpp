@@ -56,69 +56,64 @@
  *
  */
 
-int main()
-{
+int main() {
 #ifdef RINGMESH_WITH_TETGEN
 
-    using namespace RINGMesh;
+  using namespace RINGMesh;
 
-    try
-    {
-        // This line stands for the initialization
-        // of Geogram and the factories of RINGMesh
-        // IT IS MANDATORY
-        default_configure();
+  try {
+    // This line stands for the initialization
+    // of Geogram and the factories of RINGMesh
+    // IT IS MANDATORY
+    default_configure();
 
-        // Say Hello
-        print_header_information();
-        Logger::div( "RINGMesh Training" );
-        Logger::out( "", "Welcome to the RINGMesh training for basics "
-                         "functionalities on GeoModel !" );
+    // Say Hello
+    print_header_information();
+    Logger::div("RINGMesh Training");
+    Logger::out("",
+                "Welcome to the RINGMesh training for basics "
+                "functionalities on GeoModel !");
 
-        // Next line is a feature of geogram which measure
-        // the time of execution.
-        GEO::Stopwatch total( "Total time" );
+    // Next line is a feature of geogram which measure
+    // the time of execution.
+    GEO::Stopwatch total("Total time");
 
-        // We instantiate the class GeoModel
-        GeoModel< 3 > geomodel;
+    // We instantiate the class GeoModel
+    GeoModel<3> geomodel;
 
-        // load GeoModel
-        // here you can load whatever the model you want in the
-        // ringmesh_home/test/data directory
-        std::string input_file_name( ringmesh_tutorials_data_path );
-        input_file_name += "modelA1.ml";
+    // load GeoModel
+    // here you can load whatever the model you want in the
+    // ringmesh_home/test/data directory
+    std::string input_file_name(ringmesh_tutorials_data_path);
+    input_file_name += "modelA1.ml";
 
-        // function to load a geomodel
-        geomodel_load( geomodel, input_file_name );
+    // function to load a geomodel
+    geomodel_load(geomodel, input_file_name);
 
-        // function to print the statistics of the geomodel in the command
-        // terminal
-        print_geomodel_mesh_stats( geomodel );
+    // function to print the statistics of the geomodel in the command
+    // terminal
+    print_geomodel_mesh_stats(geomodel);
 
-        // build volumetric mesh in regions
-        tetrahedralize( geomodel, "TetGen" );
+    // build volumetric mesh in regions
+    tetrahedralize(geomodel, "TetGen");
 
-        // function to print the statistics of the geomodel in the command
-        // terminal
-        print_geomodel_mesh_stats( geomodel );
+    // function to print the statistics of the geomodel in the command
+    // terminal
+    print_geomodel_mesh_stats(geomodel);
 
-        // set the name of the geomodel to output
-        // you can customize the path
-        std::string output_file_name = "modelA1.gm";
-        geomodel_save( geomodel, output_file_name );
-    }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
-    }
-    catch( const std::exception& e )
-    {
-        Logger::err( "Exception", e.what() );
-        return 1;
-    }
+    // set the name of the geomodel to output
+    // you can customize the path
+    std::string output_file_name = "modelA1.gm";
+    geomodel_save(geomodel, output_file_name);
+  } catch (const RINGMeshException& e) {
+    Logger::err(e.category(), e.what());
+    return 1;
+  } catch (const std::exception& e) {
+    Logger::err("Exception", e.what());
+    return 1;
+  }
 
 #endif
 
-    return 0;
+  return 0;
 }

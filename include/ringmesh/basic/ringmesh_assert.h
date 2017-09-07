@@ -41,25 +41,20 @@
  * @file Custom assertions
  */
 
-namespace RINGMesh
-{
-    void RINGMESH_API ringmesh_assertion_failed(
-        const std::string& condition_string,
-        const std::string& file,
-        int line );
+namespace RINGMesh {
+void RINGMESH_API ringmesh_assertion_failed(const std::string& condition_string,
+                                            const std::string& file, int line);
 
-    void RINGMESH_API ringmesh_should_not_have_reached(
-        const std::string& file, int line );
-} // namespace RINGMesh
+void RINGMESH_API ringmesh_should_not_have_reached(const std::string& file,
+                                                   int line);
+}  // namespace RINGMesh
 
 #ifdef RINGMESH_DEBUG
-#define ringmesh_assert( x )                                                   \
-    if( !( x ) )                                                               \
-    RINGMesh::ringmesh_assertion_failed( #x, __FILE__, __LINE__ )
-#define ringmesh_assert_not_reached                                            \
-    if( true )                                                                 \
-    RINGMesh::ringmesh_should_not_have_reached( __FILE__, __LINE__ )
+#define ringmesh_assert(x) \
+  if (!(x)) RINGMesh::ringmesh_assertion_failed(#x, __FILE__, __LINE__)
+#define ringmesh_assert_not_reached \
+  if (true) RINGMesh::ringmesh_should_not_have_reached(__FILE__, __LINE__)
 #else
-#define ringmesh_assert( x )
+#define ringmesh_assert(x)
 #define ringmesh_assert_not_reached
 #endif

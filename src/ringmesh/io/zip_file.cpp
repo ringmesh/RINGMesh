@@ -50,189 +50,134 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh
-{
-    class ZipFile::Impl
-    {
-    public:
-        Impl( const std::string& filename )
-        {
-            zip_file_ = zipOpen( filename.c_str(), APPEND_STATUS_CREATE );
-            if( zip_file_ == nullptr )
-            {
-                throw RINGMeshException(
-                    "ZipFile", "Could not read file ", filename );
-            }
-        }
-
-        ~Impl()
-        {
-            zipClose( zip_file_, NULL );
-        }
-
-        void add_file( const std::string& filename )
-        {
-            std::fstream file(
-                filename.c_str(), std::ios::in | std::ios::binary );
-            file.seekg( 0, std::ios::end );
-            auto size = static_cast< index_t >( file.tellg() );
-            file.seekg( 0, std::ios::beg );
-            std::vector< char > buffer( size );
-            file.read( &buffer[0], size );
-            zipOpenNewFileInZip( zip_file_, filename.c_str(), nullptr, nullptr,
-                0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION );
-            zipWriteInFileInZip( zip_file_, size == 0 ? "" : &buffer[0], size );
-            zipCloseFileInZip( zip_file_ );
-            file.close();
-        }
-
-    private:
-        zipFile zip_file_{ nullptr };
-    };
-
-    ZipFile::ZipFile( const std::string& filename ) : impl_{ filename }
-    {
+namespace RINGMesh {
+class ZipFile::Impl {
+ public:
+  Impl(const std::string& filename) {
+    zip_file_ = zipOpen(filename.c_str(), APPEND_STATUS_CREATE);
+    if (zip_file_ == nullptr) {
+      throw RINGMeshException("ZipFile", "Could not read file ", filename);
     }
+  }
 
-    ZipFile::~ZipFile()
-    {
+  ~Impl() { zipClose(zip_file_, NULL); }
+
+  void add_file(const std::string& filename) {
+    std::fstream file(filename.c_str(), std::ios::in | std::ios::binary);
+    file.seekg(0, std::ios::end);
+    auto size = static_cast<index_t>(file.tellg());
+    file.seekg(0, std::ios::beg);
+    std::vector<char> buffer(size);
+    file.read(&buffer[0], size);
+    zipOpenNewFileInZip(zip_file_, filename.c_str(), nullptr, nullptr, 0,
+                        nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+    zipWriteInFileInZip(zip_file_, size == 0 ? "" : &buffer[0], size);
+    zipCloseFileInZip(zip_file_);
+    file.close();
+  }
+
+ private:
+  zipFile zip_file_{nullptr};
+};
+
+ZipFile::ZipFile(const std::string& filename) : impl_{filename} {}
+
+ZipFile::~ZipFile() {}
+
+void ZipFile::add_file(const std::string& filename) {
+  impl_->add_file(filename);
+}
+
+class UnZipFile::Impl {
+ public:
+  Impl(const std::string& filename) {
+    zip_file_ = unzOpen(filename.c_str());
+    if (zip_file_ == nullptr) {
+      throw RINGMeshException("UnZipFile", "Could not read file ", filename);
     }
+  }
 
-    void ZipFile::add_file( const std::string& filename )
-    {
-        impl_->add_file( filename );
+  ~Impl() { unzClose(zip_file_); }
+
+  void get_file(const std::string& filename) {
+    unzLocateFile(zip_file_, filename.c_str(), 0);
+    unzip_current_file(zip_file_, filename);
+  }
+
+  void start_extract() {
+    if (unzGoToFirstFile(zip_file_) != UNZ_OK) {
+      throw RINGMeshException("UnZipFile",
+                              "Unable to uncompress the first file");
     }
+  }
 
-    class UnZipFile::Impl
-    {
-    public:
-        Impl( const std::string& filename )
-        {
-            zip_file_ = unzOpen( filename.c_str() );
-            if( zip_file_ == nullptr )
-            {
-                throw RINGMeshException(
-                    "UnZipFile", "Could not read file ", filename );
-            }
-        }
+  void get_current_file() {
+    unzip_current_file(zip_file_, get_current_filename().c_str());
+  }
 
-        ~Impl()
-        {
-            unzClose( zip_file_ );
-        }
-
-        void get_file( const std::string& filename )
-        {
-            unzLocateFile( zip_file_, filename.c_str(), 0 );
-            unzip_current_file( zip_file_, filename );
-        }
-
-        void start_extract()
-        {
-            if( unzGoToFirstFile( zip_file_ ) != UNZ_OK )
-            {
-                throw RINGMeshException(
-                    "UnZipFile", "Unable to uncompress the first file" );
-            }
-        }
-
-        void get_current_file()
-        {
-            unzip_current_file( zip_file_, get_current_filename().c_str() );
-        }
-
-        std::string get_current_filename()
-        {
-            char char_file_name[MAX_FILENAME];
-            if( unzGetCurrentFileInfo64( zip_file_, nullptr, char_file_name,
-                    MAX_FILENAME, nullptr, 0, nullptr, 0 )
-                != UNZ_OK )
-            {
-                throw RINGMeshException(
-                    "UnZipFile", "Unable to get file name" );
-            }
-            return { char_file_name };
-        }
-
-        bool next_file()
-        {
-            return unzGoToNextFile( zip_file_ ) == UNZ_OK;
-        }
-
-    private:
-        void unzip_current_file( unzFile uz, const std::string& filename )
-        {
-            char read_buffer[READ_SIZE];
-            if( unzOpenCurrentFile( uz ) != UNZ_OK )
-            {
-                unzClose( uz );
-                throw RINGMeshException( "UnZipFile", "Could not open file" );
-            }
-            FILE* out{ fopen( filename.c_str(), "wb" ) };
-            if( out == nullptr )
-            {
-                unzCloseCurrentFile( uz );
-                unzClose( uz );
-                throw RINGMeshException(
-                    "UnZipFile", "Could not open destination file" );
-            }
-            int error{ UNZ_OK };
-            do
-            {
-                error = unzReadCurrentFile( uz, read_buffer, READ_SIZE );
-                if( error < 0 )
-                {
-                    unzCloseCurrentFile( uz );
-                    unzClose( uz );
-                    fclose( out );
-                    throw RINGMeshException(
-                        "UnZipFile", "Invalid error: ", error );
-                }
-                if( error > 0 )
-                {
-                    fwrite( read_buffer, static_cast< std::size_t >( error ),
-                        std::size_t( 1 ), out );
-                }
-            } while( error > 0 );
-            fclose( out );
-            unzCloseCurrentFile( uz );
-        }
-
-    private:
-        unzFile zip_file_{ nullptr };
-    };
-
-    UnZipFile::UnZipFile( const std::string& filename ) : impl_{ filename }
-    {
+  std::string get_current_filename() {
+    char char_file_name[MAX_FILENAME];
+    if (unzGetCurrentFileInfo64(zip_file_, nullptr, char_file_name,
+                                MAX_FILENAME, nullptr, 0, nullptr,
+                                0) != UNZ_OK) {
+      throw RINGMeshException("UnZipFile", "Unable to get file name");
     }
+    return {char_file_name};
+  }
 
-    UnZipFile::~UnZipFile()
-    {
+  bool next_file() { return unzGoToNextFile(zip_file_) == UNZ_OK; }
+
+ private:
+  void unzip_current_file(unzFile uz, const std::string& filename) {
+    char read_buffer[READ_SIZE];
+    if (unzOpenCurrentFile(uz) != UNZ_OK) {
+      unzClose(uz);
+      throw RINGMeshException("UnZipFile", "Could not open file");
     }
-
-    void UnZipFile::get_file( const std::string& filename )
-    {
-        impl_->get_file( filename );
+    FILE* out{fopen(filename.c_str(), "wb")};
+    if (out == nullptr) {
+      unzCloseCurrentFile(uz);
+      unzClose(uz);
+      throw RINGMeshException("UnZipFile", "Could not open destination file");
     }
+    int error{UNZ_OK};
+    do {
+      error = unzReadCurrentFile(uz, read_buffer, READ_SIZE);
+      if (error < 0) {
+        unzCloseCurrentFile(uz);
+        unzClose(uz);
+        fclose(out);
+        throw RINGMeshException("UnZipFile", "Invalid error: ", error);
+      }
+      if (error > 0) {
+        fwrite(read_buffer, static_cast<std::size_t>(error), std::size_t(1),
+               out);
+      }
+    } while (error > 0);
+    fclose(out);
+    unzCloseCurrentFile(uz);
+  }
 
-    void UnZipFile::start_extract()
-    {
-        impl_->start_extract();
-    }
+ private:
+  unzFile zip_file_{nullptr};
+};
 
-    void UnZipFile::get_current_file()
-    {
-        impl_->get_current_file();
-    }
+UnZipFile::UnZipFile(const std::string& filename) : impl_{filename} {}
 
-    std::string UnZipFile::get_current_filename()
-    {
-        return impl_->get_current_filename();
-    }
+UnZipFile::~UnZipFile() {}
 
-    bool UnZipFile::next_file()
-    {
-        return impl_->next_file();
-    }
+void UnZipFile::get_file(const std::string& filename) {
+  impl_->get_file(filename);
+}
 
-} // namespace RINGMesh
+void UnZipFile::start_extract() { impl_->start_extract(); }
+
+void UnZipFile::get_current_file() { impl_->get_current_file(); }
+
+std::string UnZipFile::get_current_filename() {
+  return impl_->get_current_filename();
+}
+
+bool UnZipFile::next_file() { return impl_->next_file(); }
+
+}  // namespace RINGMesh

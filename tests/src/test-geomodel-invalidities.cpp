@@ -51,86 +51,70 @@
 
 using namespace RINGMesh;
 
-void make_geomodel_copy(
-    const GeoModel3D& from, const std::string& name, GeoModel3D& to )
-{
-    GeoModelBuilder3D geomodel_breaker2( to );
-    geomodel_breaker2.copy.copy_geomodel( from );
-    geomodel_breaker2.info.set_geomodel_name( name );
+void make_geomodel_copy(const GeoModel3D& from, const std::string& name,
+                        GeoModel3D& to) {
+  GeoModelBuilder3D geomodel_breaker2(to);
+  geomodel_breaker2.copy.copy_geomodel(from);
+  geomodel_breaker2.info.set_geomodel_name(name);
 }
 
-void verdict( const GeoModel3D& invalid_model, const std::string& feature )
-{
-    if( is_geomodel_valid( invalid_model ) )
-    {
-        throw RINGMeshException( "RINGMesh Test", "Fail to ", feature );
-    }
-    else
-    {
-        Logger::out( "TEST", "Succeed to ", feature );
-    }
+void verdict(const GeoModel3D& invalid_model, const std::string& feature) {
+  if (is_geomodel_valid(invalid_model)) {
+    throw RINGMeshException("RINGMesh Test", "Fail to ", feature);
+  } else {
+    Logger::out("TEST", "Succeed to ", feature);
+  }
 }
 
-int main()
-{
-    try
-    {
-        default_configure();
+int main() {
+  try {
+    default_configure();
 
-        std::vector< std::future< void > > futures;
+    std::vector<std::future<void> > futures;
 
-        futures.emplace_back( std::async( std::launch::async, [] {
-            std::string input_model_file_name{ ringmesh_test_data_path
-                                               + "modelA6.ml" };
-            GeoModel3D in;
-            bool loaded_model_is_valid{ geomodel_load(
-                in, input_model_file_name ) };
+    futures.emplace_back(std::async(std::launch::async, [] {
+      std::string input_model_file_name{ringmesh_test_data_path + "modelA6.ml"};
+      GeoModel3D in;
+      bool loaded_model_is_valid{geomodel_load(in, input_model_file_name)};
 
-            if( !loaded_model_is_valid )
-            {
-                throw RINGMeshException(
-                    "RINGMesh Test", "Failed when loading model " + in.name()
-                                         + ": the loaded model is not valid." );
-            }
+      if (!loaded_model_is_valid) {
+        throw RINGMeshException("RINGMesh Test",
+                                "Failed when loading model " + in.name() +
+                                    ": the loaded model is not valid.");
+      }
 
-            Logger::out( "TEST", "Break geomodels:" );
+      Logger::out("TEST", "Break geomodels:");
 
-            GeoModel3D invalid_model;
-            make_geomodel_copy( in, "broken model 1", invalid_model );
-            GeoModelBuilder3D geomodel_breaker( invalid_model );
-            geomodel_breaker.geology.create_geological_entity(
-                RINGMesh::Interface3D::type_name_static() );
-            verdict( invalid_model,
-                "detect addition of an isolated GeoModelGeologicalEntity" );
-        } ) );
+      GeoModel3D invalid_model;
+      make_geomodel_copy(in, "broken model 1", invalid_model);
+      GeoModelBuilder3D geomodel_breaker(invalid_model);
+      geomodel_breaker.geology.create_geological_entity(
+          RINGMesh::Interface3D::type_name_static());
+      verdict(invalid_model,
+              "detect addition of an isolated GeoModelGeologicalEntity");
+    }));
 
-        futures.emplace_back( std::async( std::launch::async, [] {
-            GeoModel3D cloudspin;
-            geomodel_load(
-                cloudspin, ringmesh_test_data_path + "CloudSpin.ml" );
-            if( is_geomodel_valid( cloudspin,
-                    ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) )
-            {
-                throw RINGMeshException( "RINGMesh Test",
-                    "Fail to SURFACE_LINE_MESH_CONFORMITY on CloudSpin" );
-            }
-        } ) );
+    futures.emplace_back(std::async(std::launch::async, [] {
+      GeoModel3D cloudspin;
+      geomodel_load(cloudspin, ringmesh_test_data_path + "CloudSpin.ml");
+      if (is_geomodel_valid(cloudspin,
+                            ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY)) {
+        throw RINGMeshException(
+            "RINGMesh Test",
+            "Fail to SURFACE_LINE_MESH_CONFORMITY on CloudSpin");
+      }
+    }));
 
-        for( auto& future : futures )
-        {
-            future.get();
-        }
+    for (auto& future : futures) {
+      future.get();
     }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
-    }
-    catch( const std::exception& e )
-    {
-        Logger::err( "Exception", e.what() );
-        return 1;
-    }
-    Logger::out( "TEST", "SUCCESS" );
-    return 0;
+  } catch (const RINGMeshException& e) {
+    Logger::err(e.category(), e.what());
+    return 1;
+  } catch (const std::exception& e) {
+    Logger::err("Exception", e.what());
+    return 1;
+  }
+  Logger::out("TEST", "SUCCESS");
+  return 0;
 }

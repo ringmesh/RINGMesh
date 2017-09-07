@@ -41,17 +41,13 @@
  * @author Jeanne Pellerin
  */
 
-namespace RINGMesh
-{
-    template < index_t DIMENSION >
-    GeoModelBuilderFile< DIMENSION >::GeoModelBuilderFile(
-        GeoModel< DIMENSION >& geomodel, std::string filename )
-        : GeoModelBuilder< DIMENSION >( geomodel ),
-          filename_( std::move( filename ) )
-    {
-    }
+namespace RINGMesh {
+template <index_t DIMENSION>
+GeoModelBuilderFile<DIMENSION>::GeoModelBuilderFile(
+    GeoModel<DIMENSION>& geomodel, std::string filename)
+    : GeoModelBuilder<DIMENSION>(geomodel), filename_(std::move(filename)) {}
 
-    template class RINGMESH_API GeoModelBuilderFile< 2 >;
-    template class RINGMESH_API GeoModelBuilderFile< 3 >;
+template class RINGMESH_API GeoModelBuilderFile<2>;
+template class RINGMESH_API GeoModelBuilderFile<3>;
 
-} // namespace RINGMesh
+}  // namespace RINGMesh

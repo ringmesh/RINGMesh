@@ -41,22 +41,19 @@
  * @file Custom assertions
  */
 
-namespace RINGMesh
-{
-    void ringmesh_assertion_failed(
-        const std::string& condition_string, const std::string& file, int line )
-    {
+namespace RINGMesh {
+void ringmesh_assertion_failed(const std::string& condition_string,
+                               const std::string& file, int line) {
 #ifdef WIN32
-        DebugBreak();
+  DebugBreak();
 #endif
-        GEO::geo_assertion_failed( condition_string, file, line );
-    }
+  GEO::geo_assertion_failed(condition_string, file, line);
+}
 
-    void ringmesh_should_not_have_reached( const std::string& file, int line )
-    {
+void ringmesh_should_not_have_reached(const std::string& file, int line) {
 #ifdef WIN32
-        DebugBreak();
+  DebugBreak();
 #endif
-        GEO::geo_should_not_have_reached( file, line );
-    }
-} // namespace RINGMesh
+  GEO::geo_should_not_have_reached(file, line);
+}
+}  // namespace RINGMesh

@@ -62,9 +62,8 @@
  * @author Arnaud Botella and Antoine Mazuyer
  */
 
-namespace
-{
-    using namespace RINGMesh;
+namespace {
+using namespace RINGMesh;
 
 #include "geomodel/io_abaqus.cpp"
 #include "geomodel/io_adeli.cpp"
@@ -87,55 +86,41 @@ namespace
 #ifdef RINGMESH_WITH_GEOLOGYJS
 #include "boundary_geomodel/io_html.cpp"
 #endif
+}  // namespace
+
+namespace RINGMesh {
+template <>
+void GeoModelIOHandler<2>::initialize() {
+  GeoModelIOHandlerFactory2D::register_creator<GeoModelHandlerGM2D>("gm");
+  GeoModelIOHandlerFactory2D::register_creator<StradivariusIOHandler>("model");
+  GeoModelIOHandlerFactory2D::register_creator<SVGIOHandler>("svg");
+  GeoModelIOHandlerFactory2D::register_creator<MFEMIOHandler2D>("mfem");
 }
 
-namespace RINGMesh
-{
-    template <>
-    void GeoModelIOHandler< 2 >::initialize()
-    {
-        GeoModelIOHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
-            "gm" );
-        GeoModelIOHandlerFactory2D::register_creator< StradivariusIOHandler >(
-            "model" );
-        GeoModelIOHandlerFactory2D::register_creator< SVGIOHandler >( "svg" );
-        GeoModelIOHandlerFactory2D::register_creator< MFEMIOHandler2D >(
-            "mfem" );
-    }
-
-    /*
-     * Initializes the possible handler for IO files
-     */
-    template <>
-    void GeoModelIOHandler< 3 >::initialize()
-    {
-        GeoModelIOHandlerFactory3D::register_creator< TetGenIOHandler >(
-            "tetgen" );
-        GeoModelIOHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
-        GeoModelIOHandlerFactory3D::register_creator< CSMPIOHandler >( "csmp" );
-        GeoModelIOHandlerFactory3D::register_creator< AsterIOHandler >(
-            "mail" );
-        GeoModelIOHandlerFactory3D::register_creator< VTKIOHandler >( "vtk" );
-        GeoModelIOHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
-        GeoModelIOHandlerFactory3D::register_creator< MSHIOHandler >( "msh" );
-        GeoModelIOHandlerFactory3D::register_creator< MFEMIOHandler3D >(
-            "mfem" );
-        GeoModelIOHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
-            "gm" );
-        GeoModelIOHandlerFactory3D::register_creator< AbaqusIOHandler >(
-            "inp" );
-        GeoModelIOHandlerFactory3D::register_creator< AdeliIOHandler >(
-            "adeli" );
-        GeoModelIOHandlerFactory3D::register_creator< FeflowIOHandler >(
-            "fem" );
-        GeoModelIOHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
-        GeoModelIOHandlerFactory3D::register_creator< SMESHIOHandler >(
-            "smesh" );
-        GeoModelIOHandlerFactory3D::register_creator< STLIOHandler >( "stl" );
+/*
+ * Initializes the possible handler for IO files
+ */
+template <>
+void GeoModelIOHandler<3>::initialize() {
+  GeoModelIOHandlerFactory3D::register_creator<TetGenIOHandler>("tetgen");
+  GeoModelIOHandlerFactory3D::register_creator<TSolidIOHandler>("so");
+  GeoModelIOHandlerFactory3D::register_creator<CSMPIOHandler>("csmp");
+  GeoModelIOHandlerFactory3D::register_creator<AsterIOHandler>("mail");
+  GeoModelIOHandlerFactory3D::register_creator<VTKIOHandler>("vtk");
+  GeoModelIOHandlerFactory3D::register_creator<GPRSIOHandler>("gprs");
+  GeoModelIOHandlerFactory3D::register_creator<MSHIOHandler>("msh");
+  GeoModelIOHandlerFactory3D::register_creator<MFEMIOHandler3D>("mfem");
+  GeoModelIOHandlerFactory3D::register_creator<GeoModelHandlerGM3D>("gm");
+  GeoModelIOHandlerFactory3D::register_creator<AbaqusIOHandler>("inp");
+  GeoModelIOHandlerFactory3D::register_creator<AdeliIOHandler>("adeli");
+  GeoModelIOHandlerFactory3D::register_creator<FeflowIOHandler>("fem");
+  GeoModelIOHandlerFactory3D::register_creator<MLIOHandler>("ml");
+  GeoModelIOHandlerFactory3D::register_creator<SMESHIOHandler>("smesh");
+  GeoModelIOHandlerFactory3D::register_creator<STLIOHandler>("stl");
 
 #ifdef RINGMESH_WITH_GEOLOGYJS
-        GeoModelIOHandlerFactory3D::register_creator< HTMLIOHandler >( "html" );
+  GeoModelIOHandlerFactory3D::register_creator<HTMLIOHandler>("html");
 #endif
-    }
+}
 
-} // namespace RINGMesh
+}  // namespace RINGMesh

@@ -57,64 +57,59 @@
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 #include <ringmesh/visualization/geogram_gfx.h>
 
-namespace RINGMesh
-{
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
-    void configure_geogram()
-    {
-        Logger::instance()->unregister_all_clients();
-        Logger::instance()->register_client( new ThreadSafeConsoleLogger );
-        GEO::CmdLine::import_arg_group( "sys" );
+namespace RINGMesh {
+/*!
+ * This function configures geogram by setting some geogram options.
+ * \pre This function should be call after GEO::initialize().
+ */
+void configure_geogram() {
+  Logger::instance()->unregister_all_clients();
+  Logger::instance()->register_client(new ThreadSafeConsoleLogger);
+  GEO::CmdLine::import_arg_group("sys");
 #ifdef RINGMESH_DEBUG
-        GEO::CmdLine::set_arg( "sys:assert", "abort" );
+  GEO::CmdLine::set_arg("sys:assert", "abort");
 #endif
-        GEO::CmdLine::set_arg( "sys:FPE", true );
-        GEO::CmdLine::import_arg_group( "algo" );
-        GEO::CmdLine::set_arg( "algo:predicates", "exact" );
-        GEO::CmdLine::import_arg_group( "log" );
-        GEO::CmdLine::set_arg( "sys:use_doubles", true );
+  GEO::CmdLine::set_arg("sys:FPE", true);
+  GEO::CmdLine::import_arg_group("algo");
+  GEO::CmdLine::set_arg("algo:predicates", "exact");
+  GEO::CmdLine::import_arg_group("log");
+  GEO::CmdLine::set_arg("sys:use_doubles", true);
 #ifdef RINGMESH_WITH_GRAPHICS
-        GEO::CmdLine::import_arg_group( "gfx" );
+  GEO::CmdLine::import_arg_group("gfx");
 #endif
-    }
+}
 
-    void configure_ringmesh()
-    {
-        CmdLine::import_arg_group( "global" );
-        mesh_initialize();
-        TetraGen::initialize();
-        GeoModelGeologicalEntity2D::initialize();
-        GeoModelGeologicalEntity3D::initialize();
-        ringmesh_mesh_io_initialize();
-        initialize_gocad_import_factories();
-        register_geogram_mesh();
+void configure_ringmesh() {
+  CmdLine::import_arg_group("global");
+  mesh_initialize();
+  TetraGen::initialize();
+  GeoModelGeologicalEntity2D::initialize();
+  GeoModelGeologicalEntity3D::initialize();
+  ringmesh_mesh_io_initialize();
+  initialize_gocad_import_factories();
+  register_geogram_mesh();
 #ifdef RINGMESH_WITH_GRAPHICS
-        register_geogram_mesh_gfx();
+  register_geogram_mesh_gfx();
 #endif
-    }
+}
 
-    void default_configure()
-    {
-        GEO::initialize();
-        configure_geogram();
-        configure_ringmesh();
-    }
+void default_configure() {
+  GEO::initialize();
+  configure_geogram();
+  configure_ringmesh();
+}
 
-    void print_header_information()
-    {
-        Logger::div( "RINGMesh" );
-        Logger::out( "", "This project is developed by the RINGMesh",
-            " developers team:" );
-        Logger::out(
-            "", "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> " );
-        Logger::out( "", "You can have access to the full open-source ",
-            "code through its Bitbucket repository: " );
-        Logger::out( "", "https://bitbucket.org/ring_team/ringmesh" );
-        Logger::out( "", "More information on this project and other ",
-            "projects of the team: " );
-        Logger::out( "", "http://www.ring-team.org" );
-    }
-} // namespace RINGMesh
+void print_header_information() {
+  Logger::div("RINGMesh");
+  Logger::out("", "This project is developed by the RINGMesh",
+              " developers team:");
+  Logger::out("",
+              "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> ");
+  Logger::out("", "You can have access to the full open-source ",
+              "code through its Bitbucket repository: ");
+  Logger::out("", "https://bitbucket.org/ring_team/ringmesh");
+  Logger::out("", "More information on this project and other ",
+              "projects of the team: ");
+  Logger::out("", "http://www.ring-team.org");
+}
+}  // namespace RINGMesh

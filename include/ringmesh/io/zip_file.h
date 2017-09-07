@@ -44,35 +44,32 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh
-{
-    class RINGMESH_API ZipFile
-    {
-    public:
-        ZipFile( const std::string& filename );
-        ~ZipFile();
+namespace RINGMesh {
+class RINGMESH_API ZipFile {
+ public:
+  ZipFile(const std::string& filename);
+  ~ZipFile();
 
-        void add_file( const std::string& filename );
+  void add_file(const std::string& filename);
 
-    private:
-        IMPLEMENTATION_MEMBER( impl_ );
-    };
+ private:
+  IMPLEMENTATION_MEMBER(impl_);
+};
 
-    class RINGMESH_API UnZipFile
-    {
-    public:
-        UnZipFile( const std::string& filename );
-        ~UnZipFile();
+class RINGMESH_API UnZipFile {
+ public:
+  UnZipFile(const std::string& filename);
+  ~UnZipFile();
 
-        void start_extract();
-        void get_current_file();
-        std::string get_current_filename();
-        bool next_file();
+  void start_extract();
+  void get_current_file();
+  std::string get_current_filename();
+  bool next_file();
 
-        void get_file( const std::string& filename );
+  void get_file(const std::string& filename);
 
-    private:
-        IMPLEMENTATION_MEMBER( impl_ );
-    };
+ private:
+  IMPLEMENTATION_MEMBER(impl_);
+};
 
-} // namespace RINGMesh
+}  // namespace RINGMesh

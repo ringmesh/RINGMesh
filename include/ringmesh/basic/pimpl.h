@@ -44,26 +44,24 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh
-{
-    template < typename T >
-    class PImpl
-    {
-    public:
-        template < typename... Args >
-        PImpl( Args&&... );
-        ~PImpl();
-        T* operator->();
-        const T* operator->() const;
-        T& operator*();
-        const T& operator*() const;
+namespace RINGMesh {
+template <typename T>
+class PImpl {
+ public:
+  template <typename... Args>
+  PImpl(Args&&...);
+  ~PImpl();
+  T* operator->();
+  const T* operator->() const;
+  T& operator*();
+  const T& operator*() const;
 
-    private:
-        std::unique_ptr< T > impl_;
-    };
+ private:
+  std::unique_ptr<T> impl_;
+};
 
-#define IMPLEMENTATION_MEMBER( impl )                                          \
-    class Impl;                                                                \
-    PImpl< Impl > impl
+#define IMPLEMENTATION_MEMBER(impl) \
+  class Impl;                       \
+  PImpl<Impl> impl
 
-} // namespace RINGMesh
+}  // namespace RINGMesh

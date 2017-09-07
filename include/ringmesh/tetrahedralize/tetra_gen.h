@@ -60,70 +60,64 @@ extern "C" {
 }
 #endif
 
-namespace RINGMesh
-{
-    class TetraGen;
-    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
-    FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
+namespace RINGMesh {
+class TetraGen;
+FORWARD_DECLARATION_DIMENSION_CLASS(Region);
+FORWARD_DECLARATION_DIMENSION_CLASS(WellGroup);
 
-    ALIAS_3D( Region );
-    ALIAS_3D( WellGroup );
-} // namespace RINGMesh
+ALIAS_3D(Region);
+ALIAS_3D(WellGroup);
+}  // namespace RINGMesh
 
-namespace RINGMesh
-{
-    class RINGMESH_API TetraGen
-    {
-        ringmesh_disable_copy_and_move( TetraGen );
+namespace RINGMesh {
+class RINGMESH_API TetraGen {
+  ringmesh_disable_copy_and_move(TetraGen);
 
-    public:
-        virtual ~TetraGen() = default;
-        static std::unique_ptr< TetraGen > create(
-            GeoModel3D& M, index_t region_id, const std::string& algo_name );
-        static void initialize();
+ public:
+  virtual ~TetraGen() = default;
+  static std::unique_ptr<TetraGen> create(GeoModel3D& M, index_t region_id,
+                                          const std::string& algo_name);
+  static void initialize();
 
-        /*!
-         * Sets the boundaries of the domain
-         * @param[in] region The Region of the GeoModel to mesh
-         * @param[in] wells the wells to be conformal to
-         */
-        void set_boundaries(
-            const Region3D& region, const WellGroup3D* wells = nullptr );
+  /*!
+   * Sets the boundaries of the domain
+   * @param[in] region The Region of the GeoModel to mesh
+   * @param[in] wells the wells to be conformal to
+   */
+  void set_boundaries(const Region3D& region,
+                      const WellGroup3D* wells = nullptr);
 
-        /*!
-         * Set additional points to be in the output tetrahedral mesh
-         * @param[in] points the points to add
-         */
-        void set_internal_points( const std::vector< vec3 >& points );
+  /*!
+   * Set additional points to be in the output tetrahedral mesh
+   * @param[in] points the points to add
+   */
+  void set_internal_points(const std::vector<vec3>& points);
 
-        /*!
-         * @brief Send the set of points/edges/triangles to MGTetra or TetGen
-         * @details A set of points/edges/triangles are given to MGtetra or
-         * Tetgen
-         * The two mesh generators are configurated. Then check and repair
-         * functions
-         * are launched in order to control the outputs
-         * @param[in] refine tells whether or not there are refined options to
-         * set (true by defaults)
-         */
-        bool tetrahedralize( bool refine = true );
+  /*!
+   * @brief Send the set of points/edges/triangles to MGTetra or TetGen
+   * @details A set of points/edges/triangles are given to MGtetra or
+   * Tetgen
+   * The two mesh generators are configurated. Then check and repair
+   * functions
+   * are launched in order to control the outputs
+   * @param[in] refine tells whether or not there are refined options to
+   * set (true by defaults)
+   */
+  bool tetrahedralize(bool refine = true);
 
-    protected:
-        TetraGen( GeoModel3D& geomodel, index_t region_id )
-            : builder_( geomodel ), output_region_( region_id )
-        {
-        }
+ protected:
+  TetraGen(GeoModel3D& geomodel, index_t region_id)
+      : builder_(geomodel), output_region_(region_id) {}
 
-        virtual bool do_tetrahedralize( bool refine ) = 0;
+  virtual bool do_tetrahedralize(bool refine) = 0;
 
-    protected:
-        GeoModelBuilder3D builder_;
-        index_t output_region_{ NO_ID };
-        GEO::Mesh tetmesh_constraint_;
-        const Region3D* region_{ nullptr };
-        const WellGroup3D* wells_{ nullptr };
-    };
+ protected:
+  GeoModelBuilder3D builder_;
+  index_t output_region_{NO_ID};
+  GEO::Mesh tetmesh_constraint_;
+  const Region3D* region_{nullptr};
+  const WellGroup3D* wells_{nullptr};
+};
 
-    using TetraGenFactory =
-        Factory< std::string, TetraGen, GeoModel3D&, index_t >;
-} // namespace RINGMesh
+using TetraGenFactory = Factory<std::string, TetraGen, GeoModel3D&, index_t>;
+}  // namespace RINGMesh

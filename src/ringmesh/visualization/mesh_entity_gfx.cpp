@@ -50,464 +50,348 @@
 #include <ringmesh/visualization/geogram_gfx.h>
 #include <ringmesh/visualization/geomodel_gfx.h>
 
-namespace
-{
-    using namespace RINGMesh;
+namespace {
+using namespace RINGMesh;
 
-    std::string get_attribute_name_with_coordinate(
-        const std::string& name, index_t coordinate )
-    {
-        return name + "[" + std::to_string( coordinate ) + "]";
+std::string get_attribute_name_with_coordinate(const std::string& name,
+                                               index_t coordinate) {
+  return name + "[" + std::to_string(coordinate) + "]";
+}
+
+void compute_attribute_range(GEO::ReadOnlyScalarAttributeAdapter& attribute,
+                             double& min, double& max) {
+  if (attribute.is_bound()) {
+    for (auto i : range(attribute.size())) {
+      double value = attribute[i];
+      min = GEO::geo_min(min, value);
+      max = GEO::geo_max(max, value);
     }
+  }
+}
+}  // namespace
 
-    void compute_attribute_range(
-        GEO::ReadOnlyScalarAttributeAdapter& attribute,
-        double& min,
-        double& max )
-    {
-        if( attribute.is_bound() )
-        {
-            for( auto i : range( attribute.size() ) )
-            {
-                double value = attribute[i];
-                min = GEO::geo_min( min, value );
-                max = GEO::geo_max( max, value );
-            }
-        }
+namespace RINGMesh {
+template <index_t DIMENSION>
+class CellAttributeGfx : public AttributeGfx<DIMENSION> {
+ public:
+  CellAttributeGfx() = default;
+
+  virtual ~CellAttributeGfx() = default;
+
+  static std::string location_name_static() { return "cells"; }
+
+  std::string location_name() const override { return location_name_static(); }
+
+  void bind_attribute() override {
+    std::string attribute_name = get_attribute_name_with_coordinate(
+        this->manager_->name(), this->manager_->coordinate());
+    this->manager_->gfx().regions.set_scalar_attribute(
+        GEO::MESH_CELLS, attribute_name, this->manager_->minimum(),
+        this->manager_->maximum(), this->manager_->colormap());
+  }
+
+  void unbind_attribute() override {
+    this->manager_->gfx().regions.unset_scalar_attribute();
+  }
+
+  index_t nb_coordinates() override {
+    GEO::AttributeStore* store =
+        get_attribute_manager().find_attribute_store(this->manager_->name());
+
+    if (store == nullptr) return 0;
+    return store->dimension();
+  }
+
+  GEO::AttributesManager& get_attribute_manager() override {
+    const GeoModel<DIMENSION>* geomodel = this->manager_->gfx().geomodel();
+    return geomodel->region(0).cell_attribute_manager();
+  }
+
+ private:
+  void do_compute_range(double& attribute_min, double& attribute_max) override {
+    std::string attribute_name = get_attribute_name_with_coordinate(
+        this->manager_->name(), this->manager_->coordinate());
+    const GeoModel<DIMENSION>* geomodel = this->manager_->gfx().geomodel();
+    for (const auto& region : geomodel->regions()) {
+      GEO::ReadOnlyScalarAttributeAdapter attribute(
+          region.cell_attribute_manager(), attribute_name);
+      compute_attribute_range(attribute, attribute_min, attribute_max);
     }
-} // namespace
+  }
+};
 
-namespace RINGMesh
-{
-    template < index_t DIMENSION >
-    class CellAttributeGfx : public AttributeGfx< DIMENSION >
-    {
-    public:
-        CellAttributeGfx() = default;
+template <index_t DIMENSION>
+class CellVertexAttributeGfx : public AttributeGfx<DIMENSION> {
+ public:
+  CellVertexAttributeGfx() = default;
 
-        virtual ~CellAttributeGfx() = default;
+  virtual ~CellVertexAttributeGfx() = default;
 
-        static std::string location_name_static()
-        {
-            return "cells";
-        }
+  static std::string location_name_static() { return "cell_vertices"; }
 
-        std::string location_name() const override
-        {
-            return location_name_static();
-        }
+  std::string location_name() const override { return location_name_static(); }
 
-        void bind_attribute() override
-        {
-            std::string attribute_name = get_attribute_name_with_coordinate(
-                this->manager_->name(), this->manager_->coordinate() );
-            this->manager_->gfx().regions.set_scalar_attribute( GEO::MESH_CELLS,
-                attribute_name, this->manager_->minimum(),
-                this->manager_->maximum(), this->manager_->colormap() );
-        }
+  void bind_attribute() override {
+    std::string attribute_name = get_attribute_name_with_coordinate(
+        this->manager_->name(), this->manager_->coordinate());
+    this->manager_->gfx().regions.set_scalar_attribute(
+        GEO::MESH_VERTICES, attribute_name, this->manager_->minimum(),
+        this->manager_->maximum(), this->manager_->colormap());
+  }
 
-        void unbind_attribute() override
-        {
-            this->manager_->gfx().regions.unset_scalar_attribute();
-        }
+  void unbind_attribute() override {
+    this->manager_->gfx().regions.unset_scalar_attribute();
+  }
 
-        index_t nb_coordinates() override
-        {
-            GEO::AttributeStore* store =
-                get_attribute_manager().find_attribute_store(
-                    this->manager_->name() );
+  index_t nb_coordinates() override {
+    GEO::AttributeStore* store =
+        get_attribute_manager().find_attribute_store(this->manager_->name());
 
-            if( store == nullptr )
-                return 0;
-            return store->dimension();
-        }
+    if (store == nullptr) return 0;
+    return store->dimension();
+  }
 
-        GEO::AttributesManager& get_attribute_manager() override
-        {
-            const GeoModel< DIMENSION >* geomodel =
-                this->manager_->gfx().geomodel();
-            return geomodel->region( 0 ).cell_attribute_manager();
-        }
+  GEO::AttributesManager& get_attribute_manager() override {
+    const GeoModel<DIMENSION>* geomodel = this->manager_->gfx().geomodel();
+    return geomodel->region(0).vertex_attribute_manager();
+  }
 
-    private:
-        void do_compute_range(
-            double& attribute_min, double& attribute_max ) override
-        {
-            std::string attribute_name = get_attribute_name_with_coordinate(
-                this->manager_->name(), this->manager_->coordinate() );
-            const GeoModel< DIMENSION >* geomodel =
-                this->manager_->gfx().geomodel();
-            for( const auto& region : geomodel->regions() )
-            {
-                GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    region.cell_attribute_manager(), attribute_name );
-                compute_attribute_range(
-                    attribute, attribute_min, attribute_max );
-            }
-        }
-    };
-
-    template < index_t DIMENSION >
-    class CellVertexAttributeGfx : public AttributeGfx< DIMENSION >
-    {
-    public:
-        CellVertexAttributeGfx() = default;
-
-        virtual ~CellVertexAttributeGfx() = default;
-
-        static std::string location_name_static()
-        {
-            return "cell_vertices";
-        }
-
-        std::string location_name() const override
-        {
-            return location_name_static();
-        }
-
-        void bind_attribute() override
-        {
-            std::string attribute_name = get_attribute_name_with_coordinate(
-                this->manager_->name(), this->manager_->coordinate() );
-            this->manager_->gfx().regions.set_scalar_attribute(
-                GEO::MESH_VERTICES, attribute_name, this->manager_->minimum(),
-                this->manager_->maximum(), this->manager_->colormap() );
-        }
-
-        void unbind_attribute() override
-        {
-            this->manager_->gfx().regions.unset_scalar_attribute();
-        }
-
-        index_t nb_coordinates() override
-        {
-            GEO::AttributeStore* store =
-                get_attribute_manager().find_attribute_store(
-                    this->manager_->name() );
-
-            if( store == nullptr )
-                return 0;
-            return store->dimension();
-        }
-
-        GEO::AttributesManager& get_attribute_manager() override
-        {
-            const GeoModel< DIMENSION >* geomodel =
-                this->manager_->gfx().geomodel();
-            return geomodel->region( 0 ).vertex_attribute_manager();
-        }
-
-    private:
-        void do_compute_range(
-            double& attribute_min, double& attribute_max ) override
-        {
-            std::string attribute_name = get_attribute_name_with_coordinate(
-                this->manager_->name(), this->manager_->coordinate() );
-            const GeoModel< DIMENSION >* geomodel =
-                this->manager_->gfx().geomodel();
-            for( const auto& region : geomodel->regions() )
-            {
-                GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    region.vertex_attribute_manager(), attribute_name );
-                compute_attribute_range(
-                    attribute, attribute_min, attribute_max );
-            }
-        }
-    };
-
-    template < index_t DIMENSION >
-    class PolygonAttributeGfx : public AttributeGfx< DIMENSION >
-    {
-    public:
-        PolygonAttributeGfx() = default;
-
-        virtual ~PolygonAttributeGfx() = default;
-
-        static std::string location_name_static()
-        {
-            return "polygon";
-        }
-
-        std::string location_name() const override
-        {
-            return location_name_static();
-        }
-
-        void bind_attribute() override
-        {
-            std::string attribute_name = get_attribute_name_with_coordinate(
-                this->manager_->name(), this->manager_->coordinate() );
-            this->manager_->gfx().surfaces.set_scalar_attribute(
-                GEO::MESH_FACETS, attribute_name, this->manager_->minimum(),
-                this->manager_->maximum(), this->manager_->colormap() );
-        }
-
-        void unbind_attribute() override
-        {
-            this->manager_->gfx().surfaces.unset_scalar_attribute();
-        }
-
-        index_t nb_coordinates() override
-        {
-            GEO::AttributeStore* store =
-                get_attribute_manager().find_attribute_store(
-                    this->manager_->name() );
-
-            if( store == nullptr )
-                return 0;
-            return store->dimension();
-        }
-
-        GEO::AttributesManager& get_attribute_manager() override
-        {
-            const GeoModel< DIMENSION >* geomodel =
-                this->manager_->gfx().geomodel();
-            return geomodel->surface( 0 ).polygon_attribute_manager();
-        }
-
-    private:
-        void do_compute_range(
-            double& attribute_min, double& attribute_max ) override
-        {
-            std::string attribute_name = get_attribute_name_with_coordinate(
-                this->manager_->name(), this->manager_->coordinate() );
-            const GeoModel< DIMENSION >* geomodel =
-                this->manager_->gfx().geomodel();
-            for( const auto& surface : geomodel->surfaces() )
-            {
-                GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    surface.polygon_attribute_manager(), attribute_name );
-                compute_attribute_range(
-                    attribute, attribute_min, attribute_max );
-            }
-        }
-    };
-
-    template < index_t DIMENSION >
-    class PolygonVertexAttributeGfx : public AttributeGfx< DIMENSION >
-    {
-    public:
-        PolygonVertexAttributeGfx() = default;
-
-        virtual ~PolygonVertexAttributeGfx() = default;
-
-        static std::string location_name_static()
-        {
-            return "polygon_vertices";
-        }
-
-        std::string location_name() const override
-        {
-            return location_name_static();
-        }
-        void bind_attribute() override
-        {
-            std::string attribute_name = get_attribute_name_with_coordinate(
-                this->manager_->name(), this->manager_->coordinate() );
-            this->manager_->gfx().surfaces.set_scalar_attribute(
-                GEO::MESH_VERTICES, attribute_name, this->manager_->minimum(),
-                this->manager_->maximum(), this->manager_->colormap() );
-        }
-        void unbind_attribute() override
-        {
-            this->manager_->gfx().surfaces.unset_scalar_attribute();
-        }
-        index_t nb_coordinates() override
-        {
-            GEO::AttributeStore* store =
-                get_attribute_manager().find_attribute_store(
-                    this->manager_->name() );
-
-            if( store == nullptr )
-                return 0;
-            return store->dimension();
-        }
-
-        GEO::AttributesManager& get_attribute_manager() override
-        {
-            const GeoModel< DIMENSION >* geomodel =
-                this->manager_->gfx().geomodel();
-            return geomodel->surface( 0 ).vertex_attribute_manager();
-        }
-
-    private:
-        void do_compute_range(
-            double& attribute_min, double& attribute_max ) override
-        {
-            std::string attribute_name = get_attribute_name_with_coordinate(
-                this->manager_->name(), this->manager_->coordinate() );
-            const GeoModel< DIMENSION >* geomodel =
-                this->manager_->gfx().geomodel();
-            for( const auto& surface : geomodel->surfaces() )
-            {
-                GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    surface.vertex_attribute_manager(), attribute_name );
-                compute_attribute_range(
-                    attribute, attribute_min, attribute_max );
-            }
-        }
-    };
-
-    template < index_t DIMENSION >
-    AttributeGfxManagerBase< DIMENSION >::AttributeGfxManagerBase(
-        GeoModelGfx< DIMENSION >& gfx )
-        : gfx_( gfx )
-    {
-        register_attribute_location< PolygonVertexAttributeGfx >();
-        register_attribute_location< PolygonAttributeGfx >();
+ private:
+  void do_compute_range(double& attribute_min, double& attribute_max) override {
+    std::string attribute_name = get_attribute_name_with_coordinate(
+        this->manager_->name(), this->manager_->coordinate());
+    const GeoModel<DIMENSION>* geomodel = this->manager_->gfx().geomodel();
+    for (const auto& region : geomodel->regions()) {
+      GEO::ReadOnlyScalarAttributeAdapter attribute(
+          region.vertex_attribute_manager(), attribute_name);
+      compute_attribute_range(attribute, attribute_min, attribute_max);
     }
+  }
+};
 
-    template < index_t DIMENSION >
-    std::string AttributeGfxManagerBase< DIMENSION >::location_name() const
-    {
-        if( attribute_ )
-        {
-            return attribute_->location_name();
-        }
-        else
-        {
-            return "location";
-        }
+template <index_t DIMENSION>
+class PolygonAttributeGfx : public AttributeGfx<DIMENSION> {
+ public:
+  PolygonAttributeGfx() = default;
+
+  virtual ~PolygonAttributeGfx() = default;
+
+  static std::string location_name_static() { return "polygon"; }
+
+  std::string location_name() const override { return location_name_static(); }
+
+  void bind_attribute() override {
+    std::string attribute_name = get_attribute_name_with_coordinate(
+        this->manager_->name(), this->manager_->coordinate());
+    this->manager_->gfx().surfaces.set_scalar_attribute(
+        GEO::MESH_FACETS, attribute_name, this->manager_->minimum(),
+        this->manager_->maximum(), this->manager_->colormap());
+  }
+
+  void unbind_attribute() override {
+    this->manager_->gfx().surfaces.unset_scalar_attribute();
+  }
+
+  index_t nb_coordinates() override {
+    GEO::AttributeStore* store =
+        get_attribute_manager().find_attribute_store(this->manager_->name());
+
+    if (store == nullptr) return 0;
+    return store->dimension();
+  }
+
+  GEO::AttributesManager& get_attribute_manager() override {
+    const GeoModel<DIMENSION>* geomodel = this->manager_->gfx().geomodel();
+    return geomodel->surface(0).polygon_attribute_manager();
+  }
+
+ private:
+  void do_compute_range(double& attribute_min, double& attribute_max) override {
+    std::string attribute_name = get_attribute_name_with_coordinate(
+        this->manager_->name(), this->manager_->coordinate());
+    const GeoModel<DIMENSION>* geomodel = this->manager_->gfx().geomodel();
+    for (const auto& surface : geomodel->surfaces()) {
+      GEO::ReadOnlyScalarAttributeAdapter attribute(
+          surface.polygon_attribute_manager(), attribute_name);
+      compute_attribute_range(attribute, attribute_min, attribute_max);
     }
+  }
+};
 
-    template < index_t DIMENSION >
-    void AttributeGfxManagerBase< DIMENSION >::compute_range()
-    {
-        if( attribute_ )
-        {
-            attribute_->compute_range();
-        }
+template <index_t DIMENSION>
+class PolygonVertexAttributeGfx : public AttributeGfx<DIMENSION> {
+ public:
+  PolygonVertexAttributeGfx() = default;
+
+  virtual ~PolygonVertexAttributeGfx() = default;
+
+  static std::string location_name_static() { return "polygon_vertices"; }
+
+  std::string location_name() const override { return location_name_static(); }
+  void bind_attribute() override {
+    std::string attribute_name = get_attribute_name_with_coordinate(
+        this->manager_->name(), this->manager_->coordinate());
+    this->manager_->gfx().surfaces.set_scalar_attribute(
+        GEO::MESH_VERTICES, attribute_name, this->manager_->minimum(),
+        this->manager_->maximum(), this->manager_->colormap());
+  }
+  void unbind_attribute() override {
+    this->manager_->gfx().surfaces.unset_scalar_attribute();
+  }
+  index_t nb_coordinates() override {
+    GEO::AttributeStore* store =
+        get_attribute_manager().find_attribute_store(this->manager_->name());
+
+    if (store == nullptr) return 0;
+    return store->dimension();
+  }
+
+  GEO::AttributesManager& get_attribute_manager() override {
+    const GeoModel<DIMENSION>* geomodel = this->manager_->gfx().geomodel();
+    return geomodel->surface(0).vertex_attribute_manager();
+  }
+
+ private:
+  void do_compute_range(double& attribute_min, double& attribute_max) override {
+    std::string attribute_name = get_attribute_name_with_coordinate(
+        this->manager_->name(), this->manager_->coordinate());
+    const GeoModel<DIMENSION>* geomodel = this->manager_->gfx().geomodel();
+    for (const auto& surface : geomodel->surfaces()) {
+      GEO::ReadOnlyScalarAttributeAdapter attribute(
+          surface.vertex_attribute_manager(), attribute_name);
+      compute_attribute_range(attribute, attribute_min, attribute_max);
     }
+  }
+};
 
-    template < index_t DIMENSION >
-    void AttributeGfxManagerBase< DIMENSION >::bind_attribute()
-    {
-        if( attribute_ )
-        {
-            attribute_->bind_attribute();
-        }
-    }
+template <index_t DIMENSION>
+AttributeGfxManagerBase<DIMENSION>::AttributeGfxManagerBase(
+    GeoModelGfx<DIMENSION>& gfx)
+    : gfx_(gfx) {
+  register_attribute_location<PolygonVertexAttributeGfx>();
+  register_attribute_location<PolygonAttributeGfx>();
+}
 
-    template < index_t DIMENSION >
-    std::vector< std::string >
-        AttributeGfxManagerBase< DIMENSION >::get_attribute_names()
-    {
-        if( attribute_ )
-        {
-            return attribute_->get_attribute_names();
-        }
-        return std::vector< std::string >();
-    }
+template <index_t DIMENSION>
+std::string AttributeGfxManagerBase<DIMENSION>::location_name() const {
+  if (attribute_) {
+    return attribute_->location_name();
+  } else {
+    return "location";
+  }
+}
 
-    template < index_t DIMENSION >
-    void AttributeGfxManagerBase< DIMENSION >::unbind_attribute()
-    {
-        if( attribute_ )
-        {
-            attribute_->unbind_attribute();
-        }
-    }
+template <index_t DIMENSION>
+void AttributeGfxManagerBase<DIMENSION>::compute_range() {
+  if (attribute_) {
+    attribute_->compute_range();
+  }
+}
 
-    template < index_t DIMENSION >
-    index_t AttributeGfxManagerBase< DIMENSION >::nb_coordinates() const
-    {
-        if( attribute_ )
-        {
-            return attribute_->nb_coordinates();
-        }
-        return 0;
-    }
+template <index_t DIMENSION>
+void AttributeGfxManagerBase<DIMENSION>::bind_attribute() {
+  if (attribute_) {
+    attribute_->bind_attribute();
+  }
+}
 
-    AttributeGfxManager< 3 >::AttributeGfxManager( GeoModelGfx< 3 >& gfx )
-        : AttributeGfxManagerBase< 3 >( gfx )
-    {
-        this->register_attribute_location< CellVertexAttributeGfx >();
-        this->register_attribute_location< CellAttributeGfx >();
-    }
+template <index_t DIMENSION>
+std::vector<std::string>
+AttributeGfxManagerBase<DIMENSION>::get_attribute_names() {
+  if (attribute_) {
+    return attribute_->get_attribute_names();
+  }
+  return std::vector<std::string>();
+}
 
-    template < index_t DIMENSION >
-    std::unique_ptr< PointSetMeshGfx< DIMENSION > >
-        PointSetMeshGfx< DIMENSION >::create_gfx(
-            const PointSetMesh< DIMENSION >& mesh )
-    {
-        auto gfx = PointSetMeshGfxFactory< DIMENSION >::create(
-            mesh.type_name(), mesh );
-        if( !gfx )
-        {
-            throw RINGMeshException( "PointSetMeshGfx",
-                "Could not create mesh gfx data structure: ",
-                mesh.type_name() );
-        }
-        return gfx;
-    }
+template <index_t DIMENSION>
+void AttributeGfxManagerBase<DIMENSION>::unbind_attribute() {
+  if (attribute_) {
+    attribute_->unbind_attribute();
+  }
+}
 
-    template < index_t DIMENSION >
-    std::unique_ptr< LineMeshGfx< DIMENSION > >
-        LineMeshGfx< DIMENSION >::create_gfx(
-            const LineMesh< DIMENSION >& mesh )
-    {
-        auto gfx =
-            LineMeshGfxFactory< DIMENSION >::create( mesh.type_name(), mesh );
-        if( !gfx )
-        {
-            throw RINGMeshException( "LineMeshGfx",
-                "Could not create mesh gfx data structure: ",
-                mesh.type_name() );
-        }
-        return gfx;
-    }
+template <index_t DIMENSION>
+index_t AttributeGfxManagerBase<DIMENSION>::nb_coordinates() const {
+  if (attribute_) {
+    return attribute_->nb_coordinates();
+  }
+  return 0;
+}
 
-    template < index_t DIMENSION >
-    std::unique_ptr< SurfaceMeshGfx< DIMENSION > >
-        SurfaceMeshGfx< DIMENSION >::create_gfx(
-            const SurfaceMesh< DIMENSION >& mesh )
-    {
-        auto gfx = SurfaceMeshGfxFactory< DIMENSION >::create(
-            mesh.type_name(), mesh );
-        if( !gfx )
-        {
-            throw RINGMeshException( "SurfaceMeshGfx",
-                "Could not create mesh gfx data structure: ",
-                mesh.type_name() );
-        }
-        return gfx;
-    }
+AttributeGfxManager<3>::AttributeGfxManager(GeoModelGfx<3>& gfx)
+    : AttributeGfxManagerBase<3>(gfx) {
+  this->register_attribute_location<CellVertexAttributeGfx>();
+  this->register_attribute_location<CellAttributeGfx>();
+}
 
-    template < index_t DIMENSION >
-    std::unique_ptr< VolumeMeshGfx< DIMENSION > >
-        VolumeMeshGfx< DIMENSION >::create_gfx(
-            const VolumeMesh< DIMENSION >& mesh )
-    {
-        auto gfx =
-            VolumeMeshGfxFactory< DIMENSION >::create( mesh.type_name(), mesh );
-        if( !gfx )
-        {
-            throw RINGMeshException( "VolumeMeshGfx",
-                "Could not create mesh gfx data structure: ",
-                mesh.type_name() );
-        }
-        return gfx;
-    }
+template <index_t DIMENSION>
+std::unique_ptr<PointSetMeshGfx<DIMENSION> >
+PointSetMeshGfx<DIMENSION>::create_gfx(const PointSetMesh<DIMENSION>& mesh) {
+  auto gfx = PointSetMeshGfxFactory<DIMENSION>::create(mesh.type_name(), mesh);
+  if (!gfx) {
+    throw RINGMeshException(
+        "PointSetMeshGfx",
+        "Could not create mesh gfx data structure: ", mesh.type_name());
+  }
+  return gfx;
+}
 
-    template std::unique_ptr< PointSetMeshGfx< 2 > > RINGMESH_API
-        PointSetMeshGfx< 2 >::create_gfx( const PointSetMesh< 2 >& );
-    template std::unique_ptr< LineMeshGfx< 2 > >
-        RINGMESH_API LineMeshGfx< 2 >::create_gfx( const LineMesh< 2 >& );
-    template std::unique_ptr< SurfaceMeshGfx< 2 > >
-        RINGMESH_API SurfaceMeshGfx< 2 >::create_gfx( const SurfaceMesh< 2 >& );
-    template class RINGMESH_API AttributeGfxManagerBase< 2 >;
-    template class RINGMESH_API AttributeGfxManager< 2 >;
+template <index_t DIMENSION>
+std::unique_ptr<LineMeshGfx<DIMENSION> > LineMeshGfx<DIMENSION>::create_gfx(
+    const LineMesh<DIMENSION>& mesh) {
+  auto gfx = LineMeshGfxFactory<DIMENSION>::create(mesh.type_name(), mesh);
+  if (!gfx) {
+    throw RINGMeshException(
+        "LineMeshGfx",
+        "Could not create mesh gfx data structure: ", mesh.type_name());
+  }
+  return gfx;
+}
 
-    template std::unique_ptr< PointSetMeshGfx< 3 > > RINGMESH_API
-        PointSetMeshGfx< 3 >::create_gfx( const PointSetMesh< 3 >& );
-    template std::unique_ptr< LineMeshGfx< 3 > >
-        RINGMESH_API LineMeshGfx< 3 >::create_gfx( const LineMesh< 3 >& );
-    template std::unique_ptr< SurfaceMeshGfx< 3 > >
-        RINGMESH_API SurfaceMeshGfx< 3 >::create_gfx( const SurfaceMesh< 3 >& );
-    template std::unique_ptr< VolumeMeshGfx< 3 > >
-        RINGMESH_API VolumeMeshGfx< 3 >::create_gfx( const VolumeMesh< 3 >& );
-    template class RINGMESH_API AttributeGfxManagerBase< 3 >;
+template <index_t DIMENSION>
+std::unique_ptr<SurfaceMeshGfx<DIMENSION> >
+SurfaceMeshGfx<DIMENSION>::create_gfx(const SurfaceMesh<DIMENSION>& mesh) {
+  auto gfx = SurfaceMeshGfxFactory<DIMENSION>::create(mesh.type_name(), mesh);
+  if (!gfx) {
+    throw RINGMeshException(
+        "SurfaceMeshGfx",
+        "Could not create mesh gfx data structure: ", mesh.type_name());
+  }
+  return gfx;
+}
 
-} // namespace RINGMesh
+template <index_t DIMENSION>
+std::unique_ptr<VolumeMeshGfx<DIMENSION> > VolumeMeshGfx<DIMENSION>::create_gfx(
+    const VolumeMesh<DIMENSION>& mesh) {
+  auto gfx = VolumeMeshGfxFactory<DIMENSION>::create(mesh.type_name(), mesh);
+  if (!gfx) {
+    throw RINGMeshException(
+        "VolumeMeshGfx",
+        "Could not create mesh gfx data structure: ", mesh.type_name());
+  }
+  return gfx;
+}
+
+template std::unique_ptr<PointSetMeshGfx<2> > RINGMESH_API
+PointSetMeshGfx<2>::create_gfx(const PointSetMesh<2>&);
+template std::unique_ptr<LineMeshGfx<2> > RINGMESH_API
+LineMeshGfx<2>::create_gfx(const LineMesh<2>&);
+template std::unique_ptr<SurfaceMeshGfx<2> > RINGMESH_API
+SurfaceMeshGfx<2>::create_gfx(const SurfaceMesh<2>&);
+template class RINGMESH_API AttributeGfxManagerBase<2>;
+template class RINGMESH_API AttributeGfxManager<2>;
+
+template std::unique_ptr<PointSetMeshGfx<3> > RINGMESH_API
+PointSetMeshGfx<3>::create_gfx(const PointSetMesh<3>&);
+template std::unique_ptr<LineMeshGfx<3> > RINGMESH_API
+LineMeshGfx<3>::create_gfx(const LineMesh<3>&);
+template std::unique_ptr<SurfaceMeshGfx<3> > RINGMESH_API
+SurfaceMeshGfx<3>::create_gfx(const SurfaceMesh<3>&);
+template std::unique_ptr<VolumeMeshGfx<3> > RINGMESH_API
+VolumeMeshGfx<3>::create_gfx(const VolumeMesh<3>&);
+template class RINGMESH_API AttributeGfxManagerBase<3>;
+
+}  // namespace RINGMesh
 
 #endif

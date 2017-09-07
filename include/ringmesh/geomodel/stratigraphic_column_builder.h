@@ -45,51 +45,39 @@
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/stratigraphic_column.h>
 
-namespace RINGMesh
-{
-    class RINGMESH_API StratigraphicColumnBuilder
-    {
-        ringmesh_disable_copy_and_move( StratigraphicColumnBuilder );
+namespace RINGMesh {
+class RINGMESH_API StratigraphicColumnBuilder {
+  ringmesh_disable_copy_and_move(StratigraphicColumnBuilder);
 
-    public:
-        StratigraphicColumnBuilder(
-            StratigraphicColumn& column, GeoModel3D& model );
-        virtual ~StratigraphicColumnBuilder() = default;
+ public:
+  StratigraphicColumnBuilder(StratigraphicColumn& column, GeoModel3D& model);
+  virtual ~StratigraphicColumnBuilder() = default;
 
-    protected:
-        StratigraphicColumn& column_;
-        GeoModel3D& model_;
-    };
+ protected:
+  StratigraphicColumn& column_;
+  GeoModel3D& model_;
+};
 
-    class RINGMESH_API StratigraphicColumnBuilderFile
-        : public StratigraphicColumnBuilder
-    {
-    public:
-        StratigraphicColumnBuilderFile( StratigraphicColumn& column,
-            GeoModel3D& model,
-            std::string filename );
-        void build_column()
-        {
-            load_file();
-        }
+class RINGMESH_API StratigraphicColumnBuilderFile
+    : public StratigraphicColumnBuilder {
+ public:
+  StratigraphicColumnBuilderFile(StratigraphicColumn& column, GeoModel3D& model,
+                                 std::string filename);
+  void build_column() { load_file(); }
 
-    private:
-        virtual void load_file() = 0;
+ private:
+  virtual void load_file() = 0;
 
-    protected:
-        std::string filename_;
-    };
+ protected:
+  std::string filename_;
+};
 
-    class RINGMESH_API StratigraphicColumnBuilderXML
-        : public StratigraphicColumnBuilderFile
-    {
-    public:
-        StratigraphicColumnBuilderXML( StratigraphicColumn& column,
-            GeoModel3D& model,
-            const std::string& filename )
-            : StratigraphicColumnBuilderFile( column, model, filename )
-        {
-        }
-        void load_file() override;
-    };
-} // namespace RINGMesh
+class RINGMESH_API StratigraphicColumnBuilderXML
+    : public StratigraphicColumnBuilderFile {
+ public:
+  StratigraphicColumnBuilderXML(StratigraphicColumn& column, GeoModel3D& model,
+                                const std::string& filename)
+      : StratigraphicColumnBuilderFile(column, model, filename) {}
+  void load_file() override;
+};
+}  // namespace RINGMesh

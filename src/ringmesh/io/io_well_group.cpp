@@ -49,57 +49,46 @@
  * @author Arnaud Botella
  */
 
-namespace
-{
-    using namespace RINGMesh;
+namespace {
+using namespace RINGMesh;
 
 #include "well_group/io_smesh.cpp"
 #include "well_group/io_wl.cpp"
+}  // namespace
+
+namespace RINGMesh {
+void well_load(const std::string& filename, WellGroup<3>& wells) {
+  Logger::out("I/O", "Loading file ", filename, "...");
+
+  std::unique_ptr<WellGroupIOHandler> handler =
+      WellGroupIOHandler::get_handler(filename);
+  handler->load(filename, wells);
 }
 
-namespace RINGMesh
-{
-    void well_load( const std::string& filename, WellGroup< 3 >& wells )
-    {
-        Logger::out( "I/O", "Loading file ", filename, "..." );
-
-        std::unique_ptr< WellGroupIOHandler > handler =
-            WellGroupIOHandler::get_handler( filename );
-        handler->load( filename, wells );
+std::unique_ptr<WellGroupIOHandler> WellGroupIOHandler::create(
+    const std::string& format) {
+  auto handler = WellGroupIOHandlerFactory::create(format);
+  if (!handler) {
+    Logger::err("I/O", "Currently supported file formats are: ");
+    for (const std::string& name : WellGroupIOHandlerFactory::list_creators()) {
+      Logger::err("I/O", " ", name);
     }
 
-    std::unique_ptr< WellGroupIOHandler > WellGroupIOHandler::create(
-        const std::string& format )
-    {
-        auto handler = WellGroupIOHandlerFactory::create( format );
-        if( !handler )
-        {
-            Logger::err( "I/O", "Currently supported file formats are: " );
-            for( const std::string& name :
-                WellGroupIOHandlerFactory::list_creators() )
-            {
-                Logger::err( "I/O", " ", name );
-            }
+    throw RINGMeshException("I/O", "Unsupported file format: ", format);
+  }
+  return handler;
+}
 
-            throw RINGMeshException(
-                "I/O", "Unsupported file format: ", format );
-        }
-        return handler;
-    }
+std::unique_ptr<WellGroupIOHandler> WellGroupIOHandler::get_handler(
+    const std::string& filename) {
+  return create(GEO::FileSystem::extension(filename));
+}
 
-    std::unique_ptr< WellGroupIOHandler > WellGroupIOHandler::get_handler(
-        const std::string& filename )
-    {
-        return create( GEO::FileSystem::extension( filename ) );
-    }
-
-    /*
-     * Initializes the possible handler for IO files
-     */
-    void WellGroupIOHandler::initialize()
-    {
-        WellGroupIOHandlerFactory::register_creator< WLIOHandler >( "wl" );
-        WellGroupIOHandlerFactory::register_creator< SmeshIOHandler >(
-            "smesh" );
-    }
-} // namespace RINGMesh
+/*
+ * Initializes the possible handler for IO files
+ */
+void WellGroupIOHandler::initialize() {
+  WellGroupIOHandlerFactory::register_creator<WLIOHandler>("wl");
+  WellGroupIOHandlerFactory::register_creator<SmeshIOHandler>("smesh");
+}
+}  // namespace RINGMesh
