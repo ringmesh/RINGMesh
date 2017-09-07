@@ -44,7 +44,6 @@
 
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 #include <ringmesh/mesh/mesh.h>
 
@@ -61,6 +60,10 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Line );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
 
     ALIAS_2D_AND_3D( GeoModel );
 } // namespace RINGMesh

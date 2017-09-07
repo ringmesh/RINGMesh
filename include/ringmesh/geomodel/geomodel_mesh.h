@@ -37,8 +37,9 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <ringmesh/basic/pimpl.h>
+
 #include <ringmesh/geomodel/entity_type_manager.h>
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
@@ -103,6 +104,26 @@ namespace RINGMesh
         GeoModel< DIMENSION >& geomodel_;
         /// Attached MeshBase
         MeshBase< DIMENSION >* mesh_base_;
+    };
+
+    struct GMEVertex
+    {
+        GMEVertex( gmme_id t, index_t vertex_id_in )
+            : gmme( std::move( t ) ), v_index( vertex_id_in )
+        {
+        }
+        bool operator==( const GMEVertex& rhs ) const
+        {
+            return gmme == rhs.gmme && v_index == rhs.v_index;
+        }
+        bool is_defined() const
+        {
+            return gmme.is_defined() && v_index != NO_ID;
+        }
+        /// GeoModelEntity index in the GeoModel that owns it
+        gmme_id gmme;
+        /// Index of the vertex in the GeoModelEntity
+        index_t v_index{ NO_ID };
     };
 
     template < index_t DIMENSION >
@@ -281,229 +302,12 @@ namespace RINGMesh
             const MeshEntityType& entity_type,
             index_t& count );
 
-    private:
-        /*!
-         * Class which manages the mapping informations between vertices
-         * of GeoModelMeshEntites (entity_index) and GeoModelMeshVerticesBase
-         * (global index)
-         */
-        class GeoModelVertexMapper
-        {
-            ringmesh_disable_copy_and_move( GeoModelVertexMapper );
-
-        public:
-            GeoModelVertexMapper( GeoModelMeshVerticesBase& geomodel_vertices,
-                const GeoModel< DIMENSION >& geomodel );
-
-            ~GeoModelVertexMapper() = default;
-
-            /*!
-             * \name Query
-             * @{
-             */
-
-            /*!
-             * @brief Returns the index of a GeoModelMeshEntity vertex in the
-             * geomodel
-             * global indexing
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             * @param[in] mesh_entity_vertex_index Index of query vertex in the
-             * GeoModelMeshEntity indexing
-             * @returns Model index of the GeoModelMeshEntity vertex
-             */
-            index_t geomodel_vertex_index( const gmme_id& mesh_entity_id,
-                index_t mesh_entity_vertex_index ) const;
-
-            /*!
-             * @brief Returns all the corresponding vertices in
-             * GeoModelMeshEntities
-             * to a given geomodel vertex
-             * @param[in] vertex Model vertex index
-             * @returns All the corresponding vertices in their local indexing
-             */
-            const std::vector< GMEVertex >& mesh_entity_vertex_indices(
-                index_t v ) const;
-
-            /*!
-             * @brief Returns all the corresponding vertices in
-             * GeoModelMeshEntities
-             * of a specific type to a given geomodel vertex
-             * @param[in] vertex Model vertex index
-             * @param[in] mesh_entity_type Type of GeoModelMeshEntity
-             * @return corresponding vertices in GeoModelMeshEntities
-             * of a specific type
-             */
-            std::vector< GMEVertex > mesh_entity_vertex_indices(
-                index_t v, const MeshEntityType& mesh_entity_type ) const;
-
-            /*!
-             * @brief Returns all the corresponding vertices to a geomodel
-             * vertex
-             * in a specific GeoModelMeshEntities
-             * @param[in] vertex Model vertex index
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             * @return corresponding vertices in the GeoModelMeshEntity
-             * @returns All the corresponding vertices in their local indexing
-             */
-            std::vector< index_t > mesh_entity_vertex_indices(
-                index_t v, const gmme_id& mesh_entity_id ) const;
-
-            const std::vector< index_t >& vertex_map(
-                const gmme_id& mesh_entity_id ) const;
-
-            std::vector< index_t >& vertex_map( const gmme_id& mesh_entity_id );
-
-            /*! @}
-             * \name Updating
-             * @{
-             */
-
-            /*!
-             * @brief Sets the geomodel vertex mapping value of a given vertex
-             * in a GeoModelMeshEntity
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             * @param[in] mesh_entity_vertex_index Index of query vertex in the
-             * GeoModelMeshEntity indexing
-             * @param[in] geomodel_entity_vertex_index Model vertex index to map
-             * with
-             */
-            void set_vertex_map_value( const gmme_id& mesh_entity_id,
-                index_t mesh_entity_vertex_index,
-                index_t geomodel_entity_vertex_index );
-
-            void add_to_gme_vertices(
-                const GMEVertex& gme_vertex, index_t geomodel_vertex_index );
-
-            /*!
-             * @brief Updates all the vertex maps with regards to the global
-             * indexing
-             * changes
-             * @param[in] old2new Map between actual geomodel indexing and
-             * wanted
-             * geomodel indexing. Its size is equal to the number of geomodel
-             * vertices.
-             */
-            void update_mesh_entity_maps_and_gmes(
-                const std::vector< index_t >& old2new );
-
-            /*! @}
-             * \name Initialization
-             * @{
-             */
-
-            /*!
-             * @brief Resizes the GME_Vertex vectors
-             * @param[in] nb Size of the vector
-             */
-            void resize_geomodel_vertex_gmes( const index_t nb )
-            {
-                gme_vertices_.resize( nb );
-            }
-
-            /*!
-             * @brief Clears and resizes the GME_Vertex vectors
-             * @param[in] nb Size of the vector
-             */
-            void clear_and_resize_geomodel_vertex_gmes( const index_t nb )
-            {
-                gme_vertices_.clear();
-                resize_geomodel_vertex_gmes( nb );
-            }
-
-            void bind_all_mesh_entity_vertex_maps();
-
-            /*! @}
-             * \name Clearing
-             * @{
-             */
-
-            /*!
-             * @brief Clears all the information about vertex mapping (vector
-             * maps
-             * and vectors of GME_Vertices
-             */
-            void clear();
-
-            /*!
-             * @brief Clears the GME_Vertices about one geomodel vertex
-             */
-            void clear_geomodel_vertex_gmes( index_t v )
-            {
-                ringmesh_assert( v < gme_vertices_.size() );
-                gme_vertices_[v].clear();
-            }
-
-            void clear_vertex_map( const gmme_id& mesh_entity_id );
-
-            std::vector< index_t >& resize_vertex_map(
-                const gmme_id& mesh_entity_id );
-
-            /*!
-             * @}
-             */
-
-        private:
-            /*!
-             * @brief Initializes the given GeoModelMeshEntity vertex map
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             */
-            void initialize_mesh_entity_vertex_map(
-                const gmme_id& mesh_entity_id );
-
-            /*!
-             * @brief Tests if the given GeoModelMeshEntity vertex map is
-             * initialized.
-             * If not, initializes it.
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             * @return True is the map was initialized, false if not.
-             */
-            bool test_and_initialize_mesh_entity_vertex_map(
-                const gmme_id& mesh_entity_id );
-
-            /*!
-             * @brief Tests if the given GeoModelMeshEntity vertex map exists.
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             * @return True is the map exists, false if not.
-             */
-            bool is_mesh_entity_vertex_map_initialized(
-                const gmme_id& mesh_entity_id ) const;
-
-            /*!
-             * @brief Unbinds all the GeoModelMeshEntity vertex maps
-             */
-            void clear_all_mesh_entity_vertex_map();
-
-            void resize_all_mesh_entity_vertex_maps(
-                const MeshEntityType& type );
-
-            /*!
-             * @brief Returns the vertex attribute of a GeoModelMeshEntity
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             */
-            GEO::AttributesManager& mesh_entity_vertex_attribute_manager(
-                const gmme_id& mesh_entity_id ) const;
-
-        private:
-            GeoModelMeshVerticesBase< DIMENSION >& geomodel_vertices_;
-            const GeoModel< DIMENSION >& geomodel_;
-
-            /// Vertex maps
-            std::vector< std::vector< index_t > > corner_vertex_maps_;
-            std::vector< std::vector< index_t > > line_vertex_maps_;
-            std::vector< std::vector< index_t > > surface_vertex_maps_;
-            std::vector< std::vector< index_t > > region_vertex_maps_;
-            std::map< MeshEntityType, std::vector< std::vector< index_t > >* >
-                vertex_maps_;
-
-            /// GeoModelEntity Vertices for each geomodel vertex
-            std::vector< std::vector< GMEVertex > > gme_vertices_;
-        };
-
     protected:
         /// Attached Mesh
         std::unique_ptr< PointSetMesh< DIMENSION > >& mesh_;
-        /// Mapper from/to GeoModelMeshEntity vertices
-        GeoModelVertexMapper vertex_mapper_;
+
+    private:
+        IMPLEMENTATION_MEMBER( impl_ );
     };
 
     ALIAS_2D_AND_3D( GeoModelMeshVerticesBase );
