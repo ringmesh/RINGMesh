@@ -440,11 +440,10 @@ namespace RINGMesh
         RINGMESH_API point_segment_projection(
             const vecn< 3 >&, const vecn< 3 >&, const vecn< 3 >& );
 
-    Frame3D::Frame3D(
-        const vec3 normalized_origin, const vec3 normalized_normal )
+    Frame3D::Frame3D( vec3 normalized_origin, vec3 normalized_normal )
     {
-        origin = normalized_origin;
-        normal = normalized_normal;
+        origin = std::move( normalized_origin );
+        normal = std::move( normalized_normal );
         auto upward_point = origin + vec3{ 0., 0., 1. };
         vec3 v_axis_point_direction;
         std::tie( std::ignore, v_axis_point_direction ) =

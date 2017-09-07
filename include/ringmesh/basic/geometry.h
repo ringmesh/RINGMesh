@@ -87,7 +87,7 @@ namespace RINGMesh
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
 
-    struct Frame3D
+    struct RINGMESH_API Frame3D
     {
         Frame3D() = default;
 
@@ -102,7 +102,7 @@ namespace RINGMesh
         {
         }
 
-        Frame3D( const vec3 normalized_origin, const vec3 normalized_normal );
+        Frame3D( vec3 normalized_origin, vec3 normalized_normal );
 
         vec3 origin{};
         vec3 normal{};
