@@ -260,7 +260,7 @@ namespace RINGMesh
         ReferenceFrame3D() = default;
 
         ReferenceFrame3D( vec3 frame_origin, Frame3D frame )
-            : Frame3D( frame ), origin( std::move( frame_origin ) )
+            : Frame3D( std::move( frame ) ), origin( std::move( frame_origin ) )
         {
         }
 
@@ -276,7 +276,7 @@ namespace RINGMesh
         PlaneReferenceFrame3D() = default;
 
         PlaneReferenceFrame3D( vec3 frame_origin, Frame3D frame )
-            : ReferenceFrame3D( frame_origin, frame )
+            : ReferenceFrame3D( std::move( frame_origin ), std::move( frame ) )
         {
         }
 
