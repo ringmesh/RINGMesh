@@ -387,6 +387,7 @@ if(CLANG_FORMAT)
         format
         COMMAND ${CLANG_FORMAT}
         -style=file
+        -assume-filename=${PROJECT_SOURCE_DIR}/.clang-format
         -i
         ${ringmesh_files}
     )

@@ -166,14 +166,14 @@ namespace RINGMesh
     class GeoModelMeshVerticesBase< DIMENSION >::Impl
     {
     public:
-        Impl(
-            GeoModelMeshVerticesBase& geomodel_vertices,
+        Impl( GeoModelMeshVerticesBase& geomodel_vertices,
             const GeoModel< DIMENSION >& geomodel )
             : geomodel_vertices_( geomodel_vertices ), geomodel_( geomodel )
         {
             vertex_maps_[Corner< DIMENSION >::type_name_static()] =
                 &corner_vertex_maps_;
-            vertex_maps_[Line< DIMENSION >::type_name_static()] = &line_vertex_maps_;
+            vertex_maps_[Line< DIMENSION >::type_name_static()] =
+                &line_vertex_maps_;
             vertex_maps_[Surface< DIMENSION >::type_name_static()] =
                 &surface_vertex_maps_;
         }
@@ -270,14 +270,14 @@ namespace RINGMesh
         const std::vector< index_t >& vertex_map(
             const gmme_id& mesh_entity_id ) const
         {
-            return (
-                *vertex_maps_.at( mesh_entity_id.type() ) )[mesh_entity_id.index()];
+            return ( *vertex_maps_.at(
+                mesh_entity_id.type() ) )[mesh_entity_id.index()];
         }
 
         std::vector< index_t >& vertex_map( const gmme_id& mesh_entity_id )
         {
-            return (
-                *vertex_maps_.at( mesh_entity_id.type() ) )[mesh_entity_id.index()];
+            return ( *vertex_maps_.at(
+                mesh_entity_id.type() ) )[mesh_entity_id.index()];
         }
 
         /*! @}
@@ -382,7 +382,8 @@ namespace RINGMesh
                 auto nb_cur_type_entities =
                     geomodel_.nb_mesh_entities( cur_entity_type );
                 vertex_maps_.at( cur_entity_type )->clear();
-                vertex_maps_.at( cur_entity_type )->resize( nb_cur_type_entities );
+                vertex_maps_.at( cur_entity_type )
+                    ->resize( nb_cur_type_entities );
                 for( auto e : range( nb_cur_type_entities ) )
                 {
                     resize_vertex_map( { cur_entity_type, e } );
@@ -435,7 +436,8 @@ namespace RINGMesh
                              < vertex_maps_[mesh_entity_id.type()]->size() );
             if( geomodel_vertices_.is_initialized() )
             {
-                const auto& mesh_entity = geomodel_.mesh_entity( mesh_entity_id );
+                const auto& mesh_entity =
+                    geomodel_.mesh_entity( mesh_entity_id );
                 vertex_maps_.at( mesh_entity_id.type() )
                     ->at( mesh_entity_id.index() )
                     .resize( mesh_entity.nb_vertices(), NO_ID );
@@ -452,8 +454,7 @@ namespace RINGMesh
          * @brief Initializes the given GeoModelMeshEntity vertex map
          * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
          */
-        void initialize_mesh_entity_vertex_map(
-            const gmme_id& mesh_entity_id )
+        void initialize_mesh_entity_vertex_map( const gmme_id& mesh_entity_id )
         {
             auto& mesh_entity_vertex_map = resize_vertex_map( mesh_entity_id );
             const auto& E = geomodel_.mesh_entity( mesh_entity_id );
@@ -512,10 +513,10 @@ namespace RINGMesh
             }
         }
 
-        void resize_all_mesh_entity_vertex_maps(
-            const MeshEntityType& type )
+        void resize_all_mesh_entity_vertex_maps( const MeshEntityType& type )
         {
-            vertex_maps_.at( type )->resize( geomodel_.nb_mesh_entities( type ) );
+            vertex_maps_.at( type )->resize(
+                geomodel_.nb_mesh_entities( type ) );
         }
 
         /*!
@@ -608,8 +609,7 @@ namespace RINGMesh
                 mesh_builder->set_vertex( local_count, E.vertex( v ) );
                 // Map from vertices of MeshEntities to GeoModelMeshVerticesBase
                 impl_->set_vertex_map_value( id, v, local_count );
-                impl_->add_to_gme_vertices(
-                    GMEVertex( id, v ), local_count );
+                impl_->add_to_gme_vertices( GMEVertex( id, v ), local_count );
             }
             // Global vertex index increment
             count += E.nb_vertices();
@@ -730,8 +730,7 @@ namespace RINGMesh
         const gmme_id& mesh_entity, index_t entity_vertex_index ) const
     {
         test_and_initialize();
-        return impl_->geomodel_vertex_index(
-            mesh_entity, entity_vertex_index );
+        return impl_->geomodel_vertex_index( mesh_entity, entity_vertex_index );
     }
 
     template < index_t DIMENSION >
@@ -829,8 +828,7 @@ namespace RINGMesh
     {
         impl_->set_vertex_map_value(
             entity_id, entity_vertex_index, geomodel_vertex_index );
-        impl_->add_to_gme_vertices(
-            GMEVertex( entity_id, entity_vertex_index ),
+        impl_->add_to_gme_vertices( GMEVertex( entity_id, entity_vertex_index ),
             geomodel_vertex_index );
     }
 
@@ -950,7 +948,6 @@ namespace RINGMesh
             this->geomodel_, Region3D::type_name_static(), count );
         return count;
     }
-
 
     template <>
     GeoModelMeshVerticesBase< 3 >::Impl::Impl(
