@@ -38,8 +38,8 @@
 #include <future>
 
 #include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
+#include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*! Tests the creation of a GeoModel2D from the projection of a
@@ -50,10 +50,11 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
-        std::string input_geomodel3d_file_name = ringmesh_test_data_path
-            + "seg_overthrust_afault.gm";
+        std::string input_geomodel3d_file_name =
+            ringmesh_test_data_path + "seg_overthrust_afault.gm";
 
         Logger::out( "TEST", "Loading GeoModel3D input file ",
             input_geomodel3d_file_name );
@@ -62,49 +63,55 @@ int main()
         geomodel_load( geomodel3d, input_geomodel3d_file_name );
 
         GeoModel2D projection_geomodel2d;
-        Geometry::Plane projection_plane( { 987., 0., 2150. },
-        { 6300., 10500., -3200. } );
-        GeoModelBuilder2DProjection geomodel2d_builder( projection_geomodel2d,
-            geomodel3d, projection_plane );
+        Geometry::Plane projection_plane(
+            { 987., 0., 2150. }, { 6300., 10500., -3200. } );
+        GeoModelBuilder2DProjection geomodel2d_builder(
+            projection_geomodel2d, geomodel3d, projection_plane );
         geomodel2d_builder.build_geomodel();
 
         std::vector< std::future< void > > checks;
-        checks.emplace_back( std::async( std::launch::async,
-            [&projection_geomodel2d] {
-            if( !is_geomodel_valid( projection_geomodel2d ) ) {
-                throw RINGMeshException( "TEST",
-                    "FAILED : built GeoModel2D is not valid" );
-            }
-        } ) );
+        checks.emplace_back(
+            std::async( std::launch::async, [&projection_geomodel2d] {
+                if( !is_geomodel_valid( projection_geomodel2d ) )
+                {
+                    throw RINGMeshException(
+                        "TEST", "FAILED : built GeoModel2D is not valid" );
+                }
+            } ) );
 
         std::string output_model_file_name( ringmesh_test_output_path );
-        output_model_file_name += projection_geomodel2d.name() + "_saved_out.gm";
+        output_model_file_name +=
+            projection_geomodel2d.name() + "_saved_out.gm";
         geomodel_save( projection_geomodel2d, output_model_file_name );
 
         GeoModel2D reloaded_geomodel2d;
-        auto is_reloaded_model_valid = geomodel_load( reloaded_geomodel2d,
-            output_model_file_name );
-        if( !is_reloaded_model_valid ) {
+        auto is_reloaded_model_valid =
+            geomodel_load( reloaded_geomodel2d, output_model_file_name );
+        if( !is_reloaded_model_valid )
+        {
             std::string output_model_file_name_bis( ringmesh_test_output_path );
-            output_model_file_name_bis += reloaded_geomodel2d.name()
-                + "_saved_out_bis.gm";
+            output_model_file_name_bis +=
+                reloaded_geomodel2d.name() + "_saved_out_bis.gm";
             geomodel_save( reloaded_geomodel2d, output_model_file_name_bis );
-            throw RINGMeshException( "TEST",
-                "FAILED : reloaded GeoModel2D is not valid" );
+            throw RINGMeshException(
+                "TEST", "FAILED : reloaded GeoModel2D is not valid" );
         }
 
-        for( auto& check : checks ) {
+        for( auto& check : checks )
+        {
             check.get();
         }
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
     Logger::out( "TEST", "SUCCESS" );
     return 0;
-
 }

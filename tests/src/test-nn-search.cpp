@@ -46,13 +46,15 @@
 
 using namespace RINGMesh;
 
-template< index_t DIMENSION >
+template < index_t DIMENSION >
 void test_nn_search()
 {
     std::vector< vecn< DIMENSION > > hardcoded_unique_vertices( 4 );
-    for( index_t p : range( hardcoded_unique_vertices.size() ) ) {
+    for( index_t p : range( hardcoded_unique_vertices.size() ) )
+    {
         vecn< DIMENSION >& point = hardcoded_unique_vertices[p];
-        for( index_t i : range( DIMENSION ) ) {
+        for( index_t i : range( DIMENSION ) )
+        {
             point[i] = p;
         }
     }
@@ -80,34 +82,44 @@ void test_nn_search()
     std::vector< vecn< DIMENSION > > unique_vertices;
     std::vector< index_t > index_map;
     std::tie( std::ignore, index_map, unique_vertices ) =
-        nn_search.get_colocated_index_mapping_and_unique_points( global_epsilon );
-    for( index_t i : range( index_map.size() ) ) {
-        if( index_map[i] != hardcoded_index_map[i] ) {
+        nn_search.get_colocated_index_mapping_and_unique_points(
+            global_epsilon );
+    for( index_t i : range( index_map.size() ) )
+    {
+        if( index_map[i] != hardcoded_index_map[i] )
+        {
             throw RINGMeshException( "TEST", "Index map found is wrong" );
         }
     }
 
-    for( index_t v : range( unique_vertices.size() ) ) {
-        if( unique_vertices[v] != hardcoded_unique_vertices[v] ) {
-            throw RINGMeshException( "TEST", "Unique vertices found are wrong" );
+    for( index_t v : range( unique_vertices.size() ) )
+    {
+        if( unique_vertices[v] != hardcoded_unique_vertices[v] )
+        {
+            throw RINGMeshException(
+                "TEST", "Unique vertices found are wrong" );
         }
     }
 }
 
 int main()
 {
-    try {
+    try
+    {
         default_configure();
 
         Logger::out( "TEST", "Test NNsearch 2D" );
         test_nn_search< 2 >();
         Logger::out( "TEST", "Test NNsearch 3D" );
         test_nn_search< 3 >();
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

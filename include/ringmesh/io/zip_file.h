@@ -44,19 +44,22 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh {
-
-    class RINGMESH_API ZipFile {
+namespace RINGMesh
+{
+    class RINGMESH_API ZipFile
+    {
     public:
         ZipFile( const std::string& filename );
         ~ZipFile();
 
         void add_file( const std::string& filename );
+
     private:
         IMPLEMENTATION_MEMBER( impl_ );
     };
 
-    class RINGMESH_API UnZipFile {
+    class RINGMESH_API UnZipFile
+    {
     public:
         UnZipFile( const std::string& filename );
         ~UnZipFile();
@@ -67,6 +70,7 @@ namespace RINGMesh {
         bool next_file();
 
         void get_file( const std::string& filename );
+
     private:
         IMPLEMENTATION_MEMBER( impl_ );
     };

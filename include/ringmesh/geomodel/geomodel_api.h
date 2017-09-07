@@ -44,7 +44,8 @@
  * @todo Encapsulate these functions in a namespace and TEST them.
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     class MeshEntityType;
     class GeologicalEntityType;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
@@ -52,23 +53,26 @@ namespace RINGMesh {
     ALIAS_3D( GeoModel );
 } // namespace RINGMesh
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * @brief Print in the console the geomodel statistics
-     * @details Output number of polygons, vertices, and of the different entity types
-     * @todo Implement a test are_geomodels_equals to be able to check that tests went well
+     * @details Output number of polygons, vertices, and of the different entity
+     * types
+     * @todo Implement a test are_geomodels_equals to be able to check that
+     * tests went well
      */
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void print_geomodel( const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * Output the number of vertices, edges, polygons and cells.
      * Also output the number of triangles, quads and polygons if any.
-     * Also output the number of tetra, prisms, pyramids, hex and polyhedra if any.
+     * Also output the number of tetra, prisms, pyramids, hex and polyhedra if
+     * any.
      * @param[in] geomodel the geomodel to compute the statistics on
      */
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void print_geomodel_mesh_stats( const GeoModel< DIMENSION >& geomodel );
 
     /*!
@@ -81,22 +85,25 @@ namespace RINGMesh {
     /*!
      * @return the index of the mesh entity \param gme_type named as \param name
      * in the GeoModel \param geomodel.
-     * @note throw exception if no entities have this \param name or if two entities
+     * @note throw exception if no entities have this \param name or if two
+     * entities
      * have the same \param name
      */
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     index_t find_mesh_entity_id_from_name(
         const GeoModel< DIMENSION >& geomodel,
         const MeshEntityType& gmme_type,
         const std::string& name );
 
     /*!
-     * @return the index of the geological entity \param gme_type named as \param name
+     * @return the index of the geological entity \param gme_type named as
+     * \param name
      * in the GeoModel \param geomodel.
-     * @note throw exception if no entities have this \param name or if two entities
+     * @note throw exception if no entities have this \param name or if two
+     * entities
      * have the same \param name
      */
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     index_t find_geological_entity_id_from_name(
         const RINGMesh::GeoModel< DIMENSION >& geomodel,
         const RINGMesh::GeologicalEntityType& gmge_type,
@@ -108,11 +115,12 @@ namespace RINGMesh {
      * Compute the tetrahedral mesh of the input structural geomodel
      * @param[in/out] geomodel GeoModel to tetrahedralize
      * @param[in] method External mesher used, Tetgen by default
-     * @param[in] region_id Region to mesh. By default it set to NO_ID and all regions are meshed.
-     * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
+     * @param[in] region_id Region to mesh. By default it set to NO_ID and all
+     * regions are meshed.
+     * @param[in] add_steiner_points if true (default value), the mesher will
+     * add some points inside the region.
      */
-    void RINGMESH_API tetrahedralize(
-        GeoModel3D& geomodel,
+    void RINGMESH_API tetrahedralize( GeoModel3D& geomodel,
         const std::string& method = "TetGen",
         index_t region_id = NO_ID,
         bool add_steiner_points = true );
@@ -121,13 +129,15 @@ namespace RINGMesh {
      * Compute the tetrahedral mesh of the input structural geomodel
      * @param[in/out] geomodel GeoModel to tetrahedralize
      * @param[in] method External mesher used
-     * @param[in] region_id Region to mesh. If set to NO_ID and all regions are meshed.
-     * @param[in] add_steiner_points if true, the mesher will add some points inside the region.
-     * @param[in] internal_vertices points inside the domain to constrain mesh generation.
+     * @param[in] region_id Region to mesh. If set to NO_ID and all regions are
+     * meshed.
+     * @param[in] add_steiner_points if true, the mesher will add some points
+     * inside the region.
+     * @param[in] internal_vertices points inside the domain to constrain mesh
+     * generation.
      * There is one vector per region.
      */
-    void RINGMESH_API tetrahedralize(
-        GeoModel3D& geomodel,
+    void RINGMESH_API tetrahedralize( GeoModel3D& geomodel,
         const std::string& method,
         index_t region_id,
         bool add_steiner_points,
@@ -144,9 +154,8 @@ namespace RINGMesh {
      * @param[in/out] geomodel GeoModel on which compute the translation
      * @param[in] translation_vector vector of translation.
      */
-    template< index_t DIMENSION >
-    void translate(
-        GeoModel< DIMENSION >& geomodel,
+    template < index_t DIMENSION >
+    void translate( GeoModel< DIMENSION >& geomodel,
         const vecn< DIMENSION >& translation_vector );
 
     /*!
@@ -166,8 +175,7 @@ namespace RINGMesh {
      * @param[in] degrees true is \p angle is in degrees, false
      * if in radians.
      */
-    void RINGMESH_API rotate(
-        GeoModel3D& geomodel,
+    void RINGMESH_API rotate( GeoModel3D& geomodel,
         const vec3& origin,
         const vec3& axis,
         double angle,

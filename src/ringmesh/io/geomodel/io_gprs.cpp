@@ -51,7 +51,9 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" );
         }
-        void save( const GeoModel3D& geomodel, const std::string& filename ) final
+        void save(
+            const GeoModel3D& geomodel,
+            const std::string& filename ) final
         {
             std::string path = GEO::FileSystem::dir_name( filename );
             std::string directory = GEO::FileSystem::base_name( filename );
@@ -80,9 +82,9 @@ namespace {
             const GeoModelMesh3D& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
-            for( auto c : range( mesh.cells.nb() ) ) {
+            for( auto c :range( mesh.cells.nb() ) ) {
                 for( auto f : range( mesh.cells.nb_facets( c ) ) ) {
-                    index_t facet = NO_ID;
+                    index_t facet { NO_ID };
                     bool not_used;
                     if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
                         not_used ) ) {
@@ -106,7 +108,7 @@ namespace {
             std::vector< vec3 > edge_vertices( nb_edges );
             index_t count_edge = 0;
             for( const auto& line : geomodel.lines() ) {
-                for( auto e : range( line.nb_mesh_elements() ) ) {
+                for( index_t e : range( line.nb_mesh_elements() ) ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) );
                 }
@@ -114,8 +116,8 @@ namespace {
             NNSearch3D nn_search( edge_vertices, false );
 
             const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
-            for( auto p : range( polygons.nb() ) ) {
-                for( auto e : range( polygons.nb_vertices( p ) ) ) {
+            for( index_t p : range( polygons.nb() ) ) {
+                for( index_t e : range( polygons.nb_vertices( p ) ) ) {
                     index_t adj = polygons.adjacent( PolygonLocalEdge( p, e ) );
                     if( adj != GEO::NO_CELL && adj < p ) {
                         pipes.emplace_back( p + cell_offset, adj + cell_offset );
@@ -138,19 +140,19 @@ namespace {
                 }
             }
 
-            auto nb_pipes = static_cast< index_t >( pipes.size() );
+            auto nb_pipes = static_cast< index_t > ( pipes.size() );
             for( const auto& vertices : edges ) {
-                nb_pipes += binomial_coef(
-                    static_cast< index_t >( vertices.size() ) );
+                nb_pipes += binomial_coef( static_cast< index_t > ( vertices.size() ) );
             }
             out_pipes << nb_pipes << EOL;
-            for( const Pipe& pipe : pipes ) {
+            for( const auto& pipe : pipes ) {
                 out_pipes << pipe.v0 << SPACE << pipe.v1 << EOL;
             }
-            for( const std::vector< index_t >& vertices : edges ) {
+            for( const auto& vertices : edges ) {
                 for( auto v0 : range( vertices.size() - 1 ) ) {
                     for( auto v1 : range( v0 + 1, vertices.size() ) ) {
-                        out_pipes << vertices[v0] << SPACE << vertices[v1] << EOL;
+                        out_pipes << vertices[v0] << SPACE << vertices[v1]
+                            << EOL;
                     }
                 }
             }

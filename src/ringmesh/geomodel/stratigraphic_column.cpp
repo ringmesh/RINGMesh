@@ -35,8 +35,8 @@
 
 #include <ringmesh/geomodel/stratigraphic_column.h>
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     StratigraphicUnit::StratigraphicUnit()
         : name_( "none" ), rock_( RockFeature( "none" ) )
     {
@@ -57,23 +57,21 @@ namespace RINGMesh {
         RockFeature rock,
         double min_thick,
         double max_thick )
-        :
-            StratigraphicUnit( std::move( name ), std::move( rock ) ),
-            interface_top_( &interface_top ),
-            interface_base_( &interface_base ),
-            layer_( &layer ),
-            relation_top_( relation_top ),
-            relation_base_( relation_base ),
-            min_thick_( min_thick ),
-            max_thick_( max_thick )
+        : StratigraphicUnit( std::move( name ), std::move( rock ) ),
+          interface_top_( &interface_top ),
+          interface_base_( &interface_base ),
+          layer_( &layer ),
+          relation_top_( relation_top ),
+          relation_base_( relation_base ),
+          min_thick_( min_thick ),
+          max_thick_( max_thick )
     {
         // TODO Should we keep this layer_? [AB]
         ringmesh_unused( layer_ );
     }
 
     void StratigraphicColumn::insert_unit_below(
-        const StratigraphicUnit& above,
-        const StratigraphicUnit& to_add )
+        const StratigraphicUnit& above, const StratigraphicUnit& to_add )
     {
         index_t index = get_index( above.get_name() );
         ringmesh_assert( index != NO_ID );
@@ -87,7 +85,8 @@ namespace RINGMesh {
         units_.insert( units_.begin(), ptr_add );
     }
 
-    void StratigraphicColumn::insert_base_unit( const StratigraphicUnit& to_add )
+    void StratigraphicColumn::insert_base_unit(
+        const StratigraphicUnit& to_add )
     {
         const StratigraphicUnit* ptr_add = &to_add;
         units_.push_back( ptr_add );
@@ -127,7 +126,8 @@ namespace RINGMesh {
     double StratigraphicColumn::get_column_min_thick() const
     {
         double sum = 0;
-        for( const StratigraphicUnit* unit : units_ ) {
+        for( const StratigraphicUnit* unit : units_ )
+        {
             sum += unit->get_min_thick();
         }
         return sum;
@@ -136,7 +136,8 @@ namespace RINGMesh {
     double StratigraphicColumn::get_column_max_thick() const
     {
         double sum = 0;
-        for( const StratigraphicUnit* unit : units_ ) {
+        for( const StratigraphicUnit* unit : units_ )
+        {
             sum += unit->get_max_thick();
         }
         return sum;
@@ -144,8 +145,10 @@ namespace RINGMesh {
 
     index_t StratigraphicColumn::get_index( const std::string& name ) const
     {
-        for( auto i : range( units_.size() ) ) {
-            if( units_[i]->get_name() == name ) {
+        for( auto i : range( units_.size() ) )
+        {
+            if( units_[i]->get_name() == name )
+            {
                 return i;
             }
         }

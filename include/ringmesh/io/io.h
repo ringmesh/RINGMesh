@@ -51,7 +51,8 @@ const char TAB = '\t';
  * @author Various
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     class StratigraphicColumn;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
@@ -60,52 +61,55 @@ namespace RINGMesh {
     ALIAS_3D( WellGroup );
 } // namespace RINGMesh
 
-namespace GEO {
+namespace GEO
+{
     class MeshSubElementsStore;
 } // namespace GEO
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * Compares the contains of two files
      * @param[in] f1 the first filename
      * @param[in] f2 the second filename
      * @return return True if the files are identical
      */
-    bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 );
+    bool RINGMESH_API compare_files(
+        const std::string& f1, const std::string& f2 );
     /*!
      * Loads a GeoModel from a file
      * @param[out] geomodel the geomodel to fill
      * @param[in] filename the file to load
      */
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     bool geomodel_load(
-        GeoModel< DIMENSION >& geomodel,
-        const std::string& filename );
+        GeoModel< DIMENSION >& geomodel, const std::string& filename );
     /*!
      * Saves a GeoModel to a file
      * @param[in] geomodel the geomodel to save
      * @param[in] filename the file to save
      */
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void geomodel_save(
-        const GeoModel< DIMENSION >& geomodel,
-        const std::string& filename );
+        const GeoModel< DIMENSION >& geomodel, const std::string& filename );
     /*!
      * Loads a WellGroup from a file
      * @param[in] filename the file to load
      * @param][in,out] wells the wells to fill
      */
-    void RINGMESH_API well_load( const std::string& filename, WellGroup3D& wells );
+    void RINGMESH_API well_load(
+        const std::string& filename, WellGroup3D& wells );
 
     /*!
      * Returns the dimension of the GeoModel in the \p filename
      */
     index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
 
-    template< index_t DIMENSION >
-    class GeoModelIOHandler {
-    ringmesh_disable_copy_and_move( GeoModelIOHandler );
+    template < index_t DIMENSION >
+    class GeoModelIOHandler
+    {
+        ringmesh_disable_copy_and_move( GeoModelIOHandler );
+
     public:
         virtual ~GeoModelIOHandler() = default;
 
@@ -115,11 +119,9 @@ namespace RINGMesh {
             const std::string& filename );
 
         bool load_geomodel(
-            const std::string& filename,
-            GeoModel< DIMENSION >& geomodel );
+            const std::string& filename, GeoModel< DIMENSION >& geomodel );
 
-        void save_geomodel(
-            const GeoModel< DIMENSION >& geomodel,
+        void save_geomodel( const GeoModel< DIMENSION >& geomodel,
             const std::string& filename );
 
         virtual index_t dimension( const std::string& filename ) const
@@ -131,11 +133,9 @@ namespace RINGMesh {
     protected:
         GeoModelIOHandler() = default;
         virtual void load(
-            const std::string& filename,
-            GeoModel< DIMENSION >& geomodel ) = 0;
+            const std::string& filename, GeoModel< DIMENSION >& geomodel ) = 0;
 
-        virtual void save(
-            const GeoModel< DIMENSION >& geomodel,
+        virtual void save( const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) = 0;
 
     private:
@@ -145,14 +145,17 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( GeoModelIOHandler );
 
-    template< index_t DIMENSION >
-    using GeoModelIOHandlerFactory = Factory< std::string, GeoModelIOHandler< DIMENSION > >;
+    template < index_t DIMENSION >
+    using GeoModelIOHandlerFactory =
+        Factory< std::string, GeoModelIOHandler< DIMENSION > >;
 
     ALIAS_2D_AND_3D( GeoModelIOHandlerFactory );
 
     /***************************************************************************/
-    class RINGMESH_API WellGroupIOHandler {
-    ringmesh_disable_copy_and_move( WellGroupIOHandler );
+    class RINGMESH_API WellGroupIOHandler
+    {
+        ringmesh_disable_copy_and_move( WellGroupIOHandler );
+
     public:
         virtual ~WellGroupIOHandler() = default;
 
@@ -164,8 +167,7 @@ namespace RINGMesh {
         virtual void load( const std::string& filename, WellGroup3D& mesh ) = 0;
 
         virtual void save(
-            const WellGroup3D& mesh,
-            const std::string& filename ) = 0;
+            const WellGroup3D& mesh, const std::string& filename ) = 0;
 
     protected:
         WellGroupIOHandler() = default;
@@ -174,15 +176,18 @@ namespace RINGMesh {
         static std::unique_ptr< WellGroupIOHandler > create(
             const std::string& format );
     };
-    using WellGroupIOHandlerFactory = Factory< std::string, WellGroupIOHandler >;
+    using WellGroupIOHandlerFactory =
+        Factory< std::string, WellGroupIOHandler >;
 
     /***************************************************************************/
 
     void RINGMESH_API mesh_initialize();
 
     /*********************************************************************************************/
-    class RINGMESH_API StratigraphicColumnIOHandler {
-    ringmesh_disable_copy_and_move( StratigraphicColumnIOHandler );
+    class RINGMESH_API StratigraphicColumnIOHandler
+    {
+        ringmesh_disable_copy_and_move( StratigraphicColumnIOHandler );
+
     public:
         virtual ~StratigraphicColumnIOHandler() = default;
 
@@ -191,13 +196,11 @@ namespace RINGMesh {
         static std::unique_ptr< StratigraphicColumnIOHandler > get_handler(
             const std::string& filename );
 
-        virtual void load(
-            const std::string& filename,
+        virtual void load( const std::string& filename,
             StratigraphicColumn& column,
             GeoModel3D& geomodel ) = 0;
 
-        virtual void save(
-            const StratigraphicColumn& column,
+        virtual void save( const StratigraphicColumn& column,
             const std::string& filename ) = 0;
 
     protected:
@@ -206,7 +209,7 @@ namespace RINGMesh {
     private:
         static std::unique_ptr< StratigraphicColumnIOHandler > create(
             const std::string& format );
-
     };
-    using StratigraphicColumnIOHandlerFactory = Factory< std::string, StratigraphicColumnIOHandler >;
+    using StratigraphicColumnIOHandlerFactory =
+        Factory< std::string, StratigraphicColumnIOHandler >;
 } // namespace RINGMesh

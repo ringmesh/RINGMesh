@@ -53,12 +53,10 @@
  * @author Pierre Anquez
  */
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     void open_viewer_load_geomodel_then_close(
-        const int argc,
-        char** argv,
-        const std::string& glup_profile )
+        const int argc, char** argv, const std::string& glup_profile )
     {
         RINGMeshApplication app( argc, argv );
 
@@ -66,20 +64,20 @@ namespace RINGMesh {
 
         // Create the tasks for launching the app window
         // and the one for closing the window
-        std::future< void > start = std::async( std::launch::async,
-            &RINGMeshApplication::start, &app );
+        std::future< void > start =
+            std::async( std::launch::async, &RINGMeshApplication::start, &app );
         std::this_thread::sleep_for( std::chrono::seconds( 3 ) );
-        std::future< void > end = std::async( std::launch::async,
-            &RINGMeshApplication::quit, &app );
+        std::future< void > end =
+            std::async( std::launch::async, &RINGMeshApplication::quit, &app );
     }
-
 }
 
 int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         char ringmesh_view[] = "ringmesh-view";
         std::string input_model_file_name( ringmesh_test_data_path );
         input_model_file_name += "modelA6.ml";
@@ -92,18 +90,22 @@ int main()
 
         std::vector< std::string > GLUP_profiles( 1, "" );
         GLUP_profiles[0] = "auto";
-//        GLUP_profiles[1] = "GLUP150" ;
-//        GLUP_profiles[2] = "GLUP440" ;
-//        GLUP_profiles[3] = "VanillaGL" ;
+        //        GLUP_profiles[1] = "GLUP150" ;
+        //        GLUP_profiles[2] = "GLUP440" ;
+        //        GLUP_profiles[3] = "VanillaGL" ;
 
-        for( const std::string& profile : GLUP_profiles ) {
+        for( const std::string& profile : GLUP_profiles )
+        {
             open_viewer_load_geomodel_then_close( argc, argv, profile );
         }
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
@@ -112,8 +114,8 @@ int main()
 }
 
 #else
-int main() {
-
+int main()
+{
     using namespace RINGMesh;
 
     default_configure();
