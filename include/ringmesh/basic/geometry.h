@@ -243,30 +243,44 @@ namespace RINGMesh
     {
         Frame3D() = default;
 
-        Frame3D( vec3 frame_origin, vec3 u_axis, vec3 v_axis, vec3 w_axis )
-            : origin( std::move( frame_origin ) ),
-              u( std::move( normalize( u_axis ) ) ),
+        Frame3D( vec3 u_axis, vec3 v_axis, vec3 w_axis )
+            : u( std::move( normalize( u_axis ) ) ),
               v( std::move( normalize( v_axis ) ) ),
               w( std::move( normalize( w_axis ) ) )
         {
         }
 
-        vec3 origin{};
         vec3 u{};
         vec3 v{};
         vec3 w{};
     };
 
-    struct RINGMESH_API PlaneFrame3D : public Frame3D
+    struct RINGMESH_API ReferenceFrame3D : public Frame3D
     {
-        PlaneFrame3D() = default;
+        ReferenceFrame3D() = default;
 
-        PlaneFrame3D( vec3 frame_origin, vec3 u_axis, vec3 v_axis, vec3 w_axis )
-            : Frame3D( frame_origin, u_axis, v_axis, w_axis )
+        ReferenceFrame3D( vec3 frame_origin, Frame3D frame )
+            : Frame3D( frame ), origin( std::move( frame_origin ) )
         {
         }
 
-        PlaneFrame3D( const Geometry::Plane& plane );
+        vec3 origin{};
+    };
+
+    /*!
+     * @brief Reference frame aligned along the plane normal and whose u axis is
+     * upward
+     */
+    struct RINGMESH_API PlaneReferenceFrame3D : public ReferenceFrame3D
+    {
+        PlaneReferenceFrame3D() = default;
+
+        PlaneReferenceFrame3D( vec3 frame_origin, Frame3D frame )
+            : ReferenceFrame3D( frame_origin, frame )
+        {
+        }
+
+        PlaneReferenceFrame3D( const Geometry::Plane& plane );
     };
 
     namespace Distance

@@ -56,7 +56,7 @@ namespace RINGMesh
               geomodel3d_from_( geomodel3d_from ),
               plane_( plane )
         {
-            PlaneFrame3D plane_frame( plane );
+            PlaneReferenceFrame3D plane_frame( plane );
             u_axis_ = std::move( plane_frame.u );
             v_axis_ = std::move( plane_frame.v );
         }
