@@ -40,6 +40,7 @@
 #include <vector>
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/geometry.h>
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
@@ -415,6 +416,9 @@ namespace RINGMesh
 
     public:
         GeoModel();
+
+        GeoModel( const Frame3D plane_reference_frame );
+
         ~GeoModel() override;
 
         corner_range< 2 > corners() const
@@ -435,6 +439,10 @@ namespace RINGMesh
             return geol_entity_range< 2 >( *this, geol_type );
         }
         LineSide voi_lines() const;
+
+    private:
+        Frame3D reference_frame_ { { 0., 0., 0. }, { 0., 0., 1. }, { 1., 0., 0. }, {
+            0., 1., 0. } };
     };
 
     ALIAS_2D_AND_3D( GeoModel );

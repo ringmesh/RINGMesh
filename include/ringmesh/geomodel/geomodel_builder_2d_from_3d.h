@@ -56,25 +56,9 @@ namespace RINGMesh
               geomodel3d_from_( geomodel3d_from ),
               plane_( plane )
         {
-            // Definition of v axis (upward) of the 2D space (along the plane)
-            auto upward_point = plane_.origin + vec3{ 0., 0., 1. };
-            vec3 v_axis_point_direction;
-            std::tie( std::ignore, v_axis_point_direction ) =
-                Distance::point_to_plane( upward_point, plane_ );
-            if( ( plane_.origin - v_axis_point_direction ).length()
-                < geomodel3d_from.epsilon() )
-            {
-                // Case where plane is sub-horizontal
-                // (v axis is set towards 3D x direction)
-                auto towards_x_point = plane_.origin + vec3{ 1., 0., 0. };
-                std::tie( std::ignore, v_axis_point_direction ) =
-                    Distance::point_to_plane( towards_x_point, plane_ );
-                ringmesh_assert(
-                    ( plane_.origin - v_axis_point_direction ).length()
-                    < geomodel3d_from.epsilon() );
-            }
-            v_axis = normalize( v_axis_point_direction - plane_.origin );
-            u_axis = cross( v_axis, plane_.normal );
+            Frame3D plane2d_frame( plane_.origin, plane_.normal );
+            u_axis = plane2d_frame.u_axis;
+            v_axis = plane2d_frame.v_axis;
         }
 
     protected:
