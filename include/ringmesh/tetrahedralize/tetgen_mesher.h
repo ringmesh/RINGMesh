@@ -44,30 +44,33 @@
 #include <geogram/third_party/tetgen/tetgen.h>
 
 /*!
- * @file Interface GEO::Mesh with Tetgen 
+ * @file Interface GEO::Mesh with Tetgen
  */
-namespace GEO {
+namespace GEO
+{
     class Mesh;
 } // namespace GEO
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
 } // namespace RINGMesh
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * @brief Tetgen wrapper
      * @author Jeanne Pellerin
      */
-    class TetgenMesher {
-    ringmesh_disable_copy_and_move( TetgenMesher );
+    class TetgenMesher
+    {
+        ringmesh_disable_copy_and_move( TetgenMesher );
+
     public:
         TetgenMesher() = default;
         ~TetgenMesher();
 
-        void tetrahedralize(
-            const GEO::Mesh& input_mesh,
+        void tetrahedralize( const GEO::Mesh& input_mesh,
             VolumeMeshBuilder< 3 >& output_mesh_builder );
 
         void add_points_to_match_quality( double quality );
@@ -105,12 +108,13 @@ namespace RINGMesh {
         std::string tetgen_command_line_ = std::string( "QpnYAA" );
         GEO_3rdParty::tetgenbehavior tetgen_args_;
 
-        std::unique_ptr< GEO_3rdParty::tetgenio::polygon[] > polygons_ { };
-        std::unique_ptr< int[] > polygon_corners_ { };
+        std::unique_ptr< GEO_3rdParty::tetgenio::polygon[] > polygons_{};
+        std::unique_ptr< int[] > polygon_corners_{};
     };
 
     /*!
-     * @brief Constrained tetrahedralize of the volumes defined by a triangulated surface mesh
+     * @brief Constrained tetrahedralize of the volumes defined by a
+     * triangulated surface mesh
      * @details Does not require this mesh to be a closed manifold
      * as the equivalent in Geogram function does.
      */

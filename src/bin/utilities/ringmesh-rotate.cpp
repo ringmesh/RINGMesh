@@ -40,14 +40,15 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/io/io.h>
 #include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/io/io.h>
 
 /*!
  * @author Benjamin Chauvin
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
     void hello()
@@ -59,11 +60,12 @@ namespace {
 
     void import_arg_group_rotation()
     {
-        GEO::CmdLine::declare_arg_group( "rotation",
-            "Options to rotate a GeoModel" );
-        GEO::CmdLine::declare_arg( "rotation:origin", "0 0 0",
-            "Origin of the rotation" );
-        GEO::CmdLine::declare_arg( "rotation:axis", "0 0 1", "Axis of rotation" );
+        GEO::CmdLine::declare_arg_group(
+            "rotation", "Options to rotate a GeoModel" );
+        GEO::CmdLine::declare_arg(
+            "rotation:origin", "0 0 0", "Origin of the rotation" );
+        GEO::CmdLine::declare_arg(
+            "rotation:axis", "0 0 1", "Axis of rotation" );
         GEO::CmdLine::declare_arg( "rotation:angle", 90., "Angle of rotation" );
         GEO::CmdLine::declare_arg( "rotation:unit", "deg",
             "Angle unit (deg for degrees or rad for radians)" );
@@ -81,14 +83,16 @@ namespace {
         std::vector< std::string > split_coords;
         split_coords.reserve( 3 );
         GEO::String::split_string( coords_in_string, ' ', split_coords, true );
-        if( split_coords.size() != 3 ) {
+        if( split_coords.size() != 3 )
+        {
             throw RINGMeshException( "I/O", "Vector ", coords_in_string,
                 " has not exactly 3 components" );
         }
         vec3 coords_vec;
-        for( auto split_coords_itr : range( 3 ) ) {
-            coords_vec[split_coords_itr] = GEO::String::to_double(
-                split_coords[split_coords_itr] );
+        for( auto split_coords_itr : range( 3 ) )
+        {
+            coords_vec[split_coords_itr] =
+                GEO::String::to_double( split_coords[split_coords_itr] );
         }
         return coords_vec;
     }
@@ -97,40 +101,53 @@ namespace {
     {
         GEO::Stopwatch total( "Total time" );
 
-        std::string input_geomodel_name = GEO::CmdLine::get_arg( "in:geomodel" );
-        if( input_geomodel_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel" );
+        std::string input_geomodel_name =
+            GEO::CmdLine::get_arg( "in:geomodel" );
+        if( input_geomodel_name.empty() )
+        {
+            throw RINGMeshException(
+                "I/O", "Give at least a filename in in:geomodel" );
         }
         GeoModel3D geomodel;
         geomodel_load( geomodel, input_geomodel_name );
 
-        std::string rotation_origin_string = GEO::CmdLine::get_arg(
-            "rotation:origin" );
-        vec3 rotation_origin_vec = extract_coords_from_string(
-            rotation_origin_string );
+        std::string rotation_origin_string =
+            GEO::CmdLine::get_arg( "rotation:origin" );
+        vec3 rotation_origin_vec =
+            extract_coords_from_string( rotation_origin_string );
 
-        std::string rotation_axis_string = GEO::CmdLine::get_arg( "rotation:axis" );
-        vec3 rotation_axis_vec = extract_coords_from_string( rotation_axis_string );
+        std::string rotation_axis_string =
+            GEO::CmdLine::get_arg( "rotation:axis" );
+        vec3 rotation_axis_vec =
+            extract_coords_from_string( rotation_axis_string );
 
-        double rotation_angle = GEO::CmdLine::get_arg_double( "rotation:angle" );
+        double rotation_angle =
+            GEO::CmdLine::get_arg_double( "rotation:angle" );
         std::string rotation_unit = GEO::CmdLine::get_arg( "rotation:unit" );
         bool is_deg;
-        if( rotation_unit == "deg" ) {
+        if( rotation_unit == "deg" )
+        {
             is_deg = true;
-        } else if( rotation_unit == "rad" ) {
+        }
+        else if( rotation_unit == "rad" )
+        {
             is_deg = false;
-        } else {
-            throw RINGMeshException( "I/O", "Unknown angle unit ", rotation_unit );
+        }
+        else
+        {
+            throw RINGMeshException(
+                "I/O", "Unknown angle unit ", rotation_unit );
         }
 
-        rotate( geomodel, rotation_origin_vec, rotation_axis_vec, rotation_angle,
-            is_deg );
+        rotate( geomodel, rotation_origin_vec, rotation_axis_vec,
+            rotation_angle, is_deg );
 
-        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" );
-        if( output_geomodel_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in out:geomodel" );
+        std::string output_geomodel_name =
+            GEO::CmdLine::get_arg( "out:geomodel" );
+        if( output_geomodel_name.empty() )
+        {
+            throw RINGMeshException(
+                "I/O", "Give at least a filename in out:geomodel" );
         }
         geomodel_save( geomodel, output_geomodel_name );
     }
@@ -140,27 +157,32 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh;
 
-    try {
-
+    try
+    {
         default_configure();
         hello();
         import_arg_groups();
 
-        if( argc == 1 ) {
+        if( argc == 1 )
+        {
             GEO::CmdLine::show_usage();
             return 0;
         }
 
         std::vector< std::string > filenames;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+        if( !GEO::CmdLine::parse( argc, argv, filenames ) )
+        {
             return 1;
         }
         run();
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

@@ -13,7 +13,7 @@
  *  * Neither the name of the ALICE Project-Team nor the names of its
  *  contributors may be used to endorse or promote products derived from this
  *  software without specific prior written permission.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -89,16 +89,19 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh;
 
-    try {
-
+    try
+    {
         RINGMeshApplication app( argc, argv );
         app.start();
         return 0;
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
@@ -107,8 +110,8 @@ int main( int argc, char** argv )
 
 #else
 #include <geogram/basic/logger.h>
-int main() {
-
+int main()
+{
     configure_geogram();
     configure_ringmesh();
     Logger::out( "RINGMesh-View",

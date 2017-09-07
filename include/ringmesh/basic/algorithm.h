@@ -45,19 +45,22 @@
  * @todo Rename these functions
  */
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /*!
      * @brief Returns the position of the first entity matching @param value
      * in the container, NO_ID if not found.
      */
-    template< typename T, typename container >
+    template < typename T, typename container >
     index_t find( const container& in, const T& value )
     {
         auto it = std::find( in.begin(), in.end(), value );
-        if( it == in.end() ) {
+        if( it == in.end() )
+        {
             return NO_ID;
-        } else {
+        }
+        else
+        {
             return static_cast< index_t >( it - in.begin() );
         }
     }
@@ -66,46 +69,54 @@ namespace RINGMesh {
      * @brief Returns the position of the first entity matching @param value
      * in a sorted container, NO_ID if not found.
      */
-    template< typename T, typename container >
+    template < typename T, typename container >
     index_t find_sorted( const container& in, const T& value )
     {
         auto low = std::lower_bound( in.begin(), in.end(), value );
-        if( low == in.end() || value < *low ) {
+        if( low == in.end() || value < *low )
+        {
             return NO_ID;
-        } else {
+        }
+        else
+        {
             return static_cast< index_t >( low - in.begin() );
         }
     }
 
-    template< typename T, typename container >
+    template < typename T, typename container >
     bool contains( const container& in, const T& value )
     {
         return find( in, value ) != NO_ID;
     }
 
-    template< typename T, typename container >
+    template < typename T, typename container >
     bool contains_sorted( const container& in, const T& value )
     {
         return find_sorted( in, value ) != NO_ID;
     }
 
     /*!
-     * @brief Bubble sorting of input and output vectors according to values of input.
+     * @brief Bubble sorting of input and output vectors according to values of
+     * input.
      * @note Not efficient.
      */
-    template< typename T1, typename T2 >
+    template < typename T1, typename T2 >
     void indirect_sort( std::vector< T1 >& input, std::vector< T2 >& output )
     {
-        if( input.size() < 2 ) {
+        if( input.size() < 2 )
+        {
             return;
         }
-        for( auto it1 : range( input.size() - 1) ) {
+        for( auto it1 : range( input.size() - 1 ) )
+        {
             index_t ref_index = it1;
             T1 ref_value = input[it1];
-            for( auto it2 : range( it1 + 1, input.size() ) ) {
+            for( auto it2 : range( it1 + 1, input.size() ) )
+            {
                 index_t new_index = it2;
                 T1 new_value = input[it2];
-                if( ref_value > new_value ) {
+                if( ref_value > new_value )
+                {
                     ref_value = new_value;
                     ref_index = new_index;
                 }
@@ -120,7 +131,7 @@ namespace RINGMesh {
      * @param[in,out] container the container to sort
      * @param[in] cmp a comparator function
      */
-    template< typename CONTAINER, typename CMP >
+    template < typename CONTAINER, typename CMP >
     void sort_unique( CONTAINER& container, const CMP& cmp )
     {
         std::sort( container.begin(), container.end(), cmp );
@@ -132,7 +143,7 @@ namespace RINGMesh {
      * @brief Sorts a container and suppresses all duplicated entities.
      * @param[in,out] container the container to sort
      */
-    template< typename CONTAINER >
+    template < typename CONTAINER >
     void sort_unique( CONTAINER& container )
     {
         std::sort( container.begin(), container.end() );
