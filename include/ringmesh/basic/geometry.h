@@ -87,29 +87,6 @@ namespace RINGMesh
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
 
-    struct RINGMESH_API Frame3D
-    {
-        Frame3D() = default;
-
-        Frame3D( vec3 normalized_origin,
-            vec3 normalized_normal,
-            vec3 normalized_u_axis,
-            vec3 normalized_v_axis )
-            : origin( std::move( normalized_origin ) ),
-              normal( std::move( normalized_normal ) ),
-              u_axis( std::move( normalized_u_axis ) ),
-              v_axis( std::move( normalized_v_axis ) )
-        {
-        }
-
-        Frame3D( vec3 normalized_origin, vec3 normalized_normal );
-
-        vec3 origin{};
-        vec3 normal{};
-        vec3 u_axis{};
-        vec3 v_axis{};
-    };
-
     namespace Geometry
     {
         template < index_t DIMENSION >
@@ -261,6 +238,36 @@ namespace RINGMesh
 
         using Disk = Circle;
     } // namespace Geometry
+
+    struct RINGMESH_API Frame3D
+    {
+        Frame3D() = default;
+
+        Frame3D( vec3 frame_origin, vec3 u_axis, vec3 v_axis, vec3 w_axis )
+            : origin( std::move( frame_origin ) ),
+              u( std::move( normalize( u_axis ) ) ),
+              v( std::move( normalize( v_axis ) ) ),
+              w( std::move( normalize( w_axis ) ) )
+        {
+        }
+
+        vec3 origin{};
+        vec3 u{};
+        vec3 v{};
+        vec3 w{};
+    };
+
+    struct RINGMESH_API PlaneFrame3D : public Frame3D
+    {
+        PlaneFrame3D() = default;
+
+        PlaneFrame3D( vec3 frame_origin, vec3 u_axis, vec3 v_axis, vec3 w_axis )
+            : Frame3D( frame_origin, u_axis, v_axis, w_axis )
+        {
+        }
+
+        PlaneFrame3D( const Geometry::Plane& plane );
+    };
 
     namespace Distance
     {

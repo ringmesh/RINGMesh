@@ -68,7 +68,7 @@ int main()
         vec3 plane_normal{ 987., 0., 2150. };
         vec3 plane_origin{ 6300., 10500., -3200. };
         Geometry::Plane projection_plane( plane_normal, plane_origin );
-        Frame3D plane_frame( plane_origin, plane_normal );
+        PlaneFrame3D plane_frame( projection_plane );
         GeoModel2D projection_geomodel2d( plane_frame );
         GeoModelBuilder2DProjection geomodel2d_builder(
             projection_geomodel2d, geomodel3d, projection_plane );
