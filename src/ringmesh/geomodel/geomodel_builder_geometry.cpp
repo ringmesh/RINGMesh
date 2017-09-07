@@ -290,6 +290,32 @@ namespace RINGMesh
         return PointSetMeshBuilder< DIMENSION >::create_builder( corner_mesh );
     }
 
+    template< index_t DIMENSION >
+    std::unique_ptr< LineMeshBuilder< DIMENSION > > GeoModelBuilderGeometryBase<
+        DIMENSION >::create_line_builder( index_t line_id )
+    {
+        gmme_id id( Line< DIMENSION >::type_name_static(), line_id );
+        GeoModelMeshEntity< DIMENSION >& line =
+            geomodel_access_.modifiable_mesh_entity( id );
+        GeoModelMeshEntityAccess< DIMENSION > line_access( line );
+        auto& line_mesh =
+            dynamic_cast< LineMesh< DIMENSION >& >( *line_access.modifiable_mesh() );
+        return LineMeshBuilder< DIMENSION >::create_builder( line_mesh );
+    }
+
+    template< index_t DIMENSION >
+    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > GeoModelBuilderGeometryBase<
+        DIMENSION >::create_surface_builder( index_t surface_id )
+    {
+        gmme_id id( Surface< DIMENSION >::type_name_static(), surface_id );
+        GeoModelMeshEntity< DIMENSION >& surface =
+            geomodel_access_.modifiable_mesh_entity( id );
+        GeoModelMeshEntityAccess< DIMENSION > surface_access( surface );
+        auto& surface_mesh =
+            dynamic_cast< SurfaceMesh< DIMENSION >& >( *surface_access.modifiable_mesh() );
+        return SurfaceMeshBuilder< DIMENSION >::create_builder( surface_mesh );
+    }
+
     template < index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::copy_meshes(
         const GeoModel< DIMENSION >& geomodel )

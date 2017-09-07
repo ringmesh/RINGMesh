@@ -105,16 +105,7 @@ namespace RINGMesh
          * You can use the smartpointer LineMeshBuilder_var.
          */
         std::unique_ptr< LineMeshBuilder< DIMENSION > > create_line_builder(
-            index_t line_id )
-        {
-            gmme_id id( Line< DIMENSION >::type_name_static(), line_id );
-            GeoModelMeshEntity< DIMENSION >& line =
-                geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess< DIMENSION > line_access( line );
-            auto& line_mesh = dynamic_cast< LineMesh< DIMENSION >& >(
-                *line_access.modifiable_mesh() );
-            return LineMeshBuilder< DIMENSION >::create_builder( line_mesh );
-        }
+            index_t line_id );
 
         /*!
          * @brief Create a Mesh2DBuilder for a given surface
@@ -124,17 +115,7 @@ namespace RINGMesh
          * You can use the smartpointer Mesh2DBuilder_var.
          */
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
-            create_surface_builder( index_t surface_id )
-        {
-            gmme_id id( Surface< DIMENSION >::type_name_static(), surface_id );
-            GeoModelMeshEntity< DIMENSION >& surface =
-                geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess< DIMENSION > surface_access( surface );
-            auto& surface_mesh = dynamic_cast< SurfaceMesh< DIMENSION >& >(
-                *surface_access.modifiable_mesh() );
-            return SurfaceMeshBuilder< DIMENSION >::create_builder(
-                surface_mesh );
-        }
+            create_surface_builder( index_t surface_id );
 
         /*!
          * @brief Copy all entity meshes from the input geomodel
