@@ -440,7 +440,7 @@ namespace RINGMesh
         RINGMESH_API point_segment_projection(
             const vecn< 3 >&, const vecn< 3 >&, const vecn< 3 >& );
 
-    PlaneFrame3D::PlaneFrame3D( const Geometry::Plane& plane )
+    PlaneReferenceFrame3D::PlaneReferenceFrame3D( const Geometry::Plane& plane )
     {
         origin = plane.origin;
         w = plane.normal;

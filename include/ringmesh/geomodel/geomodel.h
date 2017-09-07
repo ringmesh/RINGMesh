@@ -417,7 +417,7 @@ namespace RINGMesh
     public:
         GeoModel();
 
-        GeoModel( const Frame3D plane_reference_frame );
+        GeoModel( const PlaneReferenceFrame3D plane_reference_frame );
 
         ~GeoModel() override;
 
@@ -441,8 +441,8 @@ namespace RINGMesh
         LineSide voi_lines() const;
 
     private:
-        Frame3D reference_frame_{ { 0., 0., 0. }, { 0., 0., 1. },
-            { 1., 0., 0. }, { 0., 1., 0. } };
+        PlaneReferenceFrame3D reference_frame_{ { 0., 0., 0. },
+            { { 0., 0., 1. }, { 1., 0., 0. }, { 0., 1., 0. } } };
     };
 
     ALIAS_2D_AND_3D( GeoModel );

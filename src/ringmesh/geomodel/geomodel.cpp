@@ -231,7 +231,7 @@ namespace RINGMesh
     {
     }
 
-    GeoModel< 2 >::GeoModel( Frame3D plane_reference_frame )
+    GeoModel< 2 >::GeoModel( PlaneReferenceFrame3D plane_reference_frame )
         : GeoModelBase< 2 >( *this ),
           reference_frame_( std::move( plane_reference_frame ) )
     {
