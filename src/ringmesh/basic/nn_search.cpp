@@ -139,6 +139,11 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    NNSearch< DIMENSION >::~NNSearch()
+    {
+    }
+
+    template < index_t DIMENSION >
     vecn< DIMENSION > NNSearch< DIMENSION >::point( index_t v ) const
     {
         return impl_->point( v );
@@ -220,8 +225,8 @@ namespace RINGMesh
     }
 
     template class RINGMESH_API NNSearch< 2 >;
-    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 2 > );
+//    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 2 > );
 
     template class RINGMESH_API NNSearch< 3 >;
-    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 3 > );
+//    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 3 > );
 } // namespace RINGMesh

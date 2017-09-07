@@ -56,7 +56,7 @@ namespace RINGMesh
         explicit NNSearch( const std::vector< vecn< DIMENSION > >& vertices,
             bool copy = true );
 
-        ~NNSearch() = default;
+        ~NNSearch();
 
         /*!
          * @brief Gets the \p index_map that link all the duplicated points
