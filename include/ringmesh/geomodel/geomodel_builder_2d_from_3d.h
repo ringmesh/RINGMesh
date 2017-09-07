@@ -57,8 +57,8 @@ namespace RINGMesh
               plane_( plane )
         {
             Frame3D plane2d_frame( plane_.origin, plane_.normal );
-            u_axis_ = plane2d_frame.u_axis;
-            v_axis_ = plane2d_frame.v_axis;
+            u_axis_ = std::move( plane2d_frame.u_axis );
+            v_axis_ = std::move( plane2d_frame.v_axis );
         }
 
     protected:
