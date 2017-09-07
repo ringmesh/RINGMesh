@@ -91,15 +91,18 @@ namespace RINGMesh
     {
         Frame3D() = default;
 
-        Frame3D( vec3 origin, vec3 normal, vec3 u_axis, vec3 v_axis )
-            : origin( std::move( origin ) ),
-              normal( std::move( normal ) ),
-              u_axis( std::move( u_axis ) ),
-              v_axis( std::move( v_axis ) )
+        Frame3D( vec3 normalized_origin,
+            vec3 normalized_normal,
+            vec3 normalized_u_axis,
+            vec3 normalized_v_axis )
+            : origin( std::move( normalized_origin ) ),
+              normal( std::move( normalized_normal ) ),
+              u_axis( std::move( normalized_u_axis ) ),
+              v_axis( std::move( normalized_v_axis ) )
         {
         }
 
-        Frame3D( const vec3 origin, const vec3 normal );
+        Frame3D( const vec3 normalized_origin, const vec3 normalized_normal );
 
         vec3 origin{};
         vec3 normal{};
