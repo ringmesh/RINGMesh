@@ -50,6 +50,7 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
 
 /*!
  * @file Implementation of Wells

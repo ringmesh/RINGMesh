@@ -45,6 +45,11 @@
  * @author Jeanne Pellerin
  */
 
+namespace GEO
+{
+    class Mesh;
+} // namespace GEO
+
 namespace RINGMesh
 {
     // Implementation class
