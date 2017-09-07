@@ -167,6 +167,8 @@ namespace {
         }
         void save( const GeoModel2D& geomodel, const std::string& filename ) final
         {
+            ringmesh_unused( geomodel );
+            ringmesh_unused( filename );
             throw RINGMeshException( "I/O",
                 "Cannot save a GeoModel for Stradivarius" );
         }

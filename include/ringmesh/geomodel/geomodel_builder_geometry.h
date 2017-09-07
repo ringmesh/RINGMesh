@@ -50,8 +50,13 @@ namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
 
     ALIAS_2D_AND_3D( GeoModelBuilder );
+    ALIAS_2D_AND_3D( VolumeMeshBuilder );
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -90,17 +95,7 @@ namespace RINGMesh
          * You can use the smartpointer Mesh0DBuilder_var.
          */
         std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
-            create_corner_builder( index_t corner_id )
-        {
-            gmme_id id( Corner< DIMENSION >::type_name_static(), corner_id );
-            GeoModelMeshEntity< DIMENSION >& corner =
-                geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess< DIMENSION > corner_access( corner );
-            auto& corner_mesh = dynamic_cast< PointSetMesh< DIMENSION >& >(
-                *corner_access.modifiable_mesh() );
-            return PointSetMeshBuilder< DIMENSION >::create_builder(
-                corner_mesh );
-        }
+            create_corner_builder( index_t corner_id );
 
         /*!
          * @brief Create a LineMeshBuilder for a given line
@@ -110,16 +105,7 @@ namespace RINGMesh
          * You can use the smartpointer LineMeshBuilder_var.
          */
         std::unique_ptr< LineMeshBuilder< DIMENSION > > create_line_builder(
-            index_t line_id )
-        {
-            gmme_id id( Line< DIMENSION >::type_name_static(), line_id );
-            GeoModelMeshEntity< DIMENSION >& line =
-                geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess< DIMENSION > line_access( line );
-            auto& line_mesh = dynamic_cast< LineMesh< DIMENSION >& >(
-                *line_access.modifiable_mesh() );
-            return LineMeshBuilder< DIMENSION >::create_builder( line_mesh );
-        }
+            index_t line_id );
 
         /*!
          * @brief Create a Mesh2DBuilder for a given surface
@@ -129,17 +115,7 @@ namespace RINGMesh
          * You can use the smartpointer Mesh2DBuilder_var.
          */
         std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
-            create_surface_builder( index_t surface_id )
-        {
-            gmme_id id( Surface< DIMENSION >::type_name_static(), surface_id );
-            GeoModelMeshEntity< DIMENSION >& surface =
-                geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess< DIMENSION > surface_access( surface );
-            auto& surface_mesh = dynamic_cast< SurfaceMesh< DIMENSION >& >(
-                *surface_access.modifiable_mesh() );
-            return SurfaceMeshBuilder< DIMENSION >::create_builder(
-                surface_mesh );
-        }
+            create_surface_builder( index_t surface_id );
 
         /*!
          * @brief Copy all entity meshes from the input geomodel
@@ -421,16 +397,7 @@ namespace RINGMesh
          * You can use the smartpointer Mesh3DBuilder_var.
          */
         std::unique_ptr< VolumeMeshBuilder3D > create_region_builder(
-            index_t region_id )
-        {
-            gmme_id id( Region3D::type_name_static(), region_id );
-            GeoModelMeshEntity3D& region =
-                geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess3D region_access( region );
-            VolumeMesh3D& region_mesh = dynamic_cast< VolumeMesh3D& >(
-                *region_access.modifiable_mesh() );
-            return VolumeMeshBuilder3D::create_builder( region_mesh );
-        }
+            index_t region_id );
 
         void copy_meshes( const GeoModel3D& geomodel ) override;
 
