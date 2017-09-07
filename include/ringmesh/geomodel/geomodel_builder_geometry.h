@@ -52,6 +52,7 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
 
     ALIAS_2D_AND_3D( GeoModelBuilder );
+    ALIAS_2D_AND_3D( VolumeMeshBuilder );
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -90,17 +91,7 @@ namespace RINGMesh
          * You can use the smartpointer Mesh0DBuilder_var.
          */
         std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
-            create_corner_builder( index_t corner_id )
-        {
-            gmme_id id( Corner< DIMENSION >::type_name_static(), corner_id );
-            GeoModelMeshEntity< DIMENSION >& corner =
-                geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess< DIMENSION > corner_access( corner );
-            auto& corner_mesh = dynamic_cast< PointSetMesh< DIMENSION >& >(
-                *corner_access.modifiable_mesh() );
-            return PointSetMeshBuilder< DIMENSION >::create_builder(
-                corner_mesh );
-        }
+            create_corner_builder( index_t corner_id );
 
         /*!
          * @brief Create a LineMeshBuilder for a given line
@@ -421,16 +412,7 @@ namespace RINGMesh
          * You can use the smartpointer Mesh3DBuilder_var.
          */
         std::unique_ptr< VolumeMeshBuilder3D > create_region_builder(
-            index_t region_id )
-        {
-            gmme_id id( Region3D::type_name_static(), region_id );
-            GeoModelMeshEntity3D& region =
-                geomodel_access_.modifiable_mesh_entity( id );
-            GeoModelMeshEntityAccess3D region_access( region );
-            VolumeMesh3D& region_mesh = dynamic_cast< VolumeMesh3D& >(
-                *region_access.modifiable_mesh() );
-            return VolumeMeshBuilder3D::create_builder( region_mesh );
-        }
+            index_t region_id );
 
         void copy_meshes( const GeoModel3D& geomodel ) override;
 

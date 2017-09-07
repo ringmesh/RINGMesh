@@ -41,6 +41,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder.h>
 
+#include <ringmesh/mesh/mesh_builder.h>
+
 namespace
 {
     using namespace RINGMesh;
@@ -273,6 +275,19 @@ namespace RINGMesh
     void GeoModelBuilderGeometryBase< DIMENSION >::clear_geomodel_mesh()
     {
         geomodel_.mesh.vertices.clear();
+    }
+
+    template< index_t DIMENSION >
+    std::unique_ptr< PointSetMeshBuilder< DIMENSION > > GeoModelBuilderGeometryBase<
+        DIMENSION >::create_corner_builder( index_t corner_id )
+    {
+        gmme_id id( Corner< DIMENSION >::type_name_static(), corner_id );
+        GeoModelMeshEntity< DIMENSION >& corner =
+            geomodel_access_.modifiable_mesh_entity( id );
+        GeoModelMeshEntityAccess< DIMENSION > corner_access( corner );
+        auto& corner_mesh =
+            dynamic_cast< PointSetMesh< DIMENSION >& >( *corner_access.modifiable_mesh() );
+        return PointSetMeshBuilder< DIMENSION >::create_builder( corner_mesh );
     }
 
     template < index_t DIMENSION >
@@ -847,6 +862,18 @@ namespace RINGMesh
             create_region_builder( region_id );
         builder->assign_cell_tet_mesh( tet_vertices );
         builder->connect_cells();
+    }
+
+    std::unique_ptr< VolumeMeshBuilder3D > GeoModelBuilderGeometry< 3 >::create_region_builder(
+        index_t region_id )
+    {
+        gmme_id id( Region3D::type_name_static(), region_id );
+        GeoModelMeshEntity3D& region =
+            geomodel_access_.modifiable_mesh_entity( id );
+        GeoModelMeshEntityAccess3D region_access( region );
+        VolumeMesh3D& region_mesh = dynamic_cast< VolumeMesh3D& >(
+            *region_access.modifiable_mesh() );
+        return VolumeMeshBuilder3D::create_builder( region_mesh );
     }
 
     index_t GeoModelBuilderGeometry< 3 >::

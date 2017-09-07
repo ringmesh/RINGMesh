@@ -66,8 +66,6 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    using MeshType = std::string;
-
     struct RINGMESH_API ElementLocalVertex
     {
         ElementLocalVertex() = default;

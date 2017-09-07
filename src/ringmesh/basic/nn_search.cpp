@@ -225,8 +225,5 @@ namespace RINGMesh
     }
 
     template class RINGMESH_API NNSearch< 2 >;
-//    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 2 > );
-
     template class RINGMESH_API NNSearch< 3 >;
-//    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 3 > );
 } // namespace RINGMesh

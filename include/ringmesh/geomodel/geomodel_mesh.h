@@ -39,19 +39,14 @@
 
 #include <ringmesh/basic/pimpl.h>
 
-#include <ringmesh/geomodel/entity_type_manager.h>
+#include <ringmesh/geomodel/entity_type.h>
 
 #include <ringmesh/mesh/mesh.h>
-#include <ringmesh/mesh/mesh_builder.h>
 
 /*!
  * @file ringmesh/geomodel_mesh.h
  * @brief Classes to manage globally the indexing of mesh entities of a GeoModel
  * @author Arnaud Botella and Jeanne Pellerin
- */
-
-/*! @todo URGENT : Rename all parameters of all the function in this file.
- *                 A lot of comments could then be removed.
  */
 
 namespace RINGMesh
@@ -66,9 +61,25 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshCells );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( MeshBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( MeshSet );
+    FORWARD_DECLARATION_DIMENSION_CLASS( NNSearch );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineAABBTree );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceAABBTree );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeAABBTree );
 
     ALIAS_3D( GeoModel );
     ALIAS_3D( GeoModelMesh );
+    ALIAS_3D( PointSetMesh );
+    ALIAS_3D( SurfaceMesh );
+
+    struct CellLocalFacet;
+    struct ElementLocalVertex;
+    struct PolygonLocalEdge;
 } // namespace RINGMesh
 
 namespace RINGMesh
