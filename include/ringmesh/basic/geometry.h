@@ -87,29 +87,24 @@ namespace RINGMesh
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
 
-    struct Frame3D 
+    struct Frame3D
     {
         Frame3D() = default;
 
-        Frame3D(
-            const vec3 origin,
-            const vec3 normal,
-            const vec3 u_axis,
-            const vec3 v_axis )
-            :
-                origin( std::move( origin ) ),
-                normal( std::move( normal ) ),
-                u_axis( std::move( u_axis ) ),
-                v_axis( std::move( v_axis ) )
+        Frame3D( vec3 origin, vec3 normal, vec3 u_axis, vec3 v_axis )
+            : origin( std::move( origin ) ),
+              normal( std::move( normal ) ),
+              u_axis( std::move( u_axis ) ),
+              v_axis( std::move( v_axis ) )
         {
         }
 
         Frame3D( const vec3 origin, const vec3 normal );
 
-        vec3 origin { };
-        vec3 normal { };
-        vec3 u_axis { };
-        vec3 v_axis { };
+        vec3 origin{};
+        vec3 normal{};
+        vec3 u_axis{};
+        vec3 v_axis{};
     };
 
     namespace Geometry

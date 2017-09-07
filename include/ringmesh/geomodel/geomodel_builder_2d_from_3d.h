@@ -57,21 +57,21 @@ namespace RINGMesh
               plane_( plane )
         {
             Frame3D plane2d_frame( plane_.origin, plane_.normal );
-            u_axis = plane2d_frame.u_axis;
-            v_axis = plane2d_frame.v_axis;
+            u_axis_{ plane2d_frame.u_axis };
+            v_axis_{ plane2d_frame.v_axis };
         }
 
     protected:
         vec2 get_2d_coord( const vec3& coord3d )
         {
-            return { dot( coord3d, u_axis ), dot( coord3d, v_axis ) };
+            return { dot( coord3d, u_axis_ ), dot( coord3d, v_axis_ ) };
         }
 
     protected:
         const GeoModel3D& geomodel3d_from_;
         const Geometry::Plane& plane_;
-        vec3 u_axis{};
-        vec3 v_axis{};
+        vec3 u_axis_{};
+        vec3 v_axis_{};
     };
 
     /*!
