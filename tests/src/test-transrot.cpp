@@ -80,53 +80,54 @@ void build_geomodel( GeoModel3D& geomodel )
     vertices[1] = v1;
     vertices[2] = v2;
     vertices[3] = v3;
-    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr );
+    builder.geometry.set_surface_geometry(
+        id.index(), vertices, triangles, surface_facet_ptr );
 
     id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v1;
     vertices[1] = v5;
     vertices[2] = v6;
     vertices[3] = v2;
-    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr );
+    builder.geometry.set_surface_geometry(
+        id.index(), vertices, triangles, surface_facet_ptr );
 
     id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v4;
     vertices[1] = v5;
     vertices[2] = v6;
     vertices[3] = v7;
-    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr );
+    builder.geometry.set_surface_geometry(
+        id.index(), vertices, triangles, surface_facet_ptr );
 
     id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v0;
     vertices[1] = v3;
     vertices[2] = v7;
     vertices[3] = v4;
-    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr );
+    builder.geometry.set_surface_geometry(
+        id.index(), vertices, triangles, surface_facet_ptr );
 
     id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v3;
     vertices[1] = v2;
     vertices[2] = v6;
     vertices[3] = v7;
-    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr );
+    builder.geometry.set_surface_geometry(
+        id.index(), vertices, triangles, surface_facet_ptr );
 
     id = builder.topology.create_mesh_entity( Surface3D::type_name_static() );
     vertices[0] = v0;
     vertices[1] = v1;
     vertices[2] = v5;
     vertices[3] = v4;
-    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr );
+    builder.geometry.set_surface_geometry(
+        id.index(), vertices, triangles, surface_facet_ptr );
 }
 
 void check_vertex( const vec3& in, const vec3& result )
 {
-    if( in != result ) {
+    if( in != result )
+    {
         throw RINGMeshException( "Test", "Verification failed" );
     }
 }
@@ -167,13 +168,15 @@ void test_rotation( GeoModel3D& geomodel )
 }
 
 void check_matrices(
-    const GEO::Matrix< 4, double >& lhs,
-    const GEO::Matrix< 4, double >& rhs )
+    const GEO::Matrix< 4, double >& lhs, const GEO::Matrix< 4, double >& rhs )
 {
-    for( index_t mat_i : range( 4 ) ) {
-        for( index_t mat_j : range( 4 ) ) {
+    for( index_t mat_i : range( 4 ) )
+    {
+        for( index_t mat_j : range( 4 ) )
+        {
             double diff = lhs( mat_i, mat_j ) - rhs( mat_i, mat_j );
-            if( std::fabs( diff ) > global_epsilon ) {
+            if( std::fabs( diff ) > global_epsilon )
+            {
                 throw RINGMeshException( "Test", "Error in rotation matrix" );
             }
         }
@@ -199,12 +202,13 @@ void test_rotation_matrix()
 
     // Tests rotation along x axis
     vec3 axis( 1, 0, 0 );
-    for( double angle = 0.; angle <= 360.; angle += step ) {
-        rot_mat_degree = rotation_matrix_about_arbitrary_axis( origin, axis, angle,
-        true );
+    for( double angle = 0.; angle <= 360.; angle += step )
+    {
+        rot_mat_degree =
+            rotation_matrix_about_arbitrary_axis( origin, axis, angle, true );
         double angle_rad = angle * pi / 180.;
-        rot_mat_radian = rotation_matrix_about_arbitrary_axis( origin, axis,
-            angle_rad, false );
+        rot_mat_radian = rotation_matrix_about_arbitrary_axis(
+            origin, axis, angle_rad, false );
         result( 0, 0 ) = 1;
         result( 0, 1 ) = 0;
         result( 0, 2 ) = 0;
@@ -223,12 +227,13 @@ void test_rotation_matrix()
 
     // Tests rotation along y axis
     axis = vec3( 0, 1, 0 );
-    for( double angle = 0.; angle <= 360.; angle += step ) {
-        rot_mat_degree = rotation_matrix_about_arbitrary_axis( origin, axis, angle,
-        true );
+    for( double angle = 0.; angle <= 360.; angle += step )
+    {
+        rot_mat_degree =
+            rotation_matrix_about_arbitrary_axis( origin, axis, angle, true );
         double angle_rad = angle * pi / 180.;
-        rot_mat_radian = rotation_matrix_about_arbitrary_axis( origin, axis,
-            angle_rad, false );
+        rot_mat_radian = rotation_matrix_about_arbitrary_axis(
+            origin, axis, angle_rad, false );
         result( 0, 0 ) = std::cos( angle_rad );
         result( 0, 1 ) = 0;
         result( 0, 2 ) = std::sin( angle_rad );
@@ -247,12 +252,13 @@ void test_rotation_matrix()
 
     // Tests rotation along z axis
     axis = vec3( 0, 0, 1 );
-    for( double angle = 0.; angle <= 360.; angle += step ) {
-        rot_mat_degree = rotation_matrix_about_arbitrary_axis( origin, axis, angle,
-        true );
+    for( double angle = 0.; angle <= 360.; angle += step )
+    {
+        rot_mat_degree =
+            rotation_matrix_about_arbitrary_axis( origin, axis, angle, true );
         double angle_rad = angle * pi / 180.;
-        rot_mat_radian = rotation_matrix_about_arbitrary_axis( origin, axis,
-            angle_rad, false );
+        rot_mat_radian = rotation_matrix_about_arbitrary_axis(
+            origin, axis, angle_rad, false );
         result( 0, 0 ) = std::cos( angle_rad );
         result( 0, 1 ) = -std::sin( angle_rad );
         result( 0, 2 ) = 0;
@@ -274,7 +280,8 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
 
         GeoModel3D geomodel;
@@ -282,11 +289,14 @@ int main()
         test_translate( geomodel );
         test_rotation_matrix();
         test_rotation( geomodel );
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

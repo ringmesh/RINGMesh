@@ -42,50 +42,60 @@
  * @author Arnaud Botella
  */
 
-namespace {
-
-    template< typename T >
+namespace
+{
+    template < typename T >
     inline T sqr( T x )
     {
         return x * x;
     }
 } // namespace
 
-namespace RINGMesh {
-
-    template< index_t DIMENSION >
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
     void Box< DIMENSION >::add_point( const vecn< DIMENSION >& p )
     {
-        if( !initialized_ ) {
+        if( !initialized_ )
+        {
             min_ = p;
             max_ = p;
             initialized_ = true;
-        } else {
-            for( auto i : range( DIMENSION ) ) {
+        }
+        else
+        {
+            for( auto i : range( DIMENSION ) )
+            {
                 min_[i] = std::min( min_[i], p[i] );
                 max_[i] = std::max( max_[i], p[i] );
             }
         }
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     double Box< DIMENSION >::signed_distance( const vecn< DIMENSION >& p ) const
     {
-        bool inside { true };
-        double result { 0.0 };
-        for( auto c : range( DIMENSION ) ) {
-            if( p[c] < min()[c] ) {
+        bool inside{ true };
+        double result{ 0.0 };
+        for( auto c : range( DIMENSION ) )
+        {
+            if( p[c] < min()[c] )
+            {
                 inside = false;
                 result += sqr( p[c] - min()[c] );
-            } else if( p[c] > max()[c] ) {
+            }
+            else if( p[c] > max()[c] )
+            {
                 inside = false;
                 result += sqr( p[c] - max()[c] );
             }
         }
-        if( inside ) {
+        if( inside )
+        {
             result = sqr( p[0] - min()[0] );
             result = std::min( result, sqr( p[0] - max()[0] ) );
-            for( auto c : range( 1, DIMENSION ) ) {
+            for( auto c : range( 1, DIMENSION ) )
+            {
                 result = std::min( result, sqr( p[c] - min()[c] ) );
                 result = std::min( result, sqr( p[c] - max()[c] ) );
             }
@@ -94,19 +104,20 @@ namespace RINGMesh {
         return result;
     }
 
-    template< index_t DIMENSION >
-    double Box< DIMENSION >::distance_to_center( const vecn< DIMENSION >& p ) const
+    template < index_t DIMENSION >
+    double Box< DIMENSION >::distance_to_center(
+        const vecn< DIMENSION >& p ) const
     {
-        double result { 0.0 };
-        for( auto c : range( DIMENSION ) ) {
+        double result{ 0.0 };
+        for( auto c : range( DIMENSION ) )
+        {
             double d = p[c] - 0.5 * ( min()[c] + max()[c] );
             result += sqr( d );
         }
         return result;
     }
 
-    template class RINGMESH_API Box< 2 > ;
-    template class RINGMESH_API Box< 3 > ;
+    template class RINGMESH_API Box< 2 >;
+    template class RINGMESH_API Box< 3 >;
 
 } // namespace RINGMesh
-

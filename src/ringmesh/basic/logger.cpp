@@ -40,9 +40,8 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     std::mutex Logger::lock_;
 
 } // namespace RINGMesh
-

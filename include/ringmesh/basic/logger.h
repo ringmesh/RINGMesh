@@ -46,9 +46,10 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh {
-
-    class RINGMESH_API Logger {
+namespace RINGMesh
+{
+    class RINGMESH_API Logger
+    {
     public:
         static void div( const std::string& title )
         {
@@ -56,22 +57,22 @@ namespace RINGMesh {
             GEO::Logger::div( title );
         }
 
-        template< typename ...Args >
-        static void out( const std::string& feature, const Args& ... args )
+        template < typename... Args >
+        static void out( const std::string& feature, const Args&... args )
         {
             std::lock_guard< std::mutex > lock( lock_ );
             log( GEO::Logger::out( feature ), args... );
         }
 
-        template< typename ...Args >
-        static void err( const std::string& feature, const Args& ... args )
+        template < typename... Args >
+        static void err( const std::string& feature, const Args&... args )
         {
             std::lock_guard< std::mutex > lock( lock_ );
             log( GEO::Logger::err( feature ), args... );
         }
 
-        template< typename ...Args >
-        static void warn( const std::string& feature, const Args& ... args )
+        template < typename... Args >
+        static void warn( const std::string& feature, const Args&... args )
         {
             std::lock_guard< std::mutex > lock( lock_ );
             log( GEO::Logger::warn( feature ), args... );
@@ -88,8 +89,8 @@ namespace RINGMesh {
             os << std::endl;
         }
 
-        template< class A0, class ...Args >
-        static void log( std::ostream& os, const A0& a0, const Args& ...args )
+        template < class A0, class... Args >
+        static void log( std::ostream& os, const A0& a0, const Args&... args )
         {
             os << a0;
             log( os, args... );

@@ -45,24 +45,29 @@
 
 using namespace RINGMesh;
 
-class A {
-ringmesh_disable_copy( A );
+class A
+{
+    ringmesh_disable_copy( A );
+
 public:
     A() = default;
 };
 
-class B {
-ringmesh_disable_copy( B );
+class B
+{
+    ringmesh_disable_copy( B );
+
 public:
     B() = default;
 };
 
-class Base {
+class Base
+{
 public:
     virtual ~Base() = default;
+
 protected:
-    Base( A& a, B& b )
-        : a_( a ), b_( b )
+    Base( A& a, B& b ) : a_( a ), b_( b )
     {
     }
 
@@ -71,19 +76,20 @@ protected:
     B& b_;
 };
 
-class Derived: public Base {
+class Derived : public Base
+{
 public:
-    Derived( A& a, B& b )
-        : Base( a, b )
+    Derived( A& a, B& b ) : Base( a, b )
     {
     }
 };
 
 void verdict( bool is_instantiated, std::string name )
 {
-    if( !is_instantiated ) {
-        throw RINGMeshException( "TEST", "Failed to instantiate the ", name,
-            " class" );
+    if( !is_instantiated )
+    {
+        throw RINGMeshException(
+            "TEST", "Failed to instantiate the ", name, " class" );
     }
 }
 
@@ -91,22 +97,26 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
         Logger::out( "TEST", "Test Factory" );
 
-        using factory = Factory< std::string, Base, A &, B& >;
+        using factory = Factory< std::string, Base, A&, B& >;
         factory::register_creator< Derived >( "Derived" );
 
         A a;
         B b;
         auto d = factory::create( "Derived", a, b );
         verdict( d != nullptr, "Derived" );
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

@@ -41,36 +41,37 @@
 
 #include <ringmesh/geomodel/geomodel_builder.h>
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     /*!
      * @brief Base class for GeoModel2D building from GeoModel3D.
      */
-    class RINGMESH_API GeoModelBuilder2DFrom3D: public GeoModelBuilder< 2 > {
+    class RINGMESH_API GeoModelBuilder2DFrom3D : public GeoModelBuilder< 2 >
+    {
     public:
-        GeoModelBuilder2DFrom3D(
-            GeoModel2D& geomodel2d,
+        GeoModelBuilder2DFrom3D( GeoModel2D& geomodel2d,
             const GeoModel3D& geomodel3d_from,
             const Geometry::Plane& plane )
-            :
-                GeoModelBuilder( geomodel2d ),
-                geomodel3d_from_( geomodel3d_from ),
-                plane_( plane )
+            : GeoModelBuilder( geomodel2d ),
+              geomodel3d_from_( geomodel3d_from ),
+              plane_( plane )
         {
             Frame3D plane2d_frame( plane_.origin, plane_.normal );
             u_axis = plane2d_frame.u_axis;
             v_axis = plane2d_frame.v_axis;
         }
+
     protected:
         vec2 get_2d_coord( const vec3& coord3d )
         {
-            return {dot( coord3d, u_axis ), dot( coord3d, v_axis )};
+            return { dot( coord3d, u_axis ), dot( coord3d, v_axis ) };
         }
 
     protected:
         const GeoModel3D& geomodel3d_from_;
         const Geometry::Plane& plane_;
-        vec3 u_axis { };
-        vec3 v_axis { };
+        vec3 u_axis{};
+        vec3 v_axis{};
     };
 
     /*!
@@ -81,10 +82,11 @@ namespace RINGMesh {
      * @warning The result GeoModel2D is not guaranteed to be valid.
      * It depends of the projection.
      */
-    class RINGMESH_API GeoModelBuilder2DProjection: public GeoModelBuilder2DFrom3D {
+    class RINGMESH_API GeoModelBuilder2DProjection
+        : public GeoModelBuilder2DFrom3D
+    {
     public:
-        GeoModelBuilder2DProjection(
-            GeoModel2D& geomodel2d,
+        GeoModelBuilder2DProjection( GeoModel2D& geomodel2d,
             const GeoModel3D& geomodel3d_from,
             const Geometry::Plane& plane )
             : GeoModelBuilder2DFrom3D( geomodel2d, geomodel3d_from, plane )

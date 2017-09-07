@@ -42,16 +42,17 @@
  * @file Re-defintions of basic types similar to those of Geogram
  */
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     /* If you need interger of 8bits of any other one
-     * it is sufficient to write using GEO::Numeric::uint8 in your file. 
-     * 
-     * Dummy variables were removed, the pollute the namespace and 
+     * it is sufficient to write using GEO::Numeric::uint8 in your file.
+     *
+     * Dummy variables were removed, the pollute the namespace and
      * it is quite easy to do without them.
      */
 
     // Basic types used in RINGMesh
-    // Using definitions of Geogram/basic/numeric.h   
+    // Using definitions of Geogram/basic/numeric.h
     using GEO::Numeric::float32;
     using GEO::Numeric::float64;
 
@@ -69,7 +70,7 @@ namespace RINGMesh {
     // This is an int
     using GEO::signed_index_t;
     // This is an array template of doubles
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     using vecn = GEO::vecng< DIMENSION, double >;
     // This is an array of 3 doubles
     using vec3 = vecn< 3 >;
@@ -78,12 +79,15 @@ namespace RINGMesh {
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
-    
-    /*! enum defining the type of cell in region 
-     *  * CellType::UNCLASSIFIED may be either a connector or more complex cell that is not specified.
-     *  * CellType::UNDEFINED means that the cell is not defined and cannot be used.
+
+    /*! enum defining the type of cell in region
+     *  * CellType::UNCLASSIFIED may be either a connector or more complex cell
+     * that is not specified.
+     *  * CellType::UNDEFINED means that the cell is not defined and cannot be
+     * used.
      */
-    enum struct CellType : index_t {
+    enum struct CellType : index_t
+    {
         TETRAHEDRON = 0,
         HEXAHEDRON = 1,
         PRISM = 2,
@@ -93,67 +97,72 @@ namespace RINGMesh {
     };
 
     /*! enum defining the type of polygon in surface.
-    *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon that is not specified.
-    *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be used.
+    *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon
+    * that is not specified.
+    *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be
+    * used.
     */
-    enum struct PolygonType : index_t {
+    enum struct PolygonType : index_t
+    {
         TRIANGLE = 0,
         QUAD = 1,
         UNCLASSIFIED = 2,
         UNDEFINED = 3
     };
-    
-    template< typename Enum >
-    auto to_underlying_type( Enum e ) -> typename std::underlying_type< Enum >::type
+
+    template < typename Enum >
+    auto to_underlying_type( Enum e ) ->
+        typename std::underlying_type< Enum >::type
     {
         return static_cast< typename std::underlying_type< Enum >::type >( e );
     }
 
-    template< typename Enum >
-    struct EnableBitMaskOperators {
+    template < typename Enum >
+    struct EnableBitMaskOperators
+    {
         static const bool enable = false;
     };
 
-    template< typename Enum >
-    typename std::enable_if< EnableBitMaskOperators< Enum >::enable, Enum >::type operator |(
-        Enum lhs,
-        Enum rhs )
+    template < typename Enum >
+    typename std::enable_if< EnableBitMaskOperators< Enum >::enable,
+        Enum >::type
+        operator|( Enum lhs, Enum rhs )
     {
-        using underlying = typename std::underlying_type<Enum>::type;
+        using underlying = typename std::underlying_type< Enum >::type;
         return static_cast< Enum >( static_cast< underlying >( lhs )
-            | static_cast< underlying >( rhs ) );
+                                    | static_cast< underlying >( rhs ) );
     }
 
-    template< typename Enum >
-    typename std::enable_if< EnableBitMaskOperators< Enum >::enable, Enum >::type operator &(
-        Enum lhs,
-        Enum rhs )
+    template < typename Enum >
+    typename std::enable_if< EnableBitMaskOperators< Enum >::enable,
+        Enum >::type
+        operator&( Enum lhs, Enum rhs )
     {
-        using underlying = typename std::underlying_type<Enum>::type;
+        using underlying = typename std::underlying_type< Enum >::type;
         return static_cast< Enum >( static_cast< underlying >( lhs )
-            & static_cast< underlying >( rhs ) );
+                                    & static_cast< underlying >( rhs ) );
     }
 
-    template< typename Enum >
-    typename std::enable_if< EnableBitMaskOperators< Enum >::enable, Enum >::type operator ^(
-        Enum lhs,
-        Enum rhs )
+    template < typename Enum >
+    typename std::enable_if< EnableBitMaskOperators< Enum >::enable,
+        Enum >::type
+        operator^( Enum lhs, Enum rhs )
     {
-        using underlying = typename std::underlying_type<Enum>::type;
+        using underlying = typename std::underlying_type< Enum >::type;
         return static_cast< Enum >( static_cast< underlying >( lhs )
-            ^ static_cast< underlying >( rhs ) );
+                                    ^ static_cast< underlying >( rhs ) );
     }
 
-    template< typename Enum >
+    template < typename Enum >
     bool enum_contains( Enum lhs, Enum rhs )
     {
         return ( lhs & rhs ) != Enum::EMPTY;
     }
 
-#define ENABLE_BITMASK_OPERATORS( Enum )    \
-    template<>                              \
-    struct EnableBitMaskOperators< Enum >   \
-    {                                       \
-        static const bool enable = true;    \
+#define ENABLE_BITMASK_OPERATORS( Enum )                                       \
+    template <>                                                                \
+    struct EnableBitMaskOperators< Enum >                                      \
+    {                                                                          \
+        static const bool enable = true;                                       \
     }
 } // namespace RINGMesh
