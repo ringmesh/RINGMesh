@@ -441,8 +441,8 @@ namespace RINGMesh
         LineSide voi_lines() const;
 
     private:
-        Frame3D reference_frame_ { { 0., 0., 0. }, { 0., 0., 1. }, { 1., 0., 0. }, {
-            0., 1., 0. } };
+        Frame3D reference_frame_{ { 0., 0., 0. }, { 0., 0., 1. },
+            { 1., 0., 0. }, { 0., 1., 0. } };
     };
 
     ALIAS_2D_AND_3D( GeoModel );
