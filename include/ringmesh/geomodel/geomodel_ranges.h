@@ -51,29 +51,6 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    /*!
-     * @brief Vertex in a GeoModelEntity
-     */
-    struct GMEVertex
-    {
-        GMEVertex( gmme_id t, index_t vertex_id_in )
-            : gmme( std::move( t ) ), v_index( vertex_id_in )
-        {
-        }
-        bool operator==( const GMEVertex& rhs ) const
-        {
-            return gmme == rhs.gmme && v_index == rhs.v_index;
-        }
-        bool is_defined() const
-        {
-            return gmme.is_defined() && v_index != NO_ID;
-        }
-        /// GeoModelEntity index in the GeoModel that owns it
-        gmme_id gmme;
-        /// Index of the vertex in the GeoModelEntity
-        index_t v_index{ NO_ID };
-    };
-
     template < index_t DIMENSION >
     class RINGMESH_API entity_range : public range
     {

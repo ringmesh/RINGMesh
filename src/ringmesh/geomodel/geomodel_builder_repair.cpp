@@ -38,7 +38,10 @@
 #include <array>
 
 #include <geogram/basic/algorithm.h>
+
 #include <ringmesh/geomodel/geomodel_builder.h>
+
+#include <ringmesh/mesh/mesh_builder.h>
 
 /*!
  * @file Implementation of repair function of the surfaces of a GeoModel
