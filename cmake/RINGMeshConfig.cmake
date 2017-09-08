@@ -99,7 +99,7 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     unset(MINIZIP_DEBUG_LIBRARY CACHE)
 
     # MINIZIP
-    find_library(MINIZIP_DEBUG_LIBRARY NAMES minizip
+    find_library(MINIZIP_DEBUG_LIBRARY NAMES minizipd
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/minizip/Debug NO_DEFAULT_PATH)
     unset(MINIZIP_RELEASE_LIBRARY CACHE)
     find_library(MINIZIP_RELEASE_LIBRARY NAMES minizip
@@ -107,7 +107,7 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     unset(TINYXML2_DEBUG_LIBRARY CACHE)
 
     # TINYXML2
-    find_library(TINYXML2_DEBUG_LIBRARY NAMES tinyxml2
+    find_library(TINYXML2_DEBUG_LIBRARY NAMES tinyxml2d
         PATHS ${RINGMESH_ROOT_DIRECTORY}/build/third_party/tinyxml2/Debug NO_DEFAULT_PATH)
     unset(TINYXML2_RELEASE_LIBRARY CACHE)
     find_library(TINYXML2_RELEASE_LIBRARY NAMES tinyxml2
