@@ -35,6 +35,8 @@
 
 #include <ringmesh/io/zip_file.h>
 
+#include <fstream>
+
 #include <minizip/unzip.h>
 #include <minizip/zip.h>
 
