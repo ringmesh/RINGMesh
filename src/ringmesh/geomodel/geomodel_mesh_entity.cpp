@@ -40,13 +40,10 @@
 
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
-#include <stack>
-
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
 
