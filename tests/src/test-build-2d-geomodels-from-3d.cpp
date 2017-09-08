@@ -37,9 +37,12 @@
 
 #include <future>
 
+#include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
+
 #include <ringmesh/io/io.h>
 
 /*! Tests the creation of a GeoModel2D from the projection of a
@@ -62,9 +65,11 @@ int main()
         GeoModel3D geomodel3d;
         geomodel_load( geomodel3d, input_geomodel3d_file_name );
 
-        GeoModel2D projection_geomodel2d;
-        Geometry::Plane projection_plane(
-            { 987., 0., 2150. }, { 6300., 10500., -3200. } );
+        vec3 plane_normal{ 987., 0., 2150. };
+        vec3 plane_origin{ 6300., 10500., -3200. };
+        Geometry::Plane projection_plane( plane_normal, plane_origin );
+        PlaneReferenceFrame3D plane_frame( projection_plane );
+        GeoModel2D projection_geomodel2d( plane_frame );
         GeoModelBuilder2DProjection geomodel2d_builder(
             projection_geomodel2d, geomodel3d, projection_plane );
         geomodel2d_builder.build_geomodel();
