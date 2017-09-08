@@ -44,11 +44,20 @@
 
 #include <ringmesh/basic/factory.h>
 
-#include <ringmesh/mesh/mesh.h>
-
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( MeshBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
+
+    struct CellLocalFacet;
+    struct EdgeLocalVertex;
+    struct ElementLocalVertex;
+    struct PolygonLocalEdge;
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -420,8 +429,7 @@ namespace RINGMesh
             {
                 for( auto v : range( 2 ) )
                 {
-                    index_t vertex_id =
-                        line_mesh_.edge_vertex( ElementLocalVertex( e, v ) );
+                    auto vertex_id = line_mesh_.edge_vertex( { e, v } );
                     to_delete[vertex_id] = false;
                 }
             }
@@ -551,7 +559,7 @@ namespace RINGMesh
          */
         index_t create_polygon( const std::vector< index_t >& vertices )
         {
-            index_t index = do_create_polygon( vertices );
+            auto index = do_create_polygon( vertices );
             clear_polygon_linked_objects();
             return index;
         }
@@ -562,7 +570,7 @@ namespace RINGMesh
          */
         index_t create_triangles( index_t nb_triangles )
         {
-            index_t index = do_create_triangles( nb_triangles );
+            auto index = do_create_triangles( nb_triangles );
             clear_polygon_linked_objects();
             return index;
         }
@@ -573,7 +581,7 @@ namespace RINGMesh
          */
         index_t create_quads( index_t nb_quads )
         {
-            index_t index = do_create_quads( nb_quads );
+            auto index = do_create_quads( nb_quads );
             clear_polygon_linked_objects();
             return index;
         }
@@ -634,7 +642,7 @@ namespace RINGMesh
         void connect_polygons(
             const std::vector< index_t >& polygons_to_connect )
         {
-            index_t nb_local_vertices = 0;
+            index_t nb_local_vertices { 0 };
             for( auto polygon : polygons_to_connect )
             {
                 nb_local_vertices +=
@@ -656,15 +664,15 @@ namespace RINGMesh
                 nb_local_vertices, NO_ID );
             std::vector< index_t > vertex2polygon_local_vertex(
                 this->surface_mesh_.nb_vertices(), NO_ID );
-            index_t local_vertex_count = 0;
+            index_t local_vertex_count { 0 };
             for( auto polygon : polygons_to_connect )
             {
-                for( auto v = 0;
+                for( index_t v = 0;
                      v < this->surface_mesh_.nb_polygon_vertices( polygon );
                      v++, local_vertex_count++ )
                 {
-                    index_t vertex = this->surface_mesh_.polygon_vertex(
-                        ElementLocalVertex( polygon, v ) );
+                    auto vertex = this->surface_mesh_.polygon_vertex(
+                        { polygon, v } );
                     next_local_vertex_around_vertex[local_vertex_count] =
                         vertex2polygon_local_vertex[vertex];
                     vertex2polygon_local_vertex[vertex] = local_vertex_count;
@@ -678,16 +686,13 @@ namespace RINGMesh
                      v < this->surface_mesh_.nb_polygon_vertices( polygon );
                      v++, local_vertex_count++ )
                 {
-                    if( !this->surface_mesh_.is_edge_on_border(
-                            PolygonLocalEdge( polygon, v ) ) )
+                    if( !this->surface_mesh_.is_edge_on_border( { polygon, v } ) )
                     {
                         continue;
                     }
-                    index_t vertex = this->surface_mesh_.polygon_vertex(
-                        ElementLocalVertex( polygon, v ) );
-                    index_t next_vertex = this->surface_mesh_.polygon_vertex(
-                        this->surface_mesh_.next_polygon_vertex(
-                            ElementLocalVertex( polygon, v ) ) );
+                    auto vertex = this->surface_mesh_.polygon_vertex( { polygon, v } );
+                    auto next_vertex = this->surface_mesh_.polygon_vertex(
+                        this->surface_mesh_.next_polygon_vertex( { polygon, v } ) );
                     for( auto local_vertex =
                              vertex2polygon_local_vertex[next_vertex];
                          local_vertex != NO_ID;
@@ -698,22 +703,20 @@ namespace RINGMesh
                         {
                             continue;
                         }
-                        index_t adj_polygon =
+                        auto adj_polygon =
                             polygon_vertices[local_vertex].element_id_;
-                        index_t adj_local_vertex =
+                        auto adj_local_vertex =
                             polygon_vertices[local_vertex].local_vertex_id_;
-                        index_t adj_next_vertex =
+                        auto adj_next_vertex =
                             this->surface_mesh_.polygon_vertex(
                                 this->surface_mesh_.next_polygon_vertex(
-                                    ElementLocalVertex(
-                                        adj_polygon, adj_local_vertex ) ) );
+                                    { adj_polygon, adj_local_vertex } ) );
                         if( adj_next_vertex == vertex )
                         {
                             this->set_polygon_adjacent(
-                                PolygonLocalEdge( polygon, v ), adj_polygon );
+                                { polygon, v }, adj_polygon );
                             this->set_polygon_adjacent(
-                                PolygonLocalEdge(
-                                    adj_polygon, adj_local_vertex ),
+                                { adj_polygon, adj_local_vertex },
                                 polygon );
                             break;
                         }
@@ -775,8 +778,7 @@ namespace RINGMesh
             {
                 for( auto v : range( surface_mesh_.nb_polygon_vertices( p ) ) )
                 {
-                    index_t vertex_id = surface_mesh_.polygon_vertex(
-                        ElementLocalVertex( p, v ) );
+                    auto vertex_id = surface_mesh_.polygon_vertex( { p, v } );
                     to_delete[vertex_id] = false;
                 }
             }
@@ -1028,8 +1030,7 @@ namespace RINGMesh
             {
                 for( auto v : range( volume_mesh_.nb_cell_vertices( c ) ) )
                 {
-                    index_t vertex_id =
-                        volume_mesh_.cell_vertex( ElementLocalVertex( c, v ) );
+                    auto vertex_id = volume_mesh_.cell_vertex( { c, v } );
                     to_delete[vertex_id] = false;
                 }
             }
