@@ -38,6 +38,7 @@
 #include <vector>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/nn_search.h>
 
 /*!
