@@ -589,13 +589,7 @@ namespace RINGMesh
          * @param vertex_index in a given edge @param edge_index.
          */
         index_t mesh_element_vertex_index(
-            const ElementLocalVertex& element_local_vertex ) const final
-        {
-            ringmesh_assert(
-                element_local_vertex.element_id_ < nb_mesh_elements() );
-            ringmesh_assert( element_local_vertex.local_vertex_id_ < 2 );
-            return line_mesh_->edge_vertex( element_local_vertex );
-        }
+            const ElementLocalVertex& element_local_vertex ) const final;
 
         /*!
          * @brief A Line is closed if its two extremities are identitical.
@@ -762,15 +756,7 @@ namespace RINGMesh
          * from its index in a polygon of the mesh.
          */
         index_t mesh_element_vertex_index(
-            const ElementLocalVertex& element_local_vertex ) const final
-        {
-            ringmesh_assert(
-                element_local_vertex.element_id_ < nb_mesh_elements() );
-            ringmesh_assert( element_local_vertex.local_vertex_id_
-                             < nb_mesh_element_vertices(
-                                   element_local_vertex.element_id_ ) );
-            return surface_mesh_->polygon_vertex( element_local_vertex );
-        }
+            const ElementLocalVertex& element_local_vertex ) const final;
 
         /*!
          * @brief Gets the polygon adjacent along an edge of a polygon.
@@ -1011,20 +997,7 @@ namespace RINGMesh
          * @brief Index of a vertex in the Region from its index in a cell
          */
         index_t mesh_element_vertex_index(
-            const ElementLocalVertex& element_local_vertex ) const final
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert(
-                    element_local_vertex.element_id_ < nb_mesh_elements() );
-                ringmesh_assert( element_local_vertex.local_vertex_id_
-                                 < nb_mesh_element_vertices(
-                                       element_local_vertex.element_id_ ) );
-                return volume_mesh_->cell_vertex( element_local_vertex );
-            }
-            ringmesh_assert_not_reached;
-            return NO_ID;
-        }
+            const ElementLocalVertex& element_local_vertex ) const final;
 
         /*!
          * Get the type of a given cell.
