@@ -40,13 +40,10 @@
 
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
-#include <stack>
-
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
 
@@ -249,6 +246,18 @@ namespace RINGMesh
         ringmesh_assert( mesh_ != nullptr );
         mesh_->print_mesh_bounded_attributes();
 #endif
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshEntity< DIMENSION >::vertex_nn_search() const
+    {
+        return mesh_->vertex_nn_search();
+    }
+
+    template < index_t DIMENSION >
+    GEO::AttributesManager& GeoModelMeshEntity< DIMENSION >::vertex_attribute_manager() const
+    {
+        return mesh_->vertex_attribute_manager();
     }
 
     template < index_t DIMENSION >
@@ -577,6 +586,15 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    index_t Corner< DIMENSION >::nb_mesh_element_vertices( index_t mesh_element ) const
+    {
+        ringmesh_unused( mesh_element );
+        index_t nb_vertices = point_set_mesh_->nb_vertices();
+        ringmesh_assert( nb_vertices < 2 );
+        return nb_vertices;
+    }
+
+    template < index_t DIMENSION >
     bool Corner< DIMENSION >::is_mesh_valid() const
     {
         bool valid{ true };
@@ -763,6 +781,18 @@ namespace RINGMesh
     /********************************************************************/
 
     template < index_t DIMENSION >
+    index_t SurfaceBase< DIMENSION >::polygon_adjacent_index(
+        const PolygonLocalEdge& polygon_local_edge ) const
+    {
+        ringmesh_assert(
+            polygon_local_edge.polygon_id_ < nb_mesh_elements() );
+        ringmesh_assert(
+            polygon_local_edge.local_edge_id_
+            < nb_mesh_element_vertices( polygon_local_edge.polygon_id_ ) );
+        return surface_mesh_->polygon_adjacent( polygon_local_edge );
+    }
+
+    template < index_t DIMENSION >
     bool SurfaceBase< DIMENSION >::is_mesh_valid() const
     {
         bool valid{ true };
@@ -826,6 +856,11 @@ namespace RINGMesh
     {
         return static_cast< const Region3D& >(
             GeoModelMeshEntity3D::incident_entity( x ) );
+    }
+
+    bool Surface< 2 >::is_meshed() const
+    {
+        return mesh().nb_polygons() > 0;
     }
 
     /********************************************************************/

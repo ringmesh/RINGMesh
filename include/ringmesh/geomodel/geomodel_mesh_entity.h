@@ -45,7 +45,10 @@
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 
-#include <ringmesh/mesh/mesh.h>
+namespace GEO
+{
+    class AttributesManager;
+}
 
 namespace RINGMesh
 {
@@ -64,8 +67,20 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
     FORWARD_DECLARATION_DIMENSION_CLASS( Line );
     FORWARD_DECLARATION_DIMENSION_CLASS( Region );
+    FORWARD_DECLARATION_DIMENSION_CLASS( MeshBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( NNSearch );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineAABBTree );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceAABBTree );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeAABBTree );
 
     ALIAS_2D_AND_3D( GeoModel );
+
+    struct ElementLocalVertex;
+    struct PolygonLocalEdge;
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -203,10 +218,7 @@ namespace RINGMesh
          * @brief Return the NNSearch for the Entity vertices.
          */
 
-        const NNSearch< DIMENSION >& vertex_nn_search() const
-        {
-            return mesh_->vertex_nn_search();
-        }
+        const NNSearch< DIMENSION >& vertex_nn_search() const;
 
         /*!
          * \name Local access to the GeoModelMeshEntity geometry
@@ -296,10 +308,7 @@ namespace RINGMesh
 
         /*! @}
          */
-        GEO::AttributesManager& vertex_attribute_manager() const
-        {
-            return mesh_->vertex_attribute_manager();
-        }
+        GEO::AttributesManager& vertex_attribute_manager() const;
 
     protected:
         GeoModelMeshEntity( const GeoModel< DIMENSION >& geomodel, index_t id )
@@ -423,13 +432,7 @@ namespace RINGMesh
         /*!
          * @return the number of vertices of the Corner
          */
-        index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const final
-        {
-            ringmesh_unused( mesh_element );
-            index_t nb_vertices = point_set_mesh_->nb_vertices();
-            ringmesh_assert( nb_vertices < 2 );
-            return nb_vertices;
-        }
+        index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const final;
 
         const Line< DIMENSION >& incident_entity( index_t x ) const;
 
@@ -777,15 +780,7 @@ namespace RINGMesh
          * at which it is starting.
          */
         index_t polygon_adjacent_index(
-            const PolygonLocalEdge& polygon_local_edge ) const
-        {
-            ringmesh_assert(
-                polygon_local_edge.polygon_id_ < nb_mesh_elements() );
-            ringmesh_assert(
-                polygon_local_edge.local_edge_id_
-                < nb_mesh_element_vertices( polygon_local_edge.polygon_id_ ) );
-            return surface_mesh_->polygon_adjacent( polygon_local_edge );
-        }
+            const PolygonLocalEdge& polygon_local_edge ) const;
 
         /*! @}
          * @{
@@ -891,10 +886,7 @@ namespace RINGMesh
         /*!
          * @brief Tells whether the Surface2D is meshed or not
          */
-        bool is_meshed() const
-        {
-            return mesh().nb_polygons() > 0;
-        }
+        bool is_meshed() const;
 
     private:
         /*! Additional information to store oriented boundary Lines
@@ -1079,7 +1071,7 @@ namespace RINGMesh
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
                 return volume_mesh_->nb_cell_facet_vertices(
-                    CellLocalFacet( cell_index, facet_index ) );
+                    { cell_index, facet_index } );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1112,7 +1104,7 @@ namespace RINGMesh
                 ringmesh_assert(
                     vertex_index < nb_mesh_element_vertices( cell_index ) );
                 return volume_mesh_->cell_facet_vertex(
-                    CellLocalFacet( cell_index, facet_index ), vertex_index );
+                    { cell_index, facet_index }, vertex_index );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
@@ -1125,8 +1117,7 @@ namespace RINGMesh
             {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return volume_mesh_->cell_adjacent(
-                    CellLocalFacet( cell_index, facet_index ) );
+                return volume_mesh_->cell_adjacent( { cell_index, facet_index } );
             }
             ringmesh_assert_not_reached;
             return NO_ID;
