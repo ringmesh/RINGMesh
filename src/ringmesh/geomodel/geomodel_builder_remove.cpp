@@ -93,8 +93,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRemovalBase<
-        DIMENSION >::do_delete_flagged_geological_entities()
+    void GeoModelBuilderRemovalBase< DIMENSION >::
+        do_delete_flagged_geological_entities()
     {
         for( auto i : range( nb_geological_entity_types_ ) )
         {

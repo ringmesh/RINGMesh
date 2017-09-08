@@ -366,9 +366,9 @@ namespace RINGMesh
         }
         if( mesh_entity_id == NO_ID )
         {
-            throw RINGMeshException( "GeoModel", name,
-                " does not match with any actual "
-                "GeoModelEntity name in the GeoModel" );
+            throw RINGMeshException(
+                "GeoModel", name, " does not match with any actual "
+                                  "GeoModelEntity name in the GeoModel" );
         }
         return mesh_entity_id;
     }
@@ -396,9 +396,9 @@ namespace RINGMesh
         }
         if( geological_entity_id == NO_ID )
         {
-            throw RINGMeshException( "GeoModel", name,
-                " does not match with any actual "
-                "GeoModelEntity name in the GeoModel" );
+            throw RINGMeshException(
+                "GeoModel", name, " does not match with any actual "
+                                  "GeoModelEntity name in the GeoModel" );
         }
         return geological_entity_id;
     }
