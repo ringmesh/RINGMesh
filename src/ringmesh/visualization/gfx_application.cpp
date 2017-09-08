@@ -1079,6 +1079,30 @@ namespace RINGMesh
             ImGui::Text( "color" );
         }
 
+        if( mesh_.edges.nb() != 0 )
+        {
+            ImGui::Separator();
+            ImGui::Checkbox( "Edges", &show_edges_ );
+            if( show_edges_ )
+            {
+                ImGui::InputInt( "", &edges_size_, 1 );
+                edges_size_ = std::max( edges_size_, 0 );
+                ImGui::PushStyleColor( ImGuiCol_Button, edges_color_ );
+                if( ImGui::Button( "  ##EdgesColor" ) )
+                {
+                    ImGui::OpenPopup( "##EdgesColorTable" );
+                }
+                ImGui::PopStyleColor();
+                if( ImGui::BeginPopup( "##EdgesColorTable" ) )
+                {
+                    show_color_table_popup( edges_color_ );
+                }
+                ImGui::SameLine();
+                ImGui::Text( "color" );
+            }
+        }
+
+
         if( mesh_.facets.nb() != 0 )
         {
             ImGui::Separator();
@@ -1132,6 +1156,14 @@ namespace RINGMesh
             mesh_gfx_.draw_vertices();
         }
 
+        if( show_edges_ )
+        {
+            mesh_gfx_.set_mesh_width( static_cast< index_t >( edges_size_ ) );
+            mesh_gfx_.set_mesh_color( edges_color_.Value.x,
+                edges_color_.Value.y, edges_color_.Value.z );
+            mesh_gfx_.draw_edges();
+        }
+
         if( app_.white_bg_ )
         {
             mesh_gfx_.set_mesh_color( 0.0, 0.0, 0.0 );
@@ -1176,11 +1208,6 @@ namespace RINGMesh
         if( show_surface_borders_ )
         {
             mesh_gfx_.draw_surface_borders();
-        }
-
-        if( show_mesh_ )
-        {
-            mesh_gfx_.draw_edges();
         }
 
         if( show_volume_ )
