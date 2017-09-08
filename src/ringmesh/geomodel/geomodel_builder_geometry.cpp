@@ -535,8 +535,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderGeometryBase< DIMENSION >::
-        delete_mesh_entity_isolated_vertices( const gmme_id& E_id )
+    void GeoModelBuilderGeometryBase<
+        DIMENSION >::delete_mesh_entity_isolated_vertices( const gmme_id& E_id )
     {
         if( geomodel_.entity_type_manager().mesh_entity_manager.is_line(
                 E_id.type() ) )
@@ -637,8 +637,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderGeometryBase< DIMENSION >::
-        cut_surfaces_by_internal_lines()
+    void GeoModelBuilderGeometryBase<
+        DIMENSION >::cut_surfaces_by_internal_lines()
     {
         for( const auto& surface : geomodel_.surfaces() )
         {
@@ -675,9 +675,9 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    void GeoModelBuilderGeometryBase< DIMENSION >::
-        duplicate_surface_vertices_along_line(
-            index_t surface_id, index_t line_id )
+    void GeoModelBuilderGeometryBase<
+        DIMENSION >::duplicate_surface_vertices_along_line( index_t surface_id,
+        index_t line_id )
     {
         ringmesh_assert( surface_id < geomodel_.nb_surfaces() );
         ringmesh_assert( line_id < geomodel_.nb_lines() );
@@ -850,9 +850,9 @@ namespace RINGMesh
         return VolumeMeshBuilder3D::create_builder( region_mesh );
     }
 
-    index_t GeoModelBuilderGeometry< 3 >::
-        disconnect_region_cells_along_surface_polygons(
-            index_t region_id, index_t surface_id )
+    index_t GeoModelBuilderGeometry<
+        3 >::disconnect_region_cells_along_surface_polygons( index_t region_id,
+        index_t surface_id )
     {
         ringmesh_assert( region_id < geomodel_.nb_regions() );
         ringmesh_assert( surface_id < geomodel_.nb_surfaces() );
@@ -1053,8 +1053,8 @@ namespace RINGMesh
         }
         else
         {
-            GeoModelBuilderGeometryBase< 3 >::
-                delete_mesh_entity_isolated_vertices( E_id );
+            GeoModelBuilderGeometryBase<
+                3 >::delete_mesh_entity_isolated_vertices( E_id );
         }
     }
 

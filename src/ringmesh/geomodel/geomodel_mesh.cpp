@@ -2898,9 +2898,7 @@ namespace RINGMesh
     {
     }
 
-    GeoModelMesh< 3 >::~GeoModelMesh()
-    {
-    }
+    GeoModelMesh< 3 >::~GeoModelMesh() {}
 
     void GeoModelMesh< 3 >::change_volume_mesh_data_structure(
         const MeshType& type )
