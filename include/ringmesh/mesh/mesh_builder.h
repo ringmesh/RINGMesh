@@ -534,9 +534,11 @@ namespace RINGMesh
             for( auto p : range( polygon_ptr.size() - 1 ) ){
                 index_t first = polygon_ptr[p];
                 index_t last = polygon_ptr[p + 1];
-                const std::vector< index_t > polygon_vertices( 
-                    &polygons[first],
-                    &polygons[last]);
+                index_t nb_to_copy( last - first );
+                std::vector< index_t > polygon_vertices( nb_to_copy );
+                for( auto i : range( nb_to_copy ) ) {
+                    polygon_vertices[i] = polygons[first + i];
+                }
                 do_create_polygon( polygon_vertices );
             }
             clear_polygon_linked_objects();
