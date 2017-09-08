@@ -49,6 +49,7 @@
 namespace RINGMesh
 {
 #define COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( Class )                    \
+    \
 public:                                                                        \
     void do_copy( const MeshBase< DIMENSION >& rhs, bool copy_attributes )     \
         override                                                               \
@@ -111,7 +112,7 @@ public:                                                                        \
             copy_std_vector_to_geo_vector( permutation );                      \
         mesh_.mesh_->vertices.permute_elements( geo_vector_permutation );      \
     }                                                                          \
-                                                                               \
+    \
 private:                                                                       \
     Class< DIMENSION >& mesh_
 
@@ -219,19 +220,6 @@ private:                                                                       \
             Logger::instance()->set_minimal( false );
         }
 
-        void do_create_polygons( const std::vector< index_t >& polygons,
-            const std::vector< index_t >& polygon_ptr ) override
-        {
-            for( auto p : range( polygon_ptr.size() - 1 ) )
-            {
-                index_t start = polygon_ptr[p];
-                index_t end = polygon_ptr[p + 1];
-                GEO::vector< index_t > polygon_vertices =
-                    copy_std_vector_to_geo_vector( polygons, start, end );
-                mesh_.mesh_->facets.create_polygon( polygon_vertices );
-            }
-        }
-
         index_t do_create_polygon(
             const std::vector< index_t >& vertices ) override
         {
@@ -251,15 +239,15 @@ private:                                                                       \
         }
 
         void do_set_polygon_vertex(
-            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
+            const ElementLocalVertex& polygon_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->facets.set_vertex( polygon_local_edge.polygon_id_,
-                polygon_local_edge.local_edge_id_, vertex_id );
+            mesh_.mesh_->facets.set_vertex( polygon_local_vertex.element_id_,
+                polygon_local_vertex.local_vertex_id_, vertex_id );
         }
 
         void do_set_polygon_adjacent(
-            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t specifies ) override
         {
             mesh_.mesh_->facets.set_adjacent( polygon_local_edge.polygon_id_,

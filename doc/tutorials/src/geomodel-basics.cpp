@@ -72,7 +72,7 @@ int main()
         // Say Hello
         print_header_information();
         Logger::div( "RINGMesh Training" );
-        Logger::out( "", "Welcome to the RINGMesh training for basics "
+        Logger::out( "", "Welcome to the RINGMesh training for basic "
                          "functionalities on GeoModel !" );
 
         // Next line is a feature of geogram which measure

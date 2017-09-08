@@ -124,21 +124,14 @@ void add_triangles( SurfaceMeshBuilder< DIMENSION >* builder, index_t size )
     index_t id = 0;
     for( index_t i : range( size - 1 ) )
     {
-        for( index_t j : range( size - 1 ) )
-        {
-            builder->set_polygon_vertex(
-                PolygonLocalEdge( id, 0 ), i * size + j );
-            builder->set_polygon_vertex(
-                PolygonLocalEdge( id, 1 ), i * size + j + 1 );
-            builder->set_polygon_vertex(
-                PolygonLocalEdge( id, 2 ), ( i + 1 ) * size + j );
+        for( index_t j : range( size - 1 ) ) {
+            builder->set_polygon_vertex( { id, 0 }, i * size + j );
+            builder->set_polygon_vertex( { id, 1 }, i * size + j + 1 );
+            builder->set_polygon_vertex( { id, 2 }, ( i + 1 ) * size + j );
             id++;
-            builder->set_polygon_vertex(
-                PolygonLocalEdge( id, 0 ), i * size + j + 1 );
-            builder->set_polygon_vertex(
-                PolygonLocalEdge( id, 1 ), ( i + 1 ) * size + j + 1 );
-            builder->set_polygon_vertex(
-                PolygonLocalEdge( id, 2 ), ( i + 1 ) * size + j );
+            builder->set_polygon_vertex( { id, 0 }, i * size + j + 1 );
+            builder->set_polygon_vertex( { id, 1 }, ( i + 1 ) * size + j + 1 );
+            builder->set_polygon_vertex( { id, 2 }, ( i + 1 ) * size + j );
             id++;
         }
     }
