@@ -439,4 +439,26 @@ namespace RINGMesh
     template std::tuple< bool, vecn< 3 > >
         RINGMESH_API point_segment_projection(
             const vecn< 3 >&, const vecn< 3 >&, const vecn< 3 >& );
+
+    PlaneReferenceFrame3D::PlaneReferenceFrame3D( const Geometry::Plane& plane )
+    {
+        origin = plane.origin;
+        w = plane.normal;
+        auto upward_point = origin + vec3{ 0., 0., 1. };
+        vec3 v_axis_point_direction;
+        std::tie( std::ignore, v_axis_point_direction ) =
+            Distance::point_to_plane( upward_point, { w, origin } );
+        if( ( origin - v_axis_point_direction ).length() < global_epsilon )
+        {
+            // Case where plane is sub-horizontal
+            // (v axis is set towards 3D x direction)
+            auto towards_x_point = origin + vec3{ 1., 0., 0. };
+            std::tie( std::ignore, v_axis_point_direction ) =
+                Distance::point_to_plane( towards_x_point, { w, origin } );
+            ringmesh_assert(
+                ( origin - v_axis_point_direction ).length() < global_epsilon );
+        }
+        v = normalize( v_axis_point_direction - origin );
+        u = cross( v, w );
+    }
 } // namespace RINGMesh
