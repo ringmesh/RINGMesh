@@ -231,6 +231,10 @@ namespace RINGMesh
             float vertices_size_{ 1 };
             ImColor vertices_color_;
 
+            bool show_edges_{ true };
+            int edges_size_{ 1 };
+            ImColor edges_color_{0, 0, 0};
+
             bool show_surface_{ true };
             bool show_surface_colors_{ true };
             bool show_mesh_{ true };
