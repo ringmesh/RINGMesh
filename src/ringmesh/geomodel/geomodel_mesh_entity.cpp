@@ -756,6 +756,16 @@ namespace RINGMesh
             GeoModelMeshEntity< DIMENSION >::boundary( x ) );
     }
 
+    template < index_t DIMENSION >
+    index_t Line< DIMENSION >::mesh_element_vertex_index(
+        const ElementLocalVertex& element_local_vertex ) const
+    {
+        ringmesh_assert(
+            element_local_vertex.element_id_ < nb_mesh_elements() );
+        ringmesh_assert( element_local_vertex.local_vertex_id_ < 2 );
+        return line_mesh_->edge_vertex( element_local_vertex );
+    }
+
     template <>
     bool Line< 2 >::is_on_voi() const
     {
@@ -790,6 +800,18 @@ namespace RINGMesh
             polygon_local_edge.local_edge_id_
             < nb_mesh_element_vertices( polygon_local_edge.polygon_id_ ) );
         return surface_mesh_->polygon_adjacent( polygon_local_edge );
+    }
+
+    template < index_t DIMENSION >
+    index_t SurfaceBase< DIMENSION >::mesh_element_vertex_index(
+        const ElementLocalVertex& element_local_vertex ) const
+    {
+        ringmesh_assert(
+            element_local_vertex.element_id_ < nb_mesh_elements() );
+        ringmesh_assert( element_local_vertex.local_vertex_id_
+                         < nb_mesh_element_vertices(
+                               element_local_vertex.element_id_ ) );
+        return surface_mesh_->polygon_vertex( element_local_vertex );
     }
 
     template < index_t DIMENSION >
@@ -876,6 +898,23 @@ namespace RINGMesh
     bool Region< DIMENSION >::is_on_voi() const
     {
         return false;
+    }
+
+    template < index_t DIMENSION >
+    index_t Region< DIMENSION >::mesh_element_vertex_index(
+        const ElementLocalVertex& element_local_vertex ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert(
+                element_local_vertex.element_id_ < nb_mesh_elements() );
+            ringmesh_assert( element_local_vertex.local_vertex_id_
+                             < nb_mesh_element_vertices(
+                                   element_local_vertex.element_id_ ) );
+            return volume_mesh_->cell_vertex( element_local_vertex );
+        }
+        ringmesh_assert_not_reached;
+        return NO_ID;
     }
 
     template < index_t DIMENSION >
