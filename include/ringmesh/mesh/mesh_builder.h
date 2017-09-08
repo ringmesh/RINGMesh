@@ -531,12 +531,14 @@ namespace RINGMesh
         void create_polygons( const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr )
         {
-            for( auto p : range( polygon_ptr.size() - 1 ) ) {
+            for( auto p : range( polygon_ptr.size() - 1 ) )
+            {
                 index_t first{ polygon_ptr[p] };
                 index_t last{ polygon_ptr[p + 1] };
                 index_t nb_to_copy{ last - first };
                 std::vector< index_t > polygon_vertices( nb_to_copy );
-                for( auto i : range( nb_to_copy ) ) {
+                for( auto i : range( nb_to_copy ) )
+                {
                     polygon_vertices[i] = polygons[first + i];
                 }
                 do_create_polygon( polygon_vertices );
@@ -841,11 +843,12 @@ namespace RINGMesh
          * @brief Sets a vertex of a polygon by local vertex index.
          * @param[in] polygon_local_vertex the polygon index and the local index
          * of a vertex in the polygon.
-         * @param[in] vertex_id specifies the vertex between 0 and the number 
+         * @param[in] vertex_id specifies the vertex between 0 and the number
          * of vertex in polygon.
          */
         virtual void do_set_polygon_vertex(
-            const ElementLocalVertex& polygon_local_vertex, index_t vertex_id ) = 0;
+            const ElementLocalVertex& polygon_local_vertex,
+            index_t vertex_id ) = 0;
         /*!
          * @brief Sets an adjacent polygon by both its polygon \param polygon_id
          * and its local edge index \param edge_id.

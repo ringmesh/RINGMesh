@@ -117,8 +117,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::
-        remove_colocated_entity_vertices_and_update_gm()
+    void GeoModelBuilderRepair<
+        DIMENSION >::remove_colocated_entity_vertices_and_update_gm()
     {
         std::set< gmme_id > empty_mesh_entities;
         std::set< gmge_id > empty_geological_entities;
@@ -133,8 +133,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::
-        remove_degenerate_polygons_and_edges_and_update_gm()
+    void GeoModelBuilderRepair<
+        DIMENSION >::remove_degenerate_polygons_and_edges_and_update_gm()
     {
         std::set< gmme_id > empty_mesh_entities;
         remove_degenerate_polygons_and_edges( empty_mesh_entities );

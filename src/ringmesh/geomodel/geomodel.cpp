@@ -219,17 +219,11 @@ namespace RINGMesh
     {
     }
 
-    GeoModel< 3 >::GeoModel() : GeoModelBase< 3 >( *this )
-    {
-    }
+    GeoModel< 3 >::GeoModel() : GeoModelBase< 3 >( *this ) {}
 
-    GeoModel< 3 >::~GeoModel()
-    {
-    }
+    GeoModel< 3 >::~GeoModel() {}
 
-    GeoModel< 2 >::GeoModel() : GeoModelBase< 2 >( *this )
-    {
-    }
+    GeoModel< 2 >::GeoModel() : GeoModelBase< 2 >( *this ) {}
 
     GeoModel< 2 >::GeoModel( PlaneReferenceFrame3D plane_reference_frame )
         : GeoModelBase< 2 >( *this ),
@@ -237,9 +231,7 @@ namespace RINGMesh
     {
     }
 
-    GeoModel< 2 >::~GeoModel()
-    {
-    }
+    GeoModel< 2 >::~GeoModel() {}
 
     const Region3D& GeoModel< 3 >::region( index_t index ) const
     {
