@@ -33,7 +33,8 @@
  *     FRANCE
  */
 
-namespace {
+namespace
+{
     /// Convert the cell type of RINGMesh to the MFEM one
     /// NO_ID for pyramids and prims because there are not supported by MFEM
     static const index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID };
@@ -51,8 +52,14 @@ namespace {
     /// MFEM works with Surface and Region index begin with 1
     static const index_t mfem_offset = 1;
 
-    enum MFEM_geometry_type {
-        POINT = 0, SEGMENT = 1, TRIANGLE = 2, SQUARE = 3, TETRAHEDRON = 4, CUBE = 5
+    enum MFEM_geometry_type
+    {
+        POINT = 0,
+        SEGMENT = 1,
+        TRIANGLE = 2,
+        SQUARE = 3,
+        TETRAHEDRON = 4,
+        CUBE = 5
     };
 
     /*!
@@ -61,18 +68,19 @@ namespace {
      * "MFEM is a free, lightweight, scalable C++ library for finite element
      * methods"
      */
-    template< index_t DIMENSION >
-    class MFEMIOHandler final: public GeoModelIOHandler< DIMENSION > {
+    template < index_t DIMENSION >
+    class MFEMIOHandler final : public GeoModelIOHandler< DIMENSION >
+    {
     public:
-        void load( const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
+        void load(
+            const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
         {
             ringmesh_unused( filename );
             ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from MFEM not implemented yet" );
+            throw RINGMeshException(
+                "I/O", "Loading of a GeoModel from MFEM not implemented yet" );
         }
-        void save(
-            const GeoModel< DIMENSION >& geomodel,
+        void save( const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
         {
             const auto& geomodel_mesh = geomodel.mesh;
@@ -89,7 +97,8 @@ namespace {
         }
 
     private:
-        void test_if_mesh_is_valid( const GeoModelMesh< DIMENSION >& geomodel_mesh );
+        void test_if_mesh_is_valid(
+            const GeoModelMesh< DIMENSION >& geomodel_mesh );
 
         /*!
          * @brief Write the header for the MFEM mesh file
@@ -105,12 +114,10 @@ namespace {
             out << EOL;
         }
 
-        void write_elements(
-            const GeoModelMesh< DIMENSION >& geomodel_mesh,
+        void write_elements( const GeoModelMesh< DIMENSION >& geomodel_mesh,
             std::ofstream& out ) const;
 
-        void write_boundaries(
-            const GeoModelMesh< DIMENSION >& geomodel_mesh,
+        void write_boundaries( const GeoModelMesh< DIMENSION >& geomodel_mesh,
             std::ofstream& out ) const;
 
         /*!
@@ -120,38 +127,42 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_vertices(
-            const GeoModelMesh< DIMENSION >& geomodel_mesh,
+        void write_vertices( const GeoModelMesh< DIMENSION >& geomodel_mesh,
             std::ofstream& out ) const
         {
             out << "vertices" << EOL;
             out << geomodel_mesh.vertices.nb() << EOL;
             out << DIMENSION << EOL;
-            for( auto v : range( geomodel_mesh.vertices.nb() ) ) {
+            for( auto v : range( geomodel_mesh.vertices.nb() ) )
+            {
                 out << geomodel_mesh.vertices.vertex( v ) << EOL;
             }
         }
     };
 
-    ALIAS_2D_AND_3D (MFEMIOHandler);
+    ALIAS_2D_AND_3D( MFEMIOHandler );
 
-    template< >
+    template <>
     void MFEMIOHandler3D::test_if_mesh_is_valid(
         const GeoModelMesh3D& geomodel_mesh )
     {
-        index_t nb_cells { geomodel_mesh.cells.nb() };
+        index_t nb_cells{ geomodel_mesh.cells.nb() };
         if( geomodel_mesh.cells.nb_tet() != nb_cells
-            && geomodel_mesh.cells.nb_hex() != nb_cells ) {
-            throw RINGMeshException( "I/O",
-                "Export to MFEM format works only with full tet or full hex format" );
+            && geomodel_mesh.cells.nb_hex() != nb_cells )
+        {
+            throw RINGMeshException( "I/O", "Export to MFEM format works only "
+                                            "with full tet or full hex "
+                                            "format" );
         }
     }
 
-    template< >
+    template <>
     void MFEMIOHandler2D::test_if_mesh_is_valid(
         const GeoModelMesh2D& geomodel_mesh )
     {
-        if( geomodel_mesh.polygons.nb() != geomodel_mesh.polygons.nb_triangle() ) {
+        if( geomodel_mesh.polygons.nb()
+            != geomodel_mesh.polygons.nb_triangle() )
+        {
             throw RINGMeshException( "I/O",
                 "Export to MFEM format works only with triangles in 2D" );
         }
@@ -167,42 +178,45 @@ namespace {
      * @param[in] geomodel_mesh the GeoModelMesh to be saved
      * @param[in] out the ofstream that wrote the MFEM mesh file
      */
-    template< >
+    template <>
     void MFEMIOHandler3D::write_elements(
-        const GeoModelMesh3D& geomodel_mesh,
-        std::ofstream& out ) const
+        const GeoModelMesh3D& geomodel_mesh, std::ofstream& out ) const
     {
-        index_t nb_cells { geomodel_mesh.cells.nb() };
+        index_t nb_cells{ geomodel_mesh.cells.nb() };
         out << "elements" << EOL;
         out << nb_cells << EOL;
-        for( auto c : range( nb_cells ) ) {
+        for( auto c : range( nb_cells ) )
+        {
             out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
-            out
-                << cell_type_mfem[to_underlying_type( geomodel_mesh.cells.type( c ) )]
+            out << cell_type_mfem[to_underlying_type(
+                       geomodel_mesh.cells.type( c ) )]
                 << " ";
-            for( auto v : range( geomodel_mesh.cells.nb_vertices( c ) ) ) {
-                out
-                    << geomodel_mesh.cells.vertex(
-                        ElementLocalVertex( c, cell2mfem[v] ) ) << " ";
+            for( auto v : range( geomodel_mesh.cells.nb_vertices( c ) ) )
+            {
+                out << geomodel_mesh.cells.vertex(
+                           ElementLocalVertex( c, cell2mfem[v] ) )
+                    << " ";
             }
             out << EOL;
         }
         out << EOL;
     }
 
-    template< >
+    template <>
     void MFEMIOHandler2D::write_elements(
-        const GeoModelMesh2D& geomodel_mesh,
-        std::ofstream& out ) const
+        const GeoModelMesh2D& geomodel_mesh, std::ofstream& out ) const
     {
-        index_t nb_triangles { geomodel_mesh.polygons.nb_triangle() };
+        index_t nb_triangles{ geomodel_mesh.polygons.nb_triangle() };
         out << "elements" << EOL;
         out << nb_triangles << EOL;
-        for( auto c : range( nb_triangles ) ) {
+        for( auto c : range( nb_triangles ) )
+        {
             out << geomodel_mesh.polygons.surface( c ) + mfem_offset << " ";
             out << TRIANGLE << " ";
-            for( auto v : range( geomodel_mesh.polygons.nb_vertices( c ) ) ) {
-                out << geomodel_mesh.polygons.vertex( ElementLocalVertex( c, v ) )
+            for( auto v : range( geomodel_mesh.polygons.nb_vertices( c ) ) )
+            {
+                out << geomodel_mesh.polygons.vertex(
+                           ElementLocalVertex( c, v ) )
                     << " ";
             }
             out << EOL;
@@ -220,20 +234,21 @@ namespace {
      * @param[in] geomodel_mesh the GeoModelMesh to be saved
      * @param[in] out the ofstream that wrote the MFEM mesh file
      */
-    template< >
+    template <>
     void MFEMIOHandler3D::write_boundaries(
-        const GeoModelMesh3D& geomodel_mesh,
-        std::ofstream& out ) const
+        const GeoModelMesh3D& geomodel_mesh, std::ofstream& out ) const
     {
         const GeoModelMeshPolygons3D& polygons = geomodel_mesh.polygons;
         out << "boundary" << EOL;
         out << polygons.nb() << EOL;
-        for( auto p : range( polygons.nb() ) ) {
+        for( auto p : range( polygons.nb() ) )
+        {
             out << polygons.surface( p ) + mfem_offset << " ";
             PolygonType polygon_type;
             std::tie( polygon_type, std::ignore ) = polygons.type( p );
             out << polygon_type_mfem[to_underlying_type( polygon_type )] << " ";
-            for( auto v : range( polygons.nb_vertices( p ) ) ) {
+            for( auto v : range( polygons.nb_vertices( p ) ) )
+            {
                 out << polygons.vertex( ElementLocalVertex( p, v ) ) << " ";
             }
             out << EOL;
@@ -241,18 +256,19 @@ namespace {
         out << EOL;
     }
 
-    template< >
+    template <>
     void MFEMIOHandler2D::write_boundaries(
-        const GeoModelMesh2D& geomodel_mesh,
-        std::ofstream& out ) const
+        const GeoModelMesh2D& geomodel_mesh, std::ofstream& out ) const
     {
         const GeoModelMeshEdges2D& edges = geomodel_mesh.edges;
         out << "boundary" << EOL;
         out << edges.nb() << EOL;
-        for( auto p : range( edges.nb() ) ) {
+        for( auto p : range( edges.nb() ) )
+        {
             out << edges.line( p ) + mfem_offset << " ";
             out << SEGMENT << " ";
-            for( auto v : range( 2 ) ) {
+            for( auto v : range( 2 ) )
+            {
                 out << edges.vertex( ElementLocalVertex( p, v ) ) << " ";
             }
             out << EOL;

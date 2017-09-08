@@ -37,12 +37,13 @@
  * @author Nicolas Mastio
  */
 
-namespace {
-
+namespace
+{
     /*!
      * @brief Import for the Stradivarius .model format
      */
-    class StradivariusBuilder final: public GeoModelBuilderFile< 2 > {
+    class StradivariusBuilder final : public GeoModelBuilderFile< 2 >
+    {
     public:
         StradivariusBuilder( GeoModel2D& geomodel, std::string filename )
             : GeoModelBuilderFile< 2 >( geomodel, std::move( filename ) )
@@ -69,81 +70,97 @@ namespace {
             file.get_fields();
             auto nb_points = file.field_as_uint( 0 );
             points_.resize( nb_points );
-            for( auto p : range( nb_points ) ) {
+            for( auto p : range( nb_points ) )
+            {
                 file.get_line();
                 file.get_fields();
                 // convert coordinates from depth to elevation
-                points_[p] = {file.field_as_double( 1 ), - file.field_as_double( 2 )};
+                points_[p] = { file.field_as_double( 1 ),
+                    -file.field_as_double( 2 ) };
             }
         }
 
-        void load_interfaces() {
+        void load_interfaces()
+        {
             GEO::LineInput file{ filename_ };
             move_to( file, "liste des horizons\n" );
             file.get_line();
             file.get_fields();
             auto nb_horizons = file.field_as_uint( 0 );
-            topology.create_mesh_entities( Line2D::type_name_static(), nb_horizons );
+            topology.create_mesh_entities(
+                Line2D::type_name_static(), nb_horizons );
 
-            for( auto horizon_id : range( nb_horizons ) ) {
+            for( auto horizon_id : range( nb_horizons ) )
+            {
                 file.get_line();
                 file.get_fields();
 
                 gmme_id horizon{ Line2D::type_name_static(), horizon_id };
-                int medium_1 {file.field_as_int( 0 )};
-                int medium_2 {file.field_as_int( 1 )};
+                int medium_1{ file.field_as_int( 0 ) };
+                int medium_2{ file.field_as_int( 1 ) };
                 auto nb_points = file.field_as_uint( 2 );
-                info.set_mesh_entity_name(horizon, file.field( 4 ));
+                info.set_mesh_entity_name( horizon, file.field( 4 ) );
 
-                std::vector<vec2> vertices(nb_points);
-                for(auto point_i : range( nb_points )) {
+                std::vector< vec2 > vertices( nb_points );
+                for( auto point_i : range( nb_points ) )
+                {
                     file.get_line();
                     file.get_fields();
                     auto point_id = file.field_as_uint( 0 );
                     vertices[point_i] = points_[point_id];
                 }
-                geometry.set_line(horizon_id, vertices);
+                geometry.set_line( horizon_id, vertices );
 
-                if (((medium_1 == 0 && (medium_2 == -1))) || ((medium_1 == -1 && (medium_2 == 0)))) {
-                    horizon_m0_.insert(horizon);
+                if( ( ( medium_1 == 0 && ( medium_2 == -1 ) ) )
+                    || ( ( medium_1 == -1 && ( medium_2 == 0 ) ) ) )
+                {
+                    horizon_m0_.insert( horizon );
                 }
             }
         }
 
-        void load_media() {
+        void load_media()
+        {
             GEO::LineInput file{ filename_ };
-            move_to(file, "liste des milieux\n");
+            move_to( file, "liste des milieux\n" );
             file.get_line();
             file.get_fields();
             auto nb_media = file.field_as_uint( 0 );
-            topology.create_mesh_entities( Surface2D::type_name_static(), nb_media + 1 );
+            topology.create_mesh_entities(
+                Surface2D::type_name_static(), nb_media + 1 );
 
-            for( const auto& horizon : horizon_m0_ ) {
+            for( const auto& horizon : horizon_m0_ )
+            {
                 topology.add_mesh_entity_boundary_relation(
-                    {   Surface2D::type_name_static(), index_t( 0 )}, horizon,
+                    { Surface2D::type_name_static(), index_t( 0 ) }, horizon,
                     true );
             }
 
-            for (auto milieu_i : range( nb_media )) {
+            for( auto milieu_i : range( nb_media ) )
+            {
                 file.get_line();
                 file.get_fields();
                 auto nb_interfaces = file.field_as_uint( 1 );
-                for (auto interface_i : range( nb_interfaces )) {
+                for( auto interface_i : range( nb_interfaces ) )
+                {
                     ringmesh_unused( interface_i );
                     file.get_line();
                     file.get_fields();
                     auto interface_id = file.field_as_uint( 0 );
                     gmme_id horizon{ Line2D::type_name_static(), interface_id };
                     topology.add_mesh_entity_boundary_relation(
-                        {   Surface2D ::type_name_static(), milieu_i + 1}, horizon,
-                        true );
+                        { Surface2D ::type_name_static(), milieu_i + 1 },
+                        horizon, true );
                 }
             }
         }
 
-        bool move_to(GEO::LineInput& file, std::string selector) {
-            while (!file.eof() && file.get_line()) {
-                if (selector.compare(file.current_line()) == 0) {
+        bool move_to( GEO::LineInput& file, std::string selector )
+        {
+            while( !file.eof() && file.get_line() )
+            {
+                if( selector.compare( file.current_line() ) == 0 )
+                {
                     return true;
                 }
             }
@@ -158,21 +175,21 @@ namespace {
     /*!
      * @brief Export for the Stradivarius .model format
      */
-    class StradivariusIOHandler final: public GeoModelIOHandler< 2 > {
+    class StradivariusIOHandler final : public GeoModelIOHandler< 2 >
+    {
     public:
         void load( const std::string& filename, GeoModel2D& geomodel ) final
         {
             StradivariusBuilder builder{ geomodel, filename };
             builder.build_geomodel();
         }
-        void save( const GeoModel2D& geomodel, const std::string& filename ) final
+        void save(
+            const GeoModel2D& geomodel, const std::string& filename ) final
         {
             ringmesh_unused( geomodel );
             ringmesh_unused( filename );
-            throw RINGMeshException( "I/O",
-                "Cannot save a GeoModel for Stradivarius" );
+            throw RINGMeshException(
+                "I/O", "Cannot save a GeoModel for Stradivarius" );
         }
     };
-
 }
-
