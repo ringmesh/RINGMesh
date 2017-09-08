@@ -250,9 +250,9 @@ namespace
         std::vector< index_t > solution( 1, 0 );
         if( nb_connected_components != 1 || connected_components != solution )
         {
-            throw RINGMeshException( "RINGMesh Test",
-                "Surface mesh should have 1 connected "
-                "component with an index at 0." );
+            throw RINGMeshException(
+                "RINGMesh Test", "Surface mesh should have 1 connected "
+                                 "component with an index at 0." );
         }
 
         nb_connected_components = NO_ID;
@@ -276,9 +276,9 @@ namespace
         solution.push_back( 1 );
         if( nb_connected_components != 2 || connected_components != solution )
         {
-            throw RINGMeshException( "RINGMesh Test",
-                "Surface mesh should have 2 connected "
-                "component with an index at 0 0 1." );
+            throw RINGMeshException(
+                "RINGMesh Test", "Surface mesh should have 2 connected "
+                                 "component with an index at 0 0 1." );
         }
     }
 

@@ -179,8 +179,8 @@ namespace RINGMesh
         store.reserve( new_size );
         for( auto i : range( old_size, new_size ) )
         {
-            store.emplace_back( GeoModelGeologicalEntityAccess<
-                DIMENSION >::create_geological_entity( type, geomodel_, i ) );
+            store.emplace_back( GeoModelGeologicalEntityAccess< DIMENSION >::
+                    create_geological_entity( type, geomodel_, i ) );
         }
         return true;
     }
@@ -317,8 +317,8 @@ namespace RINGMesh
         auto id =
             static_cast< index_t >( geomodel_.nb_geological_entities( type ) );
         geomodel_access_.modifiable_geological_entities()[index].emplace_back(
-            GeoModelGeologicalEntityAccess<
-                DIMENSION >::create_geological_entity( type, geomodel_, id ) );
+            GeoModelGeologicalEntityAccess< DIMENSION >::
+                create_geological_entity( type, geomodel_, id ) );
         return geomodel_access_.modifiable_geological_entities()[index]
             .back()
             ->gmge();

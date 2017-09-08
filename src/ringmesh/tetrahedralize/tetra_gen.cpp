@@ -576,12 +576,11 @@ namespace RINGMesh
                 for( auto v : range( 3 ) )
                 {
                     tetmesh_constraint_.facets.set_vertex( offset_polygons + t,
-                        v,
-                        starting_index
-                            + unique_indices
-                                  [offset_vertices
-                                      + surface->mesh_element_vertex_index(
-                                            ElementLocalVertex( t, v ) )] );
+                        v, starting_index
+                               + unique_indices
+                                     [offset_vertices
+                                         + surface->mesh_element_vertex_index(
+                                               ElementLocalVertex( t, v ) )] );
                 }
                 surface_region[offset_polygons + t] = surface->index();
             }

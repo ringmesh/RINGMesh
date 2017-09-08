@@ -599,9 +599,8 @@ namespace
             {
                 if( !geomodel.line( line ).is_closed() )
                 {
-                    Logger::warn( "GeoModel",
-                        " Vertex"
-                        " is twice in Line ",
+                    Logger::warn( "GeoModel", " Vertex"
+                                              " is twice in Line ",
                         line );
                     return false;
                 }
@@ -663,9 +662,8 @@ namespace
             {
                 if( !geomodel.line( line ).is_closed() )
                 {
-                    Logger::warn( "GeoModel",
-                        " Vertex"
-                        " is twice in Line ",
+                    Logger::warn( "GeoModel", " Vertex"
+                                              " is twice in Line ",
                         line );
                     return false;
                 }
@@ -900,9 +898,8 @@ namespace
 
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
             {
-                Logger::warn( "GeoModel",
-                    " Invalid surface boundary: ", invalid_corners.size() / 2,
-                    " boundary edges of ", S_id,
+                Logger::warn( "GeoModel", " Invalid surface boundary: ",
+                    invalid_corners.size() / 2, " boundary edges of ", S_id,
                     "  are in no line of the geomodel " );
                 Logger::warn( "GeoModel", " Saved in file: ", file.str() );
             }
@@ -963,9 +960,9 @@ namespace
 
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
             {
-                Logger::warn( "GeoModel",
-                    " Unconformal surface: ", unconformal_polygons.size(),
-                    " polygons of ", surface.gmme(),
+                Logger::warn( "GeoModel", " Unconformal surface: ",
+                    unconformal_polygons.size(), " polygons of ",
+                    surface.gmme(),
                     " are unconformal with the geomodel cells " );
                 Logger::warn( "GeoModel", " Saved in file: ", file.str() );
             }
@@ -1464,10 +1461,9 @@ namespace RINGMesh
         }
         if( count_invalid != 0 )
         {
-            Logger::warn( "GeoModel", count_invalid,
-                " mesh entities of the "
-                "geomodel have an invalid "
-                "connectivity." );
+            Logger::warn( "GeoModel", count_invalid, " mesh entities of the "
+                                                     "geomodel have an invalid "
+                                                     "connectivity." );
         }
         return count_invalid == 0;
     }

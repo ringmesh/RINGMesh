@@ -941,8 +941,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderBase<
-        DIMENSION >::build_lines_and_corners_from_surfaces()
+    void GeoModelBuilderBase< DIMENSION >::
+        build_lines_and_corners_from_surfaces()
     {
         LineGeometryFromGeoModelSurfaces< DIMENSION > line_computer(
             geomodel_ );
