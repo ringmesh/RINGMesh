@@ -58,11 +58,9 @@ namespace RINGMesh
 {
 #define COMMON_GEOGRAM_MESH_IMPLEMENTATION( Class )                            \
     friend class Class##Builder< DIMENSION >;                                  \
-                                                                               \
+    \
 public:                                                                        \
-    Class() : mesh_( new GEO::Mesh( DIMENSION, false ) )                       \
-    {                                                                          \
-    }                                                                          \
+    Class() : mesh_( new GEO::Mesh( DIMENSION, false ) ) {}                    \
     static MeshType type_name_static()                                         \
     {                                                                          \
         return #Class;                                                         \
@@ -105,7 +103,7 @@ public:                                                                        \
     {                                                                          \
         return mesh_->vertices.nb();                                           \
     }                                                                          \
-                                                                               \
+    \
 private:                                                                       \
     vecn< DIMENSION >& ref_vertex( index_t v_id )                              \
     {                                                                          \
@@ -113,7 +111,7 @@ private:                                                                       \
         double* vertex_ptr = mesh_->vertices.point_ptr( v_id );                \
         return *(vecn< DIMENSION >*) ( vertex_ptr );                           \
     }                                                                          \
-                                                                               \
+    \
 protected:                                                                     \
     std::unique_ptr< GEO::Mesh > mesh_
 

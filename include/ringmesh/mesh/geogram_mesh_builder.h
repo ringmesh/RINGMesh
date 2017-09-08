@@ -6,7 +6,7 @@
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
+ *     * Redistributions in binary form must reproduce the above copyrightdo
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
  *     * Neither the name of ASGA nor the
@@ -49,6 +49,7 @@
 namespace RINGMesh
 {
 #define COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( Class )                    \
+    \
 public:                                                                        \
     void do_copy( const MeshBase< DIMENSION >& rhs, bool copy_attributes )     \
         override                                                               \
@@ -111,7 +112,7 @@ public:                                                                        \
             copy_std_vector_to_geo_vector( permutation );                      \
         mesh_.mesh_->vertices.permute_elements( geo_vector_permutation );      \
     }                                                                          \
-                                                                               \
+    \
 private:                                                                       \
     Class< DIMENSION >& mesh_
 
@@ -217,19 +218,6 @@ private:                                                                       \
                 mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) );
             CVT.compute_surface( mesh_.mesh_.get(), false );
             Logger::instance()->set_minimal( false );
-        }
-
-        void do_create_polygons( const std::vector< index_t >& polygons,
-            const std::vector< index_t >& polygon_ptr ) override
-        {
-            for( auto p : range( polygon_ptr.size() - 1 ) )
-            {
-                index_t start = polygon_ptr[p];
-                index_t end = polygon_ptr[p + 1];
-                GEO::vector< index_t > polygon_vertices =
-                    copy_std_vector_to_geo_vector( polygons, start, end );
-                mesh_.mesh_->facets.create_polygon( polygon_vertices );
-            }
         }
 
         index_t do_create_polygon(

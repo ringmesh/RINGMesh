@@ -126,8 +126,8 @@ namespace
 
     bool GetChar( void* data, int idx, const char** out_text )
     {
-        *out_text = static_cast< const std::vector< std::string >* >(
-            data )->at( static_cast< long unsigned int >( idx ) )
+        *out_text = static_cast< const std::vector< std::string >* >( data )
+                        ->at( static_cast< long unsigned int >( idx ) )
                         .c_str();
         return true;
     }
@@ -216,8 +216,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
-        reset_attribute_name()
+    void RINGMeshApplication::GeoModelViewerBase<
+        DIMENSION >::reset_attribute_name()
     {
         GM_gfx_.attribute.set_name( "name" );
     }
@@ -362,8 +362,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
-        update_all_entity_visibility( bool value )
+    void RINGMeshApplication::GeoModelViewerBase<
+        DIMENSION >::update_all_entity_visibility( bool value )
     {
         GM_gfx_.corners.set_vertex_visibility( value );
         GM_gfx_.lines.set_line_visibility( value );
@@ -379,8 +379,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
-        update_entity_visibility()
+    void RINGMeshApplication::GeoModelViewerBase<
+        DIMENSION >::update_entity_visibility()
     {
         index_t selected_entity_type_casted =
             static_cast< index_t >( selected_entity_type_ );
@@ -444,15 +444,15 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
-        toggle_corner_visibility( index_t corner_id )
+    void RINGMeshApplication::GeoModelViewerBase<
+        DIMENSION >::toggle_corner_visibility( index_t corner_id )
     {
         GM_gfx_.corners.set_vertex_visibility( corner_id, true );
     }
 
     template < index_t DIMENSION >
-    void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
-        toggle_line_and_boundaries_visibility( index_t line_id )
+    void RINGMeshApplication::GeoModelViewerBase<
+        DIMENSION >::toggle_line_and_boundaries_visibility( index_t line_id )
     {
         GM_gfx_.lines.set_line_visibility( line_id, true );
         GM_gfx_.lines.set_vertex_visibility(
@@ -493,8 +493,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
-        draw_object_properties()
+    void RINGMeshApplication::GeoModelViewerBase<
+        DIMENSION >::draw_object_properties()
     {
         if( ImGui::Combo( "Type", &selected_entity_type_, GetChar,
                 static_cast< void* >( &entity_types_ ),
@@ -647,8 +647,9 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
-        draw_entity_style_editor( const std::string& label, EntityStyle& style )
+    void RINGMeshApplication::GeoModelViewerBase<
+        DIMENSION >::draw_entity_style_editor( const std::string& label,
+        EntityStyle& style )
     {
         ImGui::PushStyleColor( ImGuiCol_Button, style.color_ );
         if( ImGui::Button( ( "  " + label ).c_str() ) )
@@ -666,9 +667,9 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
-        draw_entity_vertex_style_editor(
-            const std::string& label, EntityStyle& style )
+    void RINGMeshApplication::GeoModelViewerBase<
+        DIMENSION >::draw_entity_vertex_style_editor( const std::string& label,
+        EntityStyle& style )
     {
         ImGui::PushStyleColor( ImGuiCol_Button, style.vertex_color_ );
         if( ImGui::Button( ( "  " + label ).c_str() ) )
@@ -917,8 +918,8 @@ namespace RINGMesh
         }
     }
 
-    void RINGMeshApplication::GeoModelViewer< 3 >::
-        toggle_region_and_boundaries_visibility( index_t region_id )
+    void RINGMeshApplication::GeoModelViewer<
+        3 >::toggle_region_and_boundaries_visibility( index_t region_id )
     {
         GM_gfx_.regions.set_region_visibility( region_id, true );
         GM_gfx_.regions.set_vertex_visibility(

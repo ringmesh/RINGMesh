@@ -531,7 +531,12 @@ namespace RINGMesh
         void create_polygons( const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr )
         {
-            do_create_polygons( polygons, polygon_ptr );
+            for( auto p : range( polygon_ptr.size() - 1 ) )
+            {
+                std::vector< index_t > polygon_vertices(
+                    polygon_ptr[p], polygon_ptr[p + 1] );
+                mesh_.mesh_->facets.create_polygon( polygon_vertices );
+            }
             clear_polygon_linked_objects();
         }
         /*!
@@ -808,14 +813,6 @@ namespace RINGMesh
             delete_polygon_aabb();
             delete_polygon_nn_search();
         }
-        /*!
-         * brief create polygons
-         * @param[in] polygons is the vector of vertex index for each polygon
-         * @param[in] polygon_ptr is the vector addressing the first polygon
-         * vertex for each polygon.
-         */
-        virtual void do_create_polygons( const std::vector< index_t >& polygons,
-            const std::vector< index_t >& polygon_ptr ) = 0;
         /*!
          * \brief Creates a polygon
          * \param[in] vertices a const reference to a vector that
