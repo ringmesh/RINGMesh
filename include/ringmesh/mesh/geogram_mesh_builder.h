@@ -238,15 +238,15 @@ private:                                                                       \
         }
 
         void do_set_polygon_vertex(
-            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
+            const ElementLocalVertex& polygon_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->facets.set_vertex( polygon_local_edge.polygon_id_,
-                polygon_local_edge.local_edge_id_, vertex_id );
+            mesh_.mesh_->facets.set_vertex( polygon_local_vertex.element_id_,
+                polygon_local_vertex.local_vertex_id_, vertex_id );
         }
 
         void do_set_polygon_adjacent(
-            const RINGMesh::PolygonLocalEdge& polygon_local_edge,
+            const PolygonLocalEdge& polygon_local_edge,
             index_t specifies ) override
         {
             mesh_.mesh_->facets.set_adjacent( polygon_local_edge.polygon_id_,
