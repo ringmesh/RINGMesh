@@ -239,6 +239,50 @@ namespace RINGMesh
         using Disk = Circle;
     } // namespace Geometry
 
+    struct RINGMESH_API Frame3D
+    {
+        Frame3D() = default;
+
+        Frame3D( vec3 u_axis, vec3 v_axis, vec3 w_axis )
+            : u( std::move( normalize( u_axis ) ) ),
+              v( std::move( normalize( v_axis ) ) ),
+              w( std::move( normalize( w_axis ) ) )
+        {
+        }
+
+        vec3 u{};
+        vec3 v{};
+        vec3 w{};
+    };
+
+    struct RINGMESH_API ReferenceFrame3D : public Frame3D
+    {
+        ReferenceFrame3D() = default;
+
+        ReferenceFrame3D( vec3 frame_origin, Frame3D frame )
+            : Frame3D( std::move( frame ) ), origin( std::move( frame_origin ) )
+        {
+        }
+
+        vec3 origin{};
+    };
+
+    /*!
+     * @brief Reference frame aligned along the plane normal and whose u axis is
+     * upward
+     */
+    struct RINGMESH_API PlaneReferenceFrame3D : public ReferenceFrame3D
+    {
+        PlaneReferenceFrame3D() = default;
+
+        PlaneReferenceFrame3D( vec3 frame_origin, Frame3D frame )
+            : ReferenceFrame3D( std::move( frame_origin ), std::move( frame ) )
+        {
+        }
+
+        PlaneReferenceFrame3D( const Geometry::Plane& plane );
+    };
+
     namespace Distance
     {
         /*!
