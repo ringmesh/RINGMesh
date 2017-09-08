@@ -533,7 +533,8 @@ namespace RINGMesh
         {
             for( auto p : range( polygon_ptr.size() - 1 ) ){
                 std::vector< index_t > polygon_vertices(
-                    polygon_ptr[p], polygon_ptr[p + 1] );
+                    &polygons[ polygon_ptr[p] ],
+                    &polygons[ polygon_ptr[p + 1] - 1 ]);
                 do_create_polygon( polygon_vertices );
             }
             clear_polygon_linked_objects();
@@ -582,9 +583,9 @@ namespace RINGMesh
          * polygon \param polygon_id. Index between 0 and @function nb() - 1.
          */
         void set_polygon_vertex(
-            const PolygonLocalEdge& polygon_local_edge, index_t vertex_id )
+            const ElementLocalVertex& polygon_local_vertex, index_t vertex_id )
         {
-            do_set_polygon_vertex( polygon_local_edge, vertex_id );
+            do_set_polygon_vertex( polygon_local_vertex, vertex_id );
             clear_polygon_linked_objects();
         }
         /*!
@@ -834,15 +835,13 @@ namespace RINGMesh
         virtual index_t do_create_quads( index_t nb_quads ) = 0;
         /*!
          * @brief Sets a vertex of a polygon by local vertex index.
-         * @param[in] polygon_local_edge the polygon index and the local index
-         * of an edge.
-         * Local index between 0 and @function nb_vertices(cell_id) - 1.
-         * @param[in] vertex_id specifies the vertex \param local_vertex_id of
-         * the
-         * polygon \param polygon_id. Index between 0 and @function nb() - 1.
+         * @param[in] polygon_local_vertex the polygon index and the local index
+         * of a vertex in the polygon.
+         * @param[in] vertex_id specifies the vertex between 0 and the number 
+         * of vertex in polygon.
          */
         virtual void do_set_polygon_vertex(
-            const PolygonLocalEdge& polygon_local_edge, index_t vertex_id ) = 0;
+            const ElementLocalVertex& polygon_local_vertex, index_t vertex_id ) = 0;
         /*!
          * @brief Sets an adjacent polygon by both its polygon \param polygon_id
          * and its local edge index \param edge_id.
