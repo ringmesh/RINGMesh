@@ -535,7 +535,7 @@ namespace RINGMesh
             {
                 std::vector< index_t > polygon_vertices(
                     polygon_ptr[p], polygon_ptr[p + 1] );
-                mesh_.mesh_->facets.create_polygon( polygon_vertices );
+                do_create_polygon( polygon_vertices );
             }
             clear_polygon_linked_objects();
         }
