@@ -56,38 +56,22 @@ namespace RINGMesh
               geomodel3d_from_( geomodel3d_from ),
               plane_( plane )
         {
-            // Definition of v axis (upward) of the 2D space (along the plane)
-            auto upward_point = plane_.origin + vec3{ 0., 0., 1. };
-            vec3 v_axis_point_direction;
-            std::tie( std::ignore, v_axis_point_direction ) =
-                Distance::point_to_plane( upward_point, plane_ );
-            if( ( plane_.origin - v_axis_point_direction ).length()
-                < geomodel3d_from.epsilon() )
-            {
-                // Case where plane is sub-horizontal
-                // (v axis is set towards 3D x direction)
-                auto towards_x_point = plane_.origin + vec3{ 1., 0., 0. };
-                std::tie( std::ignore, v_axis_point_direction ) =
-                    Distance::point_to_plane( towards_x_point, plane_ );
-                ringmesh_assert(
-                    ( plane_.origin - v_axis_point_direction ).length()
-                    < geomodel3d_from.epsilon() );
-            }
-            v_axis = normalize( v_axis_point_direction - plane_.origin );
-            u_axis = cross( v_axis, plane_.normal );
+            PlaneReferenceFrame3D plane_frame( plane );
+            u_axis_ = std::move( plane_frame.u );
+            v_axis_ = std::move( plane_frame.v );
         }
 
     protected:
         vec2 get_2d_coord( const vec3& coord3d )
         {
-            return { dot( coord3d, u_axis ), dot( coord3d, v_axis ) };
+            return { dot( coord3d, u_axis_ ), dot( coord3d, v_axis_ ) };
         }
 
     protected:
         const GeoModel3D& geomodel3d_from_;
         const Geometry::Plane& plane_;
-        vec3 u_axis{};
-        vec3 v_axis{};
+        vec3 u_axis_{};
+        vec3 v_axis_{};
     };
 
     /*!
