@@ -114,11 +114,6 @@ namespace
         const std::vector< index_t >& region_id_;
     };
 
-    std::string vertex_map_name()
-    {
-        return "model_vertex_map";
-    }
-
     template < index_t DIMENSION >
     std::vector< index_t > cell_facets_around_vertex(
         const VolumeMesh< DIMENSION >& mesh, index_t cell, index_t vertex_id )
