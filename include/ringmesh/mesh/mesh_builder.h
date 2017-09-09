@@ -667,7 +667,7 @@ namespace RINGMesh
             index_t local_vertex_count { 0 };
             for( auto polygon : polygons_to_connect )
             {
-                for( index_t v = 0;
+                for( index_t v { 0 };
                      v < this->surface_mesh_.nb_polygon_vertices( polygon );
                      v++, local_vertex_count++ )
                 {
