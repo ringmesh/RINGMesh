@@ -108,7 +108,6 @@ void ringmesh_unused( const T& /*unused*/ )
 
 #include <future>
 
-#include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/types.h>
 
