@@ -505,40 +505,6 @@ namespace
         }
     }
 
-    /*
-     * @brief Determines if each side of the surfaces are
-     * in the boundaries of geomodel regions
-     * @param[in] geomodel GeoModel to consider
-     * @param[out] surf_side_minus Vector indicating if the '-' side of
-     * surfaces are in the boundaries of geomodel regions
-     * @return Vector indicating if the '+' side of
-     * surfaces are in the boundaries of geomodel regions
-     */
-    std::vector< bool > determine_if_surface_sides_bound_regions(
-        const GeoModel3D& geomodel )
-    {
-        std::vector< bool > surface_sides( 2 * geomodel.nb_surfaces(), false );
-        for( const auto& region : geomodel.regions() )
-        {
-            for( auto s : range( region.nb_boundaries() ) )
-            {
-                if( region.side( s ) )
-                {
-                    surface_sides[2 * region.boundary( s ).index() + 1] = true;
-                }
-                else if( !region.side( s ) )
-                {
-                    surface_sides[2 * region.boundary( s ).index()] = true;
-                }
-                else
-                {
-                    ringmesh_assert_not_reached;
-                }
-            }
-        }
-        return surface_sides;
-    }
-
     /*! @}
      * \name Surface internal borders determination
      * @{
