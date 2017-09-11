@@ -1,0 +1,4 @@
+---
+Checks:          '*,-clang-diagnostic-*,-android-*,-boost-*,-mpi*,-misc-unused-parameters,-google-runtime-references,-modernize-make-unique,-llvm-header-guard,-misc-macro-parentheses,-google-readability-todo'
+...
+
