@@ -39,6 +39,8 @@
 #include <io.h>
 #endif
 
+#include <ringmesh/basic/nn_search.h>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 

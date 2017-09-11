@@ -41,6 +41,8 @@
 
 #include <geogram/mesh/triangle_intersection.h>
 
+#include <ringmesh/basic/nn_search.h>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>

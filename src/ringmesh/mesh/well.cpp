@@ -45,6 +45,7 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/box.h>
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>

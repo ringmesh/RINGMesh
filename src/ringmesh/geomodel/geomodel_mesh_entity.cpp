@@ -41,6 +41,7 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
@@ -862,9 +863,20 @@ namespace RINGMesh
             GeoModelMeshEntity< DIMENSION >::boundary( x ) );
     }
 
+
+    Surface< 2 >::Surface( const GeoModel2D& geomodel, index_t id, const MeshType type )
+        : SurfaceBase< 2 >( geomodel, id, type )
+    {
+    }
+
     bool Surface< 2 >::is_on_voi() const
     {
         return false;
+    }
+
+    Surface< 3 >::Surface( const GeoModel3D& geomodel, index_t id, const MeshType type )
+        : SurfaceBase< 3 >( geomodel, id, type )
+    {
     }
 
     bool Surface< 3 >::is_on_voi() const

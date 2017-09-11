@@ -48,6 +48,8 @@
 
 namespace RINGMesh
 {
+    ALIAS_3D( NNSearch );
+
     class GeoModelBuilderTSolid;
     class GeoModelBuilderTSolidImpl;
     class GeoModelBuilderML;

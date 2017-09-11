@@ -41,7 +41,6 @@
 #include <memory>
 
 #include <ringmesh/basic/factory.h>
-#include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/aabb.h>
 
@@ -59,6 +58,7 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
+    FORWARD_DECLARATION_DIMENSION_CLASS( NNSearch );
     struct EdgeLocalVertex;
     struct PolygonLocalEdge;
     struct CellLocalFacet;
@@ -852,6 +852,8 @@ namespace RINGMesh
         friend class VolumeMeshBuilder< DIMENSION >;
 
     public:
+        ~VolumeMesh();
+
         static std::unique_ptr< VolumeMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
 
@@ -1178,7 +1180,7 @@ namespace RINGMesh
             connected_components() const final;
 
     protected:
-        VolumeMesh() = default;
+        VolumeMesh();
 
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > >
@@ -1210,7 +1212,7 @@ namespace RINGMesh
 
     protected:
         MeshSetBase();
-        virtual ~MeshSetBase() = default;
+        virtual ~MeshSetBase();
 
     public:
         std::unique_ptr< PointSetMesh< DIMENSION > > point_set_mesh{};
@@ -1231,6 +1233,7 @@ namespace RINGMesh
     {
     public:
         MeshSet();
+        ~MeshSet();
 
         void create_volume_mesh( MeshType type );
 

@@ -38,9 +38,11 @@
 #include <ringmesh/mesh/mesh.h>
 
 #include <numeric>
+#include <stack>
+
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
-#include <stack>
+#include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/geogram_mesh.h>
 
@@ -577,6 +579,16 @@ namespace RINGMesh
         return std::make_tuple( nb_components, components );
     }
 
+    template< index_t DIMENSION >
+    VolumeMesh< DIMENSION >::VolumeMesh()
+    {
+    }
+
+    template< index_t DIMENSION >
+    VolumeMesh< DIMENSION >::~VolumeMesh()
+    {
+    }
+
     template < index_t DIMENSION >
     std::unique_ptr< VolumeMesh< DIMENSION > >
         VolumeMesh< DIMENSION >::create_mesh( const MeshType type )
@@ -744,6 +756,12 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    MeshSetBase< DIMENSION >::~MeshSetBase()
+    {
+
+    }
+
+    template < index_t DIMENSION >
     void MeshSetBase< DIMENSION >::create_point_set_mesh( MeshType type )
     {
         point_set_mesh = PointSetMesh< DIMENSION >::create_mesh( type );
@@ -770,6 +788,10 @@ namespace RINGMesh
     MeshSet< 3 >::MeshSet()
     {
         create_volume_mesh( "" );
+    }
+
+    MeshSet< 3 >::~MeshSet()
+    {
     }
 
     void MeshSet< 3 >::create_volume_mesh( MeshType type )

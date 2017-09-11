@@ -37,6 +37,8 @@
 
 #include <ringmesh/mesh/mesh_builder.h>
 
+#include <ringmesh/basic/nn_search.h>
+
 #include <ringmesh/mesh/geogram_mesh_builder.h>
 
 namespace

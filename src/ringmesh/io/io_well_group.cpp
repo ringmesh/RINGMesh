@@ -37,6 +37,7 @@
 
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
+#include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 

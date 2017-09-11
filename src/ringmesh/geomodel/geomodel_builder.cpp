@@ -38,6 +38,8 @@
 #include <stack>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/nn_search.h>
+
 #include <ringmesh/geomodel/geomodel_api.h>
 
 /*!

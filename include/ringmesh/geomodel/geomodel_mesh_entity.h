@@ -857,10 +857,7 @@ namespace RINGMesh
         friend class GeoModelMeshEntityAccess< 2 >;
 
     private:
-        Surface( const GeoModel2D& geomodel, index_t id, const MeshType type )
-            : SurfaceBase< 2 >( geomodel, id, type )
-        {
-        }
+        Surface( const GeoModel2D& geomodel, index_t id, const MeshType type );
 
     public:
         bool is_on_voi() const final;
@@ -888,10 +885,7 @@ namespace RINGMesh
         friend class GeoModelMeshEntityAccess< 3 >;
 
     private:
-        Surface( const GeoModel3D& geomodel, index_t id, const MeshType type )
-            : SurfaceBase< 3 >( geomodel, id, type )
-        {
-        }
+        Surface( const GeoModel3D& geomodel, index_t id, const MeshType type );
 
     public:
         bool is_on_voi() const final;

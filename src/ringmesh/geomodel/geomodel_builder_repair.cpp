@@ -38,6 +38,7 @@
 #include <array>
 
 #include <geogram/basic/algorithm.h>
+#include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/geomodel/geomodel_builder.h>
 
