@@ -42,6 +42,7 @@
 #include <geogram/basic/logger.h>
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/basic/logger.h>
 
 #ifdef RINGMESH_TEST_GRAPHICS
 
