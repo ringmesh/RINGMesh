@@ -83,10 +83,6 @@ namespace
 #include "geomodel/io_tetgen.cpp"
 #include "geomodel/io_tsolid.cpp"
 #include "geomodel/io_vtk.cpp"
-
-#ifdef RINGMESH_WITH_GEOLOGYJS
-#include "boundary_geomodel/io_html.cpp"
-#endif
 }
 
 namespace RINGMesh
@@ -132,10 +128,6 @@ namespace RINGMesh
         GeoModelIOHandlerFactory3D::register_creator< SMESHIOHandler >(
             "smesh" );
         GeoModelIOHandlerFactory3D::register_creator< STLIOHandler >( "stl" );
-
-#ifdef RINGMESH_WITH_GEOLOGYJS
-        GeoModelIOHandlerFactory3D::register_creator< HTMLIOHandler >( "html" );
-#endif
     }
 
 } // namespace RINGMesh

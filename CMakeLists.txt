@@ -129,7 +129,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DTUTORIALS_DATA_INPUT_DIRECTORY:STRING=${TUTORIALS_DATA_INPUT_DIRECTORY}
                 -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
-                -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY}
                 -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
                 -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}
                 WORKING_DIRECTORY ${project_binary_dir_config})
@@ -230,22 +229,6 @@ if(MG_TETRA)
 
   set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
 endif()
-
-#--------------------------------------------------------
-# geology.js library
-if(RINGMESH_WITH_GEOLOGYJS)
-    message(STATUS "Using geology.js directory = ${GEOLOGY_JS_DIRECTORY}")
-    # geology.js platform dependent settings. CMAKE_BUILD_TYPE is empty on Windows.
-    set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build/${CMAKE_BUILD_TYPE})
-    # Add geology.js include directories to the current ones
-    include_directories(SYSTEM ${GEOLOGY_JS_DIRECTORY}/include)
-
-    # Add geology.js project libs to the libs with which RINGMesh will link
-    set(EXTRA_LIBS ${EXTRA_LIBS} GEOLOGYJS)
-    # Add geology.js bin directories to the current ones 
-    # It would be preferable to set the imported library location [JP]
-    link_directories(${GEOLOGY_JS_PATH_BIN}/lib)
-endif(RINGMESH_WITH_GEOLOGYJS)
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files
