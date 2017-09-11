@@ -289,6 +289,21 @@ include_directories(${PROJECT_BINARY_DIR})
 # This line is for clang utilities.
 set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
 
+# Collect the IO files
+file(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh/io ${PROJECT_SOURCE_DIR}/src/ringmesh/io/*)
+foreach(directory ${directories})
+    if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/io/${directory})
+        source_file_directory(ringmesh_files io/${directory})
+    endif()
+endforeach()
+
+if(COVERALLS)
+    coveralls_setup(
+    "${ringmesh_files}"
+        ${COVERALLS_UPLOAD}
+        "${PROJECT_SOURCE_DIR}/cmake")
+endif()
+
 set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
@@ -333,21 +348,6 @@ endif(RINGMESH_WITH_TESTS)
 if(BUILD_DOCUMENTATION)
     message(STATUS "Configuring RINGMesh with doxygen")
     add_subdirectory(doc)
-endif()
-
-# Collect the IO files
-file(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh/io ${PROJECT_SOURCE_DIR}/src/ringmesh/io/*)
-foreach(directory ${directories})
-    if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/io/${directory})
-        source_file_directory(ringmesh_files io/${directory})
-    endif()
-endforeach()
-
-if(COVERALLS)
-    coveralls_setup(
-    "${ringmesh_files}"
-        ${COVERALLS_UPLOAD}
-        "${PROJECT_SOURCE_DIR}/cmake")
 endif()
 
 # additional target to perform clang-tidy run, requires clang-tidy
