@@ -42,6 +42,8 @@
 #include <ringmesh/geomodel/entity_type.h>
 
 #include <deque>
+#include <map>
+#include <set>
 #include <vector>
 
 namespace RINGMesh

@@ -36,6 +36,7 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/logger.h>
 
 /*!
  * @author Arnaud Botella

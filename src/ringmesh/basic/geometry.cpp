@@ -46,16 +46,6 @@
  * @todo Comment on the robustness of the tests
  */
 
-namespace
-{
-    using namespace RINGMesh;
-
-    bool is_almost_zero( double value )
-    {
-        return value < global_epsilon && value > -global_epsilon;
-    }
-} // namespace
-
 namespace RINGMesh
 {
     double dot_perp( const vec2& v0, const vec2& v1 )
