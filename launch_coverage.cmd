@@ -7,4 +7,4 @@ echo [auth] >> C:\Users\appveyor\mercurial.ini
 echo bb.prefix = https://bitbucket.org >> C:\Users\appveyor\mercurial.ini
 echo bb.username = ArnaudBotella >> C:\Users\appveyor\mercurial.ini
 echo bb.password = %password% >> C:\Users\appveyor\mercurial.ini
-hg push --new-branch https://bitbucket.org/ring_team/ringmeshcoverage
+hg push --force --new-branch https://bitbucket.org/ring_team/ringmeshcoverage
