@@ -604,6 +604,14 @@ namespace RINGMesh
         return result;
     }
 
+    SurfaceMesh< 3 >::SurfaceMesh()
+    {
+    }
+
+    SurfaceMesh< 3 >::~SurfaceMesh()
+    {
+    }
+
     double SurfaceMesh< 3 >::polygon_area( index_t polygon_id ) const
     {
         double result = 0.0;

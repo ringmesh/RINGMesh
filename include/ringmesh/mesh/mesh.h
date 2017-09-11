@@ -625,6 +625,8 @@ namespace RINGMesh
     class RINGMESH_API SurfaceMesh< 3 > : public SurfaceMeshBase< 3 >
     {
     public:
+        ~SurfaceMesh();
+
         /*!
          * Computes the Mesh polygon area
          * @param[in] polygon_id the polygon index
@@ -683,6 +685,8 @@ namespace RINGMesh
             }
             return normalize( norm );
         }
+    protected:
+        SurfaceMesh();
     };
 
     template <>
