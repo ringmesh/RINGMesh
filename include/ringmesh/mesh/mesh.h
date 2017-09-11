@@ -173,20 +173,7 @@ namespace RINGMesh
          * Mesh::polygons_aabb()
          * and Mesh::cells_aabb()
          */
-        const NNSearch< DIMENSION >& vertex_nn_search() const
-        {
-            if( !vertex_nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > vec_vertices( nb_vertices() );
-                for( auto v : range( nb_vertices() ) )
-                {
-                    vec_vertices[v] = vertex( v );
-                }
-                vertex_nn_search_.reset(
-                    new NNSearch< DIMENSION >( vec_vertices, true ) );
-            }
-            return *vertex_nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& vertex_nn_search() const;
 
         virtual MeshType type_name() const = 0;
 
@@ -263,19 +250,15 @@ namespace RINGMesh
          */
         double edge_length( index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 0 ) ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 1 ) ) );
+            const auto& e0 = this->vertex( edge_vertex( { edge_id, 0 } ) );
+            const auto& e1 = this->vertex( edge_vertex( { edge_id, 1 } ) );
             return ( e1 - e0 ).length();
         }
 
         vecn< DIMENSION > edge_barycenter( index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 0 ) ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 1 ) ) );
+            const auto& e0 = this->vertex( edge_vertex( { edge_id, 0 } ) );
+            const auto& e1 = this->vertex( edge_vertex( { edge_id, 1 } ) );
             return ( e1 + e0 ) / 2.;
         }
 
@@ -285,31 +268,12 @@ namespace RINGMesh
          * Mesh::polygons_aabb()
          * and Mesh::cells_aabb()
          */
-        const NNSearch< DIMENSION >& edge_nn_search() const
-        {
-            if( !edge_nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > edge_centers( nb_edges() );
-                for( auto e : range( nb_edges() ) )
-                {
-                    edge_centers[e] = edge_barycenter( e );
-                }
-                edge_nn_search_.reset(
-                    new NNSearch< DIMENSION >( edge_centers, true ) );
-            }
-            return *edge_nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& edge_nn_search() const;
+
         /*!
          * @brief Creates an AABB tree for a Mesh edges
          */
-        const LineAABBTree< DIMENSION >& edge_aabb() const
-        {
-            if( !edge_aabb_ )
-            {
-                edge_aabb_.reset( new LineAABBTree< DIMENSION >( *this ) );
-            }
-            return *edge_aabb_.get();
-        }
+        const LineAABBTree< DIMENSION >& edge_aabb() const;
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
 
@@ -369,7 +333,7 @@ namespace RINGMesh
         ElementLocalVertex next_polygon_vertex(
             const ElementLocalVertex& polygon_local_vertex ) const
         {
-            const index_t local_vertex_id =
+            const auto local_vertex_id =
                 polygon_local_vertex.local_vertex_id_;
             ringmesh_assert(
                 local_vertex_id
@@ -544,7 +508,7 @@ namespace RINGMesh
         {
             for( auto v : range( nb_polygon_vertices( polygon_index ) ) )
             {
-                if( is_edge_on_border( PolygonLocalEdge( polygon_index, v ) ) )
+                if( is_edge_on_border( { polygon_index, v } ) )
                 {
                     return true;
                 }
@@ -560,10 +524,10 @@ namespace RINGMesh
         double polygon_edge_length(
             const PolygonLocalEdge& polygon_local_edge ) const
         {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( polygon_edge_vertex( polygon_local_edge, 0 ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( polygon_edge_vertex( polygon_local_edge, 1 ) );
+            const auto& e0 = this->vertex(
+                polygon_edge_vertex( polygon_local_edge, 0 ) );
+            const auto& e1 = this->vertex(
+                polygon_edge_vertex( polygon_local_edge, 1 ) );
             return ( e1 - e0 ).length();
         }
         /*!
@@ -574,10 +538,10 @@ namespace RINGMesh
         vecn< DIMENSION > polygon_edge_barycenter(
             const PolygonLocalEdge& polygon_local_edge ) const
         {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( polygon_edge_vertex( polygon_local_edge, 0 ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( polygon_edge_vertex( polygon_local_edge, 1 ) );
+            const auto& e0 = this->vertex(
+                polygon_edge_vertex( polygon_local_edge, 0 ) );
+            const auto& e1 = this->vertex(
+                polygon_edge_vertex( polygon_local_edge, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
         /*!
@@ -596,10 +560,10 @@ namespace RINGMesh
             {
                 return polygon_vertex( polygon_local_edge );
             }
-            return polygon_vertex( ElementLocalVertex(
+            return polygon_vertex( {
                 polygon_local_edge.polygon_id_,
                 ( polygon_local_edge.local_edge_id_ + vertex_id )
-                    % nb_polygon_vertices( polygon_local_edge.polygon_id_ ) ) );
+                    % nb_polygon_vertices( polygon_local_edge.polygon_id_ ) } );
         }
 
         /*!
@@ -613,8 +577,7 @@ namespace RINGMesh
             ringmesh_assert( nb_polygon_vertices( polygon_id ) >= 1 );
             for( auto v : range( nb_polygon_vertices( polygon_id ) ) )
             {
-                result += this->vertex(
-                    polygon_vertex( ElementLocalVertex( polygon_id, v ) ) );
+                result += this->vertex( polygon_vertex( { polygon_id, v } ) );
             }
             return ( 1.0 / nb_polygon_vertices( polygon_id ) ) * result;
         }
@@ -628,33 +591,12 @@ namespace RINGMesh
         /*!
          * @brief return the NNSearch at polygons
          */
-        const NNSearch< DIMENSION >& polygon_nn_search() const
-        {
-            if( !nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > polygon_centers(
-                    nb_polygons() );
-                for( auto p : range( nb_polygons() ) )
-                {
-                    polygon_centers[p] = polygon_barycenter( p );
-                }
-                nn_search_.reset(
-                    new NNSearch< DIMENSION >( polygon_centers, true ) );
-            }
-            return *nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& polygon_nn_search() const;
+
         /*!
          * @brief Creates an AABB tree for a Mesh polygons
          */
-        const SurfaceAABBTree< DIMENSION >& polygon_aabb() const
-        {
-            if( !polygon_aabb_ )
-            {
-                polygon_aabb_.reset(
-                    new SurfaceAABBTree< DIMENSION >( *this ) );
-            }
-            return *polygon_aabb_;
-        }
+        const SurfaceAABBTree< DIMENSION >& polygon_aabb() const;
 
         bool is_mesh_valid() const override;
 
@@ -697,13 +639,13 @@ namespace RINGMesh
          */
         vec3 polygon_normal( index_t polygon_id ) const
         {
-            const vec3& p1 = this->vertex(
-                this->polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
-            const vec3& p2 = this->vertex(
-                this->polygon_vertex( ElementLocalVertex( polygon_id, 1 ) ) );
-            const vec3& p3 = this->vertex(
-                this->polygon_vertex( ElementLocalVertex( polygon_id, 2 ) ) );
-            vec3 norm = cross( p2 - p1, p3 - p1 );
+            const auto& p1 = this->vertex(
+                this->polygon_vertex( { polygon_id, 0 } ) );
+            const auto& p2 = this->vertex(
+                this->polygon_vertex( { polygon_id, 1 } ) );
+            const auto& p3 = this->vertex(
+                this->polygon_vertex( { polygon_id, 2 } ) );
+            auto norm = cross( p2 - p1, p3 - p1 );
             return normalize( norm );
         }
 
@@ -718,12 +660,12 @@ namespace RINGMesh
         vec3 normal_at_vertex( index_t vertex_id, index_t p0 = NO_ID ) const
         {
             ringmesh_assert( vertex_id < nb_vertices() );
-            index_t p = 0;
+            index_t p{ 0 };
             while( p0 == NO_ID && p < nb_polygons() )
             {
                 for( auto lv : range( nb_polygon_vertices( p ) ) )
                 {
-                    if( polygon_vertex( ElementLocalVertex( p, lv ) )
+                    if( polygon_vertex( { p, lv } )
                         == vertex_id )
                     {
                         p0 = p;
@@ -733,8 +675,7 @@ namespace RINGMesh
                 p++;
             }
 
-            std::vector< index_t > polygon_ids =
-                polygons_around_vertex( vertex_id, false, p0 );
+            auto polygon_ids = polygons_around_vertex( vertex_id, false, p0 );
             vec3 norm;
             for( auto polygon_id : polygon_ids )
             {
@@ -760,14 +701,11 @@ namespace RINGMesh
             {
                 return result;
             }
-            const vec2& p1 =
-                vertex( polygon_vertex( ElementLocalVertex( polygon_id, 0 ) ) );
+            const auto& p1 = vertex( polygon_vertex( { polygon_id, 0 } ) );
             for( auto i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) )
             {
-                const vec2& p2 = vertex(
-                    polygon_vertex( ElementLocalVertex( polygon_id, i ) ) );
-                const vec2& p3 = vertex(
-                    polygon_vertex( ElementLocalVertex( polygon_id, i + 1 ) ) );
+                const auto& p2 = vertex( polygon_vertex( { polygon_id, i } ) );
+                const auto& p3 = vertex( polygon_vertex( { polygon_id, i + 1 } ) );
                 result += GEO::Geom::triangle_signed_area( p1, p2, p3 );
             }
             return std::fabs( result );
@@ -844,10 +782,8 @@ namespace RINGMesh
          */
         double cell_edge_length( index_t cell_id, index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
+            const auto& e0 = this->vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
+            const auto& e1 = this->vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
             return ( e1 - e0 ).length();
         }
 
@@ -860,10 +796,8 @@ namespace RINGMesh
         vecn< DIMENSION > cell_edge_barycenter(
             index_t cell_id, index_t edge_id ) const
         {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
+            const auto& e0 = this->vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
+            const auto& e1 = this->vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
             return ( e1 + e0 ) / 2.;
         }
 
@@ -964,8 +898,7 @@ namespace RINGMesh
             ringmesh_assert( nb_cell_vertices( cell_id ) >= 1 );
             for( auto v : range( nb_cell_vertices( cell_id ) ) )
             {
-                result += this->vertex(
-                    cell_vertex( ElementLocalVertex( cell_id, v ) ) );
+                result += this->vertex( cell_vertex( { cell_id, v } ) );
             }
             return ( 1.0 / nb_cell_vertices( cell_id ) ) * result;
         }
@@ -982,11 +915,11 @@ namespace RINGMesh
             ringmesh_assert( cell_local_facet.local_facet_id_
                              < nb_cell_facets( cell_local_facet.cell_id_ ) );
 
-            const vecn< DIMENSION >& p1 =
+            const auto& p1 =
                 this->vertex( cell_facet_vertex( cell_local_facet, 0 ) );
-            const vecn< DIMENSION >& p2 =
+            const auto& p2 =
                 this->vertex( cell_facet_vertex( cell_local_facet, 1 ) );
-            const vecn< DIMENSION >& p3 =
+            const auto& p3 =
                 this->vertex( cell_facet_vertex( cell_local_facet, 2 ) );
 
             return cross( p2 - p1, p3 - p1 );
@@ -1004,9 +937,7 @@ namespace RINGMesh
         {
             for( auto v : range( nb_cell_vertices( cell_id ) ) )
             {
-                if( cell_vertex( ElementLocalVertex( cell_id, v ) )
-                    == vertex_id )
-                {
+                if( cell_vertex( { cell_id, v } ) == vertex_id ) {
                     return v;
                 }
             }
@@ -1025,55 +956,17 @@ namespace RINGMesh
          * Mesh::facets_aabb()
          *  and Mesh::cells_aabb()
          */
-        const NNSearch< DIMENSION >& cell_facet_nn_search() const
-        {
-            if( !cell_facet_nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > cell_facet_centers(
-                    nb_cell_facets() );
-                index_t cf = 0;
-                for( auto c : range( nb_cells() ) )
-                {
-                    for( auto f : range( nb_cell_facets( c ) ) )
-                    {
-                        cell_facet_centers[cf] =
-                            cell_facet_barycenter( CellLocalFacet( c, f ) );
-                        ++cf;
-                    }
-                }
-                cell_facet_nn_search_.reset(
-                    new NNSearch< DIMENSION >( cell_facet_centers, true ) );
-            }
-            return *cell_facet_nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& cell_facet_nn_search() const;
+
         /*!
          * @brief return the NNSearch at cells
          */
-        const NNSearch< DIMENSION >& cell_nn_search() const
-        {
-            if( !cell_nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > cell_centers( nb_cells() );
-                for( auto c : range( nb_cells() ) )
-                {
-                    cell_centers[c] = cell_barycenter( c );
-                }
-                cell_nn_search_.reset(
-                    new NNSearch< DIMENSION >( cell_centers, true ) );
-            }
-            return *cell_nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& cell_nn_search() const;
+
         /*!
          * @brief Creates an AABB tree for a Mesh cells
          */
-        const VolumeAABBTree< DIMENSION >& cell_aabb() const
-        {
-            if( !cell_aabb_ )
-            {
-                cell_aabb_.reset( new VolumeAABBTree< DIMENSION >( *this ) );
-            }
-            return *cell_aabb_.get();
-        }
+        const VolumeAABBTree< DIMENSION >& cell_aabb() const;
 
         bool is_mesh_valid() const override;
 

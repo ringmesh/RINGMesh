@@ -69,6 +69,23 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& MeshBase< DIMENSION >::vertex_nn_search() const
+    {
+        if( !vertex_nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > vec_vertices( nb_vertices() );
+            for( auto v : range( nb_vertices() ) )
+            {
+                vec_vertices[v] = vertex( v );
+            }
+            vertex_nn_search_.reset(
+                new NNSearch< DIMENSION >( vec_vertices, true ) );
+        }
+        return *vertex_nn_search_.get();
+    }
+
+
+    template < index_t DIMENSION >
     std::unique_ptr< PointSetMesh< DIMENSION > >
         PointSetMesh< DIMENSION >::create_mesh( const MeshType type )
     {
@@ -122,6 +139,31 @@ namespace RINGMesh
         return mesh;
     }
 
+    template< index_t DIMENSION >
+    const NNSearch< DIMENSION >& LineMesh< DIMENSION >::edge_nn_search() const
+    {
+        if( !edge_nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > edge_centers( nb_edges() );
+            for( auto e : range( nb_edges() ) )
+            {
+                edge_centers[e] = edge_barycenter( e );
+            }
+            edge_nn_search_.reset(
+                new NNSearch< DIMENSION >( edge_centers, true ) );
+        }
+        return *edge_nn_search_.get();
+    }
+
+    template< index_t DIMENSION >
+    const LineAABBTree< DIMENSION >& LineMesh< DIMENSION >::edge_aabb() const
+    {
+        if( !edge_aabb_ )
+        {
+            edge_aabb_.reset( new LineAABBTree< DIMENSION >( *this ) );
+        }
+        return *edge_aabb_.get();
+    }
 
     template< index_t DIMENSION >
     bool LineMesh< DIMENSION >::is_mesh_valid() const
@@ -584,6 +626,34 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& SurfaceMeshBase< DIMENSION >::polygon_nn_search() const
+    {
+        if( !nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > polygon_centers(
+                nb_polygons() );
+            for( auto p : range( nb_polygons() ) )
+            {
+                polygon_centers[p] = polygon_barycenter( p );
+            }
+            nn_search_.reset(
+                new NNSearch< DIMENSION >( polygon_centers, true ) );
+        }
+        return *nn_search_.get();
+    }
+
+    template < index_t DIMENSION >
+    const SurfaceAABBTree< DIMENSION >& SurfaceMeshBase< DIMENSION >::polygon_aabb() const
+    {
+        if( !polygon_aabb_ )
+        {
+            polygon_aabb_.reset(
+                new SurfaceAABBTree< DIMENSION >( *this ) );
+        }
+        return *polygon_aabb_;
+    }
+
+    template < index_t DIMENSION >
     bool SurfaceMeshBase< DIMENSION >::is_mesh_valid() const
     {
         bool valid{ true };
@@ -861,6 +931,55 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& VolumeMesh< DIMENSION >::cell_facet_nn_search() const
+    {
+        if( !cell_facet_nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > cell_facet_centers(
+                nb_cell_facets() );
+            index_t cf = 0;
+            for( auto c : range( nb_cells() ) )
+            {
+                for( auto f : range( nb_cell_facets( c ) ) )
+                {
+                    cell_facet_centers[cf] =
+                        cell_facet_barycenter( { c, f } );
+                    ++cf;
+                }
+            }
+            cell_facet_nn_search_.reset(
+                new NNSearch< DIMENSION >( cell_facet_centers, true ) );
+        }
+        return *cell_facet_nn_search_.get();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& VolumeMesh< DIMENSION >::cell_nn_search() const
+    {
+        if( !cell_nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > cell_centers( nb_cells() );
+            for( auto c : range( nb_cells() ) )
+            {
+                cell_centers[c] = cell_barycenter( c );
+            }
+            cell_nn_search_.reset(
+                new NNSearch< DIMENSION >( cell_centers, true ) );
+        }
+        return *cell_nn_search_.get();
+    }
+
+    template < index_t DIMENSION >
+    const VolumeAABBTree< DIMENSION >& VolumeMesh< DIMENSION >::cell_aabb() const
+    {
+        if( !cell_aabb_ )
+        {
+            cell_aabb_.reset( new VolumeAABBTree< DIMENSION >( *this ) );
+        }
+        return *cell_aabb_.get();
+    }
+
+    template < index_t DIMENSION >
     MeshSetBase< DIMENSION >::MeshSetBase()
     {
         create_point_set_mesh( "" );
@@ -913,12 +1032,14 @@ namespace RINGMesh
         volume_mesh = VolumeMesh3D::create_mesh( type );
     }
 
+    template class RINGMESH_API MeshBase< 2 >;
     template class RINGMESH_API PointSetMesh< 2 >;
     template class RINGMESH_API LineMesh< 2 >;
     template class RINGMESH_API SurfaceMeshBase< 2 >;
     template class RINGMESH_API MeshSetBase< 2 >;
     template class RINGMESH_API MeshSet< 2 >;
 
+    template class RINGMESH_API MeshBase< 3 >;
     template class RINGMESH_API PointSetMesh< 3 >;
     template class RINGMESH_API LineMesh< 3 >;
     template class RINGMESH_API SurfaceMeshBase< 3 >;
