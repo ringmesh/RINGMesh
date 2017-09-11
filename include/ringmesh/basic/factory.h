@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <ringmesh/basic/logger.h>
+
 /*!
  * @file  Factory class
  * @author Arnaud Botella
