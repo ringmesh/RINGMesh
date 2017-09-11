@@ -33,36 +33,39 @@
  *     FRANCE
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
-    class TSolidIOHandler final : public GeoModelIOHandler< 3 > {
+    class TSolidIOHandler final : public GeoModelIOHandler< 3 >
+    {
     public:
         TSolidIOHandler()
-            :
-                GeoModelIOHandler< 3 >(),
-                out_(),
-                numeric_like_vertex_attribute_names_(),
-                vertex_attribute_dimensions_(),
-                numeric_like_cell_attribute_names_(),
-                cell_attribute_dimensions_(),
-                vertex_exported_(),
-                atom_exported_(),
-                vertex_exported_id_(),
-                atom_exported_id_()
+            : GeoModelIOHandler< 3 >(),
+              out_(),
+              numeric_like_vertex_attribute_names_(),
+              vertex_attribute_dimensions_(),
+              numeric_like_cell_attribute_names_(),
+              cell_attribute_dimensions_(),
+              vertex_exported_(),
+              atom_exported_(),
+              vertex_exported_id_(),
+              atom_exported_id_()
         {
         }
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             std::ifstream input( filename.c_str() );
-            if( !input ) {
-                throw RINGMeshException( "I/O", "Failed loading geomodel from file ",
-                    filename );
+            if( !input )
+            {
+                throw RINGMeshException(
+                    "I/O", "Failed loading geomodel from file ", filename );
             }
             GeoModelBuilderTSolid builder( geomodel, filename );
             builder.build_geomodel();
         }
-        void save( const GeoModel3D& geomodel, const std::string& filename ) final
+        void save(
+            const GeoModel3D& geomodel, const std::string& filename ) final
         {
             ringmesh_assert( !out_.is_open() );
             out_.open( filename.c_str() );
@@ -72,7 +75,7 @@ namespace {
             fill_top_header( geomodel );
 
             const GeoModelMesh3D& mesh = geomodel.mesh;
-            //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
+            // mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             fill_vertex_attribute_header( geomodel );
             fill_cell_attribute_header( geomodel );
@@ -80,8 +83,10 @@ namespace {
             vertex_exported_.resize( mesh.vertices.nb(), false );
             atom_exported_.resize( mesh.cells.nb_duplicated_vertices(), false );
             vertex_exported_id_.resize( mesh.vertices.nb(), NO_ID );
-            atom_exported_id_.resize( mesh.cells.nb_duplicated_vertices(), NO_ID );
-            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+            atom_exported_id_.resize(
+                mesh.cells.nb_duplicated_vertices(), NO_ID );
+            for( index_t r = 0; r < geomodel.nb_regions(); r++ )
+            {
                 const auto& region = geomodel.region( r );
                 export_one_region( region );
             }
@@ -91,6 +96,7 @@ namespace {
 
             out_ << "END" << std::endl;
         }
+
     private:
         const GeoModelMesh3D& geomodel_mesh( const Region3D& region ) const
         {
@@ -100,46 +106,54 @@ namespace {
         {
             ringmesh_assert( out_.is_open() );
             // Print Model3d headers
-            out_ << "GOCAD TSolid 1" << EOL << "HEADER {" << EOL << "name:"
-                << geomodel.name() << EOL << "}" << EOL;
+            out_ << "GOCAD TSolid 1" << EOL << "HEADER {" << EOL
+                 << "name:" << geomodel.name() << EOL << "}" << EOL;
 
             out_ << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << EOL << "NAME Default"
-                << EOL << "AXIS_NAME \"X\" \"Y\" \"Z\"" << EOL
-                << "AXIS_UNIT \"m\" \"m\" \"m\"" << EOL << "ZPOSITIVE Elevation"
-                << EOL << "END_ORIGINAL_COORDINATE_SYSTEM" << EOL;
+                 << EOL << "AXIS_NAME \"X\" \"Y\" \"Z\"" << EOL
+                 << "AXIS_UNIT \"m\" \"m\" \"m\"" << EOL
+                 << "ZPOSITIVE Elevation" << EOL
+                 << "END_ORIGINAL_COORDINATE_SYSTEM" << EOL;
         }
         void fill_vertex_attribute_header( const GeoModel3D& geomodel )
         {
             ringmesh_assert( out_.is_open() );
             std::vector< bool > is_integer_like_attribute;
-            for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
+            for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
+            {
                 const Region3D& cur_reg = geomodel.region( reg_i );
                 GEO::AttributesManager& reg_vertex_attr_mgr =
                     cur_reg.vertex_attribute_manager();
                 GEO::vector< std::string > att_v_names;
                 reg_vertex_attr_mgr.list_attribute_names( att_v_names );
-                ringmesh_assert( att_v_names.size() == reg_vertex_attr_mgr.nb() );
-                for( const std::string& cur_att_v_name : att_v_names ) {
-
-                    if( cur_att_v_name == "point" ) {
+                ringmesh_assert(
+                    att_v_names.size() == reg_vertex_attr_mgr.nb() );
+                for( const std::string& cur_att_v_name : att_v_names )
+                {
+                    if( cur_att_v_name == "point" )
+                    {
                         continue;
                     }
 
                     if( contains( numeric_like_vertex_attribute_names_,
-                        cur_att_v_name ) ) {
+                            cur_att_v_name ) )
+                    {
                         continue;
                     }
 
                     const GEO::AttributeStore* attr_store =
-                        reg_vertex_attr_mgr.find_attribute_store( cur_att_v_name );
+                        reg_vertex_attr_mgr.find_attribute_store(
+                            cur_att_v_name );
                     ringmesh_assert( attr_store != nullptr );
 
                     if( !GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                        attr_store ) ) {
+                            attr_store ) )
+                    {
                         continue;
                     }
 
-                    numeric_like_vertex_attribute_names_.push_back( cur_att_v_name );
+                    numeric_like_vertex_attribute_names_.push_back(
+                        cur_att_v_name );
                     index_t cur_dim = attr_store->dimension();
                     vertex_attribute_dimensions_.push_back( cur_dim );
 
@@ -147,24 +161,29 @@ namespace {
                         reg_vertex_attr_mgr, cur_att_v_name );
                     ringmesh_assert(
                         adapter.element_type()
-                            != GEO::ReadOnlyScalarAttributeAdapter::ET_NONE );
+                        != GEO::ReadOnlyScalarAttributeAdapter::ET_NONE );
                     is_integer_like_attribute.push_back(
                         adapter.element_type()
-                            < GEO::ReadOnlyScalarAttributeAdapter::ET_FLOAT32 );
+                        < GEO::ReadOnlyScalarAttributeAdapter::ET_FLOAT32 );
                 }
             }
 
             const auto nb_numeric_like_vertex_attribute_names =
-                static_cast< index_t >( numeric_like_vertex_attribute_names_.size() );
-            if( !numeric_like_vertex_attribute_names_.empty() ) {
+                static_cast< index_t >(
+                    numeric_like_vertex_attribute_names_.size() );
+            if( !numeric_like_vertex_attribute_names_.empty() )
+            {
                 ringmesh_assert( nb_numeric_like_vertex_attribute_names > 0 );
                 out_ << "PROPERTIES";
-                for( const std::string& cur_num_like_v_att_name : numeric_like_vertex_attribute_names_ ) {
+                for( const std::string& cur_num_like_v_att_name :
+                    numeric_like_vertex_attribute_names_ )
+                {
                     out_ << " " << cur_num_like_v_att_name;
                 }
                 out_ << EOL;
                 out_ << "PROP_LEGAL_RANGES";
-                for( auto i : range( nb_numeric_like_vertex_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_vertex_attribute_names ) )
+                {
                     ringmesh_unused( i );
                     out_ << " **none**  **none**";
                 }
@@ -173,48 +192,63 @@ namespace {
                 write_no_data_value( nb_numeric_like_vertex_attribute_names );
                 out_ << EOL;
                 out_ << "READ_ONLY";
-                for( auto i : range( nb_numeric_like_vertex_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_vertex_attribute_names ) )
+                {
                     ringmesh_unused( i );
                     out_ << " 1";
                 }
                 out_ << EOL;
                 out_ << "PROPERTY_CLASSES";
-                for( const std::string& cur_num_like_v_att_name : numeric_like_vertex_attribute_names_ ) {
+                for( const std::string& cur_num_like_v_att_name :
+                    numeric_like_vertex_attribute_names_ )
+                {
                     out_ << " " << cur_num_like_v_att_name;
                 }
                 out_ << EOL;
                 out_ << "PROPERTY_KINDS";
-                for( auto i : range( nb_numeric_like_vertex_attribute_names ) ) {
-                    if( is_integer_like_attribute[i] ) {
+                for( auto i : range( nb_numeric_like_vertex_attribute_names ) )
+                {
+                    if( is_integer_like_attribute[i] )
+                    {
                         out_ << " \"Number\"";
-                    } else {
+                    }
+                    else
+                    {
                         out_ << " \"Real Number\"";
                     }
                 }
                 out_ << EOL;
                 out_ << "PROPERTY_SUBCLASSES";
-                for( auto i : range( nb_numeric_like_vertex_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_vertex_attribute_names ) )
+                {
                     ringmesh_unused( i );
                     out_ << " QUANTITY Float";
                 }
                 out_ << EOL;
                 out_ << "ESIZES";
-                for( const auto& cur_v_att_dim : vertex_attribute_dimensions_ ) {
+                for( const auto& cur_v_att_dim : vertex_attribute_dimensions_ )
+                {
                     out_ << " " << GEO::String::to_string( cur_v_att_dim );
                 }
                 out_ << EOL;
                 out_ << "UNITS";
-                for( auto i : range( nb_numeric_like_vertex_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_vertex_attribute_names ) )
+                {
                     ringmesh_unused( i );
                     out_ << " unitless";
                 }
                 out_ << EOL;
-                for( auto i : range( nb_numeric_like_vertex_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_vertex_attribute_names ) )
+                {
                     out_ << "PROPERTY_CLASS_HEADER "
-                        << numeric_like_vertex_attribute_names_[i] << " {" << EOL;
-                    if( is_integer_like_attribute[i] ) {
+                         << numeric_like_vertex_attribute_names_[i] << " {"
+                         << EOL;
+                    if( is_integer_like_attribute[i] )
+                    {
                         out_ << "kind: Number" << EOL;
-                    } else {
+                    }
+                    else
+                    {
                         out_ << "kind: Real Number" << EOL;
                     }
                     out_ << "unit: unitless" << EOL;
@@ -227,29 +261,33 @@ namespace {
         {
             ringmesh_assert( out_.is_open() );
             std::vector< bool > is_integer_like_attribute;
-            for( const auto& cur_reg : region_range<3>( geomodel ) ) {
-                auto& reg_cell_attr_mgr =
-                    cur_reg.cell_attribute_manager();
+            for( const auto& cur_reg : region_range< 3 >( geomodel ) )
+            {
+                auto& reg_cell_attr_mgr = cur_reg.cell_attribute_manager();
                 GEO::vector< std::string > att_c_names;
                 reg_cell_attr_mgr.list_attribute_names( att_c_names );
                 ringmesh_assert( att_c_names.size() == reg_cell_attr_mgr.nb() );
-                for( const auto& cur_att_c_name : att_c_names ) {
-
+                for( const auto& cur_att_c_name : att_c_names )
+                {
                     if( contains( numeric_like_cell_attribute_names_,
-                        cur_att_c_name ) ) {
+                            cur_att_c_name ) )
+                    {
                         continue;
                     }
 
                     const auto* attr_store =
-                        reg_cell_attr_mgr.find_attribute_store( cur_att_c_name );
+                        reg_cell_attr_mgr.find_attribute_store(
+                            cur_att_c_name );
                     ringmesh_assert( attr_store != nullptr );
 
                     if( !GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                        attr_store ) ) {
+                            attr_store ) )
+                    {
                         continue;
                     }
 
-                    numeric_like_cell_attribute_names_.push_back( cur_att_c_name );
+                    numeric_like_cell_attribute_names_.push_back(
+                        cur_att_c_name );
                     auto cur_dim = attr_store->dimension();
                     cell_attribute_dimensions_.push_back( cur_dim );
 
@@ -257,23 +295,28 @@ namespace {
                         reg_cell_attr_mgr, cur_att_c_name );
                     ringmesh_assert(
                         adapter.element_type()
-                            != GEO::ReadOnlyScalarAttributeAdapter::ET_NONE );
+                        != GEO::ReadOnlyScalarAttributeAdapter::ET_NONE );
                     is_integer_like_attribute.push_back(
                         adapter.element_type()
-                            < GEO::ReadOnlyScalarAttributeAdapter::ET_FLOAT32 );
+                        < GEO::ReadOnlyScalarAttributeAdapter::ET_FLOAT32 );
                 }
             }
 
             const auto nb_numeric_like_cell_attribute_names =
-                static_cast< index_t > ( numeric_like_cell_attribute_names_.size() );
-            if( !numeric_like_cell_attribute_names_.empty() ) {
+                static_cast< index_t >(
+                    numeric_like_cell_attribute_names_.size() );
+            if( !numeric_like_cell_attribute_names_.empty() )
+            {
                 out_ << "TETRA_PROPERTIES";
-                for( const auto& cur_num_like_c_att_name : numeric_like_cell_attribute_names_ ) {
+                for( const auto& cur_num_like_c_att_name :
+                    numeric_like_cell_attribute_names_ )
+                {
                     out_ << " " << cur_num_like_c_att_name;
                 }
                 out_ << EOL;
                 out_ << "TETRA_PROP_LEGAL_RANGES";
-                for( auto i : range( nb_numeric_like_cell_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_cell_attribute_names ) )
+                {
                     ringmesh_unused( i );
                     out_ << " **none**  **none**";
                 }
@@ -282,48 +325,64 @@ namespace {
                 write_no_data_value( nb_numeric_like_cell_attribute_names );
                 out_ << EOL;
                 out_ << "READ_ONLY";
-                for( auto i : range( nb_numeric_like_cell_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_cell_attribute_names ) )
+                {
                     ringmesh_unused( i );
                     out_ << " 1";
                 }
                 out_ << EOL;
                 out_ << "TETRA_PROPERTY_CLASSES";
-                for( const auto& cur_num_like_c_att_name : numeric_like_cell_attribute_names_ ) {
+                for( const auto& cur_num_like_c_att_name :
+                    numeric_like_cell_attribute_names_ )
+                {
                     out_ << " " << cur_num_like_c_att_name;
                 }
                 out_ << EOL;
                 out_ << "TETRA_PROPERTY_KINDS";
-                for( auto i : range( nb_numeric_like_cell_attribute_names ) ) {
-                    if( is_integer_like_attribute[i] ) {
+                for( auto i : range( nb_numeric_like_cell_attribute_names ) )
+                {
+                    if( is_integer_like_attribute[i] )
+                    {
                         out_ << " \"Number\"";
-                    } else {
+                    }
+                    else
+                    {
                         out_ << " \"Real Number\"";
                     }
                 }
                 out_ << EOL;
                 out_ << "TETRA_PROPERTY_SUBCLASSES";
-                for( auto i : range( nb_numeric_like_cell_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_cell_attribute_names ) )
+                {
                     ringmesh_unused( i );
                     out_ << " QUANTITY Float";
                 }
                 out_ << EOL;
                 out_ << "TETRA_ESIZES";
-                for( const auto& cur_cell_attr_dim : cell_attribute_dimensions_ ) {
+                for( const auto& cur_cell_attr_dim :
+                    cell_attribute_dimensions_ )
+                {
                     out_ << " " << std::to_string( cur_cell_attr_dim );
                 }
                 out_ << EOL;
                 out_ << "TETRA_UNITS";
-                for( auto i : range( nb_numeric_like_cell_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_cell_attribute_names ) )
+                {
                     ringmesh_unused( i );
                     out_ << " unitless";
                 }
                 out_ << EOL;
-                for( auto i : range( nb_numeric_like_cell_attribute_names ) ) {
+                for( auto i : range( nb_numeric_like_cell_attribute_names ) )
+                {
                     out_ << "TETRA_PROPERTY_CLASS_HEADER "
-                        << numeric_like_cell_attribute_names_[i] << " {" << EOL;
-                    if( is_integer_like_attribute[i] ) {
+                         << numeric_like_cell_attribute_names_[i] << " {"
+                         << EOL;
+                    if( is_integer_like_attribute[i] )
+                    {
                         out_ << "kind: Number" << EOL;
-                    } else {
+                    }
+                    else
+                    {
                         out_ << "kind: Real Number" << EOL;
                     }
                     out_ << "unit: unitless" << EOL;
@@ -343,7 +402,8 @@ namespace {
         void export_region_vertices( const Region3D& region )
         {
             // Export not duplicated vertices
-            for( auto c : range( region.nb_mesh_elements() ) ) {
+            for( auto c : range( region.nb_mesh_elements() ) )
+            {
                 export_region_cell_vertices( region, c );
             }
         }
@@ -353,13 +413,13 @@ namespace {
             const auto& mesh = geomodel_mesh( region );
             auto cell = mesh.cells.cell( region.gmme().index(), c );
             auto cell_center = mesh.cells.barycenter( cell );
-            for( auto v : range( mesh.cells.nb_vertices( cell ) ) ) {
+            for( auto v : range( mesh.cells.nb_vertices( cell ) ) )
+            {
                 export_region_cell_vertex( region, cell, v, cell_center );
             }
         }
 
-        void export_region_cell_vertex(
-            const Region3D& region,
+        void export_region_cell_vertex( const Region3D& region,
             index_t cell,
             index_t v,
             const vec3& cell_center )
@@ -367,69 +427,78 @@ namespace {
             ringmesh_assert( out_.is_open() );
             const auto& mesh = geomodel_mesh( region );
             auto atom_id = mesh.cells.duplicated_corner_index( { cell, v } );
-            if( atom_id == NO_ID ) {
+            if( atom_id == NO_ID )
+            {
                 auto vertex_id = mesh.cells.vertex( { cell, v } );
-                if( vertex_exported_[vertex_id] ) return;
+                if( vertex_exported_[vertex_id] )
+                    return;
                 vertex_exported_[vertex_id] = true;
                 vertex_exported_id_[vertex_id] = nb_vertices_exported_;
                 // PVRTX keyword must be used instead of VRTX keyword because
                 // properties are not read by Gocad if it is VRTX keyword.
                 out_ << "PVRTX " << nb_vertices_exported_++ << " "
-                    << mesh.vertices.vertex( vertex_id );
+                     << mesh.vertices.vertex( vertex_id );
 
                 /// Export of vertex attributes
-                export_region_cell_vertex_attributes( region, vertex_id,
-                    cell_center );
+                export_region_cell_vertex_attributes(
+                    region, vertex_id, cell_center );
                 out_ << EOL;
             }
         }
 
         void export_region_cell_vertex_attributes(
-            const Region3D& region,
-            index_t vertex_id,
-            const vec3& cell_center )
+            const Region3D& region, index_t vertex_id, const vec3& cell_center )
         {
             ringmesh_assert( out_.is_open() );
-            auto& reg_vertex_attr_mgr =
-                region.vertex_attribute_manager();
-            auto vertex_id_in_reg = find_gmm_cell_in_gm_region( region, vertex_id,
-                cell_center );
+            auto& reg_vertex_attr_mgr = region.vertex_attribute_manager();
+            auto vertex_id_in_reg =
+                find_gmm_cell_in_gm_region( region, vertex_id, cell_center );
             ringmesh_assert( vertex_id_in_reg != NO_ID );
 
-            for( auto attr_dbl_itr : range(
-                static_cast< index_t >( numeric_like_vertex_attribute_names_.size() ) ) ) {
+            for( auto attr_dbl_itr : range( static_cast< index_t >(
+                     numeric_like_vertex_attribute_names_.size() ) ) )
+            {
                 if( reg_vertex_attr_mgr.is_defined(
-                    numeric_like_vertex_attribute_names_[attr_dbl_itr] ) ) {
+                        numeric_like_vertex_attribute_names_[attr_dbl_itr] ) )
+                {
                     ringmesh_assert(
                         reg_vertex_attr_mgr.find_attribute_store(
                             numeric_like_vertex_attribute_names_[attr_dbl_itr] )
-                            != nullptr );
+                        != nullptr );
                     ringmesh_assert(
-                        reg_vertex_attr_mgr.find_attribute_store(
-                            numeric_like_vertex_attribute_names_[attr_dbl_itr] )->dimension()
-                            == vertex_attribute_dimensions_[attr_dbl_itr] );
+                        reg_vertex_attr_mgr
+                            .find_attribute_store(
+                                numeric_like_vertex_attribute_names_
+                                    [attr_dbl_itr] )
+                            ->dimension()
+                        == vertex_attribute_dimensions_[attr_dbl_itr] );
                     ringmesh_assert(
                         GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
                             reg_vertex_attr_mgr.find_attribute_store(
-                                numeric_like_vertex_attribute_names_[attr_dbl_itr] ) ) );
+                                numeric_like_vertex_attribute_names_
+                                    [attr_dbl_itr] ) ) );
                     GEO::ReadOnlyScalarAttributeAdapter cur_attr(
                         reg_vertex_attr_mgr,
                         numeric_like_vertex_attribute_names_[attr_dbl_itr] );
-                    for( auto dim_itr :range(vertex_attribute_dimensions_[attr_dbl_itr] ) ) {
+                    for( auto dim_itr :
+                        range( vertex_attribute_dimensions_[attr_dbl_itr] ) )
+                    {
                         out_ << " "
-                            << cur_attr[vertex_id_in_reg
-                                * vertex_attribute_dimensions_[attr_dbl_itr]
-                                + dim_itr];
+                             << cur_attr[vertex_id_in_reg
+                                             * vertex_attribute_dimensions_
+                                                   [attr_dbl_itr]
+                                         + dim_itr];
                     }
-                } else {
+                }
+                else
+                {
                     write_no_data_value(
                         vertex_attribute_dimensions_[attr_dbl_itr] );
                 }
             }
         }
 
-        index_t find_gmm_cell_in_gm_region(
-            const Region3D& region,
+        index_t find_gmm_cell_in_gm_region( const Region3D& region,
             index_t vertex_id,
             const vec3& cell_center ) const
         {
@@ -439,10 +508,11 @@ namespace {
             /// so the loop should not be needed but I [BC]
             /// keep it for now since duplicated nodes is not
             /// operational yet...
-            const auto& gme_vertices =
-                mesh.vertices.gme_vertices( vertex_id );
-            for( const auto& cur_gme_vertex : gme_vertices ) {
-                if( cur_gme_vertex.gmme != region.gmme() ) {
+            const auto& gme_vertices = mesh.vertices.gme_vertices( vertex_id );
+            for( const auto& cur_gme_vertex : gme_vertices )
+            {
+                if( cur_gme_vertex.gmme != region.gmme() )
+                {
                     continue;
                 }
                 auto cells_around_vertex =
@@ -450,11 +520,13 @@ namespace {
                 /// WARNING: the cell id in the region corresponding
                 /// to the cell id in the GMM "cell" is not the
                 /// variable "c" (in the for loop over the region cells).
-                for( const auto& cur_cell_around_vertex : cells_around_vertex ) {
+                for( const auto& cur_cell_around_vertex : cells_around_vertex )
+                {
                     auto center = region.mesh_element_barycenter(
                         cur_cell_around_vertex );
                     if( ( center - cell_center ).length()
-                        < region.geomodel().epsilon() ) {
+                        < region.geomodel().epsilon() )
+                    {
                         return cur_gme_vertex.v_index;
                     }
                 }
@@ -472,7 +544,8 @@ namespace {
             mark_boundary_ending_in_region( region );
 
             const auto& mesh = geomodel_mesh( region );
-            for( auto c : range(region.nb_mesh_elements() ) ) {
+            for( auto c : range( region.nb_mesh_elements() ) )
+            {
                 out_ << "TETRA";
                 auto cell = mesh.cells.cell( region.gmme().index(), c );
                 export_tetra( region, cell );
@@ -501,16 +574,22 @@ namespace {
              }*/
         }
 
-        /// TODO it seems that this code is not used for export since no writtings
+        /// TODO it seems that this code is not used for export since no
+        /// writtings
         /// in out ofstream.
         void mark_boundary_ending_in_region( const Region3D& region )
         {
             std::map< index_t, index_t > sides;
-            for( auto s : range( region.nb_boundaries() ) ) {
-                if( sides.count( region.boundary_gmme( s ).index() ) > 0 ) {
-                    // a surface is encountered twice, it is ending in the region
+            for( auto s : range( region.nb_boundaries() ) )
+            {
+                if( sides.count( region.boundary_gmme( s ).index() ) > 0 )
+                {
+                    // a surface is encountered twice, it is ending in the
+                    // region
                     sides[region.boundary_gmme( s ).index()] = 2;
-                } else {
+                }
+                else
+                {
                     sides[region.boundary_gmme( s ).index()] = region.side( s );
                 }
             }
@@ -527,15 +606,18 @@ namespace {
         {
             ringmesh_assert( out_.is_open() );
             const auto& mesh = geomodel_mesh( region );
-            for( auto v : range(
-                region.geomodel().mesh.cells.nb_vertices( cell ) ) ) {
-                auto atom_id = mesh.cells.duplicated_corner_index(
-                    { cell, v } );
-                if( atom_id == NO_ID ) {
-                    auto vertex_id = mesh.cells.vertex(
-                        { cell, v } );
+            for( auto v :
+                range( region.geomodel().mesh.cells.nb_vertices( cell ) ) )
+            {
+                auto atom_id =
+                    mesh.cells.duplicated_corner_index( { cell, v } );
+                if( atom_id == NO_ID )
+                {
+                    auto vertex_id = mesh.cells.vertex( { cell, v } );
                     out_ << " " << vertex_exported_id_[vertex_id];
-                } else {
+                }
+                else
+                {
                     out_ << " " << atom_exported_id_[atom_id];
                 }
             }
@@ -544,40 +626,51 @@ namespace {
         void export_tetra_attributes( const Region3D& region, index_t cell )
         {
             ringmesh_assert( out_.is_open() );
-            auto& reg_cell_attr_mgr =
-                region.cell_attribute_manager();
+            auto& reg_cell_attr_mgr = region.cell_attribute_manager();
             const auto& mesh = geomodel_mesh( region );
             auto center = mesh.cells.barycenter( cell );
-            const auto c_in_reg =
-                region.cell_nn_search().get_neighbors( center,
-                    region.geomodel().epsilon() );
+            const auto c_in_reg = region.cell_nn_search().get_neighbors(
+                center, region.geomodel().epsilon() );
             ringmesh_assert( c_in_reg.size() == 1 );
-            for( auto attr_dbl_itr : range(
-                numeric_like_cell_attribute_names_.size() ) ) {
+            for( auto attr_dbl_itr :
+                range( numeric_like_cell_attribute_names_.size() ) )
+            {
                 if( reg_cell_attr_mgr.is_defined(
-                    numeric_like_cell_attribute_names_[attr_dbl_itr] ) ) {
+                        numeric_like_cell_attribute_names_[attr_dbl_itr] ) )
+                {
                     ringmesh_assert(
                         reg_cell_attr_mgr.find_attribute_store(
                             numeric_like_cell_attribute_names_[attr_dbl_itr] )
-                            != nullptr );
+                        != nullptr );
                     ringmesh_assert(
-                        reg_cell_attr_mgr.find_attribute_store(
-                            numeric_like_cell_attribute_names_[attr_dbl_itr] )->dimension()
-                            == cell_attribute_dimensions_[attr_dbl_itr] );
+                        reg_cell_attr_mgr
+                            .find_attribute_store(
+                                numeric_like_cell_attribute_names_
+                                    [attr_dbl_itr] )
+                            ->dimension()
+                        == cell_attribute_dimensions_[attr_dbl_itr] );
                     ringmesh_assert(
                         GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
                             reg_cell_attr_mgr.find_attribute_store(
-                                numeric_like_cell_attribute_names_[attr_dbl_itr] ) ) );
-                    GEO::ReadOnlyScalarAttributeAdapter cur_attr( reg_cell_attr_mgr,
+                                numeric_like_cell_attribute_names_
+                                    [attr_dbl_itr] ) ) );
+                    GEO::ReadOnlyScalarAttributeAdapter cur_attr(
+                        reg_cell_attr_mgr,
                         numeric_like_cell_attribute_names_[attr_dbl_itr] );
-                    for( auto dim_itr : range(
-                        cell_attribute_dimensions_[attr_dbl_itr] ) ) {
-                        out_ << " "
-                            << cur_attr[c_in_reg[0]
-                                * cell_attribute_dimensions_[attr_dbl_itr] + dim_itr];
+                    for( auto dim_itr :
+                        range( cell_attribute_dimensions_[attr_dbl_itr] ) )
+                    {
+                        out_
+                            << " "
+                            << cur_attr[c_in_reg[0] * cell_attribute_dimensions_
+                                                          [attr_dbl_itr]
+                                        + dim_itr];
                     }
-                } else {
-                    write_no_data_value( cell_attribute_dimensions_[attr_dbl_itr] );
+                }
+                else
+                {
+                    write_no_data_value(
+                        cell_attribute_dimensions_[attr_dbl_itr] );
                 }
             }
         }
@@ -586,16 +679,22 @@ namespace {
         {
             ringmesh_assert( out_.is_open() );
             const auto& mesh = geomodel_mesh( region );
-            for( auto f : range( mesh.cells.nb_facets( c ) ) ) {
+            for( auto f : range( mesh.cells.nb_facets( c ) ) )
+            {
                 out_ << " ";
-                index_t polygon { NO_ID };
+                index_t polygon{ NO_ID };
                 bool side;
-                if( mesh.cells.is_cell_facet_on_surface( c, f, polygon, side ) ) {
-                    index_t surface_id { mesh.polygons.surface( polygon ) };
+                if( mesh.cells.is_cell_facet_on_surface( c, f, polygon, side ) )
+                {
+                    index_t surface_id{ mesh.polygons.surface( polygon ) };
                     side ? out_ << "+" : out_ << "-";
-                    out_
-                        << region.geomodel().surface( surface_id ).parent( 0 ).name();
-                } else {
+                    out_ << region.geomodel()
+                                .surface( surface_id )
+                                .parent( 0 )
+                                .name();
+                }
+                else
+                {
                     out_ << "none";
                 }
             }
@@ -608,27 +707,32 @@ namespace {
             int tface_count = 1;
 
             const auto& polygons = geomodel.mesh.polygons;
-            for( auto& cur_interface : geomodel.geol_entities(
-                Interface3D::type_name_static() ) ) {
+            for( auto& cur_interface :
+                geomodel.geol_entities( Interface3D::type_name_static() ) )
+            {
                 out_ << "SURFACE " << cur_interface.name() << EOL;
-                for( auto s : range( cur_interface.nb_children() ) ) {
+                for( auto s : range( cur_interface.nb_children() ) )
+                {
                     out_ << "TFACE " << tface_count++ << EOL;
                     auto surface_id = cur_interface.child_gmme( s ).index();
                     out_ << "KEYVERTICES";
                     auto key_polygon_id = polygons.polygon( surface_id, 0 );
-                    for( auto v : range( polygons.nb_vertices( key_polygon_id ) ) ) {
-                        out_ << " "
-                            << vertex_exported_id_[polygons.vertex(
-                                { key_polygon_id, v } )];
+                    for( auto v :
+                        range( polygons.nb_vertices( key_polygon_id ) ) )
+                    {
+                        out_ << " " << vertex_exported_id_[polygons.vertex(
+                                           { key_polygon_id, v } )];
                     }
                     out_ << EOL;
-                    for( auto p : range( polygons.nb_polygons( surface_id ) ) ) {
+                    for( auto p : range( polygons.nb_polygons( surface_id ) ) )
+                    {
                         auto polygon_id = polygons.polygon( surface_id, p );
                         out_ << "TRGL";
-                        for( auto v : range( polygons.nb_vertices( polygon_id ) ) ) {
-                            out_ << " "
-                                << vertex_exported_id_[polygons.vertex(
-                                    { polygon_id, v } )];
+                        for( auto v :
+                            range( polygons.nb_vertices( polygon_id ) ) )
+                        {
+                            out_ << " " << vertex_exported_id_[polygons.vertex(
+                                               { polygon_id, v } )];
                         }
                         out_ << EOL;
                     }
@@ -638,7 +742,8 @@ namespace {
         void export_model_region( const GeoModel3D& geomodel )
         {
             ringmesh_assert( out_.is_open() );
-            for( auto& region : geomodel.regions() ) {
+            for( auto& region : geomodel.regions() )
+            {
                 out_ << "MODEL_REGION " << region.name() << " ";
                 region.side( 0 ) ? out_ << "+" : out_ << "-";
                 out_ << region.boundary_gmme( 0 ).index() + 1 << EOL;
@@ -647,7 +752,8 @@ namespace {
 
         void write_no_data_value( index_t nb )
         {
-            for( auto i : range( nb ) ) {
+            for( auto i : range( nb ) )
+            {
                 ringmesh_unused( i );
                 out_ << " " << GEO::String::to_string( gocad_no_data_value_ );
             }
@@ -672,10 +778,9 @@ namespace {
         std::vector< bool > atom_exported_;
         std::vector< index_t > vertex_exported_id_;
         std::vector< index_t > atom_exported_id_;
-        index_t nb_vertices_exported_ { 1 };
+        index_t nb_vertices_exported_{ 1 };
 
         /// Classical Gocad NoDataValue
-        const double gocad_no_data_value_ { -99999 };
+        const double gocad_no_data_value_{ -99999 };
     };
-
 }

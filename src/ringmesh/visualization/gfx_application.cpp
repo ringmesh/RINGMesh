@@ -1102,7 +1102,6 @@ namespace RINGMesh
             }
         }
 
-
         if( mesh_.facets.nb() != 0 )
         {
             ImGui::Separator();

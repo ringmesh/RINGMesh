@@ -33,12 +33,14 @@
  *     FRANCE
  */
 
-namespace {
-    class GPRSIOHandler final: public GeoModelIOHandler< 3 > {
+namespace
+{
+    class GPRSIOHandler final : public GeoModelIOHandler< 3 >
+    {
     public:
-        struct Pipe {
-            Pipe( index_t v0_in, index_t v1_in )
-                : v0( v0_in ), v1( v1_in )
+        struct Pipe
+        {
+            Pipe( index_t v0_in, index_t v1_in ) : v0( v0_in ), v1( v1_in )
             {
             }
             index_t v0;
@@ -48,16 +50,16 @@ namespace {
         {
             ringmesh_unused( filename );
             ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from GPRS not implemented yet" );
+            throw RINGMeshException(
+                "I/O", "Loading of a GeoModel from GPRS not implemented yet" );
         }
         void save(
-            const GeoModel3D& geomodel,
-            const std::string& filename ) final
+            const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::string path = GEO::FileSystem::dir_name( filename );
             std::string directory = GEO::FileSystem::base_name( filename );
-            if( path == "." ) {
+            if( path == "." )
+            {
                 path = GEO::FileSystem::get_current_working_directory();
             }
             std::ostringstream oss;
@@ -82,16 +84,22 @@ namespace {
             const GeoModelMesh3D& mesh = geomodel.mesh;
             std::deque< Pipe > pipes;
             index_t cell_offset = mesh.cells.nb();
-            for( auto c :range( mesh.cells.nb() ) ) {
-                for( auto f : range( mesh.cells.nb_facets( c ) ) ) {
-                    index_t facet { NO_ID };
+            for( auto c : range( mesh.cells.nb() ) )
+            {
+                for( auto f : range( mesh.cells.nb_facets( c ) ) )
+                {
+                    index_t facet{ NO_ID };
                     bool not_used;
-                    if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
-                        not_used ) ) {
+                    if( mesh.cells.is_cell_facet_on_surface(
+                            c, f, facet, not_used ) )
+                    {
                         pipes.emplace_back( c, facet + cell_offset );
-                    } else {
+                    }
+                    else
+                    {
                         index_t adj = mesh.cells.adjacent( c, f );
-                        if( adj != GEO::NO_CELL && adj < c ) {
+                        if( adj != GEO::NO_CELL && adj < c )
+                        {
                             pipes.emplace_back( c, adj );
                         }
                     }
@@ -99,7 +107,8 @@ namespace {
             }
 
             index_t nb_edges = 0;
-            for( const auto& line : geomodel.lines() ) {
+            for( const auto& line : geomodel.lines() )
+            {
                 nb_edges += line.nb_mesh_elements();
             }
             std::vector< index_t > temp;
@@ -107,64 +116,83 @@ namespace {
             std::vector< std::vector< index_t > > edges( nb_edges, temp );
             std::vector< vec3 > edge_vertices( nb_edges );
             index_t count_edge = 0;
-            for( const auto& line : geomodel.lines() ) {
-                for( index_t e : range( line.nb_mesh_elements() ) ) {
-                    edge_vertices[count_edge++ ] = 0.5
-                        * ( line.vertex( e ) + line.vertex( e + 1 ) );
+            for( const auto& line : geomodel.lines() )
+            {
+                for( index_t e : range( line.nb_mesh_elements() ) )
+                {
+                    edge_vertices[count_edge++] =
+                        0.5 * ( line.vertex( e ) + line.vertex( e + 1 ) );
                 }
             }
             NNSearch3D nn_search( edge_vertices, false );
 
             const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
-            for( index_t p : range( polygons.nb() ) ) {
-                for( index_t e : range( polygons.nb_vertices( p ) ) ) {
+            for( index_t p : range( polygons.nb() ) )
+            {
+                for( index_t e : range( polygons.nb_vertices( p ) ) )
+                {
                     index_t adj = polygons.adjacent( PolygonLocalEdge( p, e ) );
-                    if( adj != GEO::NO_CELL && adj < p ) {
-                        pipes.emplace_back( p + cell_offset, adj + cell_offset );
-                    } else {
+                    if( adj != GEO::NO_CELL && adj < p )
+                    {
+                        pipes.emplace_back(
+                            p + cell_offset, adj + cell_offset );
+                    }
+                    else
+                    {
                         const vec3& e0 = mesh.vertices.vertex(
                             polygons.vertex( ElementLocalVertex( p, e ) ) );
                         const vec3& e1 = mesh.vertices.vertex(
-                            polygons.vertex(
-                                ElementLocalVertex( p,
-                                    ( e + 1 ) % polygons.nb_vertices( p ) ) ) );
+                            polygons.vertex( ElementLocalVertex(
+                                p, ( e + 1 ) % polygons.nb_vertices( p ) ) ) );
                         vec3 query = 0.5 * ( e0 + e1 );
-                        std::vector< index_t > results = nn_search.get_neighbors(
-                            query, geomodel.epsilon() );
-                        if( !results.empty() ) {
+                        std::vector< index_t > results =
+                            nn_search.get_neighbors(
+                                query, geomodel.epsilon() );
+                        if( !results.empty() )
+                        {
                             edges[results[0]].push_back( cell_offset + p );
-                        } else {
+                        }
+                        else
+                        {
                             ringmesh_assert_not_reached;
                         }
                     }
                 }
             }
 
-            auto nb_pipes = static_cast< index_t > ( pipes.size() );
-            for( const auto& vertices : edges ) {
-                nb_pipes += binomial_coef( static_cast< index_t > ( vertices.size() ) );
+            auto nb_pipes = static_cast< index_t >( pipes.size() );
+            for( const auto& vertices : edges )
+            {
+                nb_pipes +=
+                    binomial_coef( static_cast< index_t >( vertices.size() ) );
             }
             out_pipes << nb_pipes << EOL;
-            for( const auto& pipe : pipes ) {
+            for( const auto& pipe : pipes )
+            {
                 out_pipes << pipe.v0 << SPACE << pipe.v1 << EOL;
             }
-            for( const auto& vertices : edges ) {
-                for( auto v0 : range( vertices.size() - 1 ) ) {
-                    for( auto v1 : range( v0 + 1, vertices.size() ) ) {
+            for( const auto& vertices : edges )
+            {
+                for( auto v0 : range( vertices.size() - 1 ) )
+                {
+                    for( auto v1 : range( v0 + 1, vertices.size() ) )
+                    {
                         out_pipes << vertices[v0] << SPACE << vertices[v1]
-                            << EOL;
+                                  << EOL;
                     }
                 }
             }
 
-            out_xyz
-                << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
-                << EOL;
-            for( auto c : range( mesh.cells.nb() ) ) {
+            out_xyz << "Node geometry, not used by GPRS but useful to "
+                       "reconstruct a pipe-network"
+                    << EOL;
+            for( auto c : range( mesh.cells.nb() ) )
+            {
                 out_xyz << mesh.cells.barycenter( c ) << EOL;
                 out_vol << mesh.cells.volume( c ) << EOL;
             }
-            for( auto p : range( polygons.nb() ) ) {
+            for( auto p : range( polygons.nb() ) )
+            {
                 out_xyz << polygons.center( p ) << EOL;
                 out_vol << polygons.area( p ) << EOL;
             }
@@ -175,33 +203,32 @@ namespace {
         }
         index_t binomial_coef( index_t n ) const
         {
-            switch( n ) {
-                case 1:
-                    return 0;
-                case 2:
-                    return 1;
-                case 3:
-                    return 3;
-                case 4:
-                    return 6;
-                case 5:
-                    return 10;
-                case 6:
-                    return 15;
-                case 7:
-                    return 21;
-                case 8:
-                    return 28;
-                case 9:
-                    return 36;
-                case 10:
-                    return 45;
-                default:
-                    ringmesh_assert_not_reached;
-                    return 0;
-
+            switch( n )
+            {
+            case 1:
+                return 0;
+            case 2:
+                return 1;
+            case 3:
+                return 3;
+            case 4:
+                return 6;
+            case 5:
+                return 10;
+            case 6:
+                return 15;
+            case 7:
+                return 21;
+            case 8:
+                return 28;
+            case 9:
+                return 36;
+            case 10:
+                return 45;
+            default:
+                ringmesh_assert_not_reached;
+                return 0;
             }
         }
     };
-
 }

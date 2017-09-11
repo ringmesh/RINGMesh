@@ -33,28 +33,32 @@
  *     FRANCE
  */
 
-namespace {
-
+namespace
+{
     /*!
      * @brief Save the geomodel in smesh format
      * @details No attributes and no boundary marker are transferred
      */
-    class SMESHIOHandler final: public GeoModelIOHandler< 3 > {
+    class SMESHIOHandler final : public GeoModelIOHandler< 3 >
+    {
     public:
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             ringmesh_unused( filename );
             ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Geological model loading of a from UCD mesh not yet implemented" );
+            throw RINGMeshException( "I/O", "Geological model loading of a "
+                                            "from UCD mesh not yet "
+                                            "implemented" );
         }
 
-        void save( const GeoModel3D& geomodel, const std::string& filename ) final
+        void save(
+            const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
-            if( out.bad() ) {
-                Logger::err( "I/O", "Error when opening the file: ",
-                    filename.c_str() );
+            if( out.bad() )
+            {
+                Logger::err(
+                    "I/O", "Error when opening the file: ", filename.c_str() );
                 return;
             }
             out.precision( 16 );
@@ -65,10 +69,11 @@ namespace {
                 << EOL;
             out << geomodel.mesh.vertices.nb() << " 3 0 0" << EOL;
             out << "# node index, node coordinates " << EOL;
-            for( auto p : range( geomodel.mesh.vertices.nb() ) ) {
+            for( auto p : range( geomodel.mesh.vertices.nb() ) )
+            {
                 const vec3& V = geomodel.mesh.vertices.vertex( p );
-                out << p << " " << " " << V.x << " " << V.y << " " << V.z
-                    << EOL;
+                out << p << " "
+                    << " " << V.x << " " << V.y << " " << V.z << EOL;
             }
 
             /// 2. Write the triangles
@@ -76,13 +81,17 @@ namespace {
             out << "# facet count, no boundary marker" << EOL;
             out << nb_polygons( geomodel ) << "  0 " << EOL;
 
-            for( const auto& surface : geomodel.surfaces() ) {
-                for( auto p : range( surface.nb_mesh_elements() ) ) {
+            for( const auto& surface : geomodel.surfaces() )
+            {
+                for( auto p : range( surface.nb_mesh_elements() ) )
+                {
                     out << surface.nb_mesh_element_vertices( p ) << " ";
-                    for( auto v : range( surface.nb_mesh_element_vertices( p ) ) ) {
-                        out
-                            << geomodel.mesh.vertices.geomodel_vertex_id(
-                                surface.gmme(), ElementLocalVertex( p, v ) ) << " ";
+                    for( auto v :
+                        range( surface.nb_mesh_element_vertices( p ) ) )
+                    {
+                        out << geomodel.mesh.vertices.geomodel_vertex_id(
+                                   surface.gmme(), ElementLocalVertex( p, v ) )
+                            << " ";
                     }
                     out << EOL;
                 }
@@ -93,5 +102,4 @@ namespace {
             out << std::flush;
         }
     };
-
 }

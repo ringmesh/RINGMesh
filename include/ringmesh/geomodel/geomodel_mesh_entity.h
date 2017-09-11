@@ -432,7 +432,8 @@ namespace RINGMesh
         /*!
          * @return the number of vertices of the Corner
          */
-        index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const final;
+        index_t nb_mesh_element_vertices(
+            index_t mesh_element = 0 ) const final;
 
         const Line< DIMENSION >& incident_entity( index_t x ) const;
 
@@ -1090,7 +1091,8 @@ namespace RINGMesh
             {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return volume_mesh_->cell_adjacent( { cell_index, facet_index } );
+                return volume_mesh_->cell_adjacent(
+                    { cell_index, facet_index } );
             }
             ringmesh_assert_not_reached;
             return NO_ID;

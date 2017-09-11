@@ -33,8 +33,8 @@
  *     FRANCE
  */
 
-namespace {
-
+namespace
+{
     void save_header( const GeoModel3D& geomodel, std::ostream& out )
     {
         out << "solid " << geomodel.name() << EOL;
@@ -46,9 +46,7 @@ namespace {
     }
 
     void save_normal(
-        const GeoModel3D& geomodel,
-        index_t triangle_id,
-        std::ostream& out )
+        const GeoModel3D& geomodel, index_t triangle_id, std::ostream& out )
     {
         out << "facet normal " << geomodel.mesh.polygons.normal( triangle_id )
             << EOL;
@@ -64,27 +62,24 @@ namespace {
         out << "endloop" << EOL;
     }
 
-    void save_triangle_vertex(
-        const GeoModel3D& geomodel,
+    void save_triangle_vertex( const GeoModel3D& geomodel,
         index_t triangle_id,
         index_t local_vertex_id,
         std::ostream& out )
     {
         out << "vertex "
-            << geomodel.mesh.vertices.vertex(
-                geomodel.mesh.polygons.vertex(
-                    ElementLocalVertex( triangle_id, local_vertex_id ) ) )
+            << geomodel.mesh.vertices.vertex( geomodel.mesh.polygons.vertex(
+                   ElementLocalVertex( triangle_id, local_vertex_id ) ) )
             << EOL;
     }
 
     void save_triangle(
-        const GeoModel3D& geomodel,
-        index_t triangle_id,
-        std::ostream& out )
+        const GeoModel3D& geomodel, index_t triangle_id, std::ostream& out )
     {
         save_normal( geomodel, triangle_id, out );
         begin_triangle( out );
-        for( auto vertex : range( 3 ) ) {
+        for( auto vertex : range( 3 ) )
+        {
             save_triangle_vertex( geomodel, triangle_id, vertex, out );
         }
         end_triangle( out );
@@ -92,14 +87,17 @@ namespace {
 
     void save_triangles( const GeoModel3D& geomodel, std::ostream& out )
     {
-        for( auto triangle : range( geomodel.mesh.polygons.nb_triangle() ) ) {
+        for( auto triangle : range( geomodel.mesh.polygons.nb_triangle() ) )
+        {
             save_triangle( geomodel, triangle, out );
         }
     }
 
     void check_stl_validity( const GeoModel3D& geomodel )
     {
-        if( geomodel.mesh.polygons.nb() != geomodel.mesh.polygons.nb_triangle() ) {
+        if( geomodel.mesh.polygons.nb()
+            != geomodel.mesh.polygons.nb_triangle() )
+        {
             throw RINGMeshException( "I/O",
                 "Geological model save in STL format support only triangles" );
         }
@@ -116,19 +114,20 @@ namespace {
      *   endloop
      * endfacet
      */
-    class STLIOHandler final: public GeoModelIOHandler< 3 > {
+    class STLIOHandler final : public GeoModelIOHandler< 3 >
+    {
     public:
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             ringmesh_unused( filename );
             ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Geological model loading of a from STL mesh not yet implemented" );
+            throw RINGMeshException( "I/O", "Geological model loading of a "
+                                            "from STL mesh not yet "
+                                            "implemented" );
         }
 
         void save(
-            const GeoModel3D& geomodel,
-            const std::string& filename ) final
+            const GeoModel3D& geomodel, const std::string& filename ) final
         {
             check_stl_validity( geomodel );
             std::ofstream out( filename.c_str() );

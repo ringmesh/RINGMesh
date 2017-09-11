@@ -249,13 +249,15 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    const NNSearch< DIMENSION >& GeoModelMeshEntity< DIMENSION >::vertex_nn_search() const
+    const NNSearch< DIMENSION >&
+        GeoModelMeshEntity< DIMENSION >::vertex_nn_search() const
     {
         return mesh_->vertex_nn_search();
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager& GeoModelMeshEntity< DIMENSION >::vertex_attribute_manager() const
+    GEO::AttributesManager&
+        GeoModelMeshEntity< DIMENSION >::vertex_attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
     }
@@ -586,7 +588,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    index_t Corner< DIMENSION >::nb_mesh_element_vertices( index_t mesh_element ) const
+    index_t Corner< DIMENSION >::nb_mesh_element_vertices(
+        index_t mesh_element ) const
     {
         ringmesh_unused( mesh_element );
         index_t nb_vertices = point_set_mesh_->nb_vertices();
@@ -794,8 +797,7 @@ namespace RINGMesh
     index_t SurfaceBase< DIMENSION >::polygon_adjacent_index(
         const PolygonLocalEdge& polygon_local_edge ) const
     {
-        ringmesh_assert(
-            polygon_local_edge.polygon_id_ < nb_mesh_elements() );
+        ringmesh_assert( polygon_local_edge.polygon_id_ < nb_mesh_elements() );
         ringmesh_assert(
             polygon_local_edge.local_edge_id_
             < nb_mesh_element_vertices( polygon_local_edge.polygon_id_ ) );
@@ -808,9 +810,9 @@ namespace RINGMesh
     {
         ringmesh_assert(
             element_local_vertex.element_id_ < nb_mesh_elements() );
-        ringmesh_assert( element_local_vertex.local_vertex_id_
-                         < nb_mesh_element_vertices(
-                               element_local_vertex.element_id_ ) );
+        ringmesh_assert(
+            element_local_vertex.local_vertex_id_
+            < nb_mesh_element_vertices( element_local_vertex.element_id_ ) );
         return surface_mesh_->polygon_vertex( element_local_vertex );
     }
 
