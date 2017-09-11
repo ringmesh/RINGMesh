@@ -352,6 +352,13 @@ if(BUILD_DOCUMENTATION)
     add_subdirectory(doc)
 endif()
 
+# Collect the IO files
+file(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh/io ${PROJECT_SOURCE_DIR}/src/ringmesh/io/*)
+foreach(directory ${directories})
+    if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/io/${directory})
+        source_file_directory(ringmesh_files io/${directory})
+    endif()
+endforeach()
 
 if(COVERALLS)
     coveralls_setup(
