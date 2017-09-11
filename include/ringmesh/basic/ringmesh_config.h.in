@@ -50,7 +50,6 @@ namespace RINGMesh {
     #cmakedefine USE_MG_TETRA
     #cmakedefine USE_OPENMP
     #cmakedefine RINGMESH_WITH_TETGEN
-    #cmakedefine RINGMESH_WITH_GEOLOGYJS
 
     /* Optional components of RINGMesh */
     #cmakedefine RINGMESH_WITH_GRAPHICS
