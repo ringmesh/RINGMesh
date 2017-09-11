@@ -48,6 +48,9 @@
 
 namespace RINGMesh
 {
+    FORWARD_DECLARATION_DIMENSION_CLASS( Box );
+
+    ALIAS_3D( Box );
     ALIAS_3D( NNSearch );
 
     class GeoModelBuilderTSolid;

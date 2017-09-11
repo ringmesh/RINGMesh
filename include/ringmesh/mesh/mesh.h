@@ -42,8 +42,6 @@
 
 #include <ringmesh/basic/factory.h>
 
-#include <ringmesh/mesh/aabb.h>
-
 namespace GEO
 {
     class AttributesManager;
@@ -59,6 +57,10 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( NNSearch );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineAABBTree );
+    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceAABBTree );
+    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeAABBTree );
+
     struct EdgeLocalVertex;
     struct PolygonLocalEdge;
     struct CellLocalFacet;

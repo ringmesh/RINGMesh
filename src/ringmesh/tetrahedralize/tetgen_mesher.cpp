@@ -41,6 +41,7 @@
 
 #include <ringmesh/basic/nn_search.h>
 
+#include <ringmesh/mesh/aabb.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 

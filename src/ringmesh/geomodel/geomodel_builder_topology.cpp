@@ -40,6 +40,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder.h>
 
+#include <ringmesh/mesh/aabb.h>
+
 /*!
  * @file Implementation of GeoModel topological edition functions
  * @author Jeanne Pellerin

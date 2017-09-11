@@ -44,6 +44,7 @@
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 
+#include <ringmesh/mesh/aabb.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/well.h>
 

@@ -47,6 +47,7 @@
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
+#include <ringmesh/mesh/aabb.h>
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/mesh/geogram_mesh_builder.h>
 

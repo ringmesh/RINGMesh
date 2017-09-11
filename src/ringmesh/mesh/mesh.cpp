@@ -44,6 +44,7 @@
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/nn_search.h>
 
+#include <ringmesh/mesh/aabb.h>
 #include <ringmesh/mesh/geogram_mesh.h>
 
 namespace RINGMesh
