@@ -40,6 +40,7 @@
 #include <geogram/basic/vecg.h>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/logger.h>
 
 /*!
  * @author Pierre Anquez

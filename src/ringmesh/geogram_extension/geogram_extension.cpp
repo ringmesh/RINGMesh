@@ -45,6 +45,8 @@
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_repair.h>
 
+#include <ringmesh/basic/logger.h>
+
 /*!
  * @todo Re-orgarnize this mess
  */
