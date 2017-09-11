@@ -68,6 +68,16 @@ namespace RINGMesh
     {
     }
 
+    template< index_t DIMENSION >
+    MeshBase< DIMENSION >::MeshBase()
+    {
+    }
+
+    template< index_t DIMENSION >
+    MeshBase< DIMENSION >::~MeshBase()
+    {
+    }
+
     template < index_t DIMENSION >
     const NNSearch< DIMENSION >& MeshBase< DIMENSION >::vertex_nn_search() const
     {
@@ -321,6 +331,16 @@ namespace RINGMesh
         }
 
         return std::make_tuple( nb_components, components );
+    }
+
+    template< index_t DIMENSION >
+    SurfaceMeshBase< DIMENSION >::SurfaceMeshBase()
+    {
+    }
+
+    template< index_t DIMENSION >
+    SurfaceMeshBase< DIMENSION >::~SurfaceMeshBase()
+    {
     }
 
     template < index_t DIMENSION >

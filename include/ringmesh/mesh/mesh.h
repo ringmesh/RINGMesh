@@ -141,7 +141,7 @@ namespace RINGMesh
         friend class MeshBaseBuilder< DIMENSION >;
 
     public:
-        virtual ~MeshBase() = default;
+        virtual ~MeshBase();
 
         virtual void save_mesh( const std::string& filename ) const = 0;
 
@@ -185,7 +185,7 @@ namespace RINGMesh
          * @}
          */
     protected:
-        MeshBase() = default;
+        MeshBase();
 
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_{};
@@ -304,6 +304,8 @@ namespace RINGMesh
         friend class SurfaceMeshBuilder< DIMENSION >;
 
     public:
+        ~SurfaceMeshBase();
+
         static std::unique_ptr< SurfaceMesh< DIMENSION > > create_mesh(
             const MeshType type = "" );
 
@@ -604,7 +606,7 @@ namespace RINGMesh
             connected_components() const final;
 
     protected:
-        SurfaceMeshBase() = default;
+        SurfaceMeshBase();
 
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_{};
