@@ -510,7 +510,7 @@ namespace RINGMesh
     std::vector< GeologicalEntityType > RelationshipManager::parent_types(
         const MeshEntityType& child_type ) const
     {
-        return parent_types( child_type );
+        return impl_->parent_types( child_type );
     }
 
     void RelationshipManager::copy( const RelationshipManager& from )
