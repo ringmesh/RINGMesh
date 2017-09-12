@@ -46,8 +46,8 @@ namespace RINGMesh
 
     class GeologicalEntityType;
     class MeshEntityType;
-    class gmme_id;
-    class gmge_id;
+    struct gmme_id;
+    struct gmge_id;
 } // namespace RINGMesh
 
 namespace RINGMesh
