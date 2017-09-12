@@ -41,7 +41,9 @@
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/entity_type.h>
+#include <ringmesh/geomodel/entity_type_manager.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
 #include <ringmesh/geomodel/geomodel_ranges.h>
