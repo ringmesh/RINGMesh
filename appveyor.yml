@@ -4,7 +4,7 @@ notifications:
   - provider: Slack
     auth_token:
       secure: 9GfC4zyHs0Qh7E0TJnHgiaVs4sv2twBRXUh77i1gEg8=
-    channel: '#ringmesh'
+    channel: ringmesh
     on_build_success: false
     on_build_failure: true
     on_build_status_changed: true
