@@ -2,7 +2,7 @@ version: 1.0.{build}
 
 notifications:
   - provider: Slack
-    incoming_webhook:
+    auth_token:
       secure: 9GfC4zyHs0Qh7E0TJnHgiaVs4sv2twBRXUh77i1gEg8=
     channel: '#ringmesh'
     on_build_success: false
