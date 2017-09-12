@@ -35,7 +35,7 @@ build_script:
 test_script:
  - cmd: cmake --build . --target RUN_TESTS --config Debug
 
-on_success:
- - IF "%APPVEYOR_REPO_BRANCH%"=="default" (
-     C:\projects\ringmesh\launch_coverage.cmd
-   )
+#on_success:
+# - IF "%APPVEYOR_REPO_BRANCH%"=="default" (
+#     C:\projects\ringmesh\launch_coverage.cmd
+#   )
