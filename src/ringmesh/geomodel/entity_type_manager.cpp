@@ -513,7 +513,7 @@ namespace RINGMesh
         return impl_->parent_types( child_type );
     }
 
-    void RelationshipManager::copy( const RelationshipManager& from )
+    void Relationshipanager::copy( const RelationshipManager& from )
     {
         impl_->copy( *from.impl_ );
     }
