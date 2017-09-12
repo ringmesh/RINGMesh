@@ -36,7 +36,6 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-#include <ringmesh/geomodel/entity_type_manager.h>
 
 /*!
  * @brief Structures and classes used to index elements in a GeoModel,
