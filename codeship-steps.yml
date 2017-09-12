@@ -1,0 +1,12 @@
+- tag: default
+  service: coverage
+  command: echo toto
+
+- exclude: default
+  service: compile
+  command: mkdir build
+  command: cd build
+  command: cmake -DRINGMESH_WITH_TESTS:BOOL=ON ..
+  command: cd ringmesh/Debug
+  command: make -j
+  command: make test
