@@ -1,13 +1,16 @@
 - type: serial
   tag: default
   service: coverage
-  command: echo toto
+  steps:
+    - command: echo toto
+    - command: echo toto
 
 - type: serial
   exclude: default
-  service: compile
-  command: mkdir build
-#  command: cd build
+  service: compilation
+  steps:
+    - command: mkdir build
+    - command: cd build
 #  command: cmake -DRINGMESH_WITH_TESTS:BOOL=ON ..
 #  command: cd ringmesh/Debug
 #  command: make -j
