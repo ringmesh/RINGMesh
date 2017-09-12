@@ -147,6 +147,8 @@ namespace RINGMesh
         friend class GeoModelMeshPolygonsBase< DIMENSION >;
         friend class GeoModelMeshCells< DIMENSION >;
 
+        ~GeoModelMeshVerticesBase();
+
         GEO::AttributesManager& attribute_manager() const
         {
             return mesh_->vertex_attribute_manager();
