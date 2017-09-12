@@ -279,8 +279,8 @@ namespace RINGMesh
         copy_all_mesh_entity_topology( from );
 
         geomodel_access_.modifiable_epsilon() = from.epsilon();
-        geomodel_access_.modifiable_entity_type_manager().relationship_manager =
-            from.entity_type_manager().relationship_manager;
+        geomodel_access_.modifiable_entity_type_manager().relationship_manager.copy(
+            from.entity_type_manager().relationship_manager );
     }
 
     template < index_t DIMENSION >

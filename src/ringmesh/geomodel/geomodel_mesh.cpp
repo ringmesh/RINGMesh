@@ -541,6 +541,11 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
+    GeoModelMeshVerticesBase< DIMENSION >::~GeoModelMeshVerticesBase()
+    {
+    }
+
+    template < index_t DIMENSION >
     GeoModelMeshVerticesBase< DIMENSION >::GeoModelMeshVerticesBase(
         GeoModelMesh< DIMENSION >& gmm,
         GeoModel< DIMENSION >& gm,

@@ -37,10 +37,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <vector>
-
-#include <ringmesh/basic/algorithm.h>
-
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntityAccess );

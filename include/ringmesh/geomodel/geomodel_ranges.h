@@ -36,7 +36,6 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-#include <ringmesh/geomodel/entity_type_manager.h>
 
 /*!
  * @brief Structures and classes used to index elements in a GeoModel,
@@ -46,6 +45,10 @@
 
 namespace RINGMesh
 {
+    FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Line );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
+    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
 } // namespace RINGMesh
 
