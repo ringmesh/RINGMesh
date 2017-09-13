@@ -1,16 +1,20 @@
-- type: serial
-  tag: default
-  service: coverage
-  steps:
-    - command: echo toto
-    - command: echo toto
-
-- type: serial
-  exclude: default
-  service: compilation
-  steps:
-    - command: mkdir build
-    - command: cd build
+- service: demo
+  tag: codeship_yml
+  command: echo "SHOULD ONLY RUN ON MASTER"
+  
+#- type: serial
+#  tag: default
+#  service: coverage
+#  steps:
+#    - command: echo toto
+#    - command: echo toto
+#
+#- type: serial
+#  exclude: default
+#  service: compilation
+#  steps:
+#    - command: mkdir build
+#    - command: cd build
 #  command: cmake -DRINGMESH_WITH_TESTS:BOOL=ON ..
 #  command: cd ringmesh/Debug
 #  command: make -j
