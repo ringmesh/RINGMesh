@@ -39,6 +39,7 @@
 #include <map>
 #include <set>
 
+#include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/pimpl_impl.h>
 
 #include <ringmesh/geomodel/geomodel.h>
