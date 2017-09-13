@@ -42,6 +42,8 @@
 
 #include <geogram/basic/command_line.h>
 
+#include <ringmesh/basic/box.h>
+
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
