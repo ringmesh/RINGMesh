@@ -2830,10 +2830,11 @@ namespace RINGMesh
     GeoModelMeshBase< DIMENSION >::GeoModelMeshBase(
         GeoModelMesh< DIMENSION >& gmm, GeoModel< DIMENSION >& geomodel )
         : geomodel_( geomodel ),
-          vertices( gmm, geomodel, mesh_set_.point_set_mesh ),
-          edges( gmm, geomodel, mesh_set_.line_mesh ),
-          wells( gmm, geomodel, mesh_set_.well_mesh ),
-          polygons( gmm, geomodel, mesh_set_.surface_mesh )
+          mesh_set_( new MeshSet< DIMENSION > ),
+          vertices( gmm, geomodel, mesh_set_->point_set_mesh ),
+          edges( gmm, geomodel, mesh_set_->line_mesh ),
+          wells( gmm, geomodel, mesh_set_->well_mesh ),
+          polygons( gmm, geomodel, mesh_set_->surface_mesh )
     {
     }
 
@@ -2860,10 +2861,10 @@ namespace RINGMesh
     void GeoModelMeshBase< DIMENSION >::change_point_set_mesh_data_structure(
         const MeshType& type )
     {
-        if( mesh_set_.point_set_mesh->type_name() != type )
+        if( mesh_set_->point_set_mesh->type_name() != type )
         {
             vertices.clear();
-            mesh_set_.create_point_set_mesh( type );
+            mesh_set_->create_point_set_mesh( type );
         }
     }
 
@@ -2871,10 +2872,10 @@ namespace RINGMesh
     void GeoModelMeshBase< DIMENSION >::change_line_mesh_data_structure(
         const MeshType& type )
     {
-        if( mesh_set_.line_mesh->type_name() != type )
+        if( mesh_set_->line_mesh->type_name() != type )
         {
             wells.clear();
-            mesh_set_.create_line_mesh( type );
+            mesh_set_->create_line_mesh( type );
         }
     }
 
@@ -2882,10 +2883,10 @@ namespace RINGMesh
     void GeoModelMeshBase< DIMENSION >::change_surface_mesh_data_structure(
         const MeshType& type )
     {
-        if( mesh_set_.surface_mesh->type_name() != type )
+        if( mesh_set_->surface_mesh->type_name() != type )
         {
             polygons.clear();
-            mesh_set_.create_surface_mesh( type );
+            mesh_set_->create_surface_mesh( type );
         }
     }
 
@@ -2897,7 +2898,7 @@ namespace RINGMesh
 
     GeoModelMesh< 3 >::GeoModelMesh( GeoModel3D& geomodel )
         : GeoModelMeshBase< 3 >( *this, geomodel ),
-          cells( *this, geomodel, mesh_set_.volume_mesh )
+          cells( *this, geomodel, mesh_set_->volume_mesh )
     {
     }
 
@@ -2908,10 +2909,10 @@ namespace RINGMesh
     void GeoModelMesh< 3 >::change_volume_mesh_data_structure(
         const MeshType& type )
     {
-        if( mesh_set_.volume_mesh->type_name() != type )
+        if( mesh_set_->volume_mesh->type_name() != type )
         {
             cells.clear();
-            mesh_set_.create_volume_mesh( type );
+            mesh_set_->create_volume_mesh( type );
         }
     }
 

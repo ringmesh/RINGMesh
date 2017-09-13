@@ -38,7 +38,10 @@
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_api.h>
+
+#include <ringmesh/mesh/mesh.h>
 
 /*!
  * @brief Implementation of the class to build GeoModel from input

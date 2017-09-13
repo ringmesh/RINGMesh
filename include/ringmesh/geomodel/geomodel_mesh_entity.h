@@ -210,10 +210,7 @@ namespace RINGMesh
          * @}
          */
 
-        void save( const std::string& filename ) const
-        {
-            mesh_->save_mesh( filename );
-        }
+        void save( const std::string& filename ) const;
         /*!
          * @brief Return the NNSearch for the Entity vertices.
          */
@@ -225,17 +222,12 @@ namespace RINGMesh
          * @{
          */
 
-        index_t nb_vertices() const
-        {
-            return mesh_->nb_vertices();
-        }
+        index_t nb_vertices() const;
+
         /*!
          * @brief Coordinates of the \p vertex_index.
          */
-        const vecn< DIMENSION >& vertex( index_t vertex_index ) const
-        {
-            return mesh_->vertex( vertex_index );
-        }
+        const vecn< DIMENSION >& vertex( index_t vertex_index ) const;
 
         /*!
          * @brief Get the number constitutive elements of the mesh
@@ -472,12 +464,7 @@ namespace RINGMesh
          */
         Corner( const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const MeshType& type )
-            : GeoModelMeshEntity< DIMENSION >( geomodel, id )
-        {
-            update_mesh_storage_type(
-                PointSetMesh< DIMENSION >::create_mesh( type ) );
-        }
+            const MeshType& type );
 
         /*!
          * @brief Get the index of the unique vertex constituting of the Corner.
@@ -498,11 +485,7 @@ namespace RINGMesh
 
     private:
         void update_mesh_storage_type(
-            std::unique_ptr< PointSetMesh< DIMENSION > > mesh )
-        {
-            point_set_mesh_ = std::move( mesh );
-            GeoModelMeshEntity< DIMENSION >::set_mesh( point_set_mesh_ );
-        }
+            std::unique_ptr< PointSetMesh< DIMENSION > > mesh );
 
         void change_mesh_data_structure( const MeshType& type ) final;
 
@@ -553,27 +536,18 @@ namespace RINGMesh
 
         bool is_connectivity_valid() const final;
 
-        const LineAABBTree< DIMENSION >& edge_aabb() const
-        {
-            return line_mesh_->edge_aabb();
-        }
+        const LineAABBTree< DIMENSION >& edge_aabb() const;
 
         /*!
          * @brief Return the NNSearch for the edges of the line
          * @details The barycenter of the edges is used.
          */
-        const NNSearch< DIMENSION >& edge_nn_search() const
-        {
-            return line_mesh_->edge_nn_search();
-        }
+        const NNSearch< DIMENSION >& edge_nn_search() const;
 
         /*!
          * Get the number of edges of the Line
          */
-        index_t nb_mesh_elements() const final
-        {
-            return line_mesh_->nb_edges();
-        }
+        index_t nb_mesh_elements() const;
 
         /*!
          * @return The number of vertices per edge: 2.
@@ -604,21 +578,12 @@ namespace RINGMesh
         /*!
          * @brief Gets the length of an edge
          */
-        double mesh_element_size( index_t edge_index ) const final
-        {
-            ringmesh_assert( edge_index < nb_mesh_elements() );
-            return line_mesh_->edge_length( edge_index );
-        }
-
+        double mesh_element_size( index_t edge_index ) const final;
         /*!
          * @brief Gets the barycenter of an edge
          */
         vecn< DIMENSION > mesh_element_barycenter(
-            index_t edge_index ) const final
-        {
-            ringmesh_assert( edge_index < nb_mesh_elements() );
-            return line_mesh_->edge_barycenter( edge_index );
-        }
+            index_t edge_index ) const final;
 
         bool is_first_corner_first_vertex() const;
 
@@ -633,12 +598,7 @@ namespace RINGMesh
     protected:
         Line( const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const MeshType& type )
-            : GeoModelMeshEntity< DIMENSION >( geomodel, id )
-        {
-            update_mesh_storage_type(
-                LineMesh< DIMENSION >::create_mesh( type ) );
-        }
+            const MeshType& type );
 
         /*!
          * @brief Check that the mesh of the Line is valid
@@ -659,11 +619,7 @@ namespace RINGMesh
 
     private:
         void update_mesh_storage_type(
-            std::unique_ptr< LineMesh< DIMENSION > > mesh )
-        {
-            line_mesh_ = std::move( mesh );
-            GeoModelMeshEntity< DIMENSION >::set_mesh( line_mesh_ );
-        }
+            std::unique_ptr< LineMesh< DIMENSION > > mesh );
 
         void change_mesh_data_structure( const MeshType& type ) final;
 
@@ -706,29 +662,17 @@ namespace RINGMesh
 
         const Region< DIMENSION >& incident_entity( index_t x ) const;
 
-        bool is_simplicial() const
-        {
-            return surface_mesh_->polygons_are_simplicies();
-        }
+        bool is_simplicial() const;
 
-        const SurfaceAABBTree< DIMENSION >& polygon_aabb() const
-        {
-            return surface_mesh_->polygon_aabb();
-        }
+        const SurfaceAABBTree< DIMENSION >& polygon_aabb() const;
 
         /*!
          * @brief Return the NNSearch for the polygons of the surface
          * @details The barycenter of the polygons is used.
          */
-        const NNSearch< DIMENSION >& polygon_nn_search() const
-        {
-            return surface_mesh_->polygon_nn_search();
-        }
+        const NNSearch< DIMENSION >& polygon_nn_search() const;
 
-        GEO::AttributesManager& polygon_attribute_manager() const
-        {
-            return surface_mesh_->polygon_attribute_manager();
-        }
+        GEO::AttributesManager& polygon_attribute_manager() const;
 
         /*!
          * \name Accessors to Surface polygons, edges and vertices
@@ -737,19 +681,12 @@ namespace RINGMesh
         /*!
          * Number of polygons of the Surface.
          */
-        index_t nb_mesh_elements() const final
-        {
-            return surface_mesh_->nb_polygons();
-        }
+        index_t nb_mesh_elements() const final;
 
         /*!
          * Number of vertices of a polygon
          */
-        index_t nb_mesh_element_vertices( index_t polygon_index ) const final
-        {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
-            return surface_mesh_->nb_polygon_vertices( polygon_index );
-        }
+        index_t nb_mesh_element_vertices( index_t polygon_index ) const final;
 
         /*!
          * @brief Index of the vertex in the Surface
@@ -775,20 +712,12 @@ namespace RINGMesh
          * @return Polygon barycenter.
          */
         vecn< DIMENSION > mesh_element_barycenter(
-            index_t polygon_index ) const final
-        {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
-            return surface_mesh_->polygon_barycenter( polygon_index );
-        }
+            index_t polygon_index ) const final;
 
         /*!
          * @return Area of a polygon.
          */
-        double mesh_element_size( index_t polygon_index ) const final
-        {
-            ringmesh_assert( polygon_index < nb_mesh_elements() );
-            return surface_mesh_->polygon_area( polygon_index );
-        }
+        double mesh_element_size( index_t polygon_index ) const final;
 
         /*!
          * @brief Get the low level mesh data structure
@@ -801,12 +730,7 @@ namespace RINGMesh
     protected:
         SurfaceBase( const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const MeshType type )
-            : GeoModelMeshEntity< DIMENSION >( geomodel, id )
-        {
-            update_mesh_storage_type(
-                SurfaceMesh< DIMENSION >::create_mesh( type ) );
-        }
+            const MeshType type );
 
         /*!
          * @brief Check that the mesh of the Surface is valid
@@ -834,11 +758,7 @@ namespace RINGMesh
 
     private:
         void update_mesh_storage_type(
-            std::unique_ptr< SurfaceMesh< DIMENSION > > mesh )
-        {
-            surface_mesh_ = std::move( mesh );
-            GeoModelMeshEntity< DIMENSION >::set_mesh( surface_mesh_ );
-        }
+            std::unique_ptr< SurfaceMesh< DIMENSION > > mesh );
 
         void change_mesh_data_structure( const MeshType& type ) final;
 
@@ -937,34 +857,19 @@ namespace RINGMesh
 
         bool is_connectivity_valid() const final;
 
-        bool is_meshed() const
-        {
-            return volume_mesh_->nb_cells() > 0;
-        }
+        bool is_meshed() const;
 
-        bool is_simplicial() const
-        {
-            return volume_mesh_->cells_are_simplicies();
-        }
+        bool is_simplicial() const;
 
-        const VolumeAABBTree< DIMENSION >& cell_aabb() const
-        {
-            return volume_mesh_->cell_aabb();
-        }
+        const VolumeAABBTree< DIMENSION >& cell_aabb() const;
 
         /*!
          * @brief Return the NNSearch for the cells of the region
          * @details The barycenter of the cells is used.
          */
-        const NNSearch< DIMENSION >& cell_nn_search() const
-        {
-            return volume_mesh_->cell_nn_search();
-        }
+        const NNSearch< DIMENSION >& cell_nn_search() const;
 
-        GEO::AttributesManager& cell_attribute_manager() const
-        {
-            return volume_mesh_->cell_attribute_manager();
-        }
+        GEO::AttributesManager& cell_attribute_manager() const;
 
         /*!
          * \name Accessors to Region cells, facets, edges and vertices
@@ -974,24 +879,12 @@ namespace RINGMesh
         /*!
          * Get the number of cells of the Region.
          */
-        index_t nb_mesh_elements() const final
-        {
-            return volume_mesh_->nb_cells();
-        }
+        index_t nb_mesh_elements() const final;
 
         /*!
          * Get the number of vertex in the cell \param cell_index of the Region.
          */
-        index_t nb_mesh_element_vertices( index_t cell_index ) const final
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                return volume_mesh_->nb_cell_vertices( cell_index );
-            }
-            ringmesh_assert_not_reached;
-            return NO_ID;
-        }
+        index_t nb_mesh_element_vertices( index_t cell_index ) const;
 
         /*!
          * @brief Index of a vertex in the Region from its index in a cell
@@ -1003,98 +896,24 @@ namespace RINGMesh
          * Get the type of a given cell.
          * @pre The Region must be meshed
          */
-        CellType cell_type( index_t cell_index ) const
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                return volume_mesh_->cell_type( cell_index );
-            }
-            ringmesh_assert_not_reached;
-            return CellType::UNDEFINED;
-        }
+        CellType cell_type( index_t cell_index ) const;
 
-        index_t nb_cell_edges( index_t cell_index ) const
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                return volume_mesh_->nb_cell_edges( cell_index );
-            }
-            ringmesh_assert_not_reached;
-            return NO_ID;
-        }
+        index_t nb_cell_edges( index_t cell_index ) const;
 
-        index_t nb_cell_facets( index_t cell_index ) const
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                return volume_mesh_->nb_cell_facets( cell_index );
-            }
-            ringmesh_assert_not_reached;
-            return NO_ID;
-        }
+        index_t nb_cell_facets( index_t cell_index ) const;
 
         index_t nb_cell_facet_vertices(
-            index_t cell_index, index_t facet_index ) const
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return volume_mesh_->nb_cell_facet_vertices(
-                    { cell_index, facet_index } );
-            }
-            ringmesh_assert_not_reached;
-            return NO_ID;
-        }
+            index_t cell_index, index_t facet_index ) const;
 
         index_t cell_edge_vertex_index(
-            index_t cell_index, index_t edge_index, index_t vertex_index ) const
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( edge_index < nb_cell_edges( cell_index ) );
-                ringmesh_assert(
-                    vertex_index < nb_mesh_element_vertices( cell_index ) );
-                return volume_mesh_->cell_edge_vertex(
-                    cell_index, edge_index, vertex_index );
-            }
-            ringmesh_assert_not_reached;
-            return NO_ID;
-        }
+            index_t cell_index, index_t edge_index, index_t vertex_index ) const;
 
         index_t cell_facet_vertex_index( index_t cell_index,
             index_t facet_index,
-            index_t vertex_index ) const
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                ringmesh_assert(
-                    vertex_index < nb_mesh_element_vertices( cell_index ) );
-                return volume_mesh_->cell_facet_vertex(
-                    { cell_index, facet_index }, vertex_index );
-            }
-            ringmesh_assert_not_reached;
-            return NO_ID;
-        }
+            index_t vertex_index ) const;
 
         index_t cell_adjacent_index(
-            index_t cell_index, index_t facet_index ) const
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                return volume_mesh_->cell_adjacent( { cell_index, facet_index } );
-            }
-            ringmesh_assert_not_reached;
-            return NO_ID;
-        }
+            index_t cell_index, index_t facet_index ) const;
 
         ElementLocalVertex find_cell_from_colocated_vertex_if_any(
             const vecn< DIMENSION >& vertex_vec ) const;
@@ -1107,65 +926,21 @@ namespace RINGMesh
         /*!
          * @brief Volume of a cell
          */
-        double mesh_element_size( index_t cell_index ) const final
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                return volume_mesh_->cell_volume( cell_index );
-            }
-            ringmesh_assert_not_reached;
-            return 0;
-        }
+        double mesh_element_size( index_t cell_index ) const final;
+
         /*!
          * @brief Compute the volume of the Region
          */
-        double size() const final
-        {
-            double result = 0.;
-            for( auto i : range( this->nb_boundaries() ) )
-            {
-                const Surface< DIMENSION >& surface = boundary( i );
-                for( auto t : range( surface.nb_mesh_elements() ) )
-                {
-                    const vecn< DIMENSION >& p0 = surface.mesh_element_vertex(
-                        ElementLocalVertex( t, 0 ) );
-                    for( auto v :
-                        range( 1, surface.nb_mesh_element_vertices( t ) - 1 ) )
-                    {
-                        double cur_volume =
-                            ( dot( p0,
-                                cross( surface.mesh_element_vertex(
-                                           ElementLocalVertex( t, v ) ),
-                                    surface.mesh_element_vertex(
-                                        ElementLocalVertex( t, v + 1 ) ) ) ) )
-                            / 6.;
-                        side( i ) ? result -= cur_volume : result += cur_volume;
-                    }
-                }
-            }
-            return std::fabs( result );
-        }
+        double size() const final;
+
         /*!
          * @brief Get the center of the cell \param cell_index
          */
         vecn< DIMENSION > mesh_element_barycenter(
-            index_t cell_index ) const final
-        {
-            if( is_meshed() )
-            {
-                ringmesh_assert( cell_index < nb_mesh_elements() );
-                return volume_mesh_->cell_barycenter( cell_index );
-            }
-            ringmesh_assert_not_reached;
-            return vecn< DIMENSION >();
-        }
+            index_t cell_index ) const final;
 
         std::vector< index_t > cells_around_vertex(
-            index_t vertex_id, index_t cell_hint ) const
-        {
-            return volume_mesh_->cells_around_vertex( vertex_id, cell_hint );
-        }
+            index_t vertex_id, index_t cell_hint ) const;
 
         bool side( index_t i ) const
         {
@@ -1185,21 +960,12 @@ namespace RINGMesh
     private:
         Region( const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const MeshType type )
-            : GeoModelMeshEntity< DIMENSION >( geomodel, id )
-        {
-            update_mesh_storage_type(
-                VolumeMesh< DIMENSION >::create_mesh( type ) );
-        }
+            const MeshType type );
 
         bool is_mesh_valid() const final;
 
         void update_mesh_storage_type(
-            std::unique_ptr< VolumeMesh< DIMENSION > > mesh )
-        {
-            volume_mesh_ = std::move( mesh );
-            GeoModelMeshEntity< DIMENSION >::set_mesh( volume_mesh_ );
-        }
+            std::unique_ptr< VolumeMesh< DIMENSION > > mesh );
 
         void change_mesh_data_structure( const MeshType& type ) final;
 
