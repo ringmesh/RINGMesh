@@ -1,6 +1,3 @@
-demo:
-  image: busybox
-  
 compilation:
   image: ringteam/ubuntu:cmake_opengl
 
