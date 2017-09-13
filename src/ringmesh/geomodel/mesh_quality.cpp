@@ -40,6 +40,8 @@
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
+#include <ringmesh/mesh/mesh.h>
+
 /*!
  * @author Benjamin Chauvin
  * This code is inspired from

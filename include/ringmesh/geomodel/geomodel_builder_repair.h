@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <set>
+
 #include <ringmesh/geomodel/geomodel.h>
 
 /*!

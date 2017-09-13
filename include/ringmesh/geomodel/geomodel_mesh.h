@@ -41,13 +41,16 @@
 
 #include <ringmesh/geomodel/entity_type.h>
 
-#include <ringmesh/mesh/mesh.h>
-
 /*!
  * @file ringmesh/geomodel_mesh.h
  * @brief Classes to manage globally the indexing of mesh entities of a GeoModel
  * @author Arnaud Botella and Jeanne Pellerin
  */
+
+namespace GEO
+{
+    class AttributesManager;
+} // namespace GEO
 
 namespace RINGMesh
 {
@@ -1393,7 +1396,7 @@ namespace RINGMesh
         const GeoModel< DIMENSION >& geomodel_;
 
         /// Mesh storing all the elements
-        MeshSet< DIMENSION > mesh_set_;
+        std::unique_ptr< MeshSet< DIMENSION > > mesh_set_;
 
     protected:
         GeoModelMeshBase(

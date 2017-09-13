@@ -45,6 +45,7 @@
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
+#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace
@@ -496,6 +497,24 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    void GeoModelMeshEntity< DIMENSION >::save( const std::string& filename ) const
+    {
+        mesh_->save_mesh( filename );
+    }
+
+    template < index_t DIMENSION >
+    index_t GeoModelMeshEntity< DIMENSION >::nb_vertices() const
+    {
+        return mesh_->nb_vertices();
+    }
+
+    template < index_t DIMENSION >
+    const vecn< DIMENSION >& GeoModelMeshEntity< DIMENSION >::vertex( index_t vertex_index ) const
+    {
+        return mesh_->vertex( vertex_index );
+    }
+
+    template < index_t DIMENSION >
     const gmge_id GeoModelMeshEntity< DIMENSION >::parent_gmge(
         const GeologicalEntityType& parent_type ) const
     {
@@ -572,6 +591,24 @@ namespace RINGMesh
     /**************************************************************/
 
     template < index_t DIMENSION >
+    Corner< DIMENSION >::Corner( const GeoModel< DIMENSION >& geomodel,
+        index_t id,
+        const MeshType& type )
+        : GeoModelMeshEntity< DIMENSION >( geomodel, id )
+    {
+        update_mesh_storage_type(
+            PointSetMesh< DIMENSION >::create_mesh( type ) );
+    }
+
+    template < index_t DIMENSION >
+    void Corner< DIMENSION >::update_mesh_storage_type(
+        std::unique_ptr< PointSetMesh< DIMENSION > > mesh )
+    {
+        point_set_mesh_ = std::move( mesh );
+        GeoModelMeshEntity< DIMENSION >::set_mesh( point_set_mesh_ );
+    }
+
+    template < index_t DIMENSION >
     bool Corner< DIMENSION >::is_on_voi() const
     {
         // True if one of the incident lines defines the universe
@@ -621,6 +658,24 @@ namespace RINGMesh
     }
 
     /***************************************************************/
+
+    template < index_t DIMENSION >
+    Line< DIMENSION >::Line( const GeoModel< DIMENSION >& geomodel,
+        index_t id,
+        const MeshType& type )
+        : GeoModelMeshEntity< DIMENSION >( geomodel, id )
+    {
+        update_mesh_storage_type(
+            LineMesh< DIMENSION >::create_mesh( type ) );
+    }
+
+    template < index_t DIMENSION >
+    void Line< DIMENSION >::update_mesh_storage_type(
+        std::unique_ptr< LineMesh< DIMENSION > > mesh )
+    {
+        line_mesh_ = std::move( mesh );
+        GeoModelMeshEntity< DIMENSION >::set_mesh( line_mesh_ );
+    }
 
     template < index_t DIMENSION >
     bool Line< DIMENSION >::is_mesh_valid() const
@@ -737,6 +792,39 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    const LineAABBTree< DIMENSION >& Line< DIMENSION >::edge_aabb() const
+    {
+        return line_mesh_->edge_aabb();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& Line< DIMENSION >::edge_nn_search() const
+    {
+        return line_mesh_->edge_nn_search();
+    }
+
+    template < index_t DIMENSION >
+    index_t Line< DIMENSION >::nb_mesh_elements() const
+    {
+        return line_mesh_->nb_edges();
+    }
+
+    template < index_t DIMENSION >
+    double Line< DIMENSION >::mesh_element_size( index_t edge_index ) const
+    {
+        ringmesh_assert( edge_index < nb_mesh_elements() );
+        return line_mesh_->edge_length( edge_index );
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > Line< DIMENSION >::mesh_element_barycenter(
+        index_t edge_index ) const
+    {
+        ringmesh_assert( edge_index < nb_mesh_elements() );
+        return line_mesh_->edge_barycenter( edge_index );
+    }
+
+    template < index_t DIMENSION >
     bool Line< DIMENSION >::is_first_corner_first_vertex() const
     {
         if( this->nb_boundaries() != 2 || this->nb_vertices() < 2 )
@@ -789,6 +877,76 @@ namespace RINGMesh
     }
 
     /********************************************************************/
+
+    template< index_t DIMENSION >
+    SurfaceBase< DIMENSION >::SurfaceBase(
+        const GeoModel< DIMENSION >& geomodel,
+        index_t id,
+        const MeshType type )
+        : GeoModelMeshEntity< DIMENSION >( geomodel, id )
+    {
+        update_mesh_storage_type( SurfaceMesh< DIMENSION >::create_mesh( type ) );
+    }
+
+    template< index_t DIMENSION >
+    void SurfaceBase< DIMENSION >::update_mesh_storage_type(
+        std::unique_ptr< SurfaceMesh< DIMENSION > > mesh )
+    {
+        surface_mesh_ = std::move( mesh );
+        GeoModelMeshEntity< DIMENSION >::set_mesh( surface_mesh_ );
+    }
+
+    template< index_t DIMENSION >
+    index_t SurfaceBase< DIMENSION >::nb_mesh_elements() const
+    {
+        return surface_mesh_->nb_polygons();
+    }
+
+    template < index_t DIMENSION >
+    bool SurfaceBase< DIMENSION >::is_simplicial() const
+    {
+        return surface_mesh_->polygons_are_simplicies();
+    }
+
+    template < index_t DIMENSION >
+    const SurfaceAABBTree< DIMENSION >& SurfaceBase< DIMENSION >::polygon_aabb() const
+    {
+        return surface_mesh_->polygon_aabb();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& SurfaceBase< DIMENSION >::polygon_nn_search() const
+    {
+        return surface_mesh_->polygon_nn_search();
+    }
+
+    template < index_t DIMENSION >
+    GEO::AttributesManager& SurfaceBase< DIMENSION >::polygon_attribute_manager() const
+    {
+        return surface_mesh_->polygon_attribute_manager();
+    }
+
+    template < index_t DIMENSION >
+    index_t SurfaceBase< DIMENSION >::nb_mesh_element_vertices( index_t polygon_index ) const
+    {
+        ringmesh_assert( polygon_index < nb_mesh_elements() );
+        return surface_mesh_->nb_polygon_vertices( polygon_index );
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > SurfaceBase< DIMENSION >::mesh_element_barycenter(
+        index_t polygon_index ) const
+    {
+        ringmesh_assert( polygon_index < nb_mesh_elements() );
+        return surface_mesh_->polygon_barycenter( polygon_index );
+    }
+
+    template < index_t DIMENSION >
+    double SurfaceBase< DIMENSION >::mesh_element_size( index_t polygon_index ) const
+    {
+        ringmesh_assert( polygon_index < nb_mesh_elements() );
+        return surface_mesh_->polygon_area( polygon_index );
+    }
 
     template < index_t DIMENSION >
     index_t SurfaceBase< DIMENSION >::polygon_adjacent_index(
@@ -888,6 +1046,24 @@ namespace RINGMesh
     /********************************************************************/
 
     template < index_t DIMENSION >
+    Region< DIMENSION >::Region( const GeoModel< DIMENSION >& geomodel,
+        index_t id,
+        const MeshType type )
+        : GeoModelMeshEntity< DIMENSION >( geomodel, id )
+    {
+        update_mesh_storage_type(
+            VolumeMesh< DIMENSION >::create_mesh( type ) );
+    }
+
+    template < index_t DIMENSION >
+    void Region< DIMENSION >::update_mesh_storage_type(
+        std::unique_ptr< VolumeMesh< DIMENSION > > mesh )
+    {
+        volume_mesh_ = std::move( mesh );
+        GeoModelMeshEntity< DIMENSION >::set_mesh( volume_mesh_ );
+    }
+
+    template < index_t DIMENSION >
     const Surface< DIMENSION >& Region< DIMENSION >::boundary( index_t x ) const
     {
         return static_cast< const Surface< DIMENSION >& >(
@@ -935,6 +1111,214 @@ namespace RINGMesh
             region_valid = false;
         }
         return region_valid;
+    }
+
+    template < index_t DIMENSION >
+    bool Region< DIMENSION >::is_meshed() const
+    {
+        return volume_mesh_->nb_cells() > 0;
+    }
+
+    template < index_t DIMENSION >
+    bool Region< DIMENSION >::is_simplicial() const
+    {
+        return volume_mesh_->cells_are_simplicies();
+    }
+
+    template < index_t DIMENSION >
+    const VolumeAABBTree< DIMENSION >& Region< DIMENSION >::cell_aabb() const
+    {
+        return volume_mesh_->cell_aabb();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& Region< DIMENSION >::cell_nn_search() const
+    {
+        return volume_mesh_->cell_nn_search();
+    }
+
+    template < index_t DIMENSION >
+    GEO::AttributesManager& Region< DIMENSION >::cell_attribute_manager() const
+    {
+        return volume_mesh_->cell_attribute_manager();
+    }
+
+    template < index_t DIMENSION >
+    index_t Region< DIMENSION >::nb_mesh_elements() const
+    {
+        return volume_mesh_->nb_cells();
+    }
+
+    template < index_t DIMENSION >
+    index_t Region< DIMENSION >::nb_mesh_element_vertices( index_t cell_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            return volume_mesh_->nb_cell_vertices( cell_index );
+        }
+        ringmesh_assert_not_reached;
+        return NO_ID;
+    }
+
+    template < index_t DIMENSION >
+    CellType Region< DIMENSION >::cell_type( index_t cell_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            return volume_mesh_->cell_type( cell_index );
+        }
+        ringmesh_assert_not_reached;
+        return CellType::UNDEFINED;
+    }
+
+    template < index_t DIMENSION >
+    index_t Region< DIMENSION >::nb_cell_edges( index_t cell_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            return volume_mesh_->nb_cell_edges( cell_index );
+        }
+        ringmesh_assert_not_reached;
+        return NO_ID;
+    }
+
+    template < index_t DIMENSION >
+    index_t Region< DIMENSION >::nb_cell_facets( index_t cell_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            return volume_mesh_->nb_cell_facets( cell_index );
+        }
+        ringmesh_assert_not_reached;
+        return NO_ID;
+    }
+
+    template < index_t DIMENSION >
+    index_t Region< DIMENSION >::nb_cell_facet_vertices(
+        index_t cell_index, index_t facet_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
+            return volume_mesh_->nb_cell_facet_vertices(
+                { cell_index, facet_index } );
+        }
+        ringmesh_assert_not_reached;
+        return NO_ID;
+    }
+
+    template < index_t DIMENSION >
+    index_t Region< DIMENSION >::cell_edge_vertex_index(
+        index_t cell_index, index_t edge_index, index_t vertex_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            ringmesh_assert( edge_index < nb_cell_edges( cell_index ) );
+            ringmesh_assert(
+                vertex_index < nb_mesh_element_vertices( cell_index ) );
+            return volume_mesh_->cell_edge_vertex(
+                cell_index, edge_index, vertex_index );
+        }
+        ringmesh_assert_not_reached;
+        return NO_ID;
+    }
+
+    template < index_t DIMENSION >
+    index_t Region< DIMENSION >::cell_facet_vertex_index( index_t cell_index,
+        index_t facet_index,
+        index_t vertex_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
+            ringmesh_assert(
+                vertex_index < nb_mesh_element_vertices( cell_index ) );
+            return volume_mesh_->cell_facet_vertex(
+                { cell_index, facet_index }, vertex_index );
+        }
+        ringmesh_assert_not_reached;
+        return NO_ID;
+    }
+
+    template < index_t DIMENSION >
+    index_t Region< DIMENSION >::cell_adjacent_index(
+        index_t cell_index, index_t facet_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
+            return volume_mesh_->cell_adjacent( { cell_index, facet_index } );
+        }
+        ringmesh_assert_not_reached;
+        return NO_ID;
+    }
+
+    template < index_t DIMENSION >
+    double Region< DIMENSION >::mesh_element_size( index_t cell_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            return volume_mesh_->cell_volume( cell_index );
+        }
+        ringmesh_assert_not_reached;
+        return 0;
+    }
+
+    template < index_t DIMENSION >
+    double Region< DIMENSION >::size() const
+    {
+        double result = 0.;
+        for( auto i : range( this->nb_boundaries() ) )
+        {
+            const Surface< DIMENSION >& surface = boundary( i );
+            for( auto t : range( surface.nb_mesh_elements() ) )
+            {
+                const vecn< DIMENSION >& p0 = surface.mesh_element_vertex(
+                    ElementLocalVertex( t, 0 ) );
+                for( auto v :
+                    range( 1, surface.nb_mesh_element_vertices( t ) - 1 ) )
+                {
+                    double cur_volume =
+                        ( dot( p0,
+                            cross( surface.mesh_element_vertex(
+                                       ElementLocalVertex( t, v ) ),
+                                surface.mesh_element_vertex(
+                                    ElementLocalVertex( t, v + 1 ) ) ) ) )
+                        / 6.;
+                    side( i ) ? result -= cur_volume : result += cur_volume;
+                }
+            }
+        }
+        return std::fabs( result );
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > Region< DIMENSION >::mesh_element_barycenter(
+        index_t cell_index ) const
+    {
+        if( is_meshed() )
+        {
+            ringmesh_assert( cell_index < nb_mesh_elements() );
+            return volume_mesh_->cell_barycenter( cell_index );
+        }
+        ringmesh_assert_not_reached;
+        return vecn< DIMENSION >();
+    }
+
+    template < index_t DIMENSION >
+    std::vector< index_t > Region< DIMENSION >::cells_around_vertex(
+        index_t vertex_id, index_t cell_hint ) const
+    {
+        return volume_mesh_->cells_around_vertex( vertex_id, cell_hint );
     }
 
     template < index_t DIMENSION >
