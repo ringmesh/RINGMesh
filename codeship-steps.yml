@@ -1,15 +1,17 @@
-- tag: default
-  service: coverage
-  steps:
-    - command: echo toto
-    - command: echo toto
+
 
 - exclude: default
-  service: compilation
+#  service: compilation
   steps:
-    - command: mkdir build
-    - command: cd build
-    - command: cmake -DRINGMESH_WITH_TESTS:BOOL=ON ..
-    - command: cd ringmesh/Debug
-    - command: make -j
-    - command: make test
+    - service: compilation
+      command: mkdir build
+    - service: compilation
+      command: cd build
+    - service: compilation
+      command: cmake -DRINGMESH_WITH_TESTS:BOOL=ON ..
+    - service: compilation
+      command: cd ringmesh/Debug
+    - service: compilation
+      command: make -j
+    - service: compilation
+      command: make test
