@@ -37,9 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <algorithm>
 #include <set>
-
-#include <ringmesh/basic/algorithm.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
@@ -598,16 +597,10 @@ namespace RINGMesh
                 } );
         }
 
-        index_t mesh_entity_type_to_index( const MeshEntityType& type ) const
-        {
-            return find( mesh_entity_types_, type );
-        }
+        index_t mesh_entity_type_to_index( const MeshEntityType& type ) const;
 
         index_t geological_entity_type_to_index(
-            const GeologicalEntityType& type ) const
-        {
-            return find( geological_entity_types_, type );
-        }
+            const GeologicalEntityType& type ) const;
         const MeshEntityType& index_to_mesh_entity_type( index_t index ) const
         {
             return mesh_entity_types_[index];
