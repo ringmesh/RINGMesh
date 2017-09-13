@@ -39,6 +39,8 @@
 
 #include <set>
 
+#include <ringmesh/basic/algorithm.h>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
