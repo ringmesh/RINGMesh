@@ -9,7 +9,7 @@
   steps:
     - command: mkdir build
     - command: cd build
-  command: cmake -DRINGMESH_WITH_TESTS:BOOL=ON ..
-  command: cd ringmesh/Debug
-  command: make -j
-  command: make test
+    - command: cmake -DRINGMESH_WITH_TESTS:BOOL=ON ..
+    - command: cd ringmesh/Debug
+    - command: make -j
+    - command: make test
