@@ -38,6 +38,8 @@
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 
+#include <ringmesh/mesh/mesh.h>
+
 namespace
 {
     using namespace RINGMesh;

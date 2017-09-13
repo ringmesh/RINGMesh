@@ -38,7 +38,11 @@
 #include <stack>
 
 #include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+
+#include <ringmesh/mesh/mesh.h>
 
 /*!
  * @file ringmesh/geomodel/geomodel_builder.cpp

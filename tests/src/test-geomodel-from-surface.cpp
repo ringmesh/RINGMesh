@@ -47,6 +47,8 @@
 
 #include <ringmesh/io/io.h>
 
+#include <ringmesh/mesh/mesh.h>
+
 /*!
  * Test the creation of a GeoModel from a conformal surface mesh
  * @todo Test on other datasets: nested spheres.

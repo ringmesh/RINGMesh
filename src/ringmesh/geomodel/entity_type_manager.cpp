@@ -37,6 +37,7 @@
 
 #include <deque>
 #include <map>
+#include <set>
 
 #include <ringmesh/basic/pimpl_impl.h>
 
