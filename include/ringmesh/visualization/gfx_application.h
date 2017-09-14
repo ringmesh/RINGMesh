@@ -88,8 +88,6 @@ namespace RINGMesh
         void browse_geogram( const std::string& path );
         void update_region_of_interest();
 
-        static void show_color_table_popup( ImColor& color );
-
     private:
         void create_point( std::string name = "debug",
             double x = 0,
@@ -132,10 +130,10 @@ namespace RINGMesh
             };
             struct EntityStyle
             {
-                ImColor color_;
+                ImVec4 color_;
                 int size_{ 1 };
                 bool visible_vertices_{ false };
-                ImColor vertex_color_;
+                ImVec4 vertex_color_;
                 int vertex_size_{ 1 };
             };
 
@@ -189,7 +187,7 @@ namespace RINGMesh
             bool show_colormap_{ false };
 
             bool mesh_visible_{ true };
-            ImColor mesh_color_;
+            ImVec4 mesh_color_;
             bool show_attributes_{ false };
             float attribute_min_{ 0 };
             float attribute_max_{ 0 };
@@ -229,11 +227,11 @@ namespace RINGMesh
 
             bool show_vertices_{ false };
             float vertices_size_{ 1 };
-            ImColor vertices_color_;
+            ImVec4 vertices_color_;
 
             bool show_edges_{ true };
             int edges_size_{ 1 };
-            ImColor edges_color_{0, 0, 0};
+            ImVec4 edges_color_{ 0, 0, 0, 0 };
 
             bool show_surface_{ true };
             bool show_surface_colors_{ true };
@@ -269,7 +267,7 @@ namespace RINGMesh
         index_t current_viewer_{ NO_ID };
         ViewerType current_viewer_type_{ ViewerType::NONE };
 
-        static std::vector< std::vector< ImColor > > color_table_;
+        ImVec4 backgound_color_{ 0., 0., 0., 0. };
     };
 
     template <>
