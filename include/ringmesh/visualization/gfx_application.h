@@ -88,8 +88,6 @@ namespace RINGMesh
         void browse_geogram( const std::string& path );
         void update_region_of_interest();
 
-        //        static void show_color_table_popup( ImVec4& color );
-
     private:
         void create_point( std::string name = "debug",
             double x = 0,
@@ -270,8 +268,6 @@ namespace RINGMesh
         ViewerType current_viewer_type_{ ViewerType::NONE };
 
         ImVec4 backgound_color_{ 0., 0., 0., 0. };
-
-        //        static std::vector< std::vector< ImColor > > color_table_;
     };
 
     template <>
