@@ -1,14 +1,5 @@
 version: 1.0.{build}
 
-notifications:
-  - provider: Slack
-    auth_token:
-      secure: EenmXTAxbZsHHMuj/oYKtPX8ls+cy9sRwns6igp9ANA=
-    channel: ringmesh
-    on_build_success: false
-    on_build_failure: true
-    on_build_status_changed: true
-
 image: Visual Studio 2013
 
 environment:
