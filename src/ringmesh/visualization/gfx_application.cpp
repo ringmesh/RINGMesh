@@ -269,8 +269,8 @@ namespace RINGMesh
 
         if( show_corners_ )
         {
-            GM_gfx_.corners.set_vertex_color( corner_style_.color_.Value.x,
-                corner_style_.color_.Value.y, corner_style_.color_.Value.z );
+            GM_gfx_.corners.set_vertex_color( corner_style_.color_.x,
+                corner_style_.color_.y, corner_style_.color_.z );
             GM_gfx_.corners.set_vertex_size(
                 static_cast< index_t >( corner_style_.size_ ) );
             GM_gfx_.corners.draw();
@@ -278,8 +278,8 @@ namespace RINGMesh
 
         if( show_lines_ )
         {
-            GM_gfx_.lines.set_line_color( line_style_.color_.Value.x,
-                line_style_.color_.Value.y, line_style_.color_.Value.z );
+            GM_gfx_.lines.set_line_color( line_style_.color_.x,
+                line_style_.color_.y, line_style_.color_.z );
             GM_gfx_.lines.set_line_size(
                 static_cast< index_t >( line_style_.size_ ) );
             if( selected_entity_type_ == 0 )
@@ -292,9 +292,9 @@ namespace RINGMesh
                 GM_gfx_.lines.set_vertex_size(
                     static_cast< index_t >( line_style_.vertex_size_ ) );
                 GM_gfx_.lines.set_vertex_color(
-                    line_style_.vertex_color_.Value.x,
-                    line_style_.vertex_color_.Value.y,
-                    line_style_.vertex_color_.Value.z );
+                    line_style_.vertex_color_.x,
+                    line_style_.vertex_color_.y,
+                    line_style_.vertex_color_.z );
             }
             GM_gfx_.lines.draw();
         }
@@ -303,9 +303,9 @@ namespace RINGMesh
         {
             GM_gfx_.surfaces.set_mesh_visibility( mesh_visible_ );
             GM_gfx_.surfaces.set_mesh_color(
-                mesh_color_.Value.x, mesh_color_.Value.y, mesh_color_.Value.z );
-            GM_gfx_.surfaces.set_surface_color( surface_style_.color_.Value.x,
-                surface_style_.color_.Value.y, surface_style_.color_.Value.z );
+                mesh_color_.x, mesh_color_.y, mesh_color_.z );
+            GM_gfx_.surfaces.set_surface_color( surface_style_.color_.x,
+                surface_style_.color_.y, surface_style_.color_.z );
             GM_gfx_.surfaces.set_mesh_size(
                 static_cast< index_t >( surface_style_.size_ ) );
             if( selected_entity_type_ == 0 )
@@ -318,9 +318,9 @@ namespace RINGMesh
                 GM_gfx_.surfaces.set_vertex_size(
                     static_cast< index_t >( surface_style_.vertex_size_ ) );
                 GM_gfx_.surfaces.set_vertex_color(
-                    surface_style_.vertex_color_.Value.x,
-                    surface_style_.vertex_color_.Value.y,
-                    surface_style_.vertex_color_.Value.z );
+                    surface_style_.vertex_color_.x,
+                    surface_style_.vertex_color_.y,
+                    surface_style_.vertex_color_.z );
             }
             if( selected_entity_type_ == 0 )
             {
@@ -609,34 +609,24 @@ namespace RINGMesh
         ImGui::Separator();
         ImGui::Checkbox( "VOI [V]", &show_voi_ );
         ImGui::Checkbox( "Mesh [m]", &mesh_visible_ );
-        ImGui::SameLine();
-        ImGui::PushStyleColor( ImGuiCol_Button, mesh_color_ );
-        if( ImGui::Button( "  ##MeshColor" ) )
-        {
-            ImGui::OpenPopup( "##MeshColorTable" );
-        }
-        ImGui::PopStyleColor();
-        if( ImGui::BeginPopup( "##MeshColorTable" ) )
-        {
-            show_color_table_popup( mesh_color_ );
-        }
+        ImGui::ColorEdit3WithPalette( "Mesh color", &mesh_color_.x );
 
         ImGui::Separator();
         ImGui::Checkbox( "Corner [c]", &show_corners_ );
-        draw_entity_style_editor( "##CornerColor", corner_style_ );
+        draw_entity_style_editor( "Corner color", corner_style_ );
 
         ImGui::Separator();
         ImGui::Checkbox( "Line [e]", &show_lines_ );
-        draw_entity_style_editor( "##LineColor", line_style_ );
+        draw_entity_style_editor( "Line color", line_style_ );
         ImGui::Checkbox( "Vertices##Line", &line_style_.visible_vertices_ );
         if( line_style_.visible_vertices_ )
         {
-            draw_entity_vertex_style_editor( "##LineVertexColor", line_style_ );
+            draw_entity_vertex_style_editor( "Line vertex color", line_style_ );
         }
 
         ImGui::Separator();
         ImGui::Checkbox( "Surface [s]", &show_surface_ );
-        draw_entity_style_editor( "##SurfaceColor", surface_style_ );
+        draw_entity_style_editor( "Surface color", surface_style_ );
         ImGui::Checkbox(
             "Vertices##Surface", &surface_style_.visible_vertices_ );
         if( surface_style_.visible_vertices_ )
@@ -650,17 +640,7 @@ namespace RINGMesh
     void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
         draw_entity_style_editor( const std::string& label, EntityStyle& style )
     {
-        ImGui::PushStyleColor( ImGuiCol_Button, style.color_ );
-        if( ImGui::Button( ( "  " + label ).c_str() ) )
-        {
-            ImGui::OpenPopup( label.c_str() );
-        }
-        ImGui::PopStyleColor();
-        if( ImGui::BeginPopup( label.c_str() ) )
-        {
-            show_color_table_popup( style.color_ );
-        }
-        ImGui::SameLine();
+        ImGui::ColorEdit3WithPalette( label.c_str(), &style.color_.x ) ;
         ImGui::InputInt( "", &style.size_, 1 );
         style.size_ = std::max( style.size_, 0 );
     }
@@ -676,10 +656,7 @@ namespace RINGMesh
             ImGui::OpenPopup( label.c_str() );
         }
         ImGui::PopStyleColor();
-        if( ImGui::BeginPopup( label.c_str() ) )
-        {
-            show_color_table_popup( style.vertex_color_ );
-        }
+        ImGui::ColorEdit3WithPalette( label.c_str(), &style.vertex_color_.x ) ;
         ImGui::SameLine();
         ImGui::InputInt( "", &style.vertex_size_, 1 );
         style.vertex_size_ = std::max( style.vertex_size_, 0 );
@@ -874,11 +851,11 @@ namespace RINGMesh
                 colored_cells_.update();
                 show_colored_regions_.update();
                 show_colored_layers_.update();
-                GM_gfx_.regions.set_mesh_color( mesh_color_.Value.x,
-                    mesh_color_.Value.y, mesh_color_.Value.z );
-                GM_gfx_.regions.set_region_color( volume_style_.color_.Value.x,
-                    volume_style_.color_.Value.y,
-                    volume_style_.color_.Value.z );
+                GM_gfx_.regions.set_mesh_color(
+                    mesh_color_.x, mesh_color_.y, mesh_color_.z );
+                GM_gfx_.regions.set_region_color( volume_style_.color_.x,
+                    volume_style_.color_.y,
+                    volume_style_.color_.z );
             }
             GM_gfx_.regions.set_mesh_size(
                 static_cast< index_t >( volume_style_.size_ ) );
@@ -892,9 +869,9 @@ namespace RINGMesh
                 GM_gfx_.regions.set_vertex_size(
                     static_cast< index_t >( volume_style_.vertex_size_ ) );
                 GM_gfx_.regions.set_vertex_color(
-                    volume_style_.vertex_color_.Value.x,
-                    volume_style_.vertex_color_.Value.y,
-                    volume_style_.vertex_color_.Value.z );
+                    volume_style_.vertex_color_.x,
+                    volume_style_.vertex_color_.y,
+                    volume_style_.vertex_color_.z );
             }
             GM_gfx_.regions.set_draw_cells( CellType::HEXAHEDRON, show_hex_ );
             GM_gfx_.regions.set_draw_cells( CellType::PRISM, show_prism_ );
@@ -1071,10 +1048,7 @@ namespace RINGMesh
                 ImGui::OpenPopup( "##VerticesColorTable" );
             }
             ImGui::PopStyleColor();
-            if( ImGui::BeginPopup( "##VerticesColorTable" ) )
-            {
-                show_color_table_popup( vertices_color_ );
-            }
+            ImGui::ColorEdit3WithPalette( " Vertex color", &vertices_color_.x );
             ImGui::SameLine();
             ImGui::Text( "color" );
         }
@@ -1093,15 +1067,12 @@ namespace RINGMesh
                     ImGui::OpenPopup( "##EdgesColorTable" );
                 }
                 ImGui::PopStyleColor();
-                if( ImGui::BeginPopup( "##EdgesColorTable" ) )
-                {
-                    show_color_table_popup( edges_color_ );
-                }
+                ImGui::ColorEdit3WithPalette( "Edge color", &edges_color_.x ) ;
+
                 ImGui::SameLine();
                 ImGui::Text( "color" );
             }
         }
-
 
         if( mesh_.facets.nb() != 0 )
         {
@@ -1151,27 +1122,20 @@ namespace RINGMesh
         if( show_vertices_ )
         {
             mesh_gfx_.set_points_size( vertices_size_ );
-            mesh_gfx_.set_points_color( vertices_color_.Value.x,
-                vertices_color_.Value.y, vertices_color_.Value.z );
+            mesh_gfx_.set_points_color(
+                vertices_color_.x, vertices_color_.y, vertices_color_.z );
             mesh_gfx_.draw_vertices();
         }
 
         if( show_edges_ )
         {
             mesh_gfx_.set_mesh_width( static_cast< index_t >( edges_size_ ) );
-            mesh_gfx_.set_mesh_color( edges_color_.Value.x,
-                edges_color_.Value.y, edges_color_.Value.z );
+            mesh_gfx_.set_mesh_color(
+                edges_color_.x, edges_color_.y, edges_color_.z );
             mesh_gfx_.draw_edges();
         }
 
-        if( app_.white_bg_ )
-        {
-            mesh_gfx_.set_mesh_color( 0.0, 0.0, 0.0 );
-        }
-        else
-        {
-            mesh_gfx_.set_mesh_color( 1.0, 1.0, 1.0 );
-        }
+        mesh_gfx_.set_mesh_color( 0.0, 0.0, 0.0 );
 
         if( show_surface_colors_ )
         {
@@ -1188,14 +1152,7 @@ namespace RINGMesh
         }
         else
         {
-            if( app_.white_bg_ )
-            {
-                mesh_gfx_.set_surface_color( 0.9f, 0.9f, 0.9f );
-            }
-            else
-            {
-                mesh_gfx_.set_surface_color( 0.1f, 0.1f, 0.1f );
-            }
+            mesh_gfx_.set_surface_color( 0.9f, 0.9f, 0.9f );
         }
 
         mesh_gfx_.set_show_mesh( show_mesh_ );
@@ -1537,30 +1494,26 @@ namespace RINGMesh
         glup_viewer_disable( GLUP_VIEWER_BACKGROUND );
     }
 
-    void RINGMeshApplication::show_color_table_popup( ImColor& color )
-    {
-        int id = 0;
-        for( const auto& colors : color_table_ )
-        {
-            for( auto j : range( colors.size() ) )
-            {
-                if( j > 0 )
-                {
-                    ImGui::SameLine();
-                }
-                ImGui::PushID( id++ );
-                ImGui::PushStyleColor( ImGuiCol_Button, colors[j] );
-                if( ImGui::Button( "  " ) )
-                {
-                    color = colors[j];
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::PopStyleColor();
-                ImGui::PopID();
-            }
-        }
-        ImGui::EndPopup();
-    }
+    //    void RINGMeshApplication::show_color_table_popup( ImVec4& color )
+    //    {
+    //        int id = 0;
+    //        for( const auto& colors : color_table_ ) {
+    //            for( auto j : range( colors.size() ) ) {
+    //                if( j > 0 ) {
+    //                    ImGui::SameLine();
+    //                }
+    //                ImGui::PushID( id++ );
+    //                ImGui::PushStyleColor( ImGuiCol_Button, colors[j] );
+    //                if( ImGui::Button( "  " ) ) {
+    //                    color = colors[j];
+    //                    ImGui::CloseCurrentPopup();
+    //                }
+    //                ImGui::PopStyleColor();
+    //                ImGui::PopID();
+    //            }
+    //        }
+    //        ImGui::EndPopup();
+    //    }
 
     bool RINGMeshApplication::load( const std::string& filename )
     {
@@ -1792,8 +1745,6 @@ namespace RINGMesh
             return;
         }
     }
-
-    ColorTable RINGMeshApplication::color_table_ = create_color_table();
 } // namespace RINGMesh
 
 #endif
