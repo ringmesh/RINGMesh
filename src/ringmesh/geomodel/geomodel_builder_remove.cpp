@@ -35,6 +35,8 @@
 
 #include <ringmesh/geomodel/geomodel_builder_remove.h>
 
+#include <ringmesh/basic/algorithm.h>
+
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
@@ -73,6 +75,19 @@ namespace RINGMesh
         flag_geological_entities_without_children();
         do_delete_flagged_geological_entities();
         update_geological_entity_connectivity();
+    }
+
+    template < index_t DIMENSION >
+    index_t GeoModelBuilderRemovalBase< DIMENSION >::geological_entity_type_to_index(
+        const GeologicalEntityType& type ) const
+    {
+        return find( geological_entity_types_, type );
+    }
+
+    template < index_t DIMENSION >
+    index_t GeoModelBuilderRemovalBase< DIMENSION >::mesh_entity_type_to_index( const MeshEntityType& type ) const
+    {
+        return find( mesh_entity_types_, type );
     }
 
     template < index_t DIMENSION >

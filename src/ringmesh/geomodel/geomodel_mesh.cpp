@@ -43,6 +43,7 @@
 #include <geogram/basic/permutation.h>
 #include <geogram/mesh/mesh_geometry.h>
 
+#include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/pimpl_impl.h>
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
