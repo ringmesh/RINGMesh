@@ -2,6 +2,7 @@
 
 - exclude: default
   service: compilation
+  type: serial
   steps:
     - command: mkdir build
     - command: cd build
