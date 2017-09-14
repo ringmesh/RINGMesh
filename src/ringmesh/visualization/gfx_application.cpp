@@ -88,31 +88,6 @@ namespace
     ImColor yellow( 255, 255, 0 );
     ImColor pink( 255, 0, 255 );
 
-    ColorTable create_color_table()
-    {
-        ColorTable color_table_init( 4 );
-        color_table_init[0].push_back( black );
-        color_table_init[0].push_back( dark_grey );
-        color_table_init[0].push_back( grey );
-        color_table_init[0].push_back( white );
-
-        color_table_init[1].push_back( violet );
-        color_table_init[1].push_back( blue );
-        color_table_init[1].push_back( other_blue );
-        color_table_init[1].push_back( light_blue );
-
-        color_table_init[2].push_back( grass_green );
-        color_table_init[2].push_back( green );
-        color_table_init[2].push_back( light_green );
-        color_table_init[2].push_back( brown );
-
-        color_table_init[3].push_back( red );
-        color_table_init[3].push_back( orange );
-        color_table_init[3].push_back( yellow );
-        color_table_init[3].push_back( pink );
-        return color_table_init;
-    }
-
     std::string path_to_label(
         const std::string& viewer_path, const std::string& path )
     {
@@ -291,10 +266,8 @@ namespace RINGMesh
             {
                 GM_gfx_.lines.set_vertex_size(
                     static_cast< index_t >( line_style_.vertex_size_ ) );
-                GM_gfx_.lines.set_vertex_color(
-                    line_style_.vertex_color_.x,
-                    line_style_.vertex_color_.y,
-                    line_style_.vertex_color_.z );
+                GM_gfx_.lines.set_vertex_color( line_style_.vertex_color_.x,
+                    line_style_.vertex_color_.y, line_style_.vertex_color_.z );
             }
             GM_gfx_.lines.draw();
         }
@@ -609,6 +582,7 @@ namespace RINGMesh
         ImGui::Separator();
         ImGui::Checkbox( "VOI [V]", &show_voi_ );
         ImGui::Checkbox( "Mesh [m]", &mesh_visible_ );
+        ImGui::SameLine();
         ImGui::ColorEdit3WithPalette( "Mesh color", &mesh_color_.x );
 
         ImGui::Separator();
@@ -632,7 +606,7 @@ namespace RINGMesh
         if( surface_style_.visible_vertices_ )
         {
             draw_entity_vertex_style_editor(
-                "##SurfaceVertexColor", surface_style_ );
+                "Surface vertex color", surface_style_ );
         }
     }
 
@@ -640,7 +614,8 @@ namespace RINGMesh
     void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
         draw_entity_style_editor( const std::string& label, EntityStyle& style )
     {
-        ImGui::ColorEdit3WithPalette( label.c_str(), &style.color_.x ) ;
+        ImGui::SameLine();
+        ImGui::ColorEdit3WithPalette( label.c_str(), &style.color_.x );
         ImGui::InputInt( "", &style.size_, 1 );
         style.size_ = std::max( style.size_, 0 );
     }
@@ -650,14 +625,8 @@ namespace RINGMesh
         draw_entity_vertex_style_editor(
             const std::string& label, EntityStyle& style )
     {
-        ImGui::PushStyleColor( ImGuiCol_Button, style.vertex_color_ );
-        if( ImGui::Button( ( "  " + label ).c_str() ) )
-        {
-            ImGui::OpenPopup( label.c_str() );
-        }
-        ImGui::PopStyleColor();
-        ImGui::ColorEdit3WithPalette( label.c_str(), &style.vertex_color_.x ) ;
         ImGui::SameLine();
+        ImGui::ColorEdit3WithPalette( label.c_str(), &style.vertex_color_.x );
         ImGui::InputInt( "", &style.vertex_size_, 1 );
         style.vertex_size_ = std::max( style.vertex_size_, 0 );
         style.vertex_size_ = std::min( style.vertex_size_, 50 );
@@ -854,8 +823,7 @@ namespace RINGMesh
                 GM_gfx_.regions.set_mesh_color(
                     mesh_color_.x, mesh_color_.y, mesh_color_.z );
                 GM_gfx_.regions.set_region_color( volume_style_.color_.x,
-                    volume_style_.color_.y,
-                    volume_style_.color_.z );
+                    volume_style_.color_.y, volume_style_.color_.z );
             }
             GM_gfx_.regions.set_mesh_size(
                 static_cast< index_t >( volume_style_.size_ ) );
@@ -868,8 +836,7 @@ namespace RINGMesh
             {
                 GM_gfx_.regions.set_vertex_size(
                     static_cast< index_t >( volume_style_.vertex_size_ ) );
-                GM_gfx_.regions.set_vertex_color(
-                    volume_style_.vertex_color_.x,
+                GM_gfx_.regions.set_vertex_color( volume_style_.vertex_color_.x,
                     volume_style_.vertex_color_.y,
                     volume_style_.vertex_color_.z );
             }
@@ -932,13 +899,13 @@ namespace RINGMesh
         {
             ImGui::Separator();
             ImGui::Checkbox( "Region [v]", &show_volume_ );
-            draw_entity_style_editor( "##VolumeColor", volume_style_ );
+            draw_entity_style_editor( "Volume color", volume_style_ );
             ImGui::Checkbox(
                 "Vertices##Region", &volume_style_.visible_vertices_ );
             if( volume_style_.visible_vertices_ )
             {
                 draw_entity_vertex_style_editor(
-                    "##VolumeVertexColor", volume_style_ );
+                    "Volume vertex color", volume_style_ );
             }
             if( show_volume_ )
             {
@@ -1041,16 +1008,8 @@ namespace RINGMesh
         ImGui::Checkbox( "Vertices [p]", &show_vertices_ );
         if( show_vertices_ )
         {
-            ImGui::SliderFloat( "sz.", &vertices_size_, 0.1f, 5.0f, "%.1f" );
-            ImGui::PushStyleColor( ImGuiCol_Button, vertices_color_ );
-            if( ImGui::Button( "  ##VerticesColor" ) )
-            {
-                ImGui::OpenPopup( "##VerticesColorTable" );
-            }
-            ImGui::PopStyleColor();
-            ImGui::ColorEdit3WithPalette( " Vertex color", &vertices_color_.x );
-            ImGui::SameLine();
-            ImGui::Text( "color" );
+            ImGui::SliderFloat( "size", &vertices_size_, 0.1f, 5.0f, "%.1f" );
+            ImGui::ColorEdit3WithPalette( "Vertex color", &vertices_color_.x );
         }
 
         if( mesh_.edges.nb() != 0 )
@@ -1061,16 +1020,7 @@ namespace RINGMesh
             {
                 ImGui::InputInt( "", &edges_size_, 1 );
                 edges_size_ = std::max( edges_size_, 0 );
-                ImGui::PushStyleColor( ImGuiCol_Button, edges_color_ );
-                if( ImGui::Button( "  ##EdgesColor" ) )
-                {
-                    ImGui::OpenPopup( "##EdgesColorTable" );
-                }
-                ImGui::PopStyleColor();
-                ImGui::ColorEdit3WithPalette( "Edge color", &edges_color_.x ) ;
-
-                ImGui::SameLine();
-                ImGui::Text( "color" );
+                ImGui::ColorEdit3WithPalette( "Edge color", &edges_color_.x );
             }
         }
 
@@ -1682,9 +1632,42 @@ namespace RINGMesh
 
     void RINGMeshApplication::draw_viewer_properties()
     {
-        GEO::Application::draw_viewer_properties();
+        if( ImGui::Button( "home [H]", ImVec2( -1, 0 ) ) )
+        {
+            glup_viewer_home();
+        }
+        ImGui::Separator();
+        ImGui::Checkbox( "Lighting [L]", &lighting_ );
+        if( lighting_ )
+        {
+            ImGui::Checkbox(
+                "edit light [l]", (bool*) glup_viewer_is_enabled_ptr(
+                                      GLUP_VIEWER_ROTATE_LIGHT ) );
+        }
 
-        int id = 0;
+        ImGui::Separator();
+        ImGui::Checkbox( "Clipping [F1]",
+            (bool*) glup_viewer_is_enabled_ptr( GLUP_VIEWER_CLIP ) );
+        if( glup_viewer_is_enabled( GLUP_VIEWER_CLIP ) )
+        {
+            ImGui::Combo( "mode", (int*) &clip_mode_,
+                "std. GL\0cells\0straddle\0slice\0\0" );
+            ImGui::Checkbox( "edit clip [F2]",
+                (bool*) glup_viewer_is_enabled_ptr( GLUP_VIEWER_EDIT_CLIP ) );
+            ImGui::Checkbox( "fixed clip [F3]",
+                (bool*) glup_viewer_is_enabled_ptr( GLUP_VIEWER_FIXED_CLIP ) );
+        }
+
+        ImGui::Separator();
+        ImGui::Text( "Background" );
+        if( ImGui::ColorEdit3WithPalette(
+                "Color", background_color_1_.data() ) )
+        {
+            glup_viewer_enable( GLUP_VIEWER_BACKGROUND );
+            background_color_2_ = background_color_1_;
+        }
+
+        int id{ 0 };
         draw_geomodel_viewer_properties( geomodels2d_, id );
         draw_geomodel_viewer_properties( geomodels3d_, id );
 
