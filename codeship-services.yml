@@ -1,5 +1,4 @@
 app:
-#  image: ringteam/ubuntu:cmake_opengl
-  image: busybox
+  image: ringteam/ubuntu:cmake_opengl
   environment:
     COVERALLS_REPO_TOKEN: 9687dZOMnN3b4EXlGKWGgOms06uEKeuSA
