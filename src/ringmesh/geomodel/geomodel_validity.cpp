@@ -475,7 +475,7 @@ namespace
         {
             oss << entity << " ; ";
         }
-        Logger::warn( "GeoModel", oss.str() );
+        Logger::warn( "Validity", oss.str() );
     }
 
     template < template < index_t > class ENTITY, index_t DIMENSION >
@@ -494,7 +494,7 @@ namespace
                 if( type_entities.size() != 1 )
                 {
                     print_error( type_entities, type.string() + "s" );
-                    Logger::warn( "GeoModel", "It should be in only one ",
+                    Logger::warn( "Validity", "It should be in only one ",
                         boundary_type );
                     return false;
                 }
@@ -504,7 +504,7 @@ namespace
         }
         if( type_entities.empty() )
         {
-            Logger::warn( "GeoModel", " Vertex is in a ", boundary_type,
+            Logger::warn( "Validity", " Vertex is in a ", boundary_type,
                 " but in no ", type );
             return false;
         }
@@ -516,7 +516,7 @@ namespace
                 type_entities.begin(), type_entities.end(), entity );
             if( nb > 2 )
             {
-                Logger::warn( "GeoModel", " Vertex is ", nb, " times in ",
+                Logger::warn( "Validity", " Vertex is ", nb, " times in ",
                     geomodel.mesh_entity( type, entity ).gmme() );
                 return false;
             }
@@ -537,7 +537,7 @@ namespace
                 }
                 if( !internal_boundary )
                 {
-                    Logger::warn( "GeoModel", " Vertex appears ", nb,
+                    Logger::warn( "Validity", " Vertex appears ", nb,
                         " times in ",
                         geomodel.mesh_entity( type, entity ).gmme() );
                     return false;
@@ -581,7 +581,7 @@ namespace
                 if( lines.size() != 1 )
                 {
                     print_error( lines, "Lines" );
-                    Logger::warn( "GeoModel", "It should be in only one Line" );
+                    Logger::warn( "Validity", "It should be in only one Line." );
                     return false;
                 }
                 return true;
@@ -591,7 +591,7 @@ namespace
         if( lines.size() < 2 )
         {
             print_error( lines, "Line" );
-            Logger::warn( "GeoModel", "It should be in at least 2 Lines" );
+            Logger::warn( "Validity", "It should be in at least 2 Lines." );
             return false;
         }
         for( const auto line : lines )
@@ -601,7 +601,7 @@ namespace
             {
                 if( !geomodel.line( line ).is_closed() )
                 {
-                    Logger::warn( "GeoModel", " Vertex"
+                    Logger::warn( "Validity", " Vertex"
                                               " is twice in Line ",
                         line );
                     return false;
@@ -609,7 +609,7 @@ namespace
             }
             else if( nb > 2 )
             {
-                Logger::warn( "GeoModel", " Vertex appears ", nb,
+                Logger::warn( "Validity", " Vertex appears ", nb,
                     " times in Line ", line );
                 return false;
             }
@@ -622,7 +622,7 @@ namespace
             gmme_id line_id( Line3D::type_name_static(), line );
             if( !is_boundary_entity( geomodel, line_id, corner_id ) )
             {
-                Logger::warn( "GeoModel",
+                Logger::warn( "Validity",
                     " Inconsistent Line-Corner connectivity ",
                     " vertex shows that ", line_id,
                     " must be in the boundary of ", corner_id );
@@ -644,7 +644,7 @@ namespace
                 if( lines.size() != 1 )
                 {
                     print_error( lines, "Lines" );
-                    Logger::warn( "GeoModel", "It should be in only one Line" );
+                    Logger::warn( "Validity", "It should be in only one Line." );
                     return false;
                 }
                 return true;
@@ -654,7 +654,7 @@ namespace
         if( lines.empty() )
         {
             print_error( lines, "Lines" );
-            Logger::warn( "GeoModel", "It should be in at least one Line" );
+            Logger::warn( "Validity", "It should be in at least one Line." );
             return false;
         }
         for( auto line : lines )
@@ -664,7 +664,7 @@ namespace
             {
                 if( !geomodel.line( line ).is_closed() )
                 {
-                    Logger::warn( "GeoModel", " Vertex"
+                    Logger::warn( "Validity", " Vertex"
                                               " is twice in Line ",
                         line );
                     return false;
@@ -672,7 +672,7 @@ namespace
             }
             else if( nb > 2 )
             {
-                Logger::warn( "GeoModel", " Vertex appears ", nb,
+                Logger::warn( "Validity", " Vertex appears ", nb,
                     " times in Line ", line );
                 return false;
             }
@@ -685,7 +685,7 @@ namespace
             gmme_id line_id( Line2D::type_name_static(), line );
             if( !is_boundary_entity( geomodel, line_id, corner_id ) )
             {
-                Logger::warn( "GeoModel",
+                Logger::warn( "Validity",
                     " Inconsistent Line-Corner connectivity ",
                     " vertex shows that ", line_id,
                     " must be in the boundary of ", corner_id );
@@ -704,7 +704,7 @@ namespace
         if( corners.size() > 1 )
         {
             print_error( corners, "Corners" );
-            Logger::warn( "GeoModel", "It should be in only one Corner" );
+            Logger::warn( "Validity", "It should be in only one Corner." );
             return false;
         }
         return true;
@@ -786,22 +786,22 @@ namespace
             valid[i] = is_geomodel_vertex_valid( geomodel, i );
             if( !valid[i] )
             {
-                Logger::warn( "GeoModel", " Vertex ", i, " is not valid" );
+                Logger::warn( "Validity", " Vertex ", i, " is not valid." );
             }
         }
         auto nb_invalid = std::count( valid.begin(), valid.end(), false );
 
         if( nb_invalid > 0 )
         {
-            std::ostringstream file;
-            file << get_validity_errors_directory()
-                 << "/invalid_global_vertices.geogram";
-            save_invalid_points( file, geomodel, valid );
-
+            Logger::warn( "Validity", nb_invalid, " invalid vertices." );
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
             {
-                Logger::warn( "GeoModel", nb_invalid, " invalid vertices" );
-                Logger::warn( "GeoModel", "Saved in file: ", file.str() );
+                std::ostringstream file;
+                file << get_validity_errors_directory()
+                     << "/invalid_global_vertices.geogram";
+                save_invalid_points( file, geomodel, valid );
+                Logger::warn( "Validity", "Saved in file: ", file.str() );
+
             }
 
             return false;
@@ -892,18 +892,17 @@ namespace
         }
         if( !invalid_corners.empty() )
         {
-            std::ostringstream file;
-            file << get_validity_errors_directory()
-                 << "/invalid_boundary_surface_" << surface.index()
-                 << ".geogram";
-            save_edges( file, surface.geomodel(), invalid_corners );
-
+            Logger::warn( "Validity", " Invalid surface boundary: ",
+                invalid_corners.size() / 2, " boundary edges of ", S_id,
+                "  are in no line of the GeoModel." );
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
             {
-                Logger::warn( "GeoModel", " Invalid surface boundary: ",
-                    invalid_corners.size() / 2, " boundary edges of ", S_id,
-                    "  are in no line of the geomodel " );
-                Logger::warn( "GeoModel", " Saved in file: ", file.str() );
+                std::ostringstream file;
+                file << get_validity_errors_directory()
+                     << "/invalid_boundary_surface_" << surface.index()
+                     << ".geogram";
+                save_edges( file, surface.geomodel(), invalid_corners );
+                Logger::warn( "Validity", " Saved in file: ", file.str() );
             }
             return false;
         }
@@ -955,18 +954,17 @@ namespace
         }
         if( !unconformal_polygons.empty() )
         {
-            std::ostringstream file;
-            file << get_validity_errors_directory() << "/unconformal_surface_"
-                 << surface.index() << ".geogram";
-            save_polygons( file.str(), surface, unconformal_polygons );
-
+            Logger::warn( "Validity", " Unconformal surface: ",
+                unconformal_polygons.size(), " polygons of ",
+                surface.gmme(),
+                " are unconformal with the GeoModel cells." );
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
             {
-                Logger::warn( "GeoModel", " Unconformal surface: ",
-                    unconformal_polygons.size(), " polygons of ",
-                    surface.gmme(),
-                    " are unconformal with the geomodel cells " );
-                Logger::warn( "GeoModel", " Saved in file: ", file.str() );
+                std::ostringstream file;
+                file << get_validity_errors_directory() << "/unconformal_surface_"
+                     << surface.index() << ".geogram";
+                save_polygons( file.str(), surface, unconformal_polygons );
+                Logger::warn( "Validity", " Saved in file: ", file.str() );
             }
 
             return false;
@@ -1262,7 +1260,7 @@ namespace
 
                 if( !at_least_two_different_interfaces )
                 {
-                    Logger::warn( "GeoModel",
+                    Logger::warn( "Validity",
                         "All in boundaries (surfaces) of line ", line.index(),
                         " are children of a same interface." );
                     set_invalid_model();
@@ -1288,7 +1286,7 @@ namespace
 
             if( !non_manifold_edges.empty() )
             {
-                Logger::warn( "GeoModel", non_manifold_edges.size(),
+                Logger::warn( "Validity", non_manifold_edges.size(),
                     " non-manifold edges " );
                 debug_save_non_manifold_edges(
                     geomodel_, edge_indices, non_manifold_edges );
@@ -1304,6 +1302,12 @@ namespace
          */
         void test_polygon_intersections()
         {
+            if( geomodel_.mesh.polygons.nb() == 0 )
+            {
+                Logger::warn( "Validity", "No polygons in the GeoModel." );
+                set_invalid_model();
+                return;
+            }
             if( geomodel_.mesh.polygons.nb()
                 == geomodel_.mesh.polygons.nb_triangle()
                        + geomodel_.mesh.polygons.nb_quad() )
@@ -1345,15 +1349,14 @@ namespace
                     file << get_validity_errors_directory()
                          << "/intersected_polygons.geogram";
                     save_mesh_locating_geomodel_inconsistencies( mesh, file );
-                    Logger::out( "I/O" );
-                    Logger::warn( "GeoModel", nb_intersections,
+                    Logger::warn( "Validity", nb_intersections,
                         " polygon intersections " );
                     set_invalid_model();
                 }
             }
             else
             {
-                Logger::warn( "GeoModel",
+                Logger::warn( "Validity",
                     "Polygonal intersection check not implemented yet" );
             }
         }
@@ -1436,8 +1439,8 @@ namespace RINGMesh
         }
         if( count_invalid != 0 )
         {
-            Logger::warn( "GeoModel", count_invalid,
-                " mesh entities of the geomodel have an invalid mesh." );
+            Logger::warn( "Validity", count_invalid,
+                " mesh entities of the GeoModel have an invalid mesh." );
         }
         return count_invalid == 0;
     }
@@ -1463,8 +1466,8 @@ namespace RINGMesh
         }
         if( count_invalid != 0 )
         {
-            Logger::warn( "GeoModel", count_invalid, " mesh entities of the "
-                                                     "geomodel have an invalid "
+            Logger::warn( "Validity", count_invalid, " mesh entities of the "
+                                                     "GeoModel have an invalid "
                                                      "connectivity." );
         }
         return count_invalid == 0;
@@ -1490,8 +1493,8 @@ namespace RINGMesh
         }
         if( count_invalid != 0 )
         {
-            Logger::warn( "GeoModel", count_invalid,
-                " geological entities of the geomodel are invalid " );
+            Logger::warn( "Validity", count_invalid,
+                " geological entities of the GeoModel are invalid." );
         }
         return count_invalid == 0;
     }
@@ -1517,8 +1520,8 @@ namespace RINGMesh
         }
         if( count_invalid != 0 )
         {
-            Logger::warn( "GeoModel", count_invalid,
-                " mesh entities of the geomodel have an invalid ",
+            Logger::warn( "Validity", count_invalid,
+                " mesh entities of the GeoModel have an invalid ",
                 "parent connectivity (geological relationships)." );
         }
         return count_invalid == 0;
@@ -1541,12 +1544,12 @@ namespace RINGMesh
 
         if( valid )
         {
-            Logger::out( "GeoModel", "Model ", geomodel.name(), " is valid " );
+            Logger::out( "Validity", "GeoModel ", geomodel.name(), " is valid." );
         }
         else
         {
             Logger::warn(
-                "GeoModel", "Model ", geomodel.name(), " is invalid " );
+                "Validity", "GeoModel ", geomodel.name(), " is invalid." );
             if( !GEO::CmdLine::get_arg_bool( "validity_save" ) )
             {
                 Logger::out( "Info", "To save geomodel invalidities in files ",
