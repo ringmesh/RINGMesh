@@ -1,7 +1,5 @@
-
-
 - exclude: default
-  service: compilation
+  service: app
   type: serial
   steps:
     - command: mkdir build
