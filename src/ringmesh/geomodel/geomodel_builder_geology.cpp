@@ -37,6 +37,7 @@
 
 #include <stack>
 
+#include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/geomodel/geomodel_api.h>
