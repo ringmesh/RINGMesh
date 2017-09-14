@@ -76,6 +76,8 @@ namespace RINGMesh
         ElementLocalVertex( EdgeLocalVertex edge_local_vertex );
         ElementLocalVertex( PolygonLocalEdge polygon_local_edge );
         ElementLocalVertex( CellLocalFacet cell_local_facet );
+        bool operator==( const ElementLocalVertex& rhs ) const;
+        bool operator!=( const ElementLocalVertex& rhs ) const;
         index_t element_id_{ NO_ID };
         index_t local_vertex_id_{ NO_ID };
     };
@@ -93,6 +95,8 @@ namespace RINGMesh
                   std::move( edge_local_vertex.local_vertex_id_ ) )
         {
         }
+        bool operator==( const EdgeLocalVertex& rhs ) const;
+        bool operator!=( const EdgeLocalVertex& rhs ) const;
         index_t edge_id_{ NO_ID };
         index_t local_vertex_id_{ NO_ID };
     };
@@ -110,6 +114,8 @@ namespace RINGMesh
                   std::move( polygon_local_vertex.local_vertex_id_ ) )
         {
         }
+        bool operator==( const PolygonLocalEdge& rhs ) const;
+        bool operator!=( const PolygonLocalEdge& rhs ) const;
         index_t polygon_id_{ NO_ID };
         index_t local_edge_id_{ NO_ID };
     };
@@ -121,6 +127,8 @@ namespace RINGMesh
             : cell_id_( cell_id ), local_facet_id_( local_facet_id )
         {
         }
+        bool operator==( const CellLocalFacet& rhs ) const;
+        bool operator!=( const CellLocalFacet& rhs ) const;
         index_t cell_id_{ NO_ID };
         index_t local_facet_id_{ NO_ID };
     };
