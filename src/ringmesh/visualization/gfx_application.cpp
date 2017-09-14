@@ -1444,27 +1444,6 @@ namespace RINGMesh
         glup_viewer_disable( GLUP_VIEWER_BACKGROUND );
     }
 
-    //    void RINGMeshApplication::show_color_table_popup( ImVec4& color )
-    //    {
-    //        int id = 0;
-    //        for( const auto& colors : color_table_ ) {
-    //            for( auto j : range( colors.size() ) ) {
-    //                if( j > 0 ) {
-    //                    ImGui::SameLine();
-    //                }
-    //                ImGui::PushID( id++ );
-    //                ImGui::PushStyleColor( ImGuiCol_Button, colors[j] );
-    //                if( ImGui::Button( "  " ) ) {
-    //                    color = colors[j];
-    //                    ImGui::CloseCurrentPopup();
-    //                }
-    //                ImGui::PopStyleColor();
-    //                ImGui::PopID();
-    //            }
-    //        }
-    //        ImGui::EndPopup();
-    //    }
-
     bool RINGMeshApplication::load( const std::string& filename )
     {
         if( !filename.empty() && GEO::FileSystem::is_file( filename ) )
