@@ -1304,7 +1304,7 @@ namespace
         {
             if( geomodel_.mesh.polygons.nb() == 0 )
             {
-                Logger::warn( "Validity", "No polygons in the GeoModel." );
+                Logger::warn( "Validity", "No polygon in the GeoModel." );
                 set_invalid_model();
                 return;
             }
