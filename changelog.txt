@@ -1,3 +1,12 @@
+New Features:
+ * New (command-line) executable to edit GeoModel name.
+
+Bug fix:
+ * 
+
+Improvements:
+ *
+
 #### Release: 5.0.0 ####
 
 Major change:
