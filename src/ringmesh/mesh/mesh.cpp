@@ -44,6 +44,23 @@
 
 #include <ringmesh/mesh/geogram_mesh.h>
 
+namespace
+{
+    using RINGMesh::index_t;
+
+    bool compare_equal(
+        index_t lhs_index1,
+        index_t lhs_index2,
+        index_t rhs_index1,
+        index_t rhs_index2 )
+    {
+        if( lhs_index1 == rhs_index1 ) {
+            return lhs_index2 == rhs_index2;
+        }
+        return false;
+    }
+} // namespace
+
 namespace RINGMesh
 {
     ElementLocalVertex::ElementLocalVertex( EdgeLocalVertex edge_local_vertex )
@@ -63,6 +80,46 @@ namespace RINGMesh
         : element_id_( std::move( cell_local_facet.cell_id_ ) ),
           local_vertex_id_( std::move( cell_local_facet.local_facet_id_ ) )
     {
+    }
+
+    bool ElementLocalVertex::operator==( const ElementLocalVertex& rhs ) const
+    {
+        return compare_equal( element_id_, local_vertex_id_, rhs.element_id_,
+            rhs.local_vertex_id_ );
+    }
+    bool ElementLocalVertex::operator!=( const ElementLocalVertex& rhs ) const
+    {
+        return !operator==( rhs );
+    }
+
+    bool EdgeLocalVertex::operator==( const EdgeLocalVertex& rhs ) const
+    {
+        return compare_equal( edge_id_, local_vertex_id_, rhs.edge_id_,
+            rhs.local_vertex_id_ );
+    }
+    bool EdgeLocalVertex::operator!=( const EdgeLocalVertex& rhs ) const
+    {
+        return !operator==( rhs );
+    }
+
+    bool PolygonLocalEdge::operator==( const PolygonLocalEdge& rhs ) const
+    {
+        return compare_equal( polygon_id_, local_edge_id_, rhs.polygon_id_,
+            rhs.local_edge_id_ );
+    }
+    bool PolygonLocalEdge::operator!=( const PolygonLocalEdge& rhs ) const
+    {
+        return !operator==( rhs );
+    }
+
+    bool CellLocalFacet::operator==( const CellLocalFacet& rhs ) const
+    {
+        return compare_equal( cell_id_, local_facet_id_, rhs.cell_id_,
+            rhs.local_facet_id_ );
+    }
+    bool CellLocalFacet::operator!=( const CellLocalFacet& rhs ) const
+    {
+        return !operator==( rhs );
     }
 
     template < index_t DIMENSION >
