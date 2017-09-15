@@ -37,7 +37,6 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
-#include <geogram/basic/stopwatch.h>
 #include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/basic/command_line.h>
@@ -48,7 +47,7 @@
 #include <ringmesh/io/io.h>
 
 /*!
- * @author Arnaud Botella
+ * @author Pierre Anquez
  */
 
 namespace
@@ -56,7 +55,7 @@ namespace
     using namespace RINGMesh;
 
     template < index_t DIMENSION >
-    void change_geomodel_name( const std::string& geomodel_in_path,
+    void edit_geomodel_name( const std::string& geomodel_in_path,
         const std::string& geomodel_new_name,
         const std::string& geomodel_out_path )
     {
@@ -75,8 +74,8 @@ namespace
     {
         Logger::div( "Example" );
         Logger::out( "",
-            "ringmesh-modify-infos in:geomodel=path/to/input/geomodel.ext ",
-            "new:name=new_geomodel_name ",
+            "ringmesh-edit-infos in:geomodel=path/to/input/geomodel.ext ",
+            "edit:name=new_geomodel_name ",
             "[out:geomodel=path/to/input/new_geomodel_file.ext]" );
     }
 }
@@ -91,12 +90,12 @@ int main( int argc, char** argv )
 
         print_header_information();
         Logger::div( "RINGMesh" );
-        Logger::out( "", "Welcome to RINGMesh-modify-infos !" );
+        Logger::out( "", "Welcome to RINGMesh-edit-infos !" );
 
         CmdLine::import_arg_group( "in" );
         CmdLine::import_arg_group( "out" );
-        GEO::CmdLine::declare_arg_group( "new", "Set new infos" );
-        GEO::CmdLine::declare_arg( "new:name", "", "New model name" );
+        GEO::CmdLine::declare_arg_group( "edit", "Edit GeoModel infos" );
+        GEO::CmdLine::declare_arg( "edit:name", "", "New GeoModel name" );
         if( argc == 1 )
         {
             GEO::CmdLine::show_usage();
@@ -111,8 +110,6 @@ int main( int argc, char** argv )
             return 1;
         }
 
-        GEO::Stopwatch total( "Total time" );
-
         std::string geomodel_in_file = GEO::CmdLine::get_arg( "in:geomodel" );
         if( geomodel_in_file.empty() )
         {
@@ -120,11 +117,11 @@ int main( int argc, char** argv )
                 "I/O", "Give at least a filename in in:geomodel" );
         }
 
-        std::string geomodel_new_name = GEO::CmdLine::get_arg( "new:name" );
+        std::string geomodel_new_name = GEO::CmdLine::get_arg( "edit:name" );
         if( geomodel_in_file.empty() )
         {
             throw RINGMeshException(
-                "I/O", "Give at least a name in new:name" );
+                "I/O", "Give at least a new GeoModel name in edit:name" );
         }
 
         std::string geomodel_out_file = GEO::CmdLine::get_arg( "out:geomodel" );
@@ -136,12 +133,12 @@ int main( int argc, char** argv )
         index_t dimension = find_geomodel_dimension( geomodel_in_file );
         if( dimension == 2 )
         {
-            change_geomodel_name< 2 >( geomodel_in_file, geomodel_new_name,
+            edit_geomodel_name< 2 >( geomodel_in_file, geomodel_new_name,
                 geomodel_out_file );
         }
         else if( dimension == 3 )
         {
-            change_geomodel_name< 3 >( geomodel_in_file, geomodel_new_name,
+            edit_geomodel_name< 3 >( geomodel_in_file, geomodel_new_name,
                 geomodel_out_file );
         }
     }
