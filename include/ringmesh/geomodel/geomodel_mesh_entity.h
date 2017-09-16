@@ -42,7 +42,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 
 namespace GEO
@@ -53,6 +52,7 @@ namespace GEO
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntityAccess );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntityConstAccess );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
@@ -79,6 +79,10 @@ namespace RINGMesh
 
     ALIAS_2D_AND_3D( GeoModel );
 
+    class GeologicalEntityType;
+    class MeshEntityType;
+    struct gmge_id;
+    struct gmme_id;
     struct ElementLocalVertex;
     struct PolygonLocalEdge;
 } // namespace RINGMesh
@@ -104,14 +108,8 @@ namespace RINGMesh
 
         virtual MeshEntityType type_name() const = 0;
 
-        gmme_id gmme() const
-        {
-            return gmme_id( type_name(), this->index() );
-        }
-        MeshEntityType mesh_entity_type() const
-        {
-            return gmme().type();
-        }
+        gmme_id gmme() const;
+        MeshEntityType mesh_entity_type() const;
         /*!
          * @brief Global validity of the entity
          */
@@ -397,15 +395,9 @@ namespace RINGMesh
             this->unbind_vertex_mapping_attribute();
         }
 
-        static MeshEntityType type_name_static()
-        {
-            return MeshEntityType( "Corner" );
-        }
+        static MeshEntityType type_name_static();
 
-        MeshEntityType type_name() const final
-        {
-            return type_name_static();
-        }
+        MeshEntityType type_name() const final;
 
         /*!
          * @brief Checks if this entity define the geomodel external boundary
@@ -514,15 +506,9 @@ namespace RINGMesh
             this->unbind_vertex_mapping_attribute();
         }
 
-        static MeshEntityType type_name_static()
-        {
-            return MeshEntityType( "Line" );
-        }
+        static MeshEntityType type_name_static();
 
-        MeshEntityType type_name() const final
-        {
-            return type_name_static();
-        }
+        MeshEntityType type_name() const final;
 
         bool is_on_voi() const final;
 
@@ -648,15 +634,9 @@ namespace RINGMesh
             this->unbind_vertex_mapping_attribute();
         }
 
-        MeshEntityType type_name() const final
-        {
-            return type_name_static();
-        }
+        MeshEntityType type_name() const final;
 
-        static MeshEntityType type_name_static()
-        {
-            return MeshEntityType( "Surface" );
-        }
+        static MeshEntityType type_name_static();
 
         const Line< DIMENSION >& boundary( index_t x ) const;
 
@@ -841,15 +821,9 @@ namespace RINGMesh
             this->unbind_vertex_mapping_attribute();
         }
 
-        static MeshEntityType type_name_static()
-        {
-            return MeshEntityType( "Region" );
-        }
+        static MeshEntityType type_name_static();
 
-        MeshEntityType type_name() const final
-        {
-            return type_name_static();
-        }
+        MeshEntityType type_name() const final;
 
         bool is_on_voi() const final;
 

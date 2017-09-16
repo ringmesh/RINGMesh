@@ -37,10 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 
-#include <ringmesh/io/io.h>
 
 /*!
  * @brief Classes to build GeoModel from various inputs
@@ -59,16 +57,7 @@ namespace RINGMesh
         GeoModelBuilderFile(
             GeoModel< DIMENSION >& geomodel, std::string filename );
 
-        void build_geomodel()
-        {
-            if( find_geomodel_dimension( filename_ ) != DIMENSION )
-            {
-                throw RINGMeshException( "I/O",
-                    "Dimension of the GeoModel does not match the file" );
-            }
-            load_file();
-            this->end_geomodel();
-        }
+        void build_geomodel();
 
     private:
         virtual void load_file() = 0;
