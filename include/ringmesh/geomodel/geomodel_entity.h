@@ -42,8 +42,6 @@
 
 #include <ringmesh/basic/common.h>
 
-//#include <ringmesh/geomodel/entity_type.h>
-
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
