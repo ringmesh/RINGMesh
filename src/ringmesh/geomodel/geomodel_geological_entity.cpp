@@ -40,6 +40,7 @@
 
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
+#include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
@@ -155,6 +156,30 @@ namespace RINGMesh
         return this->geomodel()
             .entity_type_manager()
             .relationship_manager.child_of_gmge( children_[x] );
+    }
+
+    template < index_t DIMENSION >
+    gmge_id GeoModelGeologicalEntity< DIMENSION >::gmge() const
+    {
+        return gmge_id( type_name(), this->index() );
+    }
+
+    template < index_t DIMENSION >
+    GeologicalEntityType GeoModelGeologicalEntity< DIMENSION >::entity_type() const
+    {
+        return gmge().type();
+    }
+
+    template < index_t DIMENSION >
+    GeologicalEntityType GeoModelGeologicalEntity< DIMENSION >::type_name_static()
+    {
+        return ForbiddenGeologicalEntityType::type_name_static();
+    }
+
+    template < index_t DIMENSION >
+    GeologicalEntityType GeoModelGeologicalEntity< DIMENSION >::type_name() const
+    {
+        return type_name_static();
     }
 
     template < index_t DIMENSION >
@@ -283,16 +308,52 @@ namespace RINGMesh
         return Surface2D::type_name_static();
     }
 
+    template < index_t DIMENSION >
+    GeologicalEntityType Contact< DIMENSION >::type_name_static()
+    {
+        return GeologicalEntityType( "Contact" );
+    }
+
+    template < index_t DIMENSION >
+    GeologicalEntityType Contact< DIMENSION >::type_name() const
+    {
+        return type_name_static();
+    }
+
     template <>
     MeshEntityType Contact< 3 >::child_type_name() const
     {
         return Line3D::type_name_static();
     }
 
+    template < index_t DIMENSION >
+    GeologicalEntityType Interface< DIMENSION >::type_name_static()
+    {
+        return GeologicalEntityType( "Interface" );
+    }
+
+    template < index_t DIMENSION >
+    GeologicalEntityType Interface< DIMENSION >::type_name() const
+    {
+        return type_name_static();
+    }
+
     template <>
     MeshEntityType Interface< 3 >::child_type_name() const
     {
         return Surface3D::type_name_static();
+    }
+
+    template < index_t DIMENSION >
+    GeologicalEntityType Layer< DIMENSION >::type_name_static()
+    {
+        return GeologicalEntityType( "Layer" );
+    }
+
+    template < index_t DIMENSION >
+    GeologicalEntityType Layer< DIMENSION >::type_name() const
+    {
+        return type_name_static();
     }
 
     template <>
@@ -316,8 +377,14 @@ namespace RINGMesh
 
     template class RINGMESH_API GeoModelGeologicalEntity< 2 >;
     template class RINGMESH_API GeoModelGeologicalEntityAccess< 2 >;
+    template class RINGMESH_API Contact< 2 >;
+    template class RINGMESH_API Interface< 2 >;
+    template class RINGMESH_API Layer< 2 >;
 
     template class RINGMESH_API GeoModelGeologicalEntity< 3 >;
     template class RINGMESH_API GeoModelGeologicalEntityAccess< 3 >;
+    template class RINGMESH_API Contact< 3 >;
+    template class RINGMESH_API Interface< 3 >;
+    template class RINGMESH_API Layer< 3 >;
 
 } // namespace RINGMesh
