@@ -46,7 +46,6 @@
 
 #include <ringmesh/basic/factory.h>
 
-#include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 
 namespace RINGMesh
@@ -58,6 +57,12 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntityAccess );
+
+    class GeologicalEntityType;
+    class MeshEntityType;
+    struct gmge_id;
+    struct gmme_id;
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -134,28 +139,16 @@ namespace RINGMesh
 
         static void initialize();
 
-        gmge_id gmge() const
-        {
-            return gmge_id( type_name(), this->index() );
-        }
+        gmge_id gmge() const;
 
-        GeologicalEntityType entity_type() const
-        {
-            return gmge().type();
-        }
+        GeologicalEntityType entity_type() const;
 
         virtual MeshEntityType child_type_name() const = 0;
         virtual bool is_on_voi() const;
         virtual bool is_connectivity_valid() const;
         virtual bool is_valid() const;
-        static GeologicalEntityType type_name_static()
-        {
-            return ForbiddenGeologicalEntityType::type_name_static();
-        }
-        virtual GeologicalEntityType type_name() const
-        {
-            return type_name_static();
-        }
+        static GeologicalEntityType type_name_static();
+        virtual GeologicalEntityType type_name() const;
         index_t nb_children() const
         {
             return static_cast< index_t >( children_.size() );
@@ -209,14 +202,8 @@ namespace RINGMesh
         {
         }
 
-        static GeologicalEntityType type_name_static()
-        {
-            return GeologicalEntityType( "Contact" );
-        }
-        GeologicalEntityType type_name() const override
-        {
-            return type_name_static();
-        }
+        static GeologicalEntityType type_name_static();
+        GeologicalEntityType type_name() const override;
         MeshEntityType child_type_name() const override;
     };
 
@@ -231,14 +218,8 @@ namespace RINGMesh
         {
         }
 
-        static GeologicalEntityType type_name_static()
-        {
-            return GeologicalEntityType( "Interface" );
-        }
-        GeologicalEntityType type_name() const override
-        {
-            return type_name_static();
-        }
+        static GeologicalEntityType type_name_static();
+        GeologicalEntityType type_name() const override;
         MeshEntityType child_type_name() const override;
     };
 
@@ -253,14 +234,8 @@ namespace RINGMesh
         {
         }
 
-        static GeologicalEntityType type_name_static()
-        {
-            return GeologicalEntityType( "Layer" );
-        }
-        GeologicalEntityType type_name() const override
-        {
-            return type_name_static();
-        }
+        static GeologicalEntityType type_name_static();
+        GeologicalEntityType type_name() const override;
         MeshEntityType child_type_name() const override;
     };
 

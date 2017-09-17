@@ -42,6 +42,7 @@
 
 #include <ringmesh/basic/geometry.h>
 
+#include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
@@ -325,6 +326,18 @@ namespace RINGMesh
     bool GeoModelMeshEntity< DIMENSION >::is_index_valid() const
     {
         return this->index() < this->geomodel().nb_mesh_entities( type_name() );
+    }
+
+    template < index_t DIMENSION >
+    gmme_id GeoModelMeshEntity< DIMENSION >::gmme() const
+    {
+        return gmme_id( type_name(), this->index() );
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType GeoModelMeshEntity< DIMENSION >::mesh_entity_type() const
+    {
+        return gmme().type();
     }
 
     template < index_t DIMENSION >
@@ -657,6 +670,18 @@ namespace RINGMesh
             GeoModelMeshEntity< DIMENSION >::incident_entity( x ) );
     }
 
+    template < index_t DIMENSION >
+    MeshEntityType Corner< DIMENSION >::type_name_static()
+    {
+        return MeshEntityType( "Corner" );
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType Corner< DIMENSION >::type_name() const
+    {
+        return type_name_static();
+    }
+
     /***************************************************************/
 
     template < index_t DIMENSION >
@@ -854,6 +879,18 @@ namespace RINGMesh
         return line_mesh_->edge_vertex( element_local_vertex );
     }
 
+    template < index_t DIMENSION >
+    MeshEntityType Line< DIMENSION >::type_name_static()
+    {
+        return MeshEntityType( "Line" );
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType Line< DIMENSION >::type_name() const
+    {
+        return type_name_static();
+    }
+
     template <>
     bool Line< 2 >::is_on_voi() const
     {
@@ -1018,6 +1055,18 @@ namespace RINGMesh
     {
         return static_cast< const Line< DIMENSION >& >(
             GeoModelMeshEntity< DIMENSION >::boundary( x ) );
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType SurfaceBase< DIMENSION >::type_name() const
+    {
+        return type_name_static();
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType SurfaceBase< DIMENSION >::type_name_static()
+    {
+        return MeshEntityType( "Surface" );
     }
 
     bool Surface< 2 >::is_on_voi() const
@@ -1319,6 +1368,18 @@ namespace RINGMesh
         index_t vertex_id, index_t cell_hint ) const
     {
         return volume_mesh_->cells_around_vertex( vertex_id, cell_hint );
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType Region< DIMENSION >::type_name_static()
+    {
+        return MeshEntityType( "Region" );
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType Region< DIMENSION >::type_name() const
+    {
+        return type_name_static();
     }
 
     template < index_t DIMENSION >
