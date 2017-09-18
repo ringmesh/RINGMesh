@@ -90,46 +90,64 @@ namespace
 namespace RINGMesh
 {
     template <>
-    void GeoModelIOHandler< 2 >::initialize()
+    void GeoModelOutputHandler< 2 >::initialize()
     {
-        GeoModelIOHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
+        GeoModelOutputHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
             "gm" );
-        GeoModelIOHandlerFactory2D::register_creator< StradivariusIOHandler >(
-            "model" );
-        GeoModelIOHandlerFactory2D::register_creator< SVGIOHandler >( "svg" );
-        GeoModelIOHandlerFactory2D::register_creator< MFEMIOHandler2D >(
+        GeoModelOutputHandlerFactory2D::register_creator< MFEMIOHandler2D >(
             "mfem" );
+    }
+
+
+    template <>
+    void GeoModelInputHandler< 2 >::initialize()
+    {
+        GeoModelInputHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
+            "gm" );
+        GeoModelInputHandlerFactory2D::register_creator< StradivariusIOHandler >(
+            "model" );
+        GeoModelInputHandlerFactory2D::register_creator< SVGIOHandler >( "svg" );
     }
 
     /*
      * Initializes the possible handler for IO files
      */
     template <>
-    void GeoModelIOHandler< 3 >::initialize()
+    void GeoModelOutputHandler< 3 >::initialize()
     {
-        GeoModelIOHandlerFactory3D::register_creator< TetGenIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< TetGenIOHandler >(
             "tetgen" );
-        GeoModelIOHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
-        GeoModelIOHandlerFactory3D::register_creator< CSMPIOHandler >( "csmp" );
-        GeoModelIOHandlerFactory3D::register_creator< AsterIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
+        GeoModelOutputHandlerFactory3D::register_creator< CSMPIOHandler >( "csmp" );
+        GeoModelOutputHandlerFactory3D::register_creator< AsterIOHandler >(
             "mail" );
-        GeoModelIOHandlerFactory3D::register_creator< VTKIOHandler >( "vtk" );
-        GeoModelIOHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
-        GeoModelIOHandlerFactory3D::register_creator< MSHIOHandler >( "msh" );
-        GeoModelIOHandlerFactory3D::register_creator< MFEMIOHandler3D >(
+        GeoModelOutputHandlerFactory3D::register_creator< VTKIOHandler >( "vtk" );
+        GeoModelOutputHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
+        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler >( "msh" );
+        GeoModelOutputHandlerFactory3D::register_creator< MFEMIOHandler3D >(
             "mfem" );
-        GeoModelIOHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
+        GeoModelOutputHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
             "gm" );
-        GeoModelIOHandlerFactory3D::register_creator< AbaqusIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< AbaqusIOHandler >(
             "inp" );
-        GeoModelIOHandlerFactory3D::register_creator< AdeliIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< AdeliIOHandler >(
             "adeli" );
-        GeoModelIOHandlerFactory3D::register_creator< FeflowIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< FeflowIOHandler >(
             "fem" );
-        GeoModelIOHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
-        GeoModelIOHandlerFactory3D::register_creator< SMESHIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
+        GeoModelOutputHandlerFactory3D::register_creator< SMESHIOHandler >(
             "smesh" );
-        GeoModelIOHandlerFactory3D::register_creator< STLIOHandler >( "stl" );
+        GeoModelOutputHandlerFactory3D::register_creator< STLIOHandler >( "stl" );
+    }
+
+    template <>
+    void GeoModelInputHandler< 3 >::initialize()
+    {
+        GeoModelInputHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
+            "gm" );
+        GeoModelInputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
+        GeoModelInputHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
+
     }
 
 } // namespace RINGMesh

@@ -64,15 +64,8 @@ namespace {
      * @warning It supposes you have the mesh duplicate around the
      * faults if you want to use friction laws in aster
      */
-    class AsterIOHandler final: public GeoModelIOHandler< 3 > {
+    class AsterIOHandler final: public GeoModelOutputHandler< 3 > {
     public:
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from Code_Aster mesh not implemented yet" );
-        }
         void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );

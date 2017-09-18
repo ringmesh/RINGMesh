@@ -62,15 +62,8 @@ namespace {
      * methods"
      */
     template< index_t DIMENSION >
-    class MFEMIOHandler final: public GeoModelIOHandler< DIMENSION > {
+    class MFEMIOHandler final: public GeoModelOutputHandler< DIMENSION > {
     public:
-        void load( const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from MFEM not implemented yet" );
-        }
         void save(
             const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
