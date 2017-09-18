@@ -52,7 +52,7 @@ namespace {
         &feflow_tet_descriptor, &feflow_hex_descriptor, &feflow_prism_descriptor,
         &feflow_pyramid_descriptor };
 
-    class FeflowIOHandler final: public GeoModelOutputHandler< 3 > {
+    class FeflowIOHandler final: public GeoModelOutputHandler3D {
     public:
         static const index_t STARTING_OFFSET = 1;
 

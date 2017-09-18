@@ -41,7 +41,7 @@ namespace {
     index_t nb_polygons( const GeoModel3D& geomodel )
     {
         index_t result { 0 };
-        for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
+        for( const auto& surface : geomodel.surfaces() ) {
             result += surface.nb_mesh_elements();
         }
         return result;
@@ -169,7 +169,7 @@ namespace {
                 return false;
             }
         }
-        for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
+        for( const auto& surface : geomodel.surfaces() ) {
             if( !surface.has_parent() ) {
                 Logger::err( "", surface.gmme(),
                     " does not belong to any Interface of the geomodel" );

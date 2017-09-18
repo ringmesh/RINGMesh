@@ -85,6 +85,25 @@ namespace
 #include "geomodel/io_tetgen.cpp"
 #include "geomodel/io_tsolid.cpp"
 #include "geomodel/io_vtk.cpp"
+
+    template < typename Class, typename Factory >
+    std::unique_ptr< Class > create_handler( const std::string& format )
+    {
+        auto handler = Factory::create( format );
+        if( !handler )
+        {
+            Logger::err( "I/O", "Currently supported file formats are: " );
+            for( const std::string& name : Factory::list_creators() )
+            {
+                Logger::err( "I/O", " ", name );
+            }
+
+            throw RINGMeshException(
+                "I/O", "Unsupported file format: ", format );
+        }
+        return handler;
+    }
+
 }
 
 namespace RINGMesh
@@ -149,5 +168,50 @@ namespace RINGMesh
         GeoModelInputHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
 
     }
+
+    /***************************************************************************/
+
+    template < index_t DIMENSION >
+    std::unique_ptr< GeoModelInputHandler< DIMENSION > >
+    GeoModelInputHandler< DIMENSION >::get_handler(
+            const std::string& filename )
+    {
+        return create_handler< GeoModelInputHandler< DIMENSION >,
+            GeoModelInputHandlerFactory< DIMENSION > >( GEO::FileSystem::extension( filename ) );
+    }
+
+    template < index_t DIMENSION >
+    bool GeoModelInputHandler< DIMENSION >::load_geomodel(
+        const std::string& filename, GeoModel< DIMENSION >& geomodel )
+    {
+        load( filename, geomodel );
+        Logger::out(
+            "I/O", " Loaded geomodel ", geomodel.name(), " from ", filename );
+        return is_geomodel_valid( geomodel );
+    }
+
+    /***************************************************************************/
+
+    template < index_t DIMENSION >
+    std::unique_ptr< GeoModelOutputHandler< DIMENSION > >
+    GeoModelOutputHandler< DIMENSION >::get_handler(
+            const std::string& filename )
+    {
+        return create_handler< GeoModelOutputHandler< DIMENSION >,
+            GeoModelOutputHandlerFactory< DIMENSION > >(
+            GEO::FileSystem::extension( filename ) );
+    }
+
+    template < index_t DIMENSION >
+    void GeoModelOutputHandler< DIMENSION >::save_geomodel( const GeoModel< DIMENSION >& geomodel,
+        const std::string& filename )
+    {
+        save( geomodel, filename );
+    }
+
+    template class RINGMESH_API GeoModelInputHandler< 2 >;
+    template class RINGMESH_API GeoModelOutputHandler< 2 >;
+    template class RINGMESH_API GeoModelOutputHandler< 3 >;
+    template class RINGMESH_API GeoModelInputHandler< 3 >;
 
 } // namespace RINGMesh
