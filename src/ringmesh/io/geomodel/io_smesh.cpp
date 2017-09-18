@@ -39,16 +39,8 @@ namespace {
      * @brief Save the geomodel in smesh format
      * @details No attributes and no boundary marker are transferred
      */
-    class SMESHIOHandler final: public GeoModelIOHandler< 3 > {
+    class SMESHIOHandler final: public GeoModelOutputHandler3D {
     public:
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Geological model loading of a from UCD mesh not yet implemented" );
-        }
-
         void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );

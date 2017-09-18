@@ -400,7 +400,7 @@ namespace {
         }
     }
 
-    class MLIOHandler final: public GeoModelIOHandler< 3 > {
+    class MLIOHandler final: public GeoModelInputHandler3D, public GeoModelOutputHandler3D {
     public:
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
@@ -415,7 +415,7 @@ namespace {
             builder.build_geomodel();
         }
 
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             save_gocad_model3d( geomodel, out );
