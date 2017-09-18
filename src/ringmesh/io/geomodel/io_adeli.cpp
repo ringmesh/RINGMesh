@@ -58,7 +58,7 @@ namespace {
      * Corners are written (with vertex), then Lines (with edges), then Surfaces
      * (with surfaces, then Regions (with tetrahedron)
      */
-    class AdeliIOHandler final: public GeoModelOutputHandler< 3 > {
+    class AdeliIOHandler final: public GeoModelOutputHandler3D {
     public:
         void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {

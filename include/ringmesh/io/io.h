@@ -131,10 +131,6 @@ namespace RINGMesh
         GeoModelInputHandler() = default;
         virtual void load(
             const std::string& filename, GeoModel< DIMENSION >& geomodel ) = 0;
-
-    private:
-        static std::unique_ptr< GeoModelInputHandler > create(
-            const std::string& format );
     };
 
     ALIAS_2D_AND_3D( GeoModelInputHandler );
@@ -161,15 +157,10 @@ namespace RINGMesh
         void save_geomodel( const GeoModel< DIMENSION >& geomodel,
             const std::string& filename );
 
-
     protected:
         GeoModelOutputHandler() = default;
         virtual void save( const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) = 0;
-
-    private:
-        static std::unique_ptr< GeoModelOutputHandler > create(
-            const std::string& format );
     };
 
     ALIAS_2D_AND_3D( GeoModelOutputHandler );

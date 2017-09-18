@@ -652,7 +652,7 @@ namespace {
             }
 
             point_boundaries_.resize( gm.mesh.vertices.nb() );
-            for( const auto& surface : surface_range < 3 > ( gm ) ) {
+            for( const auto& surface : gm.surfaces() ) {
                 index_t interface_id = surface.parent_gmge( 0 ).index();
                 for( auto p : range(
                     gm.mesh.polygons.nb_polygons( surface.index() ) ) ) {
