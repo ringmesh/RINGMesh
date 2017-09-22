@@ -1,58 +1,47 @@
 /*
-*  Copyright (c) 2012-2014, Bruno Levy
-*  All rights reserved.
+* This file has been strongly inspired from the attributes of the geogram library.
+* Many thanks to Bruno Levy (Bruno.Levy@inria.fr) who did the first implementation in Geogram.
 *
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions are met:
+* Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+* Applications (ASGA). All rights reserved.
 *
-*  * Redistributions of source code must retain the above copyright notice,
-*  this list of conditions and the following disclaimer.
-*  * Redistributions in binary form must reproduce the above copyright notice,
-*  this list of conditions and the following disclaimer in the documentation
-*  and/or other materials provided with the distribution.
-*  * Neither the name of the ALICE Project-Team nor the names of its
-*  contributors may be used to endorse or promote products derived from this
-*  software without specific prior written permission.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*     * Neither the name of ASGA nor the
+*       names of its contributors may be used to endorse or promote products
+*       derived from this software without specific prior written permission.
 *
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-*  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-*  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-*  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-*  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-*  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-*  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-*  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-*  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-*  POSSIBILITY OF SUCH DAMAGE.
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+* THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+* PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+* INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+* THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
-*  If you modify this software, you should include a notice giving the
-*  name of the person performing the modification, the date of modification,
-*  and the reason for such modification.
+*     http://www.ring-team.org
 *
-*  Contact: Bruno Levy
-*
-*     Bruno.Levy@inria.fr
-*     http://www.loria.fr/~levy
-*
-*     ALICE Project
-*     LORIA, INRIA Lorraine,
-*     Campus Scientifique, BP 239
-*     54506 VANDOEUVRE LES NANCY CEDEX
+*     RING Project
+*     Ecole Nationale Superieure de Geologie - GeoRessources
+*     2 Rue du Doyen Marcel Roubault - TSA 70605
+*     54518 VANDOEUVRE-LES-NANCY
 *     FRANCE
-*
 */
 
-#ifndef GEOGRAM_BASIC_ATTRIBUTES
-#define GEOGRAM_BASIC_ATTRIBUTES
+#pragma once
 
 
-#include <geogram/basic/common.h>
-#include <geogram/basic/memory.h>
-#include <geogram/basic/numeric.h>
-#include <geogram/basic/process.h>
-#include <geogram/basic/geofile.h>
-#include <geogram/basic/logger.h>
+#include <ringmesh/basic/common.h>
+#include <ringmesh/basic/logger.h>
+
 #include <map>
 #include <typeinfo>
 #include <set>
@@ -62,7 +51,8 @@
 * \brief Generic mechanism for attributes.
 */
 
-namespace GEO {
+namespace RINGMesh {
+
 
     class AttributeStore;
 
@@ -70,7 +60,7 @@ namespace GEO {
     * \brief Base class for attributes. They are notified
     *  whenever the AttributeStore is modified.
     */
-    class GEOGRAM_API AttributeStoreObserver {
+    class RINGMESH_API AttributeStoreObserver {
     public:
 
         /**
@@ -88,7 +78,7 @@ namespace GEO {
         * \param[in] dim  new dimension, i.e. number of elements per item
         */
         void notify(
-            Memory::pointer base_addr, index_t size, index_t dim
+            pointer base_addr, index_t size, index_t dim
             )
         {
             base_addr_ = base_addr;
@@ -131,7 +121,7 @@ namespace GEO {
 
 
     protected:
-        Memory::pointer base_addr_;
+        pointer base_addr_;
         index_t size_;
         index_t dimension_;
     };
@@ -145,7 +135,7 @@ namespace GEO {
     * \brief Internal class for creating an AttributeStore
     *  from the type name of its elements.
     */
-    class GEOGRAM_API AttributeStoreCreator: public Counted {
+    class RINGMESH_API AttributeStoreCreator {
     public:
 
         /**
@@ -167,17 +157,11 @@ namespace GEO {
     };
 
     /**
-    * \brief An automatic reference-counted pointer to
-    *  an AttributeStoreCreator.
-    */
-    typedef SmartPointer<AttributeStoreCreator> AttributeStoreCreator_var;
-
-    /**
     * \brief Notifies a set of AttributeStoreObservers
     *  each time the stored array changes size and/or
     *  base address and/or dimension.
     */
-    class GEOGRAM_API AttributeStore {
+    class RINGMESH_API AttributeStore {
     public:
         /**
         * \brief AttributeStore constructor.
@@ -288,7 +272,7 @@ namespace GEO {
         *  can be overloaded in derived classes.
         */
         virtual void apply_permutation(
-            const vector<index_t>& permutation
+            const std::vector<index_t>& permutation
             );
 
         /**
@@ -308,7 +292,7 @@ namespace GEO {
         * \note This function uses memcpy(). If required, it
         *  can be overloaded in derived classes.
         */
-        virtual void compress( const vector<index_t>& old2new );
+        virtual void compress( const std::vector<index_t>& old2new );
 
         /**
         * \brief Zeroes all the memory associated with this
@@ -334,14 +318,12 @@ namespace GEO {
         */
         void copy_item( index_t to, index_t from )
         {
-            geo_debug_assert( from < cached_size_ );
-            geo_debug_assert( to < cached_size_ );
+            ringmesh_assert( from < cached_size_ );
+            ringmesh_assert( to < cached_size_ );
             index_t item_size = element_size_ * dimension_;
-            Memory::copy(
-                cached_base_addr_ + to*item_size,
-                cached_base_addr_ + from*item_size,
-                item_size
-                );
+            for( auto i : range( item_size ) ) {
+                *(cached_base_addr_ + to*item_size + i) = *(cached_base_addr_ + from*item_size + i);
+            }
         }
 
         /**
@@ -418,7 +400,7 @@ namespace GEO {
             index_t dimension
             )
         {
-            geo_assert( element_type_name_is_known( element_type_name ) );
+            ringmesh_assert( element_type_name_is_known( element_type_name ) );
             return type_name_to_creator_[element_type_name]->
                 create_attribute_store( dimension );
         }
@@ -434,7 +416,7 @@ namespace GEO {
             const std::string& element_typeid_name
             )
         {
-            geo_assert( element_typeid_name_is_known( element_typeid_name ) );
+            ringmesh_assert( element_typeid_name_is_known( element_typeid_name ) );
             return typeid_name_to_type_name_[element_typeid_name];
         }
 
@@ -450,7 +432,7 @@ namespace GEO {
             const std::string& element_type_name
             )
         {
-            geo_assert( element_type_name_is_known( element_type_name ) );
+            ringmesh_assert( element_type_name_is_known( element_type_name ) );
             return type_name_to_typeid_name_[element_type_name];
         }
 
@@ -471,18 +453,18 @@ namespace GEO {
             )
         {
             if( element_type_name_is_known( element_type_name ) ) {
-                Logger::warn( "Attributes" ) << element_type_name
-                    << " already registered"
-                    << std::endl;
+                Logger::warn( "Attributes" , 
+                    element_type_name, 
+                    " already registered" );
                 if( element_typeid_name_is_known( element_typeid_name ) ) {
                     bool already_registered_attribute_has_same_type = (
                         type_name_to_typeid_name_[element_type_name] ==
                         element_typeid_name
                         );
-                    geo_assert( already_registered_attribute_has_same_type );
+                    ringmesh_assert( already_registered_attribute_has_same_type );
                 }
             }
-            type_name_to_creator_[element_type_name] = creator;
+            type_name_to_creator_[element_type_name] = std::unique_ptr<AttributeStoreCreator>( creator );
             typeid_name_to_type_name_[element_typeid_name] = element_type_name;
             type_name_to_typeid_name_[element_type_name] = element_typeid_name;
         }
@@ -497,7 +479,7 @@ namespace GEO {
         * \param[in] dim the new dimension
         */
         virtual void notify(
-            Memory::pointer base_addr, index_t size, index_t dim
+            pointer base_addr, index_t size, index_t dim
             );
 
         /**
@@ -523,12 +505,12 @@ namespace GEO {
     protected:
         index_t element_size_;
         index_t dimension_;
-        Memory::pointer cached_base_addr_;
-        index_t cached_size_;
+        pointer cached_base_addr_{ nullptr };
+        index_t cached_size_{ 0 };
         std::set<AttributeStoreObserver*> observers_;
-        Process::spinlock lock_;
+        std::mutex lock_;
 
-        static std::map<std::string, AttributeStoreCreator_var>
+        static std::map<std::string, std::unique_ptr < AttributeStoreCreator > >
             type_name_to_creator_;
 
         static std::map<std::string, std::string>
@@ -565,7 +547,7 @@ namespace GEO {
         {
             store_.resize( new_size*dimension_ );
             notify(
-                store_.empty() ? nil : Memory::pointer( store_.data() ),
+                store_.empty() ? nil : pointer( store_.data() ),
                 new_size,
                 dimension_
                 );
@@ -596,7 +578,7 @@ namespace GEO {
             }
             store_.swap( new_store );
             notify(
-                store_.empty() ? nil : Memory::pointer( store_.data() ),
+                store_.empty() ? nil : pointer( store_.data() ),
                 size(),
                 dim
                 );
@@ -621,22 +603,22 @@ namespace GEO {
             return result;
         }
 
-        vector<T>& get_vector()
+        std::vector<T>& get_vector()
         {
             return store_;
         }
 
     protected:
         virtual void notify(
-            Memory::pointer base_addr, index_t size, index_t dim
+            pointer base_addr, index_t size, index_t dim
             )
         {
             AttributeStore::notify( base_addr, size, dim );
-            geo_assert( size*dim <= store_.size() );
+            ringmesh_assert( size*dim <= store_.size() );
         }
 
     private:
-        vector<T> store_;
+        std::vector<T> store_;
     };
 
     /*********************************************************************/
@@ -701,7 +683,7 @@ namespace GEO {
     * \brief Managers a set of attributes attached to
     *  an object.
     */
-    class GEOGRAM_API AttributesManager {
+    class RINGMESH_API AttributesManager {
     public:
         /**
         * \brief Constructs a new empty AttributesManager.
@@ -729,7 +711,7 @@ namespace GEO {
         *   AttributeStore.
         * \param[out] names a vector of all attribute names
         */
-        void list_attribute_names( vector<std::string>& names ) const;
+        void list_attribute_names( std::vector<std::string>& names ) const;
 
         /**
         * \brief Gets the size.
@@ -835,7 +817,7 @@ namespace GEO {
         *  function, but identical to the input on exit.
         */
         void apply_permutation(
-            const vector<index_t>& permutation
+            const std::vector<index_t>& permutation
             );
 
         /**
@@ -853,7 +835,7 @@ namespace GEO {
         * \param[in] old2new the index mapping to be applied.
         * \pre old2new[i] <= i || old2new[i] == index_t(-1)
         */
-        void compress( const vector<index_t>& old2new );
+        void compress( const std::vector<index_t>& old2new );
 
         /**
         * \brief Copies all the attributes from another AttributesManager.
@@ -890,7 +872,7 @@ namespace GEO {
         const AttributesManager& operator=( const AttributesManager& rhs );
 
     private:
-        index_t size_;
+        index_t size_{ 0 };
         std::map<std::string, AttributeStore*> attributes_;
     };
 
@@ -946,7 +928,7 @@ namespace GEO {
         */
         void unbind()
         {
-            geo_assert( is_bound() );
+            ringmesh_assert( is_bound() );
             unregister_me( store_ );
             manager_ = nil;
             store_ = nil;
@@ -963,14 +945,14 @@ namespace GEO {
         */
         void bind( AttributesManager& manager, const std::string& name )
         {
-            geo_assert( !is_bound() );
+            ringmesh_assert( !is_bound() );
             manager_ = &manager;
             store_ = manager_->find_attribute_store( name );
             if( store_ == nil ) {
                 store_ = new TypedAttributeStore<T>();
                 manager_->bind_attribute_store( name, store_ );
             } else {
-                geo_assert( store_->elements_type_matches( typeid( T ).name() ) );
+                ringmesh_assert( store_->elements_type_matches( typeid( T ).name() ) );
             }
             register_me( store_ );
         }
@@ -987,11 +969,11 @@ namespace GEO {
             AttributesManager& manager, const std::string& name
             )
         {
-            geo_assert( !is_bound() );
+            ringmesh_assert( !is_bound() );
             manager_ = &manager;
             store_ = manager_->find_attribute_store( name );
             if( store_ != nil ) {
-                geo_assert( store_->elements_type_matches( typeid( T ).name() ) );
+                ringmesh_assert( store_->elements_type_matches( typeid( T ).name() ) );
                 register_me( store_ );
             }
         }
@@ -1008,9 +990,9 @@ namespace GEO {
             index_t dimension
             )
         {
-            geo_assert( !is_bound() );
+            ringmesh_assert( !is_bound() );
             manager_ = &manager;
-            geo_assert( manager_->find_attribute_store( name ) == nil );
+            ringmesh_assert( manager_->find_attribute_store( name ) == nil );
             store_ = new TypedAttributeStore<T>( dimension );
             manager_->bind_attribute_store( name, store_ );
             register_me( store_ );
@@ -1024,7 +1006,7 @@ namespace GEO {
         */
         void destroy()
         {
-            geo_assert( is_bound() );
+            ringmesh_assert( is_bound() );
             unregister_me( store_ );
             manager_->delete_attribute_store( store_ );
             store_ = nil;
@@ -1042,7 +1024,7 @@ namespace GEO {
         */
         void redim( index_t new_dim )
         {
-            geo_assert( is_bound() );
+            ringmesh_assert( is_bound() );
             store_->redim( new_dim );
         }
 
@@ -1096,7 +1078,7 @@ namespace GEO {
         */
         void zero()
         {
-            geo_debug_assert( is_bound() );
+            ringmesh_assert( is_bound() );
             store_->zero();
         }
 
@@ -1126,11 +1108,11 @@ namespace GEO {
         * \note Advanced users only. Most client code will not need
         *  to use this function.
         */
-        vector<T>& get_vector()
+        std::vector<T>& get_vector()
         {
             TypedAttributeStore<T>* typed_store =
                 dynamic_cast<TypedAttributeStore<T>*>( store_ );
-            geo_assert( typed_store != nil );
+            ringmesh_assert( typed_store != nil );
             return typed_store->get_vector();
         }
 
@@ -1140,11 +1122,11 @@ namespace GEO {
         * \return a const reference to the vector<T> used to store the
         *  attribute.
         */
-        const vector<T>& get_vector() const
+        const std::vector<T>& get_vector() const
         {
             TypedAttributeStore<T>* typed_store =
                 dynamic_cast<TypedAttributeStore<T>*>( store_ );
-            geo_assert( typed_store != nil );
+            ringmesh_assert( typed_store != nil );
             return typed_store->get_vector();
         }
 
@@ -1202,7 +1184,7 @@ namespace GEO {
         */
         T& operator[]( unsigned int i )
         {
-            geo_debug_assert( i < superclass::nb_elements() );
+            ringmesh_assert( i < superclass::nb_elements() );
             return ( ( T* ) ( void* ) superclass::base_addr_ )[i];
         }
 
@@ -1213,7 +1195,7 @@ namespace GEO {
         */
         const T& operator[]( unsigned int i ) const
         {
-            geo_debug_assert( i < superclass::nb_elements() );
+            ringmesh_assert( i < superclass::nb_elements() );
             return ( ( const T* ) ( void* ) superclass::base_addr_ )[i];
         }
 
@@ -1240,338 +1222,13 @@ namespace GEO {
         Attribute<T>& operator=( const Attribute<T>& rhs );
     };
 
-    /*********************************************************************/
-
-    /**
-    * \brief Specialization of Attribute for booleans
-    * \details Attribute needs a specialization for bool, since
-    *   vector<bool> uses compressed storage (1 bit per boolean),
-    *   that is not compatible with the attribute management
-    *   mechanism. This wrapper class uses an Attribute<Numeric::uint8>
-    *   and does the appropriate conversions, using an accessor class.
-    */
-    template <> class Attribute<bool>: public AttributeBase<Numeric::uint8>{
-    public:
-        typedef AttributeBase<Numeric::uint8> superclass;
-
-        Attribute(): superclass()
-        {
-        }
-
-        Attribute( AttributesManager& manager, const std::string& name ):
-            superclass( manager, name )
-        {
-        }
-
-        class BoolAttributeAccessor;
-
-
-        /**
-        * \brief Accessor class for adapting Attribute<bool>
-        *  indexing.
-        */
-        class ConstBoolAttributeAccessor {
-        public:
-            /**
-            * \brief ConstBoolAttributeAccessor constructor.
-            */
-            ConstBoolAttributeAccessor(
-                const Attribute<bool>& attribute,
-                index_t index
-                ):
-                attribute_( &attribute ),
-                index_( index )
-            {
-            }
-
-            /**
-            * \brief Converts a BoolAttributeAccessor to a bool.
-            * \details Performs the actual lookup.
-            */
-            operator bool() const
-            {
-                return ( attribute_->element( index_ ) != 0 );
-            }
-
-        private:
-            const Attribute<bool>* attribute_;
-            index_t index_;
-
-            friend class BoolAttributeAccessor;
-        };
-
-        /**
-        * \brief Accessor class for adapting Attribute<bool>
-        *  indexing.
-        */
-        class BoolAttributeAccessor {
-        public:
-            /**
-            * \brief BoolAttributeAccessor constructor.
-            */
-            BoolAttributeAccessor(
-                Attribute<bool>& attribute,
-                index_t index
-                ):
-                attribute_( &attribute ),
-                index_( index )
-            {
-            }
-
-            /**
-            * \brief Converts a BoolAttributeAccessor to a bool.
-            * \details Performs the actual lookup.
-            */
-            operator bool() const
-            {
-                return ( attribute_->element( index_ ) != 0 );
-            }
-
-            /**
-            * \brief Copy-constructor.
-            * \param[in] rhs a const reference to the
-            *  BoolAttributeAccessor to be copied.
-            */
-            BoolAttributeAccessor( const BoolAttributeAccessor& rhs )
-            {
-                attribute_ = rhs.attribute_;
-                index_ = rhs.index_;
-            }
-
-            /**
-            * \brief Assigns a bool to a BoolAttributeAccessor.
-            * \details Stores the boolean into the Attribute.
-            */
-            BoolAttributeAccessor& operator=( bool x )
-            {
-                attribute_->element( index_ ) = Numeric::uint8( x );
-                return *this;
-            }
-
-            /**
-            * \brief Copies a bool from another attribute.
-            * \param[in] rhs a const reference to the BoolAttributeAccessor
-            *  to be copied.
-            */
-            BoolAttributeAccessor& operator=(
-                const BoolAttributeAccessor& rhs
-                )
-            {
-                if( &rhs != this ) {
-                    attribute_->element( index_ ) =
-                        rhs.attribute_->element( rhs.index_ );
-                }
-                return *this;
-            }
-
-            /**
-            * \brief Copies a bool from another attribute.
-            * \param[in] rhs a const reference to the
-            *  ConstBoolAttributeAccessor to be copied.
-            */
-            BoolAttributeAccessor& operator=(
-                const ConstBoolAttributeAccessor& rhs
-                )
-            {
-                attribute_->element( index_ ) =
-                    rhs.attribute_->element( rhs.index_ );
-                return *this;
-            }
-
-        private:
-            Attribute<bool>* attribute_;
-            index_t index_;
-        };
-
-
-        BoolAttributeAccessor operator[]( index_t i )
-        {
-            return BoolAttributeAccessor( *this, i );
-        }
-
-        ConstBoolAttributeAccessor operator[]( index_t i ) const
-        {
-            return ConstBoolAttributeAccessor( *this, i );
-        }
-
-        /**
-        * \brief Sets all the elements in this attribute
-        *   to a specified value.
-        * \param[in] val the value
-        */
-        void fill( bool val )
-        {
-            for( index_t i = 0; i<superclass::nb_elements(); ++i ) {
-                element( i ) = Numeric::uint8( val );
-            }
-        }
-
-    protected:
-
-        friend class BoolAttributeAccessor;
-        friend class ConstBoolAttributeAccessor;
-
-        /**
-        * \brief Gets a modifiable element by index
-        * \param [in] i index of the element
-        * \return a modifiable reference to the \p i%th element
-        */
-        Numeric::uint8& element( unsigned int i )
-        {
-            geo_debug_assert( i < superclass::nb_elements() );
-            return ( ( Numeric::uint8* )superclass::base_addr_ )[i];
-        }
-
-        /**
-        * \brief Gets an element by index
-        * \param [in] i index of the element
-        * \return a const reference to the \p i%th element
-        */
-        const Numeric::uint8& element( unsigned int i ) const
-        {
-            geo_debug_assert( i < superclass::nb_elements() );
-            return ( ( const Numeric::uint8* )superclass::base_addr_ )[i];
-        }
-
-    private:
-        /**
-        * \brief Forbids copy.
-        */
-        Attribute( const Attribute<bool>& rhs );
-        /**
-        * \brief Forbids copy.
-        */
-        Attribute<bool>& operator=( const Attribute<bool>& rhs );
-    };
-
-    /*********************************************************************/
-
-    /**
-    * \brief Base class to forbid some instanciations
-    *  of Attribute
-    */
-    class NotImplementedAttribute {
-    public:
-        /**
-        * \brief NotImplementedAttribute constructor
-        * \details Throws an assertion failure
-        */
-        GEO_NORETURN_DECL NotImplementedAttribute() GEO_NORETURN{
-            geo_assert_not_reached;
-        }
-
-            /**
-            * \brief NotImplementedAttribute constructor
-            * \param[in] manager the AttributesManager
-            * \param[in] name the name of the attribute
-            * \details Throws an assertion failure
-            */
-            GEO_NORETURN_DECL NotImplementedAttribute(
-            AttributesManager& manager, const std::string& name
-            ) GEO_NORETURN{
-            geo_argused( manager );
-            geo_argused( name );
-            geo_assert_not_reached;
-        }
-    };
-
-    /**
-    * \brief Forbids creation of Attribute of vectors.
-    * \details Attributes internal management uses
-    *   memcpy(), and cannot support types that do
-    *   complicated memory management.
-    * \note We could use C++11's std::is_pod() instead.
-    */
-    template <class T> class Attribute< vector<T> >:
-        public NotImplementedAttribute{
-    public:
-        /**
-        * \brief NotImplementedAttribute constructor
-        * \details Throws an assertion failure
-        */
-        Attribute(): NotImplementedAttribute()
-        {
-        }
-
-        /**
-        * \brief NotImplementedAttribute constructor
-        * \param[in] manager the AttributesManager
-        * \param[in] name the name of the attribute
-        * \details Throws an assertion failure
-        */
-        Attribute( AttributesManager& manager, const std::string& name ):
-            NotImplementedAttribute( manager, name )
-        {
-        }
-    };
-
-    /**
-    * \brief Forbids creation of Attribute of vectors.
-    * \details Attributes internal management uses
-    *   memcpy(), and cannot support types that do
-    *   complicated memory management.
-    * \note We could use C++11's std::is_pod() instead.
-    */
-    template <class T> class Attribute< std::vector<T> >:
-        public NotImplementedAttribute{
-    public:
-        /**
-        * \brief NotImplementedAttribute constructor
-        * \details Throws an assertion failure
-        */
-        Attribute(): NotImplementedAttribute()
-        {
-        }
-
-        /**
-        * \brief NotImplementedAttribute constructor
-        * \param[in] manager the AttributesManager
-        * \param[in] name the name of the attribute
-        * \details Throws an assertion failure
-        */
-        Attribute( AttributesManager& manager, const std::string& name ):
-            NotImplementedAttribute( manager, name )
-        {
-        }
-    };
-
-    /**
-    * \brief Forbids creation of Attribute of vectors.
-    * \details Attributes internal management uses
-    *   memcpy(), and cannot support types that do
-    *   complicated memory management.
-    * \note We could use C++11's std::is_pod() instead.
-    */
-    template <> class Attribute< std::string >:
-        public NotImplementedAttribute{
-    public:
-        /**
-        * \brief NotImplementedAttribute constructor
-        * \details Throws an assertion failure
-        */
-        Attribute(): NotImplementedAttribute()
-        {
-        }
-
-        /**
-        * \brief NotImplementedAttribute constructor
-        * \param[in] manager the AttributesManager
-        * \param[in] name the name of the attribute
-        * \details Throws an assertion failure
-        */
-        Attribute( AttributesManager& manager, const std::string& name ):
-            NotImplementedAttribute( manager, name )
-        {
-        }
-    };
-
     /***********************************************************/
 
     /**
     * \brief Access to an attribute as a double regardless its type.
     * \details The attribute can be an element of a vector attribute.
     */
-    class GEOGRAM_API ReadOnlyScalarAttributeAdapter:
+    class RINGMESH_API ReadOnlyScalarAttributeAdapter:
         public AttributeStoreObserver {
 
     public:
@@ -1635,7 +1292,7 @@ namespace GEO {
         */
         void unbind()
         {
-            geo_assert( is_bound() );
+            ringmesh_assert( is_bound() );
             unregister_me( const_cast<AttributeStore*>( store_ ) );
             manager_ = nil;
             store_ = nil;
@@ -1736,31 +1393,31 @@ namespace GEO {
             double result = 0.0;
             switch( element_type_ ) {
                 case ET_UINT8:
-                    result = get_element<Numeric::uint8>( i );
+                    result = get_element<uint8>( i );
                     break;
                 case ET_INT8:
-                    result = get_element<Numeric::int8>( i );
+                    result = get_element<int8>( i );
                     break;
                 case ET_UINT32:
-                    result = get_element<Numeric::uint32>( i );
+                    result = get_element<uint32>( i );
                     break;
                 case ET_INT32:
-                    result = get_element<Numeric::int32>( i );
+                    result = get_element<int32>( i );
                     break;
                 case ET_FLOAT32:
-                    result = get_element<Numeric::float32>( i );
+                    result = get_element<float32>( i );
                     break;
                 case ET_FLOAT64:
-                    result = get_element<Numeric::float64>( i );
+                    result = get_element<float64>( i );
                     break;
                 case ET_VEC2:
-                    result = get_element<Numeric::float64>( i, 2 );
+                    result = get_element<float64>( i, 2 );
                     break;
                 case ET_VEC3:
-                    result = get_element<Numeric::float64>( i, 3 );
+                    result = get_element<float64>( i, 3 );
                     break;
                 case ET_NONE:
-                    geo_assert_not_reached;
+                    ringmesh_assert_not_reached;
             }
             return result;
         }
@@ -1824,8 +1481,8 @@ namespace GEO {
         */
         template <class T> double get_element( index_t i, index_t multiplier = 1 )
         {
-            geo_debug_assert( is_bound() );
-            geo_debug_assert( i < size() );
+            ringmesh_assert( is_bound() );
+            ringmesh_assert( i < size() );
             return double(
                 static_cast<const T*>( store_->data() )[
                     ( i * store_->dimension() * multiplier ) +
@@ -1843,6 +1500,4 @@ namespace GEO {
 
     /***********************************************************/
 }
-
-#endif
 
