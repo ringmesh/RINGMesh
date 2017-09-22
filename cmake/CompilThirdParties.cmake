@@ -67,6 +67,7 @@ else(WIN32)
             find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
         endif()
     endif(APPLE)
+set(geoplatform Emscripten-clang)
 
 endif(WIN32)
 # Define Geogram as an external project that we know how to
@@ -92,7 +93,7 @@ ExternalProject_Add(geogram_ext
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-
+        -DEMSCRIPTEN_DIR=/home/mazuyer/appl/emsdk-portable/emscripten/1.37.21/
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}
   #-- Command to build geogram

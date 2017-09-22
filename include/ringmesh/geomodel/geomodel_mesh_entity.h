@@ -463,8 +463,7 @@ namespace RINGMesh
          * @return 0.
          */
         index_t mesh_element_vertex_index(
-            const ElementLocalVertex& element_local_vertex = ElementLocalVertex(
-                0, 0 ) ) const final
+            const ElementLocalVertex& element_local_vertex ) const final
         {
             ringmesh_unused( element_local_vertex );
             return 0;

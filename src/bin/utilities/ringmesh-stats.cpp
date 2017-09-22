@@ -103,21 +103,21 @@ int main( int argc, char** argv )
         CmdLine::import_arg_group( "in" );
         import_arg_group_stats();
 
-        if( argc == 1 )
-        {
-            GEO::CmdLine::show_usage();
-            return 0;
-        }
-
-        std::vector< std::string > filenames;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) )
-        {
-            return 1;
-        }
+//        if( argc == 1 )
+//        {
+//            GEO::CmdLine::show_usage();
+//            return 0;
+//        }
+//
+//        std::vector< std::string > filenames;
+//        if( !GEO::CmdLine::parse( argc, argv, filenames ) )
+//        {
+//            return 1;
+//        }
 
         GEO::Stopwatch total( "Total time" );
 
-        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" );
+        std::string model_name = "/home/mazuyer/RING/RINGMesh/tests/data/modelA5.ml";
         if( model_name.empty() )
         {
             throw RINGMeshException(

@@ -147,15 +147,13 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 
 include(cmake/utils.cmake)
 
+
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion 
         -Wsign-conversion -Wdouble-promotion -Wno-attributes)
-
-    # Determine gcc version and activate additional warnings available in latest versions
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
 
     # C++11 fully works on Linux from gcc/g++ 4.8 (before not fully operational).
     # On MacOS, it seems that C++11 is working since gcc/g++ 4.2.
@@ -168,17 +166,17 @@ if(UNIX)
     endif(APPLE)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(supported_clang_version 3.8)
-        if(COMPILER_VERSION VERSION_LESS ${supported_clang_version})
+        if(${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS ${supported_clang_version})
             message(FATAL_ERROR "RINGMesh require Clang version >= ${supported_clang_version}")
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(supported_gcc_version 4.8)
-        if(COMPILER_VERSION VERSION_LESS ${supported_gcc_version})
+        if(${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS ${supported_gcc_version})
             message(FATAL_ERROR "RINGMesh require G++ version >= ${supported_gcc_version}")
         endif()
     endif()
     # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -O3 -s USE_GLFW=3 -s TOTAL_MEMORY=268435456")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
@@ -187,6 +185,10 @@ if(UNIX)
        include(Coveralls)
        coveralls_turn_on_coverage()
     endif()
+        message(status ${CMAKE_CXX_COMPILER_ID})
+        message(status ${CMAKE_CXX_COMPILER_ID})
+        message(status ${CMAKE_CXX_COMPILER_ID})
+        message(status ${CMAKE_CXX_COMPILER_ID})
 endif(UNIX)
 
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
@@ -207,7 +209,7 @@ endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 #------------------------------------------------------------------------------------------------
 # Compil Third Parties
 include("${CMAKE_SOURCE_DIR}/cmake/CompilThirdParties.cmake")
-
+include(/home/mazuyer/appl/emsdk-portable/emscripten/1.37.21/cmake/Modules/Platform/Emscripten.cmake)
 
 #------------------------------------------------------------------------------------------------
 # Get MG-Tetra if a path is given
@@ -250,7 +252,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Add the RINGMesh target as a shared library
-add_library(RINGMesh SHARED
+add_library(RINGMesh STATIC
     ${ringmesh_include}
     ${ringmesh_src})
 
@@ -309,6 +311,7 @@ if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    set(GEOGRAM_WITH_EMSCRIPTEN on)
     include(${CMAKE_SOURCE_DIR}/third_party/geogram/cmake/opengl.cmake)
     add_ringmesh_binary(${binary_source_dir}/ringmesh-view.cpp geogram_gfx ${OPENGL_LIBRARIES})
     copy_for_windows()
