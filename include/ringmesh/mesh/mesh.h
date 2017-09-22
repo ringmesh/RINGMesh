@@ -35,9 +35,8 @@
 
 #pragma once
 
+#include <ringmesh/basic/attributes.h>
 #include <ringmesh/basic/common.h>
-#include <ringmesh/mesh/attributes.h>
-
 #include <algorithm>
 #include <memory>
 
@@ -151,12 +150,6 @@ namespace RINGMesh
         virtual std::tuple< index_t, std::vector< index_t > >
             connected_components() const = 0;
 
-        // TODO maybe reimplement the function with a RINGMesh::Mesh??
-        virtual void print_mesh_bounded_attributes() const = 0;
-        /*!
-         * \name Vertex methods
-         * @{
-         */
         /*!
          * @brief Gets a point.
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.

@@ -370,9 +370,9 @@ namespace RINGMesh
         {
             ringmesh_assert( region.is_meshed() );
             ringmesh_assert( region.is_simplicial() );
-            GEO::AttributesManager& reg_attr_mgr =
+            AttributesManager& reg_attr_mgr =
                 region.cell_attribute_manager();
-            GEO::Attribute< double > attr(
+            Attribute< double > attr(
                 reg_attr_mgr, mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
             for( auto cell_itr : range( region.nb_mesh_elements() ) )
             {

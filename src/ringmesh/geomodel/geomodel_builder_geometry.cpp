@@ -920,7 +920,7 @@ namespace RINGMesh
             ringmesh_assert( cell != NO_ID && cell_vertex != NO_ID );
         }
 
-        GEO::vector< std::string > names;
+        std::vector< std::string > names;
         geomodel_.region( region_id )
             .vertex_attribute_manager()
             .list_attribute_names( names );
@@ -948,7 +948,7 @@ namespace RINGMesh
             {
                 if( name != "model_vertex_map" && name != "point" )
                 {
-                    GEO::Attribute< double > attr(
+                    Attribute< double > attr(
                         geomodel_.region( region_id )
                             .vertex_attribute_manager(),
                         name );

@@ -317,7 +317,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager&
+    AttributesManager&
         WellCorner< DIMENSION >::vertex_attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
@@ -402,13 +402,13 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager&
+    AttributesManager&
         WellPart< DIMENSION >::vertex_attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
     }
     template < index_t DIMENSION >
-    GEO::AttributesManager&
+    AttributesManager&
         WellPart< DIMENSION >::edge_attribute_manager() const
     {
         return mesh_->edge_attribute_manager();
@@ -566,7 +566,7 @@ namespace RINGMesh
             LineMeshBuilder3D::create_builder( out );
         builder->clear( false, false );
 
-        GEO::Attribute< LineInstersection > vertex_info(
+        Attribute< LineInstersection > vertex_info(
             out.vertex_attribute_manager(), "info" );
         builder->create_vertices( in.nb_vertices() );
         for( auto v : range( in.nb_vertices() ) )
@@ -681,7 +681,7 @@ namespace RINGMesh
                 "A well should have at least one starting or ending point" );
         }
 
-        GEO::Attribute< LineInstersection > vertex_info(
+        Attribute< LineInstersection > vertex_info(
             conformal_mesh.vertex_attribute_manager(), "info" );
         std::vector< bool > edge_visited( conformal_mesh.nb_edges(), false );
         do

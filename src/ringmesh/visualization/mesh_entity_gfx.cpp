@@ -61,7 +61,7 @@ namespace
     }
 
     void compute_attribute_range(
-        GEO::ReadOnlyScalarAttributeAdapter& attribute,
+        ReadOnlyScalarAttributeAdapter& attribute,
         double& min,
         double& max )
     {
@@ -113,7 +113,7 @@ namespace RINGMesh
 
         index_t nb_coordinates() override
         {
-            GEO::AttributeStore* store =
+            AttributeStore* store =
                 get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
@@ -122,7 +122,7 @@ namespace RINGMesh
             return store->dimension();
         }
 
-        GEO::AttributesManager& get_attribute_manager() override
+        AttributesManager& get_attribute_manager() override
         {
             const GeoModel< DIMENSION >* geomodel =
                 this->manager_->gfx().geomodel();
@@ -139,7 +139,7 @@ namespace RINGMesh
                 this->manager_->gfx().geomodel();
             for( const auto& region : geomodel->regions() )
             {
-                GEO::ReadOnlyScalarAttributeAdapter attribute(
+                ReadOnlyScalarAttributeAdapter attribute(
                     region.cell_attribute_manager(), attribute_name );
                 compute_attribute_range(
                     attribute, attribute_min, attribute_max );
@@ -181,7 +181,7 @@ namespace RINGMesh
 
         index_t nb_coordinates() override
         {
-            GEO::AttributeStore* store =
+            AttributeStore* store =
                 get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
@@ -190,7 +190,7 @@ namespace RINGMesh
             return store->dimension();
         }
 
-        GEO::AttributesManager& get_attribute_manager() override
+        AttributesManager& get_attribute_manager() override
         {
             const GeoModel< DIMENSION >* geomodel =
                 this->manager_->gfx().geomodel();
@@ -207,7 +207,7 @@ namespace RINGMesh
                 this->manager_->gfx().geomodel();
             for( const auto& region : geomodel->regions() )
             {
-                GEO::ReadOnlyScalarAttributeAdapter attribute(
+                ReadOnlyScalarAttributeAdapter attribute(
                     region.vertex_attribute_manager(), attribute_name );
                 compute_attribute_range(
                     attribute, attribute_min, attribute_max );
@@ -249,7 +249,7 @@ namespace RINGMesh
 
         index_t nb_coordinates() override
         {
-            GEO::AttributeStore* store =
+            AttributeStore* store =
                 get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
@@ -258,7 +258,7 @@ namespace RINGMesh
             return store->dimension();
         }
 
-        GEO::AttributesManager& get_attribute_manager() override
+        AttributesManager& get_attribute_manager() override
         {
             const GeoModel< DIMENSION >* geomodel =
                 this->manager_->gfx().geomodel();
@@ -275,7 +275,7 @@ namespace RINGMesh
                 this->manager_->gfx().geomodel();
             for( const auto& surface : geomodel->surfaces() )
             {
-                GEO::ReadOnlyScalarAttributeAdapter attribute(
+                ReadOnlyScalarAttributeAdapter attribute(
                     surface.polygon_attribute_manager(), attribute_name );
                 compute_attribute_range(
                     attribute, attribute_min, attribute_max );
@@ -314,7 +314,7 @@ namespace RINGMesh
         }
         index_t nb_coordinates() override
         {
-            GEO::AttributeStore* store =
+            AttributeStore* store =
                 get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
@@ -323,7 +323,7 @@ namespace RINGMesh
             return store->dimension();
         }
 
-        GEO::AttributesManager& get_attribute_manager() override
+        AttributesManager& get_attribute_manager() override
         {
             const GeoModel< DIMENSION >* geomodel =
                 this->manager_->gfx().geomodel();
@@ -340,7 +340,7 @@ namespace RINGMesh
                 this->manager_->gfx().geomodel();
             for( const auto& surface : geomodel->surfaces() )
             {
-                GEO::ReadOnlyScalarAttributeAdapter attribute(
+                ReadOnlyScalarAttributeAdapter attribute(
                     surface.vertex_attribute_manager(), attribute_name );
                 compute_attribute_range(
                     attribute, attribute_min, attribute_max );
