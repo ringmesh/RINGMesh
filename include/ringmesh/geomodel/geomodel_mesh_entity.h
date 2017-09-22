@@ -1136,11 +1136,11 @@ namespace RINGMesh
                         range( 1, surface.nb_mesh_element_vertices( t ) - 1 ) )
                     {
                         double cur_volume =
-                            ( dot( p0,
-                                cross( surface.mesh_element_vertex(
-                                           ElementLocalVertex( t, v ) ),
-                                    surface.mesh_element_vertex(
-                                        ElementLocalVertex( t, v + 1 ) ) ) ) )
+                            ( dot( p0, cross( surface.mesh_element_vertex(
+                                                  ElementLocalVertex( t, v ) ),
+                                           surface.mesh_element_vertex(
+                                               ElementLocalVertex(
+                                                   t, v + 1 ) ) ) ) )
                             / 6.;
                         side( i ) ? result -= cur_volume : result += cur_volume;
                     }

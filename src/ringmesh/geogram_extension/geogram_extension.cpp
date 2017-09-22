@@ -389,7 +389,7 @@ namespace
                             {
                                 for( auto v_attr_dim_itr :
                                     range( vertex_attribute_dims_
-                                            [prop_name_itr] ) )
+                                             [prop_name_itr] ) )
                                 {
                                     vertex_attributes_[prop_name_itr][v]
                                                       [v_attr_dim_itr] =

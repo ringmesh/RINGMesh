@@ -699,7 +699,7 @@ namespace RINGMesh
         for( auto e : range( nb_mesh_elements() ) )
         {
             double l = ( this->mesh_element_vertex( { e, 1 } )
-                         - this->mesh_element_vertex( { e, 0 } ) )
+                           - this->mesh_element_vertex( { e, 0 } ) )
                            .length();
             if( l < this->geomodel().epsilon() )
             {

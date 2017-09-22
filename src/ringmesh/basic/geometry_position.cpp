@@ -261,9 +261,9 @@ namespace
         std::array< Sign, 4 > signs;
         for( const index_t f : range( 4 ) )
         {
-            double volume{ GEO::Geom::tetra_signed_volume( p,
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][0]],
+            double volume{ GEO::Geom::tetra_signed_volume(
+                p, vertices[GEO::MeshCellDescriptors::tet_descriptor
+                                .facet_vertex[f][0]],
                 vertices[GEO::MeshCellDescriptors::tet_descriptor
                              .facet_vertex[f][1]],
                 vertices[GEO::MeshCellDescriptors::tet_descriptor

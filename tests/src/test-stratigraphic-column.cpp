@@ -82,9 +82,9 @@ void test_stratigraphic_unit( const GeoModel3D& in )
         "StratigraphicUnit", "Test StratigraphicUnit building" );
 
     RockFeature rock( "rock", ROCKTYPE::NONE );
-    UnsubdividedStratigraphicUnit test_strat_unit( "strat unit",
-        dynamic_cast< const Interface3D& >(
-            in.geological_entity( Interface3D::type_name_static(), 1 ) ),
+    UnsubdividedStratigraphicUnit test_strat_unit(
+        "strat unit", dynamic_cast< const Interface3D& >( in.geological_entity(
+                          Interface3D::type_name_static(), 1 ) ),
         dynamic_cast< const Interface3D& >(
             in.geological_entity( Interface3D::type_name_static(), 0 ) ),
         dynamic_cast< const Layer3D& >(
@@ -142,33 +142,33 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
     std::string three_name = "three";
     std::string four_name = "four";
 
-    UnsubdividedStratigraphicUnit one( one_name,
-        dynamic_cast< const Interface3D& >(
-            in.geological_entity( Interface3D::type_name_static(), 1 ) ),
+    UnsubdividedStratigraphicUnit one(
+        one_name, dynamic_cast< const Interface3D& >( in.geological_entity(
+                      Interface3D::type_name_static(), 1 ) ),
         dynamic_cast< const Interface3D& >(
             in.geological_entity( Interface3D::type_name_static(), 0 ) ),
         dynamic_cast< const Layer3D& >(
             in.geological_entity( Layer3D::type_name_static(), 0 ) ),
         RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 10 );
-    UnsubdividedStratigraphicUnit two( two_name,
-        dynamic_cast< const Interface3D& >(
-            in.geological_entity( Interface3D::type_name_static(), 2 ) ),
+    UnsubdividedStratigraphicUnit two(
+        two_name, dynamic_cast< const Interface3D& >( in.geological_entity(
+                      Interface3D::type_name_static(), 2 ) ),
         dynamic_cast< const Interface3D& >(
             in.geological_entity( Interface3D::type_name_static(), 1 ) ),
         dynamic_cast< const Layer3D& >(
             in.geological_entity( Layer3D::type_name_static(), 1 ) ),
         RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 20 );
-    UnsubdividedStratigraphicUnit three( three_name,
-        dynamic_cast< const Interface3D& >(
-            in.geological_entity( Interface3D::type_name_static(), 3 ) ),
+    UnsubdividedStratigraphicUnit three(
+        three_name, dynamic_cast< const Interface3D& >( in.geological_entity(
+                        Interface3D::type_name_static(), 3 ) ),
         dynamic_cast< const Interface3D& >(
             in.geological_entity( Interface3D::type_name_static(), 2 ) ),
         dynamic_cast< const Layer3D& >(
             in.geological_entity( Layer3D::type_name_static(), 2 ) ),
         RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 30 );
-    UnsubdividedStratigraphicUnit four( four_name,
-        dynamic_cast< const Interface3D& >(
-            in.geological_entity( Interface3D::type_name_static(), 11 ) ),
+    UnsubdividedStratigraphicUnit four(
+        four_name, dynamic_cast< const Interface3D& >( in.geological_entity(
+                       Interface3D::type_name_static(), 11 ) ),
         dynamic_cast< const Interface3D& >(
             in.geological_entity( Interface3D::type_name_static(), 3 ) ),
         dynamic_cast< const Layer3D& >(

@@ -175,7 +175,7 @@ namespace
     {
         Logger::out( "GeoModel", "* ", cell_type, " volume ", cell_volume, " (",
             static_cast< index_t >(
-                cell_volume * 100 / cell_volume_total + 0.5 ),
+                         cell_volume * 100 / cell_volume_total + 0.5 ),
             "%)" );
     }
     template < index_t DIMENSION >

@@ -206,7 +206,8 @@ namespace RINGMesh
             std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >&
                 store = geomodel_access_.modifiable_mesh_entities( type_name );
             store.erase(
-                std::remove( store.begin(), store.end(),
+                std::remove(
+                    store.begin(), store.end(),
                     static_cast< std::
                             unique_ptr< GeoModelMeshEntity< DIMENSION > > >(
                         nullptr ) ),
@@ -227,7 +228,8 @@ namespace RINGMesh
                 store = geomodel_access_.modifiable_geological_entities(
                     type_name );
             store.erase(
-                std::remove( store.begin(), store.end(),
+                std::remove(
+                    store.begin(), store.end(),
                     static_cast< std::
                             unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >(
                         nullptr ) ),

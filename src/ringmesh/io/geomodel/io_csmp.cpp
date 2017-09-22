@@ -187,7 +187,7 @@ namespace
                     "PYRA_5" };
                 for( auto type :
                     range( to_underlying_type( CellType::TETRAHEDRON ),
-                        to_underlying_type( CellType::UNCLASSIFIED ) ) )
+                         to_underlying_type( CellType::UNCLASSIFIED ) ) )
                 {
                     CellType T = static_cast< CellType >( type );
                     if( mesh.cells.nb_cells( region.index(), T ) > 0 )
@@ -252,7 +252,7 @@ namespace
                 index_t entity_type[4] = { 4, 6, 12, 18 };
                 for( auto type :
                     range( to_underlying_type( CellType::TETRAHEDRON ),
-                        to_underlying_type( CellType::UNCLASSIFIED ) ) )
+                         to_underlying_type( CellType::UNCLASSIFIED ) ) )
                 {
                     CellType T = static_cast< CellType >( type );
                     for( auto el : range( mesh.cells.nb_cells( r, T ) ) )
@@ -304,7 +304,7 @@ namespace
                     "PYRA_5" };
                 for( auto type :
                     range( to_underlying_type( CellType::TETRAHEDRON ),
-                        to_underlying_type( CellType::UNCLASSIFIED ) ) )
+                         to_underlying_type( CellType::UNCLASSIFIED ) ) )
                 {
                     CellType T = static_cast< CellType >( type );
                     if( mesh.cells.nb_cells( r, T ) > 0 )
@@ -378,7 +378,7 @@ namespace
             {
                 for( auto type :
                     range( to_underlying_type( CellType::TETRAHEDRON ),
-                        to_underlying_type( CellType::UNCLASSIFIED ) ) )
+                         to_underlying_type( CellType::UNCLASSIFIED ) ) )
                 {
                     CellType T = static_cast< CellType >( type );
                     RINGMesh2CSMP& descriptor =
@@ -453,7 +453,7 @@ namespace
             {
                 for( auto type :
                     range( to_underlying_type( CellType::TETRAHEDRON ),
-                        to_underlying_type( CellType::UNCLASSIFIED ) ) )
+                         to_underlying_type( CellType::UNCLASSIFIED ) ) )
                 {
                     CellType T = static_cast< CellType >( type );
                     RINGMesh2CSMP& descriptor =

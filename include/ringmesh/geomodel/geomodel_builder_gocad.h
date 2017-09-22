@@ -291,7 +291,8 @@ namespace RINGMesh
                 const index_t region_id,
                 const std::map< index_t, index_t >& lighttsolid_atom_map /*,
              std::vector< vec3 >& region_tetra_vertices,
-             std::vector< index_t >& local_ids */ ) const
+             std::vector< index_t >& local_ids */ )
+                const
         {
             ringmesh_assert(
                 stored_vertices.size() == gocad_ids2region_ids_.size() );

@@ -406,14 +406,16 @@ namespace RINGMesh
         auto& incident_entities =
             boundary_access.modifiable_incident_entities();
         std::remove_if( incident_entities.begin(), incident_entities.end(),
-            [relation_id](
-                index_t relation ) { return relation == relation_id; } );
+            [relation_id]( index_t relation ) {
+                return relation == relation_id;
+            } );
         GeoModelMeshEntityAccess< DIMENSION > incident_entity_access(
             geomodel_access_.modifiable_mesh_entity( incident_entity ) );
         auto& boundaries = incident_entity_access.modifiable_boundaries();
         std::remove_if( boundaries.begin(), boundaries.end(),
-            [relation_id](
-                index_t relation ) { return relation == relation_id; } );
+            [relation_id]( index_t relation ) {
+                return relation == relation_id;
+            } );
     }
 
     template < index_t DIMENSION >

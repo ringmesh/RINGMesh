@@ -126,8 +126,8 @@ namespace
 
     bool GetChar( void* data, int idx, const char** out_text )
     {
-        *out_text = static_cast< const std::vector< std::string >* >(
-            data )->at( static_cast< long unsigned int >( idx ) )
+        *out_text = static_cast< const std::vector< std::string >* >( data )
+                        ->at( static_cast< long unsigned int >( idx ) )
                         .c_str();
         return true;
     }

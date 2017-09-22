@@ -190,8 +190,8 @@ namespace
                     << geomodel_mesh_entity.nb_mesh_element_vertices( elt )
                     << " ";
                 for( auto v :
-                    range(
-                        geomodel_mesh_entity.nb_mesh_element_vertices( elt ) ) )
+                    range( geomodel_mesh_entity.nb_mesh_element_vertices(
+                        elt ) ) )
                 {
                     out << geomodel_mesh_entity.geomodel()
                                    .mesh.vertices.geomodel_vertex_id(

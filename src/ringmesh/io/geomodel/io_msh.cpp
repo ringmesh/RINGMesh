@@ -156,7 +156,8 @@ namespace
                             out << geomodel.mesh.vertices.geomodel_vertex_id(
                                        cur_gmme_id,
                                        cur_gmme.mesh_element_vertex_index(
-                                           ElementLocalVertex( elem_in_cur_gmme,
+                                           ElementLocalVertex(
+                                               elem_in_cur_gmme,
                                                find_gmsh_element_local_vertex_id(
                                                    nb_vertices_in_cur_element,
                                                    gmme_type_index,

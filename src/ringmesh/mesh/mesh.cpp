@@ -717,7 +717,7 @@ namespace RINGMesh
         bool result = false;
         cell_nn_search().get_neighbors( vertex_vec,
             [this, &vertex_vec, &result, &cell_id, &cell_vertex_id, distance](
-                index_t i ) {
+                                            index_t i ) {
                 for( auto j : range( nb_cell_vertices( i ) ) )
                 {
                     if( inexact_equal( this->vertex( cell_vertex( { i, j } ) ),
