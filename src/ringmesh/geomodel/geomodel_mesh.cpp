@@ -643,17 +643,22 @@ namespace RINGMesh
             return;
         }
 
+        DEBUG("1.2.1");
         // Fill the vertices
         auto builder =
             PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         builder->create_vertices( nb );
         impl_->clear_and_resize_geomodel_vertex_gmes( nb );
         impl_->bind_all_mesh_entity_vertex_maps();
+        DEBUG("1.2.2");
 
         fill_vertices();
+        DEBUG("1.2.3");
 
         // Remove colocated vertices
         remove_colocated();
+        DEBUG("1.2.4");
+
     }
 
     template < index_t DIMENSION >
@@ -844,16 +849,26 @@ namespace RINGMesh
         {
             return;
         }
+
+        DEBUG("1.2.3.1");
         // Identify and invalidate colocated vertices
         index_t nb_colocalised_vertices{ NO_ID };
+        DEBUG("1.2.3.2");
+
         std::vector< index_t > old2new;
+        DEBUG("1.2.3.3");
+
         std::tie( nb_colocalised_vertices, old2new ) =
             mesh_->vertex_nn_search().get_colocated_index_mapping(
                 this->geomodel_.epsilon() );
+        DEBUG("1.2.3.4");
+
         if( nb_colocalised_vertices > 0 )
         {
             erase_vertices( old2new );
         }
+        DEBUG("1.2.3.5");
+
     }
 
     template < index_t DIMENSION >

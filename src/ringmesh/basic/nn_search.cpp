@@ -43,6 +43,7 @@
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/basic/pimpl_impl.h>
+#include <ringmesh/basic/logger.h>
 
 #include <geogram/points/kd_tree.h>
 
@@ -160,13 +161,19 @@ namespace RINGMesh
         NNSearch< DIMENSION >::get_colocated_index_mapping(
             double epsilon ) const
     {
+        DEBUG("1.2.3.3.1");
         std::vector< index_t > index_map( nb_points() );
+        DEBUG("1.2.3.3.2");
         std::atomic< index_t > nb_colocalised_vertices{ 0 };
+        DEBUG("1.2.3.3.3");
         parallel_for( nb_points(), [this, &index_map, &nb_colocalised_vertices,
                                        &epsilon]( index_t i ) {
+
             auto results = get_neighbors( point( i ), epsilon );
+
             index_t id{ *std::min_element( results.begin(), results.end() ) };
             index_map[i] = id;
+
             if( id < i )
             {
                 nb_colocalised_vertices++;

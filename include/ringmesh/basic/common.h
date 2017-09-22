@@ -42,6 +42,7 @@
  */
 #include <ringmesh/ringmesh_config.h>
 #include <ringmesh/ringmesh_export.h>
+#include <geogram/basic/command_line.h>
 
 #if defined( _WIN32 )
 #ifndef WIN32
@@ -101,8 +102,8 @@ public:                                                                        \
     struct Struct;
 
 // To avoid unused argument warning in function definition
-template < typename T >
-void ringmesh_unused( const T& /*unused*/ )
+template< typename T >
+void ringmesh_unused( const T& /*unused*/)
 {
 }
 
@@ -117,8 +118,7 @@ void ringmesh_unused( const T& /*unused*/ )
 
 #include <stdexcept>
 
-namespace RINGMesh
-{
+namespace RINGMesh {
     /*!
      * This function configures geogram by setting some geogram options.
      * \pre This function should be call after GEO::initialize().
@@ -147,14 +147,13 @@ namespace RINGMesh
      *          Logger::err( "Exception", e.what() );
      *       }
      */
-    class RINGMESH_API RINGMeshException : public std::runtime_error
-    {
+    class RINGMESH_API RINGMeshException: public std::runtime_error {
     public:
-        template < typename... Args >
-        explicit RINGMeshException(
-            std::string category, const Args&... messages )
-            : std::runtime_error( string_concatener( messages... ) ),
-              category_( std::move( category ) )
+        template< typename ... Args >
+        explicit RINGMeshException( std::string category, const Args&... messages )
+            :
+                std::runtime_error( string_concatener( messages... ) ),
+                category_( std::move( category ) )
         {
         }
         virtual ~RINGMeshException() throw()
@@ -167,22 +166,23 @@ namespace RINGMesh
         }
 
     private:
-        template < typename A0 >
+        template< typename A0 >
         std::string string_concatener( const A0& a0 )
         {
             return GEO::String::to_string( a0 );
         }
 
-        template < typename A0, typename A1, typename... Args >
+        template< typename A0, typename A1, typename ... Args >
         std::string string_concatener(
-            const A0& a0, const A1& a1, const Args&... args )
+            const A0& a0,
+            const A1& a1,
+            const Args&... args )
         {
-            return GEO::String::to_string( a0 )
-                   + string_concatener( a1, args... );
+            return GEO::String::to_string( a0 ) + string_concatener( a1, args... );
         }
 
     protected:
-        std::string category_{};
+        std::string category_ { };
     };
 
     /*!
@@ -198,17 +198,18 @@ namespace RINGMesh
      *      // do something
      *    }
      */
-    class RINGMESH_API range
-    {
+    class RINGMESH_API range {
     public:
-        template < typename T1, typename T2 >
+        template< typename T1, typename T2 >
         range( T1 begin, T2 end )
-            : iter_( static_cast< index_t >( begin ) ),
-              last_( static_cast< index_t >( end ) )
+            :
+                iter_( static_cast< index_t >( begin ) ),
+                last_( static_cast< index_t >( end ) )
         {
         }
-        template < typename T >
-        explicit range( T end ) : last_( static_cast< index_t >( end ) )
+        template< typename T >
+        explicit range( T end )
+            : last_( static_cast< index_t >( end ) )
         {
         }
         // Iterable functions
@@ -221,7 +222,7 @@ namespace RINGMesh
             return *this;
         }
         // Iterator functions
-        bool operator!=( const range& /*unused*/ ) const
+        bool operator!=( const range& /*unused*/) const
         {
             return iter_ < last_;
         }
@@ -235,41 +236,46 @@ namespace RINGMesh
         }
 
     protected:
-        index_t iter_{ 0 };
-        index_t last_{ 0 };
+        index_t iter_ { 0 };
+        index_t last_ { 0 };
     };
 
-    template < typename ACTION >
+    template< typename ACTION >
     void parallel_for( index_t size, const ACTION& action )
     {
-        if( size == 0 )
-        {
+        if( size == 0 ) {
             return;
         }
-        index_t nb_threads{ std::min(
-            size, std::thread::hardware_concurrency() ) };
-        std::vector< std::future< void > > futures;
-        futures.reserve( nb_threads );
-        index_t start{ 0 };
+
         auto action_per_thread = [&action]( index_t start, index_t end ) {
             for( auto i : range( start, end ) )
             {
                 action( i );
             }
         };
-        index_t nb_tasks_per_thread{ size / nb_threads };
-        for( auto thread : range( nb_threads - 1 ) )
-        {
-            ringmesh_unused( thread );
-            futures.emplace_back( std::async( std::launch::async,
-                action_per_thread, start, start + nb_tasks_per_thread ) );
-            start += nb_tasks_per_thread;
-        }
-        futures.emplace_back(
-            std::async( std::launch::async, action_per_thread, start, size ) );
-        for( auto& future : futures )
-        {
-            future.get();
+
+        if( GEO::CmdLine::get_arg_bool( "sys:multithread" ) ) {
+            index_t nb_threads { std::min( size,
+                std::thread::hardware_concurrency() ) };
+            std::vector< std::future< void > > futures;
+            futures.reserve( nb_threads );
+            index_t start { 0 };
+
+            index_t nb_tasks_per_thread { size / nb_threads };
+            for( auto thread : range( nb_threads - 1 ) ) {
+                ringmesh_unused( thread );
+                futures.emplace_back(
+                    std::async( std::launch::async, action_per_thread, start,
+                        start + nb_tasks_per_thread ) );
+                start += nb_tasks_per_thread;
+            }
+            futures.emplace_back(
+                std::async( std::launch::async, action_per_thread, start, size ) );
+            for( auto& future : futures ) {
+                future.get();
+            }
+        } else {
+            action_per_thread( 0, size );
         }
     }
 } // namespace RINGMesh

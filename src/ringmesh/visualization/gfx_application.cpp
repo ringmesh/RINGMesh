@@ -1195,6 +1195,7 @@ namespace RINGMesh
         GEO::CmdLine::declare_arg(
             "single_precision", false, "use single precision vertices (FP32)" );
         configure_ringmesh();
+        GEO::CmdLine::set_arg( "sys:multithread", false );
 
         auto ringmesh_2d_extensions =
             GeoModelIOHandlerFactory2D::list_creators();

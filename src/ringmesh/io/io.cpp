@@ -135,10 +135,12 @@ namespace RINGMesh
         {
             throw RINGMeshException( "I/O", "File does not exist: ", filename );
         }
+        DEBUG("0") ;
         Logger::out( "I/O", "Loading file ", filename, "..." );
-
+        DEBUG("0.1") ;
         std::unique_ptr< GeoModelIOHandler< DIMENSION > > handler(
             GeoModelIOHandler< DIMENSION >::get_handler( filename ) );
+        DEBUG("0.2") ;
         return handler->load_geomodel( filename, geomodel );
     }
 
