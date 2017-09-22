@@ -47,11 +47,6 @@
  * @author Arnaud Botella and Jeanne Pellerin
  */
 
-namespace GEO
-{
-    class AttributesManager;
-} // namespace GEO
-
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshBase );
@@ -74,6 +69,7 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( LineAABBTree );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceAABBTree );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeAABBTree );
+    FORWARD_DECLARATION_DIMENSION_CLASS( AttributesManager );
 
     ALIAS_3D( GeoModel );
     ALIAS_3D( GeoModelMesh );
@@ -152,7 +148,7 @@ namespace RINGMesh
 
         ~GeoModelMeshVerticesBase();
 
-        GEO::AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const
         {
             return mesh_->vertex_attribute_manager();
         }
@@ -368,7 +364,7 @@ namespace RINGMesh
 
         virtual ~GeoModelMeshPolygonsBase();
 
-        GEO::AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const
         {
             return mesh_->polygon_attribute_manager();
         }
@@ -666,7 +662,7 @@ namespace RINGMesh
 
         virtual ~GeoModelMeshEdges();
 
-        GEO::AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const
         {
             return mesh_->edge_attribute_manager();
         }
@@ -804,7 +800,7 @@ namespace RINGMesh
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< LineMesh< DIMENSION > >& mesh );
 
-        GEO::AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const
         {
             return mesh_->edge_attribute_manager();
         }
@@ -901,7 +897,7 @@ namespace RINGMesh
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< VolumeMesh< DIMENSION > >& mesh );
 
-        GEO::AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const
         {
             return mesh_->cell_attribute_manager();
         }

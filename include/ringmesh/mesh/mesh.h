@@ -321,7 +321,7 @@ namespace RINGMesh
         }
 
         AttributesManager& edge_attribute_manager() const {
-            return edge_attribute_manager_;
+            return edge_attributes_manager_;
         }
 
         bool is_mesh_valid() const override
