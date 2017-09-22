@@ -1,55 +1,50 @@
 /*
-*  Copyright (c) 2012-2014, Bruno Levy
-*  All rights reserved.
+* This file has been strongly inspired from the attributes of the geogram library.
+* Many thanks to Bruno Levy (Bruno.Levy@inria.fr) who did the first implementation in Geogram.
 *
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions are met:
+* Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+* Applications (ASGA). All rights reserved.
 *
-*  * Redistributions of source code must retain the above copyright notice,
-*  this list of conditions and the following disclaimer.
-*  * Redistributions in binary form must reproduce the above copyright notice,
-*  this list of conditions and the following disclaimer in the documentation
-*  and/or other materials provided with the distribution.
-*  * Neither the name of the ALICE Project-Team nor the names of its
-*  contributors may be used to endorse or promote products derived from this
-*  software without specific prior written permission.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*     * Neither the name of ASGA nor the
+*       names of its contributors may be used to endorse or promote products
+*       derived from this software without specific prior written permission.
 *
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-*  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-*  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-*  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-*  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-*  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-*  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-*  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-*  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-*  POSSIBILITY OF SUCH DAMAGE.
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+* THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+* PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+* INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+* THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
-*  If you modify this software, you should include a notice giving the
-*  name of the person performing the modification, the date of modification,
-*  and the reason for such modification.
+*     http://www.ring-team.org
 *
-*  Contact: Bruno Levy
-*
-*     Bruno.Levy@inria.fr
-*     http://www.loria.fr/~levy
-*
-*     ALICE Project
-*     LORIA, INRIA Lorraine,
-*     Campus Scientifique, BP 239
-*     54506 VANDOEUVRE LES NANCY CEDEX
+*     RING Project
+*     Ecole Nationale Superieure de Geologie - GeoRessources
+*     2 Rue du Doyen Marcel Roubault - TSA 70605
+*     54518 VANDOEUVRE-LES-NANCY
 *     FRANCE
-*
 */
 
-#include <geogram/basic/attributes.h>
-#include <geogram/basic/permutation.h>
-#include <geogram/basic/string.h>
-#include <geogram/basic/geometry.h>
+#include <ringmesh/mesh/attributes.h>
+#include <ringmesh/geogram_extension/geogram_extension.h>
+
+#include<geogram/basic/permutation.h>
+
+#include <memory>
 #include <algorithm>
 
-namespace GEO {
+namespace RINGMesh {
 
     void AttributeStoreObserver::register_me( AttributeStore* store )
     {
@@ -69,7 +64,7 @@ namespace GEO {
 
     /******************************************************************/
 
-    std::map<std::string, AttributeStoreCreator_var>
+    std::map<std::string, std::unique_ptr< AttributeStoreCreator > >
         AttributeStore::type_name_to_creator_;
 
     std::map<std::string, std::string>
@@ -83,15 +78,12 @@ namespace GEO {
         index_t dim
         ):
         element_size_( elemsize ),
-        dimension_( dim ),
-        cached_base_addr_( nil ),
-        cached_size_( 0 ),
-        lock_( GEOGRAM_SPINLOCK_INIT )
+        dimension_( dim )
     {
     }
 
     void AttributeStore::notify(
-        Memory::pointer base_addr, index_t size, index_t dim
+        pointer base_addr, index_t size, index_t dim
         )
     {
         if(
@@ -114,70 +106,64 @@ namespace GEO {
     {
         // It is illegal to keep an Attribute<> active
         // when the object it is bound to is destroyed.
-        geo_assert( !has_observers() );
+        ringmesh_assert( !has_observers() );
     }
 
     void AttributeStore::register_observer( AttributeStoreObserver* observer )
     {
-        Process::acquire_spinlock( lock_ );
-        geo_assert( observers_.find( observer ) == observers_.end() );
+        std::lock_guard< std::mutex > lock( lock_ );
+        ringmesh_assert( observers_.find( observer ) == observers_.end() );
         observers_.insert( observer );
         observer->notify( cached_base_addr_, cached_size_, dimension_ );
-        Process::release_spinlock( lock_ );
     }
 
     void AttributeStore::unregister_observer( AttributeStoreObserver* observer )
     {
-        Process::acquire_spinlock( lock_ );
+        std::lock_guard< std::mutex > lock( lock_ );
         std::set<AttributeStoreObserver*>::iterator it =
             observers_.find( observer );
-        geo_assert( it != observers_.end() );
+        ringmesh_assert( it != observers_.end() );
         observers_.erase( it );
-        Process::release_spinlock( lock_ );
     }
 
     void AttributeStore::apply_permutation(
-        const vector<index_t>& permutation
+        const std::vector<index_t>& permutation
         )
     {
-        geo_debug_assert( permutation.size() <= cached_size_ );
-        Permutation::apply(
-            cached_base_addr_, permutation, element_size_ * dimension_
+        ringmesh_assert( permutation.size() <= cached_size_ );
+        GEO::vector<index_t> geo_permutation = copy_std_vector_to_geo_vector( permutation );
+        GEO::Permutation::apply(
+            cached_base_addr_, geo_permutation, element_size_ * dimension_
             );
     }
 
     void AttributeStore::compress(
-        const vector<index_t>& old2new
+        const std::vector<index_t>& old2new
         )
     {
-        geo_debug_assert( old2new.size() <= cached_size_ );
+        ringmesh_assert( old2new.size() <= cached_size_ );
         index_t item_size = element_size_ * dimension_;
         for( index_t i = 0; i<old2new.size(); ++i ) {
             index_t j = old2new[i];
             if( j == index_t( -1 ) || j == i ) {
                 continue;
             }
-            geo_debug_assert( j <= i );
-            Memory::copy(
-                cached_base_addr_ + j*item_size,
-                cached_base_addr_ + i*item_size,
-                item_size
-                );
+            ringmesh_assert( j <= i );
+            for( auto k : range( item_size ) ) {
+                *( cached_base_addr_ + j*item_size + k ) = *( cached_base_addr_ + i*item_size + k );
+            }
         }
     }
 
     void AttributeStore::zero()
     {
-        Memory::clear(
-            cached_base_addr_, element_size_ * dimension_ * cached_size_
+        memset( 
+            cached_base_addr_, 0, element_size_ * dimension_ * cached_size_
             );
     }
 
     /*************************************************************************/
 
-    AttributesManager::AttributesManager(): size_( 0 )
-    {
-    }
 
     AttributesManager::~AttributesManager()
     {
@@ -200,7 +186,7 @@ namespace GEO {
     }
 
     void AttributesManager::apply_permutation(
-        const vector<index_t>& permutation
+        const std::vector<index_t>& permutation
         )
     {
         for(
@@ -213,7 +199,7 @@ namespace GEO {
     }
 
     void AttributesManager::compress(
-        const vector<index_t>& old2new
+        const std::vector<index_t>& old2new
         )
     {
         for(
@@ -230,13 +216,13 @@ namespace GEO {
         const std::string& name, AttributeStore* as
         )
     {
-        geo_assert( find_attribute_store( name ) == nil );
+        ringmesh_assert( find_attribute_store( name ) == nil );
         attributes_[name] = as;
         as->resize( size_ );
     }
 
     void AttributesManager::list_attribute_names(
-        vector<std::string>& names
+        std::vector<std::string>& names
         ) const
     {
         names.clear();
@@ -276,8 +262,8 @@ namespace GEO {
     {
         std::map<std::string, AttributeStore*>::iterator
             it = attributes_.find( name );
-        geo_assert( it != attributes_.end() );
-        geo_assert( !it->second->has_observers() );
+        ringmesh_assert( it != attributes_.end() );
+        ringmesh_assert( !it->second->has_observers() );
         delete it->second;
         attributes_.erase( it );
     }
@@ -295,7 +281,7 @@ namespace GEO {
                 return;
             }
         }
-        geo_assert_not_reached;
+        ringmesh_assert_not_reached;
     }
 
 
@@ -398,7 +384,7 @@ namespace GEO {
                 if( pos + 2 > name.length() ) {
                     result = index_t( -1 );
                 } else {
-                    result = String::to_uint(
+                    result = GEO::String::to_uint(
                         name.substr( pos + 1, name.length() - pos - 2 )
                         );
                 }
@@ -412,19 +398,19 @@ namespace GEO {
     ReadOnlyScalarAttributeAdapter::ElementType
         ReadOnlyScalarAttributeAdapter::element_type( const AttributeStore* store )
     {
-        if( store->element_typeid_name() == typeid( Numeric::uint8 ).name() ) {
+        if( store->element_typeid_name() == typeid( uint8 ).name() ) {
             return ET_UINT8;
         }
 
         if(
             store->element_typeid_name() == typeid( char ).name() ||
-            store->element_typeid_name() == typeid( Numeric::int8 ).name()
+            store->element_typeid_name() == typeid( int8 ).name()
             ) {
             return ET_INT8;
         }
 
         if(
-            store->element_typeid_name() == typeid( Numeric::uint32 ).name() ||
+            store->element_typeid_name() == typeid( uint32 ).name() ||
             store->element_typeid_name() == typeid( index_t ).name() ||
             store->element_typeid_name() == typeid( unsigned int ).name()
             ) {
@@ -432,21 +418,21 @@ namespace GEO {
         }
 
         if(
-            store->element_typeid_name() == typeid( Numeric::int32 ).name() ||
+            store->element_typeid_name() == typeid( int32 ).name() ||
             store->element_typeid_name() == typeid( int ).name()
             ) {
             return ET_INT32;
         }
 
         if(
-            store->element_typeid_name() == typeid( Numeric::float32 ).name() ||
+            store->element_typeid_name() == typeid( float32 ).name() ||
             store->element_typeid_name() == typeid( float ).name()
             ) {
             return ET_FLOAT32;
         }
 
         if(
-            store->element_typeid_name() == typeid( Numeric::float64 ).name() ||
+            store->element_typeid_name() == typeid( float64 ).name() ||
             store->element_typeid_name() == typeid( double ).name()
             ) {
             return ET_FLOAT64;
@@ -467,7 +453,7 @@ namespace GEO {
         const AttributesManager& manager, const std::string& name
         )
     {
-        geo_assert( !is_bound() );
+        ringmesh_assert( !is_bound() );
         manager_ = &manager;
         element_index_ = attribute_element_index( name );
         store_ = manager_->find_attribute_store( attribute_base_name( name ) );
