@@ -38,6 +38,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/basic/pimpl.h>
+#include <ringmesh/basic/attributes.h>
 
 #include <ringmesh/geomodel/entity_type.h>
 
@@ -69,7 +70,6 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( LineAABBTree );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceAABBTree );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeAABBTree );
-    FORWARD_DECLARATION_DIMENSION_CLASS( AttributesManager );
 
     ALIAS_3D( GeoModel );
     ALIAS_3D( GeoModelMesh );

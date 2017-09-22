@@ -41,7 +41,7 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/logger.h>
-
+#include <geogram/basic/geofile.h>
 #include <map>
 #include <typeinfo>
 #include <set>
@@ -66,7 +66,7 @@ namespace RINGMesh {
         /**
         * \brief Creates a new uninitialied AttributeStore.
         */
-        AttributeStoreObserver(): base_addr_( nil ), size_( 0 ), dimension_( 0 )
+        AttributeStoreObserver(): base_addr_( nullptr ), size_( 0 ), dimension_( 0 )
         {
         }
 
@@ -547,7 +547,7 @@ namespace RINGMesh {
         {
             store_.resize( new_size*dimension_ );
             notify(
-                store_.empty() ? nil : pointer( store_.data() ),
+                store_.empty() ?  pointer( nullptr ) : pointer( store_.data() ),
                 new_size,
                 dimension_
                 );
@@ -560,7 +560,7 @@ namespace RINGMesh {
             } else {
                 store_.clear();
             }
-            notify( nil, 0, dimension_ );
+            notify( nullptr, 0, dimension_ );
         }
 
 
@@ -569,7 +569,7 @@ namespace RINGMesh {
             if( dim == dimension() ) {
                 return;
             }
-            vector<T> new_store( size()*dim );
+            std::vector<T> new_store( size()*dim );
             index_t copy_dim = GEO::geo_min( dim, dimension() );
             for( index_t i = 0; i < size(); ++i ) {
                 for( index_t c = 0; c < copy_dim; ++c ) {
@@ -577,8 +577,13 @@ namespace RINGMesh {
                 }
             }
             store_.swap( new_store );
+            pointer temp( nullptr );
+            if( !store_.empty() )
+            {
+                temp = reinterpret_cast< pointer >( store_.data() );
+            }
             notify(
-                store_.empty() ? nil : pointer( store_.data() ),
+                temp,
                 size(),
                 dim
                 );
@@ -658,22 +663,22 @@ namespace RINGMesh {
         */
         geo_register_attribute_type( const std::string& type_name )
         {
-            AttributeStore::register_attribute_creator(
-                new TypedAttributeStoreCreator<T>, type_name, typeid( T ).name()
-                );
-            if( type_name == "bool" ) {
-                GeoFile::register_ascii_attribute_serializer(
-                    type_name,
-                    read_ascii_attribute<bool>,
-                    write_ascii_attribute<bool>
-                    );
-            } else {
-                GeoFile::register_ascii_attribute_serializer(
-                    type_name,
-                    read_ascii_attribute<T>,
-                    write_ascii_attribute<T>
-                    );
-            }
+//            AttributeStore::register_attribute_creator(
+//                new TypedAttributeStoreCreator<T>, type_name, typeid( T ).name()
+//                );
+//            if( type_name == "bool" ) {
+//                GEO::GeoFile::register_ascii_attribute_serializer(
+//                    type_name,
+//                    read_ascii_attribute<bool>,
+//                    write_ascii_attribute<bool>
+//                    );
+//            } else {
+//                GEO::GeoFile::register_ascii_attribute_serializer(
+//                    type_name,
+//                    read_ascii_attribute<T>,
+//                    write_ascii_attribute<T>
+//                    );
+//            }
         }
     };
 
@@ -688,7 +693,7 @@ namespace RINGMesh {
         /**
         * \brief Constructs a new empty AttributesManager.
         */
-        AttributesManager();
+        AttributesManager() = default;
 
 
         /**
@@ -761,14 +766,14 @@ namespace RINGMesh {
         /**
         * \brief Finds an AttributeStore by name.
         * \param[in] name the name under which the AttributeStore was bound
-        * \return a pointer to the attribute store or nil if is is undefined.
+        * \return a pointer to the attribute store or nullptr if is is undefined.
         */
         AttributeStore* find_attribute_store( const std::string& name );
 
         /**
         * \brief Finds an AttributeStore by name.
         * \param[in] name the name under which the AttributeStore was bound
-        * \return a const pointer to the attribute store or nil if is is
+        * \return a const pointer to the attribute store or nullptr if is is
         *  undefined.
         */
         const AttributeStore* find_attribute_store(
@@ -784,7 +789,7 @@ namespace RINGMesh {
         */
         bool is_defined( const std::string& name )
         {
-            return ( find_attribute_store( name ) != nil );
+            return ( find_attribute_store( name ) != nullptr );
         }
 
         /**
@@ -891,8 +896,8 @@ namespace RINGMesh {
         * \brief Creates an unitialized (unbound) Attribute.
         */
         AttributeBase():
-            manager_( nil ),
-            store_( nil )
+            manager_( nullptr ),
+            store_( nullptr )
         {
         }
 
@@ -906,8 +911,8 @@ namespace RINGMesh {
         * \param[in] name name of the attribute
         */
         AttributeBase( AttributesManager& manager, const std::string& name ):
-            manager_( nil ),
-            store_( nil )
+            manager_( nullptr ),
+            store_( nullptr )
         {
             bind( manager, name );
         }
@@ -919,7 +924,7 @@ namespace RINGMesh {
         */
         bool is_bound() const
         {
-            return ( store_ != nil );
+            return ( store_ != nullptr );
         }
 
         /**
@@ -930,8 +935,8 @@ namespace RINGMesh {
         {
             ringmesh_assert( is_bound() );
             unregister_me( store_ );
-            manager_ = nil;
-            store_ = nil;
+            manager_ = nullptr;
+            store_ = nullptr;
         }
 
         /**
@@ -948,7 +953,7 @@ namespace RINGMesh {
             ringmesh_assert( !is_bound() );
             manager_ = &manager;
             store_ = manager_->find_attribute_store( name );
-            if( store_ == nil ) {
+            if( store_ == nullptr ) {
                 store_ = new TypedAttributeStore<T>();
                 manager_->bind_attribute_store( name, store_ );
             } else {
@@ -972,7 +977,7 @@ namespace RINGMesh {
             ringmesh_assert( !is_bound() );
             manager_ = &manager;
             store_ = manager_->find_attribute_store( name );
-            if( store_ != nil ) {
+            if( store_ != nullptr ) {
                 ringmesh_assert( store_->elements_type_matches( typeid( T ).name() ) );
                 register_me( store_ );
             }
@@ -992,7 +997,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( !is_bound() );
             manager_ = &manager;
-            ringmesh_assert( manager_->find_attribute_store( name ) == nil );
+            ringmesh_assert( manager_->find_attribute_store( name ) == nullptr );
             store_ = new TypedAttributeStore<T>( dimension );
             manager_->bind_attribute_store( name, store_ );
             register_me( store_ );
@@ -1009,8 +1014,8 @@ namespace RINGMesh {
             ringmesh_assert( is_bound() );
             unregister_me( store_ );
             manager_->delete_attribute_store( store_ );
-            store_ = nil;
-            manager_ = nil;
+            store_ = nullptr;
+            manager_ = nullptr;
         }
 
         /**
@@ -1057,7 +1062,7 @@ namespace RINGMesh {
         {
             AttributeStore* store = manager.find_attribute_store( name );
             return (
-                store != nil &&
+                store != nullptr &&
                 store->elements_type_matches( typeid( T ).name() ) &&
                 ( ( dim == 0 ) || ( store->dimension() == dim ) )
                 );
@@ -1094,7 +1099,7 @@ namespace RINGMesh {
         bool can_get_vector()
         {
             return(
-                dynamic_cast<TypedAttributeStore<T>*>( store_ ) != nil
+                dynamic_cast<TypedAttributeStore<T>*>( store_ ) != nullptr
                 );
         }
 
@@ -1112,7 +1117,7 @@ namespace RINGMesh {
         {
             TypedAttributeStore<T>* typed_store =
                 dynamic_cast<TypedAttributeStore<T>*>( store_ );
-            ringmesh_assert( typed_store != nil );
+            ringmesh_assert( typed_store != nullptr );
             return typed_store->get_vector();
         }
 
@@ -1126,7 +1131,7 @@ namespace RINGMesh {
         {
             TypedAttributeStore<T>* typed_store =
                 dynamic_cast<TypedAttributeStore<T>*>( store_ );
-            ringmesh_assert( typed_store != nil );
+            ringmesh_assert( typed_store != nullptr );
             return typed_store->get_vector();
         }
 
@@ -1251,8 +1256,8 @@ namespace RINGMesh {
         * \brief ReadOnlyScalarAttributeAdapter constructor.
         */
         ReadOnlyScalarAttributeAdapter():
-            manager_( nil ),
-            store_( nil ),
+            manager_( nullptr ),
+            store_( nullptr ),
             element_type_( ET_NONE ),
             element_index_( index_t( -1 ) )
         {
@@ -1270,8 +1275,8 @@ namespace RINGMesh {
         ReadOnlyScalarAttributeAdapter(
             const AttributesManager& manager, const std::string& name
             ):
-            manager_( nil ),
-            store_( nil )
+            manager_( nullptr ),
+            store_( nullptr )
         {
             bind_if_is_defined( manager, name );
         }
@@ -1283,7 +1288,7 @@ namespace RINGMesh {
         */
         bool is_bound() const
         {
-            return ( store_ != nil );
+            return ( store_ != nullptr );
         }
 
         /**
@@ -1294,8 +1299,8 @@ namespace RINGMesh {
         {
             ringmesh_assert( is_bound() );
             unregister_me( const_cast<AttributeStore*>( store_ ) );
-            manager_ = nil;
-            store_ = nil;
+            manager_ = nullptr;
+            store_ = nullptr;
             element_type_ = ET_NONE;
             element_index_ = index_t( -1 );
         }
@@ -1346,7 +1351,7 @@ namespace RINGMesh {
         */
         index_t size() const
         {
-            return ( store_ == nil ) ? 0 : store_->size();
+            return ( store_ == nullptr ) ? 0 : store_->size();
         }
 
         /**

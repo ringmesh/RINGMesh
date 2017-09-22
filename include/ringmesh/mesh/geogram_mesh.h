@@ -75,10 +75,6 @@ public:                                                                        \
     {                                                                          \
         return *mesh_;                                                         \
     }                                                                          \
-    void print_mesh_bounded_attributes() const override                        \
-    {                                                                          \
-        print_bounded_attributes( *mesh_ );                                    \
-    }                                                                          \
     MeshType type_name() const override                                        \
     {                                                                          \
         return type_name_static();                                             \
@@ -262,7 +258,7 @@ protected:                                                                     \
                 cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
         }
 
-        /*GEO::AttributesManager& cell_facet_attribute_manager() const override
+        /*AttributesManager& cell_facet_attribute_manager() const override
         {
             return mesh_->cell_facets.attributes();
         }*/

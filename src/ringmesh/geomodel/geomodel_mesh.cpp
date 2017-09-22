@@ -518,7 +518,7 @@ namespace RINGMesh
          * @brief Returns the vertex attribute of a GeoModelMeshEntity
          * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
          */
-        GEO::AttributesManager& mesh_entity_vertex_attribute_manager(
+        AttributesManager& mesh_entity_vertex_attribute_manager(
             const gmme_id& mesh_entity_id ) const
         {
             const auto& mesh_entity = geomodel_.mesh_entity( mesh_entity_id );
@@ -2933,7 +2933,7 @@ namespace RINGMesh
         const
     {
         auto& gmm_v_attr_mgr = vertices.attribute_manager();
-        GEO::vector< std::string > att_v_names;
+        std::vector< std::string > att_v_names;
         gmm_v_attr_mgr.list_attribute_names( att_v_names );
         for( const auto& cur_attr_name : att_v_names )
         {
@@ -2960,17 +2960,17 @@ namespace RINGMesh
                         geomodel_.region( cur_vertex_on_geomodel.gmme.index() );
                     auto& reg_v_attr_mgr =
                         cur_region.vertex_attribute_manager();
-                    GEO::AttributeStore* cur_v_att_store_in_reg{ nullptr };
+                    AttributeStore* cur_v_att_store_in_reg{ nullptr };
 
                     if( !reg_v_attr_mgr.is_defined( cur_attr_name ) )
                     {
-                        const auto cur_type_name = GEO::AttributeStore::
+                        const auto cur_type_name = AttributeStore::
                             element_type_name_by_element_typeid_name(
                                 cur_v_att_store_in_gmm->element_typeid_name() );
                         ringmesh_assert(
-                            GEO::AttributeStore::element_type_name_is_known(
+                            AttributeStore::element_type_name_is_known(
                                 cur_type_name ) );
-                        cur_v_att_store_in_reg = GEO::AttributeStore::
+                        cur_v_att_store_in_reg = AttributeStore::
                             create_attribute_store_by_element_type_name(
                                 cur_type_name, dim );
                         reg_v_attr_mgr.bind_attribute_store(
@@ -3006,8 +3006,8 @@ namespace RINGMesh
     {
         for( const auto& cur_reg : geomodel().regions() )
         {
-            GEO::vector< std::string > att_v_names;
-            GEO::AttributesManager& reg_vertex_attr_mgr =
+            std::vector< std::string > att_v_names;
+            AttributesManager& reg_vertex_attr_mgr =
                 cur_reg.vertex_attribute_manager();
             reg_vertex_attr_mgr.list_attribute_names( att_v_names );
             for( const auto& cur_attr_name : att_v_names )
@@ -3023,16 +3023,16 @@ namespace RINGMesh
                     reg_vertex_attr_mgr.find_attribute_store( cur_attr_name );
                 ringmesh_assert( cur_v_att_store_in_reg != nullptr );
                 index_t dim = cur_v_att_store_in_reg->dimension();
-                GEO::AttributeStore* cur_v_att_store{ nullptr };
+                AttributeStore* cur_v_att_store{ nullptr };
                 if( !vertices.attribute_manager().is_defined( cur_attr_name ) )
                 {
-                    const auto cur_type_name = GEO::AttributeStore::
+                    const auto cur_type_name = AttributeStore::
                         element_type_name_by_element_typeid_name(
                             cur_v_att_store_in_reg->element_typeid_name() );
                     ringmesh_assert(
-                        GEO::AttributeStore::element_type_name_is_known(
+                        AttributeStore::element_type_name_is_known(
                             cur_type_name ) );
-                    cur_v_att_store = GEO::AttributeStore::
+                    cur_v_att_store = AttributeStore::
                         create_attribute_store_by_element_type_name(
                             cur_type_name, dim );
                     vertices.attribute_manager().bind_attribute_store(
@@ -3071,7 +3071,7 @@ namespace RINGMesh
         const
     {
         auto& gmm_c_attr_mgr = cells.attribute_manager();
-        GEO::vector< std::string > att_c_names;
+        std::vector< std::string > att_c_names;
         gmm_c_attr_mgr.list_attribute_names( att_c_names );
         const auto& nn_search = cells.cell_nn_search();
 
@@ -3085,17 +3085,17 @@ namespace RINGMesh
             for( const auto& cur_region : geomodel_.regions() )
             {
                 auto& reg_c_attr_mgr = cur_region.cell_attribute_manager();
-                GEO::AttributeStore* cur_c_att_store_in_reg{ nullptr };
+                AttributeStore* cur_c_att_store_in_reg{ nullptr };
 
                 if( !reg_c_attr_mgr.is_defined( cur_attr_name ) )
                 {
-                    const auto cur_type_name = GEO::AttributeStore::
+                    const auto cur_type_name = AttributeStore::
                         element_type_name_by_element_typeid_name(
                             cur_c_att_store_in_gmm->element_typeid_name() );
                     ringmesh_assert(
-                        GEO::AttributeStore::element_type_name_is_known(
+                        AttributeStore::element_type_name_is_known(
                             cur_type_name ) );
-                    cur_c_att_store_in_reg = GEO::AttributeStore::
+                    cur_c_att_store_in_reg = AttributeStore::
                         create_attribute_store_by_element_type_name(
                             cur_type_name, dim );
                     reg_c_attr_mgr.bind_attribute_store(
@@ -3136,7 +3136,7 @@ namespace RINGMesh
         const auto& nn_search = cells.cell_nn_search();
         for( const auto& cur_reg : geomodel().regions() )
         {
-            GEO::vector< std::string > att_c_names;
+            std::vector< std::string > att_c_names;
             auto& reg_cell_attr_mgr = cur_reg.cell_attribute_manager();
             reg_cell_attr_mgr.list_attribute_names( att_c_names );
             for( const auto& cur_attr_name : att_c_names )
@@ -3145,16 +3145,16 @@ namespace RINGMesh
                     reg_cell_attr_mgr.find_attribute_store( cur_attr_name );
                 ringmesh_assert( cur_c_att_store_in_reg != nullptr );
                 index_t dim = cur_c_att_store_in_reg->dimension();
-                GEO::AttributeStore* cur_c_att_store{ nullptr };
+                AttributeStore* cur_c_att_store{ nullptr };
                 if( !cells.attribute_manager().is_defined( cur_attr_name ) )
                 {
-                    const std::string cur_type_name = GEO::AttributeStore::
+                    const std::string cur_type_name = AttributeStore::
                         element_type_name_by_element_typeid_name(
                             cur_c_att_store_in_reg->element_typeid_name() );
                     ringmesh_assert(
-                        GEO::AttributeStore::element_type_name_is_known(
+                        AttributeStore::element_type_name_is_known(
                             cur_type_name ) );
-                    cur_c_att_store = GEO::AttributeStore::
+                    cur_c_att_store = AttributeStore::
                         create_attribute_store_by_element_type_name(
                             cur_type_name, dim );
                     cells.attribute_manager().bind_attribute_store(

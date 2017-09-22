@@ -41,6 +41,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/basic/attributes.h>
 
 #include <ringmesh/geomodel/geomodel_entity.h>
 
@@ -298,7 +299,7 @@ namespace RINGMesh
 
         /*! @}
          */
-        GEO::AttributesManager& vertex_attribute_manager() const;
+        AttributesManager& vertex_attribute_manager() const;
 
     protected:
         GeoModelMeshEntity( const GeoModel< DIMENSION >& geomodel, index_t id )
@@ -652,7 +653,7 @@ namespace RINGMesh
          */
         const NNSearch< DIMENSION >& polygon_nn_search() const;
 
-        GEO::AttributesManager& polygon_attribute_manager() const;
+        AttributesManager& polygon_attribute_manager() const;
 
         /*!
          * \name Accessors to Surface polygons, edges and vertices
@@ -843,7 +844,7 @@ namespace RINGMesh
          */
         const NNSearch< DIMENSION >& cell_nn_search() const;
 
-        GEO::AttributesManager& cell_attribute_manager() const;
+        AttributesManager& cell_attribute_manager() const;
 
         /*!
          * \name Accessors to Region cells, facets, edges and vertices

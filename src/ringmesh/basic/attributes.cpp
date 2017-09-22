@@ -36,10 +36,10 @@
 *     FRANCE
 */
 
-#include <ringmesh/mesh/attributes.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
 #include<geogram/basic/permutation.h>
+#include <ringmesh/basic/attributes.h>
 
 #include <memory>
 #include <algorithm>
