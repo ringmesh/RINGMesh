@@ -38,29 +38,13 @@
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
-#include<geogram/basic/permutation.h>
+#include <geogram/basic/permutation.h>
 #include <ringmesh/basic/attributes.h>
 
 #include <memory>
 #include <algorithm>
 
 namespace RINGMesh {
-
-    void AttributeStoreObserver::register_me( AttributeStore* store )
-    {
-        store->register_observer( this );
-    }
-
-    void AttributeStoreObserver::unregister_me( AttributeStore* store )
-    {
-        store->unregister_observer( this );
-    }
-
-    /******************************************************************/
-
-    AttributeStoreCreator::~AttributeStoreCreator()
-    {
-    }
 
     /******************************************************************/
 
@@ -94,11 +78,6 @@ namespace RINGMesh {
             cached_base_addr_ = base_addr;
             cached_size_ = size;
             dimension_ = dim;
-            for( std::set<AttributeStoreObserver*>::iterator
-                it = observers_.begin(); it != observers_.end(); ++it
-                ) {
-                ( *it )->notify( cached_base_addr_, cached_size_, dim );
-            }
         }
     }
 
@@ -107,23 +86,6 @@ namespace RINGMesh {
         // It is illegal to keep an Attribute<> active
         // when the object it is bound to is destroyed.
         ringmesh_assert( !has_observers() );
-    }
-
-    void AttributeStore::register_observer( AttributeStoreObserver* observer )
-    {
-        std::lock_guard< std::mutex > lock( lock_ );
-        ringmesh_assert( observers_.find( observer ) == observers_.end() );
-        observers_.insert( observer );
-        observer->notify( cached_base_addr_, cached_size_, dimension_ );
-    }
-
-    void AttributeStore::unregister_observer( AttributeStoreObserver* observer )
-    {
-        std::lock_guard< std::mutex > lock( lock_ );
-        std::set<AttributeStoreObserver*>::iterator it =
-            observers_.find( observer );
-        ringmesh_assert( it != observers_.end() );
-        observers_.erase( it );
     }
 
     void AttributeStore::apply_permutation(
@@ -481,8 +443,6 @@ namespace RINGMesh {
             element_type_ = ET_NONE;
             return;
         }
-
-        register_me( const_cast<AttributeStore*>( store_ ) );
     }
 
     bool ReadOnlyScalarAttributeAdapter::is_defined(
