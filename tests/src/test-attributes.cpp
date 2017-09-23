@@ -52,6 +52,12 @@ void test_attributes()
     AttributesManager manager;
     Attribute< T > attribute0( manager, "attribute" );
     manager.resize( 10 );
+
+    if( attribute0.size() != 10 )
+    {
+        throw RINGMeshException( "Test", "Failed to resize attribute" );
+    }
+
     Attribute< T > attribute1( manager, "attribute" );
     attribute1[5] = T(1);
 

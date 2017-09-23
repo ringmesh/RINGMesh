@@ -1,7 +1,4 @@
 /*
- * This file has been strongly inspired from the attributes of the geogram library.
- * Many thanks to Bruno Levy (Bruno.Levy@inria.fr) who did the first implementation in Geogram.
- *
  * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
@@ -46,83 +43,13 @@
 #include <set>
 
 /**
- * \file geogram/basic/attributes.h
+ * \file ringmesh/basic/attributes.h
  * \brief Generic mechanism for attributes.
+ * This file has been strongly inspired from the attributes of the geogram library.
+ * Many thanks to Bruno Levy (Bruno.Levy@inria.fr) who did the first implementation in Geogram.
  */
 
 namespace RINGMesh {
-
-    class AttributeStore;
-
-    /**
-     * \brief Base class for attributes. They are notified
-     *  whenever the AttributeStore is modified.
-     */
-    class RINGMESH_API AttributeStoreObserver {
-    public:
-
-        /**
-         * \brief Creates a new uninitialied AttributeStore.
-         */
-        AttributeStoreObserver()
-            : base_addr_( nullptr ), size_( 0 ), dimension_( 0 )
-        {
-        }
-
-        /**
-         * \brief Callback function, called by the AttributeStore
-         *  whenever it is modified.
-         * \param[in] base_addr new base address of the AttributeStore
-         * \param[in] size new number of items in the AttributeStore
-         * \param[in] dim  new dimension, i.e. number of elements per item
-         */
-        void notify( pointer base_addr, index_t size, index_t dim )
-        {
-            base_addr_ = base_addr;
-            size_ = size;
-            dimension_ = dim;
-        }
-
-        /**
-         * \brief Gets the size.
-         * \return the number of items
-         */
-        index_t size() const
-        {
-            return size_;
-        }
-
-        /**
-         * \brief Gets the dimension.
-         * \return the number of elements per item
-         */
-        index_t dimension() const
-        {
-            return dimension_;
-        }
-
-        /**
-         * \brief Gets the total number of elements.
-         * \details This corresponds to one position past
-         *  the last valid index.
-         * \return the total number of elements.
-         */
-        index_t nb_elements() const
-        {
-            return size_ * dimension_;
-        }
-
-        void register_me( AttributeStore* store );
-
-        void unregister_me( AttributeStore* store );
-
-    protected:
-        pointer base_addr_;
-        index_t size_;
-        index_t dimension_;
-    };
-
-    /*********************************************************************/
 
     class AttributeStore;
 
@@ -136,7 +63,7 @@ namespace RINGMesh {
         /**
          * \brief AttributeStoreCreator destructor.
          */
-        virtual ~AttributeStoreCreator();
+        virtual ~AttributeStoreCreator() = default;
 
         /**
          * \brief Creates a new attribute store.
@@ -212,16 +139,6 @@ namespace RINGMesh {
          *  is kept reserved for future use.
          */
         virtual void clear( bool keep_memory = false ) = 0;
-
-        /**
-         * \brief Tests whether observers listen to this AttributeStore.
-         * \retval true if at least one observer is bound to this AttributeStore
-         * \retval false otherwise
-         */
-        bool has_observers() const
-        {
-            return !observers_.empty();
-        }
 
         /**
          * \brief Gets the dimension.
@@ -342,6 +259,17 @@ namespace RINGMesh {
         }
 
         /**
+         * \brief Gets the total number of elements.
+         * \details This corresponds to one position past
+         *  the last valid index.
+         * \return the total number of elements.
+         */
+        index_t nb_elements() const
+        {
+            return cached_size_ * dimension_;
+        }
+
+        /**
          * \brief Tests whether a given element type is registered in
          *   the system.
          * \param[in] element_type_name a const reference to a string
@@ -458,31 +386,11 @@ namespace RINGMesh {
          */
         virtual void notify( pointer base_addr, index_t size, index_t dim );
 
-        /**
-         * \brief Registers an observer.
-         * \details All the registered observers are notified whenever
-         *  the size or base pointer in this AttributeStore change.
-         *  The function is thread-safe.
-         * \param[in] observer the AttributeStoreObserver to be
-         *  registered.
-         */
-        void register_observer( AttributeStoreObserver* observer );
-
-        /**
-         * \brief Unregisters an observer.
-         * \param[in] observer the AttributeStoreObserver to be
-         *  unregistered.
-         *  The function is thread-safe.
-         * \pre \p observer is registered.
-         */
-        void unregister_observer( AttributeStoreObserver* observer );
-
     protected:
         index_t element_size_;
         index_t dimension_;
         pointer cached_base_addr_ { nullptr };
         index_t cached_size_ { 0 };
-        std::set< AttributeStoreObserver* > observers_;
         std::mutex lock_;
 
         static std::map< std::string, std::unique_ptr< AttributeStoreCreator > > type_name_to_creator_;
@@ -515,40 +423,6 @@ namespace RINGMesh {
         {
         }
 
-        virtual void resize( index_t new_size )
-        {
-            store_.resize( new_size * dimension_ );
-            notify( store_.empty() ? pointer( nullptr ) : pointer( store_.data() ),
-                new_size, dimension_ );
-        }
-
-
-        virtual void clear( bool keep_memory = false )
-        {
-            if( keep_memory ) {
-                store_.resize( 0 );
-            } else {
-                store_.clear();
-            }
-            notify( nullptr, 0, dimension_ );
-        }
-
-        virtual void redim( index_t dim )
-        {
-            if( dim == dimension() ) {
-                return;
-            }
-            std::vector< T > new_store( size() * dim );
-            index_t copy_dim = GEO::geo_min( dim, dimension() );
-            for( index_t i = 0; i < size(); ++i ) {
-                for( index_t c = 0; c < copy_dim; ++c ) {
-                    new_store[dim * i + c] = store_[dimension_ * i + c];
-                }
-            }
-            store_.swap( new_store );
-            notify( store_.empty() ? pointer( nullptr ) : pointer( store_.data() ), size(), dim );
-        }
-
         virtual bool elements_type_matches( const std::string& type_name ) const
         {
             return type_name == typeid(T).name();
@@ -559,30 +433,65 @@ namespace RINGMesh {
             return typeid(T).name();
         }
 
+    };
+
+    template< class T > class VectorStore: public TypedAttributeStore< T > {
+    public:
+
+        /**
+         * \brief Creates a new empty attribute store.
+         * \param[in] dim number of elements in each item,
+         *  default value is 1, can be greater for vector
+         *  attributes.
+         */
+        VectorStore( index_t dim = 1 )
+            : TypedAttributeStore< T >( dim )
+        {
+        }
+
+        virtual void resize( index_t new_size )
+        {
+            store_.resize( new_size * this->dimension() );
+        }
+
+
+        virtual void clear( bool keep_memory = false )
+        {
+            if( keep_memory ) {
+                store_.resize( 0 );
+            } else {
+                store_.clear();
+            }
+        }
+
+        virtual void redim( index_t dim )
+        {
+            if( dim == this->dimension() ) {
+                return;
+            }
+            std::vector< T > new_store( this->size() * dim );
+            index_t copy_dim = GEO::geo_min( dim, this->dimension() );
+            for( index_t i = 0; i < this->size(); ++i ) {
+                for( index_t c = 0; c < copy_dim; ++c ) {
+                    new_store[dim * i + c] = store_[this->dimension() * i + c];
+                }
+            }
+            store_.swap( new_store );
+        }
+
         virtual AttributeStore* clone() const
         {
-            TypedAttributeStore< T >* result = new TypedAttributeStore< T >(
-                dimension() );
-            result->resize( size() );
+            VectorStore< T >* result = new VectorStore< T >(
+                this->dimension() );
+            result->resize( this->size() );
             result->store_ = store_;
             return result;
-        }
-
-        std::vector< T >& get_vector()
-        {
-            return store_;
-        }
-
-    protected:
-        virtual void notify( pointer base_addr, index_t size, index_t dim )
-        {
-            AttributeStore::notify( base_addr, size, dim );
-            ringmesh_assert( size * dim <= store_.size() );
         }
 
     private:
         std::vector< T > store_;
     };
+
 
     /*********************************************************************/
 
@@ -837,7 +746,7 @@ namespace RINGMesh {
      * \brief Base class for Attributes, that manipulates an
      *  attribute stored in an AttributesManager.
      */
-    template< class T > class AttributeBase: public AttributeStoreObserver {
+    template< class T > class AttributeBase {
     public:
 
         /**
@@ -880,7 +789,6 @@ namespace RINGMesh {
         void unbind()
         {
             ringmesh_assert( is_bound() );
-            unregister_me( store_ );
             manager_ = nullptr;
             store_ = nullptr;
         }
@@ -900,12 +808,11 @@ namespace RINGMesh {
             manager_ = &manager;
             store_ = manager_->find_attribute_store( name );
             if( store_ == nullptr ) {
-                store_ = new TypedAttributeStore< T >();
+                store_ = new VectorStore< T >();
                 manager_->bind_attribute_store( name, store_ );
             } else {
                 ringmesh_assert( store_->elements_type_matches( typeid(T).name() ) );
             }
-            register_me( store_ );
         }
 
         /**
@@ -924,7 +831,6 @@ namespace RINGMesh {
             store_ = manager_->find_attribute_store( name );
             if( store_ != nullptr ) {
                 ringmesh_assert( store_->elements_type_matches( typeid(T).name() ) );
-                register_me( store_ );
             }
         }
 
@@ -942,9 +848,8 @@ namespace RINGMesh {
             ringmesh_assert( !is_bound() );
             manager_ = &manager;
             ringmesh_assert( manager_->find_attribute_store( name ) == nullptr );
-            store_ = new TypedAttributeStore< T >( dimension );
+            store_ = new VectorStore< T >( dimension );
             manager_->bind_attribute_store( name, store_ );
-            register_me( store_ );
         }
 
         /**
@@ -956,10 +861,14 @@ namespace RINGMesh {
         void destroy()
         {
             ringmesh_assert( is_bound() );
-            unregister_me( store_ );
             manager_->delete_attribute_store( store_ );
             store_ = nullptr;
             manager_ = nullptr;
+        }
+
+        index_t dimension() const
+        {
+            return store_->dimension();
         }
 
         /**
@@ -1015,7 +924,7 @@ namespace RINGMesh {
          */
         index_t size() const
         {
-            return size_;
+            return store_->size();
         }
 
         /**
@@ -1026,52 +935,6 @@ namespace RINGMesh {
         {
             ringmesh_assert( is_bound() );
             store_->zero();
-        }
-
-        /**
-         * \brief Tests whether get_vector() can be called on this
-         *  Attribute.
-         * \details get_vector() can be called if this attribute is
-         *  bound and if type T corresponds to the type used to create
-         *  the attribute.
-         * \note Advanced users only. Most client code will not need
-         *  to use this function.
-         */
-        bool can_get_vector()
-        {
-            return ( dynamic_cast< TypedAttributeStore< T >* >( store_ ) != nullptr );
-        }
-
-        /**
-         * \brief Gets a reference to the internal vector<T> used to
-         *  store the attribute.
-         * \details It is forbidden to modify the size of the returned
-         *  vector.
-         * \return a reference to the vector<T> used to store the
-         *  attribute.
-         * \note Advanced users only. Most client code will not need
-         *  to use this function.
-         */
-        std::vector< T >& get_vector()
-        {
-            TypedAttributeStore< T >* typed_store =
-                dynamic_cast< TypedAttributeStore< T >* >( store_ );
-            ringmesh_assert( typed_store != nullptr );
-            return typed_store->get_vector();
-        }
-
-        /**
-         * \brief Gets a const reference to the internal vector<T> used to
-         *  store the attribute.
-         * \return a const reference to the vector<T> used to store the
-         *  attribute.
-         */
-        const std::vector< T >& get_vector() const
-        {
-            TypedAttributeStore< T >* typed_store =
-                dynamic_cast< TypedAttributeStore< T >* >( store_ );
-            ringmesh_assert( typed_store != nullptr );
-            return typed_store->get_vector();
         }
 
         /**
@@ -1130,7 +993,7 @@ namespace RINGMesh {
         T& operator[]( unsigned int i )
         {
             ringmesh_assert( i < superclass::nb_elements() );
-            return ( (T*) (void*) superclass::base_addr_ )[i];
+            return ( (T*) superclass::store_->data() )[i];
         }
 
         /**
@@ -1141,7 +1004,7 @@ namespace RINGMesh {
         const T& operator[]( unsigned int i ) const
         {
             ringmesh_assert( i < superclass::nb_elements() );
-            return ( (const T*) (void*) superclass::base_addr_ )[i];
+            return ( (const T*) superclass::store_->data() )[i];
         }
 
         /**
@@ -1312,7 +1175,7 @@ namespace RINGMesh {
          * \param[in] val the value
          */
         void fill(bool val) {
-            for(index_t i=0; i<superclass::nb_elements(); ++i) {
+            for(index_t i=0; i<superclass::store_->nb_elements(); ++i) {
                 element(i) = Byte(val);
             }
         }
@@ -1328,8 +1191,8 @@ namespace RINGMesh {
          * \return a modifiable reference to the \p i%th element
          */
         Byte& element(unsigned int i) {
-            geo_debug_assert(i < superclass::nb_elements());
-            return ((Byte*)superclass::base_addr_)[i];
+            geo_debug_assert(i < superclass::store_->nb_elements());
+            return superclass::store_->data()[i];
         }
 
         /**
@@ -1338,8 +1201,8 @@ namespace RINGMesh {
          * \return a const reference to the \p i%th element
          */
         const Byte& element(unsigned int i) const {
-            geo_debug_assert(i < superclass::nb_elements());
-            return ((const Byte*)superclass::base_addr_)[i];
+            geo_debug_assert(i < superclass::store_->nb_elements());
+            return superclass::store_->data()[i];
         }
 
     private:
@@ -1359,7 +1222,7 @@ namespace RINGMesh {
      * \brief Access to an attribute as a double regardless its type.
      * \details The attribute can be an element of a vector attribute.
      */
-    class RINGMESH_API ReadOnlyScalarAttributeAdapter: public AttributeStoreObserver {
+    class RINGMESH_API ReadOnlyScalarAttributeAdapter {
 
     public:
         /**
@@ -1423,7 +1286,6 @@ namespace RINGMesh {
         void unbind()
         {
             ringmesh_assert( is_bound() );
-            unregister_me( const_cast< AttributeStore* >( store_ ) );
             manager_ = nullptr;
             store_ = nullptr;
             element_type_ = ET_NONE;
