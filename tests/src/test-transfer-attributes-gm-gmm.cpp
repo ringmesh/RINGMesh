@@ -165,12 +165,12 @@ namespace
     void assign_cell_attribute_values( index_t cell_i,
         double cell_volume,
         const vec3& cell_barycenter,
-        GEO::Attribute< long int >& cell_long_int_attr,
-        GEO::Attribute< bool >& cell_bool_attr,
-        GEO::Attribute< double >& cell_double_attr,
-        GEO::Attribute< vec3 >& cell_vec3_attr,
-        GEO::Attribute< double >& cell_dim_6_double_attr,
-        GEO::Attribute< char >& cell_char_attr )
+        Attribute< long int >& cell_long_int_attr,
+        Attribute< bool >& cell_bool_attr,
+        Attribute< double >& cell_double_attr,
+        Attribute< vec3 >& cell_vec3_attr,
+        Attribute< double >& cell_dim_6_double_attr,
+        Attribute< char >& cell_char_attr )
     {
         const long int rounded_volume = std::lrint( cell_volume );
         cell_long_int_attr[cell_i] = rounded_volume;
@@ -251,7 +251,7 @@ namespace
         }
     }
 
-    void check_attribute_exists( GEO::AttributesManager& attr_mgr,
+    void check_attribute_exists( AttributesManager& attr_mgr,
         const std::string& attr_name,
         const std::string& on_mesh,
         const std::string& stored_on )
@@ -264,7 +264,7 @@ namespace
         }
     }
 
-    void check_attributes_exist_on_mesh( GEO::AttributesManager& attr_mgr,
+    void check_attributes_exist_on_mesh( AttributesManager& attr_mgr,
         const std::string& on_mesh,
         const std::string& stored_on )
     {
@@ -374,22 +374,22 @@ namespace
         for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
         {
             const Region3D& cur_reg = geomodel.region( reg_i );
-            GEO::AttributesManager& reg_v_attr_mgr =
+            AttributesManager& reg_v_attr_mgr =
                 cur_reg.vertex_attribute_manager();
             check_attributes_exist_on_mesh(
                 reg_v_attr_mgr, "geomodel region", "vertices" );
 
-            GEO::Attribute< long int > vertex_long_int_attr(
+            Attribute< long int > vertex_long_int_attr(
                 reg_v_attr_mgr, attribute_names[0] );
-            GEO::Attribute< bool > vertex_bool_attr(
+            Attribute< bool > vertex_bool_attr(
                 reg_v_attr_mgr, attribute_names[1] );
-            GEO::Attribute< double > vertex_double_attr(
+            Attribute< double > vertex_double_attr(
                 reg_v_attr_mgr, attribute_names[2] );
-            GEO::Attribute< vec3 > vertex_vec3_attr(
+            Attribute< vec3 > vertex_vec3_attr(
                 reg_v_attr_mgr, attribute_names[3] );
-            GEO::Attribute< double > vertex_dim_6_double_attr(
+            Attribute< double > vertex_dim_6_double_attr(
                 reg_v_attr_mgr, attribute_names[4] );
-            GEO::Attribute< char > vertex_char_attr(
+            Attribute< char > vertex_char_attr(
                 reg_v_attr_mgr, attribute_names[5] );
 
             for( index_t vertex_i = 0; vertex_i < cur_reg.nb_vertices();
@@ -473,21 +473,21 @@ namespace
     {
         const GeoModelMesh3D& gmm = geomodel.mesh;
         const GeoModelMeshCells3D& gmmc = gmm.cells;
-        GEO::AttributesManager& gmmc_attr_mgr = gmmc.attribute_manager();
+        AttributesManager& gmmc_attr_mgr = gmmc.attribute_manager();
         check_attributes_exist_on_mesh(
             gmmc_attr_mgr, "geomodelmesh", "cells" );
 
-        GEO::Attribute< long int > cell_long_int_attr(
+        Attribute< long int > cell_long_int_attr(
             gmmc_attr_mgr, attribute_names[0] );
-        GEO::Attribute< bool > cell_bool_attr(
+        Attribute< bool > cell_bool_attr(
             gmmc_attr_mgr, attribute_names[1] );
-        GEO::Attribute< double > cell_double_attr(
+        Attribute< double > cell_double_attr(
             gmmc_attr_mgr, attribute_names[2] );
-        GEO::Attribute< vec3 > cell_vec3_attr(
+        Attribute< vec3 > cell_vec3_attr(
             gmmc_attr_mgr, attribute_names[3] );
-        GEO::Attribute< double > cell_dim_6_double_attr(
+        Attribute< double > cell_dim_6_double_attr(
             gmmc_attr_mgr, attribute_names[4] );
-        GEO::Attribute< char > cell_char_attr(
+        Attribute< char > cell_char_attr(
             gmmc_attr_mgr, attribute_names[5] );
 
         for( index_t cell_i = 0; cell_i < gmmc.nb_cells(); ++cell_i )
