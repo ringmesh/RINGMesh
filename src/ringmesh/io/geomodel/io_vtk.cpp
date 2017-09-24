@@ -59,15 +59,8 @@ namespace {
         &tet_descriptor_vtk, &hex_descriptor_vtk, &prism_descriptor_vtk,
         &pyramid_descriptor_vtk };
 
-    class VTKIOHandler final: public GeoModelIOHandler< 3 > {
+    class VTKIOHandler final: public GeoModelOutputHandler3D {
     public:
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from VTK not implemented yet" );
-        }
         void save(
             const GeoModel3D& geomodel,
             const std::string& filename ) final

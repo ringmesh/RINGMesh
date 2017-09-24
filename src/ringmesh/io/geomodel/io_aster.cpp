@@ -64,15 +64,8 @@ namespace {
      * @warning It supposes you have the mesh duplicate around the
      * faults if you want to use friction laws in aster
      */
-    class AsterIOHandler final: public GeoModelIOHandler< 3 > {
+    class AsterIOHandler final: public GeoModelOutputHandler3D {
     public:
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from Code_Aster mesh not implemented yet" );
-        }
         void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
@@ -125,7 +118,7 @@ namespace {
         void write_polygons( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
-            for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
+            for( const auto& surface : geomodel.surfaces() ) {
                 // -1 because polygons doesn' t exist in aster
                 for( auto pt : range(
                     to_underlying_type( PolygonType::UNDEFINED ) - 1 ) ) {
@@ -185,7 +178,7 @@ namespace {
 
         void write_regions( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            for( const auto& region : region_range < 3 > ( geomodel ) ) {
+            for( const auto& region : geomodel.regions() ) {
                 if( region.is_meshed() ) {
                     out << "GROUP_MA" << EOL;
                     out << region.name() << EOL;

@@ -158,19 +158,12 @@ namespace {
     /*!
      * @brief Export for the Stradivarius .model format
      */
-    class StradivariusIOHandler final: public GeoModelIOHandler< 2 > {
+    class StradivariusIOHandler final: public GeoModelInputHandler2D {
     public:
         void load( const std::string& filename, GeoModel2D& geomodel ) final
         {
             StradivariusBuilder builder{ geomodel, filename };
             builder.build_geomodel();
-        }
-        void save( const GeoModel2D& geomodel, const std::string& filename ) final
-        {
-            ringmesh_unused( geomodel );
-            ringmesh_unused( filename );
-            throw RINGMeshException( "I/O",
-                "Cannot save a GeoModel for Stradivarius" );
         }
     };
 

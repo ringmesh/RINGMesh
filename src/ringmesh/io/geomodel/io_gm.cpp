@@ -839,7 +839,7 @@ namespace {
     }
 
     template< index_t DIMENSION >
-    class GeoModelHandlerGM final : public GeoModelIOHandler< DIMENSION > {
+    class GeoModelHandlerGM final : public GeoModelOutputHandler< DIMENSION >, public GeoModelInputHandler< DIMENSION >  {
     public:
         void load( const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
         {

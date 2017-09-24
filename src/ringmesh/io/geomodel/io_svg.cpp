@@ -225,21 +225,12 @@ namespace {
         double height_;
     };
 
-    class SVGIOHandler final: public GeoModelIOHandler< 2 > {
+    class SVGIOHandler final: public GeoModelInputHandler2D {
     public:
-        virtual ~SVGIOHandler() = default;
-
         void load( const std::string& filename, GeoModel2D& geomodel ) final
         {
             GeoModelBuilderSVG builder( geomodel, filename );
             builder.build_geomodel();
-        }
-        void save( const GeoModel2D& geomodel, const std::string& filename ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Saving a GeoModel in svg not implemented yet" );
         }
     };
 
