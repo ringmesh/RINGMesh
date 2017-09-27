@@ -106,4 +106,4 @@ namespace RINGMesh
         std::vector< vec2 > compute_projected_vertices(
             const GeoModelMeshEntity3D& entity );
     };
-}
+} // namespace RINGMesh

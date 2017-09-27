@@ -48,7 +48,7 @@
 namespace GEO
 {
     class AttributesManager;
-}
+} // namespace GEO
 
 namespace RINGMesh
 {
