@@ -77,11 +77,6 @@ namespace RINGMesh {
         std::string element_typeid_name_;
     };
 
-    /**
-     * \brief Notifies a set of AttributeStoreObservers
-     *  each time the stored array changes size and/or
-     *  base address and/or dimension.
-     */
     class RINGMESH_API AttributeStore {
     public:
         /**
@@ -211,7 +206,7 @@ namespace RINGMesh {
         /**
          * \brief Creates a new AttributeStore that is a carbon copy
          *  of this AttributeStore.
-         * \details Only the data is copied, observers are not copied.
+         * \details Only the data is copied.
          */
         virtual AttributeStore* clone() const = 0;
 
@@ -378,8 +373,7 @@ namespace RINGMesh {
     protected:
         /**
          * \brief If size or base address differ from the
-         *  cached values, notify all the observers,
-         *  and update the cached base address and size.
+         *  cached values, it updates the cached base address and size.
          * \param[in] base_addr the new base address
          * \param[in] size the new size
          * \param[in] dim the new dimension
@@ -398,16 +392,12 @@ namespace RINGMesh {
         static std::map< std::string, std::string > typeid_name_to_type_name_;
 
         static std::map< std::string, std::string > type_name_to_typeid_name_;
-
-        friend class AttributeStoreObserver;
     };
 
     /*********************************************************************/
 
     /**
-     * \brief Stores an array of elements of a given type,
-     *  and notifies a set of AttributeStoreObservers each time the
-     *  storead array changes size and/or base address.
+     * \brief Stores an array of elements of a given type.
      */
     template< class T > class TypedAttributeStore: public AttributeStore {
     public:
@@ -992,7 +982,7 @@ namespace RINGMesh {
          */
         T& operator[]( unsigned int i )
         {
-            ringmesh_assert( i < superclass::nb_elements() );
+            ringmesh_assert( i < superclass::size() );
             return ( (T*) superclass::store_->data() )[i];
         }
 

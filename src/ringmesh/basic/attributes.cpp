@@ -85,7 +85,6 @@ namespace RINGMesh {
     {
         // It is illegal to keep an Attribute<> active
         // when the object it is bound to is destroyed.
-        ringmesh_assert( !has_observers() );
     }
 
     void AttributeStore::apply_permutation(
@@ -225,7 +224,6 @@ namespace RINGMesh {
         std::map<std::string, AttributeStore*>::iterator
             it = attributes_.find( name );
         ringmesh_assert( it != attributes_.end() );
-        ringmesh_assert( !it->second->has_observers() );
         delete it->second;
         attributes_.erase( it );
     }
