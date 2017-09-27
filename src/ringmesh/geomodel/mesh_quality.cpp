@@ -376,7 +376,7 @@ namespace RINGMesh
                 reg_attr_mgr, mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
             for( auto cell_itr : range( region.nb_mesh_elements() ) )
             {
-                attr[cell_itr] =
+                attr.set_value( cell_itr,
                     get_tet_quality( region.mesh_element_vertex(
                                          ElementLocalVertex( cell_itr, 0 ) ),
                         region.mesh_element_vertex(
@@ -385,7 +385,7 @@ namespace RINGMesh
                             ElementLocalVertex( cell_itr, 2 ) ),
                         region.mesh_element_vertex(
                             ElementLocalVertex( cell_itr, 3 ) ),
-                        mesh_qual_mode );
+                        mesh_qual_mode ) );
             }
         }
     }

@@ -59,7 +59,7 @@ void test_attributes()
     }
 
     Attribute< T > attribute1( manager, "attribute" );
-    attribute1[5] = T(1);
+    attribute1.set_value(5, T( 1 ) );
 
     for( auto i : range( 10 ) )
     {

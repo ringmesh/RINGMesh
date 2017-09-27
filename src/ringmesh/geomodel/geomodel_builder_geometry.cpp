@@ -955,8 +955,8 @@ namespace RINGMesh
                     auto dim_nb = attr.dimension();
                     for( auto dim : range( dim_nb ) )
                     {
-                        attr[( vertices_nb + v ) * dim_nb + dim] =
-                            attr[cell_vertex * dim_nb + dim];
+                        attr.set_value( ( vertices_nb + v ) * dim_nb + dim,
+                            attr[cell_vertex * dim_nb + dim] );
                     }
                 }
             }

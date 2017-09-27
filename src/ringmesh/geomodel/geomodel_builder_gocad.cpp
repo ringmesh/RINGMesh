@@ -629,8 +629,8 @@ namespace
             {
                 for( auto attrib_dim_itr : range( nb_dimensions ) )
                 {
-                    attr[v_itr * nb_dimensions + attrib_dim_itr] =
-                        region_attributes[v_itr][read_fields + attrib_dim_itr];
+                    attr.set_value( v_itr * nb_dimensions + attrib_dim_itr,
+                        region_attributes[v_itr][read_fields + attrib_dim_itr] );
                 }
             }
             read_fields += nb_dimensions;
