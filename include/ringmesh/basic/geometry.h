@@ -257,7 +257,6 @@ namespace RINGMesh
 
     struct RINGMESH_API ReferenceFrame3D : public Frame3D
     {
-        using Frame3D::Frame3D;
         ReferenceFrame3D() = default;
 
         ReferenceFrame3D( vec3 frame_origin, Frame3D frame )
