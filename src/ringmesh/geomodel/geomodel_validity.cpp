@@ -1531,7 +1531,7 @@ namespace RINGMesh
     bool is_geomodel_valid( const GeoModel< DIMENSION >& geomodel,
         ValidityCheckMode validity_check_mode )
     {
-        if( !GEO::CmdLine::get_arg_bool( "in:intersection_check" ) )
+        if( !GEO::CmdLine::get_arg_bool( "validity_intersection_check" ) )
         {
             validity_check_mode =
                 validity_check_mode ^ ValidityCheckMode::POLYGON_INTERSECTIONS;

@@ -62,6 +62,9 @@ namespace RINGMesh
                 "Directory to save meshes representing geomodel "
                 "inconsistencies",
                 GEO::CmdLine::ARG_ADVANCED );
+            GEO::CmdLine::declare_arg( "validity_intersection_check", true,
+                "Toggle the surface intersection check at loading",
+                GEO::CmdLine::ARG_ADVANCED );
         }
 
         void import_arg_group_in()
@@ -69,9 +72,6 @@ namespace RINGMesh
             GEO::CmdLine::declare_arg_group( "in", "Input data" );
             GEO::CmdLine::declare_arg(
                 "in:geomodel", "", "Filename of the input geological model" );
-            GEO::CmdLine::declare_arg( "in:intersection_check", true,
-                "Toggle the surface intersection check at loading",
-                GEO::CmdLine::ARG_ADVANCED );
             GEO::CmdLine::declare_arg(
                 "in:wells", "", "Filename of the input wells" );
         }
