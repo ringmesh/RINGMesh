@@ -71,7 +71,7 @@ namespace RINGMesh
                 "I/O", "Error while loading Stratigraphic Column XML file." );
         }
         tinyxml2::XMLNode* root = column.FirstChild();
-        if( root == nil )
+        if( root == nullptr )
         {
             throw RINGMeshException( "I/O",
                 "Error while getting root of Stratigraphic Column XML file." );
@@ -89,31 +89,31 @@ namespace RINGMesh
         tinyxml2::XMLElement* unit = units->FirstChildElement( "unit" );
 
         std::vector< std::string > unitList;
-        while( unit != 0 )
+        while( unit != nullptr )
         {
             tinyxml2::XMLElement* name = unit->FirstChildElement( "name" );
-            unitList.push_back( name->GetText() );
+            unitList.emplace_back( name->GetText() );
             tinyxml2::XMLElement* top = unit->FirstChildElement( "top" );
-            if( top != 0 )
+            if( top != nullptr )
             {
                 tinyxml2::XMLElement* name_top =
                     top->FirstChildElement( "name" );
-                unitList.push_back( name_top->GetText() );
+                unitList.emplace_back( name_top->GetText() );
             }
             else
             {
-                unitList.push_back( "none" );
+                unitList.emplace_back( "none" );
             }
             tinyxml2::XMLElement* base = unit->FirstChildElement( "base" );
-            if( base != 0 )
+            if( base != nullptr )
             {
                 tinyxml2::XMLElement* name_base =
                     base->FirstChildElement( "name" );
-                unitList.push_back( name_base->GetText() );
+                unitList.emplace_back( name_base->GetText() );
             }
             else
             {
-                unitList.push_back( "none" );
+                unitList.emplace_back( "none" );
             }
             unit = unit->NextSiblingElement( "unit" );
         }
