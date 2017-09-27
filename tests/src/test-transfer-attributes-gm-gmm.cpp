@@ -86,17 +86,18 @@ namespace
     {
         const long int rounded_vertex_xy =
             std::lrint( cur_vertex.x * cur_vertex.y );
-        vertex_long_int_attr[vertex_i] = rounded_vertex_xy;
-        vertex_bool_attr[vertex_i] = ( rounded_vertex_xy % 2 == 0 );
-        vertex_double_attr[vertex_i] = cur_vertex.x;
-        vertex_vec3_attr[vertex_i] = cur_vertex;
-        vertex_dim_6_double_attr[vertex_i * 6 + 0] = cur_vertex.x;
-        vertex_dim_6_double_attr[vertex_i * 6 + 1] = cur_vertex.y;
-        vertex_dim_6_double_attr[vertex_i * 6 + 2] = cur_vertex.z;
-        vertex_dim_6_double_attr[vertex_i * 6 + 3] = cur_vertex.x;
-        vertex_dim_6_double_attr[vertex_i * 6 + 4] = cur_vertex.y;
-        vertex_dim_6_double_attr[vertex_i * 6 + 5] = cur_vertex.z;
-        vertex_char_attr[vertex_i] = std::to_string( cur_vertex.y ).data()[0];
+        vertex_long_int_attr.set_value(vertex_i, rounded_vertex_xy );
+        vertex_bool_attr.set_value( vertex_i, ( rounded_vertex_xy % 2 == 0 ) );
+        vertex_double_attr.set_value(vertex_i, cur_vertex.x );
+        vertex_vec3_attr.set_value(vertex_i, cur_vertex );
+        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 0, cur_vertex.x );
+        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 1, cur_vertex.y );
+        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 1, cur_vertex.y );
+        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 2, cur_vertex.z );
+        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 3, cur_vertex.x );
+        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 4, cur_vertex.y );
+        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 5, cur_vertex.z );
+        vertex_char_attr.set_value( vertex_i, std::to_string( cur_vertex.y ).data()[0] );
     }
 
     void set_vertex_attributes_on_geomodel_regions( const GeoModel3D& geomodel )
@@ -173,18 +174,18 @@ namespace
         Attribute< char >& cell_char_attr )
     {
         const long int rounded_volume = std::lrint( cell_volume );
-        cell_long_int_attr[cell_i] = rounded_volume;
-        cell_bool_attr[cell_i] = ( rounded_volume % 2 == 0 );
-        cell_double_attr[cell_i] = cell_volume;
-        cell_vec3_attr[cell_i] = cell_barycenter;
-        cell_dim_6_double_attr[cell_i * 6 + 0] = cell_vec3_attr[cell_i].x;
-        cell_dim_6_double_attr[cell_i * 6 + 1] = cell_vec3_attr[cell_i].y;
-        cell_dim_6_double_attr[cell_i * 6 + 2] = cell_vec3_attr[cell_i].z;
-        cell_dim_6_double_attr[cell_i * 6 + 3] = cell_vec3_attr[cell_i].x;
-        cell_dim_6_double_attr[cell_i * 6 + 4] = cell_vec3_attr[cell_i].y;
-        cell_dim_6_double_attr[cell_i * 6 + 5] = cell_vec3_attr[cell_i].z;
-        cell_char_attr[cell_i] =
-            std::to_string( cell_vec3_attr[cell_i].y ).data()[0];
+        cell_long_int_attr.set_value(cell_i, rounded_volume );
+        cell_bool_attr.set_value( cell_i, ( rounded_volume % 2 == 0 ) );
+        cell_double_attr.set_value( cell_i, cell_volume);
+        cell_vec3_attr.set_value( cell_i, cell_barycenter);
+        cell_dim_6_double_attr.set_value( cell_i * 6 + 0, cell_vec3_attr[cell_i].x );
+        cell_dim_6_double_attr.set_value( cell_i * 6 + 1, cell_vec3_attr[cell_i].y );
+        cell_dim_6_double_attr.set_value( cell_i * 6 + 2, cell_vec3_attr[cell_i].z );
+        cell_dim_6_double_attr.set_value( cell_i * 6 + 3, cell_vec3_attr[cell_i].x );
+        cell_dim_6_double_attr.set_value( cell_i * 6 + 4, cell_vec3_attr[cell_i].y );
+        cell_dim_6_double_attr.set_value( cell_i * 6 + 5, cell_vec3_attr[cell_i].z );
+        cell_char_attr.set_value( cell_i,
+            std::to_string( cell_vec3_attr[cell_i].y ).data()[0] );
     }
 
     void set_cell_attributes_on_geomodel_regions( const GeoModel3D& geomodel )

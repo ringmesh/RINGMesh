@@ -978,12 +978,12 @@ namespace RINGMesh {
         /**
          * \brief Gets a modifiable element by index
          * \param [in] i index of the element
-         * \return a modifiable reference to the \p i%th element
+         * \param [in] value to set at the \p i%th element
          */
-        T& operator[]( unsigned int i )
+        void set_value( unsigned int i, T value )
         {
             ringmesh_assert( i < superclass::size() );
-            return ( (T*) superclass::store_->data() )[i];
+            ( ( T* ) superclass::store_->data() )[i] = value ;
         }
 
         /**
@@ -993,8 +993,18 @@ namespace RINGMesh {
          */
         const T& operator[]( unsigned int i ) const
         {
-            ringmesh_assert( i < superclass::nb_elements() );
-            return ( (const T*) superclass::store_->data() )[i];
+            return value( i );
+        }
+
+        /**
+        * \brief Gets an element by index
+        * \param [in] i index of the element
+        * \return a const reference to the \p i%th element
+        */
+        const T& value( unsigned int i ) const
+        {
+            ringmesh_assert( i < superclass::size() );
+            return ( ( const T* ) superclass::store_->data() )[i];
         }
 
         /**
@@ -1150,13 +1160,19 @@ namespace RINGMesh {
             index_t index_;
         };
 
-
-        BoolAttributeAccessor operator[](index_t i) {
-            return BoolAttributeAccessor(*this,i);
+        ConstBoolAttributeAccessor value( index_t i ) const
+        {
+            return ConstBoolAttributeAccessor( *this, i );
         }
 
-        ConstBoolAttributeAccessor operator[](index_t i) const {
-            return ConstBoolAttributeAccessor(*this,i);
+        ConstBoolAttributeAccessor operator[]( index_t i ) const
+        {
+            return value (i);
+        }
+
+        void set_value( index_t i, bool value )
+        {
+            BoolAttributeAccessor(*this, i) = value;
         }
 
         /**
