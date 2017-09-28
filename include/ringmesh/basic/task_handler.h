@@ -35,12 +35,10 @@
 
 #pragma once
 
-
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/logger.h>
 
 #include <future>
-
 
 #include <geogram/basic/command_line.h>
 
@@ -49,29 +47,32 @@
  * @author Antoine Mazuyer
  */
 
-namespace RINGMesh {
-    class TaskHandler {
+namespace RINGMesh
+{
+    class TaskHandler
+    {
     public:
-        TaskHandler()
-            : multi_thread_( GEO::CmdLine::get_arg_bool( "sys:multithread" ) )
+        template< typename TASK, typename ... Args >
+        void add_or_execute_task( TASK&& task, const Args&... args )
         {
-
-        }
-
-        template< typename TASK, typename T >
-        void add_or_execute_task( TASK&& task, T pointer )
-        {
-            if( multi_thread_ ) {
-                tasks_.emplace_back( std::async( std::launch::async, task, pointer ) );
-            } else {
-                task();
+            if( multi_thread_ )
+            {
+                tasks_.emplace_back(
+                    std::async( std::launch::async, task,
+                        std::forward< const Args& >( args )... ) );
+            }
+            else
+            {
+                task( std::forward< const Args& >( args )... );
             }
         }
 
         void execute_aysnc_tasks()
         {
-            if( !tasks_.empty() ) {
-                for( auto& task : tasks_ ) {
+            if( !tasks_.empty() )
+            {
+                for( auto& task : tasks_ )
+                {
                     task.get();
                 }
             }
@@ -82,7 +83,7 @@ namespace RINGMesh {
 
         /// Tells whether or not the multithreading
         /// is enabled.
-        bool multi_thread_;
+        bool multi_thread_ { GEO::CmdLine::get_arg_bool( "sys:multithread" ) };
     };
 
 //    /*!
