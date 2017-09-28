@@ -53,12 +53,12 @@ namespace RINGMesh
     {
     public:
         template< typename TASK, typename T, typename ... Args >
-        void add_or_execute_task( TASK&& task, T* context, const Args&... args )
+        void execute_method( TASK&& task, T* context, const Args&... args )
         {
             if( multi_thread_ )
             {
                 tasks_.emplace_back(
-                    std::async( std::launch::async, task,context,
+                    std::async( std::launch::async, task, context,
                         std::forward< const Args& >( args )... ) );
             }
             else
@@ -67,7 +67,22 @@ namespace RINGMesh
             }
         }
 
-        void execute_aysnc_tasks()
+        template< typename TASK, typename ... Args >
+        void execute_function( TASK&& task, const Args&... args )
+        {
+            if( multi_thread_ )
+            {
+                tasks_.emplace_back(
+                    std::async( std::launch::async, task,
+                        std::forward< const Args& >( args )... ) );
+            }
+            else
+            {
+                task( std::forward< const Args& >( args )... );
+            }
+        }
+
+        void wait_aysnc_tasks()
         {
             if( !tasks_.empty() )
             {
