@@ -389,4 +389,4 @@ namespace RINGMesh
             }
         }
     }
-}
+} // namespace RINGMesh

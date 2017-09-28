@@ -311,21 +311,21 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::copy_meshes(
-        const GeoModel< DIMENSION >& geomodel )
+        const GeoModel< DIMENSION >& from )
     {
-        copy_meshes( geomodel, Corner< DIMENSION >::type_name_static() );
-        copy_meshes( geomodel, Line< DIMENSION >::type_name_static() );
-        copy_meshes( geomodel, Surface< DIMENSION >::type_name_static() );
+        copy_meshes( from, Corner< DIMENSION >::type_name_static() );
+        copy_meshes( from, Line< DIMENSION >::type_name_static() );
+        copy_meshes( from, Surface< DIMENSION >::type_name_static() );
     }
 
     template < index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::set_mesh_entity_vertex(
-        const gmme_id& t,
+        const gmme_id& entity_id,
         index_t v,
         const vecn< DIMENSION >& point,
         bool update )
     {
-        auto& E = geomodel_access_.modifiable_mesh_entity( t );
+        auto& E = geomodel_access_.modifiable_mesh_entity( entity_id );
         auto& geomodel_vertices = geomodel_.mesh.vertices;
         ringmesh_assert( v < E.nb_vertices() );
         if( update )
@@ -358,11 +358,11 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::set_mesh_entity_vertices(
-        const gmme_id& id,
+        const gmme_id& entity_id,
         const std::vector< vecn< DIMENSION > >& points,
         bool clear )
     {
-        auto& E = geomodel_access_.modifiable_mesh_entity( id );
+        auto& E = geomodel_access_.modifiable_mesh_entity( entity_id );
         GeoModelMeshEntityAccess< DIMENSION > gmme_access( E );
         auto builder =
             MeshBaseBuilder< DIMENSION >::create_builder(
