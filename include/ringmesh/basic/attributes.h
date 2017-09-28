@@ -482,6 +482,60 @@ namespace RINGMesh {
         std::vector< T > store_;
     };
 
+    template< class T > class ConstantStore: public TypedAttributeStore< T > {
+    public:
+
+        /**
+        * \brief Creates a new empty attribute store.
+        * \param[in] dim number of elements in each item,
+        *  default value is 1, can be greater for vector
+        *  attributes.
+        */
+        ConstantStore( index_t dim = 1 )
+            : TypedAttributeStore< T >( dim )
+        {
+        }
+
+        virtual void resize( index_t new_size )
+        {
+            store_.resize( this->dimension() );
+        }
+
+
+        virtual void clear( bool keep_memory = false )
+        {
+            if( keep_memory ) {
+                store_.resize( 0 );
+            } else {
+                store_.clear();
+            }
+        }
+
+        virtual void redim( index_t dim )
+        {
+            if( dim == this->dimension() ) {
+                return;
+            }
+            std::vector< T > new_store( dim );
+            index_t copy_dim = std::min( dim, this->dimension() );
+            for( index_t c = 0; c < copy_dim; ++c ) {
+                new_store[c] = store_[c];
+            }
+            store_.swap( new_store );
+        }
+
+        virtual AttributeStore* clone() const
+        {
+            ConstantStore< T >* result = new ConstantStore< T >(
+                this->dimension() );
+            result->resize( this->size() );
+            result->store_ = store_;
+            return result;
+        }
+
+    private:
+        std::vector< T > store_;
+    };
 
     /*********************************************************************/
 
