@@ -416,7 +416,7 @@ namespace RINGMesh
     public:
         GeoModel();
 
-        GeoModel( PlaneReferenceFrame3D plane_reference_frame );
+        explicit GeoModel( PlaneReferenceFrame3D plane_reference_frame );
 
         ~GeoModel() override;
 

@@ -919,7 +919,7 @@ namespace RINGMesh
     SurfaceBase< DIMENSION >::SurfaceBase(
         const GeoModel< DIMENSION >& geomodel,
         index_t id,
-        const MeshType type )
+        const MeshType& type )
         : GeoModelMeshEntity< DIMENSION >( geomodel, id )
     {
         update_mesh_storage_type( SurfaceMesh< DIMENSION >::create_mesh( type ) );
@@ -1097,7 +1097,7 @@ namespace RINGMesh
     template < index_t DIMENSION >
     Region< DIMENSION >::Region( const GeoModel< DIMENSION >& geomodel,
         index_t id,
-        const MeshType type )
+        const MeshType& type )
         : GeoModelMeshEntity< DIMENSION >( geomodel, id )
     {
         update_mesh_storage_type(

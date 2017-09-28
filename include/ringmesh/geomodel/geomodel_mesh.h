@@ -144,6 +144,7 @@ namespace RINGMesh
     class RINGMESH_API GeoModelMeshVerticesBase
         : public GeoModelMeshCommon< DIMENSION >
     {
+    ringmesh_disable_copy_and_move( GeoModelMeshVerticesBase );
     public:
         friend class GeoModelMeshWells< DIMENSION >;
         friend class GeoModelMeshEdges< DIMENSION >;
@@ -314,7 +315,7 @@ namespace RINGMesh
          */
         virtual index_t nb_total_vertices() const;
         virtual index_t fill_vertices();
-        void fill_vertices_for_entity_type( const GeoModel< DIMENSION >& M,
+        void fill_vertices_for_entity_type( const GeoModel< DIMENSION >& geomodel,
             const MeshEntityType& entity_type,
             index_t& count );
 
@@ -1270,9 +1271,9 @@ namespace RINGMesh
         /*!
          * Test if we need to duplicate mesh cell along the given
          * surface according the duplicate mode
-         * @param[in] s the surface index in the GeoModel
+         * @param[in] surface_id the surface index in the GeoModel
          */
-        bool is_surface_to_duplicate( index_t surface ) const;
+        bool is_surface_to_duplicate( index_t surface_id ) const;
 
         /*!
          * Determine the actions to do according the action_on_surfaces

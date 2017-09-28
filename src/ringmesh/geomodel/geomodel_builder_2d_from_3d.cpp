@@ -71,7 +71,7 @@ namespace
     const std::map< GeologicalEntityType, GeologicalEntityType >
         geol_entity_type_2d_to_3d_map =
             GeologicalEntityTypeMapFrom2DTo3DInitializer::initialize_map();
-}
+} // namespace
 
 namespace RINGMesh
 {
@@ -189,4 +189,4 @@ namespace RINGMesh
         }
         return projected_vertices;
     }
-}
+} // namespace RINGMesh

@@ -1618,7 +1618,12 @@ namespace RINGMesh
         std::tie( nb_connected_components, std::ignore ) =
             line->connected_components();
 
-        return nb_connected_components == 1;
+        if( nb_connected_components != 1 )
+        {
+            Logger::warn( "Validity", "GeoModel has not a finite extension" );
+            return false;
+        }
+        return true;
     }
 
     template <>
@@ -1686,7 +1691,12 @@ namespace RINGMesh
         std::tie( nb_connected_components, std::ignore ) =
             surface->connected_components();
 
-        return nb_connected_components == 1;
+        if( nb_connected_components != 1 )
+        {
+            Logger::warn( "Validity", "GeoModel has not a finite extension" );
+            return false;
+        }
+        return true;
     }
 
     template bool RINGMESH_API is_geomodel_valid< 2 >(
