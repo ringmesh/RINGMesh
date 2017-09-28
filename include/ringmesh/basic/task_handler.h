@@ -52,18 +52,18 @@ namespace RINGMesh
     class TaskHandler
     {
     public:
-        template< typename TASK, typename ... Args >
-        void add_or_execute_task( TASK&& task, const Args&... args )
+        template< typename TASK, typename T, typename ... Args >
+        void add_or_execute_task( TASK&& task, T* context, const Args&... args )
         {
             if( multi_thread_ )
             {
                 tasks_.emplace_back(
-                    std::async( std::launch::async, task,
+                    std::async( std::launch::async, task,context,
                         std::forward< const Args& >( args )... ) );
             }
             else
             {
-                task( std::forward< const Args& >( args )... );
+                context->task( std::forward< const Args& >( args )... );
             }
         }
 
