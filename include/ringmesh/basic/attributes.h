@@ -37,6 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/logger.h>
+#include <ringmesh/basic/factory.h>
 #include <geogram/basic/geofile.h>
 #include <map>
 #include <typeinfo>
@@ -1303,14 +1304,7 @@ namespace RINGMesh {
         /**
          * \brief ReadOnlyScalarAttributeAdapter constructor.
          */
-        ReadOnlyScalarAttributeAdapter()
-            :
-                manager_( nullptr ),
-                store_( nullptr ),
-                element_type_( ET_NONE ),
-                element_index_( index_t( -1 ) )
-        {
-        }
+        ReadOnlyScalarAttributeAdapter() = delete;
 
         /**
          * \brief ReadOnlyScalarAttributeAdapter constructor.
@@ -1372,7 +1366,7 @@ namespace RINGMesh {
          *  by binding with the same name. To destroy the attribute,
          *  use detroy() instead.
          */
-        ~ReadOnlyScalarAttributeAdapter()
+        virtual ~ReadOnlyScalarAttributeAdapter()
         {
             if( is_bound() ) {
                 unbind();
@@ -1440,39 +1434,7 @@ namespace RINGMesh {
          *  into a double
          * \pre is_bound() && i < size()
          */
-        double operator[]( index_t i )
-        {
-            double result = 0.0;
-            switch( element_type_ ) {
-                case ET_UINT8:
-                    result = get_element< uint8 >( i );
-                    break;
-                case ET_INT8:
-                    result = get_element< int8 >( i );
-                    break;
-                case ET_UINT32:
-                    result = get_element< uint32 >( i );
-                    break;
-                case ET_INT32:
-                    result = get_element< int32 >( i );
-                    break;
-                case ET_FLOAT32:
-                    result = get_element< float32 >( i );
-                    break;
-                case ET_FLOAT64:
-                    result = get_element< float64 >( i );
-                    break;
-                case ET_VEC2:
-                    result = get_element< float64 >( i, 2 );
-                    break;
-                case ET_VEC3:
-                    result = get_element< float64 >( i, 3 );
-                    break;
-                case ET_NONE:
-                    ringmesh_assert_not_reached;
-            }
-            return result;
-        }
+        virtual double operator[]( index_t i ) = 0;
 
         /**
          * \brief Tests whether a ReadOnlyScalarAttributeAdapter can
@@ -1540,13 +1502,18 @@ namespace RINGMesh {
                     * multiplier ) + element_index_] );
         }
 
-    private:
+    public:
         const AttributesManager* manager_;
         const AttributeStore* store_;
         ElementType element_type_;
         index_t element_index_;
     };
-
+    using ReadOnlyScalarAttributeAdapterFactory =
+        Factory< std::string,
+        ReadOnlyScalarAttributeAdapter,
+        const AttributesManager&,
+        const std::string& >;
+    void register_read_only_scalar_attribute();
 /***********************************************************/
 }
 

@@ -303,8 +303,10 @@ namespace RINGMesh {
         }
     }
 
-    /************************************************************************/
 
+
+
+    /************************************************************************/
     index_t ReadOnlyScalarAttributeAdapter::nb_scalar_elements_per_item(
         const AttributeStore* store
         )
@@ -355,7 +357,7 @@ namespace RINGMesh {
         return result;
     }
 
-    ReadOnlyScalarAttributeAdapter::ElementType
+/*    ReadOnlyScalarAttributeAdapter::ElementType
         ReadOnlyScalarAttributeAdapter::element_type( const AttributeStore* store )
     {
         if( store->element_typeid_name() == typeid( uint8 ).name() ) {
@@ -407,7 +409,7 @@ namespace RINGMesh {
         }
 
         return ET_NONE;
-    }
+    }*/
 
     void ReadOnlyScalarAttributeAdapter::bind_if_is_defined(
         const AttributesManager& manager, const std::string& name
@@ -472,6 +474,175 @@ namespace RINGMesh {
         return true;
     }
 
+    /************************************************************************/
+
+    class ReadOnlyScalarAttributeAdapterET_UINT8: public ReadOnlyScalarAttributeAdapter {
+    public:
+        ReadOnlyScalarAttributeAdapterET_UINT8(
+            const AttributesManager& manager,
+            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+        {
+            ReadOnlyScalarAttributeAdapter::element_type_ = ET_UINT8;
+        }
+
+        double operator[]( index_t i ) override
+        {
+            return get_element< uint8 >( i );
+        }
+    };
+
+    class ReadOnlyScalarAttributeAdapterET_INT8: public ReadOnlyScalarAttributeAdapter {
+    public:
+
+        ReadOnlyScalarAttributeAdapterET_INT8(
+            const AttributesManager& manager,
+            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+        {
+            ReadOnlyScalarAttributeAdapter::element_type_ = ET_INT8;
+        }
+
+        double operator[]( index_t i ) override
+        {
+            return get_element< int8 >( i );
+        }
+    };
+
+    class ReadOnlyScalarAttributeAdapterET_UINT32: public ReadOnlyScalarAttributeAdapter {
+    public:
+
+        ReadOnlyScalarAttributeAdapterET_UINT32(
+            const AttributesManager& manager,
+            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+        {
+            ReadOnlyScalarAttributeAdapter::element_type_ = ET_UINT32;
+        }
+
+        double operator[]( index_t i ) override
+        {
+            return get_element< uint32 >( i );
+        }
+    };
+
+    class ReadOnlyScalarAttributeAdapterET_INT32: public ReadOnlyScalarAttributeAdapter {
+    public:
+
+        ReadOnlyScalarAttributeAdapterET_INT32(
+            const AttributesManager& manager,
+            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+        {
+            ReadOnlyScalarAttributeAdapter::element_type_ = ET_INT32;
+        }
+
+        double operator[]( index_t i ) override
+        {
+            return get_element< int32 >( i );
+        }
+    };
+
+    class ReadOnlyScalarAttributeAdapterET_FLOAT32: public ReadOnlyScalarAttributeAdapter {
+    public:
+
+        ReadOnlyScalarAttributeAdapterET_FLOAT32(
+            const AttributesManager& manager,
+            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+        {
+            ReadOnlyScalarAttributeAdapter::element_type_ = ET_FLOAT32;
+        }
+
+        double operator[]( index_t i ) override
+        {
+            return get_element< float32 >( i );
+        }
+    };
+
+    class ReadOnlyScalarAttributeAdapterET_FLOAT64: public ReadOnlyScalarAttributeAdapter {
+    public:
+
+        ReadOnlyScalarAttributeAdapterET_FLOAT64(
+            const AttributesManager& manager,
+            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+        {
+            ReadOnlyScalarAttributeAdapter::element_type_ = ET_FLOAT64;
+        }
+
+        double operator[]( index_t i ) override
+        {
+            return get_element< float64 >( i );
+        }
+    };
+
+    class ReadOnlyScalarAttributeAdapterET_VEC2: public ReadOnlyScalarAttributeAdapter {
+    public:
+
+        ReadOnlyScalarAttributeAdapterET_VEC2(
+            const AttributesManager& manager,
+            const std::string& name ):
+            ReadOnlyScalarAttributeAdapter( manager, name )
+        {
+            ReadOnlyScalarAttributeAdapter::element_type_ = ET_VEC2;
+        }
+
+        double operator[]( index_t i ) override
+        {
+            return get_element< float64 >( i, 2 );
+        }
+    };
+
+    class ReadOnlyScalarAttributeAdapterET_VEC3: public ReadOnlyScalarAttributeAdapter {
+    public:
+
+        ReadOnlyScalarAttributeAdapterET_VEC3(
+            const AttributesManager& manager,
+            const std::string& name ):
+            ReadOnlyScalarAttributeAdapter( manager, name )
+        {
+            ReadOnlyScalarAttributeAdapter::element_type_ = ET_VEC3;
+        }
+
+        double operator[]( index_t i ) override
+        {
+            return get_element< float64 >( i, 3 );
+        }
+    };
+
+    void register_read_only_scalar_attribute()
+    {
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT8 >(
+            typeid( uint8 ).name() );
+
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT8 >(
+            typeid( char ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT8 >(
+            typeid( int8 ).name() );
+
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT32 >(
+            typeid( uint32 ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT32 >(
+            typeid( index_t ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT32 >(
+            typeid( unsigned int ).name() );
+
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT32 >(
+            typeid( int32 ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT32 >(
+            typeid( int ).name() );
+
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT32 >(
+            typeid( float32 ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT32 >(
+            typeid( float ).name() );
+
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT64 >(
+            typeid( float64 ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT64 >(
+            typeid( double ).name() );
+
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_VEC2 >(
+            typeid( vec2 ).name() );
+
+        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_VEC3 >(
+            typeid( vec3 ).name() );
+    }
     /************************************************************************/
 
 }
