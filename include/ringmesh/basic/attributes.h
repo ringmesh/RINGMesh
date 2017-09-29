@@ -55,8 +55,311 @@ namespace RINGMesh {
     class AttributeStore;
 
     class RINGMESH_API Store {
+    public:
+        Store( index_t elemsize, index_t el_dim = 1 ):
+            element_size_( elemsize ), element_dimension_( el_dim )
+        {
+        }
+
+        virtual ~Store()
+        {
+        }
+        /**
+        * \brief Gets the size.
+        * \return the number of items
+        */
+        index_t size() const
+        {
+            return size_;
+        }
+
+        /**
+        * \brief Gets the dimension.
+        * \details The dimension is 1 for standard attributes and
+        *  can be greater for vector attributes.
+        */
+        index_t dimension() const
+        {
+            return element_dimension_;
+        }
+
+        /**
+        * \brief Gets the total number of elements.
+        * \details This corresponds to one position past
+        *  the last valid index.
+        * \return the total number of elements.
+        */
+        index_t nb_elements() const
+        {
+            return size_ * element_dimension_;
+        }
+        virtual void zero() = 0;
+        virtual void* data() const = 0;
+        virtual void* data() = 0;
+
+        virtual void compress( const std::vector< index_t >& old2new ) = 0;
+        /**
+        * \brief Applies a permutation to the stored attributes.
+        * \details Applying a permutation to the data is equivalent
+        *  to:
+        * \code
+        * for(i=0; i<permutation.size(); i++) {
+        *    data2[i] = data[permutation[i]]
+        * }
+        * data = data2 ;
+        * \endcode
+        * But it is done in-place.
+        * \param[in] permutation the permutation.
+        *  It is temporarily changed during execution of the
+        *  function, but identical to the input on exit.
+        * \note This function uses memcpy(). If required, it
+        *  can be overloaded in derived classes.
+        */
+        virtual void apply_permutation( const std::vector< index_t >& permutation ) = 0;
+        /**
+        * \brief Copies an item
+        * \param[in] to index of the destination item
+        * \param[in] from index of the source item
+        */
+        virtual void copy_item( index_t to, index_t from ) = 0;
+
+
+        virtual bool elements_type_matches( const std::string& type_name ) const = 0;
+        virtual std::string element_typeid_name() const = 0;
+
+        virtual void resize( index_t new_size ) = 0;
+
+        virtual void clear( bool keep_memory = false ) = 0;
+
+        virtual void redim( index_t dim ) = 0;
+
+        virtual Store* clone() const = 0;
+
+    protected:
+        index_t size_{ 0 };
+        index_t element_dimension_;
+        index_t element_size_;         //size of element in byte
 
     };
+    /**
+    * \brief Stores an array of elements of a given type.
+    */
+    template< class T > class TypedStore: public Store {
+    public:
+
+        /**
+        * \brief Creates a new empty attribute store.
+        * \param[in] dim number of elements in each item,
+        *  default value is 1, can be greater for vector
+        *  attributes.
+        */
+        TypedStore( index_t dim = 1 )
+            : Store( index_t( sizeof( T ), dim )
+        {
+        }
+
+        bool elements_type_matches( const std::string& type_name ) const final
+        {
+            return type_name == typeid( T ).name();
+        }
+
+        std::string element_typeid_name() const final
+        {
+            return typeid( T ).name();
+        }
+        void zero() final
+        {
+            for( auto i : store_ ) {
+                i = ( T ) 0;
+            }
+        }
+        void* data() const final
+        {
+            return store_.data();
+        }
+        void* data() const final
+        {
+            return store_.data();
+        }
+    protected:
+        std::vector< T > store_;
+    };
+
+    template< class T > class VectorStore: public TypedStore< T > {
+    public:
+
+        /**
+        * \brief Creates a new empty attribute store.
+        * \param[in] dim number of elements in each item,
+        *  default value is 1, can be greater for vector
+        *  attributes.
+        */
+        VectorStore( index_t dim = 1 )
+            : TypedStore< T >( dim )
+        {
+        }
+
+        void resize( index_t new_size ) final
+        {
+            size_ = new_size;
+            store_.resize( new_size * element_dimension_ );
+        }
+
+
+        void clear( bool keep_memory = false ) final
+        {
+            if( keep_memory ) {
+                store_.resize( 0 );
+            } else {
+                store_.clear();
+            }
+        }
+
+        void redim( index_t dim ) final
+        {
+            if( dim == this->dimension() ) {
+                return;
+            }
+            std::vector< T > new_store( this->size() * dim );
+            index_t copy_dim = GEO::geo_min( dim, this->dimension() );
+            for( index_t i = 0; i < this->size(); ++i ) {
+                for( index_t c = 0; c < copy_dim; ++c ) {
+                    new_store[dim * i + c] = store_[this->dimension() * i + c];
+                }
+            }
+            store_.swap( new_store );
+        }
+
+        Store* clone() const final
+        {
+            VectorStore< T >* result = new VectorStore< T >(
+                this->dimension() );
+            result->resize( this->size() );
+            result->store_ = store_;
+            return result;
+        }
+
+        void compress( const std::vector< index_t >& old2new ) final
+        {
+            return;
+        }
+        /**
+        * \brief Applies a permutation to the stored attributes.
+        * \details Applying a permutation to the data is equivalent
+        *  to:
+        * \code
+        * for(i=0; i<permutation.size(); i++) {
+        *    data2[i] = data[permutation[i]]
+        * }
+        * data = data2 ;
+        * \endcode
+        * But it is done in-place.
+        * \param[in] permutation the permutation.
+        *  It is temporarily changed during execution of the
+        *  function, but identical to the input on exit.
+        * \note This function uses memcpy(). If required, it
+        *  can be overloaded in derived classes.
+        */
+        void apply_permutation( const std::vector< index_t >& permutation ) final
+        {
+            return;
+        }
+        /**
+        * \brief Copies an item
+        * \param[in] to index of the destination item
+        * \param[in] from index of the source item
+        */
+        void copy_item( index_t to, index_t from ) final
+        {
+            return;
+        }
+    };
+
+    template< class T > class ConstantStore: public TypedStore< T > {
+    public:
+
+        /**
+        * \brief Creates a new empty attribute store.
+        * \param[in] dim number of elements in each item,
+        *  default value is 1, can be greater for vector
+        *  attributes.
+        */
+        ConstantStore( index_t dim = 1 )
+            : TypedAttributeStore< T >( dim )
+        {
+        }
+
+        void resize( index_t ) override
+        {
+            store_.resize( this->dimension() );
+        }
+
+
+        void clear( bool keep_memory = false ) override
+        {
+            if( keep_memory ) {
+                store_.resize( 0 );
+            } else {
+                store_.clear();
+            }
+        }
+
+        void redim( index_t dim ) override
+        {
+            if( dim == this->dimension() ) {
+                return;
+            }
+            std::vector< T > new_store( dim );
+            index_t copy_dim = std::min( dim, this->dimension() );
+            for( index_t c = 0; c < copy_dim; ++c ) {
+                new_store[c] = store_[c];
+            }
+            store_.swap( new_store );
+        }
+
+        Store* clone() const override
+        {
+            ConstantStore< T >* result = new ConstantStore< T >(
+                this->dimension() );
+            result->store_ = store_;
+            return result;
+        }
+        void compress( const std::vector< index_t >& old2new ) final
+        {
+            return;
+        }
+        /**
+        * \brief Applies a permutation to the stored attributes.
+        * \details Applying a permutation to the data is equivalent
+        *  to:
+        * \code
+        * for(i=0; i<permutation.size(); i++) {
+        *    data2[i] = data[permutation[i]]
+        * }
+        * data = data2 ;
+        * \endcode
+        * But it is done in-place.
+        * \param[in] permutation the permutation.
+        *  It is temporarily changed during execution of the
+        *  function, but identical to the input on exit.
+        * \note This function uses memcpy(). If required, it
+        *  can be overloaded in derived classes.
+        */
+        void apply_permutation( const std::vector< index_t >& permutation ) final
+        {
+            return;
+        }
+        /**
+        * \brief Copies an item
+        * \param[in] to index of the destination item
+        * \param[in] from index of the source item
+        */
+        void copy_item( index_t to, index_t from ) final
+        {
+            return;
+        }
+    };
+
 
     /**
      * \brief Internal class for creating an AttributeStore
@@ -93,12 +396,12 @@ namespace RINGMesh {
          *  attributes and can be greater for vector
          *  attributes.
          */
-        AttributeStore( index_t elemsize, index_t dim = 1 );
+        AttributeStore( ) = default;
 
         /**
          * \brief AttributeStore destructor.
          */
-        virtual ~AttributeStore();
+        ~AttributeStore();
 
         /**
          * \brief Tests whether this AttributeStore stores
@@ -109,36 +412,46 @@ namespace RINGMesh {
          *   of type \p type_name
          * \retval false otherwise
          */
-        virtual bool elements_type_matches( const std::string& type_name ) const = 0;
+        bool elements_type_matches( const std::string& type_name ) const
+        {
+            return store_->elements_type_matches( type_name );
+        }
 
         /**
          * \brief Gets the typeid name of the element type stored
          *  in this AttributeStore.
          * \return the typeid name, as a string.
          */
-        virtual std::string element_typeid_name() const = 0;
-
+        std::string element_typeid_name() const
+        {
+            store_->element_typeid_name();
+        }
         /**
-         * \brief Gets the size.
-         * \return the number of items
-         */
+        * \brief Gets the size.
+        * \return the number of items
+        */
         index_t size() const
         {
-            return cached_size_;
+            return store_->size();
         }
-
         /**
          * \brief Resizes this AttributeStore
          * \param[in] new_size new number of items
          */
-        virtual void resize( index_t new_size ) = 0;
+        void resize( index_t new_size )
+        {
+            store_->resize( new_size );
+        }
 
         /**
          * \brief Resizes this AttributeStore to 0.
          * \param[in] keep_memory if true, then memory
          *  is kept reserved for future use.
          */
-        virtual void clear( bool keep_memory = false ) = 0;
+        void clear( bool keep_memory = false )
+        {
+            store_->clear( keep_memory );
+        }
 
         /**
          * \brief Gets the dimension.
@@ -147,7 +460,7 @@ namespace RINGMesh {
          */
         index_t dimension() const
         {
-            return dimension_;
+            return store_->dimension();
         }
 
         /**
@@ -159,7 +472,10 @@ namespace RINGMesh {
          *  value for the attribute type.
          * \param[in] dim the new dimension
          */
-        virtual void redim( index_t dim ) = 0;
+        void redim( index_t dim )
+        {
+            store_->redim( dim );
+        }
 
         /**
          * \brief Applies a permutation to the stored attributes.
@@ -178,7 +494,10 @@ namespace RINGMesh {
          * \note This function uses memcpy(). If required, it
          *  can be overloaded in derived classes.
          */
-        virtual void apply_permutation( const std::vector< index_t >& permutation );
+        void apply_permutation( const std::vector< index_t >& permutation )
+        {
+            store_->apply_permutation( permutation );
+        }
 
         /**
          * \brief Compresses the stored attributes, by
@@ -197,7 +516,10 @@ namespace RINGMesh {
          * \note This function uses memcpy(). If required, it
          *  can be overloaded in derived classes.
          */
-        virtual void compress( const std::vector< index_t >& old2new );
+        void compress( const std::vector< index_t >& old2new )
+        {
+            store_->compress( old2new );
+        }
 
         /**
          * \brief Zeroes all the memory associated with this
@@ -206,14 +528,20 @@ namespace RINGMesh {
          *  attributes that have non "plain ordinary datatypes"
          *  and that need a more elaborate initialization mechanism.
          */
-        virtual void zero();
+        void zero()
+        {
+            store_->zero();
+        };
 
         /**
          * \brief Creates a new AttributeStore that is a carbon copy
          *  of this AttributeStore.
          * \details Only the data is copied.
          */
-        virtual AttributeStore* clone() const = 0;
+        Store* clone() const
+        {
+            return store_->clone();
+        }
 
         /**
          * \brief Copies an item
@@ -222,40 +550,25 @@ namespace RINGMesh {
          */
         void copy_item( index_t to, index_t from )
         {
-            ringmesh_assert( from < cached_size_ );
-            ringmesh_assert( to < cached_size_ );
-            index_t item_size = element_size_ * dimension_;
-            for( auto i : range( item_size ) ) {
-                *( cached_base_addr_ + to * item_size + i ) = *( cached_base_addr_
-                    + from * item_size + i );
-            }
+            store_->copy_item( to, from );
         }
 
         /**
          * \brief Gets a pointer to the stored data.
          * \return A pointer to the memory block
          */
-        pointer data()
+        void* data() final
         {
-            return cached_base_addr_;
+            return store_->data();
         }
 
         /**
          * \brief Gets a pointer to the stored data.
          * \return A const pointer to the memory block
          */
-        pointer data() const
+        void* data() const final
         {
-            return cached_base_addr_;
-        }
-
-        /**
-         * \brief Gets the element size.
-         * \return the size of an element, in bytes
-         */
-        size_t element_size() const
-        {
-            return size_t( element_size_ );
+            return store_->data();
         }
 
         /**
@@ -266,7 +579,7 @@ namespace RINGMesh {
          */
         index_t nb_elements() const
         {
-            return cached_size_ * dimension_;
+            return store_->nb_elements();
         }
 
         /**
@@ -374,24 +687,8 @@ namespace RINGMesh {
             typeid_name_to_type_name_[element_typeid_name] = element_type_name;
             type_name_to_typeid_name_[element_type_name] = element_typeid_name;
         }
-
     protected:
-        /**
-         * \brief If size or base address differ from the
-         *  cached values, it updates the cached base address and size.
-         * \param[in] base_addr the new base address
-         * \param[in] size the new size
-         * \param[in] dim the new dimension
-         */
-        virtual void notify( pointer base_addr, index_t size, index_t dim );
-
-    protected:
-        Store store_;
-        index_t element_size_;
-        index_t dimension_;
-        pointer cached_base_addr_ { nullptr };
-        index_t cached_size_ { 0 };
-        std::mutex lock_;
+        std::unique_ptr<Store> store_{nullptr};
 
         static std::map< std::string, std::unique_ptr< AttributeStoreCreator > > type_name_to_creator_;
 
@@ -401,147 +698,6 @@ namespace RINGMesh {
     };
 
     /*********************************************************************/
-
-    /**
-     * \brief Stores an array of elements of a given type.
-     */
-    template< class T > class TypedAttributeStore: public AttributeStore {
-    public:
-
-        /**
-         * \brief Creates a new empty attribute store.
-         * \param[in] dim number of elements in each item,
-         *  default value is 1, can be greater for vector
-         *  attributes.
-         */
-        TypedAttributeStore( index_t dim = 1 )
-            : AttributeStore( index_t( sizeof(T) ), dim )
-        {
-        }
-
-        virtual bool elements_type_matches( const std::string& type_name ) const
-        {
-            return type_name == typeid(T).name();
-        }
-
-        virtual std::string element_typeid_name() const
-        {
-            return typeid(T).name();
-        }
-
-    };
-
-    template< class T > class VectorStore: public TypedAttributeStore< T > {
-    public:
-
-        /**
-         * \brief Creates a new empty attribute store.
-         * \param[in] dim number of elements in each item,
-         *  default value is 1, can be greater for vector
-         *  attributes.
-         */
-        VectorStore( index_t dim = 1 )
-            : TypedAttributeStore< T >( dim )
-        {
-        }
-
-        virtual void resize( index_t new_size )
-        {
-            store_.resize( new_size * this->dimension() );
-        }
-
-
-        virtual void clear( bool keep_memory = false )
-        {
-            if( keep_memory ) {
-                store_.resize( 0 );
-            } else {
-                store_.clear();
-            }
-        }
-
-        virtual void redim( index_t dim )
-        {
-            if( dim == this->dimension() ) {
-                return;
-            }
-            std::vector< T > new_store( this->size() * dim );
-            index_t copy_dim = GEO::geo_min( dim, this->dimension() );
-            for( index_t i = 0; i < this->size(); ++i ) {
-                for( index_t c = 0; c < copy_dim; ++c ) {
-                    new_store[dim * i + c] = store_[this->dimension() * i + c];
-                }
-            }
-            store_.swap( new_store );
-        }
-
-        virtual AttributeStore* clone() const
-        {
-            VectorStore< T >* result = new VectorStore< T >(
-                this->dimension() );
-            result->resize( this->size() );
-            result->store_ = store_;
-            return result;
-        }
-
-    private:
-        std::vector< T > store_;
-    };
-
-    template< class T > class ConstantStore: public TypedAttributeStore< T > {
-    public:
-
-        /**
-        * \brief Creates a new empty attribute store.
-        * \param[in] dim number of elements in each item,
-        *  default value is 1, can be greater for vector
-        *  attributes.
-        */
-        ConstantStore( index_t dim = 1 )
-            : TypedAttributeStore< T >( dim )
-        {
-        }
-
-        virtual void resize( index_t new_size )
-        {
-            store_.resize( this->dimension() );
-        }
-
-
-        virtual void clear( bool keep_memory = false )
-        {
-            if( keep_memory ) {
-                store_.resize( 0 );
-            } else {
-                store_.clear();
-            }
-        }
-
-        virtual void redim( index_t dim )
-        {
-            if( dim == this->dimension() ) {
-                return;
-            }
-            std::vector< T > new_store( dim );
-            index_t copy_dim = std::min( dim, this->dimension() );
-            for( index_t c = 0; c < copy_dim; ++c ) {
-                new_store[c] = store_[c];
-            }
-            store_.swap( new_store );
-        }
-
-        virtual AttributeStore* clone() const
-        {
-            ConstantStore< T >* result = new ConstantStore< T >(
-                this->dimension() );
-            result->resize( this->size() );
-            result->store_ = store_;
-            return result;
-        }
-
-    private:
-        std::vector< T > store_;
-    };
 
     /*********************************************************************/
 
@@ -1097,17 +1253,19 @@ namespace RINGMesh {
      *   mechanism. This wrapper class uses an Attribute<Numeric::uint8>
      *   and does the appropriate conversions, using an accessor class.
      */
-    template <> class Attribute<bool> : public AttributeBase<Byte> {
+    template <> class Attribute<bool>: public AttributeBase < Byte > {
     public:
         typedef AttributeBase<Byte> superclass;
 
-        Attribute() : superclass() {
+        Attribute(): superclass()
+        {
         }
 
-        Attribute(AttributesManager& manager, const std::string& name) :
-            superclass(manager,name) {
+        Attribute( AttributesManager& manager, const std::string& name ):
+            superclass( manager, name )
+        {
         }
-
+    }
         class BoolAttributeAccessor;
 
 
