@@ -49,7 +49,6 @@
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/mesh/geogram_mesh_builder.h>
 
-
 /*!
  * @file ringmesh/geomodel/geomodel_validity.cpp
  * @brief Implementation of functions to check the validity of GeoModels
@@ -971,21 +970,25 @@ namespace {
         void add_base_checks()
         {
             if( enum_contains( mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) ) {
-                future_.add_or_execute_task(
-                    &GeoModelValidityCheck::test_geomodel_connectivity_validity, this );
+                validity_tasks_handler_.execute_method(
+                    &GeoModelValidityCheck::test_geomodel_connectivity_validity,
+                    this );
             }
             if( enum_contains( mode_, ValidityCheckMode::GEOLOGICAL_ENTITIES ) ) {
-                future_.add_or_execute_task(
-                    &GeoModelValidityCheck::test_geomodel_geological_validity, this  );
+                validity_tasks_handler_.execute_method(
+                    &GeoModelValidityCheck::test_geomodel_geological_validity,
+                    this );
             }
             if( enum_contains( mode_,
                 ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) ) {
-                future_.add_or_execute_task(
-                    &GeoModelValidityCheck::test_surface_line_mesh_conformity, this  );
+                validity_tasks_handler_.execute_method(
+                    &GeoModelValidityCheck::test_surface_line_mesh_conformity,
+                    this );
             }
             if( enum_contains( mode_, ValidityCheckMode::MESH_ENTITIES ) ) {
-                future_.add_or_execute_task(
-                    &GeoModelValidityCheck::test_geomodel_mesh_entities_validity, this  );
+                validity_tasks_handler_.execute_method(
+                    &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
+                    this );
                 /// TODO: find a way to add this test for Model3d. See BC.
                 //  threads.emplace_back(
                 //      &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
@@ -1206,23 +1209,23 @@ namespace {
         bool valid_;
         ValidityCheckMode mode_;
 
-        TaskHandler future_;
+        TaskHandler validity_tasks_handler_;
     };
     template< >
     void GeoModelValidityCheck< 3 >::add_checks()
     {
         if( enum_contains( mode_, ValidityCheckMode::POLYGON_INTERSECTIONS ) ) {
-            future_.add_or_execute_task(
-                &GeoModelValidityCheck::test_polygon_intersections, this  );
+            validity_tasks_handler_.execute_method(
+                &GeoModelValidityCheck::test_polygon_intersections, this );
         }
         if( enum_contains( mode_,
             ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY ) ) {
-            future_.add_or_execute_task(
-                &GeoModelValidityCheck::test_region_surface_mesh_conformity, this  );
+            validity_tasks_handler_.execute_method(
+                &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
         }
         if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) ) {
-            future_.add_or_execute_task(
-                &GeoModelValidityCheck::test_non_manifold_edges, this  );
+            validity_tasks_handler_.execute_method( &GeoModelValidityCheck::test_non_manifold_edges,
+                this );
         }
         add_base_checks();
     }
