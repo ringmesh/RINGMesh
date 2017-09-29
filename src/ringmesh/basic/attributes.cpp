@@ -57,70 +57,10 @@ namespace RINGMesh {
     std::map<std::string, std::string>
         AttributeStore::type_name_to_typeid_name_;
 
-    AttributeStore::AttributeStore(
-        index_t elemsize,
-        index_t dim
-        ):
-        element_size_( elemsize ),
-        dimension_( dim )
-    {
-    }
-
-    void AttributeStore::notify(
-        pointer base_addr, index_t size, index_t dim
-        )
-    {
-        if(
-            size != cached_size_ ||
-            base_addr != cached_base_addr_ ||
-            dim != dimension_
-            ) {
-            cached_base_addr_ = base_addr;
-            cached_size_ = size;
-            dimension_ = dim;
-        }
-    }
-
     AttributeStore::~AttributeStore()
     {
         // It is illegal to keep an Attribute<> active
         // when the object it is bound to is destroyed.
-    }
-
-    void AttributeStore::apply_permutation(
-        const std::vector<index_t>& permutation
-        )
-    {
-        ringmesh_assert( permutation.size() <= cached_size_ );
-        GEO::vector<index_t> geo_permutation = copy_std_vector_to_geo_vector( permutation );
-        GEO::Permutation::apply(
-            cached_base_addr_, geo_permutation, element_size_ * dimension_
-            );
-    }
-
-    void AttributeStore::compress(
-        const std::vector<index_t>& old2new
-        )
-    {
-        ringmesh_assert( old2new.size() <= cached_size_ );
-        index_t item_size = element_size_ * dimension_;
-        for( index_t i = 0; i<old2new.size(); ++i ) {
-            index_t j = old2new[i];
-            if( j == index_t( -1 ) || j == i ) {
-                continue;
-            }
-            ringmesh_assert( j <= i );
-            for( auto k : range( item_size ) ) {
-                *( cached_base_addr_ + j*item_size + k ) = *( cached_base_addr_ + i*item_size + k );
-            }
-        }
-    }
-
-    void AttributeStore::zero()
-    {
-        memset( 
-            cached_base_addr_, 0, element_size_ * dimension_ * cached_size_
-            );
     }
 
     /*************************************************************************/
@@ -646,3 +586,4 @@ namespace RINGMesh {
 
 }
 
+rn
