@@ -1287,21 +1287,6 @@ namespace RINGMesh {
 
     public:
         /**
-         * \brief Internal representation of the attribute.
-         */
-        enum ElementType {
-            ET_NONE = 0,
-            ET_UINT8 = 1,
-            ET_INT8 = 2,
-            ET_UINT32 = 3,
-            ET_INT32 = 4,
-            ET_FLOAT32 = 5,
-            ET_FLOAT64 = 6,
-            ET_VEC2 = 7,
-            ET_VEC3 = 8
-        };
-
-        /**
          * \brief ReadOnlyScalarAttributeAdapter constructor.
          */
         ReadOnlyScalarAttributeAdapter() = delete;
@@ -1342,7 +1327,6 @@ namespace RINGMesh {
             ringmesh_assert( is_bound() );
             manager_ = nullptr;
             store_ = nullptr;
-            element_type_ = ET_NONE;
             element_index_ = index_t( -1 );
         }
 
@@ -1398,14 +1382,8 @@ namespace RINGMesh {
         /**
          * \brief Gets the internal representation of the
          *  elements.
-         * \return one of ET_NONE (if unbound), ET_UINT8,
-         *  ET_INT8, ET_UINT32, ET_INT32, ET_FLOAT32,
-         *  ET_FLOAT64, ET_VEC2, ET_VEC3
          */
-        ElementType element_type() const
-        {
-            return element_type_;
-        }
+        //virtual AttributeElementType element_type() const = 0 ;
 
         /**
          * \brief Gets the element index.
@@ -1437,25 +1415,14 @@ namespace RINGMesh {
         virtual double operator[]( index_t i ) = 0;
 
         /**
-         * \brief Tests whether a ReadOnlyScalarAttributeAdapter can
-         *  be bound to a given attribute store.
-         * \param[in] store a pointer to the attribute store.
-         * \retval true if it can be bound
-         * \retval false otherwise
-         */
-        static bool can_be_bound_to( const AttributeStore* store )
-        {
-            return element_type( store ) != ET_NONE;
-        }
-
-        /**
          * \brief Gets the number of scalar components per item in an
          *  AttributeStore.
          * \param[in] store a pointer to the attribute store.
          * \return the number of scalar components per item in an
          *  AttributeStore.
          */
-        static index_t nb_scalar_elements_per_item( const AttributeStore* store );
+        virtual index_t nb_scalar_elements_per_item( ) const = 0 ;
+        virtual bool is_integer_like_attribute() const = 0;
 
     protected:
         /**
@@ -1485,7 +1452,7 @@ namespace RINGMesh {
          *  ET_FLOAT32, ET_FLOAT64 if the type of the attribute is
          *  compatible with those types, or ET_NONE if it is incompatible.
          */
-        static ElementType element_type( const AttributeStore* store );
+        //static ElementType element_type( const AttributeStore* store );
 
         /**
          * \brief Gets an element.
@@ -1502,10 +1469,9 @@ namespace RINGMesh {
                     * multiplier ) + element_index_] );
         }
 
-    public:
+    protected:
         const AttributesManager* manager_;
         const AttributeStore* store_;
-        ElementType element_type_;
         index_t element_index_;
     };
     using ReadOnlyScalarAttributeAdapterFactory =

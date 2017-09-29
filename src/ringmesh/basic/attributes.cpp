@@ -307,22 +307,6 @@ namespace RINGMesh {
 
 
     /************************************************************************/
-    index_t ReadOnlyScalarAttributeAdapter::nb_scalar_elements_per_item(
-        const AttributeStore* store
-        )
-    {
-        ElementType et = element_type( store );
-        if( et == ET_NONE ) {
-            return 0;
-        }
-        index_t result = store->dimension();
-        if( et == ET_VEC2 ) {
-            result *= 2;
-        } else if( et == ET_VEC3 ) {
-            result *= 3;
-        }
-        return result;
-    }
 
     std::string ReadOnlyScalarAttributeAdapter::attribute_base_name(
         const std::string& name
@@ -357,60 +341,6 @@ namespace RINGMesh {
         return result;
     }
 
-/*    ReadOnlyScalarAttributeAdapter::ElementType
-        ReadOnlyScalarAttributeAdapter::element_type( const AttributeStore* store )
-    {
-        if( store->element_typeid_name() == typeid( uint8 ).name() ) {
-            return ET_UINT8;
-        }
-
-        if(
-            store->element_typeid_name() == typeid( char ).name() ||
-            store->element_typeid_name() == typeid( int8 ).name()
-            ) {
-            return ET_INT8;
-        }
-
-        if(
-            store->element_typeid_name() == typeid( uint32 ).name() ||
-            store->element_typeid_name() == typeid( index_t ).name() ||
-            store->element_typeid_name() == typeid( unsigned int ).name()
-            ) {
-            return ET_UINT32;
-        }
-
-        if(
-            store->element_typeid_name() == typeid( int32 ).name() ||
-            store->element_typeid_name() == typeid( int ).name()
-            ) {
-            return ET_INT32;
-        }
-
-        if(
-            store->element_typeid_name() == typeid( float32 ).name() ||
-            store->element_typeid_name() == typeid( float ).name()
-            ) {
-            return ET_FLOAT32;
-        }
-
-        if(
-            store->element_typeid_name() == typeid( float64 ).name() ||
-            store->element_typeid_name() == typeid( double ).name()
-            ) {
-            return ET_FLOAT64;
-        }
-
-        if( store->element_typeid_name() == typeid( vec2 ).name() ) {
-            return ET_VEC2;
-        }
-
-        if( store->element_typeid_name() == typeid( vec3 ).name() ) {
-            return ET_VEC3;
-        }
-
-        return ET_NONE;
-    }*/
-
     void ReadOnlyScalarAttributeAdapter::bind_if_is_defined(
         const AttributesManager& manager, const std::string& name
         )
@@ -426,21 +356,12 @@ namespace RINGMesh {
             return;
         }
 
-        element_type_ = element_type( store_ );
-
-        if( element_type_ == ET_NONE ) {
-            store_ = nil;
-            element_index_ = index_t( -1 );
-            return;
-        }
-
         // Test element_index_ validity: should be smaller than
         // store's dimension (or 2*store dimension if a vec2,
         // or 3*store's dimension if a vec3)
-        if( element_index_ >= nb_scalar_elements_per_item( store_ ) ) {
+        if( element_index_ >= nb_scalar_elements_per_item( ) ) {
             store_ = nil;
             element_index_ = index_t( -1 );
-            element_type_ = ET_NONE;
             return;
         }
     }
@@ -457,17 +378,16 @@ namespace RINGMesh {
         if( store == nil ) {
             return false;
         }
+        std::unique_ptr< ReadOnlyScalarAttributeAdapter >  adapter =
+            ReadOnlyScalarAttributeAdapterFactory::create( store->element_typeid_name(),
+            manager, attribute_name );
 
         index_t element_index = attribute_element_index( name );
         if( element_index == index_t( -1 ) ) {
             return false;
         }
 
-        if( element_index >= nb_scalar_elements_per_item( store ) ) {
-            return false;
-        }
-
-        if( element_type( store ) == ET_NONE ) {
+        if( element_index >= adapter->nb_scalar_elements_per_item() ) {
             return false;
         }
 
@@ -482,12 +402,24 @@ namespace RINGMesh {
             const AttributesManager& manager,
             const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
         {
-            ReadOnlyScalarAttributeAdapter::element_type_ = ET_UINT8;
         }
 
         double operator[]( index_t i ) override
         {
             return get_element< uint8 >( i );
+        }
+
+        index_t nb_scalar_elements_per_item() const override
+        {
+            return 1;
+        }
+       /* AttributeElementType element_type() const override
+        {
+            return typeid( uint8 ).name();
+        }*/
+        bool is_integer_like_attribute() const override
+        {
+            return true;
         }
     };
 
@@ -498,12 +430,24 @@ namespace RINGMesh {
             const AttributesManager& manager,
             const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
         {
-            ReadOnlyScalarAttributeAdapter::element_type_ = ET_INT8;
         }
 
         double operator[]( index_t i ) override
         {
             return get_element< int8 >( i );
+        }
+
+        index_t nb_scalar_elements_per_item() const override
+        {
+            return 1;
+        }
+        /*AttributeElementType element_type() const override
+        {
+            return typeid( int8 ).name();
+        }*/
+        bool is_integer_like_attribute() const override
+        {
+            return true;
         }
     };
 
@@ -514,12 +458,24 @@ namespace RINGMesh {
             const AttributesManager& manager,
             const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
         {
-            ReadOnlyScalarAttributeAdapter::element_type_ = ET_UINT32;
         }
 
         double operator[]( index_t i ) override
         {
             return get_element< uint32 >( i );
+        }
+
+        index_t nb_scalar_elements_per_item() const override
+        {
+            return 1;
+        }
+        /*AttributeElementType element_type() const override
+        {
+            return typeid( unsigned int ).name();
+        }*/
+        bool is_integer_like_attribute() const override
+        {
+            return true;
         }
     };
 
@@ -530,12 +486,24 @@ namespace RINGMesh {
             const AttributesManager& manager,
             const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
         {
-            ReadOnlyScalarAttributeAdapter::element_type_ = ET_INT32;
         }
 
         double operator[]( index_t i ) override
         {
             return get_element< int32 >( i );
+        }
+
+        index_t nb_scalar_elements_per_item() const override
+        {
+            return 1;
+        }
+        /*AttributeElementType element_type() const override
+        {
+            return typeid( int ).name();
+        }*/
+        bool is_integer_like_attribute() const override
+        {
+            return true;
         }
     };
 
@@ -546,12 +514,24 @@ namespace RINGMesh {
             const AttributesManager& manager,
             const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
         {
-            ReadOnlyScalarAttributeAdapter::element_type_ = ET_FLOAT32;
         }
 
         double operator[]( index_t i ) override
         {
             return get_element< float32 >( i );
+        }
+
+        index_t nb_scalar_elements_per_item() const override
+        {
+            return 1;
+        }
+        /*AttributeElementType element_type() const override
+        {
+            return typeid( float ).name();
+        }*/
+        bool is_integer_like_attribute() const override
+        {
+            return false;
         }
     };
 
@@ -562,12 +542,24 @@ namespace RINGMesh {
             const AttributesManager& manager,
             const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
         {
-            ReadOnlyScalarAttributeAdapter::element_type_ = ET_FLOAT64;
         }
 
         double operator[]( index_t i ) override
         {
             return get_element< float64 >( i );
+        }
+
+        index_t nb_scalar_elements_per_item() const override
+        {
+            return 1;
+        }
+        /*virtual AttributeElementType element_type() const override
+        {
+            return  typeid( double ).name();
+        }*/
+        bool is_integer_like_attribute() const override
+        {
+            return false;
         }
     };
 
@@ -579,12 +571,24 @@ namespace RINGMesh {
             const std::string& name ):
             ReadOnlyScalarAttributeAdapter( manager, name )
         {
-            ReadOnlyScalarAttributeAdapter::element_type_ = ET_VEC2;
         }
 
         double operator[]( index_t i ) override
         {
             return get_element< float64 >( i, 2 );
+        }
+
+        index_t nb_scalar_elements_per_item() const override
+        {
+            return 2;
+        }
+        /*AttributeElementType element_type() const override
+        {
+            return  typeid( vec2 ).name();
+        }*/
+        bool is_integer_like_attribute() const override
+        {
+            return false;
         }
     };
 
@@ -596,12 +600,24 @@ namespace RINGMesh {
             const std::string& name ):
             ReadOnlyScalarAttributeAdapter( manager, name )
         {
-            ReadOnlyScalarAttributeAdapter::element_type_ = ET_VEC3;
         }
 
         double operator[]( index_t i ) override
         {
             return get_element< float64 >( i, 3 );
+        }
+
+        index_t nb_scalar_elements_per_item() const override
+        {
+            return 3;
+        }
+        /*AttributeElementType element_type() const override
+        {
+            return  typeid( vec3 ).name();
+        }*/
+        bool is_integer_like_attribute() const override
+        {
+            return false;
         }
     };
 

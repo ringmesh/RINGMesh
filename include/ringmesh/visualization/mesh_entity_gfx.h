@@ -424,11 +424,7 @@ namespace RINGMesh
             {
                 const AttributeStore* store =
                     attributes.find_attribute_store( name );
-                if( ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                        store ) )
-                {
                     names.push_back( name );
-                }
             }
             return names;
         }
