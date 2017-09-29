@@ -134,11 +134,6 @@ namespace {
                         reg_vertex_attr_mgr.find_attribute_store( cur_att_v_name );
                     ringmesh_assert( attr_store != nullptr );
 
-                    if( !ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                        attr_store ) ) {
-                        continue;
-                    }
-
                     numeric_like_vertex_attribute_names_.push_back( cur_att_v_name );
                     index_t cur_dim = attr_store->dimension();
                     vertex_attribute_dimensions_.push_back( cur_dim );
@@ -147,12 +142,9 @@ namespace {
                     std::unique_ptr< ReadOnlyScalarAttributeAdapter >  adapter =
                         ReadOnlyScalarAttributeAdapterFactory::create( store->element_typeid_name(),
                         reg_vertex_attr_mgr, cur_att_v_name );
-                    ringmesh_assert(
-                        adapter->element_type()
-                            != ReadOnlyScalarAttributeAdapter::ET_NONE );
+                    ringmesh_assert( adapter != nullptr);
                     is_integer_like_attribute.push_back(
-                        adapter->element_type()
-                            < ReadOnlyScalarAttributeAdapter::ET_FLOAT32 );
+                        adapter->is_integer_like_attribute() );
                 }
             }
 
@@ -246,11 +238,6 @@ namespace {
                         reg_cell_attr_mgr.find_attribute_store( cur_att_c_name );
                     ringmesh_assert( attr_store != nullptr );
 
-                    if( !ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                        attr_store ) ) {
-                        continue;
-                    }
-
                     numeric_like_cell_attribute_names_.push_back( cur_att_c_name );
                     auto cur_dim = attr_store->dimension();
                     cell_attribute_dimensions_.push_back( cur_dim );
@@ -259,12 +246,9 @@ namespace {
                     std::unique_ptr< ReadOnlyScalarAttributeAdapter >  adapter =
                         ReadOnlyScalarAttributeAdapterFactory::create( store->element_typeid_name(),
                         reg_cell_attr_mgr, cur_att_c_name );
-                    ringmesh_assert(
-                        adapter->element_type()
-                            != GEO::ReadOnlyScalarAttributeAdapter::ET_NONE );
+                    ringmesh_assert( adapter != nullptr );
                     is_integer_like_attribute.push_back(
-                        adapter->element_type()
-                            < GEO::ReadOnlyScalarAttributeAdapter::ET_FLOAT32 );
+                        adapter->is_integer_like_attribute() );
                 }
             }
 
@@ -412,10 +396,7 @@ namespace {
                         reg_vertex_attr_mgr.find_attribute_store(
                             numeric_like_vertex_attribute_names_[attr_dbl_itr] )->dimension()
                             == vertex_attribute_dimensions_[attr_dbl_itr] );
-                    ringmesh_assert(
-                        ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                            reg_vertex_attr_mgr.find_attribute_store(
-                                numeric_like_vertex_attribute_names_[attr_dbl_itr] ) ) );
+
                     const AttributeStore* store = reg_vertex_attr_mgr.find_attribute_store( numeric_like_vertex_attribute_names_[attr_dbl_itr] );
                     std::unique_ptr< ReadOnlyScalarAttributeAdapter >  cur_attr =
                         ReadOnlyScalarAttributeAdapterFactory::create( store->element_typeid_name(),
@@ -569,10 +550,6 @@ namespace {
                         reg_cell_attr_mgr.find_attribute_store(
                             numeric_like_cell_attribute_names_[attr_dbl_itr] )->dimension()
                             == cell_attribute_dimensions_[attr_dbl_itr] );
-                    ringmesh_assert(
-                        ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                            reg_cell_attr_mgr.find_attribute_store(
-                                numeric_like_cell_attribute_names_[attr_dbl_itr] ) ) );
 
                     const AttributeStore* store = reg_cell_attr_mgr.find_attribute_store( numeric_like_cell_attribute_names_[attr_dbl_itr] );
                     std::unique_ptr< ReadOnlyScalarAttributeAdapter >  cur_attr =
