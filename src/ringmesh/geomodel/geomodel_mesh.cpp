@@ -259,14 +259,7 @@ namespace RINGMesh
             return result;
         }
 
-        const std::vector< index_t >& vertex_map(
-            const gmme_id& mesh_entity_id ) const
-        {
-            return (
-                *vertex_maps_.at( mesh_entity_id.type() ) )[mesh_entity_id.index()];
-        }
-
-        std::vector< index_t >& vertex_map( const gmme_id& mesh_entity_id )
+        std::vector< index_t >& vertex_map( const gmme_id& mesh_entity_id ) const
         {
             return (
                 *vertex_maps_.at( mesh_entity_id.type() ) )[mesh_entity_id.index()];
@@ -288,7 +281,7 @@ namespace RINGMesh
          */
         void set_vertex_map_value( const gmme_id& mesh_entity_id,
             index_t mesh_entity_vertex_index,
-            index_t geomodel_entity_vertex_index )
+            index_t geomodel_entity_vertex_index ) const
         {
             test_and_initialize_mesh_entity_vertex_map( mesh_entity_id );
             vertex_map( mesh_entity_id )[mesh_entity_vertex_index] =
@@ -296,7 +289,7 @@ namespace RINGMesh
         }
 
         void add_to_gme_vertices(
-            const GMEVertex& gme_vertex, index_t geomodel_vertex_index )
+            const GMEVertex& gme_vertex, index_t geomodel_vertex_index ) const
         {
             gme_vertices_[geomodel_vertex_index].push_back( gme_vertex );
         }
@@ -311,7 +304,7 @@ namespace RINGMesh
          * vertices.
          */
         void update_mesh_entity_maps_and_gmes(
-            const std::vector< index_t >& old2new )
+            const std::vector< index_t >& old2new ) const
         {
             const auto& all_mesh_entity_types =
                 geomodel_.entity_type_manager()
@@ -349,7 +342,7 @@ namespace RINGMesh
          * @brief Resizes the GME_Vertex vectors
          * @param[in] nb Size of the vector
          */
-        void resize_geomodel_vertex_gmes( const index_t nb )
+        void resize_geomodel_vertex_gmes( const index_t nb ) const
         {
             gme_vertices_.resize( nb );
         }
@@ -358,13 +351,13 @@ namespace RINGMesh
          * @brief Clears and resizes the GME_Vertex vectors
          * @param[in] nb Size of the vector
          */
-        void clear_and_resize_geomodel_vertex_gmes( const index_t nb )
+        void clear_and_resize_geomodel_vertex_gmes( const index_t nb ) const
         {
             gme_vertices_.clear();
             resize_geomodel_vertex_gmes( nb );
         }
 
-        void bind_all_mesh_entity_vertex_maps()
+        void bind_all_mesh_entity_vertex_maps() const
         {
             const auto& all_mesh_entity_types =
                 geomodel_.entity_type_manager()
@@ -392,7 +385,7 @@ namespace RINGMesh
          * maps
          * and vectors of GME_Vertices
          */
-        void clear()
+        void clear() const
         {
             gme_vertices_.clear();
             clear_all_mesh_entity_vertex_map();
@@ -401,7 +394,7 @@ namespace RINGMesh
         /*!
          * @brief Clears the GME_Vertices about one geomodel vertex
          */
-        void clear_geomodel_vertex_gmes( index_t v )
+        void clear_geomodel_vertex_gmes( index_t v ) const
         {
             ringmesh_assert( v < gme_vertices_.size() );
             gme_vertices_[v].clear();
@@ -421,7 +414,7 @@ namespace RINGMesh
         }
 
         std::vector< index_t >& resize_vertex_map(
-            const gmme_id& mesh_entity_id )
+            const gmme_id& mesh_entity_id ) const
         {
             ringmesh_assert( mesh_entity_id.index()
                              < vertex_maps_[mesh_entity_id.type()]->size() );
@@ -445,7 +438,7 @@ namespace RINGMesh
          * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
          */
         void initialize_mesh_entity_vertex_map(
-            const gmme_id& mesh_entity_id )
+            const gmme_id& mesh_entity_id ) const
         {
             auto& mesh_entity_vertex_map = resize_vertex_map( mesh_entity_id );
             const auto& E = geomodel_.mesh_entity( mesh_entity_id );
@@ -465,7 +458,7 @@ namespace RINGMesh
          * @return True is the map was initialized, false if not.
          */
         bool test_and_initialize_mesh_entity_vertex_map(
-            const gmme_id& mesh_entity_id )
+            const gmme_id& mesh_entity_id ) const
         {
             resize_all_mesh_entity_vertex_maps( mesh_entity_id.type() );
             if( !is_mesh_entity_vertex_map_initialized( mesh_entity_id ) )
@@ -492,7 +485,7 @@ namespace RINGMesh
         /*!
          * @brief Unbinds all the GeoModelMeshEntity vertex maps
          */
-        void clear_all_mesh_entity_vertex_map()
+        void clear_all_mesh_entity_vertex_map() const
         {
             for( auto& vertex_map : vertex_maps_ )
             {
@@ -505,7 +498,7 @@ namespace RINGMesh
         }
 
         void resize_all_mesh_entity_vertex_maps(
-            const MeshEntityType& type )
+            const MeshEntityType& type ) const
         {
             vertex_maps_.at( type )->resize( geomodel_.nb_mesh_entities( type ) );
         }
@@ -530,11 +523,11 @@ namespace RINGMesh
         std::vector< std::vector< index_t > > line_vertex_maps_;
         std::vector< std::vector< index_t > > surface_vertex_maps_;
         std::vector< std::vector< index_t > > region_vertex_maps_;
-        std::map< MeshEntityType, std::vector< std::vector< index_t > >* >
+        mutable std::map< MeshEntityType, std::vector< std::vector< index_t > >* >
             vertex_maps_;
 
         /// GeoModelEntity Vertices for each geomodel vertex
-        std::vector< std::vector< GMEVertex > > gme_vertices_;
+        mutable std::vector< std::vector< GMEVertex > > gme_vertices_;
     };
 
     template < index_t DIMENSION >
@@ -565,7 +558,7 @@ namespace RINGMesh
     {
         if( !is_initialized() )
         {
-            const_cast< GeoModelMeshVerticesBase* >( this )->initialize();
+            initialize();
         }
     }
 
@@ -585,7 +578,7 @@ namespace RINGMesh
     void GeoModelMeshVerticesBase< DIMENSION >::fill_vertices_for_entity_type(
         const GeoModel< DIMENSION >& geomodel,
         const MeshEntityType& entity_type,
-        index_t& count )
+        index_t& count ) const
     {
         auto mesh_builder =
             PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
@@ -627,7 +620,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshVerticesBase< DIMENSION >::initialize()
+    void GeoModelMeshVerticesBase< DIMENSION >::initialize() const
     {
         // Total number of vertices in the
         // Corners, Lines, Surfaces and Regions of the GeoModel
@@ -653,7 +646,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    index_t GeoModelMeshVerticesBase< DIMENSION >::fill_vertices()
+    index_t GeoModelMeshVerticesBase< DIMENSION >::fill_vertices() const
     {
         index_t count{ 0 };
         fill_vertices_for_entity_type(
@@ -666,7 +659,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshVerticesBase< DIMENSION >::clear()
+    void GeoModelMeshVerticesBase< DIMENSION >::clear() const
     {
         this->gmm_.polygons.clear();
         this->gmm_.wells.clear();
@@ -832,7 +825,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshVerticesBase< DIMENSION >::remove_colocated()
+    void GeoModelMeshVerticesBase< DIMENSION >::remove_colocated() const
     {
         // Get out if nothing to do
         // and compute the points if they are not initialized yet
@@ -854,7 +847,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::erase_vertices(
-        std::vector< index_t >& to_delete )
+        std::vector< index_t >& to_delete ) const
     {
         ringmesh_assert( to_delete.size() == nb() );
 
@@ -926,7 +919,7 @@ namespace RINGMesh
     {
     }
 
-    void GeoModelMeshVertices< 3 >::clear()
+    void GeoModelMeshVertices< 3 >::clear() const
     {
         this->gmm_.cells.clear();
         GeoModelMeshVerticesBase3D::clear();
@@ -940,7 +933,7 @@ namespace RINGMesh
         return nb;
     }
 
-    index_t GeoModelMeshVertices< 3 >::fill_vertices()
+    index_t GeoModelMeshVertices< 3 >::fill_vertices() const
     {
         auto count = GeoModelMeshVerticesBase3D::fill_vertices();
         fill_vertices_for_entity_type(
