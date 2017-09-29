@@ -625,37 +625,20 @@ namespace RINGMesh {
     {
         ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT8 >(
             typeid( uint8 ).name() );
-
         ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT8 >(
             typeid( char ).name() );
         ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT8 >(
             typeid( int8 ).name() );
-
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT32 >(
-            typeid( uint32 ).name() );
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT32 >(
-            typeid( index_t ).name() );
         ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT32 >(
             typeid( unsigned int ).name() );
-
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT32 >(
-            typeid( int32 ).name() );
         ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT32 >(
             typeid( int ).name() );
-
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT32 >(
-            typeid( float32 ).name() );
         ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT32 >(
             typeid( float ).name() );
-
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT64 >(
-            typeid( float64 ).name() );
         ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT64 >(
             typeid( double ).name() );
-
         ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_VEC2 >(
             typeid( vec2 ).name() );
-
         ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_VEC3 >(
             typeid( vec3 ).name() );
     }

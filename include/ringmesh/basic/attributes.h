@@ -54,6 +54,10 @@ namespace RINGMesh {
 
     class AttributeStore;
 
+    class RINGMESH_API Store {
+
+    };
+
     /**
      * \brief Internal class for creating an AttributeStore
      *  from the type name of its elements.
@@ -382,6 +386,7 @@ namespace RINGMesh {
         virtual void notify( pointer base_addr, index_t size, index_t dim );
 
     protected:
+        Store store_;
         index_t element_size_;
         index_t dimension_;
         pointer cached_base_addr_ { nullptr };
