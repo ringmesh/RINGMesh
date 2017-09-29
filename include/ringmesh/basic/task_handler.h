@@ -39,6 +39,7 @@
 #include <ringmesh/basic/logger.h>
 
 #include <future>
+#include <functional>
 
 #include <geogram/basic/command_line.h>
 
@@ -47,47 +48,40 @@
  * @author Antoine Mazuyer
  */
 
-namespace RINGMesh
-{
-    class TaskHandler
-    {
+namespace RINGMesh {
+    class TaskHandler {
     public:
         template< typename TASK, typename T, typename ... Args >
         void execute_method( TASK&& task, T* context, const Args&... args )
         {
-            if( multi_thread_ )
-            {
+            if( multi_thread_ ) {
                 tasks_.emplace_back(
                     std::async( std::launch::async, task, context,
                         std::forward< const Args& >( args )... ) );
-            }
-            else
-            {
-                context->task( std::forward< const Args& >( args )... );
+            } else {
+//                context->*task( std::forward< const Args& >( args )... );
+//                bound_member();)
+//                auto bound_member = std::bind(task, std::forward< const Args& >( args )... ) ;
+//                bound_member(*context);
             }
         }
 
         template< typename TASK, typename ... Args >
         void execute_function( TASK&& task, const Args&... args )
         {
-            if( multi_thread_ )
-            {
+            if( multi_thread_ ) {
                 tasks_.emplace_back(
                     std::async( std::launch::async, task,
                         std::forward< const Args& >( args )... ) );
-            }
-            else
-            {
+            } else {
                 task( std::forward< const Args& >( args )... );
             }
         }
 
         void wait_aysnc_tasks()
         {
-            if( !tasks_.empty() )
-            {
-                for( auto& task : tasks_ )
-                {
+            if( !tasks_.empty() ) {
+                for( auto& task : tasks_ ) {
                     task.get();
                 }
             }
