@@ -131,6 +131,7 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
                 -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
                 -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}
+                -DEMSCRIPTEN_DIRECTORY:STRING=${EMSCRIPTEN_DIRECTORY}
                 WORKING_DIRECTORY ${project_binary_dir_config})
       endforeach()
 
@@ -147,6 +148,15 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 
 include(cmake/utils.cmake)
 
+if(EMSCRIPTEN_DIRECTORY)
+    set(USE_EMSCRIPTEN on)
+    message(STATUS "Using Emscripten: ${PROJECT_BINARY_DIR}")
+    set(GEOGRAM_WITH_EMSCRIPTEN on)
+    include(${EMSCRIPTEN_DIRECTORY}/cmake/Modules/Platform/Emscripten.cmake)
+    set(CMAKE_C_COMPILER ${EMSCRIPTEN_DIRECTORY/emcc})
+    set(CMAKE_CXX_COMPILER ${EMSCRIPTEN_DIRECTORY/em++})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_GLFW=3 -s TOTAL_MEMORY=268435456")
+endif()
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
@@ -176,7 +186,7 @@ if(UNIX)
         endif()
     endif()
     # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -O3 -s USE_GLFW=3 -s TOTAL_MEMORY=268435456")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
@@ -209,7 +219,7 @@ endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 #------------------------------------------------------------------------------------------------
 # Compil Third Parties
 include("${CMAKE_SOURCE_DIR}/cmake/CompilThirdParties.cmake")
-include(/home/mazuyer/appl/emsdk-portable/emscripten/1.37.21/cmake/Modules/Platform/Emscripten.cmake)
+
 
 #------------------------------------------------------------------------------------------------
 # Get MG-Tetra if a path is given
@@ -252,7 +262,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Add the RINGMesh target as a shared library
-add_library(RINGMesh STATIC
+add_library(RINGMesh SHARED
     ${ringmesh_include}
     ${ringmesh_src})
 
@@ -311,11 +321,11 @@ if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    set(GEOGRAM_WITH_EMSCRIPTEN on)
     include(${CMAKE_SOURCE_DIR}/third_party/geogram/cmake/opengl.cmake)
     add_ringmesh_binary(${binary_source_dir}/ringmesh-view.cpp geogram_gfx ${OPENGL_LIBRARIES})
     copy_for_windows()
 endif(BUILD_RINGMESH_VIEW)
+
 
 if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")

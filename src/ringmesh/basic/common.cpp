@@ -94,6 +94,12 @@ namespace RINGMesh
 #ifdef RINGMESH_WITH_GRAPHICS
         register_geogram_mesh_gfx();
 #endif
+
+        // optionnal use of Emscripten, does not support
+        // c++11 multithreading features yet.
+#ifdef USE_EMSCRIPTEN
+        GEO::CmdLine::set_arg("sys:multithread", false) ;
+#endif
     }
 
     void default_configure()

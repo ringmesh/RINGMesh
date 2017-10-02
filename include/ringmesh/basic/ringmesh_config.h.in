@@ -48,6 +48,7 @@ namespace RINGMesh {
 
     /* Optional components with which RINGMesh can be compiled */
     #cmakedefine USE_MG_TETRA
+    #cmakedefine USE_EMSCRIPTEN
     #cmakedefine USE_OPENMP
     #cmakedefine RINGMESH_WITH_TETGEN
 

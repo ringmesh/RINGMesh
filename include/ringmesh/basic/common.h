@@ -107,12 +107,13 @@ void ringmesh_unused( const T& /*unused*/)
 {
 }
 
-#include <future>
-
+#include <ringmesh/basic/task_handler.h>
 #include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/types.h>
 
 #include <geogram/basic/string.h>
+
+#include <thread>
 
 #define DEBUG( a ) Logger::out( "Debug", #a, " = ", a )
 
@@ -254,28 +255,18 @@ namespace RINGMesh {
             }
         };
 
-        if( GEO::CmdLine::get_arg_bool( "sys:multithread" ) ) {
-            index_t nb_threads { std::min( size,
-                std::thread::hardware_concurrency() ) };
-            std::vector< std::future< void > > futures;
-            futures.reserve( nb_threads );
-            index_t start { 0 };
+        index_t nb_threads { std::min( size, std::thread::hardware_concurrency() ) };
+        TaskHandler tasks { nb_threads };
+        index_t start { 0 };
 
-            index_t nb_tasks_per_thread { size / nb_threads };
-            for( auto thread : range( nb_threads - 1 ) ) {
-                ringmesh_unused( thread );
-                futures.emplace_back(
-                    std::async( std::launch::async, action_per_thread, start,
-                        start + nb_tasks_per_thread ) );
-                start += nb_tasks_per_thread;
-            }
-            futures.emplace_back(
-                std::async( std::launch::async, action_per_thread, start, size ) );
-            for( auto& future : futures ) {
-                future.get();
-            }
-        } else {
-            action_per_thread( 0, size );
+        index_t nb_tasks_per_thread { size / nb_threads };
+        for( auto thread : range( nb_threads - 1 ) ) {
+            ringmesh_unused( thread );
+            tasks.execute_function( action_per_thread, start,
+                start + nb_tasks_per_thread );
+            start += nb_tasks_per_thread;
         }
+        tasks.execute_function( action_per_thread, start, size );
+        tasks.wait_aysnc_tasks();
     }
 } // namespace RINGMesh

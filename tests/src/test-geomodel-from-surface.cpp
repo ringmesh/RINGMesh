@@ -35,11 +35,11 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <future>
-
 #include <geogram/basic/command_line.h>
 
 #include <geogram/mesh/mesh_io.h>
+
+#include <ringmesh/basic/task_handler.h>
 
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder_from_mesh.h>
@@ -59,13 +59,12 @@ int main()
 {
     using namespace RINGMesh;
 
-    try
-    {
+    try {
         default_configure();
 
         Logger::out( "TEST", "Test GeoModel building from Surface" );
 
-        std::vector< std::future< void > > futures;
+        TaskHandler tasks;
 
         GEO::Mesh in;
         GEO::mesh_load( ringmesh_test_data_path + "modelA6.mesh", in );
@@ -85,56 +84,48 @@ int main()
         GEO::CmdLine::set_arg( "in:intersection_check", false );
 #endif
 
-        futures.emplace_back( std::async( std::launch::async, [&geomodel] {
+        tasks.execute_function( [&geomodel] {
             if( !is_geomodel_valid( geomodel ) )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when loading model ", geomodel.name(),
                     ": the loaded model is not valid." );
             }
-        } ) );
+        } );
 
-        futures.emplace_back( std::async( std::launch::async, [&geomodel] {
+        tasks.execute_function( [&geomodel] {
             // Save and reload the model
             std::string output_file( ringmesh_test_output_path );
             output_file += "saved_modelA6.gm";
             geomodel_save( geomodel, output_file );
-        } ) );
+        } );
 
         GEO::Mesh surface_meshes;
         // Compute mesh with duplicated points to compares number
         // of mesh elements and mesh entities
-        for( const auto& surface : geomodel.surfaces() )
-        {
-            index_t vertex_it{ surface_meshes.vertices.create_vertices(
+        for( const auto& surface : geomodel.surfaces() ) {
+            index_t vertex_it { surface_meshes.vertices.create_vertices(
                 surface.nb_vertices() ) };
-            for( index_t v : range( surface.nb_vertices() ) )
-            {
-                surface_meshes.vertices.point( vertex_it + v ) =
-                    surface.vertex( v );
+            for( index_t v : range( surface.nb_vertices() ) ) {
+                surface_meshes.vertices.point( vertex_it + v ) = surface.vertex( v );
             }
-            index_t facet_it{ surface_meshes.facets.create_triangles(
+            index_t facet_it { surface_meshes.facets.create_triangles(
                 surface.nb_mesh_elements() ) };
-            for( index_t f : range( surface.nb_mesh_elements() ) )
-            {
-                for( index_t v :
-                    range( surface.nb_mesh_element_vertices( f ) ) )
-                {
+            for( index_t f : range( surface.nb_mesh_elements() ) ) {
+                for( index_t v : range( surface.nb_mesh_element_vertices( f ) ) ) {
                     surface_meshes.facets.set_vertex( facet_it + f, v,
-                        vertex_it
-                            + surface.mesh_element_vertex_index( { f, v } ) );
+                        vertex_it + surface.mesh_element_vertex_index( { f, v } ) );
                 }
             }
         }
         surface_meshes.facets.connect();
 
-        futures.emplace_back(
-            std::async( std::launch::async, [&surface_meshes] {
-                // Save computed mesh
-                std::string output_file2( ringmesh_test_output_path );
-                output_file2 += "saved_modelA6_dupl_points.mesh";
-                GEO::mesh_save( surface_meshes, output_file2 );
-            } ) );
+        tasks.execute_function( [&surface_meshes] {
+            // Save computed mesh
+            std::string output_file2( ringmesh_test_output_path );
+            output_file2 += "saved_modelA6_dupl_points.mesh";
+            GEO::mesh_save( surface_meshes, output_file2 );
+        } );
 
         GeoModel3D reloaded_model;
         GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes );
@@ -144,75 +135,62 @@ int main()
         builder2.end_geomodel();
         print_geomodel( reloaded_model );
 
-        futures.emplace_back(
-            std::async( std::launch::async, [&reloaded_model] {
-                // Checking if building has been successfully done
-                if( !is_geomodel_valid( reloaded_model ) )
-                {
-                    throw RINGMeshException( "RINGMesh Test",
-                        "Failed when reloading model ", reloaded_model.name(),
-                        ": the reloaded model is not valid." );
-                }
-            } ) );
+        tasks.execute_function( [&reloaded_model] {
+            // Checking if building has been successfully done
+            if( !is_geomodel_valid( reloaded_model ) )
+            {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Failed when reloading model ", reloaded_model.name(),
+                    ": the reloaded model is not valid." );
+            }
+        } );
+
 
         // Checking number of mesh elements
-        if( surface_meshes.vertices.nb() != in.vertices.nb() )
-        {
+        if( surface_meshes.vertices.nb() != in.vertices.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when building model: not same number of vertices ",
                 "than input mesh." );
         }
-        if( surface_meshes.facets.nb() != in.facets.nb() )
-        {
+        if( surface_meshes.facets.nb() != in.facets.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when building model: not same number of facets ",
                 "than input mesh." );
         }
-        if( surface_meshes.cells.nb() != in.cells.nb() )
-        {
+        if( surface_meshes.cells.nb() != in.cells.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when building model: not same number of cells ",
                 "than input mesh." );
         }
 
         // Checking number of GeoModelMeshEntities
-        if( reloaded_model.nb_corners() != geomodel.nb_corners() )
-        {
+        if( reloaded_model.nb_corners() != geomodel.nb_corners() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of corners ",
                 "between saved model and reload model." );
         }
-        if( reloaded_model.nb_lines() != geomodel.nb_lines() )
-        {
+        if( reloaded_model.nb_lines() != geomodel.nb_lines() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of lines ",
                 "between saved model and reload model." );
         }
-        if( reloaded_model.nb_surfaces() != geomodel.nb_surfaces() )
-        {
+        if( reloaded_model.nb_surfaces() != geomodel.nb_surfaces() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of surfaces ",
                 "between saved model and reload model." );
         }
-        if( reloaded_model.nb_regions() != geomodel.nb_regions() )
-        {
+        if( reloaded_model.nb_regions() != geomodel.nb_regions() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when reload model: not same number of regions ",
                 "between saved model and reload model." );
         }
 
-        for( auto& future : futures )
-        {
-            future.get();
-        }
-    }
-    catch( const RINGMeshException& e )
-    {
+        tasks.wait_aysnc_tasks();
+
+    } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
-    }
-    catch( const std::exception& e )
-    {
+    } catch( const std::exception& e ) {
         Logger::err( "Exception", e.what() );
         return 1;
     }

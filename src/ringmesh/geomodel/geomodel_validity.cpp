@@ -1003,13 +1003,8 @@ namespace {
 
         void do_check_validity()
         {
-            std::vector< std::future< void > > tasks;
-            tasks.reserve( 8 );
             add_checks();
-
-            for( auto& task : tasks ) {
-                task.get();
-            }
+            validity_tasks_handler_.wait_aysnc_tasks();
         }
 
         /*!
@@ -1224,8 +1219,8 @@ namespace {
                 &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
         }
         if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) ) {
-            validity_tasks_handler_.execute_method( &GeoModelValidityCheck::test_non_manifold_edges,
-                this );
+            validity_tasks_handler_.execute_method(
+                &GeoModelValidityCheck::test_non_manifold_edges, this );
         }
         add_base_checks();
     }

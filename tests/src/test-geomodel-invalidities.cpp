@@ -35,11 +35,12 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <future>
+#include <ringmesh/basic/task_handler.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
+
 #include <ringmesh/io/io.h>
 
 /*! Tests the GeoModel invalidity tracking.
@@ -52,7 +53,9 @@
 using namespace RINGMesh;
 
 void make_geomodel_copy(
-    const GeoModel3D& from, const std::string& name, GeoModel3D& to )
+    const GeoModel3D& from,
+    const std::string& name,
+    GeoModel3D& to )
 {
     GeoModelBuilder3D geomodel_breaker2( to );
     geomodel_breaker2.copy.copy_geomodel( from );
@@ -61,36 +64,31 @@ void make_geomodel_copy(
 
 void verdict( const GeoModel3D& invalid_model, const std::string& feature )
 {
-    if( is_geomodel_valid( invalid_model ) )
-    {
+    if( is_geomodel_valid( invalid_model ) ) {
         throw RINGMeshException( "RINGMesh Test", "Fail to ", feature );
-    }
-    else
-    {
+    } else {
         Logger::out( "TEST", "Succeed to ", feature );
     }
 }
 
 int main()
 {
-    try
-    {
+    try {
         default_configure();
 
-        std::vector< std::future< void > > futures;
-
-        futures.emplace_back( std::async( std::launch::async, [] {
-            std::string input_model_file_name{ ringmesh_test_data_path
-                                               + "modelA6.ml" };
+        TaskHandler tasks;
+        tasks.execute_function( [] {
+            std::string input_model_file_name {ringmesh_test_data_path
+                + "modelA6.ml"};
             GeoModel3D in;
-            bool loaded_model_is_valid{ geomodel_load(
-                in, input_model_file_name ) };
+            bool loaded_model_is_valid {geomodel_load(
+                    in, input_model_file_name )};
 
             if( !loaded_model_is_valid )
             {
                 throw RINGMeshException(
                     "RINGMesh Test", "Failed when loading model " + in.name()
-                                         + ": the loaded model is not valid." );
+                    + ": the loaded model is not valid." );
             }
 
             Logger::out( "TEST", "Break geomodels:" );
@@ -102,9 +100,9 @@ int main()
                 RINGMesh::Interface3D::type_name_static() );
             verdict( invalid_model,
                 "detect addition of an isolated GeoModelGeologicalEntity" );
-        } ) );
+        } );
 
-        futures.emplace_back( std::async( std::launch::async, [] {
+        tasks.execute_function( [] {
             GeoModel3D cloudspin;
             geomodel_load(
                 cloudspin, ringmesh_test_data_path + "CloudSpin.ml" );
@@ -114,20 +112,13 @@ int main()
                 throw RINGMeshException( "RINGMesh Test",
                     "Fail to SURFACE_LINE_MESH_CONFORMITY on CloudSpin" );
             }
-        } ) );
+        } );
 
-        for( auto& future : futures )
-        {
-            future.get();
-        }
-    }
-    catch( const RINGMeshException& e )
-    {
+        tasks.wait_aysnc_tasks();
+    } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
-    }
-    catch( const std::exception& e )
-    {
+    } catch( const std::exception& e ) {
         Logger::err( "Exception", e.what() );
         return 1;
     }
