@@ -88,16 +88,9 @@ namespace {
      * http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format
      * NB : Mesh entities are also exported
      */
-    class MSHIOHandler final: public GeoModelIOHandler< 3 > {
+    class MSHIOHandler final: public GeoModelOutputHandler3D {
     public:
-        void load( const std::string& filename, GeoModel< 3 >& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from GMSH not implemented yet" );
-        }
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );

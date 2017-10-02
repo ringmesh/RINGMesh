@@ -144,6 +144,7 @@ namespace RINGMesh
     class RINGMESH_API GeoModelMeshVerticesBase
         : public GeoModelMeshCommon< DIMENSION >
     {
+    ringmesh_disable_copy_and_move( GeoModelMeshVerticesBase );
     public:
         friend class GeoModelMeshWells< DIMENSION >;
         friend class GeoModelMeshEdges< DIMENSION >;
@@ -262,7 +263,7 @@ namespace RINGMesh
          *        clear global vertex information in the all BMME
          * @warning Not stable - crashes if attributes are still bound
          */
-        virtual void clear();
+        virtual void clear() const;
 
         void unbind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
@@ -277,7 +278,7 @@ namespace RINGMesh
         /*!
          * @brief Remove colocated vertices
          */
-        void remove_colocated();
+        void remove_colocated() const;
 
         /*!
          * @brief Delete vertices for which to_delete[i] != i
@@ -291,7 +292,7 @@ namespace RINGMesh
          * indices
          * @pre to_delete[ v ] is either NO_ID, or is equal or inferior to v
          */
-        void erase_vertices( std::vector< index_t >& to_delete );
+        void erase_vertices( std::vector< index_t >& to_delete ) const;
 
     private:
         /*!
@@ -300,7 +301,7 @@ namespace RINGMesh
          * @details Fills the mesh_->vertices, computes the vertex mapping and
          *         delete colocated vertices
          */
-        void initialize();
+        void initialize() const;
 
     protected:
         GeoModelMeshVerticesBase( GeoModelMesh< DIMENSION >& gmm,
@@ -313,10 +314,10 @@ namespace RINGMesh
          *@note colocated vertices are counted twice or more.
          */
         virtual index_t nb_total_vertices() const;
-        virtual index_t fill_vertices();
-        void fill_vertices_for_entity_type( const GeoModel< DIMENSION >& M,
+        virtual index_t fill_vertices() const;
+        void fill_vertices_for_entity_type( const GeoModel< DIMENSION >& geomodel,
             const MeshEntityType& entity_type,
-            index_t& count );
+            index_t& count ) const;
 
     protected:
         /// Attached Mesh
@@ -347,9 +348,9 @@ namespace RINGMesh
             GeoModel3D& gm,
             std::unique_ptr< PointSetMesh3D >& mesh );
 
-        void clear() override;
+        void clear() const override;
         index_t nb_total_vertices() const override;
-        index_t fill_vertices() override;
+        index_t fill_vertices() const override;
     };
 
     ALIAS_2D_AND_3D( GeoModelMeshVertices );
@@ -1270,9 +1271,9 @@ namespace RINGMesh
         /*!
          * Test if we need to duplicate mesh cell along the given
          * surface according the duplicate mode
-         * @param[in] s the surface index in the GeoModel
+         * @param[in] surface_id the surface index in the GeoModel
          */
-        bool is_surface_to_duplicate( index_t surface ) const;
+        bool is_surface_to_duplicate( index_t surface_id ) const;
 
         /*!
          * Determine the actions to do according the action_on_surfaces

@@ -41,7 +41,7 @@ namespace {
     index_t nb_polygons( const GeoModel3D& geomodel )
     {
         index_t result { 0 };
-        for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
+        for( const auto& surface : geomodel.surfaces() ) {
             result += surface.nb_mesh_elements();
         }
         return result;
@@ -169,7 +169,7 @@ namespace {
                 return false;
             }
         }
-        for( const auto& surface : surface_range < 3 > ( geomodel ) ) {
+        for( const auto& surface : geomodel.surfaces() ) {
             if( !surface.has_parent() ) {
                 Logger::err( "", surface.gmme(),
                     " does not belong to any Interface of the geomodel" );
@@ -400,7 +400,7 @@ namespace {
         }
     }
 
-    class MLIOHandler final: public GeoModelIOHandler< 3 > {
+    class MLIOHandler final: public GeoModelInputHandler3D, public GeoModelOutputHandler3D {
     public:
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
@@ -418,7 +418,7 @@ namespace {
 
         }
 
-        void save( const GeoModel< 3 >& geomodel, const std::string& filename ) final
+        void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             save_gocad_model3d( geomodel, out );

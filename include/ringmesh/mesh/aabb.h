@@ -258,7 +258,7 @@ namespace RINGMesh
     class BoxAABBTree : public AABBTree< DIMENSION >
     {
     public:
-        explicit BoxAABBTree( const std::vector< Box< DIMENSION > >& boxes );
+        explicit BoxAABBTree( const std::vector< Box< DIMENSION > >& bboxes );
 
     private:
         /*!

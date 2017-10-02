@@ -474,16 +474,16 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     index_t SurfaceMeshBase< DIMENSION >::closest_vertex_in_polygon(
-        index_t p, const vecn< DIMENSION >& v ) const
+        index_t polygon_index, const vecn< DIMENSION >& query_point ) const
     {
         index_t result{ 0 };
         double dist{ DBL_MAX };
-        for( auto v_id : range( nb_polygon_vertices( p ) ) )
+        for( auto v_id : range( nb_polygon_vertices( polygon_index ) ) )
         {
             double distance = length2(
-                v
+                query_point
                 - this->vertex(
-                      polygon_vertex( ElementLocalVertex( p, v_id ) ) ) );
+                      polygon_vertex( ElementLocalVertex( polygon_index, v_id ) ) ) );
             if( dist > distance )
             {
                 dist = distance;
@@ -495,22 +495,22 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     std::vector< index_t > SurfaceMeshBase< DIMENSION >::polygons_around_vertex(
-        index_t surf_vertex_id, bool border_only, index_t p0 ) const
+        index_t vertex_id, bool border_only, index_t first_polygon ) const
     {
         index_t cur_p{ 0 };
-        while( p0 == NO_ID && cur_p < nb_polygons() )
+        while( first_polygon == NO_ID && cur_p < nb_polygons() )
         {
             for( auto lv : range( nb_polygon_vertices( cur_p ) ) )
             {
-                if( polygon_vertex( { cur_p, lv } ) == surf_vertex_id )
+                if( polygon_vertex( { cur_p, lv } ) == vertex_id )
                 {
-                    p0 = cur_p;
+                    first_polygon = cur_p;
                     break;
                 }
             }
             cur_p++;
         }
-        ringmesh_assert( p0 != NO_ID );
+        ringmesh_assert( first_polygon != NO_ID );
 
         // Flag the visited polygons
         std::vector< index_t > visited;
@@ -518,8 +518,8 @@ namespace RINGMesh
 
         // Stack of the adjacent polygons
         std::stack< index_t > S;
-        S.push( p0 );
-        visited.push_back( p0 );
+        S.push( first_polygon );
+        visited.push_back( first_polygon );
 
         std::vector< index_t > result;
         result.reserve( 10 );
@@ -530,7 +530,7 @@ namespace RINGMesh
 
             for( auto v : range( nb_polygon_vertices( p ) ) )
             {
-                if( polygon_vertex( { p, v } ) == surf_vertex_id )
+                if( polygon_vertex( { p, v } ) == vertex_id )
                 {
                     auto adj_P = polygon_adjacent( { p, v } );
                     auto prev =

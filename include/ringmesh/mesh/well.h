@@ -269,7 +269,7 @@ namespace RINGMesh
          * @param[in,out] edges the corresponding edges
          */
         void get_region_edges(
-            index_t part_id, std::vector< Edge< DIMENSION > >& edges ) const;
+            index_t region, std::vector< Edge< DIMENSION > >& edges ) const;
 
         /*!
          * Creates a new corner
@@ -450,7 +450,7 @@ namespace RINGMesh
 
         /*!
          * Creates new wells
-         * @param[in] nb the number of wells to create
+         * @param[in] nb_wells the number of wells to create
          */
         void create_wells( index_t nb_wells );
 

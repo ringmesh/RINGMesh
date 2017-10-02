@@ -100,7 +100,7 @@ namespace
 
     struct LineInstersection
     {
-        LineInstersection( const vec3& intersection,
+        explicit LineInstersection( const vec3& intersection,
             index_t surface_id = NO_ID,
             index_t trgl_id = NO_ID )
             : intersection_( intersection ),
@@ -152,7 +152,7 @@ namespace
     }
 
     index_t find_region_from_corners( const GeoModel3D& geomodel,
-        const std::vector< vec3 > vertices,
+        const std::vector< vec3 >& vertices,
         const LineInstersection& start,
         const LineInstersection& end )
     {
@@ -162,39 +162,35 @@ namespace
                 geomodel.surface( start.surface_id_ ), start.trgl_id_ );
             return find_region( geomodel, start.surface_id_, sign );
         }
-        else if( end.surface_id_ != NO_ID )
+        if( end.surface_id_ != NO_ID )
         {
             bool sign =
                 get_side( vertices[vertices.size() - 2], end.intersection_,
                     geomodel.surface( end.surface_id_ ), end.trgl_id_ );
             return find_region( geomodel, end.surface_id_, sign );
         }
-        else
+        double best_distance = max_float64();
+        index_t best_surface = NO_ID;
+        vec3 best_nearest;
+        index_t best_triangle = NO_ID;
+        for( const auto& surface : geomodel.surfaces() )
         {
-            double best_distance = max_float64();
-            index_t best_surface = NO_ID;
-            vec3 best_nearest;
-            index_t best_triangle = NO_ID;
-            for( const auto& surface : geomodel.surfaces() )
+            index_t triangle = NO_ID;
+            vec3 nearest;
+            double distance = max_float64();
+            std::tie( triangle, nearest, distance ) =
+                surface.polygon_aabb().closest_triangle( start.intersection_ );
+            if( distance < best_distance )
             {
-                index_t triangle = NO_ID;
-                vec3 nearest;
-                double distance = max_float64();
-                std::tie( triangle, nearest, distance ) =
-                    surface.polygon_aabb().closest_triangle(
-                        start.intersection_ );
-                if( distance < best_distance )
-                {
-                    best_distance = distance;
-                    best_nearest = nearest;
-                    best_surface = surface.index();
-                    best_triangle = triangle;
-                }
+                best_distance = distance;
+                best_nearest = nearest;
+                best_surface = surface.index();
+                best_triangle = triangle;
             }
-            bool sign = get_side( start.intersection_, best_nearest,
-                geomodel.surface( best_surface ), best_triangle );
-            return find_region( geomodel, best_surface, sign );
         }
+        bool sign = get_side( start.intersection_, best_nearest,
+            geomodel.surface( best_surface ), best_triangle );
+        return find_region( geomodel, best_surface, sign );
     }
 
     template < index_t DIMENSION >
@@ -248,8 +244,7 @@ namespace
                         surface_.mesh_element_vertex( { trgl, 2 } ) } );
             if( does_seg_intersect_triangle )
             {
-                intersections_.push_back(
-                    LineInstersection( result, surface_.index(), trgl ) );
+                intersections_.emplace_back( result, surface_.index(), trgl );
             }
         }
 
@@ -283,7 +278,7 @@ namespace
         index_t edge_vertex_;
         index_t vertex_from_;
     };
-}
+}  // namespace
 
 namespace RINGMesh
 {
@@ -538,10 +533,10 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void WellGroup< DIMENSION >::create_wells( index_t nb )
+    void WellGroup< DIMENSION >::create_wells( index_t nb_wells )
     {
-        wells_.resize( nb, nullptr );
-        for( auto w : range( nb_wells() ) )
+        wells_.resize( nb_wells, nullptr );
+        for( auto w : range( this->nb_wells() ) )
         {
             wells_[w] = new Well< DIMENSION >;
         }
@@ -646,7 +641,9 @@ namespace RINGMesh
     {
         ringmesh_assert( geomodel() );
         if( find_well( name ) != NO_ID )
+        {
             return;
+        }
         wells_.push_back( new Well3D );
         Well3D& new_well = *wells_.back();
         new_well.set_name( name );
