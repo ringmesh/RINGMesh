@@ -359,27 +359,12 @@ namespace RINGMesh
         return Region3D::type_name_static();
     }
 
-    template < index_t DIMENSION >
-    std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > >
-        GeoModelGeologicalEntityAccess< DIMENSION >::create_geological_entity(
-            const GeologicalEntityType& type,
-            const GeoModel< DIMENSION >& geomodel,
-            index_t index_in_geomodel )
-    {
-        auto GMGE = GeoModelGeologicalEntityFactory< DIMENSION >::create(
-            type, geomodel );
-        GMGE->id_ = index_in_geomodel;
-        return GMGE;
-    }
-
     template class RINGMESH_API GeoModelGeologicalEntity< 2 >;
-    template class RINGMESH_API GeoModelGeologicalEntityAccess< 2 >;
     template class RINGMESH_API Contact< 2 >;
     template class RINGMESH_API Interface< 2 >;
     template class RINGMESH_API Layer< 2 >;
 
     template class RINGMESH_API GeoModelGeologicalEntity< 3 >;
-    template class RINGMESH_API GeoModelGeologicalEntityAccess< 3 >;
     template class RINGMESH_API Contact< 3 >;
     template class RINGMESH_API Interface< 3 >;
     template class RINGMESH_API Layer< 3 >;

@@ -56,11 +56,11 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntity );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
     FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
     FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
     FORWARD_DECLARATION_DIMENSION_CLASS( Line );
     FORWARD_DECLARATION_DIMENSION_CLASS( Region );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
     FORWARD_DECLARATION_DIMENSION_STRUCT( EntityTypeManager );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
@@ -445,84 +445,4 @@ namespace RINGMesh
     };
 
     ALIAS_2D_AND_3D( GeoModel );
-
-    template < index_t DIMENSION >
-    class RINGMESH_API GeoModelAccess
-    {
-        ringmesh_disable_copy_and_move( GeoModelAccess );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilderBase< DIMENSION >;
-        friend class GeoModelBuilder< DIMENSION >;
-        friend class GeoModelBuilderGM< DIMENSION >;
-        friend class GeoModelBuilderTopologyBase< DIMENSION >;
-        friend class GeoModelBuilderTopology< DIMENSION >;
-        friend class GeoModelBuilderGeometryBase< DIMENSION >;
-        friend class GeoModelBuilderGeometry< DIMENSION >;
-        friend class GeoModelBuilderGeology< DIMENSION >;
-        friend class GeoModelBuilderRemovalBase< DIMENSION >;
-        friend class GeoModelBuilderRemoval< DIMENSION >;
-        friend class GeoModelBuilderRepair< DIMENSION >;
-        friend class GeoModelBuilderCopy< DIMENSION >;
-        friend class GeoModelBuilderInfo< DIMENSION >;
-
-    private:
-        explicit GeoModelAccess( GeoModel< DIMENSION >& geomodel )
-            : geomodel_( geomodel )
-        {
-        }
-        ~GeoModelAccess() = default;
-
-        std::string& modifiable_name()
-        {
-            return geomodel_.geomodel_name_;
-        }
-
-        EntityTypeManager< DIMENSION >& modifiable_entity_type_manager()
-        {
-            return geomodel_.entity_type_manager_;
-        }
-
-        std::vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >&
-            modifiable_mesh_entities( const MeshEntityType& type )
-        {
-            return const_cast< std::vector< std::
-                    unique_ptr< GeoModelMeshEntity< DIMENSION > > >& >(
-                geomodel_.mesh_entities( type ) );
-        }
-
-        GeoModelMeshEntity< DIMENSION >& modifiable_mesh_entity(
-            const gmme_id& id )
-        {
-            return *modifiable_mesh_entities( id.type() )[id.index()];
-        }
-
-        std::vector< std::vector< std::
-                unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >&
-            modifiable_geological_entities()
-        {
-            return geomodel_.geological_entities_;
-        }
-
-        std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
-            modifiable_geological_entities( const GeologicalEntityType& type )
-        {
-            return const_cast< std::vector< std::
-                    unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >& >(
-                geomodel_.geological_entities( type ) );
-        }
-
-        GeoModelGeologicalEntity< DIMENSION >& modifiable_geological_entity(
-            const gmge_id& id )
-        {
-            return *modifiable_geological_entities( id.type() )[id.index()];
-        }
-
-        double& modifiable_epsilon()
-        {
-            return geomodel_.epsilon_;
-        }
-
-    private:
-        GeoModel< DIMENSION >& geomodel_;
-    };
 } // namespace RINGMesh

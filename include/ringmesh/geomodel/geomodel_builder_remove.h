@@ -41,6 +41,7 @@
 #include <set>
 
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_builder_access.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
