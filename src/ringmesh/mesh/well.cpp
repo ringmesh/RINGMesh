@@ -412,11 +412,6 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    Well< DIMENSION >::Well() : nb_edges_( NO_ID )
-    {
-    }
-
-    template < index_t DIMENSION >
     index_t Well< DIMENSION >::find_corner(
         const vecn< DIMENSION >& vertex, double epsilon ) const
     {
@@ -465,7 +460,7 @@ namespace RINGMesh
             {
                 nb_edges += part( part_id ).nb_edges();
             }
-            const_cast< Well< DIMENSION >* >( this )->nb_edges_ = nb_edges;
+            nb_edges_ = nb_edges;
         }
         return nb_edges_;
     }
