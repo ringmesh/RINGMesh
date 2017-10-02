@@ -161,11 +161,8 @@ namespace RINGMesh
         NNSearch< DIMENSION >::get_colocated_index_mapping(
             double epsilon ) const
     {
-        DEBUG("1.2.3.3.1");
         std::vector< index_t > index_map( nb_points() );
-        DEBUG("1.2.3.3.2");
         std::atomic< index_t > nb_colocalised_vertices{ 0 };
-        DEBUG("1.2.3.3.3");
         parallel_for( nb_points(), [this, &index_map, &nb_colocalised_vertices,
                                        &epsilon]( index_t i ) {
 
