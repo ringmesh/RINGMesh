@@ -35,11 +35,10 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
-#include <ringmesh/basic/logger.h>
-
 #include <future>
 #include <functional>
+
+#include <ringmesh/basic/types.h>
 
 #include <geogram/basic/command_line.h>
 
@@ -51,6 +50,13 @@
 namespace RINGMesh {
     class TaskHandler {
     public:
+
+        TaskHandler() = default;
+
+        TaskHandler( index_t nb_threads )
+        {
+            tasks_.reserve( nb_threads );
+        }
         template< typename TASK, typename T, typename ... Args >
         void execute_method( TASK&& task, T* context, const Args&... args )
         {
@@ -59,10 +65,7 @@ namespace RINGMesh {
                     std::async( std::launch::async, task, context,
                         std::forward< const Args& >( args )... ) );
             } else {
-//                context->*task( std::forward< const Args& >( args )... );
-//                bound_member();)
-//                auto bound_member = std::bind(task, std::forward< const Args& >( args )... ) ;
-//                bound_member(*context);
+                ( *context.*task )( std::forward< const Args& >( args )... );
             }
         }
 

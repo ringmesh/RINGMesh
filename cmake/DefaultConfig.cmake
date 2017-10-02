@@ -49,6 +49,7 @@ option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 if(UNIX AND NOT APPLE)
     option(PROPAGATE_COMPILER_TO_THIRD_PARTIES "Use the specified compiler to build third parties" OFF)
 endif()
+set(EMSCRIPTEN_DIRECTORY "" CACHE PATH "Compile RINGMesh with Emscripten if this field is filled")
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
 
@@ -93,3 +94,4 @@ if(RINGMESH_WITH_GEOLOGYJS)
     set(GEOLOGY_JS_DIRECTORY "${CMAKE_SOURCE_DIR}/../geology.js/cpp" CACHE PATH "geology.js cpp directory location")
     message(STATUS ${GEOLOGY_JS_DIRECTORY})
 endif(RINGMESH_WITH_GEOLOGYJS)
+mark_as_advanced(EMSCRIPTEN_DIRECTORY PROPAGATE_COMPILER_TO_THIRD_PARTIES)
