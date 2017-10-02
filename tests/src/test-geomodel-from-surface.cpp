@@ -39,8 +39,6 @@
 
 #include <geogram/mesh/mesh_io.h>
 
-#include <ringmesh/basic/task_handler.h>
-
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder_from_mesh.h>
 #include <ringmesh/geomodel/geomodel_validity.h>

@@ -35,8 +35,6 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/basic/task_handler.h>
-
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
