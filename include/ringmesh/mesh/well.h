@@ -246,7 +246,7 @@ namespace RINGMesh
         ringmesh_disable_copy_and_move( Well );
 
     public:
-        Well();
+        Well() = default;
         ~Well() = default;
 
         /*!
@@ -391,7 +391,7 @@ namespace RINGMesh
         /// Name of the well
         std::string name_;
         /// Number of edges in the well
-        index_t nb_edges_;
+        mutable index_t nb_edges_{ NO_ID };
     };
 
     ALIAS_2D_AND_3D( Well );
