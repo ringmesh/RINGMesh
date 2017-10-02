@@ -238,7 +238,7 @@ namespace RINGMesh
         }
 
     public:
-        GeoModelMesh< DIMENSION > mesh;
+        mutable GeoModelMesh< DIMENSION > mesh;
 
     protected:
         /*!
