@@ -360,9 +360,7 @@ namespace RINGMesh
 
     template class RINGMESH_API GeoModel< 2 >;
     template class RINGMESH_API GeoModelBase< 2 >;
-    template class RINGMESH_API GeoModelAccess< 2 >;
 
     template class RINGMESH_API GeoModelBase< 3 >;
-    template class RINGMESH_API GeoModelAccess< 3 >;
 
 } // namespace RINGMesh

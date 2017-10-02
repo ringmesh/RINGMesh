@@ -241,56 +241,5 @@ namespace RINGMesh
 
     ALIAS_2D_AND_3D( Layer );
 
-    template < index_t DIMENSION >
-    class RINGMESH_API GeoModelGeologicalEntityAccess
-    {
-        ringmesh_disable_copy_and_move( GeoModelGeologicalEntityAccess );
-        friend class GeoModelBuilderTopology< DIMENSION >;
-        friend class GeoModelBuilderGeology< DIMENSION >;
-        friend class GeoModelBuilderInfo< DIMENSION >;
-        friend class GeoModelBuilderRemovalBase< DIMENSION >;
-
-    private:
-        explicit GeoModelGeologicalEntityAccess(
-            GeoModelGeologicalEntity< DIMENSION >& gmge )
-            : gmge_( gmge )
-        {
-        }
-        ~GeoModelGeologicalEntityAccess() = default;
-
-        std::string& modifiable_name()
-        {
-            return gmge_.name_;
-        }
-
-        index_t& modifiable_index()
-        {
-            return gmge_.id_;
-        }
-
-        typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE&
-            modifiable_geol_feature()
-        {
-            return gmge_.geol_feature_;
-        }
-
-        std::vector< index_t >& modifiable_children()
-        {
-            return gmge_.children_;
-        }
-
-        static std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > >
-            create_geological_entity( const GeologicalEntityType& type,
-                const GeoModel< DIMENSION >& geomodel,
-                index_t index_in_geomodel );
-
-        void copy( const GeoModelGeologicalEntity< DIMENSION >& from )
-        {
-            gmge_.copy_geological_entity( from );
-        }
-
-    private:
-        GeoModelGeologicalEntity< DIMENSION >& gmge_;
-    };
 
 } // namespace RINGMesh

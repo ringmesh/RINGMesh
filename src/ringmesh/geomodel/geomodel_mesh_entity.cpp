@@ -1426,18 +1426,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshEntityAccess< DIMENSION >::change_mesh_data_structure(
-        const MeshType& type )
-    {
-        if( gmme_.mesh_->type_name() != type )
-        {
-            gmme_.unbind_vertex_mapping_attribute();
-            gmme_.change_mesh_data_structure( type );
-            gmme_.bind_vertex_mapping_attribute();
-        }
-    }
-
-    template < index_t DIMENSION >
     void Corner< DIMENSION >::change_mesh_data_structure( const MeshType& type )
     {
         auto new_mesh = PointSetMesh< DIMENSION >::create_mesh( type );
@@ -1489,28 +1477,13 @@ namespace RINGMesh
         builder->copy( *volume_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
     }
-    template <>
-    std::vector< bool >& GeoModelMeshEntityAccess< 2 >::modifiable_sides()
-    {
-        ringmesh_assert( gmme_.type_name() == Surface2D::type_name_static() );
-        return dynamic_cast< Surface2D& >( gmme_ ).sides_;
-    }
-
-    template <>
-    std::vector< bool >& GeoModelMeshEntityAccess< 3 >::modifiable_sides()
-    {
-        ringmesh_assert( gmme_.type_name() == Region3D::type_name_static() );
-        return dynamic_cast< Region3D& >( gmme_ ).sides_;
-    }
 
     template class RINGMESH_API GeoModelMeshEntity< 2 >;
-    template class RINGMESH_API GeoModelMeshEntityAccess< 2 >;
     template class RINGMESH_API Corner< 2 >;
     template class RINGMESH_API Line< 2 >;
     template class RINGMESH_API SurfaceBase< 2 >;
 
     template class RINGMESH_API GeoModelMeshEntity< 3 >;
-    template class RINGMESH_API GeoModelMeshEntityAccess< 3 >;
     template class RINGMESH_API Corner< 3 >;
     template class RINGMESH_API Line< 3 >;
     template class RINGMESH_API SurfaceBase< 3 >;

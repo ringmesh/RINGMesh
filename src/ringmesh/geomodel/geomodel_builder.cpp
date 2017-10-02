@@ -859,6 +859,7 @@ namespace
 
 namespace RINGMesh
 {
+
     template < index_t DIMENSION >
     GeoModelBuilderCopy< DIMENSION >::GeoModelBuilderCopy(
         GeoModelBuilder< DIMENSION >& builder, GeoModel< DIMENSION >& geomodel )

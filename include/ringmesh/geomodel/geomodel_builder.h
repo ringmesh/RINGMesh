@@ -56,6 +56,7 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
+
     template < index_t DIMENSION >
     class RINGMESH_API GeoModelBuilderInfo
     {
