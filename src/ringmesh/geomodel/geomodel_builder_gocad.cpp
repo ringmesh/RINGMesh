@@ -1812,13 +1812,9 @@ namespace RINGMesh
 
     void GeoModelBuilderML::load_file()
     {
-        DEBUG("1.1") ;
         read_file();
-        DEBUG("1.2") ;
         geomodel_.mesh.vertices.test_and_initialize();
-        DEBUG("1.3") ;
         build_lines_and_corners_from_surfaces();
-        DEBUG("1.4") ;
         geology.build_contacts();
     }
 
