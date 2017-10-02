@@ -49,7 +49,7 @@ namespace RINGMesh
     class RINGMESH_API ZipFile
     {
     public:
-        ZipFile( const std::string& filename );
+        explicit ZipFile( const std::string& filename );
         ~ZipFile();
 
         void add_file( const std::string& filename );
@@ -61,7 +61,7 @@ namespace RINGMesh
     class RINGMESH_API UnZipFile
     {
     public:
-        UnZipFile( const std::string& filename );
+        explicit UnZipFile( const std::string& filename );
         ~UnZipFile();
 
         void start_extract();

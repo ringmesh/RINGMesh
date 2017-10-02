@@ -293,7 +293,7 @@ namespace
      */
     std::string mesh_qual_mode_to_prop_name( MeshQualityMode mesh_qual_mode )
     {
-        std::string quality_name = "";
+        std::string quality_name;
         switch( mesh_qual_mode )
         {
         case INSPHERE_RADIUS_BY_CIRCUMSPHERE_RADIUS:
@@ -389,4 +389,4 @@ namespace RINGMesh
             }
         }
     }
-}
+} // namespace RINGMesh

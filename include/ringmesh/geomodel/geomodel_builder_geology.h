@@ -71,7 +71,7 @@ namespace RINGMesh
         gmge_id create_geological_entity( const GeologicalEntityType& type );
 
         bool create_geological_entities(
-            const GeologicalEntityType& type, index_t nb );
+            const GeologicalEntityType& type, index_t nb_additional_entities );
 
         void set_geological_entity_geol_feature( const gmge_id& gmge_id,
             typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE

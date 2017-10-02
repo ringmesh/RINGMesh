@@ -208,7 +208,7 @@ namespace
                 "unclassified polygons" );
         }
     }
-}
+} // namespace
 
 namespace RINGMesh
 {
@@ -421,7 +421,7 @@ namespace RINGMesh
     void rotate( GeoModel3D& geomodel,
         const vec3& origin,
         const vec3& axis,
-        double theta,
+        double angle,
         bool degrees )
     {
         if( length( axis ) < geomodel.epsilon() )
@@ -431,7 +431,7 @@ namespace RINGMesh
             return;
         }
         GEO::Matrix< 4, double > rot_mat{ rotation_matrix_about_arbitrary_axis(
-            origin, axis, theta, degrees ) };
+            origin, axis, angle, degrees ) };
 
         for( auto v : range( geomodel.mesh.vertices.nb() ) )
         {

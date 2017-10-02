@@ -280,7 +280,7 @@ namespace RINGMesh
         {
         }
 
-        PlaneReferenceFrame3D( const Geometry::Plane& plane );
+        explicit PlaneReferenceFrame3D( const Geometry::Plane& plane );
     };
 
     namespace Distance

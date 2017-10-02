@@ -71,12 +71,11 @@ namespace RINGMesh
     }
 
     void StratigraphicColumn::insert_unit_below(
-        const StratigraphicUnit& above, const StratigraphicUnit& to_add )
+        const StratigraphicUnit& above, const StratigraphicUnit& unit_to_add )
     {
         index_t index = get_index( above.get_name() );
         ringmesh_assert( index != NO_ID );
-        const StratigraphicUnit* ptr_add = &to_add;
-        units_.insert( units_.begin() + index + 1, ptr_add );
+        units_.insert( units_.begin() + index + 1, &unit_to_add );
     }
 
     void StratigraphicColumn::insert_top_unit( const StratigraphicUnit& to_add )
@@ -143,11 +142,11 @@ namespace RINGMesh
         return sum;
     }
 
-    index_t StratigraphicColumn::get_index( const std::string& name ) const
+    index_t StratigraphicColumn::get_index( const std::string& unit_name ) const
     {
         for( auto i : range( units_.size() ) )
         {
-            if( units_[i]->get_name() == name )
+            if( units_[i]->get_name() == unit_name )
             {
                 return i;
             }

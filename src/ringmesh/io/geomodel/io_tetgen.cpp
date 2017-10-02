@@ -34,15 +34,8 @@
  */
 
 namespace {
-    class TetGenIOHandler final: public GeoModelIOHandler< 3 > {
+    class TetGenIOHandler final: public GeoModelOutputHandler3D {
     public:
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from TetGen not implemented yet" );
-        }
         void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::string directory = GEO::FileSystem::dir_name( filename );

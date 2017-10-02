@@ -48,17 +48,10 @@ namespace {
         { 0, 4, 5, 1, 2, 6, 7, 3 }     // vertices
     };
 
-    class AbaqusIOHandler final: public GeoModelIOHandler< 3 > {
+    class AbaqusIOHandler final: public GeoModelOutputHandler3D {
     public:
         static const index_t NB_ENTRY_PER_LINE = 16;
 
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from abaqus not implemented yet" );
-        }
         void save(
             const GeoModel3D& geomodel,
             const std::string& filename ) final

@@ -47,7 +47,7 @@
 namespace GEO
 {
     class AttributesManager;
-}
+} // namespace GEO
 
 namespace RINGMesh
 {
@@ -709,7 +709,7 @@ namespace RINGMesh
     protected:
         SurfaceBase( const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const MeshType type );
+            const MeshType& type );
 
         /*!
          * @brief Check that the mesh of the Surface is valid
@@ -933,7 +933,7 @@ namespace RINGMesh
     private:
         Region( const GeoModel< DIMENSION >& geomodel,
             index_t id,
-            const MeshType type );
+            const MeshType& type );
 
         bool is_mesh_valid() const final;
 
