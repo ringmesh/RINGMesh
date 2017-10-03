@@ -59,7 +59,7 @@ namespace RINGMesh
      * type and also their (in) boundary
      */
     template < index_t DIMENSION >
-    class MeshEntityTypeManagerBase
+    class RINGMESH_API MeshEntityTypeManagerBase
     {
     public:
         ~MeshEntityTypeManagerBase();
@@ -93,7 +93,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class MeshEntityTypeManager : public MeshEntityTypeManagerBase< DIMENSION >
+    class RINGMESH_API MeshEntityTypeManager: public MeshEntityTypeManagerBase< DIMENSION >
     {
     };
 
@@ -229,7 +229,7 @@ namespace RINGMesh
      * to give access to different manager to handle the entity types
      */
     template < index_t DIMENSION >
-    struct EntityTypeManager
+    struct RINGMESH_API EntityTypeManager
     {
         MeshEntityTypeManager< DIMENSION > mesh_entity_manager;
         GeologicalTypeManager geological_entity_manager;

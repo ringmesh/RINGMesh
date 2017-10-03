@@ -106,7 +106,7 @@ namespace RINGMesh
     index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
 
     template < index_t DIMENSION >
-    class GeoModelInputHandler
+    class RINGMESH_API GeoModelInputHandler
     {
         ringmesh_disable_copy_and_move( GeoModelInputHandler );
 
@@ -142,7 +142,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelInputHandlerFactory );
 
     template < index_t DIMENSION >
-    class GeoModelOutputHandler
+    class RINGMESH_API GeoModelOutputHandler
     {
         ringmesh_disable_copy_and_move( GeoModelOutputHandler );
 
