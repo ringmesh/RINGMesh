@@ -896,7 +896,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION >
+    class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION >
     {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
 
