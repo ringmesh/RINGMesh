@@ -537,17 +537,8 @@ namespace RINGMesh
          * @param[in] polygon_id the polygon index
          * @return the polygon center
          */
-        vecn< DIMENSION > polygon_barycenter( index_t polygon_id ) const
-        {
-            vecn< DIMENSION > result;
-            ringmesh_assert( nb_polygon_vertices( polygon_id ) >= 1 );
-            for( auto v : range( nb_polygon_vertices( polygon_id ) ) )
-            {
-                result += this->vertex(
-                    polygon_vertex( ElementLocalVertex( polygon_id, v ) ) );
-            }
-            return ( 1.0 / nb_polygon_vertices( polygon_id ) ) * result;
-        }
+        vecn< DIMENSION > polygon_barycenter( index_t polygon_id ) const;
+
         /*!
          * Computes the Mesh polygon area
          * @param[in] polygon_id the polygon index
