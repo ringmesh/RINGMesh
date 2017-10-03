@@ -491,17 +491,7 @@ namespace RINGMesh
         /*!
          * Is one of the edges of the polygon on the border of the surface?
          */
-        bool is_polygon_on_border( index_t polygon_index ) const
-        {
-            for( auto v : range( nb_polygon_vertices( polygon_index ) ) )
-            {
-                if( is_edge_on_border( { polygon_index, v } ) )
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+        bool is_polygon_on_border( index_t polygon_index ) const;
 
         /*!
          * @brief Gets the length of the edge starting at a given vertex

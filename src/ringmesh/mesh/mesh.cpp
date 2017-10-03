@@ -294,6 +294,19 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    bool SurfaceMeshBase< DIMENSION >::is_polygon_on_border( index_t polygon_index ) const
+    {
+        for( auto v : range( nb_polygon_vertices( polygon_index ) ) )
+        {
+            if( is_edge_on_border( { polygon_index, v } ) )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template < index_t DIMENSION >
     PolygonLocalEdge SurfaceMeshBase< DIMENSION >::next_on_border(
         const PolygonLocalEdge& polygon_local_edge ) const
     {
