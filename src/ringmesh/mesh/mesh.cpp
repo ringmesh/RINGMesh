@@ -294,6 +294,18 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    vecn< DIMENSION > SurfaceMeshBase< DIMENSION >::polygon_barycenter( index_t polygon_id ) const
+    {
+        vecn< DIMENSION > result;
+        ringmesh_assert( nb_polygon_vertices( polygon_id ) >= 1 );
+        for( auto v : range( nb_polygon_vertices( polygon_id ) ) )
+        {
+            result += this->vertex( polygon_vertex( { polygon_id, v } ) );
+        }
+        return ( 1.0 / nb_polygon_vertices( polygon_id ) ) * result;
+    }
+
+    template < index_t DIMENSION >
     bool SurfaceMeshBase< DIMENSION >::is_polygon_on_border( index_t polygon_index ) const
     {
         for( auto v : range( nb_polygon_vertices( polygon_index ) ) )
