@@ -690,6 +690,43 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    bool SurfaceMeshBase< DIMENSION >::is_mesh_valid() const
+    {
+        bool valid{ true };
+
+        if( this->nb_vertices() < 3 )
+        {
+            Logger::warn( "SurfaceMesh has less than 3 vertices " );
+            valid = false;
+        }
+        if( nb_polygons() == 0 )
+        {
+            Logger::warn( "SurfaceMesh has no polygon" );
+            valid = false;
+        }
+
+        // No isolated vertices
+        std::vector< index_t > nb( this->nb_vertices(), 0 );
+        for( auto p : range( nb_polygons() ) )
+        {
+            for( auto v : range( nb_polygon_vertices( p ) ) )
+            {
+                nb[polygon_vertex( { p, v } )]++;
+            }
+        }
+        auto nb_isolated_vertices =
+            static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) );
+        if( nb_isolated_vertices > 0 )
+        {
+            Logger::warn( "SurfaceMesh", "Mesh has ", nb_isolated_vertices,
+                " isolated vertices " );
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    template < index_t DIMENSION >
     std::unique_ptr< VolumeMesh< DIMENSION > >
         VolumeMesh< DIMENSION >::create_mesh( const MeshType type )
     {
