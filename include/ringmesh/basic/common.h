@@ -115,7 +115,8 @@ void ringmesh_unused( const T& /*unused*/)
 
 #include <stdexcept>
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     /*!
      * This function configures geogram by setting some geogram options.
      * \pre This function should be call after GEO::initialize().
@@ -144,7 +145,8 @@ namespace RINGMesh {
      *          Logger::err( "Exception", e.what() );
      *       }
      */
-    class RINGMESH_API RINGMeshException: public std::runtime_error {
+    class RINGMESH_API RINGMeshException: public std::runtime_error
+    {
     public:
         template< typename ... Args >
         explicit RINGMeshException( std::string category, const Args&... messages )
@@ -195,7 +197,8 @@ namespace RINGMesh {
      *      // do something
      *    }
      */
-    class RINGMESH_API range {
+    class RINGMESH_API range
+    {
     public:
         template< typename T1, typename T2 >
         range( T1 begin, T2 end )
