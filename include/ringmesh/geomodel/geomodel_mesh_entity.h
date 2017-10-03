@@ -42,6 +42,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <ringmesh/geomodel/geomodel_entity.h>
 
 namespace GEO

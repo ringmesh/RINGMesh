@@ -40,6 +40,7 @@
 #include <geogram/mesh/triangle_intersection.h>
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/task_handler.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
