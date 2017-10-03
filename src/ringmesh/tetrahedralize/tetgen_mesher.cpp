@@ -38,6 +38,7 @@
 #include <cstring>
 
 #include <geogram/mesh/mesh.h>
+
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 

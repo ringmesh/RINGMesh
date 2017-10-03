@@ -192,6 +192,41 @@ namespace RINGMesh
         return builder;
     }
 
+
+    template< index_t DIMENSION >
+    void MeshBaseBuilder< DIMENSION >::delete_vertex_nn_search()
+    {
+        mesh_base_.vertex_nn_search_.reset();
+    }
+
+    template< index_t DIMENSION >
+    void VolumeMeshBuilder< DIMENSION >::remove_isolated_vertices()
+    {
+        std::vector< bool > to_delete( volume_mesh_.nb_vertices(), true );
+        for( auto c : range( volume_mesh_.nb_cells() ) )
+        {
+            for( auto v : range( volume_mesh_.nb_cell_vertices( c ) ) )
+            {
+                auto vertex_id = volume_mesh_.cell_vertex( { c, v } );
+                to_delete[vertex_id] = false;
+            }
+        }
+        this->delete_vertices( to_delete );
+    }
+
+    template< index_t DIMENSION >
+    void VolumeMeshBuilder< DIMENSION >::delete_cell_nn_search()
+    {
+        volume_mesh_.cell_nn_search_.reset();
+        volume_mesh_.cell_facet_nn_search_.reset();
+    }
+
+    template< index_t DIMENSION >
+    void VolumeMeshBuilder< DIMENSION >::delete_cell_aabb()
+    {
+        volume_mesh_.cell_aabb_.reset();
+    }
+
     template std::unique_ptr< PointSetMeshBuilder< 2 > > RINGMESH_API
     PointSetMeshBuilder< 2 >::create_builder( PointSetMesh< 2 >& );
     template std::unique_ptr< LineMeshBuilder< 2 > >
@@ -207,4 +242,9 @@ namespace RINGMesh
     SurfaceMeshBuilder< 3 >::create_builder( SurfaceMesh< 3 >& );
     template std::unique_ptr< VolumeMeshBuilder< 3 > >
     RINGMESH_API VolumeMeshBuilder< 3 >::create_builder( VolumeMesh< 3 >& );
+
+    template class RINGMESH_API MeshBaseBuilder< 2 >;
+
+    template class RINGMESH_API MeshBaseBuilder< 3 >;
+    template class RINGMESH_API VolumeMeshBuilder< 3 >;
 } // namespace RINGMesh

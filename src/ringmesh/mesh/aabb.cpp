@@ -41,6 +41,7 @@
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 /// Copied and adapted from Geogram
 
