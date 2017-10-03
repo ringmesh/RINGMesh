@@ -36,9 +36,9 @@
 #pragma once
 
 #include <future>
-#include <functional>
 
 #include <ringmesh/basic/types.h>
+#include <ringmesh/basic/common.h>
 
 #include <geogram/basic/command_line.h>
 
@@ -97,5 +97,34 @@ namespace RINGMesh {
         /// is enabled.
         bool multi_thread_ { GEO::CmdLine::get_arg_bool( "sys:multithread" ) };
     };
+
+    template< typename ACTION >
+    void parallel_for( index_t size, const ACTION& action )
+    {
+        if( size == 0 ) {
+            return;
+        }
+
+        auto action_per_thread = [&action]( index_t start, index_t end ) {
+            for( auto i : range( start, end ) )
+            {
+                action( i );
+            }
+        };
+
+        index_t nb_threads { std::min( size, std::thread::hardware_concurrency() ) };
+        TaskHandler tasks { nb_threads };
+        index_t start { 0 };
+
+        index_t nb_tasks_per_thread { size / nb_threads };
+        for( auto thread : range( nb_threads - 1 ) ) {
+            ringmesh_unused( thread );
+            tasks.execute_function( action_per_thread, start,
+                start + nb_tasks_per_thread );
+            start += nb_tasks_per_thread;
+        }
+        tasks.execute_function( action_per_thread, start, size );
+        tasks.wait_aysnc_tasks();
+    }
 
 } // namespace RINGMesh

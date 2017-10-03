@@ -106,13 +106,10 @@ void ringmesh_unused( const T& /*unused*/)
 {
 }
 
-#include <ringmesh/basic/task_handler.h>
 #include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/types.h>
 
 #include <geogram/basic/string.h>
-
-#include <thread>
 
 #define DEBUG( a ) Logger::out( "Debug", #a, " = ", a )
 
@@ -239,33 +236,4 @@ namespace RINGMesh {
         index_t iter_ { 0 };
         index_t last_ { 0 };
     };
-
-    template< typename ACTION >
-    void parallel_for( index_t size, const ACTION& action )
-    {
-        if( size == 0 ) {
-            return;
-        }
-
-        auto action_per_thread = [&action]( index_t start, index_t end ) {
-            for( auto i : range( start, end ) )
-            {
-                action( i );
-            }
-        };
-
-        index_t nb_threads { std::min( size, std::thread::hardware_concurrency() ) };
-        TaskHandler tasks { nb_threads };
-        index_t start { 0 };
-
-        index_t nb_tasks_per_thread { size / nb_threads };
-        for( auto thread : range( nb_threads - 1 ) ) {
-            ringmesh_unused( thread );
-            tasks.execute_function( action_per_thread, start,
-                start + nb_tasks_per_thread );
-            start += nb_tasks_per_thread;
-        }
-        tasks.execute_function( action_per_thread, start, size );
-        tasks.wait_aysnc_tasks();
-    }
 } // namespace RINGMesh

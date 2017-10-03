@@ -35,8 +35,9 @@
 
 #pragma once
 
-#include <ringmesh/ringmesh_export.h>
+#include <ringmesh/basic/common.h>
 #include <string>
+
 /*!
  * @file Custom assertions
  */

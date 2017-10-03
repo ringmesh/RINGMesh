@@ -33,6 +33,8 @@
  *     FRANCE
  */
 
+#include <ringmesh/basic/task_handler.h>
+
 namespace {
     using namespace RINGMesh;
 
