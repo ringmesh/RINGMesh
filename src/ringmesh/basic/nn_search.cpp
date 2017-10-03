@@ -43,7 +43,6 @@
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/basic/pimpl_impl.h>
-#include <ringmesh/basic/logger.h>
 
 #include <geogram/points/kd_tree.h>
 
@@ -165,12 +164,9 @@ namespace RINGMesh
         std::atomic< index_t > nb_colocalised_vertices{ 0 };
         parallel_for( nb_points(), [this, &index_map, &nb_colocalised_vertices,
                                        &epsilon]( index_t i ) {
-
             auto results = get_neighbors( point( i ), epsilon );
-
             index_t id{ *std::min_element( results.begin(), results.end() ) };
             index_map[i] = id;
-
             if( id < i )
             {
                 nb_colocalised_vertices++;

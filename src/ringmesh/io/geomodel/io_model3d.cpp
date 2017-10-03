@@ -407,15 +407,12 @@ namespace {
          */
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
-            DEBUG("1") ;
             std::ifstream input( filename.c_str() );
             if( !input ) {
                 throw RINGMeshException( "I/O", "Failed to open file ", filename );
             }
             GeoModelBuilderML builder( geomodel, filename );
             builder.build_geomodel();
-            DEBUG("END") ;
-
         }
 
         void save( const GeoModel3D& geomodel, const std::string& filename ) final
