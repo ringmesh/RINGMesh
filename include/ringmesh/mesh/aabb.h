@@ -372,7 +372,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceAABBTree );
 
     template < index_t DIMENSION >
-    class RINGMESH_API VolumeAABBTree: public AABBTree< DIMENSION >
+    class RINGMESH_API VolumeAABBTree : public AABBTree< DIMENSION >
     {
         ringmesh_template_assert_3d( DIMENSION );
 
