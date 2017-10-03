@@ -240,8 +240,6 @@ namespace RINGMesh
     RINGMESH_API LineMeshBuilder< 3 >::create_builder( LineMesh< 3 >& );
     template std::unique_ptr< SurfaceMeshBuilder< 3 > > RINGMESH_API
     SurfaceMeshBuilder< 3 >::create_builder( SurfaceMesh< 3 >& );
-    template std::unique_ptr< VolumeMeshBuilder< 3 > >
-    RINGMESH_API VolumeMeshBuilder< 3 >::create_builder( VolumeMesh< 3 >& );
 
     template class RINGMESH_API MeshBaseBuilder< 2 >;
 
