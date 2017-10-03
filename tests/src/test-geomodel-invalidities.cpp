@@ -79,7 +79,7 @@ int main()
         default_configure();
 
         TaskHandler tasks;
-        tasks.execute_function( []
+        tasks.execute( []
         {
             std::string input_model_file_name
             {   ringmesh_test_data_path
@@ -107,7 +107,7 @@ int main()
                 "detect addition of an isolated GeoModelGeologicalEntity" );
         } );
 
-        tasks.execute_function( []
+        tasks.execute( []
         {
             GeoModel3D cloudspin;
             geomodel_load(

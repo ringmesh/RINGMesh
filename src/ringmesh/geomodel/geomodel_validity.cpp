@@ -1092,26 +1092,26 @@ namespace
         {
             if( enum_contains( mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) )
             {
-                validity_tasks_handler_.execute_method(
+                validity_tasks_handler_.execute(
                     &GeoModelValidityCheck::test_geomodel_connectivity_validity,
                     this );
             }
             if( enum_contains( mode_, ValidityCheckMode::GEOLOGICAL_ENTITIES ) )
             {
-                validity_tasks_handler_.execute_method(
+                validity_tasks_handler_.execute(
                     &GeoModelValidityCheck::test_geomodel_geological_validity,
                     this );
             }
             if( enum_contains( mode_,
                 ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) )
             {
-                validity_tasks_handler_.execute_method(
+                validity_tasks_handler_.execute(
                     &GeoModelValidityCheck::test_surface_line_mesh_conformity,
                     this );
             }
             if( enum_contains( mode_, ValidityCheckMode::MESH_ENTITIES ) )
             {
-                validity_tasks_handler_.execute_method(
+                validity_tasks_handler_.execute(
                     &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
                     this );
                 /// TODO: find a way to add this test for Model3d. See BC.
@@ -1363,18 +1363,18 @@ namespace
     {
         if( enum_contains( mode_, ValidityCheckMode::POLYGON_INTERSECTIONS ) )
         {
-            validity_tasks_handler_.execute_method(
+            validity_tasks_handler_.execute(
                 &GeoModelValidityCheck::test_polygon_intersections, this );
         }
         if( enum_contains( mode_,
             ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY ) )
         {
-            validity_tasks_handler_.execute_method(
+            validity_tasks_handler_.execute(
                 &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
         }
         if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) )
         {
-            validity_tasks_handler_.execute_method(
+            validity_tasks_handler_.execute(
                 &GeoModelValidityCheck::test_non_manifold_edges, this );
         }
         add_base_checks();

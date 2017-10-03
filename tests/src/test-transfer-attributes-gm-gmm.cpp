@@ -692,9 +692,9 @@ namespace
         GEO::geo_register_attribute_type< long int >( "long int" );
 
         TaskHandler tasks;
-        tasks.execute_function(
+        tasks.execute(
             &tests_transfer_from_geomodel_regions_to_geomodelmesh );
-        tasks.execute_function(
+        tasks.execute(
             &tests_transfer_from_geomodelmesh_to_geomodel_regions );
         tasks.wait_aysnc_tasks();
     }

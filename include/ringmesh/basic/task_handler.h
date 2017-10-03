@@ -57,28 +57,29 @@ namespace RINGMesh {
         {
             tasks_.reserve( nb_threads );
         }
-        template< typename TASK, typename T, typename ... Args >
-        void execute_method( TASK&& task, T* context, const Args&... args )
-        {
-            if( multi_thread_ ) {
-                tasks_.emplace_back(
-                    std::async( std::launch::async, task, context,
-                        std::forward< const Args& >( args )... ) );
-            } else {
-                ( *context.*task )( std::forward< const Args& >( args )... );
-            }
-        }
+
+//        template< typename TASK, typename T, typename ... Args >
+//        void execute_method( TASK&& task, T* context, const Args&... args )
+//         {
+//            auto to_execute = std::bind( std::forward< TASK&& >( task ), std::forward< const Args& >( args )... );
+//            if( multi_thread_ ) {
+//	        tasks_.emplace_back(
+//	            std::async( std::launch::async, to_execute ) );
+//	    } else {
+//	        to_execute();
+//	    }
+//	}
 
         template< typename TASK, typename ... Args >
-        void execute_function( TASK&& task, const Args&... args )
+        void execute( TASK&& task, const Args&... args )
         {
+            auto to_execute = std::bind( std::forward< TASK&& >( task ), std::forward< const Args& >( args )... );
             if( multi_thread_ ) {
-                tasks_.emplace_back(
-                    std::async( std::launch::async, task,
-                        std::forward< const Args& >( args )... ) );
-            } else {
-                task( std::forward< const Args& >( args )... );
-            }
+	        tasks_.emplace_back(
+	            std::async( std::launch::async, to_execute ) );
+	    } else {
+	        to_execute();
+	    }
         }
 
         void wait_aysnc_tasks()
@@ -119,11 +120,11 @@ namespace RINGMesh {
         index_t nb_tasks_per_thread { size / nb_threads };
         for( auto thread : range( nb_threads - 1 ) ) {
             ringmesh_unused( thread );
-            tasks.execute_function( action_per_thread, start,
+            tasks.execute( action_per_thread, start,
                 start + nb_tasks_per_thread );
             start += nb_tasks_per_thread;
         }
-        tasks.execute_function( action_per_thread, start, size );
+        tasks.execute( action_per_thread, start, size );
         tasks.wait_aysnc_tasks();
     }
 
