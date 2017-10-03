@@ -153,10 +153,7 @@ namespace RINGMesh
 
         ~GeoModelMeshVerticesBase();
 
-        GEO::AttributesManager& attribute_manager() const
-        {
-            return mesh_->vertex_attribute_manager();
-        }
+        GEO::AttributesManager& attribute_manager() const;
 
         /*!
          * Tests if the mesh vertices are initialized
@@ -902,10 +899,8 @@ namespace RINGMesh
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< VolumeMesh< DIMENSION > >& mesh );
 
-        GEO::AttributesManager& attribute_manager() const
-        {
-            return mesh_->cell_attribute_manager();
-        }
+        GEO::AttributesManager& attribute_manager() const;
+
         /*!
          * Test if the mesh cells are initialized
          */

@@ -45,6 +45,7 @@
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 namespace RINGMesh
 {
