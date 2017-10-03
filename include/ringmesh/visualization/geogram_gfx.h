@@ -84,7 +84,7 @@ private:                                                                       \
     GEO::MeshGfx mesh_gfx_
 
     template < index_t DIMENSION >
-    class GeogramPointSetMeshGfx : public PointSetMeshGfx< DIMENSION >
+    class RINGMESH_API GeogramPointSetMeshGfx: public PointSetMeshGfx< DIMENSION >
     {
         COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramPointSetMeshGfx );
 
@@ -100,7 +100,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramPointSetMeshGfx );
 
     template < index_t DIMENSION >
-    class GeogramLineMeshGfx : public LineMeshGfx< DIMENSION >
+    class RINGMESH_API GeogramLineMeshGfx: public LineMeshGfx< DIMENSION >
     {
         COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramLineMeshGfx );
 
@@ -132,7 +132,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramLineMeshGfx );
 
     template < index_t DIMENSION >
-    class GeogramSurfaceMeshGfx : public SurfaceMeshGfx< DIMENSION >
+    class RINGMESH_API GeogramSurfaceMeshGfx: public SurfaceMeshGfx< DIMENSION >
     {
         COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramSurfaceMeshGfx );
 
@@ -177,7 +177,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramSurfaceMeshGfx );
 
     template < index_t DIMENSION >
-    class GeogramVolumeMeshGfx : public VolumeMeshGfx< DIMENSION >
+    class RINGMESH_API GeogramVolumeMeshGfx: public VolumeMeshGfx< DIMENSION >
     {
         COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramVolumeMeshGfx );
 

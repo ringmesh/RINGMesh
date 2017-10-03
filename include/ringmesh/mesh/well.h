@@ -62,7 +62,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class WellEntity
+    class RINGMESH_API WellEntity
     {
         ringmesh_disable_copy_and_move( WellEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -90,7 +90,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class WellCorner : public WellEntity< DIMENSION >
+    class RINGMESH_API WellCorner: public WellEntity< DIMENSION >
     {
     public:
         WellCorner( const Well< DIMENSION >* well,
@@ -125,7 +125,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class WellPart : public WellEntity< DIMENSION >
+    class RINGMESH_API WellPart: public WellEntity< DIMENSION >
     {
     public:
         /*!
@@ -213,7 +213,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class Edge
+    class RINGMESH_API Edge
     {
     public:
         Edge( const vecn< DIMENSION >& v0, const vecn< DIMENSION >& v1 )
@@ -241,7 +241,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class Well
+    class RINGMESH_API Well
     {
         ringmesh_disable_copy_and_move( Well );
 
@@ -402,7 +402,7 @@ namespace RINGMesh
      * @todo Comment
      */
     template < index_t DIMENSION >
-    class WellGroup
+    class RINGMESH_API WellGroup
     {
         ringmesh_disable_copy_and_move( WellGroup );
 

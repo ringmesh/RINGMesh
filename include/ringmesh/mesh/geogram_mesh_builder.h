@@ -117,7 +117,7 @@ private:                                                                       \
     Class< DIMENSION >& mesh_
 
     template < index_t DIMENSION >
-    class GeogramPointSetMeshBuilder : public PointSetMeshBuilder< DIMENSION >
+    class RINGMESH_API GeogramPointSetMeshBuilder: public PointSetMeshBuilder< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -133,7 +133,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramPointSetMeshBuilder );
 
     template < index_t DIMENSION >
-    class GeogramLineMeshBuilder : public LineMeshBuilder< DIMENSION >
+    class RINGMESH_API GeogramLineMeshBuilder: public LineMeshBuilder< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -186,7 +186,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramLineMeshBuilder );
 
     template < index_t DIMENSION >
-    class GeogramSurfaceMeshBuilder : public SurfaceMeshBuilder< DIMENSION >
+    class RINGMESH_API GeogramSurfaceMeshBuilder: public SurfaceMeshBuilder< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -279,7 +279,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramSurfaceMeshBuilder );
 
     template < index_t DIMENSION >
-    class GeogramVolumeMeshBuilder : public VolumeMeshBuilder< DIMENSION >
+    class RINGMESH_API GeogramVolumeMeshBuilder: public VolumeMeshBuilder< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );
         ringmesh_template_assert_3d( DIMENSION );
