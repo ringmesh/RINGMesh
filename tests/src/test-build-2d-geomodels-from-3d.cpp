@@ -73,7 +73,7 @@ int main()
         geomodel2d_builder.build_geomodel();
 
         TaskHandler tasks;
-        tasks.execute_function( [&projection_geomodel2d]
+        tasks.execute( [&projection_geomodel2d]
         {
             if( !is_geomodel_valid( projection_geomodel2d ) )
             {

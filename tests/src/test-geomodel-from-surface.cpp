@@ -83,7 +83,7 @@ int main()
         GEO::CmdLine::set_arg( "validity_intersection_check", false );
 #endif
 
-        tasks.execute_function( [&geomodel]
+        tasks.execute( [&geomodel]
         {
             if( !is_geomodel_valid( geomodel ) )
             {
@@ -93,7 +93,7 @@ int main()
             }
         } );
 
-        tasks.execute_function( [&geomodel]
+        tasks.execute( [&geomodel]
         {
             // Save and reload the model
             std::string output_file( ringmesh_test_output_path );
@@ -125,7 +125,7 @@ int main()
         }
         surface_meshes.facets.connect();
 
-        tasks.execute_function( [&surface_meshes]
+        tasks.execute( [&surface_meshes]
         {
             // Save computed mesh
             std::string output_file2( ringmesh_test_output_path );
@@ -141,7 +141,7 @@ int main()
         builder2.end_geomodel();
         print_geomodel( reloaded_model );
 
-        tasks.execute_function( [&reloaded_model]
+        tasks.execute( [&reloaded_model]
         {
             // Checking if building has been successfully done
             if( !is_geomodel_valid( reloaded_model ) )

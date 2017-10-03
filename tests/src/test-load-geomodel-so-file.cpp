@@ -83,8 +83,8 @@ int main()
         Logger::out( "TEST",
             "Import two meshed GeoModels (1 TSolid & 1 LightTSolid) from .so" );
         TaskHandler tasks;
-        tasks.execute_function( &test_mesh, ringmesh_test_data_path + "modelA4.so" );
-        tasks.execute_function( &test_mesh,
+        tasks.execute( &test_mesh, ringmesh_test_data_path + "modelA4.so" );
+        tasks.execute( &test_mesh,
             ringmesh_test_data_path + "modelA4_lts.so" );
         tasks.wait_aysnc_tasks();
     }
