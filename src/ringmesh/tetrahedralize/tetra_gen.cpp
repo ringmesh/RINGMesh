@@ -40,11 +40,13 @@
 #endif
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/mesh_index.h>
 #include <ringmesh/mesh/well.h>
 
 #include <ringmesh/tetrahedralize/tetgen_mesher.h>
