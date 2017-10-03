@@ -643,7 +643,6 @@ namespace RINGMesh
 
         // Remove colocated vertices
         remove_colocated();
-
     }
 
     template < index_t DIMENSION >
@@ -834,16 +833,12 @@ namespace RINGMesh
         {
             return;
         }
-
         // Identify and invalidate colocated vertices
         index_t nb_colocalised_vertices{ NO_ID };
-
         std::vector< index_t > old2new;
-
         std::tie( nb_colocalised_vertices, old2new ) =
             mesh_->vertex_nn_search().get_colocated_index_mapping(
                 this->geomodel_.epsilon() );
-
         if( nb_colocalised_vertices > 0 )
         {
             erase_vertices( old2new );
