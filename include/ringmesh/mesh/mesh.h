@@ -255,42 +255,8 @@ namespace RINGMesh
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
 
-        bool is_mesh_valid() const override
-        {
-            bool valid{ true };
+        bool is_mesh_valid() const override;
 
-            if( this->nb_vertices() < 2 )
-            {
-                Logger::err( "LineMesh", "Mesh has less than 2 vertices " );
-                valid = false;
-            }
-
-            if( nb_edges() == 0 )
-            {
-                Logger::err( "LineMesh", "Mesh has no edge" );
-                valid = false;
-            }
-
-            // No isolated vertices
-            std::vector< index_t > nb( this->nb_vertices(), 0 );
-            for( auto p : range( nb_edges() ) )
-            {
-                for( auto v : range( 2 ) )
-                {
-                    nb[edge_vertex( { p, v } )]++;
-                }
-            }
-            auto nb_isolated_vertices =
-                static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) );
-            if( nb_isolated_vertices > 0 )
-            {
-                Logger::warn( "LineMesh", "Mesh has ", nb_isolated_vertices,
-                    " isolated vertices " );
-                valid = false;
-            }
-
-            return valid;
-        }
         std::tuple< index_t, std::vector< index_t > >
             connected_components() const final;
 
