@@ -47,7 +47,7 @@
 
 #include <ringmesh/io/io.h>
 
-#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 /*!
  * Test the creation of a GeoModel from a conformal surface mesh

@@ -43,85 +43,10 @@
 #include <stack>
 
 #include <ringmesh/mesh/geogram_mesh.h>
-
-namespace
-{
-    using RINGMesh::index_t;
-
-    bool compare_equal(
-        index_t lhs_index1,
-        index_t lhs_index2,
-        index_t rhs_index1,
-        index_t rhs_index2 )
-    {
-        if( lhs_index1 == rhs_index1 ) {
-            return lhs_index2 == rhs_index2;
-        }
-        return false;
-    }
-} // namespace
+#include <ringmesh/mesh/mesh_index.h>
 
 namespace RINGMesh
 {
-    ElementLocalVertex::ElementLocalVertex( EdgeLocalVertex edge_local_vertex )
-        : element_id_( std::move( edge_local_vertex.edge_id_ ) ),
-          local_vertex_id_( std::move( edge_local_vertex.local_vertex_id_ ) )
-    {
-    }
-
-    ElementLocalVertex::ElementLocalVertex(
-        PolygonLocalEdge polygon_local_edge )
-        : element_id_( std::move( polygon_local_edge.polygon_id_ ) ),
-          local_vertex_id_( std::move( polygon_local_edge.local_edge_id_ ) )
-    {
-    }
-
-    ElementLocalVertex::ElementLocalVertex( CellLocalFacet cell_local_facet )
-        : element_id_( std::move( cell_local_facet.cell_id_ ) ),
-          local_vertex_id_( std::move( cell_local_facet.local_facet_id_ ) )
-    {
-    }
-
-    bool ElementLocalVertex::operator==( const ElementLocalVertex& rhs ) const
-    {
-        return compare_equal( element_id_, local_vertex_id_, rhs.element_id_,
-            rhs.local_vertex_id_ );
-    }
-    bool ElementLocalVertex::operator!=( const ElementLocalVertex& rhs ) const
-    {
-        return !operator==( rhs );
-    }
-
-    bool EdgeLocalVertex::operator==( const EdgeLocalVertex& rhs ) const
-    {
-        return compare_equal( edge_id_, local_vertex_id_, rhs.edge_id_,
-            rhs.local_vertex_id_ );
-    }
-    bool EdgeLocalVertex::operator!=( const EdgeLocalVertex& rhs ) const
-    {
-        return !operator==( rhs );
-    }
-
-    bool PolygonLocalEdge::operator==( const PolygonLocalEdge& rhs ) const
-    {
-        return compare_equal( polygon_id_, local_edge_id_, rhs.polygon_id_,
-            rhs.local_edge_id_ );
-    }
-    bool PolygonLocalEdge::operator!=( const PolygonLocalEdge& rhs ) const
-    {
-        return !operator==( rhs );
-    }
-
-    bool CellLocalFacet::operator==( const CellLocalFacet& rhs ) const
-    {
-        return compare_equal( cell_id_, local_facet_id_, rhs.cell_id_,
-            rhs.local_facet_id_ );
-    }
-    bool CellLocalFacet::operator!=( const CellLocalFacet& rhs ) const
-    {
-        return !operator==( rhs );
-    }
-
     template < index_t DIMENSION >
     std::unique_ptr< PointSetMesh< DIMENSION > >
         PointSetMesh< DIMENSION >::create_mesh( const MeshType type )
@@ -174,6 +99,44 @@ namespace RINGMesh
             mesh.reset( new GeogramLineMesh< DIMENSION > );
         }
         return mesh;
+    }
+
+    template < index_t DIMENSION >
+    bool LineMesh< DIMENSION >::is_mesh_valid() const
+    {
+        bool valid{ true };
+
+        if( this->nb_vertices() < 2 )
+        {
+            Logger::err( "LineMesh", "Mesh has less than 2 vertices " );
+            valid = false;
+        }
+
+        if( nb_edges() == 0 )
+        {
+            Logger::err( "LineMesh", "Mesh has no edge" );
+            valid = false;
+        }
+
+        // No isolated vertices
+        std::vector< index_t > nb( this->nb_vertices(), 0 );
+        for( auto p : range( nb_edges() ) )
+        {
+            for( auto v : range( 2 ) )
+            {
+                nb[edge_vertex( { p, v } )]++;
+            }
+        }
+        auto nb_isolated_vertices =
+            static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) );
+        if( nb_isolated_vertices > 0 )
+        {
+            Logger::warn( "LineMesh", "Mesh has ", nb_isolated_vertices,
+                " isolated vertices " );
+            valid = false;
+        }
+
+        return valid;
     }
 
     template < index_t DIMENSION >
@@ -316,6 +279,81 @@ namespace RINGMesh
             mesh.reset( new GeogramSurfaceMesh< DIMENSION > );
         }
         return mesh;
+    }
+
+    template < index_t DIMENSION >
+    ElementLocalVertex SurfaceMeshBase< DIMENSION >::next_polygon_vertex(
+        const ElementLocalVertex& polygon_local_vertex ) const
+    {
+        const index_t local_vertex_id =
+            polygon_local_vertex.local_vertex_id_;
+        ringmesh_assert(
+            local_vertex_id
+            < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
+        if( local_vertex_id
+            != nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 )
+        {
+            return { polygon_local_vertex.element_id_,
+                local_vertex_id + 1 };
+        }
+        return { polygon_local_vertex.element_id_, 0 };
+    }
+
+    template < index_t DIMENSION >
+    ElementLocalVertex SurfaceMeshBase< DIMENSION >::prev_polygon_vertex(
+        const ElementLocalVertex& polygon_local_vertex ) const
+    {
+        ringmesh_assert(
+            polygon_local_vertex.local_vertex_id_
+            < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
+        if( polygon_local_vertex.local_vertex_id_ > 0 )
+        {
+            return { polygon_local_vertex.element_id_,
+                polygon_local_vertex.local_vertex_id_ - 1 };
+        }
+        return { polygon_local_vertex.element_id_,
+            nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 };
+    }
+
+    template < index_t DIMENSION >
+    index_t SurfaceMeshBase< DIMENSION >::polygon_edge_vertex(
+        const PolygonLocalEdge& polygon_local_edge,
+        index_t vertex_id ) const
+    {
+        ringmesh_assert( vertex_id < 2 );
+        if( vertex_id == 0 )
+        {
+            return polygon_vertex( polygon_local_edge );
+        }
+        return polygon_vertex( {
+            polygon_local_edge.polygon_id_,
+            ( polygon_local_edge.local_edge_id_ + vertex_id )
+                % nb_polygon_vertices( polygon_local_edge.polygon_id_ ) } );
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > SurfaceMeshBase< DIMENSION >::polygon_barycenter( index_t polygon_id ) const
+    {
+        vecn< DIMENSION > result;
+        ringmesh_assert( nb_polygon_vertices( polygon_id ) >= 1 );
+        for( auto v : range( nb_polygon_vertices( polygon_id ) ) )
+        {
+            result += this->vertex( polygon_vertex( { polygon_id, v } ) );
+        }
+        return ( 1.0 / nb_polygon_vertices( polygon_id ) ) * result;
+    }
+
+    template < index_t DIMENSION >
+    bool SurfaceMeshBase< DIMENSION >::is_polygon_on_border( index_t polygon_index ) const
+    {
+        for( auto v : range( nb_polygon_vertices( polygon_index ) ) )
+        {
+            if( is_edge_on_border( { polygon_index, v } ) )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     template < index_t DIMENSION >
@@ -598,6 +636,61 @@ namespace RINGMesh
         return std::fabs( result );
     }
 
+    vec3 SurfaceMesh< 3 >::normal_at_vertex( index_t vertex_id, index_t p0 ) const
+    {
+        ringmesh_assert( vertex_id < nb_vertices() );
+        index_t p = 0;
+        while( p0 == NO_ID && p < nb_polygons() )
+        {
+            for( auto lv : range( nb_polygon_vertices( p ) ) )
+            {
+                if( polygon_vertex( { p, lv } ) == vertex_id )
+                {
+                    p0 = p;
+                    break;
+                }
+            }
+            p++;
+        }
+
+        auto polygon_ids = polygons_around_vertex( vertex_id, false, p0 );
+        vec3 norm;
+        for( auto polygon_id : polygon_ids )
+        {
+            norm += polygon_normal( polygon_id );
+        }
+        return normalize( norm );
+    }
+
+    vec3 SurfaceMesh< 3 >::polygon_normal( index_t polygon_id ) const
+    {
+        const auto& p1 = this->vertex(
+            this->polygon_vertex( { polygon_id, 0 } ) );
+        const auto& p2 = this->vertex(
+            this->polygon_vertex( { polygon_id, 1 } ) );
+        const auto& p3 = this->vertex(
+            this->polygon_vertex( { polygon_id, 2 } ) );
+        auto norm = cross( p2 - p1, p3 - p1 );
+        return normalize( norm );
+    }
+
+    double SurfaceMesh< 2 >::polygon_area( index_t polygon_id ) const
+    {
+        double result{ 0 };
+        if( nb_polygon_vertices( polygon_id ) == 0 )
+        {
+            return result;
+        }
+        const auto& p1 = vertex( polygon_vertex( { polygon_id, 0 } ) );
+        for( auto i : range( 1, nb_polygon_vertices( polygon_id ) - 1 ) )
+        {
+            const auto& p2 = vertex( polygon_vertex( { polygon_id, i } ) );
+            const auto& p3 = vertex( polygon_vertex( { polygon_id, i + 1 } ) );
+            result += GEO::Geom::triangle_signed_area( p1, p2, p3 );
+        }
+        return std::fabs( result );
+    }
+
     template < index_t DIMENSION >
     std::tuple< index_t, std::vector< index_t > >
         SurfaceMeshBase< DIMENSION >::connected_components() const
@@ -632,6 +725,43 @@ namespace RINGMesh
             }
         }
         return std::make_tuple( nb_components, components );
+    }
+
+    template < index_t DIMENSION >
+    bool SurfaceMeshBase< DIMENSION >::is_mesh_valid() const
+    {
+        bool valid{ true };
+
+        if( this->nb_vertices() < 3 )
+        {
+            Logger::warn( "SurfaceMesh has less than 3 vertices " );
+            valid = false;
+        }
+        if( nb_polygons() == 0 )
+        {
+            Logger::warn( "SurfaceMesh has no polygon" );
+            valid = false;
+        }
+
+        // No isolated vertices
+        std::vector< index_t > nb( this->nb_vertices(), 0 );
+        for( auto p : range( nb_polygons() ) )
+        {
+            for( auto v : range( nb_polygon_vertices( p ) ) )
+            {
+                nb[polygon_vertex( { p, v } )]++;
+            }
+        }
+        auto nb_isolated_vertices =
+            static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) );
+        if( nb_isolated_vertices > 0 )
+        {
+            Logger::warn( "SurfaceMesh", "Mesh has ", nb_isolated_vertices,
+                " isolated vertices " );
+            valid = false;
+        }
+
+        return valid;
     }
 
     template < index_t DIMENSION >
@@ -687,6 +817,43 @@ namespace RINGMesh
             }
         }
         return std::make_tuple( nb_components, components );
+    }
+
+    template < index_t DIMENSION >
+    bool VolumeMesh< DIMENSION >::is_mesh_valid() const
+    {
+        bool valid{ true };
+
+        if( this->nb_vertices() < 4 )
+        {
+            Logger::warn( "VolumeMesh has less than 4 vertices " );
+            valid = false;
+        }
+        if( nb_cells() == 0 )
+        {
+            Logger::warn( "VolumeMesh has no cell" );
+            valid = false;
+        }
+
+        // No isolated vertices
+        std::vector< index_t > nb( this->nb_vertices(), 0 );
+        for( auto c : range( nb_cells() ) )
+        {
+            for( auto v : range( nb_cell_vertices( c ) ) )
+            {
+                nb[cell_vertex( { c, v } )]++;
+            }
+        }
+        auto nb_isolated_vertices =
+            static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) );
+        if( nb_isolated_vertices > 0 )
+        {
+            Logger::warn( "VolumeMesh", "Mesh has ", nb_isolated_vertices,
+                " isolated vertices " );
+            valid = false;
+        }
+
+        return valid;
     }
 
     template < index_t DIMENSION >
