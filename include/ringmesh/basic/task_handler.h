@@ -37,8 +37,8 @@
 
 #include <future>
 
-#include <ringmesh/basic/types.h>
 #include <ringmesh/basic/common.h>
+#include <ringmesh/basic/types.h>
 
 #include <geogram/basic/command_line.h>
 

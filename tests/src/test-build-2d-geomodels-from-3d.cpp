@@ -51,7 +51,8 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
         std::string input_geomodel3d_file_name = ringmesh_test_data_path
             + "seg_overthrust_afault.gm";
@@ -72,7 +73,8 @@ int main()
         geomodel2d_builder.build_geomodel();
 
         TaskHandler tasks;
-        tasks.execute_function( [&projection_geomodel2d] {
+        tasks.execute_function( [&projection_geomodel2d]
+        {
             if( !is_geomodel_valid( projection_geomodel2d ) )
             {
                 throw RINGMeshException(
@@ -86,7 +88,8 @@ int main()
         GeoModel2D reloaded_geomodel2d;
         auto is_reloaded_model_valid = geomodel_load( reloaded_geomodel2d,
             output_model_file_name );
-        if( !is_reloaded_model_valid ) {
+        if( !is_reloaded_model_valid )
+        {
             std::string output_model_file_name_bis( ringmesh_test_output_path );
             output_model_file_name_bis += reloaded_geomodel2d.name()
                 + "_saved_out_bis.gm";
@@ -97,10 +100,14 @@ int main()
 
         tasks.wait_aysnc_tasks();
 
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

@@ -49,7 +49,8 @@
  * @author Benjamin Chauvin
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
     const std::string attribute_names[6] = { "long_int_attr", "bool_attr",
@@ -65,7 +66,8 @@ namespace {
 
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
 
-        if( !loaded_model_is_valid ) {
+        if( !loaded_model_is_valid )
+        {
             throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
                 in.name(), ": the loaded model is not valid." );
         }
@@ -97,7 +99,8 @@ namespace {
 
     void set_vertex_attributes_on_geomodel_regions( const GeoModel3D& geomodel )
     {
-        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
+        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
+        {
             const Region3D& cur_reg = geomodel.region( reg_i );
 
             GEO::AttributesManager& reg_attr_mgr =
@@ -116,8 +119,8 @@ namespace {
             GEO::Attribute< char > vertex_char_attr( reg_attr_mgr,
                 attribute_names[5] );
 
-            for( index_t vertex_i = 0; vertex_i < cur_reg.nb_vertices();
-                ++vertex_i ) {
+            for( index_t vertex_i = 0; vertex_i < cur_reg.nb_vertices(); ++vertex_i )
+            {
                 const vec3& cur_vertex = cur_reg.vertex( vertex_i );
                 assign_vertex_attribute_values( vertex_i, cur_vertex,
                     vertex_long_int_attr, vertex_bool_attr, vertex_double_attr,
@@ -143,7 +146,8 @@ namespace {
             attribute_names[4], 6 );
         GEO::Attribute< char > vertex_char_attr( gmmv_attr_mgr, attribute_names[5] );
 
-        for( index_t v_i = 0; v_i < gmmv.nb(); ++v_i ) {
+        for( index_t v_i = 0; v_i < gmmv.nb(); ++v_i )
+        {
             const vec3& cur_vertex = gmmv.vertex( v_i );
             assign_vertex_attribute_values( v_i, cur_vertex, vertex_long_int_attr,
                 vertex_bool_attr, vertex_double_attr, vertex_vec3_attr,
@@ -179,7 +183,8 @@ namespace {
 
     void set_cell_attributes_on_geomodel_regions( const GeoModel3D& geomodel )
     {
-        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
+        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
+        {
             const Region3D& cur_reg = geomodel.region( reg_i );
 
             GEO::AttributesManager& reg_attr_mgr = cur_reg.cell_attribute_manager();
@@ -197,8 +202,8 @@ namespace {
             GEO::Attribute< char > cell_char_attr( reg_attr_mgr,
                 attribute_names[5] );
 
-            for( index_t cell_i = 0; cell_i < cur_reg.nb_mesh_elements();
-                ++cell_i ) {
+            for( index_t cell_i = 0; cell_i < cur_reg.nb_mesh_elements(); ++cell_i )
+            {
                 const double cell_volume = cur_reg.mesh_element_size( cell_i );
                 assign_cell_attribute_values( cell_i, cell_volume,
                     cur_reg.mesh_element_barycenter( cell_i ), cell_long_int_attr,
@@ -225,7 +230,8 @@ namespace {
             attribute_names[4], 6 );
         GEO::Attribute< char > cell_char_attr( gmmc_attr_mgr, attribute_names[5] );
 
-        for( index_t cell_i = 0; cell_i < gmmc.nb(); ++cell_i ) {
+        for( index_t cell_i = 0; cell_i < gmmc.nb(); ++cell_i )
+        {
             const double cell_volume = gmmc.volume( cell_i );
             assign_cell_attribute_values( cell_i, cell_volume,
                 gmmc.barycenter( cell_i ), cell_long_int_attr, cell_bool_attr,
@@ -240,7 +246,8 @@ namespace {
         const std::string& on_mesh,
         const std::string& stored_on )
     {
-        if( !attr_mgr.is_defined( attr_name ) ) {
+        if( !attr_mgr.is_defined( attr_name ) )
+        {
             throw RINGMeshException( "RINGMesh Test", "Attribute ", attr_name,
                 " does not exist on ", on_mesh, " stored on ", stored_on + "." );
         }
@@ -274,26 +281,30 @@ namespace {
             attribute_names[4] );
         GEO::Attribute< char > vertex_char_attr( gmmv_attr_mgr, attribute_names[5] );
 
-        for( index_t vertex_i = 0; vertex_i < gmmv.nb(); ++vertex_i ) {
+        for( index_t vertex_i = 0; vertex_i < gmmv.nb(); ++vertex_i )
+        {
             const vec3& cur_vertex = gmmv.vertex( vertex_i );
             const long int rounded_vertex_xy = std::lrint(
                 cur_vertex.x * cur_vertex.y );
 
-            if( rounded_vertex_xy != vertex_long_int_attr[vertex_i] ) {
+            if( rounded_vertex_xy != vertex_long_int_attr[vertex_i] )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad vertex transfer from geomodel region "
                         "to geomodelmesh for long int." );
             }
 
             bool is_pair = ( rounded_vertex_xy % 2 == 0 );
-            if( is_pair != vertex_bool_attr[vertex_i] ) {
+            if( is_pair != vertex_bool_attr[vertex_i] )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad vertex transfer from geomodel region "
                         "to geomodelmesh for bool." );
             }
 
             if( std::abs( cur_vertex.x - vertex_double_attr[vertex_i] )
-                > geomodel.epsilon() ) {
+                > geomodel.epsilon() )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad vertex transfer from geomodel region "
                         "to geomodelmesh for double." );
@@ -302,7 +313,8 @@ namespace {
             const vec3 diff = cur_vertex - vertex_vec3_attr[vertex_i];
             if( std::abs( diff.x ) > geomodel.epsilon()
                 || std::abs( diff.y ) > geomodel.epsilon()
-                || std::abs( diff.z ) > geomodel.epsilon() ) {
+                || std::abs( diff.z ) > geomodel.epsilon() )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad vertex transfer from geomodel region "
                         "to geomodelmesh for vec3." );
@@ -324,14 +336,16 @@ namespace {
                     > geomodel.epsilon()
                 || std::abs(
                     cur_vertex.z - vertex_dim_6_double_attr[6 * vertex_i + 5] )
-                    > geomodel.epsilon() ) {
+                    > geomodel.epsilon() )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad vertex transfer from geomodel region "
                         "to geomodelmesh for double dim 6." );
             }
 
             const char char_vec3_y = std::to_string( cur_vertex.y ).data()[0];
-            if( char_vec3_y != vertex_char_attr[vertex_i] ) {
+            if( char_vec3_y != vertex_char_attr[vertex_i] )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad vertex transfer from geomodel region "
                         "to geomodelmesh for char." );
@@ -342,7 +356,8 @@ namespace {
     void check_vertex_attr_transfer_from_geomodelmesh_to_geomodel_regions(
         const GeoModel3D& geomodel )
     {
-        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
+        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
+        {
             const Region3D& cur_reg = geomodel.region( reg_i );
             GEO::AttributesManager& reg_v_attr_mgr =
                 cur_reg.vertex_attribute_manager();
@@ -362,27 +377,30 @@ namespace {
             GEO::Attribute< char > vertex_char_attr( reg_v_attr_mgr,
                 attribute_names[5] );
 
-            for( index_t vertex_i = 0; vertex_i < cur_reg.nb_vertices();
-                ++vertex_i ) {
+            for( index_t vertex_i = 0; vertex_i < cur_reg.nb_vertices(); ++vertex_i )
+            {
                 const vec3& cur_vertex = cur_reg.vertex( vertex_i );
                 const long int rounded_vertex_xy = std::lrint(
                     cur_vertex.x * cur_vertex.y );
 
-                if( rounded_vertex_xy != vertex_long_int_attr[vertex_i] ) {
+                if( rounded_vertex_xy != vertex_long_int_attr[vertex_i] )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad vertex transfer from geomodelmesh to geomodel "
                             "region for long int." );
                 }
 
                 bool is_pair = ( rounded_vertex_xy % 2 == 0 );
-                if( is_pair != vertex_bool_attr[vertex_i] ) {
+                if( is_pair != vertex_bool_attr[vertex_i] )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad vertex transfer from geomodelmesh to geomodel "
                             "region for bool." );
                 }
 
                 if( std::abs( cur_vertex.x - vertex_double_attr[vertex_i] )
-                    > geomodel.epsilon() ) {
+                    > geomodel.epsilon() )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad vertex transfer from geomodelmesh to geomodel "
                             "region for double." );
@@ -391,7 +409,8 @@ namespace {
                 const vec3 diff = cur_vertex - vertex_vec3_attr[vertex_i];
                 if( std::abs( diff.x ) > geomodel.epsilon()
                     || std::abs( diff.y ) > geomodel.epsilon()
-                    || std::abs( diff.z ) > geomodel.epsilon() ) {
+                    || std::abs( diff.z ) > geomodel.epsilon() )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad vertex transfer from geomodelmesh to geomodel "
                             "region for vec3." );
@@ -414,14 +433,16 @@ namespace {
                         > geomodel.epsilon()
                     || std::abs(
                         cur_vertex.z - vertex_dim_6_double_attr[6 * vertex_i + 5] )
-                        > geomodel.epsilon() ) {
+                        > geomodel.epsilon() )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad vertex transfer from geomodelmesh to geomodel "
                             "region for double dim 6." );
                 }
 
                 const char char_vec3_y = std::to_string( cur_vertex.y ).data()[0];
-                if( char_vec3_y != vertex_char_attr[vertex_i] ) {
+                if( char_vec3_y != vertex_char_attr[vertex_i] )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad vertex transfer from geomodelmesh to geomodel "
                             "region for char." );
@@ -448,25 +469,29 @@ namespace {
             attribute_names[4] );
         GEO::Attribute< char > cell_char_attr( gmmc_attr_mgr, attribute_names[5] );
 
-        for( index_t cell_i = 0; cell_i < gmmc.nb_cells(); ++cell_i ) {
+        for( index_t cell_i = 0; cell_i < gmmc.nb_cells(); ++cell_i )
+        {
             const double cell_volume = gmmc.volume( cell_i );
             const long int rounded_volume = std::lrint( cell_volume );
 
-            if( rounded_volume != cell_long_int_attr[cell_i] ) {
+            if( rounded_volume != cell_long_int_attr[cell_i] )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad cell transfer from geomodel region "
                         "to geomodelmesh for long int." );
             }
 
             bool is_pair = ( rounded_volume % 2 == 0 );
-            if( is_pair != cell_bool_attr[cell_i] ) {
+            if( is_pair != cell_bool_attr[cell_i] )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad cell transfer from geomodel region "
                         "to geomodelmesh for bool." );
             }
 
             if( std::abs( cell_volume - cell_double_attr[cell_i] )
-                > geomodel.epsilon3() ) {
+                > geomodel.epsilon3() )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad cell transfer from geomodel region "
                         "to geomodelmesh for double." );
@@ -476,7 +501,8 @@ namespace {
             const vec3 diff = cell_barycenter - cell_vec3_attr[cell_i];
             if( std::abs( diff.x ) > geomodel.epsilon()
                 || std::abs( diff.y ) > geomodel.epsilon()
-                || std::abs( diff.z ) > geomodel.epsilon() ) {
+                || std::abs( diff.z ) > geomodel.epsilon() )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad cell transfer from geomodel region "
                         "to geomodelmesh for vec3." );
@@ -499,14 +525,16 @@ namespace {
                     > geomodel.epsilon()
                 || std::abs(
                     cell_barycenter.z - cell_dim_6_double_attr[6 * cell_i + 5] )
-                    > geomodel.epsilon() ) {
+                    > geomodel.epsilon() )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad cell transfer from geomodel region "
                         "to geomodelmesh for double dim 6." );
             }
 
             const char char_vec3_y = std::to_string( cell_barycenter.y ).data()[0];
-            if( char_vec3_y != cell_char_attr[cell_i] ) {
+            if( char_vec3_y != cell_char_attr[cell_i] )
+            {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad cell transfer from geomodel region "
                         "to geomodelmesh for char." );
@@ -517,7 +545,8 @@ namespace {
     void check_cell_attr_transfer_from_geomodelmesh_to_geomodel_regions(
         const GeoModel3D& geomodel )
     {
-        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i ) {
+        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
+        {
             const Region3D& cur_reg = geomodel.region( reg_i );
             GEO::AttributesManager& reg_c_attr_mgr =
                 cur_reg.cell_attribute_manager();
@@ -537,26 +566,29 @@ namespace {
             GEO::Attribute< char > cell_char_attr( reg_c_attr_mgr,
                 attribute_names[5] );
 
-            for( index_t cell_i = 0; cell_i < cur_reg.nb_mesh_elements();
-                ++cell_i ) {
+            for( index_t cell_i = 0; cell_i < cur_reg.nb_mesh_elements(); ++cell_i )
+            {
                 const double cell_volume = cur_reg.mesh_element_size( cell_i );
                 const long int rounded_volume = std::lrint( cell_volume );
 
-                if( rounded_volume != cell_long_int_attr[cell_i] ) {
+                if( rounded_volume != cell_long_int_attr[cell_i] )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad cell transfer from geomodelmesh "
                             "to geomodel region for long int." );
                 }
 
                 bool is_pair = ( rounded_volume % 2 == 0 );
-                if( is_pair != cell_bool_attr[cell_i] ) {
+                if( is_pair != cell_bool_attr[cell_i] )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad cell transfer from geomodelmesh "
                             "to geomodel region for bool." );
                 }
 
                 if( std::abs( cell_volume - cell_double_attr[cell_i] )
-                    > geomodel.epsilon3() ) {
+                    > geomodel.epsilon3() )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad cell transfer from geomodelmesh "
                             "to geomodel region for double." );
@@ -567,7 +599,8 @@ namespace {
                 const vec3 diff = cell_barycenter - cell_vec3_attr[cell_i];
                 if( std::abs( diff.x ) > geomodel.epsilon()
                     || std::abs( diff.y ) > geomodel.epsilon()
-                    || std::abs( diff.z ) > geomodel.epsilon() ) {
+                    || std::abs( diff.z ) > geomodel.epsilon() )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad cell transfer from geomodelmesh "
                             "to geomodel region for vec3." );
@@ -590,7 +623,8 @@ namespace {
                         > geomodel.epsilon()
                     || std::abs(
                         cell_barycenter.z - cell_dim_6_double_attr[6 * cell_i + 5] )
-                        > geomodel.epsilon() ) {
+                        > geomodel.epsilon() )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad cell transfer from geomodelmesh to geomodel "
                             "region for double dim 6." );
@@ -598,7 +632,8 @@ namespace {
 
                 const char char_vec3_y =
                     std::to_string( cell_barycenter.y ).data()[0];
-                if( char_vec3_y != cell_char_attr[cell_i] ) {
+                if( char_vec3_y != cell_char_attr[cell_i] )
+                {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad cell transfer from geomodelmesh "
                             "to geomodel region for char." );
@@ -661,7 +696,7 @@ namespace {
             &tests_transfer_from_geomodel_regions_to_geomodelmesh );
         tasks.execute_function(
             &tests_transfer_from_geomodelmesh_to_geomodel_regions );
-        tasks.wait_aysnc_tasks() ;
+        tasks.wait_aysnc_tasks();
     }
 }
 
@@ -669,16 +704,21 @@ int main()
 {
     using namespace RINGMesh;
 
-    try {
+    try
+    {
         default_configure();
 
         Logger::out( "TEST", "Tests of attribute transfer between the geomodel "
             "and the geomodelmesh" );
         run_tests();
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

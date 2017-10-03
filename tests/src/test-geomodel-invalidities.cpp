@@ -62,24 +62,31 @@ void make_geomodel_copy(
 
 void verdict( const GeoModel3D& invalid_model, const std::string& feature )
 {
-    if( is_geomodel_valid( invalid_model ) ) {
+    if( is_geomodel_valid( invalid_model ) )
+    {
         throw RINGMeshException( "RINGMesh Test", "Fail to ", feature );
-    } else {
+    }
+    else
+    {
         Logger::out( "TEST", "Succeed to ", feature );
     }
 }
 
 int main()
 {
-    try {
+    try
+    {
         default_configure();
 
         TaskHandler tasks;
-        tasks.execute_function( [] {
-            std::string input_model_file_name {ringmesh_test_data_path
+        tasks.execute_function( []
+        {
+            std::string input_model_file_name
+            {   ringmesh_test_data_path
                 + "modelA6.ml"};
             GeoModel3D in;
-            bool loaded_model_is_valid {geomodel_load(
+            bool loaded_model_is_valid
+            {   geomodel_load(
                     in, input_model_file_name )};
 
             if( !loaded_model_is_valid )
@@ -100,7 +107,8 @@ int main()
                 "detect addition of an isolated GeoModelGeologicalEntity" );
         } );
 
-        tasks.execute_function( [] {
+        tasks.execute_function( []
+        {
             GeoModel3D cloudspin;
             geomodel_load(
                 cloudspin, ringmesh_test_data_path + "CloudSpin.ml" );
@@ -113,10 +121,14 @@ int main()
         } );
 
         tasks.wait_aysnc_tasks();
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
