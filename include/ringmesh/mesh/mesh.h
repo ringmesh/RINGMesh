@@ -203,23 +203,9 @@ namespace RINGMesh
         /*!
          * @brief Gets the length of the edge \param edge_id
          */
-        double edge_length( index_t edge_id ) const
-        {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 0 ) ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 1 ) ) );
-            return ( e1 - e0 ).length();
-        }
+        double edge_length( index_t edge_id ) const;
 
-        vecn< DIMENSION > edge_barycenter( index_t edge_id ) const
-        {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 0 ) ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 1 ) ) );
-            return ( e1 + e0 ) / 2.;
-        }
+        vecn< DIMENSION > edge_barycenter( index_t edge_id ) const;
 
         /*!
          * @brief return the NNSearch at edges
@@ -465,28 +451,16 @@ namespace RINGMesh
          * local edge starting vertex index
          */
         double polygon_edge_length(
-            const PolygonLocalEdge& polygon_local_edge ) const
-        {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( polygon_edge_vertex( polygon_local_edge, 0 ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( polygon_edge_vertex( polygon_local_edge, 1 ) );
-            return ( e1 - e0 ).length();
-        }
+            const PolygonLocalEdge& polygon_local_edge ) const;
+
         /*!
          * @brief Gets the barycenter of the edge starting at a given vertex
          * @param[in] polygon_local_edge index of the polygon and
          * the local edge starting vertex index
          */
         vecn< DIMENSION > polygon_edge_barycenter(
-            const PolygonLocalEdge& polygon_local_edge ) const
-        {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( polygon_edge_vertex( polygon_local_edge, 0 ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( polygon_edge_vertex( polygon_local_edge, 1 ) );
-            return ( e1 + e0 ) / 2.;
-        }
+            const PolygonLocalEdge& polygon_local_edge ) const;
+
         /*!
          * @brief Gets the vertex index on the polygon edge
          * @param[in] polygon_local_edge index of the polygon and
@@ -673,14 +647,7 @@ namespace RINGMesh
          * @param[in] edge_id the edge index
          * @return the cell edge length
          */
-        double cell_edge_length( index_t cell_id, index_t edge_id ) const
-        {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
-            return ( e1 - e0 ).length();
-        }
+        double cell_edge_length( index_t cell_id, index_t edge_id ) const;
 
         /*!
          * Computes the Mesh cell edge barycenter
@@ -689,14 +656,7 @@ namespace RINGMesh
          * @return the cell edge center
          */
         vecn< DIMENSION > cell_edge_barycenter(
-            index_t cell_id, index_t edge_id ) const
-        {
-            const vecn< DIMENSION >& e0 =
-                this->vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
-            const vecn< DIMENSION >& e1 =
-                this->vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
-            return ( e1 + e0 ) / 2.;
-        }
+            index_t cell_id, index_t edge_id ) const;
 
         /*!
          * @brief Gets the number of facet in a cell
@@ -773,33 +733,13 @@ namespace RINGMesh
          * @return the cell facet center
          */
         vecn< DIMENSION > cell_facet_barycenter(
-            const CellLocalFacet& cell_local_facet ) const
-        {
-            vecn< DIMENSION > result;
-            index_t nb_vertices = nb_cell_facet_vertices( cell_local_facet );
-            for( auto v : range( nb_vertices ) )
-            {
-                result +=
-                    this->vertex( cell_facet_vertex( cell_local_facet, v ) );
-            }
-            ringmesh_assert( nb_vertices > 0 );
+            const CellLocalFacet& cell_local_facet ) const;
 
-            return result / static_cast< double >( nb_vertices );
-        }
         /*!
          * Compute the non weighted barycenter of the \param cell_id
          */
-        vecn< DIMENSION > cell_barycenter( index_t cell_id ) const
-        {
-            vecn< DIMENSION > result;
-            ringmesh_assert( nb_cell_vertices( cell_id ) >= 1 );
-            for( auto v : range( nb_cell_vertices( cell_id ) ) )
-            {
-                result += this->vertex(
-                    cell_vertex( ElementLocalVertex( cell_id, v ) ) );
-            }
-            return ( 1.0 / nb_cell_vertices( cell_id ) ) * result;
-        }
+        vecn< DIMENSION > cell_barycenter( index_t cell_id ) const;
+
         /*!
          * Computes the Mesh cell facet normal
          * @param[in] cell_local_facet the cell index and
@@ -807,21 +747,7 @@ namespace RINGMesh
          * @return the cell facet normal
          */
         vecn< DIMENSION > cell_facet_normal(
-            const CellLocalFacet& cell_local_facet ) const
-        {
-            ringmesh_assert( cell_local_facet.cell_id_ < nb_cells() );
-            ringmesh_assert( cell_local_facet.local_facet_id_
-                             < nb_cell_facets( cell_local_facet.cell_id_ ) );
-
-            const vecn< DIMENSION >& p1 =
-                this->vertex( cell_facet_vertex( cell_local_facet, 0 ) );
-            const vecn< DIMENSION >& p2 =
-                this->vertex( cell_facet_vertex( cell_local_facet, 1 ) );
-            const vecn< DIMENSION >& p3 =
-                this->vertex( cell_facet_vertex( cell_local_facet, 2 ) );
-
-            return cross( p2 - p1, p3 - p1 );
-        }
+            const CellLocalFacet& cell_local_facet ) const;
 
         /*!
          * @brief compute the volume of the cell \param cell_id.
@@ -831,18 +757,7 @@ namespace RINGMesh
         std::vector< index_t > cells_around_vertex(
             index_t vertex_id, index_t cell_hint ) const;
 
-        index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const
-        {
-            for( auto v : range( nb_cell_vertices( cell_id ) ) )
-            {
-                if( cell_vertex( ElementLocalVertex( cell_id, v ) )
-                    == vertex_id )
-                {
-                    return v;
-                }
-            }
-            return NO_ID;
-        }
+        index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const;
 
         bool find_cell_from_colocated_vertex_within_distance_if_any(
             const vecn< DIMENSION >& vertex_vec,
@@ -856,27 +771,8 @@ namespace RINGMesh
          * Mesh::facets_aabb()
          *  and Mesh::cells_aabb()
          */
-        const NNSearch< DIMENSION >& cell_facet_nn_search() const
-        {
-            if( !cell_facet_nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > cell_facet_centers(
-                    nb_cell_facets() );
-                index_t cf = 0;
-                for( auto c : range( nb_cells() ) )
-                {
-                    for( auto f : range( nb_cell_facets( c ) ) )
-                    {
-                        cell_facet_centers[cf] =
-                            cell_facet_barycenter( CellLocalFacet( c, f ) );
-                        ++cf;
-                    }
-                }
-                cell_facet_nn_search_.reset(
-                    new NNSearch< DIMENSION >( cell_facet_centers, true ) );
-            }
-            return *cell_facet_nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& cell_facet_nn_search() const;
+
         /*!
          * @brief return the NNSearch at cells
          */
