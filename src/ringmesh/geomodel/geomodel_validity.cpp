@@ -398,7 +398,7 @@ namespace
     void save_mesh_locating_geomodel_inconsistencies(
         const GEO::Mesh& mesh, const std::ostringstream& file )
     {
-        if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
+        if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
         {
             GEO::mesh_save( mesh, file.str() );
         }
@@ -794,7 +794,7 @@ namespace
         if( nb_invalid > 0 )
         {
             Logger::warn( "Validity", nb_invalid, " invalid vertices." );
-            if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
+            if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
                 std::ostringstream file;
                 file << get_validity_errors_directory()
@@ -895,7 +895,7 @@ namespace
             Logger::warn( "Validity", " Invalid surface boundary: ",
                 invalid_corners.size() / 2, " boundary edges of ", S_id,
                 "  are in no line of the GeoModel." );
-            if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
+            if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
                 std::ostringstream file;
                 file << get_validity_errors_directory()
@@ -958,7 +958,7 @@ namespace
                 unconformal_polygons.size(), " polygons of ",
                 surface.gmme(),
                 " are unconformal with the GeoModel cells." );
-            if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
+            if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
                 std::ostringstream file;
                 file << get_validity_errors_directory() << "/unconformal_surface_"
@@ -1409,13 +1409,13 @@ namespace RINGMesh
         }
         if( GEO::FileSystem::is_directory( copy ) )
         {
-            GEO::CmdLine::set_arg( "validity_directory", copy + '/' );
+            GEO::CmdLine::set_arg( "validity:directory", copy + '/' );
         }
     }
 
     std::string get_validity_errors_directory()
     {
-        return GEO::CmdLine::get_arg( "validity_directory" );
+        return GEO::CmdLine::get_arg( "validity:directory" );
     }
 
     template < index_t DIMENSION >
@@ -1531,12 +1531,6 @@ namespace RINGMesh
     bool is_geomodel_valid( const GeoModel< DIMENSION >& geomodel,
         ValidityCheckMode validity_check_mode )
     {
-        if( !GEO::CmdLine::get_arg_bool( "validity_intersection_check" ) )
-        {
-            validity_check_mode =
-                validity_check_mode ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
-        }
-
         GeoModelValidityCheck< DIMENSION > validity_checker(
             geomodel, validity_check_mode );
 
@@ -1550,10 +1544,10 @@ namespace RINGMesh
         {
             Logger::warn(
                 "Validity", "GeoModel ", geomodel.name(), " is invalid." );
-            if( !GEO::CmdLine::get_arg_bool( "validity_save" ) )
+            if( !GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
                 Logger::out( "Info", "To save geomodel invalidities in files ",
-                    "(.geogram) set \"validity_save\" to true in the command "
+                    "(.geogram) set \"validity:save\" to true in the command "
                     "line." );
             }
         }

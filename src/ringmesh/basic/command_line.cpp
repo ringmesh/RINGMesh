@@ -54,17 +54,6 @@ namespace RINGMesh
                 "Threshold for numerical precision (ratio of the bbox "
                 "diagonal)",
                 GEO::CmdLine::ARG_ADVANCED );
-            GEO::CmdLine::declare_arg( "validity_save", false,
-                "Saves meshes representing geomodel inconsistencies",
-                GEO::CmdLine::ARG_ADVANCED );
-            GEO::CmdLine::declare_arg( "validity_directory",
-                GEO::FileSystem::get_current_working_directory(),
-                "Directory to save meshes representing geomodel "
-                "inconsistencies",
-                GEO::CmdLine::ARG_ADVANCED );
-            GEO::CmdLine::declare_arg( "validity_intersection_check", true,
-                "Toggle the surface intersection check at loading",
-                GEO::CmdLine::ARG_ADVANCED );
         }
 
         void import_arg_group_in()
@@ -83,6 +72,24 @@ namespace RINGMesh
                 "out:geomodel", "", "Saves the geological model" );
         }
 
+        void import_arg_group_validity()
+        {
+            std::string cwd = GEO::FileSystem::get_current_working_directory();
+            GEO::CmdLine::declare_arg_group( "validity", "Validity checks" );
+            GEO::CmdLine::declare_arg( "validity:save", false,
+                "Saves meshes representing geomodel inconsistencies",
+                GEO::CmdLine::ARG_ADVANCED );
+            GEO::CmdLine::declare_arg( "validity:directory",
+                cwd,
+                "Directory to save meshes representing geomodel "
+                "inconsistencies" );
+            GEO::CmdLine::declare_arg( "validity:do_not_check", "I",
+                "Toggle off checks at loading:\n"
+                "'0' to toggle on all checks \n"
+                "'E' to toggle off finite extension.",
+                GEO::CmdLine::ARG_ADVANCED );
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "global" )
@@ -96,6 +103,10 @@ namespace RINGMesh
             else if( name == "out" )
             {
                 import_arg_group_out();
+            }
+            else if( name == "validity" )
+            {
+                import_arg_group_validity();
             }
             else
             {
