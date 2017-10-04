@@ -1531,7 +1531,7 @@ namespace RINGMesh
     bool is_geomodel_valid( const GeoModel< DIMENSION >& geomodel,
         ValidityCheckMode validity_check_mode )
     {
-        if( !GEO::CmdLine::get_arg_bool( "in:intersection_check" ) )
+        if( !GEO::CmdLine::get_arg_bool( "validity_intersection_check" ) )
         {
             validity_check_mode =
                 validity_check_mode ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
@@ -1618,7 +1618,12 @@ namespace RINGMesh
         std::tie( nb_connected_components, std::ignore ) =
             line->connected_components();
 
-        return nb_connected_components == 1;
+        if( nb_connected_components != 1 )
+        {
+            Logger::warn( "Validity", "GeoModel has not a finite extension" );
+            return false;
+        }
+        return true;
     }
 
     template <>
@@ -1686,7 +1691,12 @@ namespace RINGMesh
         std::tie( nb_connected_components, std::ignore ) =
             surface->connected_components();
 
-        return nb_connected_components == 1;
+        if( nb_connected_components != 1 )
+        {
+            Logger::warn( "Validity", "GeoModel has not a finite extension" );
+            return false;
+        }
+        return true;
     }
 
     template bool RINGMESH_API is_geomodel_valid< 2 >(

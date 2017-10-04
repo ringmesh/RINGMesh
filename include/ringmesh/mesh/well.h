@@ -62,7 +62,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class WellEntity
+    class RINGMESH_API WellEntity
     {
         ringmesh_disable_copy_and_move( WellEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -90,7 +90,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class WellCorner : public WellEntity< DIMENSION >
+    class RINGMESH_API WellCorner: public WellEntity< DIMENSION >
     {
     public:
         WellCorner( const Well< DIMENSION >* well,
@@ -125,7 +125,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class WellPart : public WellEntity< DIMENSION >
+    class RINGMESH_API WellPart: public WellEntity< DIMENSION >
     {
     public:
         /*!
@@ -213,7 +213,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class Edge
+    class RINGMESH_API Edge
     {
     public:
         Edge( const vecn< DIMENSION >& v0, const vecn< DIMENSION >& v1 )
@@ -241,12 +241,12 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class Well
+    class RINGMESH_API Well
     {
         ringmesh_disable_copy_and_move( Well );
 
     public:
-        Well();
+        Well() = default;
         ~Well() = default;
 
         /*!
@@ -269,7 +269,7 @@ namespace RINGMesh
          * @param[in,out] edges the corresponding edges
          */
         void get_region_edges(
-            index_t part_id, std::vector< Edge< DIMENSION > >& edges ) const;
+            index_t region, std::vector< Edge< DIMENSION > >& edges ) const;
 
         /*!
          * Creates a new corner
@@ -391,7 +391,7 @@ namespace RINGMesh
         /// Name of the well
         std::string name_;
         /// Number of edges in the well
-        index_t nb_edges_;
+        mutable index_t nb_edges_{ NO_ID };
     };
 
     ALIAS_2D_AND_3D( Well );
@@ -402,7 +402,7 @@ namespace RINGMesh
      * @todo Comment
      */
     template < index_t DIMENSION >
-    class WellGroup
+    class RINGMESH_API WellGroup
     {
         ringmesh_disable_copy_and_move( WellGroup );
 
@@ -450,7 +450,7 @@ namespace RINGMesh
 
         /*!
          * Creates new wells
-         * @param[in] nb the number of wells to create
+         * @param[in] nb_wells the number of wells to create
          */
         void create_wells( index_t nb_wells );
 

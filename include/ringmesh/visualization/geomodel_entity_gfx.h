@@ -63,7 +63,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class GeoModelGfxEntity
+    class RINGMESH_API GeoModelGfxEntity
     {
         ringmesh_disable_copy_and_move( GeoModelGfxEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -126,7 +126,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class CornerGfxEntity final : public GeoModelGfxEntity< DIMENSION >
+    class RINGMESH_API CornerGfxEntity final: public GeoModelGfxEntity< DIMENSION >
     {
     public:
         explicit CornerGfxEntity( GeoModelGfx< DIMENSION >& gfx );
@@ -141,7 +141,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class LineGfxEntity final : public GeoModelGfxEntity< DIMENSION >
+    class RINGMESH_API LineGfxEntity final: public GeoModelGfxEntity< DIMENSION >
     {
     public:
         explicit LineGfxEntity( GeoModelGfx< DIMENSION >& gfx );
@@ -195,7 +195,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class SurfaceGfxEntity final : public GeoModelGfxEntity< DIMENSION >
+    class RINGMESH_API SurfaceGfxEntity final: public GeoModelGfxEntity< DIMENSION >
     {
     public:
         explicit SurfaceGfxEntity( GeoModelGfx< DIMENSION >& gfx );
@@ -291,7 +291,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RegionGfxEntity final : public GeoModelGfxEntity< 3 >
+    class RINGMESH_API RegionGfxEntity final: public GeoModelGfxEntity< 3 >
     {
     public:
         explicit RegionGfxEntity( GeoModelGfx3D& gfx );

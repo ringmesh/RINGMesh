@@ -63,7 +63,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class MeshBaseBuilder
+    class RINGMESH_API MeshBaseBuilder
     {
         ringmesh_disable_copy_and_move( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -212,10 +212,7 @@ namespace RINGMesh
         {
         }
 
-        void delete_vertex_nn_search()
-        {
-            mesh_base_.vertex_nn_search_.reset();
-        }
+        void delete_vertex_nn_search();
 
         /*!
          * @brief Deletes the NNSearch on vertices
@@ -303,7 +300,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( MeshBaseBuilder );
 
     template < index_t DIMENSION >
-    class PointSetMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class RINGMESH_API PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
@@ -340,7 +337,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class LineMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class RINGMESH_API LineMeshBuilder: public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< LineMeshBuilder > create_builder(
@@ -520,7 +517,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class SurfaceMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class RINGMESH_API SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
@@ -896,7 +893,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class VolumeMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION >
     {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
 
@@ -1023,19 +1020,7 @@ namespace RINGMesh
             clear_cell_linked_objects();
         }
 
-        void remove_isolated_vertices()
-        {
-            std::vector< bool > to_delete( volume_mesh_.nb_vertices(), true );
-            for( auto c : range( volume_mesh_.nb_cells() ) )
-            {
-                for( auto v : range( volume_mesh_.nb_cell_vertices( c ) ) )
-                {
-                    auto vertex_id = volume_mesh_.cell_vertex( { c, v } );
-                    to_delete[vertex_id] = false;
-                }
-            }
-            this->delete_vertices( to_delete );
-        }
+        void remove_isolated_vertices();
 
     protected:
         explicit VolumeMeshBuilder( VolumeMesh< DIMENSION >& mesh )
@@ -1047,19 +1032,12 @@ namespace RINGMesh
         /*!
          * @brief Deletes the NNSearch on cells
          */
-        void delete_cell_nn_search()
-        {
-            volume_mesh_.cell_nn_search_.reset();
-            volume_mesh_.cell_facet_nn_search_.reset();
-        }
+        void delete_cell_nn_search();
 
         /*!
          * @brief Deletes the AABB on cells
          */
-        void delete_cell_aabb()
-        {
-            volume_mesh_.cell_aabb_.reset();
-        }
+        void delete_cell_aabb();
 
         void clear_vertex_linked_objects() override
         {

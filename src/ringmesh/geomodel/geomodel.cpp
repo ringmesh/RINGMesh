@@ -235,7 +235,7 @@ namespace RINGMesh
 
     GeoModel< 2 >::GeoModel( PlaneReferenceFrame3D plane_reference_frame )
         : GeoModelBase< 2 >( *this ),
-          reference_frame_( std::move( plane_reference_frame ) )
+          reference_frame_( plane_reference_frame )
     {
     }
 
@@ -360,9 +360,7 @@ namespace RINGMesh
 
     template class RINGMESH_API GeoModel< 2 >;
     template class RINGMESH_API GeoModelBase< 2 >;
-    template class RINGMESH_API GeoModelAccess< 2 >;
 
     template class RINGMESH_API GeoModelBase< 3 >;
-    template class RINGMESH_API GeoModelAccess< 3 >;
 
 } // namespace RINGMesh

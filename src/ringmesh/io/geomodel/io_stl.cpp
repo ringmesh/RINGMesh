@@ -116,16 +116,8 @@ namespace {
      *   endloop
      * endfacet
      */
-    class STLIOHandler final: public GeoModelIOHandler< 3 > {
+    class STLIOHandler final: public GeoModelOutputHandler3D {
     public:
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Geological model loading of a from STL mesh not yet implemented" );
-        }
-
         void save(
             const GeoModel3D& geomodel,
             const std::string& filename ) final

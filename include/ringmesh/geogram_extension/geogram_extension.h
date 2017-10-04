@@ -51,7 +51,7 @@
 namespace GEO
 {
     class Mesh;
-}
+} // namespace GEO
 
 namespace RINGMesh
 {

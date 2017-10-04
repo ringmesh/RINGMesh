@@ -36,22 +36,8 @@
 namespace {
     using namespace RINGMesh;
 
-    class TSolidIOHandler final : public GeoModelIOHandler< 3 > {
+    class TSolidIOHandler final : public GeoModelInputHandler3D, public GeoModelOutputHandler3D {
     public:
-        TSolidIOHandler()
-            :
-                GeoModelIOHandler< 3 >(),
-                out_(),
-                numeric_like_vertex_attribute_names_(),
-                vertex_attribute_dimensions_(),
-                numeric_like_cell_attribute_names_(),
-                cell_attribute_dimensions_(),
-                vertex_exported_(),
-                atom_exported_(),
-                vertex_exported_id_(),
-                atom_exported_id_()
-        {
-        }
         void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
             std::ifstream input( filename.c_str() );

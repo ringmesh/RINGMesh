@@ -1197,9 +1197,9 @@ namespace RINGMesh
         configure_ringmesh();
 
         auto ringmesh_2d_extensions =
-            GeoModelIOHandlerFactory2D::list_creators();
+            GeoModelInputHandlerFactory2D::list_creators();
         auto ringmesh_3d_extensions =
-            GeoModelIOHandlerFactory3D::list_creators();
+            GeoModelInputHandlerFactory3D::list_creators();
         ringmesh_file_extensions_ =
             GEO::String::join_strings( ringmesh_2d_extensions, ';' )
             + GEO::String::join_strings( ringmesh_3d_extensions, ';' );

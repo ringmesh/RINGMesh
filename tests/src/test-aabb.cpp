@@ -39,9 +39,9 @@
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/matrix.h>
+
 #include <ringmesh/mesh/aabb.h>
 #include <ringmesh/mesh/geogram_mesh.h>
-#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 
 /*!

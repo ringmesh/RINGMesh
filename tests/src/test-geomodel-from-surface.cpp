@@ -47,7 +47,7 @@
 
 #include <ringmesh/io/io.h>
 
-#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 /*!
  * Test the creation of a GeoModel from a conformal surface mesh
@@ -80,9 +80,9 @@ int main()
 
 // Checking the validity of loaded model
 #ifdef RINGMESH_DEBUG
-        GEO::CmdLine::set_arg( "in:intersection_check", true );
+        GEO::CmdLine::set_arg( "validity_intersection_check", true );
 #else
-        GEO::CmdLine::set_arg( "in:intersection_check", false );
+        GEO::CmdLine::set_arg( "validity_intersection_check", false );
 #endif
 
         futures.emplace_back( std::async( std::launch::async, [&geomodel] {

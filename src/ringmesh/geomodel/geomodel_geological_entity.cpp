@@ -59,7 +59,7 @@ namespace
         }
         return true;
     }
-}
+} // namespace
 
 namespace RINGMesh
 {
@@ -72,45 +72,42 @@ namespace RINGMesh
         {
             return GEOL_FEATURE::REVERSE_FAULT;
         }
-        else if( in == "normal_fault" )
+        if( in == "normal_fault" )
         {
             return GEOL_FEATURE::NORMAL_FAULT;
         }
-        else if( in == "fault" )
+        if( in == "fault" )
         {
             return GEOL_FEATURE::FAULT;
         }
-        else if( in == "top" )
+        if( in == "top" )
         {
             return GEOL_FEATURE::STRATI;
         }
-        else if( in == "none" )
+        if( in == "none" )
         {
             // This might seem strange - but it seems that what's
             // Gocad is doing
             return GEOL_FEATURE::STRATI;
         }
-        else if( in == "topographic" )
+        if( in == "topographic" )
         {
             return GEOL_FEATURE::STRATI;
         }
-        else if( in == "unconformity" )
+        if( in == "unconformity" )
         {
             return GEOL_FEATURE::UNCONFORMITY;
         }
-        else if( in == "boundary" )
+        if( in == "boundary" )
         {
             return GEOL_FEATURE::VOI;
         }
-        else if( in == "lease" )
+        if( in == "lease" )
         {
             return GEOL_FEATURE::VOI;
         }
-        else
-        {
-            // Default case - no information
-            return GEOL_FEATURE::NO_GEOL;
-        }
+        // Default case - no information
+        return GEOL_FEATURE::NO_GEOL;
     }
 
     template < index_t DIMENSION >
@@ -362,27 +359,12 @@ namespace RINGMesh
         return Region3D::type_name_static();
     }
 
-    template < index_t DIMENSION >
-    std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > >
-        GeoModelGeologicalEntityAccess< DIMENSION >::create_geological_entity(
-            const GeologicalEntityType& type,
-            const GeoModel< DIMENSION >& geomodel,
-            index_t index_in_geomodel )
-    {
-        auto GMGE = GeoModelGeologicalEntityFactory< DIMENSION >::create(
-            type, geomodel );
-        GMGE->id_ = index_in_geomodel;
-        return GMGE;
-    }
-
     template class RINGMESH_API GeoModelGeologicalEntity< 2 >;
-    template class RINGMESH_API GeoModelGeologicalEntityAccess< 2 >;
     template class RINGMESH_API Contact< 2 >;
     template class RINGMESH_API Interface< 2 >;
     template class RINGMESH_API Layer< 2 >;
 
     template class RINGMESH_API GeoModelGeologicalEntity< 3 >;
-    template class RINGMESH_API GeoModelGeologicalEntityAccess< 3 >;
     template class RINGMESH_API Contact< 3 >;
     template class RINGMESH_API Interface< 3 >;
     template class RINGMESH_API Layer< 3 >;

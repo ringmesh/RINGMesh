@@ -60,7 +60,7 @@ namespace RINGMesh
      *  Storage: |empty|ROOT|A1|A2|B1|B2|B3|B4|
      */
     template < index_t DIMENSION >
-    class AABBTree
+    class RINGMESH_API AABBTree
     {
         ringmesh_disable_copy_and_move( AABBTree );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -255,10 +255,10 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class BoxAABBTree : public AABBTree< DIMENSION >
+    class RINGMESH_API BoxAABBTree: public AABBTree< DIMENSION >
     {
     public:
-        explicit BoxAABBTree( const std::vector< Box< DIMENSION > >& boxes );
+        explicit BoxAABBTree( const std::vector< Box< DIMENSION > >& bboxes );
 
     private:
         /*!
@@ -272,7 +272,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( BoxAABBTree );
 
     template < index_t DIMENSION >
-    class LineAABBTree : public AABBTree< DIMENSION >
+    class RINGMESH_API LineAABBTree: public AABBTree< DIMENSION >
     {
     public:
         explicit LineAABBTree( const LineMesh< DIMENSION >& mesh );
@@ -321,7 +321,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( LineAABBTree );
 
     template < index_t DIMENSION >
-    class SurfaceAABBTree : public AABBTree< DIMENSION >
+    class RINGMESH_API SurfaceAABBTree: public AABBTree< DIMENSION >
     {
     public:
         explicit SurfaceAABBTree( const SurfaceMeshBase< DIMENSION >& mesh );
@@ -372,7 +372,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceAABBTree );
 
     template < index_t DIMENSION >
-    class VolumeAABBTree : public AABBTree< DIMENSION >
+    class RINGMESH_API VolumeAABBTree : public AABBTree< DIMENSION >
     {
         ringmesh_template_assert_3d( DIMENSION );
 
