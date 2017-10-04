@@ -102,6 +102,22 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    double LineMesh< DIMENSION >::edge_length( index_t edge_id ) const
+    {
+        const auto& e0 = this->vertex( edge_vertex( { edge_id, 0 } ) );
+        const auto& e1 = this->vertex( edge_vertex( { edge_id, 1 } ) );
+        return ( e1 - e0 ).length();
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > LineMesh< DIMENSION >::edge_barycenter( index_t edge_id ) const
+    {
+        const auto& e0 = this->vertex( edge_vertex( { edge_id, 0 } ) );
+        const auto& e1 = this->vertex( edge_vertex( { edge_id, 1 } ) );
+        return ( e1 + e0 ) / 2.;
+    }
+
+    template < index_t DIMENSION >
     bool LineMesh< DIMENSION >::is_mesh_valid() const
     {
         bool valid{ true };
@@ -354,6 +370,28 @@ namespace RINGMesh
             }
         }
         return false;
+    }
+
+    template < index_t DIMENSION >
+    double SurfaceMeshBase< DIMENSION >::polygon_edge_length(
+        const PolygonLocalEdge& polygon_local_edge ) const
+    {
+        const auto& e0 =
+            this->vertex( polygon_edge_vertex( polygon_local_edge, 0 ) );
+        const auto& e1 =
+            this->vertex( polygon_edge_vertex( polygon_local_edge, 1 ) );
+        return ( e1 - e0 ).length();
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > SurfaceMeshBase< DIMENSION >::polygon_edge_barycenter(
+        const PolygonLocalEdge& polygon_local_edge ) const
+    {
+        const auto& e0 =
+            this->vertex( polygon_edge_vertex( polygon_local_edge, 0 ) );
+        const auto& e1 =
+            this->vertex( polygon_edge_vertex( polygon_local_edge, 1 ) );
+        return ( e1 + e0 ) / 2.;
     }
 
     template < index_t DIMENSION >
@@ -784,6 +822,113 @@ namespace RINGMesh
             mesh.reset( new GeogramVolumeMesh< DIMENSION > );
         }
         return mesh;
+    }
+
+    template< index_t DIMENSION >
+    double VolumeMesh< DIMENSION >::cell_edge_length(
+        index_t cell_id,
+        index_t edge_id ) const
+    {
+        const auto& e0 =
+            this->vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
+        const auto& e1 =
+            this->vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
+        return ( e1 - e0 ).length();
+    }
+
+    template< index_t DIMENSION >
+    vecn< DIMENSION > VolumeMesh< DIMENSION >::cell_edge_barycenter(
+        index_t cell_id, index_t edge_id ) const
+    {
+        const auto& e0 =
+            this->vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
+        const auto& e1 =
+            this->vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
+        return ( e1 + e0 ) / 2.;
+    }
+
+    template< index_t DIMENSION >
+    vecn< DIMENSION > VolumeMesh< DIMENSION >::cell_facet_barycenter(
+        const CellLocalFacet& cell_local_facet ) const
+    {
+        vecn< DIMENSION > result;
+        index_t nb_vertices = nb_cell_facet_vertices( cell_local_facet );
+        for( auto v : range( nb_vertices ) )
+        {
+            result +=
+                this->vertex( cell_facet_vertex( cell_local_facet, v ) );
+        }
+        ringmesh_assert( nb_vertices > 0 );
+
+        return result / static_cast< double >( nb_vertices );
+    }
+
+    template< index_t DIMENSION >
+    vecn< DIMENSION > VolumeMesh< DIMENSION >::cell_barycenter( index_t cell_id ) const
+    {
+        vecn< DIMENSION > result;
+        ringmesh_assert( nb_cell_vertices( cell_id ) >= 1 );
+        for( auto v : range( nb_cell_vertices( cell_id ) ) )
+        {
+            result += this->vertex( cell_vertex( { cell_id, v } ) );
+        }
+        return ( 1.0 / nb_cell_vertices( cell_id ) ) * result;
+    }
+
+    template< index_t DIMENSION >
+    vecn< DIMENSION > VolumeMesh< DIMENSION >::cell_facet_normal(
+        const CellLocalFacet& cell_local_facet ) const
+    {
+        ringmesh_assert( cell_local_facet.cell_id_ < nb_cells() );
+        ringmesh_assert( cell_local_facet.local_facet_id_
+                         < nb_cell_facets( cell_local_facet.cell_id_ ) );
+
+        const auto& p1 =
+            this->vertex( cell_facet_vertex( cell_local_facet, 0 ) );
+        const auto& p2 =
+            this->vertex( cell_facet_vertex( cell_local_facet, 1 ) );
+        const auto& p3 =
+            this->vertex( cell_facet_vertex( cell_local_facet, 2 ) );
+
+        return cross( p2 - p1, p3 - p1 );
+    }
+
+    template< index_t DIMENSION >
+    index_t VolumeMesh< DIMENSION >::find_cell_corner(
+        index_t cell_id,
+        index_t vertex_id ) const
+    {
+        for( auto v : range( nb_cell_vertices( cell_id ) ) )
+        {
+            if( cell_vertex( { cell_id, v } ) == vertex_id )
+            {
+                return v;
+            }
+        }
+        return NO_ID;
+    }
+
+    template< index_t DIMENSION >
+    const NNSearch< DIMENSION >& VolumeMesh< DIMENSION >::cell_facet_nn_search() const
+    {
+        if( !cell_facet_nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > cell_facet_centers(
+                nb_cell_facets() );
+            index_t cf = 0;
+            for( auto c : range( nb_cells() ) )
+            {
+                for( auto f : range( nb_cell_facets( c ) ) )
+                {
+                    cell_facet_centers[cf] =
+                        cell_facet_barycenter( { c, f } );
+                    ++cf;
+                }
+            }
+            cell_facet_nn_search_.reset(
+                new NNSearch< DIMENSION >( cell_facet_centers, true ) );
+        }
+        return *cell_facet_nn_search_.get();
     }
 
     template < index_t DIMENSION >
