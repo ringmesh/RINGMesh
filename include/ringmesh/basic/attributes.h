@@ -154,7 +154,7 @@ namespace RINGMesh {
         *  attributes.
         */
         TypedStore( index_t dim = 1 )
-            : Store( index_t( sizeof( T ), dim )
+            : Store( index_t( sizeof( T ), dim ) )
         {
         }
 
@@ -557,7 +557,7 @@ namespace RINGMesh {
          * \brief Gets a pointer to the stored data.
          * \return A pointer to the memory block
          */
-        void* data() final
+        void* data()
         {
             return store_->data();
         }
@@ -566,7 +566,7 @@ namespace RINGMesh {
          * \brief Gets a pointer to the stored data.
          * \return A const pointer to the memory block
          */
-        void* data() const final
+        void* data() const
         {
             return store_->data();
         }
@@ -1265,9 +1265,8 @@ namespace RINGMesh {
             superclass( manager, name )
         {
         }
-    }
-        class BoolAttributeAccessor;
 
+        class BoolAttributeAccessor;
 
         /**
          * \brief Accessor class for adapting Attribute<bool>
@@ -1415,7 +1414,7 @@ namespace RINGMesh {
          * \return a modifiable reference to the \p i%th element
          */
         Byte& element(unsigned int i) {
-            geo_debug_assert(i < superclass::store_->nb_elements());
+            ringmesh_assert(i < superclass::store_->nb_elements());
             return superclass::store_->data()[i];
         }
 
@@ -1425,7 +1424,7 @@ namespace RINGMesh {
          * \return a const reference to the \p i%th element
          */
         const Byte& element(unsigned int i) const {
-            geo_debug_assert(i < superclass::store_->nb_elements());
+            ringmesh_assert(i < superclass::store_->nb_elements());
             return superclass::store_->data()[i];
         }
 
