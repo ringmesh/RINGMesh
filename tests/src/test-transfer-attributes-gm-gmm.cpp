@@ -45,8 +45,6 @@
 
 #include <ringmesh/io/io.h>
 
-#include <ringmesh/mesh/mesh.h>
-
 /*!
  * @author Benjamin Chauvin
  */

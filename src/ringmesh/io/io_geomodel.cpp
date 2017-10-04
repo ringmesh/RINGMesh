@@ -85,51 +85,133 @@ namespace
 #include "geomodel/io_tetgen.cpp"
 #include "geomodel/io_tsolid.cpp"
 #include "geomodel/io_vtk.cpp"
+
+    template < typename Class, typename Factory >
+    std::unique_ptr< Class > create_handler( const std::string& format )
+    {
+        auto handler = Factory::create( format );
+        if( !handler )
+        {
+            Logger::err( "I/O", "Currently supported file formats are: " );
+            for( const std::string& name : Factory::list_creators() )
+            {
+                Logger::err( "I/O", " ", name );
+            }
+
+            throw RINGMeshException(
+                "I/O", "Unsupported file format: ", format );
+        }
+        return handler;
+    }
+
 }
 
 namespace RINGMesh
 {
     template <>
-    void GeoModelIOHandler< 2 >::initialize()
+    void GeoModelOutputHandler< 2 >::initialize()
     {
-        GeoModelIOHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
+        GeoModelOutputHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
             "gm" );
-        GeoModelIOHandlerFactory2D::register_creator< StradivariusIOHandler >(
-            "model" );
-        GeoModelIOHandlerFactory2D::register_creator< SVGIOHandler >( "svg" );
-        GeoModelIOHandlerFactory2D::register_creator< MFEMIOHandler2D >(
+        GeoModelOutputHandlerFactory2D::register_creator< MFEMIOHandler2D >(
             "mfem" );
+    }
+
+
+    template <>
+    void GeoModelInputHandler< 2 >::initialize()
+    {
+        GeoModelInputHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
+            "gm" );
+        GeoModelInputHandlerFactory2D::register_creator< StradivariusIOHandler >(
+            "model" );
+        GeoModelInputHandlerFactory2D::register_creator< SVGIOHandler >( "svg" );
     }
 
     /*
      * Initializes the possible handler for IO files
      */
     template <>
-    void GeoModelIOHandler< 3 >::initialize()
+    void GeoModelOutputHandler< 3 >::initialize()
     {
-        GeoModelIOHandlerFactory3D::register_creator< TetGenIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< TetGenIOHandler >(
             "tetgen" );
-        GeoModelIOHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
-        GeoModelIOHandlerFactory3D::register_creator< CSMPIOHandler >( "csmp" );
-        GeoModelIOHandlerFactory3D::register_creator< AsterIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
+        GeoModelOutputHandlerFactory3D::register_creator< CSMPIOHandler >( "csmp" );
+        GeoModelOutputHandlerFactory3D::register_creator< AsterIOHandler >(
             "mail" );
-        GeoModelIOHandlerFactory3D::register_creator< VTKIOHandler >( "vtk" );
-        GeoModelIOHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
-        GeoModelIOHandlerFactory3D::register_creator< MSHIOHandler >( "msh" );
-        GeoModelIOHandlerFactory3D::register_creator< MFEMIOHandler3D >(
+        GeoModelOutputHandlerFactory3D::register_creator< VTKIOHandler >( "vtk" );
+        GeoModelOutputHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
+        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler >( "msh" );
+        GeoModelOutputHandlerFactory3D::register_creator< MFEMIOHandler3D >(
             "mfem" );
-        GeoModelIOHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
+        GeoModelOutputHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
             "gm" );
-        GeoModelIOHandlerFactory3D::register_creator< AbaqusIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< AbaqusIOHandler >(
             "inp" );
-        GeoModelIOHandlerFactory3D::register_creator< AdeliIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< AdeliIOHandler >(
             "adeli" );
-        GeoModelIOHandlerFactory3D::register_creator< FeflowIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< FeflowIOHandler >(
             "fem" );
-        GeoModelIOHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
-        GeoModelIOHandlerFactory3D::register_creator< SMESHIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
+        GeoModelOutputHandlerFactory3D::register_creator< SMESHIOHandler >(
             "smesh" );
-        GeoModelIOHandlerFactory3D::register_creator< STLIOHandler >( "stl" );
+        GeoModelOutputHandlerFactory3D::register_creator< STLIOHandler >( "stl" );
     }
+
+    template <>
+    void GeoModelInputHandler< 3 >::initialize()
+    {
+        GeoModelInputHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
+            "gm" );
+        GeoModelInputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
+        GeoModelInputHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
+
+    }
+
+    /***************************************************************************/
+
+    template < index_t DIMENSION >
+    std::unique_ptr< GeoModelInputHandler< DIMENSION > >
+    GeoModelInputHandler< DIMENSION >::get_handler(
+            const std::string& filename )
+    {
+        return create_handler< GeoModelInputHandler< DIMENSION >,
+            GeoModelInputHandlerFactory< DIMENSION > >( GEO::FileSystem::extension( filename ) );
+    }
+
+    template < index_t DIMENSION >
+    bool GeoModelInputHandler< DIMENSION >::load_geomodel(
+        const std::string& filename, GeoModel< DIMENSION >& geomodel )
+    {
+        load( filename, geomodel );
+        Logger::out(
+            "I/O", " Loaded geomodel ", geomodel.name(), " from ", filename );
+        return is_geomodel_valid( geomodel );
+    }
+
+    /***************************************************************************/
+
+    template < index_t DIMENSION >
+    std::unique_ptr< GeoModelOutputHandler< DIMENSION > >
+    GeoModelOutputHandler< DIMENSION >::get_handler(
+            const std::string& filename )
+    {
+        return create_handler< GeoModelOutputHandler< DIMENSION >,
+            GeoModelOutputHandlerFactory< DIMENSION > >(
+            GEO::FileSystem::extension( filename ) );
+    }
+
+    template < index_t DIMENSION >
+    void GeoModelOutputHandler< DIMENSION >::save_geomodel( const GeoModel< DIMENSION >& geomodel,
+        const std::string& filename )
+    {
+        save( geomodel, filename );
+    }
+
+    template class RINGMESH_API GeoModelInputHandler< 2 >;
+    template class RINGMESH_API GeoModelOutputHandler< 2 >;
+    template class RINGMESH_API GeoModelOutputHandler< 3 >;
+    template class RINGMESH_API GeoModelInputHandler< 3 >;
 
 } // namespace RINGMesh

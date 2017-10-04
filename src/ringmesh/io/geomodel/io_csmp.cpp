@@ -75,20 +75,13 @@ namespace {
                                                               &prism_descriptor,
                                                               &pyramid_descriptor };
 
-    class CSMPIOHandler final: public GeoModelIOHandler< 3 > {
+    class CSMPIOHandler final: public GeoModelOutputHandler3D {
     public:
         CSMPIOHandler()
         {
             clear();
         }
 
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
-        {
-            ringmesh_unused( filename );
-            ringmesh_unused( geomodel );
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from CSMP not implemented yet" );
-        }
         void save( const GeoModel3D& geomodel, const std::string& filename ) final
         {
             initialize( geomodel );
@@ -659,7 +652,7 @@ namespace {
             }
 
             point_boundaries_.resize( gm.mesh.vertices.nb() );
-            for( const auto& surface : surface_range < 3 > ( gm ) ) {
+            for( const auto& surface : gm.surfaces() ) {
                 index_t interface_id = surface.parent_gmge( 0 ).index();
                 for( auto p : range(
                     gm.mesh.polygons.nb_polygons( surface.index() ) ) ) {

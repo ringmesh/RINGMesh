@@ -443,9 +443,8 @@ namespace RINGMesh
                 parent_type ) };
             if( itr == parent_to_child_.end() ) {
                 return ForbiddenMeshEntityType::type_name_static();
-            } else {
-                return itr->second;
             }
+            return itr->second;
         }
 
         std::vector< GeologicalEntityType > parent_types(

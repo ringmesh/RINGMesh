@@ -49,9 +49,10 @@ namespace RINGMesh
     template < typename T >
     class PImpl
     {
+    ringmesh_disable_copy_and_move( PImpl );
     public:
         template < typename... Args >
-        PImpl( Args&&... );
+        explicit PImpl( Args&&... );
         ~PImpl();
         T* operator->();
         const T* operator->() const;

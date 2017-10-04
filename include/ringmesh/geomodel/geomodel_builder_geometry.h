@@ -38,6 +38,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_builder_access.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
@@ -154,7 +155,7 @@ namespace RINGMesh
         /*!
          * @brief Adds vertices to the mesh
          * @details No update of the geomodel vertices is done
-         * @param[in] id Entity index
+         * @param[in] entity_id Entity index
          * @param[in] points Geometric positions of the vertices to add
          * @param[in] clear If true the mesh is cleared, keeping its attributes
          */

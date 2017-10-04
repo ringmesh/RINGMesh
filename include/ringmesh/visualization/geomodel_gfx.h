@@ -59,7 +59,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class GeoModelGfxBase
+    class RINGMESH_API GeoModelGfxBase
     {
         ringmesh_disable_copy_and_move( GeoModelGfxBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -100,7 +100,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelGfxBase );
 
     template < index_t DIMENSION >
-    class GeoModelGfx final : public GeoModelGfxBase< DIMENSION >
+    class RINGMESH_API GeoModelGfx final: public GeoModelGfxBase< DIMENSION >
     {
     public:
         GeoModelGfx();

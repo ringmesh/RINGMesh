@@ -45,7 +45,6 @@
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-    FORWARD_DECLARATION_DIMENSION_CLASS( UniverseAccess );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
@@ -115,4 +114,4 @@ namespace RINGMesh
     };
 
     ALIAS_2D_AND_3D( GeoModelEntity );
-}
+} // namespace RINGMesh
