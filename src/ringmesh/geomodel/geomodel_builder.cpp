@@ -894,7 +894,6 @@ namespace RINGMesh
           geometry( builder, geomodel ),
           geology( builder, geomodel ),
           removal( builder, geomodel ),
-          repair( builder, geomodel ),
           copy( builder, geomodel ),
           info( builder, geomodel ),
           geomodel_( geomodel ),

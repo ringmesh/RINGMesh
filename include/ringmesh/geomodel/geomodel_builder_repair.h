@@ -42,16 +42,10 @@
 #include <ringmesh/geomodel/geomodel.h>
 
 /*!
- * @file ringmesh/geomodel_builder_repair.h
- * @brief Builder tools to repair GeoModels.
+ * @file ringmesh/geomodel_repair.h
+ * @brief Tools to repair GeoModels.
  * @author Pierre Anquez
  */
-
-namespace RINGMesh
-{
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
-} // namespace RINGMesh
 
 namespace RINGMesh
 {
@@ -63,12 +57,10 @@ namespace RINGMesh
      *          It has been tested on a very small number of geomodels.
      */
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderRepair
+    class RINGMESH_API GeoModelRepair
     {
-        ringmesh_disable_copy_and_move( GeoModelBuilderRepair );
+        ringmesh_disable_copy_and_move( GeoModelRepair );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilderBase< DIMENSION >;
-        friend class GeoModelBuilder< DIMENSION >;
 
     public:
         /*!
@@ -85,6 +77,10 @@ namespace RINGMesh
             ISOLATED_VERTICES
         };
 
+        GeoModelRepair( GeoModel< DIMENSION >& geomodel );
+
+        ~GeoModelRepair() = default;
+
         /*!
          * @brief Repair a GeoModel according a repair mode.
          * @param[in] repair_mode repair mode to apply.
@@ -92,11 +88,6 @@ namespace RINGMesh
         void repair( RepairMode repair_mode );
 
     private:
-        GeoModelBuilderRepair( GeoModelBuilder< DIMENSION >& builder,
-            GeoModel< DIMENSION >& geomodel );
-
-        ~GeoModelBuilderRepair() = default;
-
         /*!
          * All implemented repair for a GeoModel.
          */
@@ -223,11 +214,10 @@ namespace RINGMesh
         void build_contacts();
 
     private:
-        GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
-        GeoModelAccess< DIMENSION > geomodel_access_;
+        GeoModelBuilder< DIMENSION > builder_;
     };
 
-    ALIAS_2D_AND_3D( GeoModelBuilderRepair );
+    ALIAS_2D_AND_3D( GeoModelRepair );
 
 } // namespace RINGMesh

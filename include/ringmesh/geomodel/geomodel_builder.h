@@ -164,7 +164,6 @@ namespace RINGMesh
         GeoModelBuilderGeometry< DIMENSION > geometry;
         GeoModelBuilderGeology< DIMENSION > geology;
         GeoModelBuilderRemoval< DIMENSION > removal;
-        GeoModelBuilderRepair< DIMENSION > repair;
         GeoModelBuilderCopy< DIMENSION > copy;
         GeoModelBuilderInfo< DIMENSION > info;
 

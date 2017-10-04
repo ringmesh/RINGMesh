@@ -54,16 +54,14 @@
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    GeoModelBuilderRepair< DIMENSION >::GeoModelBuilderRepair(
-        GeoModelBuilder< DIMENSION >& builder, GeoModel< DIMENSION >& geomodel )
-        : builder_( builder ),
-          geomodel_( geomodel ),
-          geomodel_access_( geomodel )
+    GeoModelRepair< DIMENSION >::GeoModelRepair( GeoModel< DIMENSION >& geomodel )
+        : geomodel_( geomodel ), builder_( geomodel )
     {
+
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::repair( RepairMode repair_mode )
+    void GeoModelRepair< DIMENSION >::repair( RepairMode repair_mode )
     {
         switch( repair_mode )
         {
@@ -94,7 +92,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::geomodel_mesh_repair()
+    void GeoModelRepair< DIMENSION >::geomodel_mesh_repair()
     {
         // Remove colocated vertices in each entity
         remove_colocated_entity_vertices_and_update_gm();
@@ -119,7 +117,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::
+    void GeoModelRepair< DIMENSION >::
         remove_colocated_entity_vertices_and_update_gm()
     {
         std::set< gmme_id > empty_mesh_entities;
@@ -135,7 +133,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::
+    void GeoModelRepair< DIMENSION >::
         remove_degenerate_polygons_and_edges_and_update_gm()
     {
         std::set< gmme_id > empty_mesh_entities;
@@ -155,7 +153,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::repair_line_boundary_vertex_order()
+    void GeoModelRepair< DIMENSION >::repair_line_boundary_vertex_order()
     {
         for( const auto& line : geomodel_.lines() )
         {
@@ -171,7 +169,7 @@ namespace RINGMesh
     }
 
     template <>
-    void GeoModelBuilderRepair< 3 >::remove_isolated_vertices()
+    void GeoModelRepair< 3 >::remove_isolated_vertices()
     {
         remove_isolated_vertices_base();
         for( const auto& surface : geomodel_.surfaces() )
@@ -188,7 +186,7 @@ namespace RINGMesh
     }
 
     template <>
-    void GeoModelBuilderRepair< 2 >::remove_isolated_vertices()
+    void GeoModelRepair< 2 >::remove_isolated_vertices()
     {
         remove_isolated_vertices_base();
         for( const auto& surface : geomodel_.surfaces() )
@@ -201,7 +199,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::remove_isolated_vertices_base()
+    void GeoModelRepair< DIMENSION >::remove_isolated_vertices_base()
     {
         for( const auto& line : geomodel_.lines() )
         {
@@ -210,7 +208,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::
+    void GeoModelRepair< DIMENSION >::
         remove_isolated_vertices_on_mesh_entity(
             const GeoModelMeshEntity< DIMENSION >& geomodel_mesh_entity )
     {
@@ -234,7 +232,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelBuilderRepair< DIMENSION >::polygon_is_degenerate(
+    bool GeoModelRepair< DIMENSION >::polygon_is_degenerate(
         const Surface< DIMENSION >& surface,
         index_t polygon_id,
         std::vector< index_t >& colocated_vertices )
@@ -263,7 +261,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     std::vector< index_t >
-        GeoModelBuilderRepair< DIMENSION >::surface_detect_degenerate_polygons(
+        GeoModelRepair< DIMENSION >::surface_detect_degenerate_polygons(
             const Surface< DIMENSION >& surface,
             std::vector< index_t >& colocated_vertices )
     {
@@ -277,7 +275,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    index_t GeoModelBuilderRepair< DIMENSION >::detect_degenerate_polygons(
+    index_t GeoModelRepair< DIMENSION >::detect_degenerate_polygons(
         const Surface< DIMENSION >& surface )
     {
         std::vector< index_t > colocated;
@@ -293,7 +291,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     std::vector< bool >
-        GeoModelBuilderRepair< DIMENSION >::line_detect_degenerate_edges(
+        GeoModelRepair< DIMENSION >::line_detect_degenerate_edges(
             const Line< DIMENSION >& line,
             std::vector< index_t >& colocated_vertices )
     {
@@ -307,7 +305,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    index_t GeoModelBuilderRepair< DIMENSION >::repair_line_mesh(
+    index_t GeoModelRepair< DIMENSION >::repair_line_mesh(
         const Line< DIMENSION >& line )
     {
         std::vector< index_t > colocated;
@@ -325,7 +323,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::
+    void GeoModelRepair< DIMENSION >::
         remove_degenerate_polygons_and_edges( std::set< gmme_id >& to_remove )
     {
         to_remove.clear();
@@ -384,7 +382,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     std::set< index_t >
-        GeoModelBuilderRepair< DIMENSION >::vertices_on_inside_boundary(
+        GeoModelRepair< DIMENSION >::vertices_on_inside_boundary(
             const gmme_id& E_id )
     {
         std::set< index_t > vertices;
@@ -440,7 +438,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::remove_colocated_entity_vertices(
+    void GeoModelRepair< DIMENSION >::remove_colocated_entity_vertices(
         std::set< gmme_id >& to_remove )
     {
         to_remove.clear();
@@ -536,7 +534,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelBuilderRepair< DIMENSION >::edge_is_degenerate(
+    bool GeoModelRepair< DIMENSION >::edge_is_degenerate(
         const Line< DIMENSION >& line,
         index_t edge,
         const std::vector< index_t >& colocated_vertices )
@@ -549,10 +547,10 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRepair< DIMENSION >::build_contacts()
+    void GeoModelRepair< DIMENSION >::build_contacts()
     {
         builder_.geology.build_contacts();
     }
-    template class RINGMESH_API GeoModelBuilderRepair< 2 >;
-    template class RINGMESH_API GeoModelBuilderRepair< 3 >;
+    template class RINGMESH_API GeoModelRepair< 2 >;
+    template class RINGMESH_API GeoModelRepair< 3 >;
 } // namespace RINGMesh

@@ -70,8 +70,8 @@ int main()
         Logger::out( "RINGMesh Test", "Repairing" );
 
         // Repair the geomodel
-        GeoModelBuilder3D model_builder( geomodel );
-        model_builder.repair.repair( GeoModelBuilderRepair3D::ALL );
+        GeoModelRepair3D model_repairer( geomodel );
+        model_repairer.repair( GeoModelRepair3D::ALL );
 
         // Test the validity again
         if( !is_geomodel_valid( geomodel ) )
