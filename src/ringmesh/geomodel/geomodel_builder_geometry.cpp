@@ -43,6 +43,7 @@
 
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 namespace
 {

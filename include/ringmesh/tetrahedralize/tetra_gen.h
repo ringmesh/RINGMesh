@@ -45,8 +45,6 @@
 
 #include <ringmesh/geomodel/geomodel_builder.h>
 
-#include <ringmesh/mesh/mesh.h>
-
 /*!
  * @file ringmesh/tetragen.h
  * @brief API class interfacing GeoModel with external tetrahedral meshers
