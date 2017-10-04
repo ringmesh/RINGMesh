@@ -76,13 +76,6 @@ if(WIN32)
             "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
             "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
             COMMENT "Copy minizip binaries")
-    if(RINGMESH_WITH_GEOLOGYJS)
-        add_custom_command(TARGET RINGMesh POST_BUILD
-            COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-                "${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
-                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
-                COMMENT "Copy geology js binaries")
-    endif(RINGMESH_WITH_GEOLOGYJS)
 endif(WIN32)
 endfunction()
 
