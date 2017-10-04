@@ -288,7 +288,7 @@ namespace RINGMesh
         /*!
          * Finds if a corner at a given geometric position exist
          * @param[in] vertex the geometric position to test
-         * @param[in] epsilon the numerical précision used to compare the
+         * @param[in] epsilon the numerical precision used to compare the
          * vertices
          * @return the id of the corner or NO_ID if not found any corresponding
          * to \p p
