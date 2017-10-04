@@ -41,6 +41,7 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 /*!
  * @author Benjamin Chauvin

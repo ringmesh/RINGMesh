@@ -554,6 +554,12 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    GEO::AttributesManager& GeoModelMeshVerticesBase< DIMENSION >::attribute_manager() const
+    {
+        return mesh_->vertex_attribute_manager();
+    }
+
+    template < index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::test_and_initialize() const
     {
         if( !is_initialized() )
@@ -964,6 +970,12 @@ namespace RINGMesh
         : GeoModelMeshCommon< DIMENSION >( gmm, gm ), mesh_( mesh )
     {
         this->set_mesh( mesh_.get() );
+    }
+
+    template < index_t DIMENSION >
+    GEO::AttributesManager& GeoModelMeshCells< DIMENSION >::attribute_manager() const
+    {
+        return mesh_->cell_attribute_manager();
     }
 
     template < index_t DIMENSION >
