@@ -129,19 +129,17 @@ namespace {
             }
             index_t index = 0;
             for( const auto& line : line_range < 2 > ( geomodel_ ) ) {
-                gmme_id line_id = line.gmme();
-                index_t point0 = index_map[index++ ];
-                gmme_id corner0( Corner2D::type_name_static(), point0 );
-                index_t point1 = index_map[index++ ];
-                gmme_id corner1( Corner2D::type_name_static(), point1 );
-                topology.add_mesh_entity_boundary_relation( line_id, corner0 );
-                topology.add_mesh_entity_boundary_relation( line_id, corner1 );
+                const auto line_id = line.gmme();
+                const index_t corner0 = index_map[index++ ];
+                const index_t corner1 = index_map[index++ ];
+                topology.add_line_corner_boundary_relation( line_id.index(), corner0 );
+                topology.add_line_corner_boundary_relation( line_id.index(), corner1 );
 
                 // Update line vertex extremities with corner coordinates
-                geometry.set_mesh_entity_vertex( line_id, 0, unique_points[point0],
+                geometry.set_mesh_entity_vertex( line_id, 0, unique_points[corner0],
                     false );
                 geometry.set_mesh_entity_vertex( line_id, line.nb_vertices() - 1,
-                    unique_points[point1], false );
+                    unique_points[corner1], false );
             }
         }
 

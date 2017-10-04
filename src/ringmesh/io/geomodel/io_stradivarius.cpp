@@ -119,9 +119,8 @@ namespace {
             topology.create_mesh_entities( Surface2D::type_name_static(), nb_media + 1 );
 
             for( const auto& horizon : horizon_m0_ ) {
-                topology.add_mesh_entity_boundary_relation(
-                    {   Surface2D::type_name_static(), index_t( 0 )}, horizon,
-                    true );
+                topology.add_surface_line_boundary_relation(
+                    0, horizon.index(), true );
             }
 
             for (auto milieu_i : range( nb_media )) {
@@ -134,9 +133,8 @@ namespace {
                     file.get_fields();
                     auto interface_id = file.field_as_uint( 0 );
                     gmme_id horizon{ Line2D::type_name_static(), interface_id };
-                    topology.add_mesh_entity_boundary_relation(
-                        {   Surface2D ::type_name_static(), milieu_i + 1}, horizon,
-                        true );
+                    topology.add_surface_line_boundary_relation(
+                        milieu_i + 1, horizon.index(), true );
                 }
             }
         }

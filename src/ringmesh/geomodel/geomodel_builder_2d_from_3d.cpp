@@ -90,6 +90,21 @@ namespace RINGMesh
             topology.create_mesh_entities(
                 entity_type, geomodel3d_from_.nb_mesh_entities( entity_type ) );
         }
+
+        /*for( const auto& line : geomodel3d_from_.lines() ) {
+            for( auto boundary_id : range( line.nb_boundaries() ) ) {
+                topology.add_line_corner_boundary_relation(
+                    line, line.boundary( boundary_id ) );
+            }
+        }
+
+        for( const auto& surface : geomodel3d_from_.surfaces() ) {
+                    for( auto boundary_id : range( surface.nb_boundaries() ) ) {
+                        topology.add_surface_line_boundary_relation(
+                            surface, surface.boundary( boundary_id ) );
+                    }
+                }
+
         for( const auto& entity_type : projectable_entity_types )
         {
             for( const auto entity_id :
@@ -99,11 +114,14 @@ namespace RINGMesh
                     geomodel3d_from_.mesh_entity( entity_type, entity_id );
                 for( const auto& boundary_id : range( entity.nb_boundaries() ) )
                 {
-                    topology.add_mesh_entity_boundary_relation(
+                    // Corner type is within projectable_entity_types but for this
+                    // mesh type nothing should happen since a corner has no boundary.
+                    ringmesh_assert( entity_type != Corner3D::type_name_static() );
+                    topology.add_line_corner_or_surface_line_boundary_relation(
                         entity.gmme(), entity.boundary( boundary_id ).gmme() );
                 }
             }
-        }
+        }*/
     }
 
     void GeoModelBuilder2DProjection::copy_geomodel_3d_geological_informations()
