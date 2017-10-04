@@ -33,13 +33,12 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geomodel_builder_repair.h>
-
 #include <array>
 
 #include <geogram/basic/algorithm.h>
 
 #include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_repair.h>
 
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
