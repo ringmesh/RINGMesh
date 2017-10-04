@@ -322,7 +322,6 @@ if(BUILD_RINGMESH_VIEW)
     copy_for_windows()
 endif(BUILD_RINGMESH_VIEW)
 
-
 if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
