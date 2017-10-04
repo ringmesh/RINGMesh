@@ -68,6 +68,6 @@ namespace RINGMesh
      * @param[in] repair_mode repair mode to apply.
      */
     template < index_t DIMENSION >
-    void RINGMESH_API repair( GeoModel< DIMENSION >& geomodel, RepairMode repair_mode );
+    void RINGMESH_API repair_geomodel( GeoModel< DIMENSION >& geomodel, RepairMode repair_mode );
 
 } // namespace RINGMesh
