@@ -38,6 +38,7 @@
 #include <future>
 
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
@@ -55,7 +56,7 @@ void make_geomodel_copy(
     const GeoModel3D& from, const std::string& name, GeoModel3D& to )
 {
     GeoModelBuilder3D geomodel_breaker2( to );
-    geomodel_breaker2.copy.copy_geomodel( from );
+    copy_geomodel( from, to );
     geomodel_breaker2.info.set_geomodel_name( name );
 }
 
