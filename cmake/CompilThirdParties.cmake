@@ -210,6 +210,7 @@ ExternalProject_Add(zlib_ext
 
   #--Update/Patch step----------
   UPDATE_COMMAND ""
+
   #--Configure step-------------
   SOURCE_DIR ${ZLIB_PATH}
       CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
