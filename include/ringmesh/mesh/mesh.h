@@ -44,6 +44,7 @@
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/aabb.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 namespace GEO
 {
@@ -206,18 +207,18 @@ namespace RINGMesh
         double edge_length( index_t edge_id ) const
         {
             const vecn< DIMENSION >& e0 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 0 ) ) );
+                this->vertex( edge_vertex( { edge_id, 0 } ) );
             const vecn< DIMENSION >& e1 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 1 ) ) );
+                this->vertex( edge_vertex( { edge_id, 1 } ) );
             return ( e1 - e0 ).length();
         }
 
         vecn< DIMENSION > edge_barycenter( index_t edge_id ) const
         {
             const vecn< DIMENSION >& e0 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 0 ) ) );
+                this->vertex( edge_vertex( { edge_id, 0 } ) );
             const vecn< DIMENSION >& e1 =
-                this->vertex( edge_vertex( ElementLocalVertex( edge_id, 1 ) ) );
+                this->vertex( edge_vertex( { edge_id, 1 } ) );
             return ( e1 + e0 ) / 2.;
         }
 
@@ -796,7 +797,7 @@ namespace RINGMesh
             for( auto v : range( nb_cell_vertices( cell_id ) ) )
             {
                 result += this->vertex(
-                    cell_vertex( ElementLocalVertex( cell_id, v ) ) );
+                    cell_vertex( { cell_id, v } ) );
             }
             return ( 1.0 / nb_cell_vertices( cell_id ) ) * result;
         }
@@ -862,7 +863,7 @@ namespace RINGMesh
             {
                 std::vector< vecn< DIMENSION > > cell_facet_centers(
                     nb_cell_facets() );
-                index_t cf = 0;
+                index_t cf { 0 };
                 for( auto c : range( nb_cells() ) )
                 {
                     for( auto f : range( nb_cell_facets( c ) ) )
