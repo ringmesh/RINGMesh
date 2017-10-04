@@ -33,64 +33,41 @@
  *     FRANCE
  */
 
-#include <ringmesh/ringmesh_tests_config.h>
+#pragma once
 
-#include <ringmesh/geomodel/geomodel_repair.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
-#include <ringmesh/io/io.h>
+#include <ringmesh/basic/common.h>
+
+#include <set>
+
+#include <ringmesh/geomodel/geomodel.h>
 
 /*!
- * Load and fix a given structural model file.
- * @author Jeanne Pellerin
+ * @file ringmesh/geomodel_repair.h
+ * @brief Tools to repair GeoModels.
+ * @author Pierre Anquez
  */
-int main()
+
+namespace RINGMesh
 {
-    using namespace RINGMesh;
-
-    try
+    /*!
+     * Enumeration of the different repair modes.
+     */
+    enum struct RINGMESH_API RepairMode
     {
-        default_configure();
+        ALL,
+        BASIC,
+        COLOCATED_VERTICES,
+        DEGENERATE_FACETS_EDGES,
+        LINE_BOUNDARY_ORDER,
+        CONTACTS,
+        ISOLATED_VERTICES
+    };
 
-        std::string file_name( ringmesh_test_data_path );
-        file_name += "annot.ml";
+    /*!
+     * @brief Repair a GeoModel according a repair mode.
+     * @param[in] repair_mode repair mode to apply.
+     */
+    template < index_t DIMENSION >
+    void RINGMESH_API repair_geomodel( GeoModel< DIMENSION >& geomodel, RepairMode repair_mode );
 
-        Logger::out( "RINGMesh Test", "Loading and fixing structural geomodel:",
-            file_name );
-
-        // Load the geomodel
-        GeoModel3D geomodel;
-        bool init_model_is_valid{ geomodel_load( geomodel, file_name ) };
-        if( init_model_is_valid )
-        {
-            throw RINGMeshException( "RINGMesh Test", "Input test model ",
-                geomodel.name(),
-                " must be invalid to check the repair functionalities." );
-        }
-
-        Logger::out( "RINGMesh Test", "Repairing" );
-
-        // Repair the geomodel
-        repair_geomodel( geomodel, RepairMode::ALL );
-
-        // Test the validity again
-        if( !is_geomodel_valid( geomodel ) )
-        {
-            throw RINGMeshException(
-                "RINGMesh Test", "Fixing the invalid geological model "
-                                     + geomodel.name() + " failed." );
-        }
-
-        Logger::out( "TEST", "SUCCESS" );
-        return 0;
-    }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
-    }
-    catch( const std::exception& e )
-    {
-        Logger::err( "Exception", e.what() );
-        return 1;
-    }
-}
+} // namespace RINGMesh
