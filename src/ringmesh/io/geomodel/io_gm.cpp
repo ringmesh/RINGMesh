@@ -117,7 +117,7 @@ namespace {
             }
         }
 
-        void add_relation_for_entities_with_no_side(
+       /* void add_relation_for_entities_with_no_side(
             const gmme_id& entity,
             GEO::LineInput& file_line )
         {
@@ -130,26 +130,36 @@ namespace {
                 this->builder_.topology.add_mesh_entity_boundary_relation( entity,
                     boundary );
             }
-        }
+        }*/
     };
 
-    template< >
-    void GeoModelBuilderGMImpl_0< 2 >::read_second_line(
-        GEO::LineInput& file_line,
-        const gmme_id& entity )
-    {
-        file_line.get_line();
-        file_line.get_fields();
-        const auto& manager =
-            this->geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_surface( entity.type() ) ) {
-            add_relation_for_entities_with_sides< Line >( entity, file_line );
-        } else {
-            add_relation_for_entities_with_no_side( entity, file_line );
-        }
-    }
+//    template< >
+//    void GeoModelBuilderGMImpl_0< 2 >::read_second_line(
+//        GEO::LineInput& file_line,
+//        const gmme_id& entity )
+//    {
+//        file_line.get_line();
+//        file_line.get_fields();
+//        const auto& manager =
+//            this->geomodel_.entity_type_manager().mesh_entity_manager;
+//        if( manager.is_surface( entity.type() ) ) {
+//            add_relation_for_entities_with_sides< Line >( entity, file_line );
+//        } else {
+//            ringmesh_assert( entity.type() == Line2D::type_name_static() );
+////            add_relation_for_entities_with_no_side( entity, file_line );
+//            /*const auto& manager =
+//                this->geomodel_.entity_type_manager().mesh_entity_manager;
+//            auto type = manager.boundary_entity_type( entity.type() );*/
+//            // Second line : indices of boundaries
+//            for( auto c : range( 1, file_line.nb_fields() ) ) {
+//                index_t boundary_id { file_line.field_as_uint( c ) };
+//                this->builder_.topology.add_line_corner_boundary_relation( entity.index(),
+//                    boundary_id );
+//            }
+//        }
+//    }
 
-    template< >
+/*    template< >
     void GeoModelBuilderGMImpl_0< 3 >::read_second_line(
         GEO::LineInput& file_line,
         const gmme_id& entity )
@@ -158,12 +168,28 @@ namespace {
         file_line.get_fields();
         const auto& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_region( entity.type() ) ) {
+        auto type = manager.boundary_entity_type( entity.type() );
+        if( manager.is_region( type ) ) {
             add_relation_for_entities_with_sides< Surface >( entity, file_line );
         } else {
-            add_relation_for_entities_with_no_side( entity, file_line );
+//            add_relation_for_entities_with_no_side( entity, file_line );
+            // Second line : indices of boundaries
+            ringmesh_assert( manager.is_line( type ) || manager.is_surface( type ) );
+            for( auto c : range( 1, file_line.nb_fields() ) ) {
+                index_t boundary_id { file_line.field_as_uint( c ) };
+                const GeoModelBuilderGM< 3 >& builder = this->builder_;
+                const GeoModelBuilderTopology< 3 >& topo = builder.topology;
+                if( manager.is_line( type ) ) {
+                    builder.topology.add_mesh_line_corner_boundary_relation(
+                        entity.index(), boundary_id );
+                } else {
+                    ringmesh_assert( manager.is_surface( type ) );
+                    this->builder_.topology.add_mesh_surface_line_boundary_relation(
+                        entity.index(), boundary_id );
+                }
+            }
         }
-    }
+    }*/
 
     template< index_t DIMENSION >
     class GeoModelBuilderGMImpl_1: public GeoModelBuilderGMImpl_0< DIMENSION > {
@@ -898,4 +924,61 @@ namespace {
     };
 
     ALIAS_2D_AND_3D (GeoModelHandlerGM);
+
+
+    template< >
+    void GeoModelBuilderGMImpl_0< 2 >::read_second_line(
+        GEO::LineInput& file_line,
+        const gmme_id& entity )
+    {
+        file_line.get_line();
+        file_line.get_fields();
+        const auto& manager =
+            this->geomodel_.entity_type_manager().mesh_entity_manager;
+        if( manager.is_surface( entity.type() ) ) {
+            add_relation_for_entities_with_sides< Line >( entity, file_line );
+        } else {
+            ringmesh_assert( entity.type() == Line2D::type_name_static() );
+            //            add_relation_for_entities_with_no_side( entity, file_line );
+            /*const auto& manager =
+             this->geomodel_.entity_type_manager().mesh_entity_manager;
+             auto type = manager.boundary_entity_type( entity.type() );*/
+            // Second line : indices of boundaries
+            for( auto c : range( 1, file_line.nb_fields() ) ) {
+                index_t boundary_id { file_line.field_as_uint( c ) };
+                this->builder_.topology.add_line_corner_boundary_relation(
+                    entity.index(), boundary_id );
+            }
+        }
+    }
+
+    template< >
+    void GeoModelBuilderGMImpl_0< 3 >::read_second_line(
+        GEO::LineInput& file_line,
+        const gmme_id& entity )
+    {
+        file_line.get_line();
+        file_line.get_fields();
+        const auto& manager =
+            this->geomodel_.entity_type_manager().mesh_entity_manager;
+        auto type = manager.boundary_entity_type( entity.type() );
+        if( manager.is_region( type ) ) {
+            add_relation_for_entities_with_sides< Surface >( entity, file_line );
+        } else {
+//            add_relation_for_entities_with_no_side( entity, file_line );
+            // Second line : indices of boundaries
+            ringmesh_assert( manager.is_line( type ) || manager.is_surface( type ) );
+            for( auto c : range( 1, file_line.nb_fields() ) ) {
+                index_t boundary_id { file_line.field_as_uint( c ) };
+                if( manager.is_line( type ) ) {
+                    this->builder_.topology.add_line_corner_boundary_relation(
+                        entity.index(), boundary_id );
+                } else {
+                    ringmesh_assert( manager.is_surface( type ) );
+                    this->builder_.topology.add_surface_line_boundary_relation(
+                        entity.index(), boundary_id );
+                }
+            }
+        }
+    }
 }

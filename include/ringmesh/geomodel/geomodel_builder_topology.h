@@ -130,6 +130,15 @@ namespace RINGMesh
             const gmme_id& first_corner,
             const gmme_id& second_corner );
 
+        void add_line_corner_boundary_relation(
+            index_t incident_line_id,
+            index_t boundary_corner_id );
+
+        void set_line_corner_boundary(
+            index_t incident_line_id,
+            index_t id,
+            index_t new_boundary_corner_id );
+
     protected:
         GeoModelBuilderTopologyBase( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
@@ -193,23 +202,17 @@ namespace RINGMesh
         friend class GeoModelBuilder< 2 >;
 
     public:
-        void add_corner_boundary_relation(
-            const Line2D& incident_line,
-            const Corner2D& boundary_corner );
 
-        void set_corner_boundary( const Line& incident_line,
+        void add_surface_line_boundary_relation(
+            index_t incident_surface_id,
+            index_t boundary_line_id,
+            bool side );
+
+        void set_surface_line_boundary(
+            index_t incident_surface_id,
             index_t id,
-            const Corner2D& new_boundary_corner );
-
-        void add_line_boundary_relation(
-            const Surface2D& incident_surface,
-            const Line2D& boundary_line,
-			bool side );
-
-        void set_line_boundary( const Surface2D& incident_surface,
-            index_t id,
-            const Line2D& new_boundary_line,
-			bool side );
+            index_t new_boundary_line_id,
+            bool side );
 
     private:
         GeoModelBuilderTopology(
@@ -232,24 +235,25 @@ namespace RINGMesh
         bool create_mesh_entities( const MeshEntityType& type,
             index_t nb_additional_entities ) override;
 
-        void add_corner_or_line_boundary_relation(
-            const gmme_id& incident_entity_id,
-            const gmme_id& boundary_id );
+        void add_surface_line_boundary_relation(
+            index_t incident_surface_id,
+            index_t boundary_line_id );
 
-        void set_corner_or_line_boundary( const gmme_id& gmme,
+        void set_surface_line_boundary(
+            index_t incident_surface_id,
             index_t id,
-            index_t boundary_id );
+            index_t boundary_line_id );
 
-        void add_surface_boundary_relation(
-            const Region3D& incident_region,
-            const Surface3D& boundary_surface,
-			bool side );
+        void add_region_surface_boundary_relation(
+            index_t incident_region_id,
+            index_t boundary_surface_id,
+            bool side );
 
-        void set_surface_boundary(
-        	const Region3D& incident_region,
+        void set_region_surface_boundary(
+            index_t incident_regions,
             index_t id,
-            index_t boundary_id,
-			bool side );
+            index_t boundary_surface_id,
+            bool side );
 
     private:
         GeoModelBuilderTopology(
