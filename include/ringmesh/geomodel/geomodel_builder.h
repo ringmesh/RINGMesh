@@ -106,28 +106,6 @@ namespace RINGMesh
         GeoModelAccess< DIMENSION > geomodel_access_;
     };
 
-    template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderCopy
-    {
-        ringmesh_disable_copy_and_move( GeoModelBuilderCopy );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
-        friend class GeoModelBuilderBase< DIMENSION >;
-        friend class GeoModelBuilder< DIMENSION >;
-
-    public:
-        void copy_geomodel( const GeoModel< DIMENSION >& from );
-
-    private:
-        GeoModelBuilderCopy( GeoModelBuilder< DIMENSION >& builder,
-            GeoModel< DIMENSION >& geomodel );
-        ~GeoModelBuilderCopy() = default;
-
-    private:
-        GeoModelBuilder< DIMENSION >& builder_;
-        GeoModel< DIMENSION >& geomodel_;
-        GeoModelAccess< DIMENSION > geomodel_access_;
-    };
-
     /*!
      * @brief Base class to build or edit a GeoModel
      * @details All needed functions are organized in several specific builder
@@ -165,7 +143,6 @@ namespace RINGMesh
         GeoModelBuilderGeology< DIMENSION > geology;
         GeoModelBuilderRemoval< DIMENSION > removal;
         GeoModelBuilderRepair< DIMENSION > repair;
-        GeoModelBuilderCopy< DIMENSION > copy;
         GeoModelBuilderInfo< DIMENSION > info;
 
     protected:

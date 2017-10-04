@@ -83,6 +83,14 @@ namespace RINGMesh
         const GeoModel3D& geomodel );
 
     /*!
+     * Copy GeoModel \param from into GeoModel \param to
+     */
+    template < index_t DIMENSION >
+    void RINGMESH_API copy_geomodel(
+        const GeoModel< DIMENSION >& from,
+        GeoModel< DIMENSION >& to );
+
+    /*!
      * @return the index of the mesh entity \param gme_type named as \param name
      * in the GeoModel \param geomodel.
      * @note throw exception if no entities have this \param name or if two
