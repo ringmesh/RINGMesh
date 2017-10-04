@@ -861,24 +861,6 @@ namespace
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    GeoModelBuilderCopy< DIMENSION >::GeoModelBuilderCopy(
-        GeoModelBuilder< DIMENSION >& builder, GeoModel< DIMENSION >& geomodel )
-        : builder_( builder ),
-          geomodel_( geomodel ),
-          geomodel_access_( geomodel )
-    {
-    }
-
-    template < index_t DIMENSION >
-    void GeoModelBuilderCopy< DIMENSION >::copy_geomodel(
-        const GeoModel< DIMENSION >& from )
-    {
-        builder_.topology.copy_topology( from );
-        builder_.geometry.copy_meshes( from );
-        builder_.geology.copy_geology( from );
-    }
-
-    template < index_t DIMENSION >
     GeoModelBuilderInfo< DIMENSION >::GeoModelBuilderInfo(
         GeoModelBuilder< DIMENSION >& builder, GeoModel< DIMENSION >& geomodel )
         : builder_( builder ),
@@ -894,7 +876,6 @@ namespace RINGMesh
           geometry( builder, geomodel ),
           geology( builder, geomodel ),
           removal( builder, geomodel ),
-          copy( builder, geomodel ),
           info( builder, geomodel ),
           geomodel_( geomodel ),
           geomodel_access_( geomodel )
@@ -1151,10 +1132,8 @@ namespace RINGMesh
 
     template class RINGMESH_API GeoModelBuilderBase< 2 >;
     template class RINGMESH_API GeoModelBuilderInfo< 2 >;
-    template class RINGMESH_API GeoModelBuilderCopy< 2 >;
 
     template class RINGMESH_API GeoModelBuilderBase< 3 >;
     template class RINGMESH_API GeoModelBuilderInfo< 3 >;
-    template class RINGMESH_API GeoModelBuilderCopy< 3 >;
 
 } // namespace RINGMesh

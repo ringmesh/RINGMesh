@@ -770,33 +770,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    index_t GeoModelMeshVerticesBase< DIMENSION >::add_vertex(
-        const vecn< DIMENSION >& point )
-    {
-        auto builder =
-            PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
-        const auto index = builder->create_vertex( point );
-        impl_->resize_geomodel_vertex_gmes( nb() );
-        return index;
-    }
-
-    template < index_t DIMENSION >
-    index_t GeoModelMeshVerticesBase< DIMENSION >::add_vertices(
-        const std::vector< vecn< DIMENSION > >& points )
-    {
-        ringmesh_assert( !points.empty() );
-        auto builder =
-            PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
-        const auto start_index = builder->create_vertex( points[0] );
-        for( auto i : range( 1, points.size() ) )
-        {
-            builder->create_vertex( points[i] );
-        }
-        impl_->resize_geomodel_vertex_gmes( nb() );
-        return start_index;
-    }
-
-    template < index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::update_point(
         index_t v, const vecn< DIMENSION >& point )
     {

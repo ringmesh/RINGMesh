@@ -89,7 +89,3 @@ if(RINGMESH_WITH_TUTORIALS)
     endif() 
 endif()
 
-if(RINGMESH_WITH_GEOLOGYJS)
-    set(GEOLOGY_JS_DIRECTORY "${CMAKE_SOURCE_DIR}/../geology.js/cpp" CACHE PATH "geology.js cpp directory location")
-    message(STATUS ${GEOLOGY_JS_DIRECTORY})
-endif(RINGMESH_WITH_GEOLOGYJS)

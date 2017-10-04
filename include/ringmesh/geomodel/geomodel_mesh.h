@@ -234,16 +234,6 @@ namespace RINGMesh
             const MeshEntityType& entity_type, index_t vertex ) const;
 
         /*!
-         * @brief To use when building the geomodel by first adding its vertices
-         * @return the first index of created vertices
-         * @warning The client is responsible for setting the mapping between
-         * the points
-         * of the GeoModelEntity and the unique vertex
-         */
-        index_t add_vertex( const vecn< DIMENSION >& point );
-        index_t add_vertices( const std::vector< vecn< DIMENSION > >& points );
-
-        /*!
          * @brief Set the point coordinates of all the vertices that
          *        share this unique vertex, including the unique vertex itself.
          * @param[in] vertex Index of the vertex
