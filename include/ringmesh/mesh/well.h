@@ -42,6 +42,7 @@
 
 #include <geogram/basic/attributes.h>
 
+#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/basic/geometry.h>
 
 /*!
@@ -54,8 +55,6 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( Well );
     FORWARD_DECLARATION_DIMENSION_CLASS( NNSearch );
-    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
-    FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
     struct ElementLocalVertex;
 } // namespace RINGMesh
 
