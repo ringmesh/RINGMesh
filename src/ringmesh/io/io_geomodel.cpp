@@ -104,10 +104,21 @@ namespace
         return handler;
     }
 
+
 }
 
 namespace RINGMesh
 {
+    ValidityCheckMode interpret_validity_check_mode( const std::string& checks_to_remove )
+    {
+        ValidityCheckMode check_mode = ValidityCheckMode::ALL ;
+        for( auto& check : checks_to_remove )
+        {
+            DEBUG(check);
+        }
+        return check_mode;
+    }
+
     template <>
     void GeoModelOutputHandler< 2 >::initialize()
     {
@@ -187,7 +198,10 @@ namespace RINGMesh
         load( filename, geomodel );
         Logger::out(
             "I/O", " Loaded geomodel ", geomodel.name(), " from ", filename );
-        ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL;
+
+        //ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL;
+        std::string check_removed = GEO::CmdLine::get_arg( "validity:do_not_check" );
+        ValidityCheckMode validity_check_mode = interpret_validity_check_mode( check_removed );
         return is_geomodel_valid( geomodel, validity_check_mode );
     }
 
