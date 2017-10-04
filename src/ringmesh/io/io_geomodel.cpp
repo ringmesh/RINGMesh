@@ -187,7 +187,8 @@ namespace RINGMesh
         load( filename, geomodel );
         Logger::out(
             "I/O", " Loaded geomodel ", geomodel.name(), " from ", filename );
-        return is_geomodel_valid( geomodel );
+        ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL;
+        return is_geomodel_valid( geomodel, validity_check_mode );
     }
 
     /***************************************************************************/

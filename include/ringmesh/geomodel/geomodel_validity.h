@@ -95,7 +95,7 @@ namespace RINGMesh
      */
     template < index_t DIMENSION >
     bool is_geomodel_valid( const GeoModel< DIMENSION >& geomodel,
-        ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL );
+        ValidityCheckMode validity_check_mode );
 
     /*!
      * @brief Check the validity of all individual entity meshes

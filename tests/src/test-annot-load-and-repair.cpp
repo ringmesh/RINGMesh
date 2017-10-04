@@ -74,7 +74,7 @@ int main()
         model_builder.repair.repair( GeoModelBuilderRepair3D::ALL );
 
         // Test the validity again
-        if( !is_geomodel_valid( geomodel ) )
+        if( !is_geomodel_valid( geomodel, ValidityCheckMode::ALL ) )
         {
             throw RINGMeshException(
                 "RINGMesh Test", "Fixing the invalid geological model "

@@ -61,7 +61,7 @@ void make_geomodel_copy(
 
 void verdict( const GeoModel3D& invalid_model, const std::string& feature )
 {
-    if( is_geomodel_valid( invalid_model ) )
+    if( is_geomodel_valid( invalid_model, ValidityCheckMode::ALL ) )
     {
         throw RINGMeshException( "RINGMesh Test", "Fail to ", feature );
     }
