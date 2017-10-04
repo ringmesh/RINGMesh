@@ -50,174 +50,24 @@
 namespace RINGMesh
 {
     /*!
-     * @brief Try repairing a supposedly invalid GeoModel
-     * @details Remove colocated vertices in all GeoModelMeshEntity.
-     *          Remove degenerated edges and polygons in Surfaces and Lines.
-     * @warning This function will by no mean fix all errors in a GeoModel
-     *          It has been tested on a very small number of geomodels.
+     * Enumeration of the different repair modes.
      */
-    template < index_t DIMENSION >
-    class RINGMESH_API GeoModelRepair
+    enum struct RINGMESH_API RepairMode
     {
-        ringmesh_disable_copy_and_move( GeoModelRepair );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
-
-    public:
-        /*!
-         * Enumeration of the different repair modes.
-         */
-        enum RepairMode
-        {
-            ALL,
-            BASIC,
-            COLOCATED_VERTICES,
-            DEGENERATE_FACETS_EDGES,
-            LINE_BOUNDARY_ORDER,
-            CONTACTS,
-            ISOLATED_VERTICES
-        };
-
-        GeoModelRepair( GeoModel< DIMENSION >& geomodel );
-
-        ~GeoModelRepair() = default;
-
-        /*!
-         * @brief Repair a GeoModel according a repair mode.
-         * @param[in] repair_mode repair mode to apply.
-         */
-        void repair( RepairMode repair_mode );
-
-    private:
-        /*!
-         * All implemented repair for a GeoModel.
-         */
-        void geomodel_mesh_repair();
-        /*!
-         * Remove the colocated vertices in all the GeoModelMeshEntities within
-         * the GeoModel. GeoModelMeshEntities without any vertex anymore
-         * (after the removal of the vertices) are removed off the GeoModel.
-         */
-        void remove_colocated_entity_vertices_and_update_gm();
-        /*!
-         * Remove the degenerated polygons in all the Surfaces and all the
-         * degenerate edges in all the Lines within
-         * the GeoModel. Degeneration is due to colocated vertices.
-         * Surfaces and Lines without any vertex anymore
-         * (after the removal of the vertices) are removed off the GeoModel.
-         */
-        void remove_degenerate_polygons_and_edges_and_update_gm();
-        /*!
-         * @brief For all the lines in the geomodel, switch line boundaries
-         * if the way of their indices does not follow the way of the vertex
-         * indices.
-         */
-        void repair_line_boundary_vertex_order();
-        /*!
-         * @brief remove isolated vertices on GeoModelMeshEntities
-         */
-        void remove_isolated_vertices();
-        void remove_isolated_vertices_base();
-
-        /*!
-         * @brief remove isolated vertices on a GeoModelMeshEntity
-         * @param[in] geomodel_mesh_entity The GeoModelMeshEntity to repair
-         */
-        void remove_isolated_vertices_on_mesh_entity(
-            const GeoModelMeshEntity< DIMENSION >& geomodel_mesh_entity );
-        /*!
-         * @brief Detect and remove degenerate edges in a \param line.
-         * @return the number of degenerate edges that have been removed from
-         * the line.
-         */
-        index_t repair_line_mesh( const Line< DIMENSION >& line );
-        /*!
-         * @return a vector of boolean. Element i of this vector corresponds
-         * to the edge i of the line. If the element is true, the edge is
-         * degenerated.
-         */
-        std::vector< bool > line_detect_degenerate_edges(
-            const Line< DIMENSION >& line,
-            std::vector< index_t >& colocated_vertices );
-        /*!
-         * \note Copied and modified from geogram\mesh\mesh_repair.cpp.
-         * @return a vector of boolean. Element i of this vector corresponds
-         * to the facet i of the surface. If the element is true, the facet is
-         * degenerated.
-         */
-        std::vector< index_t > surface_detect_degenerate_polygons(
-            const Surface< DIMENSION >& surface,
-            std::vector< index_t >& colocated_vertices );
-        /*!
-         * \note Copied and modified from geogram\mesh\mesh_repair.cpp
-         *
-         * @brief Tests whether a polygon is degenerate.
-         * @param[in] surface the Surface that the polygon belongs to
-         * @param[in] polygon_id the index of the polygon in \p S
-         * @param[out] colocated_vertices contains the found colocated vertices
-         * in \p f if any.
-         * \return true if polygon \p f has duplicated vertices,
-         *  false otherwise
-         */
-        bool polygon_is_degenerate( const Surface< DIMENSION >& surface,
-            index_t polygon_id,
-            std::vector< index_t >& colocated_vertices );
-
-        /*!
-         * @brief Detect and remove degenerated polygons in a Surface
-         * @param[in,out] surface Surface to check for potential degenerate
-         * polygons.
-         * @return the number of degenerate polygons in \p surface.
-         */
-        index_t detect_degenerate_polygons(
-            const Surface< DIMENSION >& surface );
-
-        /*!
-         * @brief Remove degenerate polygons and edges from the Surface
-         *        and Line of the geomodel.
-         * @param[out] to_remove gmme_t of the entities (Surface and Line)
-         * of the geomodel that are empty once degenerate entities are removed
-         * @pre Colocated vertices have already been removed
-         */
-        void remove_degenerate_polygons_and_edges(
-            std::set< gmme_id >& to_remove );
-
-        /*!
-         * @brief Remove colocated vertices of the geomodel.
-         * @param[out] to_remove gmme_t of the entities of the geomodel that
-         *  are empty once degenerate entities are removed
-         */
-        void remove_colocated_entity_vertices( std::set< gmme_id >& to_remove );
-        /*!
-         * Get the indices of the duplicated vertices that are on an inside
-         * border.
-         * Only the vertex with the biggest index are added.
-         * @param[in] E_id GeoModelMeshEntity to check.
-         * @return vector of the vertex indexes on an inside boundary.
-         */
-        std::set< index_t > vertices_on_inside_boundary( const gmme_id& E_id );
-
-        /*!
-         * @brief Checks if an edge is degenerate.
-         *
-         * An edge is degenerate if both vertices are colocated.
-         *
-         * @param[in] line Line to check the edge \p edge.
-         * @param[in] edge edge index in Line \p line.
-         * @param[in] colocated_vertices contains the colocated mapping of the
-         * Line.
-         * @return true if the edge is degenerate. Else false.
-         */
-        bool edge_is_degenerate( const Line< DIMENSION >& line,
-            index_t edge,
-            const std::vector< index_t >& colocated_vertices );
-
-        void build_contacts();
-
-    private:
-        GeoModel< DIMENSION >& geomodel_;
-        GeoModelBuilder< DIMENSION > builder_;
+        ALL,
+        BASIC,
+        COLOCATED_VERTICES,
+        DEGENERATE_FACETS_EDGES,
+        LINE_BOUNDARY_ORDER,
+        CONTACTS,
+        ISOLATED_VERTICES
     };
 
-    ALIAS_2D_AND_3D( GeoModelRepair );
+    /*!
+     * @brief Repair a GeoModel according a repair mode.
+     * @param[in] repair_mode repair mode to apply.
+     */
+    template < index_t DIMENSION >
+    void RINGMESH_API repair( GeoModel< DIMENSION >& geomodel, RepairMode repair_mode );
 
 } // namespace RINGMesh
