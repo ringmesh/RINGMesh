@@ -50,7 +50,9 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 /*!
  * @file Implementation of Wells
@@ -306,6 +308,11 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    WellCorner< DIMENSION >::~WellCorner()
+    {
+    }
+
+    template < index_t DIMENSION >
     const vecn< DIMENSION >& WellCorner< DIMENSION >::point() const
     {
         return mesh_->vertex( 0 );
@@ -329,6 +336,11 @@ namespace RINGMesh
     {
         corners_[0] = NO_ID;
         corners_[1] = NO_ID;
+    }
+
+    template < index_t DIMENSION >
+    WellPart< DIMENSION >::~WellPart()
+    {
     }
 
     template < index_t DIMENSION >
