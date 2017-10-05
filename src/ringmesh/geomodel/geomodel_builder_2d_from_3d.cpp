@@ -91,37 +91,19 @@ namespace RINGMesh
                 entity_type, geomodel3d_from_.nb_mesh_entities( entity_type ) );
         }
 
-        /*for( const auto& line : geomodel3d_from_.lines() ) {
+        for( const auto& line : geomodel3d_from_.lines() ) {
             for( auto boundary_id : range( line.nb_boundaries() ) ) {
                 topology.add_line_corner_boundary_relation(
-                    line, line.boundary( boundary_id ) );
-            }
+                    line.gmme().index(), line.boundary( boundary_id ).index() );
+		    }
         }
 
-        for( const auto& surface : geomodel3d_from_.surfaces() ) {
-                    for( auto boundary_id : range( surface.nb_boundaries() ) ) {
-                        topology.add_surface_line_boundary_relation(
-                            surface, surface.boundary( boundary_id ) );
-                    }
-                }
-
-        for( const auto& entity_type : projectable_entity_types )
-        {
-            for( const auto entity_id :
-                range( geomodel3d_from_.nb_mesh_entities( entity_type ) ) )
-            {
-                const auto& entity =
-                    geomodel3d_from_.mesh_entity( entity_type, entity_id );
-                for( const auto& boundary_id : range( entity.nb_boundaries() ) )
-                {
-                    // Corner type is within projectable_entity_types but for this
-                    // mesh type nothing should happen since a corner has no boundary.
-                    ringmesh_assert( entity_type != Corner3D::type_name_static() );
-                    topology.add_line_corner_or_surface_line_boundary_relation(
-                        entity.gmme(), entity.boundary( boundary_id ).gmme() );
-                }
-            }
-        }*/
+	    for (const auto& surface : geomodel3d_from_.surfaces()) {
+		    for (auto boundary_id : range(surface.nb_boundaries())) {
+			    topology.add_surface_line_boundary_relation(surface.gmme().index(),
+					surface.boundary(boundary_id).index(), false); //TODO side
+	        }
+	    }
     }
 
     void GeoModelBuilder2DProjection::copy_geomodel_3d_geological_informations()
