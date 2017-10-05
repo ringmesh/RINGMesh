@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <array>
+
 /*!
  * @file Basic geometrical requests
  * @author Arnaud Botella
