@@ -35,6 +35,8 @@
 
 #pragma once
 
+#include <ringmesh/basic/common.h>
+
 #include <algorithm>
 #include <vector>
 

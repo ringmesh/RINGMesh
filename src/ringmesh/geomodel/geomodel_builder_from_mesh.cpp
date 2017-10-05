@@ -37,6 +37,8 @@
 
 #include <stack>
 
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+
 #include <geogram/mesh/mesh.h>
 
 /*!

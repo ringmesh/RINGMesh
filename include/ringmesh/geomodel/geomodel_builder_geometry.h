@@ -37,9 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder_access.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @brief Builder tools to edit and build GeoModel geometry
@@ -56,8 +54,9 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
 
-    ALIAS_2D_AND_3D( GeoModelBuilder );
-    ALIAS_2D_AND_3D( VolumeMeshBuilder );
+    ALIAS_3D( GeoModel );
+    ALIAS_3D( GeoModelBuilder );
+    ALIAS_3D( VolumeMeshBuilder );
 } // namespace RINGMesh
 
 namespace RINGMesh
