@@ -1399,6 +1399,66 @@ namespace
 
 namespace RINGMesh
 {
+    void remove_check( ValidityCheckMode& checks, ValidityCheckMode check_to_remove )
+    {
+        if( enum_contains(checks, check_to_remove) )
+        {
+            checks = checks & ( ~check_to_remove );
+        }
+    }
+
+    ValidityCheckMode interpret_validity_check_mode( const std::string& checks_to_remove )
+    {
+        ValidityCheckMode check_mode = ValidityCheckMode::ALL;
+        for( auto& check : checks_to_remove )
+        {
+            switch( check )
+            {
+                case '0': // remove no check
+                    break;
+                case 'A': // remove all checks
+                    check_mode = ValidityCheckMode::EMPTY;
+                    break;
+                case 't': // remove topological checks
+                    remove_check( check_mode, ValidityCheckMode::TOPOLOGY );
+                    break;
+                case 'g': // remove geometrical checks
+                    remove_check( check_mode, ValidityCheckMode::GEOMETRY );
+                    break;
+                case 'G': // remove geological checks
+                    remove_check( check_mode, ValidityCheckMode::GEOLOGY );
+                    break;
+                case 'E': // remove FINITE_EXTENSION check
+                    remove_check(check_mode, ValidityCheckMode::FINITE_EXTENSION);
+                    break;
+                case 'c': // remove GEOMODEL_CONNECTIVITY check
+                    remove_check(check_mode, ValidityCheckMode::GEOMODEL_CONNECTIVITY);
+                    break;
+                case 'f': // remove GEOLOGICAL_ENTITIES check
+                    remove_check( check_mode, ValidityCheckMode::GEOLOGICAL_ENTITIES );
+                    break;
+                case 's': // remove SURFACE_LINE_MESH_CONFORMITY check
+                    remove_check(check_mode, ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY);
+                    break;
+                case 'r': // remove REGION_SURFACE_MESH_CONFORMITY check
+                    remove_check(check_mode, ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY);
+                    break;
+                case 'm': // remove MESH_ENTITIES check
+                    remove_check( check_mode, ValidityCheckMode::MESH_ENTITIES );
+                    break;
+                case 'e': // remove NON_MANIFOLD_EDGES check
+                    remove_check(check_mode, ValidityCheckMode::NON_MANIFOLD_EDGES);
+                    break;
+                case 'I': // remove POLYGON_INTERSECTIONS check
+                    remove_check(check_mode, ValidityCheckMode::POLYGON_INTERSECTIONS);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return check_mode;
+    }
+
     void set_validity_errors_directory( const std::string& directory )
     {
         // If trailing / or \ is not removed, the test fails on Windows
@@ -1416,6 +1476,12 @@ namespace RINGMesh
     std::string get_validity_errors_directory()
     {
         return GEO::CmdLine::get_arg( "validity:directory" );
+    }
+
+    ValidityCheckMode RINGMESH_API get_validity_mode_from_arg()
+    {
+        return interpret_validity_check_mode(
+            GEO::CmdLine::get_arg( "validity:do_not_check" ) );
     }
 
     template < index_t DIMENSION >

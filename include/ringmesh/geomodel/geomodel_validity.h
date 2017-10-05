@@ -88,6 +88,11 @@ namespace RINGMesh
     std::string RINGMESH_API get_validity_errors_directory();
 
     /*!
+     * @brief Get validity mode from command line argument validity:do_not_check
+     */
+    ValidityCheckMode RINGMESH_API get_validity_mode_from_arg();
+
+    /*!
      * @brief Check global geomodel validity
      * @param[in] geomodel GeoModel to check
      * @param[in] validity_check_mode Mode to select what model feature should
@@ -95,7 +100,7 @@ namespace RINGMesh
      */
     template < index_t DIMENSION >
     bool is_geomodel_valid( const GeoModel< DIMENSION >& geomodel,
-        ValidityCheckMode validity_check_mode );
+        ValidityCheckMode validity_check_mode = get_validity_mode_from_arg() );
 
     /*!
      * @brief Check the validity of all individual entity meshes

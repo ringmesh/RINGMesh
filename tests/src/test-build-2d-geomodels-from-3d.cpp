@@ -77,7 +77,7 @@ int main()
         std::vector< std::future< void > > checks;
         checks.emplace_back(
             std::async( std::launch::async, [&projection_geomodel2d] {
-                if( !is_geomodel_valid( projection_geomodel2d, ValidityCheckMode::ALL ) )
+                if( !is_geomodel_valid( projection_geomodel2d ) )
                 {
                     throw RINGMeshException(
                         "TEST", "FAILED : built GeoModel2D is not valid" );
