@@ -84,7 +84,7 @@ namespace RINGMesh
                 "inconsistencies" );
             GEO::CmdLine::declare_arg( "validity:do_not_check", "0",
                 "Toggle off checks at loading:\n"
-                "By default all checks are toggle on."
+                "By default all checks are toggled on."
                 "'0' to toggle on all checks\n"
                 "'A' to toggle off all checks\n"
                 "'t' to toggle off all topology checks\n"
