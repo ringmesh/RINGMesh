@@ -85,8 +85,23 @@ namespace RINGMesh
                 "inconsistencies" );
             GEO::CmdLine::declare_arg( "validity:do_not_check", "I",
                 "Toggle off checks at loading:\n"
-                "'0' to toggle on all checks \n"
-                "'E' to toggle off finite extension.",
+                "By default only polygon intersection check is toggle off."
+                "'0' to toggle on all checks\n"
+                "'A' to toggle off all checks\n"
+                "'t' to toggle off all topology checks\n"
+                "'g' to toggle off all geometry checks\n"
+                "'G' to toggle off all geology checks\n"
+                "  Topology checks:\n"
+                "    'E' to toggle off checks on finite extension\n"
+                "    'c' to toggle off checks on geomodel connectivity\n"
+                "  Geometry checks:\n"
+                "    's' to toggle off checks on conformity between surfaces and lines\n"
+                "    'r' to toggle off checks on conformity between regions and surfaces\n"
+                "    'm' to toggle off checks on mesh entities\n"
+                "    'e' to toggle off checks on non manifold edges\n"
+                "    'I' to toggle off checks on polygon intersections\n"
+                "  Geology checks:\n"
+                "    'f' to toggle off checks on geological entities",
                 GEO::CmdLine::ARG_ADVANCED );
         }
 
