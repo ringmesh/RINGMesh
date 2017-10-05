@@ -113,7 +113,7 @@ namespace RINGMesh
     {
         if( enum_contains(checks, check_to_remove) )
         {
-            checks = checks ^ check_to_remove;
+            checks = checks & ( ~check_to_remove );
         }
     }
 
@@ -130,22 +130,13 @@ namespace RINGMesh
                     check_mode = ValidityCheckMode::EMPTY;
                     break;
                 case 't': // remove topological checks
-                {
-                    remove_check( check_mode, ValidityCheckMode::FINITE_EXTENSION );
-                    remove_check( check_mode, ValidityCheckMode::GEOMODEL_CONNECTIVITY );
+                    remove_check( check_mode, ValidityCheckMode::TOPOLOGY );
                     break;
-                }
                 case 'g': // remove geometrical checks
-                {
-                    remove_check( check_mode, ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY );
-                    remove_check( check_mode, ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY );
-                    remove_check( check_mode, ValidityCheckMode::MESH_ENTITIES );
-                    remove_check( check_mode, ValidityCheckMode::NON_MANIFOLD_EDGES );
-                    remove_check( check_mode, ValidityCheckMode::POLYGON_INTERSECTIONS );
+                    remove_check( check_mode, ValidityCheckMode::GEOMETRY );
                     break;
-                }
                 case 'G': // remove geological checks
-                    remove_check( check_mode, ValidityCheckMode::GEOLOGICAL_ENTITIES );
+                    remove_check( check_mode, ValidityCheckMode::GEOLOGY );
                     break;
                 case 'E': // remove FINITE_EXTENSION check
                     remove_check(check_mode, ValidityCheckMode::FINITE_EXTENSION);
