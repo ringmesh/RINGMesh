@@ -197,8 +197,9 @@ namespace
             const auto& p3 = M.vertex( M.cell_vertex( { cell, 3 } ) );
             return Position::point_inside_tetra( p, { p0, p1, p2, p3 } );
         }
-        default:
-            ringmesh_assert_not_reached;
+            default:
+                throw RINGMeshException( "AABB",
+                    "VolumeAABBTre containing_cell request only handle tetrahedra." );
             return false;
         }
     }
