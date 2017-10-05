@@ -258,7 +258,6 @@ namespace RINGMesh
         Logger::out(
             "I/O", " Loaded geomodel ", geomodel.name(), " from ", filename );
 
-        //ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL;
         std::string check_removed = GEO::CmdLine::get_arg( "validity:do_not_check" );
         ValidityCheckMode validity_check_mode = interpret_validity_check_mode( check_removed );
         return is_geomodel_valid( geomodel, validity_check_mode );
