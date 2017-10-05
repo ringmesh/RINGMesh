@@ -82,9 +82,9 @@ namespace RINGMesh
                 GEO::FileSystem::get_current_working_directory(),
                 "Directory to save meshes representing geomodel "
                 "inconsistencies" );
-            GEO::CmdLine::declare_arg( "validity:do_not_check", "I",
+            GEO::CmdLine::declare_arg( "validity:do_not_check", "0",
                 "Toggle off checks at loading:\n"
-                "By default only polygon intersection check is toggle off."
+                "By default all checks are toggle on."
                 "'0' to toggle on all checks\n"
                 "'A' to toggle off all checks\n"
                 "'t' to toggle off all topology checks\n"
