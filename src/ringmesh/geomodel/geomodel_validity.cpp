@@ -1409,51 +1409,29 @@ namespace RINGMesh
 
     ValidityCheckMode interpret_validity_check_mode( const std::string& checks_to_remove )
     {
+        // Initialization of the map between ValidtyCheckModes and command line characters
+        std::map< char, ValidityCheckMode > validity_checks_to_chars ;
+        validity_checks_to_chars['0'] = ValidityCheckMode::EMPTY;
+        validity_checks_to_chars['A'] = ValidityCheckMode::ALL;
+        validity_checks_to_chars['t'] = ValidityCheckMode::TOPOLOGY;
+        validity_checks_to_chars['g'] = ValidityCheckMode::GEOMETRY;
+        validity_checks_to_chars['G'] = ValidityCheckMode::GEOLOGY;
+        validity_checks_to_chars['E'] = ValidityCheckMode::FINITE_EXTENSION;
+        validity_checks_to_chars['c'] = ValidityCheckMode::GEOMODEL_CONNECTIVITY;
+        validity_checks_to_chars['f'] = ValidityCheckMode::GEOLOGICAL_ENTITIES;
+        validity_checks_to_chars['s'] = ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY;
+        validity_checks_to_chars['r'] = ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY;
+        validity_checks_to_chars['m'] = ValidityCheckMode::MESH_ENTITIES;
+        validity_checks_to_chars['e'] = ValidityCheckMode::NON_MANIFOLD_EDGES;
+        validity_checks_to_chars['I'] = ValidityCheckMode::POLYGON_INTERSECTIONS;
+
+
         ValidityCheckMode check_mode = ValidityCheckMode::ALL;
         for( auto& check : checks_to_remove )
         {
-            switch( check )
+            if( validity_checks_to_chars.find(check) != validity_checks_to_chars.end() )
             {
-                case '0': // remove no check
-                    break;
-                case 'A': // remove all checks
-                    check_mode = ValidityCheckMode::EMPTY;
-                    break;
-                case 't': // remove topological checks
-                    remove_check( check_mode, ValidityCheckMode::TOPOLOGY );
-                    break;
-                case 'g': // remove geometrical checks
-                    remove_check( check_mode, ValidityCheckMode::GEOMETRY );
-                    break;
-                case 'G': // remove geological checks
-                    remove_check( check_mode, ValidityCheckMode::GEOLOGY );
-                    break;
-                case 'E': // remove FINITE_EXTENSION check
-                    remove_check(check_mode, ValidityCheckMode::FINITE_EXTENSION);
-                    break;
-                case 'c': // remove GEOMODEL_CONNECTIVITY check
-                    remove_check(check_mode, ValidityCheckMode::GEOMODEL_CONNECTIVITY);
-                    break;
-                case 'f': // remove GEOLOGICAL_ENTITIES check
-                    remove_check( check_mode, ValidityCheckMode::GEOLOGICAL_ENTITIES );
-                    break;
-                case 's': // remove SURFACE_LINE_MESH_CONFORMITY check
-                    remove_check(check_mode, ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY);
-                    break;
-                case 'r': // remove REGION_SURFACE_MESH_CONFORMITY check
-                    remove_check(check_mode, ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY);
-                    break;
-                case 'm': // remove MESH_ENTITIES check
-                    remove_check( check_mode, ValidityCheckMode::MESH_ENTITIES );
-                    break;
-                case 'e': // remove NON_MANIFOLD_EDGES check
-                    remove_check(check_mode, ValidityCheckMode::NON_MANIFOLD_EDGES);
-                    break;
-                case 'I': // remove POLYGON_INTERSECTIONS check
-                    remove_check(check_mode, ValidityCheckMode::POLYGON_INTERSECTIONS);
-                    break;
-                default:
-                    break;
+                remove_check(check_mode, validity_checks_to_chars[check]);
             }
         }
         return check_mode;
