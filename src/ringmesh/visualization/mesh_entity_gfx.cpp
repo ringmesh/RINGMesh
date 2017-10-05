@@ -148,6 +148,74 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
+    class CellCornersAttributeGfx : public AttributeGfx< DIMENSION >
+    {
+    public:
+        CellCornersAttributeGfx() = default;
+
+        virtual ~CellCornersAttributeGfx() = default;
+
+        static std::string location_name_static()
+        {
+            return "cell_corners";
+        }
+
+        std::string location_name() const override
+        {
+            return location_name_static();
+        }
+
+        void bind_attribute() override
+        {
+            std::string attribute_name = get_attribute_name_with_coordinate(
+                this->manager_->name(), this->manager_->coordinate() );
+            this->manager_->gfx().regions.set_scalar_attribute(
+                GEO::MESH_CELL_CORNERS, attribute_name, this->manager_->minimum(),
+                this->manager_->maximum(), this->manager_->colormap() );
+        }
+
+        void unbind_attribute() override
+        {
+            this->manager_->gfx().regions.unset_scalar_attribute();
+        }
+
+        index_t nb_coordinates() override
+        {
+            GEO::AttributeStore* store =
+                get_attribute_manager().find_attribute_store(
+                    this->manager_->name() );
+
+            if( store == nullptr )
+                return 0;
+            return store->dimension();
+        }
+
+        GEO::AttributesManager& get_attribute_manager() override
+        {
+            const GeoModel< DIMENSION >* geomodel =
+                this->manager_->gfx().geomodel();
+            return geomodel->region( 0 ).cell_corners_attribute_manager();
+        }
+
+    private:
+        void do_compute_range(
+            double& attribute_min, double& attribute_max ) override
+        {
+            std::string attribute_name = get_attribute_name_with_coordinate(
+                this->manager_->name(), this->manager_->coordinate() );
+            const GeoModel< DIMENSION >* geomodel =
+                this->manager_->gfx().geomodel();
+            for( const auto& region : geomodel->regions() )
+            {
+                GEO::ReadOnlyScalarAttributeAdapter attribute(
+                    region.cell_corners_attribute_manager(), attribute_name );
+                compute_attribute_range(
+                    attribute, attribute_min, attribute_max );
+            }
+        }
+    };
+
+    template < index_t DIMENSION >
     class CellVertexAttributeGfx : public AttributeGfx< DIMENSION >
     {
     public:
@@ -422,6 +490,7 @@ namespace RINGMesh
         : AttributeGfxManagerBase< 3 >( gfx )
     {
         this->register_attribute_location< CellVertexAttributeGfx >();
+        this->register_attribute_location< CellCornersAttributeGfx >();
         this->register_attribute_location< CellAttributeGfx >();
     }
 

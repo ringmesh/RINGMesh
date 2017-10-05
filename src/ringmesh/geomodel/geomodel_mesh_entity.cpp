@@ -1190,6 +1190,12 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    GEO::AttributesManager& Region< DIMENSION >::cell_corners_attribute_manager() const
+    {
+        return volume_mesh_->cell_corners_attribute_manager();
+    }
+
+    template < index_t DIMENSION >
     index_t Region< DIMENSION >::nb_mesh_elements() const
     {
         return volume_mesh_->nb_cells();
