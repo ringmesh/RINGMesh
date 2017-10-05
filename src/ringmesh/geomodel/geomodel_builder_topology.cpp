@@ -35,8 +35,12 @@
 
 #include <ringmesh/geomodel/geomodel_builder_topology.h>
 
+#include <algorithm>
+
 #include <ringmesh/basic/geometry.h>
+
 #include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @file Implementation of GeoModel topological edition functions
@@ -536,6 +540,23 @@ namespace RINGMesh
         auto& manager = geomodel_access_.modifiable_entity_type_manager()
                             .relationship_manager;
         manager.set_boundary_to_boundary_relationship( relation_id, boundary );
+    }
+
+    template < index_t DIMENSION >
+    template< template< index_t > class ENTITY >
+    void GeoModelBuilderTopologyBase< DIMENSION >::copy_mesh_entity_topology(
+        const GeoModel< DIMENSION >& from )
+    {
+        const auto& type = ENTITY< DIMENSION >::type_name_static();
+        create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
+
+        parallel_for( geomodel_.nb_mesh_entities( type ),
+            [&type, &from, this]( index_t i ) {
+                gmme_id id( type, i );
+                GeoModelMeshEntityAccess< DIMENSION > gmme_access(
+                    geomodel_access_.modifiable_mesh_entity( id ) );
+                gmme_access.copy( from.mesh_entity( id ) );
+            } );
     }
 
     template < index_t DIMENSION >

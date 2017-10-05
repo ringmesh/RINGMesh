@@ -37,7 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_builder_access.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
 /*!
@@ -78,21 +78,7 @@ namespace RINGMesh
                 geol_feature );
 
         void set_mesh_entity_parent(
-            const gmme_id& child_gmme, index_t id, const gmge_id& parent_gmge )
-        {
-            /// No check on the validity of the index of the entity parents_
-            /// NO_ID is used to flag entities to delete
-            GeoModelMeshEntity< DIMENSION >& mesh_entity =
-                geomodel_access_.modifiable_mesh_entity( child_gmme );
-            ringmesh_assert( id < mesh_entity.nb_parents() );
-            GeoModelMeshEntityAccess< DIMENSION > gmme_access( mesh_entity );
-            index_t relationship_id = gmme_access.modifiable_parents()[id];
-            RelationshipManager& manager =
-                geomodel_access_.modifiable_entity_type_manager()
-                    .relationship_manager;
-            manager.set_parent_to_parent_child_relationship(
-                relationship_id, parent_gmge );
-        }
+            const gmme_id& child_gmme, index_t id, const gmge_id& parent_gmge );
 
         void add_parent_children_relation(
             const gmge_id& parent, const gmme_id& children );

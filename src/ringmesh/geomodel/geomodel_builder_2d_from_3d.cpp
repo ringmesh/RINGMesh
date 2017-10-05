@@ -36,6 +36,7 @@
 #include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
 
 #include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 
 #include <ringmesh/mesh/mesh_index.h>
