@@ -74,13 +74,12 @@ namespace RINGMesh
 
         void import_arg_group_validity()
         {
-            std::string cwd = GEO::FileSystem::get_current_working_directory();
             GEO::CmdLine::declare_arg_group( "validity", "Validity checks" );
             GEO::CmdLine::declare_arg( "validity:save", false,
                 "Saves meshes representing geomodel inconsistencies",
                 GEO::CmdLine::ARG_ADVANCED );
             GEO::CmdLine::declare_arg( "validity:directory",
-                cwd,
+                GEO::FileSystem::get_current_working_directory(),
                 "Directory to save meshes representing geomodel "
                 "inconsistencies" );
             GEO::CmdLine::declare_arg( "validity:do_not_check", "I",
