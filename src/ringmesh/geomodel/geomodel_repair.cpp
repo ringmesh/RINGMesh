@@ -85,7 +85,7 @@ namespace
                 case RepairMode::COLOCATED_VERTICES:
                     remove_colocated_entity_vertices_and_update_gm();
                     break;
-                case RepairMode::DEGENERATE_FACETS_EDGES:
+                case RepairMode::DEGENERATE_POLYGONS_EDGES:
                     remove_degenerate_polygons_and_edges_and_update_gm();
                     break;
                 case RepairMode::LINE_BOUNDARY_ORDER:
@@ -161,8 +161,6 @@ namespace
         {
             std::set< gmme_id > empty_mesh_entities;
             remove_degenerate_polygons_and_edges( empty_mesh_entities );
-            /// TODO when it will works,
-            /// use GeoModelBuilderRemoval::remove_entities_and_dependencies
             if( !empty_mesh_entities.empty() )
             {
                 builder_.removal.remove_mesh_entities( empty_mesh_entities );
