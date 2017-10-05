@@ -1399,6 +1399,22 @@ namespace
 
 namespace RINGMesh
 {
+    using CheckModeCmdLineMap = std::map< char, ValidityCheckMode >;
+    static CheckModeCmdLineMap validity_checks_to_chars = {
+        {'0', ValidityCheckMode::EMPTY},
+        {'A', ValidityCheckMode::ALL},
+        {'t', ValidityCheckMode::TOPOLOGY},
+        {'g', ValidityCheckMode::GEOMETRY},
+        {'G', ValidityCheckMode::GEOLOGY},
+        {'E', ValidityCheckMode::FINITE_EXTENSION},
+        {'c', ValidityCheckMode::GEOMODEL_CONNECTIVITY},
+        {'f', ValidityCheckMode::GEOLOGICAL_ENTITIES},
+        {'s', ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY},
+        {'r', ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY},
+        {'m', ValidityCheckMode::MESH_ENTITIES},
+        {'e', ValidityCheckMode::NON_MANIFOLD_EDGES},
+        {'I', ValidityCheckMode::POLYGON_INTERSECTIONS} };
+
     void remove_check( ValidityCheckMode& checks, ValidityCheckMode check_to_remove )
     {
         if( enum_contains(checks, check_to_remove) )
@@ -1409,24 +1425,7 @@ namespace RINGMesh
 
     ValidityCheckMode interpret_validity_check_mode( const std::string& checks_to_remove )
     {
-        // Initialization of the map between ValidtyCheckModes and command line characters
-        std::map< char, ValidityCheckMode > validity_checks_to_chars ;
-        validity_checks_to_chars['0'] = ValidityCheckMode::EMPTY;
-        validity_checks_to_chars['A'] = ValidityCheckMode::ALL;
-        validity_checks_to_chars['t'] = ValidityCheckMode::TOPOLOGY;
-        validity_checks_to_chars['g'] = ValidityCheckMode::GEOMETRY;
-        validity_checks_to_chars['G'] = ValidityCheckMode::GEOLOGY;
-        validity_checks_to_chars['E'] = ValidityCheckMode::FINITE_EXTENSION;
-        validity_checks_to_chars['c'] = ValidityCheckMode::GEOMODEL_CONNECTIVITY;
-        validity_checks_to_chars['f'] = ValidityCheckMode::GEOLOGICAL_ENTITIES;
-        validity_checks_to_chars['s'] = ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY;
-        validity_checks_to_chars['r'] = ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY;
-        validity_checks_to_chars['m'] = ValidityCheckMode::MESH_ENTITIES;
-        validity_checks_to_chars['e'] = ValidityCheckMode::NON_MANIFOLD_EDGES;
-        validity_checks_to_chars['I'] = ValidityCheckMode::POLYGON_INTERSECTIONS;
-
-
-        ValidityCheckMode check_mode = ValidityCheckMode::ALL;
+        ValidityCheckMode check_mode { ValidityCheckMode::ALL };
         for( auto& check : checks_to_remove )
         {
             if( validity_checks_to_chars.find(check) != validity_checks_to_chars.end() )
