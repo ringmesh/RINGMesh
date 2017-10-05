@@ -41,18 +41,19 @@
 Each RINGMesh::GeoModelMeshEntity has a RINGMesh::Mesh independent from the other ones.
 Even if there are dependencies through the RINGMesh::GeoModelGeologicalEntity,
 it implies that there is no connection between the different meshes, in other words,
-each mesh stores its vertices, facets and cells.
+each mesh stores its vertices, polygons and cells.
 However, you may want/need (1) a more general information than the one stores inside a mesh, and
 (2) a single mesh representing the entire geological model.
 
 To ease the global access, four optional databases are attached to the RINGMesh::GeoModelMesh:
  - RINGMesh::GeoModelMeshVertices: access to a global vertex without redundancy at the mesh interfaces.
  It also own a link to each GEO::Mesh vertices.
- - RINGMesh::GeoModelMeshFacets: access to a global facet.
+ - RINGMesh::GeoModelMeshPolygons: access to a global polygon.
  - RINGMesh::GeoModelMeshCells: access to a global cell and its adjacent cells (even at the mesh interfaces). 
  It also handle cell disconnection along surfaces if needed. Several disconnection mode can be set in the
- RINGMesh::GeoModelMesh (cf. RINGMesh::DupplicationMode).
- - RINGMesh::GeoModelMeshEdges: access to a global edge (to model wells).
+ RINGMesh::GeoModelMesh (cf. RINGMesh::GeoModelMeshCells::DuplicateMode).
+ - RINGMesh::GeoModelMeshEdges: access to a global edge 
+ - RINGMesh::GeoModelMeshEdges: access to a global well edge.
 These databases are empty by default and are automatically filled as soon as they are used.
 
 Examples:
