@@ -37,7 +37,7 @@
 
 #include <algorithm>
 #include <vector>
-#include <ringmesh/basic/geometry.h>
+
 /*!
  * @file ringmesh/algorithm.h
  * @brief Template function for basic operations on std container
