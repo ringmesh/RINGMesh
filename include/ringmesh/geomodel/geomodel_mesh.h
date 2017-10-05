@@ -901,6 +901,12 @@ namespace RINGMesh
 
         GEO::AttributesManager& attribute_manager() const;
 
+	/*!
+	 * Gets the attribute manager bind with the corners
+	 * of each cells
+	 */
+        GEO::AttributesManager& corners_attribute_manager() const;
+
         /*!
          * Test if the mesh cells are initialized
          */
@@ -1427,8 +1433,13 @@ namespace RINGMesh
          */
         void transfer_attributes_from_gmm_to_gm_regions() const;
         void transfer_attributes_from_gm_regions_to_gmm() const;
+
         void transfer_cell_attributes_from_gmm_to_gm_regions() const;
         void transfer_cell_attributes_from_gm_regions_to_gmm() const;
+
+        void transfer_cell_corners_attributes_from_gmm_to_gm_regions() const;
+        void transfer_cell_corners_attributes_from_gm_regions_to_gmm() const;
+
         void transfer_vertex_attributes_from_gmm_to_gm_regions() const;
         void transfer_vertex_attributes_from_gm_regions_to_gmm() const;
 

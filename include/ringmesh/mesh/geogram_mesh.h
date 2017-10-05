@@ -287,6 +287,11 @@ protected:                                                                     \
             return mesh_->cell_facets.attributes();
         }
 
+        GEO::AttributesManager& cell_corners_attribute_manager() const override
+        {
+            return mesh_->cell_corners.attributes();
+        }
+
         CellType cell_type( index_t cell_id ) const override
         {
             return static_cast< CellType >( mesh_->cells.type( cell_id ) );
