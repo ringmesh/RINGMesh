@@ -713,6 +713,9 @@ namespace RINGMesh
         virtual GEO::AttributesManager&
             cell_facet_attribute_manager() const = 0;
 
+        virtual GEO::AttributesManager&
+            cell_corners_attribute_manager() const = 0;
+
         /*!
          * @brief Gets the type of a cell.
          * @param[in] cell_id the cell index, in 0..nb()-1

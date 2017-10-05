@@ -844,6 +844,8 @@ namespace RINGMesh
 
         GEO::AttributesManager& cell_attribute_manager() const;
 
+        GEO::AttributesManager& cell_corners_attribute_manager() const;
+
         /*!
          * \name Accessors to Region cells, facets, edges and vertices
          * @{
