@@ -721,7 +721,7 @@ namespace RINGMesh
         RINGMeshApplication& app, const std::string& filename )
         : RINGMeshApplication::GeoModelViewerBase< 3 >( app, filename )
     {
-	GEO::CmdLine::set_arg("gfx:rotate","1,0.5,1,80");
+    	GEO::CmdLine::set_arg( "gfx:rotate", "1,0.5,1,80" );
         volume_style_.color_ = grey;
         volume_style_.size_ = 1;
         volume_style_.visible_vertices_ = false;
@@ -1615,11 +1615,11 @@ namespace RINGMesh
         if( ImGui::Button( "home [H]", ImVec2( -1, 0 ) ) )
         {
             glup_viewer_home();
-	    if( geomodels2d_.empty() ) {
-                float axis[3] = {1, 0.5, 1};
-	        float angle = 80;
-	        glup_viewer_set_scene_rotation(axis,angle);
-	    }
+	        if( geomodels2d_.empty() ) {
+                float axis[3] = { 1, 0.5, 1 };
+	            float angle = 80;
+	            glup_viewer_set_scene_rotation( axis,angle );
+	        }
         }
         ImGui::Separator();
         ImGui::Checkbox( "Lighting [L]", &lighting_ );
