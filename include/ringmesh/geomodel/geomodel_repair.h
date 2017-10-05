@@ -57,7 +57,7 @@ namespace RINGMesh
         ALL,
         BASIC,
         COLOCATED_VERTICES,
-        DEGENERATE_FACETS_EDGES,
+        DEGENERATE_POLYGONS_EDGES,
         LINE_BOUNDARY_ORDER,
         CONTACTS,
         ISOLATED_VERTICES
