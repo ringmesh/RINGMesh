@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <array>
+
 #include <geogram/basic/line_stream.h>
 
 #include <ringmesh/basic/factory.h>
