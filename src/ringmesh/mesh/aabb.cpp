@@ -187,21 +187,16 @@ namespace
         index_t cell,
         const vecn< DIMENSION >& p )
     {
-        switch( M.cell_type( cell ) )
+        if( M.cell_type( cell ) != CellType::TETRAHEDRON )
         {
-        case CellType::TETRAHEDRON:
-        {
-            const auto& p0 = M.vertex( M.cell_vertex( { cell, 0 } ) );
-            const auto& p1 = M.vertex( M.cell_vertex( { cell, 1 } ) );
-            const auto& p2 = M.vertex( M.cell_vertex( { cell, 2 } ) );
-            const auto& p3 = M.vertex( M.cell_vertex( { cell, 3 } ) );
-            return Position::point_inside_tetra( p, { p0, p1, p2, p3 } );
+            throw RINGMeshException( "AABB",
+                "VolumeAABBTre containing_cell request only handles tetrahedra." );
         }
-            default:
-                throw RINGMeshException( "AABB",
-                    "VolumeAABBTre containing_cell request only handle tetrahedra." );
-            return false;
-        }
+        const auto& p0 = M.vertex( M.cell_vertex( { cell, 0 } ) );
+        const auto& p1 = M.vertex( M.cell_vertex( { cell, 1 } ) );
+        const auto& p2 = M.vertex( M.cell_vertex( { cell, 2 } ) );
+        const auto& p3 = M.vertex( M.cell_vertex( { cell, 3 } ) );
+        return Position::point_inside_tetra( p, { p0, p1, p2, p3 } );
     }
 } // namespace
 
