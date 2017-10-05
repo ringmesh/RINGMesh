@@ -313,11 +313,7 @@ namespace RINGMesh
 
         // ---- Easier access to relationships between EntityTypes
         index_t mesh_entity_type_index(
-            const GeoModelMeshEntity< DIMENSION >& E ) const
-        {
-            const MeshEntityType& type = E.type_name();
-            return mesh_entity_type_to_index( type );
-        }
+            const GeoModelMeshEntity< DIMENSION >& E ) const;
 
         index_t geological_entity_type_index(
             const GeoModelGeologicalEntity< DIMENSION >& E ) const;

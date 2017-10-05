@@ -147,6 +147,14 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    index_t GeoModelBuilderRemovalBase< DIMENSION >::mesh_entity_type_index(
+        const GeoModelMeshEntity< DIMENSION >& E ) const
+    {
+        const MeshEntityType& type = E.type_name();
+        return mesh_entity_type_to_index( type );
+    }
+
+    template < index_t DIMENSION >
     void GeoModelBuilderRemovalBase< DIMENSION >::set_mesh_entity_index(
         GeoModelMeshEntity< DIMENSION >& mesh_entity, index_t new_index_in_geomodel )
     {
