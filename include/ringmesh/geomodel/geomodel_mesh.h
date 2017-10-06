@@ -149,7 +149,7 @@ namespace RINGMesh
 
         ~GeoModelMeshVerticesBase();
 
-        AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const;
 
         /*!
          * Tests if the mesh vertices are initialized
@@ -895,7 +895,7 @@ namespace RINGMesh
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< VolumeMesh< DIMENSION > >& mesh );
 
-        AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const;
 
         /*!
          * Test if the mesh cells are initialized

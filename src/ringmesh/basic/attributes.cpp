@@ -208,17 +208,6 @@ namespace RINGMesh {
         size_ = 0;
     }
 
-    void AttributesManager::zero()
-    {
-        for(
-            std::map<std::string, AttributeStore*>::iterator
-            it = attributes_.begin();
-        it != attributes_.end(); ++it
-            ) {
-            it->second->zero();
-        }
-    }
-
     void AttributesManager::copy( const AttributesManager& rhs )
     {
         clear( false, false );
@@ -232,7 +221,7 @@ namespace RINGMesh {
         }
     }
 
-    void AttributesManager::copy_item( index_t to, index_t from )
+ /*   void AttributesManager::copy_item( index_t to, index_t from )
     {
         for(
             std::map<std::string, AttributeStore*>::iterator
@@ -241,7 +230,7 @@ namespace RINGMesh {
             ) {
             it->second->copy_item( to, from );
         }
-    }
+    }*/
 
 
 
@@ -311,15 +300,15 @@ namespace RINGMesh {
         )
     {
         std::string attribute_name = attribute_base_name( name );
-        const AttributeStore* store = manager.find_attribute_store(
+        const AttributeStore* att_store = manager.find_attribute_store(
             attribute_name
             );
 
-        if( store == nil ) {
+        if( att_store == nil ) {
             return false;
         }
         std::unique_ptr< ReadOnlyScalarAttributeAdapter >  adapter =
-            ReadOnlyScalarAttributeAdapterFactory::create( store->element_typeid_name(),
+            ReadOnlyScalarAttributeAdapterFactory::create( att_store->get_store().element_typeid_name(),
             manager, attribute_name );
 
         index_t element_index = attribute_element_index( name );
