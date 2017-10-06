@@ -1432,6 +1432,11 @@ namespace RINGMesh
             {
                 remove_check(check_mode, validity_checks_to_chars[check]);
             }
+            else
+            {
+                Logger::warn( "Validity", "'", check, "' does not match to any ",
+                    "validity check. " );
+            }
         }
         return check_mode;
     }
