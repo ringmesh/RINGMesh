@@ -1,0 +1,185 @@
+/*
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Applications (ASGA). All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of ASGA nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
+
+
+/*!
+
+\page ringmesh_file_format RINGMesh File Formats
+
+Available Input/Output file formats
+-----------------------------------------
+In RINGMesh you can import and export \link ringmesh_geo_model GeoModel \endlink from files in the following formats:
+
+ ### Import File Formats ###
+
+- .ml: Model3D format from [SKUA-GOCAD](http://www.pdgm.com/products/skua-gocad/).
+- .so: TSolid volumetric mesh (tetrahedra) format from [SKUA-GOCAD](http://www.pdgm.com/products/skua-gocad/).
+Gocad/Skua Model3D information must be inside the .so file.
+- .gm: RINGMesh internal format (boundary representation or volumetric model).
+
+ ### Export File Formats ###
+
+- .obj: surface mesh format.
+- .csmp: [CSMP++](http://www.orefluids.ethz.ch/software/csmp.html) format (export 3 files: .asc, .dat, -regions.txt).
+- .gmsh: [Gmsh](http://gmsh.info/) format (can also export additional information for [Kine3D](http://www.pdgm.com/products/kine3d/)).
+- .gprs: [GPRS](https://supri-b.stanford.edu/research-areas/ad-gprs) format.
+- .mail: [ASTER](http://www.code-aster.org) format.
+- .meshb: [LibMesh](http://libmesh.github.io/) format.
+- .gm: homemade format.
+- .so: TSolid format for [SKUA-GOCAD](http://www.pdgm.com/products/skua-gocad/).
+- .tetgen: [TetGen](http://wias-berlin.de/software/tetgen/) format (export 3 files: .node, .ele, .neigh).
+- .vtk: [VTK](http://www.vtk.org/) format for ParaView.
+
+RINGMesh can then be used as a file converter to ease connection with different software see RINGMesh \link ringmesh_features Functionalities \endlink
+
+RINGMesh file format .gm 
+----------------------------
+
+RINGMesh uses a homemade file format associated to the .gm extension.
+
+A .gm file is an archive (zip) that contains:
+- .geogram files (binaries) storing the meshed entities of the GeoModel (RINGMesh::GeoModelMeshEntity).
+For more details about .geogram file, see Geogram documentation.
+- mesh_entities.txt storing of each RINGMesh::GeoModelMeshEntity its name, its geological feature
+and the indexes of its boundaries. Universe information is also stored.
+- geological_entities.txt storing the definition of each built-in RINGMesh::GeoModelGeologicalEntity
+(type, name, geological feature, child indexes). It does not contain the definition of the
+RINGMesh::Universe.
+
+To extract the files contained in the .gm file, change the extension from .gm to .zip and
+then unzip.
+
+### Geometry and Attribute of GeoModel Mesh Entities ### 
+
+ The GeoModel mesh entities (RINGMesh::Corner, RINGMesh::Line, RINGMesh::Surface and meshed RINGMesh::Region)
+ are saved in .geogram files. \n
+ Non-meshed RINGMesh::Region are thus not saved as .geogram file. Their information are still in mesh_entities.txt. \n
+ There is one file for each of the mesh entities. The name of the file is ENTITY-TYPE_ENTITY-ID.geogram. For instance:
+ - Corner_0.geogram is the .geogram file of the RINGMesh::Corner with id 0 in the RINGMesh::GeoModel.
+ - Line_5.geogram is the .geogram file of the RINGMesh::Line with id 5 in the RINGMesh::GeoModel.
+ - Surface_10.geogram is the .geogram file of the RINGMesh::Surface with id 10 in the RINGMesh::GeoModel.
+ - Region_3.geogram is the .geogram file of the RINGMesh::Region with id 3 in the RINGMesh::GeoModel.
+
+ ### Connectivity of GeoModel Meshed Entities ###
+ The text file mesh_entities.txt stores information relative to the
+ RINGMesh::GeoModelMeshEntity.
+ The header gives the geomodel name and the numbers of each type of mesh entities constituting the GeoModel.
+ The number of regions must be written even if there are not meshed.
+ In the example below, the geomodel name is model_default_name, and there are 16 corners,
+ 28 lines, 16 surfaces and 3 regions.
+
+    GeoModel name model_default_name
+    Nb Corner 16
+    Nb Line 28
+    Nb Surface 16
+    Nb Region 3
+
+ The text file mesh_entities.txt stores for each mesh entity:
+ its id, its name, its geological features and the indexes of its boundary mesh entities.
+
+- For each RINGMesh::Corner there is no boundary. Boundary id list is kept empty.
+In the example below the corner has the id 10 in the GeoModel, does not have a name
+nor a geological feature.
+
+        Corner 10 No_name no_geological_feature
+        boundary
+
+- For each RINGMesh::Line are stored the indexes of its boundaries (RINGMesh::Corner).
+In the example below the line has the id 22 in the GeoModel, does not have a name
+nor a geological feature. Its boundaries are the corner 8 and the corner 10 in the
+GeoModel.
+
+        Line 22 No_name no_geological_feature
+        boundary 8 10
+
+- For each RINGMesh::Surface are stored the indexes of its boundaries (RINGMesh::Line). 
+In the example below the surface has the id 1 in the GeoModel, does not have a name.
+Its geological feature is top. Its boundaries are the line 1, the line 4, the line 7
+and the line 21 in the GeoModel.
+
+        Surface 1 No_name top
+        boundary 1 4 7 21
+
+- For each RINGMesh::Region are stored the indexes of its boundary (RINGMesh::Surface).
+The keyword boundary is omitted.
+For RINGMesh::Region only, the boundary indexes are signed: + if the surface normals
+are oriented toward region volume, else -.
+This information must be written even if the region is not meshed.
+In the example below the region has the id 3 in the GeoModel. Its name is r3.
+It does not have any geological feature. Its boundaries are the surface 7, the surface 14,
+the surface 25 and the surface 29 in the GeoModel. Normals of surfaces 7 and 14 are oriented
+toward the region volume. Normals of surfaces 25 and 29 are oriented toward outside the region
+volume.
+
+        Region 3 r3 no_geological_feature
+        +7 +14 -25 -29
+
+- The RINGMesh::Universe must be written. No name nor geological feature are written.
+The syntax for its boundaries (RINGMesh::Surface) is the same as for the regions.
+
+        Universe
+        +5 -7 -0 +9 +3 -12
+
+### Topology of the GeoModel Geological Entities ###
+
+The file geological_entities.txt links the RINGMesh::GeoModelGeologicalEntity to the
+RINGMesh::GeoModelMeshEntity.
+The header gives the numbers of each type of geological entities constituting the GeoModel.
+In the example below the GeoModel has 20 contacts, 8 interfaces and 0 layer.
+
+    Nb Contact 20
+    Nb Interface 8
+    Nb Layer 0
+
+Then information identifying the CONTACTS, INTERFACES and LAYERS (if any) is entered:
+- Each Contact is identified by its id, its name, its geological feature, and the indexes of the Lines that constitute this Contact.
+
+        Contact 13 the_name_of_the_contact geological_feature
+        13 14 16
+
+- Each Interface is identified by its id, its name, its geological feature, and the indexes of the Surfaces that constitute this Interface.
+  The geological feature gives information on the interface type from a geological point of view.
+  @todo Give the possible for geological features: no_geological_feature, boundary, fault, ......
+
+        Interface 4 the_name_of_the_interface geological_feature
+        6 7 8
+
+- Each Layer is identified by its id, its name and the indexes of the Regions that constitute this Layer.
+
+        Layer 2 the_name_of_this_layer
+        1 10 9 8 5 14
+
+*/
+
