@@ -283,7 +283,7 @@ namespace RINGMesh {
         *  attributes.
         */
         ConstantStore( index_t dim = 1 )
-            : TypedAttributeStore< T >( dim )
+            : TypedStore< T >( dim )
         {
         }
 
@@ -993,7 +993,7 @@ namespace RINGMesh {
             ringmesh_assert( !is_bound() );
             manager_ = &manager;
             ringmesh_assert( manager_->find_attribute_store( name ) == nullptr );
-            store_ = new VectorStore< T >( dimension );
+            store_ = new AttributeStore( );
             manager_->bind_attribute_store( name, store_ );
         }
 
