@@ -613,7 +613,7 @@ namespace
                     " already exists on the ", region.gmme() );
                 continue;
             }
-            GEO::Attribute< double > attr;
+            Attribute< double > attr;
             index_t nb_dimensions =
                 load_storage.vertex_attribute_dims_[attrib_itr];
             attr.create_vector_attribute( region.vertex_attribute_manager(),
@@ -630,8 +630,8 @@ namespace
             {
                 for( auto attrib_dim_itr : range( nb_dimensions ) )
                 {
-                    attr[v_itr * nb_dimensions + attrib_dim_itr] =
-                        region_attributes[v_itr][read_fields + attrib_dim_itr];
+                    attr.set_value( v_itr * nb_dimensions + attrib_dim_itr,
+                        region_attributes[v_itr][read_fields + attrib_dim_itr] );
                 }
             }
             read_fields += nb_dimensions;
@@ -1229,7 +1229,7 @@ namespace
                         load_storage.vertex_attribute_names_[attrib_itr];
                     index_t dim =
                         load_storage.vertex_attribute_dims_[attrib_itr];
-                    GEO::Attribute< double > attr(
+                    Attribute< double > attr(
                         geomodel.region( referred_vertex_region_id )
                             .vertex_attribute_manager(),
                         name );
