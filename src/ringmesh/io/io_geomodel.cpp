@@ -103,8 +103,6 @@ namespace
         }
         return handler;
     }
-
-
 }
 
 namespace RINGMesh
