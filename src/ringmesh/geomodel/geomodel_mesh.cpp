@@ -554,7 +554,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager& GeoModelMeshVerticesBase< DIMENSION >::attribute_manager() const
+    AttributesManager& GeoModelMeshVerticesBase< DIMENSION >::attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
     }
@@ -946,7 +946,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager& GeoModelMeshCells< DIMENSION >::attribute_manager() const
+    AttributesManager& GeoModelMeshCells< DIMENSION >::attribute_manager() const
     {
         return mesh_->cell_attribute_manager();
     }
@@ -2923,7 +2923,7 @@ namespace RINGMesh
             auto* cur_v_att_store_in_gmm =
                 gmm_v_attr_mgr.find_attribute_store( cur_attr_name );
             ringmesh_assert( cur_v_att_store_in_gmm != nullptr );
-            auto dim = cur_v_att_store_in_gmm->get_store.dimension();
+            auto dim = cur_v_att_store_in_gmm->get_store().dimension();
 
             for( auto v : range( vertices.nb() ) )
             {
@@ -2942,7 +2942,7 @@ namespace RINGMesh
                     {
                         const auto cur_type_name = AttributeStore::
                             element_type_name_by_element_typeid_name(
-                            cur_v_att_store_in_gmm->get_store.element_typeid_name() );
+                            cur_v_att_store_in_gmm->get_store().element_typeid_name() );
                         ringmesh_assert(
                             AttributeStore::element_type_name_is_known(
                                 cur_type_name ) );
@@ -2967,11 +2967,11 @@ namespace RINGMesh
                         static_cast< GEO::Memory::pointer >(
                             cur_v_att_store_in_reg->data() )
                             + cur_vertex_on_geomodel.v_index * dim
-                            * cur_v_att_store_in_reg->get_store.element_size(),
+                            * cur_v_att_store_in_reg->get_store().element_size(),
                         static_cast< GEO::Memory::pointer >(
                             cur_v_att_store_in_gmm->data() )
-                            + v * dim * cur_v_att_store_in_gmm->get_store.element_size(),
-                            dim * cur_v_att_store_in_reg->get_store.element_size() );
+                            + v * dim * cur_v_att_store_in_gmm->get_store().element_size(),
+                            dim * cur_v_att_store_in_reg->get_store().element_size() );
                 }
             }
         }
@@ -2998,13 +2998,13 @@ namespace RINGMesh
                 auto* cur_v_att_store_in_reg =
                     reg_vertex_attr_mgr.find_attribute_store( cur_attr_name );
                 ringmesh_assert( cur_v_att_store_in_reg != nullptr );
-                index_t dim = cur_v_att_store_in_reg->get_store.dimension();
+                index_t dim = cur_v_att_store_in_reg->get_store().dimension();
                 AttributeStore* cur_v_att_store{ nullptr };
                 if( !vertices.attribute_manager().is_defined( cur_attr_name ) )
                 {
                     const auto cur_type_name = AttributeStore::
                         element_type_name_by_element_typeid_name(
-                        cur_v_att_store_in_reg->get_store.element_typeid_name() );
+                        cur_v_att_store_in_reg->get_store().element_typeid_name() );
                     ringmesh_assert(
                         AttributeStore::element_type_name_is_known(
                             cur_type_name ) );
@@ -3032,7 +3032,7 @@ namespace RINGMesh
                         static_cast< GEO::Memory::pointer >(
                             cur_v_att_store->data() )
                             + v_id_in_gmm * dim
-                            * cur_v_att_store->get_store.element_size(),
+                            * cur_v_att_store->get_store().element_size(),
                         static_cast< GEO::Memory::pointer >(
                             cur_v_att_store_in_reg->data() )
                             + v_in_reg_itr * dim
@@ -3056,7 +3056,7 @@ namespace RINGMesh
             auto* cur_c_att_store_in_gmm =
                 gmm_c_attr_mgr.find_attribute_store( cur_attr_name );
             ringmesh_assert( cur_c_att_store_in_gmm != nullptr );
-            auto dim = cur_c_att_store_in_gmm->get_store.dimension();
+            auto dim = cur_c_att_store_in_gmm->get_store().dimension();
 
             for( const auto& cur_region : geomodel_.regions() )
             {
@@ -3067,7 +3067,7 @@ namespace RINGMesh
                 {
                     const auto cur_type_name = AttributeStore::
                         element_type_name_by_element_typeid_name(
-                        cur_c_att_store_in_gmm->get_store.element_typeid_name() );
+                        cur_c_att_store_in_gmm->get_store().element_typeid_name() );
                     ringmesh_assert(
                         AttributeStore::element_type_name_is_known(
                             cur_type_name ) );
@@ -3083,8 +3083,8 @@ namespace RINGMesh
                         reg_c_attr_mgr.find_attribute_store( cur_attr_name );
                 }
                 ringmesh_assert( cur_c_att_store_in_reg != nullptr );
-                ringmesh_assert( cur_c_att_store_in_reg->get_store.element_size()
-                    == cur_c_att_store_in_gmm->get_store.element_size() );
+                ringmesh_assert( cur_c_att_store_in_reg->get_store().element_size()
+                    == cur_c_att_store_in_gmm->get_store().element_size() );
 
                 for( auto c : range( cur_region.nb_mesh_elements() ) )
                 {
@@ -3095,12 +3095,12 @@ namespace RINGMesh
                     GEO::Memory::copy(
                         static_cast< GEO::Memory::pointer >(
                             cur_c_att_store_in_reg->data() )
-                            + c * dim * cur_c_att_store_in_reg->get_store.element_size(),
+                            + c * dim * cur_c_att_store_in_reg->get_store().element_size(),
                         static_cast< GEO::Memory::pointer >(
                             cur_c_att_store_in_gmm->data() )
                             + c_in_geom_model_mesh[0] * dim
-                            * cur_c_att_store_in_gmm->get_store.element_size(),
-                            dim * cur_c_att_store_in_reg->get_store.element_size() );
+                            * cur_c_att_store_in_gmm->get_store().element_size(),
+                            dim * cur_c_att_store_in_reg->get_store().element_size() );
                 }
             }
         }
@@ -3120,13 +3120,13 @@ namespace RINGMesh
                 auto* cur_c_att_store_in_reg =
                     reg_cell_attr_mgr.find_attribute_store( cur_attr_name );
                 ringmesh_assert( cur_c_att_store_in_reg != nullptr );
-                index_t dim = cur_c_att_store_in_reg->get_store.dimension();
+                index_t dim = cur_c_att_store_in_reg->get_store().dimension();
                 AttributeStore* cur_c_att_store{ nullptr };
                 if( !cells.attribute_manager().is_defined( cur_attr_name ) )
                 {
                     const std::string cur_type_name = AttributeStore::
                         element_type_name_by_element_typeid_name(
-                        cur_c_att_store_in_reg->get_store.element_typeid_name() );
+                        cur_c_att_store_in_reg->get_store().element_typeid_name() );
                     ringmesh_assert(
                         AttributeStore::element_type_name_is_known(
                             cur_type_name ) );
@@ -3143,8 +3143,8 @@ namespace RINGMesh
                             cur_attr_name );
                 }
                 ringmesh_assert( cur_c_att_store != nullptr );
-                ringmesh_assert( cur_c_att_store->get_store.element_size()
-                    == cur_c_att_store_in_reg->get_store.element_size() );
+                ringmesh_assert( cur_c_att_store->get_store().element_size()
+                    == cur_c_att_store_in_reg->get_store().element_size() );
 
                 for( auto c_in_reg_itr : range( cur_reg.nb_mesh_elements() ) )
                 {
@@ -3157,12 +3157,12 @@ namespace RINGMesh
                         static_cast< GEO::Memory::pointer >(
                             cur_c_att_store->data() )
                             + c_in_geom_model_mesh[0] * dim
-                            * cur_c_att_store->get_store.element_size(),
+                            * cur_c_att_store->get_store().element_size(),
                         static_cast< GEO::Memory::pointer >(
                             cur_c_att_store_in_reg->data() )
                             + c_in_reg_itr * dim
-                            * cur_c_att_store_in_reg->get_store.element_size(),
-                            dim * cur_c_att_store->get_store.element_size() );
+                            * cur_c_att_store_in_reg->get_store().element_size(),
+                            dim * cur_c_att_store->get_store().element_size() );
                 }
             }
         }

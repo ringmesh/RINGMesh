@@ -134,7 +134,7 @@ namespace RINGMesh {
 
         virtual Store* clone() const = 0;
 
-        index_t element_size()
+        index_t element_size() const
         {
             return element_size_;
         }
@@ -1013,7 +1013,7 @@ namespace RINGMesh {
 
         index_t dimension() const
         {
-            return store_->dimension();
+            return store_->get_store().dimension();
         }
 
         /**
@@ -1069,7 +1069,7 @@ namespace RINGMesh {
          */
         index_t size() const
         {
-            return store_->size();
+            return store_->get_store().size();
         }
 
         /**
