@@ -93,7 +93,6 @@ namespace RINGMesh {
         {
             return size_ * element_dimension_;
         }
-        virtual void zero() = 0;
         virtual void* data() const = 0;
         virtual void* data() = 0;
 
@@ -135,6 +134,11 @@ namespace RINGMesh {
 
         virtual Store* clone() const = 0;
 
+        index_t element_size()
+        {
+            return element_size_;
+        }
+
     protected:
         index_t size_{ 0 };
         index_t element_dimension_;
@@ -167,17 +171,11 @@ namespace RINGMesh {
         {
             return typeid( T ).name();
         }
-        void zero() final
-        {
-            for( auto i : store_ ) {
-                i = ( T ) 0;
-            }
-        }
         void* data() const final
         {
             return store_.data();
         }
-        void* data() const final
+        void* data() final
         {
             return store_.data();
         }
@@ -403,37 +401,16 @@ namespace RINGMesh {
          */
         ~AttributeStore();
 
-        /**
-         * \brief Tests whether this AttributeStore stores
-         *  elements of a given type.
-         * \param[in] type_name the name of the type, as given by
-         *     typeid(T).name()
-         * \retval true if this AttributeStore stores elements
-         *   of type \p type_name
-         * \retval false otherwise
-         */
-        bool elements_type_matches( const std::string& type_name ) const
+        void set_store(Store* store)
         {
-            return store_->elements_type_matches( type_name );
+            store_ = std::unique_ptr<Store> (store) ;
         }
 
-        /**
-         * \brief Gets the typeid name of the element type stored
-         *  in this AttributeStore.
-         * \return the typeid name, as a string.
-         */
-        std::string element_typeid_name() const
+        const Store& get_store() const
         {
-            store_->element_typeid_name();
+            return *store_;
         }
-        /**
-        * \brief Gets the size.
-        * \return the number of items
-        */
-        index_t size() const
-        {
-            return store_->size();
-        }
+
         /**
          * \brief Resizes this AttributeStore
          * \param[in] new_size new number of items
@@ -451,16 +428,6 @@ namespace RINGMesh {
         void clear( bool keep_memory = false )
         {
             store_->clear( keep_memory );
-        }
-
-        /**
-         * \brief Gets the dimension.
-         * \details The dimension is 1 for standard attributes and
-         *  can be greater for vector attributes.
-         */
-        index_t dimension() const
-        {
-            return store_->dimension();
         }
 
         /**
@@ -522,35 +489,22 @@ namespace RINGMesh {
         }
 
         /**
-         * \brief Zeroes all the memory associated with this
-         *  AttributeStore.
-         * \details Subclasses may overload this function for
-         *  attributes that have non "plain ordinary datatypes"
-         *  and that need a more elaborate initialization mechanism.
-         */
-        void zero()
-        {
-            store_->zero();
-        };
-
-        /**
          * \brief Creates a new AttributeStore that is a carbon copy
          *  of this AttributeStore.
          * \details Only the data is copied.
          */
-        Store* clone() const
+        AttributeStore* clone() const
         {
-            return store_->clone();
-        }
+            AttributeStore* new_attstore = 
+                create_attribute_store_by_element_type_name( 
+                store_->element_typeid_name(), 
+                store_->dimension() );
 
-        /**
-         * \brief Copies an item
-         * \param[in] to index of the destination item
-         * \param[in] from index of the source item
-         */
-        void copy_item( index_t to, index_t from )
-        {
-            store_->copy_item( to, from );
+            new_attstore->set_store(
+                store_->clone()
+                );
+
+            return new_attstore;
         }
 
         /**
@@ -571,16 +525,6 @@ namespace RINGMesh {
             return store_->data();
         }
 
-        /**
-         * \brief Gets the total number of elements.
-         * \details This corresponds to one position past
-         *  the last valid index.
-         * \return the total number of elements.
-         */
-        index_t nb_elements() const
-        {
-            return store_->nb_elements();
-        }
 
         /**
          * \brief Tests whether a given element type is registered in
@@ -820,11 +764,6 @@ namespace RINGMesh {
         void clear( bool keep_attributes, bool keep_memory = false );
 
         /**
-         * \brief Zeroes all the attributes.
-         */
-        void zero();
-
-        /**
          * \brief Binds an AttributeStore with the specified name.
          *  Ownership of this AttributeStore is transfered to
          *  the AttributesManager.
@@ -1014,10 +953,10 @@ namespace RINGMesh {
             manager_ = &manager;
             store_ = manager_->find_attribute_store( name );
             if( store_ == nullptr ) {
-                store_ = new VectorStore< T >();
+                store_ = new AttributeStore();
                 manager_->bind_attribute_store( name, store_ );
             } else {
-                ringmesh_assert( store_->elements_type_matches( typeid(T).name() ) );
+                ringmesh_assert( store_->get_store().elements_type_matches( typeid(T).name() ) );
             }
         }
 
@@ -1131,16 +1070,6 @@ namespace RINGMesh {
         index_t size() const
         {
             return store_->size();
-        }
-
-        /**
-         * \brief Sets all the elements of this Attribute to
-         *   zero.
-         */
-        void zero()
-        {
-            ringmesh_assert( is_bound() );
-            store_->zero();
         }
 
         /**
@@ -1398,7 +1327,7 @@ namespace RINGMesh {
          * \param[in] val the value
          */
         void fill(bool val) {
-            for(index_t i=0; i<superclass::store_->nb_elements(); ++i) {
+            for( index_t i = 0; i<superclass::store_->get_store().nb_elements(); ++i ) {
                 element(i) = Byte(val);
             }
         }
@@ -1414,8 +1343,8 @@ namespace RINGMesh {
          * \return a modifiable reference to the \p i%th element
          */
         Byte& element(unsigned int i) {
-            ringmesh_assert(i < superclass::store_->nb_elements());
-            return superclass::store_->data()[i];
+            ringmesh_assert( i < superclass::store_->get_store().nb_elements() );
+            return ( ( Byte* ) superclass::store_->get_store().data() )[i];
         }
 
         /**
@@ -1424,8 +1353,8 @@ namespace RINGMesh {
          * \return a const reference to the \p i%th element
          */
         const Byte& element(unsigned int i) const {
-            ringmesh_assert(i < superclass::store_->nb_elements());
-            return superclass::store_->data()[i];
+            ringmesh_assert( i < superclass::store_->get_store().nb_elements() );
+            return ( ( const Byte* ) superclass::store_->get_store().data() )[i];
         }
 
     private:
@@ -1538,7 +1467,7 @@ namespace RINGMesh {
          */
         index_t size() const
         {
-            return ( store_ == nullptr ) ? 0 : store_->size();
+            return ( store_ == nullptr ) ? 0 : store_->get_store().size();
         }
 
         /**
@@ -1627,7 +1556,7 @@ namespace RINGMesh {
             ringmesh_assert( is_bound() );
             ringmesh_assert( i < size() );
             return double(
-                reinterpret_cast< const T* >( store_->data() )[( i * store_->dimension()
+                reinterpret_cast< const T* >( store_->data() )[( i * store_->get_store().dimension()
                     * multiplier ) + element_index_] );
         }
 
