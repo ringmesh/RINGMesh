@@ -418,11 +418,10 @@ namespace RINGMesh
             std::vector< std::string > attribute_names;
             attributes.list_attribute_names( attribute_names );
             std::vector< std::string > names;
-            for( const std::string& name : attribute_names )
-            {
+            for( const std::string& name : attribute_names ) {
                 const AttributeStore* store =
                     attributes.find_attribute_store( name );
-                    names.push_back( name );
+                names.push_back( name );
             }
             return names;
         }
