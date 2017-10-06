@@ -319,7 +319,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager&
+    AttributesManager&
         WellCorner< DIMENSION >::vertex_attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
@@ -409,13 +409,13 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager&
+    AttributesManager&
         WellPart< DIMENSION >::vertex_attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
     }
     template < index_t DIMENSION >
-    GEO::AttributesManager&
+    AttributesManager&
         WellPart< DIMENSION >::edge_attribute_manager() const
     {
         return mesh_->edge_attribute_manager();
@@ -568,14 +568,14 @@ namespace RINGMesh
             LineMeshBuilder3D::create_builder( out );
         builder->clear( false, false );
 
-        GEO::Attribute< LineInstersection > vertex_info(
+        Attribute< LineInstersection > vertex_info(
             out.vertex_attribute_manager(), "info" );
         builder->create_vertices( in.nb_vertices() );
         for( auto v : range( in.nb_vertices() ) )
         {
             const vec3& vertex = in.vertex( v );
             builder->set_vertex( v, vertex );
-            vertex_info[v] = LineInstersection( vertex );
+            vertex_info.set_value(v, LineInstersection( vertex ) );
         }
 
         for( auto e : range( in.nb_edges() ) )
@@ -612,18 +612,18 @@ namespace RINGMesh
             {
                 if( distances[indices[i]] < epsilon )
                 {
-                    vertex_info[from_id] = intersections[i];
+                    vertex_info.set_value( from_id, intersections[i] );
                 }
                 else if( std::fabs( distances[indices[i]] - edge_length )
                          < epsilon )
                 {
-                    vertex_info[to_id] = intersections[i];
+                    vertex_info.set_value(to_id, intersections[i] );
                 }
                 else
                 {
                     index_t vertex_id = builder->create_vertex(
                         intersections[i].intersection_ );
-                    vertex_info[vertex_id] = intersections[i];
+                    vertex_info.set_value(vertex_id, intersections[i]);
                     builder->create_edge( last_vertex, vertex_id );
                     last_vertex = vertex_id;
                 }
@@ -685,7 +685,7 @@ namespace RINGMesh
                 "A well should have at least one starting or ending point" );
         }
 
-        GEO::Attribute< LineInstersection > vertex_info(
+        Attribute< LineInstersection > vertex_info(
             conformal_mesh.vertex_attribute_manager(), "info" );
         std::vector< bool > edge_visited( conformal_mesh.nb_edges(), false );
         do
