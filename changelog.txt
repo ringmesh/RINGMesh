@@ -6,7 +6,7 @@ Bug fix:
  * 
 
 Improvements:
- *
+ * Change default colormap for attributes
 
 #### Release: 5.0.0 ####
 
