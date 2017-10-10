@@ -485,6 +485,8 @@ namespace RINGMesh
     };
     ALIAS_2D_AND_3D( Corner );
 
+    MeshEntityType corner_type_name_static();
+
     /*!
      * @brief A GeoModelEntity of type LINE
      *
@@ -613,6 +615,8 @@ namespace RINGMesh
     };
     ALIAS_2D_AND_3D( Line );
 
+    MeshEntityType line_type_name_static();
+
     /*!
      * @brief A GeoModelEntity of type SURFACE
      *
@@ -633,9 +637,9 @@ namespace RINGMesh
             this->unbind_vertex_mapping_attribute();
         }
 
-        MeshEntityType type_name() const final;
-
         static MeshEntityType type_name_static();
+
+        MeshEntityType type_name() const final;
 
         const Line< DIMENSION >& boundary( index_t x ) const;
 
@@ -744,6 +748,8 @@ namespace RINGMesh
     private:
         std::shared_ptr< SurfaceMesh< DIMENSION > > surface_mesh_{};
     };
+
+    MeshEntityType surface_type_name_static();
 
     template < index_t DIMENSION >
     class RINGMESH_API Surface final : public SurfaceBase< DIMENSION >
@@ -961,6 +967,8 @@ namespace RINGMesh
     private:
         std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_{};
     };
+
+    MeshEntityType region_type_name_static();
 
     ALIAS_3D( Region );
 
