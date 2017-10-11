@@ -657,49 +657,11 @@ namespace RINGMesh {
          */
         virtual AttributeStore* create_attribute_store( index_t dim )
         {
-            return new TypedAttributeStore< T >( dim );
+            return new TypedStore< T >( dim );
         }
     };
 
-    /*********************************************************************/
-
-    /**
-     * \brief Helper class to register new attribute types
-     * \tparam T attribute element type
-     */
-    template< class T > class geo_register_attribute_type {
-    public:
-        /**
-         * \brief geo_register_attribute_type constructor
-         * \param[in] type_name a const reference to a string with
-         *  the C++ type name.
-         * \details If the attribute is already registered with the same
-         *  \p type_name and same \p T, then a warning message is issued.
-         *  If the attribute is already registered with the same \p type_name
-         *  but a different \p T, then an assertion failure is triggered.
-         */
-        geo_register_attribute_type( const std::string& type_name )
-        {
-//            AttributeStore::register_attribute_creator(
-//                new TypedAttributeStoreCreator<T>, type_name, typeid( T ).name()
-//                );
-//            if( type_name == "bool" ) {
-//                GEO::GeoFile::register_ascii_attribute_serializer(
-//                    type_name,
-//                    read_ascii_attribute<bool>,
-//                    write_ascii_attribute<bool>
-//                    );
-//            } else {
-//                GEO::GeoFile::register_ascii_attribute_serializer(
-//                    type_name,
-//                    read_ascii_attribute<T>,
-//                    write_ascii_attribute<T>
-//                    );
-//            }
-        }
-    };
-
-    /*********************************************************************/
+   /*********************************************************************/
 
     /**
      * \brief Managers a set of attributes attached to
