@@ -62,7 +62,9 @@ void make_geomodel_copy(
 
 void verdict( const GeoModel3D& invalid_model, const std::string& feature )
 {
-    if( is_geomodel_valid( invalid_model ) )
+    ValidityCheckMode validity_check_mode =
+        ValidityCheckMode::ALL ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
+    if( is_geomodel_valid( invalid_model, validity_check_mode ) )
     {
         throw RINGMeshException( "RINGMesh Test", "Fail to ", feature );
     }
