@@ -35,6 +35,9 @@
 
 #include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
 
+#include <ringmesh/basic/geometry.h>
+
+#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
@@ -76,6 +79,26 @@ namespace
 
 namespace RINGMesh
 {
+    GeoModelBuilder2DFrom3D::GeoModelBuilder2DFrom3D( GeoModel2D& geomodel2d,
+        const GeoModel3D& geomodel3d_from,
+        const Geometry::Plane& plane )
+        : GeoModelBuilder( geomodel2d ),
+          geomodel3d_from_( geomodel3d_from ),
+          plane_( plane )
+    {
+        PlaneReferenceFrame3D plane_frame( plane );
+        u_axis_ = std::move( plane_frame.u );
+        v_axis_ = std::move( plane_frame.v );
+    }
+
+    GeoModelBuilder2DProjection::GeoModelBuilder2DProjection( GeoModel2D& geomodel2d,
+        const GeoModel3D& geomodel3d_from,
+        const Geometry::Plane& plane )
+        : GeoModelBuilder2DFrom3D( geomodel2d, geomodel3d_from, plane )
+    {
+        info.set_geomodel_name( geomodel3d_from_.name() + "_projected" );
+    }
+
     void GeoModelBuilder2DProjection::build_geomodel()
     {
         copy_geomodel_3d_topology();

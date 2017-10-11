@@ -37,6 +37,7 @@
 
 #include <ringmesh/basic/algorithm.h>
 
+#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
@@ -59,6 +60,12 @@ namespace RINGMesh
                                     .mesh_entity_manager.nb_mesh_entity_types();
         nb_geological_entity_types_ = geomodel_.nb_geological_entity_types();
         nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_;
+    }
+
+
+    template < index_t DIMENSION >
+    GeoModelBuilderRemovalBase< DIMENSION >::~GeoModelBuilderRemovalBase()
+    {
     }
 
     template < index_t DIMENSION >
