@@ -171,6 +171,30 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    void GeoModelBuilderRemovalBase< DIMENSION >::initialize_for_removal(
+        const std::set< gmme_id >& mesh_entities_to_remove )
+    {
+        nb_mesh_entity_types_ =
+            geomodel_.entity_type_manager()
+                .mesh_entity_manager.nb_mesh_entity_types();
+        nb_geological_entity_types_ =
+            geomodel_.nb_geological_entity_types();
+        nb_entity_types_ =
+            nb_geological_entity_types_ + nb_mesh_entity_types_;
+        nb_removed_mesh_entities_.resize( nb_mesh_entity_types_, 0 );
+        nb_removed_geological_entities_.resize(
+            nb_geological_entity_types_, 0 );
+        fill_entity_type_to_index_map();
+        fill_nb_initial_entities();
+        initialize_costly_storage();
+        fill_nb_children_vector();
+
+        check_if_entities_are_meshed( mesh_entities_to_remove );
+        fill_to_erase_vectors( mesh_entities_to_remove );
+        fill_removed_entities_and_mapping();
+    }
+
+    template < index_t DIMENSION >
     void GeoModelBuilderRemovalBase< DIMENSION >::do_delete_flagged_mesh_entities()
     {
         for( auto i : range( nb_mesh_entity_types_ ) )
