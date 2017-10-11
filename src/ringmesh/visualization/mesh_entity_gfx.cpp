@@ -119,7 +119,7 @@ namespace RINGMesh
 
             if( store == nullptr )
                 return 0;
-            return store->dimension();
+            return store->get_store().dimension();
         }
 
         AttributesManager& get_attribute_manager() override
@@ -141,7 +141,7 @@ namespace RINGMesh
             {
                 const AttributeStore* store = region.cell_attribute_manager().find_attribute_store( attribute_name );
                 std::unique_ptr< ReadOnlyScalarAttributeAdapter >  attribute =
-                    ReadOnlyScalarAttributeAdapterFactory::create( store->element_typeid_name(),
+                    ReadOnlyScalarAttributeAdapterFactory::create( store->get_store().element_typeid_name(),
                     region.cell_attribute_manager(), attribute_name );
                 compute_attribute_range(
                     *attribute, attribute_min, attribute_max );
@@ -189,7 +189,7 @@ namespace RINGMesh
 
             if( store == nullptr )
                 return 0;
-            return store->dimension();
+            return store->get_store().dimension();
         }
 
         AttributesManager& get_attribute_manager() override
@@ -211,7 +211,7 @@ namespace RINGMesh
             {
                 const AttributeStore* store = region.vertex_attribute_manager().find_attribute_store( attribute_name );
                 std::unique_ptr< ReadOnlyScalarAttributeAdapter >  attribute =
-                    ReadOnlyScalarAttributeAdapterFactory::create( store->element_typeid_name(),
+                    ReadOnlyScalarAttributeAdapterFactory::create( store->get_store().element_typeid_name(),
                     region.vertex_attribute_manager(), attribute_name );
                 compute_attribute_range(
                     *attribute, attribute_min, attribute_max );
@@ -259,7 +259,7 @@ namespace RINGMesh
 
             if( store == nullptr )
                 return 0;
-            return store->dimension();
+            return store->get_store().dimension();
         }
 
         AttributesManager& get_attribute_manager() override
@@ -281,7 +281,7 @@ namespace RINGMesh
             {
                 const AttributeStore* store = surface.polygon_attribute_manager().find_attribute_store( attribute_name );
                 std::unique_ptr< ReadOnlyScalarAttributeAdapter >  attribute =
-                    ReadOnlyScalarAttributeAdapterFactory::create( store->element_typeid_name(),
+                    ReadOnlyScalarAttributeAdapterFactory::create( store->get_store().element_typeid_name(),
                     surface.polygon_attribute_manager(), attribute_name );
                 compute_attribute_range(
                     *attribute, attribute_min, attribute_max );
@@ -326,7 +326,7 @@ namespace RINGMesh
 
             if( store == nullptr )
                 return 0;
-            return store->dimension();
+            return store->get_store().dimension();
         }
 
         AttributesManager& get_attribute_manager() override
@@ -348,7 +348,7 @@ namespace RINGMesh
             {
                 const AttributeStore* store = surface.vertex_attribute_manager().find_attribute_store( attribute_name );
                 std::unique_ptr< ReadOnlyScalarAttributeAdapter >  attribute =
-                    ReadOnlyScalarAttributeAdapterFactory::create( store->element_typeid_name(),
+                    ReadOnlyScalarAttributeAdapterFactory::create( store->get_store().element_typeid_name(),
                     surface.vertex_attribute_manager(), attribute_name );
                 compute_attribute_range(
                     *attribute, attribute_min, attribute_max );
