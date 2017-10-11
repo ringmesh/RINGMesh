@@ -46,7 +46,8 @@
  * @todo Comment on the robustness of the tests
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
     bool is_almost_zero( double value )
@@ -55,72 +56,78 @@ namespace {
     }
 
     bool point_inside_segment_exact(
-        const Geometry::Point3D& point,
-        const Geometry::Segment3D& segment )
+        const Geometry::Point3D& point, const Geometry::Segment3D& segment )
     {
-        Sign s1 { Position::point_side_to_plane( point, { segment.direction(),
-                                                          segment.p0 } ) };
-        Sign s2 { Position::point_side_to_plane( point, { segment.direction(),
-                                                          segment.p1 } ) };
+        Sign s1{ Position::point_side_to_plane(
+            point, { segment.direction(), segment.p0 } ) };
+        Sign s2{ Position::point_side_to_plane(
+            point, { segment.direction(), segment.p1 } ) };
         return s1 == ZERO || s2 == ZERO || s1 != s2;
     }
 
     bool point_inside_segment_exact(
-        const Geometry::Point2D& point,
-        const Geometry::Segment2D& segment )
+        const Geometry::Point2D& point, const Geometry::Segment2D& segment )
     {
-        return sign( GEO::PCK::orient_2d(segment.p0, segment.p1, point) ) == ZERO;
+        return sign( GEO::PCK::orient_2d( segment.p0, segment.p1, point ) )
+               == ZERO;
     }
 
-    template< index_t DIMENSION >
-    bool point_inside_segment_approx(
-        const Geometry::Point< DIMENSION >& point,
+    template < index_t DIMENSION >
+    bool point_inside_segment_approx( const Geometry::Point< DIMENSION >& point,
         const Geometry::Segment< DIMENSION >& segment )
     {
         double distance;
-        std::tie( distance, std::ignore ) = Distance::point_to_segment( point,
-            segment );
-        if( distance > global_epsilon ) {
+        std::tie( distance, std::ignore ) =
+            Distance::point_to_segment( point, segment );
+        if( distance > global_epsilon )
+        {
             return false;
         }
-        double half_length { segment.length() / 2. };
-        vecn< DIMENSION > segment_center { segment.barycenter() };
-        double point_distance { length( point - segment_center ) };
-        if( point_distance < half_length - global_epsilon ) {
+        double half_length{ segment.length() / 2. };
+        vecn< DIMENSION > segment_center{ segment.barycenter() };
+        double point_distance{ length( point - segment_center ) };
+        if( point_distance < half_length - global_epsilon )
+        {
             return true;
         }
-        if( point_distance > half_length + global_epsilon ) {
+        if( point_distance > half_length + global_epsilon )
+        {
             return false;
         }
         return point_inside_segment_exact( point, segment );
     }
 
     bool point_inside_triangle_exact(
-        const Geometry::Point2D& point,
-        const Geometry::Triangle2D& triangle )
+        const Geometry::Point2D& point, const Geometry::Triangle2D& triangle )
     {
-        Sign s1 { Position::point_side_to_segment( point,
-            { triangle.p0, triangle.p1 } ) };
-        Sign s2 { Position::point_side_to_segment( point,
-            { triangle.p1, triangle.p2 } ) };
-        Sign s3 { Position::point_side_to_segment( point,
-            { triangle.p2, triangle.p0 } ) };
+        Sign s1{ Position::point_side_to_segment(
+            point, { triangle.p0, triangle.p1 } ) };
+        Sign s2{ Position::point_side_to_segment(
+            point, { triangle.p1, triangle.p2 } ) };
+        Sign s3{ Position::point_side_to_segment(
+            point, { triangle.p2, triangle.p0 } ) };
 
-        if( s1 == ZERO ) {
-            if( s2 == ZERO || s3 == ZERO ) {
+        if( s1 == ZERO )
+        {
+            if( s2 == ZERO || s3 == ZERO )
+            {
                 // Case where p is exactly equal to one triangle vertex
                 return true;
             }
             return s2 == s3;
         }
-        if( s2 == ZERO ) {
-            if( s1 == ZERO || s3 == ZERO ) {
+        if( s2 == ZERO )
+        {
+            if( s1 == ZERO || s3 == ZERO )
+            {
                 return true;
             }
             return s1 == s3;
         }
-        if( s3 == ZERO ) {
-            if( s1 == ZERO || s2 == ZERO ) {
+        if( s3 == ZERO )
+        {
+            if( s1 == ZERO || s2 == ZERO )
+            {
                 return true;
             }
             return s1 == s2;
@@ -129,68 +136,73 @@ namespace {
     }
 
     bool point_inside_triangle_approx(
-        const Geometry::Point2D& point,
-        const Geometry::Triangle2D& triangle )
+        const Geometry::Point2D& point, const Geometry::Triangle2D& triangle )
     {
-        double area1 { GEO::Geom::triangle_signed_area( point, triangle.p0,
-            triangle.p1 ) };
-        if( is_almost_zero( area1 ) ) {
+        double area1{ GEO::Geom::triangle_signed_area(
+            point, triangle.p0, triangle.p1 ) };
+        if( is_almost_zero( area1 ) )
+        {
             return point_inside_triangle_exact( point, triangle );
         }
-        Sign s1 { sign( area1 ) };
-        double area2 { GEO::Geom::triangle_signed_area( point, triangle.p1,
-            triangle.p2 ) };
-        if( is_almost_zero( area2 ) ) {
+        Sign s1{ sign( area1 ) };
+        double area2{ GEO::Geom::triangle_signed_area(
+            point, triangle.p1, triangle.p2 ) };
+        if( is_almost_zero( area2 ) )
+        {
             return point_inside_triangle_exact( point, triangle );
         }
-        Sign s2 { sign( area2 ) };
-        double area3 { GEO::Geom::triangle_signed_area( point, triangle.p2,
-            triangle.p0 ) };
-        if( is_almost_zero( area3 ) ) {
+        Sign s2{ sign( area2 ) };
+        double area3{ GEO::Geom::triangle_signed_area(
+            point, triangle.p2, triangle.p0 ) };
+        if( is_almost_zero( area3 ) )
+        {
             return point_inside_triangle_exact( point, triangle );
         }
-        Sign s3 { sign( area3 ) };
+        Sign s3{ sign( area3 ) };
         return s1 == s2 && s2 == s3;
     }
 
     Geometry::Plane plane_from_triangle_normal_and_edge(
-        const vec3& normal,
-        const vec3& e0,
-        const vec3& e1 )
+        const vec3& normal, const vec3& e0, const vec3& e1 )
     {
-        return {cross( normal, normalize( e1 - e0 ) ), e0};
+        return { cross( normal, normalize( e1 - e0 ) ), e0 };
     }
 
     bool point_inside_triangle_exact(
-        const Geometry::Point3D& point,
-        const Geometry::Triangle3D& triangle )
+        const Geometry::Point3D& point, const Geometry::Triangle3D& triangle )
     {
-        vec3 triangle_normal { triangle.plane().normal };
-        Sign s1 { Position::point_side_to_plane( point,
-            plane_from_triangle_normal_and_edge( triangle_normal, triangle.p0,
-                triangle.p1 ) ) };
-        Sign s2 { Position::point_side_to_plane( point,
-            plane_from_triangle_normal_and_edge( triangle_normal, triangle.p1,
-                triangle.p2 ) ) };
-        Sign s3 { Position::point_side_to_plane( point,
-            plane_from_triangle_normal_and_edge( triangle_normal, triangle.p2,
-                triangle.p0 ) ) };
+        vec3 triangle_normal{ triangle.plane().normal };
+        Sign s1{ Position::point_side_to_plane(
+            point, plane_from_triangle_normal_and_edge(
+                       triangle_normal, triangle.p0, triangle.p1 ) ) };
+        Sign s2{ Position::point_side_to_plane(
+            point, plane_from_triangle_normal_and_edge(
+                       triangle_normal, triangle.p1, triangle.p2 ) ) };
+        Sign s3{ Position::point_side_to_plane(
+            point, plane_from_triangle_normal_and_edge(
+                       triangle_normal, triangle.p2, triangle.p0 ) ) };
 
-        if( s1 == ZERO ) {
-            if( s2 == ZERO || s3 == ZERO ) {
+        if( s1 == ZERO )
+        {
+            if( s2 == ZERO || s3 == ZERO )
+            {
                 // Case where p is exactly equal to one triangle vertex
                 return true;
             }
             return s2 == s3;
         }
-        if( s2 == ZERO ) {
-            if( s1 == ZERO || s3 == ZERO ) {
+        if( s2 == ZERO )
+        {
+            if( s1 == ZERO || s3 == ZERO )
+            {
                 return true;
             }
             return s1 == s3;
         }
-        if( s3 == ZERO ) {
-            if( s1 == ZERO || s2 == ZERO ) {
+        if( s3 == ZERO )
+        {
+            if( s1 == ZERO || s2 == ZERO )
+            {
                 return true;
             }
             return s1 == s2;
@@ -199,157 +211,170 @@ namespace {
     }
 
     bool point_inside_triangle_approx(
-        const Geometry::Point3D& point,
-        const Geometry::Triangle3D& triangle )
+        const Geometry::Point3D& point, const Geometry::Triangle3D& triangle )
     {
         // Get another point not in the triangle plane (using its normal)
-        vec3 translated_point { point + triangle.plane().normal };
+        vec3 translated_point{ point + triangle.plane().normal };
 
-        double vol1 { GEO::Geom::tetra_signed_volume( point, translated_point,
-            triangle.p0, triangle.p1 ) };
-        if( is_almost_zero( vol1 ) ) {
+        double vol1{ GEO::Geom::tetra_signed_volume(
+            point, translated_point, triangle.p0, triangle.p1 ) };
+        if( is_almost_zero( vol1 ) )
+        {
             return point_inside_triangle_exact( point, triangle );
         }
-        Sign s1 { sign( vol1 ) };
-        double vol2 { GEO::Geom::tetra_signed_volume( point, translated_point,
-            triangle.p1, triangle.p2 ) };
-        if( is_almost_zero( vol2 ) ) {
+        Sign s1{ sign( vol1 ) };
+        double vol2{ GEO::Geom::tetra_signed_volume(
+            point, translated_point, triangle.p1, triangle.p2 ) };
+        if( is_almost_zero( vol2 ) )
+        {
             return point_inside_triangle_exact( point, triangle );
         }
-        Sign s2 { sign( vol2 ) };
-        double vol3 { GEO::Geom::tetra_signed_volume( point, translated_point,
-            triangle.p2, triangle.p0 ) };
-        if( is_almost_zero( vol3 ) ) {
+        Sign s2{ sign( vol2 ) };
+        double vol3{ GEO::Geom::tetra_signed_volume(
+            point, translated_point, triangle.p2, triangle.p0 ) };
+        if( is_almost_zero( vol3 ) )
+        {
             return point_inside_triangle_exact( point, triangle );
         }
-        Sign s3 { sign( vol3 ) };
+        Sign s3{ sign( vol3 ) };
         return s1 == s2 && s2 == s3;
     }
 
-    bool point_inside_tetra_exact( const vec3& p, std::array< vec3, 4 >& vertices )
+    bool point_inside_tetra_exact(
+        const vec3& p, std::array< vec3, 4 >& vertices )
     {
         std::array< Sign, 4 > signs;
-        for( auto f : range( 4 ) ) {
-            signs[f] =
-                sign(
-                    GEO::PCK::orient_3d( p.data(),
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]].data(),
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]].data(),
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) );
+        for( auto f : range( 4 ) )
+        {
+            signs[f] = sign( GEO::PCK::orient_3d( p.data(),
+                vertices[GEO::MeshCellDescriptors::tet_descriptor
+                             .facet_vertex[f][0]]
+                    .data(),
+                vertices[GEO::MeshCellDescriptors::tet_descriptor
+                             .facet_vertex[f][1]]
+                    .data(),
+                vertices[GEO::MeshCellDescriptors::tet_descriptor
+                             .facet_vertex[f][2]]
+                    .data() ) );
         }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0
+                   && signs[3] >= 0 )
+               || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0
+                      && signs[3] <= 0 );
     }
 
-    bool point_inside_tetra_approx( const vec3& p, std::array< vec3, 4 >& vertices )
+    bool point_inside_tetra_approx(
+        const vec3& p, std::array< vec3, 4 >& vertices )
     {
         std::array< Sign, 4 > signs;
-        for( const index_t f : range( 4 ) ) {
-            double volume {
-                GEO::Geom::tetra_signed_volume( p,
-                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
-                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
-                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] ) };
-            if( is_almost_zero( volume ) ) {
+        for( const index_t f : range( 4 ) )
+        {
+            double volume{ GEO::Geom::tetra_signed_volume( p,
+                vertices[GEO::MeshCellDescriptors::tet_descriptor
+                             .facet_vertex[f][0]],
+                vertices[GEO::MeshCellDescriptors::tet_descriptor
+                             .facet_vertex[f][1]],
+                vertices[GEO::MeshCellDescriptors::tet_descriptor
+                             .facet_vertex[f][2]] ) };
+            if( is_almost_zero( volume ) )
+            {
                 return point_inside_tetra_exact( p, vertices );
             }
             signs[f] = sign( volume );
         }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0
+                   && signs[3] >= 0 )
+               || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0
+                      && signs[3] <= 0 );
     }
 } // namespace
 
-namespace RINGMesh {
-    namespace Position {
+namespace RINGMesh
+{
+    namespace Position
+    {
         bool point_inside_tetra(
-            const Geometry::Point3D& point,
-            const Geometry::Tetra& tetra )
+            const Geometry::Point3D& point, const Geometry::Tetra& tetra )
         {
-            std::array< vec3, 4 > vertices {
-                { tetra.p0, tetra.p1, tetra.p2, tetra.p3 } };
+            std::array< vec3, 4 > vertices{ { tetra.p0, tetra.p1, tetra.p2,
+                tetra.p3 } };
             return point_inside_tetra_approx( point, vertices );
         }
 
-        template< index_t DIMENSION >
-        bool point_inside_triangle(
-            const Geometry::Point< DIMENSION >& point,
+        template < index_t DIMENSION >
+        bool point_inside_triangle( const Geometry::Point< DIMENSION >& point,
             const Geometry::Triangle< DIMENSION >& triangle )
         {
             return point_inside_triangle_approx( point, triangle );
         }
 
-        template< index_t DIMENSION >
-        bool point_inside_segment(
-            const Geometry::Point< DIMENSION >& point,
+        template < index_t DIMENSION >
+        bool point_inside_segment( const Geometry::Point< DIMENSION >& point,
             const Geometry::Segment< DIMENSION >& segment )
         {
             return point_inside_segment_approx( point, segment );
         }
 
         Sign point_side_to_segment(
-            const Geometry::Point2D& point,
-            const Geometry::Segment2D& segment )
+            const Geometry::Point2D& point, const Geometry::Segment2D& segment )
         {
             return sign( GEO::PCK::orient_2d( point, segment.p0, segment.p1 ) );
         }
 
         Sign point_side_to_plane(
-            const Geometry::Point3D& point,
-            const Geometry::Plane& plane )
+            const Geometry::Point3D& point, const Geometry::Plane& plane )
         {
             double distance;
             vec3 projected_point;
-            std::tie( distance, projected_point ) = Distance::point_to_plane( point,
-                plane );
+            std::tie( distance, projected_point ) =
+                Distance::point_to_plane( point, plane );
 
-            vec3 point_on_plane { projected_point };
-            double translation { std::max( 1.0, distance ) };
-            for( auto d : range( 3 ) ) {
-                if( std::fabs( plane.normal[d] ) > global_epsilon ) {
-                    index_t d1 { ( d + 1 ) % 3 };
-                    index_t d2 { ( d + 2 ) % 3 };
+            vec3 point_on_plane{ projected_point };
+            double translation{ std::max( 1.0, distance ) };
+            for( auto d : range( 3 ) )
+            {
+                if( std::fabs( plane.normal[d] ) > global_epsilon )
+                {
+                    index_t d1{ ( d + 1 ) % 3 };
+                    index_t d2{ ( d + 2 ) % 3 };
                     point_on_plane[d1] += translation;
                     point_on_plane[d2] += translation;
 
-                    point_on_plane[d] = -( plane.plane_constant()
-                        + plane.normal[d1] * point_on_plane[d1]
-                        + plane.normal[d2] * point_on_plane[d2] ) / plane.normal[d];
+                    point_on_plane[d] =
+                        -( plane.plane_constant()
+                            + plane.normal[d1] * point_on_plane[d1]
+                            + plane.normal[d2] * point_on_plane[d2] )
+                        / plane.normal[d];
                     break;
                 }
             }
             ringmesh_assert( point_on_plane != projected_point );
 
-            vec3 u { normalize( point_on_plane ) };
-            vec3 v { cross( plane.normal, u ) };
+            vec3 u{ normalize( point_on_plane ) };
+            vec3 v{ cross( plane.normal, u ) };
 
-            vec3 p0 { projected_point + distance * u };
-            vec3 p1 { projected_point
-                + distance
-                    * ( std::cos( 2 * M_PI / 3 ) * u - std::sin( 2 * M_PI / 3 ) * v ) };
-            vec3 p2 { projected_point
-                + distance
-                    * ( std::cos( 2 * M_PI / 3 ) * u + std::sin( 2 * M_PI / 3 ) * v ) };
+            vec3 p0{ projected_point + distance * u };
+            vec3 p1{ projected_point
+                     + distance * ( std::cos( 2 * M_PI / 3 ) * u
+                                      - std::sin( 2 * M_PI / 3 ) * v ) };
+            vec3 p2{ projected_point
+                     + distance * ( std::cos( 2 * M_PI / 3 ) * u
+                                      + std::sin( 2 * M_PI / 3 ) * v ) };
 
-            return sign(
-                GEO::PCK::orient_3d( point.data(), p0.data(), p1.data(),
-                    p2.data() ) );
+            return sign( GEO::PCK::orient_3d(
+                point.data(), p0.data(), p1.data(), p2.data() ) );
         }
 
         template bool RINGMESH_API point_inside_triangle(
-            const Geometry::Point< 2 >&,
-            const Geometry::Triangle< 2 >& );
+            const Geometry::Point< 2 >&, const Geometry::Triangle< 2 >& );
 
         template bool RINGMESH_API point_inside_segment(
-            const Geometry::Point< 2 >&,
-            const Geometry::Segment< 2 >& );
+            const Geometry::Point< 2 >&, const Geometry::Segment< 2 >& );
 
         template bool RINGMESH_API point_inside_triangle(
-            const Geometry::Point< 3 >&,
-            const Geometry::Triangle< 3 >& );
+            const Geometry::Point< 3 >&, const Geometry::Triangle< 3 >& );
 
         template bool RINGMESH_API point_inside_segment(
-            const Geometry::Point< 3 >&,
-            const Geometry::Segment< 3 >& );
+            const Geometry::Point< 3 >&, const Geometry::Segment< 3 >& );
     } // namespace Position
 } // namespace RINGMesh
