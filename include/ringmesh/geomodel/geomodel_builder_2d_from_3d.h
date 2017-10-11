@@ -37,8 +37,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/basic/geometry.h>
-
 #include <ringmesh/geomodel/geomodel_builder.h>
 
 namespace RINGMesh

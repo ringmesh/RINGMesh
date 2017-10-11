@@ -33,14 +33,17 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_builder_geology.h>
 
 #include <stack>
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
 
+#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @file ringmesh/geomodel/geomodel_builder_geology.cpp
@@ -199,6 +202,22 @@ namespace RINGMesh
             return true;
         }
         return false;
+    }
+
+    template < index_t DIMENSION >
+    void GeoModelBuilderGeology< DIMENSION >::set_mesh_entity_parent(
+        const gmme_id& child_gmme, index_t id, const gmge_id& parent_gmge )
+    {
+        /// No check on the validity of the index of the entity parents_
+        /// NO_ID is used to flag entities to delete
+        auto& mesh_entity = geomodel_access_.modifiable_mesh_entity( child_gmme );
+        ringmesh_assert( id < mesh_entity.nb_parents() );
+        GeoModelMeshEntityAccess< DIMENSION > gmme_access( mesh_entity );
+        auto relationship_id = gmme_access.modifiable_parents()[id];
+        auto& manager = geomodel_access_.modifiable_entity_type_manager()
+                .relationship_manager;
+        manager.set_parent_to_parent_child_relationship(
+            relationship_id, parent_gmge );
     }
 
     template < index_t DIMENSION >
