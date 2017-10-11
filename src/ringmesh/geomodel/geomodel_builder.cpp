@@ -360,7 +360,7 @@ namespace
             std::pair< index_t, bool > default_pair( index_t( -1 ), false );
             sorted_polygons_.resize( 2 * polygons_.size(), default_pair );
 
-            // If there is only one Polygon to sort - nothing to do
+            // If there is only one Polygon to sort, nothing to do
             if( polygons_.size() == 1 )
             {
                 sorted_polygons_[0] = std::pair< index_t, bool >(
