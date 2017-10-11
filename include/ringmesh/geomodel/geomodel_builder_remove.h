@@ -72,7 +72,7 @@ namespace RINGMesh
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
-        virtual ~GeoModelBuilderRemovalBase() = default;
+        virtual ~GeoModelBuilderRemovalBase();
 
         /*!
          * @brief Remove a list of mesh entities of the geomodel

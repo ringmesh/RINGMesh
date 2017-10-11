@@ -39,6 +39,15 @@
 
 #include <ringmesh/geomodel/geomodel_builder.h>
 
+
+namespace RINGMesh
+{
+    namespace Geometry
+    {
+        class Plane;
+    } // namespace Geometry
+} // namespace RINGMesh
+
 namespace RINGMesh
 {
     /*!
@@ -49,15 +58,7 @@ namespace RINGMesh
     public:
         GeoModelBuilder2DFrom3D( GeoModel2D& geomodel2d,
             const GeoModel3D& geomodel3d_from,
-            const Geometry::Plane& plane )
-            : GeoModelBuilder( geomodel2d ),
-              geomodel3d_from_( geomodel3d_from ),
-              plane_( plane )
-        {
-            PlaneReferenceFrame3D plane_frame( plane );
-            u_axis_ = std::move( plane_frame.u );
-            v_axis_ = std::move( plane_frame.v );
-        }
+            const Geometry::Plane& plane );
 
     protected:
         vec2 get_2d_coord( const vec3& coord3d )
@@ -86,11 +87,7 @@ namespace RINGMesh
     public:
         GeoModelBuilder2DProjection( GeoModel2D& geomodel2d,
             const GeoModel3D& geomodel3d_from,
-            const Geometry::Plane& plane )
-            : GeoModelBuilder2DFrom3D( geomodel2d, geomodel3d_from, plane )
-        {
-            info.set_geomodel_name( geomodel3d_from_.name() + "_projected" );
-        }
+            const Geometry::Plane& plane );
 
         void build_geomodel();
 
