@@ -125,85 +125,17 @@ namespace RINGMesh
         void check_if_entities_are_meshed(
             const std::set< gmme_id >& mesh_entities_to_remove );
 
-        void initialize_costly_storage()
-        {
-            mesh_entity_to_erase_.resize( nb_mesh_entity_types_ );
+        void initialize_costly_storage();
 
-            old_2_new_mesh_entity_.resize( nb_mesh_entity_types_ );
-            old_2_new_geological_entity_.resize( nb_geological_entity_types_ );
-            nb_childs_.resize( nb_geological_entity_types_ );
-            for( auto i : range( nb_mesh_entity_types_ ) )
-            {
-                index_t size = geomodel_.nb_mesh_entities(
-                    index_to_mesh_entity_type( i ) );
-                mesh_entity_to_erase_[i].resize( size, false );
-                old_2_new_mesh_entity_[i].resize( size, 0 );
-            }
-
-            for( auto i : range( nb_geological_entity_types_ ) )
-            {
-                index_t size = geomodel_.nb_geological_entities(
-                    index_to_geological_entity_type( i ) );
-                old_2_new_geological_entity_[i].resize( size, 0 );
-                nb_childs_[i].resize( size, 0 );
-            }
-        }
         void delete_mesh_entity( index_t type, index_t index );
 
         void clear_null_mesh_entities( index_t type );
 
         void clear_null_geological_entities( index_t type );
 
-        void update_mesh_entity_connectivity()
-        {
-            for( auto i : range( nb_mesh_entity_types_ ) )
-            {
-                const MeshEntityType& entity_type =
-                    index_to_mesh_entity_type( i );
-                for( auto j :
-                    range( geomodel_.nb_mesh_entities( entity_type ) ) )
-                {
-                    gmme_id new_id( entity_type, j );
-                    GeoModelMeshEntity< DIMENSION >& ME =
-                        geomodel_access_.modifiable_mesh_entity( new_id );
-                    update_mesh_entity( ME );
-                }
-            }
-        }
+        void update_mesh_entity_connectivity();
 
-        void update_geological_entity_connectivity()
-        {
-            for( auto i : range( nb_geological_entity_types_ ) )
-            {
-                const GeologicalEntityType& entity_type =
-                    index_to_geological_entity_type( i );
-                for( auto j :
-                    range( geomodel_.nb_geological_entities( entity_type ) ) )
-                {
-                    gmge_id new_id( entity_type, j );
-                    GeoModelGeologicalEntity< DIMENSION >& GE =
-                        geomodel_access_.modifiable_geological_entity( new_id );
-                    update_geological_entity_index( GE );
-                    update_geological_entity_children( GE );
-                    delete_invalid_children( GE );
-                }
-            }
-
-            for( auto i : range( nb_mesh_entity_types_ ) )
-            {
-                const MeshEntityType& entity_type =
-                    index_to_mesh_entity_type( i );
-                for( auto j :
-                    range( geomodel_.nb_mesh_entities( entity_type ) ) )
-                {
-                    gmme_id new_id( entity_type, j );
-                    GeoModelMeshEntity< DIMENSION >& ME =
-                        geomodel_access_.modifiable_mesh_entity( new_id );
-                    update_mesh_entity_parents( ME );
-                    delete_invalid_parents( ME );
-                }
-            }
-        }
+        void update_geological_entity_connectivity();
 
         //        void remove_dependencies()
         //        {
@@ -229,67 +161,16 @@ namespace RINGMesh
         //        }
 
         //------  Initialization -------
-        void fill_removed_entities_and_mapping()
-        {
-            for( auto i : range( nb_mesh_entity_types_ ) )
-            {
-                for( auto j : range( nb_initial_mesh_entities_[i] ) )
-                {
-                    if( mesh_entity_to_erase_[i][j] )
-                    {
-                        nb_removed_mesh_entities_[i]++;
-                        old_2_new_mesh_entity_[i][j] = NO_ID;
-                    }
-                    else
-                    {
-                        old_2_new_mesh_entity_[i][j] =
-                            j - nb_removed_mesh_entities_[i];
-                    }
-                }
-            }
-        }
+        void fill_removed_entities_and_mapping();
+
         void fill_to_erase_vectors(
             const std::set< gmme_id >& mesh_entities_to_remove );
 
         void fill_nb_children_vector();
 
-        void fill_nb_initial_entities()
-        {
-            nb_initial_mesh_entities_.resize( nb_mesh_entity_types_, 0 );
-            for( auto i : range( nb_mesh_entity_types_ ) )
-            {
-                const MeshEntityType& type = index_to_mesh_entity_type( i );
-                nb_initial_mesh_entities_[i] =
-                    geomodel_.nb_mesh_entities( type );
-            }
+        void fill_nb_initial_entities();
 
-            nb_initial_geological_entities_.resize(
-                nb_geological_entity_types_, 0 );
-            for( auto i : range( nb_geological_entity_types_ ) )
-            {
-                const GeologicalEntityType& type =
-                    index_to_geological_entity_type( i );
-                nb_initial_geological_entities_[i] =
-                    geomodel_.nb_geological_entities( type );
-            }
-        }
-        void fill_entity_type_to_index_map()
-        {
-            const EntityTypeManager< DIMENSION >& manager =
-                geomodel_.entity_type_manager();
-            mesh_entity_types_.insert( mesh_entity_types_.end(),
-                manager.mesh_entity_manager.mesh_entity_types().begin(),
-                manager.mesh_entity_manager.mesh_entity_types().end() );
-
-            if( nb_geological_entity_types_ != 0 )
-            {
-                geological_entity_types_.insert( geological_entity_types_.end(),
-                    manager.geological_entity_manager.geological_entity_types()
-                        .begin(),
-                    manager.geological_entity_manager.geological_entity_types()
-                        .end() );
-            }
-        }
+        void fill_entity_type_to_index_map();
 
         // ---- Easier access to relationships between EntityTypes
         index_t mesh_entity_type_index(
