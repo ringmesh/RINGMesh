@@ -44,27 +44,25 @@
  * @author Arnaud Botella
  */
 
-namespace RINGMesh
-{
-    template < index_t DIMENSION >
+namespace RINGMesh {
+    template< index_t DIMENSION >
     bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
     {
-        for( auto i : range( DIMENSION ) )
-        {
-            if( u[i] != v[i] )
-                return false;
+        for( auto i : range( DIMENSION ) ) {
+            if( u[i] != v[i] ) return false;
         }
         return true;
     }
 
-    template < index_t DIMENSION >
+    template< index_t DIMENSION >
     bool operator!=( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
     {
         return !( u == v );
     }
 
-    template < index_t DIMENSION >
-    bool inexact_equal( const vecn< DIMENSION >& v1,
+    template< index_t DIMENSION >
+    bool inexact_equal(
+        const vecn< DIMENSION >& v1,
         const vecn< DIMENSION >& v2,
         double epsilon )
     {
@@ -74,28 +72,23 @@ namespace RINGMesh
     double RINGMESH_API dot_perp( const vec2& v0, const vec2& v1 );
 
     /* @warning Duplicate from Geogram/basic/numeric.h */
-    enum Sign
-    {
-        NEGATIVE = -1,
-        ZERO = 0,
-        POSITIVE = 1
+    enum Sign {
+        NEGATIVE = -1, ZERO = 0, POSITIVE = 1
     };
     /* @warning Duplicate from Geogram/basic/numeric.h */
-    template < typename T >
+    template< typename T >
     Sign sign( T x )
     {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
 
-    namespace Geometry
-    {
-        template < index_t DIMENSION >
+    namespace Geometry {
+        template< index_t DIMENSION >
         using Point = vecn< DIMENSION >;
         ALIAS_2D_AND_3D( Point );
 
-        template < index_t DIMENSION >
-        struct Segment
-        {
+        template< index_t DIMENSION >
+        struct Segment {
             Segment() = default;
             Segment( vecn< DIMENSION > p0, vecn< DIMENSION > p1 )
                 : p0( std::move( p0 ) ), p1( std::move( p1 ) )
@@ -117,31 +110,28 @@ namespace RINGMesh
             {
                 return ( p1 - p0 ).length();
             }
-            vecn< DIMENSION > p0{};
-            vecn< DIMENSION > p1{};
+            vecn< DIMENSION > p0 { };
+            vecn< DIMENSION > p1 { };
         };
         ALIAS_2D_AND_3D( Segment );
 
-        template < index_t DIMENSION >
-        struct Line
-        {
+        template< index_t DIMENSION >
+        struct Line {
             Line() = default;
             Line( const vecn< DIMENSION >& direction, vecn< DIMENSION > origin )
-                : origin( std::move( origin ) ),
-                  direction( normalize( direction ) )
+                : origin( std::move( origin ) ), direction( normalize( direction ) )
             {
             }
             explicit Line( Segment< DIMENSION > segment )
                 : Line( segment.direction(), std::move( segment.p0 ) )
             {
             }
-            vecn< DIMENSION > origin{};
-            vecn< DIMENSION > direction{};
+            vecn< DIMENSION > origin { };
+            vecn< DIMENSION > direction { };
         };
         ALIAS_2D_AND_3D( Line );
 
-        struct Plane
-        {
+        struct Plane {
             Plane() = default;
             Plane( const vec3& normal, vec3 origin )
                 : normal( normalize( normal ) ), origin( std::move( origin ) )
@@ -149,114 +139,110 @@ namespace RINGMesh
             }
             double plane_constant() const
             {
-                double plane_constant{ 0.0 };
-                for( auto i : range( 3 ) )
-                {
+                double plane_constant { 0.0 };
+                for( auto i : range( 3 ) ) {
                     plane_constant -= origin[i] * normal[i];
                 }
                 return plane_constant;
             }
-            vec3 normal{};
-            vec3 origin{};
+            vec3 normal { };
+            vec3 origin { };
         };
 
-        template < index_t DIMENSION >
-        struct Triangle
-        {
+        template< index_t DIMENSION >
+        struct Triangle {
             Triangle() = default;
-            Triangle( vecn< DIMENSION > p0,
+            Triangle(
+                vecn< DIMENSION > p0,
                 vecn< DIMENSION > p1,
                 vecn< DIMENSION > p2 )
-                : p0( std::move( p0 ) ),
-                  p1( std::move( p1 ) ),
-                  p2( std::move( p2 ) )
+                : p0( std::move( p0 ) ), p1( std::move( p1 ) ), p2( std::move( p2 ) )
             {
             }
-            vecn< DIMENSION > p0{};
-            vecn< DIMENSION > p1{};
-            vecn< DIMENSION > p2{};
+            vecn< DIMENSION > p0 { };
+            vecn< DIMENSION > p1 { };
+            vecn< DIMENSION > p2 { };
         };
-        template <>
-        struct Triangle< 3 >
-        {
+        template< >
+        struct Triangle< 3 > {
             Triangle() = default;
             Triangle( vec3 p0, vec3 p1, vec3 p2 )
-                : p0( std::move( p0 ) ),
-                  p1( std::move( p1 ) ),
-                  p2( std::move( p2 ) )
+                : p0( std::move( p0 ) ), p1( std::move( p1 ) ), p2( std::move( p2 ) )
             {
             }
             Plane plane() const
             {
-                return { cross( p1 - p0, p2 - p0 ), p0 };
+                return {cross( p1 - p0, p2 - p0 ), p0};
             }
-            vec3 p0{};
-            vec3 p1{};
-            vec3 p2{};
+            vec3 p0 { };
+            vec3 p1 { };
+            vec3 p2 { };
         };
         ALIAS_2D_AND_3D( Triangle );
 
-        struct Tetra
-        {
+        struct Tetra {
             Tetra() = default;
             Tetra( vec3 p0, vec3 p1, vec3 p2, vec3 p3 )
-                : p0( std::move( p0 ) ),
-                  p1( std::move( p1 ) ),
-                  p2( std::move( p2 ) ),
-                  p3( std::move( p3 ) )
+                :
+                    p0( std::move( p0 ) ),
+                    p1( std::move( p1 ) ),
+                    p2( std::move( p2 ) ),
+                    p3( std::move( p3 ) )
             {
             }
-            vec3 p0{};
-            vec3 p1{};
-            vec3 p2{};
-            vec3 p3{};
+            vec3 p0 { };
+            vec3 p1 { };
+            vec3 p2 { };
+            vec3 p3 { };
         };
 
-        struct Sphere
-        {
+        template< index_t DIMENSION >
+        struct Sphere {
             Sphere() = default;
-            Sphere( vec3 origin, double radius )
+            Sphere( vecn< DIMENSION > origin, double radius )
                 : origin( std::move( origin ) ), radius( std::move( radius ) )
             {
             }
-            vec3 origin{};
-            double radius{ 0 };
+            vecn< DIMENSION > origin { };
+            double radius { 0 };
         };
 
-        using Ball = Sphere;
+        template< index_t DIMENSION >
+        using Ball = Sphere< DIMENSION >;
 
-        struct Circle
-        {
+        ALIAS_2D_AND_3D( Sphere );
+        ALIAS_2D_AND_3D( Ball );
+
+        struct Circle {
             Circle() = default;
             Circle( Plane plane, double radius )
                 : plane( std::move( plane ) ), radius( std::move( radius ) )
             {
             }
             Plane plane;
-            double radius{ 0 };
+            double radius { 0 };
         };
 
         using Disk = Circle;
     } // namespace Geometry
 
-    struct RINGMESH_API Frame3D
-    {
+    struct RINGMESH_API Frame3D {
         Frame3D() = default;
 
         Frame3D( vec3 u_axis, vec3 v_axis, vec3 w_axis )
-            : u( std::move( normalize( u_axis ) ) ),
-              v( std::move( normalize( v_axis ) ) ),
-              w( std::move( normalize( w_axis ) ) )
+            :
+                u( std::move( normalize( u_axis ) ) ),
+                v( std::move( normalize( v_axis ) ) ),
+                w( std::move( normalize( w_axis ) ) )
         {
         }
 
-        vec3 u{};
-        vec3 v{};
-        vec3 w{};
+        vec3 u { };
+        vec3 v { };
+        vec3 w { };
     };
 
-    struct RINGMESH_API ReferenceFrame3D : public Frame3D
-    {
+    struct RINGMESH_API ReferenceFrame3D: public Frame3D {
         ReferenceFrame3D() = default;
 
         ReferenceFrame3D( vec3 frame_origin, Frame3D frame )
@@ -264,15 +250,14 @@ namespace RINGMesh
         {
         }
 
-        vec3 origin{};
+        vec3 origin { };
     };
 
     /*!
      * @brief Reference frame aligned along the plane normal and whose u axis is
      * upward
      */
-    struct RINGMESH_API PlaneReferenceFrame3D : public ReferenceFrame3D
-    {
+    struct RINGMESH_API PlaneReferenceFrame3D: public ReferenceFrame3D {
         PlaneReferenceFrame3D() = default;
 
         PlaneReferenceFrame3D( vec3 frame_origin, Frame3D frame )
@@ -283,15 +268,14 @@ namespace RINGMesh
         explicit PlaneReferenceFrame3D( const Geometry::Plane& plane );
     };
 
-    namespace Distance
-    {
+    namespace Distance {
         /*!
          * Computes the smallest distance between a point and a segment
          * @return a tuple containing the following elements (in this order):
          * - the smallest distance
          * - the closest point on the segment
          */
-        template < index_t DIMENSION >
+        template< index_t DIMENSION >
         std::tuple< double, vecn< DIMENSION > > point_to_segment(
             const Geometry::Point< DIMENSION >& point,
             const Geometry::Segment< DIMENSION >& segment );
@@ -302,7 +286,7 @@ namespace RINGMesh
          * - the smallest distance
          * - the closest point on the triangle
          */
-        template < index_t DIMENSION >
+        template< index_t DIMENSION >
         std::tuple< double, vecn< DIMENSION > > point_to_triangle(
             const Geometry::Point< DIMENSION >& point,
             const Geometry::Triangle< DIMENSION >& triangle );
@@ -314,7 +298,8 @@ namespace RINGMesh
          * - the nearest point on the tetrahedron.
          */
         std::tuple< double, vec3 > RINGMESH_API point_to_tetra(
-            const Geometry::Point3D& point, const Geometry::Tetra& tetra );
+            const Geometry::Point3D& point,
+            const Geometry::Tetra& tetra );
         /*!
          * Computes the distance between a point and a plane
          * @return a tuple containing:
@@ -322,11 +307,11 @@ namespace RINGMesh
          * - the nearest point on the plane.
          */
         std::tuple< double, vec3 > RINGMESH_API point_to_plane(
-            const Geometry::Point3D& point, const Geometry::Plane& plane );
+            const Geometry::Point3D& point,
+            const Geometry::Plane& plane );
     } // namespace Distance
 
-    namespace Intersection
-    {
+    namespace Intersection {
         /*!
          * Computes the intersection between a plane and a line
          * @return returns a tuple containing a boolean (true if there is an
@@ -334,7 +319,8 @@ namespace RINGMesh
          * and the intersected point if any.
          */
         std::tuple< bool, vec3 > RINGMESH_API line_plane(
-            const Geometry::Line3D& line, const Geometry::Plane& plane );
+            const Geometry::Line3D& line,
+            const Geometry::Plane& plane );
 
         /*!
          * Computes the intersection(s) between a sphere and a line
@@ -342,18 +328,22 @@ namespace RINGMesh
          * least one intersection)
          * and the intersected points.
          */
-        std::tuple< bool, std::vector< vec3 > > RINGMESH_API line_sphere(
-            const Geometry::Line3D& line, const Geometry::Sphere& sphere );
+        template< index_t DIMENSION >
+        std::tuple< bool, std::vector< vecn< DIMENSION > > > RINGMESH_API line_sphere(
+            const Geometry::Line< DIMENSION >& line,
+            const Geometry::Sphere< DIMENSION >& sphere );
 
         /*!
-         * Computes the intersection(s) between a sphere and a segment
+         * Computes the intersection(s) between a (n-1)-sphere and a segment in
+         * n-dimension space.
          * @return returns a tuple containing a boolean (true if there is at
          * least one intersection)
          * and the intersected points.
          */
-        std::tuple< bool, std::vector< vec3 > > RINGMESH_API segment_sphere(
-            const Geometry::Segment3D& segment,
-            const Geometry::Sphere& sphere );
+        template< index_t DIMENSION >
+        std::tuple< bool, std::vector< vecn< DIMENSION > > > RINGMESH_API segment_sphere(
+            const Geometry::Segment< DIMENSION >& segment,
+            const Geometry::Sphere< DIMENSION >& sphere );
 
         /*!
          * Computes the intersection between a plane and a segment
@@ -362,7 +352,8 @@ namespace RINGMesh
          * and the intersected point if any.
          */
         std::tuple< bool, vec3 > RINGMESH_API segment_plane(
-            const Geometry::Segment3D& segment, const Geometry::Plane& plane );
+            const Geometry::Segment3D& segment,
+            const Geometry::Plane& plane );
 
         /*!
          * Computes the intersection of a segment and a triangle
@@ -381,7 +372,8 @@ namespace RINGMesh
          * and the intersected points if any.
          */
         std::tuple< bool, std::vector< vec3 > > RINGMESH_API circle_plane(
-            const Geometry::Circle& circle, const Geometry::Plane& plane );
+            const Geometry::Circle& circle,
+            const Geometry::Plane& plane );
 
         /*!
          * Computes the intersection between a disk and a segment
@@ -390,7 +382,8 @@ namespace RINGMesh
          * and the intersected point if any.
          */
         std::tuple< bool, vec3 > RINGMESH_API segment_disk(
-            const Geometry::Segment3D& segment, const Geometry::Disk& disk );
+            const Geometry::Segment3D& segment,
+            const Geometry::Disk& disk );
 
         /*!
          * Computes the intersection(s) between a circle and a triangle
@@ -409,7 +402,8 @@ namespace RINGMesh
          * - the intersected line if any.
          */
         std::tuple< bool, Geometry::Line3D > RINGMESH_API plane_plane(
-            const Geometry::Plane& plane0, const Geometry::Plane& plane1 );
+            const Geometry::Plane& plane0,
+            const Geometry::Plane& plane1 );
 
         /*!
          * Computes the intersection between two lines
@@ -418,7 +412,8 @@ namespace RINGMesh
          * - the intersected point if any.
          */
         std::tuple< bool, vec2 > RINGMESH_API line_line(
-            const Geometry::Line2D& line0, const Geometry::Line2D& line1 );
+            const Geometry::Line2D& line0,
+            const Geometry::Line2D& line1 );
 
         /*!
          * Computes the intersection between two segments
@@ -437,25 +432,28 @@ namespace RINGMesh
          * - the intersected point if any.
          */
         std::tuple< bool, vec2 > RINGMESH_API segment_line(
-            const Geometry::Segment2D& segment, const Geometry::Line2D& line );
+            const Geometry::Segment2D& segment,
+            const Geometry::Line2D& line );
     } // namespace Intersection
 
-    namespace Position
-    {
+    namespace Position {
         /*!
          * @brief Tests if a point is on a segment
          * @return returns true if the point is inside
          */
-        bool RINGMESH_API point_inside_segment( const Geometry::Point3D& point,
-            const Geometry::Segment3D& segment );
+        template< index_t DIMENSION >
+        bool RINGMESH_API point_inside_segment(
+            const Geometry::Point< DIMENSION >& point,
+            const Geometry::Segment< DIMENSION >& segment );
 
         /*!
          * @brief Tests if a point is inside a triangle
          * @details if it is inside a prism based on the triangle and its normal
          * @return returns true if the point is inside
          */
-        template < index_t DIMENSION >
-        bool point_inside_triangle( const Geometry::Point< DIMENSION >& point,
+        template< index_t DIMENSION >
+        bool point_inside_triangle(
+            const Geometry::Point< DIMENSION >& point,
             const Geometry::Triangle< DIMENSION >& triangle );
 
         /*!
@@ -463,23 +461,27 @@ namespace RINGMesh
          * @return returns true if the point is inside the tetrahedron
          */
         bool RINGMESH_API point_inside_tetra(
-            const Geometry::Point3D& point, const Geometry::Tetra& tetra );
+            const Geometry::Point3D& point,
+            const Geometry::Tetra& tetra );
 
         /*!
          * Returns the point side to a segment
          */
-        Sign RINGMESH_API point_side_to_segment( const Geometry::Point2D& point,
+        Sign RINGMESH_API point_side_to_segment(
+            const Geometry::Point2D& point,
             const Geometry::Segment2D& segment );
 
         /*!
          * Returns the point side to a plane
          */
         Sign RINGMESH_API point_side_to_plane(
-            const Geometry::Point3D& point, const Geometry::Plane& plane );
+            const Geometry::Point3D& point,
+            const Geometry::Plane& plane );
 
     } // namespace Position
 
-    double RINGMESH_API triangle_signed_area( const vec3& p0,
+    double RINGMESH_API triangle_signed_area(
+        const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& triangle_normal );
@@ -493,7 +495,7 @@ namespace RINGMesh
      * possible)
      * and the projected point if any.
      */
-    template < index_t DIMENSION >
+    template< index_t DIMENSION >
     std::tuple< bool, vecn< DIMENSION > > point_segment_projection(
         const vecn< DIMENSION >& p,
         const vecn< DIMENSION >& p0,
@@ -512,11 +514,12 @@ namespace RINGMesh
      * - the parametric coordinates corresponding to points
      */
     std::tuple< bool, std::array< double, 4 > >
-        RINGMESH_API tetra_barycentric_coordinates( const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            const vec3& p3 );
+    RINGMESH_API tetra_barycentric_coordinates(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3 );
 
     /*!
      * Computes barycentric coordinates of \p p
@@ -530,8 +533,11 @@ namespace RINGMesh
      * - the parametric coordinates corresponding to points.
      */
     std::tuple< bool, std::array< double, 3 > >
-        RINGMESH_API triangle_barycentric_coordinates(
-            const vec3& p, const vec3& p0, const vec3& p1, const vec3& p2 );
+    RINGMESH_API triangle_barycentric_coordinates(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2 );
 
     /*!
      * Computes barycentric coordinates of \p p
@@ -545,8 +551,11 @@ namespace RINGMesh
      * - the parametric coordinates corresponding to points.
      */
     std::tuple< bool, std::array< double, 3 > >
-        RINGMESH_API triangle_barycentric_coordinates(
-            const vec2& p, const vec2& p0, const vec2& p1, const vec2& p2 );
+    RINGMESH_API triangle_barycentric_coordinates(
+        const vec2& p,
+        const vec2& p0,
+        const vec2& p1,
+        const vec2& p2 );
 
     /*!
      * @brief Builds a rotational matrix about an arbitrary axis.
@@ -564,6 +573,9 @@ namespace RINGMesh
      * (x',y',z') = rot_mat*(x,y,z)
      */
     GEO::Matrix< 4, double > RINGMESH_API rotation_matrix_about_arbitrary_axis(
-        const vec3& origin, const vec3& axis, double theta, bool degrees );
+        const vec3& origin,
+        const vec3& axis,
+        double theta,
+        bool degrees );
 
 } // namespace RINGMesh
