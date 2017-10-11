@@ -46,6 +46,7 @@
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 #include <ringmesh/basic/factory.h>
+#include <ringmesh/basic/attributes.h>
 
 /*!
  * @file Classes for mesh entity visualization
@@ -54,6 +55,7 @@
 
 namespace RINGMesh
 {
+//    class AttributeManager;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGfx );
     FORWARD_DECLARATION_DIMENSION_CLASS( AttributeGfxManager );
     FORWARD_DECLARATION_DIMENSION_CLASS( AttributeGfx );

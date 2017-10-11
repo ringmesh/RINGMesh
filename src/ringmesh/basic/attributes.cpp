@@ -117,9 +117,8 @@ namespace RINGMesh {
         const std::string& name, AttributeStore* as
         )
     {
-        ringmesh_assert( find_attribute_store( name ) == nil );
+        ringmesh_assert( find_attribute_store( name ) == nullptr );
         attributes_[name] = as;
-        as->resize( size_ );
     }
 
     void AttributesManager::list_attribute_names(
