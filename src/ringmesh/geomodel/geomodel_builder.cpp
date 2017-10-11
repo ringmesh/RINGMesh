@@ -901,7 +901,7 @@ namespace RINGMesh
             nn_search.get_colocated_index_mapping_and_unique_points(
                 geomodel_.epsilon() );
 
-        topology.create_mesh_entities( Corner< DIMENSION >::type_name_static(),
+        topology.create_mesh_entities( corner_type_name_static(),
             static_cast< index_t >( unique_points.size() ) );
         for( index_t c : range( geomodel_.nb_corners() ) )
         {
@@ -912,9 +912,9 @@ namespace RINGMesh
         {
             gmme_id line_id = line.gmme();
             index_t point0 = index_map[index++];
-            gmme_id corner0( Corner< DIMENSION >::type_name_static(), point0 );
+            gmme_id corner0( corner_type_name_static(), point0 );
             index_t point1 = index_map[index++];
-            gmme_id corner1( Corner< DIMENSION >::type_name_static(), point1 );
+            gmme_id corner1( corner_type_name_static(), point1 );
             topology.add_mesh_entity_boundary_relation( line_id, corner0 );
             topology.add_mesh_entity_boundary_relation( line_id, corner1 );
 
@@ -961,7 +961,7 @@ namespace RINGMesh
                 for( auto j : adjacent_surfaces )
                 {
                     gmme_id surface_index{
-                        Surface< DIMENSION >::type_name_static(), j
+                        surface_type_name_static(), j
                     };
                     topology.add_mesh_entity_boundary_relation(
                         surface_index, line_index );
@@ -1052,9 +1052,9 @@ namespace RINGMesh
                 continue;
             }
             // Create a new region
-            gmme_id cur_region_id{ Region3D::type_name_static(),
+            gmme_id cur_region_id{ region_type_name_static(),
                 geomodel_.nb_regions() };
-            topology.create_mesh_entities( Region3D::type_name_static(), 1 );
+            topology.create_mesh_entities( region_type_name_static(), 1 );
             // Get all oriented surfaces defining this region
             std::stack< std::pair< index_t, bool > > SR;
             SR.push( cur );
@@ -1070,7 +1070,7 @@ namespace RINGMesh
                 }
                 // Add the surface to the current region
                 topology.add_mesh_entity_boundary_relation( cur_region_id,
-                    gmme_id{ Surface3D::type_name_static(), s.first },
+                    gmme_id{ surface_type_name_static(), s.first },
                     s.second );
                 surf_2_region[s_id] = cur_region_id.index();
 

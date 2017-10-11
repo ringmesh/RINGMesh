@@ -1475,6 +1475,26 @@ namespace RINGMesh
         update_mesh_storage_type( std::move( new_mesh ) );
     }
 
+    MeshEntityType corner_type_name_static()
+    {
+        return Corner3D::type_name_static();
+    }
+
+    MeshEntityType line_type_name_static()
+    {
+        return Line3D::type_name_static();
+    }
+
+    MeshEntityType surface_type_name_static()
+    {
+        return Surface3D::type_name_static();
+    }
+
+    MeshEntityType region_type_name_static()
+    {
+        return Region3D::type_name_static();
+    }
+
     template class RINGMESH_API GeoModelMeshEntity< 2 >;
     template class RINGMESH_API Corner< 2 >;
     template class RINGMESH_API Line< 2 >;
