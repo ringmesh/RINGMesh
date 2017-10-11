@@ -52,7 +52,9 @@ namespace RINGMesh
         for( auto i : range( DIMENSION ) )
         {
             if( u[i] != v[i] )
+            {
                 return false;
+            }
         }
         return true;
     }
