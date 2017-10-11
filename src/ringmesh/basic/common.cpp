@@ -86,6 +86,7 @@ namespace RINGMesh
     void configure_ringmesh()
     {
         CmdLine::import_arg_group( "global" );
+        CmdLine::import_arg_group( "validity" );
         mesh_initialize();
         TetraGen::initialize();
         GeoModelGeologicalEntity2D::initialize();

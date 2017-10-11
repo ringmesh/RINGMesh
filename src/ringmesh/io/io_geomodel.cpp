@@ -103,7 +103,6 @@ namespace
         }
         return handler;
     }
-
 }
 
 namespace RINGMesh
@@ -187,6 +186,7 @@ namespace RINGMesh
         load( filename, geomodel );
         Logger::out(
             "I/O", " Loaded geomodel ", geomodel.name(), " from ", filename );
+
         return is_geomodel_valid( geomodel );
     }
 
