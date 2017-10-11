@@ -199,17 +199,17 @@ namespace RINGMesh {
 
         void resize( index_t new_size ) final
         {
-            size_ = new_size;
-            store_.resize( new_size * element_dimension_ );
+            this->size_ = new_size;
+            this->store_.resize( new_size * this->element_dimension_ );
         }
 
 
         void clear( bool keep_memory = false ) final
         {
             if( keep_memory ) {
-                store_.resize( 0 );
+                this->store_.resize( 0 );
             } else {
-                store_.clear();
+                this->store_.clear();
             }
         }
 
@@ -222,10 +222,10 @@ namespace RINGMesh {
             index_t copy_dim = GEO::geo_min( dim, this->dimension() );
             for( index_t i = 0; i < this->size(); ++i ) {
                 for( index_t c = 0; c < copy_dim; ++c ) {
-                    new_store[dim * i + c] = store_[this->dimension() * i + c];
+                    new_store[dim * i + c] = this->store_[this->dimension() * i + c];
                 }
             }
-            store_.swap( new_store );
+            this->store_.swap( new_store );
         }
 
         Store* clone() const final
@@ -233,7 +233,7 @@ namespace RINGMesh {
             VectorStore< T >* result = new VectorStore< T >(
                 this->dimension() );
             result->resize( this->size() );
-            result->store_ = store_;
+            result->store_ = this->store_;
             return result;
         }
 
@@ -289,16 +289,16 @@ namespace RINGMesh {
 
         void resize( index_t ) override
         {
-            store_.resize( this->dimension() );
+            this->store_.resize( this->dimension() );
         }
 
 
         void clear( bool keep_memory = false ) override
         {
             if( keep_memory ) {
-                store_.resize( 0 );
+                this->store_.resize( 0 );
             } else {
-                store_.clear();
+                this->store_.clear();
             }
         }
 
@@ -310,16 +310,16 @@ namespace RINGMesh {
             std::vector< T > new_store( dim );
             index_t copy_dim = std::min( dim, this->dimension() );
             for( index_t c = 0; c < copy_dim; ++c ) {
-                new_store[c] = store_[c];
+                new_store[c] = this->store_[c];
             }
-            store_.swap( new_store );
+            this->store_.swap( new_store );
         }
 
         Store* clone() const override
         {
             ConstantStore< T >* result = new ConstantStore< T >(
                 this->dimension() );
-            result->store_ = store_;
+            result->store_ = this->store_;
             return result;
         }
         void compress( const std::vector< index_t >& old2new ) final
