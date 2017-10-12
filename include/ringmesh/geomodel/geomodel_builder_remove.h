@@ -184,32 +184,14 @@ namespace RINGMesh
         const MeshEntityType children_type(
             const GeologicalEntityType& type ) const;
 
-        index_t boundary_type_index( const MeshEntityType& type ) const
-        {
-            const MeshEntityType& b_type = boundary_entity_type( type );
-            if( !geomodel_.entity_type_manager()
-                     .mesh_entity_manager.is_valid_type( b_type ) )
-            {
-                return NO_ID;
-            }
-            return mesh_entity_type_to_index( b_type );
-        }
+        index_t boundary_type_index( const MeshEntityType& type ) const;
 
         const MeshEntityType& boundary_entity_type(
             const MeshEntityType& type ) const;
 
         /// TODO unused function. To handle during removal refactoring BC.
         index_t incident_entity_type_to_index(
-            const MeshEntityType& type ) const
-        {
-            const MeshEntityType& in_ent_type = incident_entity_type( type );
-            if( !geomodel_.entity_type_manager()
-                     .mesh_entity_manager.is_valid_type( in_ent_type ) )
-            {
-                return NO_ID;
-            }
-            return mesh_entity_type_to_index( in_ent_type );
-        }
+            const MeshEntityType& type ) const;
 
         const MeshEntityType& incident_entity_type(
             const MeshEntityType& type ) const;
@@ -226,25 +208,7 @@ namespace RINGMesh
 
         // ----  Update connectivity functions  ------
 
-        void flag_geological_entities_without_children()
-        {
-            for( auto i : range( nb_childs_.size() ) )
-            {
-                for( auto j : range( nb_childs_[i].size() ) )
-                {
-                    if( nb_childs_[i][j] == 0 )
-                    {
-                        nb_removed_geological_entities_[i]++;
-                        old_2_new_geological_entity_[i][j] = NO_ID;
-                    }
-                    else
-                    {
-                        old_2_new_geological_entity_[i][j] =
-                            j - nb_removed_geological_entities_[i];
-                    }
-                }
-            }
-        }
+        void flag_geological_entities_without_children();
 
         void set_mesh_entity_index(
             GeoModelMeshEntity< DIMENSION >& mesh_entity,
