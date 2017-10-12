@@ -525,7 +525,7 @@ void test_segment_line_intersection()
 void test_line_sphere_intersection()
 {
     Logger::out( "TEST", "Test Line-Sphere intersections" );
-    Geometry::Sphere sphere{ { 2., 2., 2. }, 4. };
+    Geometry::Sphere3D sphere{ { 2., 2., 2. }, 4. };
 
     // Line outside the sphere
     Geometry::Line3D line_outside{ { -3., 2., 1. }, { 10., 10., 10. } };
@@ -566,7 +566,7 @@ void test_line_sphere_intersection()
 void test_segment_sphere_intersection()
 {
     Logger::out( "TEST", "Test Segment-Sphere intersections" );
-    Geometry::Sphere sphere{ { 2., 2., 2. }, 4. };
+    Geometry::Sphere3D sphere{ { 2., 2., 2. }, 4. };
 
     // Segment outside the sphere
     Geometry::Segment3D seg_outside{ { 10., 10., 10. }, { 15., 20., 10. } };
