@@ -62,6 +62,16 @@ namespace RINGMesh
         nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_;
     }
 
+    template < index_t DIMENSION >
+    void GeoModelBuilderRemovalBase< DIMENSION >::update_mesh_entity( GeoModelMeshEntity< DIMENSION >& ME )
+    {
+        update_mesh_entity_index( ME );
+        update_mesh_entity_boundaries( ME );
+        delete_invalid_boundaries( ME );
+
+        update_mesh_entity_incident_entity( ME );
+        delete_invalid_incident_entity( ME );
+    }
 
     template < index_t DIMENSION >
     GeoModelBuilderRemovalBase< DIMENSION >::~GeoModelBuilderRemovalBase()
@@ -414,6 +424,19 @@ namespace RINGMesh
             gmme_access.modifiable_parents(), [&manager]( index_t i ) {
                 return manager.parent_of_gmme( i ).index() == NO_ID;
             } );
+    }
+
+    template< index_t DIMENSION >
+    const MeshEntityType& GeoModelBuilderRemovalBase< DIMENSION >::index_to_mesh_entity_type( index_t index ) const
+    {
+        return mesh_entity_types_[index];
+    }
+
+    template< index_t DIMENSION >
+    const GeologicalEntityType& GeoModelBuilderRemovalBase< DIMENSION >::index_to_geological_entity_type(
+        index_t index ) const
+    {
+        return geological_entity_types_[index];
     }
 
     template< index_t DIMENSION >
