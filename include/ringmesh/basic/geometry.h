@@ -250,10 +250,10 @@ namespace RINGMesh
     {
         Frame3D() = default;
 
-        Frame3D( vec3 u_axis, vec3 v_axis, vec3 w_axis )
-            : u( std::move( normalize( u_axis ) ) ),
-              v( std::move( normalize( v_axis ) ) ),
-              w( std::move( normalize( w_axis ) ) )
+        Frame3D( const vec3& u_axis, const vec3& v_axis, const vec3& w_axis )
+            : u( normalize( u_axis ) ),
+              v( normalize( v_axis ) ),
+              w( normalize( w_axis ) )
         {
         }
 
