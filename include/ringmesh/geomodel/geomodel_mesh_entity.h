@@ -173,10 +173,7 @@ namespace RINGMesh
         /*!
          * @brief Check if the entity has a parent of the given type
          */
-        bool has_parent( const GeologicalEntityType& parent_type ) const
-        {
-            return could_be_undefined_parent_gmge( parent_type ).is_defined();
-        }
+        bool has_parent( const GeologicalEntityType& parent_type ) const;
 
         index_t nb_parents() const
         {

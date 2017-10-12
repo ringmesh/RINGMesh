@@ -598,6 +598,14 @@ namespace RINGMesh
             .entity_type_manager()
             .relationship_manager.parent_of_gmme( parents_[id] );
     }
+
+    template< index_t DIMENSION >
+    bool GeoModelMeshEntity< DIMENSION >::has_parent(
+        const GeologicalEntityType& parent_type ) const
+    {
+        return could_be_undefined_parent_gmge( parent_type ).is_defined();
+    }
+
     /**************************************************************/
 
     template < index_t DIMENSION >
