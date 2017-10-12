@@ -106,15 +106,7 @@ namespace RINGMesh
         GeoModelBuilderRemovalBase( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
-        virtual void update_mesh_entity( GeoModelMeshEntity< DIMENSION >& ME )
-        {
-            update_mesh_entity_index( ME );
-            update_mesh_entity_boundaries( ME );
-            delete_invalid_boundaries( ME );
-
-            update_mesh_entity_incident_entity( ME );
-            delete_invalid_incident_entity( ME );
-        }
+        virtual void update_mesh_entity( GeoModelMeshEntity< DIMENSION >& ME );
 
         // ---  High level functions ----------
         void initialize_for_removal(
@@ -252,16 +244,10 @@ namespace RINGMesh
 
         index_t geological_entity_type_to_index(
             const GeologicalEntityType& type ) const;
-        const MeshEntityType& index_to_mesh_entity_type( index_t index ) const
-        {
-            return mesh_entity_types_[index];
-        }
+        const MeshEntityType& index_to_mesh_entity_type( index_t index ) const;
 
         const GeologicalEntityType& index_to_geological_entity_type(
-            index_t index ) const
-        {
-            return geological_entity_types_[index];
-        }
+            index_t index ) const;
 
     protected:
         GeoModelBuilder< DIMENSION >& builder_;
