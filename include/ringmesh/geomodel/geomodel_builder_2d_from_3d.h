@@ -37,9 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
-//#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
-#include <ringmesh/basic/geometry.h>
+//#include <ringmesh/basic/geometry.h>
 
 namespace RINGMesh
 {
@@ -51,6 +50,11 @@ namespace RINGMesh
 //        class Plane;
 //    } // namespace Geometry
 } // namespace RINGMesh
+
+namespace RINGMesh::Geometry
+{
+    class Plane;
+}
 
 namespace RINGMesh
 {
