@@ -42,6 +42,9 @@
 
 namespace RINGMesh
 {
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    ALIAS_2D_AND_3D( GeoModel );
+
     namespace Geometry
     {
         class Plane;
@@ -61,10 +64,7 @@ namespace RINGMesh
             const Geometry::Plane& plane );
 
     protected:
-        vec2 get_2d_coord( const vec3& coord3d )
-        {
-            return { dot( coord3d, u_axis_ ), dot( coord3d, v_axis_ ) };
-        }
+        vec2 get_2d_coord( const vec3& coord3d );
 
     protected:
         const GeoModel3D& geomodel3d_from_;

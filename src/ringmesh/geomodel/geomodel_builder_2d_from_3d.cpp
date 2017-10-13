@@ -49,21 +49,13 @@ namespace
     using namespace RINGMesh;
 
     const MeshEntityType projectable_entity_types[3] = {
-        Corner3D::type_name_static(), Line3D::type_name_static(),
-        Surface3D::type_name_static()
+        corner_type_name_static(), line_type_name_static(),
+        surface_type_name_static()
     };
 
-    struct GeologicalEntityTypeMapFrom2DTo3DInitializer
-    {
-        static std::map< GeologicalEntityType, GeologicalEntityType >
-            initialize_map()
-        {
-            std::map< GeologicalEntityType, GeologicalEntityType > map;
-            map[Contact3D::type_name_static()] =
-                Interface2D::type_name_static();
-            map[Interface3D::type_name_static()] = Layer2D::type_name_static();
-            return map;
-        }
+    const std::map< GeologicalEntityType, GeologicalEntityType > geol_entity_type_2d_to_3d_map =
+                { { Contact3D::type_name_static(), Interface2D::type_name_static() },
+                  { Interface3D::type_name_static(), Layer2D::type_name_static() }
     };
 
     template < typename U, typename T >
@@ -71,10 +63,6 @@ namespace
     {
         return map.find( key )->second;
     }
-
-    const std::map< GeologicalEntityType, GeologicalEntityType >
-        geol_entity_type_2d_to_3d_map =
-            GeologicalEntityTypeMapFrom2DTo3DInitializer::initialize_map();
 } // namespace
 
 namespace RINGMesh
@@ -90,6 +78,12 @@ namespace RINGMesh
         u_axis_ = std::move( plane_frame.u );
         v_axis_ = std::move( plane_frame.v );
     }
+
+    vec2 GeoModelBuilder2DFrom3D::get_2d_coord( const vec3& coord3d )
+    {
+        return { dot( coord3d, u_axis_ ), dot( coord3d, v_axis_ ) };
+    }
+
 
     GeoModelBuilder2DProjection::GeoModelBuilder2DProjection( GeoModel2D& geomodel2d,
         const GeoModel3D& geomodel3d_from,
