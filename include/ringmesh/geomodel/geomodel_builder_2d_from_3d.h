@@ -38,17 +38,12 @@
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel_builder.h>
-
+#include <ringmesh/basic/geometry.h>
 
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     ALIAS_2D_AND_3D( GeoModel );
-
-    namespace Geometry
-    {
-        class Plane;
-    } // namespace Geometry
 } // namespace RINGMesh
 
 namespace RINGMesh
