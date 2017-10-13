@@ -84,7 +84,6 @@ namespace RINGMesh
         return { dot( coord3d, u_axis_ ), dot( coord3d, v_axis_ ) };
     }
 
-
     GeoModelBuilder2DProjection::GeoModelBuilder2DProjection( GeoModel2D& geomodel2d,
         const GeoModel3D& geomodel3d_from,
         const Geometry::Plane& plane )
