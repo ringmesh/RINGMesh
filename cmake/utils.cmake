@@ -43,7 +43,7 @@ function(include_file_directory var directory)
     set(${var} ${${var}} ${sources} PARENT_SCOPE)
 endfunction()
 
-function(copy_for_windows)
+function(copy_for_windows target)
 if(WIN32)
     # On windows, without proper installation steps, we need to
     # copy of Geogram dll and pdb information to RINGMesh
@@ -51,67 +51,76 @@ if(WIN32)
 
     # The dll and debug info of RINGMesh are in
     # build/ringmesh/Debug or build/ringmesh/Release.
+    get_target_property(directory ${target} RUNTIME_OUTPUT_DIRECTORY)
+    
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy RINGMesh dll")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy geogram binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${ZLIB_PATH_BIN}/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy zlib binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${TINYXML2_PATH_BIN}/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy minizip binaries")
 endif(WIN32)
 endfunction()
 
-function(add_ringmesh_binary bin_path)
-    get_filename_component(bin_name ${bin_path} NAME_WE)
-    # Set the target as an executable
-    add_executable(${bin_name} ${bin_path})
+macro(add_ringmesh_executable exe_path folder_name)
+    get_filename_component(exe_name ${exe_path} NAME_WE)
 
-    set(BINARY_DEPENDANCIES RINGMesh geogram)
-    foreach(arg ${ARGN})
-        set(BINARY_DEPENDANCIES ${BINARY_DEPENDANCIES} ${arg})
-    endforeach()
-    target_link_libraries(${bin_name} ${BINARY_DEPENDANCIES})
+    # Set the target as an executable
+    add_executable(${exe_name} ${exe_path})
+    target_link_libraries(${exe_name} PRIVATE RINGMesh geogram)
+    add_dependencies(${exe_name} RINGMesh)
 
     # Add the project to a folder of projects for the tests
-    set_property(TARGET ${bin_name} PROPERTY FOLDER "Utilities")
-
+    set_target_properties(${exe_name} PROPERTIES FOLDER ${folder_name})
+    
     # ringmesh_files is defined in the root RINGMesh CMakeLists.txt.
     # This line is for clang utilities.
     set(ringmesh_files ${ringmesh_files} ${bin_path} PARENT_SCOPE)
+    copy_for_windows(${exe_name})
+endmacro()
+
+function(add_ringmesh_binary bin_path)
+    add_ringmesh_executable(${bin_path} "Utilities")
+    set_target_properties(${exe_name} PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()
 
-function(add_ringmesh_test cpp_file_path folder_name)
-    get_filename_component(cpp_file_name ${cpp_file_path} NAME_WE)
+function(add_ringmesh_utility bin_path)
+    add_ringmesh_executable(${bin_path} "Utilities")
+    set_target_properties(${exe_name} PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
+endfunction()
 
-    # Add the target for that file
-    add_executable(${cpp_file_name} ${cpp_file_path})
-
-    # Link RINGMesh Make sure YourLib is linked to each app
-    target_link_libraries(${cpp_file_name} geogram RINGMesh)
-
-    add_dependencies(${cpp_file_name} RINGMesh)
-
-    # Add the project to a folder of projects for the tests
-    set_property(TARGET ${cpp_file_name} PROPERTY FOLDER ${folder_name})
-
+function(add_ringmesh_test cpp_file_path)
+    add_ringmesh_executable(${cpp_file_path} "Tests")
     # Add the test to CTest
-    add_test(NAME ${cpp_file_name} COMMAND ${cpp_file_name})
+    add_test(NAME ${exe_name} COMMAND ${exe_name})
+    set_target_properties(${exe_name} PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tests)
+endfunction()
+
+
+function(add_ringmesh_tutorial cpp_file_path)
+    add_ringmesh_test(${cpp_file_path} "Tutorials")
+    set_target_properties(${exe_name} PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tutorials)
 endfunction()
