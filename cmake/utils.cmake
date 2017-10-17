@@ -61,27 +61,27 @@ function(copy_for_windows target)
 #    message(STATUS ${target})
 #    message(STATUS "$<TARGET_FILE_NAME:${target}>")
 if(WIN32)    
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET ${target} POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
             "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
             COMMENT "Copy RINGMesh dll")
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET ${target} POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
             "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
             COMMENT "Copy geogram binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET ${target} POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${ZLIB_PATH_BIN}/$<CONFIGURATION>"
             "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
             COMMENT "Copy zlib binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET ${target} POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${TINYXML2_PATH_BIN}/$<CONFIGURATION>"
             "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET ${target} POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
             "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
