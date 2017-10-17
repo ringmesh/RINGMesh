@@ -44,39 +44,47 @@ function(include_file_directory var directory)
 endfunction()
 
 function(copy_for_windows target)
-if(WIN32)
+
     # On windows, without proper installation steps, we need to
     # copy of Geogram dll and pdb information to RINGMesh
     # to be able to launch RINGMesh utilities and tests from the debugger
 
+#    include(BundleUtilities)
     # The dll and debug info of RINGMesh are in
     # build/ringmesh/Debug or build/ringmesh/Release.
-    get_target_property(directory ${target} RUNTIME_OUTPUT_DIRECTORY)
-    
+#    add_custom_command(TARGET ${target} POST_BUILD
+#        COMMAND  fixup_bundle(\"$<TARGET_FILE_DIR:${target}>\" \"\" \"${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>\")
+#            COMMENT "Copy geogram binaries")
+    #fixup_bundle(${target} "geogram" "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>")
+#    get_target_property(directory ${target} RUNTIME_OUTPUT_DIRECTORY)
+    #get_target_property(name ${target} LOCATION)
+#    message(STATUS ${target})
+#    message(STATUS "$<TARGET_FILE_NAME:${target}>")
+if(WIN32)    
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
-            "${directory}/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
             COMMENT "Copy RINGMesh dll")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
-            "${directory}/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
             COMMENT "Copy geogram binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${ZLIB_PATH_BIN}/$<CONFIGURATION>"
-            "${directory}/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
             COMMENT "Copy zlib binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${TINYXML2_PATH_BIN}/$<CONFIGURATION>"
-            "${directory}/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
-            "${directory}/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
             COMMENT "Copy minizip binaries")
 endif(WIN32)
 endfunction()
