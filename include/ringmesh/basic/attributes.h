@@ -900,6 +900,10 @@ namespace RINGMesh {
             store_ = nullptr;
         }
 
+        void set_constant_value( T value )
+        {
+
+        }
         /**
          * \brief Binds this Attribute to an AttributesManager.
          * \details If the attribute already exists with the specified
@@ -1091,6 +1095,15 @@ namespace RINGMesh {
         {
             ringmesh_assert( i < superclass::size() );
             ( ( T* ) superclass::store_->data() )[i] = value ;
+        }
+
+        /**
+        * \brief Gets a modifiable element by index
+        * \param [in] value to set at the \p i%th element
+        */
+        void set_constant_value( T value )
+        {
+            set_constant_value( value );
         }
 
         /**
