@@ -240,6 +240,7 @@ endforeach()
 add_library(RINGMesh SHARED
     ${ringmesh_include}
     ${ringmesh_src})
+add_library(RINGMesh::RINGMesh ALIAS RINGMesh)
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
