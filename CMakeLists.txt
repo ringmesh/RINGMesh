@@ -305,6 +305,7 @@ set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     add_ringmesh_binary(${binary_source_dir}/ringmesh-view.cpp)
+    copy_for_windows(${PROJECT_BINARY_DIR}/bin)
 endif()
 
 if(RINGMESH_WITH_UTILITIES)
@@ -314,16 +315,19 @@ if(RINGMESH_WITH_UTILITIES)
     foreach(utility_src ${utility_sources})
         add_ringmesh_utility(${utility_src})
     endforeach()
+    copy_for_windows(${PROJECT_BINARY_DIR}/bin/utilities)
 endif()
 
 if(RINGMESH_WITH_TUTORIALS)
     message(STATUS "Configuring RINGMesh with tutorials")
     add_subdirectory(doc/tutorials)
+    copy_for_windows(${PROJECT_BINARY_DIR}/bin/tutorials)
 endif()
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")
     add_subdirectory(tests)
+    copy_for_windows(${PROJECT_BINARY_DIR}/bin/tests)
 endif()
 
 
