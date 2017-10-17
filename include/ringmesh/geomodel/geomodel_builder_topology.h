@@ -93,10 +93,14 @@ namespace RINGMesh
         bool get_dependent_entities( std::set< gmme_id >& mesh_entities,
             std::set< gmge_id >& geological_entities ) const;
 
-        virtual gmme_id create_mesh_entity( const MeshEntityType& type );
+        virtual gmme_id create_mesh_entity(
+            const MeshEntityType& entity_type,
+            const MeshType& mesh_type = "" );
 
         virtual bool create_mesh_entities(
-            const MeshEntityType& type, index_t nb_additional_entities );
+            const MeshEntityType& entity_type,
+            index_t nb_additional_entities,
+            const MeshType& mesh_type = "" );
 
         void remove_mesh_entity_boundary_relation(
             const gmme_id& incident_entity, const gmme_id& boundary );
@@ -208,10 +212,14 @@ namespace RINGMesh
         friend class GeoModelBuilder< 3 >;
 
     public:
-        gmme_id create_mesh_entity( const MeshEntityType& type ) override;
+        gmme_id create_mesh_entity(
+            const MeshEntityType& entity_type,
+            const MeshType& mesh_type = "" ) override;
 
-        bool create_mesh_entities( const MeshEntityType& type,
-            index_t nb_additional_entities ) override;
+        bool create_mesh_entities(
+            const MeshEntityType& entity_type,
+            index_t nb_additional_entities,
+            const MeshType& mesh_type = "" ) override;
 
         void add_mesh_entity_boundary_relation(
             const gmme_id& incident_entity_id,
