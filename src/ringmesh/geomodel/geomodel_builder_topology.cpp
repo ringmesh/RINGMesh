@@ -590,21 +590,22 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entity(
-        const MeshEntityType& type )
+        const MeshEntityType& entity_type,
+        const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_corner( type ) )
+        if( manager.is_corner( entity_type ) )
         {
-            return this->create_mesh_entity< Corner >();
+            return this->create_mesh_entity< Corner >( mesh_type );
         }
-        if( manager.is_line( type ) )
+        if( manager.is_line( entity_type ) )
         {
-            return create_mesh_entity< Line >();
+            return create_mesh_entity< Line >( mesh_type );
         }
-        if( manager.is_surface( type ) )
+        if( manager.is_surface( entity_type ) )
         {
-            return create_mesh_entity< Surface >();
+            return create_mesh_entity< Surface >( mesh_type );
         }
         ringmesh_assert_not_reached;
         return gmme_id();
@@ -612,51 +613,56 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     bool GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entities(
-        const MeshEntityType& type, index_t nb_additional_entities )
+        const MeshEntityType& entity_type,
+        index_t nb_additional_entities,
+        const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_corner( type ) )
+        if( manager.is_corner( entity_type ) )
         {
             return this->create_mesh_entities< Corner >(
-                nb_additional_entities );
+                nb_additional_entities, mesh_type );
         }
-        if( manager.is_line( type ) )
+        if( manager.is_line( entity_type ) )
         {
-            return create_mesh_entities< Line >( nb_additional_entities );
+            return create_mesh_entities< Line >( nb_additional_entities, mesh_type );
         }
-        if( manager.is_surface( type ) )
+        if( manager.is_surface( entity_type ) )
         {
-            return create_mesh_entities< Surface >( nb_additional_entities );
+            return create_mesh_entities< Surface >( nb_additional_entities, mesh_type );
         }
         ringmesh_assert_not_reached;
         return false;
     }
 
     gmme_id GeoModelBuilderTopology< 3 >::create_mesh_entity(
-        const MeshEntityType& type )
+        const MeshEntityType& entity_type,
+        const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_region( type ) )
+        if( manager.is_region( entity_type ) )
         {
             return GeoModelBuilderTopologyBase3D::
-                create_mesh_entity< Region >();
+                create_mesh_entity< Region >( mesh_type );
         }
-        return GeoModelBuilderTopologyBase3D::create_mesh_entity( type );
+        return GeoModelBuilderTopologyBase3D::create_mesh_entity( entity_type, mesh_type );
     }
     bool GeoModelBuilderTopology< 3 >::create_mesh_entities(
-        const MeshEntityType& type, index_t nb_additional_entities )
+        const MeshEntityType& entity_type,
+        index_t nb_additional_entities,
+        const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_region( type ) )
+        if( manager.is_region( entity_type ) )
         {
             return GeoModelBuilderTopologyBase3D::
-                create_mesh_entities< Region >( nb_additional_entities );
+                create_mesh_entities< Region >( nb_additional_entities, mesh_type );
         }
         return GeoModelBuilderTopologyBase3D::create_mesh_entities(
-            type, nb_additional_entities );
+            entity_type, nb_additional_entities, mesh_type );
     }
     void GeoModelBuilderTopology< 3 >::copy_all_mesh_entity_topology(
         const GeoModel3D& from )
