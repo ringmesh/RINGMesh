@@ -43,7 +43,7 @@ function(include_file_directory var directory)
     set(${var} ${${var}} ${sources} PARENT_SCOPE)
 endfunction()
 
-function(copy_for_windows target)
+macro(copy_for_windows directory)
 
     # On windows, without proper installation steps, we need to
     # copy of Geogram dll and pdb information to RINGMesh
@@ -60,35 +60,39 @@ function(copy_for_windows target)
     #get_target_property(name ${target} LOCATION)
 #    message(STATUS ${target})
 #    message(STATUS "$<TARGET_FILE_NAME:${target}>")
-
+#    add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
+#        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+#            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+#            "${directory}/$<CONFIGURATION>"
+#            COMMENT "Copy RINGMesh dll")
 if(WIN32)    
     add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy RINGMesh dll")
     add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy geogram binaries")
     add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${ZLIB_PATH_BIN}/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy zlib binaries")
     add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${TINYXML2_PATH_BIN}/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
     add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy minizip binaries")
 endif(WIN32)
-endfunction()
+endmacro()
 
 macro(add_ringmesh_executable exe_path folder_name)
     get_filename_component(exe_name ${exe_path} NAME_WE)
@@ -104,7 +108,6 @@ macro(add_ringmesh_executable exe_path folder_name)
     # ringmesh_files is defined in the root RINGMesh CMakeLists.txt.
     # This line is for clang utilities.
     set(ringmesh_files ${ringmesh_files} ${bin_path} PARENT_SCOPE)
-    copy_for_windows(${exe_name})
 endmacro()
 
 function(add_ringmesh_binary bin_path)
