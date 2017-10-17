@@ -1,0 +1,32 @@
+version: 1.0.{build}
+
+image: Visual Studio 2015
+
+environment:
+  password:
+    secure: 61164urZVvsMrnw+6P+GBQ==
+    
+build:
+  parallel: true
+ 
+build_script:
+ - cmd: >-
+    mkdir build
+    
+    cd build
+    
+    mkdir ringmesh
+    
+    cd ringmesh
+    
+    cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DBUILD_RINGMESH_VIEW:BOOL=ON -DRINGMESH_TEST_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ../..
+    
+    cmake --build . --config Debug
+    
+test_script:
+ - cmd: cmake --build . --target RUN_TESTS --config Debug
+
+on_success:
+ - IF "%APPVEYOR_REPO_BRANCH%"=="default" (
+     C:\projects\ringmesh\launch_coverage.cmd
+   )
