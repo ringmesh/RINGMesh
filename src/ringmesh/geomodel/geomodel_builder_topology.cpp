@@ -310,12 +310,13 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_corner(
-        const vecn< DIMENSION >& point )
+        const vecn< DIMENSION >& point,
+        const MeshType& mesh_type )
     {
         gmme_id result{ find_corner( geomodel_, point ) };
         if( !result.is_defined() )
         {
-            result = create_mesh_entity< Corner >();
+            result = create_mesh_entity< Corner >( mesh_type );
             builder_.geometry.set_corner( result.index(), point );
         }
         return result;
@@ -323,12 +324,13 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_corner(
-        index_t geomodel_point_id )
+        index_t geomodel_point_id,
+        const MeshType& mesh_type )
     {
         gmme_id result{ find_corner( geomodel_, geomodel_point_id ) };
         if( !result.is_defined() )
         {
-            result = create_mesh_entity< Corner >();
+            result = create_mesh_entity< Corner >( mesh_type );
             builder_.geometry.set_corner( result.index(), geomodel_point_id );
         }
         return result;
@@ -336,7 +338,8 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_line(
-        const std::vector< vecn< DIMENSION > >& vertices )
+        const std::vector< vecn< DIMENSION > >& vertices,
+        const MeshType& mesh_type )
     {
         gmme_id result;
         for( const auto& line : geomodel_.lines() )
@@ -348,7 +351,7 @@ namespace RINGMesh
         }
         if( !result.is_defined() )
         {
-            result = create_mesh_entity< Line >();
+            result = create_mesh_entity< Line >( mesh_type );
             builder_.geometry.set_line( result.index(), vertices );
 
             // Finds the indices of the corner at both extremities
@@ -365,7 +368,8 @@ namespace RINGMesh
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_line(
         const std::vector< index_t >& sorted_adjacent_surfaces,
         const gmme_id& first_corner,
-        const gmme_id& second_corner )
+        const gmme_id& second_corner,
+        const MeshType& mesh_type )
     {
         for( const auto& line : geomodel_.lines() )
         {
@@ -388,7 +392,7 @@ namespace RINGMesh
                 }
             }
         }
-        return create_mesh_entity< Line >();
+        return create_mesh_entity< Line >( mesh_type );
     }
 
     template < index_t DIMENSION >
@@ -549,7 +553,7 @@ namespace RINGMesh
         const GeoModel< DIMENSION >& from )
     {
         const auto& type = ENTITY< DIMENSION >::type_name_static();
-        create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
+        create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ), "" );
 
         parallel_for( geomodel_.nb_mesh_entities( type ),
             [&type, &from, this]( index_t i ) {
