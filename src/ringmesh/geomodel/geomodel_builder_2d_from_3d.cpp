@@ -35,7 +35,11 @@
 
 #include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
 
+#include <ringmesh/basic/geometry.h>
+
+#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 
 #include <ringmesh/mesh/mesh_index.h>
@@ -45,21 +49,13 @@ namespace
     using namespace RINGMesh;
 
     const MeshEntityType projectable_entity_types[3] = {
-        Corner3D::type_name_static(), Line3D::type_name_static(),
-        Surface3D::type_name_static()
+        corner_type_name_static(), line_type_name_static(),
+        surface_type_name_static()
     };
 
-    struct GeologicalEntityTypeMapFrom2DTo3DInitializer
-    {
-        static std::map< GeologicalEntityType, GeologicalEntityType >
-            initialize_map()
-        {
-            std::map< GeologicalEntityType, GeologicalEntityType > map;
-            map[Contact3D::type_name_static()] =
-                Interface2D::type_name_static();
-            map[Interface3D::type_name_static()] = Layer2D::type_name_static();
-            return map;
-        }
+    const std::map< GeologicalEntityType, GeologicalEntityType > geol_entity_type_2d_to_3d_map =
+                { { Contact3D::type_name_static(), Interface2D::type_name_static() },
+                  { Interface3D::type_name_static(), Layer2D::type_name_static() }
     };
 
     template < typename U, typename T >
@@ -67,14 +63,35 @@ namespace
     {
         return map.find( key )->second;
     }
-
-    const std::map< GeologicalEntityType, GeologicalEntityType >
-        geol_entity_type_2d_to_3d_map =
-            GeologicalEntityTypeMapFrom2DTo3DInitializer::initialize_map();
 } // namespace
 
 namespace RINGMesh
 {
+    GeoModelBuilder2DFrom3D::GeoModelBuilder2DFrom3D( GeoModel2D& geomodel2d,
+        const GeoModel3D& geomodel3d_from,
+        const Geometry::Plane& plane )
+        : GeoModelBuilder( geomodel2d ),
+          geomodel3d_from_( geomodel3d_from ),
+          plane_( plane )
+    {
+        PlaneReferenceFrame3D plane_frame( plane );
+        u_axis_ = std::move( plane_frame.u );
+        v_axis_ = std::move( plane_frame.v );
+    }
+
+    vec2 GeoModelBuilder2DFrom3D::get_2d_coord( const vec3& coord3d )
+    {
+        return { dot( coord3d, u_axis_ ), dot( coord3d, v_axis_ ) };
+    }
+
+    GeoModelBuilder2DProjection::GeoModelBuilder2DProjection( GeoModel2D& geomodel2d,
+        const GeoModel3D& geomodel3d_from,
+        const Geometry::Plane& plane )
+        : GeoModelBuilder2DFrom3D( geomodel2d, geomodel3d_from, plane )
+    {
+        info.set_geomodel_name( geomodel3d_from_.name() + "_projected" );
+    }
+
     void GeoModelBuilder2DProjection::build_geomodel()
     {
         copy_geomodel_3d_topology();
