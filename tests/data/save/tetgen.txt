@@ -1,0 +1,4 @@
+modelA6_tetra.gm
+geomodel.node
+geomodel.neigh
+geomodel.ele
