@@ -38,14 +38,12 @@
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel_builder.h>
-
+#include <ringmesh/basic/geometry.h>
 
 namespace RINGMesh
 {
-    namespace Geometry
-    {
-        class Plane;
-    } // namespace Geometry
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    ALIAS_2D_AND_3D( GeoModel );
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -61,10 +59,7 @@ namespace RINGMesh
             const Geometry::Plane& plane );
 
     protected:
-        vec2 get_2d_coord( const vec3& coord3d )
-        {
-            return { dot( coord3d, u_axis_ ), dot( coord3d, v_axis_ ) };
-        }
+        vec2 get_2d_coord( const vec3& coord3d );
 
     protected:
         const GeoModel3D& geomodel3d_from_;
