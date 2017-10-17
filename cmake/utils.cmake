@@ -60,31 +60,32 @@ function(copy_for_windows target)
     #get_target_property(name ${target} LOCATION)
 #    message(STATUS ${target})
 #    message(STATUS "$<TARGET_FILE_NAME:${target}>")
+
 if(WIN32)    
-    add_custom_command(TARGET ${target} POST_BUILD
+    add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>"
             COMMENT "Copy RINGMesh dll")
-    add_custom_command(TARGET ${target} POST_BUILD
+    add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>"
             COMMENT "Copy geogram binaries")
-    add_custom_command(TARGET ${target} POST_BUILD
+    add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${ZLIB_PATH_BIN}/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>"
             COMMENT "Copy zlib binaries")
-    add_custom_command(TARGET ${target} POST_BUILD
+    add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${TINYXML2_PATH_BIN}/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>"
             COMMENT "Copy tinyxml2 binaries")
-    add_custom_command(TARGET ${target} POST_BUILD
+    add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
-            "$<TARGET_FILE_DIR:${target}>/$<CONFIGURATION>"
+            "$<TARGET_FILE_DIR:${target}>"
             COMMENT "Copy minizip binaries")
 endif(WIN32)
 endfunction()
