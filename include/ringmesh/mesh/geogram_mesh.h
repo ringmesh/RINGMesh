@@ -135,8 +135,8 @@ protected:                                                                     \
         index_t edge_vertex(
             const ElementLocalVertex& edge_local_vertex ) const override
         {
-            return mesh_->edges.vertex( edge_local_vertex.element_id_,
-                edge_local_vertex.local_vertex_id_ );
+            return mesh_->edges.vertex( edge_local_vertex.element_id,
+                edge_local_vertex.local_vertex_id );
         }
 
         index_t nb_edges() const override
@@ -161,8 +161,8 @@ protected:                                                                     \
         index_t polygon_vertex(
             const ElementLocalVertex& polygon_local_vertex ) const override
         {
-            return mesh_->facets.vertex( polygon_local_vertex.element_id_,
-                polygon_local_vertex.local_vertex_id_ );
+            return mesh_->facets.vertex( polygon_local_vertex.element_id,
+                polygon_local_vertex.local_vertex_id );
         }
 
         index_t nb_polygons() const override
@@ -178,8 +178,8 @@ protected:                                                                     \
         index_t polygon_adjacent(
             const PolygonLocalEdge& polygon_local_edge ) const override
         {
-            return mesh_->facets.adjacent( polygon_local_edge.polygon_id_,
-                polygon_local_edge.local_edge_id_ );
+            return mesh_->facets.adjacent( polygon_local_edge.polygon_id,
+                polygon_local_edge.local_edge_id );
         }
 
         GEO::AttributesManager& polygon_attribute_manager() const override
@@ -204,8 +204,8 @@ protected:                                                                     \
         index_t cell_vertex(
             const ElementLocalVertex& cell_local_vertex ) const override
         {
-            return mesh_->cells.vertex( cell_local_vertex.element_id_,
-                cell_local_vertex.local_vertex_id_ );
+            return mesh_->cells.vertex( cell_local_vertex.element_id,
+                cell_local_vertex.local_vertex_id );
         }
 
         index_t cell_edge_vertex(
@@ -217,15 +217,15 @@ protected:                                                                     \
         index_t cell_facet_vertex( const CellLocalFacet& cell_local_facet,
             index_t vertex_id ) const override
         {
-            return mesh_->cells.facet_vertex( cell_local_facet.cell_id_,
-                cell_local_facet.local_facet_id_, vertex_id );
+            return mesh_->cells.facet_vertex( cell_local_facet.cell_id,
+                cell_local_facet.local_facet_id, vertex_id );
         }
 
         index_t cell_facet(
             const CellLocalFacet& cell_local_facet ) const override
         {
             return mesh_->cells.facet(
-                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
+                cell_local_facet.cell_id, cell_local_facet.local_facet_id );
         }
 
         index_t nb_cell_facets( index_t cell_id ) const override
@@ -247,7 +247,7 @@ protected:                                                                     \
             const CellLocalFacet& cell_local_facet ) const override
         {
             return mesh_->cells.facet_nb_vertices(
-                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
+                cell_local_facet.cell_id, cell_local_facet.local_facet_id );
         }
 
         index_t nb_cell_vertices( index_t cell_id ) const override
@@ -274,7 +274,7 @@ protected:                                                                     \
             const CellLocalFacet& cell_local_facet ) const override
         {
             return mesh_->cells.adjacent(
-                cell_local_facet.cell_id_, cell_local_facet.local_facet_id_ );
+                cell_local_facet.cell_id, cell_local_facet.local_facet_id );
         }
 
         GEO::AttributesManager& cell_attribute_manager() const override
