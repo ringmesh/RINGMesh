@@ -78,11 +78,11 @@ int main()
         builder.build_lines_and_corners_from_surfaces();
         builder.build_regions_from_lines_and_surfaces();
         builder.end_geomodel();
-        print_geomodel( geomodel );
 
         // Checking the validity of loaded model
         ValidityCheckMode validity_mode = ValidityCheckMode::ALL;
-#ifndef RINGMESH_DEBUG
+
+#ifdef RINGMESH_DEBUG
         validity_mode =
             validity_mode ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
 #endif
@@ -94,13 +94,6 @@ int main()
                     "Failed when loading model ", geomodel.name(),
                     ": the loaded model is not valid." );
             }
-        } ) );
-
-        futures.emplace_back( std::async( std::launch::async, [&geomodel] {
-            // Save and reload the model
-            std::string output_file( ringmesh_test_output_path );
-            output_file += "saved_modelA6.gm";
-            geomodel_save( geomodel, output_file );
         } ) );
 
         GEO::Mesh surface_meshes;
@@ -144,7 +137,6 @@ int main()
         builder2.build_lines_and_corners_from_surfaces();
         builder2.build_regions_from_lines_and_surfaces();
         builder2.end_geomodel();
-        print_geomodel( reloaded_model );
 
         futures.emplace_back(
             std::async( std::launch::async, [&reloaded_model, &validity_mode] {
