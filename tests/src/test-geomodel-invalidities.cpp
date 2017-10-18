@@ -128,6 +128,21 @@ int main()
             }
         } ) );
 
+        // Load a model without region : 6 surfaces defining a cube with holes
+        // between surfaces (all surface borders are free borders)
+        GeoModel3D not_sealed_cube_geomodel;
+        std::string input_cube_model_file_name( ringmesh_test_data_path );
+        input_cube_model_file_name += "not_sealed_cube.ml";
+        bool is_cube_valid = geomodel_load(
+            not_sealed_cube_geomodel, input_cube_model_file_name );
+
+        if( !is_cube_valid )
+        {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed to detect invalidities in loaded model ",
+                not_sealed_cube_geomodel.name() );
+        }
+
         for( auto& future : futures )
         {
             future.get();
