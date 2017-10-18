@@ -118,9 +118,9 @@ namespace
     }
 
     void home_rotation() {
-	float axis[3] = { 1, 0.5, 1 };
-	float angle { 80 };
-	glup_viewer_set_scene_rotation( axis, angle );
+	    float axis[3] = { 1, 0.5, 1 };
+	    float angle { 80 };
+	    glup_viewer_set_scene_rotation( axis, angle );
     }
 }
 namespace RINGMesh
