@@ -37,6 +37,8 @@
 
 #include <future>
 
+#include <geogram/basic/command_line.h>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
@@ -60,10 +62,11 @@ void make_geomodel_copy(
     geomodel_breaker2.info.set_geomodel_name( name );
 }
 
-void verdict( const GeoModel3D& invalid_model, const std::string& feature )
+void verdict(
+    const GeoModel3D& invalid_model,
+    const std::string& feature,
+    const ValidityCheckMode& validity_check_mode )
 {
-    ValidityCheckMode validity_check_mode =
-        ValidityCheckMode::ALL ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
     if( is_geomodel_valid( invalid_model, validity_check_mode ) )
     {
         throw RINGMeshException( "RINGMesh Test", "Fail to ", feature );
@@ -80,31 +83,37 @@ int main()
     {
         default_configure();
 
+        // No validity checks at loading
+        GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
+
         std::vector< std::future< void > > futures;
 
         futures.emplace_back( std::async( std::launch::async, [] {
             std::string input_model_file_name{ ringmesh_test_data_path
                                                + "modelA6.ml" };
-            GeoModel3D in;
-            bool loaded_model_is_valid{ geomodel_load(
-                in, input_model_file_name ) };
+            GeoModel3D geomodel;
+            geomodel_load( geomodel, input_model_file_name );
 
-            if( !loaded_model_is_valid )
-            {
-                throw RINGMeshException(
-                    "RINGMesh Test", "Failed when loading model " + in.name()
-                                         + ": the loaded model is not valid." );
-            }
+            Logger::out( "TEST", "Break geomodel:" );
 
-            Logger::out( "TEST", "Break geomodels:" );
+            ValidityCheckMode validity_check_mode =
+                ValidityCheckMode::ALL ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
 
             GeoModel3D invalid_model;
-            make_geomodel_copy( in, "broken model 1", invalid_model );
+            make_geomodel_copy( geomodel, "broken model 1", invalid_model );
             GeoModelBuilder3D geomodel_breaker( invalid_model );
             geomodel_breaker.geology.create_geological_entity(
                 RINGMesh::Interface3D::type_name_static() );
+            if( is_geomodel_valid( geomodel,
+                    ValidityCheckMode::TOPOLOGY ) )
+            {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Fail to detect addition of an isolated "
+                    "GeoModelGeologicalEntity" );
+            }
             verdict( invalid_model,
-                "detect addition of an isolated GeoModelGeologicalEntity" );
+                "detect addition of an isolated GeoModelGeologicalEntity",
+                validity_check_mode );
         } ) );
 
         futures.emplace_back( std::async( std::launch::async, [] {

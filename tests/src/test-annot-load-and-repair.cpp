@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <geogram/basic/command_line.h>
+
 #include <ringmesh/geomodel/geomodel_repair.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
@@ -57,6 +59,9 @@ int main()
         Logger::out( "RINGMesh Test", "Loading and fixing structural geomodel:",
             file_name );
 
+        // Check only model geometry
+        GEO::CmdLine::set_arg( "validity:do_not_check", "tGI" );
+
         // Load the geomodel
         GeoModel3D geomodel;
         bool init_model_is_valid{ geomodel_load( geomodel, file_name ) };
@@ -67,13 +72,13 @@ int main()
                 " must be invalid to check the repair functionalities." );
         }
 
-        Logger::out( "RINGMesh Test", "Repairing" );
+        Logger::out( "RINGMesh Test", "Repairing..." );
 
         // Repair the geomodel
         repair_geomodel( geomodel, RepairMode::ALL );
 
         // Test the validity again
-        if( !is_geomodel_valid( geomodel ) )
+        if( !is_geomodel_valid( geomodel, ValidityCheckMode::GEOMETRY ) )
         {
             throw RINGMeshException(
                 "RINGMesh Test", "Fixing the invalid geological model "
