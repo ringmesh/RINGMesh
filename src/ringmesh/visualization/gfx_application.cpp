@@ -1614,7 +1614,7 @@ namespace RINGMesh
     {
         if( ImGui::Button( "home [H]", ImVec2( -1, 0 ) ) )
         {
-            glup_viewer_home();
+	    glup_viewer_home();
 	    bool geomodel_2d_displayed { false };
 	    for( auto& geomodel2d: geomodels2d_ ) {
 		if( geomodel2d->is_visible_ ) {
@@ -1623,9 +1623,9 @@ namespace RINGMesh
 		}
 	    }
 	    if( !geomodel_2d_displayed ) {
-                float axis[3] = { 1, 0.5, 1 };
-	        float angle { 80 };
-	        glup_viewer_set_scene_rotation( axis, angle );
+		float axis[3] = { 1, 0.5, 1 };
+		float angle { 80 };
+		glup_viewer_set_scene_rotation( axis, angle );
 	    }
         }
 	
