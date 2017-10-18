@@ -42,6 +42,7 @@
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
@@ -83,6 +84,21 @@ int main()
     {
         default_configure();
 
+        // Load a model without region : 6 surfaces defining a cube with holes
+        // between surfaces (all surface borders are free borders)
+        GeoModel3D not_sealed_cube_geomodel;
+        std::string input_cube_model_file_name( ringmesh_test_data_path );
+        input_cube_model_file_name += "not_sealed_cube.ml";
+        bool is_cube_valid = geomodel_load(
+            not_sealed_cube_geomodel, input_cube_model_file_name );
+
+        if( is_cube_valid )
+        {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed to detect invalidities in loaded model ",
+                not_sealed_cube_geomodel.name() );
+        }
+
         // No validity checks at loading
         GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
 
@@ -96,24 +112,18 @@ int main()
 
             Logger::out( "TEST", "Break geomodel:" );
 
-            ValidityCheckMode validity_check_mode =
-                ValidityCheckMode::ALL ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
-
             GeoModel3D invalid_model;
             make_geomodel_copy( geomodel, "broken model 1", invalid_model );
             GeoModelBuilder3D geomodel_breaker( invalid_model );
-            geomodel_breaker.geology.create_geological_entity(
-                RINGMesh::Interface3D::type_name_static() );
-            if( is_geomodel_valid( geomodel,
+            geomodel_breaker.topology.create_mesh_entity(
+                RINGMesh::Surface3D::type_name_static() );
+            if( is_geomodel_valid( invalid_model,
                     ValidityCheckMode::TOPOLOGY ) )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Fail to detect addition of an isolated "
-                    "GeoModelGeologicalEntity" );
+                    "GeoModelMeshEntity" );
             }
-            verdict( invalid_model,
-                "detect addition of an isolated GeoModelGeologicalEntity",
-                validity_check_mode );
         } ) );
 
         futures.emplace_back( std::async( std::launch::async, [] {
@@ -127,21 +137,6 @@ int main()
                     "Fail to SURFACE_LINE_MESH_CONFORMITY on CloudSpin" );
             }
         } ) );
-
-        // Load a model without region : 6 surfaces defining a cube with holes
-        // between surfaces (all surface borders are free borders)
-        GeoModel3D not_sealed_cube_geomodel;
-        std::string input_cube_model_file_name( ringmesh_test_data_path );
-        input_cube_model_file_name += "not_sealed_cube.ml";
-        bool is_cube_valid = geomodel_load(
-            not_sealed_cube_geomodel, input_cube_model_file_name );
-
-        if( !is_cube_valid )
-        {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed to detect invalidities in loaded model ",
-                not_sealed_cube_geomodel.name() );
-        }
 
         for( auto& future : futures )
         {
