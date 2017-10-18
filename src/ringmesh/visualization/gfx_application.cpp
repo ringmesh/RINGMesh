@@ -1618,7 +1618,8 @@ namespace RINGMesh
 	    bool geomodel_2d_displayed { false };
 	    for( auto& geomodel2d: geomodels2d_ ) {
 		if( geomodel2d->is_visible_ ) {
-		    geomodel_2d_displayed = true ;
+		    geomodel_2d_displayed = true;
+		    break;
 		}
 	    }
 	    if( !geomodel_2d_displayed ) {
