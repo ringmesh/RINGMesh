@@ -49,22 +49,8 @@ macro(copy_for_windows directory)
     # copy of Geogram dll and pdb information to RINGMesh
     # to be able to launch RINGMesh utilities and tests from the debugger
 
-#    include(BundleUtilities)
     # The dll and debug info of RINGMesh are in
     # build/ringmesh/Debug or build/ringmesh/Release.
-#    add_custom_command(TARGET ${target} POST_BUILD
-#        COMMAND  fixup_bundle(\"$<TARGET_FILE_DIR:${target}>\" \"\" \"${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>\")
-#            COMMENT "Copy geogram binaries")
-    #fixup_bundle(${target} "geogram" "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>")
-#    get_target_property(directory ${target} RUNTIME_OUTPUT_DIRECTORY)
-    #get_target_property(name ${target} LOCATION)
-#    message(STATUS ${target})
-#    message(STATUS "$<TARGET_FILE_NAME:${target}>")
-#    add_custom_command(TARGET RINGMesh::RINGMesh POST_BUILD
-#        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-#            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
-#            "${directory}/$<CONFIGURATION>"
-#            COMMENT "Copy RINGMesh dll")
 if(WIN32)
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
