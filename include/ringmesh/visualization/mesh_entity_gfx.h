@@ -359,7 +359,7 @@ namespace RINGMesh
 
         std::string name_;
         index_t coordinate_{ 0 };
-        GLuint colormap_texture_{ 0 };
+        GLuint colormap_texture_{ 5 };
         double minimum_{ 0 };
         double maximum_{ 0 };
 

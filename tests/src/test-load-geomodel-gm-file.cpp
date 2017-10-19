@@ -66,40 +66,10 @@ namespace
     }
 
     template < index_t DIMENSION >
-    void save_and_compare_geomodels( const GeoModel< DIMENSION >& in )
-    {
-        std::string output_model_file_name( ringmesh_test_output_path );
-        output_model_file_name += "modelA1_saved_out.gm";
-        geomodel_save( in, output_model_file_name );
-
-        GeoModel< DIMENSION > in2;
-        bool reloaded_model_is_valid =
-            geomodel_load( in2, output_model_file_name );
-
-        if( !reloaded_model_is_valid )
-        {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when reloading model ", in2.name(),
-                ": the reloaded model is not valid." );
-        }
-
-        std::string output_model_file_name_bis( ringmesh_test_output_path );
-        output_model_file_name_bis += "modelA1_saved_out_bis.gm";
-        geomodel_save( in2, output_model_file_name_bis );
-
-        if( !compare_files(
-                output_model_file_name, output_model_file_name_bis ) )
-        {
-            throw RINGMeshException( "TEST", "FAILED" );
-        }
-    }
-
-    template < index_t DIMENSION >
     void test_file( const std::string& filename )
     {
         GeoModel< DIMENSION > in;
         load_geomodel( in, filename );
-        save_and_compare_geomodels( in );
     }
 }
 

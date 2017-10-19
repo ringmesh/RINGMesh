@@ -302,17 +302,17 @@ namespace RINGMesh
         const ElementLocalVertex& polygon_local_vertex ) const
     {
         const index_t local_vertex_id =
-            polygon_local_vertex.local_vertex_id_;
+            polygon_local_vertex.local_vertex_id;
         ringmesh_assert(
             local_vertex_id
-            < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
+            < nb_polygon_vertices( polygon_local_vertex.element_id ) );
         if( local_vertex_id
-            != nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 )
+            != nb_polygon_vertices( polygon_local_vertex.element_id ) - 1 )
         {
-            return { polygon_local_vertex.element_id_,
+            return { polygon_local_vertex.element_id,
                 local_vertex_id + 1 };
         }
-        return { polygon_local_vertex.element_id_, 0 };
+        return { polygon_local_vertex.element_id, 0 };
     }
 
     template < index_t DIMENSION >
@@ -320,15 +320,15 @@ namespace RINGMesh
         const ElementLocalVertex& polygon_local_vertex ) const
     {
         ringmesh_assert(
-            polygon_local_vertex.local_vertex_id_
-            < nb_polygon_vertices( polygon_local_vertex.element_id_ ) );
-        if( polygon_local_vertex.local_vertex_id_ > 0 )
+            polygon_local_vertex.local_vertex_id
+            < nb_polygon_vertices( polygon_local_vertex.element_id ) );
+        if( polygon_local_vertex.local_vertex_id > 0 )
         {
-            return { polygon_local_vertex.element_id_,
-                polygon_local_vertex.local_vertex_id_ - 1 };
+            return { polygon_local_vertex.element_id,
+                polygon_local_vertex.local_vertex_id - 1 };
         }
-        return { polygon_local_vertex.element_id_,
-            nb_polygon_vertices( polygon_local_vertex.element_id_ ) - 1 };
+        return { polygon_local_vertex.element_id,
+            nb_polygon_vertices( polygon_local_vertex.element_id ) - 1 };
     }
 
     template < index_t DIMENSION >
@@ -342,9 +342,9 @@ namespace RINGMesh
             return polygon_vertex( polygon_local_edge );
         }
         return polygon_vertex( {
-            polygon_local_edge.polygon_id_,
-            ( polygon_local_edge.local_edge_id_ + vertex_id )
-                % nb_polygon_vertices( polygon_local_edge.polygon_id_ ) } );
+            polygon_local_edge.polygon_id,
+            ( polygon_local_edge.local_edge_id + vertex_id )
+                % nb_polygon_vertices( polygon_local_edge.polygon_id ) } );
     }
 
     template < index_t DIMENSION >
@@ -399,8 +399,8 @@ namespace RINGMesh
         const PolygonLocalEdge& polygon_local_edge ) const
     {
         ringmesh_assert(
-            polygon_local_edge.local_edge_id_
-            < nb_polygon_vertices( polygon_local_edge.polygon_id_ ) );
+            polygon_local_edge.local_edge_id
+            < nb_polygon_vertices( polygon_local_edge.polygon_id ) );
         ringmesh_assert( is_edge_on_border( polygon_local_edge ) );
 
         // Global indices in the surfaces
@@ -411,19 +411,19 @@ namespace RINGMesh
         // boundary
         // There must be one (the current one) or two (the next one on boundary)
         auto polygons_around_next_v_id = polygons_around_vertex(
-            next_v_id, true, polygon_local_edge.polygon_id_ );
+            next_v_id, true, polygon_local_edge.polygon_id );
         auto nb_around =
             static_cast< index_t >( polygons_around_next_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
         PolygonLocalEdge next_polygon_local_edge{ NO_ID, NO_ID };
-        auto& next_p = next_polygon_local_edge.polygon_id_;
+        auto& next_p = next_polygon_local_edge.polygon_id;
         next_p = polygons_around_next_v_id[0];
-        auto& next_e = next_polygon_local_edge.local_edge_id_;
+        auto& next_e = next_polygon_local_edge.local_edge_id;
 
         if( nb_around == 2 )
         {
-            if( next_p == polygon_local_edge.polygon_id_ )
+            if( next_p == polygon_local_edge.polygon_id )
             {
                 next_p = polygons_around_next_v_id[1];
             }
@@ -449,8 +449,8 @@ namespace RINGMesh
         const PolygonLocalEdge& polygon_local_edge ) const
     {
         ringmesh_assert(
-            polygon_local_edge.local_edge_id_
-            < nb_polygon_vertices( polygon_local_edge.polygon_id_ ) );
+            polygon_local_edge.local_edge_id
+            < nb_polygon_vertices( polygon_local_edge.polygon_id ) );
         ringmesh_assert( is_edge_on_border( polygon_local_edge ) );
 
         // Global indices in the surfaces
@@ -460,18 +460,18 @@ namespace RINGMesh
         // boundary
         // There must be one (the current one) or two (the next one on boundary)
         auto polygons_around_v_id = polygons_around_vertex(
-            v_id, true, polygon_local_edge.polygon_id_ );
+            v_id, true, polygon_local_edge.polygon_id );
         auto nb_around = static_cast< index_t >( polygons_around_v_id.size() );
         ringmesh_assert( nb_around == 1 || nb_around == 2 );
 
         PolygonLocalEdge prev_polygon_local_edge{ NO_ID, NO_ID };
-        auto& prev_p = prev_polygon_local_edge.polygon_id_;
+        auto& prev_p = prev_polygon_local_edge.polygon_id;
         prev_p = polygons_around_v_id[0];
-        auto& prev_e = prev_polygon_local_edge.local_edge_id_;
+        auto& prev_e = prev_polygon_local_edge.local_edge_id;
 
         if( nb_around == 2 )
         {
-            if( prev_p == polygon_local_edge.polygon_id_ )
+            if( prev_p == polygon_local_edge.polygon_id )
             {
                 prev_p = polygons_around_v_id[1];
             }
@@ -482,7 +482,7 @@ namespace RINGMesh
             auto v_in_prev_f = vertex_index_in_polygon( prev_p, v_id );
             // Local index of previous vertex in the prev polygon
             prev_e =
-                prev_polygon_vertex( { prev_p, v_in_prev_f } ).local_vertex_id_;
+                prev_polygon_vertex( { prev_p, v_in_prev_f } ).local_vertex_id;
             ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         }
         else if( nb_around == 1 )
@@ -490,7 +490,7 @@ namespace RINGMesh
             // v_id must be in two border edges of polygon p
             auto v_in_next_polygon = vertex_index_in_polygon( prev_p, v_id );
             prev_e = prev_polygon_vertex( { prev_p, v_in_next_polygon } )
-                         .local_vertex_id_;
+                         .local_vertex_id;
             ringmesh_assert( is_edge_on_border( prev_polygon_local_edge ) );
         }
 
@@ -610,7 +610,7 @@ namespace RINGMesh
                 {
                     auto adj_P = polygon_adjacent( { p, v } );
                     auto prev =
-                        prev_polygon_vertex( { p, v } ).local_vertex_id_;
+                        prev_polygon_vertex( { p, v } ).local_vertex_id;
                     auto adj_prev = polygon_adjacent( { p, prev } );
 
                     if( adj_P != NO_ID )
@@ -879,9 +879,9 @@ namespace RINGMesh
     vecn< DIMENSION > VolumeMesh< DIMENSION >::cell_facet_normal(
         const CellLocalFacet& cell_local_facet ) const
     {
-        ringmesh_assert( cell_local_facet.cell_id_ < nb_cells() );
-        ringmesh_assert( cell_local_facet.local_facet_id_
-                         < nb_cell_facets( cell_local_facet.cell_id_ ) );
+        ringmesh_assert( cell_local_facet.cell_id < nb_cells() );
+        ringmesh_assert( cell_local_facet.local_facet_id
+                         < nb_cell_facets( cell_local_facet.cell_id ) );
 
         const auto& p1 =
             this->vertex( cell_facet_vertex( cell_local_facet, 0 ) );

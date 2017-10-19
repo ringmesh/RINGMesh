@@ -38,6 +38,7 @@
 #include <geogram/basic/algorithm.h>
 
 #include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_repair.h>
 
 #include <ringmesh/mesh/mesh.h>

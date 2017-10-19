@@ -35,8 +35,13 @@
 
 #include <ringmesh/geomodel/geomodel_builder_topology.h>
 
+#include <algorithm>
+
 #include <ringmesh/basic/geometry.h>
+
+#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @file Implementation of GeoModel topological edition functions
@@ -305,12 +310,13 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_corner(
-        const vecn< DIMENSION >& point )
+        const vecn< DIMENSION >& point,
+        const MeshType& mesh_type )
     {
         gmme_id result{ find_corner( geomodel_, point ) };
         if( !result.is_defined() )
         {
-            result = create_mesh_entity< Corner >();
+            result = create_mesh_entity< Corner >( mesh_type );
             builder_.geometry.set_corner( result.index(), point );
         }
         return result;
@@ -318,12 +324,13 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_corner(
-        index_t geomodel_point_id )
+        index_t geomodel_point_id,
+        const MeshType& mesh_type )
     {
         gmme_id result{ find_corner( geomodel_, geomodel_point_id ) };
         if( !result.is_defined() )
         {
-            result = create_mesh_entity< Corner >();
+            result = create_mesh_entity< Corner >( mesh_type );
             builder_.geometry.set_corner( result.index(), geomodel_point_id );
         }
         return result;
@@ -331,7 +338,8 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_line(
-        const std::vector< vecn< DIMENSION > >& vertices )
+        const std::vector< vecn< DIMENSION > >& vertices,
+        const MeshType& mesh_type )
     {
         gmme_id result;
         for( const auto& line : geomodel_.lines() )
@@ -343,7 +351,7 @@ namespace RINGMesh
         }
         if( !result.is_defined() )
         {
-            result = create_mesh_entity< Line >();
+            result = create_mesh_entity< Line >( mesh_type );
             builder_.geometry.set_line( result.index(), vertices );
 
             // Finds the indices of the corner at both extremities
@@ -360,7 +368,8 @@ namespace RINGMesh
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_line(
         const std::vector< index_t >& sorted_adjacent_surfaces,
         const gmme_id& first_corner,
-        const gmme_id& second_corner )
+        const gmme_id& second_corner,
+        const MeshType& mesh_type )
     {
         for( const auto& line : geomodel_.lines() )
         {
@@ -383,7 +392,7 @@ namespace RINGMesh
                 }
             }
         }
-        return create_mesh_entity< Line >();
+        return create_mesh_entity< Line >( mesh_type );
     }
 
     template < index_t DIMENSION >
@@ -539,6 +548,23 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    template< template< index_t > class ENTITY >
+    void GeoModelBuilderTopologyBase< DIMENSION >::copy_mesh_entity_topology(
+        const GeoModel< DIMENSION >& from )
+    {
+        const auto& type = ENTITY< DIMENSION >::type_name_static();
+        create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ), "" );
+
+        parallel_for( geomodel_.nb_mesh_entities( type ),
+            [&type, &from, this]( index_t i ) {
+                gmme_id id( type, i );
+                GeoModelMeshEntityAccess< DIMENSION > gmme_access(
+                    geomodel_access_.modifiable_mesh_entity( id ) );
+                gmme_access.copy( from.mesh_entity( id ) );
+            } );
+    }
+
+    template < index_t DIMENSION >
     void GeoModelBuilderTopologyBase< DIMENSION >::
         set_mesh_entity_incident_entity(
             const gmme_id& gmme, index_t id, index_t incident_entity_id )
@@ -568,21 +594,22 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entity(
-        const MeshEntityType& type )
+        const MeshEntityType& entity_type,
+        const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_corner( type ) )
+        if( manager.is_corner( entity_type ) )
         {
-            return this->create_mesh_entity< Corner >();
+            return this->create_mesh_entity< Corner >( mesh_type );
         }
-        if( manager.is_line( type ) )
+        if( manager.is_line( entity_type ) )
         {
-            return create_mesh_entity< Line >();
+            return create_mesh_entity< Line >( mesh_type );
         }
-        if( manager.is_surface( type ) )
+        if( manager.is_surface( entity_type ) )
         {
-            return create_mesh_entity< Surface >();
+            return create_mesh_entity< Surface >( mesh_type );
         }
         ringmesh_assert_not_reached;
         return gmme_id();
@@ -590,51 +617,56 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     bool GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entities(
-        const MeshEntityType& type, index_t nb_additional_entities )
+        const MeshEntityType& entity_type,
+        index_t nb_additional_entities,
+        const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_corner( type ) )
+        if( manager.is_corner( entity_type ) )
         {
             return this->create_mesh_entities< Corner >(
-                nb_additional_entities );
+                nb_additional_entities, mesh_type );
         }
-        if( manager.is_line( type ) )
+        if( manager.is_line( entity_type ) )
         {
-            return create_mesh_entities< Line >( nb_additional_entities );
+            return create_mesh_entities< Line >( nb_additional_entities, mesh_type );
         }
-        if( manager.is_surface( type ) )
+        if( manager.is_surface( entity_type ) )
         {
-            return create_mesh_entities< Surface >( nb_additional_entities );
+            return create_mesh_entities< Surface >( nb_additional_entities, mesh_type );
         }
         ringmesh_assert_not_reached;
         return false;
     }
 
     gmme_id GeoModelBuilderTopology< 3 >::create_mesh_entity(
-        const MeshEntityType& type )
+        const MeshEntityType& entity_type,
+        const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_region( type ) )
+        if( manager.is_region( entity_type ) )
         {
             return GeoModelBuilderTopologyBase3D::
-                create_mesh_entity< Region >();
+                create_mesh_entity< Region >( mesh_type );
         }
-        return GeoModelBuilderTopologyBase3D::create_mesh_entity( type );
+        return GeoModelBuilderTopologyBase3D::create_mesh_entity( entity_type, mesh_type );
     }
     bool GeoModelBuilderTopology< 3 >::create_mesh_entities(
-        const MeshEntityType& type, index_t nb_additional_entities )
+        const MeshEntityType& entity_type,
+        index_t nb_additional_entities,
+        const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_region( type ) )
+        if( manager.is_region( entity_type ) )
         {
             return GeoModelBuilderTopologyBase3D::
-                create_mesh_entities< Region >( nb_additional_entities );
+                create_mesh_entities< Region >( nb_additional_entities, mesh_type );
         }
         return GeoModelBuilderTopologyBase3D::create_mesh_entities(
-            type, nb_additional_entities );
+            entity_type, nb_additional_entities, mesh_type );
     }
     void GeoModelBuilderTopology< 3 >::copy_all_mesh_entity_topology(
         const GeoModel3D& from )
