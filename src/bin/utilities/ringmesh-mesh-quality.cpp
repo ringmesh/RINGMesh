@@ -37,6 +37,8 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/stopwatch.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
@@ -63,6 +65,10 @@ namespace
     {
         GEO::CmdLine::declare_arg_group( "quality", "Mesh quality" );
         GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" );
+        GEO::CmdLine::declare_arg( "quality:min_value", 0.01,
+            "Cell quality is defined as low if below this minimum value" );
+        GEO::CmdLine::declare_arg( "quality:output", "",
+            "Output filename for a mesh containing low quality tetrahedra" );
     }
 
     void import_arg_groups()
@@ -112,6 +118,20 @@ namespace
         index_t quality_mode = GEO::CmdLine::get_arg_uint( "quality:mode" );
         compute_prop_tet_mesh_quality(
             static_cast< MeshQualityMode >( quality_mode ), geomodel );
+
+        std::string min_quality_out_name =
+            GEO::CmdLine::get_arg( "quality:output" );
+         if( !min_quality_out_name.empty() )
+         {
+             double min_quality =
+                 GEO::CmdLine::get_arg_double( "quality:min_value" );
+             // Working on attributes
+             GEO::Mesh output_mesh;
+             output_low_quality_cells(
+                 static_cast< MeshQualityMode >( quality_mode ),
+                 geomodel, output_mesh, min_quality );
+             GEO::mesh_save( output_mesh, min_quality_out_name );
+         }
 
         std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( geomodel_out_name.empty() )
