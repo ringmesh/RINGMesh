@@ -69,7 +69,7 @@ namespace
         {
             for( auto i : range( attribute.size() ) )
             {
-                double value = attribute[i];
+                auto value = attribute[i];
                 min = GEO::geo_min( min, value );
                 max = GEO::geo_max( max, value );
             }
@@ -95,7 +95,7 @@ namespace RINGMesh
 
         void bind_attribute() override
         {
-            std::string attribute_name = get_attribute_name_with_coordinate(
+            auto attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             this->manager_->gfx().regions.set_scalar_attribute( GEO::MESH_CELLS,
                 attribute_name, this->manager_->minimum(),
@@ -109,7 +109,7 @@ namespace RINGMesh
 
         index_t nb_coordinates() override
         {
-            GEO::AttributeStore* store =
+            auto store =
                 get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
@@ -120,7 +120,7 @@ namespace RINGMesh
 
         GEO::AttributesManager& get_attribute_manager() override
         {
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             return geomodel->region( 0 ).cell_attribute_manager();
         }
@@ -129,9 +129,9 @@ namespace RINGMesh
         void do_compute_range(
             double& attribute_min, double& attribute_max ) override
         {
-            std::string attribute_name = get_attribute_name_with_coordinate(
+            auto attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             for( const auto& region : geomodel->regions() )
             {
@@ -184,7 +184,7 @@ namespace RINGMesh
 
         GEO::AttributesManager& get_attribute_manager() override
         {
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             return geomodel->region( 0 ).cell_corners_attribute_manager();
         }
@@ -193,9 +193,9 @@ namespace RINGMesh
         void do_compute_range(
             double& attribute_min, double& attribute_max ) override
         {
-            std::string attribute_name = get_attribute_name_with_coordinate(
+            auto attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             for( const auto& region : geomodel->regions() )
             {
@@ -223,7 +223,7 @@ namespace RINGMesh
 
         void bind_attribute() override
         {
-            std::string attribute_name = get_attribute_name_with_coordinate(
+            auto attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             this->manager_->gfx().regions.set_scalar_attribute(
                 GEO::MESH_VERTICES, attribute_name, this->manager_->minimum(),
@@ -237,7 +237,7 @@ namespace RINGMesh
 
         index_t nb_coordinates() override
         {
-            GEO::AttributeStore* store =
+            auto store =
                 get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
@@ -248,7 +248,7 @@ namespace RINGMesh
 
         GEO::AttributesManager& get_attribute_manager() override
         {
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             return geomodel->region( 0 ).vertex_attribute_manager();
         }
@@ -257,9 +257,9 @@ namespace RINGMesh
         void do_compute_range(
             double& attribute_min, double& attribute_max ) override
         {
-            std::string attribute_name = get_attribute_name_with_coordinate(
+            auto attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             for( const auto& region : geomodel->regions() )
             {
@@ -287,7 +287,7 @@ namespace RINGMesh
 
         void bind_attribute() override
         {
-            std::string attribute_name = get_attribute_name_with_coordinate(
+            auto attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             this->manager_->gfx().surfaces.set_scalar_attribute(
                 GEO::MESH_FACETS, attribute_name, this->manager_->minimum(),
@@ -301,7 +301,7 @@ namespace RINGMesh
 
         index_t nb_coordinates() override
         {
-            GEO::AttributeStore* store =
+            auto store =
                 get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
@@ -312,7 +312,7 @@ namespace RINGMesh
 
         GEO::AttributesManager& get_attribute_manager() override
         {
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             return geomodel->surface( 0 ).polygon_attribute_manager();
         }
@@ -321,9 +321,9 @@ namespace RINGMesh
         void do_compute_range(
             double& attribute_min, double& attribute_max ) override
         {
-            std::string attribute_name = get_attribute_name_with_coordinate(
+            auto attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             for( const auto& surface : geomodel->surfaces() )
             {
@@ -350,7 +350,7 @@ namespace RINGMesh
         }
         void bind_attribute() override
         {
-            std::string attribute_name = get_attribute_name_with_coordinate(
+            auto attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
             this->manager_->gfx().surfaces.set_scalar_attribute(
                 GEO::MESH_VERTICES, attribute_name, this->manager_->minimum(),
@@ -362,7 +362,7 @@ namespace RINGMesh
         }
         index_t nb_coordinates() override
         {
-            GEO::AttributeStore* store =
+            auto store =
                 get_attribute_manager().find_attribute_store(
                     this->manager_->name() );
 
@@ -373,7 +373,7 @@ namespace RINGMesh
 
         GEO::AttributesManager& get_attribute_manager() override
         {
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             return geomodel->surface( 0 ).vertex_attribute_manager();
         }
@@ -382,9 +382,9 @@ namespace RINGMesh
         void do_compute_range(
             double& attribute_min, double& attribute_max ) override
         {
-            std::string attribute_name = get_attribute_name_with_coordinate(
+            auto attribute_name = get_attribute_name_with_coordinate(
                 this->manager_->name(), this->manager_->coordinate() );
-            const GeoModel< DIMENSION >* geomodel =
+            const auto geomodel =
                 this->manager_->gfx().geomodel();
             for( const auto& surface : geomodel->surfaces() )
             {
