@@ -83,10 +83,6 @@ namespace RINGMesh
     class CellAttributeGfx : public AttributeGfx< DIMENSION >
     {
     public:
-        CellAttributeGfx() = default;
-
-        virtual ~CellAttributeGfx() = default;
-
         static std::string location_name_static()
         {
             return "cells";
@@ -151,10 +147,6 @@ namespace RINGMesh
     class CellCornersAttributeGfx : public AttributeGfx< DIMENSION >
     {
     public:
-        CellCornersAttributeGfx() = default;
-
-        virtual ~CellCornersAttributeGfx() = default;
-
         static std::string location_name_static()
         {
             return "cell_corners";
@@ -219,10 +211,6 @@ namespace RINGMesh
     class CellVertexAttributeGfx : public AttributeGfx< DIMENSION >
     {
     public:
-        CellVertexAttributeGfx() = default;
-
-        virtual ~CellVertexAttributeGfx() = default;
-
         static std::string location_name_static()
         {
             return "cell_vertices";
@@ -287,10 +275,6 @@ namespace RINGMesh
     class PolygonAttributeGfx : public AttributeGfx< DIMENSION >
     {
     public:
-        PolygonAttributeGfx() = default;
-
-        virtual ~PolygonAttributeGfx() = default;
-
         static std::string location_name_static()
         {
             return "polygon";
@@ -355,10 +339,6 @@ namespace RINGMesh
     class PolygonVertexAttributeGfx : public AttributeGfx< DIMENSION >
     {
     public:
-        PolygonVertexAttributeGfx() = default;
-
-        virtual ~PolygonVertexAttributeGfx() = default;
-
         static std::string location_name_static()
         {
             return "polygon_vertices";
