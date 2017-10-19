@@ -70,10 +70,10 @@ namespace RINGMesh
         static void register_creator( const Key& key )
         {
             static_assert( std::is_base_of< BaseClass, DerivedClass >::value,
-                "DerivedClass must be a subclass of BaseClass" );
+                "DerivedClass is not a subclass of BaseClass" );
             static_assert(
                 std::is_constructible< DerivedClass, Args... >::value,
-                "DerivedClass must be constructible with Args..." );
+                "DerivedClass is not constructible with Args..." );
             if( !store_
                      .emplace(
                          key, Creator( create_function_impl< DerivedClass > ) )

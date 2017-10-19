@@ -97,7 +97,7 @@ namespace
                         index_t j_next = surface.mesh()
                                              .next_polygon_vertex(
                                                  { i, j } )
-                                             .local_vertex_id_;
+                                             .local_vertex_id;
                         if( inexact_equal(
                                 surface.mesh_element_vertex(
                                     { i, j_next } ),
@@ -207,9 +207,9 @@ namespace
                 continue;
             }
             auto prev_v =
-                mesh.prev_polygon_vertex( { p, v } ).local_vertex_id_;
+                mesh.prev_polygon_vertex( { p, v } ).local_vertex_id;
             auto next_v =
-                mesh.next_polygon_vertex( { p, v } ).local_vertex_id_;
+                mesh.next_polygon_vertex( { p, v } ).local_vertex_id;
             if( inexact_equal( surface.mesh_element_vertex( { p, prev_v } ), v1,
                     surface.geomodel().epsilon() ) )
             {
@@ -917,8 +917,8 @@ namespace RINGMesh
             auto& cell = cell_vertices[v].element_;
             auto& cell_vertex = cell_vertices[v].vertex_;
             auto element_local_vertex = region.find_cell_from_colocated_vertex_if_any( p );
-            cell = element_local_vertex.element_id_;
-            cell_vertex = element_local_vertex.local_vertex_id_;
+            cell = element_local_vertex.element_id;
+            cell_vertex = element_local_vertex.local_vertex_id;
 
             ringmesh_assert( cell != NO_ID && cell_vertex != NO_ID );
         }
