@@ -56,6 +56,8 @@ namespace RINGMesh {
 
     class RINGMESH_API Store {
     public:
+        
+
         Store( index_t elemsize, index_t el_dim = 1 ):
             element_size_( elemsize ), element_dimension_( el_dim )
         {
@@ -93,7 +95,7 @@ namespace RINGMesh {
         {
             return size_ * element_dimension_;
         }
-        virtual void* data() const = 0;
+        virtual const void* data() const = 0;
         virtual void* data() = 0;
 
         virtual void compress( const std::vector< index_t >& old2new ) = 0;
@@ -158,7 +160,7 @@ namespace RINGMesh {
         *  attributes.
         */
         TypedStore( index_t dim = 1 )
-            : Store( index_t( sizeof( T ), dim ) )
+            : Store( index_t( sizeof(T) ), dim )
         {
         }
 
@@ -171,7 +173,7 @@ namespace RINGMesh {
         {
             return typeid( T ).name();
         }
-        void* data() const final
+        const void* data() const final
         {
             return store_.data();
         }
@@ -289,7 +291,7 @@ namespace RINGMesh {
 
         void resize( index_t ) override
         {
-            this->store_.resize( this->dimension() );
+            Logger::warn( "Trying to resize constant attribute" );
         }
 
 
@@ -358,30 +360,6 @@ namespace RINGMesh {
         }
     };
 
-
-    /**
-     * \brief Internal class for creating an AttributeStore
-     *  from the type name of its elements.
-     */
-    class RINGMESH_API AttributeStoreCreator {
-    public:
-
-        /**
-         * \brief AttributeStoreCreator destructor.
-         */
-        virtual ~AttributeStoreCreator() = default;
-
-        /**
-         * \brief Creates a new attribute store.
-         * \param[in] dimension number of elements in each item
-         * \return a pointer to the newly created AttributeStore
-         */
-        virtual AttributeStore* create_attribute_store( index_t dimension ) = 0;
-
-    private:
-        std::string element_type_name_;
-        std::string element_typeid_name_;
-    };
 
     class RINGMESH_API AttributeStore {
     public:
@@ -900,10 +878,6 @@ namespace RINGMesh {
             store_ = nullptr;
         }
 
-        void set_constant_value( T value )
-        {
-
-        }
         /**
          * \brief Binds this Attribute to an AttributesManager.
          * \details If the attribute already exists with the specified
@@ -920,6 +894,7 @@ namespace RINGMesh {
             store_ = manager_->find_attribute_store( name );
             if( store_ == nullptr ) {
                 store_ = new AttributeStore();
+                store_->set_store( new VectorStore<T>(1) );
                 manager_->bind_attribute_store( name, store_ );
             } else {
                 ringmesh_assert( store_->get_store().elements_type_matches( typeid(T).name() ) );
@@ -1097,13 +1072,11 @@ namespace RINGMesh {
             ( ( T* ) superclass::store_->data() )[i] = value ;
         }
 
-        /**
-        * \brief Gets a modifiable element by index
-        * \param [in] value to set at the \p i%th element
-        */
-        void set_constant_value( T value )
+
+        void set_constant_value( index_t dim, T value )
         {
-            set_constant_value( value );
+            store_->set_store( new ConstantStore<T>( dim ) );
+            set_value( 0, value ) ;
         }
 
         /**
