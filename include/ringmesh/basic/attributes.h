@@ -361,6 +361,30 @@ namespace RINGMesh {
     };
 
 
+    /**
+     * \brief Internal class for creating an AttributeStore
+     *  from the type name of its elements.
+     */
+    class RINGMESH_API AttributeStoreCreator {
+    public:
+
+        /**
+         * \brief AttributeStoreCreator destructor.
+         */
+        virtual ~AttributeStoreCreator() = default;
+
+        /**
+         * \brief Creates a new attribute store.
+         * \param[in] dimension number of elements in each item
+         * \return a pointer to the newly created AttributeStore
+         */
+        virtual AttributeStore* create_attribute_store( index_t dimension ) = 0;
+
+    private:
+        std::string element_type_name_;
+        std::string element_typeid_name_;
+    };
+
     class RINGMESH_API AttributeStore {
     public:
         /**
@@ -971,6 +995,13 @@ namespace RINGMesh {
             ringmesh_assert( is_bound() );
             store_->redim( new_dim );
         }
+        virtual void set_value( index_t id, T value ) = 0;
+
+        void set_constant_value( T value,  index_t dim = 1 )
+        {
+            store_->set_store( new ConstantStore<T>( dim ) );
+            set_value( 0, value );
+        }
 
         /**
          * \brief Attribute destructor
@@ -1066,18 +1097,13 @@ namespace RINGMesh {
          * \param [in] i index of the element
          * \param [in] value to set at the \p i%th element
          */
-        void set_value( unsigned int i, T value )
+        void set_value( index_t i, T value ) final
         {
             ringmesh_assert( i < superclass::size() );
             ( ( T* ) superclass::store_->data() )[i] = value ;
         }
 
 
-        void set_constant_value( index_t dim, T value )
-        {
-            store_->set_store( new ConstantStore<T>( dim ) );
-            set_value( 0, value ) ;
-        }
 
         /**
          * \brief Gets an element by index
@@ -1264,7 +1290,7 @@ namespace RINGMesh {
             return value (i);
         }
 
-        void set_value( index_t i, bool value )
+        void set_value( index_t i, bool value ) final
         {
             BoolAttributeAccessor(*this, i) = value;
         }
