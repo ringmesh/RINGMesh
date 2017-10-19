@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <geogram/basic/command_line.h>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
@@ -63,6 +65,9 @@ int main()
         std::string file_name( ringmesh_test_data_path );
         file_name += "modelA6.ml";
 
+        // Check only model geometry
+        GEO::CmdLine::set_arg( "validity:do_not_check", "tG" );
+
         // Loading the GeoModel
         GeoModel3D geomodel;
         bool loaded_model_is_valid = geomodel_load( geomodel, file_name );
@@ -89,11 +94,11 @@ int main()
                     "maybe the MG Tetra Licence can not be reached" );
             }
         }
-        if( !is_geomodel_valid( geomodel ) )
+        if( !is_geomodel_valid( geomodel, ValidityCheckMode::GEOMETRY ) )
         {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when tetrahedralize model ", geomodel.name(),
-                ": the model becomes invalid." );
+                ": the model geometry becomes invalid." );
         }
 
 #endif
