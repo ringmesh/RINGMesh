@@ -36,6 +36,7 @@
 #include <ringmesh/geomodel/mesh_quality.h>
 
 #include <geogram/basic/attributes.h>
+#include <geogram/mesh/mesh.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
@@ -383,6 +384,38 @@ namespace RINGMesh
                     region.mesh_element_vertex( { cell_itr, 2 } ),
                     region.mesh_element_vertex( { cell_itr, 3 } ),
                     mesh_qual_mode );
+            }
+        }
+    }
+
+    void output_low_quality_cells(
+        MeshQualityMode mesh_qual_mode,
+        const GeoModel3D& geomodel,
+        GEO::Mesh& output_mesh,
+        double min_quality )
+    {
+        ringmesh_assert( geomodel.nb_regions() != 0 );
+        for( const auto& region : geomodel.regions() )
+        {
+            ringmesh_assert( region.is_meshed() );
+            ringmesh_assert( region.is_simplicial() );
+            GEO::Attribute< double > quality_attribute(
+                region.cell_attribute_manager(),
+                mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
+            for( auto cell_id : range( region.nb_mesh_elements() ) )
+            {
+                if( quality_attribute[cell_id] < min_quality )
+                {
+                    auto first_new_vertex_id = output_mesh.vertices.nb();
+                    for( auto v : range(4) ) {
+                        output_mesh.vertices.create_vertex(
+                            region.mesh_element_vertex( { cell_id, v } ).data() );
+                    }
+                    output_mesh.cells.create_tet(first_new_vertex_id,
+                        first_new_vertex_id + 1,
+                        first_new_vertex_id + 2,
+                        first_new_vertex_id + 3 );
+                }
             }
         }
     }
