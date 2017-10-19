@@ -64,6 +64,11 @@
 
 #include <ringmesh/io/io.h>
 
+// RINGMesh colormaps
+#include <ringmesh/visualization/colormaps/jet.xpm>
+#include <ringmesh/visualization/colormaps/lgbt.xpm>
+#include <ringmesh/visualization/colormaps/minmax_transparent.xpm>
+
 namespace
 {
     using namespace RINGMesh;
@@ -1449,7 +1454,7 @@ namespace RINGMesh
     {
         GEO::Application::init_graphics();
 
-        init_colormaps();
+        init_ringmesh_colormaps();
         glupEnable(GLUP_ALPHA_DISCARD);
         glup_viewer_disable( GLUP_VIEWER_BACKGROUND );
     }
@@ -1520,6 +1525,14 @@ namespace RINGMesh
                 float( bbox.max()[0] ), float( bbox.max()[1] ),
                 float( bbox.max()[2] ) );
         }
+    }
+
+    void RINGMeshApplication::init_ringmesh_colormaps()
+    {
+        init_colormaps();
+        init_colormap( "jet", jet_xpm );
+        init_colormap( "lgbt", lgbt_xpm );
+        init_colormap( "minmax_transparent", minmax_transparent_xpm );
     }
 
     void RINGMeshApplication::draw_scene()
