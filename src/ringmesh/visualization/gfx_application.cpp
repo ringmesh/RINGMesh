@@ -1455,7 +1455,7 @@ namespace RINGMesh
         GEO::Application::init_graphics();
 
         init_ringmesh_colormaps();
-        glupEnable(GLUP_ALPHA_DISCARD);
+        glupEnable( GLUP_ALPHA_DISCARD );
         glup_viewer_disable( GLUP_VIEWER_BACKGROUND );
     }
 
