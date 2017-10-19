@@ -77,6 +77,11 @@ void test_attributes()
             }
         }
     }
+    attribute1.set_constant_value( T( 0 ) );
+    if( attribute1.size() != 1 )
+    {
+        throw RINGMeshException( "Test", "Failed to create a constant attribut" );
+    }
 }
 
 int main()
