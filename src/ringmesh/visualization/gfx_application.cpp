@@ -42,6 +42,8 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
+#include <algorithm>
+
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
 

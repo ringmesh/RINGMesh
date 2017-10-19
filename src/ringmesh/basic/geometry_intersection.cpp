@@ -375,21 +375,23 @@ namespace RINGMesh
             return std::make_tuple( false, vec3() );
         }
 
-        std::tuple< bool, std::vector< vec3 > > line_sphere(
-            const Geometry::Line3D& line, const Geometry::Sphere& sphere )
+        template < index_t DIMENSION >
+        std::tuple< bool, std::vector< vecn< DIMENSION > > > line_sphere(
+            const Geometry::Line< DIMENSION >& line,
+            const Geometry::Sphere< DIMENSION >& sphere )
         {
             // The sphere is (X-C)^T*(X-C)-1 = 0 and the line is X = P+t*D.
             // Substitute the line equation into the sphere equation to obtain a
             // quadratic equation Q(t) = t^2 + 2*a1*t + a0 = 0, where a1 =
             // D^T*(P-C),
             // and a0 = (P-C)^T*(P-C)-1.
-            vec3 diff{ line.origin - sphere.origin };
+            vecn< DIMENSION > diff{ line.origin - sphere.origin };
             double a0{ dot( diff, diff ) - sphere.radius * sphere.radius };
             double a1{ dot( line.direction, diff ) };
 
             // Intersection occurs when Q(t) has real roots.
             double discr{ a1 * a1 - a0 };
-            std::vector< vec3 > results;
+            std::vector< vecn< DIMENSION > > results;
             if( discr > global_epsilon )
             {
                 double root{ std::sqrt( discr ) };
@@ -407,15 +409,17 @@ namespace RINGMesh
             return std::make_tuple( !results.empty(), results );
         }
 
-        std::tuple< bool, std::vector< vec3 > > segment_sphere(
-            const Geometry::Segment3D& segment, const Geometry::Sphere& sphere )
+        template < index_t DIMENSION >
+        std::tuple< bool, std::vector< vecn< DIMENSION > > > segment_sphere(
+            const Geometry::Segment< DIMENSION >& segment,
+            const Geometry::Sphere< DIMENSION >& sphere )
         {
             bool line_intersect;
-            std::vector< vec3 > line_intersections;
+            std::vector< vecn< DIMENSION > > line_intersections;
             std::tie( line_intersect, line_intersections ) =
-                line_sphere( Geometry::Line3D{ segment }, sphere );
+                line_sphere( Geometry::Line< DIMENSION >{ segment }, sphere );
 
-            std::vector< vec3 > segment_intersections;
+            std::vector< vecn< DIMENSION > > segment_intersections;
             if( line_intersect )
             {
                 segment_intersections.reserve( line_intersections.size() );
@@ -430,5 +434,21 @@ namespace RINGMesh
             return std::make_tuple(
                 !segment_intersections.empty(), segment_intersections );
         }
+
+        template std::tuple< bool, std::vector< vec2 > >
+            RINGMESH_API line_sphere( const Geometry::Line2D& segment,
+                const Geometry::Sphere2D& sphere );
+
+        template std::tuple< bool, std::vector< vec2 > >
+            RINGMESH_API segment_sphere( const Geometry::Segment2D& segment,
+                const Geometry::Sphere2D& sphere );
+
+        template std::tuple< bool, std::vector< vec3 > >
+            RINGMESH_API line_sphere( const Geometry::Line3D& segment,
+                const Geometry::Sphere3D& sphere );
+
+        template std::tuple< bool, std::vector< vec3 > >
+            RINGMESH_API segment_sphere( const Geometry::Segment3D& segment,
+                const Geometry::Sphere3D& sphere );
     } // namespace Intersection
 } // namespace RINGMesh
