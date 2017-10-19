@@ -49,26 +49,14 @@ namespace {
             const std::string& filename ) final
         {
             std::string path = GEO::FileSystem::dir_name( filename );
-            std::string directory = GEO::FileSystem::base_name( filename );
-            if( path == "." ) {
-                path = GEO::FileSystem::get_current_working_directory();
-            }
-            std::ostringstream oss;
-            oss << path << "/" << directory;
-            std::string full_path = oss.str();
-            GEO::FileSystem::create_directory( full_path );
+            std::string name = GEO::FileSystem::base_name( filename );
 
-            std::ostringstream oss_pipes;
-            oss_pipes << full_path << "/pipes.in";
-            std::ofstream out_pipes( oss_pipes.str().c_str() );
-
-            std::ostringstream oss_vol;
-            oss_vol << full_path << "/vol.in";
-            std::ofstream out_vol( oss_vol.str().c_str() );
+            std::ofstream out_pipes( "pipes.in" );
+            std::ofstream out_vol( "vol.in" );
             out_vol.precision( 16 );
 
             std::ostringstream oss_xyz;
-            oss_xyz << full_path << "/gprs.xyz";
+            oss_xyz << name << ".xyz";
             std::ofstream out_xyz( oss_xyz.str().c_str() );
             out_xyz.precision( 16 );
 
