@@ -49,6 +49,7 @@
 #endif
 
 #include <ringmesh/basic/command_line.h>
+#include <ringmesh/basic/attributes.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geomodel/geomodel_builder_gocad.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
@@ -56,6 +57,7 @@
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 #include <ringmesh/visualization/geogram_gfx.h>
+
 
 namespace RINGMesh
 {
@@ -92,6 +94,7 @@ namespace RINGMesh
         ringmesh_mesh_io_initialize();
         initialize_gocad_import_factories();
         register_geogram_mesh();
+        register_read_only_scalar_attribute();
 #ifdef RINGMESH_WITH_GRAPHICS
         register_geogram_mesh_gfx();
 #endif
