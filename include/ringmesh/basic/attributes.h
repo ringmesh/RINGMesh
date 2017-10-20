@@ -287,6 +287,9 @@ namespace RINGMesh {
         ConstantStore( index_t dim = 1 )
             : TypedStore< T >( dim )
         {
+            this->store_.resize( dim );
+            size_ = 1;
+
         }
 
         void resize( index_t ) override
@@ -406,6 +409,7 @@ namespace RINGMesh {
         void set_store(Store* store)
         {
             store_ = std::unique_ptr<Store> (store) ;
+
         }
 
         const Store& get_store() const
@@ -1099,6 +1103,7 @@ namespace RINGMesh {
          */
         void set_value( index_t i, T value ) final
         {
+            index_t si = superclass::size();
             ringmesh_assert( i < superclass::size() );
             ( ( T* ) superclass::store_->data() )[i] = value ;
         }
@@ -1290,11 +1295,15 @@ namespace RINGMesh {
             return value (i);
         }
 
-        void set_value( index_t i, bool value ) final
+        void set_value( index_t i, Byte value ) final
         {
             BoolAttributeAccessor(*this, i) = value;
         }
 
+        void set_value( index_t i, bool value ) 
+        {
+            BoolAttributeAccessor( *this, i ) = value;
+        }
         /**
          * \brief Sets all the elements in this attribute
          *   to a specified value.
