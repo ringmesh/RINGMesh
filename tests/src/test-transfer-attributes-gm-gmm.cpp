@@ -43,6 +43,8 @@
 #include <ringmesh/geomodel/geomodel_mesh.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
+#include <ringmesh/mesh/mesh_index.h>
+
 #include <ringmesh/io/io.h>
 
 /*!
@@ -160,6 +162,106 @@ namespace
         }
     }
 
+    void assign_cell_corner_attribute_values( index_t cell,
+	index_t corner,
+        const vec3& cur_vertex,
+        GEO::Attribute< long int >& cell_corner_long_int_attr,
+        GEO::Attribute< bool >& cell_corner_bool_attr,
+        GEO::Attribute< double >& cell_corner_double_attr,
+        GEO::Attribute< vec3 >& cell_corner_vec3_attr,
+        GEO::Attribute< double >& cell_corner_dim_6_double_attr,
+        GEO::Attribute< char >& cell_corner_char_attr )
+    {
+	index_t pos = 4 * cell + corner;
+        const long int rounded_vertex_xy =
+            std::lrint( cur_vertex.x * cur_vertex.y );
+        cell_corner_long_int_attr[pos] = rounded_vertex_xy;
+        cell_corner_bool_attr[pos] = ( rounded_vertex_xy % 2 == 0 );
+        cell_corner_double_attr[pos] = cur_vertex.x;
+        cell_corner_vec3_attr[pos] = cur_vertex;
+        cell_corner_dim_6_double_attr[pos * 6 + 0] = cur_vertex.x;
+        cell_corner_dim_6_double_attr[pos * 6 + 1] = cur_vertex.y;
+        cell_corner_dim_6_double_attr[pos * 6 + 2] = cur_vertex.z;
+        cell_corner_dim_6_double_attr[pos * 6 + 3] = cur_vertex.x;
+        cell_corner_dim_6_double_attr[pos * 6 + 4] = cur_vertex.y;
+        cell_corner_dim_6_double_attr[pos * 6 + 5] = cur_vertex.z;
+        cell_corner_char_attr[pos] = std::to_string( cur_vertex.y ).data()[0];
+    }
+
+    void set_cell_corner_attributes_on_geomodel_regions( const GeoModel3D& geomodel )
+    {
+        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
+        {
+            const Region3D& cur_reg = geomodel.region( reg_i );
+
+            GEO::AttributesManager& reg_attr_mgr =
+                cur_reg.cell_corners_attribute_manager();
+            GEO::Attribute< long int > cell_corner_long_int_attr(
+                reg_attr_mgr, attribute_names[0] );
+            GEO::Attribute< bool > cell_corner_bool_attr(
+                reg_attr_mgr, attribute_names[1] );
+            GEO::Attribute< double > cell_corner_double_attr(
+                reg_attr_mgr, attribute_names[2] );
+            GEO::Attribute< vec3 > cell_corner_vec3_attr(
+                reg_attr_mgr, attribute_names[3] );
+            GEO::Attribute< double > cell_corner_dim_6_double_attr;
+            cell_corner_dim_6_double_attr.create_vector_attribute(
+                reg_attr_mgr, attribute_names[4], 6 );
+            GEO::Attribute< char > cell_corner_char_attr(
+                reg_attr_mgr, attribute_names[5] );
+
+            for( index_t cell_index = 0; cell_index < cur_reg.nb_mesh_elements();
+                 ++cell_index )
+            {
+		for( index_t corner_index = 0;
+			corner_index < cur_reg.nb_mesh_element_vertices( cell_index );
+			corner_index++) {
+		    const auto cur_vertex =
+			cur_reg.vertex( cur_reg.mesh_element_vertex_index(
+				    {cell_index, corner_index} ) );
+		    assign_cell_corner_attribute_values( cell_index, corner_index, cur_vertex,
+			    cell_corner_long_int_attr, cell_corner_bool_attr,
+			    cell_corner_double_attr, cell_corner_vec3_attr,
+			    cell_corner_dim_6_double_attr, cell_corner_char_attr );
+		}
+            }
+        }
+    }
+
+    void set_cell_corner_attributes_on_geomodelmesh( const GeoModel3D& geomodel )
+    {
+        const GeoModelMesh3D& gmm = geomodel.mesh;
+        const GeoModelMeshCells3D& gmmc = gmm.cells;
+        GEO::AttributesManager& gmmc_corner_attr_mgr = gmmc.attribute_manager();
+
+        GEO::Attribute< long int > cell_corner_long_int_attr(
+            gmmc_corner_attr_mgr, attribute_names[0] );
+        GEO::Attribute< bool > cell_corner_bool_attr(
+            gmmc_corner_attr_mgr, attribute_names[1] );
+        GEO::Attribute< double > cell_corner_double_attr(
+            gmmc_corner_attr_mgr, attribute_names[2] );
+        GEO::Attribute< vec3 > cell_corner_vec3_attr(
+            gmmc_corner_attr_mgr, attribute_names[3] );
+        GEO::Attribute< double > cell_corner_dim_6_double_attr;
+        cell_corner_dim_6_double_attr.create_vector_attribute(
+            gmmc_corner_attr_mgr, attribute_names[4], 6 );
+        GEO::Attribute< char > cell_corner_char_attr(
+            gmmc_corner_attr_mgr, attribute_names[5] );
+
+        for( index_t cell_index = 0; cell_index < gmmc.nb(); ++cell_index )
+        {
+	    for(index_t corner_index = 0; corner_index < gmmc.nb_vertices( cell_index );
+		    corner_index++)
+	    {
+		index_t cur_vertex_index = gmmc.vertex( { cell_index, corner_index } );
+                const vec3& cur_vertex = gmm.vertices.vertex( cur_vertex_index );
+		assign_cell_corner_attribute_values( cell_index, corner_index, cur_vertex,
+			cell_corner_long_int_attr, cell_corner_bool_attr,
+			cell_corner_double_attr, cell_corner_vec3_attr,
+			cell_corner_dim_6_double_attr, cell_corner_char_attr);
+	    }
+        }
+    }
     void assign_cell_attribute_values( index_t cell_i,
         double cell_volume,
         const vec3& cell_barycenter,
@@ -366,6 +468,107 @@ namespace
         }
     }
 
+    void check_cell_corner_attr_transfer_from_geomodel_regions_to_geomodelmesh(
+        const GeoModel3D& geomodel )
+    {
+        const GeoModelMesh3D& gmm = geomodel.mesh;
+        const GeoModelMeshCells3D& gmmc = gmm.cells;
+        GEO::AttributesManager& gmmc_corner_attr_mgr = gmmc.corners_attribute_manager();
+        check_attributes_exist_on_mesh(
+            gmmc_corner_attr_mgr, "geomodelmesh","cell_corners" );
+
+        GEO::Attribute< long int > vertex_long_int_attr(
+            gmmc_corner_attr_mgr, attribute_names[0] );
+        GEO::Attribute< bool > vertex_bool_attr(
+            gmmc_corner_attr_mgr, attribute_names[1] );
+        GEO::Attribute< double > vertex_double_attr(
+            gmmc_corner_attr_mgr, attribute_names[2] );
+        GEO::Attribute< vec3 > vertex_vec3_attr(
+            gmmc_corner_attr_mgr, attribute_names[3] );
+        GEO::Attribute< double > vertex_dim_6_double_attr(
+            gmmc_corner_attr_mgr, attribute_names[4] );
+        GEO::Attribute< char > vertex_char_attr(
+            gmmc_corner_attr_mgr, attribute_names[5] );
+
+        for( index_t cell_index = 0; cell_index < gmmc.nb(); ++cell_index )
+        {
+	    for( index_t corner_index = 0; corner_index < gmmc.nb_vertices( cell_index );
+		    corner_index++)
+	    {
+		index_t pos = gmmc.nb_vertices( cell_index ) * cell_index + corner_index;
+		index_t cur_vertex_index = gmmc.vertex( { cell_index, corner_index } );
+		const vec3& cur_vertex = gmm.vertices.vertex( cur_vertex_index );
+                const long int rounded_vertex_xy =
+                    std::lrint( cur_vertex.x * cur_vertex.y );
+
+                if( rounded_vertex_xy != vertex_long_int_attr[pos] )
+                {
+                    throw RINGMeshException( "RINGMesh Test",
+                        "Bad vertex transfer from geomodel region "
+                        "to geomodelmesh for long int." );
+                }
+
+                bool is_pair = ( rounded_vertex_xy % 2 == 0 );
+                if( is_pair != vertex_bool_attr[pos] )
+                {
+                    throw RINGMeshException( "RINGMesh Test",
+                        "Bad vertex transfer from geomodel region "
+                        "to geomodelmesh for bool." );
+                }
+
+                if( std::abs( cur_vertex.x - vertex_double_attr[pos] )
+                    > geomodel.epsilon() )
+                {
+                    throw RINGMeshException( "RINGMesh Test",
+                        "Bad vertex transfer from geomodel region "
+                        "to geomodelmesh for double." );
+                }
+
+                const vec3 diff = cur_vertex - vertex_vec3_attr[pos];
+                if( std::abs( diff.x ) > geomodel.epsilon()
+                    || std::abs( diff.y ) > geomodel.epsilon()
+                    || std::abs( diff.z ) > geomodel.epsilon() )
+                {
+                    throw RINGMeshException( "RINGMesh Test",
+                        "Bad vertex transfer from geomodel region "
+                        "to geomodelmesh for vec3." );
+                }
+
+		if( std::abs(
+			    cur_vertex.x - vertex_dim_6_double_attr[6 * pos + 0] )
+			> geomodel.epsilon()
+			|| std::abs( cur_vertex.y
+			    - vertex_dim_6_double_attr[6 * pos + 1] )
+			> geomodel.epsilon()
+			|| std::abs( cur_vertex.z
+			    - vertex_dim_6_double_attr[6 * pos + 2] )
+			> geomodel.epsilon()
+			|| std::abs( cur_vertex.x
+			    - vertex_dim_6_double_attr[6 * pos + 3] )
+			> geomodel.epsilon()
+			|| std::abs( cur_vertex.y
+			    - vertex_dim_6_double_attr[6 * pos + 4] )
+			> geomodel.epsilon()
+			|| std::abs( cur_vertex.z
+			    - vertex_dim_6_double_attr[6 * pos + 5] )
+			> geomodel.epsilon() )
+		{
+		    throw RINGMeshException( "RINGMesh Test",
+			    "Bad vertex transfer from geomodel region "
+			    "to geomodelmesh for double dim 6." );
+		}
+
+		const char char_vec3_y = std::to_string( cur_vertex.y ).data()[0];
+		if( char_vec3_y != vertex_char_attr[pos] )
+		{
+		    throw RINGMeshException( "RINGMesh Test",
+			    "Bad vertex transfer from geomodel region "
+			    "to geomodelmesh for char." );
+		}
+	    }
+        }
+    }
+
     void check_vertex_attr_transfer_from_geomodelmesh_to_geomodel_regions(
         const GeoModel3D& geomodel )
     {
@@ -463,6 +666,114 @@ namespace
                         "region for char." );
                 }
             }
+        }
+    }
+
+    void check_cell_corner_attr_transfer_from_geomodelmesh_to_geomodel_regions(
+        const GeoModel3D& geomodel )
+    {
+        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
+        {
+            const Region3D& cur_reg = geomodel.region( reg_i );
+            GEO::AttributesManager& reg_v_attr_mgr =
+                cur_reg.cell_corners_attribute_manager();
+            check_attributes_exist_on_mesh(
+                reg_v_attr_mgr, "geomodel region", "cell_corners" );
+
+            GEO::Attribute< long int > cell_corner_long_int_attr(
+                reg_v_attr_mgr, attribute_names[0] );
+            GEO::Attribute< bool > cell_corner_bool_attr(
+                reg_v_attr_mgr, attribute_names[1] );
+            GEO::Attribute< double > cell_corner_double_attr(
+                reg_v_attr_mgr, attribute_names[2] );
+            GEO::Attribute< vec3 > cell_corner_vec3_attr(
+                reg_v_attr_mgr, attribute_names[3] );
+            GEO::Attribute< double > cell_corner_dim_6_double_attr(
+                reg_v_attr_mgr, attribute_names[4] );
+            GEO::Attribute< char > cell_corner_char_attr(
+                reg_v_attr_mgr, attribute_names[5] );
+
+	    for( index_t cell_index = 0; cell_index < cur_reg.nb_mesh_elements();
+		    cell_index++) 
+	    {
+		for( index_t corner_index = 0; 
+			corner_index < cur_reg.nb_mesh_element_vertices( cell_index );
+			corner_index++ )
+		{
+		    index_t pos = cur_reg.nb_mesh_element_vertices( cell_index ) * cell_index +
+			corner_index;
+		    index_t cur_vertex_index =
+			cur_reg.mesh_element_vertex_index( { cell_index, corner_index } ); 
+		    const vec3& cur_vertex = cur_reg.vertex( cur_vertex_index );
+                    const long int rounded_vertex_xy =
+                    std::lrint( cur_vertex.x * cur_vertex.y );
+
+                    if( rounded_vertex_xy != cell_corner_long_int_attr[pos] )
+                    {
+                        throw RINGMeshException( "RINGMesh Test",
+                            "Bad cell corner transfer from geomodelmesh to geomodel "
+                            "region for long int." );
+                    }
+
+                    bool is_pair = ( rounded_vertex_xy % 2 == 0 );
+                    if( is_pair != cell_corner_bool_attr[pos] )
+                    {
+                        throw RINGMeshException( "RINGMesh Test",
+                            "Bad vertex transfer from geomodelmesh to geomodel "
+                            "region for bool." );
+                    }
+		    if( std::abs( cur_vertex.x - cell_corner_double_attr[pos] )
+                        > geomodel.epsilon() )
+                    {
+                        throw RINGMeshException( "RINGMesh Test",
+                            "Bad vertex transfer from geomodelmesh to geomodel "
+                            "region for double." );
+                    }
+
+                    const vec3 diff = cur_vertex - cell_corner_vec3_attr[pos];
+                    if( std::abs( diff.x ) > geomodel.epsilon()
+                        || std::abs( diff.y ) > geomodel.epsilon()
+                        || std::abs( diff.z ) > geomodel.epsilon() )
+                    {
+                        throw RINGMeshException( "RINGMesh Test",
+                            "Bad vertex transfer from geomodelmesh to geomodel "
+                            "region for vec3." );
+                    }
+
+                    if( std::abs( cur_vertex.x
+                                  - cell_corner_dim_6_double_attr[6 * pos + 0] )
+                            > geomodel.epsilon()
+                        || std::abs( cur_vertex.y
+                                     - cell_corner_dim_6_double_attr[6 * pos + 1] )
+                               > geomodel.epsilon()
+                        || std::abs( cur_vertex.z
+                                     - cell_corner_dim_6_double_attr[6 * pos + 2] )
+                               > geomodel.epsilon()
+                        || std::abs( cur_vertex.x
+                                     - cell_corner_dim_6_double_attr[6 * pos + 3] )
+                               > geomodel.epsilon()
+                        || std::abs( cur_vertex.y
+                                     - cell_corner_dim_6_double_attr[6 * pos + 4] )
+                               > geomodel.epsilon()
+                        || std::abs( cur_vertex.z
+                                     - cell_corner_dim_6_double_attr[6 * pos + 5] )
+                               > geomodel.epsilon() )
+                    {
+                        throw RINGMeshException( "RINGMesh Test",
+                            "Bad vertex transfer from geomodelmesh to geomodel "
+                            "region for double dim 6." );
+                    }
+
+                    const char char_vec3_y =
+                        std::to_string( cur_vertex.y ).data()[0];
+                    if( char_vec3_y != cell_corner_char_attr[pos] )
+                    {
+                        throw RINGMeshException( "RINGMesh Test",
+                            "Bad vertex transfer from geomodelmesh to geomodel "
+                            "region for char." );
+                    }
+		}
+	    }
         }
     }
 
@@ -670,6 +981,8 @@ namespace
             geomodel );
         check_cell_attr_transfer_from_geomodel_regions_to_geomodelmesh(
             geomodel );
+        check_cell_corner_attr_transfer_from_geomodel_regions_to_geomodelmesh(
+            geomodel );
     }
 
     void check_attr_transfer_from_geomodelmesh_to_geomodel_regions(
@@ -678,6 +991,8 @@ namespace
         check_vertex_attr_transfer_from_geomodelmesh_to_geomodel_regions(
             geomodel );
         check_cell_attr_transfer_from_geomodelmesh_to_geomodel_regions(
+            geomodel );
+        check_cell_corner_attr_transfer_from_geomodelmesh_to_geomodel_regions(
             geomodel );
     }
 
@@ -694,6 +1009,7 @@ namespace
 
         set_vertex_attributes_on_geomodel_regions( geomodel );
         set_cell_attributes_on_geomodel_regions( geomodel );
+        set_cell_corner_attributes_on_geomodel_regions( geomodel );
         const GeoModelMesh3D& gmm = geomodel.mesh;
         gmm.transfer_attributes_from_gm_regions_to_gmm();
         check_attr_transfer_from_geomodel_regions_to_geomodelmesh( geomodel );
@@ -706,6 +1022,7 @@ namespace
 
         set_vertex_attributes_on_geomodelmesh( geomodel );
         set_cell_attributes_on_geomodelmesh( geomodel );
+        set_cell_corner_attributes_on_geomodelmesh( geomodel );
         const GeoModelMesh3D& gmm = geomodel.mesh;
         gmm.transfer_attributes_from_gmm_to_gm_regions();
         check_attr_transfer_from_geomodelmesh_to_geomodel_regions( geomodel );
