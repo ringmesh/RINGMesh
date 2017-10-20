@@ -76,14 +76,6 @@ public:                                                                        \
     {                                                                          \
         return *mesh_;                                                         \
     }                                                                          \
-    void print_mesh_bounded_attributes() const override                        \
-    {                                                                          \
-        print_bounded_attributes( *mesh_ );                                    \
-    }                                                                          \
-    GEO::AttributesManager& vertex_attribute_manager() const override          \
-    {                                                                          \
-        return mesh_->vertices.attributes();                                   \
-    }                                                                          \
     MeshType type_name() const override                                        \
     {                                                                          \
         return type_name_static();                                             \
@@ -143,11 +135,6 @@ protected:                                                                     \
         {
             return mesh_->edges.nb();
         }
-
-        GEO::AttributesManager& edge_attribute_manager() const override
-        {
-            return mesh_->edges.attributes();
-        }
     };
 
     ALIAS_2D_AND_3D( GeogramLineMesh );
@@ -180,11 +167,6 @@ protected:                                                                     \
         {
             return mesh_->facets.adjacent( polygon_local_edge.polygon_id,
                 polygon_local_edge.local_edge_id );
-        }
-
-        GEO::AttributesManager& polygon_attribute_manager() const override
-        {
-            return mesh_->facets.attributes();
         }
 
         bool polygons_are_simplicies() const override
@@ -277,15 +259,10 @@ protected:                                                                     \
                 cell_local_facet.cell_id, cell_local_facet.local_facet_id );
         }
 
-        GEO::AttributesManager& cell_attribute_manager() const override
-        {
-            return mesh_->cells.attributes();
-        }
-
-        GEO::AttributesManager& cell_facet_attribute_manager() const override
+        /*AttributesManager& cell_facet_attribute_manager() const override
         {
             return mesh_->cell_facets.attributes();
-        }
+        }*/
 
         CellType cell_type( index_t cell_id ) const override
         {

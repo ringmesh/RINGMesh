@@ -46,6 +46,7 @@
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 #include <ringmesh/basic/factory.h>
+#include <ringmesh/basic/attributes.h>
 
 /*!
  * @file Classes for mesh entity visualization
@@ -54,6 +55,7 @@
 
 namespace RINGMesh
 {
+//    class AttributeManager;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGfx );
     FORWARD_DECLARATION_DIMENSION_CLASS( AttributeGfxManager );
     FORWARD_DECLARATION_DIMENSION_CLASS( AttributeGfx );
@@ -414,23 +416,18 @@ namespace RINGMesh
         }
         std::vector< std::string > get_attribute_names()
         {
-            const GEO::AttributesManager& attributes = get_attribute_manager();
-            GEO::vector< std::string > attribute_names;
+            const AttributesManager& attributes = get_attribute_manager();
+            std::vector< std::string > attribute_names;
             attributes.list_attribute_names( attribute_names );
             std::vector< std::string > names;
-            for( const std::string& name : attribute_names )
-            {
-                const GEO::AttributeStore* store =
+            for( const std::string& name : attribute_names ) {
+                const AttributeStore* store =
                     attributes.find_attribute_store( name );
-                if( GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                        store ) )
-                {
-                    names.push_back( name );
-                }
+                names.push_back( name );
             }
             return names;
         }
-        virtual GEO::AttributesManager& get_attribute_manager() = 0;
+        virtual AttributesManager& get_attribute_manager() = 0;
         virtual void bind_attribute() = 0;
         virtual void unbind_attribute() = 0;
         virtual index_t nb_coordinates() = 0;
