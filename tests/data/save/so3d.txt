@@ -1,2 +1,2 @@
 modelA1_volume_meshed.gm
-geomodel.so
+geomodel3d.so

@@ -1,2 +1,2 @@
 modelA6_tetra.gm
-geomodel.inp
+geomodel3d.inp

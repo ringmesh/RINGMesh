@@ -1,2 +1,2 @@
 modelA6_tetra.gm
-geomodel.vtk
+geomodel3d.vtk

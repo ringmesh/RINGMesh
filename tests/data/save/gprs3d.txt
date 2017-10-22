@@ -1,4 +1,4 @@
 modelA6_tetra.gm
-geomodel.xyz
+geomodel3d.xyz
 pipes.in
 vol.in

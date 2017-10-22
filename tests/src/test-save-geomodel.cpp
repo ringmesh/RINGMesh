@@ -115,12 +115,16 @@ bool compare_words( const std::string& word1, const std::string& word2 )
     {
         if( !compare_double( word1, word2 ) )
         {
+            DEBUG( word1 );
+            DEBUG( word2 );
             return false;
         }
     } else
     {
         if( std::strcmp( word1.c_str(), word2.c_str() ) != 0 )
         {
+            DEBUG( word1 );
+            DEBUG( word2 );
             return false;
         }
     }
@@ -138,6 +142,8 @@ bool compare_output_files( const std::string& file1, const std::string& file2 )
         in2.get_fields();
         if( in1.nb_fields() != in2.nb_fields() )
         {
+            DEBUG( in1.nb_fields() );
+            DEBUG( in2.nb_fields() );
             return false;
         }
         for( auto f : range( in1.nb_fields() ) )
@@ -149,7 +155,7 @@ bool compare_output_files( const std::string& file1, const std::string& file2 )
         }
     }
 
-    return in1.line_number() == in2.line_number();
+    return true;
 }
 
 void check_files( const std::string& file1, const std::string& file2 )
