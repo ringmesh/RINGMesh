@@ -115,16 +115,12 @@ bool compare_words( const std::string& word1, const std::string& word2 )
     {
         if( !compare_double( word1, word2 ) )
         {
-            DEBUG( word1 );
-            DEBUG( word2 );
             return false;
         }
     } else
     {
         if( std::strcmp( word1.c_str(), word2.c_str() ) != 0 )
         {
-            DEBUG( word1 );
-            DEBUG( word2 );
             return false;
         }
     }
@@ -229,7 +225,6 @@ int main()
     {
         default_configure();
 
-        CmdLine::import_arg_group( "out" );
         GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
         test_output_geomodel< 2 >();
         test_output_geomodel< 3 >();
