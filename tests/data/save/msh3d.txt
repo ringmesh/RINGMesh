@@ -1,2 +1,2 @@
 modelA6_tetra.gm
-geomodel.msh
+geomodel3d.msh
