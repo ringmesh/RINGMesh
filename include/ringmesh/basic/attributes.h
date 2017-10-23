@@ -132,6 +132,7 @@ namespace RINGMesh {
 
         virtual void clear( bool keep_memory = false ) = 0;
 
+        //todo remove everything related to dim, only keep resize
         virtual void redim( index_t dim ) = 0;
 
         virtual Store* clone() const = 0;
@@ -143,7 +144,7 @@ namespace RINGMesh {
 
     protected:
         index_t size_{ 0 };
-        index_t element_dimension_;
+        index_t element_dimension_; //todo to remove
         index_t element_size_;         //size of element in byte
 
     };
@@ -182,7 +183,7 @@ namespace RINGMesh {
             return store_.data();
         }
     protected:
-        std::vector< T > store_;
+        std::vector< T > store_; //todo this vector should be in the vectorStore
     };
 
     template< class T > class VectorStore: public TypedStore< T > {
@@ -862,6 +863,7 @@ namespace RINGMesh {
     template< class T > class AttributeBase {
     public:
 
+        //todo the constructors might be protected. Do we want to be able to create an AttributeBase?
         /**
          * \brief Creates an unitialized (unbound) Attribute.
          */
@@ -1162,6 +1164,10 @@ namespace RINGMesh {
      *   and does the appropriate conversions, using an accessor class.
      */
     template <> class Attribute<bool>: public AttributeBase < Byte > {
+        //todo I would move this specialization into a VectorStore specialization
+        // the issue is because the std::vector< bool > implementation is strange.
+        // If you do so, I think there is no longer needs for AttributeBase class,
+        // we could merge it with Attribute.
     public:
         typedef AttributeBase<Byte> superclass;
 
