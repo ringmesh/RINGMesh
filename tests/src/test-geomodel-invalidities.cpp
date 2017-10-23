@@ -106,7 +106,7 @@ int main()
 
         futures.emplace_back( std::async( std::launch::async, [] {
             std::string input_model_file_name{ ringmesh_test_data_path
-                                               + "modelA6.ml" };
+                                               + "load/modelA6.ml" };
             GeoModel3D geomodel;
             geomodel_load( geomodel, input_model_file_name );
 
@@ -129,7 +129,7 @@ int main()
         futures.emplace_back( std::async( std::launch::async, [] {
             GeoModel3D cloudspin;
             geomodel_load(
-                cloudspin, ringmesh_test_data_path + "CloudSpin.ml" );
+                cloudspin, ringmesh_test_data_path + "load/CloudSpin.ml" );
             if( is_geomodel_valid( cloudspin,
                     ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) )
             {

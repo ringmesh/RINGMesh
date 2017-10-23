@@ -496,7 +496,7 @@ namespace {
             clear();
 
             const GeoModel3D& geomodel = gm;
-            std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" );
+            std::string cmsp_filename ; //= GEO::CmdLine::get_arg( "out:csmp" );
             box_model_ = cmsp_filename != "";
             if( box_model_ ) {
                 GEO::LineInput parser( cmsp_filename );

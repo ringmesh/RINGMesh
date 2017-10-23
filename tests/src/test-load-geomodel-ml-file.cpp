@@ -54,7 +54,7 @@ int main()
         default_configure();
         // model filename to test
         std::vector< std::string > input_model_file_name_list = {
-            "CloudSpin_fixed.ml", "modelA6.ml"
+            "CloudSpin_fixed.ml", "load/modelA6.ml"
         };
         for( const std::string& input_model_name : input_model_file_name_list )
         {
