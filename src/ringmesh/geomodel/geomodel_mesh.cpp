@@ -549,12 +549,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelMeshVerticesBase< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_vertices() > 0;
-    }
-
-    template < index_t DIMENSION >
     GEO::AttributesManager& GeoModelMeshVerticesBase< DIMENSION >::attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
@@ -636,6 +630,7 @@ namespace RINGMesh
         // Get out if no vertices
         if( nb == 0 )
         {
+           // is_initialized_ = true;
             return;
         }
 
@@ -650,6 +645,7 @@ namespace RINGMesh
 
         // Remove colocated vertices
         remove_colocated();
+        is_initialized_ = true;
     }
 
     template < index_t DIMENSION >
@@ -953,12 +949,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelMeshCells< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_cells() > 0;
-    }
-
-    template < index_t DIMENSION >
     void GeoModelMeshCells< DIMENSION >::test_and_initialize() const
     {
         if( !is_initialized() )
@@ -997,6 +987,7 @@ namespace RINGMesh
         // Get out if no cells
         if( nb == 0 )
         {
+            is_initialized_ = true;
             return;
         }
 
@@ -1120,6 +1111,7 @@ namespace RINGMesh
             nb_cells_per_type[to_underlying_type( CellType::PYRAMID )];
         nb_connectors_ =
             nb_cells_per_type[to_underlying_type( CellType::UNCLASSIFIED )];
+        is_initialized_ = true;
     }
 
     template < index_t DIMENSION >
@@ -1954,12 +1946,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelMeshEdges< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_edges() > 0;
-    }
-
-    template < index_t DIMENSION >
     index_t GeoModelMeshEdges< DIMENSION >::nb() const
     {
         test_and_initialize();
@@ -2071,6 +2057,7 @@ namespace RINGMesh
                 cur_edge++;
             }
         }
+        is_initialized_ = true;
     }
 
     template < index_t DIMENSION >
@@ -2132,12 +2119,6 @@ namespace RINGMesh
     {
         surface_id_.clear();
         polygon_id_.clear();
-    }
-
-    template < index_t DIMENSION >
-    bool GeoModelMeshPolygonsBase< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_polygons() > 0;
     }
 
     template < index_t DIMENSION >
@@ -2493,6 +2474,7 @@ namespace RINGMesh
 
         if( nb_total_polygons == 0 )
         {
+            is_initialized_ = true;
             return;
         }
 
@@ -2579,6 +2561,8 @@ namespace RINGMesh
         nb_quads_ = nb_polygon_per_type[PolygonType::QUAD];
         nb_unclassified_polygons_ =
             nb_polygon_per_type[PolygonType::UNCLASSIFIED];
+
+        is_initialized_ = true;
     }
 
     template < index_t DIMENSION >
@@ -2723,12 +2707,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelMeshWells< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_edges() > 0;
-    }
-
-    template < index_t DIMENSION >
     void GeoModelMeshWells< DIMENSION >::test_and_initialize() const
     {
         if( !is_initialized() )
@@ -2792,6 +2770,7 @@ namespace RINGMesh
                 }
             }
         }
+        is_initialized_ = true;
     }
 
     template < index_t DIMENSION >
