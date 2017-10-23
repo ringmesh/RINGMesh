@@ -35,7 +35,7 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_repair.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
@@ -70,8 +70,7 @@ int main()
         Logger::out( "RINGMesh Test", "Repairing" );
 
         // Repair the geomodel
-        GeoModelBuilder3D model_builder( geomodel );
-        model_builder.repair.repair( GeoModelBuilderRepair3D::ALL );
+        repair_geomodel( geomodel, RepairMode::ALL );
 
         // Test the validity again
         if( !is_geomodel_valid( geomodel ) )

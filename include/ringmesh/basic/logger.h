@@ -99,5 +99,6 @@ namespace RINGMesh
     private:
         static std::mutex lock_;
     };
-
 } // namespace RINGMesh
+
+#define DEBUG( a ) RINGMesh::Logger::out( "Debug", #a, " = ", a )

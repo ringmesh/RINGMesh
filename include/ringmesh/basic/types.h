@@ -156,6 +156,15 @@ namespace RINGMesh
     }
 
     template < typename Enum >
+    typename std::enable_if< EnableBitMaskOperators< Enum >::enable,
+        Enum >::type
+        operator~( Enum lhs )
+    {
+        using underlying = typename std::underlying_type< Enum >::type;
+        return static_cast< Enum >( ~static_cast< underlying >( lhs ) );
+    }
+
+    template < typename Enum >
     bool enum_contains( Enum lhs, Enum rhs )
     {
         return ( lhs & rhs ) != Enum::EMPTY;

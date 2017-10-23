@@ -37,63 +37,37 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel_builder.h>
-#include <ringmesh/basic/geometry.h>
+#include <set>
 
-namespace RINGMesh
-{
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-    ALIAS_2D_AND_3D( GeoModel );
-} // namespace RINGMesh
+#include <ringmesh/geomodel/geomodel.h>
+
+/*!
+ * @file ringmesh/geomodel_repair.h
+ * @brief Tools to repair GeoModels.
+ * @author Pierre Anquez
+ */
 
 namespace RINGMesh
 {
     /*!
-     * @brief Base class for GeoModel2D building from GeoModel3D.
+     * Enumeration of the different repair modes.
      */
-    class RINGMESH_API GeoModelBuilder2DFrom3D : public GeoModelBuilder< 2 >
+    enum struct RINGMESH_API RepairMode
     {
-    public:
-        GeoModelBuilder2DFrom3D( GeoModel2D& geomodel2d,
-            const GeoModel3D& geomodel3d_from,
-            const Geometry::Plane& plane );
-
-    protected:
-        vec2 get_2d_coord( const vec3& coord3d );
-
-    protected:
-        const GeoModel3D& geomodel3d_from_;
-        const Geometry::Plane& plane_;
-        vec3 u_axis_{};
-        vec3 v_axis_{};
+        ALL,
+        BASIC,
+        COLOCATED_VERTICES,
+        DEGENERATE_POLYGONS_EDGES,
+        LINE_BOUNDARY_ORDER,
+        CONTACTS,
+        ISOLATED_VERTICES
     };
 
     /*!
-     * @brief Builder of GeoModel2D which project a GeoModel3D onto a plane.
-     * @note This builder is dedicated to planar or sub-planar
-     * GeoModel3D without volume, i.e. cross-sections, map-view models
-     * or GeoModel3D only made of 1 fault or 1 horizon.
-     * @warning The result GeoModel2D is not guaranteed to be valid.
-     * It depends of the projection.
+     * @brief Repair a GeoModel according a repair mode.
+     * @param[in] repair_mode repair mode to apply.
      */
-    class RINGMESH_API GeoModelBuilder2DProjection
-        : public GeoModelBuilder2DFrom3D
-    {
-    public:
-        GeoModelBuilder2DProjection( GeoModel2D& geomodel2d,
-            const GeoModel3D& geomodel3d_from,
-            const Geometry::Plane& plane );
+    template < index_t DIMENSION >
+    void RINGMESH_API repair_geomodel( GeoModel< DIMENSION >& geomodel, RepairMode repair_mode );
 
-        void build_geomodel();
-
-    private:
-        void copy_geomodel_3d_topology();
-
-        void copy_geomodel_3d_geological_informations();
-
-        void project_geomodel_3d_mesh_entities();
-
-        std::vector< vec2 > compute_projected_vertices(
-            const GeoModelMeshEntity3D& entity );
-    };
 } // namespace RINGMesh
