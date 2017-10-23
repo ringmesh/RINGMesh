@@ -100,6 +100,10 @@ namespace RINGMesh
         {
             return is_initialized_;
         }
+        virtual void clear() const
+        {
+            is_initialized_ = false;
+        }
 
     protected:
         GeoModelMeshCommon(
@@ -254,7 +258,7 @@ namespace RINGMesh
          *        clear global vertex information in the all BMME
          * @warning Not stable - crashes if attributes are still bound
          */
-        virtual void clear() const;
+        void clear() const override;
 
         void unbind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
