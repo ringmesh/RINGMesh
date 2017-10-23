@@ -108,7 +108,7 @@ namespace RINGMesh
     /*!
      * @brief Base class to build or edit a GeoModel
      * @details All needed functions are organized in several specific builder
-     * in accordance with the kind of edition operation (copy, repair, ...) or
+     * in accordance with the kind of edition operation (remove, repair, ...) or
      * with the GeoModel part which is edited (topology, geometry, geology,
      * info)
      */
