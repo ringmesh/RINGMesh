@@ -40,7 +40,6 @@
 #include <ringmesh/geomodel/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/geomodel_builder_remove.h>
-#include <ringmesh/geomodel/geomodel_builder_repair.h>
 #include <ringmesh/geomodel/geomodel_builder_topology.h>
 
 /*!
@@ -142,7 +141,6 @@ namespace RINGMesh
         GeoModelBuilderGeometry< DIMENSION > geometry;
         GeoModelBuilderGeology< DIMENSION > geology;
         GeoModelBuilderRemoval< DIMENSION > removal;
-        GeoModelBuilderRepair< DIMENSION > repair;
         GeoModelBuilderInfo< DIMENSION > info;
 
     protected:

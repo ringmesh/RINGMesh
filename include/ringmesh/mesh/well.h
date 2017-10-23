@@ -98,6 +98,8 @@ namespace RINGMesh
             bool is_on_surface,
             index_t id );
 
+        ~WellCorner();
+
         const vecn< DIMENSION >& point() const;
 
         bool is_on_surface() const
@@ -135,6 +137,8 @@ namespace RINGMesh
          * well
          */
         WellPart( const Well< DIMENSION >* well, index_t id );
+
+        ~WellPart();
 
         /*!
          * Sets the corber id
@@ -289,7 +293,7 @@ namespace RINGMesh
         /*!
          * Finds if a corner at a given geometric position exist
          * @param[in] vertex the geometric position to test
-         * @param[in] epsilon the numerical précision used to compare the
+         * @param[in] epsilon the numerical precision used to compare the
          * vertices
          * @return the id of the corner or NO_ID if not found any corresponding
          * to \p p
@@ -399,7 +403,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     /*!
-     * @todo Comment
+     * Set of wells associated to a GeoModel
      */
     template < index_t DIMENSION >
     class RINGMESH_API WellGroup

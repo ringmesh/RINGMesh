@@ -39,9 +39,7 @@
 
 #include <set>
 
-#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder_access.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @brief Builder tools to edit and build GeoModel topology
@@ -53,8 +51,10 @@ namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
     ALIAS_2D_AND_3D( GeoModelBuilder );
+    ALIAS_2D_AND_3D( GeoModel );
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -152,20 +152,7 @@ namespace RINGMesh
             index_t nb_additionnal_entities, const MeshType& type = "" );
 
         template < template < index_t > class ENTITY >
-        void copy_mesh_entity_topology( const GeoModel< DIMENSION >& from )
-        {
-            const MeshEntityType& type =
-                ENTITY< DIMENSION >::type_name_static();
-            create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
-
-            parallel_for( geomodel_.nb_mesh_entities( type ),
-                [&type, &from, this]( index_t i ) {
-                    gmme_id id( type, i );
-                    GeoModelMeshEntityAccess< DIMENSION > gmme_access(
-                        geomodel_access_.modifiable_mesh_entity( id ) );
-                    gmme_access.copy( from.mesh_entity( id ) );
-                } );
-        }
+        void copy_mesh_entity_topology( const GeoModel< DIMENSION >& from );
 
         index_t check_if_boundary_incident_entity_relation_already_exists(
             const gmme_id& incident_entity, const gmme_id& boundary );

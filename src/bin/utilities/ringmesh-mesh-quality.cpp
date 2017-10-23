@@ -73,7 +73,7 @@ namespace
     }
 
     void check_geomodel_is_3d_meshed_by_simplexes(
-        const GeoModel< 3 >& geomodel )
+        const GeoModel3D& geomodel )
     {
         if( geomodel.nb_regions() == 0 )
         {

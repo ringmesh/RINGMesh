@@ -598,6 +598,14 @@ namespace RINGMesh
             .entity_type_manager()
             .relationship_manager.parent_of_gmme( parents_[id] );
     }
+
+    template< index_t DIMENSION >
+    bool GeoModelMeshEntity< DIMENSION >::has_parent(
+        const GeologicalEntityType& parent_type ) const
+    {
+        return could_be_undefined_parent_gmge( parent_type ).is_defined();
+    }
+
     /**************************************************************/
 
     template < index_t DIMENSION >
@@ -1473,6 +1481,26 @@ namespace RINGMesh
             VolumeMeshBuilder< DIMENSION >::create_builder( *new_mesh );
         builder->copy( *volume_mesh_, true );
         update_mesh_storage_type( std::move( new_mesh ) );
+    }
+
+    MeshEntityType corner_type_name_static()
+    {
+        return Corner3D::type_name_static();
+    }
+
+    MeshEntityType line_type_name_static()
+    {
+        return Line3D::type_name_static();
+    }
+
+    MeshEntityType surface_type_name_static()
+    {
+        return Surface3D::type_name_static();
+    }
+
+    MeshEntityType region_type_name_static()
+    {
+        return Region3D::type_name_static();
     }
 
     template class RINGMESH_API GeoModelMeshEntity< 2 >;

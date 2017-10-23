@@ -35,9 +35,9 @@
 
 #pragma once
 
-#include <array>
-
 #include <ringmesh/basic/common.h>
+
+#include <array>
 
 /*!
  * @file Basic geometrical requests
@@ -52,7 +52,9 @@ namespace RINGMesh
         for( auto i : range( DIMENSION ) )
         {
             if( u[i] != v[i] )
+            {
                 return false;
+            }
         }
         return true;
     }
@@ -212,18 +214,23 @@ namespace RINGMesh
             vec3 p3{};
         };
 
+        template < index_t DIMENSION >
         struct Sphere
         {
             Sphere() = default;
-            Sphere( vec3 origin, double radius )
+            Sphere( vecn< DIMENSION > origin, double radius )
                 : origin( std::move( origin ) ), radius( std::move( radius ) )
             {
             }
-            vec3 origin{};
+            vecn< DIMENSION > origin{};
             double radius{ 0 };
         };
 
-        using Ball = Sphere;
+        template < index_t DIMENSION >
+        using Ball = Sphere< DIMENSION >;
+
+        ALIAS_2D_AND_3D( Sphere );
+        ALIAS_2D_AND_3D( Ball );
 
         struct Circle
         {
@@ -243,10 +250,10 @@ namespace RINGMesh
     {
         Frame3D() = default;
 
-        Frame3D( vec3 u_axis, vec3 v_axis, vec3 w_axis )
-            : u( std::move( normalize( u_axis ) ) ),
-              v( std::move( normalize( v_axis ) ) ),
-              w( std::move( normalize( w_axis ) ) )
+        Frame3D( const vec3& u_axis, const vec3& v_axis, const vec3& w_axis )
+            : u( normalize( u_axis ) ),
+              v( normalize( v_axis ) ),
+              w( normalize( w_axis ) )
         {
         }
 
@@ -342,18 +349,22 @@ namespace RINGMesh
          * least one intersection)
          * and the intersected points.
          */
-        std::tuple< bool, std::vector< vec3 > > RINGMESH_API line_sphere(
-            const Geometry::Line3D& line, const Geometry::Sphere& sphere );
+        template < index_t DIMENSION >
+        std::tuple< bool, std::vector< vecn< DIMENSION > > >
+            RINGMESH_API line_sphere( const Geometry::Line< DIMENSION >& line,
+                const Geometry::Sphere< DIMENSION >& sphere );
 
         /*!
-         * Computes the intersection(s) between a sphere and a segment
+         * Computes the intersection(s) between a (n-1)-sphere and a segment in
+         * n-dimension space.
          * @return returns a tuple containing a boolean (true if there is at
          * least one intersection)
          * and the intersected points.
          */
-        std::tuple< bool, std::vector< vec3 > > RINGMESH_API segment_sphere(
-            const Geometry::Segment3D& segment,
-            const Geometry::Sphere& sphere );
+        template < index_t DIMENSION >
+        std::tuple< bool, std::vector< vecn< DIMENSION > > > RINGMESH_API
+            segment_sphere( const Geometry::Segment< DIMENSION >& segment,
+                const Geometry::Sphere< DIMENSION >& sphere );
 
         /*!
          * Computes the intersection between a plane and a segment
@@ -446,8 +457,10 @@ namespace RINGMesh
          * @brief Tests if a point is on a segment
          * @return returns true if the point is inside
          */
-        bool RINGMESH_API point_inside_segment( const Geometry::Point3D& point,
-            const Geometry::Segment3D& segment );
+        template < index_t DIMENSION >
+        bool RINGMESH_API point_inside_segment(
+            const Geometry::Point< DIMENSION >& point,
+            const Geometry::Segment< DIMENSION >& segment );
 
         /*!
          * @brief Tests if a point is inside a triangle

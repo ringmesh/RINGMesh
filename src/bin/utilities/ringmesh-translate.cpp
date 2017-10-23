@@ -61,7 +61,7 @@ namespace
     void import_arg_group_translation()
     {
         GEO::CmdLine::declare_arg_group(
-            "translation", "Options to rotate a GeoModel" );
+            "translation", "Options to translate a GeoModel" );
         GEO::CmdLine::declare_arg( "translation:vector", "0 0 0",
             "Translation vector to be written between quotation marks" );
     }

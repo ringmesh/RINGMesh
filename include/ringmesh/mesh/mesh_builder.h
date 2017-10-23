@@ -419,19 +419,7 @@ namespace RINGMesh
         /*!
          * @brief Remove vertices not connected to any mesh element
          */
-        void remove_isolated_vertices()
-        {
-            std::vector< bool > to_delete( line_mesh_.nb_vertices(), true );
-            for( auto e : range( line_mesh_.nb_edges() ) )
-            {
-                for( auto v : range( 2 ) )
-                {
-                    auto vertex_id = line_mesh_.edge_vertex( { e, v } );
-                    to_delete[vertex_id] = false;
-                }
-            }
-            this->delete_vertices( to_delete );
-        }
+        void remove_isolated_vertices();
 
     protected:
         explicit LineMeshBuilder( LineMesh< DIMENSION >& mesh )
@@ -768,19 +756,7 @@ namespace RINGMesh
         /*!
          * @brief Remove vertices not connected to any mesh element
          */
-        void remove_isolated_vertices()
-        {
-            std::vector< bool > to_delete( surface_mesh_.nb_vertices(), true );
-            for( auto p : range( surface_mesh_.nb_polygons() ) )
-            {
-                for( auto v : range( surface_mesh_.nb_polygon_vertices( p ) ) )
-                {
-                    auto vertex_id = surface_mesh_.polygon_vertex( { p, v } );
-                    to_delete[vertex_id] = false;
-                }
-            }
-            this->delete_vertices( to_delete );
-        }
+        void remove_isolated_vertices();
 
     protected:
         explicit SurfaceMeshBuilder( SurfaceMeshBase< DIMENSION >& mesh )

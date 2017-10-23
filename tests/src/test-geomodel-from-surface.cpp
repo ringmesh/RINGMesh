@@ -41,8 +41,10 @@
 
 #include <geogram/mesh/mesh_io.h>
 
+#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder_from_mesh.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 
 #include <ringmesh/io/io.h>
@@ -78,15 +80,15 @@ int main()
         builder.end_geomodel();
         print_geomodel( geomodel );
 
-// Checking the validity of loaded model
-#ifdef RINGMESH_DEBUG
-        GEO::CmdLine::set_arg( "validity_intersection_check", true );
-#else
-        GEO::CmdLine::set_arg( "validity_intersection_check", false );
+        // Checking the validity of loaded model
+        ValidityCheckMode validity_mode = ValidityCheckMode::ALL;
+#ifndef RINGMESH_DEBUG
+        validity_mode =
+            validity_mode ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
 #endif
 
-        futures.emplace_back( std::async( std::launch::async, [&geomodel] {
-            if( !is_geomodel_valid( geomodel ) )
+        futures.emplace_back( std::async( std::launch::async, [&geomodel, &validity_mode] {
+            if( !is_geomodel_valid( geomodel, validity_mode ) )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when loading model ", geomodel.name(),
@@ -145,9 +147,9 @@ int main()
         print_geomodel( reloaded_model );
 
         futures.emplace_back(
-            std::async( std::launch::async, [&reloaded_model] {
+            std::async( std::launch::async, [&reloaded_model, &validity_mode] {
                 // Checking if building has been successfully done
-                if( !is_geomodel_valid( reloaded_model ) )
+                if( !is_geomodel_valid( reloaded_model, validity_mode ) )
                 {
                     throw RINGMeshException( "RINGMesh Test",
                         "Failed when reloading model ", reloaded_model.name(),
