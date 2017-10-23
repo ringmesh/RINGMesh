@@ -88,7 +88,7 @@ int main()
         std::vector< std::future< void > > futures;
 
         futures.emplace_back( std::async( std::launch::async, &test_mesh,
-            ringmesh_test_data_path + "load/modelA4.so" ) );
+            ringmesh_test_data_path + "modelA4.so" ) );
 
         futures.emplace_back( std::async( std::launch::async, &test_mesh,
             ringmesh_test_data_path + "modelA4_lts.so" ) );

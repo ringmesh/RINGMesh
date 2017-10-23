@@ -83,8 +83,8 @@ int main()
 
         Logger::out( "TEST", "Test IO for a GeoModel in .gm" );
 
-        test_file< 3 >( "load/modelA1_version0.gm" );
-        test_file< 3 >( "load/modelA1_version1.gm" );
+        test_file< 3 >( "modelA1_version0.gm" );
+        test_file< 3 >( "modelA1_version1.gm" );
         test_file< 3 >( "modelA1_version2.gm" );
         test_file< 2 >( "model_2d_version2.gm" );
     }

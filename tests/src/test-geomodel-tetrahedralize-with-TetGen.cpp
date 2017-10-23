@@ -59,7 +59,7 @@ int main()
         default_configure();
 
         std::string file_name( ringmesh_test_data_path );
-        file_name += "load/modelA6.ml";
+        file_name += "modelA6.ml";
 
         // Check only model geometry
         GEO::CmdLine::set_arg( "validity:do_not_check", "tG" );
