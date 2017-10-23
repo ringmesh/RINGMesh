@@ -560,6 +560,21 @@ namespace
 
     template < index_t DIMENSION >
     bool is_surface_vertex_valid( const GeoModel< DIMENSION >& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities );
+
+    template < >
+    bool is_surface_vertex_valid( const GeoModel2D& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities )
+    {
+        if( geomodel.nb_surfaces() > 0 && geomodel.surface( 0 ).is_meshed() )
+        {
+            return is_vertex_valid< Surface >( geomodel, entities );
+        }
+        return true;
+    }
+
+    template < index_t DIMENSION >
+    bool is_surface_vertex_valid( const GeoModel< DIMENSION >& geomodel,
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
         return is_vertex_valid< Surface >( geomodel, entities );
