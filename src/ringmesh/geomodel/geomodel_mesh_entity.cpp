@@ -1015,7 +1015,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool SurfaceBase< DIMENSION >::is_mesh_valid() const
+    bool SurfaceBase< DIMENSION >::is_mesh_valid_base() const
     {
         bool valid{ true };
         auto id = this->gmme();
@@ -1079,11 +1079,25 @@ namespace RINGMesh
         return false;
     }
 
+    bool Surface< 2 >::is_mesh_valid() const
+    {
+        if( !is_meshed() )
+        {
+            return true;
+        }
+        return is_mesh_valid_base();
+    }
+
     bool Surface< 3 >::is_on_voi() const
     {
         ringmesh_assert( this->nb_incident_entities() == 1
                          || this->nb_incident_entities() == 2 );
         return this->nb_incident_entities() == 1;
+    }
+
+    bool Surface< 3 >::is_mesh_valid() const
+    {
+        return is_mesh_valid_base();
     }
 
     const Region3D& Surface< 3 >::incident_entity( index_t x ) const

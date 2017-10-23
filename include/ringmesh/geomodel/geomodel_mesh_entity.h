@@ -734,7 +734,7 @@ namespace RINGMesh
          *
          * @todo Check that there is no duplicated polygon
          */
-        bool is_mesh_valid() const final;
+        bool is_mesh_valid_base() const;
 
     private:
         void update_mesh_storage_type(
@@ -764,6 +764,7 @@ namespace RINGMesh
         {
         }
 
+        bool is_mesh_valid() const final;
     public:
         bool is_on_voi() const final;
         bool side( index_t i ) const
@@ -795,6 +796,7 @@ namespace RINGMesh
         {
         }
 
+        bool is_mesh_valid() const final;
     public:
         bool is_on_voi() const final;
         const Region< 3 >& incident_entity( index_t x ) const;
