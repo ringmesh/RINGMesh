@@ -66,13 +66,13 @@ namespace RINGMesh
      * @brief Builder tools to remove entities from a GeoModel
      */
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderRemovalBase
+    class RINGMESH_API GeoModelBuilderRemoveBase
     {
-        ringmesh_disable_copy_and_move( GeoModelBuilderRemovalBase );
+        ringmesh_disable_copy_and_move( GeoModelBuilderRemoveBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
-        virtual ~GeoModelBuilderRemovalBase();
+        virtual ~GeoModelBuilderRemoveBase();
 
         /*!
          * @brief Remove a list of mesh entities of the geomodel
@@ -103,7 +103,7 @@ namespace RINGMesh
             const std::set< gmme_id >& entities_to_remove );
 
     protected:
-        GeoModelBuilderRemovalBase( GeoModelBuilder< DIMENSION >& builder,
+        GeoModelBuilderRemoveBase( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
 
         virtual void update_mesh_entity( GeoModelMeshEntity< DIMENSION >& ME );
@@ -282,29 +282,29 @@ namespace RINGMesh
         std::vector< GeologicalEntityType > geological_entity_types_;
     };
 
-    ALIAS_2D_AND_3D( GeoModelBuilderRemovalBase );
+    ALIAS_2D_AND_3D( GeoModelBuilderRemoveBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderRemoval
-        : public GeoModelBuilderRemovalBase< DIMENSION >
+    class RINGMESH_API GeoModelBuilderRemove
+        : public GeoModelBuilderRemoveBase< DIMENSION >
     {
         friend class GeoModelBuilderBase< DIMENSION >;
         friend class GeoModelBuilder< DIMENSION >;
 
     private:
-        GeoModelBuilderRemoval( GeoModelBuilder< DIMENSION >& builder,
+        GeoModelBuilderRemove( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
     };
 
     template <>
-    class RINGMESH_API GeoModelBuilderRemoval< 3 >
-        : public GeoModelBuilderRemovalBase< 3 >
+    class RINGMESH_API GeoModelBuilderRemove< 3 >
+        : public GeoModelBuilderRemoveBase< 3 >
     {
         friend class GeoModelBuilderBase< 3 >;
         friend class GeoModelBuilder< 3 >;
 
     private:
-        GeoModelBuilderRemoval(
+        GeoModelBuilderRemove(
             GeoModelBuilder3D& builder, GeoModel3D& geomodel );
 
         void update_mesh_entity( GeoModelMeshEntity3D& ME ) override;
