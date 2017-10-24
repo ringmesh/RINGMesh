@@ -58,12 +58,6 @@ int main()
     {
         default_configure();
 
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path );
-        log_file += "log.txt";
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
-
         std::string file_name( ringmesh_test_data_path );
         file_name += "modelA6.ml";
 

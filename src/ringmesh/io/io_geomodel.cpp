@@ -140,7 +140,8 @@ namespace RINGMesh
         GeoModelOutputHandlerFactory3D::register_creator< AsterIOHandler >(
             "mail" );
         GeoModelOutputHandlerFactory3D::register_creator< VTKIOHandler >( "vtk" );
-        GeoModelOutputHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
+        //todo GPRS export is not working for the moment [AB]
+//        GeoModelOutputHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
         GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler >( "msh" );
         GeoModelOutputHandlerFactory3D::register_creator< MFEMIOHandler3D >(
             "mfem" );
