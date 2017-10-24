@@ -87,6 +87,7 @@ namespace RINGMesh
         bool can_load_geogram( const std::string& filename );
         void browse_geogram( const std::string& path );
         void update_region_of_interest();
+        void init_ringmesh_colormaps();
 
     private:
         void create_point( std::string name = "debug",

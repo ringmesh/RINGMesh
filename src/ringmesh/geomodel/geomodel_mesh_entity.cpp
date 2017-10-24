@@ -879,8 +879,8 @@ namespace RINGMesh
         const ElementLocalVertex& element_local_vertex ) const
     {
         ringmesh_assert(
-            element_local_vertex.element_id_ < nb_mesh_elements() );
-        ringmesh_assert( element_local_vertex.local_vertex_id_ < 2 );
+            element_local_vertex.element_id < nb_mesh_elements() );
+        ringmesh_assert( element_local_vertex.local_vertex_id < 2 );
         return line_mesh_->edge_vertex( element_local_vertex );
     }
 
@@ -995,10 +995,10 @@ namespace RINGMesh
         const PolygonLocalEdge& polygon_local_edge ) const
     {
         ringmesh_assert(
-            polygon_local_edge.polygon_id_ < nb_mesh_elements() );
+            polygon_local_edge.polygon_id < nb_mesh_elements() );
         ringmesh_assert(
-            polygon_local_edge.local_edge_id_
-            < nb_mesh_element_vertices( polygon_local_edge.polygon_id_ ) );
+            polygon_local_edge.local_edge_id
+            < nb_mesh_element_vertices( polygon_local_edge.polygon_id ) );
         return surface_mesh_->polygon_adjacent( polygon_local_edge );
     }
 
@@ -1007,15 +1007,15 @@ namespace RINGMesh
         const ElementLocalVertex& element_local_vertex ) const
     {
         ringmesh_assert(
-            element_local_vertex.element_id_ < nb_mesh_elements() );
-        ringmesh_assert( element_local_vertex.local_vertex_id_
+            element_local_vertex.element_id < nb_mesh_elements() );
+        ringmesh_assert( element_local_vertex.local_vertex_id
                          < nb_mesh_element_vertices(
-                               element_local_vertex.element_id_ ) );
+                               element_local_vertex.element_id ) );
         return surface_mesh_->polygon_vertex( element_local_vertex );
     }
 
     template < index_t DIMENSION >
-    bool SurfaceBase< DIMENSION >::is_mesh_valid() const
+    bool SurfaceBase< DIMENSION >::is_mesh_valid_base() const
     {
         bool valid{ true };
         auto id = this->gmme();
@@ -1079,11 +1079,25 @@ namespace RINGMesh
         return false;
     }
 
+    bool Surface< 2 >::is_mesh_valid() const
+    {
+        if( !is_meshed() )
+        {
+            return true;
+        }
+        return is_mesh_valid_base();
+    }
+
     bool Surface< 3 >::is_on_voi() const
     {
         ringmesh_assert( this->nb_incident_entities() == 1
                          || this->nb_incident_entities() == 2 );
         return this->nb_incident_entities() == 1;
+    }
+
+    bool Surface< 3 >::is_mesh_valid() const
+    {
+        return is_mesh_valid_base();
     }
 
     const Region3D& Surface< 3 >::incident_entity( index_t x ) const
@@ -1137,10 +1151,10 @@ namespace RINGMesh
         if( is_meshed() )
         {
             ringmesh_assert(
-                element_local_vertex.element_id_ < nb_mesh_elements() );
-            ringmesh_assert( element_local_vertex.local_vertex_id_
+                element_local_vertex.element_id < nb_mesh_elements() );
+            ringmesh_assert( element_local_vertex.local_vertex_id
                              < nb_mesh_element_vertices(
-                                   element_local_vertex.element_id_ ) );
+                                   element_local_vertex.element_id ) );
             return volume_mesh_->cell_vertex( element_local_vertex );
         }
         ringmesh_assert_not_reached;
@@ -1469,7 +1483,7 @@ namespace RINGMesh
         ElementLocalVertex cell_local_vertex;
         volume_mesh_->find_cell_from_colocated_vertex_within_distance_if_any(
             vertex_vec, this->geomodel_.epsilon(),
-            cell_local_vertex.element_id_, cell_local_vertex.local_vertex_id_ );
+            cell_local_vertex.element_id, cell_local_vertex.local_vertex_id );
         return cell_local_vertex;
     }
 

@@ -760,21 +760,21 @@ namespace
                 backward ? mesh.prev_on_border( cur_polygon_local_edge )
                          : mesh.next_on_border( cur_polygon_local_edge );
             ringmesh_assert(
-                next_polygon_local_edge0_on_border.polygon_id_ != NO_ID );
+                next_polygon_local_edge0_on_border.polygon_id != NO_ID );
             ringmesh_assert(
-                next_polygon_local_edge0_on_border.local_edge_id_ != NO_ID );
+                next_polygon_local_edge0_on_border.local_edge_id != NO_ID );
 
             PolygonLocalEdge next_polygon_local_edge1_on_border =
                 mesh.next_polygon_vertex( next_polygon_local_edge0_on_border );
             ringmesh_assert(
-                next_polygon_local_edge1_on_border.polygon_id_ != NO_ID );
+                next_polygon_local_edge1_on_border.polygon_id != NO_ID );
             ringmesh_assert(
-                next_polygon_local_edge1_on_border.local_edge_id_ != NO_ID );
+                next_polygon_local_edge1_on_border.local_edge_id != NO_ID );
 
             // Finds the BorderPolygon that is corresponding to this
             // It must exist and there is only one
             BorderPolygon bait{ border_polygon.surface_,
-                next_polygon_local_edge0_on_border.polygon_id_,
+                next_polygon_local_edge0_on_border.polygon_id,
                 geomodel_vertices.geomodel_vertex_id(
                     surface_id, next_polygon_local_edge0_on_border ),
                 geomodel_vertices.geomodel_vertex_id(

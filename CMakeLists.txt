@@ -76,7 +76,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Additional cmake modules
 include(ExternalProject)
 
-
 # Enable testing with CTest
 enable_testing()
 
@@ -86,11 +85,10 @@ project(RINGMesh)
 
 # Define version number
 # It is then exported to the configuration file
-set (RINGMesh_VERSION_MAJOR 5)
-set (RINGMesh_VERSION_MINOR 0)
-set (RINGMesh_VERSION_PATCH 0)
+set(RINGMesh_VERSION_MAJOR 5)
+set(RINGMesh_VERSION_MINOR 0)
+set(RINGMesh_VERSION_PATCH 0)
 set(RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RINGMesh_VERSION_PATCH})
-
 
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
@@ -207,7 +205,6 @@ endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 # Compil Third Parties
 include("${CMAKE_SOURCE_DIR}/cmake/CompilThirdParties.cmake")
 
-
 #------------------------------------------------------------------------------------------------
 # Get MG-Tetra if a path is given
 if(MG_TETRA)
@@ -226,7 +223,7 @@ if(MG_TETRA)
     link_directories(${MG_TETRA}/lib/Linux${PLATFORM})
   endif(WIN32)
 
-  set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
+  set(EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
 endif()
 
 #------------------------------------------------------------------------------------------------
@@ -239,19 +236,19 @@ foreach(directory ${directories})
     endif()
 endforeach()
 
-#------------------------------------------------------------------------------------------------
-# Build configuration
-# Organize outputs in a Linux way
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-
-# Add include directories of RINGMesh
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED
     ${ringmesh_include}
     ${ringmesh_src})
+
+#------------------------------------------------------------------------------------------------
+# Build configuration
+# Organize outputs in a Linux way
+set_target_properties(RINGMesh PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set_target_properties(RINGMesh PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
+# Add include directories of RINGMesh
+target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 # RINGMesh depends on Geogram Tinyxml2 and zlib
 add_dependencies(RINGMesh geogram_ext tinyxml2_ext zlib_ext minizip_ext)
@@ -278,7 +275,7 @@ set(ringmesh_include ${ringmesh_include} ${generated_export_file})
 generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
 
 # We want to be able to include these file
-include_directories(${PROJECT_BINARY_DIR})
+target_include_directories(RINGMesh PUBLIC ${PROJECT_BINARY_DIR})
 
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
@@ -306,41 +303,31 @@ endif()
 set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-    message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    include(${CMAKE_SOURCE_DIR}/third_party/geogram/cmake/opengl.cmake)
-    add_ringmesh_binary(${binary_source_dir}/ringmesh-view.cpp geogram_gfx ${OPENGL_LIBRARIES})
-    copy_for_windows()
-endif(BUILD_RINGMESH_VIEW)
+    add_ringmesh_binary(${binary_source_dir}/ringmesh-view.cpp)
+    copy_for_windows(${PROJECT_BINARY_DIR}/bin)
+endif()
 
 if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
-    message(STATUS "RINGMesh utilities directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-
     # Get the paths of the utility files
     file(GLOB utility_sources "${binary_source_dir}/utilities/*.cpp")
     foreach(utility_src ${utility_sources})
-        add_ringmesh_binary(${utility_src})
-    endforeach(utility_src ${utility_sources})
-    copy_for_windows()
-endif(RINGMESH_WITH_UTILITIES)
+        add_ringmesh_utility(${utility_src})
+    endforeach()
+    copy_for_windows(${PROJECT_BINARY_DIR}/bin/utilities)
+endif()
 
 if(RINGMESH_WITH_TUTORIALS)
     message(STATUS "Configuring RINGMesh with tutorials")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tutorials)
-    message(STATUS "RINGMesh tutorials directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     add_subdirectory(doc/tutorials)
-    copy_for_windows()
-endif(RINGMESH_WITH_TUTORIALS)
+    copy_for_windows(${PROJECT_BINARY_DIR}/bin/tutorials)
+endif()
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tests)
-    message(STATUS "RINGMesh tests directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     add_subdirectory(tests)
-    copy_for_windows()
-endif(RINGMESH_WITH_TESTS)
+    copy_for_windows(${PROJECT_BINARY_DIR}/bin/tests)
+endif()
 
 
 # Documentation

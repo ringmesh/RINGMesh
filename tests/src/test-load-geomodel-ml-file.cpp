@@ -61,7 +61,7 @@ int main()
             std::string input_model_file_name =
                 ringmesh_test_data_path + input_model_name;
 
-            Logger::out( "TEST", "Geomodel input test. Loading file ",
+            Logger::out( "TEST", "GeoModel input test. Loading file ",
                 input_model_file_name );
 
             GeoModel3D in;
@@ -74,39 +74,7 @@ int main()
                     "Failed when loading model ", in.name(),
                     ": the loaded model is not valid." );
             }
-
-            std::string output_model_file_name( ringmesh_test_output_path );
-            output_model_file_name += in.name() + "_saved_out.ml";
-            geomodel_save( in, output_model_file_name );
-
-            GeoModel3D in2;
-            bool reloaded_model_is_valid =
-                geomodel_load( in2, output_model_file_name );
-
-            if( !reloaded_model_is_valid )
-            {
-                throw RINGMeshException( "RINGMesh Test",
-                    "Failed when reloading model ", in2.name(),
-                    ": the reloaded model is not valid." );
-            }
-
-            std::string output_model_file_name_bis( ringmesh_test_output_path );
-            output_model_file_name_bis += in.name() + "_saved_out_bis.ml";
-            geomodel_save( in2, output_model_file_name_bis );
-
-            if( !compare_files(
-                    output_model_file_name, output_model_file_name_bis ) )
-            {
-                throw RINGMeshException( "TEST", "FAILED" );
-            }
         }
-
-        // Load a model without region : 6 surfaces defining a cube with holes
-        // between surfaces (all surface borders are free borders)
-        GeoModel3D not_sealed_cube_geomodel;
-        std::string input_cube_model_file_name( ringmesh_test_data_path );
-        input_cube_model_file_name += "not_sealed_cube.ml";
-        geomodel_load( not_sealed_cube_geomodel, input_cube_model_file_name );
     }
     catch( const RINGMeshException& e )
     {

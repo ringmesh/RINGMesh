@@ -689,9 +689,9 @@ namespace RINGMesh
                             continue;
                         }
                         auto adj_polygon =
-                            polygon_vertices[local_vertex].element_id_;
+                            polygon_vertices[local_vertex].element_id;
                         auto adj_local_vertex =
-                            polygon_vertices[local_vertex].local_vertex_id_;
+                            polygon_vertices[local_vertex].local_vertex_id;
                         auto adj_next_vertex =
                             this->surface_mesh_.polygon_vertex(
                                 this->surface_mesh_.next_polygon_vertex(

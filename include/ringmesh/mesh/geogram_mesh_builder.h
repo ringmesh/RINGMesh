@@ -158,8 +158,8 @@ private:                                                                       \
         void do_set_edge_vertex( const EdgeLocalVertex& edge_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->edges.set_vertex( edge_local_vertex.edge_id_,
-                edge_local_vertex.local_vertex_id_, vertex_id );
+            mesh_.mesh_->edges.set_vertex( edge_local_vertex.edge_id,
+                edge_local_vertex.local_vertex_id, vertex_id );
         }
 
         void do_delete_edges( const std::vector< bool >& to_delete ) override
@@ -242,16 +242,16 @@ private:                                                                       \
             const ElementLocalVertex& polygon_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->facets.set_vertex( polygon_local_vertex.element_id_,
-                polygon_local_vertex.local_vertex_id_, vertex_id );
+            mesh_.mesh_->facets.set_vertex( polygon_local_vertex.element_id,
+                polygon_local_vertex.local_vertex_id, vertex_id );
         }
 
         void do_set_polygon_adjacent(
             const PolygonLocalEdge& polygon_local_edge,
             index_t specifies ) override
         {
-            mesh_.mesh_->facets.set_adjacent( polygon_local_edge.polygon_id_,
-                polygon_local_edge.local_edge_id_, specifies );
+            mesh_.mesh_->facets.set_adjacent( polygon_local_edge.polygon_id,
+                polygon_local_edge.local_edge_id, specifies );
         }
 
         void do_clear_polygons(
@@ -307,8 +307,8 @@ private:                                                                       \
         void do_set_cell_vertex( const ElementLocalVertex& cell_local_vertex,
             index_t vertex_id ) override
         {
-            mesh_.mesh_->cells.set_vertex( cell_local_vertex.element_id_,
-                cell_local_vertex.local_vertex_id_, vertex_id );
+            mesh_.mesh_->cells.set_vertex( cell_local_vertex.element_id,
+                cell_local_vertex.local_vertex_id, vertex_id );
         }
 
         void do_set_cell_corner_vertex_index(
@@ -320,8 +320,8 @@ private:                                                                       \
         void do_set_cell_adjacent( const CellLocalFacet& cell_local_facet,
             index_t cell_adjacent ) override
         {
-            mesh_.mesh_->cells.set_adjacent( cell_local_facet.cell_id_,
-                cell_local_facet.local_facet_id_, cell_adjacent );
+            mesh_.mesh_->cells.set_adjacent( cell_local_facet.cell_id,
+                cell_local_facet.local_facet_id, cell_adjacent );
         }
 
         void connect_cells() override
