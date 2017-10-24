@@ -57,28 +57,28 @@ namespace
 namespace RINGMesh
 {
     ElementLocalVertex::ElementLocalVertex( EdgeLocalVertex edge_local_vertex )
-        : element_id_( std::move( edge_local_vertex.edge_id_ ) ),
-          local_vertex_id_( std::move( edge_local_vertex.local_vertex_id_ ) )
+        : element_id( std::move( edge_local_vertex.edge_id ) ),
+          local_vertex_id( std::move( edge_local_vertex.local_vertex_id ) )
     {
     }
 
     ElementLocalVertex::ElementLocalVertex(
         PolygonLocalEdge polygon_local_edge )
-        : element_id_( std::move( polygon_local_edge.polygon_id_ ) ),
-          local_vertex_id_( std::move( polygon_local_edge.local_edge_id_ ) )
+        : element_id( std::move( polygon_local_edge.polygon_id ) ),
+          local_vertex_id( std::move( polygon_local_edge.local_edge_id ) )
     {
     }
 
     ElementLocalVertex::ElementLocalVertex( CellLocalFacet cell_local_facet )
-        : element_id_( std::move( cell_local_facet.cell_id_ ) ),
-          local_vertex_id_( std::move( cell_local_facet.local_facet_id_ ) )
+        : element_id( std::move( cell_local_facet.cell_id ) ),
+          local_vertex_id( std::move( cell_local_facet.local_facet_id ) )
     {
     }
 
     bool ElementLocalVertex::operator==( const ElementLocalVertex& rhs ) const
     {
-        return compare_equal( element_id_, local_vertex_id_, rhs.element_id_,
-            rhs.local_vertex_id_ );
+        return compare_equal( element_id, local_vertex_id, rhs.element_id,
+            rhs.local_vertex_id );
     }
     bool ElementLocalVertex::operator!=( const ElementLocalVertex& rhs ) const
     {
@@ -87,8 +87,8 @@ namespace RINGMesh
 
     bool EdgeLocalVertex::operator==( const EdgeLocalVertex& rhs ) const
     {
-        return compare_equal( edge_id_, local_vertex_id_, rhs.edge_id_,
-            rhs.local_vertex_id_ );
+        return compare_equal( edge_id, local_vertex_id, rhs.edge_id,
+            rhs.local_vertex_id );
     }
     bool EdgeLocalVertex::operator!=( const EdgeLocalVertex& rhs ) const
     {
@@ -97,8 +97,8 @@ namespace RINGMesh
 
     bool PolygonLocalEdge::operator==( const PolygonLocalEdge& rhs ) const
     {
-        return compare_equal( polygon_id_, local_edge_id_, rhs.polygon_id_,
-            rhs.local_edge_id_ );
+        return compare_equal( polygon_id, local_edge_id, rhs.polygon_id,
+            rhs.local_edge_id );
     }
     bool PolygonLocalEdge::operator!=( const PolygonLocalEdge& rhs ) const
     {
@@ -107,8 +107,8 @@ namespace RINGMesh
 
     bool CellLocalFacet::operator==( const CellLocalFacet& rhs ) const
     {
-        return compare_equal( cell_id_, local_facet_id_, rhs.cell_id_,
-            rhs.local_facet_id_ );
+        return compare_equal( cell_id, local_facet_id, rhs.cell_id,
+            rhs.local_facet_id );
     }
     bool CellLocalFacet::operator!=( const CellLocalFacet& rhs ) const
     {

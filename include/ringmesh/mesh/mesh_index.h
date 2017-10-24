@@ -50,7 +50,7 @@ namespace RINGMesh
     {
         ElementLocalVertex() = default;
         ElementLocalVertex( index_t element_id, index_t local_vertex_id )
-            : element_id_( element_id ), local_vertex_id_( local_vertex_id )
+            : element_id( element_id ), local_vertex_id( local_vertex_id )
         {
         }
         ElementLocalVertex( EdgeLocalVertex edge_local_vertex );
@@ -58,58 +58,58 @@ namespace RINGMesh
         ElementLocalVertex( CellLocalFacet cell_local_facet );
         bool operator==( const ElementLocalVertex& rhs ) const;
         bool operator!=( const ElementLocalVertex& rhs ) const;
-        index_t element_id_{ NO_ID };
-        index_t local_vertex_id_{ NO_ID };
+        index_t element_id{ NO_ID };
+        index_t local_vertex_id{ NO_ID };
     };
 
     struct RINGMESH_API EdgeLocalVertex
     {
         EdgeLocalVertex() = default;
         EdgeLocalVertex( index_t edge_id, index_t local_vertex_id )
-            : edge_id_( edge_id ), local_vertex_id_( local_vertex_id )
+            : edge_id( edge_id ), local_vertex_id( local_vertex_id )
         {
         }
         EdgeLocalVertex( ElementLocalVertex edge_local_vertex )
-            : edge_id_( std::move( edge_local_vertex.element_id_ ) ),
-              local_vertex_id_(
-                  std::move( edge_local_vertex.local_vertex_id_ ) )
+            : edge_id( std::move( edge_local_vertex.element_id ) ),
+              local_vertex_id(
+                  std::move( edge_local_vertex.local_vertex_id ) )
         {
         }
         bool operator==( const EdgeLocalVertex& rhs ) const;
         bool operator!=( const EdgeLocalVertex& rhs ) const;
-        index_t edge_id_{ NO_ID };
-        index_t local_vertex_id_{ NO_ID };
+        index_t edge_id{ NO_ID };
+        index_t local_vertex_id{ NO_ID };
     };
 
     struct RINGMESH_API PolygonLocalEdge
     {
         PolygonLocalEdge() = default;
         PolygonLocalEdge( index_t polygon_id, index_t local_edge_id )
-            : polygon_id_( polygon_id ), local_edge_id_( local_edge_id )
+            : polygon_id( polygon_id ), local_edge_id( local_edge_id )
         {
         }
         PolygonLocalEdge( ElementLocalVertex polygon_local_vertex )
-            : polygon_id_( std::move( polygon_local_vertex.element_id_ ) ),
-              local_edge_id_(
-                  std::move( polygon_local_vertex.local_vertex_id_ ) )
+            : polygon_id( std::move( polygon_local_vertex.element_id ) ),
+              local_edge_id(
+                  std::move( polygon_local_vertex.local_vertex_id ) )
         {
         }
         bool operator==( const PolygonLocalEdge& rhs ) const;
         bool operator!=( const PolygonLocalEdge& rhs ) const;
-        index_t polygon_id_{ NO_ID };
-        index_t local_edge_id_{ NO_ID };
+        index_t polygon_id{ NO_ID };
+        index_t local_edge_id{ NO_ID };
     };
 
     struct RINGMESH_API CellLocalFacet
     {
         CellLocalFacet() = default;
         CellLocalFacet( index_t cell_id, index_t local_facet_id )
-            : cell_id_( cell_id ), local_facet_id_( local_facet_id )
+            : cell_id( cell_id ), local_facet_id( local_facet_id )
         {
         }
         bool operator==( const CellLocalFacet& rhs ) const;
         bool operator!=( const CellLocalFacet& rhs ) const;
-        index_t cell_id_{ NO_ID };
-        index_t local_facet_id_{ NO_ID };
+        index_t cell_id{ NO_ID };
+        index_t local_facet_id{ NO_ID };
     };
 } // namespace RINGMesh

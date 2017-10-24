@@ -33,14 +33,21 @@
  *     FRANCE
  */
 
+#include <ringmesh/ringmesh_tests_config.h>
+
 #include <iostream>
+
+#include <geogram/basic/command_line.h>
+
 #include <ringmesh/basic/common.h>
+
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/stratigraphic_column.h>
 #include <ringmesh/geomodel/stratigraphic_column_builder.h>
+
 #include <ringmesh/io/io.h>
-#include <ringmesh/ringmesh_tests_config.h>
 
 using namespace RINGMesh;
 
@@ -372,7 +379,10 @@ int main()
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
         Logger::instance()->register_client( file_logger );
 
-        // build geomodel
+        // No validity checks at loading
+        GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
+
+        // Load geomodel
         std::string input_model_file_name( ringmesh_test_data_path );
         input_model_file_name += "CloudSpin_fixed.ml";
         GeoModel3D in;
