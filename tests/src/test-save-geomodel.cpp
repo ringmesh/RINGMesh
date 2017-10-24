@@ -41,6 +41,7 @@
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/line_stream.h>
 
+#include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
@@ -85,9 +86,14 @@ void resize( std::string& word1, std::string& word2 )
     }
 }
 
-void remove_point( std::string& word )
+index_t remove_point( std::string& word )
 {
-    std::remove( word.begin(), word.end(), '.' );
+    auto position = find( word, '.' );
+    if( position != NO_ID )
+    {
+        word.erase( word.begin() + position );
+    }
+    return position;
 }
 
 bool compare_double( std::string word1, std::string word2 )
@@ -96,8 +102,12 @@ bool compare_double( std::string word1, std::string word2 )
     {
         resize( word1, word2 );
     }
-    remove_point( word1 );
-    remove_point( word2 );
+    auto position1 = remove_point( word1 );
+    auto position2 = remove_point( word2 );
+    if( position1 != position2 )
+    {
+        return false;
+    }
     try
     {
         auto value1 = std::stol( word1 );
