@@ -147,7 +147,7 @@ namespace
             {
                 builder_.topology.get_dependent_entities( empty_mesh_entities,
                     empty_geological_entities );
-                builder_.removal.remove_mesh_entities( empty_mesh_entities );
+                builder_.remove.remove_mesh_entities( empty_mesh_entities );
             }
         }
 
@@ -164,7 +164,7 @@ namespace
             remove_degenerate_polygons_and_edges( empty_mesh_entities );
             if( !empty_mesh_entities.empty() )
             {
-                builder_.removal.remove_mesh_entities( empty_mesh_entities );
+                builder_.remove.remove_mesh_entities( empty_mesh_entities );
             }
 
             // This is basic requirement ! no_colocated geomodel vertices !

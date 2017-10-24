@@ -54,8 +54,8 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometry );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoveBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemove );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntity );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
@@ -121,8 +121,8 @@ namespace RINGMesh
         friend class GeoModelBuilderGeometry< DIMENSION >;
         friend class GeoModelBuilderGeology< DIMENSION >;
         friend class GeoModelBuilderInfo< DIMENSION >;
-        friend class GeoModelBuilderRemovalBase< DIMENSION >;
-        friend class GeoModelBuilderRemoval< DIMENSION >;
+        friend class GeoModelBuilderRemoveBase< DIMENSION >;
+        friend class GeoModelBuilderRemove< DIMENSION >;
 
     private:
         explicit GeoModelMeshEntityAccess(
@@ -194,7 +194,7 @@ namespace RINGMesh
         friend class GeoModelBuilderTopology< DIMENSION >;
         friend class GeoModelBuilderGeology< DIMENSION >;
         friend class GeoModelBuilderInfo< DIMENSION >;
-        friend class GeoModelBuilderRemovalBase< DIMENSION >;
+        friend class GeoModelBuilderRemoveBase< DIMENSION >;
 
     private:
         explicit GeoModelGeologicalEntityAccess(
@@ -252,8 +252,8 @@ namespace RINGMesh
         friend class GeoModelBuilderGeometryBase< DIMENSION >;
         friend class GeoModelBuilderGeometry< DIMENSION >;
         friend class GeoModelBuilderGeology< DIMENSION >;
-        friend class GeoModelBuilderRemovalBase< DIMENSION >;
-        friend class GeoModelBuilderRemoval< DIMENSION >;
+        friend class GeoModelBuilderRemoveBase< DIMENSION >;
+        friend class GeoModelBuilderRemove< DIMENSION >;
         friend class GeoModelBuilderRepair< DIMENSION >;
         friend class GeoModelBuilderCopy< DIMENSION >;
         friend class GeoModelBuilderInfo< DIMENSION >;

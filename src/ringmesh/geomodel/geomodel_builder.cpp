@@ -876,7 +876,7 @@ namespace RINGMesh
         : topology( builder, geomodel ),
           geometry( builder, geomodel ),
           geology( builder, geomodel ),
-          removal( builder, geomodel ),
+          remove( builder, geomodel ),
           info( builder, geomodel ),
           geomodel_( geomodel ),
           geomodel_access_( geomodel )
@@ -1128,7 +1128,7 @@ namespace RINGMesh
         const auto& cur_region = geomodel_.region( universe_id );
         std::set< gmme_id > to_erase;
         to_erase.insert( cur_region.gmme() );
-        removal.remove_mesh_entities( to_erase );
+        remove.remove_mesh_entities( to_erase );
     }
 
     template class RINGMESH_API GeoModelBuilderBase< 2 >;
