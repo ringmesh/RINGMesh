@@ -140,7 +140,7 @@ namespace RINGMesh
         GeoModelBuilderTopology< DIMENSION > topology;
         GeoModelBuilderGeometry< DIMENSION > geometry;
         GeoModelBuilderGeology< DIMENSION > geology;
-        GeoModelBuilderRemoval< DIMENSION > removal;
+        GeoModelBuilderRemove< DIMENSION > remove;
         GeoModelBuilderInfo< DIMENSION > info;
 
     protected:
