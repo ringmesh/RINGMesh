@@ -47,7 +47,7 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopology );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoveBase );
 } // namespace RINGMesh
 
 namespace RINGMesh
