@@ -35,17 +35,13 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <algorithm>
-#include <string>
-
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/line_stream.h>
 
 #include <ringmesh/basic/algorithm.h>
-#include <ringmesh/basic/command_line.h>
+
 #include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+
 #include <ringmesh/io/io.h>
 
 /*!
