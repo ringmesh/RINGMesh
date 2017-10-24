@@ -41,6 +41,7 @@
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/nn_search.h>
+#include <ringmesh/basic/types.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
@@ -252,6 +253,11 @@ namespace RINGMesh
         index_t starting_index_{ 1 };
 
     private:
+	meshgems_integer to_mg_int( index_t from) const
+	{
+	    return static_cast< meshgems_integer >( from );
+	}
+
         void initialize_ringmesh_storage()
         {
             tetra_get_mesh( tms_, &mesh_output_ );
@@ -259,7 +265,8 @@ namespace RINGMesh
             mesh_get_vertex_count( mesh_output_, &nb_points );
             signed_index_t nb_tets = 0;
             mesh_get_tetrahedron_count( mesh_output_, &nb_tets );
-            initialize_storage( nb_points, nb_tets );
+            initialize_storage( static_cast< index_t > ( nb_points ),
+		    static_cast< index_t > ( nb_tets ) );
         }
 
         void initialize_mgtetra_variables()
@@ -291,44 +298,44 @@ namespace RINGMesh
         void set_vertices()
         {
             mesh_set_vertex_count(
-                mesh_input_, tetmesh_constraint_.vertices.nb() );
+                mesh_input_, to_mg_int( tetmesh_constraint_.vertices.nb() ) );
             for( auto p : range( tetmesh_constraint_.vertices.nb() ) )
             {
-                mesh_set_vertex_coordinates( mesh_input_, p + starting_index_,
+                mesh_set_vertex_coordinates( mesh_input_, to_mg_int( p + starting_index_ ),
                     tetmesh_constraint_.vertices.point_ptr( p ) );
             }
         }
 
         void set_edges()
         {
-            mesh_set_edge_count( mesh_input_, tetmesh_constraint_.edges.nb() );
+            mesh_set_edge_count( mesh_input_, to_mg_int( tetmesh_constraint_.edges.nb() ) );
             for( auto e : range( tetmesh_constraint_.edges.nb() ) )
             {
                 meshgems_integer edge_indices[2];
                 edge_indices[0] =
-                    tetmesh_constraint_.edges.vertex( e, 0 ) + starting_index_;
+                    to_mg_int( tetmesh_constraint_.edges.vertex( e, 0 ) + starting_index_ );
                 edge_indices[1] =
-                    tetmesh_constraint_.edges.vertex( e, 1 ) + starting_index_;
+                    to_mg_int( tetmesh_constraint_.edges.vertex( e, 1 ) + starting_index_ );
                 mesh_set_edge_vertices(
-                    mesh_input_, e + starting_index_, edge_indices );
+                    mesh_input_, to_mg_int( e + starting_index_ ), edge_indices );
             }
         }
 
         void set_triangles()
         {
             mesh_set_triangle_count(
-                mesh_input_, tetmesh_constraint_.facets.nb() );
+                mesh_input_, to_mg_int( tetmesh_constraint_.facets.nb() ) );
             for( auto t : range( tetmesh_constraint_.facets.nb() ) )
             {
                 meshgems_integer triangle_indices[3];
                 triangle_indices[0] =
-                    tetmesh_constraint_.facets.vertex( t, 0 ) + starting_index_;
+                    to_mg_int( tetmesh_constraint_.facets.vertex( t, 0 ) + starting_index_ );
                 triangle_indices[1] =
-                    tetmesh_constraint_.facets.vertex( t, 1 ) + starting_index_;
+                    to_mg_int( tetmesh_constraint_.facets.vertex( t, 1 ) + starting_index_ );
                 triangle_indices[2] =
-                    tetmesh_constraint_.facets.vertex( t, 2 ) + starting_index_;
+                    to_mg_int( tetmesh_constraint_.facets.vertex( t, 2 ) + starting_index_ );
                 mesh_set_triangle_vertices(
-                    mesh_input_, t + starting_index_, triangle_indices );
+                    mesh_input_, to_mg_int( t + starting_index_ ), triangle_indices );
             }
         }
 
@@ -376,37 +383,37 @@ namespace RINGMesh
             return true;
         }
 
-        void write_vertices_in_ringmesh_data_structure() final
+        void write_vertices_in_ringmesh_data_structure()
         {
             parallel_for( region_->nb_vertices(), [this]( index_t v ) {
                 double point[3];
                 mesh_get_vertex_coordinates(
-                    mesh_output_, v + starting_index_, point );
+                    mesh_output_, to_mg_int( v + starting_index_ ), point );
                 set_point( v, point );
             } );
         }
 
-        void write_tet_in_ringmesh_data_structure() final
+        void write_tet_in_ringmesh_data_structure()
         {
             parallel_for( region_->nb_mesh_elements(), [this]( index_t t ) {
                 int tet[4];
                 mesh_get_tetrahedron_vertices(
-                    mesh_output_, t + starting_index_, tet );
+                    mesh_output_, to_mg_int( t + starting_index_ ), tet );
                 // Because MG Tetra count the vertices starting with 1
                 for( auto v : range( 4 ) )
                 {
-                    tet[v] -= starting_index_;
+                    tet[v] -= static_cast < int >( starting_index_ );
                 }
                 set_tetra( t, tet );
             } );
-            builder_->geometry.compute_region_adjacencies( output_region_ );
+            builder_.geometry.compute_region_adjacencies( output_region_ );
         }
         void set_point( index_t index, const double* point )
         {
             bool update = false;
             vec3 vertex( point );
-            builder_->geometry.set_mesh_entity_vertex(
-                gmme_id( Region::type_name_static(), output_region_ ), index,
+            builder_.geometry.set_mesh_entity_vertex(
+                gmme_id( Region3D::type_name_static(), output_region_ ), index,
                 vertex, update );
         }
 
@@ -418,18 +425,18 @@ namespace RINGMesh
                 index_t vertex_id = static_cast< index_t >( vertex_indices[v] );
                 corners[v] = vertex_id;
             }
-            builder_->geometry.set_region_element_geometry(
+            builder_.geometry.set_region_element_geometry(
                 output_region_, tetra_index, corners );
         }
 
         void initialize_storage( index_t nb_points, index_t nb_tets )
         {
-            gmme_id region_id( Region::type_name_static(), output_region_ );
-            builder_->geometry.delete_mesh_entity_mesh( region_id );
-            builder_->geometry.create_mesh_entity_vertices(
+            gmme_id region_id( Region3D::type_name_static(), output_region_ );
+            builder_.geometry.delete_mesh_entity_mesh( region_id );
+            builder_.geometry.create_mesh_entity_vertices(
                 region_id, nb_points );
-            builder_->geometry.create_region_cells(
-                output_region_, GEO::MESH_TET, nb_tets );
+            builder_.geometry.create_region_cells(
+                output_region_,CellType::TETRAHEDRON, nb_tets );
         }
     };
 #endif
