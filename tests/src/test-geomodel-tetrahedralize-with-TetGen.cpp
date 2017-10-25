@@ -37,6 +37,8 @@
 
 #include <geogram/basic/command_line.h>
 
+#include <ringmesh/basic/command_line.h>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
@@ -47,7 +49,6 @@
 
 /*!
  * @file Test global tetrahedralization of a GeoModel
- * @author Jeanne Pellerin
  */
 
 int main()
@@ -57,6 +58,8 @@ int main()
     try
     {
         default_configure();
+        CmdLine::import_arg_group( "global" );
+        GEO::CmdLine::set_arg( "algo:tet", "TetGen");
 
         std::string file_name( ringmesh_test_data_path );
         file_name += "modelA6.ml";
@@ -78,7 +81,7 @@ int main()
 #ifdef RINGMESH_WITH_TETGEN
 
         // Tetrahedralize the GeoModel
-        tetrahedralize( geomodel, "TetGen", NO_ID, false );
+        tetrahedralize( geomodel, NO_ID, false );
         for( index_t r : range( geomodel.nb_regions() ) )
         {
             if( !geomodel.region( r ).is_meshed() )

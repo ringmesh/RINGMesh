@@ -54,6 +54,8 @@ namespace RINGMesh
                 "Threshold for numerical precision (ratio of the bbox "
                 "diagonal)",
                 GEO::CmdLine::ARG_ADVANCED );
+            GEO::CmdLine::declare_arg( "algo:tet", "TetGen",
+                "Toggles the tetrahedral mesher (TetGen, MG_Tetra)" );
         }
 
         void import_arg_group_in()
