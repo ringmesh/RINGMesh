@@ -55,9 +55,7 @@ void import_arg_groups()
 {
     CmdLine::import_arg_group( "in" );
     CmdLine::import_arg_group( "out" );
-    CmdLine::import_arg_group( "global" );
 }
-
 
 void show_usage_example()
 {
@@ -66,6 +64,7 @@ void show_usage_example()
         "ringmesh-tetrahedralize in:geomodel=path/to/input/geomodel.ext ",
         "out:geomodel=path/to/output/geomodel.ext algo:tet=TetGen" );
 }
+
 int main( int argc, char** argv )
 {
     try
@@ -73,9 +72,16 @@ int main( int argc, char** argv )
         default_configure();
         import_arg_groups();
 
+        if( argc == 1 )
+        {
+            GEO::CmdLine::show_usage();
+            return 0;
+        }
+
         std::vector< std::string > filenames;
         if( !GEO::CmdLine::parse( argc, argv, filenames ) )
         {
+            GEO::CmdLine::show_usage();
             show_usage_example();
             return 1;
         }
