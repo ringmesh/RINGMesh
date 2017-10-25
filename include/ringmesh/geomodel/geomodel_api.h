@@ -126,7 +126,7 @@ namespace RINGMesh
      * add some points inside the region.
      */
     void RINGMESH_API tetrahedralize( GeoModel3D& geomodel,
-        index_t region_id,
+        index_t region_id = NO_ID,
         bool add_steiner_points = true );
 
     /*!
