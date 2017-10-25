@@ -85,7 +85,7 @@ namespace
     {
         Logger::div( "Example" );
         Logger::out( "",
-            "ringmesh-convert in:geomodel=path/to/input/geomodel.ext ",
+            "ringmeshconvert in:geomodel=path/to/input/geomodel.ext ",
             "out:geomodel=path/to/output/geomodel.ext" );
     }
 }
