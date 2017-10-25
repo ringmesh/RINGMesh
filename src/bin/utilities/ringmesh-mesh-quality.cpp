@@ -104,7 +104,7 @@ namespace
     {
         GEO::Stopwatch total( "Total time" );
 
-        std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" );
+        auto geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" );
         if( geomodel_in_name.empty() )
         {
             throw RINGMeshException(
@@ -114,15 +114,15 @@ namespace
         geomodel_load( geomodel, geomodel_in_name );
         check_geomodel_is_3d_meshed_by_simplexes( geomodel );
 
-        index_t quality_mode = GEO::CmdLine::get_arg_uint( "quality:mode" );
+        auto quality_mode = GEO::CmdLine::get_arg_uint( "quality:mode" );
         compute_prop_tet_mesh_quality(
             static_cast< MeshQualityMode >( quality_mode ), geomodel );
 
-        std::string min_quality_out_name =
+        auto min_quality_out_name =
             GEO::CmdLine::get_arg( "quality:output" );
          if( !min_quality_out_name.empty() )
          {
-             double min_quality =
+             auto min_quality =
                  GEO::CmdLine::get_arg_double( "quality:min_value" );
              // Working on attributes
              RINGMesh::GeogramVolumeMesh3D output_mesh;
@@ -134,7 +134,7 @@ namespace
              output_mesh.save_mesh( min_quality_out_name );
          }
 
-        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
+        auto geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( geomodel_out_name.empty() )
         {
             throw RINGMeshException(
