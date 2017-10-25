@@ -117,26 +117,21 @@ namespace RINGMesh
         const RINGMesh::GeologicalEntityType& gmge_type,
         const std::string& name );
 
-#ifdef RINGMESH_WITH_TETGEN
-
     /*!
      * Compute the tetrahedral mesh of the input structural geomodel
      * @param[in/out] geomodel GeoModel to tetrahedralize
-     * @param[in] method External mesher used, Tetgen by default
      * @param[in] region_id Region to mesh. By default it set to NO_ID and all
      * regions are meshed.
      * @param[in] add_steiner_points if true (default value), the mesher will
      * add some points inside the region.
      */
     void RINGMESH_API tetrahedralize( GeoModel3D& geomodel,
-        const std::string& method = "TetGen",
-        index_t region_id = NO_ID,
+        index_t region_id,
         bool add_steiner_points = true );
 
     /*!
      * Compute the tetrahedral mesh of the input structural geomodel
      * @param[in/out] geomodel GeoModel to tetrahedralize
-     * @param[in] method External mesher used
      * @param[in] region_id Region to mesh. If set to NO_ID and all regions are
      * meshed.
      * @param[in] add_steiner_points if true, the mesher will add some points
@@ -146,12 +141,9 @@ namespace RINGMesh
      * There is one vector per region.
      */
     void RINGMESH_API tetrahedralize( GeoModel3D& geomodel,
-        const std::string& method,
         index_t region_id,
         bool add_steiner_points,
         const std::vector< std::vector< vec3 > >& internal_vertices );
-
-#endif
 
     /*!
      * @brief Translates the boundary geomodel by a vector.
