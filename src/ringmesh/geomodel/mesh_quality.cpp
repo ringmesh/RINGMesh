@@ -404,7 +404,7 @@ namespace RINGMesh {
         }
     }
 
-    void output_low_quality_cells(
+    double output_low_quality_cells(
         MeshQualityMode mesh_qual_mode,
         const GeoModel3D& geomodel,
         VolumeMesh3D& output_mesh,
@@ -412,6 +412,7 @@ namespace RINGMesh {
     {
         ringmesh_assert( geomodel.nb_regions() != 0 );
         auto mesh_builder = VolumeMeshBuilder3D::create_builder( output_mesh );
+        double min_qual_value{ max_float64() };
         for( const auto& region : geomodel.regions() ) {
             ringmesh_assert( region.is_meshed() );
             ringmesh_assert( region.is_simplicial() );
@@ -432,8 +433,13 @@ namespace RINGMesh {
                         mesh_builder->set_cell_vertex( { new_cell_id, v_id },
                         first_new_vertex_id + v_id );
                     }
+                    if( quality_attribute[cell_id] < min_qual_value )
+                    {
+                        min_qual_value = quality_attribute[cell_id];
+                    }
                 }
             }
         }
+        return min_qual_value;
     }
 } // namespace RINGMesh
