@@ -129,8 +129,6 @@ namespace RINGMesh
      * add some points inside the region.
      */
     void RINGMESH_API tetrahedralize( GeoModel3D& geomodel,
-        const std::string& method = "TetGen",
-        index_t region_id = NO_ID,
         bool add_steiner_points = true );
 
     /*!
@@ -146,7 +144,6 @@ namespace RINGMesh
      * There is one vector per region.
      */
     void RINGMESH_API tetrahedralize( GeoModel3D& geomodel,
-        const std::string& method,
         index_t region_id,
         bool add_steiner_points,
         const std::vector< std::vector< vec3 > >& internal_vertices );

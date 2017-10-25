@@ -51,18 +51,11 @@
 
 using namespace RINGMesh;
 
-void import_arg_group_tetrahedralize()
-{
-    GEO::CmdLine::declare_arg(
-        "tetrahedralizer", "TetGen",
-        "External mesher to call for tetrahedralizing the GeoModel");
-}
-
 void import_arg_groups()
 {
     CmdLine::import_arg_group( "in" );
     CmdLine::import_arg_group( "out" );
-    import_arg_group_tetrahedralize();
+    CmdLine::import_arg_group( "global" );
 }
 
 
@@ -71,7 +64,7 @@ void show_usage_example()
     Logger::div( "Example" );
     Logger::out( "",
         "ringmesh-tetrahedralize in:geomodel=path/to/input/geomodel.ext ",
-        "out:geomodel=path/to/output/geomodel.ext tetrahedralizer=MGTetra" );
+        "out:geomodel=path/to/output/geomodel.ext algo:tet=TetGen" );
 }
 int main( int argc, char** argv )
 {
@@ -89,17 +82,22 @@ int main( int argc, char** argv )
         GEO::Stopwatch total( "Total time" );
 
         GeoModel3D geomodel;
-        std::string input_geomodel_name { GEO::CmdLine::get_arg( "in:geomodel" ) };
-        if( input_geomodel_name.empty() )
+        std::string input_file_name { GEO::CmdLine::get_arg( "in:geomodel" ) };
+        if( input_file_name.empty() )
         {
             throw RINGMeshException(
                 "I/O", "Give at least a filename in in:geomodel" );
         }
-        geomodel_load( geomodel, input_geomodel_name );
+        geomodel_load( geomodel, input_file_name );
 
-        tetrahedralize( geomodel, GEO::CmdLine::get_arg( "tetrahedralizer" ) );
+        tetrahedralize( geomodel );
+
         std::string output_file_name { GEO::CmdLine::get_arg( "out:geomodel" ) };
-
+        if( output_file_name.empty() )
+        {
+            throw RINGMeshException(
+                "I/O", "Give at least a filename in out:geomodel" );
+        }
         geomodel_save( geomodel, output_file_name );
     }
     catch( const RINGMeshException& e )

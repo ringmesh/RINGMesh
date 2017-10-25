@@ -40,6 +40,7 @@
 #include <iostream>
 
 #include <geogram/basic/progress.h>
+#include <geogram/basic/command_line.h>
 
 #include <ringmesh/basic/geometry.h>
 
@@ -461,7 +462,6 @@ namespace RINGMesh
 #ifdef RINGMESH_WITH_TETGEN
 
     void tetrahedralize( GeoModel3D& geomodel,
-        const std::string& method,
         index_t region_id,
         bool add_steiner_points )
     {
@@ -471,23 +471,23 @@ namespace RINGMesh
          */
         std::vector< std::vector< vec3 > > internal_vertices(
             geomodel.nb_regions() );
-        tetrahedralize( geomodel, method, region_id, add_steiner_points,
+        tetrahedralize( geomodel, region_id, add_steiner_points,
             internal_vertices );
     }
 
     void tetrahedralize( GeoModel3D& geomodel,
-        const std::string& method,
         index_t region_id,
         bool add_steiner_points,
         const std::vector< std::vector< vec3 > >& internal_vertices )
     {
+        const std::string method { GEO::CmdLine::get_arg( "algo:tet" ) };
         if( region_id == NO_ID )
         {
             Logger::out( "Info", "Using ", method );
             GEO::ProgressTask progress( "Compute", geomodel.nb_regions() );
             for( auto i : range( geomodel.nb_regions() ) )
             {
-                tetrahedralize( geomodel, method, i, add_steiner_points,
+                tetrahedralize( geomodel, i, add_steiner_points,
                     internal_vertices );
                 progress.next();
             }
