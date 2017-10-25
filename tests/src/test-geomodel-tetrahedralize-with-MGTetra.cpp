@@ -86,7 +86,7 @@ int main()
 #ifdef USE_MG_TETRA
 
         // Tetrahedralize the GeoModel
-        tetrahedralize( geomodel, "MG_Tetra", NO_ID, false );
+        tetrahedralize( geomodel, NO_ID, false );
 
         for( index_t r : range( geomodel.nb_regions() ) )
         {
