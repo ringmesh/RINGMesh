@@ -37,6 +37,8 @@
 
 #include <geogram/basic/command_line.h>
 
+#include <ringmesh/basic/command_line.h>
+
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
@@ -55,6 +57,8 @@ int main()
     try
     {
         default_configure();
+        CmdLine::import_arg_group( "global" );
+        GEO::CmdLine::set_arg( "algo:tet", "MG_Tetra");
 
         // Set an output log file
         std::string log_file( ringmesh_test_output_path );
