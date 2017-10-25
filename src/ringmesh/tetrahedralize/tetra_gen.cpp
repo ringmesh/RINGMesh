@@ -41,7 +41,6 @@
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/nn_search.h>
-#include <ringmesh/basic/types.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
@@ -413,7 +412,7 @@ namespace RINGMesh
             bool update = false;
             vec3 vertex( point );
             builder_.geometry.set_mesh_entity_vertex(
-                gmme_id( Region3D::type_name_static(), output_region_ ), index,
+                gmme_id( region_type_name_static(), output_region_ ), index,
                 vertex, update );
         }
 
@@ -431,7 +430,7 @@ namespace RINGMesh
 
         void initialize_storage( index_t nb_points, index_t nb_tets )
         {
-            gmme_id region_id( Region3D::type_name_static(), output_region_ );
+            gmme_id region_id( region_type_name_static(), output_region_ );
             builder_.geometry.delete_mesh_entity_mesh( region_id );
             builder_.geometry.create_mesh_entity_vertices(
                 region_id, nb_points );
