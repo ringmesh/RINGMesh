@@ -92,7 +92,7 @@ namespace RINGMesh
     void RINGMESH_API compute_prop_tet_mesh_quality(
         MeshQualityMode mesh_qual_mode, const GeoModel3D& geomodel );
 
-    void RINGMESH_API output_low_quality_cells(
+    double RINGMESH_API output_low_quality_cells(
         MeshQualityMode mesh_qual_mode,
         const GeoModel3D& geomodel,
         VolumeMesh3D& output_mesh,
