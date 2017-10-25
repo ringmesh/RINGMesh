@@ -100,10 +100,6 @@ namespace RINGMesh
         {
             return is_initialized_;
         }
-        virtual void clear() const
-        {
-            is_initialized_ = false;
-        }
 
     protected:
         GeoModelMeshCommon(
@@ -121,6 +117,10 @@ namespace RINGMesh
             mesh_base_->save_mesh( filename );
         }
 
+        void set_is_initialized( bool value ) const
+        {
+            is_initialized_ = value;
+        }
     protected:
         /// Attached GeoModelMesh
         GeoModelMesh< DIMENSION >& gmm_;
@@ -128,6 +128,8 @@ namespace RINGMesh
         GeoModel< DIMENSION >& geomodel_;
         /// Attached MeshBase
         MeshBase< DIMENSION >* mesh_base_;
+
+    private:
         /// initilization flag
         mutable bool is_initialized_{ false };
     };
@@ -258,7 +260,7 @@ namespace RINGMesh
          *        clear global vertex information in the all BMME
          * @warning Not stable - crashes if attributes are still bound
          */
-        void clear() const override;
+        void clear() const;
 
         void unbind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
@@ -343,7 +345,7 @@ namespace RINGMesh
             GeoModel3D& gm,
             std::unique_ptr< PointSetMesh3D >& mesh );
 
-        void clear() const override;
+        void clear() const;
         index_t nb_total_vertices() const override;
         index_t fill_vertices() const override;
     };
