@@ -43,7 +43,6 @@
 #include <geogram/basic/file_system.h>
 
 #include <ringmesh/basic/pimpl_impl.h>
-#include <ringmesh/basic/logger.h>
 
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
