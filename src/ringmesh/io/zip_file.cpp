@@ -113,7 +113,7 @@ namespace RINGMesh
             std::string directory_to_unzip )
             :
                 zip_file_ { unzOpen( filename.c_str() ) },
-                directory_to_unzip_ { std::move( directory_to_unzip ) }
+                directory_to_unzip_ ( std::move( directory_to_unzip ) )
         {
             if( zip_file_ == nullptr )
             {
