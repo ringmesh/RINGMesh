@@ -124,7 +124,7 @@ namespace
          {
              auto min_quality =
                  GEO::CmdLine::get_arg_double( "quality:min_value" );
-             RINGMesh::GeogramVolumeMesh3D output_mesh;
+             GeogramVolumeMesh3D output_mesh;
              double min_cell_quality { output_low_quality_cells(
                  static_cast< MeshQualityMode >( quality_mode ),
                  geomodel, output_mesh, min_quality ) };

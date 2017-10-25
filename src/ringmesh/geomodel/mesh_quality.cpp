@@ -50,7 +50,8 @@
  * http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html
  */
 
-namespace {
+namespace
+{
     using namespace RINGMesh;
 
     /*!

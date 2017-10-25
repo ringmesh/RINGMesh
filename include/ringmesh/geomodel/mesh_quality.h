@@ -43,11 +43,6 @@
  * http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html
  */
 
-namespace GEO
-{
-    class Mesh;
-}
-
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
