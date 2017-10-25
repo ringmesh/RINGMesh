@@ -37,13 +37,12 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/stopwatch.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/mesh_quality.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -126,11 +125,11 @@ namespace
              double min_quality =
                  GEO::CmdLine::get_arg_double( "quality:min_value" );
              // Working on attributes
-             GEO::Mesh output_mesh;
+             RINGMesh::GeogramVolumeMesh3D output_mesh;
              output_low_quality_cells(
                  static_cast< MeshQualityMode >( quality_mode ),
                  geomodel, output_mesh, min_quality );
-             GEO::mesh_save( output_mesh, min_quality_out_name );
+             output_mesh.save_mesh( min_quality_out_name );
          }
 
         std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
