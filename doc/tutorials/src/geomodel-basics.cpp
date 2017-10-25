@@ -99,7 +99,8 @@ int main()
         print_geomodel_mesh_stats( geomodel );
 
         // build volumetric mesh in regions
-        tetrahedralize( geomodel, "TetGen" );
+        GEO::CmdLine::set_arg( "algo:tet", "TetGen" );
+        tetrahedralize( geomodel );
 
         // function to print the statistics of the geomodel in the command
         // terminal
