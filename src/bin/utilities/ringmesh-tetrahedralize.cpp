@@ -34,7 +34,6 @@
  */
 
 #include <ringmesh/basic/common.h>
-#include <ringmesh/ringmesh_tutorials_config.h>
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/stopwatch.h>
@@ -42,83 +41,69 @@
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!
  * @author Antoine Mazuyer
- * @author Francois Bonneau
  * @author Pierre Anquez
  */
 
-/*!
- * Purpose of this main is to show the methods
- * to be used to build a GeoModel from scratch.
- */
 
-int main()
+using namespace RINGMesh;
+
+void import_arg_groups()
 {
-#ifdef RINGMESH_WITH_TETGEN
+    CmdLine::import_arg_group( "in" );
+    CmdLine::import_arg_group( "out" );
+}
 
-    using namespace RINGMesh;
+void show_usage_example()
+{
+    Logger::div( "Example" );
+    Logger::out( "",
+        "ringmesh-tetrahedralize in:geomodel=path/to/input/geomodel.ext ",
+        "out:geomodel=path/to/output/geomodel.ext algo:tet=TetGen" );
+}
 
+int main( int argc, char** argv )
+{
     try
     {
-        // This line stands for the initialization
-        // of Geogram and the factories of RINGMesh
-        // IT IS MANDATORY
         default_configure();
+        import_arg_groups();
 
-        // Say Hello
-        print_header_information();
-        Logger::div( "RINGMesh Training" );
-        Logger::out( "", "Welcome to the RINGMesh training for basic "
-                         "functionalities on GeoModel !" );
-
-        // Next line is a feature of geogram which measure
-        // the time of execution.
-        GEO::Stopwatch total( "Total time" );
-
-        // We instantiate the class GeoModel
-        GeoModel3D geomodel;
-
-        // load GeoModel
-        // here you can load whatever the model you want in the
-        // ringmesh_home/test/data directory
-        std::string input_file_name( ringmesh_tutorials_data_path );
-        input_file_name += "modelA1.ml";
-
-        // We do not want to check the model validity at loading
-        GEO::CmdLine::set_arg( "validity:do_not_check", "A" ); // "A" for all checks
-
-        // function to load a geomodel
-        geomodel_load( geomodel, input_file_name );
-
-        // function to print the statistics of the geomodel in the command
-        // terminal
-        print_geomodel_mesh_stats( geomodel );
-
-        // build volumetric mesh in regions
-        GEO::CmdLine::set_arg( "algo:tet", "TetGen" );
-        tetrahedralize( geomodel );
-
-        // function to print the statistics of the geomodel in the command
-        // terminal
-        print_geomodel_mesh_stats( geomodel );
-
-        // check tetrahedralized GeoModel validity
-        ValidityCheckMode checks{ ValidityCheckMode::ALL };
-        bool is_valid = is_geomodel_valid( geomodel, checks);
-        if( !is_valid )
+        if( argc == 1 )
         {
-            throw RINGMeshException( "RINGMesh Test",
-                "Tetrahedralized model ", geomodel.name(),
-                " is not valid." );
+            GEO::CmdLine::show_usage();
+            return 0;
         }
 
-        // set the name of the geomodel to output
-        // you can customize the path
-        std::string output_file_name = "modelA1.gm";
+        std::vector< std::string > filenames;
+        if( !GEO::CmdLine::parse( argc, argv, filenames ) )
+        {
+            GEO::CmdLine::show_usage();
+            show_usage_example();
+            return 1;
+        }
+        GEO::Stopwatch total( "Total time" );
+
+        GeoModel3D geomodel;
+        std::string input_file_name { GEO::CmdLine::get_arg( "in:geomodel" ) };
+        if( input_file_name.empty() )
+        {
+            throw RINGMeshException(
+                "I/O", "Give at least a filename in in:geomodel" );
+        }
+        geomodel_load( geomodel, input_file_name );
+
+        tetrahedralize( geomodel );
+
+        std::string output_file_name { GEO::CmdLine::get_arg( "out:geomodel" ) };
+        if( output_file_name.empty() )
+        {
+            throw RINGMeshException(
+                "I/O", "Give at least a filename in out:geomodel" );
+        }
         geomodel_save( geomodel, output_file_name );
     }
     catch( const RINGMeshException& e )
@@ -131,8 +116,6 @@ int main()
         Logger::err( "Exception", e.what() );
         return 1;
     }
-
-#endif
 
     return 0;
 }
