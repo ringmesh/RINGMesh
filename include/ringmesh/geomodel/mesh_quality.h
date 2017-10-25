@@ -87,9 +87,20 @@ namespace RINGMesh
     void RINGMESH_API compute_prop_tet_mesh_quality(
         MeshQualityMode mesh_qual_mode, const GeoModel3D& geomodel );
 
-    double RINGMESH_API output_low_quality_cells(
+    /*!
+     * @brief Fill the /p output_mesh with cells of quality below \p min_quality
+     * @param[in] mesh_qual_mode mesh quality of cells.
+     * @param[in] min_quality Value of quality below which a cell is add in the mesh.
+     * @param[in] geomodel GeoModel in which the mesh quality is read.
+     * @param[out] output_mesh VolumeMesh to fill with low quality cells.
+     * @returns The minimum value of cell quality
+     *
+     * @warning The GeoModel must have at least one region. All the regions
+     * must be meshed by simplexes (tetrahedra).
+     */
+    double RINGMESH_API fill_mesh_with_low_quality_cells(
         MeshQualityMode mesh_qual_mode,
+        double min_quality,
         const GeoModel3D& geomodel,
-        VolumeMesh3D& output_mesh,
-        double min_quality );
+        VolumeMesh3D& output_mesh );
 } // namespace RINGMesh

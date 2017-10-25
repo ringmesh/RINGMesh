@@ -388,10 +388,11 @@ namespace RINGMesh
         }
     }
 
-    double output_low_quality_cells( MeshQualityMode mesh_qual_mode,
+    double fill_mesh_with_low_quality_cells(
+        MeshQualityMode mesh_qual_mode,
+        double min_quality,
         const GeoModel3D& geomodel,
-        VolumeMesh3D& output_mesh,
-        double min_quality )
+        VolumeMesh3D& output_mesh )
     {
         ringmesh_assert( geomodel.nb_regions() != 0 );
         auto mesh_builder = VolumeMeshBuilder3D::create_builder( output_mesh );
