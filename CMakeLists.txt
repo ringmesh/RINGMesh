@@ -223,7 +223,7 @@ if(MG_TETRA)
     link_directories(${MG_TETRA}/lib/Linux${PLATFORM})
   endif(WIN32)
 
-  set(EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
+  set(EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra meshgems_stubs)
 endif()
 
 #------------------------------------------------------------------------------------------------
