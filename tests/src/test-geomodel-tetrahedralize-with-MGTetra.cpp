@@ -40,6 +40,7 @@
 #include <ringmesh/basic/command_line.h>
 
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
