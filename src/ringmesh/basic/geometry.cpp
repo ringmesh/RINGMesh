@@ -436,7 +436,7 @@ namespace RINGMesh
         w = plane.normal;
 
         // @todo A generic algorithm to find the first vector belonging to the plane
-        // can be found using principal component of the plane normal.
+        // can be designed using principal component of the plane normal.
         // However it is not a simple problem. The current version is
         // not generic and is based on the idea that the plane is either a map section
         // or a cross-section. [PA]
