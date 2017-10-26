@@ -549,12 +549,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelMeshVerticesBase< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_vertices() > 0;
-    }
-
-    template < index_t DIMENSION >
     GEO::AttributesManager& GeoModelMeshVerticesBase< DIMENSION >::attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
@@ -563,7 +557,7 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::test_and_initialize() const
     {
-        if( !is_initialized() )
+        if( !this->is_initialized() )
         {
             initialize();
         }
@@ -629,6 +623,8 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::initialize() const
     {
+        this->set_is_initialized( true );
+
         // Total number of vertices in the
         // Corners, Lines, Surfaces and Regions of the GeoModel
         auto nb = nb_total_vertices();
@@ -668,6 +664,8 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::clear() const
     {
+        this->set_is_initialized( false );
+
         this->gmm_.polygons.clear();
         this->gmm_.wells.clear();
         impl_->clear();
@@ -901,6 +899,7 @@ namespace RINGMesh
 
     void GeoModelMeshVertices< 3 >::clear() const
     {
+        this->set_is_initialized( false );
         this->gmm_.cells.clear();
         GeoModelMeshVerticesBase3D::clear();
     }
@@ -953,15 +952,9 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelMeshCells< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_cells() > 0;
-    }
-
-    template < index_t DIMENSION >
     void GeoModelMeshCells< DIMENSION >::test_and_initialize() const
     {
-        if( !is_initialized() )
+        if( !this->is_initialized() )
         {
             const_cast< GeoModelMeshCells* >( this )->initialize();
         }
@@ -970,6 +963,8 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshCells< DIMENSION >::initialize()
     {
+        this->set_is_initialized( true );
+
         this->gmm_.vertices.test_and_initialize();
         auto mesh_builder =
             VolumeMeshBuilder< DIMENSION >::create_builder( *mesh_ );
@@ -1824,6 +1819,8 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshCells< DIMENSION >::clear()
     {
+        this->set_is_initialized( false );
+
         auto mesh_builder =
             VolumeMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         mesh_builder->clear( true, false );
@@ -1954,12 +1951,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelMeshEdges< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_edges() > 0;
-    }
-
-    template < index_t DIMENSION >
     index_t GeoModelMeshEdges< DIMENSION >::nb() const
     {
         test_and_initialize();
@@ -2021,7 +2012,7 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshEdges< DIMENSION >::test_and_initialize() const
     {
-        if( !is_initialized() )
+        if( !this->is_initialized() )
         {
             const_cast< GeoModelMeshEdges* >( this )->initialize();
         }
@@ -2030,6 +2021,8 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshEdges< DIMENSION >::initialize()
     {
+        this->set_is_initialized( true );
+
         this->gmm_.vertices.test_and_initialize();
         line_edge_ptr_.resize( this->geomodel_.nb_lines() + 1, 0 );
         auto mesh_builder =
@@ -2132,12 +2125,6 @@ namespace RINGMesh
     {
         surface_id_.clear();
         polygon_id_.clear();
-    }
-
-    template < index_t DIMENSION >
-    bool GeoModelMeshPolygonsBase< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_polygons() > 0;
     }
 
     template < index_t DIMENSION >
@@ -2400,6 +2387,7 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshPolygonsBase< DIMENSION >::clear()
     {
+        this->set_is_initialized( false );
         surface_polygon_ptr_.clear();
         nb_triangles_ = 0;
         nb_quads_ = 0;
@@ -2411,7 +2399,7 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshPolygonsBase< DIMENSION >::test_and_initialize() const
     {
-        if( !is_initialized() )
+        if( !this->is_initialized() )
         {
             const_cast< GeoModelMeshPolygonsBase* >( this )->initialize();
         }
@@ -2420,6 +2408,8 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshPolygonsBase< DIMENSION >::initialize()
     {
+        this->set_is_initialized( true );
+
         this->gmm_.vertices.test_and_initialize();
         surface_polygon_ptr_.resize(
             this->geomodel_.nb_surfaces()
@@ -2716,6 +2706,7 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshWells< DIMENSION >::clear()
     {
+        this->set_is_initialized( false );
         auto mesh_builder =
             LineMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         mesh_builder->clear( true, false );
@@ -2723,15 +2714,9 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool GeoModelMeshWells< DIMENSION >::is_initialized() const
-    {
-        return mesh_->nb_edges() > 0;
-    }
-
-    template < index_t DIMENSION >
     void GeoModelMeshWells< DIMENSION >::test_and_initialize() const
     {
-        if( !is_initialized() )
+        if( !this->is_initialized() )
         {
             const_cast< GeoModelMeshWells* >( this )->initialize();
         }
@@ -2740,6 +2725,8 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelMeshWells< DIMENSION >::initialize()
     {
+        this->set_is_initialized( true );
+
         if( !this->geomodel_.wells() )
         {
             return;
