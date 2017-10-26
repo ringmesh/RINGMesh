@@ -955,12 +955,8 @@ namespace RINGMesh
                         geomodel_.region( region_id )
                             .vertex_attribute_manager(),
                         name );
-                    auto dim_nb = attr.dimension();
-                    for( auto dim : range( dim_nb ) )
-                    {
-                        attr.set_value( ( vertices_nb + v ) * dim_nb + dim,
-                            attr[cell_vertex * dim_nb + dim] );
-                    }
+                        attr.set_value( ( vertices_nb + v ),
+                            attr[cell_vertex] );
                 }
             }
         }

@@ -58,8 +58,8 @@ namespace RINGMesh {
     public:
         
 
-        Store( index_t elemsize, index_t el_dim = 1 ):
-            element_size_( elemsize ), element_dimension_( el_dim )
+        Store( index_t elemsize ):
+            element_size_( elemsize )
         {
         }
 
@@ -76,16 +76,6 @@ namespace RINGMesh {
         }
 
         /**
-        * \brief Gets the dimension.
-        * \details The dimension is 1 for standard attributes and
-        *  can be greater for vector attributes.
-        */
-        index_t dimension() const
-        {
-            return element_dimension_;
-        }
-
-        /**
         * \brief Gets the total number of elements.
         * \details This corresponds to one position past
         *  the last valid index.
@@ -93,7 +83,7 @@ namespace RINGMesh {
         */
         index_t nb_elements() const
         {
-            return size_ * element_dimension_;
+            return size_;
         }
         virtual const void* data() const = 0;
         virtual void* data() = 0;
@@ -132,9 +122,6 @@ namespace RINGMesh {
 
         virtual void clear( bool keep_memory = false ) = 0;
 
-        //todo remove everything related to dim, only keep resize
-        virtual void redim( index_t dim ) = 0;
-
         virtual Store* clone() const = 0;
 
         index_t element_size() const
@@ -144,7 +131,6 @@ namespace RINGMesh {
 
     protected:
         index_t size_{ 0 };
-        index_t element_dimension_; //todo to remove
         index_t element_size_;         //size of element in byte
 
     };
@@ -156,12 +142,9 @@ namespace RINGMesh {
 
         /**
         * \brief Creates a new empty attribute store.
-        * \param[in] dim number of elements in each item,
-        *  default value is 1, can be greater for vector
-        *  attributes.
         */
-        TypedStore( index_t dim = 1 )
-            : Store( index_t( sizeof(T) ), dim )
+        TypedStore( )
+            : Store( index_t( sizeof(T) ))
         {
         }
 
@@ -182,28 +165,23 @@ namespace RINGMesh {
         {
             return store_.data();
         }
-    protected:
-        std::vector< T > store_; //todo this vector should be in the vectorStore
-    };
+     };
 
     template< class T > class VectorStore: public TypedStore< T > {
     public:
 
         /**
         * \brief Creates a new empty attribute store.
-        * \param[in] dim number of elements in each item,
-        *  default value is 1, can be greater for vector
-        *  attributes.
         */
-        VectorStore( index_t dim = 1 )
-            : TypedStore< T >( dim )
+        VectorStore( )
+            : TypedStore< T >( )
         {
         }
 
         void resize( index_t new_size ) final
         {
             this->size_ = new_size;
-            this->store_.resize( new_size * this->element_dimension_ );
+            this->store_.resize( new_size );
         }
 
 
@@ -216,25 +194,9 @@ namespace RINGMesh {
             }
         }
 
-        void redim( index_t dim ) final
-        {
-            if( dim == this->dimension() ) {
-                return;
-            }
-            std::vector< T > new_store( this->size() * dim );
-            index_t copy_dim = GEO::geo_min( dim, this->dimension() );
-            for( index_t i = 0; i < this->size(); ++i ) {
-                for( index_t c = 0; c < copy_dim; ++c ) {
-                    new_store[dim * i + c] = this->store_[this->dimension() * i + c];
-                }
-            }
-            this->store_.swap( new_store );
-        }
-
         Store* clone() const final
         {
-            VectorStore< T >* result = new VectorStore< T >(
-                this->dimension() );
+            VectorStore< T >* result = new VectorStore< T >();
             result->resize( this->size() );
             result->store_ = this->store_;
             return result;
@@ -274,6 +236,8 @@ namespace RINGMesh {
         {
             return;
         }
+    protected:
+        std::vector< T > store_;
     };
 
     template< class T > class ConstantStore: public TypedStore< T > {
@@ -281,14 +245,11 @@ namespace RINGMesh {
 
         /**
         * \brief Creates a new empty attribute store.
-        * \param[in] dim number of elements in each item,
-        *  default value is 1, can be greater for vector
-        *  attributes.
         */
-        ConstantStore( index_t dim = 1 )
-            : TypedStore< T >( dim )
+        ConstantStore( )
+            : TypedStore< T >( )
         {
-            this->store_.resize( dim );
+            this->store_.resize( );
             size_ = 1;
 
         }
@@ -308,23 +269,9 @@ namespace RINGMesh {
             }
         }
 
-        void redim( index_t dim ) override
-        {
-            if( dim == this->dimension() ) {
-                return;
-            }
-            std::vector< T > new_store( dim );
-            index_t copy_dim = std::min( dim, this->dimension() );
-            for( index_t c = 0; c < copy_dim; ++c ) {
-                new_store[c] = this->store_[c];
-            }
-            this->store_.swap( new_store );
-        }
-
         Store* clone() const override
         {
-            ConstantStore< T >* result = new ConstantStore< T >(
-                this->dimension() );
+            ConstantStore< T >* result = new ConstantStore< T >();
             result->store_ = this->store_;
             return result;
         }
@@ -362,6 +309,8 @@ namespace RINGMesh {
         {
             return;
         }
+    protected:
+        T store_ ;
     };
 
 
@@ -379,10 +328,9 @@ namespace RINGMesh {
 
         /**
          * \brief Creates a new attribute store.
-         * \param[in] dimension number of elements in each item
          * \return a pointer to the newly created AttributeStore
          */
-        virtual AttributeStore* create_attribute_store( index_t dimension ) = 0;
+        virtual AttributeStore* create_attribute_store( ) = 0;
 
     private:
         std::string element_type_name_;
@@ -395,10 +343,6 @@ namespace RINGMesh {
          * \brief AttributeStore constructor.
          * \param[in] elemsize size of one element,
          *  in bytes.
-         * \param[in] dim number of elements in
-         *  each item. Default is 1 for standard
-         *  attributes and can be greater for vector
-         *  attributes.
          */
         AttributeStore( ) = default;
 
@@ -435,20 +379,6 @@ namespace RINGMesh {
         void clear( bool keep_memory = false )
         {
             store_->clear( keep_memory );
-        }
-
-        /**
-         * \brief Sets the dimension.
-         * \details The dimension is 1 for standard attributes and
-         *  can be greater for vector attributes. The existing
-         *  fields are kept. If the new dimension is greater than
-         *  the old one, then new fields are initialized to the default
-         *  value for the attribute type.
-         * \param[in] dim the new dimension
-         */
-        void redim( index_t dim )
-        {
-            store_->redim( dim );
         }
 
         /**
@@ -504,8 +434,7 @@ namespace RINGMesh {
         {
             AttributeStore* new_attstore = 
                 create_attribute_store_by_element_type_name( 
-                store_->element_typeid_name(), 
-                store_->dimension() );
+                store_->element_typeid_name() );
 
             new_attstore->set_store(
                 store_->clone()
@@ -567,15 +496,12 @@ namespace RINGMesh {
          * \brief Creates an attribute store of a given type
          * \param[in] element_type_name a const reference to a string with
          *  the C++ type of the elements to be stored in the attribute
-         * \param[in] dimension number of elements in each item
          */
         static AttributeStore* create_attribute_store_by_element_type_name(
-            const std::string& element_type_name,
-            index_t dimension )
+            const std::string& element_type_name )
         {
             ringmesh_assert( element_type_name_is_known( element_type_name ) );
-            return type_name_to_creator_[element_type_name]->create_attribute_store(
-                dimension );
+            return type_name_to_creator_[element_type_name]->create_attribute_store( );
         }
 
         /**
@@ -662,9 +588,9 @@ namespace RINGMesh {
         /**
          * \copydoc AttributeStoreCreator::create_attribute_store()
          */
-        virtual AttributeStore* create_attribute_store( index_t dim )
+        virtual AttributeStore* create_attribute_store( )
         {
-            return new TypedStore< T >( dim );
+            return new TypedStore< T >( );
         }
     };
 
@@ -954,12 +880,11 @@ namespace RINGMesh {
          * \brief Creates and binds a new vector attribute.
          * \param[in] manager the attribute manager
          * \param[in] name the name of the attribute
-         * \param[in] dimension the number of elements per item
          */
         void create_vector_attribute(
             AttributesManager& manager,
             const std::string& name,
-            index_t dimension )
+            int nb_component)
         {
             ringmesh_assert( !is_bound() );
             manager_ = &manager;
@@ -982,30 +907,11 @@ namespace RINGMesh {
             manager_ = nullptr;
         }
 
-        index_t dimension() const
-        {
-            return store_->get_store().dimension();
-        }
-
-        /**
-         * \brief Sets the dimension.
-         * \details The dimension is 1 for standard attributes and
-         *  can be greater for vector attributes. The existing
-         *  fields are kept. If the new dimension is greater than
-         *  the old one, then new fields are initialized to the default
-         *  value for the attribute type.
-         * \param[in] new_dim the new dimension
-         */
-        void redim( index_t new_dim )
-        {
-            ringmesh_assert( is_bound() );
-            store_->redim( new_dim );
-        }
         virtual void set_value( index_t id, T value ) = 0;
 
-        void set_constant_value( T value,  index_t dim = 1 )
+        void set_constant_value( T value )
         {
-            store_->set_store( new ConstantStore<T>( dim ) );
+            store_->set_store( new ConstantStore<T>( ) );
             set_value( 0, value );
         }
 
@@ -1028,17 +934,15 @@ namespace RINGMesh {
          *  corresponding type exists in an AttributesManager.
          * \param[in] manager a reference to the AttributesManager
          * \param[in] name the name of the attribute
-         * \param[in] dim dimension, or 0 if any dimension can match
          */
         static bool is_defined(
             AttributesManager& manager,
-            const std::string& name,
-            index_t dim = 0 )
+            const std::string& name )
         {
             AttributeStore* store = manager.find_attribute_store( name );
             return ( store != nullptr
-                && store->elements_type_matches( typeid(T).name() )
-                && ( ( dim == 0 ) || ( store->dimension() == dim ) ) );
+                && store->elements_type_matches( typeid( T ).name() )
+                );
         }
 
         /**
@@ -1545,8 +1449,7 @@ namespace RINGMesh {
             ringmesh_assert( is_bound() );
             ringmesh_assert( i < size() );
             return double(
-                reinterpret_cast< const T* >( store_->data() )[( i * store_->get_store().dimension()
-                    * multiplier ) + element_index_] );
+                reinterpret_cast< const T* >( store_->data() )[( i * multiplier ) + element_index_] );
         }
 
     protected:

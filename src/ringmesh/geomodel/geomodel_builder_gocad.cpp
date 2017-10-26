@@ -615,28 +615,20 @@ namespace
                     " already exists on the ", region.gmme() );
                 continue;
             }
-            Attribute< double > attr;
-            index_t nb_dimensions =
-                load_storage.vertex_attribute_dims_[attrib_itr];
-            attr.create_vector_attribute( region.vertex_attribute_manager(),
-                load_storage.vertex_attribute_names_[attrib_itr],
-                nb_dimensions );
+            Attribute< std::vector< double> > attr ( region.vertex_attribute_manager(),
+                load_storage.vertex_attribute_names_[attrib_itr] );
             // Does it resize all the past attributes to the size of the current
             // attribute?
             // Problematic, isn't it?
             region.vertex_attribute_manager().resize(
                 static_cast< index_t >( region_attributes.size() )
-                    * nb_dimensions
-                + nb_dimensions );
+                );
             for( auto v_itr : range( region_attributes.size() ) )
             {
-                for( auto attrib_dim_itr : range( nb_dimensions ) )
-                {
-                    attr.set_value( v_itr * nb_dimensions + attrib_dim_itr,
-                        region_attributes[v_itr][read_fields + attrib_dim_itr] );
-                }
+                    attr.set_value( v_itr,
+                        region_attributes[v_itr][read_fields] );
             }
-            read_fields += nb_dimensions;
+            read_fields ++ ;
         }
     }
 
