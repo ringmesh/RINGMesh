@@ -95,6 +95,12 @@ namespace RINGMesh
         ringmesh_disable_copy_and_move( GeoModelMeshCommon );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
+    public:
+        bool is_initialized() const
+        {
+            return is_initialized_;
+        }
+
     protected:
         GeoModelMeshCommon(
             GeoModelMesh< DIMENSION >& gmm, GeoModel< DIMENSION >& geomodel );
@@ -111,6 +117,10 @@ namespace RINGMesh
             mesh_base_->save_mesh( filename );
         }
 
+        void set_is_initialized( bool value ) const
+        {
+            is_initialized_ = value;
+        }
     protected:
         /// Attached GeoModelMesh
         GeoModelMesh< DIMENSION >& gmm_;
@@ -118,6 +128,10 @@ namespace RINGMesh
         GeoModel< DIMENSION >& geomodel_;
         /// Attached MeshBase
         MeshBase< DIMENSION >* mesh_base_;
+
+    private:
+        /// initilization flag
+        mutable bool is_initialized_{ false };
     };
 
     struct GMEVertex
@@ -155,10 +169,6 @@ namespace RINGMesh
 
         GEO::AttributesManager& attribute_manager() const;
 
-        /*!
-         * Tests if the mesh vertices are initialized
-         */
-        bool is_initialized() const;
         /*!
          * Tests if the mesh vertices need to be initialized,
          * if so initialize them.
@@ -250,7 +260,7 @@ namespace RINGMesh
          *        clear global vertex information in the all BMME
          * @warning Not stable - crashes if attributes are still bound
          */
-        virtual void clear() const;
+        void clear() const;
 
         void unbind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
@@ -335,7 +345,7 @@ namespace RINGMesh
             GeoModel3D& gm,
             std::unique_ptr< PointSetMesh3D >& mesh );
 
-        void clear() const override;
+        void clear() const;
         index_t nb_total_vertices() const override;
         index_t fill_vertices() const override;
     };
@@ -364,7 +374,6 @@ namespace RINGMesh
         /*!
          * Test if the mesh polygons are initialized
          */
-        bool is_initialized() const;
         void test_and_initialize() const;
 
         /*!
@@ -662,7 +671,6 @@ namespace RINGMesh
         /*!
          * Test if the mesh edges are initialized
          */
-        bool is_initialized() const;
         void test_and_initialize() const;
 
         /*!
@@ -798,10 +806,6 @@ namespace RINGMesh
         }
 
         /*!
-         * Test if the mesh edges are initialized
-         */
-        bool is_initialized() const;
-        /*!
          * Tests if the mesh edges needs to be initialized and initialize it
          */
         void test_and_initialize() const;
@@ -891,10 +895,6 @@ namespace RINGMesh
 
         GEO::AttributesManager& attribute_manager() const;
 
-        /*!
-         * Test if the mesh cells are initialized
-         */
-        bool is_initialized() const;
         /*!
          * Test if the mesh cells are duplicated
          */
