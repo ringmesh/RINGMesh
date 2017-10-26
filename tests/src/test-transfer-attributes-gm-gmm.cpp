@@ -114,9 +114,8 @@ namespace
                 reg_attr_mgr, attribute_names[2] );
             Attribute< vec3 > vertex_vec3_attr(
                 reg_attr_mgr, attribute_names[3] );
-            Attribute< double > vertex_dim_6_double_attr;
-            vertex_dim_6_double_attr.create_vector_attribute(
-                reg_attr_mgr, attribute_names[4], 6 );
+            Attribute< std::vector<double> > vertex_dim_6_double_attr(
+                reg_attr_mgr, attribute_names[4] );
             Attribute< char > vertex_char_attr(
                 reg_attr_mgr, attribute_names[5] );
 
@@ -146,9 +145,8 @@ namespace
             gmmv_attr_mgr, attribute_names[2] );
         Attribute< vec3 > vertex_vec3_attr(
             gmmv_attr_mgr, attribute_names[3] );
-        Attribute< double > vertex_dim_6_double_attr;
-        vertex_dim_6_double_attr.create_vector_attribute(
-            gmmv_attr_mgr, attribute_names[4], 6 );
+        Attribute< std::vector< double > > vertex_dim_6_double_attr(
+            gmmv_attr_mgr, attribute_names[4] );
         Attribute< char > vertex_char_attr(
             gmmv_attr_mgr, attribute_names[5] );
 
@@ -202,9 +200,8 @@ namespace
                 reg_attr_mgr, attribute_names[2] );
             Attribute< vec3 > cell_vec3_attr(
                 reg_attr_mgr, attribute_names[3] );
-            Attribute< double > cell_dim_6_double_attr;
-            cell_dim_6_double_attr.create_vector_attribute(
-                reg_attr_mgr, attribute_names[4], 6 );
+            Attribute< double > cell_dim_6_double_attr(
+                reg_attr_mgr, attribute_names[4]);
             Attribute< char > cell_char_attr(
                 reg_attr_mgr, attribute_names[5] );
 
@@ -234,9 +231,8 @@ namespace
             gmmc_attr_mgr, attribute_names[2] );
         Attribute< vec3 > cell_vec3_attr(
             gmmc_attr_mgr, attribute_names[3] );
-        Attribute< double > cell_dim_6_double_attr;
-        cell_dim_6_double_attr.create_vector_attribute(
-            gmmc_attr_mgr, attribute_names[4], 6 );
+        Attribute< double > cell_dim_6_double_attr(
+            gmmc_attr_mgr, attribute_names[4] );
         Attribute< char > cell_char_attr(
             gmmc_attr_mgr, attribute_names[5] );
 
