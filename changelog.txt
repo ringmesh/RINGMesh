@@ -1,6 +1,11 @@
 New Features:
  * New (command-line) executable to edit GeoModel name.
  * Possibility to toggle off each validity check.
+ * New executable to tetrahedralize an input GeoModel
+ * Add new colormaps
+ * Split IO GeoModel factories in two disctint factories:
+     * one to register extensions that can be loaded
+     * one to register extensions that can be saved  
 
 Bug fix:
  * 
