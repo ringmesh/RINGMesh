@@ -435,6 +435,11 @@ namespace RINGMesh
         origin = plane.origin;
         w = plane.normal;
 
+        // @todo A generic algorithm to find the first vector belonging to the plane
+        // can be found using principal component of the plane normal.
+        // However it is not a simple problem. The current version is
+        // not generic and is based on the idea that the plane is either a map section
+        // or a cross-section. [PA]
         vec3 another_point_for_v_axis{ origin };
         if( w.z > 10 * ( w.x + w.y ) )
         {
