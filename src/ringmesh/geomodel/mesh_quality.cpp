@@ -41,6 +41,7 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
 
 /*!
@@ -385,5 +386,48 @@ namespace RINGMesh
                     mesh_qual_mode );
             }
         }
+    }
+
+    double fill_mesh_with_low_quality_cells(
+        MeshQualityMode mesh_qual_mode,
+        double min_quality,
+        const GeoModel3D& geomodel,
+        VolumeMesh3D& output_mesh )
+    {
+        ringmesh_assert( geomodel.nb_regions() != 0 );
+        auto mesh_builder = VolumeMeshBuilder3D::create_builder( output_mesh );
+        double min_qual_value{ max_float64() };
+        for( const auto& region : geomodel.regions() )
+        {
+            ringmesh_assert( region.is_meshed() );
+            ringmesh_assert( region.is_simplicial() );
+            GEO::Attribute< double > quality_attribute(
+                region.cell_attribute_manager(),
+                mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
+            for( auto cell_id : range( region.nb_mesh_elements() ) )
+            {
+                if( quality_attribute[cell_id] < min_quality )
+                {
+                    auto first_new_vertex_id = output_mesh.nb_vertices();
+                    for( auto v : range( 4 ) )
+                    {
+                        mesh_builder->create_vertex(
+                            region.mesh_element_vertex( { cell_id, v } ) );
+                    }
+                    auto new_cell_id =
+                        mesh_builder->create_cells( 1, CellType::TETRAHEDRON );
+                    for( auto v_id : range( 4 ) )
+                    {
+                        mesh_builder->set_cell_vertex(
+                            { new_cell_id, v_id }, first_new_vertex_id + v_id );
+                    }
+                    if( quality_attribute[cell_id] < min_qual_value )
+                    {
+                        min_qual_value = quality_attribute[cell_id];
+                    }
+                }
+            }
+        }
+        return min_qual_value;
     }
 } // namespace RINGMesh
