@@ -1,10 +1,39 @@
 language: cpp
 sudo: false
 
-script:
-  - mkdir build
-  - cd build
-  - cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
-  - cd ringmesh/Debug
-  - cmake --build .
-  - ctest
+matrix:
+  fast_finish: true
+  include:  
+  - os: linux
+    env:
+      - TEST="Clang format"
+    script:
+      - |
+        if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+          mkdir build
+          cd build
+          cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+          cd ringmesh/Release
+          make format
+          if [[ -n $(git diff) ]]; then
+            echo "Pull-request format failed"
+            exit -1
+          fi
+        fi
+    after_failed:
+      - echo "Pushing updated format to repository"
+      - git config --global user.email "travis@travis-ci.org"
+      - git config --global user.name "Travis CI"
+      - git commit --all --message "Travis build: $TRAVIS_BUILD_NUMBER"
+      - git push origin/$TRAVIS_BRANCH
+  - os: linux
+    env:
+      - TEST="Gcc Check"
+    script:
+      - mkdir build
+      - cd build
+      - CXX=/usr/bin/g++ CC=/usr/bin/gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+      - cd ringmesh/Debug
+      - cmake --build .
+      - ctest
+      
