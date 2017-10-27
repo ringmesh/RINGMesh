@@ -247,7 +247,6 @@ endif()
 # It would be preferable to set the imported library location [JP]
 link_directories(${ZLIB_PATH_BIN}/install/lib)
 
-
 #------------------------------------------------------------------------------------------------
 # minizip
 # Set the path to minizip code
@@ -296,6 +295,7 @@ ExternalProject_Add_Step(minizip_ext forcebuild
   )
 
 add_dependencies(minizip_ext zlib_ext)
+add_dependencies(minizip_ext bsd_ext)
 
 # Add minizip include directories to the current ones
 # same as minizip
