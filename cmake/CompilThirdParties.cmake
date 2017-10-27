@@ -249,6 +249,60 @@ link_directories(${ZLIB_PATH_BIN}/install/lib)
 
 
 #------------------------------------------------------------------------------------------------
+# bsd
+# Set the path to the bsd code
+set(BSD_PATH ${PROJECT_SOURCE_DIR}/third_party/bsd)
+
+# bsd platform dependent settings
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/bsd/${CMAKE_BUILD_TYPE})
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/bsd)
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+
+# Define bsd as an external project that we know how to
+# configure and compile
+ExternalProject_Add(bsd_ext
+    PREFIX ${BSD_PATH_BIN}
+
+  #--Download step--------------
+  DOWNLOAD_COMMAND ""
+
+  #--Update/Patch step----------
+  UPDATE_COMMAND ""
+
+  #--Configure step-------------
+  SOURCE_DIR ${BSD_PATH}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${BSD_PATH}
+          -G ${CMAKE_GENERATOR}
+          -DCMAKE_INSTALL_PREFIX:PATH=${BSD_PATH_BIN}/install
+          -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+
+  #--Build step-----------------
+  BINARY_DIR ${BSD_PATH_BIN}
+  #-- Command to build zlib
+  BUILD_COMMAND ${CMAKE_COMMAND} --build ${BSD_PATH_BIN} ${COMPILATION_OPTION}
+
+  #--Install step---------------
+  INSTALL_DIR ${ZLIB_PATH_BIN}/install
+)
+
+ExternalProject_Add_Step(bsd_ext forcebuild
+    DEPENDERS build
+    ALWAYS 1
+  )
+
+# Add bsd project libs to the libs with which RINGMesh will link
+    set(EXTRA_LIBS ${EXTRA_LIBS} bsd)
+
+
+# Add zlib bin directories to the current ones
+# It would be preferable to set the imported library location [JP]
+link_directories(${BSD_PATH_BIN}/install/lib)
+
+#------------------------------------------------------------------------------------------------
 # minizip
 # Set the path to minizip code
 set(MINIZIP_PATH ${PROJECT_SOURCE_DIR}/third_party/minizip)
@@ -296,6 +350,7 @@ ExternalProject_Add_Step(minizip_ext forcebuild
   )
 
 add_dependencies(minizip_ext zlib_ext)
+add_dependencies(minizip_ext bsd_ext)
 
 # Add minizip include directories to the current ones
 # same as minizip
