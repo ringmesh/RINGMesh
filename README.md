@@ -1,20 +1,18 @@
 How to compile RINGMesh             {#ringmesh_compiling}
 =======================
 
-[![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0/branch/default?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh/branch/default)
+[![Build status](https://ci.appveyor.com/api/projects/status/nlso0s96wcuge2vn/branch/master?svg=true)](https://ci.appveyor.com/project/ringmesh/ringmesh/branch/master)
 [![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmeshcoverage/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmeshcoverage?branch=default)
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 2.8.11). There is no other dependency (everything
 you need is shipped with RINGMesh). Follow the Linux, Mac OS or Windows instructions below.
 
-To clone RINGMesh you need Mercurial (https://www.mercurial-scm.org/).
-You also need to have Git (https://git-scm.com/) for RINGMesh subrepositories (without it the cloning will fail).
+To clone RINGMesh you need Git (https://git-scm.com/).
 Make sure that Git binary directory is in your computer path (environment variable).
 Under Windows, after installing Git you should have in your path environment variable:
 C:\Program Files\Git\cmd.
-Warning: TortoiseGit (https://tortoisegit.org/) does not install Git, whereas
-TortoiseHg (https://www.mercurial-scm.org/wiki/TortoiseHg) installs Mercurial (tested on Windows 10).
+Warning: TortoiseGit (https://tortoisegit.org/) does not install Git.
 
 Linux
 ===========================
