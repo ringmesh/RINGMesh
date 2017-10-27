@@ -16,16 +16,14 @@ matrix:
           cd ringmesh/Release
           make format
           if [[ -n $(git diff) ]]; then
-            echo "Pull-request format failed"
+            echo "Pushing updated format to repository"
+            git config --global user.email "travis@travis-ci.org"
+            git config --global user.name "Travis CI"
+            git commit --all --message "Travis build: $TRAVIS_BUILD_NUMBER"
+            git push origin/$TRAVIS_BRANCH
             exit -1
           fi
         fi
-    after_failed:
-      - echo "Pushing updated format to repository"
-      - git config --global user.email "travis@travis-ci.org"
-      - git config --global user.name "Travis CI"
-      - git commit --all --message "Travis build: $TRAVIS_BUILD_NUMBER"
-      - git push origin/$TRAVIS_BRANCH
   - os: linux
     env:
       - TEST="Gcc Check"
