@@ -295,7 +295,6 @@ ExternalProject_Add_Step(minizip_ext forcebuild
   )
 
 add_dependencies(minizip_ext zlib_ext)
-add_dependencies(minizip_ext bsd_ext)
 
 # Add minizip include directories to the current ones
 # same as minizip
