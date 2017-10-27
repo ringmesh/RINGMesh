@@ -17,7 +17,6 @@ matrix:
           make format
           if [[ -n $(git diff) ]]; then
             echo "Branch Pushing updated branch format $TRAVIS_BRANCH to repository"
-            git checkout -b $TRAVIS_BRANCH
             git config --global user.email "travis@travis-ci.org"
             git config --global user.name "Travis CI"
             git commit --all --message "Travis build: $TRAVIS_BUILD_NUMBER"
