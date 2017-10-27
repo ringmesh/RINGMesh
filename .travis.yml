@@ -14,5 +14,5 @@ script:
   - cd build
   - CXX=/usr/bin/g++-5 CC=/usr/bin/gcc-5 cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
   - cd ringmesh/Debug
-  - cmake --build . -- -j
-  - ctest -j
+  - cmake --build .
+  - ctest
