@@ -16,7 +16,7 @@ matrix:
           cd ringmesh/Release
           make format
           if [[ -n $(git diff) ]]; then
-            $TRAVIS_BUILD_DIR/../../tools/travis-ci-git-commit.bash
+            $TRAVIS_BUILD_DIR/../../../tools/travis-ci-git-commit.bash
             exit -1
           fi
         fi
