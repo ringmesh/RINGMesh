@@ -19,10 +19,10 @@ function travis-branch-commit() {
         msg "someone may have pushed new commits before this build cloned the repo"
         return 0
     fi
-    #if ! git checkout "$TRAVIS_BRANCH"; then
-    #    err "failed to checkout $TRAVIS_BRANCH"
-    #    return 1
-    #fi
+    if ! git checkout "$TRAVIS_BRANCH"; then
+        err "failed to checkout $TRAVIS_BRANCH"
+        return 1
+    fi
 
     if ! git add --all $TRAVIS_BUILD_DIR; then
         err "failed to add modified files to git index"
