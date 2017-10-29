@@ -116,11 +116,11 @@ namespace RINGMesh
         }
 
 	    for (const auto& surface : geomodel3d_from_.surfaces()) {
-		    for (auto boundary_id : range(surface.nb_boundaries())) {
-			    topology.add_surface_line_boundary_relation(surface.gmme().index(),
-					surface.boundary(boundary_id).index(), false); //TODO side
-	        }
-	    }
+            for (auto boundary_id : range(surface.nb_boundaries())) {
+                topology.add_surface_line_boundary_relation(surface.gmme().index(),
+                    surface.boundary(boundary_id).index(), false); //TODO side
+            }
+        }
     }
 
     void GeoModelBuilder2DProjection::copy_geomodel_3d_geological_informations()

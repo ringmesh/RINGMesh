@@ -841,17 +841,17 @@ namespace {
         const auto& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_surface( entity.type() ) ) {
-		    for (auto c : range(file_line.nb_fields())) {
-			    bool side { false };
-			    if (std::strncmp(file_line.field(c), "+", 1) == 0) {
-				    side = true;
-			    }
-			    index_t s { NO_ID };
-			    GEO::String::from_string(&file_line.field(c)[1], s);
+            for (auto c : range(file_line.nb_fields())) {
+                bool side { false };
+                if (std::strncmp(file_line.field(c), "+", 1) == 0) {
+                    side = true;
+                }
+                index_t s { NO_ID };
+                GEO::String::from_string(&file_line.field(c)[1], s);
 
-			    this->builder_.topology.add_surface_line_boundary_relation(
-				 	entity.index(), s, side);
-		    }
+                this->builder_.topology.add_surface_line_boundary_relation(
+                    entity.index(), s, side);
+            }
         } else {
             // Second line : indices of boundaries
             for( auto c : range( 1, file_line.nb_fields() ) ) {
@@ -873,17 +873,17 @@ namespace {
         const auto& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_region(entity.type()) ) {
-		    for (auto c : range(file_line.nb_fields())) {
-			    bool side { false };
-			    if (std::strncmp(file_line.field(c), "+", 1) == 0) {
-				    side = true;
-			    }
-			    index_t s { NO_ID };
-			    GEO::String::from_string(&file_line.field(c)[1], s);
+            for (auto c : range(file_line.nb_fields())) {
+                bool side { false };
+                if (std::strncmp(file_line.field(c), "+", 1) == 0) {
+                    side = true;
+                }
+                index_t s { NO_ID };
+                GEO::String::from_string(&file_line.field(c)[1], s);
 
-			    this->builder_.topology.add_region_surface_boundary_relation(
-				 	entity.index(), s, side);
-		    }
+                this->builder_.topology.add_region_surface_boundary_relation(
+                    entity.index(), s, side);
+            }
         } else {
             // Second line : indices of boundaries
 			// Corners are skipped
