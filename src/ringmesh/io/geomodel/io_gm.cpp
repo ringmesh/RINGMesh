@@ -98,24 +98,6 @@ namespace {
             return cur_gmme;
         }
         void read_second_line( GEO::LineInput& file_line, const gmme_id& entity );
-    private:
-        template< template< index_t > class ENTITY >
-        void add_relation_for_entities_with_sides(
-            const gmme_id& entity,
-            GEO::LineInput& file_line )
-        {
-            for( auto c : range( file_line.nb_fields() ) ) {
-                bool side { false };
-                if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
-                    side = true;
-                }
-                index_t s { NO_ID };
-                GEO::String::from_string( &file_line.field( c )[1], s );
-
-                this->builder_.topology.add_mesh_entity_boundary_relation( entity, {
-                    ENTITY< DIMENSION >::type_name_static(), s }, side );
-            }
-        }
     };
 
     template< index_t DIMENSION >
@@ -871,9 +853,9 @@ namespace {
 				 	entity.index(), s, side);
 		    }
         } else {
-            ringmesh_assert( entity.type() == Line2D::type_name_static() );
             // Second line : indices of boundaries
             for( auto c : range( 1, file_line.nb_fields() ) ) {
+				ringmesh_assert(entity.type() == Line2D::type_name_static());
                 index_t boundary_id { file_line.field_as_uint( c ) };
                 this->builder_.topology.add_line_corner_boundary_relation(
                     entity.index(), boundary_id );
@@ -890,8 +872,7 @@ namespace {
         file_line.get_fields();
         const auto& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
-        auto type = manager.boundary_entity_type( entity.type() );
-        if( manager.is_region( type ) ) {
+        if( manager.is_region(entity.type()) ) {
 		    for (auto c : range(file_line.nb_fields())) {
 			    bool side { false };
 			    if (std::strncmp(file_line.field(c), "+", 1) == 0) {
@@ -905,14 +886,15 @@ namespace {
 		    }
         } else {
             // Second line : indices of boundaries
-            ringmesh_assert( manager.is_line( type ) || manager.is_surface( type ) );
+			// Corners are skipped
             for( auto c : range( 1, file_line.nb_fields() ) ) {
+				ringmesh_assert(manager.is_line(entity.type()) || manager.is_surface(entity.type()));
                 index_t boundary_id { file_line.field_as_uint( c ) };
-                if( manager.is_line( type ) ) {
+                if( manager.is_line(entity.type()) ) {
                     this->builder_.topology.add_line_corner_boundary_relation(
                         entity.index(), boundary_id );
                 } else {
-                    ringmesh_assert( manager.is_surface( type ) );
+                    ringmesh_assert( manager.is_surface(entity.type()) );
                     this->builder_.topology.add_surface_line_boundary_relation(
                         entity.index(), boundary_id );
                 }
