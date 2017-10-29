@@ -107,15 +107,11 @@ void ringmesh_unused( const T& /*unused*/ )
 }
 
 #include <future>
+#include <sstream>
+#include <stdexcept>
 
 #include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/types.h>
-
-#include <geogram/basic/string.h>
-
-#define DEBUG( a ) Logger::out( "Debug", #a, " = ", a )
-
-#include <stdexcept>
 
 namespace RINGMesh
 {
@@ -170,14 +166,16 @@ namespace RINGMesh
         template < typename A0 >
         std::string string_concatener( const A0& a0 )
         {
-            return GEO::String::to_string( a0 );
+            std::ostringstream out;
+            out << a0;
+            return out.str();
         }
 
         template < typename A0, typename A1, typename... Args >
         std::string string_concatener(
             const A0& a0, const A1& a1, const Args&... args )
         {
-            return GEO::String::to_string( a0 )
+            return string_concatener( a0 )
                    + string_concatener( a1, args... );
         }
 

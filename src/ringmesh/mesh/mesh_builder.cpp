@@ -200,6 +200,36 @@ namespace RINGMesh
     }
 
     template< index_t DIMENSION >
+    void LineMeshBuilder< DIMENSION >::remove_isolated_vertices()
+    {
+        std::vector< bool > to_delete( line_mesh_.nb_vertices(), true );
+        for( auto e : range( line_mesh_.nb_edges() ) )
+        {
+            for( auto v : range( 2 ) )
+            {
+                auto vertex_id = line_mesh_.edge_vertex( { e, v } );
+                to_delete[vertex_id] = false;
+            }
+        }
+        this->delete_vertices( to_delete );
+    }
+
+    template< index_t DIMENSION >
+    void SurfaceMeshBuilder< DIMENSION >::remove_isolated_vertices()
+    {
+        std::vector< bool > to_delete( surface_mesh_.nb_vertices(), true );
+        for( auto p : range( surface_mesh_.nb_polygons() ) )
+        {
+            for( auto v : range( surface_mesh_.nb_polygon_vertices( p ) ) )
+            {
+                auto vertex_id = surface_mesh_.polygon_vertex( { p, v } );
+                to_delete[vertex_id] = false;
+            }
+        }
+        this->delete_vertices( to_delete );
+    }
+
+    template< index_t DIMENSION >
     void VolumeMeshBuilder< DIMENSION >::remove_isolated_vertices()
     {
         std::vector< bool > to_delete( volume_mesh_.nb_vertices(), true );
@@ -229,20 +259,16 @@ namespace RINGMesh
 
     template std::unique_ptr< PointSetMeshBuilder< 2 > > RINGMESH_API
     PointSetMeshBuilder< 2 >::create_builder( PointSetMesh< 2 >& );
-    template std::unique_ptr< LineMeshBuilder< 2 > >
-    RINGMESH_API LineMeshBuilder< 2 >::create_builder( LineMesh< 2 >& );
-    template std::unique_ptr< SurfaceMeshBuilder< 2 > > RINGMESH_API
-    SurfaceMeshBuilder< 2 >::create_builder( SurfaceMesh< 2 >& );
 
     template std::unique_ptr< PointSetMeshBuilder< 3 > > RINGMESH_API
     PointSetMeshBuilder< 3 >::create_builder( PointSetMesh< 3 >& );
-    template std::unique_ptr< LineMeshBuilder< 3 > >
-    RINGMESH_API LineMeshBuilder< 3 >::create_builder( LineMesh< 3 >& );
-    template std::unique_ptr< SurfaceMeshBuilder< 3 > > RINGMESH_API
-    SurfaceMeshBuilder< 3 >::create_builder( SurfaceMesh< 3 >& );
 
     template class RINGMESH_API MeshBaseBuilder< 2 >;
+    template class RINGMESH_API LineMeshBuilder< 2 >;
+    template class RINGMESH_API SurfaceMeshBuilder< 2 >;
 
     template class RINGMESH_API MeshBaseBuilder< 3 >;
+    template class RINGMESH_API LineMeshBuilder< 3 >;
+    template class RINGMESH_API SurfaceMeshBuilder< 3 >;
     template class RINGMESH_API VolumeMeshBuilder< 3 >;
 } // namespace RINGMesh

@@ -59,8 +59,8 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometry );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoveBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemove );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
@@ -173,10 +173,7 @@ namespace RINGMesh
         /*!
          * @brief Check if the entity has a parent of the given type
          */
-        bool has_parent( const GeologicalEntityType& parent_type ) const
-        {
-            return could_be_undefined_parent_gmge( parent_type ).is_defined();
-        }
+        bool has_parent( const GeologicalEntityType& parent_type ) const;
 
         index_t nb_parents() const
         {
@@ -485,6 +482,8 @@ namespace RINGMesh
     };
     ALIAS_2D_AND_3D( Corner );
 
+    MeshEntityType RINGMESH_API corner_type_name_static();
+
     /*!
      * @brief A GeoModelEntity of type LINE
      *
@@ -612,6 +611,8 @@ namespace RINGMesh
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_{};
     };
     ALIAS_2D_AND_3D( Line );
+    
+    MeshEntityType RINGMESH_API line_type_name_static();
 
     /*!
      * @brief A GeoModelEntity of type SURFACE
@@ -633,9 +634,9 @@ namespace RINGMesh
             this->unbind_vertex_mapping_attribute();
         }
 
-        MeshEntityType type_name() const final;
-
         static MeshEntityType type_name_static();
+
+        MeshEntityType type_name() const final;
 
         const Line< DIMENSION >& boundary( index_t x ) const;
 
@@ -733,7 +734,7 @@ namespace RINGMesh
          *
          * @todo Check that there is no duplicated polygon
          */
-        bool is_mesh_valid() const final;
+        bool is_mesh_valid_base() const;
 
     private:
         void update_mesh_storage_type(
@@ -744,6 +745,8 @@ namespace RINGMesh
     private:
         std::shared_ptr< SurfaceMesh< DIMENSION > > surface_mesh_{};
     };
+
+    MeshEntityType RINGMESH_API surface_type_name_static();
 
     template < index_t DIMENSION >
     class RINGMESH_API Surface final : public SurfaceBase< DIMENSION >
@@ -761,6 +764,7 @@ namespace RINGMesh
         {
         }
 
+        bool is_mesh_valid() const final;
     public:
         bool is_on_voi() const final;
         bool side( index_t i ) const
@@ -792,6 +796,7 @@ namespace RINGMesh
         {
         }
 
+        bool is_mesh_valid() const final;
     public:
         bool is_on_voi() const final;
         const Region< 3 >& incident_entity( index_t x ) const;
@@ -961,6 +966,8 @@ namespace RINGMesh
     private:
         std::shared_ptr< VolumeMesh< DIMENSION > > volume_mesh_{};
     };
+
+    MeshEntityType RINGMESH_API region_type_name_static();
 
     ALIAS_3D( Region );
 

@@ -227,6 +227,10 @@ ExternalProject_Add_Step(zlib_ext forcebuild
     DEPENDERS build
     ALWAYS 1
   )
+  
+ExternalProject_Add_Step(zlib_ext post_build
+    COMMAND ${CMAKE_COMMAND} -E remove ${ZLIB_PATH}/zconf.h.included
+  )
 
 # Add zlib include directories to the current ones
 include_directories(SYSTEM ${ZLIB_PATH_BIN}/install/include)
@@ -242,7 +246,6 @@ endif()
 # Add zlib bin directories to the current ones
 # It would be preferable to set the imported library location [JP]
 link_directories(${ZLIB_PATH_BIN}/install/lib)
-
 
 #------------------------------------------------------------------------------------------------
 # minizip

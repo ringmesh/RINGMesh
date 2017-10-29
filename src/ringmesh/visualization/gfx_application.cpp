@@ -42,6 +42,8 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
+#include <algorithm>
+
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
 
@@ -61,6 +63,11 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/io/io.h>
+
+// RINGMesh colormaps
+#include <ringmesh/visualization/colormaps/jet.xpm>
+#include <ringmesh/visualization/colormaps/lgbt.xpm>
+#include <ringmesh/visualization/colormaps/minmax_transparent.xpm>
 
 namespace
 {
@@ -115,6 +122,12 @@ namespace
         {
             bbox.add_point( entity.vertex( v ) );
         }
+    }
+
+    void home_rotation() {
+	    float axis[3] = { 1, 0.5, 1 };
+	    float angle { 80 };
+	    glup_viewer_set_scene_rotation( axis, angle );
     }
 }
 namespace RINGMesh
@@ -721,6 +734,7 @@ namespace RINGMesh
         RINGMeshApplication& app, const std::string& filename )
         : RINGMeshApplication::GeoModelViewerBase< 3 >( app, filename )
     {
+        home_rotation();
         volume_style_.color_ = grey;
         volume_style_.size_ = 1;
         volume_style_.visible_vertices_ = false;
@@ -1440,7 +1454,8 @@ namespace RINGMesh
     {
         GEO::Application::init_graphics();
 
-        init_colormaps();
+        init_ringmesh_colormaps();
+        glupEnable( GLUP_ALPHA_DISCARD );
         glup_viewer_disable( GLUP_VIEWER_BACKGROUND );
     }
 
@@ -1510,6 +1525,14 @@ namespace RINGMesh
                 float( bbox.max()[0] ), float( bbox.max()[1] ),
                 float( bbox.max()[2] ) );
         }
+    }
+
+    void RINGMeshApplication::init_ringmesh_colormaps()
+    {
+        init_colormaps();
+        init_colormap( "jet", jet_xpm );
+        init_colormap( "lgbt", lgbt_xpm );
+        init_colormap( "minmax_transparent", minmax_transparent_xpm );
     }
 
     void RINGMeshApplication::draw_scene()
@@ -1611,10 +1634,20 @@ namespace RINGMesh
 
     void RINGMeshApplication::draw_viewer_properties()
     {
-        if( ImGui::Button( "home [H]", ImVec2( -1, 0 ) ) )
-        {
+        if( ImGui::Button( "home [H]", ImVec2( -1, 0 ) ) ) {
             glup_viewer_home();
+            bool geomodel_2d_displayed { false };
+            for( auto& geomodel2d: geomodels2d_ ) {
+                if( geomodel2d->is_visible_ ) {
+                    geomodel_2d_displayed = true;
+                    break;
+                }
+            }
+            if( !geomodel_2d_displayed ) {
+                home_rotation();
+            }
         }
+	
         ImGui::Separator();
         ImGui::Checkbox( "Lighting [L]", &lighting_ );
         if( lighting_ )

@@ -40,6 +40,7 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
 
+#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
@@ -360,7 +361,7 @@ namespace
             std::pair< index_t, bool > default_pair( index_t( -1 ), false );
             sorted_polygons_.resize( 2 * polygons_.size(), default_pair );
 
-            // If there is only one Polygon to sort - nothing to do
+            // If there is only one Polygon to sort, nothing to do
             if( polygons_.size() == 1 )
             {
                 sorted_polygons_[0] = std::pair< index_t, bool >(
@@ -759,21 +760,21 @@ namespace
                 backward ? mesh.prev_on_border( cur_polygon_local_edge )
                          : mesh.next_on_border( cur_polygon_local_edge );
             ringmesh_assert(
-                next_polygon_local_edge0_on_border.polygon_id_ != NO_ID );
+                next_polygon_local_edge0_on_border.polygon_id != NO_ID );
             ringmesh_assert(
-                next_polygon_local_edge0_on_border.local_edge_id_ != NO_ID );
+                next_polygon_local_edge0_on_border.local_edge_id != NO_ID );
 
             PolygonLocalEdge next_polygon_local_edge1_on_border =
                 mesh.next_polygon_vertex( next_polygon_local_edge0_on_border );
             ringmesh_assert(
-                next_polygon_local_edge1_on_border.polygon_id_ != NO_ID );
+                next_polygon_local_edge1_on_border.polygon_id != NO_ID );
             ringmesh_assert(
-                next_polygon_local_edge1_on_border.local_edge_id_ != NO_ID );
+                next_polygon_local_edge1_on_border.local_edge_id != NO_ID );
 
             // Finds the BorderPolygon that is corresponding to this
             // It must exist and there is only one
             BorderPolygon bait{ border_polygon.surface_,
-                next_polygon_local_edge0_on_border.polygon_id_,
+                next_polygon_local_edge0_on_border.polygon_id,
                 geomodel_vertices.geomodel_vertex_id(
                     surface_id, next_polygon_local_edge0_on_border ),
                 geomodel_vertices.geomodel_vertex_id(
@@ -875,7 +876,7 @@ namespace RINGMesh
         : topology( builder, geomodel ),
           geometry( builder, geomodel ),
           geology( builder, geomodel ),
-          removal( builder, geomodel ),
+          remove( builder, geomodel ),
           info( builder, geomodel ),
           geomodel_( geomodel ),
           geomodel_access_( geomodel )
@@ -901,7 +902,7 @@ namespace RINGMesh
             nn_search.get_colocated_index_mapping_and_unique_points(
                 geomodel_.epsilon() );
 
-        topology.create_mesh_entities( Corner< DIMENSION >::type_name_static(),
+        topology.create_mesh_entities( corner_type_name_static(),
             static_cast< index_t >( unique_points.size() ) );
         for( index_t c : range( geomodel_.nb_corners() ) )
         {
@@ -912,9 +913,9 @@ namespace RINGMesh
         {
             gmme_id line_id = line.gmme();
             index_t point0 = index_map[index++];
-            gmme_id corner0( Corner< DIMENSION >::type_name_static(), point0 );
+            gmme_id corner0( corner_type_name_static(), point0 );
             index_t point1 = index_map[index++];
-            gmme_id corner1( Corner< DIMENSION >::type_name_static(), point1 );
+            gmme_id corner1( corner_type_name_static(), point1 );
             topology.add_mesh_entity_boundary_relation( line_id, corner0 );
             topology.add_mesh_entity_boundary_relation( line_id, corner1 );
 
@@ -961,7 +962,7 @@ namespace RINGMesh
                 for( auto j : adjacent_surfaces )
                 {
                     gmme_id surface_index{
-                        Surface< DIMENSION >::type_name_static(), j
+                        surface_type_name_static(), j
                     };
                     topology.add_mesh_entity_boundary_relation(
                         surface_index, line_index );
@@ -1052,8 +1053,8 @@ namespace RINGMesh
                 continue;
             }
             // Create a new region
-            const index_t cur_region_id { geomodel_.nb_regions() };
-            topology.create_mesh_entities( Region3D::type_name_static(), 1 );
+            index_t cur_region_id { geomodel_.nb_regions() };
+            topology.create_mesh_entities( region_type_name_static(), 1 );
             // Get all oriented surfaces defining this region
             std::stack< std::pair< index_t, bool > > SR;
             SR.push( cur );
@@ -1127,7 +1128,7 @@ namespace RINGMesh
         const auto& cur_region = geomodel_.region( universe_id );
         std::set< gmme_id > to_erase;
         to_erase.insert( cur_region.gmme() );
-        removal.remove_mesh_entities( to_erase );
+        remove.remove_mesh_entities( to_erase );
     }
 
     template class RINGMESH_API GeoModelBuilderBase< 2 >;

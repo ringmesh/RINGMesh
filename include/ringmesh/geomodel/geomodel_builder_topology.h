@@ -39,9 +39,7 @@
 
 #include <set>
 
-#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder_access.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @brief Builder tools to edit and build GeoModel topology
@@ -53,8 +51,10 @@ namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
     ALIAS_2D_AND_3D( GeoModelBuilder );
+    ALIAS_2D_AND_3D( GeoModel );
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -93,10 +93,14 @@ namespace RINGMesh
         bool get_dependent_entities( std::set< gmme_id >& mesh_entities,
             std::set< gmge_id >& geological_entities ) const;
 
-        virtual gmme_id create_mesh_entity( const MeshEntityType& type );
+        virtual gmme_id create_mesh_entity(
+            const MeshEntityType& entity_type,
+            const MeshType& mesh_type = "" );
 
         virtual bool create_mesh_entities(
-            const MeshEntityType& type, index_t nb_additional_entities );
+            const MeshEntityType& entity_type,
+            index_t nb_additional_entities,
+            const MeshType& mesh_type = "" );
 
         void remove_mesh_entity_boundary_relation(
             const gmme_id& incident_entity, const gmme_id& boundary );
@@ -109,10 +113,15 @@ namespace RINGMesh
         /*!
          * @brief Finds or creates a corner at given coordinates.
          * @param[in] point Geometric location of the Corner
+         * @param[in] mesh_type Mesh data structure type to associate to the Corner
          * @return Index of the Corner
          */
-        gmme_id find_or_create_corner( const vecn< DIMENSION >& point );
-        gmme_id find_or_create_corner( index_t geomodel_point_id );
+        gmme_id find_or_create_corner(
+            const vecn< DIMENSION >& point,
+            const MeshType& mesh_type = "" );
+        gmme_id find_or_create_corner(
+            index_t geomodel_point_id,
+            const MeshType& mesh_type = "" );
 
         /*!
          * @brief Finds or creates a line
@@ -120,7 +129,8 @@ namespace RINGMesh
          * @return Index of the Line
          */
         gmme_id find_or_create_line(
-            const std::vector< vecn< DIMENSION > >& vertices );
+            const std::vector< vecn< DIMENSION > >& vertices,
+            const MeshType& mesh_type = "" );
 
         /*!
          * @brief Finds or creates a line knowing its topological adjacencies
@@ -128,7 +138,8 @@ namespace RINGMesh
         gmme_id find_or_create_line(
             const std::vector< index_t >& sorted_adjacent_surfaces,
             const gmme_id& first_corner,
-            const gmme_id& second_corner );
+            const gmme_id& second_corner,
+            const MeshType& mesh_type = "" );
 
         void add_line_corner_boundary_relation(
             index_t incident_line_id,
@@ -144,27 +155,14 @@ namespace RINGMesh
             GeoModel< DIMENSION >& geomodel );
 
         template < template < index_t > class ENTITY >
-        gmme_id create_mesh_entity( const MeshType& mesh_type = "" );
+        gmme_id create_mesh_entity( const MeshType& mesh_type );
 
         template < template < index_t > class ENTITY >
         bool create_mesh_entities(
-            index_t nb_additionnal_entities, const MeshType& type = "" );
+            index_t nb_additionnal_entities, const MeshType& type );
 
         template < template < index_t > class ENTITY >
-        void copy_mesh_entity_topology( const GeoModel< DIMENSION >& from )
-        {
-            const MeshEntityType& type =
-                ENTITY< DIMENSION >::type_name_static();
-            create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) );
-
-            parallel_for( geomodel_.nb_mesh_entities( type ),
-                [&type, &from, this]( index_t i ) {
-                    gmme_id id( type, i );
-                    GeoModelMeshEntityAccess< DIMENSION > gmme_access(
-                        geomodel_access_.modifiable_mesh_entity( id ) );
-                    gmme_access.copy( from.mesh_entity( id ) );
-                } );
-        }
+        void copy_mesh_entity_topology( const GeoModel< DIMENSION >& from );
 
         index_t check_if_boundary_incident_entity_relation_already_exists(
             const gmme_id& incident_entity, const gmme_id& boundary );
@@ -230,10 +228,14 @@ namespace RINGMesh
         friend class GeoModelBuilder< 3 >;
 
     public:
-        gmme_id create_mesh_entity( const MeshEntityType& type ) override;
+        gmme_id create_mesh_entity(
+            const MeshEntityType& entity_type,
+            const MeshType& mesh_type = "" ) override;
 
-        bool create_mesh_entities( const MeshEntityType& type,
-            index_t nb_additional_entities ) override;
+        bool create_mesh_entities(
+            const MeshEntityType& entity_type,
+            index_t nb_additional_entities,
+            const MeshType& mesh_type = "" ) override;
 
         void add_surface_line_boundary_relation(
             index_t incident_surface_id,

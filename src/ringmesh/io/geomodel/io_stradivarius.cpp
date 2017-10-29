@@ -57,7 +57,7 @@ namespace {
             load_media();
 
             horizon_m0_.emplace( Surface2D::type_name_static(), index_t( 0 ) );
-            removal.remove_mesh_entities( horizon_m0_ );
+            remove.remove_mesh_entities( horizon_m0_ );
             build_corners_from_lines();
         }
 

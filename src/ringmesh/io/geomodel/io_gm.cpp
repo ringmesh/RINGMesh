@@ -266,12 +266,11 @@ namespace {
             Logger::instance()->set_minimal( true );
             std::vector< std::future< void > > files;
             do {
-                auto file_name = uz.get_current_filename();
-                if( GEO::FileSystem::extension( file_name ) == "txt" ) {
+                if( GEO::FileSystem::extension( uz.get_current_filename() ) == "txt" ) {
                     continue;
                 }
 
-                uz.get_current_file();
+                const auto file_name = uz.get_current_file();
                 files.push_back(
                     std::async( std::launch::deferred,
                         [file_name, this] {
@@ -323,21 +322,24 @@ namespace {
 
         void load_file() final
         {
-            UnZipFile uz { this->filename_ };
+            const std::string directory_to_unzip { GEO::FileSystem::normalized_path(
+                GEO::FileSystem::dir_name( this->filename_ ) ) + "/"
+                + std::to_string( std::hash< std::string >()(  this->filename_ ) ) };
+            UnZipFile uz { this->filename_, directory_to_unzip };
 
-            const std::string mesh_entity_file( "mesh_entities.txt" );
-            uz.get_file( mesh_entity_file );
+            const auto mesh_entity_file = uz.get_file( "mesh_entities.txt" );
             load_mesh_entities( mesh_entity_file );
             auto ok = GEO::FileSystem::delete_file( mesh_entity_file );
             ringmesh_unused( ok ); // avoids warning in release
             ringmesh_assert( ok );
             load_meshes( uz );
 
-            const std::string geological_entity_file { "geological_entities.txt" };
-            uz.get_file( geological_entity_file );
+            const auto geological_entity_file = uz.get_file( "geological_entities.txt" );
             load_geological_entities( geological_entity_file );
             ok = GEO::FileSystem::delete_file( geological_entity_file );
             ringmesh_assert( ok );
+
+            GEO::FileSystem::delete_directory( directory_to_unzip );
         }
 
         void load_mesh_entities( const std::string& mesh_entity_file )
@@ -796,14 +798,8 @@ namespace {
     public:
         void load( const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
         {
-            auto pwd = GEO::FileSystem::get_current_working_directory();
-            GEO::FileSystem::set_current_working_directory(
-                GEO::FileSystem::dir_name( filename ) );
-            GeoModelBuilderGM< DIMENSION > builder { geomodel,
-                                                     GEO::FileSystem::base_name(
-                                                         filename, false ) };
+            GeoModelBuilderGM< DIMENSION > builder { geomodel, filename };
             builder.build_geomodel();
-            GEO::FileSystem::set_current_working_directory( pwd );
         }
 
         void save(

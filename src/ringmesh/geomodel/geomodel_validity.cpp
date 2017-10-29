@@ -398,7 +398,7 @@ namespace
     void save_mesh_locating_geomodel_inconsistencies(
         const GEO::Mesh& mesh, const std::ostringstream& file )
     {
-        if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
+        if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
         {
             GEO::mesh_save( mesh, file.str() );
         }
@@ -554,6 +554,21 @@ namespace
         if( geomodel.nb_regions() > 0 && geomodel.region( 0 ).is_meshed() )
         {
             return is_vertex_valid< Region >( geomodel, entities );
+        }
+        return true;
+    }
+
+    template < index_t DIMENSION >
+    bool is_surface_vertex_valid( const GeoModel< DIMENSION >& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities );
+
+    template < >
+    bool is_surface_vertex_valid( const GeoModel2D& geomodel,
+        const std::map< MeshEntityType, std::vector< index_t > >& entities )
+    {
+        if( geomodel.nb_surfaces() > 0 && geomodel.surface( 0 ).is_meshed() )
+        {
+            return is_vertex_valid< Surface >( geomodel, entities );
         }
         return true;
     }
@@ -794,7 +809,7 @@ namespace
         if( nb_invalid > 0 )
         {
             Logger::warn( "Validity", nb_invalid, " invalid vertices." );
-            if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
+            if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
                 std::ostringstream file;
                 file << get_validity_errors_directory()
@@ -895,7 +910,7 @@ namespace
             Logger::warn( "Validity", " Invalid surface boundary: ",
                 invalid_corners.size() / 2, " boundary edges of ", S_id,
                 "  are in no line of the GeoModel." );
-            if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
+            if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
                 std::ostringstream file;
                 file << get_validity_errors_directory()
@@ -958,7 +973,7 @@ namespace
                 unconformal_polygons.size(), " polygons of ",
                 surface.gmme(),
                 " are unconformal with the GeoModel cells." );
-            if( GEO::CmdLine::get_arg_bool( "validity_save" ) )
+            if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
                 std::ostringstream file;
                 file << get_validity_errors_directory() << "/unconformal_surface_"
@@ -1399,6 +1414,48 @@ namespace
 
 namespace RINGMesh
 {
+    using CheckModeCmdLineMap = std::map< char, ValidityCheckMode >;
+    static CheckModeCmdLineMap validity_checks_to_chars = {
+        {'0', ValidityCheckMode::EMPTY},
+        {'A', ValidityCheckMode::ALL},
+        {'t', ValidityCheckMode::TOPOLOGY},
+        {'g', ValidityCheckMode::GEOMETRY},
+        {'G', ValidityCheckMode::GEOLOGY},
+        {'E', ValidityCheckMode::FINITE_EXTENSION},
+        {'c', ValidityCheckMode::GEOMODEL_CONNECTIVITY},
+        {'f', ValidityCheckMode::GEOLOGICAL_ENTITIES},
+        {'s', ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY},
+        {'r', ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY},
+        {'m', ValidityCheckMode::MESH_ENTITIES},
+        {'e', ValidityCheckMode::NON_MANIFOLD_EDGES},
+        {'I', ValidityCheckMode::POLYGON_INTERSECTIONS} };
+
+    void remove_check( ValidityCheckMode& checks, ValidityCheckMode check_to_remove )
+    {
+        if( enum_contains(checks, check_to_remove) )
+        {
+            checks = checks & ( ~check_to_remove );
+        }
+    }
+
+    ValidityCheckMode interpret_validity_check_mode( const std::string& checks_to_remove )
+    {
+        ValidityCheckMode check_mode { ValidityCheckMode::ALL };
+        for( auto& check : checks_to_remove )
+        {
+            if( validity_checks_to_chars.find(check) != validity_checks_to_chars.end() )
+            {
+                remove_check(check_mode, validity_checks_to_chars[check]);
+            }
+            else
+            {
+                Logger::warn( "Validity", "'", check, "' does not match to any ",
+                    "validity check. " );
+            }
+        }
+        return check_mode;
+    }
+
     void set_validity_errors_directory( const std::string& directory )
     {
         // If trailing / or \ is not removed, the test fails on Windows
@@ -1409,13 +1466,19 @@ namespace RINGMesh
         }
         if( GEO::FileSystem::is_directory( copy ) )
         {
-            GEO::CmdLine::set_arg( "validity_directory", copy + '/' );
+            GEO::CmdLine::set_arg( "validity:directory", copy + '/' );
         }
     }
 
     std::string get_validity_errors_directory()
     {
-        return GEO::CmdLine::get_arg( "validity_directory" );
+        return GEO::CmdLine::get_arg( "validity:directory" );
+    }
+
+    ValidityCheckMode RINGMESH_API get_validity_mode_from_arg()
+    {
+        return interpret_validity_check_mode(
+            GEO::CmdLine::get_arg( "validity:do_not_check" ) );
     }
 
     template < index_t DIMENSION >
@@ -1531,12 +1594,6 @@ namespace RINGMesh
     bool is_geomodel_valid( const GeoModel< DIMENSION >& geomodel,
         ValidityCheckMode validity_check_mode )
     {
-        if( !GEO::CmdLine::get_arg_bool( "validity_intersection_check" ) )
-        {
-            validity_check_mode =
-                validity_check_mode ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
-        }
-
         GeoModelValidityCheck< DIMENSION > validity_checker(
             geomodel, validity_check_mode );
 
@@ -1550,10 +1607,10 @@ namespace RINGMesh
         {
             Logger::warn(
                 "Validity", "GeoModel ", geomodel.name(), " is invalid." );
-            if( !GEO::CmdLine::get_arg_bool( "validity_save" ) )
+            if( !GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
                 Logger::out( "Info", "To save geomodel invalidities in files ",
-                    "(.geogram) set \"validity_save\" to true in the command "
+                    "(.geogram) set \"validity:save\" to true in the command "
                     "line." );
             }
         }
