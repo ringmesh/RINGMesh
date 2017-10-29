@@ -24,7 +24,7 @@ function travis-branch-commit() {
         return 1
     fi
 
-    if ! git add --all $TRAVIS_BUILD_DIR; then
+    if ! git add --all "$TRAVIS_BUILD_DIR"; then
         err "failed to add modified files to git index"
         return 1
     fi
@@ -42,10 +42,6 @@ function travis-branch-commit() {
     local remote=origin
     if [[ $GITHUB_TOKEN ]]; then
         remote=https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG
-    fi
-    if [[ $TRAVIS_BRANCH != master ]]; then
-        msg "not pushing updates to branch $TRAVIS_BRANCH"
-        return 0
     fi
     if ! git push --quiet --follow-tags "$remote" "$TRAVIS_BRANCH" > /dev/null 2>&1; then
         err "failed to push git changes"
