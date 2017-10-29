@@ -683,8 +683,8 @@ namespace RINGMesh
             // This code should be removed after reworking of the removal because
             // this is called to remove the mesh entities when a geological entity
             // is removed, and we do not want to remove automatically the dependencies [BC].
-            /*builder_.topology.set_mesh_entity_boundary(
-                mesh_entity.gmme(), i, new_boundary );*/
+            builder_.topology.set_mesh_entity_boundary(
+                mesh_entity.gmme(), i, new_boundary );
         }
     }
 
