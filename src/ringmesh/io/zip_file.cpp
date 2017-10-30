@@ -108,11 +108,9 @@ namespace RINGMesh
     class UnZipFile::Impl
     {
     public:
-        Impl( const std::string& filename,
-            std::string directory_to_unzip )
-            :
-                zip_file_ { unzOpen( filename.c_str() ) },
-                directory_to_unzip_ ( std::move( directory_to_unzip ) )
+        Impl( const std::string& filename, std::string directory_to_unzip )
+            : zip_file_{ unzOpen( filename.c_str() ) },
+              directory_to_unzip_( std::move( directory_to_unzip ) )
         {
             if( zip_file_ == nullptr )
             {
@@ -147,7 +145,8 @@ namespace RINGMesh
 
         std::string get_current_file()
         {
-            return unzip_current_file( zip_file_, get_current_filename().c_str() );
+            return unzip_current_file(
+                zip_file_, get_current_filename().c_str() );
         }
 
         std::string get_current_filename()
@@ -169,7 +168,8 @@ namespace RINGMesh
         }
 
     private:
-        std::string unzip_current_file( unzFile uz, const std::string& filename )
+        std::string unzip_current_file(
+            unzFile uz, const std::string& filename )
         {
             char read_buffer[READ_SIZE];
             if( unzOpenCurrentFile( uz ) != UNZ_OK )
@@ -177,7 +177,8 @@ namespace RINGMesh
                 unzClose( uz );
                 throw RINGMeshException( "UnZipFile", "Could not open file" );
             }
-            const std::string unziped_file { directory_to_unzip_ + "/" + filename };
+            const std::string unziped_file{ directory_to_unzip_ + "/"
+                                            + filename };
             FILE* out{ fopen( unziped_file.c_str(), "wb" ) };
             if( out == nullptr )
             {
@@ -215,9 +216,8 @@ namespace RINGMesh
     };
 
     UnZipFile::UnZipFile(
-        const std::string& filename,
-        std::string directory_to_unzip )
-        : impl_ { filename, std::move( directory_to_unzip ) }
+        const std::string& filename, std::string directory_to_unzip )
+        : impl_{ filename, std::move( directory_to_unzip ) }
     {
     }
 

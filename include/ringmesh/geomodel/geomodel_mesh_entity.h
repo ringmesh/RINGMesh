@@ -413,7 +413,8 @@ namespace RINGMesh
         /*!
          * @return the number of vertices of the Corner
          */
-        index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const final;
+        index_t nb_mesh_element_vertices(
+            index_t mesh_element = 0 ) const final;
 
         const Line< DIMENSION >& incident_entity( index_t x ) const;
 
@@ -611,7 +612,7 @@ namespace RINGMesh
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_{};
     };
     ALIAS_2D_AND_3D( Line );
-    
+
     MeshEntityType RINGMESH_API line_type_name_static();
 
     /*!
@@ -765,6 +766,7 @@ namespace RINGMesh
         }
 
         bool is_mesh_valid() const final;
+
     public:
         bool is_on_voi() const final;
         bool side( index_t i ) const
@@ -797,6 +799,7 @@ namespace RINGMesh
         }
 
         bool is_mesh_valid() const final;
+
     public:
         bool is_on_voi() const final;
         const Region< 3 >& incident_entity( index_t x ) const;
@@ -883,8 +886,9 @@ namespace RINGMesh
         index_t nb_cell_facet_vertices(
             index_t cell_index, index_t facet_index ) const;
 
-        index_t cell_edge_vertex_index(
-            index_t cell_index, index_t edge_index, index_t vertex_index ) const;
+        index_t cell_edge_vertex_index( index_t cell_index,
+            index_t edge_index,
+            index_t vertex_index ) const;
 
         index_t cell_facet_vertex_index( index_t cell_index,
             index_t facet_index,

@@ -93,7 +93,8 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API MeshEntityTypeManager: public MeshEntityTypeManagerBase< DIMENSION >
+    class RINGMESH_API MeshEntityTypeManager
+        : public MeshEntityTypeManagerBase< DIMENSION >
     {
     };
 

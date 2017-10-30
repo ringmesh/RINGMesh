@@ -151,8 +151,8 @@ namespace RINGMesh
 
         static void initialize();
 
-        static std::unique_ptr< GeoModelOutputHandler< DIMENSION > > get_handler(
-            const std::string& filename );
+        static std::unique_ptr< GeoModelOutputHandler< DIMENSION > >
+            get_handler( const std::string& filename );
 
         void save_geomodel( const GeoModel< DIMENSION >& geomodel,
             const std::string& filename );

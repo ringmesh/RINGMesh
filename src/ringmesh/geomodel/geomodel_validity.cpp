@@ -562,7 +562,7 @@ namespace
     bool is_surface_vertex_valid( const GeoModel< DIMENSION >& geomodel,
         const std::map< MeshEntityType, std::vector< index_t > >& entities );
 
-    template < >
+    template <>
     bool is_surface_vertex_valid( const GeoModel2D& geomodel,
         const std::map< MeshEntityType, std::vector< index_t > >& entities )
     {
@@ -596,7 +596,8 @@ namespace
                 if( lines.size() != 1 )
                 {
                     print_error( lines, "Lines" );
-                    Logger::warn( "Validity", "It should be in only one Line." );
+                    Logger::warn(
+                        "Validity", "It should be in only one Line." );
                     return false;
                 }
                 return true;
@@ -659,7 +660,8 @@ namespace
                 if( lines.size() != 1 )
                 {
                     print_error( lines, "Lines" );
-                    Logger::warn( "Validity", "It should be in only one Line." );
+                    Logger::warn(
+                        "Validity", "It should be in only one Line." );
                     return false;
                 }
                 return true;
@@ -816,7 +818,6 @@ namespace
                      << "/invalid_global_vertices.geogram";
                 save_invalid_points( file, geomodel, valid );
                 Logger::warn( "Validity", "Saved in file: ", file.str() );
-
             }
 
             return false;
@@ -970,14 +971,14 @@ namespace
         if( !unconformal_polygons.empty() )
         {
             Logger::warn( "Validity", " Unconformal surface: ",
-                unconformal_polygons.size(), " polygons of ",
-                surface.gmme(),
+                unconformal_polygons.size(), " polygons of ", surface.gmme(),
                 " are unconformal with the GeoModel cells." );
             if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
                 std::ostringstream file;
-                file << get_validity_errors_directory() << "/unconformal_surface_"
-                     << surface.index() << ".geogram";
+                file << get_validity_errors_directory()
+                     << "/unconformal_surface_" << surface.index()
+                     << ".geogram";
                 save_polygons( file.str(), surface, unconformal_polygons );
                 Logger::warn( "Validity", " Saved in file: ", file.str() );
             }
@@ -1416,41 +1417,44 @@ namespace RINGMesh
 {
     using CheckModeCmdLineMap = std::map< char, ValidityCheckMode >;
     static CheckModeCmdLineMap validity_checks_to_chars = {
-        {'0', ValidityCheckMode::EMPTY},
-        {'A', ValidityCheckMode::ALL},
-        {'t', ValidityCheckMode::TOPOLOGY},
-        {'g', ValidityCheckMode::GEOMETRY},
-        {'G', ValidityCheckMode::GEOLOGY},
-        {'E', ValidityCheckMode::FINITE_EXTENSION},
-        {'c', ValidityCheckMode::GEOMODEL_CONNECTIVITY},
-        {'f', ValidityCheckMode::GEOLOGICAL_ENTITIES},
-        {'s', ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY},
-        {'r', ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY},
-        {'m', ValidityCheckMode::MESH_ENTITIES},
-        {'e', ValidityCheckMode::NON_MANIFOLD_EDGES},
-        {'I', ValidityCheckMode::POLYGON_INTERSECTIONS} };
+        { '0', ValidityCheckMode::EMPTY }, { 'A', ValidityCheckMode::ALL },
+        { 't', ValidityCheckMode::TOPOLOGY },
+        { 'g', ValidityCheckMode::GEOMETRY },
+        { 'G', ValidityCheckMode::GEOLOGY },
+        { 'E', ValidityCheckMode::FINITE_EXTENSION },
+        { 'c', ValidityCheckMode::GEOMODEL_CONNECTIVITY },
+        { 'f', ValidityCheckMode::GEOLOGICAL_ENTITIES },
+        { 's', ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY },
+        { 'r', ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY },
+        { 'm', ValidityCheckMode::MESH_ENTITIES },
+        { 'e', ValidityCheckMode::NON_MANIFOLD_EDGES },
+        { 'I', ValidityCheckMode::POLYGON_INTERSECTIONS }
+    };
 
-    void remove_check( ValidityCheckMode& checks, ValidityCheckMode check_to_remove )
+    void remove_check(
+        ValidityCheckMode& checks, ValidityCheckMode check_to_remove )
     {
-        if( enum_contains(checks, check_to_remove) )
+        if( enum_contains( checks, check_to_remove ) )
         {
             checks = checks & ( ~check_to_remove );
         }
     }
 
-    ValidityCheckMode interpret_validity_check_mode( const std::string& checks_to_remove )
+    ValidityCheckMode interpret_validity_check_mode(
+        const std::string& checks_to_remove )
     {
-        ValidityCheckMode check_mode { ValidityCheckMode::ALL };
+        ValidityCheckMode check_mode{ ValidityCheckMode::ALL };
         for( auto& check : checks_to_remove )
         {
-            if( validity_checks_to_chars.find(check) != validity_checks_to_chars.end() )
+            if( validity_checks_to_chars.find( check )
+                != validity_checks_to_chars.end() )
             {
-                remove_check(check_mode, validity_checks_to_chars[check]);
+                remove_check( check_mode, validity_checks_to_chars[check] );
             }
             else
             {
-                Logger::warn( "Validity", "'", check, "' does not match to any ",
-                    "validity check. " );
+                Logger::warn( "Validity", "'", check,
+                    "' does not match to any ", "validity check. " );
             }
         }
         return check_mode;
@@ -1601,7 +1605,8 @@ namespace RINGMesh
 
         if( valid )
         {
-            Logger::out( "Validity", "GeoModel ", geomodel.name(), " is valid." );
+            Logger::out(
+                "Validity", "GeoModel ", geomodel.name(), " is valid." );
         }
         else
         {

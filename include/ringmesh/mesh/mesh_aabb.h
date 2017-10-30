@@ -35,8 +35,8 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
 #include <ringmesh/basic/aabb.h>
+#include <ringmesh/basic/common.h>
 
 namespace RINGMesh
 {
@@ -49,7 +49,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API LineAABBTree: public AABBTree< DIMENSION >
+    class RINGMESH_API LineAABBTree : public AABBTree< DIMENSION >
     {
     public:
         explicit LineAABBTree( const LineMesh< DIMENSION >& mesh );
@@ -98,7 +98,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( LineAABBTree );
 
     template < index_t DIMENSION >
-    class RINGMESH_API SurfaceAABBTree: public AABBTree< DIMENSION >
+    class RINGMESH_API SurfaceAABBTree : public AABBTree< DIMENSION >
     {
     public:
         explicit SurfaceAABBTree( const SurfaceMeshBase< DIMENSION >& mesh );

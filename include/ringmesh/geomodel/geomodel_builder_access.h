@@ -64,14 +64,14 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_STRUCT( EntityTypeManager );
 
     class GeologicalEntityType;
-    class MeshEntityType;;
+    class MeshEntityType;
+    ;
     struct gmge_id;
     struct gmme_id;
 } // namespace RINGMesh
 
 namespace RINGMesh
 {
-
     template < index_t DIMENSION >
     class RINGMESH_API GeoModelMeshEntityConstAccess
     {

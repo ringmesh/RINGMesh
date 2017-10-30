@@ -234,8 +234,7 @@ namespace RINGMesh
     }
 
     GeoModel< 2 >::GeoModel( PlaneReferenceFrame3D plane_reference_frame )
-        : GeoModelBase< 2 >( *this ),
-          reference_frame_( plane_reference_frame )
+        : GeoModelBase< 2 >( *this ), reference_frame_( plane_reference_frame )
     {
     }
 

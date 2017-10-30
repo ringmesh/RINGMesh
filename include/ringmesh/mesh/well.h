@@ -90,7 +90,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class RINGMESH_API WellCorner: public WellEntity< DIMENSION >
+    class RINGMESH_API WellCorner : public WellEntity< DIMENSION >
     {
     public:
         WellCorner( const Well< DIMENSION >* well,
@@ -127,7 +127,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class RINGMESH_API WellPart: public WellEntity< DIMENSION >
+    class RINGMESH_API WellPart : public WellEntity< DIMENSION >
     {
     public:
         /*!

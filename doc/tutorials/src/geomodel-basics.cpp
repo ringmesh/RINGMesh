@@ -89,7 +89,8 @@ int main()
         input_file_name += "modelA1.ml";
 
         // We do not want to check the model validity at loading
-        GEO::CmdLine::set_arg( "validity:do_not_check", "A" ); // "A" for all checks
+        GEO::CmdLine::set_arg(
+            "validity:do_not_check", "A" ); // "A" for all checks
 
         // function to load a geomodel
         geomodel_load( geomodel, input_file_name );
@@ -108,12 +109,11 @@ int main()
 
         // check tetrahedralized GeoModel validity
         ValidityCheckMode checks{ ValidityCheckMode::ALL };
-        bool is_valid = is_geomodel_valid( geomodel, checks);
+        bool is_valid = is_geomodel_valid( geomodel, checks );
         if( !is_valid )
         {
-            throw RINGMeshException( "RINGMesh Test",
-                "Tetrahedralized model ", geomodel.name(),
-                " is not valid." );
+            throw RINGMeshException( "RINGMesh Test", "Tetrahedralized model ",
+                geomodel.name(), " is not valid." );
         }
 
         // set the name of the geomodel to output

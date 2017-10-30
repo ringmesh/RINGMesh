@@ -300,7 +300,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( MeshBaseBuilder );
 
     template < index_t DIMENSION >
-    class RINGMESH_API PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION >
+    class RINGMESH_API PointSetMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
@@ -337,7 +337,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API LineMeshBuilder: public MeshBaseBuilder< DIMENSION >
+    class RINGMESH_API LineMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< LineMeshBuilder > create_builder(
@@ -505,7 +505,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION >
+    class RINGMESH_API SurfaceMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
@@ -524,12 +524,14 @@ namespace RINGMesh
         void create_polygons( const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr )
         {
-            for( auto p : range( polygon_ptr.size() - 1 ) ) {
+            for( auto p : range( polygon_ptr.size() - 1 ) )
+            {
                 index_t first{ polygon_ptr[p] };
                 index_t last{ polygon_ptr[p + 1] };
                 index_t nb_to_copy{ last - first };
                 std::vector< index_t > polygon_vertices( nb_to_copy );
-                for( auto i : range( nb_to_copy ) ) {
+                for( auto i : range( nb_to_copy ) )
+                {
                     polygon_vertices[i] = polygons[first + i];
                 }
                 do_create_polygon( polygon_vertices );
@@ -627,7 +629,7 @@ namespace RINGMesh
         void connect_polygons(
             const std::vector< index_t >& polygons_to_connect )
         {
-            index_t nb_local_vertices { 0 };
+            index_t nb_local_vertices{ 0 };
             for( auto polygon : polygons_to_connect )
             {
                 nb_local_vertices +=
@@ -649,15 +651,15 @@ namespace RINGMesh
                 nb_local_vertices, NO_ID );
             std::vector< index_t > vertex2polygon_local_vertex(
                 this->surface_mesh_.nb_vertices(), NO_ID );
-            index_t local_vertex_count { 0 };
+            index_t local_vertex_count{ 0 };
             for( auto polygon : polygons_to_connect )
             {
-                for( index_t v { 0 };
+                for( index_t v{ 0 };
                      v < this->surface_mesh_.nb_polygon_vertices( polygon );
                      v++, local_vertex_count++ )
                 {
-                    auto vertex = this->surface_mesh_.polygon_vertex(
-                        { polygon, v } );
+                    auto vertex =
+                        this->surface_mesh_.polygon_vertex( { polygon, v } );
                     next_local_vertex_around_vertex[local_vertex_count] =
                         vertex2polygon_local_vertex[vertex];
                     vertex2polygon_local_vertex[vertex] = local_vertex_count;
@@ -671,13 +673,16 @@ namespace RINGMesh
                      v < this->surface_mesh_.nb_polygon_vertices( polygon );
                      v++, local_vertex_count++ )
                 {
-                    if( !this->surface_mesh_.is_edge_on_border( { polygon, v } ) )
+                    if( !this->surface_mesh_.is_edge_on_border(
+                            { polygon, v } ) )
                     {
                         continue;
                     }
-                    auto vertex = this->surface_mesh_.polygon_vertex( { polygon, v } );
+                    auto vertex =
+                        this->surface_mesh_.polygon_vertex( { polygon, v } );
                     auto next_vertex = this->surface_mesh_.polygon_vertex(
-                        this->surface_mesh_.next_polygon_vertex( { polygon, v } ) );
+                        this->surface_mesh_.next_polygon_vertex(
+                            { polygon, v } ) );
                     for( auto local_vertex =
                              vertex2polygon_local_vertex[next_vertex];
                          local_vertex != NO_ID;
@@ -701,8 +706,7 @@ namespace RINGMesh
                             this->set_polygon_adjacent(
                                 { polygon, v }, adj_polygon );
                             this->set_polygon_adjacent(
-                                { adj_polygon, adj_local_vertex },
-                                polygon );
+                                { adj_polygon, adj_local_vertex }, polygon );
                             break;
                         }
                     }
@@ -816,11 +820,12 @@ namespace RINGMesh
          * @brief Sets a vertex of a polygon by local vertex index.
          * @param[in] polygon_local_vertex the polygon index and the local index
          * of a vertex in the polygon.
-         * @param[in] vertex_id specifies the vertex between 0 and the number 
+         * @param[in] vertex_id specifies the vertex between 0 and the number
          * of vertex in polygon.
          */
         virtual void do_set_polygon_vertex(
-            const ElementLocalVertex& polygon_local_vertex, index_t vertex_id ) = 0;
+            const ElementLocalVertex& polygon_local_vertex,
+            index_t vertex_id ) = 0;
         /*!
          * @brief Sets an adjacent polygon by both its polygon \param polygon_id
          * and its local edge index \param edge_id.
@@ -869,7 +874,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION >
+    class VolumeMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
 

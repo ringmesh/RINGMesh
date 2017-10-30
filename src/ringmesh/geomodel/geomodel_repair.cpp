@@ -55,17 +55,15 @@ namespace
 {
     using namespace RINGMesh;
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     class GeoModelRepair
     {
-    ringmesh_disable_copy_and_move( GeoModelRepair );
+        ringmesh_disable_copy_and_move( GeoModelRepair );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
+
     public:
-        GeoModelRepair(
-            GeoModel< DIMENSION >& geomodel )
-            :
-                builder_( geomodel ),
-                geomodel_( geomodel )
+        GeoModelRepair( GeoModel< DIMENSION >& geomodel )
+            : builder_( geomodel ), geomodel_( geomodel )
         {
         }
 
@@ -77,29 +75,29 @@ namespace
         {
             switch( repair_mode )
             {
-                case RepairMode::ALL:
-                    geomodel_mesh_repair();
-                    break;
-                case RepairMode::BASIC:
-                    builder_.end_geomodel();
-                    break;
-                case RepairMode::COLOCATED_VERTICES:
-                    remove_colocated_entity_vertices_and_update_gm();
-                    break;
-                case RepairMode::DEGENERATE_POLYGONS_EDGES:
-                    remove_degenerate_polygons_and_edges_and_update_gm();
-                    break;
-                case RepairMode::LINE_BOUNDARY_ORDER:
-                    repair_line_boundary_vertex_order();
-                    break;
-                case RepairMode::CONTACTS:
-                    build_contacts();
-                    break;
-                case RepairMode::ISOLATED_VERTICES:
-                    remove_isolated_vertices();
-                    break;
-                default:
-                    ringmesh_assert_not_reached;
+            case RepairMode::ALL:
+                geomodel_mesh_repair();
+                break;
+            case RepairMode::BASIC:
+                builder_.end_geomodel();
+                break;
+            case RepairMode::COLOCATED_VERTICES:
+                remove_colocated_entity_vertices_and_update_gm();
+                break;
+            case RepairMode::DEGENERATE_POLYGONS_EDGES:
+                remove_degenerate_polygons_and_edges_and_update_gm();
+                break;
+            case RepairMode::LINE_BOUNDARY_ORDER:
+                repair_line_boundary_vertex_order();
+                break;
+            case RepairMode::CONTACTS:
+                build_contacts();
+                break;
+            case RepairMode::ISOLATED_VERTICES:
+                remove_isolated_vertices();
+                break;
+            default:
+                ringmesh_assert_not_reached;
             }
         }
 
@@ -145,8 +143,8 @@ namespace
             remove_colocated_entity_vertices( empty_mesh_entities );
             if( !empty_mesh_entities.empty() )
             {
-                builder_.topology.get_dependent_entities( empty_mesh_entities,
-                    empty_geological_entities );
+                builder_.topology.get_dependent_entities(
+                    empty_mesh_entities, empty_geological_entities );
                 builder_.remove.remove_mesh_entities( empty_mesh_entities );
             }
         }
@@ -185,11 +183,12 @@ namespace
             {
                 if( !line.is_first_corner_first_vertex() )
                 {
-                    const auto first_boundary_index = line.boundary( 0 ).index();
-                    builder_.topology.set_mesh_entity_boundary( line.gmme(), 0,
-                        line.boundary_gmme( 1 ).index() );
-                    builder_.topology.set_mesh_entity_boundary( line.gmme(), 1,
-                        first_boundary_index );
+                    const auto first_boundary_index =
+                        line.boundary( 0 ).index();
+                    builder_.topology.set_mesh_entity_boundary(
+                        line.gmme(), 0, line.boundary_gmme( 1 ).index() );
+                    builder_.topology.set_mesh_entity_boundary(
+                        line.gmme(), 1, first_boundary_index );
                 }
             }
         }
@@ -215,16 +214,16 @@ namespace
         {
             std::vector< bool > vertices_to_delete(
                 geomodel_mesh_entity.nb_vertices(), true );
-            for( auto mesh_element_index : range(
-                geomodel_mesh_entity.nb_mesh_elements() ) )
+            for( auto mesh_element_index :
+                range( geomodel_mesh_entity.nb_mesh_elements() ) )
             {
-                for( auto vertex : range(
-                    geomodel_mesh_entity.nb_mesh_element_vertices(
+                for( auto vertex :
+                    range( geomodel_mesh_entity.nb_mesh_element_vertices(
                         mesh_element_index ) ) )
                 {
-                    vertices_to_delete[geomodel_mesh_entity.mesh_element_vertex_index(
-                        { mesh_element_index, vertex } )] =
-                    false;
+                    vertices_to_delete
+                        [geomodel_mesh_entity.mesh_element_vertex_index(
+                            { mesh_element_index, vertex } )] = false;
                 }
             }
             builder_.geometry.delete_mesh_entity_vertices(
@@ -244,11 +243,12 @@ namespace
                 nn_search.get_colocated_index_mapping( geomodel_.epsilon() );
 
             auto degenerate = line_detect_degenerate_edges( line, colocated );
-            auto nb = static_cast< index_t >( std::count( degenerate.begin(),
-                degenerate.end(), 1 ) );
+            auto nb = static_cast< index_t >(
+                std::count( degenerate.begin(), degenerate.end(), 1 ) );
             /// We have a problem if some vertices are left isolated
             /// If we remove them here we can kill all indices correspondances
-            builder_.geometry.delete_line_edges( line.index(), degenerate, false );
+            builder_.geometry.delete_line_edges(
+                line.index(), degenerate, false );
             return nb;
         }
 
@@ -264,8 +264,8 @@ namespace
             std::vector< bool > e_is_degenerate( line.nb_mesh_elements() );
             for( auto e : range( line.nb_mesh_elements() ) )
             {
-                e_is_degenerate[e] = edge_is_degenerate( line, e,
-                    colocated_vertices );
+                e_is_degenerate[e] =
+                    edge_is_degenerate( line, e, colocated_vertices );
             }
             return e_is_degenerate;
         }
@@ -280,11 +280,12 @@ namespace
             const Surface< DIMENSION >& surface,
             std::vector< index_t >& colocated_vertices )
         {
-            std::vector< index_t > f_is_degenerate( surface.nb_mesh_elements() );
+            std::vector< index_t > f_is_degenerate(
+                surface.nb_mesh_elements() );
             for( auto p : range( surface.nb_mesh_elements() ) )
             {
-                f_is_degenerate[p] = polygon_is_degenerate( surface, p,
-                    colocated_vertices );
+                f_is_degenerate[p] =
+                    polygon_is_degenerate( surface, p, colocated_vertices );
             }
             return f_is_degenerate;
         }
@@ -300,8 +301,7 @@ namespace
          * \return true if polygon \p f has duplicated vertices,
          *  false otherwise
          */
-        bool polygon_is_degenerate(
-            const Surface< DIMENSION >& surface,
+        bool polygon_is_degenerate( const Surface< DIMENSION >& surface,
             index_t polygon_id,
             std::vector< index_t >& colocated_vertices )
         {
@@ -318,12 +318,12 @@ namespace
                 GEO::sort_unique( vertices );
                 return vertices.size() != nb_vertices;
             }
-            auto v1 = colocated_vertices[surface.mesh_element_vertex_index( {
-                polygon_id, 0 } )];
-            auto v2 = colocated_vertices[surface.mesh_element_vertex_index( {
-                polygon_id, 1 } )];
-            auto v3 = colocated_vertices[surface.mesh_element_vertex_index( {
-                polygon_id, 2 } )];
+            auto v1 = colocated_vertices[surface.mesh_element_vertex_index(
+                { polygon_id, 0 } )];
+            auto v2 = colocated_vertices[surface.mesh_element_vertex_index(
+                { polygon_id, 1 } )];
+            auto v3 = colocated_vertices[surface.mesh_element_vertex_index(
+                { polygon_id, 2 } )];
             return v1 == v2 || v2 == v3 || v3 == v1;
         }
 
@@ -333,17 +333,18 @@ namespace
          * polygons.
          * @return the number of degenerate polygons in \p surface.
          */
-        index_t detect_degenerate_polygons( const Surface< DIMENSION >& surface )
+        index_t detect_degenerate_polygons(
+            const Surface< DIMENSION >& surface )
         {
             std::vector< index_t > colocated;
             const auto& nn_search = surface.vertex_nn_search();
             std::tie( std::ignore, colocated ) =
                 nn_search.get_colocated_index_mapping( geomodel_.epsilon() );
 
-            auto degenerate = surface_detect_degenerate_polygons( surface,
-                colocated );
-            return static_cast< index_t >( std::count( degenerate.begin(),
-                degenerate.end(), 1 ) );
+            auto degenerate =
+                surface_detect_degenerate_polygons( surface, colocated );
+            return static_cast< index_t >(
+                std::count( degenerate.begin(), degenerate.end(), 1 ) );
         }
 
         /*!
@@ -353,7 +354,8 @@ namespace
          * of the geomodel that are empty once degenerate entities are removed
          * @pre Colocated vertices have already been removed
          */
-        void remove_degenerate_polygons_and_edges( std::set< gmme_id >& to_remove )
+        void remove_degenerate_polygons_and_edges(
+            std::set< gmme_id >& to_remove )
         {
             to_remove.clear();
             for( const auto& line : geomodel_.lines() )
@@ -392,7 +394,8 @@ namespace
                         builder->repair( mode, 0.0 );
 
                         // This might create some small components - remove them
-                        builder->remove_small_connected_components( epsilon_sq, 3 );
+                        builder->remove_small_connected_components(
+                            epsilon_sq, 3 );
 
                         // Alright, this is a bit of an overkill [JP]
                         if( surface.nb_vertices() > 0 )
@@ -418,26 +421,29 @@ namespace
         {
             to_remove.clear();
             // For all Lines and Surfaces
-            std::array< const MeshEntityType, 2 > types { {
-                Line< DIMENSION >::type_name_static(),
-                Surface< DIMENSION >::type_name_static() } };
+            std::array< const MeshEntityType, 2 > types{
+                { Line< DIMENSION >::type_name_static(),
+                    Surface< DIMENSION >::type_name_static() }
+            };
             for( const auto& type : types )
             {
                 for( auto e : range( geomodel_.nb_mesh_entities( type ) ) )
                 {
-                    gmme_id entity_id { type, e };
+                    gmme_id entity_id{ type, e };
                     const auto& E = geomodel_.mesh_entity( entity_id );
 
                     const auto& kdtree = E.vertex_nn_search();
                     std::vector< index_t > colocated;
                     std::tie( std::ignore, colocated ) =
-                        kdtree.get_colocated_index_mapping( geomodel_.epsilon() );
+                        kdtree.get_colocated_index_mapping(
+                            geomodel_.epsilon() );
 
                     // Get the vertices to delete
-                    auto inside_border = vertices_on_inside_boundary( entity_id );
+                    auto inside_border =
+                        vertices_on_inside_boundary( entity_id );
 
                     std::vector< bool > to_delete( colocated.size(), false );
-                    index_t nb_todelete { 0 };
+                    index_t nb_todelete{ 0 };
                     for( auto v : range( colocated.size() ) )
                     {
                         if( colocated[v] == v
@@ -467,11 +473,12 @@ namespace
                     }
                     if( type == Surface< DIMENSION >::type_name_static() )
                     {
-                        auto builder = builder_.geometry.create_surface_builder( e );
+                        auto builder =
+                            builder_.geometry.create_surface_builder( e );
                         for( auto p_itr : range( E.nb_mesh_elements() ) )
                         {
-                            for( auto fpv_itr : range(
-                                E.nb_mesh_element_vertices( p_itr ) ) )
+                            for( auto fpv_itr :
+                                range( E.nb_mesh_element_vertices( p_itr ) ) )
                             {
                                 builder->set_polygon_vertex( { p_itr, fpv_itr },
                                     colocated[E.mesh_element_vertex_index(
@@ -484,13 +491,16 @@ namespace
                     }
                     else if( type == Line< DIMENSION >::type_name_static() )
                     {
-                        auto builder = builder_.geometry.create_line_builder( e );
+                        auto builder =
+                            builder_.geometry.create_line_builder( e );
                         for( auto e_itr : range( E.nb_mesh_elements() ) )
                         {
                             builder->set_edge_vertex( { e_itr, 0 },
-                                colocated[E.mesh_element_vertex_index( { e_itr, 0 } )] );
+                                colocated[E.mesh_element_vertex_index(
+                                    { e_itr, 0 } )] );
                             builder->set_edge_vertex( { e_itr, 1 },
-                                colocated[E.mesh_element_vertex_index( { e_itr, 1 } )] );
+                                colocated[E.mesh_element_vertex_index(
+                                    { e_itr, 1 } )] );
                         }
                         builder->delete_vertices( to_delete );
                         Logger::out( "Repair", nb_todelete,
@@ -533,8 +543,8 @@ namespace
                 if( mesh_entity.boundary( i ).is_inside_border( mesh_entity ) )
                 {
                     inside_border.push_back(
-                        dynamic_cast< const GeoModelMeshEntity< DIMENSION >* >( &mesh_entity.boundary(
-                            i ) ) );
+                        dynamic_cast< const GeoModelMeshEntity< DIMENSION >* >(
+                            &mesh_entity.boundary( i ) ) );
                 }
             }
             if( !inside_border.empty() )
@@ -554,7 +564,8 @@ namespace
                         {
                             std::sort( colocated_indices.begin(),
                                 colocated_indices.end() );
-                            // Add colocated vertices except one to the duplicated
+                            // Add colocated vertices except one to the
+                            // duplicated
                             // vertices set
                             vertices.insert( colocated_indices.begin() + 1,
                                 colocated_indices.end() );
@@ -576,8 +587,7 @@ namespace
          * Line.
          * @return true if the edge is degenerate. Else false.
          */
-        bool edge_is_degenerate(
-            const Line< DIMENSION >& line,
+        bool edge_is_degenerate( const Line< DIMENSION >& line,
             index_t edge,
             const std::vector< index_t >& colocated_vertices )
         {
@@ -598,7 +608,7 @@ namespace
         GeoModel< DIMENSION >& geomodel_;
     };
 
-    template< >
+    template <>
     void GeoModelRepair< 3 >::remove_isolated_vertices()
     {
         remove_isolated_vertices_base();
@@ -615,7 +625,7 @@ namespace
         }
     }
 
-    template< >
+    template <>
     void GeoModelRepair< 2 >::remove_isolated_vertices()
     {
         remove_isolated_vertices_base();
@@ -631,8 +641,9 @@ namespace
 
 namespace RINGMesh
 {
-    template< index_t DIMENSION >
-    void repair_geomodel( GeoModel< DIMENSION >& geomodel, RepairMode repair_mode )
+    template < index_t DIMENSION >
+    void repair_geomodel(
+        GeoModel< DIMENSION >& geomodel, RepairMode repair_mode )
     {
         GeoModelRepair< DIMENSION > repairer( geomodel );
         repairer.repair( repair_mode );

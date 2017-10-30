@@ -58,8 +58,8 @@ namespace RINGMesh
     {
         if( find_geomodel_dimension( filename_ ) != DIMENSION )
         {
-            throw RINGMeshException( "I/O",
-                "Dimension of the GeoModel does not match the file" );
+            throw RINGMeshException(
+                "I/O", "Dimension of the GeoModel does not match the file" );
         }
         load_file();
         this->end_geomodel();
