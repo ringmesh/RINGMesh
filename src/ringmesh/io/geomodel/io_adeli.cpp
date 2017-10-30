@@ -317,5 +317,7 @@ namespace
             }
             return regions_and_deps_elements;
         }
+    private:
+        std::vector< RegionAndDependentEntities > regions_and_deps_;
     };
 }
