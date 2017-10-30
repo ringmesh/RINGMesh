@@ -17,7 +17,7 @@ matrix:
           make format
           if [[ -n $(git diff) ]]; then
             echo "Format requirement is not satisfied"
-            exit 1
+            return 1
           fi
         fi
     after_failure:
