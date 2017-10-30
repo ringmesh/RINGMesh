@@ -46,9 +46,6 @@ option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
-if(UNIX AND NOT APPLE)
-    option(PROPAGATE_COMPILER_TO_THIRD_PARTIES "Use the specified compiler to build third parties" OFF)
-endif()
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
 
