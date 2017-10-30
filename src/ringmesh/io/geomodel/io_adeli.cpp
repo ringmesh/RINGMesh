@@ -133,9 +133,9 @@ namespace
         {
             const NNSearch3D& nn =
                 geomodel_.mesh_entity( region_gmme_ ).vertex_nn_search();
-            std::vector< index_t > element_vertices( 1 );
             for( const auto& corner_gmme : corners_ )
             {
+            std::vector< index_t > element_vertices( 1 );
                 element_vertices[0] = nn.get_closest_neighbor(
                     geomodel_.mesh_entity( corner_gmme ).vertex( 0 ) );
                 write_mesh_entity_element( adeli_point_type, element_vertices,
@@ -160,9 +160,9 @@ namespace
             for( auto mesh_entity_element :
                 range( mesh_entity.nb_mesh_elements() ) )
             {
-                std::vector< index_t > element_vertices;
+                std::vector< index_t > element_vertices = 
                 get_element_vertices(
-                    mesh_entity, mesh_entity_element, element_vertices );
+                    mesh_entity, mesh_entity_element );
                 write_mesh_entity_element(
                     adeli_cell_types[mesh_entity.nb_mesh_element_vertices(
                                          mesh_entity_element )
@@ -186,15 +186,14 @@ namespace
             out << EOL;
         }
 
-        void get_element_vertices( const GeoModelMeshEntity3D& mesh_entity,
-            index_t element_index,
-            std::vector< index_t >& element_vertices ) const
+        std::vector< index_t > get_element_vertices( const GeoModelMeshEntity3D& mesh_entity,
+            index_t element_index) const
         {
             const NNSearch3D& nn =
                 geomodel_.mesh_entity( region_gmme_ ).vertex_nn_search();
             index_t nb_vertices =
                 mesh_entity.nb_mesh_element_vertices( element_index );
-            element_vertices.resize( nb_vertices );
+            std::vector< index_t > element_vertices( nb_vertices );
             for( auto element_local_vertex : range( nb_vertices ) )
             {
                 element_vertices[element_local_vertex] =
@@ -203,10 +202,11 @@ namespace
                           mesh_entity.mesh_element_vertex_index(
                               { element_index, element_local_vertex } ) ) );
             }
+            return element_vertices;
         }
 
         index_t nb_elements_in_entities(
-            const std::vector< gmme_id > entities ) const
+            const std::vector< gmme_id >& entities ) const
         {
             index_t nb_elements = 0;
             for( const auto& entity : entities )
@@ -304,6 +304,10 @@ namespace
                         "I/O", "Adeli supports only tet meshes" );
                 }
             }
+            if( geomodel.nb_regions() == 0) {
+                    throw RINGMeshException(
+                        "I/O", "Adeli can't load model with 0 regions" );
+        }
             write_regions_vertices( geomodel, out );
             write_regions( geomodel, out );
             out << std::flush;
