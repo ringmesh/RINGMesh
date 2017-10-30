@@ -121,6 +121,7 @@ namespace RINGMesh
         {
             is_initialized_ = value;
         }
+
     protected:
         /// Attached GeoModelMesh
         GeoModelMesh< DIMENSION >& gmm_;
@@ -158,7 +159,8 @@ namespace RINGMesh
     class RINGMESH_API GeoModelMeshVerticesBase
         : public GeoModelMeshCommon< DIMENSION >
     {
-    ringmesh_disable_copy_and_move( GeoModelMeshVerticesBase );
+        ringmesh_disable_copy_and_move( GeoModelMeshVerticesBase );
+
     public:
         friend class GeoModelMeshWells< DIMENSION >;
         friend class GeoModelMeshEdges< DIMENSION >;
@@ -312,7 +314,8 @@ namespace RINGMesh
          */
         virtual index_t nb_total_vertices() const;
         virtual index_t fill_vertices() const;
-        void fill_vertices_for_entity_type( const GeoModel< DIMENSION >& geomodel,
+        void fill_vertices_for_entity_type(
+            const GeoModel< DIMENSION >& geomodel,
             const MeshEntityType& entity_type,
             index_t& count ) const;
 

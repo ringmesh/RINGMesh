@@ -124,10 +124,11 @@ namespace
         }
     }
 
-    void home_rotation() {
-	    float axis[3] = { 1, 0.5, 1 };
-	    float angle { 80 };
-	    glup_viewer_set_scene_rotation( axis, angle );
+    void home_rotation()
+    {
+        float axis[3] = { 1, 0.5, 1 };
+        float angle{ 80 };
+        glup_viewer_set_scene_rotation( axis, angle );
     }
 }
 namespace RINGMesh
@@ -1634,20 +1635,24 @@ namespace RINGMesh
 
     void RINGMeshApplication::draw_viewer_properties()
     {
-        if( ImGui::Button( "home [H]", ImVec2( -1, 0 ) ) ) {
+        if( ImGui::Button( "home [H]", ImVec2( -1, 0 ) ) )
+        {
             glup_viewer_home();
-            bool geomodel_2d_displayed { false };
-            for( auto& geomodel2d: geomodels2d_ ) {
-                if( geomodel2d->is_visible_ ) {
+            bool geomodel_2d_displayed{ false };
+            for( auto& geomodel2d : geomodels2d_ )
+            {
+                if( geomodel2d->is_visible_ )
+                {
                     geomodel_2d_displayed = true;
                     break;
                 }
             }
-            if( !geomodel_2d_displayed ) {
+            if( !geomodel_2d_displayed )
+            {
                 home_rotation();
             }
         }
-	
+
         ImGui::Separator();
         ImGui::Checkbox( "Lighting [L]", &lighting_ );
         if( lighting_ )

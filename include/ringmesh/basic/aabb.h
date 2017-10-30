@@ -247,7 +247,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API BoxAABBTree: public AABBTree< DIMENSION >
+    class RINGMESH_API BoxAABBTree : public AABBTree< DIMENSION >
     {
     public:
         explicit BoxAABBTree( const std::vector< Box< DIMENSION > >& bboxes );

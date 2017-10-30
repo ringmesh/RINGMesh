@@ -284,8 +284,9 @@ namespace RINGMesh
         copy_all_mesh_entity_topology( from );
 
         geomodel_access_.modifiable_epsilon() = from.epsilon();
-        geomodel_access_.modifiable_entity_type_manager().relationship_manager.copy(
-            from.entity_type_manager().relationship_manager );
+        geomodel_access_.modifiable_entity_type_manager()
+            .relationship_manager.copy(
+                from.entity_type_manager().relationship_manager );
     }
 
     template < index_t DIMENSION >
@@ -310,8 +311,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_corner(
-        const vecn< DIMENSION >& point,
-        const MeshType& mesh_type )
+        const vecn< DIMENSION >& point, const MeshType& mesh_type )
     {
         gmme_id result{ find_corner( geomodel_, point ) };
         if( !result.is_defined() )
@@ -324,8 +324,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::find_or_create_corner(
-        index_t geomodel_point_id,
-        const MeshType& mesh_type )
+        index_t geomodel_point_id, const MeshType& mesh_type )
     {
         gmme_id result{ find_corner( geomodel_, geomodel_point_id ) };
         if( !result.is_defined() )
@@ -548,7 +547,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    template< template< index_t > class ENTITY >
+    template < template < index_t > class ENTITY >
     void GeoModelBuilderTopologyBase< DIMENSION >::copy_mesh_entity_topology(
         const GeoModel< DIMENSION >& from )
     {
@@ -594,8 +593,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     gmme_id GeoModelBuilderTopologyBase< DIMENSION >::create_mesh_entity(
-        const MeshEntityType& entity_type,
-        const MeshType& mesh_type )
+        const MeshEntityType& entity_type, const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
@@ -630,28 +628,30 @@ namespace RINGMesh
         }
         if( manager.is_line( entity_type ) )
         {
-            return create_mesh_entities< Line >( nb_additional_entities, mesh_type );
+            return create_mesh_entities< Line >(
+                nb_additional_entities, mesh_type );
         }
         if( manager.is_surface( entity_type ) )
         {
-            return create_mesh_entities< Surface >( nb_additional_entities, mesh_type );
+            return create_mesh_entities< Surface >(
+                nb_additional_entities, mesh_type );
         }
         ringmesh_assert_not_reached;
         return false;
     }
 
     gmme_id GeoModelBuilderTopology< 3 >::create_mesh_entity(
-        const MeshEntityType& entity_type,
-        const MeshType& mesh_type )
+        const MeshEntityType& entity_type, const MeshType& mesh_type )
     {
         const auto& manager =
             geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_region( entity_type ) )
         {
-            return GeoModelBuilderTopologyBase3D::
-                create_mesh_entity< Region >( mesh_type );
+            return GeoModelBuilderTopologyBase3D::create_mesh_entity< Region >(
+                mesh_type );
         }
-        return GeoModelBuilderTopologyBase3D::create_mesh_entity( entity_type, mesh_type );
+        return GeoModelBuilderTopologyBase3D::create_mesh_entity(
+            entity_type, mesh_type );
     }
     bool GeoModelBuilderTopology< 3 >::create_mesh_entities(
         const MeshEntityType& entity_type,
@@ -663,7 +663,8 @@ namespace RINGMesh
         if( manager.is_region( entity_type ) )
         {
             return GeoModelBuilderTopologyBase3D::
-                create_mesh_entities< Region >( nb_additional_entities, mesh_type );
+                create_mesh_entities< Region >(
+                    nb_additional_entities, mesh_type );
         }
         return GeoModelBuilderTopologyBase3D::create_mesh_entities(
             entity_type, nb_additional_entities, mesh_type );

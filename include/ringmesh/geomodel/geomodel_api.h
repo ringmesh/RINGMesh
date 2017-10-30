@@ -87,8 +87,7 @@ namespace RINGMesh
      */
     template < index_t DIMENSION >
     void RINGMESH_API copy_geomodel(
-        const GeoModel< DIMENSION >& from,
-        GeoModel< DIMENSION >& to );
+        const GeoModel< DIMENSION >& from, GeoModel< DIMENSION >& to );
 
     /*!
      * @return the index of the mesh entity \param gme_type named as \param name

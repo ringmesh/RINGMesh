@@ -62,8 +62,7 @@ namespace RINGMesh
     {
     public:
         explicit UnZipFile(
-            const std::string& filename,
-            std::string directory_to_unzip = "." );
+            const std::string& filename, std::string directory_to_unzip = "." );
         ~UnZipFile();
 
         void start_extract();

@@ -43,38 +43,39 @@ namespace
 {
     using namespace RINGMesh;
 
-    template< index_t DIMENSION >
-    std::unique_ptr< PointSetMeshBuilder< DIMENSION > > create_point_mesh_builder(
-        PointSetMesh< DIMENSION >& mesh )
+    template < index_t DIMENSION >
+    std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
+        create_point_mesh_builder( PointSetMesh< DIMENSION >& mesh )
     {
-        return PointSetMeshBuilderFactory< DIMENSION >::create( mesh.type_name(),
-            mesh );
+        return PointSetMeshBuilderFactory< DIMENSION >::create(
+            mesh.type_name(), mesh );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     std::unique_ptr< LineMeshBuilder< DIMENSION > > create_line_mesh_builder(
         LineMesh< DIMENSION >& mesh )
     {
-        return LineMeshBuilderFactory< DIMENSION >::create( mesh.type_name(), mesh );
+        return LineMeshBuilderFactory< DIMENSION >::create(
+            mesh.type_name(), mesh );
     }
 
-    template< index_t DIMENSION >
-    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > create_surface_mesh_builder(
-        SurfaceMesh< DIMENSION >& mesh )
+    template < index_t DIMENSION >
+    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
+        create_surface_mesh_builder( SurfaceMesh< DIMENSION >& mesh )
     {
-        return SurfaceMeshBuilderFactory< DIMENSION >::create( mesh.type_name(),
-            mesh );
+        return SurfaceMeshBuilderFactory< DIMENSION >::create(
+            mesh.type_name(), mesh );
     }
 
-    template< index_t DIMENSION >
-    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > create_volume_mesh_builder(
-        VolumeMesh< DIMENSION >& mesh )
+    template < index_t DIMENSION >
+    std::unique_ptr< VolumeMeshBuilder< DIMENSION > >
+        create_volume_mesh_builder( VolumeMesh< DIMENSION >& mesh )
     {
-        return VolumeMeshBuilderFactory< DIMENSION >::create( mesh.type_name(),
-            mesh );
+        return VolumeMeshBuilderFactory< DIMENSION >::create(
+            mesh.type_name(), mesh );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     std::unique_ptr< MeshBaseBuilder< DIMENSION > > create_pointset_builder(
         MeshBase< DIMENSION >& mesh )
     {
@@ -93,16 +94,15 @@ namespace
         {
             return create_surface_mesh_builder( *surface );
         }
-        return
-        {};
+        return {};
     }
 } // namespace
 
 namespace RINGMesh
 {
-    template< >
+    template <>
     std::unique_ptr< MeshBaseBuilder< 2 > >
-    RINGMESH_API MeshBaseBuilder< 2 >::create_builder( MeshBase< 2 >& mesh )
+        RINGMESH_API MeshBaseBuilder< 2 >::create_builder( MeshBase< 2 >& mesh )
     {
         auto builder = create_pointset_builder( mesh );
         if( !builder )
@@ -114,9 +114,9 @@ namespace RINGMesh
         return builder;
     }
 
-    template< >
+    template <>
     std::unique_ptr< MeshBaseBuilder< 3 > >
-    RINGMESH_API MeshBaseBuilder< 3 >::create_builder( MeshBase< 3 >& mesh )
+        RINGMESH_API MeshBaseBuilder< 3 >::create_builder( MeshBase< 3 >& mesh )
     {
         auto builder = create_pointset_builder( mesh );
         if( !builder )
@@ -136,9 +136,10 @@ namespace RINGMesh
         return builder;
     }
 
-    template< index_t DIMENSION >
-    std::unique_ptr< PointSetMeshBuilder< DIMENSION > > PointSetMeshBuilder<
-        DIMENSION >::create_builder( PointSetMesh< DIMENSION >& mesh )
+    template < index_t DIMENSION >
+    std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
+        PointSetMeshBuilder< DIMENSION >::create_builder(
+            PointSetMesh< DIMENSION >& mesh )
     {
         auto builder = create_point_mesh_builder( mesh );
         if( !builder )
@@ -150,9 +151,10 @@ namespace RINGMesh
         return builder;
     }
 
-    template< index_t DIMENSION >
-    std::unique_ptr< LineMeshBuilder< DIMENSION > > LineMeshBuilder< DIMENSION >::create_builder(
-        LineMesh< DIMENSION >& mesh )
+    template < index_t DIMENSION >
+    std::unique_ptr< LineMeshBuilder< DIMENSION > >
+        LineMeshBuilder< DIMENSION >::create_builder(
+            LineMesh< DIMENSION >& mesh )
     {
         auto builder = create_line_mesh_builder( mesh );
         if( !builder )
@@ -164,9 +166,10 @@ namespace RINGMesh
         return builder;
     }
 
-    template< index_t DIMENSION >
-    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > SurfaceMeshBuilder< DIMENSION >::create_builder(
-        SurfaceMesh< DIMENSION >& mesh )
+    template < index_t DIMENSION >
+    std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
+        SurfaceMeshBuilder< DIMENSION >::create_builder(
+            SurfaceMesh< DIMENSION >& mesh )
     {
         auto builder = create_surface_mesh_builder( mesh );
         if( !builder )
@@ -178,9 +181,10 @@ namespace RINGMesh
         return builder;
     }
 
-    template< index_t DIMENSION >
-    std::unique_ptr< VolumeMeshBuilder< DIMENSION > > VolumeMeshBuilder< DIMENSION >::create_builder(
-        VolumeMesh< DIMENSION >& mesh )
+    template < index_t DIMENSION >
+    std::unique_ptr< VolumeMeshBuilder< DIMENSION > >
+        VolumeMeshBuilder< DIMENSION >::create_builder(
+            VolumeMesh< DIMENSION >& mesh )
     {
         auto builder = create_volume_mesh_builder( mesh );
         if( !builder )
@@ -192,14 +196,13 @@ namespace RINGMesh
         return builder;
     }
 
-
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void MeshBaseBuilder< DIMENSION >::delete_vertex_nn_search()
     {
         mesh_base_.vertex_nn_search_.reset();
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void LineMeshBuilder< DIMENSION >::remove_isolated_vertices()
     {
         std::vector< bool > to_delete( line_mesh_.nb_vertices(), true );
@@ -214,7 +217,7 @@ namespace RINGMesh
         this->delete_vertices( to_delete );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void SurfaceMeshBuilder< DIMENSION >::remove_isolated_vertices()
     {
         std::vector< bool > to_delete( surface_mesh_.nb_vertices(), true );
@@ -229,7 +232,7 @@ namespace RINGMesh
         this->delete_vertices( to_delete );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void VolumeMeshBuilder< DIMENSION >::remove_isolated_vertices()
     {
         std::vector< bool > to_delete( volume_mesh_.nb_vertices(), true );
@@ -244,24 +247,24 @@ namespace RINGMesh
         this->delete_vertices( to_delete );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void VolumeMeshBuilder< DIMENSION >::delete_cell_nn_search()
     {
         volume_mesh_.cell_nn_search_.reset();
         volume_mesh_.cell_facet_nn_search_.reset();
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void VolumeMeshBuilder< DIMENSION >::delete_cell_aabb()
     {
         volume_mesh_.cell_aabb_.reset();
     }
 
     template std::unique_ptr< PointSetMeshBuilder< 2 > > RINGMESH_API
-    PointSetMeshBuilder< 2 >::create_builder( PointSetMesh< 2 >& );
+        PointSetMeshBuilder< 2 >::create_builder( PointSetMesh< 2 >& );
 
     template std::unique_ptr< PointSetMeshBuilder< 3 > > RINGMESH_API
-    PointSetMeshBuilder< 3 >::create_builder( PointSetMesh< 3 >& );
+        PointSetMeshBuilder< 3 >::create_builder( PointSetMesh< 3 >& );
 
     template class RINGMESH_API MeshBaseBuilder< 2 >;
     template class RINGMESH_API LineMeshBuilder< 2 >;

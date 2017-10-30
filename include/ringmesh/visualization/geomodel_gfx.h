@@ -100,7 +100,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelGfxBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelGfx final: public GeoModelGfxBase< DIMENSION >
+    class RINGMESH_API GeoModelGfx final : public GeoModelGfxBase< DIMENSION >
     {
     public:
         GeoModelGfx();

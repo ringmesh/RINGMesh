@@ -48,7 +48,6 @@
  * @author Pierre Anquez
  */
 
-
 using namespace RINGMesh;
 
 void import_arg_groups()
@@ -88,7 +87,7 @@ int main( int argc, char** argv )
         GEO::Stopwatch total( "Total time" );
 
         GeoModel3D geomodel;
-        std::string input_file_name { GEO::CmdLine::get_arg( "in:geomodel" ) };
+        std::string input_file_name{ GEO::CmdLine::get_arg( "in:geomodel" ) };
         if( input_file_name.empty() )
         {
             throw RINGMeshException(
@@ -98,7 +97,7 @@ int main( int argc, char** argv )
 
         tetrahedralize( geomodel );
 
-        std::string output_file_name { GEO::CmdLine::get_arg( "out:geomodel" ) };
+        std::string output_file_name{ GEO::CmdLine::get_arg( "out:geomodel" ) };
         if( output_file_name.empty() )
         {
             throw RINGMeshException(
