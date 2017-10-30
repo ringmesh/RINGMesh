@@ -16,10 +16,12 @@ matrix:
           cd ringmesh/Release
           make format
           if [[ -n $(git diff) ]]; then
-            $TRAVIS_BUILD_DIR/tools/travis-ci-git-commit.bash
+            echo "Format requirement is not satisfied"
             exit -1
           fi
         fi
+    after_failure:
+      - $TRAVIS_BUILD_DIR/tools/travis-ci-git-commit.bash
   - os: linux
     env:
       - TEST="Gcc Check"
