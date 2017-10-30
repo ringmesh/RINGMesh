@@ -104,7 +104,7 @@ namespace RINGMesh
             const gmme_id& incident_entity, const gmme_id& boundary );
 
         void set_mesh_entity_incident_entity(
-            const gmme_id& gmme, index_t id, index_t incident_entity_id );
+            const gmme_id& gmme, index_t current_local_incident_entity_id, index_t new_global_incident_entity_id );
 
         void delete_mesh_entity( const MeshEntityType& type, index_t index );
 
@@ -144,8 +144,8 @@ namespace RINGMesh
 
         void set_line_corner_boundary(
             index_t incident_line_id,
-            index_t id,
-            index_t new_boundary_corner_id );
+            index_t current_local_boundary_corner_id,
+            index_t new_global_boundary_corner_id );
 
     protected:
         GeoModelBuilderTopologyBase( GeoModelBuilder< DIMENSION >& builder,
@@ -175,8 +175,8 @@ namespace RINGMesh
         // Should be removed when the removal class is reworked [BC].
         friend class GeoModelBuilderRemoveBase< DIMENSION >;
         void set_mesh_entity_boundary(const gmme_id& gmme,
-            index_t id,
-            index_t boundary_id);
+            index_t current_local_boundary_id,
+            index_t new_global_boundary_id);
 
     protected:
         GeoModelBuilder< DIMENSION >& builder_;
@@ -208,8 +208,8 @@ namespace RINGMesh
 
         void set_surface_line_boundary(
             index_t incident_surface_id,
-            index_t id,
-            index_t new_boundary_line_id,
+            index_t current_local_boundary_line_id,
+            index_t new_global_boundary_line_id,
             bool side );
 
     private:
@@ -241,18 +241,18 @@ namespace RINGMesh
 
         void set_surface_line_boundary(
             index_t incident_surface_id,
-            index_t id,
-            index_t boundary_line_id );
+            index_t current_local_boundary_line_id,
+            index_t new_global_boundary_line_id );
 
         void add_region_surface_boundary_relation(
             index_t incident_region_id,
-            index_t boundary_surface_id,
+            index_t local_boundary_surface_id,
             bool side );
 
         void set_region_surface_boundary(
             index_t incident_regions,
-            index_t id,
-            index_t boundary_surface_id,
+            index_t current_local_boundary_surface_id,
+            index_t new_global_boundary_surface_id,
             bool side );
 
     private:
