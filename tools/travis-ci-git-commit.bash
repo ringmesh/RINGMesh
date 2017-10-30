@@ -35,7 +35,6 @@ function travis-branch-commit() {
     fi
     if ! git push https://BotellaA:$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG "$TRAVIS_BRANCH" > /dev/null 2>&1; then
         err "failed to push git changes"
-        err "$GITHUB_TOKEN"
         return 1
     fi
 }
