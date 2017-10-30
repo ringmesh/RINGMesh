@@ -79,7 +79,7 @@ namespace
                 geomodel_.mesh_entity( region_gmme_ ).nb_mesh_elements();
             nb_elements += nb_elements_in_entities( surfaces_ );
             nb_elements += nb_elements_in_entities( lines_ );
-            nb_elements += static_cast< index_t> ( corners_.size() );
+            nb_elements += static_cast< index_t >( corners_.size() );
             return nb_elements;
         }
 
