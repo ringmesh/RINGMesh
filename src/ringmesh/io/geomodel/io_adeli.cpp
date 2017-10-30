@@ -324,7 +324,7 @@ namespace
                 geomodel.region( 0 ).gmme(), id_offset_adeli, id_offset_adeli,
                 id_offset_adeli, id_offset_adeli, id_offset_adeli,
                 id_offset_adeli );
-            for( auto region_index : range (1, geomodel.nb_regions() ) )
+            for( auto region_index : range( 1, geomodel.nb_regions() ) )
             {
                 regions_and_deps[region_index - 1].write_entities( out );
                 regions_and_deps.emplace_back( geomodel,
