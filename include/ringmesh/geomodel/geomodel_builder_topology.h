@@ -147,12 +147,6 @@ namespace RINGMesh
             index_t id,
             index_t new_boundary_corner_id );
 
-        // TODO Could be protected (in public as long as the removal is not reworked) [BC]
-        // See comment in GeoModelBuilderRemoveBase< DIMENSION >::update_mesh_entity_boundaries [BC]
-        void set_mesh_entity_boundary(const gmme_id& gmme,
-            index_t id,
-            index_t boundary_id);
-
     protected:
         GeoModelBuilderTopologyBase( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
@@ -176,6 +170,13 @@ namespace RINGMesh
         void add_mesh_entity_boundary_relation(
             const gmme_id& incident_entity_id,
             const gmme_id& boundary_id );
+
+        // Temporary friend for GeoModelBuilderRemoveBase< DIMENSION >::update_mesh_entity_boundaries.
+        // Should be removed when the removal class is reworked [BC].
+        friend class GeoModelBuilderRemoveBase< DIMENSION >;
+        void set_mesh_entity_boundary(const gmme_id& gmme,
+            index_t id,
+            index_t boundary_id);
 
     protected:
         GeoModelBuilder< DIMENSION >& builder_;
