@@ -33,12 +33,9 @@ function travis-branch-commit() {
         err "failed to commit updates"
         return 1
     fi
-    local remote=origin
-    if [[ $GITHUB_TOKEN ]]; then
-        remote=https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG
-    fi
-    if ! git push --quiet --follow-tags "$remote" "$TRAVIS_BRANCH" > /dev/null 2>&1; then
+    if ! git push --quiet --follow-tags https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG "$TRAVIS_BRANCH" > /dev/null 2>&1; then
         err "failed to push git changes"
+        err $GITHUB_TOKEN
         return 1
     fi
 }
