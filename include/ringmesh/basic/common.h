@@ -175,8 +175,7 @@ namespace RINGMesh
         std::string string_concatener(
             const A0& a0, const A1& a1, const Args&... args )
         {
-            return string_concatener( a0 )
-                   + string_concatener( a1, args... );
+            return string_concatener( a0 ) + string_concatener( a1, args... );
         }
 
     protected:

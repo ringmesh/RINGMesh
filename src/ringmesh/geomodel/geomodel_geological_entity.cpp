@@ -162,19 +162,22 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GeologicalEntityType GeoModelGeologicalEntity< DIMENSION >::entity_type() const
+    GeologicalEntityType
+        GeoModelGeologicalEntity< DIMENSION >::entity_type() const
     {
         return gmge().type();
     }
 
     template < index_t DIMENSION >
-    GeologicalEntityType GeoModelGeologicalEntity< DIMENSION >::type_name_static()
+    GeologicalEntityType
+        GeoModelGeologicalEntity< DIMENSION >::type_name_static()
     {
         return ForbiddenGeologicalEntityType::type_name_static();
     }
 
     template < index_t DIMENSION >
-    GeologicalEntityType GeoModelGeologicalEntity< DIMENSION >::type_name() const
+    GeologicalEntityType
+        GeoModelGeologicalEntity< DIMENSION >::type_name() const
     {
         return type_name_static();
     }

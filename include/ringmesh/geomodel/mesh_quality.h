@@ -90,7 +90,8 @@ namespace RINGMesh
     /*!
      * @brief Fill the /p output_mesh with cells of quality below \p min_quality
      * @param[in] mesh_qual_mode mesh quality of cells.
-     * @param[in] min_quality Value of quality below which a cell is add in the mesh.
+     * @param[in] min_quality Value of quality below which a cell is add in the
+     * mesh.
      * @param[in] geomodel GeoModel in which the mesh quality is read.
      * @param[out] output_mesh VolumeMesh to fill with low quality cells.
      * @returns The minimum value of cell quality

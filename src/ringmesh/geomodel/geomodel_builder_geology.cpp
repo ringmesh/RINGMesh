@@ -210,12 +210,13 @@ namespace RINGMesh
     {
         /// No check on the validity of the index of the entity parents_
         /// NO_ID is used to flag entities to delete
-        auto& mesh_entity = geomodel_access_.modifiable_mesh_entity( child_gmme );
+        auto& mesh_entity =
+            geomodel_access_.modifiable_mesh_entity( child_gmme );
         ringmesh_assert( id < mesh_entity.nb_parents() );
         GeoModelMeshEntityAccess< DIMENSION > gmme_access( mesh_entity );
         auto relationship_id = gmme_access.modifiable_parents()[id];
         auto& manager = geomodel_access_.modifiable_entity_type_manager()
-                .relationship_manager;
+                            .relationship_manager;
         manager.set_parent_to_parent_child_relationship(
             relationship_id, parent_gmge );
     }

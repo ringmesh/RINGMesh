@@ -241,5 +241,4 @@ namespace RINGMesh
 
     ALIAS_2D_AND_3D( Layer );
 
-
 } // namespace RINGMesh

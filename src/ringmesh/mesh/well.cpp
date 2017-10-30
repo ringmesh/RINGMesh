@@ -280,7 +280,7 @@ namespace
         index_t edge_vertex_;
         index_t vertex_from_;
     };
-}  // namespace
+} // namespace
 
 namespace RINGMesh
 {

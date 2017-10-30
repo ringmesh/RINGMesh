@@ -231,7 +231,8 @@ namespace RINGMesh
         void remove_invalid_values(
             std::vector< THINGS_TO_DELETE >& vector, const TEST& test );
 
-        void delete_invalid_children( GeoModelGeologicalEntity< DIMENSION >& E );
+        void delete_invalid_children(
+            GeoModelGeologicalEntity< DIMENSION >& E );
 
         void delete_invalid_boundaries( GeoModelMeshEntity< DIMENSION >& E );
 

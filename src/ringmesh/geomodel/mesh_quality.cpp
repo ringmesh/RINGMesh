@@ -388,8 +388,7 @@ namespace RINGMesh
         }
     }
 
-    double fill_mesh_with_low_quality_cells(
-        MeshQualityMode mesh_qual_mode,
+    double fill_mesh_with_low_quality_cells( MeshQualityMode mesh_qual_mode,
         double min_quality,
         const GeoModel3D& geomodel,
         VolumeMesh3D& output_mesh )

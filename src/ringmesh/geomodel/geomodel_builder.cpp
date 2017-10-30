@@ -961,9 +961,7 @@ namespace RINGMesh
 
                 for( auto j : adjacent_surfaces )
                 {
-                    gmme_id surface_index{
-                        surface_type_name_static(), j
-                    };
+                    gmme_id surface_index{ surface_type_name_static(), j };
                     topology.add_mesh_entity_boundary_relation(
                         surface_index, line_index );
                 }
@@ -1071,8 +1069,7 @@ namespace RINGMesh
                 }
                 // Add the surface to the current region
                 topology.add_mesh_entity_boundary_relation( cur_region_id,
-                    gmme_id{ surface_type_name_static(), s.first },
-                    s.second );
+                    gmme_id{ surface_type_name_static(), s.first }, s.second );
                 surf_2_region[s_id] = cur_region_id.index();
 
                 // Check the other side of the surface and push it in S

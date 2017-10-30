@@ -71,8 +71,7 @@ namespace RINGMesh
         }
         EdgeLocalVertex( ElementLocalVertex edge_local_vertex )
             : edge_id( std::move( edge_local_vertex.element_id ) ),
-              local_vertex_id(
-                  std::move( edge_local_vertex.local_vertex_id ) )
+              local_vertex_id( std::move( edge_local_vertex.local_vertex_id ) )
         {
         }
         bool operator==( const EdgeLocalVertex& rhs ) const;
@@ -90,8 +89,7 @@ namespace RINGMesh
         }
         PolygonLocalEdge( ElementLocalVertex polygon_local_vertex )
             : polygon_id( std::move( polygon_local_vertex.element_id ) ),
-              local_edge_id(
-                  std::move( polygon_local_vertex.local_vertex_id ) )
+              local_edge_id( std::move( polygon_local_vertex.local_vertex_id ) )
         {
         }
         bool operator==( const PolygonLocalEdge& rhs ) const;
