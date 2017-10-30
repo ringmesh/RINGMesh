@@ -185,10 +185,11 @@ namespace
                 {
                     const auto first_boundary_index =
                         line.boundary( 0 ).index();
-                    builder_.topology.set_mesh_entity_boundary(
-                        line.gmme(), 0, line.boundary_gmme( 1 ).index() );
-                    builder_.topology.set_mesh_entity_boundary(
-                        line.gmme(), 1, first_boundary_index );
+                    builder_.topology.set_line_corner_boundary(
+                        line.gmme().index(), 0,
+                        line.boundary_gmme( 1 ).index() );
+                    builder_.topology.set_line_corner_boundary(
+                        line.gmme().index(), 1, first_boundary_index );
                 }
             }
         }
