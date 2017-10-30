@@ -7,6 +7,7 @@ env:
 
 stages:
   - format
+    if: env(TRAVIS_PULL_REQUEST) = false
   - compile and test
 
 jobs:
@@ -16,17 +17,15 @@ jobs:
       env:
         - TEST="Clang format"
       script:
+        - mkdir build
+        - cd build
+        - cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - cd ringmesh/Release
+        - make format
         - |
-          if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-            mkdir build
-            cd build
-            cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
-            cd ringmesh/Release
-            make format
-            if [[ -n $(git diff) ]]; then
-              echo "Format requirement is not satisfied"
-              return 1
-            fi
+          if [[ -n $(git diff) ]]; then
+            echo "Format requirement is not satisfied"
+            return 1
           fi
       after_failure:
         - "$TRAVIS_BUILD_DIR/tools/travis-ci-git-commit.bash"
