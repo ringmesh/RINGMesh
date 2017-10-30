@@ -79,7 +79,7 @@ namespace
                 geomodel_.mesh_entity( region_gmme_ ).nb_mesh_elements();
             nb_elements += nb_elements_in_entities( surfaces_ );
             nb_elements += nb_elements_in_entities( lines_ );
-            nb_elements += corners_.size();
+            nb_elements += static_cast< index_t> ( corners_.size() );
             return nb_elements;
         }
 
@@ -146,8 +146,6 @@ namespace
             index_t& offset,
             std::ofstream& out )
         {
-            const NNSearch3D& nn =
-                geomodel_.mesh_entity( region_gmme_ ).vertex_nn_search();
             for( const auto& entity_gmme : entities )
             {
                 write_entity(
@@ -379,7 +377,5 @@ namespace
             }
             return regions_and_deps_elements;
         }
-    private:
-        std::vector< RegionAndDependentEntities > regions_and_deps_;
     };
 }
