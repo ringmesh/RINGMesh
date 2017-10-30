@@ -46,7 +46,7 @@ namespace
 {
     using namespace RINGMesh;
 
-    using const_vector_itr = const std::vector< index_t >::iterator ;
+    using const_vector_itr = const std::vector< index_t >::iterator;
 
     template < index_t DIMENSION >
     class Morton_cmp
@@ -216,7 +216,8 @@ namespace RINGMesh
      * \param[in] bboxes the array of bounding boxes
      * \param[in] node_index the index of the root of the subtree
      * \param[in] element_begin first box index in the vector \p bboxes
-     * \param[in] element_end one position past the last box index in the vector \p
+     * \param[in] element_end one position past the last box index in the vector
+     * \p
      * bboxes
      */
     template < index_t DIMENSION >
@@ -234,8 +235,8 @@ namespace RINGMesh
             return;
         }
         index_t element_middle, child_left, child_right;
-        get_recursive_iterators( node_index, element_begin, element_end, element_middle,
-            child_left, child_right );
+        get_recursive_iterators( node_index, element_begin, element_end,
+            element_middle, child_left, child_right );
         ringmesh_assert( child_left < tree_.size() );
         ringmesh_assert( child_right < tree_.size() );
         initialize_tree_recursive(
@@ -335,13 +336,17 @@ namespace RINGMesh
         return result.length();
     }
 
-    template double RINGMESH_API inner_point_box_distance( const vec2&, const Box2D& );
-    template double RINGMESH_API point_box_signed_distance( const vec2&, const Box2D& );
+    template double RINGMESH_API inner_point_box_distance(
+        const vec2&, const Box2D& );
+    template double RINGMESH_API point_box_signed_distance(
+        const vec2&, const Box2D& );
     template class RINGMESH_API AABBTree< 2 >;
     template class RINGMESH_API BoxAABBTree< 2 >;
 
-    template double RINGMESH_API inner_point_box_distance( const vec3&, const Box3D& );
-    template double RINGMESH_API point_box_signed_distance( const vec3&, const Box3D& );
+    template double RINGMESH_API inner_point_box_distance(
+        const vec3&, const Box3D& );
+    template double RINGMESH_API point_box_signed_distance(
+        const vec3&, const Box3D& );
     template class RINGMESH_API AABBTree< 3 >;
     template class RINGMESH_API BoxAABBTree< 3 >;
 } // namespace RINGMesh

@@ -94,11 +94,9 @@ namespace RINGMesh
             std::set< gmge_id >& geological_entities ) const;
 
         virtual gmme_id create_mesh_entity(
-            const MeshEntityType& entity_type,
-            const MeshType& mesh_type = "" );
+            const MeshEntityType& entity_type, const MeshType& mesh_type = "" );
 
-        virtual bool create_mesh_entities(
-            const MeshEntityType& entity_type,
+        virtual bool create_mesh_entities( const MeshEntityType& entity_type,
             index_t nb_additional_entities,
             const MeshType& mesh_type = "" );
 
@@ -113,15 +111,14 @@ namespace RINGMesh
         /*!
          * @brief Finds or creates a corner at given coordinates.
          * @param[in] point Geometric location of the Corner
-         * @param[in] mesh_type Mesh data structure type to associate to the Corner
+         * @param[in] mesh_type Mesh data structure type to associate to the
+         * Corner
          * @return Index of the Corner
          */
         gmme_id find_or_create_corner(
-            const vecn< DIMENSION >& point,
-            const MeshType& mesh_type = "" );
+            const vecn< DIMENSION >& point, const MeshType& mesh_type = "" );
         gmme_id find_or_create_corner(
-            index_t geomodel_point_id,
-            const MeshType& mesh_type = "" );
+            index_t geomodel_point_id, const MeshType& mesh_type = "" );
 
         /*!
          * @brief Finds or creates a line
@@ -230,12 +227,10 @@ namespace RINGMesh
         friend class GeoModelBuilder< 3 >;
 
     public:
-        gmme_id create_mesh_entity(
-            const MeshEntityType& entity_type,
+        gmme_id create_mesh_entity( const MeshEntityType& entity_type,
             const MeshType& mesh_type = "" ) override;
 
-        bool create_mesh_entities(
-            const MeshEntityType& entity_type,
+        bool create_mesh_entities( const MeshEntityType& entity_type,
             index_t nb_additional_entities,
             const MeshType& mesh_type = "" ) override;
 

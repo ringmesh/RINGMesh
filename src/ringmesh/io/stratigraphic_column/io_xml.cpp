@@ -33,11 +33,12 @@
  *     FRANCE
  */
 
-namespace {
-    class XMLStratigraphicColumnIOHandler: public StratigraphicColumnIOHandler {
+namespace
+{
+    class XMLStratigraphicColumnIOHandler : public StratigraphicColumnIOHandler
+    {
     public:
-        void load(
-            const std::string& filename,
+        void load( const std::string& filename,
             StratigraphicColumn& column,
             GeoModel3D& geomodel ) final
         {
@@ -47,21 +48,18 @@ namespace {
             StratigraphicColumnBuilderXML builder( column, geomodel,
                 GEO::FileSystem::base_name( filename, false ) );
             builder.load_file();
-            Logger::out( "I/O", " Loaded stratigraphic column ", geomodel.name(),
-                " from ", filename );
+            Logger::out( "I/O", " Loaded stratigraphic column ",
+                geomodel.name(), " from ", filename );
             GEO::FileSystem::set_current_working_directory( pwd );
         }
 
-        void save(
-            const StratigraphicColumn& column,
+        void save( const StratigraphicColumn& column,
             const std::string& filename ) final
         {
             ringmesh_unused( column );
             ringmesh_unused( filename );
-            throw RINGMeshException( "I/O",
-                "Saving of a StratigraphicColumn not implemented yet" );
+            throw RINGMeshException(
+                "I/O", "Saving of a StratigraphicColumn not implemented yet" );
         }
-
     };
-
 }

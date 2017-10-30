@@ -197,7 +197,8 @@ namespace RINGMesh
         ALIAS_2D_AND_3D( GeoModelViewerBase );
 
         template < index_t DIMENSION >
-        class RINGMESH_API GeoModelViewer final: public GeoModelViewerBase< DIMENSION >
+        class RINGMESH_API GeoModelViewer final
+            : public GeoModelViewerBase< DIMENSION >
         {
         };
 

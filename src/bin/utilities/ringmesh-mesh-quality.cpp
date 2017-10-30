@@ -42,8 +42,8 @@
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/mesh_quality.h>
-#include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/io/io.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 
 /*!
  * @author Benjamin Chauvin
@@ -77,8 +77,7 @@ namespace
         CmdLine::import_arg_group( "out" );
     }
 
-    void check_geomodel_is_3d_meshed_by_simplexes(
-        const GeoModel3D& geomodel )
+    void check_geomodel_is_3d_meshed_by_simplexes( const GeoModel3D& geomodel )
     {
         if( geomodel.nb_regions() == 0 )
         {
@@ -118,20 +117,19 @@ namespace
         compute_prop_tet_mesh_quality(
             static_cast< MeshQualityMode >( quality_mode ), geomodel );
 
-        auto min_quality_out_name =
-            GEO::CmdLine::get_arg( "quality:output" );
-         if( !min_quality_out_name.empty() )
-         {
-             auto min_quality =
-                 GEO::CmdLine::get_arg_double( "quality:min_value" );
-             GeogramVolumeMesh3D output_mesh;
-             double min_cell_quality { fill_mesh_with_low_quality_cells(
-                 static_cast< MeshQualityMode >( quality_mode ), min_quality,
-                 geomodel, output_mesh ) };
-             Logger::out( "Quality", "The minimal value for cell quality is ",
-                 min_cell_quality );
-             output_mesh.save_mesh( min_quality_out_name );
-         }
+        auto min_quality_out_name = GEO::CmdLine::get_arg( "quality:output" );
+        if( !min_quality_out_name.empty() )
+        {
+            auto min_quality =
+                GEO::CmdLine::get_arg_double( "quality:min_value" );
+            GeogramVolumeMesh3D output_mesh;
+            double min_cell_quality{ fill_mesh_with_low_quality_cells(
+                static_cast< MeshQualityMode >( quality_mode ), min_quality,
+                geomodel, output_mesh ) };
+            Logger::out( "Quality", "The minimal value for cell quality is ",
+                min_cell_quality );
+            output_mesh.save_mesh( min_quality_out_name );
+        }
 
         auto geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( geomodel_out_name.empty() )

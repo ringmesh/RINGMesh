@@ -961,9 +961,7 @@ namespace RINGMesh
 
                 for( auto j : adjacent_surfaces )
                 {
-                    gmme_id surface_index{
-                        surface_type_name_static(), j
-                    };
+                    gmme_id surface_index{ surface_type_name_static(), j };
                     topology.add_mesh_entity_boundary_relation(
                         surface_index, line_index );
                 }
