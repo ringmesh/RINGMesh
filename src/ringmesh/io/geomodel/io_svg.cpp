@@ -144,18 +144,21 @@ namespace
                 geometry.set_corner( c, unique_points[c] );
             }
             index_t index = 0;
-            for( const auto& line : line_range < 2 > ( geomodel_ ) ) {
+            for( const auto& line : line_range< 2 >( geomodel_ ) )
+            {
                 const auto line_id = line.gmme();
-                const index_t corner0 = index_map[index++ ];
-                const index_t corner1 = index_map[index++ ];
-                topology.add_line_corner_boundary_relation( line_id.index(), corner0 );
-                topology.add_line_corner_boundary_relation( line_id.index(), corner1 );
+                const index_t corner0 = index_map[index++];
+                const index_t corner1 = index_map[index++];
+                topology.add_line_corner_boundary_relation(
+                    line_id.index(), corner0 );
+                topology.add_line_corner_boundary_relation(
+                    line_id.index(), corner1 );
 
                 // Update line vertex extremities with corner coordinates
-                geometry.set_mesh_entity_vertex( line_id, 0, unique_points[corner0],
-                    false );
-                geometry.set_mesh_entity_vertex( line_id, line.nb_vertices() - 1,
-                    unique_points[corner1], false );
+                geometry.set_mesh_entity_vertex(
+                    line_id, 0, unique_points[corner0], false );
+                geometry.set_mesh_entity_vertex( line_id,
+                    line.nb_vertices() - 1, unique_points[corner1], false );
             }
         }
 

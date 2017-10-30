@@ -103,8 +103,9 @@ namespace RINGMesh
         void remove_mesh_entity_boundary_relation(
             const gmme_id& incident_entity, const gmme_id& boundary );
 
-        void set_mesh_entity_incident_entity(
-            const gmme_id& gmme, index_t current_local_incident_entity_id, index_t new_global_incident_entity_id );
+        void set_mesh_entity_incident_entity( const gmme_id& gmme,
+            index_t current_local_incident_entity_id,
+            index_t new_global_incident_entity_id );
 
         void delete_mesh_entity( const MeshEntityType& type, index_t index );
 
@@ -139,11 +140,9 @@ namespace RINGMesh
             const MeshType& mesh_type = "" );
 
         void add_line_corner_boundary_relation(
-            index_t incident_line_id,
-            index_t boundary_corner_id );
+            index_t incident_line_id, index_t boundary_corner_id );
 
-        void set_line_corner_boundary(
-            index_t incident_line_id,
+        void set_line_corner_boundary( index_t incident_line_id,
             index_t current_local_boundary_corner_id,
             index_t new_global_boundary_corner_id );
 
@@ -168,15 +167,15 @@ namespace RINGMesh
             const GeoModel< DIMENSION >& from );
 
         void add_mesh_entity_boundary_relation(
-            const gmme_id& incident_entity_id,
-            const gmme_id& boundary_id );
+            const gmme_id& incident_entity_id, const gmme_id& boundary_id );
 
-        // Temporary friend for GeoModelBuilderRemoveBase< DIMENSION >::update_mesh_entity_boundaries.
+        // Temporary friend for GeoModelBuilderRemoveBase< DIMENSION
+        // >::update_mesh_entity_boundaries.
         // Should be removed when the removal class is reworked [BC].
         friend class GeoModelBuilderRemoveBase< DIMENSION >;
-        void set_mesh_entity_boundary(const gmme_id& gmme,
+        void set_mesh_entity_boundary( const gmme_id& gmme,
             index_t current_local_boundary_id,
-            index_t new_global_boundary_id);
+            index_t new_global_boundary_id );
 
     protected:
         GeoModelBuilder< DIMENSION >& builder_;
@@ -200,14 +199,10 @@ namespace RINGMesh
         friend class GeoModelBuilder< 2 >;
 
     public:
-
         void add_surface_line_boundary_relation(
-            index_t incident_surface_id,
-            index_t boundary_line_id,
-            bool side );
+            index_t incident_surface_id, index_t boundary_line_id, bool side );
 
-        void set_surface_line_boundary(
-            index_t incident_surface_id,
+        void set_surface_line_boundary( index_t incident_surface_id,
             index_t current_local_boundary_line_id,
             index_t new_global_boundary_line_id,
             bool side );
@@ -236,21 +231,17 @@ namespace RINGMesh
             const MeshType& mesh_type = "" ) override;
 
         void add_surface_line_boundary_relation(
-            index_t incident_surface_id,
-            index_t boundary_line_id );
+            index_t incident_surface_id, index_t boundary_line_id );
 
-        void set_surface_line_boundary(
-            index_t incident_surface_id,
+        void set_surface_line_boundary( index_t incident_surface_id,
             index_t current_local_boundary_line_id,
             index_t new_global_boundary_line_id );
 
-        void add_region_surface_boundary_relation(
-            index_t incident_region_id,
+        void add_region_surface_boundary_relation( index_t incident_region_id,
             index_t local_boundary_surface_id,
             bool side );
 
-        void set_region_surface_boundary(
-            index_t incident_regions,
+        void set_region_surface_boundary( index_t incident_regions,
             index_t current_local_boundary_surface_id,
             index_t new_global_boundary_surface_id,
             bool side );

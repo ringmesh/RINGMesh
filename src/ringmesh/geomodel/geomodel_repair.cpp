@@ -179,13 +179,17 @@ namespace
          */
         void repair_line_boundary_vertex_order()
         {
-            for( const auto& line : geomodel_.lines() ) {
-                if( !line.is_first_corner_first_vertex() ) {
-                    const auto first_boundary_index = line.boundary( 0 ).index();
-                    builder_.topology.set_line_corner_boundary( line.gmme().index(),
-                        0, line.boundary_gmme( 1 ).index() );
-                    builder_.topology.set_line_corner_boundary( line.gmme().index(),
-                        1, first_boundary_index );
+            for( const auto& line : geomodel_.lines() )
+            {
+                if( !line.is_first_corner_first_vertex() )
+                {
+                    const auto first_boundary_index =
+                        line.boundary( 0 ).index();
+                    builder_.topology.set_line_corner_boundary(
+                        line.gmme().index(), 0,
+                        line.boundary_gmme( 1 ).index() );
+                    builder_.topology.set_line_corner_boundary(
+                        line.gmme().index(), 1, first_boundary_index );
                 }
             }
         }

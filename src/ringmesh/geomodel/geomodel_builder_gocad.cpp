@@ -378,7 +378,7 @@ namespace
         GeoModelBuilderTSolid& geomodel_builder )
     {
         geomodel_builder.topology.add_region_surface_boundary_relation(
-            region_id, surface_id , surf_side );
+            region_id, surface_id, surf_side );
     }
 
     /*!
@@ -865,7 +865,7 @@ namespace
                 for( const std::pair< index_t, bool >& info :
                     region_boundaries )
                 {
-                    const index_t surface_id { info.first };
+                    const index_t surface_id{ info.first };
                     builder_.topology.add_region_surface_boundary_relation(
                         region_id.index(), surface_id, info.second );
                 }

@@ -129,7 +129,8 @@ namespace
             topology.create_mesh_entities(
                 Surface2D::type_name_static(), nb_media + 1 );
 
-            for( const auto& horizon : horizon_m0_ ) {
+            for( const auto& horizon : horizon_m0_ )
+            {
                 topology.add_surface_line_boundary_relation(
                     0, horizon.index(), true );
             }

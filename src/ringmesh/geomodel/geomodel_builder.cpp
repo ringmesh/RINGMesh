@@ -1051,7 +1051,7 @@ namespace RINGMesh
                 continue;
             }
             // Create a new region
-            index_t cur_region_id { geomodel_.nb_regions() };
+            index_t cur_region_id{ geomodel_.nb_regions() };
             topology.create_mesh_entities( region_type_name_static(), 1 );
             // Get all oriented surfaces defining this region
             std::stack< std::pair< index_t, bool > > SR;
@@ -1068,9 +1068,7 @@ namespace RINGMesh
                 }
                 // Add the surface to the current region
                 topology.add_region_surface_boundary_relation(
-                    cur_region_id,
-                    s.first,
-                    s.second );
+                    cur_region_id, s.first, s.second );
                 surf_2_region[s_id] = cur_region_id;
 
                 // Check the other side of the surface and push it in S

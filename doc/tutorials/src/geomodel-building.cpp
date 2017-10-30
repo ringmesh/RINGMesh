@@ -425,7 +425,7 @@ int main()
         // For corner 0
         // Corner 0 is a boundary of the lines: 0, 3, and 13.
         builder.topology.add_line_corner_boundary_relation( 0, 0 );
-        builder.topology.add_line_corner_boundary_relation( 3 , 0 );
+        builder.topology.add_line_corner_boundary_relation( 3, 0 );
         builder.topology.add_line_corner_boundary_relation( 13, 0 );
 
         // For corner 1
@@ -608,47 +608,58 @@ int main()
 
         // For surface 0
         // Surface 0 is a boundary of the region 0.
-        builder.topology.add_region_surface_boundary_relation( 0, 0, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            0, 0, false ); // TODO side ????
 
         // For surface 1
         // Surface 1 is a boundary of the region 0.
-        builder.topology.add_region_surface_boundary_relation( 0, 1, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            0, 1, false ); // TODO side ????
 
         // For surface 2
         // Surface 2 is a boundary of the region 1.
-        builder.topology.add_region_surface_boundary_relation( 1, 2, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            1, 2, false ); // TODO side ????
 
         // For surface 3
         // Surface 3 is a boundary of the region 1.
-        builder.topology.add_region_surface_boundary_relation( 1, 3, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            1, 3, false ); // TODO side ????
 
         // For surface 4
         // Surface 4 is a boundary of the region 0.
-        builder.topology.add_region_surface_boundary_relation( 0, 4, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            0, 4, false ); // TODO side ????
 
         // For surface 5
         // Surface 5 is a boundary of the region 1.
-        builder.topology.add_region_surface_boundary_relation( 1, 5, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            1, 5, false ); // TODO side ????
 
         // For surface 6
         // Surface 6 is a boundary of the region 0.
-        builder.topology.add_region_surface_boundary_relation( 0, 6, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            0, 6, false ); // TODO side ????
 
         // For surface 7
         // Surface 7 is a boundary of the region 1.
-        builder.topology.add_region_surface_boundary_relation( 1, 7, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            1, 7, false ); // TODO side ????
 
         // For surface 8
         // Surface 8 is a boundary of the region 0.
-        builder.topology.add_region_surface_boundary_relation( 0, 8, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            0, 8, false ); // TODO side ????
 
         // For surface 9
         // Surface 9 is a boundary of the region 1.
-        builder.topology.add_region_surface_boundary_relation( 1, 9, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            1, 9, false ); // TODO side ????
 
         // For surface 10
         // Surface 10 is a boundary of the region 0.
-        builder.topology.add_region_surface_boundary_relation( 0, 10, false );//TODO side ????
+        builder.topology.add_region_surface_boundary_relation(
+            0, 10, false ); // TODO side ????
 
         //#####################################
         // Setting the parent/child relations #

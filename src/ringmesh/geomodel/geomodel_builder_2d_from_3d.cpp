@@ -109,17 +109,23 @@ namespace RINGMesh
                 entity_type, geomodel3d_from_.nb_mesh_entities( entity_type ) );
         }
 
-        for( const auto& line : geomodel3d_from_.lines() ) {
-            for( auto boundary_id : range( line.nb_boundaries() ) ) {
+        for( const auto& line : geomodel3d_from_.lines() )
+        {
+            for( auto boundary_id : range( line.nb_boundaries() ) )
+            {
                 topology.add_line_corner_boundary_relation(
                     line.gmme().index(), line.boundary( boundary_id ).index() );
-		    }
+            }
         }
 
-	    for (const auto& surface : geomodel3d_from_.surfaces()) {
-            for (auto boundary_id : range(surface.nb_boundaries())) {
-                topology.add_surface_line_boundary_relation(surface.gmme().index(),
-                    surface.boundary(boundary_id).index(), false); //TODO side
+        for( const auto& surface : geomodel3d_from_.surfaces() )
+        {
+            for( auto boundary_id : range( surface.nb_boundaries() ) )
+            {
+                topology.add_surface_line_boundary_relation(
+                    surface.gmme().index(),
+                    surface.boundary( boundary_id ).index(),
+                    false ); // TODO side
             }
         }
     }

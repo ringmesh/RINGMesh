@@ -105,11 +105,13 @@ namespace
                 cur_gmme, file_line.field( 2 ) );
             return cur_gmme;
         }
-        void read_second_line( GEO::LineInput& file_line, const gmme_id& entity );
+        void read_second_line(
+            GEO::LineInput& file_line, const gmme_id& entity );
     };
 
-    template< index_t DIMENSION >
-    class GeoModelBuilderGMImpl_1: public GeoModelBuilderGMImpl_0< DIMENSION > {
+    template < index_t DIMENSION >
+    class GeoModelBuilderGMImpl_1 : public GeoModelBuilderGMImpl_0< DIMENSION >
+    {
     public:
         GeoModelBuilderGMImpl_1( GeoModelBuilderGM< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel )
@@ -886,73 +888,86 @@ namespace
             std::vector< std::string >& filenames );
     };
 
-    ALIAS_2D_AND_3D (GeoModelHandlerGM);
+    ALIAS_2D_AND_3D( GeoModelHandlerGM );
 
-
-    template< >
+    template <>
     void GeoModelBuilderGMImpl_0< 2 >::read_second_line(
-        GEO::LineInput& file_line,
-        const gmme_id& entity )
+        GEO::LineInput& file_line, const gmme_id& entity )
     {
         file_line.get_line();
         file_line.get_fields();
         const auto& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_surface( entity.type() ) ) {
-            for (auto c : range(file_line.nb_fields())) {
-                bool side { false };
-                if (std::strncmp(file_line.field(c), "+", 1) == 0) {
+        if( manager.is_surface( entity.type() ) )
+        {
+            for( auto c : range( file_line.nb_fields() ) )
+            {
+                bool side{ false };
+                if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 )
+                {
                     side = true;
                 }
-                index_t s { NO_ID };
-                GEO::String::from_string(&file_line.field(c)[1], s);
+                index_t s{ NO_ID };
+                GEO::String::from_string( &file_line.field( c )[1], s );
 
                 this->builder_.topology.add_surface_line_boundary_relation(
-                    entity.index(), s, side);
+                    entity.index(), s, side );
             }
-        } else {
+        }
+        else
+        {
             // Second line : indices of boundaries
-            for( auto c : range( 1, file_line.nb_fields() ) ) {
-				ringmesh_assert(entity.type() == Line2D::type_name_static());
-                index_t boundary_id { file_line.field_as_uint( c ) };
+            for( auto c : range( 1, file_line.nb_fields() ) )
+            {
+                ringmesh_assert( entity.type() == Line2D::type_name_static() );
+                index_t boundary_id{ file_line.field_as_uint( c ) };
                 this->builder_.topology.add_line_corner_boundary_relation(
                     entity.index(), boundary_id );
             }
         }
     }
 
-    template< >
+    template <>
     void GeoModelBuilderGMImpl_0< 3 >::read_second_line(
-        GEO::LineInput& file_line,
-        const gmme_id& entity )
+        GEO::LineInput& file_line, const gmme_id& entity )
     {
         file_line.get_line();
         file_line.get_fields();
         const auto& manager =
             this->geomodel_.entity_type_manager().mesh_entity_manager;
-        if( manager.is_region(entity.type()) ) {
-            for (auto c : range(file_line.nb_fields())) {
-                bool side { false };
-                if (std::strncmp(file_line.field(c), "+", 1) == 0) {
+        if( manager.is_region( entity.type() ) )
+        {
+            for( auto c : range( file_line.nb_fields() ) )
+            {
+                bool side{ false };
+                if( std::strncmp( file_line.field( c ), "+", 1 ) == 0 )
+                {
                     side = true;
                 }
-                index_t s { NO_ID };
-                GEO::String::from_string(&file_line.field(c)[1], s);
+                index_t s{ NO_ID };
+                GEO::String::from_string( &file_line.field( c )[1], s );
 
                 this->builder_.topology.add_region_surface_boundary_relation(
-                    entity.index(), s, side);
+                    entity.index(), s, side );
             }
-        } else {
+        }
+        else
+        {
             // Second line : indices of boundaries
-			// Corners are skipped
-            for( auto c : range( 1, file_line.nb_fields() ) ) {
-				ringmesh_assert(manager.is_line(entity.type()) || manager.is_surface(entity.type()));
-                index_t boundary_id { file_line.field_as_uint( c ) };
-                if( manager.is_line(entity.type()) ) {
+            // Corners are skipped
+            for( auto c : range( 1, file_line.nb_fields() ) )
+            {
+                ringmesh_assert( manager.is_line( entity.type() )
+                                 || manager.is_surface( entity.type() ) );
+                index_t boundary_id{ file_line.field_as_uint( c ) };
+                if( manager.is_line( entity.type() ) )
+                {
                     this->builder_.topology.add_line_corner_boundary_relation(
                         entity.index(), boundary_id );
-                } else {
-                    ringmesh_assert( manager.is_surface(entity.type()) );
+                }
+                else
+                {
+                    ringmesh_assert( manager.is_surface( entity.type() ) );
                     this->builder_.topology.add_surface_line_boundary_relation(
                         entity.index(), boundary_id );
                 }
