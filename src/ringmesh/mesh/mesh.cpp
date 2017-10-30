@@ -851,7 +851,8 @@ namespace RINGMesh
     {
         vecn< DIMENSION > result;
         index_t nb_vertices = nb_cell_facet_vertices( cell_local_facet );
-        for( auto v : range( nb_vertices ) )        {
+        for( auto v : range( nb_vertices ) )
+        {
             result += this->vertex( cell_facet_vertex( cell_local_facet, v ) );
         }
         ringmesh_assert( nb_vertices > 0 );
