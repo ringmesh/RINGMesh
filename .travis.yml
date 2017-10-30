@@ -30,7 +30,7 @@ jobs:
           fi
       after_failure:
         - "$TRAVIS_BUILD_DIR/tools/travis-ci-git-commit.bash"
-    
+
     - stage: compile and test
       os: linux
       env:
@@ -42,3 +42,16 @@ jobs:
         - cd ringmesh/Debug
         - cmake --build .
         - ctest
+
+    - stage: compile and test
+      os: linux
+      env:
+        - TEST="Clang Check"
+      script:
+        - mkdir build
+        - cd build
+        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - cd ringmesh/Debug
+        - cmake --build .
+        - ctest
+
