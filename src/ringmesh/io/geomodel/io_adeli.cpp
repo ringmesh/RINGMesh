@@ -323,8 +323,7 @@ namespace
                 geomodel.region( 0 ).gmme(), id_offset_adeli, id_offset_adeli,
                 id_offset_adeli, id_offset_adeli, id_offset_adeli,
                 id_offset_adeli );
-            for( index_t region_index = 1; region_index < geomodel.nb_regions();
-                 region_index++ )
+            for( auto region_index : range (1, geomodel.nb_regions )
             {
                 regions_and_deps[region_index - 1].write_entities( out );
                 regions_and_deps.emplace_back( geomodel,
@@ -346,7 +345,7 @@ namespace
             out << "$NOD" << EOL;
             out << count_regions_vertices( geomodel ) << EOL;
             index_t vertex_index = id_offset_adeli;
-            for( const auto& region : region_range< 3 >( geomodel ) )
+            for( const auto& region : geomodel.regions() )
             {
                 for( auto v : range( region.nb_vertices() ) )
                 {
