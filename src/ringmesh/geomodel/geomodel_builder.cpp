@@ -1006,6 +1006,11 @@ namespace RINGMesh
         geometry.cut_surfaces_by_internal_lines();
     }
 
+    void GeoModelBuilder< 2 >::build_surfaces_from_corners_and_lines()
+    {
+        DEBUG( "todo");
+    }
+
     GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel3D& geomodel )
         : GeoModelBuilderBase< 3 >( *this, geomodel )
     {

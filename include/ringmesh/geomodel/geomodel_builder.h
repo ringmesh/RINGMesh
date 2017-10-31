@@ -158,6 +158,8 @@ namespace RINGMesh
     {
     public:
         explicit GeoModelBuilder( GeoModel2D& geomodel );
+
+        void build_surfaces_from_corners_and_lines();
     };
 
     template <>
