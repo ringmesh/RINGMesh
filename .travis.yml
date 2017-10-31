@@ -55,7 +55,7 @@ jobs:
         - cd build
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw_output make
-        - sonar-scanner -X
+        - sonar-scanner -Dproject.settings=$TRAVIS_BUILD_DIR/sonar-project.properties
     
     - stage: compile and test
       os: linux
