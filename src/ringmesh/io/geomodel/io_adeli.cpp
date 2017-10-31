@@ -189,10 +189,10 @@ namespace
             const GeoModelMeshEntity3D& mesh_entity,
             index_t element_index ) const
         {
-            const NNSearch3D& nn =
+            const auto& nn =
                 geomodel_.mesh_entity( region_gmme_ ).vertex_nn_search();
-            index_t nb_vertices =
-                mesh_entity.nb_mesh_element_vertices( element_index );
+            index_t nb_vertices {
+                mesh_entity.nb_mesh_element_vertices( element_index ) };
             std::vector< index_t > element_vertices( nb_vertices );
             for( auto element_local_vertex : range( nb_vertices ) )
             {
@@ -208,7 +208,7 @@ namespace
         index_t nb_elements_in_entities(
             const std::vector< gmme_id >& entities ) const
         {
-            index_t nb_elements = 0;
+            index_t nb_elements { 0 };
             for( const auto& entity : entities )
             {
                 nb_elements +=
@@ -221,7 +221,7 @@ namespace
         {
             for( auto boundary_index : range( incident.nb_boundaries() ) )
             {
-                const gmme_id& boundary_gmme =
+                const auto& boundary_gmme =
                     incident.boundary_gmme( boundary_index );
                 boundaries.emplace_back( boundary_gmme );
                 if( boundary_gmme.type() == surface_type_name_static() )
@@ -249,7 +249,7 @@ namespace
         const GeoModel3D& geomodel_;
 
         /// The base Region
-        const gmme_id& region_gmme_;
+        const gmme_id region_gmme_;
 
         /// The Surfaces which are incident to the Region
         std::vector< gmme_id > surfaces_;
@@ -345,7 +345,7 @@ namespace
         {
             out << "$NOD" << EOL;
             out << count_regions_vertices( geomodel ) << EOL;
-            index_t vertex_index = id_offset_adeli;
+            index_t vertex_index { id_offset_adeli };
             for( const auto& region : geomodel.regions() )
             {
                 for( auto v : range( region.nb_vertices() ) )
@@ -369,7 +369,7 @@ namespace
         index_t count_regions_and_deps_elements(
             const GeoModel3D& geomodel ) const
         {
-            index_t regions_and_deps_elements = 0;
+            index_t regions_and_deps_elements { 0 };
             for( const auto& region : geomodel.regions() )
             {
                 RegionAndDependentEntities region_and_deps(
