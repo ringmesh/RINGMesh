@@ -7,8 +7,7 @@ env:
 
 stages:
   - format
-  - compile and test on Linux
-  - compile and test on MacOS X (Xcode)
+  - compile and test
 
 jobs:
   include:
@@ -47,10 +46,22 @@ jobs:
     - stage: compile and test
       os: osx
       env:
-        - TEST="XCode 7.3"
+        - TEST="Xcode Check"
       script:
         - mkdir -p build/ringmesh
         - cd build/ringmesh
-        - cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ../..
+        - CXX=clang++ CC=clang cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ../..
         - cmake --build . --config Debug
         - ctest
+
+    - stage: compile and test
+      os: osx
+      env:
+        - TEST="Unix Makefile Check"
+      script:
+        - mkdir build
+        - cd build
+        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - cd ringmesh/Debug
+        - cmake --build .
+- ctest
