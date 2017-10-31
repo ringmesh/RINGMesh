@@ -645,6 +645,12 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    index_t Corner< DIMENSION >::nb_mesh_elements() const
+    {
+        return 1;
+    }
+
+    template < index_t DIMENSION >
     index_t Corner< DIMENSION >::nb_mesh_element_vertices(
         index_t mesh_element ) const
     {

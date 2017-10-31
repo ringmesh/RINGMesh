@@ -403,12 +403,9 @@ namespace RINGMesh
         bool is_on_voi() const final;
 
         /*!
-         * @return 0, no mesh_element are defined for corners.
+         * @brief For corners, the number of mesh elements is always equal to 1.
          */
-        index_t nb_mesh_elements() const final
-        {
-            return 0;
-        }
+        index_t nb_mesh_elements() const final;
 
         /*!
          * @return the number of vertices of the Corner
@@ -437,6 +434,7 @@ namespace RINGMesh
             index_t mesh_element = 0 ) const final
         {
             ringmesh_unused( mesh_element );
+            ringmesh_assert( this->nb_vertices() > 0 );
             return this->vertex( 0 );
         }
 
