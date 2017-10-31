@@ -39,7 +39,6 @@
 
 #include <ringmesh/geomodel/geomodel_builder.h>
 
-
 /*!
  * @brief Classes to build GeoModel from various inputs
  * @author Jeanne Pellerin

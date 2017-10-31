@@ -33,7 +33,8 @@
  *     FRANCE
  */
 
-namespace {
+namespace
+{
     // The reg phys field in the GMSH format is set to 0 for each element
     static const index_t reg_phys = 0;
 
@@ -41,8 +42,238 @@ namespace {
     static const index_t adeli_line_type = 1;
     static const index_t adeli_triangle_type = 2;
     static const index_t adeli_tet_type = 4;
-    static const index_t adeli_cell_types[4] =
-        { adeli_point_type, adeli_line_type, adeli_triangle_type, adeli_tet_type };
+    static const index_t adeli_cell_types[4] = { adeli_point_type,
+        adeli_line_type, adeli_triangle_type, adeli_tet_type };
+    class RegionAndDependentEntities
+    {
+    public:
+        RegionAndDependentEntities(
+            const GeoModel3D& geomodel, gmme_id region_gmme )
+            : geomodel_( geomodel ), region_gmme_( std::move( region_gmme ) )
+        {
+            build();
+        }
+        RegionAndDependentEntities( const GeoModel3D& geomodel,
+            gmme_id region_gmme,
+            index_t offset_vertices,
+            index_t offset_elements,
+            index_t offset_corners,
+            index_t offset_lines,
+            index_t offset_surfaces,
+            index_t offset_regions )
+            : geomodel_( geomodel ),
+              region_gmme_( std::move( region_gmme ) ),
+              offset_vertices_( offset_vertices ),
+              offset_elements_( offset_elements ),
+              offset_corners_( offset_corners ),
+              offset_lines_( offset_lines ),
+              offset_surfaces_( offset_surfaces ),
+              offset_regions_( offset_regions )
+        {
+            build();
+        }
+
+        index_t nb_total_elements() const
+        {
+            index_t nb_elements =
+                geomodel_.mesh_entity( region_gmme_ ).nb_mesh_elements();
+            nb_elements += nb_elements_in_entities( surfaces_ );
+            nb_elements += nb_elements_in_entities( lines_ );
+            nb_elements += static_cast< index_t >( corners_.size() );
+            return nb_elements;
+        }
+
+        void write_entities( std::ofstream& out )
+        {
+            write_corners( out );
+            write_entities( lines_, offset_lines_, out );
+            write_entities( surfaces_, offset_surfaces_, out );
+            std::vector< gmme_id > regions( 1 );
+            regions[0] = region_gmme_;
+            write_entities( regions, offset_regions_, out );
+            offset_vertices_ +=
+                geomodel_.mesh_entity( region_gmme_ ).nb_vertices();
+        }
+
+        index_t offset_vertices() const
+        {
+            return offset_vertices_;
+        }
+        index_t offset_elements() const
+        {
+            return offset_elements_;
+        }
+        index_t offset_corners() const
+        {
+            return offset_corners_;
+        }
+        index_t offset_lines() const
+        {
+            return offset_lines_;
+        }
+        index_t offset_surfaces() const
+        {
+            return offset_surfaces_;
+        }
+        index_t offset_regions() const
+        {
+            return offset_regions_;
+        }
+
+    private:
+        void build()
+        {
+            get_boundary_entities(
+                geomodel_.mesh_entity( region_gmme_ ), surfaces_ );
+            sort_unique( surfaces_ );
+            sort_unique( lines_ );
+            sort_unique( corners_ );
+        }
+        void write_corners( std::ofstream& out )
+        {
+            const auto& nn =
+                geomodel_.mesh_entity( region_gmme_ ).vertex_nn_search();
+            for( const auto& corner_gmme : corners_ )
+            {
+                std::vector< index_t > element_vertices( 1 );
+                element_vertices[0] =
+                    nn.get_closest_neighbor(
+                        geomodel_.mesh_entity( corner_gmme ).vertex( 0 ) )
+                    + offset_vertices_;
+                write_mesh_entity_element( adeli_point_type, element_vertices,
+                    offset_corners_++, out );
+            }
+        }
+        void write_entities( const std::vector< gmme_id >& entities,
+            index_t& offset,
+            std::ofstream& out )
+        {
+            for( const auto& entity_gmme : entities )
+            {
+                write_entity(
+                    geomodel_.mesh_entity( entity_gmme ), offset++, out );
+            }
+        }
+
+        void write_entity( const GeoModelMeshEntity3D& mesh_entity,
+            index_t offset,
+            std::ofstream& out )
+        {
+            for( auto mesh_entity_element :
+                range( mesh_entity.nb_mesh_elements() ) )
+            {
+                std::vector< index_t > element_vertices =
+                    get_element_vertices( mesh_entity, mesh_entity_element );
+                write_mesh_entity_element(
+                    adeli_cell_types[mesh_entity.nb_mesh_element_vertices(
+                                         mesh_entity_element )
+                                     - 1],
+                    element_vertices, offset, out );
+            }
+        }
+
+        void write_mesh_entity_element( index_t cell_descriptor,
+            const std::vector< index_t >& element_vertices,
+            index_t offset,
+            std::ofstream& out )
+        {
+            out << offset_elements_++ << " " << cell_descriptor << " "
+                << reg_phys << " " << offset << " " << element_vertices.size()
+                << " ";
+            for( auto element_vertex : element_vertices )
+            {
+                out << element_vertex << " ";
+            }
+            out << EOL;
+        }
+
+        std::vector< index_t > get_element_vertices(
+            const GeoModelMeshEntity3D& mesh_entity,
+            index_t element_index ) const
+        {
+            const auto& nn =
+                geomodel_.mesh_entity( region_gmme_ ).vertex_nn_search();
+            index_t nb_vertices{ mesh_entity.nb_mesh_element_vertices(
+                element_index ) };
+            std::vector< index_t > element_vertices( nb_vertices );
+            for( auto element_local_vertex : range( nb_vertices ) )
+            {
+                element_vertices[element_local_vertex] =
+                    offset_vertices_
+                    + nn.get_closest_neighbor( mesh_entity.vertex(
+                          mesh_entity.mesh_element_vertex_index(
+                              { element_index, element_local_vertex } ) ) );
+            }
+            return element_vertices;
+        }
+
+        index_t nb_elements_in_entities(
+            const std::vector< gmme_id >& entities ) const
+        {
+            index_t nb_elements{ 0 };
+            for( const auto& entity : entities )
+            {
+                nb_elements +=
+                    geomodel_.mesh_entity( entity ).nb_mesh_elements();
+            }
+            return nb_elements;
+        }
+        void get_boundary_entities( const GeoModelMeshEntity3D& incident,
+            std::vector< gmme_id >& boundaries )
+        {
+            for( auto boundary_index : range( incident.nb_boundaries() ) )
+            {
+                const auto& boundary_gmme =
+                    incident.boundary_gmme( boundary_index );
+                boundaries.emplace_back( boundary_gmme );
+                if( boundary_gmme.type() == surface_type_name_static() )
+                {
+                    get_boundary_entities(
+                        geomodel_.mesh_entity( boundary_gmme ), lines_ );
+                }
+                else if( boundary_gmme.type() == line_type_name_static() )
+                {
+                    get_boundary_entities(
+                        geomodel_.mesh_entity( boundary_gmme ), corners_ );
+                }
+                else if( boundary_gmme.type() == corner_type_name_static() )
+                {
+                }
+                else
+                {
+                    ringmesh_assert_not_reached;
+                }
+            }
+        }
+
+    private:
+        /// The exported GeoModel
+        const GeoModel3D& geomodel_;
+
+        /// The base Region
+        const gmme_id region_gmme_;
+
+        /// The Surfaces which are incident to the Region
+        std::vector< gmme_id > surfaces_;
+
+        /// The Lines which are incident to the Surface
+        std::vector< gmme_id > lines_;
+
+        /// The Corners which are incident to the Lines
+        std::vector< gmme_id > corners_;
+
+        index_t offset_vertices_{ 0 };
+
+        index_t offset_elements_{ 0 };
+
+        index_t offset_corners_{ 0 };
+
+        index_t offset_lines_{ 0 };
+
+        index_t offset_surfaces_{ 0 };
+
+        index_t offset_regions_{ 0 };
+    };
 
     // The index begins at 1.
     static const index_t id_offset_adeli = 1;
@@ -54,127 +285,101 @@ namespace {
      * running Finite Element Simulation with the ADELI solver.
      * The description of the output file can be found here :
      * http://gmsh.info/doc/texinfo/gmsh.html#MSH-file-format-version-1_002e0
-     * First, nodes are written, then the elements. The elements are not separated.
+     * First, nodes are written, then the elements. The elements are not
+     * separated.
      * Corners are written (with vertex), then Lines (with edges), then Surfaces
      * (with surfaces, then Regions (with tetrahedron)
      */
-    class AdeliIOHandler final: public GeoModelOutputHandler3D {
+    class AdeliIOHandler final : public GeoModelOutputHandler3D
+    {
     public:
-        void save( const GeoModel3D& geomodel, const std::string& filename ) final
+        void save(
+            const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
             const RINGMesh::GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
-            if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
-                {
-                    throw RINGMeshException( "I/O",
-                        "Adeli supports only tet meshes" );
-                }
+            if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() )
+            {
+                throw RINGMeshException(
+                    "I/O", "Adeli supports only tet meshes" );
             }
-
-            write_vertices( geomodel_mesh, out );
-
-            write_mesh_elements( geomodel, out );
+            if( geomodel.nb_regions() == 0 )
+            {
+                throw RINGMeshException(
+                    "I/O", "Adeli can't load model with 0 regions" );
+            }
+            write_regions_vertices( geomodel, out );
+            write_regions( geomodel, out );
             out << std::flush;
         }
 
     private:
-        void write_vertices(
-            const GeoModelMesh3D& geomodel_mesh,
-            std::ofstream& out ) const
+        void write_regions( const GeoModel3D& geomodel, std::ofstream& out )
+        {
+            out << "$ELM" << EOL;
+            out << count_regions_and_deps_elements( geomodel ) << EOL;
+            std::vector< RegionAndDependentEntities > regions_and_deps;
+            regions_and_deps.emplace_back( geomodel,
+                geomodel.region( 0 ).gmme(), id_offset_adeli, id_offset_adeli,
+                id_offset_adeli, id_offset_adeli, id_offset_adeli,
+                id_offset_adeli );
+            for( auto region_index : range( 1, geomodel.nb_regions() ) )
+            {
+                regions_and_deps[region_index - 1].write_entities( out );
+                regions_and_deps.emplace_back( geomodel,
+                    geomodel.region( region_index ).gmme(),
+                    regions_and_deps[region_index - 1].offset_vertices(),
+                    regions_and_deps[region_index - 1].offset_elements(),
+                    regions_and_deps[region_index - 1].offset_corners(),
+                    regions_and_deps[region_index - 1].offset_lines(),
+                    regions_and_deps[region_index - 1].offset_surfaces(),
+                    regions_and_deps[region_index - 1].offset_regions() );
+            }
+            regions_and_deps[geomodel.nb_regions() - 1].write_entities( out );
+            out << "$ENDELM" << EOL;
+        }
+
+        void write_regions_vertices(
+            const GeoModel3D& geomodel, std::ofstream& out )
         {
             out << "$NOD" << EOL;
-            out << geomodel_mesh.vertices.nb() << EOL;
-            for( auto v : range( geomodel_mesh.vertices.nb() ) ) {
-                out << v + id_offset_adeli << " "
-                    << geomodel_mesh.vertices.vertex( v ) << EOL;
+            out << count_regions_vertices( geomodel ) << EOL;
+            index_t vertex_index{ id_offset_adeli };
+            for( const auto& region : geomodel.regions() )
+            {
+                for( auto v : range( region.nb_vertices() ) )
+                {
+                    out << vertex_index++ << " " << region.vertex( v ) << EOL;
+                }
             }
             out << "$ENDNOD" << EOL;
         }
 
-        index_t write_corners(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        index_t count_regions_vertices( const GeoModel3D& geomodel )
         {
-            out << "$ELM" << EOL;
-            out << nb_total_elements( geomodel ) << EOL;
-            index_t elt = 1;
-            for( const auto& corner : geomodel.corners() ) {
-                out << elt++ << " " << adeli_cell_types[0] << " " << reg_phys << " "
-                    << corner.index() + id_offset_adeli << " "
-                    << corner.nb_vertices() << " "
-                    << geomodel.mesh.vertices.geomodel_vertex_id( corner.gmme(),
-                        0 ) + id_offset_adeli << EOL;
+            index_t nb_vertices = 0;
+            for( const auto& region : geomodel.regions() )
+            {
+                nb_vertices += region.nb_vertices();
             }
-            return elt;
+            return nb_vertices;
         }
 
-        void write_mesh_elements(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+        index_t count_regions_and_deps_elements(
+            const GeoModel3D& geomodel ) const
         {
-            index_t elt = write_corners( geomodel, out );
-            const MeshEntityTypeManager3D& manager =
-                geomodel.entity_type_manager().mesh_entity_manager;
-            const std::vector< MeshEntityType >& mesh_entity_types =
-                manager.mesh_entity_types();
-            // Corners are already written so we start this loop at 1
-            for( auto geomodel_mesh_entities : range( 1,
-                manager.nb_mesh_entity_types() ) ) {
-                for( auto entity : range(
-                    geomodel.nb_mesh_entities(
-                        mesh_entity_types[geomodel_mesh_entities] ) ) ) {
-                    write_mesh_elements_for_a_mesh_entity(
-                        geomodel.mesh_entity(
-                            mesh_entity_types[geomodel_mesh_entities], entity ),
-                        adeli_cell_types[geomodel_mesh_entities], elt, out );
-                }
+            index_t regions_and_deps_elements{ 0 };
+            for( const auto& region : geomodel.regions() )
+            {
+                RegionAndDependentEntities region_and_deps(
+                    geomodel, region.gmme() );
+                index_t nb_elements_in_region =
+                    region_and_deps.nb_total_elements();
+                regions_and_deps_elements =
+                    regions_and_deps_elements + nb_elements_in_region;
             }
-            out << "$ENDELM" << EOL;
-        }
-
-        index_t nb_total_elements( const GeoModel3D& geomodel ) const
-        {
-            const MeshEntityTypeManager3D& manager =
-                geomodel.entity_type_manager().mesh_entity_manager;
-            const std::vector< MeshEntityType >& mesh_entity_types =
-                manager.mesh_entity_types();
-            // Because corners does not have mesh elements, but are considered as elements
-            // in adeli, we have to count the vertex of each corner in a different
-            // way
-            index_t nb_mesh_entities = geomodel.nb_corners();
-            for( auto geomodel_mesh_entities : range( 1,
-                manager.nb_mesh_entity_types() ) ) {
-                for( auto entity : range(
-                    geomodel.nb_mesh_entities(
-                        mesh_entity_types[geomodel_mesh_entities] ) ) ) {
-                    nb_mesh_entities +=
-                        geomodel.mesh_entity(
-                            mesh_entity_types[geomodel_mesh_entities], entity ).nb_mesh_elements();
-                }
-            }
-            return nb_mesh_entities;
-        }
-
-        void write_mesh_elements_for_a_mesh_entity(
-            const GeoModelMeshEntity3D& geomodel_mesh_entity,
-            index_t cell_descriptor,
-            index_t& elt_id,
-            std::ofstream& out ) const
-        {
-            for( auto elt : range( geomodel_mesh_entity.nb_mesh_elements() ) ) {
-                out << elt_id++ << " " << cell_descriptor << " " << reg_phys << " "
-                    << geomodel_mesh_entity.index() + id_offset_adeli << " "
-                    << geomodel_mesh_entity.nb_mesh_element_vertices( elt ) << " ";
-                for( auto v : range(
-                    geomodel_mesh_entity.nb_mesh_element_vertices( elt ) ) ) {
-                    out
-                        << geomodel_mesh_entity.geomodel().mesh.vertices.geomodel_vertex_id(
-                            geomodel_mesh_entity.gmme(),
-                            ElementLocalVertex( elt, v ) ) + id_offset_adeli << " ";
-                }
-                out << EOL;
-            }
+            return regions_and_deps_elements;
         }
     };
 }

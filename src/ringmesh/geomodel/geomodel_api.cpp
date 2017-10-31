@@ -39,6 +39,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include <geogram/basic/command_line.h>
 #include <geogram/basic/progress.h>
 
 #include <ringmesh/basic/geometry.h>
@@ -345,8 +346,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     void RINGMESH_API copy_geomodel(
-        const GeoModel< DIMENSION >& from,
-        GeoModel< DIMENSION >& to )
+        const GeoModel< DIMENSION >& from, GeoModel< DIMENSION >& to )
     {
         GeoModelBuilder< DIMENSION > to_builder( to );
         to_builder.topology.copy_topology( from );
@@ -458,12 +458,8 @@ namespace RINGMesh
         }
     }
 
-#ifdef RINGMESH_WITH_TETGEN
-
-    void tetrahedralize( GeoModel3D& geomodel,
-        const std::string& method,
-        index_t region_id,
-        bool add_steiner_points )
+    void tetrahedralize(
+        GeoModel3D& geomodel, index_t region_id, bool add_steiner_points )
     {
         /* @todo Review: Maybe rethink these functions
          *       to have a function that can mesh a region of a geomodel
@@ -471,24 +467,24 @@ namespace RINGMesh
          */
         std::vector< std::vector< vec3 > > internal_vertices(
             geomodel.nb_regions() );
-        tetrahedralize( geomodel, method, region_id, add_steiner_points,
-            internal_vertices );
+        tetrahedralize(
+            geomodel, region_id, add_steiner_points, internal_vertices );
     }
 
     void tetrahedralize( GeoModel3D& geomodel,
-        const std::string& method,
         index_t region_id,
         bool add_steiner_points,
         const std::vector< std::vector< vec3 > >& internal_vertices )
     {
+        const std::string method{ GEO::CmdLine::get_arg( "algo:tet" ) };
         if( region_id == NO_ID )
         {
             Logger::out( "Info", "Using ", method );
             GEO::ProgressTask progress( "Compute", geomodel.nb_regions() );
             for( auto i : range( geomodel.nb_regions() ) )
             {
-                tetrahedralize( geomodel, method, i, add_steiner_points,
-                    internal_vertices );
+                tetrahedralize(
+                    geomodel, i, add_steiner_points, internal_vertices );
                 progress.next();
             }
         }
@@ -509,7 +505,6 @@ namespace RINGMesh
         // and it will be re-computed during its next access.
         geomodel.mesh.vertices.clear();
     }
-#endif
 
     template void RINGMESH_API print_geomodel( const GeoModel2D& );
     template void RINGMESH_API copy_geomodel( const GeoModel2D&, GeoModel2D& );

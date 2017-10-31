@@ -49,7 +49,8 @@ namespace RINGMesh
     template < typename T >
     class PImpl
     {
-    ringmesh_disable_copy_and_move( PImpl );
+        ringmesh_disable_copy_and_move( PImpl );
+
     public:
         template < typename... Args >
         explicit PImpl( Args&&... );

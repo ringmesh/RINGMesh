@@ -41,13 +41,13 @@ namespace
 {
     using RINGMesh::index_t;
 
-    bool compare_equal(
-        index_t lhs_index1,
+    bool compare_equal( index_t lhs_index1,
         index_t lhs_index2,
         index_t rhs_index1,
         index_t rhs_index2 )
     {
-        if( lhs_index1 == rhs_index1 ) {
+        if( lhs_index1 == rhs_index1 )
+        {
             return lhs_index2 == rhs_index2;
         }
         return false;
@@ -77,8 +77,8 @@ namespace RINGMesh
 
     bool ElementLocalVertex::operator==( const ElementLocalVertex& rhs ) const
     {
-        return compare_equal( element_id, local_vertex_id, rhs.element_id,
-            rhs.local_vertex_id );
+        return compare_equal(
+            element_id, local_vertex_id, rhs.element_id, rhs.local_vertex_id );
     }
     bool ElementLocalVertex::operator!=( const ElementLocalVertex& rhs ) const
     {
@@ -87,8 +87,8 @@ namespace RINGMesh
 
     bool EdgeLocalVertex::operator==( const EdgeLocalVertex& rhs ) const
     {
-        return compare_equal( edge_id, local_vertex_id, rhs.edge_id,
-            rhs.local_vertex_id );
+        return compare_equal(
+            edge_id, local_vertex_id, rhs.edge_id, rhs.local_vertex_id );
     }
     bool EdgeLocalVertex::operator!=( const EdgeLocalVertex& rhs ) const
     {
@@ -97,8 +97,8 @@ namespace RINGMesh
 
     bool PolygonLocalEdge::operator==( const PolygonLocalEdge& rhs ) const
     {
-        return compare_equal( polygon_id, local_edge_id, rhs.polygon_id,
-            rhs.local_edge_id );
+        return compare_equal(
+            polygon_id, local_edge_id, rhs.polygon_id, rhs.local_edge_id );
     }
     bool PolygonLocalEdge::operator!=( const PolygonLocalEdge& rhs ) const
     {
@@ -107,8 +107,8 @@ namespace RINGMesh
 
     bool CellLocalFacet::operator==( const CellLocalFacet& rhs ) const
     {
-        return compare_equal( cell_id, local_facet_id, rhs.cell_id,
-            rhs.local_facet_id );
+        return compare_equal(
+            cell_id, local_facet_id, rhs.cell_id, rhs.local_facet_id );
     }
     bool CellLocalFacet::operator!=( const CellLocalFacet& rhs ) const
     {

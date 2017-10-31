@@ -251,7 +251,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    const NNSearch< DIMENSION >& GeoModelMeshEntity< DIMENSION >::vertex_nn_search() const
+    const NNSearch< DIMENSION >&
+        GeoModelMeshEntity< DIMENSION >::vertex_nn_search() const
     {
         return mesh_->vertex_nn_search();
     }
@@ -506,7 +507,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshEntity< DIMENSION >::save( const std::string& filename ) const
+    void GeoModelMeshEntity< DIMENSION >::save(
+        const std::string& filename ) const
     {
         mesh_->save_mesh( filename );
     }
@@ -518,7 +520,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    const vecn< DIMENSION >& GeoModelMeshEntity< DIMENSION >::vertex( index_t vertex_index ) const
+    const vecn< DIMENSION >& GeoModelMeshEntity< DIMENSION >::vertex(
+        index_t vertex_index ) const
     {
         return mesh_->vertex( vertex_index );
     }
@@ -598,7 +601,7 @@ namespace RINGMesh
             .relationship_manager.parent_of_gmme( parents_[id] );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     bool GeoModelMeshEntity< DIMENSION >::has_parent(
         const GeologicalEntityType& parent_type ) const
     {
@@ -640,7 +643,14 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    index_t Corner< DIMENSION >::nb_mesh_element_vertices( index_t mesh_element ) const
+    index_t Corner< DIMENSION >::nb_mesh_elements() const
+    {
+        return 1;
+    }
+
+    template < index_t DIMENSION >
+    index_t Corner< DIMENSION >::nb_mesh_element_vertices(
+        index_t mesh_element ) const
     {
         ringmesh_unused( mesh_element );
         index_t nb_vertices = point_set_mesh_->nb_vertices();
@@ -694,8 +704,7 @@ namespace RINGMesh
         const MeshType& type )
         : GeoModelMeshEntity< DIMENSION >( geomodel, id )
     {
-        update_mesh_storage_type(
-            LineMesh< DIMENSION >::create_mesh( type ) );
+        update_mesh_storage_type( LineMesh< DIMENSION >::create_mesh( type ) );
     }
 
     template < index_t DIMENSION >
@@ -877,8 +886,7 @@ namespace RINGMesh
     index_t Line< DIMENSION >::mesh_element_vertex_index(
         const ElementLocalVertex& element_local_vertex ) const
     {
-        ringmesh_assert(
-            element_local_vertex.element_id < nb_mesh_elements() );
+        ringmesh_assert( element_local_vertex.element_id < nb_mesh_elements() );
         ringmesh_assert( element_local_vertex.local_vertex_id < 2 );
         return line_mesh_->edge_vertex( element_local_vertex );
     }
@@ -919,17 +927,18 @@ namespace RINGMesh
 
     /********************************************************************/
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     SurfaceBase< DIMENSION >::SurfaceBase(
         const GeoModel< DIMENSION >& geomodel,
         index_t id,
         const MeshType& type )
         : GeoModelMeshEntity< DIMENSION >( geomodel, id )
     {
-        update_mesh_storage_type( SurfaceMesh< DIMENSION >::create_mesh( type ) );
+        update_mesh_storage_type(
+            SurfaceMesh< DIMENSION >::create_mesh( type ) );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void SurfaceBase< DIMENSION >::update_mesh_storage_type(
         std::unique_ptr< SurfaceMesh< DIMENSION > > mesh )
     {
@@ -937,7 +946,7 @@ namespace RINGMesh
         GeoModelMeshEntity< DIMENSION >::set_mesh( surface_mesh_ );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     index_t SurfaceBase< DIMENSION >::nb_mesh_elements() const
     {
         return surface_mesh_->nb_polygons();
@@ -950,13 +959,15 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    const SurfaceAABBTree< DIMENSION >& SurfaceBase< DIMENSION >::polygon_aabb() const
+    const SurfaceAABBTree< DIMENSION >&
+        SurfaceBase< DIMENSION >::polygon_aabb() const
     {
         return surface_mesh_->polygon_aabb();
     }
 
     template < index_t DIMENSION >
-    const NNSearch< DIMENSION >& SurfaceBase< DIMENSION >::polygon_nn_search() const
+    const NNSearch< DIMENSION >&
+        SurfaceBase< DIMENSION >::polygon_nn_search() const
     {
         return surface_mesh_->polygon_nn_search();
     }
@@ -968,7 +979,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    index_t SurfaceBase< DIMENSION >::nb_mesh_element_vertices( index_t polygon_index ) const
+    index_t SurfaceBase< DIMENSION >::nb_mesh_element_vertices(
+        index_t polygon_index ) const
     {
         ringmesh_assert( polygon_index < nb_mesh_elements() );
         return surface_mesh_->nb_polygon_vertices( polygon_index );
@@ -983,7 +995,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    double SurfaceBase< DIMENSION >::mesh_element_size( index_t polygon_index ) const
+    double SurfaceBase< DIMENSION >::mesh_element_size(
+        index_t polygon_index ) const
     {
         ringmesh_assert( polygon_index < nb_mesh_elements() );
         return surface_mesh_->polygon_area( polygon_index );
@@ -993,8 +1006,7 @@ namespace RINGMesh
     index_t SurfaceBase< DIMENSION >::polygon_adjacent_index(
         const PolygonLocalEdge& polygon_local_edge ) const
     {
-        ringmesh_assert(
-            polygon_local_edge.polygon_id < nb_mesh_elements() );
+        ringmesh_assert( polygon_local_edge.polygon_id < nb_mesh_elements() );
         ringmesh_assert(
             polygon_local_edge.local_edge_id
             < nb_mesh_element_vertices( polygon_local_edge.polygon_id ) );
@@ -1005,16 +1017,15 @@ namespace RINGMesh
     index_t SurfaceBase< DIMENSION >::mesh_element_vertex_index(
         const ElementLocalVertex& element_local_vertex ) const
     {
+        ringmesh_assert( element_local_vertex.element_id < nb_mesh_elements() );
         ringmesh_assert(
-            element_local_vertex.element_id < nb_mesh_elements() );
-        ringmesh_assert( element_local_vertex.local_vertex_id
-                         < nb_mesh_element_vertices(
-                               element_local_vertex.element_id ) );
+            element_local_vertex.local_vertex_id
+            < nb_mesh_element_vertices( element_local_vertex.element_id ) );
         return surface_mesh_->polygon_vertex( element_local_vertex );
     }
 
     template < index_t DIMENSION >
-    bool SurfaceBase< DIMENSION >::is_mesh_valid() const
+    bool SurfaceBase< DIMENSION >::is_mesh_valid_base() const
     {
         bool valid{ true };
         auto id = this->gmme();
@@ -1078,11 +1089,25 @@ namespace RINGMesh
         return false;
     }
 
+    bool Surface< 2 >::is_mesh_valid() const
+    {
+        if( !is_meshed() )
+        {
+            return true;
+        }
+        return is_mesh_valid_base();
+    }
+
     bool Surface< 3 >::is_on_voi() const
     {
         ringmesh_assert( this->nb_incident_entities() == 1
                          || this->nb_incident_entities() == 2 );
         return this->nb_incident_entities() == 1;
+    }
+
+    bool Surface< 3 >::is_mesh_valid() const
+    {
+        return is_mesh_valid_base();
     }
 
     const Region3D& Surface< 3 >::incident_entity( index_t x ) const
@@ -1137,9 +1162,9 @@ namespace RINGMesh
         {
             ringmesh_assert(
                 element_local_vertex.element_id < nb_mesh_elements() );
-            ringmesh_assert( element_local_vertex.local_vertex_id
-                             < nb_mesh_element_vertices(
-                                   element_local_vertex.element_id ) );
+            ringmesh_assert(
+                element_local_vertex.local_vertex_id
+                < nb_mesh_element_vertices( element_local_vertex.element_id ) );
             return volume_mesh_->cell_vertex( element_local_vertex );
         }
         ringmesh_assert_not_reached;
@@ -1203,7 +1228,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    index_t Region< DIMENSION >::nb_mesh_element_vertices( index_t cell_index ) const
+    index_t Region< DIMENSION >::nb_mesh_element_vertices(
+        index_t cell_index ) const
     {
         if( is_meshed() )
         {
@@ -1283,9 +1309,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    index_t Region< DIMENSION >::cell_facet_vertex_index( index_t cell_index,
-        index_t facet_index,
-        index_t vertex_index ) const
+    index_t Region< DIMENSION >::cell_facet_vertex_index(
+        index_t cell_index, index_t facet_index, index_t vertex_index ) const
     {
         if( is_meshed() )
         {
@@ -1335,17 +1360,17 @@ namespace RINGMesh
             const Surface< DIMENSION >& surface = boundary( i );
             for( auto t : range( surface.nb_mesh_elements() ) )
             {
-                const vecn< DIMENSION >& p0 = surface.mesh_element_vertex(
-                    ElementLocalVertex( t, 0 ) );
+                const vecn< DIMENSION >& p0 =
+                    surface.mesh_element_vertex( ElementLocalVertex( t, 0 ) );
                 for( auto v :
                     range( 1, surface.nb_mesh_element_vertices( t ) - 1 ) )
                 {
                     double cur_volume =
-                        ( dot( p0,
-                            cross( surface.mesh_element_vertex(
-                                       ElementLocalVertex( t, v ) ),
-                                surface.mesh_element_vertex(
-                                    ElementLocalVertex( t, v + 1 ) ) ) ) )
+                        ( dot(
+                            p0, cross( surface.mesh_element_vertex(
+                                           ElementLocalVertex( t, v ) ),
+                                    surface.mesh_element_vertex(
+                                        ElementLocalVertex( t, v + 1 ) ) ) ) )
                         / 6.;
                     side( i ) ? result -= cur_volume : result += cur_volume;
                 }
@@ -1467,8 +1492,8 @@ namespace RINGMesh
     {
         ElementLocalVertex cell_local_vertex;
         volume_mesh_->find_cell_from_colocated_vertex_within_distance_if_any(
-            vertex_vec, this->geomodel_.epsilon(),
-            cell_local_vertex.element_id, cell_local_vertex.local_vertex_id );
+            vertex_vec, this->geomodel_.epsilon(), cell_local_vertex.element_id,
+            cell_local_vertex.local_vertex_id );
         return cell_local_vertex;
     }
 

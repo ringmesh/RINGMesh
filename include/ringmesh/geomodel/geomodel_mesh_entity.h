@@ -60,8 +60,8 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometryBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeometry );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGeology );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemovalBase );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoval );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemoveBase );
+    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRemove );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderInfo );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
@@ -404,17 +404,15 @@ namespace RINGMesh
         bool is_on_voi() const final;
 
         /*!
-         * @return 0, no mesh_element are defined for corners.
+         * @brief For corners, the number of mesh elements is always equal to 1.
          */
-        index_t nb_mesh_elements() const final
-        {
-            return 0;
-        }
+        index_t nb_mesh_elements() const final;
 
         /*!
          * @return the number of vertices of the Corner
          */
-        index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const final;
+        index_t nb_mesh_element_vertices(
+            index_t mesh_element = 0 ) const final;
 
         const Line< DIMENSION >& incident_entity( index_t x ) const;
 
@@ -437,6 +435,7 @@ namespace RINGMesh
             index_t mesh_element = 0 ) const final
         {
             ringmesh_unused( mesh_element );
+            ringmesh_assert( this->nb_vertices() > 0 );
             return this->vertex( 0 );
         }
 
@@ -612,7 +611,7 @@ namespace RINGMesh
         std::shared_ptr< LineMesh< DIMENSION > > line_mesh_{};
     };
     ALIAS_2D_AND_3D( Line );
-    
+
     MeshEntityType RINGMESH_API line_type_name_static();
 
     /*!
@@ -735,7 +734,7 @@ namespace RINGMesh
          *
          * @todo Check that there is no duplicated polygon
          */
-        bool is_mesh_valid() const final;
+        bool is_mesh_valid_base() const;
 
     private:
         void update_mesh_storage_type(
@@ -764,6 +763,8 @@ namespace RINGMesh
             : SurfaceBase< 2 >( geomodel, id, type )
         {
         }
+
+        bool is_mesh_valid() const final;
 
     public:
         bool is_on_voi() const final;
@@ -795,6 +796,8 @@ namespace RINGMesh
             : SurfaceBase< 3 >( geomodel, id, type )
         {
         }
+
+        bool is_mesh_valid() const final;
 
     public:
         bool is_on_voi() const final;
@@ -882,8 +885,9 @@ namespace RINGMesh
         index_t nb_cell_facet_vertices(
             index_t cell_index, index_t facet_index ) const;
 
-        index_t cell_edge_vertex_index(
-            index_t cell_index, index_t edge_index, index_t vertex_index ) const;
+        index_t cell_edge_vertex_index( index_t cell_index,
+            index_t edge_index,
+            index_t vertex_index ) const;
 
         index_t cell_facet_vertex_index( index_t cell_index,
             index_t facet_index,

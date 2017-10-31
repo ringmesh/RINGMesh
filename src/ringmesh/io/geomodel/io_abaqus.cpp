@@ -33,28 +33,31 @@
  *     FRANCE
  */
 
-namespace {
-
-    struct RINGMesh2Abaqus {
+namespace
+{
+    struct RINGMesh2Abaqus
+    {
         std::string entity_type;
         index_t vertices[8];
     };
 
-    static RINGMesh2Abaqus tet_descriptor_abaqus = { "C3D4",                  // type
-        { 0, 1, 2, 3 }     // vertices
+    static RINGMesh2Abaqus tet_descriptor_abaqus = {
+        "C3D4", // type
+        { 0, 1, 2, 3 } // vertices
     };
 
-    static RINGMesh2Abaqus hex_descriptor_abaqus = { "C3D8",                  // type
-        { 0, 4, 5, 1, 2, 6, 7, 3 }     // vertices
+    static RINGMesh2Abaqus hex_descriptor_abaqus = {
+        "C3D8", // type
+        { 0, 4, 5, 1, 2, 6, 7, 3 } // vertices
     };
 
-    class AbaqusIOHandler final: public GeoModelOutputHandler3D {
+    class AbaqusIOHandler final : public GeoModelOutputHandler3D
+    {
     public:
         static const index_t NB_ENTRY_PER_LINE = 16;
 
         void save(
-            const GeoModel3D& geomodel,
-            const std::string& filename ) final
+            const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -72,52 +75,59 @@ namespace {
             out << "*END PART" << EOL;
             out << std::flush;
         }
+
     private:
-        void save_vertices( const GeoModel3D& geomodel, std::ofstream& out ) const
+        void save_vertices(
+            const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshVertices3D& vertices = geomodel.mesh.vertices;
             out << "*NODE" << EOL;
-            for( auto v : range( vertices.nb() ) ) {
+            for( auto v : range( vertices.nb() ) )
+            {
                 out << v + 1;
                 const vec3& vertex = vertices.vertex( v );
-                for( auto i : range( 3 ) ) {
+                for( auto i : range( 3 ) )
+                {
                     out << COMMA << SPACE << vertex[i];
                 }
                 out << EOL;
             }
-
         }
         void save_nb_polygons(
-            const GeoModel3D& geomodel,
-            std::ofstream& out ) const
+            const GeoModel3D& geomodel, std::ofstream& out ) const
         {
-            const GeologicalEntityType& type = Interface3D ::type_name_static();
+            const GeologicalEntityType& type = Interface3D::type_name_static();
             index_t nb_interfaces = geomodel.nb_geological_entities( type );
-            for( auto i : range( nb_interfaces ) ) {
+            for( auto i : range( nb_interfaces ) )
+            {
                 save_interface( geomodel, i, out );
             }
         }
-        void save_interface(
-            const GeoModel3D& geomodel,
+        void save_interface( const GeoModel3D& geomodel,
             index_t interface_id,
             std::ofstream& out ) const
         {
             const GeoModelMeshPolygons3D& polygons = geomodel.mesh.polygons;
-            const GeoModelGeologicalEntity3D& entity = geomodel.geological_entity(
-                Interface3D::type_name_static(), interface_id );
+            const GeoModelGeologicalEntity3D& entity =
+                geomodel.geological_entity(
+                    Interface3D::type_name_static(), interface_id );
             std::string sep;
             index_t count = 0;
-            std::vector< bool > vertex_exported( geomodel.mesh.vertices.nb(),
-                false );
+            std::vector< bool > vertex_exported(
+                geomodel.mesh.vertices.nb(), false );
             out << "*NSET, nset=" << entity.name() << EOL;
-            for( auto s : range( entity.nb_children() ) ) {
+            for( auto s : range( entity.nb_children() ) )
+            {
                 index_t surface_id = entity.child_gmme( s ).index();
-                for( auto p : range( polygons.nb_polygons( surface_id ) ) ) {
+                for( auto p : range( polygons.nb_polygons( surface_id ) ) )
+                {
                     index_t polygon_id = polygons.polygon( surface_id, p );
-                    for( auto v : range( polygons.nb_vertices( polygon_id ) ) ) {
+                    for( auto v : range( polygons.nb_vertices( polygon_id ) ) )
+                    {
                         index_t vertex_id = polygons.vertex(
                             ElementLocalVertex( polygon_id, v ) );
-                        if( vertex_exported[vertex_id] ) continue;
+                        if( vertex_exported[vertex_id] )
+                            continue;
                         vertex_exported[vertex_id] = true;
                         out << sep << vertex_id + 1;
                         sep = COMMA + SPACE;
@@ -131,18 +141,24 @@ namespace {
         void save_tets( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshCells3D& cells = geomodel.mesh.cells;
-            if( cells.nb_tet() > 0 ) {
+            if( cells.nb_tet() > 0 )
+            {
                 out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type
                     << EOL;
-                for( auto r : range( geomodel.nb_regions() ) ) {
-                    for( auto c : range( cells.nb_tet( r ) ) ) {
+                for( auto r : range( geomodel.nb_regions() ) )
+                {
+                    for( auto c : range( cells.nb_tet( r ) ) )
+                    {
                         index_t tetra = cells.tet( r, c );
                         out << tetra + 1;
-                        for( auto v : range( 4 ) ) {
-                            index_t vertex_id = tet_descriptor_abaqus.vertices[v];
+                        for( auto v : range( 4 ) )
+                        {
+                            index_t vertex_id =
+                                tet_descriptor_abaqus.vertices[v];
                             out << COMMA << SPACE
                                 << cells.vertex(
-                                    ElementLocalVertex( tetra, vertex_id ) ) + 1;
+                                       ElementLocalVertex( tetra, vertex_id ) )
+                                       + 1;
                         }
                         out << EOL;
                     }
@@ -152,40 +168,49 @@ namespace {
         void save_hex( const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshCells3D& cells = geomodel.mesh.cells;
-            if( cells.nb_hex() > 0 ) {
+            if( cells.nb_hex() > 0 )
+            {
                 out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type
                     << EOL;
-                for( auto r : range( geomodel.nb_regions() ) ) {
-                    for( auto c : range( cells.nb_hex( r ) ) ) {
+                for( auto r : range( geomodel.nb_regions() ) )
+                {
+                    for( auto c : range( cells.nb_hex( r ) ) )
+                    {
                         index_t hex = cells.hex( r, c );
                         out << hex + 1;
-                        for( auto v : range( 8 ) ) {
-                            index_t vertex_id = hex_descriptor_abaqus.vertices[v];
+                        for( auto v : range( 8 ) )
+                        {
+                            index_t vertex_id =
+                                hex_descriptor_abaqus.vertices[v];
                             out << COMMA << SPACE
                                 << cells.vertex(
-                                    ElementLocalVertex( hex, vertex_id ) ) + 1;
+                                       ElementLocalVertex( hex, vertex_id ) )
+                                       + 1;
                         }
                         out << EOL;
                     }
                 }
             }
         }
-        void save_regions( const GeoModel3D& geomodel, std::ofstream& out ) const
+        void save_regions(
+            const GeoModel3D& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshCells3D& cells = geomodel.mesh.cells;
-            for( auto r : range( geomodel.nb_regions() ) ) {
+            for( auto r : range( geomodel.nb_regions() ) )
+            {
                 const std::string& name = geomodel.region( r ).name();
                 out << "*ELSET, elset=" << name << EOL;
                 index_t count = 0;
                 std::string sep;
-                for( auto c : range( cells.nb_tet( r ) ) ) {
+                for( auto c : range( cells.nb_tet( r ) ) )
+                {
                     index_t tetra = cells.tet( r, c );
                     out << sep << tetra + 1;
                     sep = COMMA + SPACE;
                     new_line_if_needed( count, out, sep );
-
                 }
-                for( auto c : range( cells.nb_hex( r ) ) ) {
+                for( auto c : range( cells.nb_hex( r ) ) )
+                {
                     index_t hex = cells.hex( r, c );
                     out << sep << hex + 1;
                     sep = COMMA + SPACE;
@@ -203,12 +228,11 @@ namespace {
             save_regions( geomodel, out );
         }
         void new_line_if_needed(
-            index_t& count,
-            std::ofstream& out,
-            std::string& sep ) const
+            index_t& count, std::ofstream& out, std::string& sep ) const
         {
             count++;
-            if( count == NB_ENTRY_PER_LINE ) {
+            if( count == NB_ENTRY_PER_LINE )
+            {
                 count = 0;
                 sep = "";
                 out << EOL;
@@ -216,11 +240,11 @@ namespace {
         }
         void reset_line( index_t& count, std::ofstream& out ) const
         {
-            if( count != 0 ) {
+            if( count != 0 )
+            {
                 count = 0;
                 out << EOL;
             }
         }
     };
-
 }

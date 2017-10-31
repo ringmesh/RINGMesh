@@ -157,14 +157,6 @@ namespace RINGMesh {
         {
             return typeid( T ).name();
         }
-        const void* data() const final
-        {
-            return store_.data();
-        }
-        void* data() final
-        {
-            return store_.data();
-        }
      };
 
     template< class T > class VectorStore: public TypedStore< T > {
@@ -184,6 +176,14 @@ namespace RINGMesh {
             this->store_.resize( new_size );
         }
 
+        const void* data() const final
+        {
+            return store_.data();
+        }
+        void* data() final
+        {
+            return store_.data();
+        }
 
         void clear( bool keep_memory = false ) final
         {
@@ -249,8 +249,7 @@ namespace RINGMesh {
         ConstantStore( )
             : TypedStore< T >( )
         {
-            this->store_.resize( );
-            size_ = 1;
+            this->size_ = 1;
 
         }
 
@@ -259,14 +258,17 @@ namespace RINGMesh {
             Logger::warn( "Trying to resize constant attribute" );
         }
 
+        const void* data() const final
+        {
+            return &store_;
+        }
+        void* data() final
+        {
+            return &store_;
+        }
 
         void clear( bool keep_memory = false ) override
         {
-            if( keep_memory ) {
-                this->store_.resize( 0 );
-            } else {
-                this->store_.clear();
-            }
         }
 
         Store* clone() const override
@@ -461,6 +463,10 @@ namespace RINGMesh {
             return store_->data();
         }
 
+        bool elements_type_matches( const std::string& type_name ) const
+        {
+            return store_->elements_type_matches( type_name );
+        }
 
         /**
          * \brief Tests whether a given element type is registered in
@@ -850,7 +856,7 @@ namespace RINGMesh {
             store_ = manager_->find_attribute_store( name );
             if( store_ == nullptr ) {
                 store_ = new AttributeStore();
-                store_->set_store( new VectorStore<T>(1) );
+                store_->set_store( new VectorStore<T>() );
                 manager_->bind_attribute_store( name, store_ );
             } else {
                 ringmesh_assert( store_->get_store().elements_type_matches( typeid(T).name() ) );

@@ -377,9 +377,8 @@ namespace
         bool surf_side,
         GeoModelBuilderTSolid& geomodel_builder )
     {
-        geomodel_builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), region_id ),
-            gmme_id( Surface3D::type_name_static(), surface_id ), surf_side );
+        geomodel_builder.topology.add_region_surface_boundary_relation(
+            region_id, surface_id, surf_side );
     }
 
     /*!
@@ -615,7 +614,7 @@ namespace
                     " already exists on the ", region.gmme() );
                 continue;
             }
-            Attribute< std::vector< double> > attr ( region.vertex_attribute_manager(),
+            Attribute<  double > attr ( region.vertex_attribute_manager(),
                 load_storage.vertex_attribute_names_[attrib_itr] );
             // Does it resize all the past attributes to the size of the current
             // attribute?
@@ -852,16 +851,15 @@ namespace
             // Set the region name and boundaries
             if( name != "Universe" )
             {
-                gmme_id region_id = builder_.topology.create_mesh_entity(
+                const gmme_id region_id = builder_.topology.create_mesh_entity(
                     Region3D::type_name_static() );
                 builder_.info.set_mesh_entity_name( region_id, name );
                 for( const std::pair< index_t, bool >& info :
                     region_boundaries )
                 {
-                    gmme_id surface_id(
-                        Surface3D::type_name_static(), info.first );
-                    builder_.topology.add_mesh_entity_boundary_relation(
-                        region_id, surface_id, info.second );
+                    const index_t surface_id{ info.first };
+                    builder_.topology.add_region_surface_boundary_relation(
+                        region_id.index(), surface_id, info.second );
                 }
             }
         }

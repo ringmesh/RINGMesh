@@ -38,9 +38,10 @@
  * @author Arnaud Botella
  */
 
-namespace {
-
-    class GeoModelBuilderSVG final : public GeoModelBuilderFile< 2 > {
+namespace
+{
+    class GeoModelBuilderSVG final : public GeoModelBuilderFile< 2 >
+    {
     public:
         GeoModelBuilderSVG( GeoModel2D& geomodel, const std::string& filename )
             : GeoModelBuilderFile< 2 >( geomodel, filename ), height_( 0. )
@@ -51,13 +52,18 @@ namespace {
         void load_file()
         {
             tinyxml2::XMLDocument svg_file;
-            if( svg_file.LoadFile( filename_.c_str() ) != tinyxml2::XML_SUCCESS ) {
-                throw RINGMeshException( "I/O", "Error while loading svg file." );
+            if( svg_file.LoadFile( filename_.c_str() )
+                != tinyxml2::XML_SUCCESS )
+            {
+                throw RINGMeshException(
+                    "I/O", "Error while loading svg file." );
             }
-            tinyxml2::XMLElement* svg_node = svg_file.FirstChildElement( "svg" );
-            if( svg_node == nullptr ) {
-                throw RINGMeshException( "I/O",
-                    "Error while getting root of svg file." );
+            tinyxml2::XMLElement* svg_node =
+                svg_file.FirstChildElement( "svg" );
+            if( svg_node == nullptr )
+            {
+                throw RINGMeshException(
+                    "I/O", "Error while getting root of svg file." );
             }
             height_ = svg_node->DoubleAttribute( "height" );
             create_lines( svg_node );
@@ -68,16 +74,21 @@ namespace {
         void create_lines( tinyxml2::XMLElement* svg_node )
         {
             tinyxml2::XMLElement* group = svg_node->FirstChildElement( "g" );
-            while( group != nullptr ) {
+            while( group != nullptr )
+            {
                 vec2 group_translation = get_transform( group );
                 tinyxml2::XMLElement* path = group->FirstChildElement( "path" );
-                while( path != nullptr ) {
-                    vec2 translation = group_translation + get_transform( path );
+                while( path != nullptr )
+                {
+                    vec2 translation =
+                        group_translation + get_transform( path );
                     std::string data = path->Attribute( "d" );
-                    std::vector< vec2 > vertices = get_path_vertices( data,
-                        translation );
-                    index_t line_id = topology.create_mesh_entity(
-                        Line2D::type_name_static() ).index();
+                    std::vector< vec2 > vertices =
+                        get_path_vertices( data, translation );
+                    index_t line_id =
+                        topology
+                            .create_mesh_entity( Line2D::type_name_static() )
+                            .index();
                     geometry.set_line( line_id, vertices );
                     path = path->NextSiblingElement( "path" );
                 }
@@ -88,14 +99,16 @@ namespace {
         vec2 get_transform( tinyxml2::XMLElement* group )
         {
             const char* attribute = group->Attribute( "transform" );
-            if( attribute == nullptr ) {
+            if( attribute == nullptr )
+            {
                 return vec2();
             }
             std::string action, parameters;
             GEO::String::split_string( attribute, '(', action, parameters );
-            if( action != "translate" ) {
-                throw RINGMeshException( "I/O", "Forbidden transformation ", action,
-                    " found in the svg file. " );
+            if( action != "translate" )
+            {
+                throw RINGMeshException( "I/O", "Forbidden transformation ",
+                    action, " found in the svg file. " );
             }
             parameters.pop_back();
             std::vector< std::string > coordinates;
@@ -110,9 +123,11 @@ namespace {
         {
             std::vector< vec2 > point_extremities;
             point_extremities.reserve( geomodel_.nb_lines() * 2 );
-            for( const auto& line : line_range < 2 > ( geomodel_ ) ) {
+            for( const auto& line : line_range< 2 >( geomodel_ ) )
+            {
                 point_extremities.push_back( line.vertex( 0 ) );
-                point_extremities.push_back( line.vertex( line.nb_vertices() - 1 ) );
+                point_extremities.push_back(
+                    line.vertex( line.nb_vertices() - 1 ) );
             }
 
             NNSearch2D nn_search( point_extremities );
@@ -123,50 +138,58 @@ namespace {
                     geomodel_.epsilon() );
 
             topology.create_mesh_entities( Corner2D::type_name_static(),
-                static_cast< index_t > ( unique_points.size() ) );
-            for( index_t c : range( geomodel_.nb_corners() ) ) {
+                static_cast< index_t >( unique_points.size() ) );
+            for( index_t c : range( geomodel_.nb_corners() ) )
+            {
                 geometry.set_corner( c, unique_points[c] );
             }
             index_t index = 0;
-            for( const auto& line : line_range < 2 > ( geomodel_ ) ) {
-                gmme_id line_id = line.gmme();
-                index_t point0 = index_map[index++ ];
-                gmme_id corner0( Corner2D::type_name_static(), point0 );
-                index_t point1 = index_map[index++ ];
-                gmme_id corner1( Corner2D::type_name_static(), point1 );
-                topology.add_mesh_entity_boundary_relation( line_id, corner0 );
-                topology.add_mesh_entity_boundary_relation( line_id, corner1 );
+            for( const auto& line : line_range< 2 >( geomodel_ ) )
+            {
+                const auto line_id = line.gmme();
+                const index_t corner0 = index_map[index++];
+                const index_t corner1 = index_map[index++];
+                topology.add_line_corner_boundary_relation(
+                    line_id.index(), corner0 );
+                topology.add_line_corner_boundary_relation(
+                    line_id.index(), corner1 );
 
                 // Update line vertex extremities with corner coordinates
-                geometry.set_mesh_entity_vertex( line_id, 0, unique_points[point0],
-                    false );
-                geometry.set_mesh_entity_vertex( line_id, line.nb_vertices() - 1,
-                    unique_points[point1], false );
+                geometry.set_mesh_entity_vertex(
+                    line_id, 0, unique_points[corner0], false );
+                geometry.set_mesh_entity_vertex( line_id,
+                    line.nb_vertices() - 1, unique_points[corner1], false );
             }
         }
 
         std::vector< vec2 > get_path_vertices(
-            std::string& data,
-            const vec2& translation ) const
+            std::string& data, const vec2& translation ) const
         {
             std::vector< std::string > tokens = get_tokens( data );
             std::vector< vec2 > vertices;
             vertices.reserve( tokens.size() );
             bool is_absolute = true;
-            for( index_t i = 0; i < tokens.size(); i++ ) {
+            for( index_t i = 0; i < tokens.size(); i++ )
+            {
                 std::string& token = tokens[i];
-                if( std::isalpha( token.front() ) ) {
+                if( std::isalpha( token.front() ) )
+                {
                     ringmesh_assert( token.size() == 1 );
                     is_absolute = is_command_absolute( token );
-                } else {
+                }
+                else
+                {
                     vec2 vertex;
                     GEO::String::from_string( token, vertex.x );
                     GEO::String::from_string( tokens[++i], vertex.y );
-                    if( is_absolute || vertices.empty() ) {
+                    if( is_absolute || vertices.empty() )
+                    {
                         vertex += translation;
                         vertex.y = height_ - vertex.y;
                         vertices.push_back( vertex );
-                    } else {
+                    }
+                    else
+                    {
                         vertex.y = -vertex.y;
                         vertices.push_back( vertices.back() + vertex );
                     }
@@ -178,10 +201,12 @@ namespace {
         void throw_if_forbidden_command( const std::string& data ) const
         {
             std::string forbidden_letters( "HhVvCcSs" );
-            for( char letter : forbidden_letters ) {
-                if( data.find( letter ) != std::string::npos ) {
-                    throw RINGMeshException( "I/O", "Forbidden command ", letter,
-                        " found in the svg file. ",
+            for( char letter : forbidden_letters )
+            {
+                if( data.find( letter ) != std::string::npos )
+                {
+                    throw RINGMeshException( "I/O", "Forbidden command ",
+                        letter, " found in the svg file. ",
                         "Flatten your paths before importing in RINGMesh." );
                 }
             }
@@ -192,25 +217,26 @@ namespace {
             throw_if_forbidden_command( data );
             std::replace( data.begin(), data.end(), ',', ' ' );
             std::string letters( "MmLl" );
-            for( char letter : letters ) {
+            for( char letter : letters )
+            {
                 std::string string_letter = GEO::String::to_string( letter );
-                replace_all_string_occurens( data, string_letter,
-                    " " + string_letter + " " );
+                replace_all_string_occurens(
+                    data, string_letter, " " + string_letter + " " );
             }
             std::vector< std::string > tokens;
             GEO::String::split_string( data, ' ', tokens );
             return tokens;
         }
 
-        void replace_all_string_occurens(
-            std::string& context,
+        void replace_all_string_occurens( std::string& context,
             const std::string& to_replace,
             const std::string& replacement ) const
         {
             std::size_t look_here = 0;
             std::size_t found_here;
             while( ( found_here = context.find( to_replace, look_here ) )
-                != std::string::npos ) {
+                   != std::string::npos )
+            {
                 context.replace( found_here, to_replace.size(), replacement );
                 look_here = found_here + replacement.size();
             }
@@ -225,7 +251,8 @@ namespace {
         double height_;
     };
 
-    class SVGIOHandler final: public GeoModelInputHandler2D {
+    class SVGIOHandler final : public GeoModelInputHandler2D
+    {
     public:
         void load( const std::string& filename, GeoModel2D& geomodel ) final
         {
@@ -233,5 +260,4 @@ namespace {
             builder.build_geomodel();
         }
     };
-
 }

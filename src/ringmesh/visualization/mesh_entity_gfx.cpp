@@ -119,7 +119,8 @@ namespace RINGMesh
 
             if( store == nullptr )
                 return 0;
-            return store->get_store().dimension();
+            return 1;
+//            return store->get_store().dimension();
         }
 
         AttributesManager& get_attribute_manager() override
@@ -189,7 +190,8 @@ namespace RINGMesh
 
             if( store == nullptr )
                 return 0;
-            return store->get_store().dimension();
+            return 1;
+//            return store->get_store().dimension();
         }
 
         AttributesManager& get_attribute_manager() override
@@ -259,7 +261,8 @@ namespace RINGMesh
 
             if( store == nullptr )
                 return 0;
-            return store->get_store().dimension();
+            return 1;
+//            return store->get_store().dimension();
         }
 
         AttributesManager& get_attribute_manager() override
@@ -326,7 +329,8 @@ namespace RINGMesh
 
             if( store == nullptr )
                 return 0;
-            return store->get_store().dimension();
+            return 1;
+//            return store->get_store().dimension();
         }
 
         AttributesManager& get_attribute_manager() override

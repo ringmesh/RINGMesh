@@ -54,6 +54,8 @@ namespace RINGMesh
                 "Threshold for numerical precision (ratio of the bbox "
                 "diagonal)",
                 GEO::CmdLine::ARG_ADVANCED );
+            GEO::CmdLine::declare_arg( "algo:tet", "TetGen",
+                "Toggles the tetrahedral mesher (TetGen, MG_Tetra)" );
         }
 
         void import_arg_group_in()
@@ -94,8 +96,10 @@ namespace RINGMesh
                 "    'E' to toggle off checks on finite extension\n"
                 "    'c' to toggle off checks on geomodel connectivity\n"
                 "  Geometry checks:\n"
-                "    's' to toggle off checks on conformity between surfaces and lines\n"
-                "    'r' to toggle off checks on conformity between regions and surfaces\n"
+                "    's' to toggle off checks on conformity between surfaces "
+                "and lines\n"
+                "    'r' to toggle off checks on conformity between regions "
+                "and surfaces\n"
                 "    'm' to toggle off checks on mesh entities\n"
                 "    'e' to toggle off checks on non manifold edges\n"
                 "    'I' to toggle off checks on polygon intersections\n"

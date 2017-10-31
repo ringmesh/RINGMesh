@@ -28,5 +28,5 @@ test_script:
 
 on_success:
  - IF "%APPVEYOR_REPO_BRANCH%"=="default" (
-     C:\projects\ringmesh\launch_coverage.cmd
+     C:\projects\ringmesh\tools\launch_coverage.cmd
    )

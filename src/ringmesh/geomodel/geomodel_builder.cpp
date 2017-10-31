@@ -876,7 +876,7 @@ namespace RINGMesh
         : topology( builder, geomodel ),
           geometry( builder, geomodel ),
           geology( builder, geomodel ),
-          removal( builder, geomodel ),
+          remove( builder, geomodel ),
           info( builder, geomodel ),
           geomodel_( geomodel ),
           geomodel_access_( geomodel )
@@ -961,9 +961,7 @@ namespace RINGMesh
 
                 for( auto j : adjacent_surfaces )
                 {
-                    gmme_id surface_index{
-                        surface_type_name_static(), j
-                    };
+                    gmme_id surface_index{ surface_type_name_static(), j };
                     topology.add_mesh_entity_boundary_relation(
                         surface_index, line_index );
                 }
@@ -1053,8 +1051,7 @@ namespace RINGMesh
                 continue;
             }
             // Create a new region
-            gmme_id cur_region_id{ region_type_name_static(),
-                geomodel_.nb_regions() };
+            index_t cur_region_id{ geomodel_.nb_regions() };
             topology.create_mesh_entities( region_type_name_static(), 1 );
             // Get all oriented surfaces defining this region
             std::stack< std::pair< index_t, bool > > SR;
@@ -1070,10 +1067,9 @@ namespace RINGMesh
                     continue;
                 }
                 // Add the surface to the current region
-                topology.add_mesh_entity_boundary_relation( cur_region_id,
-                    gmme_id{ surface_type_name_static(), s.first },
-                    s.second );
-                surf_2_region[s_id] = cur_region_id.index();
+                topology.add_region_surface_boundary_relation(
+                    cur_region_id, s.first, s.second );
+                surf_2_region[s_id] = cur_region_id;
 
                 // Check the other side of the surface and push it in S
                 index_t s_id_opp = !s.second ? 2 * s.first : 2 * s.first + 1;
@@ -1128,7 +1124,7 @@ namespace RINGMesh
         const auto& cur_region = geomodel_.region( universe_id );
         std::set< gmme_id > to_erase;
         to_erase.insert( cur_region.gmme() );
-        removal.remove_mesh_entities( to_erase );
+        remove.remove_mesh_entities( to_erase );
     }
 
     template class RINGMESH_API GeoModelBuilderBase< 2 >;

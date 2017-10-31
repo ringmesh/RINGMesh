@@ -88,13 +88,13 @@ namespace
         vertex_bool_attr.set_value( vertex_i, ( rounded_vertex_xy % 2 == 0 ) );
         vertex_double_attr.set_value(vertex_i, cur_vertex.x );
         vertex_vec3_attr.set_value(vertex_i, cur_vertex );
-        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 0, cur_vertex.x );
-        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 1, cur_vertex.y );
-        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 1, cur_vertex.y );
-        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 2, cur_vertex.z );
-        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 3, cur_vertex.x );
-        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 4, cur_vertex.y );
-        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 5, cur_vertex.z );
+//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 0, cur_vertex.x );
+//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 1, cur_vertex.y );
+//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 1, cur_vertex.y );
+//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 2, cur_vertex.z );
+//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 3, cur_vertex.x );
+//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 4, cur_vertex.y );
+//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 5, cur_vertex.z );
         vertex_char_attr.set_value( vertex_i, std::to_string( cur_vertex.y ).data()[0] );
     }
 
@@ -114,7 +114,8 @@ namespace
                 reg_attr_mgr, attribute_names[2] );
             Attribute< vec3 > vertex_vec3_attr(
                 reg_attr_mgr, attribute_names[3] );
-            Attribute< std::vector<double> > vertex_dim_6_double_attr(
+//            Attribute< std::vector<double> > vertex_dim_6_double_attr(
+            Attribute< double > vertex_dim_6_double_attr(
                 reg_attr_mgr, attribute_names[4] );
             Attribute< char > vertex_char_attr(
                 reg_attr_mgr, attribute_names[5] );
@@ -145,7 +146,8 @@ namespace
             gmmv_attr_mgr, attribute_names[2] );
         Attribute< vec3 > vertex_vec3_attr(
             gmmv_attr_mgr, attribute_names[3] );
-        Attribute< std::vector< double > > vertex_dim_6_double_attr(
+        //            Attribute< std::vector<double> > vertex_dim_6_double_attr(
+                    Attribute< double > vertex_dim_6_double_attr(
             gmmv_attr_mgr, attribute_names[4] );
         Attribute< char > vertex_char_attr(
             gmmv_attr_mgr, attribute_names[5] );

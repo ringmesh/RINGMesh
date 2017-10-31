@@ -115,8 +115,8 @@ namespace RINGMesh
         Logger::out(
             "", "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> " );
         Logger::out( "", "You can have access to the full open-source ",
-            "code through its Bitbucket repository: " );
-        Logger::out( "", "https://bitbucket.org/ring_team/ringmesh" );
+            "code through its GitHub repository: " );
+        Logger::out( "", "https://github.com/ringmesh/RINGMesh" );
         Logger::out( "", "More information on this project and other ",
             "projects of the team: " );
         Logger::out( "", "http://www.ring-team.org" );
