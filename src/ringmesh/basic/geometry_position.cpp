@@ -373,7 +373,11 @@ namespace RINGMesh
             vec2 seg2{ segment2.direction() };
             double angle_between_pi_and_minus_pi =
                 std::atan2( seg1.y, seg1.x ) - std::atan2( seg2.y, seg2.x );
-            return M_PI + angle_between_pi_and_minus_pi;
+            if( angle_between_pi_and_minus_pi < 0 )
+            {
+                return angle_between_pi_and_minus_pi + 2 * M_PI;
+            }
+            return angle_between_pi_and_minus_pi;
 
         }
 

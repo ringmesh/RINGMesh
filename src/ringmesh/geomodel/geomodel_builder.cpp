@@ -942,6 +942,7 @@ namespace RINGMesh {
         // Each side of each Line is in one Surface( +side is first )
         std::vector< index_t > line_2_surface( 2 * this->geomodel_.nb_lines(),
             NO_ID );
+
         index_t surface_count { 0 };
         while( std::count( line_2_surface.begin(), line_2_surface.end(), NO_ID ) > 0 ) {
             auto location = static_cast< index_t >( std::distance(
@@ -957,8 +958,6 @@ namespace RINGMesh {
             bool stop{ false };
             while( !stop )
             {
-                DEBUG( cur_line_id );
-                DEBUG( cur_side );
                 ringmesh_assert( line_2_surface[2 * cur_line_id + ( cur_side ? 0 : 1 )] == NO_ID );
                 line_2_surface[2 * cur_line_id + ( cur_side ? 0 : 1 )] = surface_count;
 
@@ -996,28 +995,17 @@ namespace RINGMesh {
                             cur_corner.gmme();
                 }
 
-                DEBUG( next_line_id );
-                DEBUG( next_side );
-
-
                 if( next_line_id == first_line_id && next_side == first_side )
                 {
                     stop = true;
-                    DEBUG("stop");
                 } else
                 {
                     cur_line_id = next_line_id;
                     cur_side = next_side;
                 }
             }
-            for( auto i : range(geomodel_.nb_lines()) )
-            {
-                std::cout << i << " : " << line_2_surface[2*i] << " / " << line_2_surface[2*i + 1] << std::endl;
-            }
-
             ++surface_count;
         }
-        DEBUG( surface_count );
     }
 
     GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel3D& geomodel )
