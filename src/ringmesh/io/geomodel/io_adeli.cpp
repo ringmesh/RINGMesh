@@ -48,13 +48,13 @@ namespace
     {
     public:
         RegionAndDependentEntities(
-            const GeoModel3D& geomodel, const gmme_id& region_gmme )
-            : geomodel_( geomodel ), region_gmme_( region_gmme )
+            const GeoModel3D& geomodel, gmme_id region_gmme )
+            : geomodel_( geomodel ), region_gmme_( std::move( region_gmme ) )
         {
             build();
         }
         RegionAndDependentEntities( const GeoModel3D& geomodel,
-            const gmme_id& region_gmme,
+            gmme_id region_gmme,
             index_t offset_vertices,
             index_t offset_elements,
             index_t offset_corners,
@@ -62,7 +62,7 @@ namespace
             index_t offset_surfaces,
             index_t offset_regions )
             : geomodel_( geomodel ),
-              region_gmme_( region_gmme ),
+              region_gmme_( std::move( region_gmme ) ),
               offset_vertices_( offset_vertices ),
               offset_elements_( offset_elements ),
               offset_corners_( offset_corners ),
@@ -131,7 +131,7 @@ namespace
         }
         void write_corners( std::ofstream& out )
         {
-            const NNSearch3D& nn =
+            const auto& nn =
                 geomodel_.mesh_entity( region_gmme_ ).vertex_nn_search();
             for( const auto& corner_gmme : corners_ )
             {
