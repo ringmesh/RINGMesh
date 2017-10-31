@@ -55,7 +55,7 @@ jobs:
         - cd build
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd ringmesh/Release
-        - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw_outputs make
+        - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs make
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
     
