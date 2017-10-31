@@ -52,7 +52,7 @@ jobs:
         - cd build/ringmesh
         - CXX=clang++ CC=clang cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ../..
         - cmake --build . --config Debug
-        - ctest
+        - ctest -C Debug
 
     - stage: compile and test
       os: osx
