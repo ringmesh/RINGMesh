@@ -6,43 +6,10 @@ env:
     secure: Fo3r89wp9lKA2IoNAweBji9su5qmKhYrnkJ49Ci0VK1p6l4kM2CL5IF3aQvwweybtIacpxLZQN+XSrGZe21Mtc+tuG5OgJDg7R462sD9PHt+6bpJOcCx3c7Cw6U4ObKnbaF/2ybqoXk4uFfAISXHgJ9Og2+T+ouXgfou03sQHz/yY7bFjUFqX0VPRDNNvV9CZuP5CMoLUf/Lp6qhuS2V1q6qTMziQ+ga5Bv6/sMmetvSglrXH1wXG4cTF9ceBWknV6ql0cYnQGFp+uOQq4a8E3LA8zF75kkFim1BGlzhgZfWvCmdk20HgJRVfd8iqFmHwhV+Zm+9koqNo5C4T513LA1IxapCJ2H7kNWb77hJ/7JGfZO6Nk9yIp2YHQLtGn90NXisHhlSvZzNvtrewqjdS5NAsz3qxXYjKqdROYTSVD8QiGJZOTuZU8XnEivnj+MMSlFgsJ5ff0cZmMsbEJ9KPeaCW4r8wpVraEI9cCKaTC1jqyV6MSAV0THqdRzV7tI86ZyWYopCPntFbdd8+89yX7qNOBpwimJVfEbsUaPAo356o0Mjic//gbHbCd5JoOpCt7uBoOSpSX1tj8E63mc0EyLn9N/4z0YkfOKHoIrbN3Q1vDqX49M51vNjgo8sYiGelqQTbGl8lrnHGh3Vsub1MrvW+idpINAeZp8SN/REy28=
 
 stages:
-  - format
-  - compile and test
+  - compile and test on MacOS X (Xcode)
 
 jobs:
   include:
-    - stage: format
-      os: linux
-      env:
-        - TEST="Clang format"
-      script:
-        - |
-          if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-            mkdir build
-            cd build
-            cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
-            cd ringmesh/Release
-            make format
-            if [[ -n $(git diff) ]]; then
-              echo "Format requirement is not satisfied"
-              return 1
-            fi
-          fi
-      after_failure:
-        - "$TRAVIS_BUILD_DIR/tools/travis-ci-git-commit.bash"
-    
-    - stage: compile and test
-      os: linux
-      env:
-        - TEST="Gcc Check"
-      script:
-        - mkdir build
-        - cd build
-        - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
-        - cd ringmesh/Debug
-        - cmake --build .
-        - ctest
-
     - stage: compile and test
       os: osx
       env:
@@ -50,6 +17,6 @@ jobs:
       script:
         - mkdir -p build/ringmesh
         - cd build/ringmesh
-        - cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ../..
         - cmake --build . --config Debug
         - ctest
