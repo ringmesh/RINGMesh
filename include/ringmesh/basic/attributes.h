@@ -63,9 +63,7 @@ namespace RINGMesh
         {
         }
 
-        virtual ~Store()
-        {
-        }
+        virtual ~Store() = default;
         /**
         * \brief Gets the size.
         * \return the number of items
@@ -121,7 +119,7 @@ namespace RINGMesh
 
         virtual void resize( index_t new_size ) = 0;
 
-        virtual void clear( bool keep_memory = false ) = 0;
+        virtual void clear() = 0;
 
         virtual Store* clone() const = 0;
 
@@ -166,42 +164,34 @@ namespace RINGMesh
         /**
         * \brief Creates a new empty attribute store.
         */
-        VectorStore() : TypedStore< T >()
-        {
-        }
+        VectorStore() = default;
 
         void resize( index_t new_size ) final
         {
             this->size_ = new_size;
-            this->store_.resize( new_size );
+            vector_.resize( new_size );
         }
 
         const void* data() const final
         {
-            return store_.data();
-        }
-        void* data() final
-        {
-            return store_.data();
+            return vector_.data();
         }
 
-        void clear( bool keep_memory = false ) final
+        void* data() final
         {
-            if( keep_memory )
-            {
-                this->store_.resize( 0 );
-            }
-            else
-            {
-                this->store_.clear();
-            }
+            return vector_.data();
+        }
+
+        void clear() final
+        {
+            vector_.clear();
         }
 
         Store* clone() const final
         {
             VectorStore< T >* result = new VectorStore< T >();
             result->resize( this->size() );
-            result->store_ = this->store_;
+            result->vector_ = vector_;
             return result;
         }
 
@@ -242,7 +232,7 @@ namespace RINGMesh
         }
 
     protected:
-        std::vector< T > store_;
+        std::vector< T > vector_;
     };
 
     template < class T >
@@ -252,7 +242,7 @@ namespace RINGMesh
         /**
         * \brief Creates a new empty attribute store.
         */
-        ConstantStore() : TypedStore< T >()
+        ConstantStore()
         {
             this->size_ = 1;
         }
@@ -264,21 +254,21 @@ namespace RINGMesh
 
         const void* data() const final
         {
-            return &store_;
+            return &constant_;
         }
         void* data() final
         {
-            return &store_;
+            return &constant_;
         }
 
-        void clear( bool keep_memory = false ) override
+        void clear() override
         {
         }
 
         Store* clone() const override
         {
             ConstantStore< T >* result = new ConstantStore< T >();
-            result->store_ = this->store_;
+            result->constant_ = constant_;
             return result;
         }
         void compress( const std::vector< index_t >& old2new ) final
@@ -318,7 +308,7 @@ namespace RINGMesh
         }
 
     protected:
-        T store_;
+        T constant_;
     };
 
     /**
@@ -380,12 +370,10 @@ namespace RINGMesh
 
         /**
          * \brief Resizes this AttributeStore to 0.
-         * \param[in] keep_memory if true, then memory
-         *  is kept reserved for future use.
          */
-        void clear( bool keep_memory = false )
+        void clear()
         {
-            store_->clear( keep_memory );
+            store_->clear();
         }
 
         /**
@@ -592,33 +580,13 @@ namespace RINGMesh
 
     /*********************************************************************/
 
-    /*********************************************************************/
-
-    /**
-     * \brief Implementation of AttributeStoreCreator for a specific type.
-     * \tparam T type of the elements
-     */
-    template < class T >
-    class TypedAttributeStoreCreator : public AttributeStoreCreator
-    {
-    public:
-        /**
-         * \copydoc AttributeStoreCreator::create_attribute_store()
-         */
-        virtual AttributeStore* create_attribute_store()
-        {
-            return new TypedStore< T >();
-        }
-    };
-
-    /*********************************************************************/
-
     /**
      * \brief Managers a set of attributes attached to
      *  an object.
      */
     class RINGMESH_API AttributesManager
     {
+        ringmesh_disable_copy_and_move( AttributesManager );
     public:
         /**
          * \brief Constructs a new empty AttributesManager.
@@ -635,27 +603,27 @@ namespace RINGMesh
          * \return The number of attributes managed by this
          *   AttributesManager.
          */
-        index_t nb() const
+        index_t nb_attributes() const
         {
-            return index_t( attributes_.size() );
+            return static_cast< index_t >( attributes_.size() );
         }
 
         /**
          * \brief Gets the names of all the attributes in this
          *   AttributeStore.
-         * \param[out] names a vector of all attribute names
+         * \return a vector of all attribute names
          */
-        void list_attribute_names( std::vector< std::string >& names ) const;
+        std::vector< std::string > attribute_names() const;
 
         /**
-         * \brief Gets the size.
+         * \brief Gets the number of items in an Attribute.
          * \details All attributes stored in an AttributesManager have
          *  the same number of items.
          * \return the number of items of each attribute.
          */
-        index_t size() const
+        index_t nb_items() const
         {
-            return size_;
+            return nb_items_;
         }
 
         /**
@@ -671,10 +639,8 @@ namespace RINGMesh
          * \param[in] keep_attributes if true, then all
          *  attributes are resized to 0 but their names are
          *  kept.
-         * \param[in] keep_memory if true, allocated memory
-         *  is kept reserved.
          */
-        void clear( bool keep_attributes, bool keep_memory = false );
+        void clear( bool keep_attributes );
 
         /**
          * \brief Binds an AttributeStore with the specified name.
@@ -778,26 +744,7 @@ namespace RINGMesh
         void copy_item( index_t to, index_t from );
 
     private:
-        /**
-         * \brief Forbids copy.
-         * \details This is to make sure that client code does
-         *   not unintentionlly copies an AttributesManager (for
-         *   instance by passing it by-value to a function).
-         *   Use copy() instead.
-         */
-        AttributesManager( const AttributesManager& rhs );
-
-        /**
-         * \brief Forbids copy.
-         * \details This is to make sure that client code does
-         *   not unintentionlly copies an AttributesManager (for
-         *   instance by passing it by-value to a function).
-         *   Use copy() instead.
-         */
-        const AttributesManager& operator=( const AttributesManager& rhs );
-
-    private:
-        index_t size_{ 0 };
+        index_t nb_items_{ 0 };
         std::map< std::string, AttributeStore* > attributes_;
     };
 
@@ -810,31 +757,8 @@ namespace RINGMesh
     template < class T >
     class AttributeBase
     {
+        ringmesh_disable_copy_and_move( AttributeBase );
     public:
-        // todo the constructors might be protected. Do we want to be able to
-        // create an AttributeBase?
-        /**
-         * \brief Creates an unitialized (unbound) Attribute.
-         */
-        AttributeBase() : manager_( nullptr ), store_( nullptr )
-        {
-        }
-
-        /**
-         * \brief Creates or retreives a persistent attribute attached to
-         *  a given AttributesManager.
-         * \details If the attribute already exists with the specified
-         *  name in the AttributesManager then it is retreived, else
-         *  it is created and bound to the name.
-         * \param[in] manager a reference to the AttributesManager
-         * \param[in] name name of the attribute
-         */
-        AttributeBase( AttributesManager& manager, const std::string& name )
-            : manager_( nullptr ), store_( nullptr )
-        {
-            bind( manager, name );
-        }
-
         /**
          * \brief Tests whether an Attribute is bound.
          * \retval true if this Attribute is bound
@@ -990,8 +914,29 @@ namespace RINGMesh
         }
 
     protected:
-        AttributesManager* manager_;
-        AttributeStore* store_;
+       /**
+         * \brief Creates an unitialized (unbound) Attribute.
+         */
+        AttributeBase() = default;
+
+        /**
+         * \brief Creates or retreives a persistent attribute attached to
+         *  a given AttributesManager.
+         * \details If the attribute already exists with the specified
+         *  name in the AttributesManager then it is retreived, else
+         *  it is created and bound to the name.
+         * \param[in] manager a reference to the AttributesManager
+         * \param[in] name name of the attribute
+         */
+        AttributeBase( AttributesManager& manager, const std::string& name )
+        {
+            bind( manager, name );
+        }
+
+
+    protected:
+        AttributesManager* manager_{ nullptr };
+        AttributeStore* store_{ nullptr };
     };
 
     /*********************************************************************/
@@ -1011,9 +956,7 @@ namespace RINGMesh
         /**
          * \brief Creates an unitialized (unbound) Attribute.
          */
-        Attribute() : superclass()
-        {
-        }
+        Attribute() = default;
 
         /**
          * \brief Creates or retreives a persistent attribute attached to
@@ -1074,16 +1017,6 @@ namespace RINGMesh
                 ( *this )[i] = val;
             }
         }
-
-    private:
-        /**
-         * \brief Forbids copy.
-         */
-        Attribute( const Attribute< T >& rhs );
-        /**
-         * \brief Forbids copy.
-         */
-        Attribute< T >& operator=( const Attribute< T >& rhs );
     };
     /**
      * \brief Specialization of Attribute for booleans
@@ -1287,16 +1220,6 @@ namespace RINGMesh
                 i < superclass::store_->get_store().nb_elements() );
             return ( (const Byte*) superclass::store_->get_store().data() )[i];
         }
-
-    private:
-        /**
-         * \brief Forbids copy.
-         */
-        Attribute( const Attribute< bool >& rhs );
-        /**
-         * \brief Forbids copy.
-         */
-        Attribute< bool >& operator=( const Attribute< bool >& rhs );
     };
 
     /***********************************************************/

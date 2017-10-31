@@ -112,10 +112,10 @@ namespace
                 const Region3D& cur_reg = geomodel.region( reg_i );
                 AttributesManager& reg_vertex_attr_mgr =
                     cur_reg.vertex_attribute_manager();
-                std::vector< std::string > att_v_names;
-                reg_vertex_attr_mgr.list_attribute_names( att_v_names );
+                std::vector< std::string > att_v_names =
+                reg_vertex_attr_mgr.attribute_names();
                 ringmesh_assert(
-                    att_v_names.size() == reg_vertex_attr_mgr.nb() );
+                    att_v_names.size() == reg_vertex_attr_mgr.nb_attributes() );
                 for( const std::string& cur_att_v_name : att_v_names )
                 {
                     if( cur_att_v_name == "point" )
@@ -247,8 +247,8 @@ namespace
             for( const auto& cur_reg : region_range< 3 >( geomodel ) )
             {
                 auto& reg_cell_attr_mgr = cur_reg.cell_attribute_manager();
-                std::vector< std::string > att_c_names;
-                reg_cell_attr_mgr.list_attribute_names( att_c_names );
+                std::vector< std::string > att_c_names =
+                reg_cell_attr_mgr.attribute_names();
                 ringmesh_assert( att_c_names.size() == reg_cell_attr_mgr.nb() );
                 for( const auto& cur_att_c_name : att_c_names )
                 {

@@ -2928,8 +2928,8 @@ namespace RINGMesh
         const
     {
         auto& gmm_v_attr_mgr = vertices.attribute_manager();
-        std::vector< std::string > att_v_names;
-        gmm_v_attr_mgr.list_attribute_names( att_v_names );
+        std::vector< std::string > att_v_names=
+        gmm_v_attr_mgr.attribute_names();
         for( const auto& cur_attr_name : att_v_names )
         {
             // It is not necessary to copy the coordinates. There are already
@@ -3004,10 +3004,10 @@ namespace RINGMesh
     {
         for( const auto& cur_reg : geomodel().regions() )
         {
-            std::vector< std::string > att_v_names;
             AttributesManager& reg_vertex_attr_mgr =
                 cur_reg.vertex_attribute_manager();
-            reg_vertex_attr_mgr.list_attribute_names( att_v_names );
+            std::vector< std::string > att_v_names=
+            reg_vertex_attr_mgr.attribute_names( );
             for( const auto& cur_attr_name : att_v_names )
             {
                 // It is not necessary to copy the coordinates. There are
@@ -3070,8 +3070,8 @@ namespace RINGMesh
         const
     {
         auto& gmm_c_attr_mgr = cells.attribute_manager();
-        std::vector< std::string > att_c_names;
-        gmm_c_attr_mgr.list_attribute_names( att_c_names );
+        std::vector< std::string > att_c_names=
+        gmm_c_attr_mgr.attribute_names( );
         const auto& nn_search = cells.cell_nn_search();
 
         for( const auto& cur_attr_name : att_c_names )
@@ -3138,9 +3138,9 @@ namespace RINGMesh
         const auto& nn_search = cells.cell_nn_search();
         for( const auto& cur_reg : geomodel().regions() )
         {
-            std::vector< std::string > att_c_names;
             auto& reg_cell_attr_mgr = cur_reg.cell_attribute_manager();
-            reg_cell_attr_mgr.list_attribute_names( att_c_names );
+            std::vector< std::string > att_c_names=
+            reg_cell_attr_mgr.attribute_names();
             for( const auto& cur_attr_name : att_c_names )
             {
                 auto* cur_c_att_store_in_reg =

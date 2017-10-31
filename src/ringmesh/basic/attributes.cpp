@@ -69,12 +69,12 @@ namespace RINGMesh
 
     AttributesManager::~AttributesManager()
     {
-        clear( false, false );
+        clear( false );
     }
 
     void AttributesManager::resize( index_t new_size )
     {
-        if( new_size == size_ )
+        if( new_size == nb_items_ )
         {
             return;
         }
@@ -84,7 +84,7 @@ namespace RINGMesh
         {
             it->second->resize( new_size );
         }
-        size_ = new_size;
+        nb_items_ = new_size;
     }
 
     void AttributesManager::apply_permutation(
@@ -115,16 +115,15 @@ namespace RINGMesh
         attributes_[name] = as;
     }
 
-    void AttributesManager::list_attribute_names(
-        std::vector< std::string >& names ) const
+    std::vector< std::string > AttributesManager::attribute_names() const
     {
-        names.clear();
-        for( std::map< std::string, AttributeStore* >::const_iterator it =
-                 attributes_.begin();
-             it != attributes_.end(); ++it )
+        std::vector< std::string > names ;
+        names.reserve( attributes_.size() );
+        for( auto it : attributes_ )
         {
-            names.push_back( it->first );
+            names.push_back( it.first );
         }
+        return names;
     }
 
     AttributeStore* AttributesManager::find_attribute_store(
@@ -176,7 +175,7 @@ namespace RINGMesh
         ringmesh_assert_not_reached;
     }
 
-    void AttributesManager::clear( bool keep_attributes, bool keep_memory )
+    void AttributesManager::clear( bool keep_attributes )
     {
         if( keep_attributes )
         {
@@ -184,7 +183,7 @@ namespace RINGMesh
                      attributes_.begin();
                  it != attributes_.end(); ++it )
             {
-                it->second->clear( keep_memory );
+                it->second->clear();
             }
         }
         else
@@ -197,13 +196,13 @@ namespace RINGMesh
             }
             attributes_.clear();
         }
-        size_ = 0;
+        nb_items_ = 0;
     }
 
     void AttributesManager::copy( const AttributesManager& rhs )
     {
-        clear( false, false );
-        resize( rhs.size() );
+        clear( false );
+        resize( rhs.nb_items() );
         for( std::map< std::string, AttributeStore* >::const_iterator it =
                  rhs.attributes_.begin();
              it != rhs.attributes_.end(); ++it )
