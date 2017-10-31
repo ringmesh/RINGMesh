@@ -417,8 +417,8 @@ namespace RINGMesh
         std::vector< std::string > get_attribute_names()
         {
             const AttributesManager& attributes = get_attribute_manager();
-            std::vector< std::string > attribute_names=
-            attributes.attribute_names();
+            std::vector< std::string > attribute_names =
+                attributes.attribute_names();
             std::vector< std::string > names;
             for( const std::string& name : attribute_names )
             {

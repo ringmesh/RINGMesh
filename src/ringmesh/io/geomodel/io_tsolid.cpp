@@ -113,7 +113,7 @@ namespace
                 AttributesManager& reg_vertex_attr_mgr =
                     cur_reg.vertex_attribute_manager();
                 std::vector< std::string > att_v_names =
-                reg_vertex_attr_mgr.attribute_names();
+                    reg_vertex_attr_mgr.attribute_names();
                 ringmesh_assert(
                     att_v_names.size() == reg_vertex_attr_mgr.nb_attributes() );
                 for( const std::string& cur_att_v_name : att_v_names )
@@ -248,7 +248,7 @@ namespace
             {
                 auto& reg_cell_attr_mgr = cur_reg.cell_attribute_manager();
                 std::vector< std::string > att_c_names =
-                reg_cell_attr_mgr.attribute_names();
+                    reg_cell_attr_mgr.attribute_names();
                 ringmesh_assert( att_c_names.size() == reg_cell_attr_mgr.nb() );
                 for( const auto& cur_att_c_name : att_c_names )
                 {

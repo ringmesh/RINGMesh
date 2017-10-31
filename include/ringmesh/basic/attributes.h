@@ -587,6 +587,7 @@ namespace RINGMesh
     class RINGMESH_API AttributesManager
     {
         ringmesh_disable_copy_and_move( AttributesManager );
+
     public:
         /**
          * \brief Constructs a new empty AttributesManager.
@@ -758,6 +759,7 @@ namespace RINGMesh
     class AttributeBase
     {
         ringmesh_disable_copy_and_move( AttributeBase );
+
     public:
         /**
          * \brief Tests whether an Attribute is bound.
@@ -914,9 +916,9 @@ namespace RINGMesh
         }
 
     protected:
-       /**
-         * \brief Creates an unitialized (unbound) Attribute.
-         */
+        /**
+          * \brief Creates an unitialized (unbound) Attribute.
+          */
         AttributeBase() = default;
 
         /**
@@ -932,7 +934,6 @@ namespace RINGMesh
         {
             bind( manager, name );
         }
-
 
     protected:
         AttributesManager* manager_{ nullptr };

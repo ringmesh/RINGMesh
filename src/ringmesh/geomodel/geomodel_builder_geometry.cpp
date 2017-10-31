@@ -910,10 +910,9 @@ namespace RINGMesh
             ringmesh_assert( cell != NO_ID && cell_vertex != NO_ID );
         }
 
-        std::vector< std::string > names=
-        geomodel_.region( region_id )
-            .vertex_attribute_manager()
-            .attribute_names();
+        std::vector< std::string > names = geomodel_.region( region_id )
+                                               .vertex_attribute_manager()
+                                               .attribute_names();
 
         auto& E = geomodel_access_.modifiable_mesh_entity( region_gme );
         auto vertices_nb = E.nb_vertices();

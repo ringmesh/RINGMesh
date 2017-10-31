@@ -117,7 +117,7 @@ namespace RINGMesh
 
     std::vector< std::string > AttributesManager::attribute_names() const
     {
-        std::vector< std::string > names ;
+        std::vector< std::string > names;
         names.reserve( attributes_.size() );
         for( auto it : attributes_ )
         {
