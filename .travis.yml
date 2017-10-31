@@ -42,3 +42,14 @@ jobs:
         - cd ringmesh/Debug
         - cmake --build .
         - ctest
+
+    - stage: compile and test
+      os: osx
+      env:
+        - TEST="XCode 7.3"
+      script:
+        - mkdir -p build/ringmesh
+        - cd build/ringmesh
+        - cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - cmake --build . --config Debug
+        - ctest
