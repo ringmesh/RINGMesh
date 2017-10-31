@@ -10,6 +10,8 @@ addons:
     organization: "ringmesh"
     token:
       secure: "iBY+oKod3+StQmrdPMT4uPrDmQpm/PeOwFor5XJPDmJsZlWmrqU7wD178JFozQ3jfYsz/gLjM5VDq6mBveoPQxqBnFPnUpaj/IPvF3Fk3EKOY9qgOfil2w+WOrgvt51cMBxGwpc2VUsXs4noQWT5axbFCF2vFmGOOwP7+7yixY7UedXiyC92t6TL9VQ7zvy+RpvVbOyfRVvp43w6Frnn9R1ff2ni4ZrqOP4EtoliyUecofENtuOjtVABB9rV6Kj9t8/VIzqNtDjGSJvQWu8+2qYHwfE5ZbzuRUmqWHUyxPPJyoOKaONSi08hSMX+hRf5gqPOoU/3II5MVyeHT00ND5lUJKTxMUeFwpR6L4AAngDuoQeJu4/2jbCp9Q4J8gbkbxQFWSHWNIBi9cgIAvxddiKuitYaVeUseVuS68AwLY4N4dbccxIMidUxJ82X60JNmuY6xsOvx8XIGsZP8RQyvAxwblWA/DzgGuAvJS3KqIyqoBJNyCbdaLVLWwmek+YC3UBAi9QAMVnkNMBkRxhMuJd10AVUuR2bueq9B7u7Bo6zuOvbR/Pf2H8ScYl6v3qM7AcZmN8kKxNB0rzcSR15Z7565f3FKJaSjeDTXA/4s4ZOcxBKPhEG9QGDdcDVJADb0iKOPBPkXBEqC7rOy0e+7xp3Ih9qtstiSQbJUWxVIbU="
+    branches:
+      - travis-sonar
 
 stages:
   - format
