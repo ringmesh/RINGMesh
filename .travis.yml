@@ -44,7 +44,7 @@ jobs:
       env:
         - TEST="Sonar check"
       before_script:
-        - mkdir -p      $TRAVIS_BUILD_DIR/3rdparty
+        - mkdir $TRAVIS_BUILD_DIR/3rdparty
         - cd $TRAVIS_BUILD_DIR/3rdparty
         - wget https://sonarqube.com/static/cpp/build-wrapper-linux-x86.zip
         - unzip build-wrapper-linux-x86.zip
@@ -54,7 +54,7 @@ jobs:
         - mkdir build
         - cd build
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
-        - build-wrapper --out-dir $TRAVIS_BUILD_DIR/bw_output make
+        - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw_output make
         - sonar-scanner
     
     - stage: compile and test
