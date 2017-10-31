@@ -50,7 +50,8 @@ namespace RINGMesh
      * @brief Abstract interface class to load and build GeoModels from files
      */
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderFileBase : public GeoModelBuilder< DIMENSION >
+    class RINGMESH_API GeoModelBuilderFileBase
+        : public GeoModelBuilder< DIMENSION >
     {
     public:
         GeoModelBuilderFileBase(
@@ -68,7 +69,8 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderFile : public GeoModelBuilderFileBase< DIMENSION >
+    class RINGMESH_API GeoModelBuilderFile
+        : public GeoModelBuilderFileBase< DIMENSION >
     {
     public:
         GeoModelBuilderFile(
@@ -76,7 +78,8 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API GeoModelBuilderFile< 2 > : public GeoModelBuilderFileBase< 2 >
+    class RINGMESH_API GeoModelBuilderFile< 2 >
+        : public GeoModelBuilderFileBase< 2 >
     {
     public:
         GeoModelBuilderFile( GeoModel2D& geomodel, std::string filename );
@@ -84,11 +87,11 @@ namespace RINGMesh
         ~GeoModelBuilderFile() override;
 
         void build_geomodel();
-
     };
 
     template <>
-    class RINGMESH_API GeoModelBuilderFile< 3 > : public GeoModelBuilderFileBase< 3 >
+    class RINGMESH_API GeoModelBuilderFile< 3 >
+        : public GeoModelBuilderFileBase< 3 >
     {
     public:
         GeoModelBuilderFile( GeoModel3D& geomodel, std::string filename );
@@ -96,6 +99,5 @@ namespace RINGMesh
         ~GeoModelBuilderFile() override;
 
         void build_geomodel();
-
     };
 } // namespace RINGMesh

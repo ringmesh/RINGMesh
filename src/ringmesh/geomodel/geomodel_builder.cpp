@@ -41,9 +41,9 @@
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/geomodel_builder_remove.h>
-#include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/mesh.h>
@@ -1135,19 +1135,20 @@ namespace RINGMesh
         {
             if( line_2_surface[2 * line_id] != line_2_surface[2 * line_id + 1] )
             {
-                are_surfaces_hole[ line_2_surface[2 * line_id] ] = false;
-                are_surfaces_hole[ line_2_surface[2 * line_id + 1] ] = false;
+                are_surfaces_hole[line_2_surface[2 * line_id]] = false;
+                are_surfaces_hole[line_2_surface[2 * line_id + 1]] = false;
             }
         }
-        index_t nb_pb_surfaces{
-            static_cast< index_t >( std::count( are_surfaces_hole.begin(),
-                are_surfaces_hole.end(), true ) ) };
+        index_t nb_pb_surfaces{ static_cast< index_t >( std::count(
+            are_surfaces_hole.begin(), are_surfaces_hole.end(), true ) ) };
         if( nb_pb_surfaces > 0 )
         {
             throw RINGMeshException( "Surface2D", "During surface from corners "
-                " and lines build, ", nb_pb_surfaces," group(s) of lines are "
-                    "floating inside a surface. This is not yet handled by the "
-                    "algorithm. Aborting..." );
+                                                  " and lines build, ",
+                nb_pb_surfaces,
+                " group(s) of lines are "
+                "floating inside a surface. This is not yet handled by the "
+                "algorithm. Aborting..." );
         }
         DEBUG( 2 );
 
@@ -1164,28 +1165,33 @@ namespace RINGMesh
                     this->geomodel_.line( cur_surf_boundary.index );
                 for( auto vertex : range( 1, cur_line.nb_vertices() ) )
                 {
-                    cur_surface_mesh_builder->create_vertex(
-                        cur_line.vertex( cur_surf_boundary.side ?
-                            vertex : ( cur_line.nb_vertices() - 1 ) - vertex ) );
-                    polygon_vertices.push_back(
-                        cur_line.vertex( cur_surf_boundary.side ?
-                            vertex : ( cur_line.nb_vertices() - 1 ) - vertex ) );
+                    cur_surface_mesh_builder->create_vertex( cur_line.vertex(
+                        cur_surf_boundary.side
+                            ? vertex
+                            : ( cur_line.nb_vertices() - 1 ) - vertex ) );
+                    polygon_vertices.push_back( cur_line.vertex(
+                        cur_surf_boundary.side
+                            ? vertex
+                            : ( cur_line.nb_vertices() - 1 ) - vertex ) );
                 }
             }
-            std::vector< index_t > polygon_corners( cur_surface_mesh->nb_vertices() );
+            std::vector< index_t > polygon_corners(
+                cur_surface_mesh->nb_vertices() );
             std::iota( polygon_corners.begin(), polygon_corners.end(), 0 );
-//            cur_surface_mesh_builder->create_polygon( polygon_vertices );
+            //            cur_surface_mesh_builder->create_polygon(
+            //            polygon_vertices );
             auto surface_id =
                 topology.create_mesh_entity( surface_type_name_static() );
             std::vector< index_t > polygon_vertex_ptr( 2, 0 );
-            polygon_vertex_ptr[1] = static_cast< index_t >( polygon_corners.size() );
-            geometry.set_surface_geometry( surface_id.index(), polygon_vertices, polygon_corners, polygon_vertex_ptr );
+            polygon_vertex_ptr[1] =
+                static_cast< index_t >( polygon_corners.size() );
+            geometry.set_surface_geometry( surface_id.index(), polygon_vertices,
+                polygon_corners, polygon_vertex_ptr );
         }
         DEBUG( 3 );
 
-
         // Find exterior and remove it
-        double max_surface_area { 0 };
+        double max_surface_area{ 0 };
         index_t exterior_id{ NO_ID };
         for( const auto& surface : geomodel_.surfaces() )
         {
@@ -1199,13 +1205,12 @@ namespace RINGMesh
         std::set< gmme_id > to_remove;
         to_remove.insert( { surface_type_name_static(), exterior_id } );
         remove.remove_mesh_entities( to_remove );
-        ordered_surface_boundaries.erase( ordered_surface_boundaries.begin() + exterior_id );
+        ordered_surface_boundaries.erase(
+            ordered_surface_boundaries.begin() + exterior_id );
         DEBUG( 4 );
 
         // Update topology
         DEBUG( 5 );
-
-
     }
 
     GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel3D& geomodel )

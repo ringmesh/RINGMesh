@@ -68,12 +68,11 @@ namespace RINGMesh
                 "I/O", "Dimension of the GeoModel does not match the file" );
         }
         load_file();
-
     }
 
     GeoModelBuilderFile< 2 >::GeoModelBuilderFile(
-        GeoModel2D& geomodel, std::string filename ) :
-        GeoModelBuilderFileBase< 2 >( geomodel, filename )
+        GeoModel2D& geomodel, std::string filename )
+        : GeoModelBuilderFileBase< 2 >( geomodel, filename )
     {
     }
 
@@ -84,7 +83,7 @@ namespace RINGMesh
     void GeoModelBuilderFile< 2 >::build_geomodel()
     {
         GeoModelBuilderFileBase< 2 >::build_geomodel();
-        if( this->geomodel_.nb_surfaces() == 0  )
+        if( this->geomodel_.nb_surfaces() == 0 )
         {
             this->build_surfaces_from_corners_and_lines();
         }
@@ -92,8 +91,8 @@ namespace RINGMesh
     }
 
     GeoModelBuilderFile< 3 >::GeoModelBuilderFile(
-        GeoModel3D& geomodel, std::string filename ) :
-        GeoModelBuilderFileBase< 3 >( geomodel, filename )
+        GeoModel3D& geomodel, std::string filename )
+        : GeoModelBuilderFileBase< 3 >( geomodel, filename )
     {
     }
 
