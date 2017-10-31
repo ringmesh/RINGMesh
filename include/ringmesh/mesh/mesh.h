@@ -35,10 +35,10 @@
 
 #pragma once
 
-#include <ringmesh/basic/attributes.h>
-#include <ringmesh/basic/common.h>
 #include <algorithm>
 #include <memory>
+#include <ringmesh/basic/attributes.h>
+#include <ringmesh/basic/common.h>
 
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/nn_search.h>
@@ -137,7 +137,6 @@ namespace RINGMesh
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_{};
         mutable AttributesManager vertex_attributes_manager_;
-
     };
     ALIAS_2D_AND_3D( MeshBase );
 
@@ -161,7 +160,6 @@ namespace RINGMesh
 
     protected:
         PointSetMesh() = default;
-
     };
     ALIAS_2D_AND_3D( PointSetMesh );
 
@@ -234,7 +232,8 @@ namespace RINGMesh
             return *edge_aabb_.get();
         }
 
-        AttributesManager& edge_attribute_manager() const {
+        AttributesManager& edge_attribute_manager() const
+        {
             return edge_attributes_manager_;
         }
 
@@ -250,7 +249,6 @@ namespace RINGMesh
         mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_{};
         mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_{};
         mutable AttributesManager edge_attributes_manager_;
-
     };
     ALIAS_2D_AND_3D( LineMesh );
 
@@ -531,7 +529,6 @@ namespace RINGMesh
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_{};
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_{};
         mutable AttributesManager polygon_attributes_manager_;
-
     };
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
@@ -717,8 +714,7 @@ namespace RINGMesh
             return cell_attributes_manager_;
         }
 
-
-        //virtual AttributesManager& cell_facet_attribute_manager() const = 0;
+        // virtual AttributesManager& cell_facet_attribute_manager() const = 0;
 
         /*!
          * @brief Gets the type of a cell.
@@ -822,7 +818,6 @@ namespace RINGMesh
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_{};
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_{};
         mutable AttributesManager cell_attributes_manager_;
-
     };
 
     using VolumeMesh3D = VolumeMesh< 3 >;

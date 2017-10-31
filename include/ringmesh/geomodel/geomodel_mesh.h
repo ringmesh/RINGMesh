@@ -37,8 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/basic/pimpl.h>
 #include <ringmesh/basic/attributes.h>
+#include <ringmesh/basic/pimpl.h>
 
 #include <ringmesh/geomodel/entity_type.h>
 

@@ -138,11 +138,14 @@ namespace
                         cur_att_v_name );
                     vertex_attribute_dimensions_.push_back( 1 );
 
-                    const AttributeStore* attstore = reg_vertex_attr_mgr.find_attribute_store( cur_att_v_name );
-                    std::unique_ptr< ReadOnlyScalarAttributeAdapter >  adapter =
-                        ReadOnlyScalarAttributeAdapterFactory::create( attstore->get_store().element_typeid_name(),
-                        reg_vertex_attr_mgr, cur_att_v_name );
-                    ringmesh_assert( adapter != nullptr);
+                    const AttributeStore* attstore =
+                        reg_vertex_attr_mgr.find_attribute_store(
+                            cur_att_v_name );
+                    std::unique_ptr< ReadOnlyScalarAttributeAdapter > adapter =
+                        ReadOnlyScalarAttributeAdapterFactory::create(
+                            attstore->get_store().element_typeid_name(),
+                            reg_vertex_attr_mgr, cur_att_v_name );
+                    ringmesh_assert( adapter != nullptr );
                     is_integer_like_attribute.push_back(
                         adapter->is_integer_like_attribute() );
                 }
@@ -264,10 +267,13 @@ namespace
                         cur_att_c_name );
                     cell_attribute_dimensions_.push_back( 1 );
 
-                    const AttributeStore* attstore = reg_cell_attr_mgr.find_attribute_store( cur_att_c_name );
-                    std::unique_ptr< ReadOnlyScalarAttributeAdapter >  adapter =
-                        ReadOnlyScalarAttributeAdapterFactory::create( attstore->get_store().element_typeid_name(),
-                        reg_cell_attr_mgr, cur_att_c_name );
+                    const AttributeStore* attstore =
+                        reg_cell_attr_mgr.find_attribute_store(
+                            cur_att_c_name );
+                    std::unique_ptr< ReadOnlyScalarAttributeAdapter > adapter =
+                        ReadOnlyScalarAttributeAdapterFactory::create(
+                            attstore->get_store().element_typeid_name(),
+                            reg_cell_attr_mgr, cur_att_c_name );
                     ringmesh_assert( adapter != nullptr );
                     is_integer_like_attribute.push_back(
                         adapter->is_integer_like_attribute() );
@@ -438,17 +444,25 @@ namespace
                             numeric_like_vertex_attribute_names_[attr_dbl_itr] )
                         != nullptr );
 
-                    const AttributeStore* attstore = reg_vertex_attr_mgr.find_attribute_store( numeric_like_vertex_attribute_names_[attr_dbl_itr] );
-                    std::unique_ptr< ReadOnlyScalarAttributeAdapter >  cur_attr =
-                        ReadOnlyScalarAttributeAdapterFactory::create( attstore->get_store().element_typeid_name(),
-                        reg_vertex_attr_mgr, numeric_like_vertex_attribute_names_[attr_dbl_itr] );
+                    const AttributeStore* attstore =
+                        reg_vertex_attr_mgr.find_attribute_store(
+                            numeric_like_vertex_attribute_names_
+                                [attr_dbl_itr] );
+                    std::unique_ptr< ReadOnlyScalarAttributeAdapter > cur_attr =
+                        ReadOnlyScalarAttributeAdapterFactory::create(
+                            attstore->get_store().element_typeid_name(),
+                            reg_vertex_attr_mgr,
+                            numeric_like_vertex_attribute_names_
+                                [attr_dbl_itr] );
                     for( auto dim_itr :
                         range( vertex_attribute_dimensions_[attr_dbl_itr] ) )
                     {
                         out_ << " "
-                            << cur_attr->operator[](vertex_id_in_reg
-                                * vertex_attribute_dimensions_[attr_dbl_itr]
-                                + dim_itr);
+                             << cur_attr->operator[](
+                                    vertex_id_in_reg*
+                                        vertex_attribute_dimensions_
+                                            [attr_dbl_itr]
+                                    + dim_itr );
                     }
                 }
                 else
@@ -603,16 +617,23 @@ namespace
                         reg_cell_attr_mgr.find_attribute_store(
                             numeric_like_cell_attribute_names_[attr_dbl_itr] )
                         != nullptr );
- 
-                    const AttributeStore* attstore = reg_cell_attr_mgr.find_attribute_store( numeric_like_cell_attribute_names_[attr_dbl_itr] );
-                    std::unique_ptr< ReadOnlyScalarAttributeAdapter >  cur_attr =
-                        ReadOnlyScalarAttributeAdapterFactory::create( attstore->get_store().element_typeid_name(),
-                        reg_cell_attr_mgr, numeric_like_cell_attribute_names_[attr_dbl_itr] );
-                    for( auto dim_itr : range(
-                        cell_attribute_dimensions_[attr_dbl_itr] ) ) {
+
+                    const AttributeStore* attstore =
+                        reg_cell_attr_mgr.find_attribute_store(
+                            numeric_like_cell_attribute_names_[attr_dbl_itr] );
+                    std::unique_ptr< ReadOnlyScalarAttributeAdapter > cur_attr =
+                        ReadOnlyScalarAttributeAdapterFactory::create(
+                            attstore->get_store().element_typeid_name(),
+                            reg_cell_attr_mgr,
+                            numeric_like_cell_attribute_names_[attr_dbl_itr] );
+                    for( auto dim_itr :
+                        range( cell_attribute_dimensions_[attr_dbl_itr] ) )
+                    {
                         out_ << " "
-                            << cur_attr->operator[](c_in_reg[0]
-                                * cell_attribute_dimensions_[attr_dbl_itr] + dim_itr);
+                             << cur_attr->operator[](
+                                    c_in_reg[0] * cell_attribute_dimensions_
+                                                      [attr_dbl_itr]
+                                    + dim_itr );
                     }
                 }
                 else

@@ -39,9 +39,9 @@
 
 #include <mutex>
 
-#include <ringmesh/basic/attributes.h>
 #include <geogram/basic/attributes.h>
 #include <geogram/basic/memory.h>
+#include <ringmesh/basic/attributes.h>
 
 /*!
  * @file Helper functions on classes defined in Geogram

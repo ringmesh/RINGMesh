@@ -258,7 +258,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    AttributesManager& GeoModelMeshEntity< DIMENSION >::vertex_attribute_manager() const
+    AttributesManager&
+        GeoModelMeshEntity< DIMENSION >::vertex_attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
     }
@@ -973,7 +974,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    AttributesManager& SurfaceBase< DIMENSION >::polygon_attribute_manager() const
+    AttributesManager&
+        SurfaceBase< DIMENSION >::polygon_attribute_manager() const
     {
         return surface_mesh_->polygon_attribute_manager();
     }

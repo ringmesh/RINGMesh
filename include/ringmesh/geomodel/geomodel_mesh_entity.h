@@ -40,8 +40,8 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
 #include <ringmesh/basic/attributes.h>
+#include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel_entity.h>
 

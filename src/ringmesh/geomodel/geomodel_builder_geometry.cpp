@@ -938,12 +938,10 @@ namespace RINGMesh
             {
                 if( name != "model_vertex_map" && name != "point" )
                 {
-                    Attribute< double > attr(
-                        geomodel_.region( region_id )
-                            .vertex_attribute_manager(),
+                    Attribute< double > attr( geomodel_.region( region_id )
+                                                  .vertex_attribute_manager(),
                         name );
-                        attr.set_value( ( vertices_nb + v ),
-                            attr[cell_vertex] );
+                    attr.set_value( ( vertices_nb + v ), attr[cell_vertex] );
                 }
             }
         }

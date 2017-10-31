@@ -35,31 +35,31 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
-#include <ringmesh/basic/logger.h>
-#include <ringmesh/basic/factory.h>
 #include <geogram/basic/geofile.h>
 #include <map>
-#include <typeinfo>
+#include <ringmesh/basic/common.h>
+#include <ringmesh/basic/factory.h>
+#include <ringmesh/basic/logger.h>
 #include <set>
+#include <typeinfo>
 
 /**
  * \file ringmesh/basic/attributes.h
  * \brief Generic mechanism for attributes.
- * This file has been strongly inspired from the attributes of the geogram library.
- * Many thanks to Bruno Levy (Bruno.Levy@inria.fr) who did the first implementation in Geogram.
+ * This file has been strongly inspired from the attributes of the geogram
+ * library.
+ * Many thanks to Bruno Levy (Bruno.Levy@inria.fr) who did the first
+ * implementation in Geogram.
  */
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     class AttributeStore;
 
-    class RINGMESH_API Store {
+    class RINGMESH_API Store
+    {
     public:
-        
-
-        Store( index_t elemsize ):
-            element_size_( elemsize )
+        Store( index_t elemsize ) : element_size_( elemsize )
         {
         }
 
@@ -106,7 +106,8 @@ namespace RINGMesh {
         * \note This function uses memcpy(). If required, it
         *  can be overloaded in derived classes.
         */
-        virtual void apply_permutation( const std::vector< index_t >& permutation ) = 0;
+        virtual void apply_permutation(
+            const std::vector< index_t >& permutation ) = 0;
         /**
         * \brief Copies an item
         * \param[in] to index of the destination item
@@ -114,8 +115,8 @@ namespace RINGMesh {
         */
         virtual void copy_item( index_t to, index_t from ) = 0;
 
-
-        virtual bool elements_type_matches( const std::string& type_name ) const = 0;
+        virtual bool elements_type_matches(
+            const std::string& type_name ) const = 0;
         virtual std::string element_typeid_name() const = 0;
 
         virtual void resize( index_t new_size ) = 0;
@@ -131,20 +132,19 @@ namespace RINGMesh {
 
     protected:
         index_t size_{ 0 };
-        index_t element_size_;         //size of element in byte
-
+        index_t element_size_; // size of element in byte
     };
     /**
     * \brief Stores an array of elements of a given type.
     */
-    template< class T > class TypedStore: public Store {
+    template < class T >
+    class TypedStore : public Store
+    {
     public:
-
         /**
         * \brief Creates a new empty attribute store.
         */
-        TypedStore( )
-            : Store( index_t( sizeof(T) ))
+        TypedStore() : Store( index_t( sizeof( T ) ) )
         {
         }
 
@@ -157,16 +157,16 @@ namespace RINGMesh {
         {
             return typeid( T ).name();
         }
-     };
+    };
 
-    template< class T > class VectorStore: public TypedStore< T > {
+    template < class T >
+    class VectorStore : public TypedStore< T >
+    {
     public:
-
         /**
         * \brief Creates a new empty attribute store.
         */
-        VectorStore( )
-            : TypedStore< T >( )
+        VectorStore() : TypedStore< T >()
         {
         }
 
@@ -187,9 +187,12 @@ namespace RINGMesh {
 
         void clear( bool keep_memory = false ) final
         {
-            if( keep_memory ) {
+            if( keep_memory )
+            {
                 this->store_.resize( 0 );
-            } else {
+            }
+            else
+            {
                 this->store_.clear();
             }
         }
@@ -223,7 +226,8 @@ namespace RINGMesh {
         * \note This function uses memcpy(). If required, it
         *  can be overloaded in derived classes.
         */
-        void apply_permutation( const std::vector< index_t >& permutation ) final
+        void apply_permutation(
+            const std::vector< index_t >& permutation ) final
         {
             return;
         }
@@ -236,21 +240,21 @@ namespace RINGMesh {
         {
             return;
         }
+
     protected:
         std::vector< T > store_;
     };
 
-    template< class T > class ConstantStore: public TypedStore< T > {
+    template < class T >
+    class ConstantStore : public TypedStore< T >
+    {
     public:
-
         /**
         * \brief Creates a new empty attribute store.
         */
-        ConstantStore( )
-            : TypedStore< T >( )
+        ConstantStore() : TypedStore< T >()
         {
             this->size_ = 1;
-
         }
 
         void resize( index_t ) override
@@ -298,7 +302,8 @@ namespace RINGMesh {
         * \note This function uses memcpy(). If required, it
         *  can be overloaded in derived classes.
         */
-        void apply_permutation( const std::vector< index_t >& permutation ) final
+        void apply_permutation(
+            const std::vector< index_t >& permutation ) final
         {
             return;
         }
@@ -311,18 +316,18 @@ namespace RINGMesh {
         {
             return;
         }
-    protected:
-        T store_ ;
-    };
 
+    protected:
+        T store_;
+    };
 
     /**
      * \brief Internal class for creating an AttributeStore
      *  from the type name of its elements.
      */
-    class RINGMESH_API AttributeStoreCreator {
+    class RINGMESH_API AttributeStoreCreator
+    {
     public:
-
         /**
          * \brief AttributeStoreCreator destructor.
          */
@@ -332,31 +337,31 @@ namespace RINGMesh {
          * \brief Creates a new attribute store.
          * \return a pointer to the newly created AttributeStore
          */
-        virtual AttributeStore* create_attribute_store( ) = 0;
+        virtual AttributeStore* create_attribute_store() = 0;
 
     private:
         std::string element_type_name_;
         std::string element_typeid_name_;
     };
 
-    class RINGMESH_API AttributeStore {
+    class RINGMESH_API AttributeStore
+    {
     public:
         /**
          * \brief AttributeStore constructor.
          * \param[in] elemsize size of one element,
          *  in bytes.
          */
-        AttributeStore( ) = default;
+        AttributeStore() = default;
 
         /**
          * \brief AttributeStore destructor.
          */
         ~AttributeStore();
 
-        void set_store(Store* store)
+        void set_store( Store* store )
         {
-            store_ = std::unique_ptr<Store> (store) ;
-
+            store_ = std::unique_ptr< Store >( store );
         }
 
         const Store& get_store() const
@@ -434,13 +439,11 @@ namespace RINGMesh {
          */
         AttributeStore* clone() const
         {
-            AttributeStore* new_attstore = 
-                create_attribute_store_by_element_type_name( 
-                store_->element_typeid_name() );
+            AttributeStore* new_attstore =
+                create_attribute_store_by_element_type_name(
+                    store_->element_typeid_name() );
 
-            new_attstore->set_store(
-                store_->clone()
-                );
+            new_attstore->set_store( store_->clone() );
 
             return new_attstore;
         }
@@ -480,7 +483,7 @@ namespace RINGMesh {
             const std::string& element_type_name )
         {
             return ( type_name_to_creator_.find( element_type_name )
-                != type_name_to_creator_.end() );
+                     != type_name_to_creator_.end() );
         }
 
         /**
@@ -495,7 +498,7 @@ namespace RINGMesh {
             const std::string& element_typeid_name )
         {
             return ( typeid_name_to_type_name_.find( element_typeid_name )
-                != typeid_name_to_type_name_.end() );
+                     != typeid_name_to_type_name_.end() );
         }
 
         /**
@@ -507,7 +510,8 @@ namespace RINGMesh {
             const std::string& element_type_name )
         {
             ringmesh_assert( element_type_name_is_known( element_type_name ) );
-            return type_name_to_creator_[element_type_name]->create_attribute_store( );
+            return type_name_to_creator_[element_type_name]
+                ->create_attribute_store();
         }
 
         /**
@@ -520,7 +524,8 @@ namespace RINGMesh {
         static std::string element_type_name_by_element_typeid_name(
             const std::string& element_typeid_name )
         {
-            ringmesh_assert( element_typeid_name_is_known( element_typeid_name ) );
+            ringmesh_assert(
+                element_typeid_name_is_known( element_typeid_name ) );
             return typeid_name_to_type_name_[element_typeid_name];
         }
 
@@ -549,31 +554,36 @@ namespace RINGMesh {
          * \param[in] element_typeid_name a const reference to a string with
          *  the mangled type name of the elements, as given by typeid(T).name()
          */
-        static void register_attribute_creator(
-            AttributeStoreCreator* creator,
+        static void register_attribute_creator( AttributeStoreCreator* creator,
             const std::string& element_type_name,
             const std::string& element_typeid_name )
         {
-            if( element_type_name_is_known( element_type_name ) ) {
-                Logger::warn( "Attributes", element_type_name,
-                    " already registered" );
-                if( element_typeid_name_is_known( element_typeid_name ) ) {
+            if( element_type_name_is_known( element_type_name ) )
+            {
+                Logger::warn(
+                    "Attributes", element_type_name, " already registered" );
+                if( element_typeid_name_is_known( element_typeid_name ) )
+                {
                     bool already_registered_attribute_has_same_type =
                         ( type_name_to_typeid_name_[element_type_name]
                             == element_typeid_name );
-                    ringmesh_assert( already_registered_attribute_has_same_type );
-                    ringmesh_unused( already_registered_attribute_has_same_type );
+                    ringmesh_assert(
+                        already_registered_attribute_has_same_type );
+                    ringmesh_unused(
+                        already_registered_attribute_has_same_type );
                 }
             }
-            type_name_to_creator_[element_type_name] = std::unique_ptr<
-                AttributeStoreCreator >( creator );
+            type_name_to_creator_[element_type_name] =
+                std::unique_ptr< AttributeStoreCreator >( creator );
             typeid_name_to_type_name_[element_typeid_name] = element_type_name;
             type_name_to_typeid_name_[element_type_name] = element_typeid_name;
         }
-    protected:
-        std::unique_ptr<Store> store_{nullptr};
 
-        static std::map< std::string, std::unique_ptr< AttributeStoreCreator > > type_name_to_creator_;
+    protected:
+        std::unique_ptr< Store > store_{ nullptr };
+
+        static std::map< std::string, std::unique_ptr< AttributeStoreCreator > >
+            type_name_to_creator_;
 
         static std::map< std::string, std::string > typeid_name_to_type_name_;
 
@@ -588,25 +598,27 @@ namespace RINGMesh {
      * \brief Implementation of AttributeStoreCreator for a specific type.
      * \tparam T type of the elements
      */
-    template< class T >
-    class TypedAttributeStoreCreator: public AttributeStoreCreator {
+    template < class T >
+    class TypedAttributeStoreCreator : public AttributeStoreCreator
+    {
     public:
         /**
          * \copydoc AttributeStoreCreator::create_attribute_store()
          */
-        virtual AttributeStore* create_attribute_store( )
+        virtual AttributeStore* create_attribute_store()
         {
-            return new TypedStore< T >( );
+            return new TypedStore< T >();
         }
     };
 
-   /*********************************************************************/
+    /*********************************************************************/
 
     /**
      * \brief Managers a set of attributes attached to
      *  an object.
      */
-    class RINGMESH_API AttributesManager {
+    class RINGMESH_API AttributesManager
+    {
     public:
         /**
          * \brief Constructs a new empty AttributesManager.
@@ -672,12 +684,14 @@ namespace RINGMesh {
          * \param[in] as a pointer to the AttributeStore to be bound
          * \pre No AttributeStore is already bound to the same name
          */
-        void bind_attribute_store( const std::string& name, AttributeStore* as );
+        void bind_attribute_store(
+            const std::string& name, AttributeStore* as );
 
         /**
          * \brief Finds an AttributeStore by name.
          * \param[in] name the name under which the AttributeStore was bound
-         * \return a pointer to the attribute store or nullptr if is is undefined.
+         * \return a pointer to the attribute store or nullptr if is is
+         * undefined.
          */
         AttributeStore* find_attribute_store( const std::string& name );
 
@@ -687,7 +701,8 @@ namespace RINGMesh {
          * \return a const pointer to the attribute store or nullptr if is is
          *  undefined.
          */
-        const AttributeStore* find_attribute_store( const std::string& name ) const;
+        const AttributeStore* find_attribute_store(
+            const std::string& name ) const;
 
         /**
          * \brief Tests whether an attribute is defined.
@@ -782,7 +797,7 @@ namespace RINGMesh {
         const AttributesManager& operator=( const AttributesManager& rhs );
 
     private:
-        index_t size_ { 0 };
+        index_t size_{ 0 };
         std::map< std::string, AttributeStore* > attributes_;
     };
 
@@ -792,15 +807,16 @@ namespace RINGMesh {
      * \brief Base class for Attributes, that manipulates an
      *  attribute stored in an AttributesManager.
      */
-    template< class T > class AttributeBase {
+    template < class T >
+    class AttributeBase
+    {
     public:
-
-        //todo the constructors might be protected. Do we want to be able to create an AttributeBase?
+        // todo the constructors might be protected. Do we want to be able to
+        // create an AttributeBase?
         /**
          * \brief Creates an unitialized (unbound) Attribute.
          */
-        AttributeBase()
-            : manager_( nullptr ), store_( nullptr )
+        AttributeBase() : manager_( nullptr ), store_( nullptr )
         {
         }
 
@@ -854,12 +870,16 @@ namespace RINGMesh {
             ringmesh_assert( !is_bound() );
             manager_ = &manager;
             store_ = manager_->find_attribute_store( name );
-            if( store_ == nullptr ) {
+            if( store_ == nullptr )
+            {
                 store_ = new AttributeStore();
-                store_->set_store( new VectorStore<T>() );
+                store_->set_store( new VectorStore< T >() );
                 manager_->bind_attribute_store( name, store_ );
-            } else {
-                ringmesh_assert( store_->get_store().elements_type_matches( typeid(T).name() ) );
+            }
+            else
+            {
+                ringmesh_assert( store_->get_store().elements_type_matches(
+                    typeid( T ).name() ) );
             }
         }
 
@@ -871,14 +891,15 @@ namespace RINGMesh {
          * \pre !is_bound()
          */
         void bind_if_is_defined(
-            AttributesManager& manager,
-            const std::string& name )
+            AttributesManager& manager, const std::string& name )
         {
             ringmesh_assert( !is_bound() );
             manager_ = &manager;
             store_ = manager_->find_attribute_store( name );
-            if( store_ != nullptr ) {
-                ringmesh_assert( store_->elements_type_matches( typeid(T).name() ) );
+            if( store_ != nullptr )
+            {
+                ringmesh_assert(
+                    store_->elements_type_matches( typeid( T ).name() ) );
             }
         }
 
@@ -887,15 +908,15 @@ namespace RINGMesh {
          * \param[in] manager the attribute manager
          * \param[in] name the name of the attribute
          */
-        void create_vector_attribute(
-            AttributesManager& manager,
+        void create_vector_attribute( AttributesManager& manager,
             const std::string& name,
-            int nb_component)
+            int nb_component )
         {
             ringmesh_assert( !is_bound() );
             manager_ = &manager;
-            ringmesh_assert( manager_->find_attribute_store( name ) == nullptr );
-            store_ = new AttributeStore( );
+            ringmesh_assert(
+                manager_->find_attribute_store( name ) == nullptr );
+            store_ = new AttributeStore();
             manager_->bind_attribute_store( name, store_ );
         }
 
@@ -917,7 +938,7 @@ namespace RINGMesh {
 
         void set_constant_value( T value )
         {
-            store_->set_store( new ConstantStore<T>( ) );
+            store_->set_store( new ConstantStore< T >() );
             set_value( 0, value );
         }
 
@@ -930,7 +951,8 @@ namespace RINGMesh {
          */
         ~AttributeBase()
         {
-            if( is_bound() ) {
+            if( is_bound() )
+            {
                 unbind();
             }
         }
@@ -942,13 +964,11 @@ namespace RINGMesh {
          * \param[in] name the name of the attribute
          */
         static bool is_defined(
-            AttributesManager& manager,
-            const std::string& name )
+            AttributesManager& manager, const std::string& name )
         {
             AttributeStore* store = manager.find_attribute_store( name );
             return ( store != nullptr
-                && store->elements_type_matches( typeid( T ).name() )
-                );
+                     && store->elements_type_matches( typeid( T ).name() ) );
         }
 
         /**
@@ -982,15 +1002,16 @@ namespace RINGMesh {
      *  or a plain ordinary datatype (classes that do dynamic
      *  memory allocation are not allowed here).
      */
-    template< class T > class Attribute: public AttributeBase< T > {
+    template < class T >
+    class Attribute : public AttributeBase< T >
+    {
     public:
         typedef AttributeBase< T > superclass;
 
         /**
          * \brief Creates an unitialized (unbound) Attribute.
          */
-        Attribute()
-            : superclass()
+        Attribute() : superclass()
         {
         }
 
@@ -1017,10 +1038,8 @@ namespace RINGMesh {
         {
             index_t si = superclass::size();
             ringmesh_assert( i < superclass::size() );
-            ( ( T* ) superclass::store_->data() )[i] = value ;
+            ( (T*) superclass::store_->data() )[i] = value;
         }
-
-
 
         /**
          * \brief Gets an element by index
@@ -1040,7 +1059,7 @@ namespace RINGMesh {
         const T& value( unsigned int i ) const
         {
             ringmesh_assert( i < superclass::size() );
-            return ( ( const T* ) superclass::store_->data() )[i];
+            return ( (const T*) superclass::store_->data() )[i];
         }
 
         /**
@@ -1050,7 +1069,8 @@ namespace RINGMesh {
          */
         void fill( const T& val )
         {
-            for( index_t i = 0; i < superclass::nb_elements(); ++i ) {
+            for( index_t i = 0; i < superclass::nb_elements(); ++i )
+            {
                 ( *this )[i] = val;
             }
         }
@@ -1073,20 +1093,25 @@ namespace RINGMesh {
      *   mechanism. This wrapper class uses an Attribute<Numeric::uint8>
      *   and does the appropriate conversions, using an accessor class.
      */
-    template <> class Attribute<bool>: public AttributeBase < Byte > {
-        //todo I would move this specialization into a VectorStore specialization
-        // the issue is because the std::vector< bool > implementation is strange.
-        // If you do so, I think there is no longer needs for AttributeBase class,
+    template <>
+    class Attribute< bool > : public AttributeBase< Byte >
+    {
+        // todo I would move this specialization into a VectorStore
+        // specialization
+        // the issue is because the std::vector< bool > implementation is
+        // strange.
+        // If you do so, I think there is no longer needs for AttributeBase
+        // class,
         // we could merge it with Attribute.
     public:
-        typedef AttributeBase<Byte> superclass;
+        typedef AttributeBase< Byte > superclass;
 
-        Attribute(): superclass()
+        Attribute() : superclass()
         {
         }
 
-        Attribute( AttributesManager& manager, const std::string& name ):
-            superclass( manager, name )
+        Attribute( AttributesManager& manager, const std::string& name )
+            : superclass( manager, name )
         {
         }
 
@@ -1096,29 +1121,29 @@ namespace RINGMesh {
          * \brief Accessor class for adapting Attribute<bool>
          *  indexing.
          */
-        class ConstBoolAttributeAccessor {
+        class ConstBoolAttributeAccessor
+        {
         public:
             /**
              * \brief ConstBoolAttributeAccessor constructor.
              */
             ConstBoolAttributeAccessor(
-                const Attribute<bool>& attribute,
-                index_t index
-            ) :
-                attribute_(&attribute),
-                index_(index) {
+                const Attribute< bool >& attribute, index_t index )
+                : attribute_( &attribute ), index_( index )
+            {
             }
 
             /**
              * \brief Converts a BoolAttributeAccessor to a bool.
              * \details Performs the actual lookup.
              */
-            operator bool() const {
-                return (attribute_->element(index_) != 0);
+            operator bool() const
+            {
+                return ( attribute_->element( index_ ) != 0 );
             }
 
         private:
-            const Attribute<bool>* attribute_;
+            const Attribute< bool >* attribute_;
             index_t index_;
 
             friend class BoolAttributeAccessor;
@@ -1128,25 +1153,24 @@ namespace RINGMesh {
          * \brief Accessor class for adapting Attribute<bool>
          *  indexing.
          */
-        class BoolAttributeAccessor {
+        class BoolAttributeAccessor
+        {
         public:
             /**
              * \brief BoolAttributeAccessor constructor.
              */
-            BoolAttributeAccessor(
-                Attribute<bool>& attribute,
-                index_t index
-            ) :
-                attribute_(&attribute),
-                index_(index) {
+            BoolAttributeAccessor( Attribute< bool >& attribute, index_t index )
+                : attribute_( &attribute ), index_( index )
+            {
             }
 
             /**
              * \brief Converts a BoolAttributeAccessor to a bool.
              * \details Performs the actual lookup.
              */
-            operator bool() const {
-                return (attribute_->element(index_) != 0);
+            operator bool() const
+            {
+                return ( attribute_->element( index_ ) != 0 );
             }
 
             /**
@@ -1154,7 +1178,8 @@ namespace RINGMesh {
              * \param[in] rhs a const reference to the
              *  BoolAttributeAccessor to be copied.
              */
-            BoolAttributeAccessor(const BoolAttributeAccessor& rhs) {
+            BoolAttributeAccessor( const BoolAttributeAccessor& rhs )
+            {
                 attribute_ = rhs.attribute_;
                 index_ = rhs.index_;
             }
@@ -1163,8 +1188,9 @@ namespace RINGMesh {
              * \brief Assigns a bool to a BoolAttributeAccessor.
              * \details Stores the boolean into the Attribute.
              */
-            BoolAttributeAccessor& operator=(bool x) {
-                attribute_->element(index_) = Byte(x);
+            BoolAttributeAccessor& operator=( bool x )
+            {
+                attribute_->element( index_ ) = Byte( x );
                 return *this;
             }
 
@@ -1173,12 +1199,12 @@ namespace RINGMesh {
              * \param[in] rhs a const reference to the BoolAttributeAccessor
              *  to be copied.
              */
-            BoolAttributeAccessor& operator=(
-                const BoolAttributeAccessor& rhs
-            ) {
-                if(&rhs != this) {
-                    attribute_->element(index_) =
-                        rhs.attribute_->element(rhs.index_);
+            BoolAttributeAccessor& operator=( const BoolAttributeAccessor& rhs )
+            {
+                if( &rhs != this )
+                {
+                    attribute_->element( index_ ) =
+                        rhs.attribute_->element( rhs.index_ );
                 }
                 return *this;
             }
@@ -1189,15 +1215,15 @@ namespace RINGMesh {
              *  ConstBoolAttributeAccessor to be copied.
              */
             BoolAttributeAccessor& operator=(
-                const ConstBoolAttributeAccessor& rhs
-            ) {
-                attribute_->element(index_) =
-                    rhs.attribute_->element(rhs.index_);
+                const ConstBoolAttributeAccessor& rhs )
+            {
+                attribute_->element( index_ ) =
+                    rhs.attribute_->element( rhs.index_ );
                 return *this;
             }
 
         private:
-            Attribute<bool>* attribute_;
+            Attribute< bool >* attribute_;
             index_t index_;
         };
 
@@ -1208,15 +1234,15 @@ namespace RINGMesh {
 
         ConstBoolAttributeAccessor operator[]( index_t i ) const
         {
-            return value (i);
+            return value( i );
         }
 
         void set_value( index_t i, Byte value ) final
         {
-            BoolAttributeAccessor(*this, i) = value;
+            BoolAttributeAccessor( *this, i ) = value;
         }
 
-        void set_value( index_t i, bool value ) 
+        void set_value( index_t i, bool value )
         {
             BoolAttributeAccessor( *this, i ) = value;
         }
@@ -1225,14 +1251,16 @@ namespace RINGMesh {
          *   to a specified value.
          * \param[in] val the value
          */
-        void fill(bool val) {
-            for( index_t i = 0; i<superclass::store_->get_store().nb_elements(); ++i ) {
-                element(i) = Byte(val);
+        void fill( bool val )
+        {
+            for( index_t i = 0;
+                 i < superclass::store_->get_store().nb_elements(); ++i )
+            {
+                element( i ) = Byte( val );
             }
         }
 
     protected:
-
         friend class BoolAttributeAccessor;
         friend class ConstBoolAttributeAccessor;
 
@@ -1241,9 +1269,11 @@ namespace RINGMesh {
          * \param [in] i index of the element
          * \return a modifiable reference to the \p i%th element
          */
-        Byte& element(unsigned int i) {
-            ringmesh_assert( i < superclass::store_->get_store().nb_elements() );
-            return ( ( Byte* ) superclass::store_->get_store().data() )[i];
+        Byte& element( unsigned int i )
+        {
+            ringmesh_assert(
+                i < superclass::store_->get_store().nb_elements() );
+            return ( (Byte*) superclass::store_->get_store().data() )[i];
         }
 
         /**
@@ -1251,21 +1281,23 @@ namespace RINGMesh {
          * \param [in] i index of the element
          * \return a const reference to the \p i%th element
          */
-        const Byte& element(unsigned int i) const {
-            ringmesh_assert( i < superclass::store_->get_store().nb_elements() );
-            return ( ( const Byte* ) superclass::store_->get_store().data() )[i];
+        const Byte& element( unsigned int i ) const
+        {
+            ringmesh_assert(
+                i < superclass::store_->get_store().nb_elements() );
+            return ( (const Byte*) superclass::store_->get_store().data() )[i];
         }
 
     private:
         /**
          * \brief Forbids copy.
          */
-        Attribute(const Attribute<bool>& rhs);
+        Attribute( const Attribute< bool >& rhs );
         /**
          * \brief Forbids copy.
          */
-        Attribute<bool>& operator=(const Attribute<bool>& rhs);
-    } ;
+        Attribute< bool >& operator=( const Attribute< bool >& rhs );
+    };
 
     /***********************************************************/
 
@@ -1273,8 +1305,8 @@ namespace RINGMesh {
      * \brief Access to an attribute as a double regardless its type.
      * \details The attribute can be an element of a vector attribute.
      */
-    class RINGMESH_API ReadOnlyScalarAttributeAdapter {
-
+    class RINGMESH_API ReadOnlyScalarAttributeAdapter
+    {
     public:
         /**
          * \brief ReadOnlyScalarAttributeAdapter constructor.
@@ -1291,8 +1323,7 @@ namespace RINGMesh {
          *   the "foobar" vector attribute.
          */
         ReadOnlyScalarAttributeAdapter(
-            const AttributesManager& manager,
-            const std::string& name )
+            const AttributesManager& manager, const std::string& name )
             : manager_( nullptr ), store_( nullptr )
         {
             bind_if_is_defined( manager, name );
@@ -1330,8 +1361,7 @@ namespace RINGMesh {
          * \pre !is_bound()
          */
         void bind_if_is_defined(
-            const AttributesManager& manager,
-            const std::string& name );
+            const AttributesManager& manager, const std::string& name );
 
         /**
          * \brief ReadonlyScalarAttributeAdapter destructor
@@ -1342,7 +1372,8 @@ namespace RINGMesh {
          */
         virtual ~ReadOnlyScalarAttributeAdapter()
         {
-            if( is_bound() ) {
+            if( is_bound() )
+            {
                 unbind();
             }
         }
@@ -1357,8 +1388,7 @@ namespace RINGMesh {
          *   the "foobar" vector attribute.
          */
         static bool is_defined(
-            const AttributesManager& manager,
-            const std::string& name );
+            const AttributesManager& manager, const std::string& name );
 
         /**
          * \brief Gets the size.
@@ -1373,7 +1403,7 @@ namespace RINGMesh {
          * \brief Gets the internal representation of the
          *  elements.
          */
-        //virtual AttributeElementType element_type() const = 0 ;
+        // virtual AttributeElementType element_type() const = 0 ;
 
         /**
          * \brief Gets the element index.
@@ -1411,7 +1441,7 @@ namespace RINGMesh {
          * \return the number of scalar components per item in an
          *  AttributeStore.
          */
-        virtual index_t nb_scalar_elements_per_item( ) const = 0 ;
+        virtual index_t nb_scalar_elements_per_item() const = 0;
         virtual bool is_integer_like_attribute() const = 0;
 
     protected:
@@ -1442,7 +1472,7 @@ namespace RINGMesh {
          *  ET_FLOAT32, ET_FLOAT64 if the type of the attribute is
          *  compatible with those types, or ET_NONE if it is incompatible.
          */
-        //static ElementType element_type( const AttributeStore* store );
+        // static ElementType element_type( const AttributeStore* store );
 
         /**
          * \brief Gets an element.
@@ -1450,12 +1480,13 @@ namespace RINGMesh {
          * \param[in] multiplier multiplier applied to the index before fetching
          *  the raw pointer.
          */
-        template< class T > double get_element( index_t i, index_t multiplier = 1 ) const
+        template < class T >
+        double get_element( index_t i, index_t multiplier = 1 ) const
         {
             ringmesh_assert( is_bound() );
             ringmesh_assert( i < size() );
-            return double(
-                reinterpret_cast< const T* >( store_->data() )[( i * multiplier ) + element_index_] );
+            return double( reinterpret_cast< const T* >(
+                store_->data() )[( i * multiplier ) + element_index_] );
         }
 
     protected:
@@ -1463,12 +1494,10 @@ namespace RINGMesh {
         const AttributeStore* store_;
         index_t element_index_;
     };
-    using ReadOnlyScalarAttributeAdapterFactory =
-        Factory< std::string,
+    using ReadOnlyScalarAttributeAdapterFactory = Factory< std::string,
         ReadOnlyScalarAttributeAdapter,
         const AttributesManager&,
         const std::string& >;
     void register_read_only_scalar_attribute();
-/***********************************************************/
+    /***********************************************************/
 }
-

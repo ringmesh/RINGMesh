@@ -1,6 +1,8 @@
 /*
-* This file has been strongly inspired from the attributes of the geogram library.
-* Many thanks to Bruno Levy (Bruno.Levy@inria.fr) who did the first implementation in Geogram.
+* This file has been strongly inspired from the attributes of the geogram
+* library.
+* Many thanks to Bruno Levy (Bruno.Levy@inria.fr) who did the first
+* implementation in Geogram.
 *
 * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
 * Applications (ASGA). All rights reserved.
@@ -41,20 +43,20 @@
 #include <geogram/basic/permutation.h>
 #include <ringmesh/basic/attributes.h>
 
-#include <memory>
 #include <algorithm>
+#include <memory>
 
-namespace RINGMesh {
-
+namespace RINGMesh
+{
     /******************************************************************/
 
-    std::map<std::string, std::unique_ptr< AttributeStoreCreator > >
+    std::map< std::string, std::unique_ptr< AttributeStoreCreator > >
         AttributeStore::type_name_to_creator_;
 
-    std::map<std::string, std::string>
+    std::map< std::string, std::string >
         AttributeStore::typeid_name_to_type_name_;
 
-    std::map<std::string, std::string>
+    std::map< std::string, std::string >
         AttributeStore::type_name_to_typeid_name_;
 
     AttributeStore::~AttributeStore()
@@ -65,7 +67,6 @@ namespace RINGMesh {
 
     /*************************************************************************/
 
-
     AttributesManager::~AttributesManager()
     {
         clear( false, false );
@@ -73,95 +74,87 @@ namespace RINGMesh {
 
     void AttributesManager::resize( index_t new_size )
     {
-        if( new_size == size_ ) {
+        if( new_size == size_ )
+        {
             return;
         }
-        for(
-            std::map<std::string, AttributeStore*>::iterator
-            it = attributes_.begin();
-        it != attributes_.end(); ++it
-            ) {
+        for( std::map< std::string, AttributeStore* >::iterator it =
+                 attributes_.begin();
+             it != attributes_.end(); ++it )
+        {
             it->second->resize( new_size );
         }
         size_ = new_size;
     }
 
     void AttributesManager::apply_permutation(
-        const std::vector<index_t>& permutation
-        )
+        const std::vector< index_t >& permutation )
     {
-        for(
-            std::map<std::string, AttributeStore*>::iterator
-            it = attributes_.begin();
-        it != attributes_.end(); ++it
-            ) {
+        for( std::map< std::string, AttributeStore* >::iterator it =
+                 attributes_.begin();
+             it != attributes_.end(); ++it )
+        {
             it->second->apply_permutation( permutation );
         }
     }
 
-    void AttributesManager::compress(
-        const std::vector<index_t>& old2new
-        )
+    void AttributesManager::compress( const std::vector< index_t >& old2new )
     {
-        for(
-            std::map<std::string, AttributeStore*>::iterator
-            it = attributes_.begin();
-        it != attributes_.end(); ++it
-            ) {
+        for( std::map< std::string, AttributeStore* >::iterator it =
+                 attributes_.begin();
+             it != attributes_.end(); ++it )
+        {
             it->second->compress( old2new );
         }
     }
 
-
     void AttributesManager::bind_attribute_store(
-        const std::string& name, AttributeStore* as
-        )
+        const std::string& name, AttributeStore* as )
     {
         ringmesh_assert( find_attribute_store( name ) == nullptr );
         attributes_[name] = as;
     }
 
     void AttributesManager::list_attribute_names(
-        std::vector<std::string>& names
-        ) const
+        std::vector< std::string >& names ) const
     {
         names.clear();
-        for( std::map<std::string, AttributeStore*>::const_iterator
-            it = attributes_.begin(); it != attributes_.end();
-            ++it ) {
+        for( std::map< std::string, AttributeStore* >::const_iterator it =
+                 attributes_.begin();
+             it != attributes_.end(); ++it )
+        {
             names.push_back( it->first );
         }
     }
 
     AttributeStore* AttributesManager::find_attribute_store(
-        const std::string& name
-        )
+        const std::string& name )
     {
-        std::map<std::string, AttributeStore*>::iterator
-            it = attributes_.find( name );
-        if( it == attributes_.end() ) {
+        std::map< std::string, AttributeStore* >::iterator it =
+            attributes_.find( name );
+        if( it == attributes_.end() )
+        {
             return nil;
         }
         return it->second;
     }
 
     const AttributeStore* AttributesManager::find_attribute_store(
-        const std::string& name
-        ) const
+        const std::string& name ) const
     {
-        std::map<std::string, AttributeStore*>::const_iterator
-            it = attributes_.find( name );
-        if( it == attributes_.end() ) {
+        std::map< std::string, AttributeStore* >::const_iterator it =
+            attributes_.find( name );
+        if( it == attributes_.end() )
+        {
             return nil;
         }
         return it->second;
     }
 
-
     void AttributesManager::delete_attribute_store( const std::string& name )
     {
-        std::map<std::string, AttributeStore*>::iterator
-            it = attributes_.find( name );
+        std::map< std::string, AttributeStore* >::iterator it =
+            attributes_.find( name );
         ringmesh_assert( it != attributes_.end() );
         delete it->second;
         attributes_.erase( it );
@@ -169,12 +162,12 @@ namespace RINGMesh {
 
     void AttributesManager::delete_attribute_store( AttributeStore* as )
     {
-        for(
-            std::map<std::string, AttributeStore*>::iterator
-            it = attributes_.begin();
-        it != attributes_.end(); ++it
-            ) {
-            if( it->second == as ) {
+        for( std::map< std::string, AttributeStore* >::iterator it =
+                 attributes_.begin();
+             it != attributes_.end(); ++it )
+        {
+            if( it->second == as )
+            {
                 delete as;
                 attributes_.erase( it );
                 return;
@@ -183,23 +176,23 @@ namespace RINGMesh {
         ringmesh_assert_not_reached;
     }
 
-
     void AttributesManager::clear( bool keep_attributes, bool keep_memory )
     {
-        if( keep_attributes ) {
-            for(
-                std::map<std::string, AttributeStore*>::iterator
-                it = attributes_.begin();
-            it != attributes_.end(); ++it
-                ) {
+        if( keep_attributes )
+        {
+            for( std::map< std::string, AttributeStore* >::iterator it =
+                     attributes_.begin();
+                 it != attributes_.end(); ++it )
+            {
                 it->second->clear( keep_memory );
             }
-        } else {
-            for(
-                std::map<std::string, AttributeStore*>::iterator
-                it = attributes_.begin();
-            it != attributes_.end(); ++it
-                ) {
+        }
+        else
+        {
+            for( std::map< std::string, AttributeStore* >::iterator it =
+                     attributes_.begin();
+                 it != attributes_.end(); ++it )
+            {
                 delete it->second;
             }
             attributes_.clear();
@@ -211,58 +204,59 @@ namespace RINGMesh {
     {
         clear( false, false );
         resize( rhs.size() );
-        for(
-            std::map<std::string, AttributeStore*>::const_iterator
-            it = rhs.attributes_.begin();
-        it != rhs.attributes_.end(); ++it
-            ) {
+        for( std::map< std::string, AttributeStore* >::const_iterator it =
+                 rhs.attributes_.begin();
+             it != rhs.attributes_.end(); ++it )
+        {
             bind_attribute_store( it->first, it->second->clone() );
         }
     }
 
- /*   void AttributesManager::copy_item( index_t to, index_t from )
-    {
-        for(
-            std::map<std::string, AttributeStore*>::iterator
-            it = attributes_.begin();
-        it != attributes_.end(); ++it
-            ) {
-            it->second->copy_item( to, from );
-        }
-    }*/
-
-
-
+    /*   void AttributesManager::copy_item( index_t to, index_t from )
+       {
+           for(
+               std::map<std::string, AttributeStore*>::iterator
+               it = attributes_.begin();
+           it != attributes_.end(); ++it
+               ) {
+               it->second->copy_item( to, from );
+           }
+       }*/
 
     /************************************************************************/
 
     std::string ReadOnlyScalarAttributeAdapter::attribute_base_name(
-        const std::string& name
-        )
+        const std::string& name )
     {
         size_t pos = name.find( '[' );
-        if( pos == std::string::npos ) {
+        if( pos == std::string::npos )
+        {
             return name;
         }
         return name.substr( 0, pos );
     }
 
     index_t ReadOnlyScalarAttributeAdapter::attribute_element_index(
-        const std::string& name
-        )
+        const std::string& name )
     {
         index_t result = 0;
         size_t pos = name.find( '[' );
-        if( pos != std::string::npos ) {
-            try {
-                if( pos + 2 > name.length() ) {
+        if( pos != std::string::npos )
+        {
+            try
+            {
+                if( pos + 2 > name.length() )
+                {
                     result = index_t( -1 );
-                } else {
-                    result = GEO::String::to_uint(
-                        name.substr( pos + 1, name.length() - pos - 2 )
-                        );
                 }
-            } catch( ... ) {
+                else
+                {
+                    result = GEO::String::to_uint(
+                        name.substr( pos + 1, name.length() - pos - 2 ) );
+                }
+            }
+            catch( ... )
+            {
                 result = index_t( -1 );
             }
         }
@@ -270,15 +264,15 @@ namespace RINGMesh {
     }
 
     void ReadOnlyScalarAttributeAdapter::bind_if_is_defined(
-        const AttributesManager& manager, const std::string& name
-        )
+        const AttributesManager& manager, const std::string& name )
     {
         ringmesh_assert( !is_bound() );
         manager_ = &manager;
         element_index_ = attribute_element_index( name );
         store_ = manager_->find_attribute_store( attribute_base_name( name ) );
 
-        if( store_ == nil || element_index_ == index_t( -1 ) ) {
+        if( store_ == nil || element_index_ == index_t( -1 ) )
+        {
             store_ = nil;
             element_index_ = index_t( -1 );
             return;
@@ -287,7 +281,8 @@ namespace RINGMesh {
         // Test element_index_ validity: should be smaller than
         // store's dimension (or 2*store dimension if a vec2,
         // or 3*store's dimension if a vec3)
-        if( element_index_ >= nb_scalar_elements_per_item( ) ) {
+        if( element_index_ >= nb_scalar_elements_per_item() )
+        {
             store_ = nil;
             element_index_ = index_t( -1 );
             return;
@@ -295,27 +290,29 @@ namespace RINGMesh {
     }
 
     bool ReadOnlyScalarAttributeAdapter::is_defined(
-        const AttributesManager& manager, const std::string& name
-        )
+        const AttributesManager& manager, const std::string& name )
     {
         std::string attribute_name = attribute_base_name( name );
-        const AttributeStore* att_store = manager.find_attribute_store(
-            attribute_name
-            );
+        const AttributeStore* att_store =
+            manager.find_attribute_store( attribute_name );
 
-        if( att_store == nil ) {
+        if( att_store == nil )
+        {
             return false;
         }
-        std::unique_ptr< ReadOnlyScalarAttributeAdapter >  adapter =
-            ReadOnlyScalarAttributeAdapterFactory::create( att_store->get_store().element_typeid_name(),
-            manager, attribute_name );
+        std::unique_ptr< ReadOnlyScalarAttributeAdapter > adapter =
+            ReadOnlyScalarAttributeAdapterFactory::create(
+                att_store->get_store().element_typeid_name(), manager,
+                attribute_name );
 
         index_t element_index = attribute_element_index( name );
-        if( element_index == index_t( -1 ) ) {
+        if( element_index == index_t( -1 ) )
+        {
             return false;
         }
 
-        if( element_index >= adapter->nb_scalar_elements_per_item() ) {
+        if( element_index >= adapter->nb_scalar_elements_per_item() )
+        {
             return false;
         }
 
@@ -324,11 +321,13 @@ namespace RINGMesh {
 
     /************************************************************************/
 
-    class ReadOnlyScalarAttributeAdapterET_UINT8: public ReadOnlyScalarAttributeAdapter {
+    class ReadOnlyScalarAttributeAdapterET_UINT8
+        : public ReadOnlyScalarAttributeAdapter
+    {
     public:
         ReadOnlyScalarAttributeAdapterET_UINT8(
-            const AttributesManager& manager,
-            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+            const AttributesManager& manager, const std::string& name )
+            : ReadOnlyScalarAttributeAdapter( manager, name )
         {
         }
 
@@ -341,22 +340,23 @@ namespace RINGMesh {
         {
             return 1;
         }
-       /* AttributeElementType element_type() const override
-        {
-            return typeid( uint8 ).name();
-        }*/
+        /* AttributeElementType element_type() const override
+         {
+             return typeid( uint8 ).name();
+         }*/
         bool is_integer_like_attribute() const override
         {
             return true;
         }
     };
 
-    class ReadOnlyScalarAttributeAdapterET_INT8: public ReadOnlyScalarAttributeAdapter {
+    class ReadOnlyScalarAttributeAdapterET_INT8
+        : public ReadOnlyScalarAttributeAdapter
+    {
     public:
-
         ReadOnlyScalarAttributeAdapterET_INT8(
-            const AttributesManager& manager,
-            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+            const AttributesManager& manager, const std::string& name )
+            : ReadOnlyScalarAttributeAdapter( manager, name )
         {
         }
 
@@ -379,12 +379,13 @@ namespace RINGMesh {
         }
     };
 
-    class ReadOnlyScalarAttributeAdapterET_UINT32: public ReadOnlyScalarAttributeAdapter {
+    class ReadOnlyScalarAttributeAdapterET_UINT32
+        : public ReadOnlyScalarAttributeAdapter
+    {
     public:
-
         ReadOnlyScalarAttributeAdapterET_UINT32(
-            const AttributesManager& manager,
-            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+            const AttributesManager& manager, const std::string& name )
+            : ReadOnlyScalarAttributeAdapter( manager, name )
         {
         }
 
@@ -407,12 +408,13 @@ namespace RINGMesh {
         }
     };
 
-    class ReadOnlyScalarAttributeAdapterET_INT32: public ReadOnlyScalarAttributeAdapter {
+    class ReadOnlyScalarAttributeAdapterET_INT32
+        : public ReadOnlyScalarAttributeAdapter
+    {
     public:
-
         ReadOnlyScalarAttributeAdapterET_INT32(
-            const AttributesManager& manager,
-            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+            const AttributesManager& manager, const std::string& name )
+            : ReadOnlyScalarAttributeAdapter( manager, name )
         {
         }
 
@@ -435,12 +437,13 @@ namespace RINGMesh {
         }
     };
 
-    class ReadOnlyScalarAttributeAdapterET_FLOAT32: public ReadOnlyScalarAttributeAdapter {
+    class ReadOnlyScalarAttributeAdapterET_FLOAT32
+        : public ReadOnlyScalarAttributeAdapter
+    {
     public:
-
         ReadOnlyScalarAttributeAdapterET_FLOAT32(
-            const AttributesManager& manager,
-            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+            const AttributesManager& manager, const std::string& name )
+            : ReadOnlyScalarAttributeAdapter( manager, name )
         {
         }
 
@@ -463,12 +466,13 @@ namespace RINGMesh {
         }
     };
 
-    class ReadOnlyScalarAttributeAdapterET_FLOAT64: public ReadOnlyScalarAttributeAdapter {
+    class ReadOnlyScalarAttributeAdapterET_FLOAT64
+        : public ReadOnlyScalarAttributeAdapter
+    {
     public:
-
         ReadOnlyScalarAttributeAdapterET_FLOAT64(
-            const AttributesManager& manager,
-            const std::string& name ): ReadOnlyScalarAttributeAdapter( manager, name )
+            const AttributesManager& manager, const std::string& name )
+            : ReadOnlyScalarAttributeAdapter( manager, name )
         {
         }
 
@@ -491,13 +495,13 @@ namespace RINGMesh {
         }
     };
 
-    class ReadOnlyScalarAttributeAdapterET_VEC2: public ReadOnlyScalarAttributeAdapter {
+    class ReadOnlyScalarAttributeAdapterET_VEC2
+        : public ReadOnlyScalarAttributeAdapter
+    {
     public:
-
         ReadOnlyScalarAttributeAdapterET_VEC2(
-            const AttributesManager& manager,
-            const std::string& name ):
-            ReadOnlyScalarAttributeAdapter( manager, name )
+            const AttributesManager& manager, const std::string& name )
+            : ReadOnlyScalarAttributeAdapter( manager, name )
         {
         }
 
@@ -520,13 +524,13 @@ namespace RINGMesh {
         }
     };
 
-    class ReadOnlyScalarAttributeAdapterET_VEC3: public ReadOnlyScalarAttributeAdapter {
+    class ReadOnlyScalarAttributeAdapterET_VEC3
+        : public ReadOnlyScalarAttributeAdapter
+    {
     public:
-
         ReadOnlyScalarAttributeAdapterET_VEC3(
-            const AttributesManager& manager,
-            const std::string& name ):
-            ReadOnlyScalarAttributeAdapter( manager, name )
+            const AttributesManager& manager, const std::string& name )
+            : ReadOnlyScalarAttributeAdapter( manager, name )
         {
         }
 
@@ -551,25 +555,33 @@ namespace RINGMesh {
 
     void register_read_only_scalar_attribute()
     {
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT8 >(
-            typeid( uint8 ).name() );
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT8 >(
-            typeid( char ).name() );
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT8 >(
-            typeid( int8 ).name() );
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_UINT32 >(
-            typeid( unsigned int ).name() );
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_INT32 >(
-            typeid( int ).name() );
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT32 >(
-            typeid( float ).name() );
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT64 >(
-            typeid( double ).name() );
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_VEC2 >(
-            typeid( vec2 ).name() );
-        ReadOnlyScalarAttributeAdapterFactory::register_creator< ReadOnlyScalarAttributeAdapterET_VEC3 >(
-            typeid( vec3 ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::
+            register_creator< ReadOnlyScalarAttributeAdapterET_UINT8 >(
+                typeid( uint8 ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::
+            register_creator< ReadOnlyScalarAttributeAdapterET_INT8 >(
+                typeid( char ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::
+            register_creator< ReadOnlyScalarAttributeAdapterET_INT8 >(
+                typeid( int8 ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::
+            register_creator< ReadOnlyScalarAttributeAdapterET_UINT32 >(
+                typeid( unsigned int ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::
+            register_creator< ReadOnlyScalarAttributeAdapterET_INT32 >(
+                typeid( int ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::
+            register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT32 >(
+                typeid( float ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::
+            register_creator< ReadOnlyScalarAttributeAdapterET_FLOAT64 >(
+                typeid( double ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::
+            register_creator< ReadOnlyScalarAttributeAdapterET_VEC2 >(
+                typeid( vec2 ).name() );
+        ReadOnlyScalarAttributeAdapterFactory::
+            register_creator< ReadOnlyScalarAttributeAdapterET_VEC3 >(
+                typeid( vec3 ).name() );
     }
     /************************************************************************/
-
 }

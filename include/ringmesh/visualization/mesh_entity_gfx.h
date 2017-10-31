@@ -45,8 +45,8 @@
 
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
-#include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/attributes.h>
+#include <ringmesh/basic/factory.h>
 
 /*!
  * @file Classes for mesh entity visualization
@@ -55,7 +55,7 @@
 
 namespace RINGMesh
 {
-//    class AttributeManager;
+    //    class AttributeManager;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGfx );
     FORWARD_DECLARATION_DIMENSION_CLASS( AttributeGfxManager );
     FORWARD_DECLARATION_DIMENSION_CLASS( AttributeGfx );
@@ -420,7 +420,8 @@ namespace RINGMesh
             std::vector< std::string > attribute_names;
             attributes.list_attribute_names( attribute_names );
             std::vector< std::string > names;
-            for( const std::string& name : attribute_names ) {
+            for( const std::string& name : attribute_names )
+            {
                 const AttributeStore* store =
                     attributes.find_attribute_store( name );
                 names.push_back( name );

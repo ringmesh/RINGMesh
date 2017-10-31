@@ -614,20 +614,18 @@ namespace
                     " already exists on the ", region.gmme() );
                 continue;
             }
-            Attribute<  double > attr ( region.vertex_attribute_manager(),
+            Attribute< double > attr( region.vertex_attribute_manager(),
                 load_storage.vertex_attribute_names_[attrib_itr] );
             // Does it resize all the past attributes to the size of the current
             // attribute?
             // Problematic, isn't it?
             region.vertex_attribute_manager().resize(
-                static_cast< index_t >( region_attributes.size() )
-                );
+                static_cast< index_t >( region_attributes.size() ) );
             for( auto v_itr : range( region_attributes.size() ) )
             {
-                    attr.set_value( v_itr,
-                        region_attributes[v_itr][read_fields] );
+                attr.set_value( v_itr, region_attributes[v_itr][read_fields] );
             }
-            read_fields ++ ;
+            read_fields++;
         }
     }
 
