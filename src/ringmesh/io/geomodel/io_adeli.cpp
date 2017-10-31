@@ -300,10 +300,8 @@ namespace
             const RINGMesh::GeoModelMesh3D& geomodel_mesh = geomodel.mesh;
             if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() )
             {
-                {
-                    throw RINGMeshException(
-                        "I/O", "Adeli supports only tet meshes" );
-                }
+                throw RINGMeshException(
+                    "I/O", "Adeli supports only tet meshes" );
             }
             if( geomodel.nb_regions() == 0 )
             {
