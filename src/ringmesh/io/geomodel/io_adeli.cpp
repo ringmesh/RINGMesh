@@ -136,9 +136,10 @@ namespace
             for( const auto& corner_gmme : corners_ )
             {
                 std::vector< index_t > element_vertices( 1 );
-                element_vertices[0] = nn.get_closest_neighbor(
-                    geomodel_.mesh_entity( corner_gmme ).vertex( 0 ) ) +
-                    offset_vertices_;
+                element_vertices[0] =
+                    nn.get_closest_neighbor(
+                        geomodel_.mesh_entity( corner_gmme ).vertex( 0 ) )
+                    + offset_vertices_;
                 write_mesh_entity_element( adeli_point_type, element_vertices,
                     offset_corners_++, out );
             }
