@@ -1210,6 +1210,16 @@ namespace RINGMesh
         DEBUG( 4 );
 
         // Update topology
+        index_t surface_id{ 0 };
+        for( const auto& surface_boundaries : ordered_surface_boundaries )
+        {
+            for( const auto& cur_boundary : surface_boundaries )
+            {
+                topology.add_surface_line_boundary_relation( surface_id,
+                    cur_boundary.index, cur_boundary.side );
+            }
+            ++surface_id;
+        }
         DEBUG( 5 );
     }
 
