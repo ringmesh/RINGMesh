@@ -433,23 +433,27 @@ namespace RINGMesh
             index_t middle_box2, child_left2, child_right2;
             get_recursive_iterators( node_index2, element_begin2, element_end2,
                 middle_box2, child_left2, child_right2 );
-            self_intersect_recursive< ACTION >( node_index1, element_begin1,
+	    std::future< void > left_result = std::async( std::launch::async, self_intersect_recursive< ACTION >, this, node_index1, element_begin1,
                 element_end1, child_left2, element_begin2, middle_box2,
                 action );
-            self_intersect_recursive< ACTION >( node_index1, element_begin1,
+           std::future< void > right_result = std::async( std::launch::async,  self_intersect_recursive< ACTION >,this, node_index1, element_begin1,
                 element_end1, child_right2, middle_box2, element_end2, action );
+	   left_result.get();
+	   right_result.get();
         }
         else
         {
             index_t middle_box1, child_left1, child_right1;
             get_recursive_iterators( node_index1, element_begin1, element_end1,
                 middle_box1, child_left1, child_right1 );
-            self_intersect_recursive< ACTION >( child_left1, element_begin1,
+            std::future< void > left_result =  std::async( std::launch::async, self_intersect_recursive< ACTION >, this, child_left1, element_begin1,
                 middle_box1, node_index2, element_begin2, element_end2,
                 action );
-            self_intersect_recursive< ACTION >( child_right1, middle_box1,
+            std::future< void > right_result =std::async( std::launch::async,   self_intersect_recursive< ACTION >,this, child_right1, middle_box1,
                 element_end1, node_index2, element_begin2, element_end2,
                 action );
+	   left_result.get();
+	   right_result.get();
         }
     }
 } // namespace RINGMesh
