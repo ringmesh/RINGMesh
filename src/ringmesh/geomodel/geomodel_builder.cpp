@@ -1039,7 +1039,8 @@ namespace RINGMesh
         std::vector< std::vector< OrientedLine > > surface_boundary_lines;
         find_surfaces_boundary_lines( line_2_surface, surface_boundary_lines );
 
-        check_internal_floating_lines( line_2_surface, static_cast< index_t >(surface_boundary_lines.size()) );
+        check_internal_floating_lines( line_2_surface,
+            static_cast< index_t >( surface_boundary_lines.size() ) );
 
         // Generate surface polygons
         build_surface_polygons( surface_boundary_lines );
@@ -1053,7 +1054,7 @@ namespace RINGMesh
         std::vector< index_t >& line_2_surface,
         std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
     {
-        line_2_surface.resize( 2 * this->geomodel_.nb_lines(), NO_ID  );
+        line_2_surface.resize( 2 * this->geomodel_.nb_lines(), NO_ID );
         index_t surface_count{ 0 };
         while( std::count( line_2_surface.begin(), line_2_surface.end(), NO_ID )
                > 0 )
@@ -1161,7 +1162,8 @@ namespace RINGMesh
     }
 
     void GeoModelBuilder< 2 >::build_surface_polygons(
-        const std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
+        const std::vector< std::vector< OrientedLine > >&
+            surface_boundary_lines )
     {
         for( const auto& surface_boundaries : surface_boundary_lines )
         {
@@ -1198,8 +1200,6 @@ namespace RINGMesh
             geometry.set_surface_geometry( surface_id.index(), polygon_vertices,
                 polygon_corners, polygon_vertex_ptr );
         }
-
-
     }
 
     void GeoModelBuilder< 2 >::find_exterior_and_remove_it(
@@ -1224,7 +1224,8 @@ namespace RINGMesh
     }
 
     void GeoModelBuilder< 2 >::set_surface_line_boundary_relationships(
-        const std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
+        const std::vector< std::vector< OrientedLine > >&
+            surface_boundary_lines )
     {
         index_t surface_id{ 0 };
         for( const auto& surface_boundaries : surface_boundary_lines )

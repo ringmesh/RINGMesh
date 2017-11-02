@@ -174,20 +174,24 @@ namespace RINGMesh
 
         void find_surfaces_boundary_lines(
             std::vector< index_t >& line_2_surface,
-            std::vector< std::vector< OrientedLine > >& surface_boundary_lines );
+            std::vector< std::vector< OrientedLine > >&
+                surface_boundary_lines );
 
         void check_internal_floating_lines(
             const std::vector< index_t >& line_2_surface,
             const index_t nb_found_surfaces );
 
         void build_surface_polygons(
-            const std::vector< std::vector< OrientedLine > >& surface_boundary_lines );
+            const std::vector< std::vector< OrientedLine > >&
+                surface_boundary_lines );
 
         void find_exterior_and_remove_it(
-            std::vector< std::vector< OrientedLine > >& surface_boundary_lines );
+            std::vector< std::vector< OrientedLine > >&
+                surface_boundary_lines );
 
         void set_surface_line_boundary_relationships(
-            const std::vector< std::vector< OrientedLine > >& surface_boundary_lines );
+            const std::vector< std::vector< OrientedLine > >&
+                surface_boundary_lines );
     };
 
     template <>
