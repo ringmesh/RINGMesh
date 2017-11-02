@@ -1215,8 +1215,8 @@ namespace RINGMesh
         {
             for( const auto& cur_boundary : surface_boundaries )
             {
-                topology.add_surface_line_boundary_relation( surface_id,
-                    cur_boundary.index, cur_boundary.side );
+                topology.add_surface_line_boundary_relation(
+                    surface_id, cur_boundary.index, cur_boundary.side );
             }
             ++surface_id;
         }
