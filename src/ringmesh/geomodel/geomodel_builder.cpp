@@ -1034,6 +1034,10 @@ namespace RINGMesh
 
     void GeoModelBuilder< 2 >::build_surfaces_from_corners_and_lines()
     {
+        if( geomodel_.nb_surfaces() > 0 )
+        {
+            return;
+        }
         // Each side of each Line is in one Surface(+side is first)
         std::vector< index_t > line_2_surface;
         std::vector< std::vector< OrientedLine > > surface_boundary_lines;

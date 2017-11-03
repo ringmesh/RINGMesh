@@ -33,7 +33,6 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder_file.h>
 
 #include <ringmesh/io/io.h>
@@ -47,7 +46,7 @@
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    GeoModelBuilderFileBase< DIMENSION >::GeoModelBuilderFileBase(
+    GeoModelBuilderFile< DIMENSION >::GeoModelBuilderFile(
         GeoModel< DIMENSION >& geomodel, std::string filename )
         : GeoModelBuilder< DIMENSION >( geomodel ),
           filename_( std::move( filename ) )
@@ -55,12 +54,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GeoModelBuilderFileBase< DIMENSION >::~GeoModelBuilderFileBase()
-    {
-    }
-
-    template < index_t DIMENSION >
-    void GeoModelBuilderFileBase< DIMENSION >::build_geomodel()
+    void GeoModelBuilderFile< DIMENSION >::build_geomodel()
     {
         if( find_geomodel_dimension( filename_ ) != DIMENSION )
         {
@@ -68,48 +62,10 @@ namespace RINGMesh
                 "I/O", "Dimension of the GeoModel does not match the file" );
         }
         load_file();
-    }
-
-    GeoModelBuilderFile< 2 >::GeoModelBuilderFile(
-        GeoModel2D& geomodel, std::string filename )
-        : GeoModelBuilderFileBase< 2 >( geomodel, filename )
-    {
-    }
-
-    GeoModelBuilderFile< 2 >::~GeoModelBuilderFile()
-    {
-    }
-
-    void GeoModelBuilderFile< 2 >::build_geomodel()
-    {
-        GeoModelBuilderFileBase< 2 >::build_geomodel();
-        if( this->geomodel_.nb_surfaces() == 0 )
-        {
-            this->build_surfaces_from_corners_and_lines();
-        }
         this->end_geomodel();
     }
 
-    GeoModelBuilderFile< 3 >::GeoModelBuilderFile(
-        GeoModel3D& geomodel, std::string filename )
-        : GeoModelBuilderFileBase< 3 >( geomodel, filename )
-    {
-    }
-
-    GeoModelBuilderFile< 3 >::~GeoModelBuilderFile()
-    {
-    }
-
-    void GeoModelBuilderFile< 3 >::build_geomodel()
-    {
-        GeoModelBuilderFileBase< 3 >::build_geomodel();
-        this->end_geomodel();
-    }
-
-    template class RINGMESH_API GeoModelBuilderFileBase< 2 >;
     template class RINGMESH_API GeoModelBuilderFile< 2 >;
-
-    template class RINGMESH_API GeoModelBuilderFileBase< 3 >;
     template class RINGMESH_API GeoModelBuilderFile< 3 >;
 
 } // namespace RINGMesh

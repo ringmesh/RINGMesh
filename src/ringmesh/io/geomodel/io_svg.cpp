@@ -68,6 +68,7 @@ namespace
             height_ = svg_node->DoubleAttribute( "height" );
             create_lines( svg_node );
             create_corners();
+            build_surfaces_from_corners_and_lines();
         }
 
     private:
