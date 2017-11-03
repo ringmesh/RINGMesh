@@ -2145,7 +2145,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     void GeoModelMeshPolygonsBase< DIMENSION >::resize_polygon_data(
-        const index_t nb_polygons )
+        index_t nb_polygons )
     {
         surface_id_.resize( nb_polygons, NO_ID );
         polygon_id_.resize( nb_polygons, NO_ID );

@@ -980,7 +980,7 @@ namespace RINGMesh
             auto line_index = topology.find_or_create_line(
                 adjacent_surfaces, first_corner, second_corner );
 
-            bool created_line = geomodel_.nb_lines() != backup_nb_lines;
+            bool created_line { geomodel_.nb_lines() != backup_nb_lines };
             if( created_line )
             {
                 geometry.set_line( line_index.index(), vertices );
@@ -998,8 +998,8 @@ namespace RINGMesh
             }
             else
             {
-                bool same_geometry = line_equal(
-                    geomodel_.line( line_index.index() ), vertices );
+                bool same_geometry { line_equal(
+                    geomodel_.line( line_index.index() ), vertices ) };
                 if( !same_geometry )
                 {
                     geometry.set_line( line_index.index(), vertices );
@@ -1171,9 +1171,6 @@ namespace RINGMesh
     {
         for( const auto& surface_boundaries : surface_boundary_lines )
         {
-            auto cur_surface_mesh = SurfaceMesh2D::create_mesh();
-            auto cur_surface_mesh_builder =
-                SurfaceMeshBuilder2D::create_builder( *cur_surface_mesh );
             std::vector< vec2 > polygon_vertices;
             for( auto cur_surf_boundary : surface_boundaries )
             {
@@ -1181,10 +1178,6 @@ namespace RINGMesh
                     this->geomodel_.line( cur_surf_boundary.index );
                 for( auto vertex : range( 1, cur_line.nb_vertices() ) )
                 {
-                    cur_surface_mesh_builder->create_vertex( cur_line.vertex(
-                        cur_surf_boundary.side
-                            ? vertex
-                            : ( cur_line.nb_vertices() - 1 ) - vertex ) );
                     polygon_vertices.push_back( cur_line.vertex(
                         cur_surf_boundary.side
                             ? vertex
@@ -1192,10 +1185,8 @@ namespace RINGMesh
                 }
             }
             std::vector< index_t > polygon_corners(
-                cur_surface_mesh->nb_vertices() );
+                polygon_vertices.size() );
             std::iota( polygon_corners.begin(), polygon_corners.end(), 0 );
-            //            cur_surface_mesh_builder->create_polygon(
-            //            polygon_vertices );
             auto surface_id =
                 topology.create_mesh_entity( surface_type_name_static() );
             std::vector< index_t > polygon_vertex_ptr( 2, 0 );
@@ -1213,7 +1204,7 @@ namespace RINGMesh
         index_t exterior_id{ NO_ID };
         for( const auto& surface : geomodel_.surfaces() )
         {
-            double surface_area = surface.size();
+            double surface_area { surface.size() };
             if( surface_area > max_surface_area )
             {
                 max_surface_area = surface_area;

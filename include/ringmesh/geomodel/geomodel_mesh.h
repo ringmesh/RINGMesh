@@ -574,7 +574,7 @@ namespace RINGMesh
         /*!
          * Resize edge data: surface_id_ and polygon_id_
          */
-        void resize_polygon_data( const index_t nb_polygons );
+        void resize_polygon_data( index_t nb_polygons );
         /*!
          * Clear edge data: surface_id_ and polygon_id_
          */
