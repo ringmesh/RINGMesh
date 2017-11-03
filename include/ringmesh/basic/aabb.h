@@ -433,14 +433,18 @@ namespace RINGMesh
             index_t middle_box2, child_left2, child_right2;
             get_recursive_iterators( node_index2, element_begin2, element_end2,
                 middle_box2, child_left2, child_right2 );
-            std::future< void > left_result = std::async( std::launch::async,
-                [&]{ AABBTree::self_intersect_recursive(
-                node_index1, element_begin1, element_end1, child_left2,
-                element_begin2, middle_box2, action ); } );
-            std::future< void > right_result = std::async( std::launch::async,
-                [&]{ AABBTree::self_intersect_recursive(
-                node_index1, element_begin1, element_end1, child_right2,
-                middle_box2, element_end2, action ); } );
+            std::future< void > left_result =
+                std::async( std::launch::async, [&] {
+                    AABBTree::self_intersect_recursive( node_index1,
+                        element_begin1, element_end1, child_left2,
+                        element_begin2, middle_box2, action );
+                } );
+            std::future< void > right_result =
+                std::async( std::launch::async, [&] {
+                    AABBTree::self_intersect_recursive( node_index1,
+                        element_begin1, element_end1, child_right2, middle_box2,
+                        element_end2, action );
+                } );
             left_result.get();
             right_result.get();
         }
@@ -449,14 +453,18 @@ namespace RINGMesh
             index_t middle_box1, child_left1, child_right1;
             get_recursive_iterators( node_index1, element_begin1, element_end1,
                 middle_box1, child_left1, child_right1 );
-            std::future< void > left_result = std::async( std::launch::async,
-                [&]{ AABBTree::self_intersect_recursive(
-                child_left1, element_begin1, middle_box1, node_index2,
-                element_begin2, element_end2, action ); } );
-            std::future< void > right_result = std::async( std::launch::async,
-                [&]{ AABBTree::self_intersect_recursive(
-                child_right1, middle_box1, element_end1, node_index2,
-                element_begin2, element_end2, action ); } );
+            std::future< void > left_result =
+                std::async( std::launch::async, [&] {
+                    AABBTree::self_intersect_recursive( child_left1,
+                        element_begin1, middle_box1, node_index2,
+                        element_begin2, element_end2, action );
+                } );
+            std::future< void > right_result =
+                std::async( std::launch::async, [&] {
+                    AABBTree::self_intersect_recursive( child_right1,
+                        middle_box1, element_end1, node_index2, element_begin2,
+                        element_end2, action );
+                } );
             left_result.get();
             right_result.get();
         }
