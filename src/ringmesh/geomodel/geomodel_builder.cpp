@@ -980,7 +980,7 @@ namespace RINGMesh
             auto line_index = topology.find_or_create_line(
                 adjacent_surfaces, first_corner, second_corner );
 
-            bool created_line { geomodel_.nb_lines() != backup_nb_lines };
+            bool created_line{ geomodel_.nb_lines() != backup_nb_lines };
             if( created_line )
             {
                 geometry.set_line( line_index.index(), vertices );
@@ -998,7 +998,7 @@ namespace RINGMesh
             }
             else
             {
-                bool same_geometry { line_equal(
+                bool same_geometry{ line_equal(
                     geomodel_.line( line_index.index() ), vertices ) };
                 if( !same_geometry )
                 {
@@ -1184,8 +1184,7 @@ namespace RINGMesh
                             : ( cur_line.nb_vertices() - 1 ) - vertex ) );
                 }
             }
-            std::vector< index_t > polygon_corners(
-                polygon_vertices.size() );
+            std::vector< index_t > polygon_corners( polygon_vertices.size() );
             std::iota( polygon_corners.begin(), polygon_corners.end(), 0 );
             auto surface_id =
                 topology.create_mesh_entity( surface_type_name_static() );
@@ -1204,7 +1203,7 @@ namespace RINGMesh
         index_t exterior_id{ NO_ID };
         for( const auto& surface : geomodel_.surfaces() )
         {
-            double surface_area { surface.size() };
+            double surface_area{ surface.size() };
             if( surface_area > max_surface_area )
             {
                 max_surface_area = surface_area;
