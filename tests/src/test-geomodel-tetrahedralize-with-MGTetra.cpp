@@ -57,6 +57,8 @@ int main()
     try
     {
         default_configure();
+        
+ #ifdef USE_MG_TETRA
         CmdLine::import_arg_group( "global" );
         GEO::CmdLine::set_arg( "algo:tet", "MG_Tetra");
 
@@ -76,8 +78,6 @@ int main()
                 "Failed when building model ", geomodel.name(),
                 ": the model is not valid." );
         }
-
-#ifdef USE_MG_TETRA
 
         // Tetrahedralize the GeoModel
         tetrahedralize( geomodel, NO_ID, false );
