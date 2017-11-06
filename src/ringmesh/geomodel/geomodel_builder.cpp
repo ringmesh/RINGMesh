@@ -1052,15 +1052,13 @@ namespace RINGMesh
         struct LineIncidentSurfacePair
         {
             LineIncidentSurfacePair(
-                index_t plus_surface_id,
-                index_t minus_surface_id )
+                index_t plus_surface_id, index_t minus_surface_id )
             {
                 surface_ids_[0] = plus_surface_id;
                 surface_ids_[1] = minus_surface_id;
             }
 
-            LineIncidentSurfacePair()
-            : LineIncidentSurfacePair( NO_ID, NO_ID )
+            LineIncidentSurfacePair() : LineIncidentSurfacePair( NO_ID, NO_ID )
             {
             }
 
@@ -1103,15 +1101,18 @@ namespace RINGMesh
         };
 
         OrientedLine get_first_undetermined_line_side(
-            const std::vector< LineIncidentSurfacePair >& line_indicent_surfaces )
+            const std::vector< LineIncidentSurfacePair >&
+                line_indicent_surfaces )
         {
-            for( auto line : range(line_indicent_surfaces.size()) )
+            for( auto line : range( line_indicent_surfaces.size() ) )
             {
-                if( line_indicent_surfaces[line].side_surface_index( true ) == NO_ID )
+                if( line_indicent_surfaces[line].side_surface_index( true )
+                    == NO_ID )
                 {
                     return OrientedLine( line, true );
                 }
-                if( line_indicent_surfaces[line].side_surface_index( false ) == NO_ID )
+                if( line_indicent_surfaces[line].side_surface_index( false )
+                    == NO_ID )
                 {
                     return OrientedLine( line, false );
                 }
@@ -1191,10 +1192,12 @@ namespace RINGMesh
             do
             {
                 ringmesh_assert(
-                    line_indicent_surfaces[cur_line_and_side.index].side_surface_index(cur_line_and_side.side)
+                    line_indicent_surfaces[cur_line_and_side.index]
+                        .side_surface_index( cur_line_and_side.side )
                     == NO_ID );
-                line_indicent_surfaces[cur_line_and_side.index].set_side_surface_index(
-                    cur_line_and_side.side, cur_surface_id);
+                line_indicent_surfaces[cur_line_and_side.index]
+                    .set_side_surface_index(
+                        cur_line_and_side.side, cur_surface_id );
                 cur_surface_boundaries.emplace_back( cur_line_and_side );
 
                 cur_line_and_side =
@@ -1209,11 +1212,13 @@ namespace RINGMesh
         {
             // This vector registers for each line the index of the two incident
             // surfaces
-            line_indicent_surfaces.resize(
-                this->geomodel_.nb_lines() );
+            line_indicent_surfaces.resize( this->geomodel_.nb_lines() );
             index_t surface_counter{ 0 };
             while( std::count_if( line_indicent_surfaces.begin(),
-                       line_indicent_surfaces.end(), []( LineIncidentSurfacePair line ){ return line.is_undetermined(); } )
+                       line_indicent_surfaces.end(),
+                       []( LineIncidentSurfacePair line ) {
+                           return line.is_undetermined();
+                       } )
                    > 0 )
             {
                 std::vector< OrientedLine > cur_surface_boundaries =
@@ -1226,7 +1231,8 @@ namespace RINGMesh
         }
 
         void check_internal_floating_lines(
-            const std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
+            const std::vector< LineIncidentSurfacePair >&
+                line_indicent_surfaces,
             const index_t nb_found_surfaces )
         {
             std::vector< bool > are_surfaces_hole( nb_found_surfaces, true );
@@ -1235,8 +1241,10 @@ namespace RINGMesh
                 if( line_indicent_surfaces[line_id].plus_surface_index()
                     != line_indicent_surfaces[line_id].minus_surface_index() )
                 {
-                    are_surfaces_hole[line_indicent_surfaces[line_id].plus_surface_index()] = false;
-                    are_surfaces_hole[line_indicent_surfaces[line_id].minus_surface_index()] = false;
+                    are_surfaces_hole[line_indicent_surfaces[line_id]
+                                          .plus_surface_index()] = false;
+                    are_surfaces_hole[line_indicent_surfaces[line_id]
+                                          .minus_surface_index()] = false;
                 }
             }
             index_t nb_pb_surfaces{ static_cast< index_t >( std::count(
