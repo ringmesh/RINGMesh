@@ -1040,18 +1040,83 @@ namespace RINGMesh
             {
                 return index == rhs.index && side == rhs.side;
             }
+
+            bool operator!=( const OrientedLine& rhs )
+            {
+                return !operator==( rhs );
+            }
             index_t index;
             bool side;
         };
 
-        OrientedLine get_first_undetermined_line_side(
-            const std::vector< index_t >& line_indicent_surfaces )
+        struct LineIncidentSurfacePair
         {
-            auto location = static_cast< index_t >(
-                std::distance( line_indicent_surfaces.begin(),
-                    std::find( line_indicent_surfaces.begin(),
-                        line_indicent_surfaces.end(), NO_ID ) ) );
-            return OrientedLine( location / 2, location % 2 == 0 );
+            LineIncidentSurfacePair(
+                index_t plus_surface_id,
+                index_t minus_surface_id )
+            {
+                surface_ids_[0] = plus_surface_id;
+                surface_ids_[1] = minus_surface_id;
+            }
+
+            LineIncidentSurfacePair()
+            : LineIncidentSurfacePair( NO_ID, NO_ID )
+            {
+            }
+
+            bool is_undetermined() const
+            {
+                return surface_ids_[0] == NO_ID || surface_ids_[1] == NO_ID;
+            }
+
+            index_t plus_surface_index() const
+            {
+                return surface_ids_[0];
+            }
+
+            index_t minus_surface_index() const
+            {
+                return surface_ids_[1];
+            }
+
+            index_t side_surface_index( bool side ) const
+            {
+                if( side )
+                {
+                    return plus_surface_index();
+                }
+                return minus_surface_index();
+            }
+
+            void set_side_surface_index( bool side, index_t surface_id )
+            {
+                if( side )
+                {
+                    surface_ids_[0] = surface_id;
+                    return;
+                }
+                surface_ids_[1] = surface_id;
+            }
+
+        private:
+            index_t surface_ids_[2];
+        };
+
+        OrientedLine get_first_undetermined_line_side(
+            const std::vector< LineIncidentSurfacePair >& line_indicent_surfaces )
+        {
+            for( auto line : range(line_indicent_surfaces.size()) )
+            {
+                if( line_indicent_surfaces[line].side_surface_index( true ) == NO_ID )
+                {
+                    return OrientedLine( line, true );
+                }
+                if( line_indicent_surfaces[line].side_surface_index( false ) == NO_ID )
+                {
+                    return OrientedLine( line, false );
+                }
+            }
+            return OrientedLine( NO_ID, false );
         }
 
         index_t find_line_with_minimal_angle(
@@ -1084,7 +1149,7 @@ namespace RINGMesh
             const auto& cur_line =
                 this->geomodel_.line( cur_line_and_side.index );
             index_t cur_corner_id{
-                cur_line.boundary_gmme( cur_line_and_side.side ? 1 : 0 ).index()
+                cur_line.boundary( cur_line_and_side.side ? 1 : 0 ).index()
             };
             const auto& cur_corner = this->geomodel_.corner( cur_corner_id );
             if( cur_corner.nb_incident_entities() == 1 )
@@ -1106,14 +1171,13 @@ namespace RINGMesh
 
         std::vector< OrientedLine > get_surface_boundaries(
             const index_t cur_surface_id,
-            std::vector< index_t >& line_indicent_surfaces )
+            std::vector< LineIncidentSurfacePair >& line_indicent_surfaces )
         {
             std::vector< OrientedLine > cur_surface_boundaries;
             OrientedLine first_line_and_side =
                 get_first_undetermined_line_side( line_indicent_surfaces );
 
             OrientedLine cur_line_and_side{ first_line_and_side };
-            bool stop{ false };
 
             // From the first line, the lines are walked turning around corners
             // in the same direction (clockwise). Line after line, the
@@ -1124,43 +1188,32 @@ namespace RINGMesh
             // towards
             // its second boundary, the surface is set as incident by the + side
             // of the line.
-            while( !stop )
+            do
             {
                 ringmesh_assert(
-                    line_indicent_surfaces[2 * cur_line_and_side.index
-                                           + ( cur_line_and_side.side ? 0 : 1 )]
+                    line_indicent_surfaces[cur_line_and_side.index].side_surface_index(cur_line_and_side.side)
                     == NO_ID );
-                line_indicent_surfaces[2 * cur_line_and_side.index
-                                       + ( cur_line_and_side.side ? 0 : 1 )] =
-                    cur_surface_id;
+                line_indicent_surfaces[cur_line_and_side.index].set_side_surface_index(
+                    cur_line_and_side.side, cur_surface_id);
                 cur_surface_boundaries.emplace_back( cur_line_and_side );
 
-                OrientedLine next_line_and_side =
+                cur_line_and_side =
                     get_next_surface_boundary_line( cur_line_and_side );
-
-                if( next_line_and_side == first_line_and_side )
-                {
-                    stop = true;
-                }
-                else
-                {
-                    cur_line_and_side = next_line_and_side;
-                }
-            }
+            } while( cur_line_and_side != first_line_and_side );
             return cur_surface_boundaries;
         }
 
         void find_surfaces_boundary_lines(
-            std::vector< index_t >& line_indicent_surfaces,
+            std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
             std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
         {
             // This vector registers for each line the index of the two incident
             // surfaces
             line_indicent_surfaces.resize(
-                2 * this->geomodel_.nb_lines(), NO_ID );
+                this->geomodel_.nb_lines() );
             index_t surface_counter{ 0 };
-            while( std::count( line_indicent_surfaces.begin(),
-                       line_indicent_surfaces.end(), NO_ID )
+            while( std::count_if( line_indicent_surfaces.begin(),
+                       line_indicent_surfaces.end(), []( LineIncidentSurfacePair line ){ return line.is_undetermined(); } )
                    > 0 )
             {
                 std::vector< OrientedLine > cur_surface_boundaries =
@@ -1173,17 +1226,17 @@ namespace RINGMesh
         }
 
         void check_internal_floating_lines(
-            const std::vector< index_t >& line_2_surface,
+            const std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
             const index_t nb_found_surfaces )
         {
             std::vector< bool > are_surfaces_hole( nb_found_surfaces, true );
             for( auto line_id : range( geomodel_.nb_lines() ) )
             {
-                if( line_2_surface[2 * line_id]
-                    != line_2_surface[2 * line_id + 1] )
+                if( line_indicent_surfaces[line_id].plus_surface_index()
+                    != line_indicent_surfaces[line_id].minus_surface_index() )
                 {
-                    are_surfaces_hole[line_2_surface[2 * line_id]] = false;
-                    are_surfaces_hole[line_2_surface[2 * line_id + 1]] = false;
+                    are_surfaces_hole[line_indicent_surfaces[line_id].plus_surface_index()] = false;
+                    are_surfaces_hole[line_indicent_surfaces[line_id].minus_surface_index()] = false;
                 }
             }
             index_t nb_pb_surfaces{ static_cast< index_t >( std::count(
@@ -1307,12 +1360,12 @@ namespace RINGMesh
             return;
         }
         // Each side of each Line is in one Surface(+side is first)
-        std::vector< index_t > line_2_surface;
+        std::vector< Impl::LineIncidentSurfacePair > line_incident_surfaces;
         std::vector< std::vector< Impl::OrientedLine > > surface_boundary_lines;
         impl_->find_surfaces_boundary_lines(
-            line_2_surface, surface_boundary_lines );
+            line_incident_surfaces, surface_boundary_lines );
 
-        impl_->check_internal_floating_lines( line_2_surface,
+        impl_->check_internal_floating_lines( line_incident_surfaces,
             static_cast< index_t >( surface_boundary_lines.size() ) );
 
         // Generate surface polygons
