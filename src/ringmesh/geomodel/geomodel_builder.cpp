@@ -1025,8 +1025,7 @@ namespace RINGMesh
     class GeoModelBuilder< 2 >::Impl
     {
     public:
-        Impl( GeoModel2D& geomodel )
-            : geomodel_( geomodel )
+        Impl( GeoModel2D& geomodel ) : geomodel_( geomodel )
         {
         }
 
@@ -1042,18 +1041,19 @@ namespace RINGMesh
 
         void find_surfaces_boundary_lines(
             std::vector< index_t >& line_2_surface,
-            std::vector< std::vector< OrientedLine > >&
-                surface_boundary_lines )
+            std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
         {
             line_2_surface.resize( 2 * this->geomodel_.nb_lines(), NO_ID );
             index_t surface_count{ 0 };
-            while( std::count( line_2_surface.begin(), line_2_surface.end(), NO_ID )
+            while( std::count(
+                       line_2_surface.begin(), line_2_surface.end(), NO_ID )
                    > 0 )
             {
                 std::vector< OrientedLine > cur_surface_boundaries;
-                auto location = static_cast< index_t >( std::distance(
-                    line_2_surface.begin(), std::find( line_2_surface.begin(),
-                                                line_2_surface.end(), NO_ID ) ) );
+                auto location = static_cast< index_t >(
+                    std::distance( line_2_surface.begin(),
+                        std::find( line_2_surface.begin(), line_2_surface.end(),
+                            NO_ID ) ) );
 
                 index_t first_line_id{ location / 2 };
                 bool first_side{ location % 2 == 0 };
@@ -1069,7 +1069,8 @@ namespace RINGMesh
                         == NO_ID );
                     line_2_surface[2 * cur_line_id + ( cur_side ? 0 : 1 )] =
                         surface_count;
-                    cur_surface_boundaries.emplace_back( cur_line_id, cur_side );
+                    cur_surface_boundaries.emplace_back(
+                        cur_line_id, cur_side );
 
                     const auto& cur_line = this->geomodel_.line( cur_line_id );
                     index_t cur_corner_id{
@@ -1082,7 +1083,8 @@ namespace RINGMesh
                     bool next_side{ false };
                     if( cur_corner.nb_incident_entities() == 1 )
                     {
-                        // Case the current line is an internal border of a surface
+                        // Case the current line is an internal border of a
+                        // surface
                         next_line_id = cur_line_id;
                         next_side = !cur_side;
                     }
@@ -1106,12 +1108,13 @@ namespace RINGMesh
                             }
                         }
                         ringmesh_assert( next_line_id != NO_ID );
-                        next_side =
-                            this->geomodel_.line( next_line_id ).boundary_gmme( 0 )
-                            == cur_corner.gmme();
+                        next_side = this->geomodel_.line( next_line_id )
+                                        .boundary_gmme( 0 )
+                                    == cur_corner.gmme();
                     }
 
-                    if( next_line_id == first_line_id && next_side == first_side )
+                    if( next_line_id == first_line_id
+                        && next_side == first_side )
                     {
                         stop = true;
                     }
@@ -1133,7 +1136,8 @@ namespace RINGMesh
             std::vector< bool > are_surfaces_hole( nb_found_surfaces, true );
             for( auto line_id : range( geomodel_.nb_lines() ) )
             {
-                if( line_2_surface[2 * line_id] != line_2_surface[2 * line_id + 1] )
+                if( line_2_surface[2 * line_id]
+                    != line_2_surface[2 * line_id + 1] )
                 {
                     are_surfaces_hole[line_2_surface[2 * line_id]] = false;
                     are_surfaces_hole[line_2_surface[2 * line_id + 1]] = false;
@@ -1143,8 +1147,9 @@ namespace RINGMesh
                 are_surfaces_hole.begin(), are_surfaces_hole.end(), true ) ) };
             if( nb_pb_surfaces > 0 )
             {
-                throw RINGMeshException( "Surface2D", "During surface from corners "
-                                                      " and lines build, ",
+                throw RINGMeshException( "Surface2D",
+                    "During surface from corners "
+                    " and lines build, ",
                     nb_pb_surfaces,
                     " group(s) of lines are "
                     "floating inside a surface. This is not yet handled by the "
@@ -1171,22 +1176,22 @@ namespace RINGMesh
                                 : ( cur_line.nb_vertices() - 1 ) - vertex ) );
                     }
                 }
-                std::vector< index_t > polygon_corners( polygon_vertices.size() );
+                std::vector< index_t > polygon_corners(
+                    polygon_vertices.size() );
                 std::iota( polygon_corners.begin(), polygon_corners.end(), 0 );
                 GeoModelBuilder2D builder( geomodel_ );
-                auto surface_id =
-                    builder.topology.create_mesh_entity( surface_type_name_static() );
+                auto surface_id = builder.topology.create_mesh_entity(
+                    surface_type_name_static() );
                 std::vector< index_t > polygon_vertex_ptr( 2, 0 );
                 polygon_vertex_ptr[1] =
                     static_cast< index_t >( polygon_corners.size() );
-                builder.geometry.set_surface_geometry( surface_id.index(), polygon_vertices,
-                    polygon_corners, polygon_vertex_ptr );
+                builder.geometry.set_surface_geometry( surface_id.index(),
+                    polygon_vertices, polygon_corners, polygon_vertex_ptr );
             }
         }
 
         void find_exterior_and_remove_it(
-            std::vector< std::vector< OrientedLine > >&
-                surface_boundary_lines )
+            std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
         {
             double max_surface_area{ 0 };
             index_t exterior_id{ NO_ID };
@@ -1224,7 +1229,6 @@ namespace RINGMesh
             }
         }
 
-
     private:
         GeoModel2D& geomodel_;
     };
@@ -1253,7 +1257,8 @@ namespace RINGMesh
         // Each side of each Line is in one Surface(+side is first)
         std::vector< index_t > line_2_surface;
         std::vector< std::vector< Impl::OrientedLine > > surface_boundary_lines;
-        impl_->find_surfaces_boundary_lines( line_2_surface, surface_boundary_lines );
+        impl_->find_surfaces_boundary_lines(
+            line_2_surface, surface_boundary_lines );
 
         impl_->check_internal_floating_lines( line_2_surface,
             static_cast< index_t >( surface_boundary_lines.size() ) );
@@ -1263,7 +1268,8 @@ namespace RINGMesh
         impl_->find_exterior_and_remove_it( surface_boundary_lines );
 
         // Update topology
-        impl_->set_surface_line_boundary_relationships( surface_boundary_lines );
+        impl_->set_surface_line_boundary_relationships(
+            surface_boundary_lines );
     }
 
     GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel3D& geomodel )
