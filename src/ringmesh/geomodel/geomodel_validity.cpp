@@ -1103,7 +1103,8 @@ namespace
     private:
         void add_base_checks()
         {
-            if( enum_contains( mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) )
+            if( enum_contains(
+                    mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) )
             {
                 validity_tasks_handler_.execute(
                     &GeoModelValidityCheck::test_geomodel_connectivity_validity,
@@ -1115,8 +1116,8 @@ namespace
                     &GeoModelValidityCheck::test_geomodel_geological_validity,
                     this );
             }
-            if( enum_contains( mode_,
-                ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) )
+            if( enum_contains(
+                    mode_, ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) )
             {
                 validity_tasks_handler_.execute(
                     &GeoModelValidityCheck::test_surface_line_mesh_conformity,
@@ -1125,7 +1126,8 @@ namespace
             if( enum_contains( mode_, ValidityCheckMode::MESH_ENTITIES ) )
             {
                 validity_tasks_handler_.execute(
-                    &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
+                    &GeoModelValidityCheck::
+                        test_geomodel_mesh_entities_validity,
                     this );
                 /// TODO: find a way to add this test for Model3d. See BC.
                 //  threads.emplace_back(
@@ -1133,7 +1135,6 @@ namespace
                 //          this );
             }
         }
-
 
         void add_checks()
         {
@@ -1391,11 +1392,12 @@ namespace
             validity_tasks_handler_.execute(
                 &GeoModelValidityCheck::test_polygon_intersections, this );
         }
-        if( enum_contains( mode_,
-            ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY ) )
+        if( enum_contains(
+                mode_, ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY ) )
         {
             validity_tasks_handler_.execute(
-                &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
+                &GeoModelValidityCheck::test_region_surface_mesh_conformity,
+                this );
         }
         if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) )
         {
@@ -1403,7 +1405,7 @@ namespace
                 &GeoModelValidityCheck::test_non_manifold_edges, this );
         }
         add_base_checks();
-}
+    }
 
 } // namespace
 
