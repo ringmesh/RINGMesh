@@ -1035,97 +1035,137 @@ namespace RINGMesh
                 : index( line_index ), side( line_side )
             {
             }
+
+            bool operator==( const OrientedLine& rhs )
+            {
+                return index == rhs.index && side == rhs.side;
+            }
             index_t index;
             bool side;
         };
 
+        OrientedLine get_first_undetermined_line_side(
+            const std::vector< index_t >& line_indicent_surfaces )
+        {
+            auto location = static_cast< index_t >(
+                std::distance( line_indicent_surfaces.begin(),
+                    std::find( line_indicent_surfaces.begin(), line_indicent_surfaces.end(),
+                        NO_ID ) ) );
+            return OrientedLine( location / 2, location % 2 == 0 );
+        }
+
+        index_t find_line_with_minimal_angle(
+            const Corner2D& pivot_corner,
+            const index_t cur_line_id )
+        {
+            double min_angle{ max_float64() };
+            const auto& cur_line =
+                this->geomodel_.line( cur_line_id );
+            index_t minimal_angle_line_id { NO_ID };
+            for( auto line_itr :
+                range( pivot_corner.nb_incident_entities() ) )
+            {
+                const auto& line =
+                    pivot_corner.incident_entity( line_itr );
+                if( line.index() == cur_line_id )
+                {
+                    continue;
+                }
+                auto cur_angle = compute_angle_at_corner(
+                    cur_line, pivot_corner, line );
+                if( cur_angle < min_angle )
+                {
+                    min_angle = cur_angle;
+                    minimal_angle_line_id = line.index();
+                }
+            }
+            return minimal_angle_line_id;
+        }
+
+        OrientedLine get_next_surface_boundary_line(
+            const OrientedLine cur_line_and_side )
+        {
+            const auto& cur_line = this->geomodel_.line( cur_line_and_side.index );
+            index_t cur_corner_id{
+                cur_line.boundary_gmme( cur_line_and_side.side ? 1 : 0 ).index()
+            };
+            const auto& cur_corner =
+                this->geomodel_.corner( cur_corner_id );
+            if( cur_corner.nb_incident_entities() == 1 )
+            {
+                // Case the current line is an internal border of a
+                // surface
+                return OrientedLine( cur_line_and_side.index, !cur_line_and_side.side );
+            }
+
+            index_t next_line_id = find_line_with_minimal_angle(
+                cur_corner, cur_line_and_side.index );
+            ringmesh_assert( next_line_id != NO_ID );
+            bool next_side = this->geomodel_.line( next_line_id )
+                            .boundary_gmme( 0 )
+                        == cur_corner.gmme();
+            return OrientedLine( next_line_id, next_side );
+
+        }
+
+        std::vector< OrientedLine > get_surface_boundaries(
+            const index_t cur_surface_id,
+            std::vector< index_t >& line_indicent_surfaces )
+        {
+            std::vector< OrientedLine > cur_surface_boundaries;
+            OrientedLine first_line_and_side =
+                get_first_undetermined_line_side( line_indicent_surfaces );
+
+            OrientedLine cur_line_and_side { first_line_and_side };
+            bool stop{ false };
+
+            // From the first line, the lines are walked turning around corners
+            // in the same direction (clockwise). Line after line, the boundaries
+            // of the currently processed surface are found until the algorithm
+            // has gone back to the first line.
+            // By convention, if a line is walked from its first boundary towards
+            // its second boundary, the surface is set as incident by the + side
+            // of the line.
+            while( !stop )
+            {
+                ringmesh_assert(
+                    line_indicent_surfaces[2 * cur_line_and_side.index + ( cur_line_and_side.side ? 0 : 1 )]
+                    == NO_ID );
+                line_indicent_surfaces[2 * cur_line_and_side.index + ( cur_line_and_side.side ? 0 : 1 )] =
+                    cur_surface_id;
+                cur_surface_boundaries.emplace_back( cur_line_and_side );
+
+                OrientedLine next_line_and_side =
+                    get_next_surface_boundary_line( cur_line_and_side );
+
+                if( next_line_and_side == first_line_and_side )
+                {
+                    stop = true;
+                }
+                else
+                {
+                    cur_line_and_side = next_line_and_side;
+                }
+            }
+            return cur_surface_boundaries;
+        }
+
         void find_surfaces_boundary_lines(
-            std::vector< index_t >& line_2_surface,
+            std::vector< index_t >& line_indicent_surfaces,
             std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
         {
-            line_2_surface.resize( 2 * this->geomodel_.nb_lines(), NO_ID );
-            index_t surface_count{ 0 };
+            // This vector registers for each line the index of the two incident surfaces
+            line_indicent_surfaces.resize( 2 * this->geomodel_.nb_lines(), NO_ID );
+            index_t surface_counter{ 0 };
             while( std::count(
-                       line_2_surface.begin(), line_2_surface.end(), NO_ID )
+                       line_indicent_surfaces.begin(), line_indicent_surfaces.end(), NO_ID )
                    > 0 )
             {
-                std::vector< OrientedLine > cur_surface_boundaries;
-                auto location = static_cast< index_t >(
-                    std::distance( line_2_surface.begin(),
-                        std::find( line_2_surface.begin(), line_2_surface.end(),
-                            NO_ID ) ) );
+                std::vector< OrientedLine > cur_surface_boundaries =
+                    get_surface_boundaries( surface_counter, line_indicent_surfaces);
 
-                index_t first_line_id{ location / 2 };
-                bool first_side{ location % 2 == 0 };
-
-                index_t cur_line_id{ first_line_id };
-                bool cur_side{ first_side };
-
-                bool stop{ false };
-                while( !stop )
-                {
-                    ringmesh_assert(
-                        line_2_surface[2 * cur_line_id + ( cur_side ? 0 : 1 )]
-                        == NO_ID );
-                    line_2_surface[2 * cur_line_id + ( cur_side ? 0 : 1 )] =
-                        surface_count;
-                    cur_surface_boundaries.emplace_back(
-                        cur_line_id, cur_side );
-
-                    const auto& cur_line = this->geomodel_.line( cur_line_id );
-                    index_t cur_corner_id{
-                        cur_line.boundary_gmme( cur_side ? 1 : 0 ).index()
-                    };
-                    const auto& cur_corner =
-                        this->geomodel_.corner( cur_corner_id );
-                    double min_angle{ max_float64() };
-                    index_t next_line_id{ NO_ID };
-                    bool next_side{ false };
-                    if( cur_corner.nb_incident_entities() == 1 )
-                    {
-                        // Case the current line is an internal border of a
-                        // surface
-                        next_line_id = cur_line_id;
-                        next_side = !cur_side;
-                    }
-                    else
-                    {
-                        for( auto next_line_itr :
-                            range( cur_corner.nb_incident_entities() ) )
-                        {
-                            const auto& next_line =
-                                cur_corner.incident_entity( next_line_itr );
-                            if( next_line.index() == cur_line_id )
-                            {
-                                continue;
-                            }
-                            auto cur_angle = compute_angle_at_corner(
-                                cur_line, cur_corner, next_line );
-                            if( cur_angle < min_angle )
-                            {
-                                min_angle = cur_angle;
-                                next_line_id = next_line.index();
-                            }
-                        }
-                        ringmesh_assert( next_line_id != NO_ID );
-                        next_side = this->geomodel_.line( next_line_id )
-                                        .boundary_gmme( 0 )
-                                    == cur_corner.gmme();
-                    }
-
-                    if( next_line_id == first_line_id
-                        && next_side == first_side )
-                    {
-                        stop = true;
-                    }
-                    else
-                    {
-                        cur_line_id = next_line_id;
-                        cur_side = next_side;
-                    }
-                }
                 surface_boundary_lines.push_back( cur_surface_boundaries );
-                ++surface_count;
+                ++surface_counter;
             }
         }
 
