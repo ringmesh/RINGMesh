@@ -1157,25 +1157,33 @@ namespace RINGMesh
             }
         }
 
+        std::vector< vec2 > get_surface_polygon_vertices(
+            const std::vector< OrientedLine >& surface_boundaries )
+        {
+            std::vector< vec2 > polygon_vertices;
+            for( auto cur_surf_boundary : surface_boundaries )
+            {
+                const auto& cur_line =
+                    this->geomodel_.line( cur_surf_boundary.index );
+                for( auto vertex : range( 1, cur_line.nb_vertices() ) )
+                {
+                    polygon_vertices.push_back( cur_line.vertex(
+                        cur_surf_boundary.side
+                            ? vertex
+                            : ( cur_line.nb_vertices() - 1 ) - vertex ) );
+                }
+            }
+            return polygon_vertices;
+        }
+
         void build_surface_polygons(
             const std::vector< std::vector< OrientedLine > >&
                 surface_boundary_lines )
         {
             for( const auto& surface_boundaries : surface_boundary_lines )
             {
-                std::vector< vec2 > polygon_vertices;
-                for( auto cur_surf_boundary : surface_boundaries )
-                {
-                    const auto& cur_line =
-                        this->geomodel_.line( cur_surf_boundary.index );
-                    for( auto vertex : range( 1, cur_line.nb_vertices() ) )
-                    {
-                        polygon_vertices.push_back( cur_line.vertex(
-                            cur_surf_boundary.side
-                                ? vertex
-                                : ( cur_line.nb_vertices() - 1 ) - vertex ) );
-                    }
-                }
+                std::vector< vec2 > polygon_vertices =
+                    get_surface_polygon_vertices( surface_boundaries );
                 std::vector< index_t > polygon_corners(
                     polygon_vertices.size() );
                 std::iota( polygon_corners.begin(), polygon_corners.end(), 0 );
@@ -1194,22 +1202,22 @@ namespace RINGMesh
             std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
         {
             double max_surface_area{ 0 };
-            index_t exterior_id{ NO_ID };
+            index_t exterior_surface_id{ NO_ID };
             for( const auto& surface : geomodel_.surfaces() )
             {
                 double surface_area{ surface.size() };
                 if( surface_area > max_surface_area )
                 {
                     max_surface_area = surface_area;
-                    exterior_id = surface.index();
+                    exterior_surface_id = surface.index();
                 }
             }
             std::set< gmme_id > to_remove;
-            to_remove.insert( { surface_type_name_static(), exterior_id } );
+            to_remove.insert( { surface_type_name_static(), exterior_surface_id } );
             GeoModelBuilder2D builder( geomodel_ );
             builder.remove.remove_mesh_entities( to_remove );
             surface_boundary_lines.erase(
-                surface_boundary_lines.begin() + exterior_id );
+                surface_boundary_lines.begin() + exterior_surface_id );
         }
 
         void set_surface_line_boundary_relationships(
