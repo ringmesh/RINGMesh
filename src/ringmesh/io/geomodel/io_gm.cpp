@@ -33,6 +33,7 @@
  *     FRANCE
  */
 
+#include <ringmesh/basic/task_handler.h>
 namespace
 {
     using namespace RINGMesh;
@@ -275,36 +276,33 @@ namespace
          */
         void load_meshes( UnZipFile& uz )
         {
-            uz.start_extract();
+                     uz.start_extract();
 
             Logger::instance()->set_minimal( true );
             std::vector< std::future< void > > files;
-            do
-            {
-                if( GEO::FileSystem::extension( uz.get_current_filename() )
-                    == "txt" )
-                {
+            do {
+                auto file_name = uz.get_current_filename();
+                if( GEO::FileSystem::extension( file_name ) == "txt" ) {
                     continue;
                 }
 
-                const auto file_name = uz.get_current_file();
+                uz.get_current_file();
                 files.push_back(
-                    std::async( std::launch::deferred, [file_name, this] {
-                        auto file_without_extension =
-                            GEO::FileSystem::base_name( file_name );
-                        std::string entity_type, entity_id;
-                        GEO::String::split_string( file_without_extension, '_',
-                            entity_type, entity_id );
-                        index_t id{ NO_ID };
-                        GEO::String::from_string( entity_id, id );
-                        load_mesh_entity(
-                            MeshEntityType{ entity_type }, file_name, id );
-                        GEO::FileSystem::delete_file( file_name );
-                    } ) );
+                    std::async( std::launch::deferred,
+                        [file_name, this] {
+                            auto file_without_extension = GEO::FileSystem::base_name(
+                                file_name );
+                            std::string entity_type, entity_id;
+                            GEO::String::split_string( file_without_extension, '_', entity_type,
+                                entity_id );
+                            index_t id { NO_ID };
+                            GEO::String::from_string( entity_id, id );
+                            load_mesh_entity( MeshEntityType {entity_type}, file_name, id );
+                            GEO::FileSystem::delete_file( file_name );
+                        } ) );
             } while( uz.next_file() );
 
-            for( auto& file : files )
-            {
+            for( auto& file : files ) {
                 file.get();
             }
             Logger::instance()->set_minimal( false );

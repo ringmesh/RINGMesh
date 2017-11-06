@@ -36,6 +36,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/basic/task_handler.h>
 
 #include <deque>
 #include <memory>

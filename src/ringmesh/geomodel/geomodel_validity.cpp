@@ -42,6 +42,7 @@
 #include <geogram/mesh/triangle_intersection.h>
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/task_handler.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
@@ -1100,34 +1101,32 @@ namespace
         }
 
     private:
-        void add_base_checks( std::vector< std::future< void > >& tasks )
+        void add_base_checks()
         {
-            if( enum_contains(
-                    mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) )
+            if( enum_contains( mode_, ValidityCheckMode::GEOMODEL_CONNECTIVITY ) )
             {
-                tasks.emplace_back( std::async( std::launch::async,
+                validity_tasks_handler_.execute(
                     &GeoModelValidityCheck::test_geomodel_connectivity_validity,
-                    this ) );
+                    this );
             }
             if( enum_contains( mode_, ValidityCheckMode::GEOLOGICAL_ENTITIES ) )
             {
-                tasks.emplace_back( std::async( std::launch::async,
+                validity_tasks_handler_.execute(
                     &GeoModelValidityCheck::test_geomodel_geological_validity,
-                    this ) );
+                    this );
             }
-            if( enum_contains(
-                    mode_, ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) )
+            if( enum_contains( mode_,
+                ValidityCheckMode::SURFACE_LINE_MESH_CONFORMITY ) )
             {
-                tasks.emplace_back( std::async( std::launch::async,
+                validity_tasks_handler_.execute(
                     &GeoModelValidityCheck::test_surface_line_mesh_conformity,
-                    this ) );
+                    this );
             }
             if( enum_contains( mode_, ValidityCheckMode::MESH_ENTITIES ) )
             {
-                tasks.emplace_back( std::async( std::launch::async,
-                    &GeoModelValidityCheck::
-                        test_geomodel_mesh_entities_validity,
-                    this ) );
+                validity_tasks_handler_.execute(
+                    &GeoModelValidityCheck::test_geomodel_mesh_entities_validity,
+                    this );
                 /// TODO: find a way to add this test for Model3d. See BC.
                 //  threads.emplace_back(
                 //      &GeoModelValidityCheck::test_non_free_line_at_two_interfaces_intersection,
@@ -1135,21 +1134,16 @@ namespace
             }
         }
 
-        void add_checks( std::vector< std::future< void > >& tasks )
+
+        void add_checks()
         {
-            add_base_checks( tasks );
+            add_base_checks();
         }
 
         void do_check_validity()
         {
-            std::vector< std::future< void > > tasks;
-            tasks.reserve( 8 );
-            add_checks( tasks );
-
-            for( auto& task : tasks )
-            {
-                task.get();
-            }
+            add_checks();
+            validity_tasks_handler_.wait_aysnc_tasks();
         }
 
         /*!
@@ -1386,30 +1380,30 @@ namespace
         const GeoModel< DIMENSION >& geomodel_;
         bool valid_;
         ValidityCheckMode mode_;
+
+        TaskHandler validity_tasks_handler_;
     };
     template <>
-    void GeoModelValidityCheck< 3 >::add_checks(
-        std::vector< std::future< void > >& tasks )
+    void GeoModelValidityCheck< 3 >::add_checks()
     {
         if( enum_contains( mode_, ValidityCheckMode::POLYGON_INTERSECTIONS ) )
         {
-            tasks.push_back( std::async( std::launch::async,
-                &GeoModelValidityCheck::test_polygon_intersections, this ) );
+            validity_tasks_handler_.execute(
+                &GeoModelValidityCheck::test_polygon_intersections, this );
         }
-        if( enum_contains(
-                mode_, ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY ) )
+        if( enum_contains( mode_,
+            ValidityCheckMode::REGION_SURFACE_MESH_CONFORMITY ) )
         {
-            tasks.emplace_back( std::async( std::launch::async,
-                &GeoModelValidityCheck::test_region_surface_mesh_conformity,
-                this ) );
+            validity_tasks_handler_.execute(
+                &GeoModelValidityCheck::test_region_surface_mesh_conformity, this );
         }
         if( enum_contains( mode_, ValidityCheckMode::NON_MANIFOLD_EDGES ) )
         {
-            tasks.emplace_back( std::async( std::launch::async,
-                &GeoModelValidityCheck::test_non_manifold_edges, this ) );
+            validity_tasks_handler_.execute(
+                &GeoModelValidityCheck::test_non_manifold_edges, this );
         }
-        add_base_checks( tasks );
-    }
+        add_base_checks();
+}
 
 } // namespace
 
