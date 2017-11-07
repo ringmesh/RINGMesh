@@ -365,6 +365,21 @@ namespace RINGMesh
                 point.data(), p0.data(), p1.data(), p2.data() ) );
         }
 
+        double RINGMESH_API segment_angle( const Geometry::Segment2D& segment1,
+            const Geometry::Segment2D& segment2 )
+        {
+            vec2 seg1{ segment1.direction() };
+            vec2 seg2{ segment2.direction() };
+            double angle_between_pi_and_minus_pi{
+                std::atan2( seg1.y, seg1.x ) - std::atan2( seg2.y, seg2.x )
+            };
+            if( angle_between_pi_and_minus_pi < 0 )
+            {
+                return angle_between_pi_and_minus_pi + 2 * M_PI;
+            }
+            return angle_between_pi_and_minus_pi;
+        }
+
         template bool RINGMESH_API point_inside_triangle(
             const Geometry::Point< 2 >&, const Geometry::Triangle< 2 >& );
 

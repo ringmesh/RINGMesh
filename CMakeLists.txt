@@ -127,7 +127,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DTUTORIALS_DATA_INPUT_DIRECTORY:STRING=${TUTORIALS_DATA_INPUT_DIRECTORY}
                 -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}
                 -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
-                -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}
                 WORKING_DIRECTORY ${project_binary_dir_config})
       endforeach()
 
@@ -163,7 +162,7 @@ if(UNIX)
         set(CMAKE_MACOSX_RPATH 1)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
     endif(APPLE)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(supported_clang_version 3.8)
         if(COMPILER_VERSION VERSION_LESS ${supported_clang_version})
             message(FATAL_ERROR "RINGMesh require Clang version >= ${supported_clang_version}")
@@ -184,6 +183,15 @@ if(UNIX)
        include(Coveralls)
        coveralls_turn_on_coverage()
     endif()
+else(UNIX)
+    if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+        message(FATAL_ERROR "RINGMesh on Windows requires Microsoft Visual C++")
+    endif()
+    # 1800 corresponds to VS 12 2013.
+    # See https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B for VS version numbers.
+    if(MSVC_VERSION LESS 1800)
+        message(FATAL_ERROR "RINGMesh requires Visual Studio greater or equal to VS 12 2013 WIN64")
+    endif(MSVC_VERSION LESS 1800)
 endif(UNIX)
 
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
@@ -223,7 +231,7 @@ if(MG_TETRA)
     link_directories(${MG_TETRA}/lib/Linux${PLATFORM})
   endif(WIN32)
 
-  set(EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
+  set(EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra meshgems_stubs)
 endif()
 
 #------------------------------------------------------------------------------------------------

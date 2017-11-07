@@ -36,6 +36,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/basic/pimpl.h>
 
 #include <ringmesh/geomodel/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/geomodel_builder_geometry.h>
@@ -108,7 +109,7 @@ namespace RINGMesh
     /*!
      * @brief Base class to build or edit a GeoModel
      * @details All needed functions are organized in several specific builder
-     * in accordance with the kind of edition operation (copy, repair, ...) or
+     * in accordance with the kind of edition operation or
      * with the GeoModel part which is edited (topology, geometry, geology,
      * info)
      */
@@ -140,7 +141,7 @@ namespace RINGMesh
         GeoModelBuilderTopology< DIMENSION > topology;
         GeoModelBuilderGeometry< DIMENSION > geometry;
         GeoModelBuilderGeology< DIMENSION > geology;
-        GeoModelBuilderRemoval< DIMENSION > removal;
+        GeoModelBuilderRemove< DIMENSION > remove;
         GeoModelBuilderInfo< DIMENSION > info;
 
     protected:
@@ -158,6 +159,13 @@ namespace RINGMesh
     {
     public:
         explicit GeoModelBuilder( GeoModel2D& geomodel );
+
+        ~GeoModelBuilder();
+
+        void build_surfaces_from_corners_and_lines();
+
+    private:
+        IMPLEMENTATION_MEMBER( impl_ );
     };
 
     template <>

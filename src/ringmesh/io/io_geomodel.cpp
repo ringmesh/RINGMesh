@@ -116,15 +116,15 @@ namespace RINGMesh
             "mfem" );
     }
 
-
     template <>
     void GeoModelInputHandler< 2 >::initialize()
     {
         GeoModelInputHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
             "gm" );
-        GeoModelInputHandlerFactory2D::register_creator< StradivariusIOHandler >(
-            "model" );
-        GeoModelInputHandlerFactory2D::register_creator< SVGIOHandler >( "svg" );
+        GeoModelInputHandlerFactory2D::
+            register_creator< StradivariusIOHandler >( "model" );
+        GeoModelInputHandlerFactory2D::register_creator< SVGIOHandler >(
+            "svg" );
     }
 
     /*
@@ -135,13 +135,19 @@ namespace RINGMesh
     {
         GeoModelOutputHandlerFactory3D::register_creator< TetGenIOHandler >(
             "tetgen" );
-        GeoModelOutputHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
-        GeoModelOutputHandlerFactory3D::register_creator< CSMPIOHandler >( "csmp" );
+        GeoModelOutputHandlerFactory3D::register_creator< TSolidIOHandler >(
+            "so" );
+        GeoModelOutputHandlerFactory3D::register_creator< CSMPIOHandler >(
+            "csmp" );
         GeoModelOutputHandlerFactory3D::register_creator< AsterIOHandler >(
             "mail" );
-        GeoModelOutputHandlerFactory3D::register_creator< VTKIOHandler >( "vtk" );
-//        GeoModelOutputHandlerFactory3D::register_creator< GPRSIOHandler >( "gprs" );
-        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler >( "msh" );
+        GeoModelOutputHandlerFactory3D::register_creator< VTKIOHandler >(
+            "vtk" );
+        // todo GPRS export is not working for the moment [AB]
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        GPRSIOHandler >( "gprs" );
+        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler >(
+            "msh" );
         GeoModelOutputHandlerFactory3D::register_creator< MFEMIOHandler3D >(
             "mfem" );
         GeoModelOutputHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
@@ -155,7 +161,8 @@ namespace RINGMesh
         GeoModelOutputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
         GeoModelOutputHandlerFactory3D::register_creator< SMESHIOHandler >(
             "smesh" );
-        GeoModelOutputHandlerFactory3D::register_creator< STLIOHandler >( "stl" );
+        GeoModelOutputHandlerFactory3D::register_creator< STLIOHandler >(
+            "stl" );
     }
 
     template <>
@@ -164,19 +171,20 @@ namespace RINGMesh
         GeoModelInputHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
             "gm" );
         GeoModelInputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
-        GeoModelInputHandlerFactory3D::register_creator< TSolidIOHandler >( "so" );
-
+        GeoModelInputHandlerFactory3D::register_creator< TSolidIOHandler >(
+            "so" );
     }
 
     /***************************************************************************/
 
     template < index_t DIMENSION >
     std::unique_ptr< GeoModelInputHandler< DIMENSION > >
-    GeoModelInputHandler< DIMENSION >::get_handler(
+        GeoModelInputHandler< DIMENSION >::get_handler(
             const std::string& filename )
     {
         return create_handler< GeoModelInputHandler< DIMENSION >,
-            GeoModelInputHandlerFactory< DIMENSION > >( GEO::FileSystem::extension( filename ) );
+            GeoModelInputHandlerFactory< DIMENSION > >(
+            GEO::FileSystem::extension( filename ) );
     }
 
     template < index_t DIMENSION >
@@ -194,7 +202,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     std::unique_ptr< GeoModelOutputHandler< DIMENSION > >
-    GeoModelOutputHandler< DIMENSION >::get_handler(
+        GeoModelOutputHandler< DIMENSION >::get_handler(
             const std::string& filename )
     {
         return create_handler< GeoModelOutputHandler< DIMENSION >,
@@ -203,8 +211,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelOutputHandler< DIMENSION >::save_geomodel( const GeoModel< DIMENSION >& geomodel,
-        const std::string& filename )
+    void GeoModelOutputHandler< DIMENSION >::save_geomodel(
+        const GeoModel< DIMENSION >& geomodel, const std::string& filename )
     {
         save( geomodel, filename );
     }

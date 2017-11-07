@@ -56,8 +56,9 @@ namespace
     {
         if( M.cell_type( cell ) != CellType::TETRAHEDRON )
         {
-            throw RINGMeshException( "AABB",
-                "VolumeAABBTre containing_cell request only handles tetrahedra." );
+            throw RINGMeshException( "AABB", "VolumeAABBTre containing_cell "
+                                             "request only handles "
+                                             "tetrahedra." );
         }
         const auto& p0 = M.vertex( M.cell_vertex( { cell, 0 } ) );
         const auto& p1 = M.vertex( M.cell_vertex( { cell, 1 } ) );
