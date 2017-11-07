@@ -47,10 +47,11 @@
  * @author Antoine Mazuyer
  */
 
-namespace RINGMesh {
-    class TaskHandler {
+namespace RINGMesh
+{
+    class TaskHandler
+    {
     public:
-
         TaskHandler() = default;
 
         TaskHandler( index_t nb_threads )
@@ -58,39 +59,47 @@ namespace RINGMesh {
             tasks_.reserve( nb_threads );
         }
 
-        template< typename TASK, typename ... Args >
+        template < typename TASK, typename... Args >
         void execute( TASK&& task, const Args&... args )
         {
-            auto to_execute = std::bind( std::forward< TASK&& >( task ), std::forward< const Args& >( args )... );
-            if( multi_thread_ ) {
-	        tasks_.emplace_back(
-	            std::async( std::launch::async, to_execute ) );
-             } else {
-	        to_execute();
-	    }
+            auto to_execute = std::bind( std::forward< TASK&& >( task ),
+                std::forward< const Args& >( args )... );
+            if( multi_thread_ )
+            {
+                tasks_.emplace_back(
+                    std::async( std::launch::async, to_execute ) );
+            }
+            else
+            {
+                to_execute();
+            }
         }
 
         void wait_aysnc_tasks()
         {
-            if( !tasks_.empty() ) {
-                for( auto& task : tasks_ ) {
+            if( !tasks_.empty() )
+            {
+                for( auto& task : tasks_ )
+                {
                     task.get();
                 }
             }
         }
+
     private:
         /// Vector containing all the tasks
         std::vector< std::future< void > > tasks_;
 
         /// Tells whether or not the multithreading
         /// is enabled.
-        bool multi_thread_ { GEO::CmdLine::get_arg_bool( "sys:multithread" ) };
+        bool multi_thread_{ GEO::CmdLine::get_arg_bool( "sys:multithread" ) };
     };
 
-    template< typename ACTION >
+    template < typename ACTION >
     void parallel_for( index_t size, const ACTION& action )
     {
-        if( size == 0 ) {
+        if( size == 0 )
+        {
             return;
         }
 
@@ -101,15 +110,17 @@ namespace RINGMesh {
             }
         };
 
-        index_t nb_threads { std::min( size, std::thread::hardware_concurrency() ) };
-        TaskHandler tasks { nb_threads };
-        index_t start { 0 };
+        index_t nb_threads{ std::min(
+            size, std::thread::hardware_concurrency() ) };
+        TaskHandler tasks{ nb_threads };
+        index_t start{ 0 };
 
-        index_t nb_tasks_per_thread { size / nb_threads };
-        for( auto thread : range( nb_threads - 1 ) ) {
+        index_t nb_tasks_per_thread{ size / nb_threads };
+        for( auto thread : range( nb_threads - 1 ) )
+        {
             ringmesh_unused( thread );
-            tasks.execute( action_per_thread, start,
-                start + nb_tasks_per_thread );
+            tasks.execute(
+                action_per_thread, start, start + nb_tasks_per_thread );
             start += nb_tasks_per_thread;
         }
         tasks.execute( action_per_thread, start, size );
@@ -117,4 +128,3 @@ namespace RINGMesh {
     }
 
 } // namespace RINGMesh
-
