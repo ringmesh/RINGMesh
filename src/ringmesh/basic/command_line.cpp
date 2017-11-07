@@ -42,7 +42,6 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
-#include <geogram/basic/file_system.h>
 
 namespace RINGMesh
 {
