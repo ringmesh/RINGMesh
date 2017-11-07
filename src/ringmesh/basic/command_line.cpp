@@ -80,8 +80,8 @@ namespace RINGMesh
             GEO::CmdLine::declare_arg( "validity:save", false,
                 "Saves meshes representing geomodel inconsistencies",
                 GEO::CmdLine::ARG_ADVANCED );
-            GEO::CmdLine::declare_arg( "validity:directory",
-                ".", "Directory to save meshes representing geomodel "
+            GEO::CmdLine::declare_arg( "validity:directory", ".",
+                "Directory to save meshes representing geomodel "
                 "inconsistencies" );
             GEO::CmdLine::declare_arg( "validity:do_not_check", "0",
                 "Toggle off checks at loading:\n"
