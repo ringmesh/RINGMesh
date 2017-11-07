@@ -132,10 +132,10 @@ namespace
 
     template < index_t DIMENSION >
     bool polygon_is_degenerate(
-        const SurfaceBase< DIMENSION >& surface,
-        index_t polygon_id )
+        const SurfaceBase< DIMENSION >& surface, index_t polygon_id )
     {
-        if( surface.mesh_element_size( polygon_id ) < surface.geomodel().epsilon2() )
+        if( surface.mesh_element_size( polygon_id )
+            < surface.geomodel().epsilon2() )
         {
             return true;
         }
@@ -152,8 +152,9 @@ namespace
         return false;
     }
 
-    template< index_t DIMENSION >
-    bool cell_is_degenerate( const Region< DIMENSION >& region, index_t cell_id )
+    template < index_t DIMENSION >
+    bool cell_is_degenerate(
+        const Region< DIMENSION >& region, index_t cell_id )
     {
         if( region.mesh_element_size( cell_id ) < region.geomodel().epsilon3() )
         {
