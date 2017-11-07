@@ -1172,7 +1172,8 @@ namespace RINGMesh
 
         std::vector< OrientedLine > get_surface_boundaries(
             const index_t cur_surface_id,
-            std::vector< LineIncidentSurfacePair >& line_indicent_surfaces ) const
+            std::vector< LineIncidentSurfacePair >& line_indicent_surfaces )
+            const
         {
             std::vector< OrientedLine > cur_surface_boundaries;
             OrientedLine first_line_and_side =
@@ -1208,7 +1209,8 @@ namespace RINGMesh
 
         void find_surfaces_boundary_lines(
             std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
-            std::vector< std::vector< OrientedLine > >& surface_boundary_lines ) const
+            std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
+            const
         {
             // This vector registers for each line the index of the two incident
             // surfaces
@@ -1280,8 +1282,7 @@ namespace RINGMesh
             return polygon_vertices;
         }
 
-        void build_surface_polygons(
-            GeoModelBuilder2D& builder,
+        void build_surface_polygons( GeoModelBuilder2D& builder,
             const std::vector< std::vector< OrientedLine > >&
                 surface_boundary_lines ) const
         {
@@ -1302,9 +1303,9 @@ namespace RINGMesh
             }
         }
 
-        void find_exterior_and_remove_it(
-            GeoModelBuilder2D& builder,
-            std::vector< std::vector< OrientedLine > >& surface_boundary_lines ) const
+        void find_exterior_and_remove_it( GeoModelBuilder2D& builder,
+            std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
+            const
         {
             double max_surface_area{ 0 };
             index_t exterior_surface_id{ NO_ID };
@@ -1381,8 +1382,8 @@ namespace RINGMesh
         impl_->find_exterior_and_remove_it( *this, surface_boundary_lines );
 
         // Update topology
-        impl_->set_surface_line_boundary_relationships( *this,
-            surface_boundary_lines );
+        impl_->set_surface_line_boundary_relationships(
+            *this, surface_boundary_lines );
     }
 
     GeoModelBuilder< 3 >::GeoModelBuilder( GeoModel3D& geomodel )
