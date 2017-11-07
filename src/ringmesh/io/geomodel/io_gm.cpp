@@ -33,7 +33,6 @@
  *     FRANCE
  */
 
-#include <ringmesh/basic/task_handler.h>
 namespace
 {
     using namespace RINGMesh;
@@ -282,13 +281,13 @@ namespace
             std::vector< std::future< void > > files;
             do
             {
-                auto file_name = uz.get_current_filename();
-                if( GEO::FileSystem::extension( file_name ) == "txt" )
+                if( GEO::FileSystem::extension( uz.get_current_filename() )
+                    == "txt" )
                 {
                     continue;
                 }
 
-                uz.get_current_file();
+                const auto file_name = uz.get_current_file();
                 files.push_back(
                     std::async( std::launch::deferred, [file_name, this] {
                         auto file_without_extension =
@@ -976,3 +975,4 @@ namespace
         }
     }
 }
+
