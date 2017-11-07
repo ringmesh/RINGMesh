@@ -38,6 +38,7 @@
 #include <algorithm>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/task_handler.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>

@@ -45,6 +45,7 @@
 #include <geogram/basic/file_system.h>
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/task_handler.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>

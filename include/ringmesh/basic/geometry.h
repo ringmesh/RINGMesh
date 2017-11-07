@@ -490,6 +490,13 @@ namespace RINGMesh
         Sign RINGMESH_API point_side_to_plane(
             const Geometry::Point3D& point, const Geometry::Plane& plane );
 
+        /*!
+         * Returns the angle from segment1 to segment2
+         * (in radians, between 0 and 2 * pi)
+         */
+        double RINGMESH_API segment_angle( const Geometry::Segment2D& segment1,
+            const Geometry::Segment2D& segment2 );
+
     } // namespace Position
 
     double RINGMESH_API triangle_signed_area( const vec3& p0,
