@@ -34,7 +34,7 @@
 # Root CMakeList of RINGMesh project
 #------------------------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 set(USER_CONFIG "${CMAKE_SOURCE_DIR}/cmake/UserConfig.cmake" CACHE PATH
   "Path to optional user configuration file.")
 
