@@ -2140,18 +2140,19 @@ namespace RINGMesh
     template < index_t DIMENSION >
     GeoModelMeshPolygonsBase< DIMENSION >::~GeoModelMeshPolygonsBase()
     {
-        clear_polygones_data();
+        clear_polygon_data();
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshPolygonsBase< DIMENSION >::resize_polygones_data()
+    void GeoModelMeshPolygonsBase< DIMENSION >::resize_polygon_data(
+        index_t nb_polygons )
     {
-        surface_id_.resize( mesh_->nb_polygons(), NO_ID );
-        polygon_id_.resize( mesh_->nb_polygons(), NO_ID );
+        surface_id_.resize( nb_polygons, NO_ID );
+        polygon_id_.resize( nb_polygons, NO_ID );
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshPolygonsBase< DIMENSION >::clear_polygones_data()
+    void GeoModelMeshPolygonsBase< DIMENSION >::clear_polygon_data()
     {
         surface_id_.clear();
         polygon_id_.clear();
@@ -2517,7 +2518,7 @@ namespace RINGMesh
             return;
         }
 
-        // Create triangles and quads, the polygons will be handle later
+        // Create triangles and quads, the polygons will be handled later
         if( nb_polygon_per_type[PolygonType::TRIANGLE] != 0 )
         {
             mesh_builder->create_triangles(
@@ -2547,7 +2548,7 @@ namespace RINGMesh
 
         // Fill the triangles and quads created above
         // Create and fill polygons
-        resize_polygones_data();
+        resize_polygon_data( nb_total_polygons );
         const auto& geomodel_vertices = this->gmm_.vertices;
         std::vector< index_t > cur_polygon_per_type(
             to_underlying_type( PolygonType::UNDEFINED ), 0 );
@@ -2838,7 +2839,7 @@ namespace RINGMesh
     template < index_t DIMENSION >
     GeoModelMeshBase< DIMENSION >::~GeoModelMeshBase()
     {
-        polygons.clear_polygones_data();
+        polygons.clear_polygon_data();
     }
 
     template < index_t DIMENSION >
