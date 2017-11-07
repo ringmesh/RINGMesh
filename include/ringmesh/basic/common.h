@@ -175,8 +175,7 @@ namespace RINGMesh
         std::string string_concatener(
             const A0& a0, const A1& a1, const Args&... args )
         {
-            return string_concatener( a0 )
-                   + string_concatener( a1, args... );
+            return string_concatener( a0 ) + string_concatener( a1, args... );
         }
 
     protected:
@@ -236,38 +235,4 @@ namespace RINGMesh
         index_t iter_{ 0 };
         index_t last_{ 0 };
     };
-
-    template < typename ACTION >
-    void parallel_for( index_t size, const ACTION& action )
-    {
-        if( size == 0 )
-        {
-            return;
-        }
-        index_t nb_threads{ std::min(
-            size, std::thread::hardware_concurrency() ) };
-        std::vector< std::future< void > > futures;
-        futures.reserve( nb_threads );
-        index_t start{ 0 };
-        auto action_per_thread = [&action]( index_t start, index_t end ) {
-            for( auto i : range( start, end ) )
-            {
-                action( i );
-            }
-        };
-        index_t nb_tasks_per_thread{ size / nb_threads };
-        for( auto thread : range( nb_threads - 1 ) )
-        {
-            ringmesh_unused( thread );
-            futures.emplace_back( std::async( std::launch::async,
-                action_per_thread, start, start + nb_tasks_per_thread ) );
-            start += nb_tasks_per_thread;
-        }
-        futures.emplace_back(
-            std::async( std::launch::async, action_per_thread, start, size ) );
-        for( auto& future : futures )
-        {
-            future.get();
-        }
-    }
 } // namespace RINGMesh

@@ -42,7 +42,6 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
-#include <geogram/basic/file_system.h>
 
 namespace RINGMesh
 {
@@ -54,6 +53,8 @@ namespace RINGMesh
                 "Threshold for numerical precision (ratio of the bbox "
                 "diagonal)",
                 GEO::CmdLine::ARG_ADVANCED );
+            GEO::CmdLine::declare_arg( "algo:tet", "TetGen",
+                "Toggles the tetrahedral mesher (TetGen, MG_Tetra)" );
         }
 
         void import_arg_group_in()
@@ -78,8 +79,7 @@ namespace RINGMesh
             GEO::CmdLine::declare_arg( "validity:save", false,
                 "Saves meshes representing geomodel inconsistencies",
                 GEO::CmdLine::ARG_ADVANCED );
-            GEO::CmdLine::declare_arg( "validity:directory",
-                GEO::FileSystem::get_current_working_directory(),
+            GEO::CmdLine::declare_arg( "validity:directory", ".",
                 "Directory to save meshes representing geomodel "
                 "inconsistencies" );
             GEO::CmdLine::declare_arg( "validity:do_not_check", "0",
@@ -94,8 +94,10 @@ namespace RINGMesh
                 "    'E' to toggle off checks on finite extension\n"
                 "    'c' to toggle off checks on geomodel connectivity\n"
                 "  Geometry checks:\n"
-                "    's' to toggle off checks on conformity between surfaces and lines\n"
-                "    'r' to toggle off checks on conformity between regions and surfaces\n"
+                "    's' to toggle off checks on conformity between surfaces "
+                "and lines\n"
+                "    'r' to toggle off checks on conformity between regions "
+                "and surfaces\n"
                 "    'm' to toggle off checks on mesh entities\n"
                 "    'e' to toggle off checks on non manifold edges\n"
                 "    'I' to toggle off checks on polygon intersections\n"

@@ -33,10 +33,13 @@
  *     FRANCE
  */
 
-namespace {
-    class TetGenIOHandler final: public GeoModelOutputHandler3D {
+namespace
+{
+    class TetGenIOHandler final : public GeoModelOutputHandler3D
+    {
     public:
-        void save( const GeoModel3D& geomodel, const std::string& filename ) final
+        void save(
+            const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::string directory = GEO::FileSystem::dir_name( filename );
             std::string file = GEO::FileSystem::base_name( filename );
@@ -48,7 +51,8 @@ namespace {
 
             const GeoModelMesh3D& mesh = geomodel.mesh;
             node << mesh.vertices.nb() << " 3 0 0" << EOL;
-            for( auto v : range( mesh.vertices.nb() ) ) {
+            for( auto v : range( mesh.vertices.nb() ) )
+            {
                 node << v << SPACE << mesh.vertices.vertex( v ) << EOL;
             }
 
@@ -62,8 +66,10 @@ namespace {
             ele << mesh.cells.nb() << " 4 1" << EOL;
             neigh << mesh.cells.nb() << " 4" << EOL;
             index_t nb_tet_exported = 0;
-            for( auto m : range( geomodel.nb_regions() ) ) {
-                for( auto tet : range( mesh.cells.nb_tet( m ) ) ) {
+            for( auto m : range( geomodel.nb_regions() ) )
+            {
+                for( auto tet : range( mesh.cells.nb_tet( m ) ) )
+                {
                     index_t cell = mesh.cells.tet( m, tet );
                     ele << nb_tet_exported << SPACE
                         << mesh.cells.vertex( ElementLocalVertex( cell, 0 ) )
@@ -75,12 +81,16 @@ namespace {
                         << mesh.cells.vertex( ElementLocalVertex( cell, 3 ) )
                         << SPACE << m + 1 << EOL;
                     neigh << nb_tet_exported;
-                    for( auto f : range( mesh.cells.nb_facets( tet ) ) ) {
+                    for( auto f : range( mesh.cells.nb_facets( tet ) ) )
+                    {
                         neigh << SPACE;
                         index_t adj = mesh.cells.adjacent( cell, f );
-                        if( adj == GEO::NO_CELL ) {
+                        if( adj == GEO::NO_CELL )
+                        {
                             neigh << -1;
-                        } else {
+                        }
+                        else
+                        {
                             neigh << adj;
                         }
                     }
@@ -93,5 +103,4 @@ namespace {
             node << std::flush;
         }
     };
-
 }

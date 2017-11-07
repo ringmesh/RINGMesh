@@ -33,37 +33,44 @@
  *     FRANCE
  */
 
-namespace {
-    struct RINGMesh2VTK {
+namespace
+{
+    struct RINGMesh2VTK
+    {
         index_t entity_type;
         index_t vertices[8];
     };
 
-    static RINGMesh2VTK tet_descriptor_vtk = { 10,                  // type
-        { 0, 1, 2, 3 }     // vertices
+    static RINGMesh2VTK tet_descriptor_vtk = {
+        10, // type
+        { 0, 1, 2, 3 } // vertices
     };
 
-    static RINGMesh2VTK hex_descriptor_vtk = { 12,                         // type
-        { 0, 4, 5, 1, 2, 6, 7, 3 }     // vertices
+    static RINGMesh2VTK hex_descriptor_vtk = {
+        12, // type
+        { 0, 4, 5, 1, 2, 6, 7, 3 } // vertices
     };
 
-    static RINGMesh2VTK prism_descriptor_vtk = { 13,                     // type
-        { 0, 2, 1, 3, 5, 4 }   // vertices
+    static RINGMesh2VTK prism_descriptor_vtk = {
+        13, // type
+        { 0, 2, 1, 3, 5, 4 } // vertices
     };
 
-    static RINGMesh2VTK pyramid_descriptor_vtk = { 14,                 // type
-        { 0, 1, 2, 3, 4 }  // vertices
+    static RINGMesh2VTK pyramid_descriptor_vtk = {
+        14, // type
+        { 0, 1, 2, 3, 4 } // vertices
     };
 
     static RINGMesh2VTK* cell_type_to_cell_descriptor_vtk[4] = {
         &tet_descriptor_vtk, &hex_descriptor_vtk, &prism_descriptor_vtk,
-        &pyramid_descriptor_vtk };
+        &pyramid_descriptor_vtk
+    };
 
-    class VTKIOHandler final: public GeoModelOutputHandler3D {
+    class VTKIOHandler final : public GeoModelOutputHandler3D
+    {
     public:
         void save(
-            const GeoModel3D& geomodel,
-            const std::string& filename ) final
+            const GeoModel3D& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
             out.precision( 16 );
@@ -75,33 +82,38 @@ namespace {
 
             const auto& mesh = geomodel.mesh;
             out << "POINTS " << mesh.vertices.nb() << " double" << EOL;
-            for( auto v : range( mesh.vertices.nb() ) ) {
+            for( auto v : range( mesh.vertices.nb() ) )
+            {
                 out << mesh.vertices.vertex( v ) << EOL;
             }
             out << EOL;
 
             index_t total_corners = ( 4 + 1 ) * mesh.cells.nb_tet()
-                + ( 5 + 1 ) * mesh.cells.nb_pyramid()
-                + ( 6 + 1 ) * mesh.cells.nb_prism()
-                + ( 8 + 1 ) * mesh.cells.nb_hex();
+                                    + ( 5 + 1 ) * mesh.cells.nb_pyramid()
+                                    + ( 6 + 1 ) * mesh.cells.nb_prism()
+                                    + ( 8 + 1 ) * mesh.cells.nb_hex();
             out << "CELLS " << mesh.cells.nb_cells() << SPACE << total_corners
                 << EOL;
-            for( auto c : range( mesh.cells.nb() ) ) {
+            for( auto c : range( mesh.cells.nb() ) )
+            {
                 out << mesh.cells.nb_vertices( c );
                 const auto& descriptor =
-                    *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
-                for( auto v : range( mesh.cells.nb_vertices( c ) ) ) {
+                    *cell_type_to_cell_descriptor_vtk[to_underlying_type(
+                        mesh.cells.type( c ) )];
+                for( auto v : range( mesh.cells.nb_vertices( c ) ) )
+                {
                     auto vertex_id = descriptor.vertices[v];
-                    out << SPACE
-                        << mesh.cells.vertex( { c, vertex_id } );
+                    out << SPACE << mesh.cells.vertex( { c, vertex_id } );
                 }
                 out << EOL;
             }
 
             out << "CELL_TYPES " << mesh.cells.nb() << EOL;
-            for( auto c : range( mesh.cells.nb() ) ) {
+            for( auto c : range( mesh.cells.nb() ) )
+            {
                 const auto& descriptor =
-                    *cell_type_to_cell_descriptor_vtk[to_underlying_type( mesh.cells.type( c ) )];
+                    *cell_type_to_cell_descriptor_vtk[to_underlying_type(
+                        mesh.cells.type( c ) )];
                 out << descriptor.entity_type << EOL;
             }
             out << EOL;
@@ -109,12 +121,12 @@ namespace {
             out << "CELL_DATA " << mesh.cells.nb() << EOL;
             out << "SCALARS region int 1" << EOL;
             out << "LOOKUP_TABLE default" << EOL;
-            for( auto c : range( mesh.cells.nb() ) ) {
+            for( auto c : range( mesh.cells.nb() ) )
+            {
                 out << mesh.cells.region( c ) << EOL;
             }
             out << EOL;
             out << std::flush;
         }
     };
-
 }
