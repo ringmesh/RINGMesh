@@ -574,11 +574,11 @@ namespace RINGMesh
         /*!
          * Resize edge data: surface_id_ and polygon_id_
          */
-        void resize_polygones_data();
+        void resize_polygon_data( index_t nb_polygons );
         /*!
          * Clear edge data: surface_id_ and polygon_id_
          */
-        void clear_polygones_data();
+        void clear_polygon_data();
 
         /*!
          * @brief Removes polygon adjacencies along lines
