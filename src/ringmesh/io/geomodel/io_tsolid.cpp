@@ -249,7 +249,8 @@ namespace
                 auto& reg_cell_attr_mgr = cur_reg.cell_attribute_manager();
                 std::vector< std::string > att_c_names =
                     reg_cell_attr_mgr.attribute_names();
-                ringmesh_assert( att_c_names.size() == reg_cell_attr_mgr.nb_attributes() );
+                ringmesh_assert(
+                    att_c_names.size() == reg_cell_attr_mgr.nb_attributes() );
                 for( const auto& cur_att_c_name : att_c_names )
                 {
                     if( contains( numeric_like_cell_attribute_names_,
