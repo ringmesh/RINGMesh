@@ -1,5 +1,5 @@
 Corner 73
 Line 93
-Surface 0
+Surface 21
 Vertex 219
-Facet 0
+Facet 21

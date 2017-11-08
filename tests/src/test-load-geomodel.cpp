@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+/* * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +65,7 @@ template< index_t DIMENSION >
 void throw_error( const GeoModel< DIMENSION >& geomodel, const std::string& entity )
 {
     throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
-        geomodel.name(), ": the loaded model as the correct number of ", entity );
+        geomodel.name(), ": the loaded model as not the correct number of ", entity );
 }
 
 void get_line( GEO::LineInput& in )
@@ -136,7 +135,13 @@ void check_geomodel( const GeoModel< 2 >& geomodel, const std::string& result )
 template< >
 void check_geomodel( const GeoModel< 3 >& geomodel, const std::string& result )
 {
-    GEO::LineInput in( result );
+    std::string info { ringmesh_test_data_path + "load/" + result };
+    GEO::LineInput in( info );
+    if( !in.OK() )
+    {
+        throw RINGMeshException( "TEST", "Failed to load file: ", info );
+
+    }
     get_line( in );
     index_t nb_corners = in.field_as_uint( 1 );
     if( geomodel.nb_corners() != nb_corners )
