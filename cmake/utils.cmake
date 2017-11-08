@@ -31,6 +31,11 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
+function(add_folder src_files include_files directory)
+    source_file_directory(${src_files} ${directory})
+    include_file_directory(${include_files} ${directory})
+endfunction()
+
 function(source_file_directory var directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/*.cpp")
     source_group("Source Files\\${directory}" FILES ${sources})

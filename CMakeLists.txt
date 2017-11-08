@@ -236,13 +236,18 @@ endif()
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files
-file(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh ${PROJECT_SOURCE_DIR}/src/ringmesh/*)
-foreach(directory ${directories})
-    if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
-        source_file_directory(ringmesh_src ${directory})
-        include_file_directory(ringmesh_include ${directory})
-    endif()
-endforeach()
+add_folder(ringmesh_src ringmesh_include basic)
+add_folder(ringmesh_src ringmesh_include geogram_extension)
+add_folder(ringmesh_src ringmesh_include geomodel/builder)
+add_folder(ringmesh_src ringmesh_include geomodel/core)
+add_folder(ringmesh_src ringmesh_include geomodel/tools)
+add_folder(ringmesh_src ringmesh_include io)
+add_folder(ringmesh_src ringmesh_include mesh)
+add_folder(ringmesh_src ringmesh_include tetrahedralization)
+add_folder(ringmesh_src ringmesh_include visualization)
+
+message( STATUS ${ringmesh_include})
+message( STATUS ${ringmesh_src})
 
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED

@@ -33,6 +33,8 @@
  *     FRANCE
  */
 
+#include <ringmesh/geomodel/core/entity_type_manager.h>
+
 #include <deque>
 #include <map>
 #include <set>
