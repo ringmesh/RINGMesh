@@ -52,7 +52,7 @@ using namespace RINGMesh;
 template< index_t DIMENSION >
 void load_input_geomodel( GeoModel< DIMENSION >& geomodel, const std::string& file )
 {
-    bool loaded_model_is_valid = geomodel_load( geomodel,
+    auto loaded_model_is_valid = geomodel_load( geomodel,
         ringmesh_test_data_path + file );
     if( !loaded_model_is_valid )
     {
@@ -127,7 +127,7 @@ void check_geomodel(
 
 template< >
 void check_geomodel(
-    const GeoModel< 2 >& geomodel,
+    const GeoModel2D& geomodel,
     const std::map< std::string, index_t >& reference )
 {
     check_geomodel_base( geomodel, reference );
@@ -135,7 +135,7 @@ void check_geomodel(
 
 template< >
 void check_geomodel(
-    const GeoModel< 3 >& geomodel,
+    const GeoModel3D& geomodel,
     const std::map< std::string, index_t >& reference )
 {
     check_geomodel_base( geomodel, reference );
