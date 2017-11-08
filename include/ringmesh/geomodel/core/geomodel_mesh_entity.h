@@ -42,7 +42,7 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel_core/geomodel_entity.h>
+#include <ringmesh/geomodel/core/geomodel_entity.h>
 
 namespace GEO
 {

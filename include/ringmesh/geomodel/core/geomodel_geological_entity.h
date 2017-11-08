@@ -46,7 +46,7 @@
 
 #include <ringmesh/basic/factory.h>
 
-#include <ringmesh/geomodel_core/geomodel_entity.h>
+#include <ringmesh/geomodel/core/geomodel_entity.h>
 
 namespace RINGMesh
 {

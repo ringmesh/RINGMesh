@@ -37,63 +37,54 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+
+/*!
+ * @file ringmesh/geomodel/builder_from_mesh.h
+ * @brief Classes to build GeoModel from Geogram meshes
+ * @author Jeanne Pellerin
+ */
+
+namespace GEO
+{
+    class Mesh;
+} // namespace GEO
 
 namespace RINGMesh
 {
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-    ALIAS_2D_AND_3D( GeoModel );
-} // namespace RINGMesh
-
-namespace RINGMesh
-{
-    /*!
-     * @brief Base class for GeoModel2D building from GeoModel3D.
-     */
-    class RINGMESH_API GeoModelBuilder2DFrom3D : public GeoModelBuilder< 2 >
-    {
-    public:
-        GeoModelBuilder2DFrom3D( GeoModel2D& geomodel2d,
-            const GeoModel3D& geomodel3d_from,
-            const Geometry::Plane& plane );
-
-    protected:
-        vec2 get_2d_coord( const vec3& coord3d );
-
-    protected:
-        const GeoModel3D& geomodel3d_from_;
-        const Geometry::Plane& plane_;
-        vec3 u_axis_{};
-        vec3 v_axis_{};
-    };
+    // Implementation class
+    class GeoModelEntityFromMesh;
 
     /*!
-     * @brief Builder of GeoModel2D which project a GeoModel3D onto a plane.
-     * @note This builder is dedicated to planar or sub-planar
-     * GeoModel3D without volume, i.e. cross-sections, map-view models
-     * or GeoModel3D only made of 1 fault or 1 horizon.
-     * @warning The result GeoModel2D is not guaranteed to be valid.
-     * It depends of the projection.
+     * @brief To build a GeoModel from a set of disconnected polygonal surfaces
      */
-    class RINGMESH_API GeoModelBuilder2DProjection
-        : public GeoModelBuilder2DFrom3D
+    class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder< 3 >
     {
     public:
-        GeoModelBuilder2DProjection( GeoModel2D& geomodel2d,
-            const GeoModel3D& geomodel3d_from,
-            const Geometry::Plane& plane );
+        GeoModelBuilderSurfaceMesh(
+            GeoModel3D& geomodel, const GEO::Mesh& mesh )
+            : GeoModelBuilder( geomodel ), mesh_( mesh )
+        {
+        }
 
-        void build_geomodel();
+        /*!
+         * @details Adds separately each connected component of the mesh
+         *          as a Surface of the geomodel under construction.
+         *          All the polygons of the input mesh are visited and added to
+         * a
+         *          Surface of the GeoModel.
+         *          Connected components of the mesh are determined with a
+         *          propagation (or "coloriage" algorithm) using the
+         * adjacent_facet
+         *          information provided on the input GEO::Mesh.
+         *
+         * @todo Old code - old building - to delimit connected components
+         * vertices are duplicated in the input mesh
+         *
+         */
+        void build_polygonal_surfaces_from_connected_components();
 
     private:
-        void copy_geomodel_3d_topology();
-
-        void copy_geomodel_3d_geological_informations();
-
-        void project_geomodel_3d_mesh_entities();
-
-        std::vector< vec2 > compute_projected_vertices(
-            const GeoModelMeshEntity3D& entity );
+        const GEO::Mesh& mesh_;
     };
 } // namespace RINGMesh

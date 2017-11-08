@@ -41,9 +41,9 @@
 
 #include <ringmesh/basic/geometry.h>
 
-#include <ringmesh/geomodel_core/entity_type_manager.h>
-#include <ringmesh/geomodel_core/geomodel_mesh.h>
-#include <ringmesh/geomodel_core/geomodel_ranges.h>
+#include <ringmesh/geomodel/core/entity_type_manager.h>
+#include <ringmesh/geomodel/core/geomodel_mesh.h>
+#include <ringmesh/geomodel/core/geomodel_ranges.h>
 
 /*!
  * @file ringmesh/geomodel.h

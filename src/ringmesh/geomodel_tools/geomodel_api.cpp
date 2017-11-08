@@ -33,8 +33,6 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_tools/geomodel_api.h>
-
 #include <array>
 #include <iomanip>
 #include <iostream>
@@ -43,12 +41,11 @@
 #include <geogram/basic/progress.h>
 
 #include <ringmesh/basic/geometry.h>
-
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_entity.h>
-#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_entity.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
 #include <ringmesh/mesh/mesh.h>
 
 #include <ringmesh/tetrahedralize/tetra_gen.h>

@@ -39,7 +39,7 @@
 
 #include <ringmesh/basic/pimpl.h>
 
-#include <ringmesh/geomodel_core/entity_type.h>
+#include <ringmesh/geomodel/core/entity_type.h>
 
 /*!
  * @file ringmesh/geomodel_mesh.h

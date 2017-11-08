@@ -44,7 +44,7 @@
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 #include <ringmesh/geogram_extension/geogram_mesh.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/visualization/mesh_entity_gfx.h>
 
 /*!

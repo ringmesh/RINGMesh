@@ -38,11 +38,9 @@
 #include <future>
 
 #include <ringmesh/basic/geometry.h>
-
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_builder/geomodel_builder_2d_from_3d.h>
-#include <ringmesh/geomodel_tools/geomodel_validity.h>
-
+#include <ringmesh/geomodel/builder/geomodel_builder_2d_from_3d.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*! Tests the creation of a GeoModel2D from the projection of a

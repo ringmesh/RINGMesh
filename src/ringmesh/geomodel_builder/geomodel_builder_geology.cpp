@@ -33,21 +33,19 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_builder/geomodel_builder_geology.h>
-
 #include <stack>
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/task_handler.h>
-
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel_tools/geomodel_api.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_geology.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
 
 /*!
- * @file ringmesh/geomodel_builder/geomodel_builder_geology.cpp
+ * @file ringmesh/geomodel/builder/geomodel_builder_geology.cpp
  * @brief Implementation of the classes to build GeoModel geological entities
  * @author Jeanne Pellerin
  */

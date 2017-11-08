@@ -40,9 +40,9 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_tools/geomodel_api.h>
-#include <ringmesh/geomodel_tools/geomodel_validity.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!

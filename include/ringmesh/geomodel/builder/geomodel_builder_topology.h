@@ -36,10 +36,9 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-
+#include <ringmesh/geomodel/builder/geomodel_builder_access.h>
 #include <set>
 
-#include <ringmesh/geomodel_builder/geomodel_builder_access.h>
 
 /*!
  * @brief Builder tools to edit and build GeoModel topology

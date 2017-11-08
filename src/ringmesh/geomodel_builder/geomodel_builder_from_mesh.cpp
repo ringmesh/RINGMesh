@@ -33,17 +33,15 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_builder/geomodel_builder_from_mesh.h>
-
 #include <stack>
 
-#include <ringmesh/geomodel_core/entity_type.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-
 #include <geogram/mesh/mesh.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_from_mesh.h>
+#include <ringmesh/geomodel/core/entity_type.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
 /*!
- * @file ringmesh/geomodel_builder/geomodel_builder_from_mesh.cpp
+ * @file ringmesh/geomodel/builder/geomodel_builder_from_mesh.cpp
  * @brief Implementation of the classes to build GeoModel from various meshes
  * @author Jeanne Pellerin
  */

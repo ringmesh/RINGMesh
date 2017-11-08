@@ -36,9 +36,8 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-
-#include <ringmesh/geomodel_builder/geomodel_builder_access.h>
-#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_access.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 
 /*!
  * @brief Classes to build GeoModel geological entities

@@ -33,8 +33,6 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_core/geomodel_mesh.h>
-
 #include <numeric>
 #include <stack>
 
@@ -45,13 +43,12 @@
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/pimpl_impl.h>
-
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
-
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/well.h>

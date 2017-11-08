@@ -35,11 +35,9 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <geogram/basic/line_stream.h>
-
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
-#include <ringmesh/geomodel_tools/geomodel_validity.h>
-
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!

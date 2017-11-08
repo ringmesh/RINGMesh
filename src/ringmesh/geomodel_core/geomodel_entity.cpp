@@ -38,9 +38,8 @@
  * @author Jeanne Pellerin and Arnaud Botella
  */
 
-#include <ringmesh/geomodel_core/geomodel_entity.h>
-
-#include <ringmesh/geomodel_core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_entity.h>
 
 namespace RINGMesh
 {

@@ -36,12 +36,10 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/basic/algorithm.h>
-
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
-#include <ringmesh/geomodel_tools/geomodel_validity.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -97,8 +95,8 @@ void test_template( GeoModel3D& geomodel,
         in_geological_entities.insert( { geological_type, to_insert_id } );
     }
 
-    const GeoModelBuilder3D geomodel_builder( geomodel );
-    geomodel_builder.topology.get_dependent_entities(
+    const GeoModelBuilder3D geomodel/builder( geomodel );
+    geomodel/builder.topology.get_dependent_entities(
         in_mesh_entities, in_geological_entities );
     check_element_of_a_set_are_in_another_set< gmme_id >(
         in_mesh_entities, solution_gmme_id, "solution" );

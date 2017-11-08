@@ -33,63 +33,42 @@
  *     FRANCE
  */
 
-/*!
- * @file ringmesh/geomodel_tools/stratigraphic_column_builder.h
- * @author Marie Sirvent, Pierre Anquez and Francois Bonneau
- */
-
 #pragma once
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/stratigraphic_column.h>
+#include <set>
+
+#include <ringmesh/geomodel/core/geomodel.h>
+
+/*!
+ * @file ringmesh/geomodel_repair.h
+ * @brief Tools to repair GeoModels.
+ * @author Pierre Anquez
+ */
 
 namespace RINGMesh
 {
-    class RINGMESH_API StratigraphicColumnBuilder
+    /*!
+     * Enumeration of the different repair modes.
+     */
+    enum struct RINGMESH_API RepairMode
     {
-        ringmesh_disable_copy_and_move( StratigraphicColumnBuilder );
-
-    public:
-        StratigraphicColumnBuilder(
-            StratigraphicColumn& column, GeoModel3D& model );
-        virtual ~StratigraphicColumnBuilder() = default;
-
-    protected:
-        StratigraphicColumn& column_;
-        GeoModel3D& model_;
+        ALL,
+        BASIC,
+        COLOCATED_VERTICES,
+        DEGENERATE_POLYGONS_EDGES,
+        LINE_BOUNDARY_ORDER,
+        CONTACTS,
+        ISOLATED_VERTICES
     };
 
-    class RINGMESH_API StratigraphicColumnBuilderFile
-        : public StratigraphicColumnBuilder
-    {
-    public:
-        StratigraphicColumnBuilderFile( StratigraphicColumn& column,
-            GeoModel3D& model,
-            std::string filename );
-        void build_column()
-        {
-            load_file();
-        }
+    /*!
+     * @brief Repair a GeoModel according a repair mode.
+     * @param[in] repair_mode repair mode to apply.
+     */
+    template < index_t DIMENSION >
+    void RINGMESH_API repair_geomodel(
+        GeoModel< DIMENSION >& geomodel, RepairMode repair_mode );
 
-    private:
-        virtual void load_file() = 0;
-
-    protected:
-        std::string filename_;
-    };
-
-    class RINGMESH_API StratigraphicColumnBuilderXML
-        : public StratigraphicColumnBuilderFile
-    {
-    public:
-        StratigraphicColumnBuilderXML( StratigraphicColumn& column,
-            GeoModel3D& model,
-            const std::string& filename )
-            : StratigraphicColumnBuilderFile( column, model, filename )
-        {
-        }
-        void load_file() override;
-    };
 } // namespace RINGMesh

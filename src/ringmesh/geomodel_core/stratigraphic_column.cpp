@@ -33,7 +33,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_core/stratigraphic_column.h>
+#include <ringmesh/geomodel/core/stratigraphic_column.h>
 
 namespace RINGMesh
 {

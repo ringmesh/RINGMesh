@@ -47,13 +47,12 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/task_handler.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
-
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
-#include <ringmesh/geomodel_builder/geomodel_builder_gocad.h>
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel_tools/geomodel_api.h>
-#include <ringmesh/geomodel_tools/geomodel_validity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 
 #include <ringmesh/io/zip_file.h>
 

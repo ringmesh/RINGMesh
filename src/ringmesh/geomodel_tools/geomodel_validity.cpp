@@ -33,8 +33,6 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_tools/geomodel_validity.h>
-
 #include <future>
 
 #include <geogram/basic/file_system.h>
@@ -45,10 +43,11 @@
 #include <ringmesh/basic/task_handler.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geogram_extension/geogram_mesh_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
 
 /*!
  * @file ringmesh/geomodel_tools/geomodel_validity.cpp

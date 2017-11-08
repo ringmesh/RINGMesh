@@ -43,7 +43,7 @@
 
 #include <ringmesh/basic/factory.h>
 
-#include <ringmesh/geomodel_builder/geomodel_builder_file.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_file.h>
 
 namespace RINGMesh
 {

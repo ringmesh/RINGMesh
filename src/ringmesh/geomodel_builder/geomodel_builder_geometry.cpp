@@ -33,16 +33,13 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_builder/geomodel_builder_geometry.h>
-
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
-
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_geometry.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>

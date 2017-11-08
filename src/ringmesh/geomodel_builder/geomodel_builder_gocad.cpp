@@ -33,16 +33,13 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_builder/geomodel_builder_gocad.h>
-
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
-
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel_tools/geomodel_api.h>
-
+#include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_index.h>
 
@@ -370,14 +367,14 @@ namespace
      * @param[in] region_id Index of the region
      * @param[in] surface_id Index of the surface
      * @param[in] surf_side Side of the surface bounding the region
-     * @param[in] geomodel_builder Builder of the GeoModel to consider
+     * @param[in] geomodel/builder Builder of the GeoModel to consider
      */
     void fill_region_and_surface_boundaries_links( index_t region_id,
         index_t surface_id,
         bool surf_side,
-        GeoModelBuilderTSolid& geomodel_builder )
+        GeoModelBuilderTSolid& geomodel/builder )
     {
-        geomodel_builder.topology.add_region_surface_boundary_relation(
+        geomodel/builder.topology.add_region_surface_boundary_relation(
             region_id, surface_id, surf_side );
     }
 
@@ -387,17 +384,17 @@ namespace
      * of the surface
      * @param[in] region_id Index of the region
      * @param[in] surface_id Index of the surface
-     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
+     * @param[in,out] geomodel/builder Builder of the GeoModel to consider
      */
     void add_both_surface_sides_to_region_boundaries( index_t region_id,
         index_t surface_id,
-        GeoModelBuilderTSolid& geomodel_builder )
+        GeoModelBuilderTSolid& geomodel/builder )
 
     {
         fill_region_and_surface_boundaries_links(
-            region_id, surface_id, true, geomodel_builder );
+            region_id, surface_id, true, geomodel/builder );
         fill_region_and_surface_boundaries_links(
-            region_id, surface_id, false, geomodel_builder );
+            region_id, surface_id, false, geomodel/builder );
     }
 
     /*!
@@ -409,18 +406,18 @@ namespace
      * @param[in] surface_id Index of the surface
      * @param[in] cell_facet_center_id Index of the cell facet center
      * (i.e., cell_id * 4 + local_facet_id)
-     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
+     * @param[in,out] geomodel/builder Builder of the GeoModel to consider
      */
     void add_one_surface_side_to_region_boundaries( index_t region_id,
         index_t surface_id,
         index_t cell_facet_center_id,
-        GeoModelBuilderTSolid& geomodel_builder,
+        GeoModelBuilderTSolid& geomodel/builder,
         const GeoModel3D& geomodel )
     {
         bool side = determine_surface_side_to_add(
             geomodel, region_id, surface_id, cell_facet_center_id );
         fill_region_and_surface_boundaries_links(
-            region_id, surface_id, side, geomodel_builder );
+            region_id, surface_id, side, geomodel/builder );
     }
 
     /*!
@@ -431,23 +428,23 @@ namespace
      * @param[in] region_id Index of the region
      * @param[in] colocated_cell_facet_centers Vector of colocated cell
      * facet centers
-     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
+     * @param[in,out] geomodel/builder Builder of the GeoModel to consider
      */
     void add_surface_sides_to_region_boundaries( index_t surface_id,
         index_t region_id,
         const std::vector< index_t >& colocated_cell_facet_centers,
         const GeoModel3D& geomodel,
-        GeoModelBuilderTSolid& geomodel_builder )
+        GeoModelBuilderTSolid& geomodel/builder )
     {
         switch( colocated_cell_facet_centers.size() )
         {
         case 1:
             add_one_surface_side_to_region_boundaries( region_id, surface_id,
-                colocated_cell_facet_centers[0], geomodel_builder, geomodel );
+                colocated_cell_facet_centers[0], geomodel/builder, geomodel );
             break;
         case 2:
             add_both_surface_sides_to_region_boundaries(
-                region_id, surface_id, geomodel_builder );
+                region_id, surface_id, geomodel/builder );
             break;
         default:
             ringmesh_assert_not_reached;
@@ -461,12 +458,12 @@ namespace
      * could bound geomodel regions.
      * @param[in] surface_id Index of the surface
      * @param[in] region_nn_searchs Vector of NNSearchs of the geomodel regions
-     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
+     * @param[in,out] geomodel/builder Builder of the GeoModel to consider
      */
     void add_surface_to_region_boundaries( index_t surface_id,
         const std::vector< std::unique_ptr< NNSearch3D > >& region_nn_searchs,
         const GeoModel3D& geomodel,
-        GeoModelBuilderTSolid& geomodel_builder )
+        GeoModelBuilderTSolid& geomodel/builder )
     {
         index_t cur_region{ 0 };
         index_t nb_added_surf_sides{ 0 };
@@ -483,7 +480,7 @@ namespace
             if( nb_surf_sides_are_boundary > 0 )
             {
                 add_surface_sides_to_region_boundaries( surface_id, cur_region,
-                    colocated_cell_facet_centers, geomodel, geomodel_builder );
+                    colocated_cell_facet_centers, geomodel, geomodel/builder );
                 nb_added_surf_sides += nb_surf_sides_are_boundary;
             }
             ++cur_region;
@@ -496,17 +493,17 @@ namespace
 
     /*!
      * @brief Sets the boundaries of the GeoModel regions
-     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
+     * @param[in,out] geomodel/builder Builder of the GeoModel to consider
      */
     void compute_boundaries_of_geomodel_regions(
-        GeoModelBuilderTSolid& geomodel_builder, const GeoModel3D& geomodel )
+        GeoModelBuilderTSolid& geomodel/builder, const GeoModel3D& geomodel )
     {
         std::vector< std::unique_ptr< NNSearch3D > > reg_nn_searchs =
             compute_cell_facet_centers_region_nn_searchs( geomodel );
         for( const auto& surface : geomodel.surfaces() )
         {
             add_surface_to_region_boundaries(
-                surface.index(), reg_nn_searchs, geomodel, geomodel_builder );
+                surface.index(), reg_nn_searchs, geomodel, geomodel/builder );
         }
     }
 
@@ -913,15 +910,15 @@ namespace
          * sets
          * its name from .so file
          * @param[in] region_name Name of the new region
-         * @param[in] geomodel_builder Builder of the geomodel
+         * @param[in] geomodel/builder Builder of the geomodel
          * @return The index of the initialized region
          */
         index_t initialize_region( const std::string& region_name,
-            GeoModelBuilderGocad& geomodel_builder ) const
+            GeoModelBuilderGocad& geomodel/builder ) const
         {
-            gmme_id cur_region = geomodel_builder.topology.create_mesh_entity(
+            gmme_id cur_region = geomodel/builder.topology.create_mesh_entity(
                 Region3D::type_name_static() );
-            geomodel_builder.info.set_mesh_entity_name(
+            geomodel/builder.info.set_mesh_entity_name(
                 cur_region, region_name );
             return cur_region.index();
         }

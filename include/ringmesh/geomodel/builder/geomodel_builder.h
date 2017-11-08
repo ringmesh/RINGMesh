@@ -38,10 +38,10 @@
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/pimpl.h>
 
-#include <ringmesh/geomodel_builder/geomodel_builder_geology.h>
-#include <ringmesh/geomodel_builder/geomodel_builder_geometry.h>
-#include <ringmesh/geomodel_builder/geomodel_builder_remove.h>
-#include <ringmesh/geomodel_builder/geomodel_builder_topology.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_geology.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_geometry.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_remove.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_topology.h>
 
 /*!
  * @brief Classes to build GeoModel from various inputs

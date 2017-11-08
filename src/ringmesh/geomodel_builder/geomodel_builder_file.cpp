@@ -33,12 +33,11 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_builder/geomodel_builder_file.h>
-
+#include <ringmesh/geomodel/builder/geomodel_builder_file.h>
 #include <ringmesh/io/io.h>
 
 /*!
- * @file ringmesh/geomodel_builder/geomodel_builder_file.cpp
+ * @file ringmesh/geomodel/builder/geomodel_builder_file.cpp
  * @brief Implementation of the classes to build GeoModel from various inputs
  * @author Jeanne Pellerin
  */

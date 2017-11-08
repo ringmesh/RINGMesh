@@ -33,12 +33,11 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_builder/stratigraphic_column_builder.h>
-
+#include <ringmesh/geomodel/builder/stratigraphic_column_builder.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
 #include <tinyxml2/tinyxml2.h>
 
-#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
-#include <ringmesh/geomodel_tools/geomodel_api.h>
 
 namespace RINGMesh
 {

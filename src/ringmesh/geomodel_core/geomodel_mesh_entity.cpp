@@ -38,13 +38,11 @@
  * @author Jeanne Pellerin and Arnaud Botella
  */
 
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-
 #include <ringmesh/basic/geometry.h>
-
-#include <ringmesh/geomodel_core/entity_type.h>
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/core/entity_type.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>

@@ -40,9 +40,9 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel_tools/mesh_quality.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/mesh_quality.h>
 #include <ringmesh/io/io.h>
 
 /*!

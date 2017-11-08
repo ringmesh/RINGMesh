@@ -33,13 +33,11 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_builder/geomodel_builder_remove.h>
-
 #include <ringmesh/basic/algorithm.h>
-
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_remove.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
 /*!
  * @file Implementation of GeoModelEntity removal

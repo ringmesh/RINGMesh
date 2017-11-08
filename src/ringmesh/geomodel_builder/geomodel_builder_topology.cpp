@@ -33,16 +33,14 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_builder/geomodel_builder_topology.h>
-
 #include <algorithm>
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/task_handler.h>
-
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_topology.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
 /*!
  * @file Implementation of GeoModel topological edition functions

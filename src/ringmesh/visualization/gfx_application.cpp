@@ -57,10 +57,10 @@
 
 #include <ringmesh/basic/command_line.h>
 
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
-#include <ringmesh/geomodel_core/geomodel_entity.h>
-#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel_entity.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
 #include <ringmesh/io/io.h>
 

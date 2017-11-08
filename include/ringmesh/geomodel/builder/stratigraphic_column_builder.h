@@ -33,58 +33,63 @@
  *     FRANCE
  */
 
+/*!
+ * @file ringmesh/geomodel_tools/stratigraphic_column_builder.h
+ * @author Marie Sirvent, Pierre Anquez and Francois Bonneau
+ */
+
 #pragma once
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel_builder/geomodel_builder.h>
-
-/*!
- * @file ringmesh/geomodel_builder_from_mesh.h
- * @brief Classes to build GeoModel from Geogram meshes
- * @author Jeanne Pellerin
- */
-
-namespace GEO
-{
-    class Mesh;
-} // namespace GEO
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/stratigraphic_column.h>
 
 namespace RINGMesh
 {
-    // Implementation class
-    class GeoModelEntityFromMesh;
+    class RINGMESH_API StratigraphicColumnBuilder
+    {
+        ringmesh_disable_copy_and_move( StratigraphicColumnBuilder );
 
-    /*!
-     * @brief To build a GeoModel from a set of disconnected polygonal surfaces
-     */
-    class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder< 3 >
+    public:
+        StratigraphicColumnBuilder(
+            StratigraphicColumn& column, GeoModel3D& model );
+        virtual ~StratigraphicColumnBuilder() = default;
+
+    protected:
+        StratigraphicColumn& column_;
+        GeoModel3D& model_;
+    };
+
+    class RINGMESH_API StratigraphicColumnBuilderFile
+        : public StratigraphicColumnBuilder
     {
     public:
-        GeoModelBuilderSurfaceMesh(
-            GeoModel3D& geomodel, const GEO::Mesh& mesh )
-            : GeoModelBuilder( geomodel ), mesh_( mesh )
+        StratigraphicColumnBuilderFile( StratigraphicColumn& column,
+            GeoModel3D& model,
+            std::string filename );
+        void build_column()
         {
+            load_file();
         }
 
-        /*!
-         * @details Adds separately each connected component of the mesh
-         *          as a Surface of the geomodel under construction.
-         *          All the polygons of the input mesh are visited and added to
-         * a
-         *          Surface of the GeoModel.
-         *          Connected components of the mesh are determined with a
-         *          propagation (or "coloriage" algorithm) using the
-         * adjacent_facet
-         *          information provided on the input GEO::Mesh.
-         *
-         * @todo Old code - old building - to delimit connected components
-         * vertices are duplicated in the input mesh
-         *
-         */
-        void build_polygonal_surfaces_from_connected_components();
-
     private:
-        const GEO::Mesh& mesh_;
+        virtual void load_file() = 0;
+
+    protected:
+        std::string filename_;
+    };
+
+    class RINGMESH_API StratigraphicColumnBuilderXML
+        : public StratigraphicColumnBuilderFile
+    {
+    public:
+        StratigraphicColumnBuilderXML( StratigraphicColumn& column,
+            GeoModel3D& model,
+            const std::string& filename )
+            : StratigraphicColumnBuilderFile( column, model, filename )
+        {
+        }
+        void load_file() override;
     };
 } // namespace RINGMesh

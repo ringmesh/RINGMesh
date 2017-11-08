@@ -33,17 +33,15 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_builder/geomodel_builder_access.h>
-
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_entity.h>
-#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
-
+#include <ringmesh/geomodel/builder/geomodel_builder_access.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_entity.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/mesh/mesh.h>
 
 /*!
- * @file ringmesh/geomodel_builder/geomodel_builder_access.cpp
+ * @file ringmesh/geomodel/builder/geomodel_builder_access.cpp
  * @brief Implementation of the classes to access the GeoModel and its Entities
  * @author Pierre Anquez
  */

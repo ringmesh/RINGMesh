@@ -33,8 +33,6 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel_core/entity_type_manager.h>
-
 #include <deque>
 #include <map>
 #include <set>
@@ -42,9 +40,10 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/pimpl_impl.h>
 
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_core/geomodel_entity.h>
-#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/core/entity_type_manager.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_entity.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
 namespace RINGMesh
 {
