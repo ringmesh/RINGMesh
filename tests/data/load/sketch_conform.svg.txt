@@ -2,4 +2,4 @@ Corner 73
 Line 93
 Surface 21
 Vertex 219
-Facet 21
+Polygon 21

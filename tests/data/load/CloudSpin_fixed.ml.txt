@@ -3,7 +3,7 @@ Line 239
 Surface 115
 Region 7
 Vertex 14524
-Facet 30751
+Polygon 30751
 Cell 0
 Interface 22
 Contact 84

@@ -3,7 +3,7 @@ Line 132
 Surface 79
 Region 14
 Vertex 25827
-Facet 55426
+Polygon 55426
 Cell 0
 Interface 12
 Contact 44

@@ -2,4 +2,4 @@ Corner 308
 Line 557
 Surface 250
 Vertex 389
-Facet 0
+Polygon 0
