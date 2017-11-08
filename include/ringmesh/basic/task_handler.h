@@ -40,6 +40,8 @@
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/types.h>
 
+#include <functional>
+
 #include <geogram/basic/command_line.h>
 
 /*!
