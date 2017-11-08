@@ -38,7 +38,6 @@
 #include <ringmesh/geomodel/tools/geomodel_api.h>
 #include <tinyxml2/tinyxml2.h>
 
-
 namespace RINGMesh
 {
     StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(

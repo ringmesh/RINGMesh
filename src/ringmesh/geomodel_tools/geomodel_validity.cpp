@@ -48,7 +48,6 @@
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
 
-
 /*!
  * @file ringmesh/geomodel_tools/geomodel_validity.cpp
  * @brief Implementation of functions to check the validity of GeoModels
