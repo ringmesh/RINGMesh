@@ -41,11 +41,11 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
-#include <ringmesh/geomodel/stratigraphic_column.h>
-#include <ringmesh/geomodel/stratigraphic_column_builder.h>
+#include <ringmesh/geomodel_core/geomodel.h>
+#include <ringmesh/geomodel_tools/geomodel_validity.h>
+#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel_core/stratigraphic_column.h>
+#include <ringmesh/geomodel_builder/stratigraphic_column_builder.h>
 
 #include <ringmesh/io/io.h>
 

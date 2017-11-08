@@ -41,7 +41,7 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel_core/geomodel.h>
 #include <ringmesh/io/io.h>
 
 /*!

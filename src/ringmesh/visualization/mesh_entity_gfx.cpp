@@ -42,10 +42,10 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel_core/geomodel.h>
+#include <ringmesh/geomodel_core/geomodel_entity.h>
+#include <ringmesh/geomodel_core/geomodel_geological_entity.h>
+#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
 
 #include <ringmesh/visualization/geogram_gfx.h>
 #include <ringmesh/visualization/geomodel_gfx.h>

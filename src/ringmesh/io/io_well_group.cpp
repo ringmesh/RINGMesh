@@ -37,10 +37,10 @@
 
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 
-#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel_core/geomodel.h>
 
-#include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/well.h>
 

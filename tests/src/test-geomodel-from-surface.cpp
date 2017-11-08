@@ -41,11 +41,11 @@
 
 #include <geogram/mesh/mesh_io.h>
 
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder_from_mesh.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/geomodel_core/geomodel.h>
+#include <ringmesh/geomodel_tools/geomodel_api.h>
+#include <ringmesh/geomodel_builder/geomodel_builder_from_mesh.h>
+#include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel_tools/geomodel_validity.h>
 
 #include <ringmesh/io/io.h>
 

@@ -39,9 +39,9 @@
 
 #include <ringmesh/basic/geometry.h>
 
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_builder_2d_from_3d.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/geomodel_core/geomodel.h>
+#include <ringmesh/geomodel_builder/geomodel_builder_2d_from_3d.h>
+#include <ringmesh/geomodel_tools/geomodel_validity.h>
 
 #include <ringmesh/io/io.h>
 
