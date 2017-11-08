@@ -34,7 +34,7 @@
 # Root CMakeList of RINGMesh project
 #------------------------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 set(USER_CONFIG "${CMAKE_SOURCE_DIR}/cmake/UserConfig.cmake" CACHE PATH
   "Path to optional user configuration file.")
 
@@ -147,7 +147,7 @@ include(cmake/utils.cmake)
 # Platform dependent settings
 if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion 
+    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion
         -Wsign-conversion -Wdouble-promotion -Wno-attributes)
 
     # Determine gcc version and activate additional warnings available in latest versions
@@ -173,8 +173,8 @@ if(UNIX)
             message(FATAL_ERROR "RINGMesh require G++ version >= ${supported_gcc_version}")
         endif()
     endif()
-    # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)

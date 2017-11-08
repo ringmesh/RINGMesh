@@ -33,6 +33,8 @@
  *     FRANCE
  */
 
+#include <ringmesh/basic/task_handler.h>
+
 #include <ringmesh/tetrahedralize/tetgen_mesher.h>
 
 #include <cstring>

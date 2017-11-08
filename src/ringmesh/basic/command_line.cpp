@@ -42,7 +42,6 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
-#include <geogram/basic/file_system.h>
 
 namespace RINGMesh
 {
@@ -80,8 +79,7 @@ namespace RINGMesh
             GEO::CmdLine::declare_arg( "validity:save", false,
                 "Saves meshes representing geomodel inconsistencies",
                 GEO::CmdLine::ARG_ADVANCED );
-            GEO::CmdLine::declare_arg( "validity:directory",
-                GEO::FileSystem::get_current_working_directory(),
+            GEO::CmdLine::declare_arg( "validity:directory", ".",
                 "Directory to save meshes representing geomodel "
                 "inconsistencies" );
             GEO::CmdLine::declare_arg( "validity:do_not_check", "0",
