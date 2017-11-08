@@ -48,7 +48,8 @@ option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
-option(BUILD_GEOGRAM_WITHOUT_EXE "Compile geogram without tests and executables")
+option(BUILD_GEOGRAM_WITHOUT_EXE "Compile geogram without tests and executables" ON)
+mark_as_advanced(BUILD_GEOGRAM_WITHOUT_EXE)
 
 #------------------------------------------------------------------------------------------------
 # Select Available Mesher 

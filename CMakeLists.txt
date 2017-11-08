@@ -129,7 +129,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
                 -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
                 WORKING_DIRECTORY ${project_binary_dir_config})
-          mark_as_advanced(BUILD_GEOGRAM_WITHOUT_EXE)
       endforeach()
 
       # Get out when all configurations have been run
