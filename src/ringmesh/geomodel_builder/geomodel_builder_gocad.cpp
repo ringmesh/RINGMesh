@@ -40,8 +40,8 @@
 #include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_tools/geomodel_api.h>
 #include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel_tools/geomodel_api.h>
 
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_index.h>

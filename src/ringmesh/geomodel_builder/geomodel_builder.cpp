@@ -41,11 +41,11 @@
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/pimpl_impl.h>
 
-#include <ringmesh/geomodel_core/geomodel.h>
-#include <ringmesh/geomodel_tools/geomodel_api.h>
 #include <ringmesh/geomodel_builder/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel_builder/geomodel_builder_remove.h>
+#include <ringmesh/geomodel_core/geomodel.h>
 #include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel_tools/geomodel_api.h>
 
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>

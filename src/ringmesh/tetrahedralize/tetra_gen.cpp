@@ -42,8 +42,8 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/nn_search.h>
 
-#include <ringmesh/geomodel_core/geomodel.h>
 #include <ringmesh/geomodel_builder/geomodel_builder.h>
+#include <ringmesh/geomodel_core/geomodel.h>
 #include <ringmesh/geomodel_core/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
