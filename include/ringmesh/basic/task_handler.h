@@ -36,7 +36,6 @@
 #pragma once
 
 #include <functional>
-
 #include <future>
 
 #include <ringmesh/basic/common.h>
