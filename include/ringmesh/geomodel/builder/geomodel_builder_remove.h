@@ -39,7 +39,6 @@
 #include <ringmesh/geomodel/builder/geomodel_builder_access.h>
 #include <set>
 
-
 /*!
  * @brief Builder tools to remove entities from a GeoModel.
  * @author Antoine Mazuyer
