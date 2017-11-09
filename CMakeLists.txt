@@ -247,9 +247,6 @@ add_folder(ringmesh_src ringmesh_include mesh)
 add_folder(ringmesh_src ringmesh_include tetrahedralize)
 add_folder(ringmesh_src ringmesh_include visualize)
 
-message( STATUS ${ringmesh_include})
-message( STATUS ${ringmesh_src})
-
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED
     ${ringmesh_include}
