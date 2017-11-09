@@ -101,7 +101,7 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
       # For all configuration types
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
           # The binary directory for this configuration
-          set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/ringmesh/${config})
+          set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/${config})
 
           # Create the directory
           file(MAKE_DIRECTORY ${project_binary_dir_config})
@@ -136,7 +136,7 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
       return()
     endif()
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
+    set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR})
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}")
