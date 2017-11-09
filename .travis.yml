@@ -40,8 +40,8 @@ jobs:
         - cd build
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd ringmesh/Debug
-        - cmake --build .
-        - ctest
+        - cmake --build . -- -j2
+        - ctest -j2
 
     - stage: compile and test
       os: linux
@@ -52,6 +52,6 @@ jobs:
         - cd build
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd ringmesh/Debug
-        - cmake --build .
-        - ctest
+        - cmake --build . -- -j2
+        - ctest -j2
 

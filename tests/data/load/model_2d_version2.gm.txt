@@ -1,0 +1,7 @@
+Corner 12
+Line 17
+Surface 6
+Vertex 12
+Polygon 12
+Interface 7
+Layer 3

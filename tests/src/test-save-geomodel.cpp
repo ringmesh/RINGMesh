@@ -39,8 +39,7 @@
 #include <geogram/basic/line_stream.h>
 
 #include <ringmesh/basic/algorithm.h>
-
-#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel.h>
 
 #include <ringmesh/io/io.h>
 

@@ -6,7 +6,7 @@ How to compile RINGMesh             {#ringmesh_compiling}
 [![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmeshcoverage/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmeshcoverage?branch=default)
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
-You will need CMake (version >= 2.8.11). There is no other dependency (everything
+You will need CMake (version >= 3.1). There is no other dependency (everything
 you need is shipped with RINGMesh). Follow the Linux, Mac OS or Windows instructions below.
 
 To clone RINGMesh you need Git (https://git-scm.com/).
@@ -88,7 +88,7 @@ Windows
 Configuring RINGMesh
 --------------------
 
-Launch CMake GUI, indicate where is the source code as the path to RINGMesh root and 
+Launch CMake GUI, indicate where is the source code as the path to RINGMesh root and
 where to put the binaries as this_root/build/ringmesh.
 Configuration options can be set in using the interface.
 

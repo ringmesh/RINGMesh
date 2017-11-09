@@ -31,17 +31,22 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-function(source_file_directory var directory)
+macro(add_folder src_files include_files directory)
+    source_file_directory(${src_files} ${directory})
+    include_file_directory(${include_files} ${directory})
+endmacro()
+
+macro(source_file_directory var directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/*.cpp")
     source_group("Source Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources} PARENT_SCOPE)
-endfunction()
+    set(${var} ${${var}} ${sources})
+endmacro()
 
-function(include_file_directory var directory)
+macro(include_file_directory var directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/include/ringmesh/${directory}/*.h")
     source_group("Header Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources} PARENT_SCOPE)
-endfunction()
+    set(${var} ${${var}} ${sources})
+endmacro()
 
 macro(copy_for_windows directory)
 

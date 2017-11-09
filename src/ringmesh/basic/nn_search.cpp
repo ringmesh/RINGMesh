@@ -41,8 +41,8 @@
  */
 
 #include <ringmesh/basic/nn_search.h>
-
 #include <ringmesh/basic/pimpl_impl.h>
+#include <ringmesh/basic/task_handler.h>
 
 #include <geogram/points/kd_tree.h>
 

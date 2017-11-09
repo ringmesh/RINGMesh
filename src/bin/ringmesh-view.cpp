@@ -83,7 +83,7 @@
 
 #include <geogram/basic/logger.h>
 
-#include <ringmesh/visualization/gfx_application.h>
+#include <ringmesh/visualize/gfx_application.h>
 
 int main( int argc, char** argv )
 {

@@ -36,9 +36,8 @@
 #include <ringmesh/io/io.h>
 
 #include <geogram/basic/file_system.h>
-
-#include <ringmesh/geomodel/stratigraphic_column.h>
-#include <ringmesh/geomodel/stratigraphic_column_builder.h>
+#include <ringmesh/geomodel/builder/stratigraphic_column_builder.h>
+#include <ringmesh/geomodel/core/stratigraphic_column.h>
 
 namespace
 {
