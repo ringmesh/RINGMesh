@@ -51,10 +51,10 @@ Note: you need gcc/g++ version higher or equal to 4.8 to compile RINGMesh.
 
 Then, to compile RINGMesh, go to RINGMesh root directory and:
 
-* cd build/ringmesh/Release
+* cd build/Release
 * make [-j4]
 
-To build in debug, go to build/ringmesh/Debug instead.
+To build in debug, go to build/Debug instead.
 
 Note: if you get this error during geogram gfx compilation
 "No rule to make target '/usr/lib/x86_64-linux-gnu/libGL.so'"
@@ -76,7 +76,7 @@ Compiling the documentation
  * ccmake ..
  * set BUILD_DOCUMENTATION option to ON
  * configure and generate
-* cd build/ringmesh/Release
+* cd build/Release
 * make doc-devkit OR make doc-devkit-lite
 
 You can also build the documentation through eclipse (see available targets).
@@ -89,7 +89,7 @@ Configuring RINGMesh
 --------------------
 
 Launch CMake GUI, indicate where is the source code as the path to RINGMesh root and
-where to put the binaries as this_root/build/ringmesh.
+where to put the binaries as this_root/build.
 Configuration options can be set in using the interface.
 
 RINGMesh has previously been compiled with:
@@ -122,7 +122,7 @@ Compiling the documentation
 ---------------------------
 
 * Check the BUILD_DOCUMENTATION option when using cmake
-* Open the solution which is in build/ringmesh/RINGmesh.sln in VisualStudio
+* Open the solution which is in build/RINGmesh.sln in VisualStudio
 * Build the doc-devkit or the doc-devkit-lite project
 
 See the documentation section for more details.
@@ -151,10 +151,10 @@ As in Linux except for the packages.
 
 ### Using Xcode IDE
 You need to install Xcode IDE.
-Open the build/ringmesh/RINGMesh.xcodeproj with Xcode IDE,
+Open the build/RINGMesh.xcodeproj with Xcode IDE,
 and then compile (as in Windows with VisualStudio).
 Or use these command lines:
-* cd build/ringmesh
+* cd build
 * xcodebuild -project RINGMesh.xcodeproj -alltargets -configuration Release
 
 To build in Debug, replace "Release" by "Debug" after "-configuration".
