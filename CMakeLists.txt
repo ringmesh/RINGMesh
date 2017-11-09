@@ -34,7 +34,7 @@
 # Root CMakeList of RINGMesh project
 #------------------------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 set(USER_CONFIG "${CMAKE_SOURCE_DIR}/cmake/UserConfig.cmake" CACHE PATH
   "Path to optional user configuration file.")
 
@@ -101,7 +101,7 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
       # For all configuration types
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
           # The binary directory for this configuration
-          set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/ringmesh/${config})
+          set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/${config})
 
           # Create the directory
           file(MAKE_DIRECTORY ${project_binary_dir_config})
@@ -127,7 +127,7 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DTUTORIALS_DATA_INPUT_DIRECTORY:STRING=${TUTORIALS_DATA_INPUT_DIRECTORY}
                 -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}
                 -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
-                -DPROPAGATE_COMPILER_TO_THIRD_PARTIES:BOOL=${PROPAGATE_COMPILER_TO_THIRD_PARTIES}
+                -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
                 WORKING_DIRECTORY ${project_binary_dir_config})
       endforeach()
 
@@ -136,7 +136,7 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
       return()
     endif()
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
+    set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR})
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}")
@@ -148,7 +148,7 @@ include(cmake/utils.cmake)
 # Platform dependent settings
 if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion 
+    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion
         -Wsign-conversion -Wdouble-promotion -Wno-attributes)
 
     # Determine gcc version and activate additional warnings available in latest versions
@@ -174,8 +174,8 @@ if(UNIX)
             message(FATAL_ERROR "RINGMesh require G++ version >= ${supported_gcc_version}")
         endif()
     endif()
-    # In Cmake > 3, there is the option: set (CMAKE_CXX_STANDARD 11). To see in the future.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
@@ -237,13 +237,15 @@ endif()
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files
-file(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh ${PROJECT_SOURCE_DIR}/src/ringmesh/*)
-foreach(directory ${directories})
-    if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
-        source_file_directory(ringmesh_src ${directory})
-        include_file_directory(ringmesh_include ${directory})
-    endif()
-endforeach()
+add_folder(ringmesh_src ringmesh_include basic)
+add_folder(ringmesh_src ringmesh_include geogram_extension)
+add_folder(ringmesh_src ringmesh_include geomodel/builder)
+add_folder(ringmesh_src ringmesh_include geomodel/core)
+add_folder(ringmesh_src ringmesh_include geomodel/tools)
+add_folder(ringmesh_src ringmesh_include io)
+add_folder(ringmesh_src ringmesh_include mesh)
+add_folder(ringmesh_src ringmesh_include tetrahedralize)
+add_folder(ringmesh_src ringmesh_include visualize)
 
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED

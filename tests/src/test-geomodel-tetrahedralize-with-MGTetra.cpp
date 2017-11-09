@@ -38,12 +38,11 @@
 #include <geogram/basic/command_line.h>
 
 #include <ringmesh/basic/command_line.h>
-
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -57,6 +56,8 @@ int main()
     try
     {
         default_configure();
+        
+ #ifdef USE_MG_TETRA
         CmdLine::import_arg_group( "global" );
         GEO::CmdLine::set_arg( "algo:tet", "MG_Tetra");
 
@@ -76,8 +77,6 @@ int main()
                 "Failed when building model ", geomodel.name(),
                 ": the model is not valid." );
         }
-
-#ifdef USE_MG_TETRA
 
         // Tetrahedralize the GeoModel
         tetrahedralize( geomodel, NO_ID, false );

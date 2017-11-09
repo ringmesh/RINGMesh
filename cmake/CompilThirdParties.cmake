@@ -52,19 +52,12 @@ else(WIN32)
         set(geoplatform Darwin-clang-dynamic)
     else(APPLE)
     # Linux
-        if(${PROPAGATE_COMPILER_TO_THIRD_PARTIES})
-            if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-                message(STATUS "Using Clang compiler to compile third parties")
-                set(geoplatform Linux64-clang-dynamic)
-            elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-                message(STATUS "Using gcc compiler to compile third parties")
-                set(geoplatform Linux64-gcc-dynamic)
-            endif()
-        else(${PROPAGATE_COMPILER_TO_THIRD_PARTIES})
-            message(STATUS "Using gcc default compiler to compile third parties")
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+            message(STATUS "Using Clang compiler to compile third parties")
+            set(geoplatform Linux64-clang-dynamic)
+        elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            message(STATUS "Using gcc compiler to compile third parties")
             set(geoplatform Linux64-gcc-dynamic)
-            find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
-            find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
         endif()
     endif(APPLE)
 
@@ -92,6 +85,7 @@ ExternalProject_Add(geogram_ext
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DGEOGRAM_LIB_ONLY:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
 
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}

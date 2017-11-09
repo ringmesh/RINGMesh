@@ -38,9 +38,8 @@
 #include <cstring>
 
 #include <geogram/basic/file_system.h>
-
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 
 /*!
  * @file Please add a file description

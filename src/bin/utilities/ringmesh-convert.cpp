@@ -40,10 +40,10 @@
 #include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -85,7 +85,7 @@ namespace
     {
         Logger::div( "Example" );
         Logger::out( "",
-            "ringmeshconvert in:geomodel=path/to/input/geomodel.ext ",
+            "ringmesh-convert in:geomodel=path/to/input/geomodel.ext ",
             "out:geomodel=path/to/output/geomodel.ext" );
     }
 }
