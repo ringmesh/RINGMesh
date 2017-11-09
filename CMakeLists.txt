@@ -66,30 +66,12 @@ CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
     "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
 
-#------------------------------------------------------------------------------------------------
-# Turn on the ability to create folders to organize projects and files
-# It creates "CMakePredefinedTargets" folder by default and adds CMake
-# defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+get_cmake_property(_variableNames VARIABLES)
+foreach (_variableName ${_variableNames})
+    set(CMAKE_ARGS "${CMAKE_ARGS} -D${_variableName}=${${_variableName}}")
+endforeach()
 
-#------------------------------------------------------------------------------------------------
-# Additional cmake modules
-include(ExternalProject)
-
-# Enable testing with CTest
-enable_testing()
-
-#------------------------------------------------------------------------------------------------
-# Define the project RINGMesh
-project(RINGMesh)
-
-# Define version number
-# It is then exported to the configuration file
-set(RINGMesh_VERSION_MAJOR 5)
-set(RINGMesh_VERSION_MINOR 0)
-set(RINGMesh_VERSION_PATCH 0)
-set(RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RINGMesh_VERSION_PATCH})
-
+      project(LINUX_CONFIG NONE)
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them
@@ -97,7 +79,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # If the CMAKE_BUILD_TYPE is no defined
     # i.e. at first run of that file
     if(CMAKE_BUILD_TYPE STREQUAL "")
-
       # For all configuration types
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
           # The binary directory for this configuration
@@ -114,20 +95,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DCMAKE_BUILD_TYPE:STRING=${config}
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                 -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
-                -DMG_TETRA:STRING=${MG_TETRA}
-                -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN}
-                -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
-                -DRINGMESH_TEST_GRAPHICS:BOOL=${RINGMESH_TEST_GRAPHICS}
-                -DBUILD_RINGMESH_VIEW:BOOL=${BUILD_RINGMESH_VIEW}
-                -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
-                -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
-                -DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
-                -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}
-                -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
-                -DTUTORIALS_DATA_INPUT_DIRECTORY:STRING=${TUTORIALS_DATA_INPUT_DIRECTORY}
-                -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}
-                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
-                -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
                 WORKING_DIRECTORY ${project_binary_dir_config})
       endforeach()
 
@@ -138,6 +105,33 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR})
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+
+
+message(STATUS ${PROJECT_BINARY_DIR})
+message(STATUS ${GLOBAL_BINARY_DIR})
+#if(USE_SUPERBUILD)
+    project(SUPERBUILD NONE)
+    # execute the superbuild
+    include("${CMAKE_SOURCE_DIR}/cmake/SuperBuild.cmake")
+ #   return()
+#else()
+    # Define the project RINGMesh
+    project(RINGMesh)
+#endif()
+
+#------------------------------------------------------------------------------------------------
+# Turn on the ability to create folders to organize projects and files
+# It creates "CMakePredefinedTargets" folder by default and adds CMake
+# defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+
+# Define version number
+# It is then exported to the configuration file
+set(RINGMesh_VERSION_MAJOR 5)
+set(RINGMesh_VERSION_MINOR 0)
+set(RINGMesh_VERSION_PATCH 0)
+set(RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RINGMesh_VERSION_PATCH})
 
 message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}")
 message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
@@ -197,22 +191,13 @@ endif(UNIX)
 
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Enable parallel computation
-    set(cpuinfo_file "/proc/cpuinfo")
-    if(EXISTS "${cpuinfo_file}")
-        file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
-        list(LENGTH procs PROCESSOR_COUNT)
-    endif()
-    set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
+    set(COMPILATION_OPTION -- -j)
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
     # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
     # are automatically built with the same build type as RINGMesh.
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-
-#------------------------------------------------------------------------------------------------
-# Compil Third Parties
-include("${CMAKE_SOURCE_DIR}/cmake/CompilThirdParties.cmake")
 
 #------------------------------------------------------------------------------------------------
 # Get MG-Tetra if a path is given
@@ -335,6 +320,8 @@ if(RINGMESH_WITH_TUTORIALS)
 endif()
 
 if(RINGMESH_WITH_TESTS)
+    # Enable testing with CTest
+    enable_testing()
     message(STATUS "Configuring RINGMesh with tests")
     add_subdirectory(tests)
     copy_for_windows(${PROJECT_BINARY_DIR}/bin/tests)

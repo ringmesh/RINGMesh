@@ -32,6 +32,10 @@
 #     FRANCE
 
 #------------------------------------------------------------------------------------------------
+# Additional cmake modules
+include(ExternalProject)
+
+#------------------------------------------------------------------------------------------------
 # GEOGRAM
 # Set the path to Geogram code
 set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/third_party/geogram)
@@ -60,6 +64,8 @@ else(WIN32)
             set(geoplatform Linux64-gcc-dynamic)
         endif()
     endif(APPLE)
+
+message(STATUS ${GEOGRAM_PATH_BIN})
 
 endif(WIN32)
 # Define Geogram as an external project that we know how to
