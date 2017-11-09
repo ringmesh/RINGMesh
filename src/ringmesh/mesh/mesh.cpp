@@ -42,7 +42,7 @@
 #include <ringmesh/basic/geometry.h>
 #include <stack>
 
-#include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/mesh/mesh_index.h>
 
 namespace RINGMesh

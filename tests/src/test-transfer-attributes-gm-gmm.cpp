@@ -38,10 +38,9 @@
 #include <future>
 
 #include <geogram/basic/attributes.h>
-
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_mesh.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
 #include <ringmesh/io/io.h>
 

@@ -36,9 +36,8 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <geogram/basic/command_line.h>
-
-#include <ringmesh/geomodel/geomodel_repair.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/geomodel/tools/geomodel_repair.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!
