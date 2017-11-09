@@ -43,8 +43,8 @@
 
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
-#include <ringmesh/visualization/geomodel_entity_gfx.h>
-#include <ringmesh/visualization/mesh_entity_gfx.h>
+#include <ringmesh/visualize/geomodel_entity_gfx.h>
+#include <ringmesh/visualize/mesh_entity_gfx.h>
 
 /*!
  * @file Classes for GeoModel visualization

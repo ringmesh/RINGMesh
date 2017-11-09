@@ -38,7 +38,7 @@
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
-#include <ringmesh/visualization/geomodel_entity_gfx.h>
+#include <ringmesh/visualize/geomodel_entity_gfx.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
@@ -47,9 +47,9 @@
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
-#include <ringmesh/visualization/geogram_gfx.h>
-#include <ringmesh/visualization/geomodel_gfx.h>
-#include <ringmesh/visualization/mesh_entity_gfx.h>
+#include <ringmesh/visualize/geogram_gfx.h>
+#include <ringmesh/visualize/geomodel_gfx.h>
+#include <ringmesh/visualize/mesh_entity_gfx.h>
 
 namespace RINGMesh
 {

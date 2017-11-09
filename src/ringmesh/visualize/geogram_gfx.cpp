@@ -33,7 +33,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/visualization/geogram_gfx.h>
+#include <ringmesh/visualize/geogram_gfx.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
 

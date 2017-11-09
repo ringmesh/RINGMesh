@@ -38,7 +38,7 @@
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
-#include <ringmesh/visualization/gfx_application.h>
+#include <ringmesh/visualize/gfx_application.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
@@ -65,9 +65,9 @@
 #include <ringmesh/io/io.h>
 
 // RINGMesh colormaps
-#include <ringmesh/visualization/colormaps/jet.xpm>
-#include <ringmesh/visualization/colormaps/lgbt.xpm>
-#include <ringmesh/visualization/colormaps/minmax_transparent.xpm>
+#include <ringmesh/visualize/colormaps/jet.xpm>
+#include <ringmesh/visualize/colormaps/lgbt.xpm>
+#include <ringmesh/visualize/colormaps/minmax_transparent.xpm>
 
 namespace
 {

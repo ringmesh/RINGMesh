@@ -55,7 +55,7 @@
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/io/io.h>
 #include <ringmesh/tetrahedralize/tetra_gen.h>
-#include <ringmesh/visualization/geogram_gfx.h>
+#include <ringmesh/visualize/geogram_gfx.h>
 
 namespace RINGMesh
 {

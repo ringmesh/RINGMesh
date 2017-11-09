@@ -45,7 +45,7 @@
 
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/visualization/mesh_entity_gfx.h>
+#include <ringmesh/visualize/mesh_entity_gfx.h>
 
 /*!
  * @file Classes for geogram visualization

@@ -38,7 +38,7 @@
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
-#include <ringmesh/visualization/geomodel_gfx.h>
+#include <ringmesh/visualize/geomodel_gfx.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
 

@@ -44,7 +44,7 @@
 #include <ringmesh/basic/box.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 
-#include <ringmesh/visualization/geomodel_gfx.h>
+#include <ringmesh/visualize/geomodel_gfx.h>
 
 /*!
  * @file Classes for GeoModel visualization
