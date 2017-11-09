@@ -130,84 +130,47 @@ namespace
         return nb;
     }
 
-    bool check_mesh_entity_vertices_are_different(
-        std::vector< index_t >& vertices,
-        std::vector< index_t >& vertices_global )
-    {
-        ringmesh_assert(
-            std::count( vertices.begin(), vertices.end(), NO_ID ) == 0 );
-        ringmesh_assert(
-            std::count( vertices_global.begin(), vertices_global.end(), NO_ID )
-            == 0 );
-        // 0 is the default value of the geomodel_vertex_id
-        // If we have only 0 either this is a degenerate polygons, but most
-        // certainly
-        // geomodel vertex ids are not good
-        ringmesh_assert(
-            static_cast< index_t >( std::count(
-                vertices_global.begin(), vertices_global.end(), 0 ) )
-            != vertices_global.size() );
-
-        std::sort( vertices.begin(), vertices.end() );
-        std::sort( vertices_global.begin(), vertices_global.end() );
-        return std::unique( vertices.begin(), vertices.end() ) != vertices.end()
-               || std::unique( vertices_global.begin(), vertices_global.end() )
-                      != vertices_global.end();
-    }
-
-    /*!
-     * @brief Returns true if the surface polygon is incident twice to the same
-     * vertex
-     */
     template < index_t DIMENSION >
     bool polygon_is_degenerate(
-        const SurfaceBase< DIMENSION >& S, const gmme_id& id, index_t p )
+        const SurfaceBase< DIMENSION >& surface, index_t polygon_id )
     {
-        index_t nb_polygon_vertices{ S.nb_mesh_element_vertices( p ) };
-        std::vector< index_t > corners( nb_polygon_vertices, NO_ID );
-        std::vector< index_t > corners_global( nb_polygon_vertices, NO_ID );
-        index_t v{ 0 };
-        const auto& geomodel_vertices = S.geomodel().mesh.vertices;
-        for( auto c : range( S.nb_mesh_element_vertices( p ) ) )
+        if( surface.mesh_element_size( polygon_id )
+            < surface.geomodel().epsilon2() )
         {
-            index_t polygon_vertex_index{ S.mesh_element_vertex_index(
-                { p, c } ) };
-            corners[v] = polygon_vertex_index;
-            corners_global[v] =
-                geomodel_vertices.geomodel_vertex_id( id, { p, v } );
-            v++;
+            return true;
         }
-        double area{ S.mesh_element_size( p ) };
-        return check_mesh_entity_vertices_are_different(
-                   corners, corners_global )
-               || area < S.geomodel().epsilon2();
+
+        const auto& mesh = surface.mesh();
+        auto min_length = surface.geomodel().epsilon();
+        for( auto c : range( mesh.nb_polygon_vertices( polygon_id ) ) )
+        {
+            if( mesh.polygon_edge_length( { polygon_id, c } ) < min_length )
+            {
+                return false;
+            }
+        }
+        return false;
     }
 
-    /*!
-     * @brief Returns true if the region cell is incident twice to the same
-     * vertex
-     * or if the cell volume is negative or inferior to epsilon
-     */
     template < index_t DIMENSION >
     bool cell_is_degenerate(
-        const Region< DIMENSION >& region, index_t cell_index )
+        const Region< DIMENSION >& region, index_t cell_id )
     {
-        index_t nb_vertices_in_cell{ region.nb_mesh_element_vertices(
-            cell_index ) };
-        std::vector< index_t > vertices( nb_vertices_in_cell, NO_ID );
-        std::vector< index_t > vertices_global( nb_vertices_in_cell, NO_ID );
-        auto id = region.gmme();
-        const auto& geomodel_vertices = region.geomodel().mesh.vertices;
-        for( auto v : range( nb_vertices_in_cell ) )
+        if( region.mesh_element_size( cell_id ) < region.geomodel().epsilon3() )
         {
-            vertices[v] = region.mesh_element_vertex_index( { cell_index, v } );
-            vertices_global[v] =
-                geomodel_vertices.geomodel_vertex_id( id, { cell_index, v } );
+            return true;
         }
-        double volume{ region.mesh_element_size( cell_index ) };
-        return check_mesh_entity_vertices_are_different(
-                   vertices, vertices_global )
-               || volume < region.geomodel().epsilon3();
+
+        const auto& mesh = region.mesh();
+        auto min_length = region.geomodel().epsilon();
+        for( auto e : range( region.nb_cell_edges( cell_id ) ) )
+        {
+            if( mesh.cell_edge_length( cell_id, e ) < min_length )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 } // namespace
 
@@ -1043,7 +1006,7 @@ namespace RINGMesh
         index_t nb_degenerate{ 0 };
         for( auto p : range( surface_mesh_->nb_polygons() ) )
         {
-            if( polygon_is_degenerate( *this, id, p ) )
+            if( polygon_is_degenerate( *this, p ) )
             {
                 nb_degenerate++;
             }
