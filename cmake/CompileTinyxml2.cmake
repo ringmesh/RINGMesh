@@ -36,6 +36,7 @@
 # Set the path to tinyxml2 code
 set(TINYXML2_PATH ${PROJECT_SOURCE_DIR}/third_party/tinyxml2)
 set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/tinyxml2/${CMAKE_BUILD_TYPE})
+set(TINYXML2_INSTALL_PREFIX ${TINYXML2_PATH_BIN}/install CACHE INTERNAL "Tinyxml2 install directory")
 
 # Define tinyxml2 as an external project that we know how to
 # configure and compile
@@ -56,6 +57,7 @@ ExternalProject_Add(tinyxml2_ext
           -DBUILD_TESTING:BOOL=OFF
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+          -DCMAKE_INSTALL_PREFIX:STRING=${TINYXML2_INSTALL_PREFIX}
 
   #--Build step-----------------
   BINARY_DIR ${TINYXML2_PATH_BIN}
@@ -63,7 +65,7 @@ ExternalProject_Add(tinyxml2_ext
   BUILD_COMMAND ${CMAKE_COMMAND} --build ${TINYXML2_PATH_BIN} ${COMPILATION_OPTION}
 
   #--Install step---------------
-  INSTALL_COMMAND ""
+  INSTALL_DIR ${TINYXML2_INSTALL_PREFIX}
 )
 
 ExternalProject_Add_Step(tinyxml2_ext forcebuild

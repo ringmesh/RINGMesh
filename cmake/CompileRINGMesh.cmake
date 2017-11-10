@@ -46,7 +46,6 @@ ExternalProject_Add(ringmesh_ext
 
   #--Update/Patch step----------
   UPDATE_COMMAND ""
-  CMAKE_ARGS "-DZLIB_PATH_BIN=${ZLIB_PATH_BIN}"
 
   #--Configure step-------------
   SOURCE_DIR ${PROJECT_SOURCE_DIR}
@@ -57,7 +56,6 @@ ExternalProject_Add(ringmesh_ext
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DGLOBAL_BINARY_DIR=${PROJECT_BINARY_DIR}/..
-          -DCMAKE_PROJECT_RINGMesh_INCLUDE=${PROJECT_SOURCE_DIR}/cmake/temp_fix.cmake
           -DUSE_SUPERBUILD=OFF
 
   #--Build step-----------------

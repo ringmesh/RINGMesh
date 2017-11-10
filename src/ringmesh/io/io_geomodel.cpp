@@ -39,7 +39,7 @@
 #include <deque>
 #include <iomanip>
 
-#include <tinyxml2/tinyxml2.h>
+#include <tinyxml2.h>
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>

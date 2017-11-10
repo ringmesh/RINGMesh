@@ -56,6 +56,8 @@ else(WIN32)
     endif()
 message(STATUS ${GEOGRAM_PATH_BIN})
 
+set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install CACHE INTERNAL "Geogram install directory")
+          
 endif(WIN32)
 # Define Geogram as an external project that we know how to
 # configure and compile
@@ -81,6 +83,7 @@ ExternalProject_Add(geogram_ext
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DGEOGRAM_LIB_ONLY:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
+        -DCMAKE_INSTALL_PREFIX:STRING=${GEOGRAM_INSTALL_PREFIX}
 
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}
@@ -88,7 +91,7 @@ ExternalProject_Add(geogram_ext
   BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN} ${COMPILATION_OPTION}
 
   #--Install step---------------
-  INSTALL_COMMAND ""
+  INSTALL_DIR ${GEOGRAM_INSTALL_PREFIX}
 )
 
 ExternalProject_Add_Step(geogram_ext forcebuild

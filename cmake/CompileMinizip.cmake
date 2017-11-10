@@ -36,6 +36,7 @@
 # Set the path to minizip code
 set(MINIZIP_PATH ${PROJECT_SOURCE_DIR}/third_party/minizip)
 set(MINIZIP_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/minizip/${CMAKE_BUILD_TYPE})
+set(MINIZIP_INSTALL_PREFIX ${MINIZIP_PATH_BIN}/install CACHE INTERNAL "Minizip install directory")
 
 # Define minizip as an external project that we know how to
 # configure and compile
@@ -57,6 +58,8 @@ ExternalProject_Add(minizip_ext
           -DZLIB_ROOT:PATH=${ZLIB_PATH_BIN}/install
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+          -DCMAKE_INSTALL_PREFIX:STRING=${MINIZIP_INSTALL_PREFIX}
+          
 
   #--Build step-----------------
   BINARY_DIR ${MINIZIP_PATH_BIN}
@@ -64,7 +67,7 @@ ExternalProject_Add(minizip_ext
   BUILD_COMMAND ${CMAKE_COMMAND} --build ${MINIZIP_PATH_BIN} ${COMPILATION_OPTION}
 
   #--Install step---------------
-  INSTALL_COMMAND ""
+  INSTALL_DIR ${MINIZIP_INSTALL_PREFIX}
   
   DEPENDS zlib_ext
 )

@@ -90,7 +90,7 @@ macro(add_ringmesh_executable exe_path folder_name)
 
     # Set the target as an executable
     add_executable(${exe_name} ${exe_path})
-    target_link_libraries(${exe_name} PRIVATE RINGMesh geogram)
+    target_link_libraries(${exe_name} PRIVATE RINGMesh)
     add_dependencies(${exe_name} RINGMesh)
 
     # Add the project to a folder of projects for the tests
