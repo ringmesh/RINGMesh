@@ -62,6 +62,8 @@ include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   Geogram DEFAULT_MSG GEOGRAM_LIBRARY GEOGRAM_INCLUDE_DIR
 )
+        message(STATUS "Geogram_FOUND ${Geogram_FOUND}")
+        message(STATUS "GEOGRAM_FOUND ${GEOGRAM_FOUND}")
 
 # Create an imported target for Geogram 
 If (Geogram_FOUND)
