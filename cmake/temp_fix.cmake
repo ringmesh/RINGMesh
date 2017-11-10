@@ -29,8 +29,6 @@ endif()
 set(EXTRA_LIBS ${EXTRA_LIBS} debug minizipd optimized minizip)
 
 
-# Add tinyxml2 include directories to the current ones
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
 
 
 # Add tinyxml2 bin directories to the current ones 
@@ -54,3 +52,7 @@ link_directories(${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE}/insta
 # Add minizip bin directories to the current ones
 # It would be preferable to set the imported library location [JP]
 link_directories(${GLOBAL_BINARY_DIR}/third_party/minizip/${CMAKE_BUILD_TYPE})
+
+
+# Add tinyxml2 include directories to the current ones
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
