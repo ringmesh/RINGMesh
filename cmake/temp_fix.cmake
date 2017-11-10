@@ -43,7 +43,7 @@ set(EXTRA_LIBS ${EXTRA_LIBS} debug tinyxml2d optimized tinyxml2)
 
 
 # Add zlib include directories to the current ones
-include_directories(SYSTEM ${GLOBAL_BINARY_DIR}/third_party/zlib/install/include)
+include_directories(SYSTEM ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE}/install/include)
 
 
 # Add zlib bin directories to the current ones
