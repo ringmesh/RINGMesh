@@ -18,11 +18,11 @@ link_directories(${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE}/li
 
 
 # Add zlib project libs to the libs with which RINGMesh will link
-if(UNIX)
-    set(EXTRA_LIBS ${EXTRA_LIBS} z)
-else()
-    set(EXTRA_LIBS ${EXTRA_LIBS} debug zlibd optimized zlib)
-endif()
+#if(UNIX)
+#    set(EXTRA_LIBS ${EXTRA_LIBS} z)
+#else()
+#    set(EXTRA_LIBS ${EXTRA_LIBS} debug zlibd optimized zlib)
+#endif()
 
 
 # Add minizip project libs to the libs with which RINGMesh will link
@@ -41,12 +41,12 @@ set(EXTRA_LIBS ${EXTRA_LIBS} debug tinyxml2d optimized tinyxml2)
 
 
 # Add zlib include directories to the current ones
-include_directories(SYSTEM ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE}/install/include)
+#include_directories(SYSTEM ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE}/install/include)
 
 
 # Add zlib bin directories to the current ones
 # It would be preferable to set the imported library location [JP]
-link_directories(${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE}/install/lib)
+#link_directories(${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE}/install/lib)
 
 
 # Add minizip bin directories to the current ones

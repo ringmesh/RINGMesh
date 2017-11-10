@@ -258,6 +258,9 @@ set_target_properties(RINGMesh PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BIN
 # Add include directories of RINGMesh
 target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
+find_package(ZLIB REQUIRED PATHS ${ZLIB_PATH_BIN}/install)
+target_link_libraries(RINGMesh PRIVATE ZLIB::ZLIB)
+
 # Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
