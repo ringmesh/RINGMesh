@@ -46,6 +46,7 @@ ExternalProject_Add(ringmesh_ext
 
   #--Update/Patch step----------
   UPDATE_COMMAND ""
+  CMAKE_ARGS "-DZLIB_PATH_BIN=${ZLIB_PATH_BIN}"
 
   #--Configure step-------------
   SOURCE_DIR ${PROJECT_SOURCE_DIR}
