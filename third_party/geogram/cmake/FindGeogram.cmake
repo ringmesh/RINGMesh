@@ -69,6 +69,7 @@ If (Geogram_FOUND)
         set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INCLUDE_DIR}/..)
   
         if (NOT TARGET Geogram::geogram)
+        message(STATUS "IMPORTING Geogram::geogram)
                 add_library (Geogram::geogram UNKNOWN IMPORTED)
 
                 # Interface include directory
@@ -81,6 +82,8 @@ If (Geogram_FOUND)
                   IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
                   IMPORTED_LOCATION "${GEOGRAM_LIBRARY}"
                 )
+        else()
+        message(STATUS "NOT IMPORTING Geogram::geogram)
         endif ()
 
         if (NOT TARGET Geogram::geogram_gfx)
