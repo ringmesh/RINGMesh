@@ -86,6 +86,3 @@ ExternalProject_Add_Step(minizip_ext forcebuild
 # Add minizip project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} debug minizipd optimized minizip)
 
-# Add minizip bin directories to the current ones
-# It would be preferable to set the imported library location [JP]
-link_directories(${MINIZIP_PATH_BIN})

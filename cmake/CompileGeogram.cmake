@@ -96,8 +96,6 @@ ExternalProject_Add_Step(geogram_ext forcebuild
     ALWAYS 1
   )
 
-# Add geogram include directories to the current ones
-include_directories(SYSTEM ${GEOGRAM_PATH}/src/lib)
 
 # Add geogram project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
@@ -105,10 +103,3 @@ if(RINGMESH_WITH_GRAPHICS)
     include(${GEOGRAM_PATH}/cmake/opengl.cmake)
     set(EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx ${OPENGL_LIBRARIES})
 endif(RINGMESH_WITH_GRAPHICS)
-
-# Add geogram bin directories to the current ones.
-# It would be preferable to set the imported library location [JP].
-# CMAKE_CFG_INTDIR is needed for Xcode (in MacOS) because the executables
-# need the complete path to geogram libraries (with the configuration:
-# Release or Debug).
-link_directories(${GEOGRAM_PATH_BIN}/lib/${CMAKE_CFG_INTDIR})
