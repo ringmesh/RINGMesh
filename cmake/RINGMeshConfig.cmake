@@ -44,9 +44,9 @@ set(THIRD_PARTY_INCLUDE_DIR
 # is in the same project. It is necessary to differenciate Release and Debug.
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # RINGMESH
-    set(RINGMesh_CONFIG_INCLUDE_DIR ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/${CMAKE_BUILD_TYPE})
+    set(RINGMesh_CONFIG_INCLUDE_DIR ${RINGMESH_ROOT_DIRECTORY}/build/${CMAKE_BUILD_TYPE})
     find_library(RINGMesh_LIBRARY NAMES RINGMesh
-        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/${CMAKE_BUILD_TYPE}/lib)
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/${CMAKE_BUILD_TYPE}/lib)
 
     # GEOGRAM
     find_library(GEOGRAM_LIBRARY NAMES geogram
@@ -73,11 +73,11 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
         NO_DEFAULT_PATH)
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # RINGMESH
-    set(RINGMesh_CONFIG_INCLUDE_DIR ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh)
+    set(RINGMesh_CONFIG_INCLUDE_DIR ${RINGMESH_ROOT_DIRECTORY}/build)
     find_library(RINGMesh_DEBUG_LIBRARY NAMES RINGMesh
-        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/lib/Debug)
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/lib/Debug)
     find_library(RINGMesh_RELEASE_LIBRARY NAMES RINGMesh
-        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/ringmesh/lib/Release)
+        PATHS ${RINGMESH_ROOT_DIRECTORY}/build/lib/Release)
 
     # GEOGRAM
     find_library(GEOGRAM_DEBUG_LIBRARY NAMES geogram
