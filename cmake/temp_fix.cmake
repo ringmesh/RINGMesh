@@ -5,7 +5,7 @@ include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party/geogram/src/lib)
 # Add geogram project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
 if(RINGMESH_WITH_GRAPHICS)
-    include(${GEOGRAM_PATH}/cmake/opengl.cmake)
+    include(${PROJECT_SOURCE_DIR}/third_party/geogram/cmake/opengl.cmake)
     set(EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx ${OPENGL_LIBRARIES})
 endif(RINGMESH_WITH_GRAPHICS)
 
