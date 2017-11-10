@@ -76,9 +76,4 @@ ExternalProject_Add_Step(zlib_ext forcebuild
     DEPENDERS build
     ALWAYS 1
   )
-  
-ExternalProject_Add_Step(zlib_ext post_build
-    COMMAND ${CMAKE_COMMAND} -E remove ${ZLIB_PATH}/zconf.h.included
-  )
-
 

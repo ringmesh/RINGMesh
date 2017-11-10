@@ -72,7 +72,7 @@ ExternalProject_Add(minizip_ext
   #--Install step---------------
   INSTALL_COMMAND ""
   
-  DEPENDS ${DEPENDENCIES}
+  DEPENDS zlib_ext
 )
 
 ExternalProject_Add_Step(minizip_ext forcebuild
@@ -80,14 +80,5 @@ ExternalProject_Add_Step(minizip_ext forcebuild
     ALWAYS 1
   )
 
-add_dependencies(minizip_ext zlib_ext)
-
 # Add minizip include directories to the current ones
 # same as minizip
-
-# Add minizip project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} debug minizipd optimized minizip)
-
-# Add minizip bin directories to the current ones
-# It would be preferable to set the imported library location [JP]
-link_directories(${MINIZIP_PATH_BIN})
