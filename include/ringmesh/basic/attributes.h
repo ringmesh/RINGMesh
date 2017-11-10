@@ -235,8 +235,9 @@ namespace RINGMesh
         std::vector< T > vector_;
     };
 
-    template < >
-    class VectorStore<bool>: public TypedStore< Byte > {
+    template <>
+    class VectorStore< bool > : public TypedStore< Byte >
+    {
     public:
         /**
         * \brief Creates a new empty attribute store.
@@ -1097,7 +1098,7 @@ namespace RINGMesh
             }
         }
     };
-   
+
     /***********************************************************/
 
     /**
