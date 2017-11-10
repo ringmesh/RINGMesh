@@ -23,6 +23,8 @@ set(ZLIB_ROOT ${DEF_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation
 find_package(ZLIB REQUIRED)
 if(ZLIB_FOUND)
     include_directories(${ZLIB_INCLUDE_DIRS})
+else()
+     message(FATAL_ERROR "ZLIB NOT FOUND")
 endif()
 
 set(MINIZIP_SRC "crypt.c"

@@ -35,17 +35,9 @@
 # tinyxml2
 # Set the path to tinyxml2 code
 set(TINYXML2_PATH ${PROJECT_SOURCE_DIR}/third_party/tinyxml2)
-
-# tinyxml2 platform dependent settings
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/tinyxml2/${CMAKE_BUILD_TYPE})
-else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/tinyxml2)
-endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/tinyxml2/${CMAKE_BUILD_TYPE})
 
 # Define tinyxml2 as an external project that we know how to
-# configure and compile
-# Define Tinyxml2 as an external project that we know how to
 # configure and compile
 ExternalProject_Add(tinyxml2_ext
   PREFIX ${TINYXML2_PATH_BIN}

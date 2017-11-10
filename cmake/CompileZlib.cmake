@@ -35,13 +35,7 @@
 # zlib
 # Set the path to zlib code
 set(ZLIB_PATH ${PROJECT_SOURCE_DIR}/third_party/zlib)
-
-# zib platform dependent settings
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE})
-else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib)
-endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE})
 
 # Define zlib as an external project that we know how to
 # configure and compile

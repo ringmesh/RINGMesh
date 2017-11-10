@@ -35,13 +35,7 @@
 # minizip
 # Set the path to minizip code
 set(MINIZIP_PATH ${PROJECT_SOURCE_DIR}/third_party/minizip)
-
-# zib platform dependent settings
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    set(MINIZIP_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/minizip/${CMAKE_BUILD_TYPE})
-else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    set(MINIZIP_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/minizip)
-endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+set(MINIZIP_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/minizip/${CMAKE_BUILD_TYPE})
 
 # Define minizip as an external project that we know how to
 # configure and compile
