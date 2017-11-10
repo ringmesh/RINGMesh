@@ -62,17 +62,13 @@ include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   Geogram DEFAULT_MSG GEOGRAM_LIBRARY GEOGRAM_INCLUDE_DIR
 )
-        message(STATUS "Geogram_FOUND ${Geogram_FOUND}")
-        message(STATUS "GEOGRAM_FOUND ${GEOGRAM_FOUND}")
 
 # Create an imported target for Geogram 
-If (Geogram_FOUND)
-        message(STATUS "FOUND Geogram")
+If (GEOGRAM_FOUND)
   
         set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INCLUDE_DIR}/..)
   
         if (NOT TARGET Geogram::geogram)
-        message(STATUS "IMPORTING Geogram::geogram")
                 add_library (Geogram::geogram UNKNOWN IMPORTED)
 
                 # Interface include directory
@@ -85,8 +81,6 @@ If (Geogram_FOUND)
                   IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
                   IMPORTED_LOCATION "${GEOGRAM_LIBRARY}"
                 )
-        else()
-        message(STATUS "NOT IMPORTING Geogram::geogram")
         endif ()
 
         if (NOT TARGET Geogram::geogram_gfx)
@@ -108,8 +102,6 @@ If (Geogram_FOUND)
                 )
                 
         endif ()
-else()
-        message(STATUS "NOT FOUND Geogram")
 endif ()
 
 # Hide variables from the default CMake-Gui options
