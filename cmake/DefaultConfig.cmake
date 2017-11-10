@@ -38,7 +38,7 @@
 # RelWithDebInfo is mandatory to debug some plugins in Windows in debug mode (e.g., a Gocad plugin) to
 # avoid issues in particular in the STL (e.g., bad transfer of std::string from Gocad to RINGMesh).
 set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE TYPE INTERNAL FORCE)
-      
+
 #------------------------------------------------------------------------------------------------
 # Project options
 # Optional components of RINGMesh - creation of specific targets

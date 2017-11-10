@@ -85,7 +85,6 @@ set(RINGMESH_EXTRA_ARGS
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # If the CMAKE_BUILD_TYPE is no defined
     # i.e. at first run of that file
-          message( STATUS "type ${CMAKE_BUILD_TYPE}")
     if(NOT CMAKE_BUILD_TYPE)
       # For all configuration types
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
@@ -117,9 +116,6 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 
-message(STATUS "type = ${CMAKE_BUILD_TYPE}")
-message(STATUS "project = ${PROJECT_BINARY_DIR}")
-message(STATUS "global = ${GLOBAL_BINARY_DIR}")
 if(USE_SUPERBUILD)
     # execute the superbuild
     project(SUPERBUILD)
