@@ -37,8 +37,8 @@
 # Configuration modes - Debug and Release by default + RelWithDebInfo for Windows.
 # RelWithDebInfo is mandatory to debug some plugins in Windows in debug mode (e.g., a Gocad plugin) to
 # avoid issues in particular in the STL (e.g., bad transfer of std::string from Gocad to RINGMesh).
-set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
-
+set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE TYPE INTERNAL FORCE)
+      
 #------------------------------------------------------------------------------------------------
 # Project options
 # Optional components of RINGMesh - creation of specific targets
@@ -67,26 +67,7 @@ if(MG_TETRA)
 endif(MG_TETRA)
  
 # Optional custom configuration of data directories
-if(RINGMESH_WITH_TESTS)
-    set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
-    set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
-    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
-    # PROJECT_BINARY_DIR not defined at this point
-    set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
-    if(UNIX)    
-      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
-    endif()    
-endif()
-
-# Optional custom configuration of tutorials directories
-if(RINGMESH_WITH_TUTORIALS)
-    set(TUTORIALS_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/tutorials)
-    set(TUTORIALS_SOURCE_DIRECTORY ${TUTORIALS_DIRECTORY}/src)
-    set(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data")
-    # PROJECT_BINARY_DIR not defined at this point
-    set(TUTORIALS_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tutorials/output" CACHE PATH "Output data location")
-    if(UNIX)    
-      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
-    endif() 
+if(RINGMESH_WITH_TESTS AND UNIX)
+    list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
 endif()
 

@@ -32,11 +32,46 @@
 #     FRANCE
 
 #------------------------------------------------------------------------------------------------
-# Additional cmake modules
-include(ExternalProject)
+# RINGMesh
+# Set the path to ringmesh code
+set(RINGMesh_PATH ${PROJECT_SOURCE_DIR}/third_party/ringmesh)
 
-include(${PROJECT_SOURCE_DIR}/cmake/CompileGeogram.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/CompileTinyxml2.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/CompileZlib.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/CompileMinizip.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/CompileRINGMesh.cmake)
+# Define ringmesh as an external project that we know how to
+# configure and compile
+ExternalProject_Add(ringmesh_ext
+  PREFIX ${PROJECT_BINARY_DIR}
+
+  #--Download step--------------
+  DOWNLOAD_COMMAND ""
+
+  #--Update/Patch step----------
+  UPDATE_COMMAND ""
+
+  #--Configure step-------------
+  SOURCE_DIR ${PROJECT_SOURCE_DIR}
+      CONFIGURE_COMMAND ${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}
+          ${RINGMESH_EXTRA_ARGS} 
+          -G ${CMAKE_GENERATOR}
+          -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+          -DGLOBAL_BINARY_DIR=${PROJECT_BINARY_DIR}
+          -DCMAKE_PROJECT_RINGMesh_INCLUDE=${PROJECT_SOURCE_DIR}/cmake/temp_fix.cmake
+          -DUSE_SUPERBUILD=OFF
+
+  #--Build step-----------------
+  BINARY_DIR ${PROJECT_BINARY_DIR}
+  #-- Command to build ringmesh
+  BUILD_COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} ${COMPILATION_OPTION}
+
+  #--Install step---------------
+  INSTALL_COMMAND ""
+  
+  DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
+)
+
+ExternalProject_Add_Step(ringmesh_ext forcebuild
+    DEPENDERS build
+    ALWAYS 1
+  )
+

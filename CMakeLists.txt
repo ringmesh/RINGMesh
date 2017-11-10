@@ -66,21 +66,30 @@ CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
     "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
 
-get_cmake_property(_variableNames VARIABLES)
-foreach (_variableName ${_variableNames})
-    set(CMAKE_ARGS "${CMAKE_ARGS} -D${_variableName}=${${_variableName}}")
-endforeach()
+set(RINGMESH_EXTRA_ARGS
+    -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
+    -DMG_TETRA:STRING=${MG_TETRA}
+    -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN}
+    -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+    -DRINGMESH_TEST_GRAPHICS:BOOL=${RINGMESH_TEST_GRAPHICS}
+    -DBUILD_RINGMESH_VIEW:BOOL=${BUILD_RINGMESH_VIEW}
+    -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
+    -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
+    -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
+    -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
+    -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE})
 
-      project(LINUX_CONFIG NONE)
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # If the CMAKE_BUILD_TYPE is no defined
     # i.e. at first run of that file
-    if(CMAKE_BUILD_TYPE STREQUAL "")
+          message( STATUS "type ${CMAKE_BUILD_TYPE}")
+    if(NOT CMAKE_BUILD_TYPE)
       # For all configuration types
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
+          project(MULTI_CONFIG NONE)
           # The binary directory for this configuration
           set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/${config})
 
@@ -92,9 +101,10 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
           # and pass on all the options
           execute_process(
              COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
-                -DCMAKE_BUILD_TYPE:STRING=${config}
-                -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
-                -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
+                -G ${CMAKE_GENERATOR}
+                ${RINGMESH_EXTRA_ARGS} 
+                -DCMAKE_BUILD_TYPE=${config}
+                -DGLOBAL_BINARY_DIR=${PROJECT_BINARY_DIR}
                 WORKING_DIRECTORY ${project_binary_dir_config})
       endforeach()
 
@@ -107,17 +117,18 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 
-message(STATUS ${PROJECT_BINARY_DIR})
-message(STATUS ${GLOBAL_BINARY_DIR})
-#if(USE_SUPERBUILD)
-    project(SUPERBUILD NONE)
+message(STATUS "type = ${CMAKE_BUILD_TYPE}")
+message(STATUS "project = ${PROJECT_BINARY_DIR}")
+message(STATUS "global = ${GLOBAL_BINARY_DIR}")
+if(USE_SUPERBUILD)
     # execute the superbuild
+    project(SUPERBUILD)
     include("${CMAKE_SOURCE_DIR}/cmake/SuperBuild.cmake")
- #   return()
-#else()
+    return()
+else()
     # Define the project RINGMesh
     project(RINGMesh)
-#endif()
+endif()
 
 #------------------------------------------------------------------------------------------------
 # Turn on the ability to create folders to organize projects and files
@@ -191,7 +202,12 @@ endif(UNIX)
 
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Enable parallel computation
-    set(COMPILATION_OPTION -- -j)
+    set(cpuinfo_file "/proc/cpuinfo")
+    if(EXISTS "${cpuinfo_file}")
+        file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
+        list(LENGTH procs PROCESSOR_COUNT)
+    endif()
+    set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
     # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
@@ -245,9 +261,6 @@ set_target_properties(RINGMesh PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BIN
 
 # Add include directories of RINGMesh
 target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
-
-# RINGMesh depends on Geogram Tinyxml2 and zlib
-add_dependencies(RINGMesh geogram_ext tinyxml2_ext zlib_ext minizip_ext)
 
 # Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})

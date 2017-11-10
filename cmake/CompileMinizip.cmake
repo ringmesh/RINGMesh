@@ -32,11 +32,60 @@
 #     FRANCE
 
 #------------------------------------------------------------------------------------------------
-# Additional cmake modules
-include(ExternalProject)
+# minizip
+# Set the path to minizip code
+set(MINIZIP_PATH ${PROJECT_SOURCE_DIR}/third_party/minizip)
 
-include(${PROJECT_SOURCE_DIR}/cmake/CompileGeogram.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/CompileTinyxml2.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/CompileZlib.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/CompileMinizip.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/CompileRINGMesh.cmake)
+# zib platform dependent settings
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    set(MINIZIP_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/minizip/${CMAKE_BUILD_TYPE})
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    set(MINIZIP_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/minizip)
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+
+# Define minizip as an external project that we know how to
+# configure and compile
+ExternalProject_Add(minizip_ext
+  PREFIX ${MINIZIP_PATH_BIN}
+
+  #--Download step--------------
+  DOWNLOAD_COMMAND ""
+
+  #--Update/Patch step----------
+  UPDATE_COMMAND ""
+
+  #--Configure step-------------
+  SOURCE_DIR ${MINIZIP_PATH}
+      CONFIGURE_COMMAND ${CMAKE_COMMAND} ${MINIZIP_PATH}
+          -G ${CMAKE_GENERATOR}
+          -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+          -DUSE_AES:BOOL=OFF
+          -DZLIB_ROOT:PATH=${ZLIB_PATH_BIN}/install
+          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+
+  #--Build step-----------------
+  BINARY_DIR ${MINIZIP_PATH_BIN}
+  #-- Command to build minizip
+  BUILD_COMMAND ${CMAKE_COMMAND} --build ${MINIZIP_PATH_BIN} ${COMPILATION_OPTION}
+
+  #--Install step---------------
+  INSTALL_COMMAND ""
+  
+  DEPENDS zlib_ext
+)
+
+ExternalProject_Add_Step(minizip_ext forcebuild
+    DEPENDERS build
+    ALWAYS 1
+  )
+
+# Add minizip include directories to the current ones
+# same as minizip
+
+# Add minizip project libs to the libs with which RINGMesh will link
+set(EXTRA_LIBS ${EXTRA_LIBS} debug minizipd optimized minizip)
+
+# Add minizip bin directories to the current ones
+# It would be preferable to set the imported library location [JP]
+link_directories(${MINIZIP_PATH_BIN})
