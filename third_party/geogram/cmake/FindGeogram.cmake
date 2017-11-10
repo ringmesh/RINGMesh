@@ -65,6 +65,7 @@ find_package_handle_standard_args(
 
 # Create an imported target for Geogram 
 If (Geogram_FOUND)
+        message(STATUS "FOUND Geogram")
   
         set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INCLUDE_DIR}/..)
   
@@ -105,8 +106,8 @@ If (Geogram_FOUND)
                 )
                 
         endif ()
-
-        
+else()
+        message(STATUS "NOT FOUND Geogram")
 endif ()
 
 # Hide variables from the default CMake-Gui options
