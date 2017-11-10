@@ -79,7 +79,3 @@ ExternalProject_Add_Step(tinyxml2_ext forcebuild
     ALWAYS 1
   )
 
-
-# Add tinyxml2 project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} debug tinyxml2d optimized tinyxml2)
-

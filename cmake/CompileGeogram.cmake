@@ -96,10 +96,3 @@ ExternalProject_Add_Step(geogram_ext forcebuild
     ALWAYS 1
   )
 
-
-# Add geogram project libs to the libs with which RINGMesh will link
-set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
-if(RINGMESH_WITH_GRAPHICS)
-    include(${GEOGRAM_PATH}/cmake/opengl.cmake)
-    set(EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx ${OPENGL_LIBRARIES})
-endif(RINGMESH_WITH_GRAPHICS)

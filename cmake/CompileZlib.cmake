@@ -82,11 +82,3 @@ ExternalProject_Add_Step(zlib_ext post_build
   )
 
 
-# Add zlib project libs to the libs with which RINGMesh will link
-if(UNIX)
-    set(EXTRA_LIBS ${EXTRA_LIBS} z)
-else()
-    set(EXTRA_LIBS ${EXTRA_LIBS} debug zlibd optimized zlib)
-endif()
-
-
