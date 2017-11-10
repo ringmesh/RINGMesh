@@ -235,6 +235,83 @@ namespace RINGMesh
         std::vector< T > vector_;
     };
 
+    template < >
+    class VectorStore<bool>: public TypedStore< Byte > {
+    public:
+        /**
+        * \brief Creates a new empty attribute store.
+        */
+        VectorStore() = default;
+
+        void resize( index_t new_size ) final
+        {
+            this->size_ = new_size;
+            vector_.resize( new_size );
+        }
+
+        const void* data() const final
+        {
+            return vector_.data();
+        }
+
+        void* data() final
+        {
+            return vector_.data();
+        }
+
+        void clear() final
+        {
+            vector_.clear();
+        }
+
+        Store* clone() const final
+        {
+            VectorStore< bool >* result = new VectorStore< bool >();
+            result->resize( this->size() );
+            result->vector_ = vector_;
+            return result;
+        }
+
+        void compress( const std::vector< index_t >& old2new ) final
+        {
+            return;
+        }
+        /**
+        * \brief Applies a permutation to the stored attributes.
+        * \details Applying a permutation to the data is equivalent
+        *  to:
+        * \code
+        * for(i=0; i<permutation.size(); i++) {
+        *    data2[i] = data[permutation[i]]
+        * }
+        * data = data2 ;
+        * \endcode
+        * But it is done in-place.
+        * \param[in] permutation the permutation.
+        *  It is temporarily changed during execution of the
+        *  function, but identical to the input on exit.
+        * \note This function uses memcpy(). If required, it
+        *  can be overloaded in derived classes.
+        */
+        void apply_permutation(
+            const std::vector< index_t >& permutation ) final
+        {
+            return;
+        }
+        /**
+        * \brief Copies an item
+        * \param[in] to index of the destination item
+        * \param[in] from index of the source item
+        */
+        void copy_item( index_t to, index_t from ) final
+        {
+            return;
+        }
+
+    protected:
+        std::vector< Byte > vector_;
+    };
+
     template < class T >
     class ConstantStore : public TypedStore< T >
     {
@@ -800,6 +877,7 @@ namespace RINGMesh
             {
                 store_ = new AttributeStore();
                 store_->set_store( new VectorStore< T >() );
+                store_->resize( manager_->nb_items() );
                 manager_->bind_attribute_store( name, store_ );
             }
             else
@@ -1019,210 +1097,7 @@ namespace RINGMesh
             }
         }
     };
-    /**
-     * \brief Specialization of Attribute for booleans
-     * \details Attribute needs a specialization for bool, since
-     *   vector<bool> uses compressed storage (1 bit per boolean),
-     *   that is not compatible with the attribute management
-     *   mechanism. This wrapper class uses an Attribute<Numeric::uint8>
-     *   and does the appropriate conversions, using an accessor class.
-     */
-    template <>
-    class Attribute< bool > : public AttributeBase< Byte >
-    {
-        // todo I would move this specialization into a VectorStore
-        // specialization
-        // the issue is because the std::vector< bool > implementation is
-        // strange.
-        // If you do so, I think there is no longer needs for AttributeBase
-        // class,
-        // we could merge it with Attribute.
-    public:
-        typedef AttributeBase< Byte > superclass;
-
-        Attribute() : superclass()
-        {
-        }
-
-        Attribute( AttributesManager& manager, const std::string& name )
-            : superclass( manager, name )
-        {
-        }
-
-        class BoolAttributeAccessor;
-
-        /**
-         * \brief Accessor class for adapting Attribute<bool>
-         *  indexing.
-         */
-        class ConstBoolAttributeAccessor
-        {
-        public:
-            /**
-             * \brief ConstBoolAttributeAccessor constructor.
-             */
-            ConstBoolAttributeAccessor(
-                const Attribute< bool >& attribute, index_t index )
-                : attribute_( &attribute ), index_( index )
-            {
-            }
-
-            /**
-             * \brief Converts a BoolAttributeAccessor to a bool.
-             * \details Performs the actual lookup.
-             */
-            operator bool() const
-            {
-                return ( attribute_->element( index_ ) != 0 );
-            }
-
-        private:
-            const Attribute< bool >* attribute_;
-            index_t index_;
-
-            friend class BoolAttributeAccessor;
-        };
-
-        /**
-         * \brief Accessor class for adapting Attribute<bool>
-         *  indexing.
-         */
-        class BoolAttributeAccessor
-        {
-        public:
-            /**
-             * \brief BoolAttributeAccessor constructor.
-             */
-            BoolAttributeAccessor( Attribute< bool >& attribute, index_t index )
-                : attribute_( &attribute ), index_( index )
-            {
-            }
-
-            /**
-             * \brief Converts a BoolAttributeAccessor to a bool.
-             * \details Performs the actual lookup.
-             */
-            operator bool() const
-            {
-                return ( attribute_->element( index_ ) != 0 );
-            }
-
-            /**
-             * \brief Copy-constructor.
-             * \param[in] rhs a const reference to the
-             *  BoolAttributeAccessor to be copied.
-             */
-            BoolAttributeAccessor( const BoolAttributeAccessor& rhs )
-            {
-                attribute_ = rhs.attribute_;
-                index_ = rhs.index_;
-            }
-
-            /**
-             * \brief Assigns a bool to a BoolAttributeAccessor.
-             * \details Stores the boolean into the Attribute.
-             */
-            BoolAttributeAccessor& operator=( bool x )
-            {
-                attribute_->element( index_ ) = Byte( x );
-                return *this;
-            }
-
-            /**
-             * \brief Copies a bool from another attribute.
-             * \param[in] rhs a const reference to the BoolAttributeAccessor
-             *  to be copied.
-             */
-            BoolAttributeAccessor& operator=( const BoolAttributeAccessor& rhs )
-            {
-                if( &rhs != this )
-                {
-                    attribute_->element( index_ ) =
-                        rhs.attribute_->element( rhs.index_ );
-                }
-                return *this;
-            }
-
-            /**
-             * \brief Copies a bool from another attribute.
-             * \param[in] rhs a const reference to the
-             *  ConstBoolAttributeAccessor to be copied.
-             */
-            BoolAttributeAccessor& operator=(
-                const ConstBoolAttributeAccessor& rhs )
-            {
-                attribute_->element( index_ ) =
-                    rhs.attribute_->element( rhs.index_ );
-                return *this;
-            }
-
-        private:
-            Attribute< bool >* attribute_;
-            index_t index_;
-        };
-
-        ConstBoolAttributeAccessor value( index_t i ) const
-        {
-            return ConstBoolAttributeAccessor( *this, i );
-        }
-
-        ConstBoolAttributeAccessor operator[]( index_t i ) const
-        {
-            return value( i );
-        }
-
-        void set_value( index_t i, Byte value ) final
-        {
-            BoolAttributeAccessor( *this, i ) = value;
-        }
-
-        void set_value( index_t i, bool value )
-        {
-            BoolAttributeAccessor( *this, i ) = value;
-        }
-        /**
-         * \brief Sets all the elements in this attribute
-         *   to a specified value.
-         * \param[in] val the value
-         */
-        void fill( bool val )
-        {
-            for( index_t i = 0;
-                 i < superclass::store_->get_store().nb_elements(); ++i )
-            {
-                element( i ) = Byte( val );
-            }
-        }
-
-    protected:
-        friend class BoolAttributeAccessor;
-        friend class ConstBoolAttributeAccessor;
-
-        /**
-         * \brief Gets a modifiable element by index
-         * \param [in] i index of the element
-         * \return a modifiable reference to the \p i%th element
-         */
-        Byte& element( unsigned int i )
-        {
-            ringmesh_assert(
-                i < superclass::store_->get_store().nb_elements() );
-            return ( (Byte*) superclass::store_->get_store().data() )[i];
-        }
-
-        /**
-         * \brief Gets an element by index
-         * \param [in] i index of the element
-         * \return a const reference to the \p i%th element
-         */
-        const Byte& element( unsigned int i ) const
-        {
-            ringmesh_assert(
-                i < superclass::store_->get_store().nb_elements() );
-            return ( (const Byte*) superclass::store_->get_store().data() )[i];
-        }
-    };
-
+   
     /***********************************************************/
 
     /**
