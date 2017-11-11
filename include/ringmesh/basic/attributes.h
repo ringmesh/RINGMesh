@@ -1248,4 +1248,3 @@ namespace RINGMesh
     void register_read_only_scalar_attribute();
     /***********************************************************/
 }
-
