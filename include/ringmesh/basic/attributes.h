@@ -158,13 +158,13 @@ namespace RINGMesh
     };
 
     template < class T >
-    class VectorStore : public TypedStore< T >
+    class VectorStoreBase : public TypedStore< T >
     {
     public:
         /**
         * \brief Creates a new empty attribute store.
         */
-        VectorStore() = default;
+        VectorStoreBase() = default;
 
         void resize( index_t new_size ) final
         {
@@ -185,14 +185,6 @@ namespace RINGMesh
         void clear() final
         {
             vector_.clear();
-        }
-
-        Store* clone() const final
-        {
-            VectorStore< T >* result = new VectorStore< T >();
-            result->resize( this->size() );
-            result->vector_ = vector_;
-            return result;
         }
 
         void compress( const std::vector< index_t >& old2new ) final
@@ -235,35 +227,29 @@ namespace RINGMesh
         std::vector< T > vector_;
     };
 
+    template < class T >
+    class VectorStore : public VectorStoreBase< T >
+    {
+    public:
+        VectorStore() = default;
+
+        Store* clone() const final
+        {
+            VectorStore< T >* result = new VectorStore< T >();
+            result->resize( this->size() );
+            result->vector_ = vector_;
+            return result;
+        }
+    };
+
     template <>
-    class VectorStore< bool > : public TypedStore< Byte >
+    class VectorStore< bool > : public VectorStoreBase< Byte >
     {
     public:
         /**
         * \brief Creates a new empty attribute store.
         */
         VectorStore() = default;
-
-        void resize( index_t new_size ) final
-        {
-            this->size_ = new_size;
-            vector_.resize( new_size );
-        }
-
-        const void* data() const final
-        {
-            return vector_.data();
-        }
-
-        void* data() final
-        {
-            return vector_.data();
-        }
-
-        void clear() final
-        {
-            vector_.clear();
-        }
 
         Store* clone() const final
         {
@@ -272,45 +258,6 @@ namespace RINGMesh
             result->vector_ = vector_;
             return result;
         }
-
-        void compress( const std::vector< index_t >& old2new ) final
-        {
-            return;
-        }
-        /**
-        * \brief Applies a permutation to the stored attributes.
-        * \details Applying a permutation to the data is equivalent
-        *  to:
-        * \code
-        * for(i=0; i<permutation.size(); i++) {
-        *    data2[i] = data[permutation[i]]
-        * }
-        * data = data2 ;
-        * \endcode
-        * But it is done in-place.
-        * \param[in] permutation the permutation.
-        *  It is temporarily changed during execution of the
-        *  function, but identical to the input on exit.
-        * \note This function uses memcpy(). If required, it
-        *  can be overloaded in derived classes.
-        */
-        void apply_permutation(
-            const std::vector< index_t >& permutation ) final
-        {
-            return;
-        }
-        /**
-        * \brief Copies an item
-        * \param[in] to index of the destination item
-        * \param[in] from index of the source item
-        */
-        void copy_item( index_t to, index_t from ) final
-        {
-            return;
-        }
-
-    protected:
-        std::vector< Byte > vector_;
     };
 
     template < class T >
@@ -1301,3 +1248,4 @@ namespace RINGMesh
     void register_read_only_scalar_attribute();
     /***********************************************************/
 }
+
