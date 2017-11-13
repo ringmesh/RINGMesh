@@ -40,7 +40,11 @@ include(cmake/geogram.cmake)
 set(VORPALINE_VERSION_MAJOR 1)
 set(VORPALINE_VERSION_MINOR 5)
 <<<<<<< HEAD
+<<<<<<< HEAD
 set(VORPALINE_VERSION_PATCH 1)
+=======
+set(VORPALINE_VERSION_PATCH 3)
+>>>>>>> master
 =======
 set(VORPALINE_VERSION_PATCH 3)
 >>>>>>> master

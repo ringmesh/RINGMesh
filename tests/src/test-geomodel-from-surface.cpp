@@ -80,6 +80,7 @@ int main()
 
 #ifdef RINGMESH_DEBUG
 <<<<<<< HEAD
+<<<<<<< HEAD
         GEO::CmdLine::set_arg( "validity_intersection_check", true );
 #else
         GEO::CmdLine::set_arg( "validity_intersection_check", false );
@@ -96,6 +97,14 @@ int main()
         futures.emplace_back( std::async( std::launch::async, [&geomodel, &validity_mode] {
             if( !is_geomodel_valid( geomodel, validity_mode ) )
 >>>>>>> master
+=======
+        validity_mode =
+            validity_mode ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
+#endif
+
+        futures.emplace_back( std::async( std::launch::async, [&geomodel, &validity_mode] {
+            if( !is_geomodel_valid( geomodel, validity_mode ) )
+>>>>>>> master
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when loading model ", geomodel.name(),
@@ -103,6 +112,7 @@ int main()
             }
         } );
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         tasks.execute( [&geomodel]
         {
@@ -112,6 +122,8 @@ int main()
             geomodel_save( geomodel, output_file );
         } );
 
+=======
+>>>>>>> master
 =======
 >>>>>>> master
         GEO::Mesh surface_meshes;
