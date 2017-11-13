@@ -40,8 +40,9 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -53,7 +54,6 @@
 /*!
  * Purpose of this main is to show the methods
  * to be used to build a GeoModel from scratch.
- *
  */
 
 int main()
@@ -80,13 +80,17 @@ int main()
         GEO::Stopwatch total( "Total time" );
 
         // We instantiate the class GeoModel
-        GeoModel< 3 > geomodel;
+        GeoModel3D geomodel;
 
         // load GeoModel
         // here you can load whatever the model you want in the
         // ringmesh_home/test/data directory
         std::string input_file_name( ringmesh_tutorials_data_path );
         input_file_name += "modelA1.ml";
+
+        // We do not want to check the model validity at loading
+        GEO::CmdLine::set_arg(
+            "validity:do_not_check", "A" ); // "A" for all checks
 
         // function to load a geomodel
         geomodel_load( geomodel, input_file_name );
@@ -96,11 +100,21 @@ int main()
         print_geomodel_mesh_stats( geomodel );
 
         // build volumetric mesh in regions
-        tetrahedralize( geomodel, "TetGen" );
+        GEO::CmdLine::set_arg( "algo:tet", "TetGen" );
+        tetrahedralize( geomodel );
 
         // function to print the statistics of the geomodel in the command
         // terminal
         print_geomodel_mesh_stats( geomodel );
+
+        // check tetrahedralized GeoModel validity
+        ValidityCheckMode checks{ ValidityCheckMode::ALL };
+        bool is_valid = is_geomodel_valid( geomodel, checks );
+        if( !is_valid )
+        {
+            throw RINGMeshException( "RINGMesh Test", "Tetrahedralized model ",
+                geomodel.name(), " is not valid." );
+        }
 
         // set the name of the geomodel to output
         // you can customize the path

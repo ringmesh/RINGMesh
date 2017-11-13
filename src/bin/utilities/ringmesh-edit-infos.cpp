@@ -40,9 +40,9 @@
 #include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -132,13 +132,13 @@ int main( int argc, char** argv )
         index_t dimension = find_geomodel_dimension( geomodel_in_file );
         if( dimension == 2 )
         {
-            edit_geomodel_name< 2 >( geomodel_in_file, geomodel_new_name,
-                geomodel_out_file );
+            edit_geomodel_name< 2 >(
+                geomodel_in_file, geomodel_new_name, geomodel_out_file );
         }
         else if( dimension == 3 )
         {
-            edit_geomodel_name< 3 >( geomodel_in_file, geomodel_new_name,
-                geomodel_out_file );
+            edit_geomodel_name< 3 >(
+                geomodel_in_file, geomodel_new_name, geomodel_out_file );
         }
     }
     catch( const RINGMeshException& e )
