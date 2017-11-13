@@ -79,6 +79,22 @@ set(RINGMESH_EXTRA_ARGS
     -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
     -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE})
 
+
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    # Enable parallel computation
+    set(cpuinfo_file "/proc/cpuinfo")
+    if(EXISTS "${cpuinfo_file}")
+        file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
+        list(LENGTH procs PROCESSOR_COUNT)
+    endif()
+    set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
+else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
+    # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
+    # are automatically built with the same build type as RINGMesh.
+    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
+endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them
@@ -195,21 +211,6 @@ else(UNIX)
         message(FATAL_ERROR "RINGMesh requires Visual Studio greater or equal to VS 12 2013 WIN64")
     endif(MSVC_VERSION LESS 1800)
 endif(UNIX)
-
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    # Enable parallel computation
-    set(cpuinfo_file "/proc/cpuinfo")
-    if(EXISTS "${cpuinfo_file}")
-        file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
-        list(LENGTH procs PROCESSOR_COUNT)
-    endif()
-    set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
-else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
-    # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
-    # are automatically built with the same build type as RINGMesh.
-    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
-endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 #------------------------------------------------------------------------------------------------
 # Get MG-Tetra if a path is given
