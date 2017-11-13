@@ -340,26 +340,26 @@ namespace
             }
             return false;
         }
-        
-        std::string generate_folder_name() const {
+
+        std::string generate_folder_name() const
+        {
             std::string directory_to_unzip{
                 GEO::FileSystem::normalized_path(
                     GEO::FileSystem::dir_name( this->filename_ ) )
                 + "/" + std::to_string(
                             std::hash< std::string >()( this->filename_ ) )
             };
-            index_t unique_id{0};
-            while (GEO::FileSystem::is_directory( directory_to_unzip )) {
-                directory_to_unzip += std::to_string(unique_id++);
+            index_t unique_id{ 0 };
+            while( GEO::FileSystem::is_directory( directory_to_unzip ) )
+            {
+                directory_to_unzip += std::to_string( unique_id++ );
             }
             return directory_to_unzip;
         }
 
         void load_file() final
         {
-            const std::string directory_to_unzip{
-                 generate_folder_name()
-            };
+            const std::string directory_to_unzip{ generate_folder_name() };
             UnZipFile uz{ this->filename_, directory_to_unzip };
 
             const auto mesh_entity_file = uz.get_file( "mesh_entities.txt" );
