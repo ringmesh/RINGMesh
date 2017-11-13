@@ -38,14 +38,14 @@
 #include <geogram/basic/command_line.h>
 
 #include <geogram/mesh/mesh_io.h>
-
-#include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder_from_mesh.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
-
+#include <ringmesh/geomodel/builder/geomodel_builder_from_mesh.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
-#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 /*!
  * Test the creation of a GeoModel from a conformal surface mesh
@@ -74,10 +74,12 @@ int main()
         builder.build_lines_and_corners_from_surfaces();
         builder.build_regions_from_lines_and_surfaces();
         builder.end_geomodel();
-        print_geomodel( geomodel );
 
-// Checking the validity of loaded model
+        // Checking the validity of loaded model
+        ValidityCheckMode validity_mode = ValidityCheckMode::ALL;
+
 #ifdef RINGMESH_DEBUG
+<<<<<<< HEAD
         GEO::CmdLine::set_arg( "validity_intersection_check", true );
 #else
         GEO::CmdLine::set_arg( "validity_intersection_check", false );
@@ -86,6 +88,14 @@ int main()
         tasks.execute( [&geomodel]
         {
             if( !is_geomodel_valid( geomodel ) )
+=======
+        validity_mode =
+            validity_mode ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
+#endif
+
+        futures.emplace_back( std::async( std::launch::async, [&geomodel, &validity_mode] {
+            if( !is_geomodel_valid( geomodel, validity_mode ) )
+>>>>>>> master
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when loading model ", geomodel.name(),
@@ -93,6 +103,7 @@ int main()
             }
         } );
 
+<<<<<<< HEAD
         tasks.execute( [&geomodel]
         {
             // Save and reload the model
@@ -101,6 +112,8 @@ int main()
             geomodel_save( geomodel, output_file );
         } );
 
+=======
+>>>>>>> master
         GEO::Mesh surface_meshes;
         // Compute mesh with duplicated points to compares number
         // of mesh elements and mesh entities
@@ -139,8 +152,8 @@ int main()
         builder2.build_lines_and_corners_from_surfaces();
         builder2.build_regions_from_lines_and_surfaces();
         builder2.end_geomodel();
-        print_geomodel( reloaded_model );
 
+<<<<<<< HEAD
         tasks.execute( [&reloaded_model]
         {
             // Checking if building has been successfully done
@@ -151,6 +164,18 @@ int main()
                     ": the reloaded model is not valid." );
             }
         } );
+=======
+        futures.emplace_back(
+            std::async( std::launch::async, [&reloaded_model, &validity_mode] {
+                // Checking if building has been successfully done
+                if( !is_geomodel_valid( reloaded_model, validity_mode ) )
+                {
+                    throw RINGMeshException( "RINGMesh Test",
+                        "Failed when reloading model ", reloaded_model.name(),
+                        ": the reloaded model is not valid." );
+                }
+            } ) );
+>>>>>>> master
 
         // Checking number of mesh elements
         if( surface_meshes.vertices.nb() != in.vertices.nb() )

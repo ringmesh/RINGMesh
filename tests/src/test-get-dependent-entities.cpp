@@ -35,8 +35,11 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/geomodel/geomodel_builder.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/basic/algorithm.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!

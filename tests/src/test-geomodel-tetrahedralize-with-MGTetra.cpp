@@ -35,14 +35,18 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <geogram/basic/command_line.h>
+
+#include <ringmesh/basic/command_line.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!
  * @file Test global tetrahedralization of a GeoModel
- * @author Jeanne Pellerin
  */
 
 int main()
@@ -52,15 +56,16 @@ int main()
     try
     {
         default_configure();
-
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path );
-        log_file += "log.txt";
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
+        
+ #ifdef USE_MG_TETRA
+        CmdLine::import_arg_group( "global" );
+        GEO::CmdLine::set_arg( "algo:tet", "MG_Tetra");
 
         std::string file_name( ringmesh_test_data_path );
         file_name += "modelA6.ml";
+
+        // Check only model geometry
+        GEO::CmdLine::set_arg( "validity:do_not_check", "tG" );
 
         // Loading the GeoModel
         GeoModel3D geomodel;
@@ -73,10 +78,8 @@ int main()
                 ": the model is not valid." );
         }
 
-#ifdef USE_MG_TETRA
-
         // Tetrahedralize the GeoModel
-        tetrahedralize( geomodel, "MG_Tetra", NO_ID, false );
+        tetrahedralize( geomodel, NO_ID, false );
 
         for( index_t r : range( geomodel.nb_regions() ) )
         {
@@ -88,11 +91,11 @@ int main()
                     "maybe the MG Tetra Licence can not be reached" );
             }
         }
-        if( !is_geomodel_valid( geomodel ) )
+        if( !is_geomodel_valid( geomodel, ValidityCheckMode::GEOMETRY ) )
         {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when tetrahedralize model ", geomodel.name(),
-                ": the model becomes invalid." );
+                ": the model geometry becomes invalid." );
         }
 
 #endif

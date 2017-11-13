@@ -35,10 +35,21 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+<<<<<<< HEAD
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 
+=======
+#include <future>
+
+#include <geogram/basic/command_line.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
+>>>>>>> master
 #include <ringmesh/io/io.h>
 
 /*! Tests the GeoModel invalidity tracking.
@@ -56,13 +67,16 @@ void make_geomodel_copy(
     GeoModel3D& to )
 {
     GeoModelBuilder3D geomodel_breaker2( to );
-    geomodel_breaker2.copy.copy_geomodel( from );
+    copy_geomodel( from, to );
     geomodel_breaker2.info.set_geomodel_name( name );
 }
 
-void verdict( const GeoModel3D& invalid_model, const std::string& feature )
+void verdict(
+    const GeoModel3D& invalid_model,
+    const std::string& feature,
+    const ValidityCheckMode& validity_check_mode )
 {
-    if( is_geomodel_valid( invalid_model ) )
+    if( is_geomodel_valid( invalid_model, validity_check_mode ) )
     {
         throw RINGMeshException( "RINGMesh Test", "Fail to ", feature );
     }
@@ -78,6 +92,7 @@ int main()
     {
         default_configure();
 
+<<<<<<< HEAD
         TaskHandler tasks;
         tasks.execute( []
         {
@@ -97,15 +112,57 @@ int main()
             }
 
             Logger::out( "TEST", "Break geomodels:" );
+=======
+        // Load a model without region : 6 surfaces defining a cube with holes
+        // between surfaces (all surface borders are free borders)
+        GeoModel3D not_sealed_cube_geomodel;
+        std::string input_cube_model_file_name( ringmesh_test_data_path );
+        input_cube_model_file_name += "not_sealed_cube.ml";
+        bool is_cube_valid = geomodel_load(
+            not_sealed_cube_geomodel, input_cube_model_file_name );
+
+        if( is_cube_valid )
+        {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed to detect invalidities in loaded model ",
+                not_sealed_cube_geomodel.name() );
+        }
+
+        // No validity checks at loading
+        GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
+
+        std::vector< std::future< void > > futures;
+
+        futures.emplace_back( std::async( std::launch::async, [] {
+            std::string input_model_file_name{ ringmesh_test_data_path
+                                               + "modelA6.ml" };
+            GeoModel3D geomodel;
+            geomodel_load( geomodel, input_model_file_name );
+
+            Logger::out( "TEST", "Break geomodel:" );
+>>>>>>> master
 
             GeoModel3D invalid_model;
-            make_geomodel_copy( in, "broken model 1", invalid_model );
+            make_geomodel_copy( geomodel, "broken model 1", invalid_model );
             GeoModelBuilder3D geomodel_breaker( invalid_model );
+<<<<<<< HEAD
             geomodel_breaker.geology.create_geological_entity(
                 RINGMesh::Interface3D::type_name_static() );
             verdict( invalid_model,
                 "detect addition of an isolated GeoModelGeologicalEntity" );
         } );
+=======
+            geomodel_breaker.topology.create_mesh_entity(
+                RINGMesh::Surface3D::type_name_static() );
+            if( is_geomodel_valid( invalid_model,
+                    ValidityCheckMode::TOPOLOGY ) )
+            {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Fail to detect addition of an isolated "
+                    "GeoModelMeshEntity" );
+            }
+        } ) );
+>>>>>>> master
 
         tasks.execute( []
         {
