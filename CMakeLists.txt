@@ -111,14 +111,14 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
       # We do not want to execute the rest of the file in that case
       return()
     endif()
-else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR})
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-
 
 if(USE_SUPERBUILD)
     # execute the superbuild
     project(SUPERBUILD)
+    if(NOT GLOBAL_BINARY_DIR)
+        set(GLOBAL_BINARY_DIR ${PROJECT_BINARY_DIR})
+    endif()
     include("${CMAKE_SOURCE_DIR}/cmake/SuperBuild.cmake")
     return()
 else()
