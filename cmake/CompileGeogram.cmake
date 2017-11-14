@@ -54,11 +54,9 @@ else(WIN32)
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang ")
         set(geoplatform Darwin-clang-dynamic)
     endif()
-message(STATUS ${GEOGRAM_PATH_BIN})
-
-set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install CACHE INTERNAL "Geogram install directory")
-          
 endif(WIN32)
+set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install CACHE INTERNAL "Geogram install directory")  
+
 # Define Geogram as an external project that we know how to
 # configure and compile
 ExternalProject_Add(geogram_ext

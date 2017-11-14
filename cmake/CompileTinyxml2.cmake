@@ -36,7 +36,7 @@
 # Set the path to tinyxml2 code
 set(TINYXML2_PATH ${PROJECT_SOURCE_DIR}/third_party/tinyxml2)
 set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/tinyxml2/${CMAKE_BUILD_TYPE})
-set(TINYXML2_INSTALL_PREFIX ${TINYXML2_PATH_BIN}/install CACHE INTERNAL "Tinyxml2 install directory")
+set(TINYXML2_INSTALL_PREFIX ${TINYXML2_PATH_BIN}install CACHE INTERNAL "Tinyxml2 install directory")
 
 # Define tinyxml2 as an external project that we know how to
 # configure and compile

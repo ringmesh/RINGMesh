@@ -261,6 +261,7 @@ target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 find_package(ZLIB REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
+message ("GEOGRAM_INSTALL_PREFIX " ${GEOGRAM_INSTALL_PREFIX} )
 find_package(Geogram REQUIRED)
 find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
 include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
