@@ -120,7 +120,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    vecn< DIMENSION > initialize_vecn_coordinates( const double& value )
+    vecn< DIMENSION > initialize_vecn_coordinates( double value )
     {
         index_t nb_coords = DIMENSION;
         vecn< DIMENSION > vec;
@@ -130,4 +130,7 @@ namespace RINGMesh
         }
         return vec;
     }
+
+    template vec2 RINGMESH_API initialize_vecn_coordinates( double );
+    template vec3 RINGMESH_API initialize_vecn_coordinates( double );
 } // namespace RINGMesh
