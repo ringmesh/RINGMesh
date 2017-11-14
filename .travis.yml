@@ -42,7 +42,7 @@ jobs:
     - stage: compile and test
       os: linux
       env:
-        - TEST="Gcc adn Sonar Check"
+        - TEST="Gcc and Sonar Check"
       before_script:
         - mkdir $TRAVIS_BUILD_DIR/3rdparty
         - cd $TRAVIS_BUILD_DIR/3rdparty
@@ -58,7 +58,7 @@ jobs:
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
         - ctest -j2
         - |
-          if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+          if [ "$TRAVIS_PULL_REQUEST" = "true" ]; then
             cd $TRAVIS_BUILD_DIR
             sonar-scanner
           fi
