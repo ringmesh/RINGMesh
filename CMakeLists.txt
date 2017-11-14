@@ -115,6 +115,7 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                 -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
                 -DMG_TETRA:STRING=${MG_TETRA}
+                -DEMSCRIPTEN:STRING=${EMSCRIPTEN}
                 -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN}
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_TEST_GRAPHICS:BOOL=${RINGMESH_TEST_GRAPHICS}
@@ -210,6 +211,15 @@ else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
+#-----------------------------------------------------------------------------------------------
+# Set the options for Emscripten
+if(NOT ${EMSCRIPTEN} STREQUAL "")
+    MESSAGE(STATUS "Use Emscripten")
+    include(${EMSCRIPTEN}/cmake/Modules/Platform/Emscripten.cmake)
+    set(CMAKE_C_COMPILER ${EMSCRIPTEN}/emcc)
+    set(CMAKE_CXX_COMPILER ${EMSCRIPTEN}/em++)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_GLFW=3 -s TOTAL_MEMORY=268435456")
+endif()
 #------------------------------------------------------------------------------------------------
 # Compil Third Parties
 include("${CMAKE_SOURCE_DIR}/cmake/CompilThirdParties.cmake")

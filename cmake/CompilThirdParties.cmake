@@ -60,8 +60,12 @@ else(WIN32)
             set(geoplatform Linux64-gcc-dynamic)
         endif()
     endif(APPLE)
-
 endif(WIN32)
+
+
+if(NOT ${EMSCRIPTEN} STREQUAL "")
+    set(geoplatform Emscripten-clang)
+endif()
 # Define Geogram as an external project that we know how to
 # configure and compile
 ExternalProject_Add(geogram_ext
@@ -85,6 +89,7 @@ ExternalProject_Add(geogram_ext
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DEMSCRIPTEN_DIR:STRING=${EMSCRIPTEN}
         -DGEOGRAM_LIB_ONLY:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
 
   #--Build step-----------------

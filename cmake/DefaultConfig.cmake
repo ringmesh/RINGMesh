@@ -46,6 +46,9 @@ option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
+
+set(EMSCRIPTEN "" CACHE PATH "Path to Emscripten")
+mark_as_advanced(EMSCRIPTEN)
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
 option(BUILD_GEOGRAM_WITHOUT_EXE "Compile geogram without tests and executables" ON)
