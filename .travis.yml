@@ -57,11 +57,8 @@ jobs:
         - cd Debug
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
         - ctest -j2
-        - |
-          if [ "$TRAVIS_PULL_REQUEST" = "true" ]; then
-            cd $TRAVIS_BUILD_DIR
-            sonar-scanner
-          fi
+        - cd $TRAVIS_BUILD_DIR
+        - sonar-scanner
 
     - stage: compile and test
       os: linux
