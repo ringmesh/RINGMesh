@@ -118,4 +118,16 @@ namespace RINGMesh
             "projects of the team: " );
         Logger::out( "", "http://www.ring-team.org" );
     }
+
+    template< index_t DIMENSION >
+    vecn< DIMENSION > initialize_vecn_coordinates( const double& value )
+    {
+        index_t nb_coords = DIMENSION;
+        vecn< DIMENSION > vec;
+        for( auto coord : range( nb_coords ) )
+        {
+            vec[coord] = value;
+        }
+        return vec;
+    }
 } // namespace RINGMesh
