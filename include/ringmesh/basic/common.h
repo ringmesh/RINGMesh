@@ -236,6 +236,6 @@ namespace RINGMesh
         index_t last_{ 0 };
     };
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     vecn< DIMENSION > initialize_vecn_coordinates( const double& value );
 } // namespace RINGMesh

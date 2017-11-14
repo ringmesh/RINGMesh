@@ -119,7 +119,7 @@ namespace RINGMesh
         Logger::out( "", "http://www.ring-team.org" );
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     vecn< DIMENSION > initialize_vecn_coordinates( const double& value )
     {
         index_t nb_coords = DIMENSION;
