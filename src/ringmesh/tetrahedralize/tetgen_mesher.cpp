@@ -123,7 +123,6 @@ namespace RINGMesh
                     "  the message above, your input data set, and the exact" );
                 Logger::err( "Tetgen",
                     "  command line you used to run this program, thank you" );
-                ;
                 break;
             case 3:
                 Logger::err( "Tetgen",

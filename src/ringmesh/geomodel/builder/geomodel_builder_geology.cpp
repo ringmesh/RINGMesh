@@ -279,7 +279,6 @@ namespace RINGMesh
             manager.find_parent_child_relationship( parent, children );
         if( relation_id == NO_ID )
         {
-            std::ostringstream message;
             throw RINGMeshException( "Entity",
                 "No parent children relation found between ", parent, " and ",
                 children );
