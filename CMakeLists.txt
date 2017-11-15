@@ -300,13 +300,6 @@ foreach(directory ${directories})
     endif()
 endforeach()
 
-<<<<<<< HEAD
-=======
-if(COVERALLS)
-    coverage_setup("") # TODO empty string for testing purpose, to remove/handle later
-endif()
-
->>>>>>> refs/remotes/origin/master
 set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
