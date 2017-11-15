@@ -128,8 +128,8 @@ namespace
         {
             return;
         }
-        const index_t COORDY { ( COORDX + 1 ) % 3 };
-        const index_t COORDZ { ( COORDY + 1 ) % 3 };
+        const index_t COORDY{ ( COORDX + 1 ) % 3 };
+        const index_t COORDZ{ ( COORDY + 1 ) % 3 };
 
         auto m0 = begin;
         auto m8 = end;
