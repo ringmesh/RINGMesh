@@ -33,10 +33,36 @@
 
 cmake_minimum_required(VERSION 3.1)
 
+<<<<<<< HEAD
 find_program(GCOV_EXECUTABLE gcov)
 if(NOT GCOV_EXECUTABLE)
 	message(FATAL_ERROR "gcov not found! Aborting...")
 endif()
+=======
+# Since it's not possible to pass a CMake list properly in the
+# "1;2;3" format to an external process, we have replaced the
+# ";" with "*", so reverse that here so we get it back into the
+# CMake list format.
+#string(REGEX REPLACE "\\*" ";" COVERAGE_SRCS ${COVERAGE_SRCS})
+
+find_program(GCOV_EXECUTABLE gcov)
+if(NOT GCOV_EXECUTABLE)
+	message(FATAL_ERROR "gcov not found! Aborting...")
+endif()
+
+# convert all paths in COVERAGE_SRCS to absolute paths
+#set(COVERAGE_SRCS_TMP "")
+#foreach (COVERAGE_SRC ${COVERAGE_SRCS})
+#	if (NOT "${COVERAGE_SRC}" MATCHES "^/")
+#		set(COVERAGE_SRC ${PROJECT_ROOT}/${COVERAGE_SRC})
+#	endif()
+#	list(APPEND COVERAGE_SRCS_TMP ${COVERAGE_SRC})
+#endforeach()
+#set(COVERAGE_SRCS ${COVERAGE_SRCS_TMP})
+#unset(COVERAGE_SRCS_TMP)
+
+##############################################################################
+>>>>>>> refs/remotes/origin/master
 
 set(GCOV_OUTPUT ${PROJECT_ROOT}/gcov-outputs)
 file(MAKE_DIRECTORY ${GCOV_OUTPUT})

@@ -31,6 +31,7 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
+<<<<<<< HEAD
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
     if("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 3)
         message(FATAL_ERROR "Clang version must be 3.0.0 or greater! Aborting...")
@@ -65,3 +66,62 @@ add_custom_target(coverage
 	COMMENT "Generating gcov output..."
 	DEPENDS RINGMesh
 )
+=======
+function(coverage_setup COVERAGE_SRCS)
+    set(SCRIPT_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+	# When passing a CMake list to an external process, the list
+	# will be converted from the format "1;2;3" to "1 2 3".
+	# This means the script we're calling won't see it as a list
+	# of sources, but rather just one long path. We remedy this
+	# by replacing ";" with "*" and then reversing that in the script
+	# that we're calling.
+	# http://cmake.3232098.n2.nabble.com/Passing-a-CMake-list-quot-as-is-quot-to-a-custom-target-td6505681.html
+	set(COVERAGE_SRCS_TMP ${COVERAGE_SRCS})
+	set(COVERAGE_SRCS "")
+	foreach (COVERAGE_SRC ${COVERAGE_SRCS_TMP})
+		set(COVERAGE_SRCS "${COVERAGE_SRCS}*${COVERAGE_SRC}")
+	endforeach()
+
+	add_custom_target(coverage
+
+		# Zero the coverage counters.
+		COMMAND ${CMAKE_COMMAND} -DPROJECT_BINARY_DIR="${PROJECT_BINARY_DIR}" -P "${SCRIPT_PATH}/CoverageClear.cmake"
+
+		# Run regress tests.
+		COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+
+		# Generate Gcov
+		COMMAND ${CMAKE_COMMAND}
+				-DCOVERAGE_SRCS="${COVERAGE_SRCS}"
+				-DCOV_PATH="${PROJECT_BINARY_DIR}"
+				-DPROJECT_ROOT="${PROJECT_SOURCE_DIR}"
+				-P "${SCRIPT_PATH}/GenerateGcov.cmake"
+
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMENT "Generating gcov output..."
+		DEPENDS RINGMesh
+    )
+endfunction()
+
+macro(turn_on_coverage)
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+        if("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 3)
+            message(FATAL_ERROR "Clang version must be 3.0.0 or greater! Aborting...")
+        endif()
+    elseif(NOT CMAKE_COMPILER_IS_GNUCXX)
+        message(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
+    endif()
+
+    add_compile_options(-g -O0 -fno-elide-constructors -fprofile-arcs -ftest-coverage -fno-inline -fno-inline-small-functions  -fno-default-inline)
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        link_libraries(gcov)
+    else()
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+    endif()
+endmacro()
+
+
+
+
+>>>>>>> refs/remotes/origin/master
