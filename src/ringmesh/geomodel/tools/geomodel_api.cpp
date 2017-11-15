@@ -146,7 +146,6 @@ namespace
         double tet_volume{ 0 };
         double pyramid_volume{ 0 };
         double prism_volume{ 0 };
-        ;
         double hex_volume{ 0 };
         double poly_volume{ 0 };
 
