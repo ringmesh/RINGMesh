@@ -178,9 +178,7 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-       set(COVERALLS ON)
        include(${PROJECT_SOURCE_DIR}/cmake/Coverage.cmake)
-       turn_on_coverage()
     endif()
 else(UNIX)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -301,10 +299,6 @@ foreach(directory ${directories})
         source_file_directory(ringmesh_files io/${directory})
     endif()
 endforeach()
-
-if(COVERALLS)
-    coverage_setup("") # TODO empty string for testing purpose, to remove/handle later
-endif()
 
 set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
