@@ -35,6 +35,8 @@
 
 #pragma once
 
+#include <array>
+
 #include <ringmesh/basic/common.h>
 
 /*!
