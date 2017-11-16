@@ -1,18 +1,9 @@
-#include <geogram/mesh/mesh.h>
+#include "test-geogram-install2.cpp"
 
 int main()
 {
-    using namespace GEO;
 
-    initialize();
-
-    Mesh M;
-
-    vec3 point{};
-    M.vertices.create_vertex( point.data() );
-
-    M.show_stats();
-
+    toto_mesh();
 
     return 0;
 }
