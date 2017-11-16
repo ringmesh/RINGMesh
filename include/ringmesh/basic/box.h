@@ -48,69 +48,25 @@ namespace RINGMesh
     class Box
     {
     public:
-        bool initialized() const
-        {
-            return initialized_;
-        }
+        bool initialized() const;
 
-        void clear()
-        {
-            initialized_ = false;
-        }
+        void clear();
 
-        const vecn< DIMENSION >& min() const
-        {
-            return min_;
-        }
+        const vecn< DIMENSION >& min() const;
 
-        const vecn< DIMENSION >& max() const
-        {
-            return max_;
-        }
+        const vecn< DIMENSION >& max() const;
 
-        vecn< DIMENSION > center() const
-        {
-            return 0.5 * ( min() + max() );
-        }
+        vecn< DIMENSION > center() const;
 
-        vecn< DIMENSION > diagonal() const
-        {
-            return max() - min();
-        }
+        vecn< DIMENSION > diagonal() const;
 
         void add_point( const vecn< DIMENSION >& p );
 
-        void add_box( const Box< DIMENSION >& b )
-        {
-            if( b.initialized() )
-            {
-                add_point( b.min() );
-                add_point( b.max() );
-            }
-        }
+        void add_box( const Box< DIMENSION >& b );
 
-        bool bboxes_overlap( const Box< DIMENSION >& B ) const
-        {
-            for( auto c : range( DIMENSION ) )
-            {
-                if( max()[c] < B.min()[c] )
-                {
-                    return false;
-                }
-                if( min()[c] > B.max()[c] )
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
+        bool bboxes_overlap( const Box< DIMENSION >& B ) const;
 
-        Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const
-        {
-            Box< DIMENSION > result{ *this };
-            result.add_box( B );
-            return result;
-        }
+        Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const;
 
         /*!
          * Computes the intersection between this box and another one
@@ -120,41 +76,9 @@ namespace RINGMesh
          * - the box corresponding to the intersection.
          */
         std::tuple< bool, Box< DIMENSION > > bbox_intersection(
-            const Box< DIMENSION >& B ) const
-        {
-            if( !bboxes_overlap( B ) )
-            {
-                return std::make_tuple( false, Box() );
-            }
+            const Box< DIMENSION >& B ) const;
 
-            Box< DIMENSION > result;
-            vecn< DIMENSION > minimal_max;
-            vecn< DIMENSION > maximal_min;
-            for( auto c : range( DIMENSION ) )
-            {
-                minimal_max[c] = std::min( this->max()[c], B.max()[c] );
-                maximal_min[c] = std::max( this->min()[c], B.min()[c] );
-            }
-            result.add_point( maximal_min );
-            result.add_point( minimal_max );
-            return std::make_tuple( true, result );
-        }
-
-        bool contains( const vecn< DIMENSION >& b ) const
-        {
-            for( auto c : range( DIMENSION ) )
-            {
-                if( b[c] < min()[c] )
-                {
-                    return false;
-                }
-                if( b[c] > max()[c] )
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
+        bool contains( const vecn< DIMENSION >& b ) const;
 
         double distance_to_center( const vecn< DIMENSION >& p ) const;
 
