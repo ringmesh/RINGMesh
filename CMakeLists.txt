@@ -263,6 +263,12 @@ find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
 include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
 target_link_libraries(RINGMesh PUBLIC Geogram::geogram PRIVATE ZLIB::ZLIB tinyxml2 MINIZIP::minizip)
 
+add_executable(test-geogram-install src/test-geogram-install.cpp)
+target_link_libraries(test-geogram-install PRIVATE Geogram::geogram)
+
+add_dependencies(RINGMesh test-geogram-install)
+
+
 if(RINGMESH_WITH_GRAPHICS)
     target_link_libraries(RINGMesh PUBLIC Geogram::geogram_gfx)
 endif(RINGMESH_WITH_GRAPHICS)
