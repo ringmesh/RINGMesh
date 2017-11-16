@@ -385,11 +385,6 @@ namespace RINGMesh
             return std::make_tuple( result, closest_point );
         }
 
-        std::array< std::array< index_t, 3 >, 4 > tetra_facet_vertex { {{ 1, 3, 2 }, {
-            0, 2, 3 },
-                                                                       { 3, 1, 0 }, {
-                                                                           0, 1, 2 }} };
-
         std::tuple< double, vec3 > point_to_tetra(
             const Geometry::Point3D& point, const Geometry::Tetra& tetra )
         {
@@ -403,9 +398,9 @@ namespace RINGMesh
                 vec3 cur_p;
                 std::tie( distance, cur_p ) = point_to_triangle(
                     point, Geometry::Triangle3D{
-                               vertices[tetra_facet_vertex[f][0]],
-                               vertices[tetra_facet_vertex[f][1]],
-                               vertices[tetra_facet_vertex[f][2]] } );
+                               vertices[Geometry::Tetra::tetra_facet_vertex[f][0]],
+                               vertices[Geometry::Tetra::tetra_facet_vertex[f][1]],
+                               vertices[Geometry::Tetra::tetra_facet_vertex[f][2]] } );
                 if( distance < dist )
                 {
                     dist = distance;
