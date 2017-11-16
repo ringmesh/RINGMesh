@@ -136,7 +136,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    Box< DIMENSION > Box< DIMENSION >::bbox_union( const Box< DIMENSION >& B ) const
+    Box< DIMENSION > Box< DIMENSION >::bbox_union(
+        const Box< DIMENSION >& B ) const
     {
         Box< DIMENSION > result{ *this };
         result.add_box( B );
