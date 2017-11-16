@@ -77,14 +77,9 @@ namespace RINGMesh {
             }
         }
 
-<<<<<<< HEAD
     private:
-        std::vector< vecn< DIMENSION > > axis_ { DIMENSION, vecn< DIMENSION >() };
-=======
-    protected:
         std::vector< vecn< DIMENSION > > axis_{ DIMENSION,
             vecn< DIMENSION >() };
->>>>>>> c23cba02831bdc258ed846990cea8004d12c5973
     };
     ALIAS_2D_AND_3D( FrameBase );
 
