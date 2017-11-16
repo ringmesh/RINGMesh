@@ -83,7 +83,7 @@ namespace RINGMesh
         }
 
     private:
-        std::array< vecn< DIMENSION >, DIMENSION > axis_{};
+        std::array< vecn< DIMENSION >, DIMENSION > axis_;
     };
     ALIAS_2D_AND_3D( FrameBase );
 
