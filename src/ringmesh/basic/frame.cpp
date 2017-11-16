@@ -73,7 +73,8 @@ namespace RINGMesh
         vec3 v_axis_point;
         std::tie( std::ignore, v_axis_point ) = Distance::point_to_plane(
             another_point_for_v_axis, { ( *this )[2], origin() } );
-        ringmesh_assert( ( origin() - v_axis_point ).length() > global_epsilon );
+        ringmesh_assert(
+            ( origin() - v_axis_point ).length() > global_epsilon );
         ( *this )[1] = normalize( v_axis_point - origin() );
         ( *this )[0] = cross( ( *this )[1], ( *this )[2] );
     }
