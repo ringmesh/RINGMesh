@@ -39,7 +39,7 @@
 
 #include <vector>
 
-#include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/frame.h>
 
 #include <ringmesh/geomodel/core/entity_type_manager.h>
 #include <ringmesh/geomodel/core/geomodel_mesh.h>
