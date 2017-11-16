@@ -146,6 +146,11 @@ namespace RINGMesh
                 Logger::err(
                     "Tetgen", "An input error was detected. Program stopped." );
                 break;
+            default:
+                Logger::err(
+                    "Tetgen", "An exception was thrown. Program stopped." );
+                break;
+
             }
         }
     }

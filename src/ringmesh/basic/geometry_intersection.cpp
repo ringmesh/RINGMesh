@@ -192,15 +192,10 @@ namespace RINGMesh
                     return std::make_tuple( false, vec2() );
                 }
 
-                if( s0_seg0 == ZERO || s1_seg0 == ZERO
-                    || ( s0_seg0 != s1_seg0 ) )
+                if( ( s0_seg0 == ZERO || s1_seg0 == ZERO || ( s0_seg0 != s1_seg0 ) )
+                    && ( s0_seg1 == ZERO || s1_seg1 == ZERO || ( s0_seg1 != s1_seg1 ) ) )
                 {
-                    if( s0_seg1 == ZERO || s1_seg1 == ZERO
-                        || ( s0_seg1 != s1_seg1 ) )
-                    {
-                        return std::make_tuple(
-                            true, line_intersection_result );
-                    }
+                    return std::make_tuple( true, line_intersection_result );
                 }
             }
             return std::make_tuple( false, vec2() );
@@ -275,13 +270,11 @@ namespace RINGMesh
             vec3 segment_plane_result;
             std::tie( does_segment_intersect_plane, segment_plane_result ) =
                 segment_plane( segment, disk.plane );
-            if( does_segment_intersect_plane )
-            {
-                if( ( segment_plane_result - disk.plane.origin ).length()
+            if( does_segment_intersect_plane
+                && ( segment_plane_result - disk.plane.origin ).length()
                     <= disk.radius )
-                {
-                    return std::make_tuple( true, segment_plane_result );
-                }
+            {
+                return std::make_tuple( true, segment_plane_result );
             }
             return std::make_tuple( false, vec3() );
         }
@@ -349,26 +342,24 @@ namespace RINGMesh
             if( DdQxE2 >= 0 )
             {
                 double DdE1xQ{ sign * dot( D, cross( edge1, diff ) ) };
-                if( DdE1xQ >= 0 )
+                if( DdE1xQ >= 0 && DdQxE2 + DdE1xQ <= DdN )
                 {
-                    if( DdQxE2 + DdE1xQ <= DdN )
+                    // Line intersects triangle, check if segment does.
+                    double QdN { -sign * dot( diff, normal ) };
+                    double extDdN { segment.length() * DdN / 2. };
+                    if( -extDdN <= QdN && QdN <= extDdN )
                     {
-                        // Line intersects triangle, check if segment does.
-                        double QdN{ -sign * dot( diff, normal ) };
-                        double extDdN{ segment.length() * DdN / 2. };
-                        if( -extDdN <= QdN && QdN <= extDdN )
-                        {
-                            // Segment intersects triangle.
-                            double inv{ 1. / DdN };
-                            double seg_parameter{ QdN * inv };
+                        // Segment intersects triangle.
+                        double inv { 1. / DdN };
+                        double seg_parameter { QdN * inv };
 
-                            vec3 result{ seg_center + seg_parameter * D };
-                            return std::make_tuple( true, result );
-                        }
-                        // else: |t| > extent, no intersection
+                        vec3 result { seg_center + seg_parameter * D };
+                        return std::make_tuple( true, result );
                     }
-                    // else: b1+b2 > 1, no intersection
+                    // else: |t| > extent, no intersection
+
                 }
+                // else: b1+b2 > 1, no intersection
                 // else: b2 < 0, no intersection
             }
             // else: b1 < 0, no intersection
