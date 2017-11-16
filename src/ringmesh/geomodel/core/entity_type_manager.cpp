@@ -343,7 +343,7 @@ namespace RINGMesh
     {
         if( !contains( geological_entity_types_, geological_type_name ) )
         {
-            geological_entity_types_.push_back( ( geological_type_name ) );
+            geological_entity_types_.push_back( geological_type_name );
         }
     }
 

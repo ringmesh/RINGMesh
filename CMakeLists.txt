@@ -195,11 +195,7 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-       set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
-       set(COVERALLS ON)
-       set(COVERALLS_UPLOAD ON)
-       include(Coveralls)
-       coveralls_turn_on_coverage()
+       include(${PROJECT_SOURCE_DIR}/cmake/Coverage.cmake)
     endif()
 else(UNIX)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -310,13 +306,6 @@ foreach(directory ${directories})
         source_file_directory(ringmesh_files io/${directory})
     endif()
 endforeach()
-
-if(COVERALLS)
-    coveralls_setup(
-    "${ringmesh_files}"
-        ${COVERALLS_UPLOAD}
-        "${PROJECT_SOURCE_DIR}/cmake")
-endif()
 
 set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
