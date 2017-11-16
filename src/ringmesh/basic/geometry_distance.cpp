@@ -385,10 +385,10 @@ namespace RINGMesh
             return std::make_tuple( result, closest_point );
         }
 
-        std::array< std::array< index_t, 3 >, 4 > tetra_facet_vertex { { 1, 3, 2 }, {
+        std::array< std::array< index_t, 3 >, 4 > tetra_facet_vertex { {{ 1, 3, 2 }, {
             0, 2, 3 },
                                                                        { 3, 1, 0 }, {
-                                                                           0, 1, 2 } };
+                                                                           0, 1, 2 }} };
 
         std::tuple< double, vec3 > point_to_tetra(
             const Geometry::Point3D& point, const Geometry::Tetra& tetra )
