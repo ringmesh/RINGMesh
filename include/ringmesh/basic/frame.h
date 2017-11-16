@@ -42,22 +42,20 @@
  * @author Pierre Anquez
  */
 
-namespace RINGMesh
-{
-    namespace Geometry
-    {
+namespace RINGMesh {
+    namespace Geometry {
         struct Plane;
         FORWARD_DECLARATION_DIMENSION_STRUCT( Line );
         ALIAS_2D( Line );
     }
 }
 
-namespace RINGMesh
-{
-    template < index_t DIMENSION >
-    class RINGMESH_API FrameBase
-    {
+namespace RINGMesh {
+    template< index_t DIMENSION >
+    class RINGMESH_API FrameBase {
     public:
+        virtual ~FrameBase();
+
         const vecn< DIMENSION >& operator[]( index_t coord ) const
         {
             ringmesh_assert( coord < DIMENSION );
@@ -74,71 +72,69 @@ namespace RINGMesh
         // Default Frame aligned on space axis
         FrameBase()
         {
-            for( auto coord : RINGMesh::range( DIMENSION ) )
-            {
+            for( auto coord : RINGMesh::range( DIMENSION ) ) {
                 axis_[coord][coord] = 1.;
             }
         }
 
-    protected:
-        std::vector< vecn< DIMENSION > > axis_{ DIMENSION, vecn< DIMENSION >() };
+    private:
+        std::vector< vecn< DIMENSION > > axis_ { DIMENSION, vecn< DIMENSION >() };
     };
     ALIAS_2D_AND_3D( FrameBase );
 
-    template < index_t DIMENSION >
-    class RINGMESH_API Frame : public FrameBase< DIMENSION >
-    {
+    template< index_t DIMENSION >
+    class RINGMESH_API Frame: public FrameBase< DIMENSION > {
+    public:
+        Frame() = default;
     };
     ALIAS_2D_AND_3D( Frame );
 
-    template <>
-    class RINGMESH_API Frame< 2 > : public FrameBase< 2 >
-    {
+    template< >
+    class RINGMESH_API Frame< 2 > : public FrameBase< 2 > {
     public:
-    public:
-        Frame() : FrameBase< 2 >()
-        {
-        }
+        Frame() = default;
 
-        Frame( const vec2& x, const vec2& y ) : FrameBase()
+        Frame( const vec2& x, const vec2& y )
+            : FrameBase()
         {
-            axis_[0] = x;
-            axis_[1] = y;
+            ( *this )[0] = x;
+            ( *this )[1] = y;
         }
     };
 
-    template <>
-    class RINGMESH_API Frame< 3 > : public FrameBase< 3 >
-    {
+    template< >
+    class RINGMESH_API Frame< 3 > : public FrameBase< 3 > {
     public:
-    public:
-        Frame() : FrameBase< 3 >()
-        {
-        }
+        Frame() = default;
 
-        Frame( const vec3& x, const vec3& y, const vec3& z ) : FrameBase()
+        Frame( const vec3& x, const vec3& y, const vec3& z )
+            : FrameBase()
         {
-            axis_[0] = x;
-            axis_[1] = y;
-            axis_[2] = z;
+            ( *this )[0] = x;
+            ( *this )[1] = y;
+            ( *this )[2] = z;
         }
     };
 
-    template < index_t DIMENSION >
-    class RINGMESH_API ReferenceFrame : public Frame< DIMENSION >
-    {
+    template< index_t DIMENSION >
+    class RINGMESH_API ReferenceFrame: public Frame< DIMENSION > {
     public:
         ReferenceFrame() = default;
 
-        ReferenceFrame(
-            vecn< DIMENSION > frame_origin, Frame< DIMENSION > frame )
-            : Frame< DIMENSION >( std::move( frame ) ),
-              origin( std::move( frame_origin ) )
+        ReferenceFrame( vecn< DIMENSION > frame_origin, Frame< DIMENSION > frame )
+            :
+                Frame< DIMENSION >( std::move( frame ) ),
+                origin_( std::move( frame_origin ) )
         {
         }
 
-    public:
-        vecn< DIMENSION > origin{};
+        vecn< DIMENSION > origin()
+        {
+            return origin_;
+        }
+
+    protected:
+        vecn< DIMENSION > origin_{ };
     };
     ALIAS_2D_AND_3D( ReferenceFrame );
 
@@ -146,8 +142,7 @@ namespace RINGMesh
      * @brief Reference frame aligned along the plane normal and whose u axis is
      * upward
      */
-    class RINGMESH_API PlaneReferenceFrame3D : public ReferenceFrame< 3 >
-    {
+    class RINGMESH_API PlaneReferenceFrame3D: public ReferenceFrame< 3 > {
     public:
         PlaneReferenceFrame3D() = default;
 
@@ -163,8 +158,7 @@ namespace RINGMesh
      * @brief Reference frame aligned along the plane normal and whose u axis is
      * upward
      */
-    class RINGMESH_API LineReferenceFrame2D : public ReferenceFrame< 2 >
-    {
+    class RINGMESH_API LineReferenceFrame2D: public ReferenceFrame< 2 > {
     public:
         LineReferenceFrame2D() = default;
 
