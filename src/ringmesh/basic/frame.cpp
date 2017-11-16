@@ -46,7 +46,7 @@ namespace RINGMesh
 {
     PlaneReferenceFrame3D::PlaneReferenceFrame3D( const Geometry::Plane& plane )
     {
-        origin_ = plane.origin;
+        this->origin() = plane.origin;
         ( *this )[2] = plane.normal;
 
         // @todo A generic algorithm to find the first vector belonging to the
