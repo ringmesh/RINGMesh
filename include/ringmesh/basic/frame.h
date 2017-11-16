@@ -58,7 +58,7 @@ namespace RINGMesh
     class RINGMESH_API FrameBase
     {
     public:
-        virtual ~FrameBase();
+        virtual ~FrameBase() = default;
 
         const vecn< DIMENSION >& operator[]( index_t coord ) const
         {
@@ -83,8 +83,7 @@ namespace RINGMesh
         }
 
     private:
-        std::vector< vecn< DIMENSION > > axis_{ DIMENSION,
-            vecn< DIMENSION >() };
+        std::array< vecn< DIMENSION >, DIMENSION > axis_{ vecn< DIMENSION >() };
     };
     ALIAS_2D_AND_3D( FrameBase );
 
@@ -102,10 +101,10 @@ namespace RINGMesh
     public:
         Frame() = default;
 
-        Frame( const vec2& x, const vec2& y ) : FrameBase()
+        Frame( vec2 x, vec2 y )
         {
-            ( *this )[0] = x;
-            ( *this )[1] = y;
+            ( *this )[0] = std::move( x );
+            ( *this )[1] = std::move( y );
         }
     };
 
@@ -115,11 +114,11 @@ namespace RINGMesh
     public:
         Frame() = default;
 
-        Frame( const vec3& x, const vec3& y, const vec3& z ) : FrameBase()
+        Frame( vec3 x, vec3 y, vec3 z )
         {
-            ( *this )[0] = x;
-            ( *this )[1] = y;
-            ( *this )[2] = z;
+            ( *this )[0] = std::move( x );
+            ( *this )[1] = std::move( y );
+            ( *this )[2] = std::move( z );
         }
     };
 
@@ -136,12 +135,17 @@ namespace RINGMesh
         {
         }
 
-        vecn< DIMENSION > origin()
+        const vecn< DIMENSION >& origin() const
         {
             return origin_;
         }
 
-    protected:
+        vecn< DIMENSION >& origin()
+        {
+            return origin_;
+        }
+
+    private:
         vecn< DIMENSION > origin_{};
     };
     ALIAS_2D_AND_3D( ReferenceFrame );

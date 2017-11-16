@@ -44,11 +44,6 @@
 
 namespace RINGMesh
 {
-    template < index_t DIMENSION >
-    FrameBase< DIMENSION >::~FrameBase()
-    {
-    }
-
     PlaneReferenceFrame3D::PlaneReferenceFrame3D( const Geometry::Plane& plane )
     {
         origin_ = plane.origin;
