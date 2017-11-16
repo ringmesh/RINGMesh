@@ -52,7 +52,7 @@ namespace RINGMesh
     PlaneReferenceFrame3D::PlaneReferenceFrame3D( const Geometry::Plane& plane )
     {
         origin_ = plane.origin;
-        (*this)[2] = plane.normal;
+        ( *this )[2] = plane.normal;
 
         // @todo A generic algorithm to find the first vector belonging to the
         // plane
@@ -62,8 +62,8 @@ namespace RINGMesh
         // and is based on the idea that the plane is either a map section
         // or a cross-section. [PA]
         vec3 another_point_for_v_axis{ origin_ };
-        if( std::fabs( (*this)[2].z )
-            > ( std::fabs( (*this)[2].x ) + std::fabs( (*this)[2].y ) ) )
+        if( std::fabs( ( *this )[2].z )
+            > ( std::fabs( ( *this )[2].x ) + std::fabs( ( *this )[2].y ) ) )
         {
             // Case where plane is sub-horizontal
             // (v axis is set towards 3D y direction)
@@ -77,9 +77,9 @@ namespace RINGMesh
         }
         vec3 v_axis_point;
         std::tie( std::ignore, v_axis_point ) = Distance::point_to_plane(
-            another_point_for_v_axis, { (*this)[2], origin_ } );
+            another_point_for_v_axis, { ( *this )[2], origin_ } );
         ringmesh_assert( ( origin_ - v_axis_point ).length() > global_epsilon );
-        (*this)[1] = normalize( v_axis_point - origin_ );
-        (*this)[0] = cross( (*this)[1], (*this)[2] );
+        ( *this )[1] = normalize( v_axis_point - origin_ );
+        ( *this )[0] = cross( ( *this )[1], ( *this )[2] );
     }
 } // namespace RINGMesh
