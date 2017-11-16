@@ -246,12 +246,14 @@ namespace RINGMesh
         using Disk = Circle;
     } // namespace Geometry
 
-    template< index_t DIMENSION >
-    struct RINGMESH_API Frame {
+    template < index_t DIMENSION >
+    struct RINGMESH_API Frame
+    {
         // Default Frame aligned on space axis
         Frame()
         {
-            for( auto coord : RINGMesh::range( DIMENSION ) ) {
+            for( auto coord : RINGMesh::range( DIMENSION ) )
+            {
                 axis[coord][coord] = 1.;
             }
         }
@@ -268,17 +270,19 @@ namespace RINGMesh
             return axis[coord];
         }
 
-        std::vector< vecn< DIMENSION > > axis { DIMENSION, vecn< DIMENSION >() };
+        std::vector< vecn< DIMENSION > > axis{ DIMENSION, vecn< DIMENSION >() };
     };
     ALIAS_2D_AND_3D( Frame );
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     struct RINGMESH_API ReferenceFrame : public Frame< DIMENSION >
     {
         ReferenceFrame() = default;
 
-        ReferenceFrame( vecn< DIMENSION > frame_origin, Frame< DIMENSION > frame )
-            : Frame< DIMENSION >( std::move( frame ) ), origin( std::move( frame_origin ) )
+        ReferenceFrame(
+            vecn< DIMENSION > frame_origin, Frame< DIMENSION > frame )
+            : Frame< DIMENSION >( std::move( frame ) ),
+              origin( std::move( frame_origin ) )
         {
         }
 

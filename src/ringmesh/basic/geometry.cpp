@@ -443,7 +443,8 @@ namespace RINGMesh
         // and is based on the idea that the plane is either a map section
         // or a cross-section. [PA]
         vec3 another_point_for_v_axis{ origin };
-        if( std::fabs( axis[2].z ) > ( std::fabs( axis[2].x ) + std::fabs( axis[2].y ) ) )
+        if( std::fabs( axis[2].z )
+            > ( std::fabs( axis[2].x ) + std::fabs( axis[2].y ) ) )
         {
             // Case where plane is sub-horizontal
             // (v axis is set towards 3D y direction)
@@ -456,8 +457,8 @@ namespace RINGMesh
             another_point_for_v_axis += vec3{ 0., 0., 1. };
         }
         vec3 v_axis_point;
-        std::tie( std::ignore, v_axis_point ) =
-            Distance::point_to_plane( another_point_for_v_axis, { axis[2], origin } );
+        std::tie( std::ignore, v_axis_point ) = Distance::point_to_plane(
+            another_point_for_v_axis, { axis[2], origin } );
         ringmesh_assert( ( origin - v_axis_point ).length() > global_epsilon );
         axis[1] = normalize( v_axis_point - origin );
         axis[0] = cross( axis[1], axis[2] );
