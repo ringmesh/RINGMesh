@@ -1,9 +1,10 @@
 How to compile RINGMesh             {#ringmesh_compiling}
 =======================
 
-[![Build status](https://ci.appveyor.com/api/projects/status/nlso0s96wcuge2vn/branch/master?svg=true)](https://ci.appveyor.com/project/ringmesh/ringmesh/branch/master)
-[![Build Status](https://travis-ci.org/ringmesh/RINGMesh.svg?branch=master)](https://travis-ci.org/ringmesh/RINGMesh)
-[![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmeshcoverage/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmeshcoverage?branch=default)
+[![Travis build](https://ci.appveyor.com/api/projects/status/nlso0s96wcuge2vn/branch/master?svg=true)](https://ci.appveyor.com/project/ringmesh/ringmesh/branch/master)
+[![Appveyor build](https://travis-ci.org/ringmesh/RINGMesh.svg?branch=master)](https://travis-ci.org/ringmesh/RINGMesh)
+[![Sonar quality](https://sonarcloud.io/api/badges/gate?key=ringmesh)](https://sonarcloud.io/dashboard/index/ringmesh)
+[![Coverage](https://sonarcloud.io/api/badges/measure?key=ringmesh&metric=coverage)](https://sonarcloud.io/dashboard/index/ringmesh)
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 3.1). There is no other dependency (everything
