@@ -433,7 +433,7 @@ namespace RINGMesh
     PlaneReferenceFrame3D::PlaneReferenceFrame3D( const Geometry::Plane& plane )
     {
         origin = plane.origin;
-        w = plane.normal;
+        axis[2] = plane.normal;
 
         // @todo A generic algorithm to find the first vector belonging to the
         // plane
@@ -443,7 +443,7 @@ namespace RINGMesh
         // and is based on the idea that the plane is either a map section
         // or a cross-section. [PA]
         vec3 another_point_for_v_axis{ origin };
-        if( std::fabs( w.z ) > ( std::fabs( w.x ) + std::fabs( w.y ) ) )
+        if( std::fabs( axis[2].z ) > ( std::fabs( axis[2].x ) + std::fabs( axis[2].y ) ) )
         {
             // Case where plane is sub-horizontal
             // (v axis is set towards 3D y direction)
@@ -457,9 +457,9 @@ namespace RINGMesh
         }
         vec3 v_axis_point;
         std::tie( std::ignore, v_axis_point ) =
-            Distance::point_to_plane( another_point_for_v_axis, { w, origin } );
+            Distance::point_to_plane( another_point_for_v_axis, { axis[2], origin } );
         ringmesh_assert( ( origin - v_axis_point ).length() > global_epsilon );
-        v = normalize( v_axis_point - origin );
-        u = cross( v, w );
+        axis[1] = normalize( v_axis_point - origin );
+        axis[0] = cross( axis[1], axis[2] );
     }
 } // namespace RINGMesh

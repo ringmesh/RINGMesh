@@ -246,39 +246,51 @@ namespace RINGMesh
         using Disk = Circle;
     } // namespace Geometry
 
-    struct RINGMESH_API Frame3D
-    {
-        Frame3D() = default;
+    template< index_t DIMENSION >
+    struct RINGMESH_API Frame {
+        // Default Frame aligned on space axis
+        Frame()
+        {
+            for( auto coord : RINGMesh::range( DIMENSION ) ) {
+                axis[coord][coord] = 1.;
+            }
+        }
 
-        Frame3D( const vec3& u_axis, const vec3& v_axis, const vec3& w_axis )
-            : u( normalize( u_axis ) ),
-              v( normalize( v_axis ) ),
-              w( normalize( w_axis ) )
+        const vecn< DIMENSION >& operator[]( index_t coord ) const
+        {
+            ringmesh_assert( coord < DIMENSION );
+            return axis[coord];
+        }
+
+        vecn< DIMENSION >& operator[]( index_t coord )
+        {
+            ringmesh_assert( coord < DIMENSION );
+            return axis[coord];
+        }
+
+        std::vector< vecn< DIMENSION > > axis { DIMENSION, vecn< DIMENSION >() };
+    };
+    ALIAS_2D_AND_3D( Frame );
+
+    template< index_t DIMENSION >
+    struct RINGMESH_API ReferenceFrame : public Frame< DIMENSION >
+    {
+        ReferenceFrame() = default;
+
+        ReferenceFrame( vecn< DIMENSION > frame_origin, Frame< DIMENSION > frame )
+            : Frame< DIMENSION >( std::move( frame ) ), origin( std::move( frame_origin ) )
         {
         }
 
-        vec3 u{};
-        vec3 v{};
-        vec3 w{};
+        vecn< DIMENSION > origin{};
     };
-
-    struct RINGMESH_API ReferenceFrame3D : public Frame3D
-    {
-        ReferenceFrame3D() = default;
-
-        ReferenceFrame3D( vec3 frame_origin, Frame3D frame )
-            : Frame3D( std::move( frame ) ), origin( std::move( frame_origin ) )
-        {
-        }
-
-        vec3 origin{};
-    };
+    ALIAS_2D_AND_3D( ReferenceFrame );
 
     /*!
      * @brief Reference frame aligned along the plane normal and whose u axis is
      * upward
      */
-    struct RINGMESH_API PlaneReferenceFrame3D : public ReferenceFrame3D
+    struct RINGMESH_API PlaneReferenceFrame3D : public ReferenceFrame< 3 >
     {
         PlaneReferenceFrame3D() = default;
 
@@ -288,6 +300,22 @@ namespace RINGMesh
         }
 
         explicit PlaneReferenceFrame3D( const Geometry::Plane& plane );
+    };
+
+    /*!
+     * @brief Reference frame aligned along the plane normal and whose u axis is
+     * upward
+     */
+    struct RINGMESH_API LineReferenceFrame2D : public ReferenceFrame< 2 >
+    {
+        LineReferenceFrame2D() = default;
+
+        LineReferenceFrame2D( vec2 frame_origin, Frame2D frame )
+            : ReferenceFrame2D( std::move( frame_origin ), std::move( frame ) )
+        {
+        }
+
+        explicit LineReferenceFrame2D( const Geometry::Line2D& plane );
     };
 
     namespace Distance
