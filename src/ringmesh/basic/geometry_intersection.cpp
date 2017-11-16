@@ -192,8 +192,10 @@ namespace RINGMesh
                     return std::make_tuple( false, vec2() );
                 }
 
-                if( ( s0_seg0 == ZERO || s1_seg0 == ZERO || ( s0_seg0 != s1_seg0 ) )
-                    && ( s0_seg1 == ZERO || s1_seg1 == ZERO || ( s0_seg1 != s1_seg1 ) ) )
+                if( ( s0_seg0 == ZERO || s1_seg0 == ZERO
+                        || ( s0_seg0 != s1_seg0 ) )
+                    && ( s0_seg1 == ZERO || s1_seg1 == ZERO
+                           || ( s0_seg1 != s1_seg1 ) ) )
                 {
                     return std::make_tuple( true, line_intersection_result );
                 }
@@ -272,7 +274,7 @@ namespace RINGMesh
                 segment_plane( segment, disk.plane );
             if( does_segment_intersect_plane
                 && ( segment_plane_result - disk.plane.origin ).length()
-                    <= disk.radius )
+                       <= disk.radius )
             {
                 return std::make_tuple( true, segment_plane_result );
             }
@@ -345,19 +347,18 @@ namespace RINGMesh
                 if( DdE1xQ >= 0 && DdQxE2 + DdE1xQ <= DdN )
                 {
                     // Line intersects triangle, check if segment does.
-                    double QdN { -sign * dot( diff, normal ) };
-                    double extDdN { segment.length() * DdN / 2. };
+                    double QdN{ -sign * dot( diff, normal ) };
+                    double extDdN{ segment.length() * DdN / 2. };
                     if( -extDdN <= QdN && QdN <= extDdN )
                     {
                         // Segment intersects triangle.
-                        double inv { 1. / DdN };
-                        double seg_parameter { QdN * inv };
+                        double inv{ 1. / DdN };
+                        double seg_parameter{ QdN * inv };
 
-                        vec3 result { seg_center + seg_parameter * D };
+                        vec3 result{ seg_center + seg_parameter * D };
                         return std::make_tuple( true, result );
                     }
                     // else: |t| > extent, no intersection
-
                 }
                 // else: b1+b2 > 1, no intersection
                 // else: b2 < 0, no intersection

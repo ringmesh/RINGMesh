@@ -250,10 +250,10 @@ namespace
                     { p2, ( v2 + 1 ) % polygons.nb_vertices( p2 ) } ) };
 
                 if( ( ( v10 == v20 && v11 == v21 )
-                    || ( v10 == v21 && v11 == v20 ) ) &&
-                    ( is_edge_on_line( geomodel, v20, v21 ) ) )
-                    {
-                        return true;
+                        || ( v10 == v21 && v11 == v20 ) )
+                    && ( is_edge_on_line( geomodel, v20, v21 ) ) )
+                {
+                    return true;
                 }
             }
         }

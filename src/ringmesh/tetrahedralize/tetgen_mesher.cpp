@@ -150,7 +150,6 @@ namespace RINGMesh
                 Logger::err(
                     "Tetgen", "An exception was thrown. Program stopped." );
                 break;
-
             }
         }
     }
