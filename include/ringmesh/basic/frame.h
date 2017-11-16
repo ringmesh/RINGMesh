@@ -82,18 +82,7 @@ namespace RINGMesh
             }
         }
 
-<<<<<<< HEAD
     private:
-=======
-<<<<<<< HEAD
-
-    private:
-        std::vector< vecn< DIMENSION > > axis_{ DIMENSION,
-            vecn< DIMENSION >() };
-=======
-
-    protected:
->>>>>>> f99c6c2d4ea728df64fc16b85457d1092e9241ee
         std::vector< vecn< DIMENSION > > axis_{ DIMENSION,
             vecn< DIMENSION >() };
     };
