@@ -115,7 +115,7 @@ if(WIN32)
 
   # Default mode for Windows uses static libraries. Use this variable to
   # link with geogram compiled as DLLs.
-  set(VORPALINE_BUILD_DYNAMIC FALSE CACHE BOOL "Installed Geogram uses DLLs")
+  set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "Installed Geogram uses DLLs")
 
   # remove warning for multiply defined symbols (caused by multiple
   # instanciations of STL templates)
