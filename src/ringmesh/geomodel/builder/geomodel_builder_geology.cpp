@@ -438,7 +438,6 @@ namespace RINGMesh
                 contact_id = create_geological_entity(
                     Contact< DIMENSION >::type_name_static() );
                 ringmesh_assert( contact_id.index() == interfaces.size() );
-                interfaces.push_back( cur_interfaces );
                 // Create a name for this contact
                 std::string name = "contact";
                 for( const auto& it : cur_interfaces )
@@ -447,6 +446,7 @@ namespace RINGMesh
                     name += geomodel_.geological_entity( it ).name();
                 }
                 builder_.info.set_geological_entity_name( contact_id, name );
+                interfaces.emplace_back( std::move( cur_interfaces ) );
             }
             add_parent_children_relation( contact_id, line.gmme() );
         }
