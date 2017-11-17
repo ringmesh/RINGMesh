@@ -206,6 +206,8 @@ else(UNIX)
     if(MSVC_VERSION LESS 1800)
         message(FATAL_ERROR "RINGMesh requires Visual Studio greater or equal to VS 12 2013 WIN64")
     endif(MSVC_VERSION LESS 1800)
+    
+    add_definitions(-DGEO_DYNAMIC_LIBS)
 endif(UNIX)
 
 #------------------------------------------------------------------------------------------------
