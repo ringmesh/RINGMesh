@@ -831,7 +831,7 @@ namespace GEO {
 
     namespace MeshCellDescriptors {
 
-        CellDescriptor tet_descriptor = {
+        GEOGRAM_API CellDescriptor tet_descriptor = {
             4,         // nb_vertices
             4,         // nb_facets
             {3,3,3,3}, // nb_vertices in facet
