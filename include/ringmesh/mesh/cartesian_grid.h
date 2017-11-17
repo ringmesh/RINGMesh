@@ -84,14 +84,14 @@ namespace RINGMesh
         }
 
         //		CartesianGrid( index_t nb_cell_i, index_t nb_cell_j, index_t
-        //nb_cell_k,
+        // nb_cell_k,
         //				vec3 vec_axis_i, vec3 vec_axis_j, vec3 vec_axis_k,
         //				vec3 origin_position) : nb_cell_i_(nb_cell_i),
-        //nb_cell_j_(nb_cell_j), nb_cell_k_(nb_cell_k),
+        // nb_cell_j_(nb_cell_j), nb_cell_k_(nb_cell_k),
         //				nb_cells_(nb_cell_i*nb_cell_j*nb_cell_k),
-        //vec_axis_i_(vec_axis_i), vec_axis_j_(vec_axis_j),
+        // vec_axis_i_(vec_axis_i), vec_axis_j_(vec_axis_j),
         //				vec_axis_k_(vec_axis_k),
-        //origin_position_(origin_position)
+        // origin_position_(origin_position)
         //		{
         //			vec_x_base_ijk_[0] = ;
         //		}
@@ -109,7 +109,7 @@ namespace RINGMesh
             // TODO
         }
         //		GEO::AttributesManager& vertex_attribute_manager() const
-        //override
+        // override
         //		{
         //			return mesh_->vertices.attributes();
         //		}
@@ -175,11 +175,11 @@ namespace RINGMesh
             {
             }
             //			coords[0] =
-            //origin_position_[0]+i*vec_axis_i_[0]+j*vec_axis_j_[0]+k*vec_axis_k_[0];
+            // origin_position_[0]+i*vec_axis_i_[0]+j*vec_axis_j_[0]+k*vec_axis_k_[0];
             //			coords[1] =
-            //origin_position_[1]+i*vec_axis_i_[1]+j*vec_axis_j_[1]+k*vec_axis_k_[1];
+            // origin_position_[1]+i*vec_axis_i_[1]+j*vec_axis_j_[1]+k*vec_axis_k_[1];
             //			coords[2] =
-            //origin_position_[2]+i*vec_axis_i_[2]+j*vec_axis_j_[2]+k*vec_axis_k_[2];
+            // origin_position_[2]+i*vec_axis_i_[2]+j*vec_axis_j_[2]+k*vec_axis_k_[2];
             return coords;
         }
 
