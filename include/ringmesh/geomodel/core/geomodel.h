@@ -39,7 +39,7 @@
 
 #include <vector>
 
-#include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/frame.h>
 
 #include <ringmesh/geomodel/core/entity_type_manager.h>
 #include <ringmesh/geomodel/core/geomodel_mesh.h>
@@ -439,8 +439,7 @@ namespace RINGMesh
         LineSide voi_lines() const;
 
     private:
-        PlaneReferenceFrame3D reference_frame_{ { 0., 0., 0. },
-            { { 0., 0., 1. }, { 1., 0., 0. }, { 0., 1., 0. } } };
+        PlaneReferenceFrame3D reference_frame_{};
     };
 
     ALIAS_2D_AND_3D( GeoModel );

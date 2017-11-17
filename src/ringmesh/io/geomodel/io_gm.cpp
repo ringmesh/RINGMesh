@@ -305,7 +305,7 @@ namespace
 
             for( auto& file : files )
             {
-                file.get();
+                file.wait();
             }
             Logger::instance()->set_minimal( false );
         }

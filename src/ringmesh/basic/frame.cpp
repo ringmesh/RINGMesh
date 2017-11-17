@@ -33,62 +33,49 @@
  *     FRANCE
  */
 
-#pragma once
+#include <ringmesh/basic/frame.h>
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/basic/geometry.h>
 
 /*!
- * @file Box class declaration
- * @author Arnaud Botella
+ * @file Basic classes for representing frame
+ * @author Pierre Anquez
  */
 
 namespace RINGMesh
 {
-    template < index_t DIMENSION >
-    class Box
+    PlaneReferenceFrame3D::PlaneReferenceFrame3D( const Geometry::Plane& plane )
     {
-    public:
-        bool initialized() const;
+        origin() = plane.origin;
+        ( *this )[2] = plane.normal;
 
-        void clear();
-
-        const vecn< DIMENSION >& min() const;
-
-        const vecn< DIMENSION >& max() const;
-
-        vecn< DIMENSION > center() const;
-
-        vecn< DIMENSION > diagonal() const;
-
-        void add_point( const vecn< DIMENSION >& p );
-
-        void add_box( const Box< DIMENSION >& b );
-
-        bool bboxes_overlap( const Box< DIMENSION >& B ) const;
-
-        Box< DIMENSION > bbox_union( const Box< DIMENSION >& B ) const;
-
-        /*!
-         * Computes the intersection between this box and another one
-         * @param[in] B another box
-         * @return a tuple containing:
-         * - a boolean (true if the two boxes do intersect, false otherwise).
-         * - the box corresponding to the intersection.
-         */
-        std::tuple< bool, Box< DIMENSION > > bbox_intersection(
-            const Box< DIMENSION >& B ) const;
-
-        bool contains( const vecn< DIMENSION >& b ) const;
-
-        double distance_to_center( const vecn< DIMENSION >& p ) const;
-
-        double signed_distance( const vecn< DIMENSION >& p ) const;
-
-    private:
-        bool initialized_{ false };
-        vecn< DIMENSION > min_{};
-        vecn< DIMENSION > max_{};
-    };
-    ALIAS_2D_AND_3D( Box );
-
+        // @todo A generic algorithm to find the first vector belonging to the
+        // plane
+        // can be designed using principal component of the plane normal.
+        // However it is not a simple problem. The current version is not
+        // generic
+        // and is based on the idea that the plane is either a map section
+        // or a cross-section. [PA]
+        vec3 another_point_for_v_axis{ origin() };
+        if( std::fabs( ( *this )[2].z )
+            > ( std::fabs( ( *this )[2].x ) + std::fabs( ( *this )[2].y ) ) )
+        {
+            // Case where plane is sub-horizontal
+            // (v axis is set towards 3D y direction)
+            another_point_for_v_axis += vec3{ 0., 1., 0. };
+        }
+        else
+        {
+            // Case where plane is not sub-horizontal
+            // (v axis is set towards 3D z direction)
+            another_point_for_v_axis += vec3{ 0., 0., 1. };
+        }
+        vec3 v_axis_point;
+        std::tie( std::ignore, v_axis_point ) = Distance::point_to_plane(
+            another_point_for_v_axis, { ( *this )[2], origin() } );
+        ringmesh_assert(
+            ( origin() - v_axis_point ).length() > global_epsilon );
+        ( *this )[1] = normalize( v_axis_point - origin() );
+        ( *this )[0] = cross( ( *this )[1], ( *this )[2] );
+    }
 } // namespace RINGMesh

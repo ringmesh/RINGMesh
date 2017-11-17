@@ -193,7 +193,7 @@ namespace RINGMesh
         {
             if( index_map[p] == p )
             {
-                unique_points.push_back( point( p ) );
+                unique_points.emplace_back( point( p ) );
                 index_map[p] = p - offset;
             }
             else

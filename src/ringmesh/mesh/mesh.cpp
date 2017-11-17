@@ -611,23 +611,17 @@ namespace RINGMesh
                     auto prev = prev_polygon_vertex( { p, v } ).local_vertex_id;
                     auto adj_prev = polygon_adjacent( { p, prev } );
 
-                    if( adj_P != NO_ID )
+                    if( adj_P != NO_ID && !contains( visited, adj_P ) )
                     {
                         // The edge starting at P is not on the boundary
-                        if( !contains( visited, adj_P ) )
-                        {
-                            S.push( adj_P );
-                            visited.push_back( adj_P );
-                        }
+                        S.push( adj_P );
+                        visited.push_back( adj_P );
                     }
-                    if( adj_prev != NO_ID )
+                    if( adj_prev != NO_ID && !contains( visited, adj_prev ) )
                     {
                         // The edge ending at P is not on the boundary
-                        if( !contains( visited, adj_prev ) )
-                        {
-                            S.push( adj_prev );
-                            visited.push_back( adj_prev );
-                        }
+                        S.push( adj_prev );
+                        visited.push_back( adj_prev );
                     }
 
                     if( border_only )
@@ -1054,14 +1048,10 @@ namespace RINGMesh
                     if( vertex == vertex_id )
                     {
                         auto adj_P = cell_adjacent( { c, f } );
-
-                        if( adj_P != NO_ID )
+                        if( adj_P != NO_ID && !contains( visited, adj_P ) )
                         {
-                            if( !contains( visited, adj_P ) )
-                            {
-                                S.push( adj_P );
-                                visited.push_back( adj_P );
-                            }
+                            S.push( adj_P );
+                            visited.push_back( adj_P );
                         }
                         break;
                     }

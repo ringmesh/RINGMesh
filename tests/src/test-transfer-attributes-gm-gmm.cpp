@@ -724,7 +724,7 @@ namespace
 
         for( auto& future : futures )
         {
-            future.get();
+            future.wait();
         }
     }
 }

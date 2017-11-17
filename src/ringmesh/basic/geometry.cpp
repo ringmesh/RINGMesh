@@ -429,37 +429,4 @@ namespace RINGMesh
     template std::tuple< bool, vecn< 3 > >
         RINGMESH_API point_segment_projection(
             const vecn< 3 >&, const vecn< 3 >&, const vecn< 3 >& );
-
-    PlaneReferenceFrame3D::PlaneReferenceFrame3D( const Geometry::Plane& plane )
-    {
-        origin = plane.origin;
-        w = plane.normal;
-
-        // @todo A generic algorithm to find the first vector belonging to the
-        // plane
-        // can be designed using principal component of the plane normal.
-        // However it is not a simple problem. The current version is not
-        // generic
-        // and is based on the idea that the plane is either a map section
-        // or a cross-section. [PA]
-        vec3 another_point_for_v_axis{ origin };
-        if( std::fabs( w.z ) > ( std::fabs( w.x ) + std::fabs( w.y ) ) )
-        {
-            // Case where plane is sub-horizontal
-            // (v axis is set towards 3D y direction)
-            another_point_for_v_axis += vec3{ 0., 1., 0. };
-        }
-        else
-        {
-            // Case where plane is not sub-horizontal
-            // (v axis is set towards 3D z direction)
-            another_point_for_v_axis += vec3{ 0., 0., 1. };
-        }
-        vec3 v_axis_point;
-        std::tie( std::ignore, v_axis_point ) =
-            Distance::point_to_plane( another_point_for_v_axis, { w, origin } );
-        ringmesh_assert( ( origin - v_axis_point ).length() > global_epsilon );
-        v = normalize( v_axis_point - origin );
-        u = cross( v, w );
-    }
 } // namespace RINGMesh

@@ -480,7 +480,8 @@ namespace RINGMesh
         unique_surfaces.reserve( nb_surfaces );
         std::vector< index_t > surface_id;
         surface_id.reserve( nb_surfaces );
-        index_t nb_surface_vertices{ 0 }, nb_polygons{ 0 };
+        index_t nb_surface_vertices{ 0 };
+        index_t nb_polygons{ 0 };
         for( auto s : range( nb_surfaces ) )
         {
             const Surface3D& surface = region_->boundary( s );

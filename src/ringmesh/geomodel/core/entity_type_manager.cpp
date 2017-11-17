@@ -162,12 +162,9 @@ namespace RINGMesh
     private:
         void initialize_base()
         {
-            mesh_entity_types_.push_back(
-                Corner< DIMENSION >::type_name_static() );
-            mesh_entity_types_.push_back(
-                Line< DIMENSION >::type_name_static() );
-            mesh_entity_types_.push_back(
-                Surface< DIMENSION >::type_name_static() );
+            mesh_entity_types_.emplace_back( corner_type_name_static() );
+            mesh_entity_types_.emplace_back( line_type_name_static() );
+            mesh_entity_types_.emplace_back( surface_type_name_static() );
         }
 
     private:
@@ -178,7 +175,7 @@ namespace RINGMesh
     MeshEntityTypes< 3 >::MeshEntityTypes()
     {
         initialize_base();
-        mesh_entity_types_.push_back( Region3D::type_name_static() );
+        mesh_entity_types_.emplace_back( region_type_name_static() );
     }
 
     template < index_t DIMENSION >
@@ -343,7 +340,7 @@ namespace RINGMesh
     {
         if( !contains( geological_entity_types_, geological_type_name ) )
         {
-            geological_entity_types_.push_back( ( geological_type_name ) );
+            geological_entity_types_.push_back( geological_type_name );
         }
     }
 

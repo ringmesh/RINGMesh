@@ -163,7 +163,10 @@ namespace RINGMesh
             }
             else
             {
-                double tmp0, tmp1, numer, denom;
+                double tmp0;
+                double tmp1;
+                double numer;
+                double denom;
 
                 if( s < 0.0 )
                 { // region 2

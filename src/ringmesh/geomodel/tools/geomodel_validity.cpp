@@ -249,13 +249,11 @@ namespace
                 index_t v21{ polygons.vertex(
                     { p2, ( v2 + 1 ) % polygons.nb_vertices( p2 ) } ) };
 
-                if( ( v10 == v20 && v11 == v21 )
-                    || ( v10 == v21 && v11 == v20 ) )
+                if( ( ( v10 == v20 && v11 == v21 )
+                        || ( v10 == v21 && v11 == v20 ) )
+                    && ( is_edge_on_line( geomodel, v20, v21 ) ) )
                 {
-                    if( is_edge_on_line( geomodel, v20, v21 ) )
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
@@ -1027,7 +1025,7 @@ namespace
         {
             const auto& v0 = vertices.vertex( edge_indices[e] );
             const auto& v1 = vertices.vertex( edge_indices[e + 1] );
-            edge_barycenters.push_back( ( v0 + v1 ) * 0.5 );
+            edge_barycenters.emplace_back( ( v0 + v1 ) * 0.5 );
         }
         return edge_barycenters;
     }
