@@ -576,7 +576,8 @@ namespace RINGMesh
     {
         gmme_id corner{ corner_type_name_static(), corner_id };
         std::vector< bool > to_delete;
-        to_delete.push_back( true );
+        to_delete.reserve( 1 );
+        to_delete.emplace_back( true );
         delete_mesh_entity_vertices( corner, to_delete );
     }
     template < index_t DIMENSION >

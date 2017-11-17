@@ -1025,7 +1025,7 @@ namespace
         {
             const auto& v0 = vertices.vertex( edge_indices[e] );
             const auto& v1 = vertices.vertex( edge_indices[e + 1] );
-            edge_barycenters.push_back( ( v0 + v1 ) * 0.5 );
+            edge_barycenters.emplace_back( ( v0 + v1 ) * 0.5 );
         }
         return edge_barycenters;
     }
