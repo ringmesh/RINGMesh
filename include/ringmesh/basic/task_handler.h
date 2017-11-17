@@ -82,7 +82,7 @@ namespace RINGMesh
             {
                 for( auto& task : tasks_ )
                 {
-                    task.get();
+                    task.wait();
                 }
             }
         }
