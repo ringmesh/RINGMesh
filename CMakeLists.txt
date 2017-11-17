@@ -258,6 +258,7 @@ set_target_properties(RINGMesh PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BIN
 # Add include directories of RINGMesh
 target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
+message(STATUS "ZLIB_ROOT = ${ZLIB_ROOT}")
 find_package(ZLIB REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
 message ("GEOGRAM_INSTALL_PREFIX " ${GEOGRAM_INSTALL_PREFIX} )
