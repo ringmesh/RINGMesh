@@ -64,24 +64,24 @@ if(WIN32)
             COMMENT "Copy RINGMesh dll")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
+            "${GEOGRAM_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy geogram binaries")
+#    add_custom_command(TARGET RINGMesh POST_BUILD
+#        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+#            "${ZLIB_ROOT}/bin"
+#            "${directory}/$<CONFIGURATION>"
+#            COMMENT "Copy zlib binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${ZLIB_PATH_BIN}/$<CONFIGURATION>"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy zlib binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${TINYXML2_PATH_BIN}/$<CONFIGURATION>"
+            "${TINYXML2_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy minizip binaries")
+#    add_custom_command(TARGET RINGMesh POST_BUILD
+#        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+#            "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
+#            "${directory}/$<CONFIGURATION>"
+#            COMMENT "Copy minizip binaries")
 endif(WIN32)
 endmacro()
 

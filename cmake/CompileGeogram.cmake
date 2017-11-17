@@ -53,7 +53,7 @@ else(WIN32)
         set(geoplatform Darwin-clang-dynamic)
     endif()
 endif(WIN32)
-set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install CACHE INTERNAL "Geogram install directory")  
+set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install/${CMAKE_CFG_INTDIR} CACHE INTERNAL "Geogram install directory")  
 
 # Define Geogram as an external project that we know how to
 # configure and compile
