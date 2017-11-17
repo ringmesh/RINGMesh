@@ -208,6 +208,7 @@ else(UNIX)
     endif(MSVC_VERSION LESS 1800)
     
     add_definitions(-DGEO_DYNAMIC_LIBS)
+    set(VORPALINE_BUILD_DYNAMIC ON)
 endif(UNIX)
 
 #------------------------------------------------------------------------------------------------
