@@ -102,7 +102,7 @@ int main()
 
         for( auto& check : checks )
         {
-            check.get();
+            check.wait();
         }
     }
     catch( const RINGMeshException& e )

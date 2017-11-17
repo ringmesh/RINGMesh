@@ -195,7 +195,7 @@ int main()
 
         for( auto& future : futures )
         {
-            future.get();
+            future.wait();
         }
     }
     catch( const RINGMeshException& e )
