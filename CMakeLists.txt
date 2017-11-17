@@ -269,11 +269,11 @@ set_target_properties(test-geogram PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT
 set_target_properties(test-geogram PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 
-add_executable(test-geogram-install src/test-geogram-install.cpp)
-target_link_libraries(test-geogram-install PUBLIC test-geogram)
-
-add_dependencies(test-geogram-install test-geogram)
-add_dependencies(RINGMesh test-geogram-install)
+#add_executable(test-geogram-install src/test-geogram-install.cpp)
+#target_link_libraries(test-geogram-install PUBLIC test-geogram)
+#
+#add_dependencies(test-geogram-install test-geogram)
+add_dependencies(RINGMesh test-geogram)
 
 
 if(RINGMESH_WITH_GRAPHICS)
