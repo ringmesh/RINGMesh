@@ -265,10 +265,12 @@ target_link_libraries(RINGMesh PUBLIC Geogram::geogram PRIVATE ZLIB::ZLIB tinyxm
 
 add_library(test-geogram SHARED src/test-geogram-install2.cpp)
 target_link_libraries(test-geogram PUBLIC Geogram::geogram)
+set_target_properties(test-geogram PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set_target_properties(test-geogram PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 
 add_executable(test-geogram-install src/test-geogram-install.cpp)
-target_link_libraries(test-geogram-install PRIVATE test-geogram)
+target_link_libraries(test-geogram-install PUBLIC test-geogram)
 
 add_dependencies(test-geogram-install test-geogram)
 add_dependencies(RINGMesh test-geogram-install)
