@@ -36,7 +36,7 @@
 # Set the path to zlib code
 set(ZLIB_PATH ${PROJECT_SOURCE_DIR}/third_party/zlib)
 set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE})
-set(ZLIB_ROOT ${ZLIB_PATH_BIN}/install/${CMAKE_CFG_INTDIR} CACHE INTERNAL "Zlib install directory")
+set(ZLIB_ROOT ${ZLIB_PATH_BIN}/install CACHE INTERNAL "Zlib install directory")
 
 # Define zlib as an external project that we know how to
 # configure and compile

@@ -36,7 +36,7 @@
 # Set the path to minizip code
 set(MINIZIP_PATH ${PROJECT_SOURCE_DIR}/third_party/minizip)
 set(MINIZIP_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/minizip/${CMAKE_BUILD_TYPE})
-set(MINIZIP_INSTALL_PREFIX ${MINIZIP_PATH_BIN}/install/${CMAKE_CFG_INTDIR} CACHE INTERNAL "Minizip install directory")
+set(MINIZIP_INSTALL_PREFIX ${MINIZIP_PATH_BIN}/install CACHE INTERNAL "Minizip install directory")
 
 # Define minizip as an external project that we know how to
 # configure and compile

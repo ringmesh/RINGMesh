@@ -258,13 +258,12 @@ set_target_properties(RINGMesh PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BIN
 # Add include directories of RINGMesh
 target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
+find_package(ZLIB REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
 message ("GEOGRAM_INSTALL_PREFIX " ${GEOGRAM_INSTALL_PREFIX} )
 find_package(Geogram REQUIRED)
 find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
 include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
-message(STATUS "ZLIB_ROOT = ${ZLIB_ROOT}")
-find_package(ZLIB REQUIRED)
 target_link_libraries(RINGMesh PUBLIC Geogram::geogram PRIVATE ZLIB::ZLIB tinyxml2 MINIZIP::minizip)
 
 get_target_property(TEST1 RINGMesh LINK_LIBRARIES)
