@@ -260,8 +260,13 @@ target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 find_package(ZLIB REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
-message ("GEOGRAM_INSTALL_PREFIX " ${GEOGRAM_INSTALL_PREFIX} )
+message(STATUS "GEOGRAM_INSTALL_PREFIX " ${GEOGRAM_INSTALL_PREFIX})
 find_package(Geogram REQUIRED)
+# Geogram changes the variabe GEOGRAM_INSTALL_PREFIX from /.../install to
+# /.../install/include/geogram1
+# The line below reverts this change...
+set(GEOGRAM_INSTALL_PREFIX "${GEOGRAM_INSTALL_PREFIX}/..")
+message(STATUS "GEOGRAM_INSTALL_PREFIX after the find geogram and the revert of variable change " ${GEOGRAM_INSTALL_PREFIX} )
 find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
 include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
 target_link_libraries(RINGMesh PUBLIC Geogram::geogram PRIVATE ZLIB::ZLIB tinyxml2 MINIZIP::minizip)
