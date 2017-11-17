@@ -162,12 +162,9 @@ namespace RINGMesh
     private:
         void initialize_base()
         {
-            mesh_entity_types_.emplace_back(
-                corner_type_name_static() );
-            mesh_entity_types_.emplace_back(
-                line_type_name_static() );
-            mesh_entity_types_.emplace_back(
-                surface_type_name_static() );
+            mesh_entity_types_.emplace_back( corner_type_name_static() );
+            mesh_entity_types_.emplace_back( line_type_name_static() );
+            mesh_entity_types_.emplace_back( surface_type_name_static() );
         }
 
     private:

@@ -1221,11 +1221,11 @@ namespace RINGMesh
                        } )
                    > 0 )
             {
-                auto cur_surface_boundaries =
-                    get_surface_boundaries(
-                        surface_counter, line_indicent_surfaces );
+                auto cur_surface_boundaries = get_surface_boundaries(
+                    surface_counter, line_indicent_surfaces );
 
-                surface_boundary_lines.emplace_back( std::move( cur_surface_boundaries ) );
+                surface_boundary_lines.emplace_back(
+                    std::move( cur_surface_boundaries ) );
                 ++surface_counter;
             }
         }
