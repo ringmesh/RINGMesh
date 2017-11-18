@@ -66,24 +66,24 @@ CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
     "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
 
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    # Enable parallel computation
-    if(NOT PROCESSOR_COUNT)
-    set(cpuinfo_file "/proc/cpuinfo")
-    if(EXISTS "${cpuinfo_file}")
-        file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
-        list(LENGTH procs nb_proc)
-        set(PROCESSOR_COUNT ${nb_proc} CACHE INTERNAL "Number of processors")
-    endif()
-    endif()
-    message(STATUS "PROCESSOR_COUNT = ${PROCESSOR_COUNT}")
-    set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
-else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
-    # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
-    # are automatically built with the same build type as RINGMesh.
-    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
-endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+#if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+#    # Enable parallel computation
+#    if(NOT PROCESSOR_COUNT)
+#    set(cpuinfo_file "/proc/cpuinfo")
+#    if(EXISTS "${cpuinfo_file}")
+#        file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
+#        list(LENGTH procs nb_proc)
+#        set(PROCESSOR_COUNT ${nb_proc} CACHE INTERNAL "Number of processors")
+#    endif()
+#    endif()
+#    message(STATUS "PROCESSOR_COUNT = ${PROCESSOR_COUNT}")
+#    #set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
+#else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+#    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
+#    # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
+#    # are automatically built with the same build type as RINGMesh.
+#    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
+#endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
 set(RINGMESH_EXTRA_ARGS
     -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
@@ -97,7 +97,6 @@ set(RINGMESH_EXTRA_ARGS
     -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
     -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
     -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE})
-    -DPROCESSOR_COUNT=${PROCESSOR_COUNT}
 
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
