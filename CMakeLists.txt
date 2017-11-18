@@ -87,6 +87,7 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
         file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
         list(LENGTH procs PROCESSOR_COUNT)
     endif()
+    message(STATUS "PROCESSOR_COUNT = ${PROCESSOR_COUNT}")
     set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
 else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
