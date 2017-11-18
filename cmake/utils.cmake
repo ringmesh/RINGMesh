@@ -69,6 +69,11 @@ if(WIN32)
             COMMENT "Copy geogram binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${GEOGRAM_INSTALL_PREFIX}/lib"
+            "${directory}/$<CONFIGURATION>"
+            COMMENT "Copy geogram visualization libraries")
+    add_custom_command(TARGET RINGMesh POST_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${ZLIB_ROOT}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy zlib binaries")
