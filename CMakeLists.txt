@@ -82,10 +82,13 @@ set(RINGMESH_EXTRA_ARGS
 
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     # Enable parallel computation
+    if(NOT PROCESSOR_COUNT)
     set(cpuinfo_file "/proc/cpuinfo")
     if(EXISTS "${cpuinfo_file}")
         file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
-        list(LENGTH procs PROCESSOR_COUNT)
+        list(LENGTH procs nb_proc)
+        set(PROCESSOR_COUNT ${nb_proc} CACHE INTERNAL "Number of processors")
+    endif()
     endif()
     message(STATUS "PROCESSOR_COUNT = ${PROCESSOR_COUNT}")
     set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
