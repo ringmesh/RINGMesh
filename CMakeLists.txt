@@ -66,25 +66,6 @@ CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
     "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
 
-#if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-#    # Enable parallel computation
-#    if(NOT PROCESSOR_COUNT)
-#    set(cpuinfo_file "/proc/cpuinfo")
-#    if(EXISTS "${cpuinfo_file}")
-#        file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
-#        list(LENGTH procs nb_proc)
-#        set(PROCESSOR_COUNT ${nb_proc} CACHE INTERNAL "Number of processors")
-#    endif()
-#    endif()
-#    message(STATUS "PROCESSOR_COUNT = ${PROCESSOR_COUNT}")
-#    #set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
-#else(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-#    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio or Xcode.
-#    # This enables in particular that dependencies of RINGMesh (e.g., geogram, zlib, etc.)
-#    # are automatically built with the same build type as RINGMesh.
-#    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
-#endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-
 set(RINGMESH_EXTRA_ARGS
     -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
     -DMG_TETRA:STRING=${MG_TETRA}
@@ -211,7 +192,7 @@ else(UNIX)
     endif(MSVC_VERSION LESS 1800)
     
     add_definitions(-DGEO_DYNAMIC_LIBS)
-    set(VORPALINE_BUILD_DYNAMIC ON)
+    set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "Installed Geogram uses DLLs")
 endif(UNIX)
 
 #------------------------------------------------------------------------------------------------
@@ -263,21 +244,15 @@ target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 find_package(ZLIB REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
-message(STATUS "GEOGRAM_INSTALL_PREFIX " ${GEOGRAM_INSTALL_PREFIX})
+set(TMP_GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INSTALL_PREFIX})
 find_package(Geogram REQUIRED)
 # Geogram changes the variabe GEOGRAM_INSTALL_PREFIX from /.../install to
 # /.../install/include/geogram1
 # The line below reverts this change...
-set(GEOGRAM_INSTALL_PREFIX "${GEOGRAM_INSTALL_PREFIX}/..")
-message(STATUS "GEOGRAM_INSTALL_PREFIX after the find geogram and the revert of variable change " ${GEOGRAM_INSTALL_PREFIX} )
+set(GEOGRAM_INSTALL_PREFIX ${TMP_GEOGRAM_INSTALL_PREFIX})
 find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
 include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
 target_link_libraries(RINGMesh PUBLIC Geogram::geogram PRIVATE ZLIB::ZLIB tinyxml2 MINIZIP::minizip)
-
-get_target_property(TEST1 RINGMesh LINK_LIBRARIES)
-get_target_property(TEST2 RINGMesh IMPORTED_LINK_DEPENDENT_LIBRARIES)
-message(STATUS "TEST1 = ${TEST1}")
-message(STATUS "TEST2 = ${TEST2}")
 
 if(RINGMESH_WITH_GRAPHICS)
     target_link_libraries(RINGMesh PUBLIC Geogram::geogram_gfx)
