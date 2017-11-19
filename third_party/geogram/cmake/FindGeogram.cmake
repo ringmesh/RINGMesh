@@ -58,8 +58,6 @@ find_library (GEOGRAM_GLFW3_LIBRARY
                 PATH_SUFFIXES lib
 )
 
-message( STATUS "GEOGRAM_GLFW3_LIBRARY = ${GEOGRAM_GLFW3_LIBRARY}")
-
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   GEOGRAM DEFAULT_MSG GEOGRAM_LIBRARY GEOGRAM_INCLUDE_DIR

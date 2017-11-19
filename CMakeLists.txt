@@ -134,7 +134,6 @@ endif()
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-
 # Define version number
 # It is then exported to the configuration file
 set(RINGMesh_VERSION_MAJOR 5)
@@ -147,37 +146,29 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 
 include(cmake/utils.cmake)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(UNIX)
-    set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion
         -Wsign-conversion -Wdouble-promotion -Wno-attributes)
 
     # Determine gcc version and activate additional warnings available in latest versions
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
 
-    # C++11 fully works on Linux from gcc/g++ 4.8 (before not fully operational).
-    # On MacOS, it seems that C++11 is working since gcc/g++ 4.2.
     if(APPLE)
         if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-            message(FATAL_ERROR "RINGMesh on Apple requires Clang compiler")
+            message(WARNING "RINGMesh on Apple is only tested with Clang compiler")
         endif()
-        set(CMAKE_MACOSX_RPATH 1)
+        set(CMAKE_MACOSX_RPATH ON)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
     endif(APPLE)
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        set(supported_clang_version 3.8)
-        if(COMPILER_VERSION VERSION_LESS ${supported_clang_version})
-            message(FATAL_ERROR "RINGMesh require Clang version >= ${supported_clang_version}")
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        set(supported_gcc_version 4.8)
-        if(COMPILER_VERSION VERSION_LESS ${supported_gcc_version})
-            message(FATAL_ERROR "RINGMesh require G++ version >= ${supported_gcc_version}")
-        endif()
-    endif()
-    set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
@@ -185,16 +176,10 @@ if(UNIX)
     endif()
 else(UNIX)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        message(FATAL_ERROR "RINGMesh on Windows requires Microsoft Visual C++")
+        message(WARNING "RINGMesh on Windows is only tested with Microsoft Visual C++")
     endif()
-    # 1800 corresponds to VS 12 2013.
-    # See https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B for VS version numbers.
-    if(MSVC_VERSION LESS 1800)
-        message(FATAL_ERROR "RINGMesh requires Visual Studio greater or equal to VS 12 2013 WIN64")
-    endif(MSVC_VERSION LESS 1800)
     
     add_definitions(-DGEO_DYNAMIC_LIBS)
-    set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "Installed Geogram uses DLLs")
 endif(UNIX)
 
 #------------------------------------------------------------------------------------------------
@@ -231,13 +216,10 @@ add_folder(ringmesh_src ringmesh_include tetrahedralize)
 add_folder(ringmesh_src ringmesh_include visualize)
 
 # Add the RINGMesh target as a shared library
-add_library(RINGMesh SHARED
-    ${ringmesh_include}
-    ${ringmesh_src})
+add_library(RINGMesh SHARED ${ringmesh_include} ${ringmesh_src})
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
-# Organize outputs in a Linux way
 set_target_properties(RINGMesh PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set_target_properties(RINGMesh PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
@@ -247,6 +229,7 @@ target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 find_package(ZLIB REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
 set(TMP_GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INSTALL_PREFIX})
+set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
 find_package(Geogram REQUIRED)
 # Geogram changes the variabe GEOGRAM_INSTALL_PREFIX from /.../install to
 # /.../install/include/geogram1
@@ -275,7 +258,7 @@ set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/basic/ringmesh_c
 configure_file(${input_configure_file} ${generated_configure_file})
 set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 
-#generate macros for API export and add itbto include directories
+#generate macros for API export and add it to include directories
 include (GenerateExportHeader)
 set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
 set(ringmesh_include ${ringmesh_include} ${generated_export_file})
