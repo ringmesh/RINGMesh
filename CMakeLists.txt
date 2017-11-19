@@ -123,9 +123,13 @@ if(USE_SUPERBUILD)
     endif()
     include("${CMAKE_SOURCE_DIR}/cmake/SuperBuild.cmake")
     return()
-else()
-    # Define the project RINGMesh
-    project(RINGMesh)
+endif()
+
+
+# Define the project RINGMesh
+project(RINGMesh)
+if(POLICY CMP0063)
+  cmake_policy(SET CMP0063 NEW)
 endif()
 
 #------------------------------------------------------------------------------------------------
@@ -158,9 +162,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if(UNIX)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion
         -Wsign-conversion -Wdouble-promotion -Wno-attributes)
-
-    # Determine gcc version and activate additional warnings available in latest versions
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
 
     if(APPLE)
         if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
