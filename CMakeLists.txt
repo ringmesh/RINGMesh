@@ -125,12 +125,8 @@ if(USE_SUPERBUILD)
     return()
 endif()
 
-
 # Define the project RINGMesh
 project(RINGMesh)
-if(POLICY CMP0063)
-  cmake_policy(SET CMP0063 NEW)
-endif()
 
 #------------------------------------------------------------------------------------------------
 # Turn on the ability to create folders to organize projects and files
@@ -153,8 +149,6 @@ include(cmake/utils.cmake)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-#set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-#set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     
 #------------------------------------------------------------------------------------------------
@@ -173,14 +167,12 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-       include(${PROJECT_SOURCE_DIR}/cmake/Coverage.cmake)
+       include(cmake/Coverage.cmake)
     endif()
 else(UNIX)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         message(WARNING "RINGMesh on Windows is only tested with Microsoft Visual C++")
     endif()
-    
-    add_definitions(-DGEO_DYNAMIC_LIBS)
 endif(UNIX)
 
 #------------------------------------------------------------------------------------------------
@@ -227,15 +219,16 @@ set_target_properties(RINGMesh PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BIN
 # Add include directories of RINGMesh
 target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-find_package(ZLIB REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
 set(TMP_GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INSTALL_PREFIX})
 set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
 find_package(Geogram REQUIRED)
-# Geogram changes the variabe GEOGRAM_INSTALL_PREFIX from /.../install to
-# /.../install/include/geogram1
-# The line below reverts this change...
 set(GEOGRAM_INSTALL_PREFIX ${TMP_GEOGRAM_INSTALL_PREFIX})
+if(WIN32)
+    target_compile_definitions(RINGMesh PUBLIC -DGEO_DYNAMIC_LIBS)
+endif()
+
+find_package(ZLIB REQUIRED)
 find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
 include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
 target_link_libraries(RINGMesh PUBLIC Geogram::geogram PRIVATE ZLIB::ZLIB tinyxml2 MINIZIP::minizip)
