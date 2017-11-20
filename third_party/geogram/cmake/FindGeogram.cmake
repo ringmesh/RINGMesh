@@ -78,6 +78,53 @@ If (GEOGRAM_FOUND)
                   IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
                   IMPORTED_LOCATION "${GEOGRAM_LIBRARY}"
                 )
+        
+                # Some specific settings for Windows
+                if(WIN32)
+                
+                  # Default mode for Windows uses static libraries. Use this variable to
+                  # link with geogram compiled as DLLs.
+                  set(VORPALINE_BUILD_DYNAMIC FALSE CACHE BOOL "Installed Geogram uses DLLs")
+                
+                  # remove warning for multiply defined symbols (caused by multiple
+                  # instanciations of STL templates)
+                  set_target_Properties(Geogram::geogram PROPERTIES
+                    COMPILE_OPTIONS /wd425
+                  )
+                
+                  # remove all unused stuff from windows.h
+                  set_target_Properties(Geogram::geogram PROPERTIES
+                    COMPILE_DEFINITIONS -DWIN32_LEAN_AND_MEA
+                  )
+                  set_target_Properties(Geogram::geogram PROPERTIES
+                    COMPILE_DEFINITIONS -DVC_EXTRALEAN
+                  )
+                
+                  # do not define a min() and a max() macro, breaks
+                  # std::min() and std::max() !!
+                  set_target_Properties(Geogram::geogram PROPERTIES
+                    COMPILE_DEFINITIONS -DNOMINMAX
+                  )
+                
+                  # we want M_PI etc...
+                  set_target_Properties(Geogram::geogram PROPERTIES
+                    COMPILE_DEFINITIONS -D_USE_MATH_DEFINES
+                  )
+                
+                  set_target_Properties(Geogram::geogram PROPERTIES
+                    COMPILE_DEFINITIONS -DGEO_DYNAMIC_LIBS
+                  )
+                  
+                  if(NOT VORPALINE_BUILD_DYNAMIC) 
+                      # If we use static library, we link with the static C++ runtime.
+                      foreach(config ${CMAKE_CONFIGURATION_TYPES})
+                         string(TOUPPER ${config} config)
+                         string(REPLACE /MD /MT CMAKE_C_FLAGS_${config} "${CMAKE_C_FLAGS_${config}}")
+                         string(REPLACE /MD /MT CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}}")
+                      endforeach()
+                  endif()
+                
+                endif()   
         endif ()
 
         if (NOT TARGET Geogram::geogram_gfx)
@@ -104,38 +151,3 @@ endif ()
 # Hide variables from the default CMake-Gui options
 mark_as_advanced (GEOGRAM_LIBRARY GEOGRAM_GFX_LIBRARY GEOGRAM_INCLUDE_DIR)
 
-# Some specific settings for Windows
-
-if(WIN32)
-
-  # Default mode for Windows uses static libraries. Use this variable to
-  # link with geogram compiled as DLLs.
-  set(VORPALINE_BUILD_DYNAMIC FALSE CACHE BOOL "Installed Geogram uses DLLs")
-
-  # remove warning for multiply defined symbols (caused by multiple
-  # instanciations of STL templates)
-  target_compile_definitions(Geogram::geogram PUBLIC /wd425)
-
-  # remove all unused stuff from windows.h
-  target_compile_definitions(Geogram::geogram PUBLIC -DWIN32_LEAN_AND_MEA)
-  target_compile_definitions(Geogram::geogram PUBLIC -DVC_EXTRALEAN)
-
-  # do not define a min() and a max() macro, breaks
-  # std::min() and std::max() !!
-  target_compile_definitions(Geogram::geogram PUBLIC -DNOMINMAX)
-
-  # we want M_PI etc...
-  target_compile_definitions(Geogram::geogram PUBLIC -D_USE_MATH_DEFINES)
-
-  target_compile_definitions(Geogram::geogram PUBLIC -DGEO_DYNAMIC_LIBS)
-  
-  if(NOT VORPALINE_BUILD_DYNAMIC) 
-      # If we use static library, we link with the static C++ runtime.
-      foreach(config ${CMAKE_CONFIGURATION_TYPES})
-         string(TOUPPER ${config} config)
-         string(REPLACE /MD /MT CMAKE_C_FLAGS_${config} "${CMAKE_C_FLAGS_${config}}")
-         string(REPLACE /MD /MT CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}}")
-      endforeach()
-  endif()
-
-endif()    
