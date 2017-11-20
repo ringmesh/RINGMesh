@@ -60,126 +60,131 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-	template < index_t DIMENSION >
-	class RINGMESH_API CartesianGrid
-	{
-		friend class CartesianGridBuilder< DIMENSION >;
+    template < index_t DIMENSION >
+    class RINGMESH_API CartesianGrid
+    {
+        friend class CartesianGridBuilder< DIMENSION >;
 
-	public:
-	CartesianGrid( intvecn< DIMENSION > nb_cells, index_t nb_total_cells,
-			ReferenceFrame< DIMENSION > vec_cartesian_axis) : nb_cells_(nb_cells),
-			cartesian_frame_(vec_cartesian_axis)
-	{
-		nb_total_cells_ = 1;
-		for ( auto i : RINGMesh::range( DIMENSION ) )
-		{
-			nb_total_cells_ *= nb_cells;
-		}
-	}
+    public:
+        CartesianGrid( intvecn< DIMENSION > nb_cells,
+            index_t nb_total_cells,
+            ReferenceFrame< DIMENSION > vec_cartesian_axis )
+            : nb_cells_( nb_cells ), cartesian_frame_( vec_cartesian_axis )
+        {
+            nb_total_cells_ = 1;
+            for( auto i : RINGMesh::range( DIMENSION ) )
+            {
+                nb_total_cells_ *= nb_cells;
+            }
+        }
 
-		static MeshType type_name_static()
-		{
-			return 'CartesianGrid';
-		}
-		void save_mesh( const std::string& filename ) const
-		{
-			// TODO
-		}
-		void print_mesh_bounded_attributes() const
-		{
-			//TODO
-		}
-//		GEO::AttributesManager& vertex_attribute_manager() const override
-//		{
-//			return mesh_->vertices.attributes();
-//		}
-		MeshType type_name() const override
-		{
-			return type_name_static();
-		}
-//		static std::string default_extension_static()
-//		{
-//			return "geogram";
-//		}
-//		std::string default_extension() const override
-//		{
-//			return default_extension_static();
-//		}
-//		index_t nb_vertices() const override
-//		{
-//			return mesh_->vertices.nb();
-//		}
+        static MeshType type_name_static()
+        {
+            return 'CartesianGrid';
+        }
+        void save_mesh( const std::string& filename ) const
+        {
+            // TODO
+        }
+        void print_mesh_bounded_attributes() const
+        {
+            // TODO
+        }
+        //		GEO::AttributesManager& vertex_attribute_manager() const
+        //override
+        //		{
+        //			return mesh_->vertices.attributes();
+        //		}
+        MeshType type_name() const override
+        {
+            return type_name_static();
+        }
+        //		static std::string default_extension_static()
+        //		{
+        //			return "geogram";
+        //		}
+        //		std::string default_extension() const override
+        //		{
+        //			return default_extension_static();
+        //		}
+        //		index_t nb_vertices() const override
+        //		{
+        //			return mesh_->vertices.nb();
+        //		}
 
-	private:
-		/**
-		 * \brief Forbids copy.
-		 * \details This is to make sure that client code does
-		 *   not unintentionally copy a Mesh (for
-		 *   instance by passing it by-value to a function).
-		 *   Use copy() instead.
-		 */
-		CartesianGrid(const CartesianGrid& rhs);
+    private:
+        /**
+         * \brief Forbids copy.
+         * \details This is to make sure that client code does
+         *   not unintentionally copy a Mesh (for
+         *   instance by passing it by-value to a function).
+         *   Use copy() instead.
+         */
+        CartesianGrid( const CartesianGrid& rhs );
 
-		/**
-		 * \brief Forbids copy.
-		 * \details This is to make sure that client code does
-		 *   not unintentionally copies a Mesh (for
-		 *   instance by passing it by-value to a function).
-		 *   Use copy() instead.
-		 */
-		const CartesianGrid& operator=(const CartesianGrid& rhs);
+        /**
+         * \brief Forbids copy.
+         * \details This is to make sure that client code does
+         *   not unintentionally copies a Mesh (for
+         *   instance by passing it by-value to a function).
+         *   Use copy() instead.
+         */
+        const CartesianGrid& operator=( const CartesianGrid& rhs );
 
-	protected:
-		intvecn< DIMENSION > nb_cells_;
-		index_t nb_total_cells_;
+    protected:
+        intvecn< DIMENSION > nb_cells_;
+        index_t nb_total_cells_;
 
-		ReferenceFrame< DIMENSION > cartesian_frame_;
+        ReferenceFrame< DIMENSION > cartesian_frame_;
 
-	public:
-		vecn< DIMENSION > cell_center_reference_coords(const intvecn< DIMENSION > cartesian_coords) const
-		{
-			vecn< DIMENSION > cart_double_coords;
-			for ( auto i : RINGMesh::range( DIMENSION ))
-			{
-				cart_double_coords[i] = static_cast< double >(cartesian_coords[i]);
-			}
-			return cartesian_frame_.coords_to_base(cart_double_coords);
-		}
+    public:
+        vecn< DIMENSION > cell_center_reference_coords(
+            const intvecn< DIMENSION > cartesian_coords ) const
+        {
+            vecn< DIMENSION > cart_double_coords;
+            for( auto i : RINGMesh::range( DIMENSION ) )
+            {
+                cart_double_coords[i] =
+                    static_cast< double >( cartesian_coords[i] );
+            }
+            return cartesian_frame_.coords_to_base( cart_double_coords );
+        }
 
-		intvecn< DIMENSION > containing_cell(const vecn< DIMENSION > vertex) const
-		{
-			intvecn< DIMENSION > coord;
-			for ( auto i : RINGMesh::range( DIMENSION ) )
-			{
-				coord[i] = std::floor(vertex[i]+0.5);
-			}
-			return coord;
-		}
+        intvecn< DIMENSION > containing_cell(
+            const vecn< DIMENSION > vertex ) const
+        {
+            intvecn< DIMENSION > coord;
+            for( auto i : RINGMesh::range( DIMENSION ) )
+            {
+                coord[i] = std::floor( vertex[i] + 0.5 );
+            }
+            return coord;
+        }
 
-		index_t cell_offset(const intvecn< DIMENSION > coords) const
-		{
-			index_t offset = 0;
-			index_t mult = 1;
-			for ( auto i : RINGMesh::range( DIMENSION ) )
-			{
-				offset += coords[i]*mult;
-				mult *= nb_cells_[i];
-			}
-			return offset;
-		}
+        index_t cell_offset( const intvecn< DIMENSION > coords ) const
+        {
+            index_t offset = 0;
+            index_t mult = 1;
+            for( auto i : RINGMesh::range( DIMENSION ) )
+            {
+                offset += coords[i] * mult;
+                mult *= nb_cells_[i];
+            }
+            return offset;
+        }
 
-		intvecn< DIMENSION > ijk_from_offset(const index_t offset) const
-		{
-			intvecn< DIMENSION > coords;
-			index_t off = 0;
-			index_t div = nb_total_cells_ / nb_cells_[ DIMENSION -1 ];
-			for ( auto i : RINGMesh::range( DIMENSION ) )
-			{
-				coords[ DIMENSION-1 - i ] = ( offset - off ) / div;
-				off += coords[ DIMENSION-1 - i ]*div;
-				div /= nb_cells_[ DIMENSION-1 - i ];
-			}
-			return coords;
-		}
-	};
+        intvecn< DIMENSION > ijk_from_offset( const index_t offset ) const
+        {
+            intvecn< DIMENSION > coords;
+            index_t off = 0;
+            index_t div = nb_total_cells_ / nb_cells_[DIMENSION - 1];
+            for( auto i : RINGMesh::range( DIMENSION ) )
+            {
+                coords[DIMENSION - 1 - i] = ( offset - off ) / div;
+                off += coords[DIMENSION - 1 - i] * div;
+                div /= nb_cells_[DIMENSION - 1 - i];
+            }
+            return coords;
+        }
+    };
 }
