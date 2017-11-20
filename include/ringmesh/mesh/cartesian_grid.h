@@ -183,6 +183,3 @@ namespace RINGMesh
 		}
 	};
 }
-
-
-
