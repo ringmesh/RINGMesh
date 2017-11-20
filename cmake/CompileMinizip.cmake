@@ -31,15 +31,10 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-#------------------------------------------------------------------------------------------------
-# minizip
-# Set the path to minizip code
 set(MINIZIP_PATH ${PROJECT_SOURCE_DIR}/third_party/minizip)
 set(MINIZIP_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/minizip/${CMAKE_BUILD_TYPE})
 set(MINIZIP_INSTALL_PREFIX ${MINIZIP_PATH_BIN}/install CACHE INTERNAL "Minizip install directory")
 
-# Define minizip as an external project that we know how to
-# configure and compile
 ExternalProject_Add(minizip_ext
   PREFIX ${MINIZIP_PATH_BIN}
   SOURCE_DIR ${MINIZIP_PATH}
@@ -49,7 +44,6 @@ ExternalProject_Add(minizip_ext
           -DCMAKE_INSTALL_PREFIX:STRING=${MINIZIP_INSTALL_PREFIX}
   BINARY_DIR ${MINIZIP_PATH_BIN}
   INSTALL_DIR ${MINIZIP_INSTALL_PREFIX}
-  STEP_TARGETS configure build install
   DEPENDS zlib_ext
 )
 

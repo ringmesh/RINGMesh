@@ -31,13 +31,8 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-#------------------------------------------------------------------------------------------------
-# RINGMesh
-# Set the path to ringmesh code
 set(RINGMesh_PATH ${PROJECT_SOURCE_DIR}/third_party/ringmesh)
 
-# Define ringmesh as an external project that we know how to
-# configure and compile
 ExternalProject_Add(ringmesh_ext
   PREFIX ${PROJECT_BINARY_DIR}
   SOURCE_DIR ${PROJECT_SOURCE_DIR}
@@ -46,7 +41,7 @@ ExternalProject_Add(ringmesh_ext
           -DGLOBAL_BINARY_DIR:PATH=${PROJECT_BINARY_DIR}/..
           -DUSE_SUPERBUILD:BOOL=OFF
   BINARY_DIR ${PROJECT_BINARY_DIR}  
-  STEP_TARGETS configure build
+  INSTALL_COMMAND ""
   DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
 )
 

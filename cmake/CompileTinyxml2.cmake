@@ -31,15 +31,10 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-#------------------------------------------------------------------------------------------------
-# tinyxml2
-# Set the path to tinyxml2 code
 set(TINYXML2_PATH ${PROJECT_SOURCE_DIR}/third_party/tinyxml2)
 set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/tinyxml2/${CMAKE_BUILD_TYPE})
 set(TINYXML2_INSTALL_PREFIX ${TINYXML2_PATH_BIN}/install CACHE INTERNAL "Tinyxml2 install directory")
 
-# Define tinyxml2 as an external project that we know how to
-# configure and compile
 ExternalProject_Add(tinyxml2_ext
   PREFIX ${TINYXML2_PATH_BIN}
   SOURCE_DIR ${TINYXML2_PATH}
@@ -48,7 +43,6 @@ ExternalProject_Add(tinyxml2_ext
           -DCMAKE_INSTALL_PREFIX:STRING=${TINYXML2_INSTALL_PREFIX}
   BINARY_DIR ${TINYXML2_PATH_BIN}
   INSTALL_DIR ${TINYXML2_INSTALL_PREFIX}
-  STEP_TARGETS configure build install
 )
 
 ExternalProject_Add_Step(tinyxml2_ext forcebuild

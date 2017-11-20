@@ -45,7 +45,7 @@ else(WIN32)
         set(geoplatform Linux64-clang-dynamic)
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(geoplatform Linux64-gcc-dynamic)
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang ")
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
         set(geoplatform Darwin-clang-dynamic)
     endif()
 endif(WIN32)
@@ -64,7 +64,6 @@ ExternalProject_Add(geogram_ext
         -DCMAKE_INSTALL_PREFIX:STRING=${GEOGRAM_INSTALL_PREFIX}
   BINARY_DIR ${GEOGRAM_PATH_BIN}
   INSTALL_DIR ${GEOGRAM_INSTALL_PREFIX}
-  STEP_TARGETS configure build install
 )
 
 ExternalProject_Add_Step(geogram_ext forcebuild
