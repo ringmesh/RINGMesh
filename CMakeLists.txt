@@ -60,11 +60,6 @@ include(CMakeDependentOption)
 # option is ON.
 CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
     "RINGMESH_WITH_GRAPHICS" OFF)
-# Option to test ringmesh-view. Disable when BUILD_RINGMESH_VIEW
-# is OFF. The fist time BUILD_RINGMESH_VIEW is ON, this
-# option is ON.
-CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
-    "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
