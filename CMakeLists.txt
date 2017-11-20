@@ -220,10 +220,8 @@ target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 # RINGMesh depends on Geogram Tinyxml2 Minizip and zlib
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
-#set(TMP_GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INSTALL_PREFIX})
 set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
 find_package(Geogram REQUIRED)
-#set(GEOGRAM_INSTALL_PREFIX ${TMP_GEOGRAM_INSTALL_PREFIX})
 if(WIN32)
     target_compile_definitions(RINGMesh PUBLIC -DGEO_DYNAMIC_LIBS)
 endif()
