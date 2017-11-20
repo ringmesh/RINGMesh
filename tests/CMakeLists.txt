@@ -31,9 +31,10 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeLists for RINGMesh tests
-# This file is included by the root CMakeList of the RINGMesh project
-# Author Jeanne Pellerin
+set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
+set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
+set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
+set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output")
 
 if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
     message(STATUS "Defined data directory for tests does not exists, using default tests/data")

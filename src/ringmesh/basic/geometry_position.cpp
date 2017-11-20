@@ -247,14 +247,11 @@ namespace
         for( auto f : range( 4 ) )
         {
             signs[f] = sign( GEO::PCK::orient_3d( p.data(),
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][0]]
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][0]]
                     .data(),
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][1]]
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][1]]
                     .data(),
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][2]]
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][2]]
                     .data() ) );
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0
@@ -270,12 +267,9 @@ namespace
         for( const index_t f : range( 4 ) )
         {
             double volume{ GEO::Geom::tetra_signed_volume( p,
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][1]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][2]] ) };
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][0]],
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][1]],
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][2]] ) };
             if( is_almost_zero( volume ) )
             {
                 return point_inside_tetra_exact( p, vertices );
