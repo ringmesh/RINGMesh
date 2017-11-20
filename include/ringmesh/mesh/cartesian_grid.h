@@ -91,7 +91,7 @@ namespace RINGMesh
             // TODO
         }
         //		GEO::AttributesManager& vertex_attribute_manager() const
-        //override
+        // override
         //		{
         //			return mesh_->vertices.attributes();
         //		}
