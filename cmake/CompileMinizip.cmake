@@ -42,40 +42,18 @@ set(MINIZIP_INSTALL_PREFIX ${MINIZIP_PATH_BIN}/install CACHE INTERNAL "Minizip i
 # configure and compile
 ExternalProject_Add(minizip_ext
   PREFIX ${MINIZIP_PATH_BIN}
-
-  #--Download step--------------
-  DOWNLOAD_COMMAND ""
-
-  #--Update/Patch step----------
-  UPDATE_COMMAND ""
-
-  #--Configure step-------------
   SOURCE_DIR ${MINIZIP_PATH}
-      CONFIGURE_COMMAND ${CMAKE_COMMAND} ${MINIZIP_PATH}
-          -G ${CMAKE_GENERATOR}
-          -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+  CMAKE_CACHE_ARGS
           -DUSE_AES:BOOL=OFF
           -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_INSTALL_PREFIX:STRING=${MINIZIP_INSTALL_PREFIX}
-          
-
-  #--Build step-----------------
   BINARY_DIR ${MINIZIP_PATH_BIN}
-  #-- Command to build minizip
-  BUILD_COMMAND ${CMAKE_COMMAND} --build ${MINIZIP_PATH_BIN} ${COMPILATION_OPTION}
-
-  #--Install step---------------
   INSTALL_DIR ${MINIZIP_INSTALL_PREFIX}
-  
+  STEP_TARGETS configure build install
   DEPENDS zlib_ext
 )
 
 ExternalProject_Add_Step(minizip_ext forcebuild
     DEPENDERS build
     ALWAYS 1
-  )
-
-# Add minizip include directories to the current ones
-# same as minizip
+)

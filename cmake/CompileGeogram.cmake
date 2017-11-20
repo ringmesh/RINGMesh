@@ -31,12 +31,8 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-#------------------------------------------------------------------------------------------------
-# GEOGRAM
-# Set the path to Geogram code
 set(GEOGRAM_PATH ${CMAKE_SOURCE_DIR}/third_party/geogram)
 
-# Geogram platform dependent settings
 if(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram)
     set(geoplatform Win-vs-dynamic-generic)
@@ -55,43 +51,23 @@ else(WIN32)
 endif(WIN32)
 set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install CACHE INTERNAL "Geogram install directory")  
 
-# Define Geogram as an external project that we know how to
-# configure and compile
 ExternalProject_Add(geogram_ext
   PREFIX ${GEOGRAM_PATH_BIN}
-
-  #--Download step--------------
-  DOWNLOAD_COMMAND ""
-
-  #--Update/Patch step----------
-  UPDATE_COMMAND ""
-
-  #--Configure step-------------
   SOURCE_DIR ${GEOGRAM_PATH}
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
-        -G ${CMAKE_GENERATOR} 
+  CMAKE_CACHE_ARGS
         -DVORPALINE_PLATFORM:STRING=${geoplatform}
         -DGEOGRAM_WITH_LUA:BOOL=OFF
         -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DGEOGRAM_LIB_ONLY:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
         -DCMAKE_INSTALL_PREFIX:STRING=${GEOGRAM_INSTALL_PREFIX}
-
-  #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}
-  #-- Command to build geogram
-  BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN} ${COMPILATION_OPTION}
-
-  #--Install step---------------
   INSTALL_DIR ${GEOGRAM_INSTALL_PREFIX}
+  STEP_TARGETS configure build install
 )
 
 ExternalProject_Add_Step(geogram_ext forcebuild
-    DEPENDERS build
-    ALWAYS 1
-  )
-
+     DEPENDERS build
+     ALWAYS 1
+)

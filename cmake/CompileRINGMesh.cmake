@@ -40,32 +40,13 @@ set(RINGMesh_PATH ${PROJECT_SOURCE_DIR}/third_party/ringmesh)
 # configure and compile
 ExternalProject_Add(ringmesh_ext
   PREFIX ${PROJECT_BINARY_DIR}
-
-  #--Download step--------------
-  DOWNLOAD_COMMAND ""
-
-  #--Update/Patch step----------
-  UPDATE_COMMAND ""
-
-  #--Configure step-------------
   SOURCE_DIR ${PROJECT_SOURCE_DIR}
-      CONFIGURE_COMMAND ${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}
+  CMAKE_CACHE_ARGS
           ${RINGMESH_EXTRA_ARGS} 
-          -G ${CMAKE_GENERATOR}
-          -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-          -DGLOBAL_BINARY_DIR=${PROJECT_BINARY_DIR}/..
-          -DUSE_SUPERBUILD=OFF
-
-  #--Build step-----------------
-  BINARY_DIR ${PROJECT_BINARY_DIR}
-  #-- Command to build ringmesh
-  BUILD_COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} ${COMPILATION_OPTION}
-
-  #--Install step---------------
-  INSTALL_COMMAND ""
-  
+          -DGLOBAL_BINARY_DIR:PATH=${PROJECT_BINARY_DIR}/..
+          -DUSE_SUPERBUILD:BOOL=OFF
+  BINARY_DIR ${PROJECT_BINARY_DIR}  
+  STEP_TARGETS configure build
   DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
 )
 

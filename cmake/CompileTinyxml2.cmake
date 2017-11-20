@@ -42,34 +42,17 @@ set(TINYXML2_INSTALL_PREFIX ${TINYXML2_PATH_BIN}/install CACHE INTERNAL "Tinyxml
 # configure and compile
 ExternalProject_Add(tinyxml2_ext
   PREFIX ${TINYXML2_PATH_BIN}
-
-  #--Download step--------------
-  DOWNLOAD_COMMAND ""
-
-  #--Update/Patch step----------
-  UPDATE_COMMAND ""
-
-  #--Configure step-------------
   SOURCE_DIR ${TINYXML2_PATH}
-      CONFIGURE_COMMAND ${CMAKE_COMMAND} ${TINYXML2_PATH}
-          -G ${CMAKE_GENERATOR} 
-          -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+  CMAKE_CACHE_ARGS
           -DBUILD_TESTING:BOOL=OFF
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_INSTALL_PREFIX:STRING=${TINYXML2_INSTALL_PREFIX}
-
-  #--Build step-----------------
   BINARY_DIR ${TINYXML2_PATH_BIN}
-  #-- Command to build tinyxml2
-  BUILD_COMMAND ${CMAKE_COMMAND} --build ${TINYXML2_PATH_BIN} ${COMPILATION_OPTION}
-
-  #--Install step---------------
   INSTALL_DIR ${TINYXML2_INSTALL_PREFIX}
+  STEP_TARGETS configure build install
 )
 
 ExternalProject_Add_Step(tinyxml2_ext forcebuild
     DEPENDERS build
     ALWAYS 1
-  )
+)
 

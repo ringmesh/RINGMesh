@@ -42,33 +42,16 @@ set(ZLIB_ROOT ${ZLIB_PATH_BIN}/install CACHE INTERNAL "Zlib install directory")
 # configure and compile
 ExternalProject_Add(zlib_ext
   PREFIX ${ZLIB_PATH_BIN}
-
-  #--Download step--------------
-  DOWNLOAD_COMMAND ""
-
-  #--Update/Patch step----------
-  UPDATE_COMMAND ""
-
-  #--Configure step-------------
   SOURCE_DIR ${ZLIB_PATH}
-      CONFIGURE_COMMAND ${CMAKE_COMMAND} ${ZLIB_PATH}
-          -G ${CMAKE_GENERATOR}
+  CMAKE_CACHE_ARGS
           -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT}
-          -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-
-  #--Build step-----------------
   BINARY_DIR ${ZLIB_PATH_BIN}
-  #-- Command to build zlib
-  BUILD_COMMAND ${CMAKE_COMMAND} --build ${ZLIB_PATH_BIN} ${COMPILATION_OPTION}
-
-  #--Install step---------------
   INSTALL_DIR ${ZLIB_ROOT}
+  STEP_TARGETS configure build install
 )
 
 ExternalProject_Add_Step(zlib_ext forcebuild
     DEPENDERS build
     ALWAYS 1
-  )
+)
 
