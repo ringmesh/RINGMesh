@@ -203,6 +203,10 @@ add_folder(ringmesh_src ringmesh_include visualize)
 
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED ${ringmesh_include} ${ringmesh_src})
+export(TARGETS RINGMesh NAMESPACE RINGMesh:: FILE RINGMeshTargets.cmake)
+file(WRITE
+    ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
+    "include(\${CMAKE_CURRENT_LIST_DIR}/RINGMeshTargets.cmake)\n")
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
