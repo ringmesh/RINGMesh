@@ -5,7 +5,7 @@
 #
 # This module defines the following variables:
 #
-#   Geogram_FOUND        - True if geogram has been found.
+#   GEOGRAM_FOUND        - True if geogram has been found.
 #   Geogram::geogram     - Imported target for the main Geogram library.
 #   Geogram::geogram_gfx - Imported target for Geogram graphics library.
 #
@@ -64,10 +64,7 @@ find_package_handle_standard_args(
 )
 
 # Create an imported target for Geogram 
-If (GEOGRAM_FOUND)
-  
-        set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INCLUDE_DIR}/..)
-  
+If (GEOGRAM_FOUND)  
         if (NOT TARGET Geogram::geogram)
                 add_library (Geogram::geogram UNKNOWN IMPORTED)
 
@@ -117,19 +114,21 @@ if(WIN32)
 
   # remove warning for multiply defined symbols (caused by multiple
   # instanciations of STL templates)
-  add_definitions(/wd4251)
+  target_compile_definitions(Geogram::geogram PUBLIC /wd425)
 
   # remove all unused stuff from windows.h
-  add_definitions(-DWIN32_LEAN_AND_MEAN)
-  add_definitions(-DVC_EXTRALEAN)
+  target_compile_definitions(Geogram::geogram PUBLIC -DWIN32_LEAN_AND_MEA)
+  target_compile_definitions(Geogram::geogram PUBLIC -DVC_EXTRALEAN)
 
   # do not define a min() and a max() macro, breaks
   # std::min() and std::max() !!
-  add_definitions(-DNOMINMAX )
+  target_compile_definitions(Geogram::geogram PUBLIC -DNOMINMAX)
 
   # we want M_PI etc...
-  add_definitions(-D_USE_MATH_DEFINES)
+  target_compile_definitions(Geogram::geogram PUBLIC -D_USE_MATH_DEFINES)
 
+  target_compile_definitions(Geogram::geogram PUBLIC -DGEO_DYNAMIC_LIBS)
+  
   if(NOT VORPALINE_BUILD_DYNAMIC) 
       # If we use static library, we link with the static C++ runtime.
       foreach(config ${CMAKE_CONFIGURATION_TYPES})

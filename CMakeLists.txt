@@ -225,7 +225,7 @@ set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
 find_package(Geogram REQUIRED)
 set(GEOGRAM_INSTALL_PREFIX ${TMP_GEOGRAM_INSTALL_PREFIX})
 if(WIN32)
-    target_compile_definitions(RINGMesh PUBLIC -DGEO_DYNAMIC_LIBS)
+    #target_compile_definitions(RINGMesh PUBLIC -DGEO_DYNAMIC_LIBS)
 endif()
 
 find_package(ZLIB REQUIRED)
