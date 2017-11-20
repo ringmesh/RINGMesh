@@ -50,12 +50,12 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geomodel_builder_gocad.h>
-#include <ringmesh/geomodel/geomodel_geological_entity.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
+#include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/io/io.h>
-#include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/tetrahedralize/tetra_gen.h>
-#include <ringmesh/visualization/geogram_gfx.h>
+#include <ringmesh/visualize/geogram_gfx.h>
 
 namespace RINGMesh
 {
@@ -118,4 +118,19 @@ namespace RINGMesh
             "projects of the team: " );
         Logger::out( "", "http://www.ring-team.org" );
     }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > initialize_vecn_coordinates( double value )
+    {
+        index_t nb_coords = DIMENSION;
+        vecn< DIMENSION > vec;
+        for( auto coord : range( nb_coords ) )
+        {
+            vec[coord] = value;
+        }
+        return vec;
+    }
+
+    template vec2 RINGMESH_API initialize_vecn_coordinates( double );
+    template vec3 RINGMESH_API initialize_vecn_coordinates( double );
 } // namespace RINGMesh

@@ -212,6 +212,7 @@ namespace RINGMesh
             vec3 p1{};
             vec3 p2{};
             vec3 p3{};
+            static const std::array< std::array< index_t, 3 >, 4 > tetra_facet_vertex;
         };
 
         template < index_t DIMENSION >
@@ -245,50 +246,6 @@ namespace RINGMesh
 
         using Disk = Circle;
     } // namespace Geometry
-
-    struct RINGMESH_API Frame3D
-    {
-        Frame3D() = default;
-
-        Frame3D( const vec3& u_axis, const vec3& v_axis, const vec3& w_axis )
-            : u( normalize( u_axis ) ),
-              v( normalize( v_axis ) ),
-              w( normalize( w_axis ) )
-        {
-        }
-
-        vec3 u{};
-        vec3 v{};
-        vec3 w{};
-    };
-
-    struct RINGMESH_API ReferenceFrame3D : public Frame3D
-    {
-        ReferenceFrame3D() = default;
-
-        ReferenceFrame3D( vec3 frame_origin, Frame3D frame )
-            : Frame3D( std::move( frame ) ), origin( std::move( frame_origin ) )
-        {
-        }
-
-        vec3 origin{};
-    };
-
-    /*!
-     * @brief Reference frame aligned along the plane normal and whose u axis is
-     * upward
-     */
-    struct RINGMESH_API PlaneReferenceFrame3D : public ReferenceFrame3D
-    {
-        PlaneReferenceFrame3D() = default;
-
-        PlaneReferenceFrame3D( vec3 frame_origin, Frame3D frame )
-            : ReferenceFrame3D( std::move( frame_origin ), std::move( frame ) )
-        {
-        }
-
-        explicit PlaneReferenceFrame3D( const Geometry::Plane& plane );
-    };
 
     namespace Distance
     {
@@ -489,6 +446,13 @@ namespace RINGMesh
          */
         Sign RINGMESH_API point_side_to_plane(
             const Geometry::Point3D& point, const Geometry::Plane& plane );
+
+        /*!
+         * Returns the angle from segment1 to segment2
+         * (in radians, between 0 and 2 * pi)
+         */
+        double RINGMESH_API segment_angle( const Geometry::Segment2D& segment1,
+            const Geometry::Segment2D& segment2 );
 
     } // namespace Position
 

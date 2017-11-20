@@ -236,37 +236,6 @@ namespace RINGMesh
         index_t last_{ 0 };
     };
 
-    template < typename ACTION >
-    void parallel_for( index_t size, const ACTION& action )
-    {
-        if( size == 0 )
-        {
-            return;
-        }
-        index_t nb_threads{ std::min(
-            size, std::thread::hardware_concurrency() ) };
-        std::vector< std::future< void > > futures;
-        futures.reserve( nb_threads );
-        index_t start{ 0 };
-        auto action_per_thread = [&action]( index_t start, index_t end ) {
-            for( auto i : range( start, end ) )
-            {
-                action( i );
-            }
-        };
-        index_t nb_tasks_per_thread{ size / nb_threads };
-        for( auto thread : range( nb_threads - 1 ) )
-        {
-            ringmesh_unused( thread );
-            futures.emplace_back( std::async( std::launch::async,
-                action_per_thread, start, start + nb_tasks_per_thread ) );
-            start += nb_tasks_per_thread;
-        }
-        futures.emplace_back(
-            std::async( std::launch::async, action_per_thread, start, size ) );
-        for( auto& future : futures )
-        {
-            future.get();
-        }
-    }
+    template < index_t DIMENSION >
+    vecn< DIMENSION > RINGMESH_API initialize_vecn_coordinates( double value );
 } // namespace RINGMesh

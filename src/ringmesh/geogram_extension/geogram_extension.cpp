@@ -604,9 +604,11 @@ namespace
     private:
         vec3 load_vertex( GEO::LineInput& file, index_t field ) const
         {
-            double x = file.field_as_double( field++ );
-            double y = file.field_as_double( field++ );
-            double z = file.field_as_double( field++ );
+            double x = file.field_as_double( field );
+            field++;
+            double y = file.field_as_double( field );
+            field++;
+            double z = file.field_as_double( field );
             return vec3( x, y, z );
         }
     };

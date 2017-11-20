@@ -226,7 +226,9 @@ namespace RINGMesh
             return NO_ID;
         }
 
-        index_t box_middle, child_left, child_right;
+        index_t box_middle;
+        index_t child_left;
+        index_t child_right;
         this->get_recursive_iterators( node_index, box_begin, box_end,
             box_middle, child_left, child_right );
 

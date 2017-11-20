@@ -33,6 +33,8 @@
  *     FRANCE
  */
 
+#include <ringmesh/basic/task_handler.h>
+
 #include <ringmesh/tetrahedralize/tetgen_mesher.h>
 
 #include <cstring>
@@ -121,7 +123,6 @@ namespace RINGMesh
                     "  the message above, your input data set, and the exact" );
                 Logger::err( "Tetgen",
                     "  command line you used to run this program, thank you" );
-                ;
                 break;
             case 3:
                 Logger::err( "Tetgen",
@@ -144,6 +145,10 @@ namespace RINGMesh
             case 10:
                 Logger::err(
                     "Tetgen", "An input error was detected. Program stopped." );
+                break;
+            default:
+                Logger::err(
+                    "Tetgen", "An exception was thrown. Program stopped." );
                 break;
             }
         }

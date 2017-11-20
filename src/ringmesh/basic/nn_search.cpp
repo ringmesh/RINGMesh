@@ -41,8 +41,8 @@
  */
 
 #include <ringmesh/basic/nn_search.h>
-
 #include <ringmesh/basic/pimpl_impl.h>
+#include <ringmesh/basic/task_handler.h>
 
 #include <geogram/points/kd_tree.h>
 
@@ -193,7 +193,7 @@ namespace RINGMesh
         {
             if( index_map[p] == p )
             {
-                unique_points.push_back( point( p ) );
+                unique_points.emplace_back( point( p ) );
                 index_map[p] = p - offset;
             }
             else
