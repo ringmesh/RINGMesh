@@ -64,7 +64,7 @@ namespace RINGMesh
             : nb_cells_in_each_direction_( std::move( nb_cells_in_each_direction ) ),
 			  cartesian_frame_( std::move( vec_cartesian_axis  ) )
         {
-            nb_total_cells_{ 1 };
+            nb_total_cells_ = 1;
             for( auto i : range( DIMENSION ) )
             {
                 nb_total_cells_ *= nb_cells_in_each_direction[i];
