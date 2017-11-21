@@ -349,7 +349,7 @@ set(CPACK_PACKAGE_VERSION_PATCH ${RINGMesh_VERSION_PATCH})
 set(CPACK_PACKAGE_VENDOR "RING-TEAM (www.ring-team.org)")
 set(CPACK_SOURCE_GENERATOR "ZIP")
 
-set(CPACK_SOURCE_IGNORE_FILES "/build/;/.hg/;/_CPack_Packages/")
+set(CPACK_SOURCE_IGNORE_FILES "/build/;/.git/;/_CPack_Packages/")
 
 # This must always be last!
 include(CPack)
