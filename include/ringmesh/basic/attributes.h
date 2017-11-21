@@ -148,10 +148,10 @@ namespace RINGMesh
 
         bool elements_type_matches( const std::string& type_name ) const final
         {
-            return type_name == typeid( T ).name();
+            return type_name == element_typeid_name();
         }
 
-        std::string element_typeid_name() const final
+        std::string element_typeid_name() const override
         {
             return typeid( T ).name();
         }
@@ -257,6 +257,10 @@ namespace RINGMesh
             result->resize( this->size() );
             result->vector_ = vector_;
             return result;
+        }
+        std::string element_typeid_name() const final
+        {
+            return "bool";
         }
     };
 
