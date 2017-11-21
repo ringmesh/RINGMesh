@@ -159,7 +159,7 @@ namespace RINGMesh
                 for( auto coor : range( DIMENSION ) )
                 {
                     global_coords[coord] +=
-                        local_coords[coor] * this->operator[](coor)[coord];
+                        local_coords[coor] * this->operator[]( coor )[coord];
                 }
             }
             return global_coords;
