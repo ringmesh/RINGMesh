@@ -55,7 +55,7 @@ if(MG_TETRA)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PLATFORM _64)
   else(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    SET(PLATFORM)
+    set(PLATFORM)
   endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
   # Is there not a nice way to import this library? [JP]
