@@ -147,23 +147,23 @@ namespace RINGMesh
             return origin_;
         }
 
-        vecn< DIMENSION > coords_to_frame(
-            const vecn< DIMENSION > base_coords ) const;
+        vecn< DIMENSION > coords_to_local(
+            const vecn< DIMENSION > global_coords ) const;
 
-        vecn< DIMENSION > coords_to_base(
-            const vecn< DIMENSION > frame_coords ) const
+        vecn< DIMENSION > coords_to_global(
+            const vecn< DIMENSION > local_coords ) const
         {
-            vecn< DIMENSION > base_coords;
+            vecn< DIMENSION > global_coords;
             for( auto coord : RINGMesh::range( DIMENSION ) )
             {
-                base_coords[coord] = ( *this ).origin()[coord];
+                global_coords[coord] = ( *this ).origin()[coord];
                 for( auto coor : RINGMesh::range( DIMENSION ) )
                 {
-                    base_coords[coord] +=
-                        frame_coords[coor] * ( *this )[coor][coord];
+                    global_coords[coord] +=
+                        local_coords[coor] * ( *this )[coor][coord];
                 }
             }
-            return base_coords;
+            return global_coords;
         }
 
     private:
@@ -201,22 +201,22 @@ namespace RINGMesh
             }
         }
 
-        vec3 coords_to_frame( const vec3 base_coords ) const
+        vec3 coords_to_local( const vec3 global_coords ) const
         {
-            vec3 frame_coords;
-            frame_coords[0] = base_change_.origin()[0]
-                              + base_coords[0] * base_change_[0][0]
-                              + base_coords[1] * base_change_[1][0]
-                              + base_coords[2] * base_change_[2][0];
-            frame_coords[1] = base_change_.origin()[1]
-                              + base_coords[0] * base_change_[0][1]
-                              + base_coords[1] * base_change_[1][1]
-                              + base_coords[2] * base_change_[2][1];
-            frame_coords[2] = base_change_.origin()[2]
-                              + base_coords[0] * base_change_[0][2]
-                              + base_coords[1] * base_change_[1][2]
-                              + base_coords[2] * base_change_[2][2];
-            return frame_coords;
+            vec3 local_coords;
+            local_coords[0] = base_change_.origin()[0]
+                              + global_coords[0] * base_change_[0][0]
+                              + global_coords[1] * base_change_[1][0]
+                              + global_coords[2] * base_change_[2][0];
+            local_coords[1] = base_change_.origin()[1]
+                              + global_coords[0] * base_change_[0][1]
+                              + global_coords[1] * base_change_[1][1]
+                              + global_coords[2] * base_change_[2][1];
+            local_coords[2] = base_change_.origin()[2]
+                              + global_coords[0] * base_change_[0][2]
+                              + global_coords[1] * base_change_[1][2]
+                              + global_coords[2] * base_change_[2][2];
+            return local_coords;
         }
 
     protected:
