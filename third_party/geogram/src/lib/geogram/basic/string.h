@@ -91,7 +91,6 @@ namespace GEO {
             bool skip_empty_fields = true
         );
 
-
         /**
          * \brief Splits a string into two parts.
          * \param[in] in the input string to split

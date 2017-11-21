@@ -128,9 +128,11 @@ namespace
         {
             return;
         }
-        const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3;
+        const index_t COORDY{ ( COORDX + 1 ) % 3 };
+        const index_t COORDZ{ ( COORDY + 1 ) % 3 };
 
-        auto m0 = begin, m8 = end;
+        auto m0 = begin;
+        auto m8 = end;
         auto m4 = split( m0, m8, Morton_cmp3D( bboxes, COORDX ) );
         auto m2 = split( m0, m4, Morton_cmp3D( bboxes, COORDY ) );
         auto m1 = split( m0, m2, Morton_cmp3D( bboxes, COORDZ ) );
@@ -160,7 +162,8 @@ namespace
         }
         const index_t COORDY = ( COORDX + 1 ) % 2;
 
-        auto m0 = begin, m4 = end;
+        auto m0 = begin;
+        auto m4 = end;
         auto m2 = split( m0, m4, Morton_cmp2D( bboxes, COORDX ) );
         auto m1 = split( m0, m2, Morton_cmp2D( bboxes, COORDY ) );
         auto m3 = split( m2, m4, Morton_cmp2D( bboxes, COORDY ) );
@@ -203,7 +206,9 @@ namespace RINGMesh
         {
             return node_index;
         }
-        index_t element_middle, child_left, child_right;
+        index_t element_middle;
+        index_t child_left;
+        index_t child_right;
         get_recursive_iterators( node_index, box_begin, box_end, element_middle,
             child_left, child_right );
         return std::max(
@@ -234,7 +239,9 @@ namespace RINGMesh
             node( node_index ) = bboxes[mapping_morton_[element_begin]];
             return;
         }
-        index_t element_middle, child_left, child_right;
+        index_t element_middle;
+        index_t child_left;
+        index_t child_right;
         get_recursive_iterators( node_index, element_begin, element_end,
             element_middle, child_left, child_right );
         ringmesh_assert( child_left < tree_.size() );
@@ -257,7 +264,9 @@ namespace RINGMesh
         index_t node_index = ROOT_INDEX;
         while( !is_leaf( box_begin, box_end ) )
         {
-            index_t box_middle, child_left, child_right;
+            index_t box_middle;
+            index_t child_left;
+            index_t child_right;
             get_recursive_iterators( node_index, box_begin, box_end, box_middle,
                 child_left, child_right );
             if( length2( node( child_left ).center() - query )

@@ -39,9 +39,8 @@
 #include <geogram/basic/numeric.h>
 
 /*!
- * @file Re-defintions of basic types similar to those of Geogram
+ * @file Re-definitions of basic types similar to those of Geogram
  */
-
 namespace RINGMesh
 {
     /* If you need interger of 8bits of any other one

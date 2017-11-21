@@ -31,17 +31,22 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-function(source_file_directory var directory)
+macro(add_folder src_files include_files directory)
+    source_file_directory(${src_files} ${directory})
+    include_file_directory(${include_files} ${directory})
+endmacro()
+
+macro(source_file_directory var directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/*.cpp")
     source_group("Source Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources} PARENT_SCOPE)
-endfunction()
+    set(${var} ${${var}} ${sources})
+endmacro()
 
-function(include_file_directory var directory)
+macro(include_file_directory var directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/include/ringmesh/${directory}/*.h")
     source_group("Header Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources} PARENT_SCOPE)
-endfunction()
+    set(${var} ${${var}} ${sources})
+endmacro()
 
 macro(copy_for_windows directory)
 
@@ -59,24 +64,29 @@ if(WIN32)
             COMMENT "Copy RINGMesh dll")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
+            "${GEOGRAM_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy geogram binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${ZLIB_PATH_BIN}/$<CONFIGURATION>"
+            "${GEOGRAM_INSTALL_PREFIX}/lib"
+            "${directory}/$<CONFIGURATION>"
+            COMMENT "Copy geogram visualization libraries")
+    add_custom_command(TARGET RINGMesh POST_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${ZLIB_ROOT}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy zlib binaries")
     add_custom_command(TARGET RINGMesh POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${TINYXML2_PATH_BIN}/$<CONFIGURATION>"
+            "${TINYXML2_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy minizip binaries")
+#    add_custom_command(TARGET RINGMesh POST_BUILD
+#        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+#            "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
+#            "${directory}/$<CONFIGURATION>"
+#            COMMENT "Copy minizip binaries")
 endif(WIN32)
 endmacro()
 
@@ -85,7 +95,7 @@ macro(add_ringmesh_executable exe_path folder_name)
 
     # Set the target as an executable
     add_executable(${exe_name} ${exe_path})
-    target_link_libraries(${exe_name} PRIVATE RINGMesh geogram)
+    target_link_libraries(${exe_name} PRIVATE RINGMesh)
     add_dependencies(${exe_name} RINGMesh)
 
     # Add the project to a folder of projects for the tests

@@ -280,11 +280,22 @@ namespace RINGMesh
          * @brief Gets the number of all polygons in the whole Mesh.
          */
         virtual index_t nb_polygons() const = 0;
+
         /*!
          * @brief Gets the number of vertices in the polygon \param polygon_id.
          * @param[in] polygon_id polygon index
          */
         virtual index_t nb_polygon_vertices( index_t polygon_id ) const = 0;
+
+        /*!
+         * @brief Gets the number of edges in the polygon \param polygon_id.
+         * @param[in] polygon_id polygon index
+         */
+        index_t nb_polygon_edges( index_t polygon_id ) const
+        {
+            return nb_polygon_vertices( polygon_id );
+        }
+
         /*!
          * @brief Gets the next vertex index in the polygon vertex
          * \param polygon_local_vertex.
@@ -403,12 +414,14 @@ namespace RINGMesh
         {
             return polygon_attributes_manager_;
         }
+
         /*!
          * @brief Tests whether all the polygons are triangles. when all the
          * polygons are triangles, storage and access is optimized.
          * @return True if all polygons are triangles and False otherwise.
          */
         virtual bool polygons_are_simplicies() const = 0;
+
         /*!
          * return true if the polygon \param polygon_id is a triangle
          */
