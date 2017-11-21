@@ -132,7 +132,8 @@ namespace RINGMesh
 
         ReferenceFrame(
             vecn< DIMENSION > frame_origin, Frame< DIMENSION > frame )
-            : Frame< DIMENSION >( std::move( frame ) ), origin_( std::move( frame_origin ) )
+            : Frame< DIMENSION >( std::move( frame ) ),
+              origin_( std::move( frame_origin ) )
         {
         }
 
