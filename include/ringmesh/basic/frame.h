@@ -134,83 +134,93 @@ namespace RINGMesh
             vecn< DIMENSION > frame_origin, Frame< DIMENSION > frame )
             : Frame< DIMENSION >( std::move( frame ) )
         {
-        	origin_ = std::move( frame_origin );
+            origin_ = std::move( frame_origin );
         }
 
-		const vecn< DIMENSION >& origin() const
-		{
-			return origin_;
-		}
+        const vecn< DIMENSION >& origin() const
+        {
+            return origin_;
+        }
 
-		vecn< DIMENSION >& origin()
-		{
-			return origin_;
-		}
+        vecn< DIMENSION >& origin()
+        {
+            return origin_;
+        }
 
-        vecn< DIMENSION > coords_to_frame(const vecn< DIMENSION > base_coords) const;
+        vecn< DIMENSION > coords_to_frame(
+            const vecn< DIMENSION > base_coords ) const;
 
-        vecn< DIMENSION > coords_to_base(const vecn< DIMENSION > frame_coords) const
-		{
-        	vecn< DIMENSION > base_coords;
-        	for( auto coord : RINGMesh::range( DIMENSION ) )
-			{
-        		base_coords[coord] = ( *this ).origin()[coord];
-        		for( auto coor : RINGMesh::range( DIMENSION ) )
-				{
-					base_coords[coord] += frame_coords[coor]*( *this )[coor][coord];
-				}
-			}
-        	return base_coords;
-		}
+        vecn< DIMENSION > coords_to_base(
+            const vecn< DIMENSION > frame_coords ) const
+        {
+            vecn< DIMENSION > base_coords;
+            for( auto coord : RINGMesh::range( DIMENSION ) )
+            {
+                base_coords[coord] = ( *this ).origin()[coord];
+                for( auto coor : RINGMesh::range( DIMENSION ) )
+                {
+                    base_coords[coord] +=
+                        frame_coords[coor] * ( *this )[coor][coord];
+                }
+            }
+            return base_coords;
+        }
 
-	private:
-		vecn< DIMENSION > origin_{};
+    private:
+        vecn< DIMENSION > origin_{};
     };
     ALIAS_2D_AND_3D( ReferenceFrame );
 
     class RINGMESH_API CGFrame3D : public ReferenceFrame< 3 >
     {
     public:
-    	CGFrame3D() = default;
+        CGFrame3D() = default;
 
-    	CGFrame3D( vec3 frame_origin, Frame3D frame )
+        CGFrame3D( vec3 frame_origin, Frame3D frame )
             : ReferenceFrame3D( std::move( frame_origin ), std::move( frame ) )
         {
-    		base_change_ = ReferenceFrame3D();
-    		GEO::Matrix< 3, double > bchange;
-    		for (index_t i=0; i<3; i++)
-    		{
-    			for (index_t j=0; j<3; j++)
-    			{
-    				bchange(i,j) = frame[j][i];
-    			}
-    		}
-    		bchange = bchange.inverse();
-    		for (index_t i=0; i<3; i++)
-    		{
-    			base_change_.origin()[i] = 0;
-    			for (index_t j=0; j<3; j++)
-    			{
-    				base_change_.origin()[i] -= bchange(i,j)*( *this ).origin()[j];
-    				base_change_[i][j] = bchange(j,i);
-    			}
-    		}
+            base_change_ = ReferenceFrame3D();
+            GEO::Matrix< 3, double > bchange;
+            for( index_t i = 0; i < 3; i++ )
+            {
+                for( index_t j = 0; j < 3; j++ )
+                {
+                    bchange( i, j ) = frame[j][i];
+                }
+            }
+            bchange = bchange.inverse();
+            for( index_t i = 0; i < 3; i++ )
+            {
+                base_change_.origin()[i] = 0;
+                for( index_t j = 0; j < 3; j++ )
+                {
+                    base_change_.origin()[i] -=
+                        bchange( i, j ) * ( *this ).origin()[j];
+                    base_change_[i][j] = bchange( j, i );
+                }
+            }
         }
 
-    	vec3 coords_to_frame(const vec3 base_coords) const
-    	{
-    		vec3 frame_coords;
-    		frame_coords[0] = base_change_.origin()[0]+base_coords[0]*base_change_[0][0]
-								+base_coords[1]*base_change_[1][0]+base_coords[2]*base_change_[2][0];
-    		frame_coords[1] = base_change_.origin()[1]+base_coords[0]*base_change_[0][1]
-								+base_coords[1]*base_change_[1][1]+base_coords[2]*base_change_[2][1];
-    		frame_coords[2] = base_change_.origin()[2]+base_coords[0]*base_change_[0][2]
-								+base_coords[1]*base_change_[1][2]+base_coords[2]*base_change_[2][2];
-    		return frame_coords;
-    	}
+        vec3 coords_to_frame( const vec3 base_coords ) const
+        {
+            vec3 frame_coords;
+            frame_coords[0] = base_change_.origin()[0]
+                              + base_coords[0] * base_change_[0][0]
+                              + base_coords[1] * base_change_[1][0]
+                              + base_coords[2] * base_change_[2][0];
+            frame_coords[1] = base_change_.origin()[1]
+                              + base_coords[0] * base_change_[0][1]
+                              + base_coords[1] * base_change_[1][1]
+                              + base_coords[2] * base_change_[2][1];
+            frame_coords[2] = base_change_.origin()[2]
+                              + base_coords[0] * base_change_[0][2]
+                              + base_coords[1] * base_change_[1][2]
+                              + base_coords[2] * base_change_[2][2];
+            return frame_coords;
+        }
 
     protected:
-    	ReferenceFrame3D base_change_;
+        ReferenceFrame3D base_change_;
     };
 
     /*!
