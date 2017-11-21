@@ -148,15 +148,14 @@ namespace RINGMesh
         }
 
         vecn< DIMENSION > coords_to_local(
-            const vecn< DIMENSION > global_coords ) const;
+            const vecn< DIMENSION >& global_coords ) const;
 
         vecn< DIMENSION > coords_to_global(
-            const vecn< DIMENSION > local_coords ) const
+            const vecn< DIMENSION >& local_coords ) const
         {
-            vecn< DIMENSION > global_coords;
+            vecn< DIMENSION > global_coords = ( *this ).origin();
             for( auto coord : RINGMesh::range( DIMENSION ) )
             {
-                global_coords[coord] = ( *this ).origin()[coord];
                 for( auto coor : RINGMesh::range( DIMENSION ) )
                 {
                     global_coords[coord] +=
@@ -171,32 +170,30 @@ namespace RINGMesh
     };
     ALIAS_2D_AND_3D( ReferenceFrame );
 
-    class RINGMESH_API CGFrame3D : public ReferenceFrame< 3 >
+    class RINGMESH_API CartesianGridFrame3D : public ReferenceFrame< 3 >
     {
     public:
-        CGFrame3D() = default;
+        CartesianGridFrame3D() = default;
 
-        CGFrame3D( vec3 frame_origin, Frame3D frame )
+        CartesianGridFrame3D( vec3 frame_origin, Frame3D frame )
             : ReferenceFrame3D( std::move( frame_origin ), std::move( frame ) )
         {
-            base_change_ = ReferenceFrame3D();
-            GEO::Matrix< 3, double > bchange;
-            for( index_t i = 0; i < 3; i++ )
+            GEO::Matrix< 3, double > basechangematrix;
+            for( auto i : RINGMesh::range( 3 ) )
             {
-                for( index_t j = 0; j < 3; j++ )
+                for( auto j : RINGMesh::range( 3 ) )
                 {
-                    bchange( i, j ) = frame[j][i];
+                    basechangematrix( i, j ) = frame[j][i];
                 }
             }
-            bchange = bchange.inverse();
-            for( index_t i = 0; i < 3; i++ )
+            basechangematrix = basechangematrix.inverse();
+            for( auto i : RINGMesh::range( 3 ) )
             {
-                base_change_.origin()[i] = 0;
-                for( index_t j = 0; j < 3; j++ )
+                for( auto j : RINGMesh::range( 3 ) )
                 {
                     base_change_.origin()[i] -=
-                        bchange( i, j ) * ( *this ).origin()[j];
-                    base_change_[i][j] = bchange( j, i );
+                        basechangematrix( i, j ) * ( *this ).origin()[j];
+                    base_change_[i][j] = basechangematrix( j, i );
                 }
             }
         }

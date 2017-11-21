@@ -37,16 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
-//#include <memory>
-
-//#include <geogram/mesh/mesh.h>
-//#include <geogram/mesh/mesh_io.h>
-
-//#include <ringmesh/geogram_extension/geogram_extension.h>
-
 #include <ringmesh/basic/frame.h>
-//#include <ringmesh/mesh/mesh.h>
-//#include <ringmesh/mesh/mesh_index.h>
+#include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh
 {
@@ -63,24 +55,26 @@ namespace RINGMesh
     template < index_t DIMENSION >
     class RINGMESH_API CartesianGrid
     {
+        ringmesh_disable_copy_and_move( CartesianGrid );
         friend class CartesianGridBuilder< DIMENSION >;
 
     public:
-        CartesianGrid( intvecn< DIMENSION > nb_cells,
+        CartesianGrid( intvecn< DIMENSION > nb_cells_in_each_direction,
             index_t nb_total_cells,
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
-            : nb_cells_( nb_cells ), cartesian_frame_( vec_cartesian_axis )
+            : nb_cells_in_each_direction_( std::move( nb_cells_in_each_direction ) ),
+			  cartesian_frame_( std::move( vec_cartesian_axis  ) )
         {
             nb_total_cells_ = 1;
             for( auto i : RINGMesh::range( DIMENSION ) )
             {
-                nb_total_cells_ *= nb_cells;
+                nb_total_cells_ *= nb_cells_in_each_direction[i];
             }
         }
 
         static MeshType type_name_static()
         {
-            return 'CartesianGrid';
+            return "CartesianGrid";
         }
         void save_mesh( const std::string& filename ) const
         {
@@ -112,45 +106,26 @@ namespace RINGMesh
         //			return mesh_->vertices.nb();
         //		}
 
-    private:
-        /**
-         * \brief Forbids copy.
-         * \details This is to make sure that client code does
-         *   not unintentionally copy a Mesh (for
-         *   instance by passing it by-value to a function).
-         *   Use copy() instead.
-         */
-        CartesianGrid( const CartesianGrid& rhs );
-
-        /**
-         * \brief Forbids copy.
-         * \details This is to make sure that client code does
-         *   not unintentionally copies a Mesh (for
-         *   instance by passing it by-value to a function).
-         *   Use copy() instead.
-         */
-        const CartesianGrid& operator=( const CartesianGrid& rhs );
-
-    protected:
-        intvecn< DIMENSION > nb_cells_;
-        index_t nb_total_cells_;
-
-        ReferenceFrame< DIMENSION > cartesian_frame_;
-
-    public:
         vecn< DIMENSION > cell_center_reference_coords(
             const intvecn< DIMENSION > cartesian_coords ) const
         {
-            vecn< DIMENSION > cart_double_coords;
+            vecn< DIMENSION > cartesian_double_coords;
             for( auto i : RINGMesh::range( DIMENSION ) )
             {
-                cart_double_coords[i] =
+                cartesian_double_coords[i] =
                     static_cast< double >( cartesian_coords[i] );
             }
-            return cartesian_frame_.coords_to_base( cart_double_coords );
+            return cartesian_frame_.coords_to_base( cartesian_double_coords );
         }
 
-        intvecn< DIMENSION > containing_cell(
+        intvecn< DIMENSION > containing_cell_from_global_vertex(
+        		const vecn< DIMENSION > reference_vertex) const
+        {
+        	vecn< DIMENSION > frame_vertex = cartesian_frame_.coords_to_frame( reference_vertex );
+        	return containing_cell( frame_vertex );
+        }
+
+        intvecn< DIMENSION > containing_cell_from_local_vertex(
             const vecn< DIMENSION > vertex ) const
         {
             intvecn< DIMENSION > coord;
@@ -163,12 +138,12 @@ namespace RINGMesh
 
         index_t cell_offset( const intvecn< DIMENSION > coords ) const
         {
-            index_t offset = 0;
-            index_t mult = 1;
+            index_t offset{ 0 };
+            index_t mult{ 1 };
             for( auto i : RINGMesh::range( DIMENSION ) )
             {
                 offset += coords[i] * mult;
-                mult *= nb_cells_[i];
+                mult *= nb_cells_in_each_direction_[i];
             }
             return offset;
         }
@@ -176,15 +151,27 @@ namespace RINGMesh
         intvecn< DIMENSION > ijk_from_offset( const index_t offset ) const
         {
             intvecn< DIMENSION > coords;
-            index_t off = 0;
-            index_t div = nb_total_cells_ / nb_cells_[DIMENSION - 1];
+            index_t off{ 0 };
+            index_t div{ nb_total_cells_ / nb_cells_in_each_direction_[DIMENSION - 1] };
             for( auto i : RINGMesh::range( DIMENSION ) )
             {
                 coords[DIMENSION - 1 - i] = ( offset - off ) / div;
                 off += coords[DIMENSION - 1 - i] * div;
-                div /= nb_cells_[DIMENSION - 1 - i];
+                div /= nb_cells_in_each_direction_[DIMENSION - 1 - i];
             }
             return coords;
         }
+
+    protected:
+        intvecn< DIMENSION > nb_cells_in_each_direction_;
+        index_t nb_total_cells_;
+
+        ReferenceFrame< DIMENSION > cartesian_frame_;
     };
+    ALIAS_2D_AND_3D( CartesianGrid );
+    
+    class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh
+	{
+
+	};
 }
