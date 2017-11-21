@@ -125,10 +125,17 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-	class RINGMESH_API ReferenceFrameBase : Frame< DIMENSION >
-	{
-	public:
-		virtual ~ReferenceFrameBase() = default;
+    class RINGMESH_API ReferenceFrame : public Frame< DIMENSION >
+    {
+    public:
+        ReferenceFrame() = default;
+
+        ReferenceFrame(
+            vecn< DIMENSION > frame_origin, Frame< DIMENSION > frame )
+            : Frame< DIMENSION >( std::move( frame ) )
+        {
+        	origin_ = std::move( frame_origin );
+        }
 
 		const vecn< DIMENSION >& origin() const
 		{
@@ -140,27 +147,6 @@ namespace RINGMesh
 			return origin_;
 		}
 
-	protected:
-		ReferenceFrameBase() = default;
-
-	private:
-		vecn< DIMENSION > origin_{};
-	};
-	ALIAS_2D_AND_3D( ReferenceFrameBase );
-
-    template < index_t DIMENSION >
-    class RINGMESH_API ReferenceFrame : public ReferenceFrameBase< DIMENSION >
-    {
-    public:
-        ReferenceFrame() = default;
-
-        ReferenceFrame(
-            vecn< DIMENSION > frame_origin, Frame< DIMENSION > frame )
-            : Frame< DIMENSION >( std::move( frame ) ),
-              origin_( std::move( frame_origin ) )
-        {
-        }
-
         vecn< DIMENSION > coords_to_frame(const vecn< DIMENSION > base_coords) const;
 
         vecn< DIMENSION > coords_to_base(const vecn< DIMENSION > frame_coords) const
@@ -168,41 +154,45 @@ namespace RINGMesh
         	vecn< DIMENSION > base_coords;
         	for( auto coord : RINGMesh::range( DIMENSION ) )
 			{
-        		base_coords[coord] = origin_[coord];
+        		base_coords[coord] = ( *this ).origin()[coord];
         		for( auto coor : RINGMesh::range( DIMENSION ) )
 				{
-					base_coords[coord] += frame_coords[coor]*axis_[coor][coord];
+					base_coords[coord] += frame_coords[coor]*( *this )[coor][coord];
 				}
 			}
         	return base_coords;
 		}
+
+	private:
+		vecn< DIMENSION > origin_{};
     };
     ALIAS_2D_AND_3D( ReferenceFrame );
 
-    class RINGMESH_API CartesianGridFrame3D : public ReferenceFrame< 3 >
+    class RINGMESH_API CGFrame3D : public ReferenceFrame< 3 >
     {
     public:
-    	CartesianGridFrame3D() = default;
+    	CGFrame3D() = default;
 
-    	CartesianGridFrame3D( vec3 frame_origin, Frame3D frame )
+    	CGFrame3D( vec3 frame_origin, Frame3D frame )
             : ReferenceFrame3D( std::move( frame_origin ), std::move( frame ) )
         {
+    		base_change_ = ReferenceFrame3D();
     		GEO::Matrix< 3, double > bchange;
-    		for (int i=0; i<3; i++)
+    		for (index_t i=0; i<3; i++)
     		{
-    			for (int j=0; j<3; j++)
+    			for (index_t j=0; j<3; j++)
     			{
-    				bchange[i][j] = frame[j][i];
+    				bchange(i,j) = frame[j][i];
     			}
     		}
     		bchange = bchange.inverse();
-    		for (int i=0; i<3; i++)
+    		for (index_t i=0; i<3; i++)
     		{
     			base_change_.origin()[i] = 0;
-    			for (int j=0; j<3; j++)
+    			for (index_t j=0; j<3; j++)
     			{
-    				base_change_.origin()[i] -= bchange[i][j]*origin_[j];
-    				base_change_[i][j] = bchange[j][i];
+    				base_change_.origin()[i] -= bchange(i,j)*( *this ).origin()[j];
+    				base_change_[i][j] = bchange(j,i);
     			}
     		}
         }
@@ -219,7 +209,7 @@ namespace RINGMesh
     		return frame_coords;
     	}
 
-    private:
+    protected:
     	ReferenceFrame3D base_change_;
     };
 
