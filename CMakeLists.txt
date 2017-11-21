@@ -35,7 +35,7 @@
 #------------------------------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.1)
-set(USER_CONFIG "${CMAKE_SOURCE_DIR}/cmake/UserConfig.cmake" CACHE PATH
+set(USER_CONFIG cmake/UserConfig.cmake CACHE PATH
   "Path to optional user configuration file.")
 
 #------------------------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ set(USER_CONFIG "${CMAKE_SOURCE_DIR}/cmake/UserConfig.cmake" CACHE PATH
 # have the defaults.
 message(STATUS "(optional) USER_CONFIG = ${USER_CONFIG}")
 include("${USER_CONFIG}" OPTIONAL)
-include("${CMAKE_SOURCE_DIR}/cmake/DefaultConfig.cmake")
+include(cmake/DefaultConfig.cmake)
 
 #------------------------------------------------------------------------------------------------
 #ensure consistent choice in configuration options
@@ -68,7 +68,7 @@ set(CMAKE_INSTALL_MESSAGE LAZY)
 # the one of RINGMesh. This is done during compilation, i.e., RINGMesh.cmake is
 # called (USE_SUPERBUILD = OFF) when the super build project is compiled.
 if(USE_SUPERBUILD)
-    include("${CMAKE_SOURCE_DIR}/cmake/SuperBuild.cmake")
+    include(cmake/SuperBuild.cmake)
 else(USE_SUPERBUILD)
-    include("${CMAKE_SOURCE_DIR}/cmake/RINGMesh.cmake")
+    include(cmake/RINGMesh.cmake)
 endif(USE_SUPERBUILD)
