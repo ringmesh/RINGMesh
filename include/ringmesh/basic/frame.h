@@ -153,13 +153,13 @@ namespace RINGMesh
         vecn< DIMENSION > coords_to_global(
             const vecn< DIMENSION >& local_coords ) const
         {
-            vecn< DIMENSION > global_coords = ( *this ).origin();
-            for( auto coord : RINGMesh::range( DIMENSION ) )
+            vecn< DIMENSION > global_coords = this->origin();
+            for( auto coord : range( DIMENSION ) )
             {
-                for( auto coor : RINGMesh::range( DIMENSION ) )
+                for( auto coor : range( DIMENSION ) )
                 {
                     global_coords[coord] +=
-                        local_coords[coor] * ( *this )[coor][coord];
+                        local_coords[coor] * this->operator[](coor)[coord];
                 }
             }
             return global_coords;
@@ -178,27 +178,27 @@ namespace RINGMesh
         CartesianGridFrame3D( vec3 frame_origin, Frame3D frame )
             : ReferenceFrame3D( std::move( frame_origin ), std::move( frame ) )
         {
-            GEO::Matrix< 3, double > basechangematrix;
-            for( auto i : RINGMesh::range( 3 ) )
+            GEO::Matrix< 3, double > base_change_matrix;
+            for( auto i : range( 3 ) )
             {
-                for( auto j : RINGMesh::range( 3 ) )
+                for( auto j : range( 3 ) )
                 {
-                    basechangematrix( i, j ) = frame[j][i];
+                    base_change_matrix( i, j ) = frame[j][i];
                 }
             }
-            basechangematrix = basechangematrix.inverse();
-            for( auto i : RINGMesh::range( 3 ) )
+            base_change_matrix = base_change_matrix.inverse();
+            for( auto i : range( 3 ) )
             {
-                for( auto j : RINGMesh::range( 3 ) )
+                for( auto j : range( 3 ) )
                 {
                     base_change_.origin()[i] -=
-                        basechangematrix( i, j ) * ( *this ).origin()[j];
-                    base_change_[i][j] = basechangematrix( j, i );
+                        base_change_matrix( i, j ) * this->origin()[j];
+                    base_change_[i][j] = base_change_matrix( j, i );
                 }
             }
         }
 
-        vec3 coords_to_local( const vec3 global_coords ) const
+        vec3 coords_to_local( const vec3& global_coords ) const
         {
             vec3 local_coords;
             local_coords[0] = base_change_.origin()[0]
