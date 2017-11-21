@@ -63,6 +63,10 @@ CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
+# CMake is called, a main project (super build project) is generated first.
+# This main project is responsible to create third party cmake projects including
+# the one of RINGMesh. This is done during compilation, i.e., RINGMesh.cmake is
+# called (USE_SUPERBUILD = OFF) when the super build project is compiled.
 if(USE_SUPERBUILD)
     include("${CMAKE_SOURCE_DIR}/cmake/SuperBuild.cmake")
 else(USE_SUPERBUILD)
