@@ -159,30 +159,31 @@ namespace RINGMesh
         static vecn< DIMENSION > coords_from_global_to_frame(
             const ReferenceFrame< DIMENSION >& reference_frame,
             const vecn< DIMENSION >& global_coords )
-	        {
-	            GEO::Matrix< DIMENSION, double > base_change_matrix;
-	            for( auto i : range( DIMENSION ) )
-	            {
-	                for( auto j : range( DIMENSION ) )
-	                {
-	                    base_change_matrix( i, j ) = reference_frame[j][i];
-	                }
-	            }
-	            base_change_matrix = base_change_matrix.inverse();
-	            vecn< DIMENSION > local_coords;
-	            for( auto i : range( DIMENSION ) )
-	            {
-	                for( auto j : range( DIMENSION ) )
-	                {
-	                	local_coords[i] +=
-	                        base_change_matrix( i, j ) * ( global_coords[j] - reference_frame.origin()[j] );
-	                }
-	            }
-	            return local_coords;
-	        }
+        {
+            GEO::Matrix< DIMENSION, double > base_change_matrix;
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto j : range( DIMENSION ) )
+                {
+                    base_change_matrix( i, j ) = reference_frame[j][i];
+                }
+            }
+            base_change_matrix = base_change_matrix.inverse();
+            vecn< DIMENSION > local_coords;
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto j : range( DIMENSION ) )
+                {
+                    local_coords[i] +=
+                        base_change_matrix( i, j )
+                        * ( global_coords[j] - reference_frame.origin()[j] );
+                }
+            }
+            return local_coords;
+        }
 
         static vecn< DIMENSION > coords_from_frame_to_global(
-        	const ReferenceFrame< DIMENSION >& reference_frame,
+            const ReferenceFrame< DIMENSION >& reference_frame,
             const vecn< DIMENSION >& local_coords )
         {
             vecn< DIMENSION > global_coords = reference_frame->origin();
@@ -198,29 +199,30 @@ namespace RINGMesh
         }
 
         static ReferenceFrame< DIMENSION > reference_frame_from_global_to_local(
-        	const ReferenceFrame< DIMENSION >& reference_frame )
-		{
-        	ReferenceFrame< DIMENSION > inverse_reference_frame;
-			GEO::Matrix< DIMENSION, double > base_change_matrix;
-			for( auto i : range( DIMENSION ) )
-			{
-				for( auto j : range( DIMENSION ) )
-				{
-					base_change_matrix( i, j ) = reference_frame[j][i];
-				}
-			}
-			base_change_matrix = base_change_matrix.inverse();
-			for( auto i : range( DIMENSION ) )
-			{
-				for( auto j : range( DIMENSION ) )
-				{
-					inverse_reference_frame.origin()[i] -=
-						base_change_matrix( i, j ) * reference_frame.origin()[j];
-					inverse_reference_frame[i][j] = base_change_matrix( j, i );
-				}
-			}
-			return inverse_reference_frame;
-		}
+            const ReferenceFrame< DIMENSION >& reference_frame )
+        {
+            ReferenceFrame< DIMENSION > inverse_reference_frame;
+            GEO::Matrix< DIMENSION, double > base_change_matrix;
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto j : range( DIMENSION ) )
+                {
+                    base_change_matrix( i, j ) = reference_frame[j][i];
+                }
+            }
+            base_change_matrix = base_change_matrix.inverse();
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto j : range( DIMENSION ) )
+                {
+                    inverse_reference_frame.origin()[i] -=
+                        base_change_matrix( i, j )
+                        * reference_frame.origin()[j];
+                    inverse_reference_frame[i][j] = base_change_matrix( j, i );
+                }
+            }
+            return inverse_reference_frame;
+        }
     };
     ALIAS_2D_AND_3D( FrameManipulator );
 

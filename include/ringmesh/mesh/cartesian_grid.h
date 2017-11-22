@@ -70,7 +70,9 @@ namespace RINGMesh
             {
                 nb_total_cells_ *= nb_cells_in_each_direction[i];
             }
-            inverse_cartesian_frame_ = FrameManipulator::reference_frame_from_global_to_local(cartesian_frame_);
+            inverse_cartesian_frame_ =
+                FrameManipulator::reference_frame_from_global_to_local(
+                    cartesian_frame_ );
         }
 
         static MeshType type_name_static()
@@ -117,14 +119,15 @@ namespace RINGMesh
                     static_cast< double >( cartesian_coords[i] );
             }
             return FrameManipulator::coords_from_frame_to_global(
-            		cartesian_frame_, cartesian_double_coords );
+                cartesian_frame_, cartesian_double_coords );
         }
 
         intvecn< DIMENSION >& containing_cell_from_global_vertex(
             const vecn< DIMENSION >& reference_vertex ) const
         {
-            vecn< DIMENSION > frame_vertex = FrameManipulator::coords_from_frame_to_global(
-            		inverse_cartesian_frame_, reference_vertex);
+            vecn< DIMENSION > frame_vertex =
+                FrameManipulator::coords_from_frame_to_global(
+                    inverse_cartesian_frame_, reference_vertex );
             return this->containing_cell_from_local_vertex( frame_vertex );
         }
 
