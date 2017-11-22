@@ -90,7 +90,7 @@ configure_package_config_file(
     cmake/RINGMeshConfig.cmake.in 
     ${CMAKE_BINARY_DIR}/RINGMeshConfig.cmake
     INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
-    PATH_VARS GEOGRAM_INSTALL_PREFIX TINYXML2_INSTALL_PREFIX MINIZIP_INSTALL_PREFIX
+    PATH_VARS GEOGRAM_INSTALL_PREFIX
 )
 
 #------------------------------------------------------------------------------------------------
