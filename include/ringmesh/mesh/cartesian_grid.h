@@ -70,6 +70,7 @@ namespace RINGMesh
             {
                 nb_total_cells_ *= nb_cells_in_each_direction[i];
             }
+            inverse_cartesian_frame_ = FrameManipulator::reference_frame_from_global_to_local(cartesian_frame_);
         }
 
         static MeshType type_name_static()
@@ -115,14 +116,15 @@ namespace RINGMesh
                 cartesian_double_coords[i] =
                     static_cast< double >( cartesian_coords[i] );
             }
-            return cartesian_frame_.coords_to_global( cartesian_double_coords );
+            return FrameManipulator::coords_from_frame_to_global(
+            		cartesian_frame_, cartesian_double_coords );
         }
 
         intvecn< DIMENSION >& containing_cell_from_global_vertex(
             const vecn< DIMENSION >& reference_vertex ) const
         {
-            vecn< DIMENSION > frame_vertex =
-                cartesian_frame_.coords_to_local( reference_vertex );
+            vecn< DIMENSION > frame_vertex = FrameManipulator::coords_from_frame_to_global(
+            		inverse_cartesian_frame_, reference_vertex);
             return this->containing_cell_from_local_vertex( frame_vertex );
         }
 
@@ -169,6 +171,7 @@ namespace RINGMesh
         index_t nb_total_cells_;
 
         ReferenceFrame< DIMENSION > cartesian_frame_;
+        ReferenceFrame< DIMENSION > inverse_cartesian_frame_;
     };
     ALIAS_2D_AND_3D( CartesianGrid );
 

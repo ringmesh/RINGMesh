@@ -147,78 +147,82 @@ namespace RINGMesh
             return origin_;
         }
 
-        vecn< DIMENSION > coords_to_local(
-            const vecn< DIMENSION >& global_coords ) const;
-
-        vecn< DIMENSION > coords_to_global(
-            const vecn< DIMENSION >& local_coords ) const
-        {
-            vecn< DIMENSION > global_coords = this->origin();
-            for( auto coord : range( DIMENSION ) )
-            {
-                for( auto coor : range( DIMENSION ) )
-                {
-                    global_coords[coord] +=
-                        local_coords[coor] * ( *this )[coor][coord];
-                }
-            }
-            return global_coords;
-        }
-
     private:
         vecn< DIMENSION > origin_{};
     };
     ALIAS_2D_AND_3D( ReferenceFrame );
 
-    class RINGMESH_API CartesianGridFrame3D : public ReferenceFrame< 3 >
+    template < index_t DIMENSION >
+    class RINGMESH_API FrameManipulator
     {
     public:
-        CartesianGridFrame3D() = default;
+        static vecn< DIMENSION > coords_from_global_to_frame(
+            const ReferenceFrame< DIMENSION >& reference_frame,
+            const vecn< DIMENSION >& global_coords )
+	        {
+	            GEO::Matrix< DIMENSION, double > base_change_matrix;
+	            for( auto i : range( DIMENSION ) )
+	            {
+	                for( auto j : range( DIMENSION ) )
+	                {
+	                    base_change_matrix( i, j ) = reference_frame[j][i];
+	                }
+	            }
+	            base_change_matrix = base_change_matrix.inverse();
+	            vecn< DIMENSION > local_coords;
+	            for( auto i : range( DIMENSION ) )
+	            {
+	                for( auto j : range( DIMENSION ) )
+	                {
+	                	local_coords[i] +=
+	                        base_change_matrix( i, j ) * ( global_coords[j] - reference_frame.origin()[j] );
+	                }
+	            }
+	            return local_coords;
+	        }
 
-        CartesianGridFrame3D( vec3 frame_origin, Frame3D frame )
-            : ReferenceFrame3D( std::move( frame_origin ), std::move( frame ) )
+        static vecn< DIMENSION > coords_from_frame_to_global(
+        	const ReferenceFrame< DIMENSION >& reference_frame,
+            const vecn< DIMENSION >& local_coords )
         {
-            GEO::Matrix< 3, double > base_change_matrix;
-            for( auto i : range( 3 ) )
+            vecn< DIMENSION > global_coords = reference_frame->origin();
+            for( auto coord : range( DIMENSION ) )
             {
-                for( auto j : range( 3 ) )
+                for( auto coor : range( DIMENSION ) )
                 {
-                    base_change_matrix( i, j ) = frame[j][i];
+                    global_coords[coord] +=
+                        local_coords[coor] * reference_frame[coor][coord];
                 }
             }
-            base_change_matrix = base_change_matrix.inverse();
-            for( auto i : range( 3 ) )
-            {
-                for( auto j : range( 3 ) )
-                {
-                    base_change_.origin()[i] -=
-                        base_change_matrix( i, j ) * this->origin()[j];
-                    base_change_[i][j] = base_change_matrix( j, i );
-                }
-            }
+            return global_coords;
         }
 
-        vec3 coords_to_local( const vec3& global_coords ) const
-        {
-            vec3 local_coords;
-            local_coords[0] = base_change_.origin()[0]
-                              + global_coords[0] * base_change_[0][0]
-                              + global_coords[1] * base_change_[1][0]
-                              + global_coords[2] * base_change_[2][0];
-            local_coords[1] = base_change_.origin()[1]
-                              + global_coords[0] * base_change_[0][1]
-                              + global_coords[1] * base_change_[1][1]
-                              + global_coords[2] * base_change_[2][1];
-            local_coords[2] = base_change_.origin()[2]
-                              + global_coords[0] * base_change_[0][2]
-                              + global_coords[1] * base_change_[1][2]
-                              + global_coords[2] * base_change_[2][2];
-            return local_coords;
-        }
-
-    protected:
-        ReferenceFrame3D base_change_;
+        static ReferenceFrame< DIMENSION > reference_frame_from_global_to_local(
+        	const ReferenceFrame< DIMENSION >& reference_frame )
+		{
+        	ReferenceFrame< DIMENSION > inverse_reference_frame;
+			GEO::Matrix< DIMENSION, double > base_change_matrix;
+			for( auto i : range( DIMENSION ) )
+			{
+				for( auto j : range( DIMENSION ) )
+				{
+					base_change_matrix( i, j ) = reference_frame[j][i];
+				}
+			}
+			base_change_matrix = base_change_matrix.inverse();
+			for( auto i : range( DIMENSION ) )
+			{
+				for( auto j : range( DIMENSION ) )
+				{
+					inverse_reference_frame.origin()[i] -=
+						base_change_matrix( i, j ) * reference_frame.origin()[j];
+					inverse_reference_frame[i][j] = base_change_matrix( j, i );
+				}
+			}
+			return inverse_reference_frame;
+		}
     };
+    ALIAS_2D_AND_3D( FrameManipulator );
 
     /*!
      * @brief Reference frame aligned along the plane normal and whose u axis is
