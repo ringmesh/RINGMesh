@@ -36,19 +36,20 @@
 
 /*!
 
-\page ringmesh_cmake_integration How to integrate RINGMesh in anther cmake project
+\page ringmesh_cmake_integration How to integrate RINGMesh in another cmake project
 
-This page explain how to complete a CMakeLists.txt of a project using RINGMesh as dependency.
+This page explains how to complete a CMakeLists.txt of a project using RINGMesh as dependency.
 
 
 Define a user-defined variable to get RINGMesh install directory path
 -------------------------------------------------------------
-The code below define a variable RINGMesh_INSTALL_PREFIX containing the path to the RINGMesh install directory.
+The code below defines a variable RINGMesh_INSTALL_PREFIX containing the path to the RINGMesh install directory.
 The user can change the default value (parent directory of the current cmake project).
-This directory has to contain a RINGMeshConfig.cmake file.
+This directory must contain a RINGMeshConfig.cmake file.
 
+Example:
 \code
-SET(RINGMesh_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/../RINGMesh" CACHE PATH "Path to RINGMesh install directory (mandatory dependency)")
+set(RINGMesh_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/../RINGMesh/build/Release" CACHE PATH "Path to RINGMesh install directory (mandatory dependency)")
 \endcode
 
 
