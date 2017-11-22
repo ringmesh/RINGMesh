@@ -61,8 +61,9 @@ namespace RINGMesh
     public:
         CartesianGrid( intvecn< DIMENSION > nb_cells_in_each_direction,
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
-            : nb_cells_in_each_direction_( std::move( nb_cells_in_each_direction ) ),
-			  cartesian_frame_( std::move( vec_cartesian_axis  ) )
+            : nb_cells_in_each_direction_(
+                  std::move( nb_cells_in_each_direction ) ),
+              cartesian_frame_( std::move( vec_cartesian_axis ) )
         {
             nb_total_cells_ = 1;
             for( auto i : range( DIMENSION ) )
@@ -118,10 +119,11 @@ namespace RINGMesh
         }
 
         intvecn< DIMENSION >& containing_cell_from_global_vertex(
-        		const vecn< DIMENSION >& reference_vertex) const
+            const vecn< DIMENSION >& reference_vertex ) const
         {
-        	vecn< DIMENSION > frame_vertex = cartesian_frame_.coords_to_local( reference_vertex );
-        	return this->containing_cell_from_local_vertex( frame_vertex );
+            vecn< DIMENSION > frame_vertex =
+                cartesian_frame_.coords_to_local( reference_vertex );
+            return this->containing_cell_from_local_vertex( frame_vertex );
         }
 
         intvecn< DIMENSION > containing_cell_from_local_vertex(
@@ -151,7 +153,8 @@ namespace RINGMesh
         {
             intvecn< DIMENSION > coords;
             index_t off{ 0 };
-            index_t div{ nb_total_cells_ / nb_cells_in_each_direction_[DIMENSION - 1] };
+            index_t div{ nb_total_cells_
+                         / nb_cells_in_each_direction_[DIMENSION - 1] };
             for( auto i : range( DIMENSION ) )
             {
                 coords[DIMENSION - 1 - i] = ( offset - off ) / div;
@@ -168,9 +171,9 @@ namespace RINGMesh
         ReferenceFrame< DIMENSION > cartesian_frame_;
     };
     ALIAS_2D_AND_3D( CartesianGrid );
-    
-//    class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh
-//	{
-//
-//	};
+
+    //    class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh
+    //	{
+    //
+    //	};
 }
