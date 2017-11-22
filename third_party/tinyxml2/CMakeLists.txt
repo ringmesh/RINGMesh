@@ -48,6 +48,9 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 # to distinguish between debug and release lib
 set(CMAKE_DEBUG_POSTFIX "d")
 
+set(CMAKE_MACOSX_RPATH ON)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
 if(BUILD_SHARED_LIBS)
 add_library(tinyxml2 SHARED tinyxml2.cpp tinyxml2.h)
 
