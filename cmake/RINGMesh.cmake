@@ -35,8 +35,10 @@ if(UNIX)
         endif()
         set(CMAKE_MACOSX_RPATH ON)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    else(APPLE)
+        # pthread is ignored on MacOS
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
     endif(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        include(cmake/Coverage.cmake)
@@ -55,7 +57,7 @@ if(MG_TETRA)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PLATFORM _64)
   else(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    SET(PLATFORM)
+    set(PLATFORM)
   endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
   # Is there not a nice way to import this library? [JP]

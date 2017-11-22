@@ -35,6 +35,13 @@ set(ZLIB_PATH ${PROJECT_SOURCE_DIR}/third_party/zlib)
 set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE})
 set(ZLIB_ROOT ${ZLIB_PATH_BIN}/install CACHE INTERNAL "Zlib install directory")
 
+if(APPLE)
+    set(APPLE_EXTRA_ARGS
+        -DCMAKE_MACOSX_RPATH:BOOL=ON
+        -DCMAKE_INSTALL_RPATH:STRING=${ZLIB_ROOT}/lib
+    )
+endif(APPLE)
+
 ExternalProject_Add(zlib_ext
   PREFIX ${ZLIB_PATH_BIN}
   SOURCE_DIR ${ZLIB_PATH}
@@ -43,6 +50,7 @@ ExternalProject_Add(zlib_ext
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
   CMAKE_CACHE_ARGS
           -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT}
+          ${APPLE_EXTRA_ARGS}
   BINARY_DIR ${ZLIB_PATH_BIN}
   INSTALL_DIR ${ZLIB_ROOT}
 )
