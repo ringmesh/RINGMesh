@@ -153,7 +153,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( ReferenceFrame );
 
     template < index_t DIMENSION >
-    class RINGMESH_API FrameManipulator
+    class RINGMESH_API ReferenceFrameManipulator
     {
     public:
         static vecn< DIMENSION > coords_from_global_to_frame(
@@ -186,7 +186,7 @@ namespace RINGMesh
             const ReferenceFrame< DIMENSION >& reference_frame,
             const vecn< DIMENSION >& local_coords )
         {
-            vecn< DIMENSION > global_coords = reference_frame->origin();
+            vecn< DIMENSION > global_coords = reference_frame.origin();
             for( auto coord : range( DIMENSION ) )
             {
                 for( auto coor : range( DIMENSION ) )
@@ -224,7 +224,7 @@ namespace RINGMesh
             return inverse_reference_frame;
         }
     };
-    ALIAS_2D_AND_3D( FrameManipulator );
+    ALIAS_2D_AND_3D( ReferenceFrameManipulator );
 
     /*!
      * @brief Reference frame aligned along the plane normal and whose u axis is

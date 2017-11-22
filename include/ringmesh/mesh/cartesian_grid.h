@@ -36,8 +36,8 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-
 #include <ringmesh/basic/frame.h>
+
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh
@@ -59,20 +59,19 @@ namespace RINGMesh
         friend class CartesianGridBuilder< DIMENSION >;
 
     public:
-        CartesianGrid( intvecn< DIMENSION > nb_cells_in_each_direction,
+        CartesianGrid( ivecn< DIMENSION > nb_cells_in_each_direction,
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
             : nb_cells_in_each_direction_(
                   std::move( nb_cells_in_each_direction ) ),
-              cartesian_frame_( std::move( vec_cartesian_axis ) )
+              cartesian_frame_( std::move( vec_cartesian_axis ) ),
+			  nb_total_cells_( 1 ),
+	          inverse_cartesian_frame_( ReferenceFrameManipulator::reference_frame_from_global_to_local(
+	                    cartesian_frame_ ) )
         {
-            nb_total_cells_ = 1;
             for( auto i : range( DIMENSION ) )
             {
                 nb_total_cells_ *= nb_cells_in_each_direction[i];
             }
-            inverse_cartesian_frame_ =
-                FrameManipulator::reference_frame_from_global_to_local(
-                    cartesian_frame_ );
         }
 
         static MeshType type_name_static()
@@ -110,7 +109,7 @@ namespace RINGMesh
         //		}
 
         vecn< DIMENSION >& cell_center_global_coords(
-            const intvecn< DIMENSION >& cartesian_coords ) const
+            const ivecn< DIMENSION >& cartesian_coords ) const
         {
             vecn< DIMENSION > cartesian_double_coords;
             for( auto i : range( DIMENSION ) )
@@ -118,23 +117,23 @@ namespace RINGMesh
                 cartesian_double_coords[i] =
                     static_cast< double >( cartesian_coords[i] );
             }
-            return FrameManipulator::coords_from_frame_to_global(
+            return ReferenceFrameManipulator::coords_from_frame_to_global(
                 cartesian_frame_, cartesian_double_coords );
         }
 
-        intvecn< DIMENSION >& containing_cell_from_global_vertex(
+        ivecn< DIMENSION >& containing_cell_from_global_vertex(
             const vecn< DIMENSION >& reference_vertex ) const
         {
             vecn< DIMENSION > frame_vertex =
-                FrameManipulator::coords_from_frame_to_global(
+                ReferenceFrameManipulator::coords_from_frame_to_global(
                     inverse_cartesian_frame_, reference_vertex );
             return this->containing_cell_from_local_vertex( frame_vertex );
         }
 
-        intvecn< DIMENSION > containing_cell_from_local_vertex(
+        ivecn< DIMENSION > containing_cell_from_local_vertex(
             const vecn< DIMENSION >& vertex ) const
         {
-            intvecn< DIMENSION > coord;
+            ivecn< DIMENSION > coord;
             for( auto i : range( DIMENSION ) )
             {
                 coord[i] = std::floor( vertex[i] + 0.5 );
@@ -142,7 +141,7 @@ namespace RINGMesh
             return coord;
         }
 
-        index_t cell_offset( const intvecn< DIMENSION >& coords ) const
+        index_t cell_offset( const ivecn< DIMENSION >& coords ) const
         {
             index_t offset{ 0 };
             index_t mult{ 1 };
@@ -154,9 +153,9 @@ namespace RINGMesh
             return offset;
         }
 
-        intvecn< DIMENSION > ijk_from_offset( const index_t offset ) const
+        ivecn< DIMENSION > ijk_from_offset( const index_t offset ) const
         {
-            intvecn< DIMENSION > coords;
+            ivecn< DIMENSION > coords;
             index_t off{ 0 };
             index_t div{ nb_total_cells_
                          / nb_cells_in_each_direction_[DIMENSION - 1] };
@@ -170,7 +169,7 @@ namespace RINGMesh
         }
 
     protected:
-        intvecn< DIMENSION > nb_cells_in_each_direction_;
+        ivecn< DIMENSION > nb_cells_in_each_direction_;
         index_t nb_total_cells_;
 
         ReferenceFrame< DIMENSION > cartesian_frame_;
