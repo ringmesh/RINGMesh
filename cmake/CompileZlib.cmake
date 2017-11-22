@@ -38,7 +38,7 @@ set(ZLIB_ROOT ${ZLIB_PATH_BIN}/install CACHE INTERNAL "Zlib install directory")
 if(APPLE)
     set(APPLE_EXTRA_ARGS
         -DCMAKE_MACOSX_RPATH:BOOL=ON
-        -DCMAKE_INSTALL_RPATH:STRING=${ZLIB_ROOT}/lib
+        -DCMAKE_INSTALL_RPATH:PATH=${ZLIB_ROOT}/lib
     )
 endif(APPLE)
 
