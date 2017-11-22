@@ -65,7 +65,7 @@ find_package(RINGMesh REQUIRED PATHS ${RINGMesh_INSTALL_PREFIX})
 \endcode
 
 
-Using RINGMesh WITH your code
+Using RINGMesh with your code
 -----------------------------
 Add this line to link your library (called MyLib) with RINGMesh:
 \code
