@@ -139,8 +139,7 @@ namespace RINGMesh
         index_t create_vertex()
         {
             index_t index = do_create_vertex();
-            index_t new_size = mesh_base_.nb_vertices() + 1;
-            mesh_base_.vertex_attributes_manager_.resize( new_size );
+            mesh_base_.vertex_attributes_manager_.resize( mesh_base_.nb_vertices() );
             clear_vertex_linked_objects();
             return index;
         }
