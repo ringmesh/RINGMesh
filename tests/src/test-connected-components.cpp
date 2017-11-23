@@ -216,8 +216,8 @@ namespace
         surface_mesh_builder.set_polygon_adjacent(
             { new_polygon_id, 2 }, NO_ID );
         surface_mesh_builder.connect_polygons();
-        surface_mesh_builder.repair(
-            GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
+//        surface_mesh_builder.repair(
+//            GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
     }
 
     void surface_mesh_connected_component_test()
