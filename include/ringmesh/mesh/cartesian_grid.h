@@ -38,7 +38,14 @@
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/frame.h>
 
+#include <ringmesh/geogram_extension/geogram_extension.h>
+
 #include <ringmesh/mesh/mesh.h>
+
+namespace GEO
+{
+    class AttributesManager;
+} // namespace GEO
 
 namespace RINGMesh
 {
@@ -72,6 +79,7 @@ namespace RINGMesh
             {
                 nb_total_cells_ *= nb_cells_in_each_direction[i];
             }
+            attributes_manager_.resize(nb_total_cells_);
         }
 
         static MeshType type_name_static()
@@ -82,9 +90,9 @@ namespace RINGMesh
         {
             // TODO
         }
-        void print_mesh_bounded_attributes() const
+        void print_mesh_bounded_attributes( const std::string& output_location ) const
         {
-            // TODO
+//        	print_bounded_attributes( attributes_manager_, output_location );
         }
         //		GEO::AttributesManager& vertex_attribute_manager() const
         // override
@@ -124,10 +132,9 @@ namespace RINGMesh
         ivecn< DIMENSION >& containing_cell_from_global_vertex(
             const vecn< DIMENSION >& reference_vertex ) const
         {
-            vecn< DIMENSION > frame_vertex =
-                ReferenceFrameManipulator::coords_from_frame_to_global(
-                    inverse_cartesian_frame_, reference_vertex );
-            return this->containing_cell_from_local_vertex( frame_vertex );
+            return this->containing_cell_from_local_vertex(
+            	ReferenceFrameManipulator::coords_from_frame_to_global(
+                    inverse_cartesian_frame_, reference_vertex ) );
         }
 
         ivecn< DIMENSION > containing_cell_from_local_vertex(
@@ -153,7 +160,7 @@ namespace RINGMesh
             return offset;
         }
 
-        ivecn< DIMENSION > ijk_from_offset( const index_t offset ) const
+        ivecn< DIMENSION > local_from_offset( const index_t offset ) const
         {
             ivecn< DIMENSION > coords;
             index_t off{ 0 };
@@ -174,6 +181,8 @@ namespace RINGMesh
 
         ReferenceFrame< DIMENSION > cartesian_frame_;
         ReferenceFrame< DIMENSION > inverse_cartesian_frame_;
+
+        GEO::AttributesManager attributes_manager_;
     };
     ALIAS_2D_AND_3D( CartesianGrid );
 

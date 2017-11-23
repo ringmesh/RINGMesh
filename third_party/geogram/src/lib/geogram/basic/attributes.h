@@ -669,7 +669,7 @@ namespace GEO {
     /*********************************************************************/    
     
     /**
-     * \brief Managers a set of attributes attached to 
+     * \brief Manages a set of attributes attached to
      *  an object.
      */
     class GEOGRAM_API AttributesManager {
