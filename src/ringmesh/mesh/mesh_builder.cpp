@@ -231,39 +231,6 @@ namespace RINGMesh
         this->delete_vertices( to_delete );
     }
 
-    template< index_t DIMENSION >
-    void SurfaceMeshBuilder< DIMENSION >::remove_small_connected_components(
-        double min_area,
-        index_t min_polygons )
-    {
-        std::vector< index_t > components;
-        index_t nb_components;
-        std::tie( nb_components, components ) = surface_mesh_.connected_components();
-        if( nb_components == 0 )
-        {
-            return;
-        }
-        std::vector< double > comp_area( nb_components, 0.0 );
-        std::vector< index_t > comp_polygons( nb_components, 0 );
-        for( auto p : range( surface_mesh_.nb_polygons() ) )
-        {
-            comp_area[components[p]] += surface_mesh_.polygon_area( p );
-            ++comp_polygons[components[p]];
-        }
-
-        std::vector< bool > polygon_to_delete( surface_mesh_.nb_polygons(), false );
-        for( auto p : range( surface_mesh_.nb_polygons() ) )
-        {
-            auto component = components[p];
-            if( comp_area[component] < min_area
-                || comp_polygons[component] < min_polygons )
-            {
-                polygon_to_delete[p] = true;
-            }
-        }
-        delete_polygons( polygon_to_delete, true );
-    }
-
     template < index_t DIMENSION >
     void VolumeMeshBuilder< DIMENSION >::remove_isolated_vertices()
     {

@@ -722,17 +722,6 @@ namespace RINGMesh
          * \name SurfaceMesh algorithms
          * @{
          */
-        /**
-         * \brief Removes the connected components that have an area
-         *  smaller than a given threshold.
-         * \param[in] min_area the connected components with an
-         *  area smaller than this threshold are removed
-         * \param[in] min_polygons the connected components with
-         *  less than \param min_polygons polygons are removed
-         */
-        void remove_small_connected_components(
-            double min_area,
-            index_t min_polygons );
         virtual void triangulate(
             const SurfaceMeshBase< DIMENSION >& surface_in ) = 0;
         /*!@}

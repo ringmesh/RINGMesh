@@ -387,13 +387,12 @@ namespace
                     {
                         // Colocated vertices must be processed before
                         // MESH_REPAIR_DUP_F 2 ;
-                        auto mode = static_cast< GEO::MeshRepairMode >( 2 );
+                        auto mode = static_cast< GEO::MeshRepairMode >( 0 );
                         auto builder = builder_.geometry.create_surface_builder(
                             surface.index() );
 //                        builder->repair( mode, 0.0 );
 
-                        // This might create some small components - remove them
-                        builder->remove_small_connected_components(
+                        remove_small_connected_components( surface.mesh(), *builder,
                             epsilon_sq, 3 );
                     }
                     if( surface.nb_vertices() == 0
@@ -403,6 +402,48 @@ namespace
                     }
                 }
             }
+        }
+
+        /*!
+         * \brief Removes the connected components that have an area
+         *  smaller than a given threshold.
+         * \param[in] min_area the connected components with an
+         *  area smaller than this threshold are removed
+         * \param[in] min_polygons the connected components with
+         *  less than \param min_polygons polygons are removed
+         */
+        void remove_small_connected_components(
+            const SurfaceMesh< DIMENSION >& surface,
+            SurfaceMeshBuilder< DIMENSION >& builder,
+            double min_area,
+            index_t min_polygons )
+        {
+            std::vector< index_t > components;
+            index_t nb_components;
+            std::tie( nb_components, components ) = surface.connected_components();
+            if( nb_components == 0 )
+            {
+                return;
+            }
+            std::vector< double > comp_area( nb_components, 0.0 );
+            std::vector< index_t > comp_polygons( nb_components, 0 );
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                comp_area[components[p]] += surface.polygon_area( p );
+                ++comp_polygons[components[p]];
+            }
+
+            std::vector< bool > polygon_to_delete( surface.nb_polygons(), false );
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                auto component = components[p];
+                if( comp_area[component] < min_area
+                    || comp_polygons[component] < min_polygons )
+                {
+                    polygon_to_delete[p] = true;
+                }
+            }
+            builder.delete_polygons( polygon_to_delete, true );
         }
 
         /*!
