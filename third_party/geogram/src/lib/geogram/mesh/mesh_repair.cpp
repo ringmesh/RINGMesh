@@ -1077,6 +1077,8 @@ namespace {
                 << " new vertices)"
                 << std::endl;
 
+            Logger::out("Validate") << "#######################\n";
+
             index_t first_v = M.vertices.create_vertices(
                 new_vertices.size() / M.vertices.dimension()
             );
@@ -1111,7 +1113,7 @@ namespace GEO {
 
         repair_connect_facets(M);
         repair_reorient_facets_anti_moebius(M);
-        repair_split_non_manifold_vertices(M);
+//        repair_split_non_manifold_vertices(M);
 
         if(
             (mode & MESH_REPAIR_RECONSTRUCT) != 0
@@ -1140,7 +1142,7 @@ namespace GEO {
             // small component, to ensure that everything is correct.
             repair_connect_facets(M);
             repair_reorient_facets_anti_moebius(M);
-            repair_split_non_manifold_vertices(M);
+//            repair_split_non_manifold_vertices(M);
 
         }
 	

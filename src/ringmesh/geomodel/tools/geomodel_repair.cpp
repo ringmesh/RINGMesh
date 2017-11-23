@@ -36,6 +36,7 @@
 #include <array>
 
 #include <geogram/basic/algorithm.h>
+
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_repair.h>
@@ -380,18 +381,13 @@ namespace
                 /// @todo Check if that cannot be simplified
                 if( nb > 0 )
                 {
-                    // If there are some degenerated polygons
-                    // Using repair function of geogram
-                    // Warning - This triangulates the mesh
+                    surface.save( "toto_before_" + std::to_string( surface.index() ) + ".geogram");
                     if( surface.nb_vertices() > 0 )
                     {
-                        // Colocated vertices must be processed before
-                        // MESH_REPAIR_DUP_F 2 ;
-                        auto mode = static_cast< GEO::MeshRepairMode >( 0 );
                         auto builder = builder_.geometry.create_surface_builder(
                             surface.index() );
-//                        builder->repair( mode, 0.0 );
 
+                        remove_dupplicated_or_degenerated_polygons( surface.mesh(), *builder );
                         remove_small_connected_components( surface.mesh(), *builder,
                             epsilon_sq, 3 );
                     }
@@ -400,8 +396,79 @@ namespace
                     {
                         to_remove.insert( surface.gmme() );
                     }
+                surface.save( "toto_" + std::to_string( surface.index() ) + ".geogram");
                 }
             }
+        }
+
+        bool polygon_is_degenerate(
+            const SurfaceMesh< DIMENSION >& surface,
+            index_t polygon_id )
+        {
+            if( surface.polygon_area( polygon_id ) < geomodel_.epsilon2() )
+            {
+                return true;
+            }
+
+            auto min_length = geomodel_.epsilon();
+            for( auto c : range( surface.nb_polygon_vertices( polygon_id ) ) )
+            {
+                if( surface.polygon_edge_length( { polygon_id, c } ) < min_length )
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        void detect_bad_facets(
+            const SurfaceMesh< DIMENSION >& surface,
+            std::vector< bool >& remove_polygon )
+        {
+            const auto& polygon_search = surface.polygon_nn_search();
+            index_t nb_duplicates;
+            std::vector< index_t > mapping;
+            std::tie( nb_duplicates, mapping ) = polygon_search.get_colocated_index_mapping(
+                geomodel_.epsilon() );
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                if( mapping[p] != p )
+                {
+                    remove_polygon[p] = true;
+                }
+            }
+
+            index_t nb_degenerate = 0;
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                if( !remove_polygon[p] && polygon_is_degenerate( surface, p ) )
+                {
+                    nb_degenerate++;
+                    remove_polygon[p] = true;
+                }
+            }
+            if( nb_duplicates != 0 || nb_degenerate != 0 )
+            {
+                Logger::out( "Validate", "Detected ", nb_duplicates,
+                    " duplicate and " , nb_degenerate ," degenerate facets\n");
+            }
+        }
+
+        void remove_dupplicated_or_degenerated_polygons(
+            const SurfaceMesh< DIMENSION >& surface,
+            SurfaceMeshBuilder< DIMENSION >& builder )
+        {
+            std::vector< bool > remove_polygon( surface.nb_polygons(), false );
+            detect_bad_facets( surface, remove_polygon );
+            builder.delete_polygons( remove_polygon, false );
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                for( auto v : range( 3 ) )
+                {
+                    builder.set_polygon_adjacent( {p,v}, NO_ID );
+                }
+            }
+            builder.connect_polygons();
         }
 
         /*!

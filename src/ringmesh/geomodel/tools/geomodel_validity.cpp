@@ -1046,6 +1046,7 @@ namespace
                 line_abbb.closest_edge( barycenter );
             if( distance > geomodel.epsilon() )
             {
+                DEBUG( barycenter );
                 border_edges_on_line[border_edge] = false;
             }
         }
@@ -1075,7 +1076,7 @@ namespace
     public:
         GeoModelValidityCheck( const GeoModel< DIMENSION >& geomodel,
             const ValidityCheckMode validity_check_mode )
-            : geomodel_( geomodel ),
+             : geomodel_( geomodel ),
               valid_( true ),
               mode_( validity_check_mode )
         {
