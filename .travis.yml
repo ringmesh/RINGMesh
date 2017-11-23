@@ -29,6 +29,7 @@ jobs:
             mkdir build
             cd build
             cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+            clang-format --version
             cd Release
             make format
             if [[ -n $(git diff) ]]; then
