@@ -211,7 +211,12 @@ namespace RINGMesh
         void apply_permutation(
             const std::vector< index_t >& permutation ) final
         {
-            return;
+            std::vector<T> tmp_vector;
+            tmp_vector.resize( vector_.size() );
+            for( auto p : range( permutation.size() ) ) {
+                tmp_vector[p] = vector_[permutation[p]];
+            }
+            vector_ = tmp_vector;
         }
         /**
         * \brief Copies an item
@@ -220,7 +225,8 @@ namespace RINGMesh
         */
         void copy_item( index_t to, index_t from ) final
         {
-            return;
+            ringmesh_assert( to < vector_.size() && from < vector_.size() );
+            vector_[from] = vector_[to];
         }
 
     protected:
@@ -260,7 +266,7 @@ namespace RINGMesh
         }
         std::string element_typeid_name() const final
         {
-            return "bool";
+            return std::string("bool");
         }
     };
 

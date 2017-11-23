@@ -78,7 +78,7 @@ namespace
         Attribute< bool >& vertex_bool_attr,
         Attribute< double >& vertex_double_attr,
         Attribute< vec3 >& vertex_vec3_attr,
-        Attribute< double >& vertex_dim_6_double_attr,
+        Attribute< std::vector<double> >& vertex_dim_6_double_attr,
         Attribute< char >& vertex_char_attr )
     {
         const long int rounded_vertex_xy =
@@ -87,13 +87,14 @@ namespace
         vertex_bool_attr.set_value( vertex_i, ( rounded_vertex_xy % 2 == 0 ) );
         vertex_double_attr.set_value(vertex_i, cur_vertex.x );
         vertex_vec3_attr.set_value(vertex_i, cur_vertex );
-//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 0, cur_vertex.x );
-//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 1, cur_vertex.y );
-//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 1, cur_vertex.y );
-//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 2, cur_vertex.z );
-//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 3, cur_vertex.x );
-//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 4, cur_vertex.y );
-//        vertex_dim_6_double_attr.set_value( vertex_i * 6 + 5, cur_vertex.z );
+
+        int mydoubles[] = { 
+            cur_vertex.x, cur_vertex.y, cur_vertex.z, 
+            cur_vertex.x, cur_vertex.y, cur_vertex.z
+        };
+        std::vector<double> six_doubles( mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
+        vertex_dim_6_double_attr.set_value( vertex_i, six_doubles );
+
         vertex_char_attr.set_value( vertex_i, std::to_string( cur_vertex.y ).data()[0] );
     }
 
@@ -113,8 +114,7 @@ namespace
                 reg_attr_mgr, attribute_names[2] );
             Attribute< vec3 > vertex_vec3_attr(
                 reg_attr_mgr, attribute_names[3] );
-//            Attribute< std::vector<double> > vertex_dim_6_double_attr(
-            Attribute< double > vertex_dim_6_double_attr(
+            Attribute< std::vector<double> > vertex_dim_6_double_attr(
                 reg_attr_mgr, attribute_names[4] );
             Attribute< char > vertex_char_attr(
                 reg_attr_mgr, attribute_names[5] );
@@ -145,8 +145,7 @@ namespace
             gmmv_attr_mgr, attribute_names[2] );
         Attribute< vec3 > vertex_vec3_attr(
             gmmv_attr_mgr, attribute_names[3] );
-        //            Attribute< std::vector<double> > vertex_dim_6_double_attr(
-                    Attribute< double > vertex_dim_6_double_attr(
+        Attribute< std::vector<double> > vertex_dim_6_double_attr(
             gmmv_attr_mgr, attribute_names[4] );
         Attribute< char > vertex_char_attr(
             gmmv_attr_mgr, attribute_names[5] );
@@ -167,7 +166,7 @@ namespace
         Attribute< bool >& cell_bool_attr,
         Attribute< double >& cell_double_attr,
         Attribute< vec3 >& cell_vec3_attr,
-        Attribute< double >& cell_dim_6_double_attr,
+        Attribute< std::vector<double> >& cell_dim_6_double_attr,
         Attribute< char >& cell_char_attr )
     {
         const long int rounded_volume = std::lrint( cell_volume );
@@ -175,12 +174,13 @@ namespace
         cell_bool_attr.set_value( cell_i, ( rounded_volume % 2 == 0 ) );
         cell_double_attr.set_value( cell_i, cell_volume);
         cell_vec3_attr.set_value( cell_i, cell_barycenter);
-        cell_dim_6_double_attr.set_value( cell_i * 6 + 0, cell_vec3_attr[cell_i].x );
-        cell_dim_6_double_attr.set_value( cell_i * 6 + 1, cell_vec3_attr[cell_i].y );
-        cell_dim_6_double_attr.set_value( cell_i * 6 + 2, cell_vec3_attr[cell_i].z );
-        cell_dim_6_double_attr.set_value( cell_i * 6 + 3, cell_vec3_attr[cell_i].x );
-        cell_dim_6_double_attr.set_value( cell_i * 6 + 4, cell_vec3_attr[cell_i].y );
-        cell_dim_6_double_attr.set_value( cell_i * 6 + 5, cell_vec3_attr[cell_i].z );
+        int mydoubles[] = {
+            cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y, cell_vec3_attr[cell_i].z,
+            cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y, cell_vec3_attr[cell_i].z
+        };
+        std::vector<double> six_doubles( mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
+        cell_dim_6_double_attr.set_value( cell_i, six_doubles );
+
         cell_char_attr.set_value( cell_i,
             std::to_string( cell_vec3_attr[cell_i].y ).data()[0] );
     }
@@ -201,7 +201,7 @@ namespace
                 reg_attr_mgr, attribute_names[2] );
             Attribute< vec3 > cell_vec3_attr(
                 reg_attr_mgr, attribute_names[3] );
-            Attribute< double > cell_dim_6_double_attr(
+            Attribute< std::vector<double> > cell_dim_6_double_attr(
                 reg_attr_mgr, attribute_names[4]);
             Attribute< char > cell_char_attr(
                 reg_attr_mgr, attribute_names[5] );
@@ -232,7 +232,7 @@ namespace
             gmmc_attr_mgr, attribute_names[2] );
         Attribute< vec3 > cell_vec3_attr(
             gmmc_attr_mgr, attribute_names[3] );
-        Attribute< double > cell_dim_6_double_attr(
+        Attribute< std::vector<double> > cell_dim_6_double_attr(
             gmmc_attr_mgr, attribute_names[4] );
         Attribute< char > cell_char_attr(
             gmmc_attr_mgr, attribute_names[5] );

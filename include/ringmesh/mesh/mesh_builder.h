@@ -84,6 +84,9 @@ namespace RINGMesh
         void copy( const MeshBase< DIMENSION >& rhs, bool copy_attributes )
         {
             do_copy( rhs, copy_attributes );
+            if( copy_attributes ) {
+                mesh_base_.vertex_attributes_manager_.copy( rhs.vertex_attributes_manager_ );
+            }
             clear_vertex_linked_objects();
         }
 
@@ -99,6 +102,7 @@ namespace RINGMesh
         void clear( bool keep_attributes, bool keep_memory )
         {
             do_clear( keep_attributes, keep_memory );
+            mesh_base_.vertex_attributes_manager_.clear( keep_attributes );
             clear_vertex_linked_objects();
         }
         /*!
@@ -135,6 +139,8 @@ namespace RINGMesh
         index_t create_vertex()
         {
             index_t index = do_create_vertex();
+            index_t new_size = mesh_base_.nb_vertices() + 1;
+            mesh_base_.vertex_attributes_manager_.resize( new_size );
             clear_vertex_linked_objects();
             return index;
         }
@@ -157,6 +163,8 @@ namespace RINGMesh
         index_t create_vertices( index_t nb )
         {
             index_t index = do_create_vertices( nb );
+            index_t new_size = mesh_base_.nb_vertices() + nb;
+            mesh_base_.vertex_attributes_manager_.resize( new_size );
             clear_vertex_linked_objects();
             return index;
         }
@@ -180,6 +188,18 @@ namespace RINGMesh
         void delete_vertices( const std::vector< bool >& to_delete )
         {
             do_delete_vertices( to_delete );
+            index_t new_size = mesh_base_.nb_vertices();
+            std::vector<index_t> permutation;
+            permutation.resize( new_size );
+            index_t i = 0;
+            for ( auto d : range( to_delete.size() ) ) {
+                if( !to_delete[d] ) {
+                    permutation[i] = d;
+                    i++;
+                }
+            }
+            mesh_base_.vertex_attributes_manager_.apply_permutation( permutation );
+            mesh_base_.vertex_attributes_manager_.resize( new_size );
             clear_vertex_linked_objects();
         }
         /*!
@@ -193,11 +213,13 @@ namespace RINGMesh
         void clear_vertices( bool keep_attributes, bool keep_memory )
         {
             do_clear_vertices( keep_attributes, keep_memory );
+            mesh_base_.vertex_attributes_manager_.clear( keep_attributes );
             clear_vertex_linked_objects();
         }
         void permute_vertices( const std::vector< index_t >& permutation )
         {
             do_permute_vertices( permutation );
+            mesh_base_.vertex_attributes_manager_.apply_permutation( permutation );
             clear_vertex_linked_objects();
         }
         /*!@}
@@ -351,6 +373,9 @@ namespace RINGMesh
         void create_edge( index_t v1_id, index_t v2_id )
         {
             do_create_edge( v1_id, v2_id );
+            line_mesh_.edge_attributes_manager_.resize(
+                line_mesh_.nb_edges()
+                );
             clear_edge_linked_objects();
         }
         /*!
@@ -361,6 +386,9 @@ namespace RINGMesh
         index_t create_edges( index_t nb_edges )
         {
             index_t index = do_create_edges( nb_edges );
+            line_mesh_.edge_attributes_manager_.resize(
+                line_mesh_.nb_edges()
+                );
             clear_edge_linked_objects();
             return index;
         }
@@ -395,6 +423,9 @@ namespace RINGMesh
             {
                 this->remove_isolated_vertices();
             }
+            line_mesh_.edge_attributes_manager_.resize(
+                line_mesh_.nb_edges()
+                );
             clear_edge_linked_objects();
         }
         /*!
@@ -408,11 +439,13 @@ namespace RINGMesh
         void clear_edges( bool keep_attributes, bool keep_memory )
         {
             do_clear_edges( keep_attributes, keep_memory );
+            line_mesh_.edge_attributes_manager_.clear( keep_attributes );
             clear_edge_linked_objects();
         }
         void permute_edges( const std::vector< index_t >& permutation )
         {
             do_permute_edges( permutation );
+            line_mesh_.edge_attributes_manager_.apply_permutation( permutation );
             clear_edge_linked_objects();
         }
 
@@ -536,6 +569,7 @@ namespace RINGMesh
                 }
                 do_create_polygon( polygon_vertices );
             }
+            surface_mesh_.polygon_attributes_manager_.resize( surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
         }
         /*!
@@ -547,6 +581,7 @@ namespace RINGMesh
         index_t create_polygon( const std::vector< index_t >& vertices )
         {
             auto index = do_create_polygon( vertices );
+            surface_mesh_.polygon_attributes_manager_.resize( surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
             return index;
         }
@@ -558,6 +593,7 @@ namespace RINGMesh
         index_t create_triangles( index_t nb_triangles )
         {
             auto index = do_create_triangles( nb_triangles );
+            surface_mesh_.polygon_attributes_manager_.resize( surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
             return index;
         }
@@ -569,6 +605,7 @@ namespace RINGMesh
         index_t create_quads( index_t nb_quads )
         {
             auto index = do_create_quads( nb_quads );
+            surface_mesh_.polygon_attributes_manager_.resize( surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
             return index;
         }
@@ -613,6 +650,7 @@ namespace RINGMesh
         void clear_polygons( bool keep_attributes, bool keep_memory )
         {
             do_clear_polygons( keep_attributes, keep_memory );
+            surface_mesh_.polygon_attributes_manager_.clear( keep_attributes );
             clear_polygon_linked_objects();
         }
         /*!
@@ -717,6 +755,7 @@ namespace RINGMesh
         void permute_polygons( const std::vector< index_t >& permutation )
         {
             do_permute_polygons( permutation );
+            surface_mesh_.polygon_attributes_manager_.apply_permutation( permutation );
             clear_polygon_linked_objects();
         }
         /*!
@@ -736,6 +775,7 @@ namespace RINGMesh
             {
                 this->remove_isolated_vertices();
             }
+            surface_mesh_.polygon_attributes_manager_.resize( surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
         }
 
@@ -893,6 +933,7 @@ namespace RINGMesh
         index_t create_cells( index_t nb_cells, CellType type )
         {
             index_t index = do_create_cells( nb_cells, type );
+            volume_mesh_.cell_attributes_manager_.resize( volume_mesh_.nb_cells() );
             clear_cell_linked_objects();
             return index;
         }
@@ -963,6 +1004,7 @@ namespace RINGMesh
         void clear_cells( bool keep_attributes, bool keep_memory )
         {
             do_clear_cells( keep_attributes, keep_memory );
+            volume_mesh_.cell_attributes_manager_.clear( keep_attributes );
             clear_cell_linked_objects();
         }
         /*!
@@ -979,6 +1021,7 @@ namespace RINGMesh
         void permute_cells( const std::vector< index_t >& permutation )
         {
             do_permute_cells( permutation );
+            volume_mesh_.cell_attributes_manager_.apply_permutation( permutation );
             clear_cell_linked_objects();
         }
         /*!
@@ -998,6 +1041,7 @@ namespace RINGMesh
             {
                 this->remove_isolated_vertices();
             }
+            volume_mesh_.cell_attributes_manager_.resize( volume_mesh_.nb_cells() );
             clear_cell_linked_objects();
         }
 
