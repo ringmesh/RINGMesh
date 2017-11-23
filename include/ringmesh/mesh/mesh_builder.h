@@ -101,18 +101,6 @@ namespace RINGMesh
             do_clear( keep_attributes, keep_memory );
             clear_vertex_linked_objects();
         }
-        /*!
-         * \brief Fixes some defaults in a mesh.
-         * \param[in] mode a combination of #MeshRepairMode flags.
-         *  Combine them with the 'bitwise or' (|) operator.
-         * \param[in] colocate_epsilon tolerance used to colocate vertices
-         *  (if #MESH_REPAIR_COLOCATE is set in mode).
-         */
-        void repair( GEO::MeshRepairMode mode, double colocate_epsilon )
-        {
-            do_repair( mode, colocate_epsilon );
-            clear_vertex_linked_objects();
-        }
         /*!@}
          * \name Vertex related methods
          * @{
@@ -238,15 +226,6 @@ namespace RINGMesh
          * by subsequent mesh entity creations.
          */
         virtual void do_clear( bool keep_attributes, bool keep_memory ) = 0;
-        /*!
-         * \brief Fixes some defaults in a mesh.
-         * \param[in] mode a combination of #MeshRepairMode flags.
-         *  Combine them with the 'bitwise or' (|) operator.
-         * \param[in] colocate_epsilon tolerance used to colocate vertices
-         *  (if #MESH_REPAIR_COLOCATE is set in mode).
-         */
-        virtual void do_repair(
-            GEO::MeshRepairMode mode, double colocate_epsilon ) = 0;
         /*!
          * @brief Sets a point.
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
@@ -751,8 +730,9 @@ namespace RINGMesh
          * \param[in] min_polygons the connected components with
          *  less than \param min_polygons polygons are removed
          */
-        virtual void remove_small_connected_components(
-            double min_area, index_t min_polygons ) = 0;
+        void remove_small_connected_components(
+            double min_area,
+            index_t min_polygons );
         virtual void triangulate(
             const SurfaceMeshBase< DIMENSION >& surface_in ) = 0;
         /*!@}

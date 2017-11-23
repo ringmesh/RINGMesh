@@ -39,8 +39,6 @@
 
 #include <geogram/basic/command_line.h>
 
-#include <geogram/mesh/mesh_preprocessing.h>
-
 #include <geogram/voronoi/CVT.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 
@@ -68,11 +66,6 @@ public:                                                                        \
     void do_clear( bool keep_attributes, bool keep_memory ) override           \
     {                                                                          \
         mesh_.mesh_->clear( keep_attributes, keep_memory );                    \
-    }                                                                          \
-    void do_repair( GEO::MeshRepairMode mode, double colocate_epsilon )        \
-        override                                                               \
-    {                                                                          \
-        GEO::mesh_repair( *mesh_.mesh_, mode, colocate_epsilon );              \
     }                                                                          \
     void do_set_vertex( index_t v_id, const vecn< DIMENSION >& vertex )        \
         override                                                               \
@@ -199,13 +192,6 @@ private:                                                                       \
             : SurfaceMeshBuilder< DIMENSION >( mesh ),
               mesh_( dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) )
         {
-        }
-
-        void remove_small_connected_components(
-            double min_area, index_t min_polygons ) override
-        {
-            GEO::remove_small_connected_components(
-                *mesh_.mesh_, min_area, min_polygons );
         }
 
         void triangulate(

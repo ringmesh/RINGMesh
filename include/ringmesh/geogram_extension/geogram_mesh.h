@@ -72,7 +72,11 @@ public:                                                                        \
     {                                                                          \
         GEO::mesh_save( *mesh_, filename, GEO::MeshIOFlags() );                \
     }                                                                          \
-    const GEO::Mesh& gfx_mesh() const                                          \
+    GEO::Mesh& geogram_mesh() \
+    {                                                                          \
+        return *mesh_;                                                         \
+    }                                                                          \
+    const GEO::Mesh& geogram_mesh() const                                          \
     {                                                                          \
         return *mesh_;                                                         \
     }                                                                          \
