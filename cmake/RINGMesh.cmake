@@ -208,7 +208,7 @@ if(CLANG_TIDY)
 endif()
 
 # additional target to perform clang-format run, requires clang-format
-find_program(CLANG_FORMAT "clang-format")
+find_program(CLANG_FORMAT "clang-format" REQUIRED)
 if(CLANG_FORMAT)
     message(STATUS "Configuring RINGMesh with clang-format")
     add_custom_target(
