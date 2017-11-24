@@ -47,23 +47,24 @@
 
 using namespace RINGMesh;
 
-template< index_t DIMENSION >
-void load_input_geomodel( GeoModel< DIMENSION >& geomodel, const std::string& file )
+template < index_t DIMENSION >
+void load_input_geomodel(
+    GeoModel< DIMENSION >& geomodel, const std::string& file )
 {
-    auto loaded_model_is_valid = geomodel_load( geomodel,
-        ringmesh_test_data_path + file );
+    auto loaded_model_is_valid =
+        geomodel_load( geomodel, ringmesh_test_data_path + file );
     if( !loaded_model_is_valid )
     {
-        throw RINGMeshException( "RINGMesh Test",
-            "Failed when loading model " + geomodel.name()
-                + ": the loaded model is not valid." );
+        throw RINGMeshException(
+            "RINGMesh Test", "Failed when loading model " + geomodel.name()
+                                 + ": the loaded model is not valid." );
     }
 }
 
 std::map< std::string, index_t > load_reference_info( const std::string& file )
 {
     std::map< std::string, index_t > reference;
-    std::string info { ringmesh_test_data_path + "load/" + file };
+    std::string info{ ringmesh_test_data_path + "load/" + file };
     GEO::LineInput in( info );
     if( !in.OK() )
     {
@@ -77,17 +78,17 @@ std::map< std::string, index_t > load_reference_info( const std::string& file )
     return reference;
 }
 
-template< index_t DIMENSION >
-void throw_error( const GeoModel< DIMENSION >& geomodel, const std::string& entity )
+template < index_t DIMENSION >
+void throw_error(
+    const GeoModel< DIMENSION >& geomodel, const std::string& entity )
 {
     throw RINGMeshException( "RINGMesh Test", "Failed when loading model ",
         geomodel.name(), ": the loaded model as not the correct number of ",
         entity );
 }
 
-template< index_t DIMENSION >
-void check_geomodel_base(
-    const GeoModel< DIMENSION >& geomodel,
+template < index_t DIMENSION >
+void check_geomodel_base( const GeoModel< DIMENSION >& geomodel,
     const std::map< std::string, index_t >& reference )
 {
     const auto& manager = geomodel.entity_type_manager();
@@ -99,7 +100,8 @@ void check_geomodel_base(
         }
     }
 
-    for( const auto& type : manager.geological_entity_manager.geological_entity_types() )
+    for( const auto& type :
+        manager.geological_entity_manager.geological_entity_types() )
     {
         if( reference.at( type.string() )
             != geomodel.nb_geological_entities( type ) )
@@ -118,22 +120,19 @@ void check_geomodel_base(
     }
 }
 
-template< index_t DIMENSION >
-void check_geomodel(
-    const GeoModel< DIMENSION >& geomodel,
+template < index_t DIMENSION >
+void check_geomodel( const GeoModel< DIMENSION >& geomodel,
     const std::map< std::string, index_t >& reference );
 
-template< >
-void check_geomodel(
-    const GeoModel2D& geomodel,
+template <>
+void check_geomodel( const GeoModel2D& geomodel,
     const std::map< std::string, index_t >& reference )
 {
     check_geomodel_base( geomodel, reference );
 }
 
-template< >
-void check_geomodel(
-    const GeoModel3D& geomodel,
+template <>
+void check_geomodel( const GeoModel3D& geomodel,
     const std::map< std::string, index_t >& reference )
 {
     check_geomodel_base( geomodel, reference );
@@ -143,21 +142,20 @@ void check_geomodel(
     }
 }
 
-template< index_t DIMENSION >
+template < index_t DIMENSION >
 void process_extension( const std::string& extension )
 {
-    std::string info { ringmesh_test_data_path + "load/" + extension
-        + std::to_string( DIMENSION ) + "d.txt" };
-    GEO::LineInput in { info };
+    std::string info{ ringmesh_test_data_path + "load/" + extension
+                      + std::to_string( DIMENSION ) + "d.txt" };
+    GEO::LineInput in{ info };
     if( !in.OK() )
     {
         throw RINGMeshException( "TEST", "Failed to load file: ", info );
-
     }
     while( !in.eof() && in.get_line() )
     {
         in.get_fields();
-        std::string file { in.field( 0 ) };
+        std::string file{ in.field( 0 ) };
         GeoModel< DIMENSION > geomodel;
         load_input_geomodel( geomodel, file );
         check_geomodel( geomodel, load_reference_info( file + ".txt" ) );
@@ -165,7 +163,7 @@ void process_extension( const std::string& extension )
     }
 }
 
-template< index_t DIMENSION >
+template < index_t DIMENSION >
 void test_input_geomodels()
 {
     Logger::out( "TEST", "Load GeoModel", DIMENSION, "D files" );

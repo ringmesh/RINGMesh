@@ -62,8 +62,7 @@ void make_geomodel_copy(
     geomodel_breaker2.info.set_geomodel_name( name );
 }
 
-void verdict(
-    const GeoModel3D& invalid_model,
+void verdict( const GeoModel3D& invalid_model,
     const std::string& feature,
     const ValidityCheckMode& validity_check_mode )
 {
@@ -116,8 +115,8 @@ int main()
             GeoModelBuilder3D geomodel_breaker( invalid_model );
             geomodel_breaker.topology.create_mesh_entity(
                 RINGMesh::Surface3D::type_name_static() );
-            if( is_geomodel_valid( invalid_model,
-                    ValidityCheckMode::TOPOLOGY ) )
+            if( is_geomodel_valid(
+                    invalid_model, ValidityCheckMode::TOPOLOGY ) )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Fail to detect addition of an isolated "

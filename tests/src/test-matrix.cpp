@@ -35,8 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/basic/logger.h>
 #include <geogram/basic/string.h>
+#include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/matrix.h>
 
 /*!
