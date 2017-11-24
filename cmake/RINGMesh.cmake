@@ -181,13 +181,6 @@ if(RINGMESH_WITH_TESTS)
     copy_for_windows(${PROJECT_BINARY_DIR}/bin/tests)
 endif()
 
-
-# Documentation
-if(BUILD_DOCUMENTATION)
-    message(STATUS "Configuring RINGMesh with doxygen")
-    add_subdirectory(doc)
-endif()
-
 # additional target to perform clang-tidy run, requires clang-tidy
 find_program(CLANG_TIDY "clang-tidy")
 if(CLANG_TIDY)
@@ -204,20 +197,6 @@ if(CLANG_TIDY)
         --
         -std=c++11
         ${include_dirs}
-    )
-endif()
-
-# additional target to perform clang-format run, requires clang-format
-message(STATUS "#####################################")
-find_program(CLANG_FORMAT "clang-format" REQUIRED)
-if(CLANG_FORMAT)
-    message(STATUS "Configuring RINGMesh with clang-format")
-    add_custom_target(
-        format
-        COMMAND ${CLANG_FORMAT}
-        -style=file
-        -i
-        ${ringmesh_files}
     )
 endif()
 
