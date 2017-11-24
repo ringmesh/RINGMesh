@@ -35,7 +35,7 @@
 set(DOXYGEN_MINIMUM_VERSION 1.6.0)
 find_package(Doxygen ${DOXYGEN_MINIMUM_VERSION} QUIET)
 if(NOT DOXYGEN_FOUND)
-    message(WARNING "Doxygen >= ${DOXYGEN_MINIMUM_VERSION} not found, cannot generate documentation")
+    message(STATUS "Doxygen >= ${DOXYGEN_MINIMUM_VERSION} not found, cannot generate documentation")
 else()
     message(STATUS "Configuring RINGMesh with Doxygen")
     # Generate a target for generating a specific documentation type
