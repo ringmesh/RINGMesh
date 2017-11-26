@@ -46,10 +46,19 @@ Define a user-defined variable to get RINGMesh install directory path
 The code below defines a variable RINGMesh_INSTALL_PREFIX containing the path to the RINGMesh install directory.
 The user can change the default value (parent directory of the current cmake project).
 This directory must contain a RINGMeshConfig.cmake file.
+If you compiled RINGMesh using Unix Makefiles, RINGMeshConfig.cmake is in build/Debug directory in debug mode
+(build/Release in release mode, and build/RelWithDebInfo in release with debug information mode).
+If you compiled RINGMesh using a project-based IDE (i.e., Visual Studio and Xcode), RINGMeshConfig.cmake is in the build
+directory.
 
-Example:
+Example with RINGMesh compiled thanks to Unix Makefiles:
 \code
 set(RINGMesh_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/../RINGMesh/build/Release" CACHE PATH "Path to RINGMesh install directory (mandatory dependency)")
+\endcode
+
+Example with RINGMesh compiled thanks to Visual Studio or Xcode:
+\code
+set(RINGMesh_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/../RINGMesh/build" CACHE PATH "Path to RINGMesh install directory (mandatory dependency)")
 \endcode
 
 
