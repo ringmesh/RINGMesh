@@ -56,10 +56,10 @@ int main()
     try
     {
         default_configure();
-        
- #ifdef USE_MG_TETRA
+
+#ifdef USE_MG_TETRA
         CmdLine::import_arg_group( "global" );
-        GEO::CmdLine::set_arg( "algo:tet", "MG_Tetra");
+        GEO::CmdLine::set_arg( "algo:tet", "MG_Tetra" );
 
         std::string file_name( ringmesh_test_data_path );
         file_name += "modelA6.ml";

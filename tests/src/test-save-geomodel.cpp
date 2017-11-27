@@ -50,7 +50,7 @@
 
 using namespace RINGMesh;
 
-const index_t MAX_DIFF_DIGIT { 1 };
+const index_t MAX_DIFF_DIGIT{ 1 };
 
 void get_line( GEO::LineInput& in )
 {
@@ -63,7 +63,8 @@ bool is_double( const std::string& field )
     try
     {
         std::stod( field );
-    } catch( const std::invalid_argument& )
+    }
+    catch( const std::invalid_argument& )
     {
         return false;
     }
@@ -75,7 +76,8 @@ void resize( std::string& word1, std::string& word2 )
     if( word1.size() < word2.size() )
     {
         word1.resize( word2.size(), '0' );
-    } else if( word2.size() < word1.size() )
+    }
+    else if( word2.size() < word1.size() )
     {
         word2.resize( word1.size(), '0' );
     }
@@ -108,7 +110,8 @@ bool compare_double( std::string word1, std::string word2 )
         auto value1 = std::stol( word1 );
         auto value2 = std::stol( word2 );
         return std::abs( value1 - value2 ) <= MAX_DIFF_DIGIT;
-    } catch( const std::invalid_argument& )
+    }
+    catch( const std::invalid_argument& )
     {
         return false;
     }
@@ -122,7 +125,8 @@ bool compare_words( const std::string& word1, const std::string& word2 )
         {
             return false;
         }
-    } else
+    }
+    else
     {
         if( std::strcmp( word1.c_str(), word2.c_str() ) != 0 )
         {
@@ -134,8 +138,8 @@ bool compare_words( const std::string& word1, const std::string& word2 )
 
 bool compare_output_files( const std::string& file1, const std::string& file2 )
 {
-    GEO::LineInput in1 { file1 };
-    GEO::LineInput in2 { file2 };
+    GEO::LineInput in1{ file1 };
+    GEO::LineInput in2{ file2 };
 
     while( !in1.eof() && !in2.eof() && in1.get_line() && in2.get_line() )
     {
@@ -170,52 +174,54 @@ void check_files( const std::string& file1, const std::string& file2 )
 
 void check_output( GEO::LineInput& in )
 {
-    std::string data_path { ringmesh_test_data_path + "save/" };
+    std::string data_path{ ringmesh_test_data_path + "save/" };
     while( !in.eof() && in.get_line() )
     {
         in.get_fields();
-        std::string template_output { data_path + in.field( 0 ) };
-        std::string new_output { ringmesh_test_output_path + in.field( 0 ) };
+        std::string template_output{ data_path + in.field( 0 ) };
+        std::string new_output{ ringmesh_test_output_path + in.field( 0 ) };
         check_files( new_output, template_output );
     }
 }
 
-template< index_t DIMENSION >
-void io_geomodel( const std::string& geomodel_file, const std::string& extension )
+template < index_t DIMENSION >
+void io_geomodel(
+    const std::string& geomodel_file, const std::string& extension )
 {
     GeoModel< DIMENSION > geomodel;
     geomodel_load( geomodel, geomodel_file );
-    geomodel_save( geomodel,
-        ringmesh_test_output_path + "geomodel" + std::to_string( DIMENSION ) + "d."
-            + extension );
+    geomodel_save( geomodel, ringmesh_test_output_path + "geomodel"
+                                 + std::to_string( DIMENSION ) + "d."
+                                 + extension );
 }
 
-template< index_t DIMENSION >
+template < index_t DIMENSION >
 void process_extension( const std::string& extension )
 {
     if( extension == "gm" )
     {
         return;
     }
-    std::string info { ringmesh_test_data_path + "save/" + extension
-        + std::to_string( DIMENSION ) + "d.txt" };
-    GEO::LineInput in { info };
+    std::string info{ ringmesh_test_data_path + "save/" + extension
+                      + std::to_string( DIMENSION ) + "d.txt" };
+    GEO::LineInput in{ info };
     if( !in.OK() )
     {
         throw RINGMeshException( "TEST", "Failed to load file: ", info );
-
     }
     get_line( in );
-    io_geomodel< DIMENSION >( ringmesh_test_data_path + in.field( 0 ), extension );
+    io_geomodel< DIMENSION >(
+        ringmesh_test_data_path + in.field( 0 ), extension );
     check_output( in );
     Logger::out( "TEST", "Format ", extension, " OK" );
 }
 
-template< index_t DIMENSION >
+template < index_t DIMENSION >
 void test_output_geomodel()
 {
     Logger::out( "TEST", "Save GeoModel", DIMENSION, "D files" );
-    auto extensions = GeoModelOutputHandlerFactory< DIMENSION >::list_creators();
+    auto extensions =
+        GeoModelOutputHandlerFactory< DIMENSION >::list_creators();
     for( const auto& extension : extensions )
     {
         process_extension< DIMENSION >( extension );
@@ -233,12 +239,13 @@ int main()
         GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
         test_output_geomodel< 2 >();
         test_output_geomodel< 3 >();
-
-    } catch( const RINGMeshException& e )
+    }
+    catch( const RINGMeshException& e )
     {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e )
+    }
+    catch( const std::exception& e )
     {
         Logger::err( "Exception", e.what() );
         return 1;

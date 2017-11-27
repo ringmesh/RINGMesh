@@ -42,11 +42,13 @@ if(WIN32)
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        set(geoplatform Linux64-clang-dynamic)
+        if(APPLE)
+            set(geoplatform Darwin-clang-dynamic)
+        else(APPLE)
+            set(geoplatform Linux64-clang-dynamic)
+        endif(APPLE)
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(geoplatform Linux64-gcc-dynamic)
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-        set(geoplatform Darwin-clang-dynamic)
     endif()
 endif(WIN32)
 set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install CACHE INTERNAL "Geogram install directory")  
@@ -64,7 +66,7 @@ ExternalProject_Add(geogram_ext
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
         -DGEOGRAM_LIB_ONLY:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
-        -DCMAKE_INSTALL_PREFIX:STRING=${GEOGRAM_INSTALL_PREFIX}
+        -DCMAKE_INSTALL_PREFIX:PATH=${GEOGRAM_INSTALL_PREFIX}
   BINARY_DIR ${GEOGRAM_PATH_BIN}
   INSTALL_DIR ${GEOGRAM_INSTALL_PREFIX}
 )

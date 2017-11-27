@@ -63,11 +63,9 @@ option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 # Optional custom steps 
-option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
 option(BUILD_GEOGRAM_WITHOUT_EXE "Compile geogram without tests and executables" ON)
-mark_as_advanced(BUILD_GEOGRAM_WITHOUT_EXE)
 option(USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)
-mark_as_advanced(USE_SUPERBUILD)
+mark_as_advanced(BUILD_GEOGRAM_WITHOUT_EXE USE_SUPERBUILD)
 
 # Select Available Mesher 
 # Each selected mesher will increase the RINGMesh functionalities.
@@ -106,3 +104,5 @@ if(USE_SUPERBUILD)
 else(USE_SUPERBUILD)
     include(cmake/RINGMesh.cmake)
 endif(USE_SUPERBUILD)
+
+include(cmake/external_tools.cmake)
