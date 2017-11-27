@@ -527,7 +527,7 @@ namespace GEO {
     /**
      * \brief Stores an array of elements of a given type, 
      *  and notifies a set of AttributeStoreObservers each time the
-     *  storead array changes size and/or base address.
+     *  stored array changes size and/or base address.
      */
     template <class T> class TypedAttributeStore : public AttributeStore {
     public:
