@@ -30,32 +30,13 @@
 #     2 Rue du Doyen Marcel Roubault - TSA 70605
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
+#
 
-set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
-set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
-set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
-set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output")
+@PACKAGE_INIT@ 
 
-if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
-    message(STATUS "Defined data directory for tests does not exists, using default tests/data")
-    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" FORCE)
-endif()
+set_and_check(GEOGRAM_INSTALL_PREFIX @GEOGRAM_INSTALL_PREFIX@)
+list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
+set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
+find_package(Geogram REQUIRED)
 
-# Create the directory for the outputs of the tests
-# It is output in the configuration file as well as the test input data directory
-file(MAKE_DIRECTORY ${TEST_DATA_OUTPUT_DIRECTORY})
-
-# Configure a header file to pass some of the CMake settings
-# to the source code
-set(test_config_file_in ${TEST_SOURCE_DIRECTORY}/ringmesh_tests_config.h.in)
-set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
-configure_file(${test_config_file_in} ${test_config_file})
-
-# Get the name of the test files
-file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
-
-# For all the test files found
-foreach(testsourcefile ${TESTS})
-    add_ringmesh_test(${testsourcefile})
-endforeach(testsourcefile ${TESTS})
-
+include(${CMAKE_CURRENT_LIST_DIR}/RINGMeshTargets.cmake)

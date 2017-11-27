@@ -31,31 +31,47 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
-set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
-set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
-set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output")
+set(GEOGRAM_PATH ${CMAKE_SOURCE_DIR}/third_party/geogram)
 
-if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
-    message(STATUS "Defined data directory for tests does not exists, using default tests/data")
-    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" FORCE)
-endif()
+if(WIN32)
+    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram)
+    set(geoplatform Win-vs-dynamic-generic)
+    # Extra lib
+    set(EXTRA_LIBS ${EXTRA_LIBS} psapi)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+else(WIN32)
+    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        if(APPLE)
+            set(geoplatform Darwin-clang-dynamic)
+        else(APPLE)
+            set(geoplatform Linux64-clang-dynamic)
+        endif(APPLE)
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        set(geoplatform Linux64-gcc-dynamic)
+    endif()
+endif(WIN32)
+set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install CACHE INTERNAL "Geogram install directory")  
 
-# Create the directory for the outputs of the tests
-# It is output in the configuration file as well as the test input data directory
-file(MAKE_DIRECTORY ${TEST_DATA_OUTPUT_DIRECTORY})
+ExternalProject_Add(geogram_ext
+  PREFIX ${GEOGRAM_PATH_BIN}
+  SOURCE_DIR ${GEOGRAM_PATH}
+  CMAKE_ARGS 
+          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+  CMAKE_CACHE_ARGS
+        -DVORPALINE_PLATFORM:STRING=${geoplatform}
+        -DGEOGRAM_WITH_LUA:BOOL=OFF
+        -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
+        -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+        -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
+        -DGEOGRAM_LIB_ONLY:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
+        -DCMAKE_INSTALL_PREFIX:PATH=${GEOGRAM_INSTALL_PREFIX}
+  BINARY_DIR ${GEOGRAM_PATH_BIN}
+  INSTALL_DIR ${GEOGRAM_INSTALL_PREFIX}
+)
 
-# Configure a header file to pass some of the CMake settings
-# to the source code
-set(test_config_file_in ${TEST_SOURCE_DIRECTORY}/ringmesh_tests_config.h.in)
-set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
-configure_file(${test_config_file_in} ${test_config_file})
-
-# Get the name of the test files
-file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
-
-# For all the test files found
-foreach(testsourcefile ${TESTS})
-    add_ringmesh_test(${testsourcefile})
-endforeach(testsourcefile ${TESTS})
-
+ExternalProject_Add_Step(geogram_ext forcebuild
+     DEPENDERS build
+     ALWAYS 1
+)

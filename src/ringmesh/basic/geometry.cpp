@@ -48,6 +48,10 @@
 
 namespace RINGMesh
 {
+    const std::array< std::array< index_t, 3 >, 4 >
+        Geometry::Tetra::tetra_facet_vertex = { { { 1, 3, 2 }, { 0, 2, 3 },
+            { 3, 1, 0 }, { 0, 1, 2 } } };
+
     double dot_perp( const vec2& v0, const vec2& v1 )
     {
         return dot( v0, vec2( v1.y, -v1.x ) );

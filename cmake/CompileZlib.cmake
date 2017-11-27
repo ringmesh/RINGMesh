@@ -31,31 +31,32 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
-set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
-set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
-set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output")
+set(ZLIB_PATH ${PROJECT_SOURCE_DIR}/third_party/zlib)
+set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE})
+set(ZLIB_ROOT ${ZLIB_PATH_BIN}/install CACHE INTERNAL "Zlib install directory")
 
-if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
-    message(STATUS "Defined data directory for tests does not exists, using default tests/data")
-    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" FORCE)
-endif()
+if(APPLE)
+    set(APPLE_EXTRA_ARGS
+        -DCMAKE_MACOSX_RPATH:BOOL=ON
+        -DCMAKE_INSTALL_RPATH:PATH=${ZLIB_ROOT}/lib
+    )
+endif(APPLE)
 
-# Create the directory for the outputs of the tests
-# It is output in the configuration file as well as the test input data directory
-file(MAKE_DIRECTORY ${TEST_DATA_OUTPUT_DIRECTORY})
+ExternalProject_Add(zlib_ext
+  PREFIX ${ZLIB_PATH_BIN}
+  SOURCE_DIR ${ZLIB_PATH}
+  CMAKE_ARGS 
+          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+  CMAKE_CACHE_ARGS
+          -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT}
+          ${APPLE_EXTRA_ARGS}
+  BINARY_DIR ${ZLIB_PATH_BIN}
+  INSTALL_DIR ${ZLIB_ROOT}
+)
 
-# Configure a header file to pass some of the CMake settings
-# to the source code
-set(test_config_file_in ${TEST_SOURCE_DIRECTORY}/ringmesh_tests_config.h.in)
-set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
-configure_file(${test_config_file_in} ${test_config_file})
-
-# Get the name of the test files
-file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
-
-# For all the test files found
-foreach(testsourcefile ${TESTS})
-    add_ringmesh_test(${testsourcefile})
-endforeach(testsourcefile ${TESTS})
+ExternalProject_Add_Step(zlib_ext forcebuild
+    DEPENDERS build
+    ALWAYS 1
+)
 
