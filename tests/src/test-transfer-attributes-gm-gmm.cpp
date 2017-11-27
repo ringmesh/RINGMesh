@@ -78,24 +78,24 @@ namespace
         Attribute< bool >& vertex_bool_attr,
         Attribute< double >& vertex_double_attr,
         Attribute< vec3 >& vertex_vec3_attr,
-        Attribute< std::vector<double> >& vertex_dim_6_double_attr,
+        Attribute< std::vector< double > >& vertex_dim_6_double_attr,
         Attribute< char >& vertex_char_attr )
     {
         const long int rounded_vertex_xy =
             std::lrint( cur_vertex.x * cur_vertex.y );
-        vertex_long_int_attr.set_value(vertex_i, rounded_vertex_xy );
+        vertex_long_int_attr.set_value( vertex_i, rounded_vertex_xy );
         vertex_bool_attr.set_value( vertex_i, ( rounded_vertex_xy % 2 == 0 ) );
-        vertex_double_attr.set_value(vertex_i, cur_vertex.x );
-        vertex_vec3_attr.set_value(vertex_i, cur_vertex );
+        vertex_double_attr.set_value( vertex_i, cur_vertex.x );
+        vertex_vec3_attr.set_value( vertex_i, cur_vertex );
 
-        int mydoubles[] = { 
-            cur_vertex.x, cur_vertex.y, cur_vertex.z, 
-            cur_vertex.x, cur_vertex.y, cur_vertex.z
-        };
-        std::vector<double> six_doubles( mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
+        int mydoubles[] = { cur_vertex.x, cur_vertex.y, cur_vertex.z,
+            cur_vertex.x, cur_vertex.y, cur_vertex.z };
+        std::vector< double > six_doubles(
+            mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
         vertex_dim_6_double_attr.set_value( vertex_i, six_doubles );
 
-        vertex_char_attr.set_value( vertex_i, std::to_string( cur_vertex.y ).data()[0] );
+        vertex_char_attr.set_value(
+            vertex_i, std::to_string( cur_vertex.y ).data()[0] );
     }
 
     void set_vertex_attributes_on_geomodel_regions( const GeoModel3D& geomodel )
@@ -114,7 +114,7 @@ namespace
                 reg_attr_mgr, attribute_names[2] );
             Attribute< vec3 > vertex_vec3_attr(
                 reg_attr_mgr, attribute_names[3] );
-            Attribute< std::vector<double> > vertex_dim_6_double_attr(
+            Attribute< std::vector< double > > vertex_dim_6_double_attr(
                 reg_attr_mgr, attribute_names[4] );
             Attribute< char > vertex_char_attr(
                 reg_attr_mgr, attribute_names[5] );
@@ -139,16 +139,13 @@ namespace
 
         Attribute< long int > vertex_long_int_attr(
             gmmv_attr_mgr, attribute_names[0] );
-        Attribute< bool > vertex_bool_attr(
-            gmmv_attr_mgr, attribute_names[1] );
+        Attribute< bool > vertex_bool_attr( gmmv_attr_mgr, attribute_names[1] );
         Attribute< double > vertex_double_attr(
             gmmv_attr_mgr, attribute_names[2] );
-        Attribute< vec3 > vertex_vec3_attr(
-            gmmv_attr_mgr, attribute_names[3] );
-        Attribute< std::vector<double> > vertex_dim_6_double_attr(
+        Attribute< vec3 > vertex_vec3_attr( gmmv_attr_mgr, attribute_names[3] );
+        Attribute< std::vector< double > > vertex_dim_6_double_attr(
             gmmv_attr_mgr, attribute_names[4] );
-        Attribute< char > vertex_char_attr(
-            gmmv_attr_mgr, attribute_names[5] );
+        Attribute< char > vertex_char_attr( gmmv_attr_mgr, attribute_names[5] );
 
         for( index_t v_i = 0; v_i < gmmv.nb(); ++v_i )
         {
@@ -166,23 +163,23 @@ namespace
         Attribute< bool >& cell_bool_attr,
         Attribute< double >& cell_double_attr,
         Attribute< vec3 >& cell_vec3_attr,
-        Attribute< std::vector<double> >& cell_dim_6_double_attr,
+        Attribute< std::vector< double > >& cell_dim_6_double_attr,
         Attribute< char >& cell_char_attr )
     {
         const long int rounded_volume = std::lrint( cell_volume );
-        cell_long_int_attr.set_value(cell_i, rounded_volume );
+        cell_long_int_attr.set_value( cell_i, rounded_volume );
         cell_bool_attr.set_value( cell_i, ( rounded_volume % 2 == 0 ) );
-        cell_double_attr.set_value( cell_i, cell_volume);
-        cell_vec3_attr.set_value( cell_i, cell_barycenter);
-        int mydoubles[] = {
-            cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y, cell_vec3_attr[cell_i].z,
-            cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y, cell_vec3_attr[cell_i].z
-        };
-        std::vector<double> six_doubles( mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
+        cell_double_attr.set_value( cell_i, cell_volume );
+        cell_vec3_attr.set_value( cell_i, cell_barycenter );
+        int mydoubles[] = { cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y,
+            cell_vec3_attr[cell_i].z, cell_vec3_attr[cell_i].x,
+            cell_vec3_attr[cell_i].y, cell_vec3_attr[cell_i].z };
+        std::vector< double > six_doubles(
+            mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
         cell_dim_6_double_attr.set_value( cell_i, six_doubles );
 
-        cell_char_attr.set_value( cell_i,
-            std::to_string( cell_vec3_attr[cell_i].y ).data()[0] );
+        cell_char_attr.set_value(
+            cell_i, std::to_string( cell_vec3_attr[cell_i].y ).data()[0] );
     }
 
     void set_cell_attributes_on_geomodel_regions( const GeoModel3D& geomodel )
@@ -191,8 +188,7 @@ namespace
         {
             const Region3D& cur_reg = geomodel.region( reg_i );
 
-            AttributesManager& reg_attr_mgr =
-                cur_reg.cell_attribute_manager();
+            AttributesManager& reg_attr_mgr = cur_reg.cell_attribute_manager();
             Attribute< long int > cell_long_int_attr(
                 reg_attr_mgr, attribute_names[0] );
             Attribute< bool > cell_bool_attr(
@@ -201,8 +197,8 @@ namespace
                 reg_attr_mgr, attribute_names[2] );
             Attribute< vec3 > cell_vec3_attr(
                 reg_attr_mgr, attribute_names[3] );
-            Attribute< std::vector<double> > cell_dim_6_double_attr(
-                reg_attr_mgr, attribute_names[4]);
+            Attribute< std::vector< double > > cell_dim_6_double_attr(
+                reg_attr_mgr, attribute_names[4] );
             Attribute< char > cell_char_attr(
                 reg_attr_mgr, attribute_names[5] );
 
@@ -226,16 +222,13 @@ namespace
 
         Attribute< long int > cell_long_int_attr(
             gmmc_attr_mgr, attribute_names[0] );
-        Attribute< bool > cell_bool_attr(
-            gmmc_attr_mgr, attribute_names[1] );
+        Attribute< bool > cell_bool_attr( gmmc_attr_mgr, attribute_names[1] );
         Attribute< double > cell_double_attr(
             gmmc_attr_mgr, attribute_names[2] );
-        Attribute< vec3 > cell_vec3_attr(
-            gmmc_attr_mgr, attribute_names[3] );
-        Attribute< std::vector<double> > cell_dim_6_double_attr(
+        Attribute< vec3 > cell_vec3_attr( gmmc_attr_mgr, attribute_names[3] );
+        Attribute< std::vector< double > > cell_dim_6_double_attr(
             gmmc_attr_mgr, attribute_names[4] );
-        Attribute< char > cell_char_attr(
-            gmmc_attr_mgr, attribute_names[5] );
+        Attribute< char > cell_char_attr( gmmc_attr_mgr, attribute_names[5] );
 
         for( index_t cell_i = 0; cell_i < gmmc.nb(); ++cell_i )
         {
@@ -280,16 +273,13 @@ namespace
 
         Attribute< long int > vertex_long_int_attr(
             gmmv_attr_mgr, attribute_names[0] );
-        Attribute< bool > vertex_bool_attr(
-            gmmv_attr_mgr, attribute_names[1] );
+        Attribute< bool > vertex_bool_attr( gmmv_attr_mgr, attribute_names[1] );
         Attribute< double > vertex_double_attr(
             gmmv_attr_mgr, attribute_names[2] );
-        Attribute< vec3 > vertex_vec3_attr(
-            gmmv_attr_mgr, attribute_names[3] );
+        Attribute< vec3 > vertex_vec3_attr( gmmv_attr_mgr, attribute_names[3] );
         Attribute< double > vertex_dim_6_double_attr(
             gmmv_attr_mgr, attribute_names[4] );
-        Attribute< char > vertex_char_attr(
-            gmmv_attr_mgr, attribute_names[5] );
+        Attribute< char > vertex_char_attr( gmmv_attr_mgr, attribute_names[5] );
 
         for( index_t vertex_i = 0; vertex_i < gmmv.nb(); ++vertex_i )
         {
@@ -475,16 +465,13 @@ namespace
 
         Attribute< long int > cell_long_int_attr(
             gmmc_attr_mgr, attribute_names[0] );
-        Attribute< bool > cell_bool_attr(
-            gmmc_attr_mgr, attribute_names[1] );
+        Attribute< bool > cell_bool_attr( gmmc_attr_mgr, attribute_names[1] );
         Attribute< double > cell_double_attr(
             gmmc_attr_mgr, attribute_names[2] );
-        Attribute< vec3 > cell_vec3_attr(
-            gmmc_attr_mgr, attribute_names[3] );
+        Attribute< vec3 > cell_vec3_attr( gmmc_attr_mgr, attribute_names[3] );
         Attribute< double > cell_dim_6_double_attr(
             gmmc_attr_mgr, attribute_names[4] );
-        Attribute< char > cell_char_attr(
-            gmmc_attr_mgr, attribute_names[5] );
+        Attribute< char > cell_char_attr( gmmc_attr_mgr, attribute_names[5] );
 
         for( index_t cell_i = 0; cell_i < gmmc.nb_cells(); ++cell_i )
         {
