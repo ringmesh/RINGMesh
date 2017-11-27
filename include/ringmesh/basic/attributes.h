@@ -222,9 +222,10 @@ namespace RINGMesh
         void apply_permutation(
             const std::vector< index_t >& permutation ) final
         {
-            std::vector<T> tmp_vector;
+            std::vector< T > tmp_vector;
             tmp_vector.resize( vector_.size() );
-            for( auto p : range( permutation.size() ) ) {
+            for( auto p : range( permutation.size() ) )
+            {
                 tmp_vector[p] = vector_[permutation[p]];
             }
             vector_ = tmp_vector;
@@ -277,7 +278,7 @@ namespace RINGMesh
         }
         std::string element_typeid_name() const final
         {
-            return std::string("bool");
+            return std::string( "bool" );
         }
     };
 
@@ -981,7 +982,6 @@ namespace RINGMesh
             bind( manager, name );
         }
 
-
         /**
          * \brief Gets a modifiable element by index
          * \param [in] i index of the element
@@ -1026,7 +1026,6 @@ namespace RINGMesh
                 ( *this )[i] = val;
             }
         }
-
 
     protected:
         AttributesManager* manager_{ nullptr };

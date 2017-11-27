@@ -59,19 +59,20 @@ void test_attributes()
     }
 
     Attribute< T > attribute1( manager, "attribute" );
-    attribute1.set_value(5, T( 1 ) );
+    attribute1.set_value( 5, T( 1 ) );
 
     for( auto i : range( 10 ) )
     {
-        if( i == 5 ){
-            if( attribute0[i] != T(1) )
+        if( i == 5 )
+        {
+            if( attribute0[i] != T( 1 ) )
             {
                 throw RINGMeshException( "Test", "Failed to edit attribute" );
             }
         }
         else
         {
-            if( attribute0[i] != T(0) )
+            if( attribute0[i] != T( 0 ) )
             {
                 throw RINGMeshException( "Test", "Failed to edit attribute" );
             }
@@ -80,7 +81,8 @@ void test_attributes()
     attribute1.set_constant_value( T( 0 ) );
     if( attribute1.size() != 1 )
     {
-        throw RINGMeshException( "Test", "Failed to create a constant attribut" );
+        throw RINGMeshException(
+            "Test", "Failed to create a constant attribut" );
     }
 }
 
