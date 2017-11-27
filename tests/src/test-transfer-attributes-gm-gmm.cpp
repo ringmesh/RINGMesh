@@ -706,10 +706,10 @@ namespace
         tests_transfer_from_geomodel_regions_to_geomodelmesh();
         tests_transfer_from_geomodelmesh_to_geomodel_regions();
 
-//        futures.emplace_back( std::async( std::launch::async,
-//            &tests_transfer_from_geomodel_regions_to_geomodelmesh ) );
-//        futures.emplace_back( std::async( std::launch::async,
-//            &tests_transfer_from_geomodelmesh_to_geomodel_regions ) );
+        //        futures.emplace_back( std::async( std::launch::async,
+        //            &tests_transfer_from_geomodel_regions_to_geomodelmesh ) );
+        //        futures.emplace_back( std::async( std::launch::async,
+        //            &tests_transfer_from_geomodelmesh_to_geomodel_regions ) );
 
         for( auto& future : futures )
         {

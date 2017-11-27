@@ -38,8 +38,8 @@
 #include <geogram/basic/geofile.h>
 #include <map>
 #include <ringmesh/basic/common.h>
-#include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/factory.h>
+#include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/logger.h>
 #include <set>
 #include <typeinfo>
