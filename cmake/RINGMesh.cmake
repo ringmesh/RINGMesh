@@ -85,6 +85,16 @@ add_folder(ringmesh_src ringmesh_include visualize)
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED ${ringmesh_include} ${ringmesh_src})
 
+# Exports RINGMesh target
+include ( CMakePackageConfigHelpers )
+export(TARGETS RINGMesh NAMESPACE RINGMesh:: FILE RINGMeshTargets.cmake)
+configure_package_config_file(
+    cmake/RINGMeshConfig.cmake.in 
+    ${CMAKE_BINARY_DIR}/RINGMeshConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
+    PATH_VARS GEOGRAM_INSTALL_PREFIX
+)
+
 #------------------------------------------------------------------------------------------------
 # Build configuration
 set_target_properties(RINGMesh PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
