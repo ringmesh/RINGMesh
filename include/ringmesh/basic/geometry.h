@@ -212,7 +212,8 @@ namespace RINGMesh
             vec3 p1{};
             vec3 p2{};
             vec3 p3{};
-            static const std::array< std::array< index_t, 3 >, 4 > tetra_facet_vertex;
+            static const std::array< std::array< index_t, 3 >, 4 >
+                tetra_facet_vertex;
         };
 
         template < index_t DIMENSION >

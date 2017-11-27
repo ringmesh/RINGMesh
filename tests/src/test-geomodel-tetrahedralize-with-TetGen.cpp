@@ -57,7 +57,7 @@ int main()
     {
         default_configure();
         CmdLine::import_arg_group( "global" );
-        GEO::CmdLine::set_arg( "algo:tet", "TetGen");
+        GEO::CmdLine::set_arg( "algo:tet", "TetGen" );
 
         std::string file_name( ringmesh_test_data_path );
         file_name += "modelA6.ml";

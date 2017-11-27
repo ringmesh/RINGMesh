@@ -85,14 +85,15 @@ int main()
             validity_mode ^ ValidityCheckMode::POLYGON_INTERSECTIONS;
 #endif
 
-        futures.emplace_back( std::async( std::launch::async, [&geomodel, &validity_mode] {
-            if( !is_geomodel_valid( geomodel, validity_mode ) )
-            {
-                throw RINGMeshException( "RINGMesh Test",
-                    "Failed when loading model ", geomodel.name(),
-                    ": the loaded model is not valid." );
-            }
-        } ) );
+        futures.emplace_back(
+            std::async( std::launch::async, [&geomodel, &validity_mode] {
+                if( !is_geomodel_valid( geomodel, validity_mode ) )
+                {
+                    throw RINGMeshException( "RINGMesh Test",
+                        "Failed when loading model ", geomodel.name(),
+                        ": the loaded model is not valid." );
+                }
+            } ) );
 
         GEO::Mesh surface_meshes;
         // Compute mesh with duplicated points to compares number

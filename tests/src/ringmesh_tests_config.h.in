@@ -35,19 +35,21 @@
 
 /*!
  * This file is generated at project configuration by CMake
- * Do not modify it directly but modify the include/ringmesh_tests_config.h.in file 
+ * Do not modify it directly but modify the include/ringmesh_tests_config.h.in
+ * file
  * and re-run the project configuration
  */
- 
+
 #pragma once
- 
+
 #include <string>
 
-namespace RINGMesh {
- 
+namespace RINGMesh
+{
     /* Absolute path to data storage for the test */
-    static const std::string ringmesh_test_data_path = "@TEST_DATA_INPUT_DIRECTORY@/" ;
+    static const std::string ringmesh_test_data_path =
+        "@TEST_DATA_INPUT_DIRECTORY@/";
 
-    static const std::string ringmesh_test_output_path = "@TEST_DATA_OUTPUT_DIRECTORY@/" ;
-
+    static const std::string ringmesh_test_output_path =
+        "@TEST_DATA_OUTPUT_DIRECTORY@/";
 }
