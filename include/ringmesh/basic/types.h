@@ -73,8 +73,15 @@ namespace RINGMesh
     using vecn = GEO::vecng< DIMENSION, double >;
     // This is an array of 3 doubles
     using vec3 = vecn< 3 >;
-    // This is an array of 3 doubles
+    // This is an array of 2 doubles
     using vec2 = vecn< 2 >;
+    // This is an array template of signed integers
+    template < index_t DIMENSION >
+    using ivecn = GEO::vecng< DIMENSION, signed_index_t >;
+    // This is an array of 3 signed integers
+    using ivec3 = ivecn< 3 >;
+    // This is an array of 2 signed integers
+    using ivec2 = ivecn< 2 >;
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
