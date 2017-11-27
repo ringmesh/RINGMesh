@@ -38,6 +38,7 @@
 #include <geogram/basic/geofile.h>
 #include <map>
 #include <ringmesh/basic/common.h>
+#include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/logger.h>
 #include <set>
@@ -863,8 +864,9 @@ namespace RINGMesh
             store_ = manager_->find_attribute_store( name );
             if( store_ == nullptr )
             {
-                store_ = new AttributeStore();
-                store_->set_store( new VectorStore< T >() );
+                store_ = new AttributeStore;
+                store_->set_store( new VectorStore< T > );
+                DEBUG( manager_->nb_items() );
                 store_->resize( manager_->nb_items() );
                 manager_->bind_attribute_store( name, store_ );
             }
