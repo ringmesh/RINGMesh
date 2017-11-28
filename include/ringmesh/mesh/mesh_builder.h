@@ -254,7 +254,6 @@ namespace RINGMesh
         void update_vertex_attributes();
 
     private:
-
         virtual void update_attributes() = 0;
 
         virtual void do_load_mesh( const std::string& filename ) = 0;
@@ -480,6 +479,7 @@ namespace RINGMesh
         {
             line_mesh_.edge_attribute_manager().resize( line_mesh_.nb_edges() );
         }
+
     private:
         void update_attributes() final
         {
@@ -836,8 +836,10 @@ namespace RINGMesh
 
         void update_polygon_attributes()
         {
-            surface_mesh_.polygon_attribute_manager().resize( surface_mesh_.nb_polygons() );
+            surface_mesh_.polygon_attribute_manager().resize(
+                surface_mesh_.nb_polygons() );
         }
+
     private:
         void update_attributes() final
         {
@@ -1092,6 +1094,7 @@ namespace RINGMesh
         }
 
         void update_cell_attributes();
+
     private:
         void update_attributes() final
         {
