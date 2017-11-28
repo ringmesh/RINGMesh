@@ -279,7 +279,7 @@ namespace RINGMesh
         }
         std::string element_typeid_name() const final
         {
-            return std::string( "bool" );
+            return typeid( bool ).name();
         }
     };
 
@@ -401,6 +401,11 @@ namespace RINGMesh
          */
         AttributeStore() = default;
 
+        AttributeStore( Store* store )
+        {
+            set_store( store );
+        }
+
         /**
          * \brief AttributeStore destructor.
          */
@@ -482,9 +487,9 @@ namespace RINGMesh
          *  of this AttributeStore.
          * \details Only the data is copied.
          */
-        AttributeStore* clone() const
+        std::unique_ptr<RINGMesh::AttributeStore> clone() const
         {
-            AttributeStore* new_attstore =
+            std::unique_ptr<RINGMesh::AttributeStore> new_attstore =
                 create_attribute_store_by_element_type_name(
                     store_->element_typeid_name() );
 
@@ -561,12 +566,12 @@ namespace RINGMesh
          * \param[in] element_type_name a const reference to a string with
          *  the C++ type of the elements to be stored in the attribute
          */
-        static AttributeStore* create_attribute_store_by_element_type_name(
+        static std::unique_ptr< AttributeStore > create_attribute_store_by_element_type_name(
             const std::string& element_type_name )
         {
-            ringmesh_assert( element_type_name_is_known( element_type_name ) );
-            return type_name_to_creator_[element_type_name]
-                ->create_attribute_store();
+            auto creator = type_name_to_creator_.find( element_type_name );
+            ringmesh_assert( creator != type_name_to_creator_.end());
+            return creator->second();
         }
 
         /**
@@ -603,16 +608,14 @@ namespace RINGMesh
          * \brief Registers a new element type
          * \note Internal use function, one should use
          *  geo_register_attribute_type instead
-         * \param[in] creator a pointer to the AttributeStoreCreator
          * \param[in] element_type_name a const reference to a string with the
          *  C++ type name of the elements
-         * \param[in] element_typeid_name a const reference to a string with
-         *  the mangled type name of the elements, as given by typeid(T).name()
          */
-        static void register_attribute_creator( AttributeStoreCreator* creator,
-            const std::string& element_type_name,
-            const std::string& element_typeid_name )
+        template< class T >
+        static void register_attribute_creator(
+            const std::string& element_type_name )
         {
+            std::string element_typeid_name = typeid(T).name();
             if( element_type_name_is_known( element_type_name ) )
             {
                 Logger::warn(
@@ -628,17 +631,44 @@ namespace RINGMesh
                         already_registered_attribute_has_same_type );
                 }
             }
-            type_name_to_creator_[element_type_name] =
-                std::unique_ptr< AttributeStoreCreator >( creator );
-            typeid_name_to_type_name_[element_typeid_name] = element_type_name;
-            type_name_to_typeid_name_[element_type_name] = element_typeid_name;
+            if( !type_name_to_creator_.emplace( element_type_name,
+                Creator( create_function_impl< T > ) ).second )
+            {
+                Logger::warn( "Attribute",
+                    "Trying to register twice the same attribute type: ",
+                    element_type_name );
+            }
+            typeid_name_to_type_name_.emplace( element_typeid_name,
+                element_type_name );
+            type_name_to_typeid_name_.emplace( element_type_name,
+                element_typeid_name );
         }
 
-    protected:
-        std::unique_ptr< Store > store_{ nullptr };
+        template< typename T >
+        static std::unique_ptr< AttributeStore > create_function_impl()
+        {
+            return std::unique_ptr< AttributeStore > { new AttributeStore {
+                new VectorStore< T > } };
+        }
 
-        static std::map< std::string, std::unique_ptr< AttributeStoreCreator > >
-            type_name_to_creator_;
+        static void initialize()
+        {
+            register_attribute_creator< bool >( "bool" );
+            register_attribute_creator< char >( "char" );
+            register_attribute_creator< int >( "int" );
+            register_attribute_creator< index_t >( "index_t" );
+            register_attribute_creator< float >( "float" );
+            register_attribute_creator< double >( "double" );
+            register_attribute_creator< vec2 >( "vec2" );
+            register_attribute_creator< vec3 >( "vec3" );
+        }
+
+        using Creator = typename std::add_pointer< std::unique_ptr< AttributeStore >() >::type;
+
+    protected:
+        std::unique_ptr< Store > store_ { nullptr };
+
+        static std::map< std::string, Creator > type_name_to_creator_;
 
         static std::map< std::string, std::string > typeid_name_to_type_name_;
 

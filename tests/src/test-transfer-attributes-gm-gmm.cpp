@@ -88,7 +88,7 @@ namespace
         vertex_double_attr.set_value( vertex_i, cur_vertex.x );
         vertex_vec3_attr.set_value( vertex_i, cur_vertex );
 
-        int mydoubles[] = { cur_vertex.x, cur_vertex.y, cur_vertex.z,
+        double mydoubles[] = { cur_vertex.x, cur_vertex.y, cur_vertex.z,
             cur_vertex.x, cur_vertex.y, cur_vertex.z };
         std::vector< double > six_doubles(
             mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
@@ -171,7 +171,7 @@ namespace
         cell_bool_attr.set_value( cell_i, ( rounded_volume % 2 == 0 ) );
         cell_double_attr.set_value( cell_i, cell_volume );
         cell_vec3_attr.set_value( cell_i, cell_barycenter );
-        int mydoubles[] = { cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y,
+        double mydoubles[] = { cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y,
             cell_vec3_attr[cell_i].z, cell_vec3_attr[cell_i].x,
             cell_vec3_attr[cell_i].y, cell_vec3_attr[cell_i].z };
         std::vector< double > six_doubles(
