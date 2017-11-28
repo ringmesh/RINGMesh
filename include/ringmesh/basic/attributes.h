@@ -867,7 +867,6 @@ namespace RINGMesh
             {
                 store_ = new AttributeStore;
                 store_->set_store( new VectorStore< T > );
-                DEBUG( manager_->nb_items() );
                 store_->resize( manager_->nb_items() );
                 manager_->bind_attribute_store( name, store_ );
             }
