@@ -838,14 +838,6 @@ namespace RINGMesh
          */
         void copy( const AttributesManager& rhs );
 
-        /**
-         * \brief Copies all the attributes of an item into another one.
-         * \param[in] to index of the destination item
-         * \param[in] from index of the source item
-         * \note This function is not efficient.
-         */
-        void copy_item( index_t to, index_t from );
-
     private:
         index_t nb_items_{ 0 };
         std::map< std::string, AttributeStore* > attributes_;
@@ -861,8 +853,41 @@ namespace RINGMesh
     class Attribute
     {
         ringmesh_disable_copy_and_move( Attribute );
-
     public:
+        /**
+          * \brief Creates an unitialized (unbound) Attribute.
+          */
+        Attribute() = default;
+
+        /**
+         * \brief Creates or retreives a persistent attribute attached to
+         *  a given AttributesManager.
+         * \details If the attribute already exists with the specified
+         *  name in the AttributesManager then it is retreived, else
+         *  it is created and bound to the name.
+         * \param[in] manager a reference to the AttributesManager
+         * \param[in] name name of the attribute
+         */
+        Attribute( AttributesManager& manager, const std::string& name )
+        {
+            bind( manager, name );
+        }
+
+        /**
+         * \brief Attribute destructor
+         * \details
+         *  The attribute is not destroyed, it can be retreived later
+         *  by binding with the same name. To destroy the attribute,
+         *  use detroy() instead.
+         */
+        ~Attribute()
+        {
+            if( is_bound() )
+            {
+                unbind();
+            }
+        }
+
         /**
          * \brief Tests whether an Attribute is bound.
          * \retval true if this Attribute is bound
@@ -954,21 +979,6 @@ namespace RINGMesh
         }
 
         /**
-         * \brief Attribute destructor
-         * \details
-         *  The attribute is not destroyed, it can be retreived later
-         *  by binding with the same name. To destroy the attribute,
-         *  use detroy() instead.
-         */
-        ~Attribute()
-        {
-            if( is_bound() )
-            {
-                unbind();
-            }
-        }
-
-        /**
          * \brief Tests whether an attribute with the specified name and with
          *  corresponding type exists in an AttributesManager.
          * \param[in] manager a reference to the AttributesManager
@@ -998,25 +1008,6 @@ namespace RINGMesh
         AttributesManager* manager() const
         {
             return manager_;
-        }
-
-        /**
-          * \brief Creates an unitialized (unbound) Attribute.
-          */
-        Attribute() = default;
-
-        /**
-         * \brief Creates or retreives a persistent attribute attached to
-         *  a given AttributesManager.
-         * \details If the attribute already exists with the specified
-         *  name in the AttributesManager then it is retreived, else
-         *  it is created and bound to the name.
-         * \param[in] manager a reference to the AttributesManager
-         * \param[in] name name of the attribute
-         */
-        Attribute( AttributesManager& manager, const std::string& name )
-        {
-            bind( manager, name );
         }
 
         /**

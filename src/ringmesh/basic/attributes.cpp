@@ -212,17 +212,6 @@ namespace RINGMesh
         }
     }
 
-    /*   void AttributesManager::copy_item( index_t to, index_t from )
-       {
-           for(
-               std::map<std::string, AttributeStore*>::iterator
-               it = attributes_.begin();
-           it != attributes_.end(); ++it
-               ) {
-               it->second->copy_item( to, from );
-           }
-       }*/
-
     /************************************************************************/
 
     std::string ReadOnlyScalarAttributeAdapter::attribute_base_name(
