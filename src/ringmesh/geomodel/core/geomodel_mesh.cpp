@@ -2964,9 +2964,11 @@ namespace RINGMesh
                         ringmesh_assert(
                             AttributeStore::element_type_name_is_known(
                                 cur_type_name ) );
-                        cur_v_att_store_in_reg = AttributeStore::
-                            create_attribute_store_by_element_type_name(
-                                cur_type_name );
+                        cur_v_att_store_in_reg =
+                            AttributeStore::
+                                create_attribute_store_by_element_type_name(
+                                    cur_type_name )
+                                    .release();
                         reg_v_attr_mgr.bind_attribute_store(
                             cur_attr_name, cur_v_att_store_in_reg );
                     }
@@ -3028,9 +3030,11 @@ namespace RINGMesh
                                 .element_typeid_name() );
                     ringmesh_assert( AttributeStore::element_type_name_is_known(
                         cur_type_name ) );
-                    cur_v_att_store = AttributeStore::
-                        create_attribute_store_by_element_type_name(
-                            cur_type_name );
+                    cur_v_att_store =
+                        AttributeStore::
+                            create_attribute_store_by_element_type_name(
+                                cur_type_name )
+                                .release();
                     vertices.attribute_manager().bind_attribute_store(
                         cur_attr_name, cur_v_att_store );
                 }
@@ -3092,9 +3096,11 @@ namespace RINGMesh
                                 .element_typeid_name() );
                     ringmesh_assert( AttributeStore::element_type_name_is_known(
                         cur_type_name ) );
-                    cur_c_att_store_in_reg = AttributeStore::
-                        create_attribute_store_by_element_type_name(
-                            cur_type_name );
+                    cur_c_att_store_in_reg =
+                        AttributeStore::
+                            create_attribute_store_by_element_type_name(
+                                cur_type_name )
+                                .release();
                     reg_c_attr_mgr.bind_attribute_store(
                         cur_attr_name, cur_c_att_store_in_reg );
                 }
@@ -3145,7 +3151,7 @@ namespace RINGMesh
                 auto* cur_c_att_store_in_reg =
                     reg_cell_attr_mgr.find_attribute_store( cur_attr_name );
                 ringmesh_assert( cur_c_att_store_in_reg != nullptr );
-                AttributeStore* cur_c_att_store{ nullptr };
+                RINGMesh::AttributeStore* cur_c_att_store;
                 if( !cells.attribute_manager().is_defined( cur_attr_name ) )
                 {
                     const std::string cur_type_name = AttributeStore::
@@ -3154,9 +3160,11 @@ namespace RINGMesh
                                 .element_typeid_name() );
                     ringmesh_assert( AttributeStore::element_type_name_is_known(
                         cur_type_name ) );
-                    cur_c_att_store = AttributeStore::
-                        create_attribute_store_by_element_type_name(
-                            cur_type_name );
+                    cur_c_att_store =
+                        AttributeStore::
+                            create_attribute_store_by_element_type_name(
+                                cur_type_name )
+                                .release();
                     cells.attribute_manager().bind_attribute_store(
                         cur_attr_name, cur_c_att_store );
                 }

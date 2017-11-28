@@ -38,8 +38,8 @@
 #include <geogram/basic/geofile.h>
 #include <map>
 #include <ringmesh/basic/common.h>
-#include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/factory.h>
+#include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/logger.h>
 #include <set>
 #include <typeinfo>
@@ -274,12 +274,12 @@ namespace RINGMesh
         {
             VectorStore< bool >* result = new VectorStore< bool >();
             result->resize( this->size() );
-            result->vector_ = vector_;
+            result->vector_ = this->vector_;
             return result;
         }
         std::string element_typeid_name() const final
         {
-            return std::string( "bool" );
+            return typeid( bool ).name();
         }
     };
 
@@ -401,6 +401,11 @@ namespace RINGMesh
          */
         AttributeStore() = default;
 
+        AttributeStore( Store* store )
+        {
+            set_store( store );
+        }
+
         /**
          * \brief AttributeStore destructor.
          */
@@ -482,9 +487,9 @@ namespace RINGMesh
          *  of this AttributeStore.
          * \details Only the data is copied.
          */
-        AttributeStore* clone() const
+        std::unique_ptr< RINGMesh::AttributeStore > clone() const
         {
-            AttributeStore* new_attstore =
+            std::unique_ptr< RINGMesh::AttributeStore > new_attstore =
                 create_attribute_store_by_element_type_name(
                     store_->element_typeid_name() );
 
@@ -561,12 +566,13 @@ namespace RINGMesh
          * \param[in] element_type_name a const reference to a string with
          *  the C++ type of the elements to be stored in the attribute
          */
-        static AttributeStore* create_attribute_store_by_element_type_name(
-            const std::string& element_type_name )
+        static std::unique_ptr< AttributeStore >
+            create_attribute_store_by_element_type_name(
+                const std::string& element_type_name )
         {
-            ringmesh_assert( element_type_name_is_known( element_type_name ) );
-            return type_name_to_creator_[element_type_name]
-                ->create_attribute_store();
+            auto creator = type_name_to_creator_.find( element_type_name );
+            ringmesh_assert( creator != type_name_to_creator_.end() );
+            return creator->second();
         }
 
         /**
@@ -603,16 +609,14 @@ namespace RINGMesh
          * \brief Registers a new element type
          * \note Internal use function, one should use
          *  geo_register_attribute_type instead
-         * \param[in] creator a pointer to the AttributeStoreCreator
          * \param[in] element_type_name a const reference to a string with the
          *  C++ type name of the elements
-         * \param[in] element_typeid_name a const reference to a string with
-         *  the mangled type name of the elements, as given by typeid(T).name()
          */
-        static void register_attribute_creator( AttributeStoreCreator* creator,
-            const std::string& element_type_name,
-            const std::string& element_typeid_name )
+        template < class T >
+        static void register_attribute_creator(
+            const std::string& element_type_name )
         {
+            std::string element_typeid_name = typeid( T ).name();
             if( element_type_name_is_known( element_type_name ) )
             {
                 Logger::warn(
@@ -628,16 +632,47 @@ namespace RINGMesh
                         already_registered_attribute_has_same_type );
                 }
             }
-            type_name_to_creator_[element_type_name] =
-                std::unique_ptr< AttributeStoreCreator >( creator );
-            typeid_name_to_type_name_[element_typeid_name] = element_type_name;
-            type_name_to_typeid_name_[element_type_name] = element_typeid_name;
+            if( !type_name_to_creator_
+                     .emplace( element_type_name,
+                         std::add_pointer< std::
+                                 unique_ptr< AttributeStore >() >::
+                             type( create_function_impl< T > ) )
+                     .second )
+            {
+                Logger::warn( "Attribute",
+                    "Trying to register twice the same attribute type: ",
+                    element_type_name );
+            }
+            typeid_name_to_type_name_.emplace(
+                element_typeid_name, element_type_name );
+            type_name_to_typeid_name_.emplace(
+                element_type_name, element_typeid_name );
+        }
+
+        template < typename T >
+        static std::unique_ptr< AttributeStore > create_function_impl()
+        {
+            return std::unique_ptr< AttributeStore >{ new AttributeStore{
+                new VectorStore< T > } };
+        }
+
+        static void initialize()
+        {
+            register_attribute_creator< bool >( "bool" );
+            register_attribute_creator< char >( "char" );
+            register_attribute_creator< int >( "int" );
+            register_attribute_creator< index_t >( "index_t" );
+            register_attribute_creator< float >( "float" );
+            register_attribute_creator< double >( "double" );
+            register_attribute_creator< vec2 >( "vec2" );
+            register_attribute_creator< vec3 >( "vec3" );
         }
 
     protected:
         std::unique_ptr< Store > store_{ nullptr };
 
-        static std::map< std::string, std::unique_ptr< AttributeStoreCreator > >
+        static std::map< std::string,
+            std::add_pointer< std::unique_ptr< AttributeStore >() >::type >
             type_name_to_creator_;
 
         static std::map< std::string, std::string > typeid_name_to_type_name_;
@@ -803,14 +838,6 @@ namespace RINGMesh
          */
         void copy( const AttributesManager& rhs );
 
-        /**
-         * \brief Copies all the attributes of an item into another one.
-         * \param[in] to index of the destination item
-         * \param[in] from index of the source item
-         * \note This function is not efficient.
-         */
-        void copy_item( index_t to, index_t from );
-
     private:
         index_t nb_items_{ 0 };
         std::map< std::string, AttributeStore* > attributes_;
@@ -828,6 +855,40 @@ namespace RINGMesh
         ringmesh_disable_copy_and_move( Attribute );
 
     public:
+        /**
+          * \brief Creates an unitialized (unbound) Attribute.
+          */
+        Attribute() = default;
+
+        /**
+         * \brief Creates or retreives a persistent attribute attached to
+         *  a given AttributesManager.
+         * \details If the attribute already exists with the specified
+         *  name in the AttributesManager then it is retreived, else
+         *  it is created and bound to the name.
+         * \param[in] manager a reference to the AttributesManager
+         * \param[in] name name of the attribute
+         */
+        Attribute( AttributesManager& manager, const std::string& name )
+        {
+            bind( manager, name );
+        }
+
+        /**
+         * \brief Attribute destructor
+         * \details
+         *  The attribute is not destroyed, it can be retreived later
+         *  by binding with the same name. To destroy the attribute,
+         *  use detroy() instead.
+         */
+        ~Attribute()
+        {
+            if( is_bound() )
+            {
+                unbind();
+            }
+        }
+
         /**
          * \brief Tests whether an Attribute is bound.
          * \retval true if this Attribute is bound
@@ -918,21 +979,6 @@ namespace RINGMesh
         }
 
         /**
-         * \brief Attribute destructor
-         * \details
-         *  The attribute is not destroyed, it can be retreived later
-         *  by binding with the same name. To destroy the attribute,
-         *  use detroy() instead.
-         */
-        ~Attribute()
-        {
-            if( is_bound() )
-            {
-                unbind();
-            }
-        }
-
-        /**
          * \brief Tests whether an attribute with the specified name and with
          *  corresponding type exists in an AttributesManager.
          * \param[in] manager a reference to the AttributesManager
@@ -962,25 +1008,6 @@ namespace RINGMesh
         AttributesManager* manager() const
         {
             return manager_;
-        }
-
-        /**
-          * \brief Creates an unitialized (unbound) Attribute.
-          */
-        Attribute() = default;
-
-        /**
-         * \brief Creates or retreives a persistent attribute attached to
-         *  a given AttributesManager.
-         * \details If the attribute already exists with the specified
-         *  name in the AttributesManager then it is retreived, else
-         *  it is created and bound to the name.
-         * \param[in] manager a reference to the AttributesManager
-         * \param[in] name name of the attribute
-         */
-        Attribute( AttributesManager& manager, const std::string& name )
-        {
-            bind( manager, name );
         }
 
         /**

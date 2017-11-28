@@ -50,7 +50,8 @@ namespace RINGMesh
 {
     /******************************************************************/
 
-    std::map< std::string, std::unique_ptr< AttributeStoreCreator > >
+    std::map< std::string,
+        std::add_pointer< std::unique_ptr< AttributeStore >() >::type >
         AttributeStore::type_name_to_creator_;
 
     std::map< std::string, std::string >
@@ -207,20 +208,9 @@ namespace RINGMesh
                  rhs.attributes_.begin();
              it != rhs.attributes_.end(); ++it )
         {
-            bind_attribute_store( it->first, it->second->clone() );
+            bind_attribute_store( it->first, it->second->clone().get() );
         }
     }
-
-    /*   void AttributesManager::copy_item( index_t to, index_t from )
-       {
-           for(
-               std::map<std::string, AttributeStore*>::iterator
-               it = attributes_.begin();
-           it != attributes_.end(); ++it
-               ) {
-               it->second->copy_item( to, from );
-           }
-       }*/
 
     /************************************************************************/
 
