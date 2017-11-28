@@ -50,7 +50,8 @@ namespace RINGMesh
 {
     /******************************************************************/
 
-    std::map< std::string, AttributeStore::Creator > AttributeStore::type_name_to_creator_;
+    std::map< std::string, AttributeStore::Creator >
+        AttributeStore::type_name_to_creator_;
 
     std::map< std::string, std::string >
         AttributeStore::typeid_name_to_type_name_;

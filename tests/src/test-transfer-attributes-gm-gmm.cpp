@@ -171,9 +171,10 @@ namespace
         cell_bool_attr.set_value( cell_i, ( rounded_volume % 2 == 0 ) );
         cell_double_attr.set_value( cell_i, cell_volume );
         cell_vec3_attr.set_value( cell_i, cell_barycenter );
-        double mydoubles[] = { cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y,
-            cell_vec3_attr[cell_i].z, cell_vec3_attr[cell_i].x,
-            cell_vec3_attr[cell_i].y, cell_vec3_attr[cell_i].z };
+        double mydoubles[] = { cell_vec3_attr[cell_i].x,
+            cell_vec3_attr[cell_i].y, cell_vec3_attr[cell_i].z,
+            cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y,
+            cell_vec3_attr[cell_i].z };
         std::vector< double > six_doubles(
             mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
         cell_dim_6_double_attr.set_value( cell_i, six_doubles );

@@ -487,9 +487,9 @@ namespace RINGMesh
          *  of this AttributeStore.
          * \details Only the data is copied.
          */
-        std::unique_ptr<RINGMesh::AttributeStore> clone() const
+        std::unique_ptr< RINGMesh::AttributeStore > clone() const
         {
-            std::unique_ptr<RINGMesh::AttributeStore> new_attstore =
+            std::unique_ptr< RINGMesh::AttributeStore > new_attstore =
                 create_attribute_store_by_element_type_name(
                     store_->element_typeid_name() );
 
@@ -566,11 +566,12 @@ namespace RINGMesh
          * \param[in] element_type_name a const reference to a string with
          *  the C++ type of the elements to be stored in the attribute
          */
-        static std::unique_ptr< AttributeStore > create_attribute_store_by_element_type_name(
-            const std::string& element_type_name )
+        static std::unique_ptr< AttributeStore >
+            create_attribute_store_by_element_type_name(
+                const std::string& element_type_name )
         {
             auto creator = type_name_to_creator_.find( element_type_name );
-            ringmesh_assert( creator != type_name_to_creator_.end());
+            ringmesh_assert( creator != type_name_to_creator_.end() );
             return creator->second();
         }
 
@@ -611,11 +612,11 @@ namespace RINGMesh
          * \param[in] element_type_name a const reference to a string with the
          *  C++ type name of the elements
          */
-        template< class T >
+        template < class T >
         static void register_attribute_creator(
             const std::string& element_type_name )
         {
-            std::string element_typeid_name = typeid(T).name();
+            std::string element_typeid_name = typeid( T ).name();
             if( element_type_name_is_known( element_type_name ) )
             {
                 Logger::warn(
@@ -631,23 +632,25 @@ namespace RINGMesh
                         already_registered_attribute_has_same_type );
                 }
             }
-            if( !type_name_to_creator_.emplace( element_type_name,
-                Creator( create_function_impl< T > ) ).second )
+            if( !type_name_to_creator_
+                     .emplace( element_type_name,
+                         Creator( create_function_impl< T > ) )
+                     .second )
             {
                 Logger::warn( "Attribute",
                     "Trying to register twice the same attribute type: ",
                     element_type_name );
             }
-            typeid_name_to_type_name_.emplace( element_typeid_name,
-                element_type_name );
-            type_name_to_typeid_name_.emplace( element_type_name,
-                element_typeid_name );
+            typeid_name_to_type_name_.emplace(
+                element_typeid_name, element_type_name );
+            type_name_to_typeid_name_.emplace(
+                element_type_name, element_typeid_name );
         }
 
-        template< typename T >
+        template < typename T >
         static std::unique_ptr< AttributeStore > create_function_impl()
         {
-            return std::unique_ptr< AttributeStore > { new AttributeStore {
+            return std::unique_ptr< AttributeStore >{ new AttributeStore{
                 new VectorStore< T > } };
         }
 
@@ -663,10 +666,11 @@ namespace RINGMesh
             register_attribute_creator< vec3 >( "vec3" );
         }
 
-        using Creator = typename std::add_pointer< std::unique_ptr< AttributeStore >() >::type;
+        using Creator = typename std::
+            add_pointer< std::unique_ptr< AttributeStore >() >::type;
 
     protected:
-        std::unique_ptr< Store > store_ { nullptr };
+        std::unique_ptr< Store > store_{ nullptr };
 
         static std::map< std::string, Creator > type_name_to_creator_;
 
