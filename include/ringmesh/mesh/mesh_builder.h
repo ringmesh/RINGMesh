@@ -92,7 +92,12 @@ namespace RINGMesh
             clear_vertex_linked_objects();
         }
 
-        virtual void load_mesh( const std::string& filename ) = 0;
+        void load_mesh( const std::string& filename )
+        {
+            clear( false, false );
+            do_load_mesh( filename );
+            update_attributes();
+        }
         /*!
          * @brief Removes all the entities and attributes of this mesh.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -141,9 +146,8 @@ namespace RINGMesh
         index_t create_vertex()
         {
             index_t index = do_create_vertex();
-            mesh_base_.vertex_attributes_manager_.resize(
-                mesh_base_.nb_vertices() );
             clear_vertex_linked_objects();
+            update_vertex_attributes();
             return index;
         }
         /*!
@@ -165,9 +169,8 @@ namespace RINGMesh
         index_t create_vertices( index_t nb )
         {
             index_t index = do_create_vertices( nb );
-            index_t new_size = mesh_base_.nb_vertices() + nb;
-            mesh_base_.vertex_attributes_manager_.resize( new_size );
             clear_vertex_linked_objects();
+            update_vertex_attributes();
             return index;
         }
 
@@ -179,6 +182,7 @@ namespace RINGMesh
         {
             do_assign_vertices( point_coordinates );
             clear_vertex_linked_objects();
+            update_vertex_attributes();
         }
 
         /*!
@@ -204,8 +208,8 @@ namespace RINGMesh
             }
             mesh_base_.vertex_attributes_manager_.apply_permutation(
                 permutation );
-            mesh_base_.vertex_attributes_manager_.resize( new_size );
             clear_vertex_linked_objects();
+            update_vertex_attributes();
         }
         /*!
          * @brief Removes all the vertices and attributes.
@@ -247,7 +251,13 @@ namespace RINGMesh
          */
         virtual void clear_vertex_linked_objects() = 0;
 
+        void update_vertex_attributes();
+
     private:
+
+        virtual void update_attributes() = 0;
+
+        virtual void do_load_mesh( const std::string& filename ) = 0;
         /*!
          * @brief Copy a mesh into this one.
          * @param[in] rhs a const reference to the mesh to be copied.
@@ -346,6 +356,11 @@ namespace RINGMesh
         }
 
     private:
+        void update_attributes() final
+        {
+            this->update_vertex_attributes();
+        }
+
         void clear_vertex_linked_objects() final
         {
             this->delete_vertex_nn_search();
@@ -379,8 +394,8 @@ namespace RINGMesh
         void create_edge( index_t v1_id, index_t v2_id )
         {
             do_create_edge( v1_id, v2_id );
-            line_mesh_.edge_attributes_manager_.resize( line_mesh_.nb_edges() );
             clear_edge_linked_objects();
+            update_edge_attributes();
         }
         /*!
          * \brief Creates a contiguous chunk of edges
@@ -390,8 +405,8 @@ namespace RINGMesh
         index_t create_edges( index_t nb_edges )
         {
             index_t index = do_create_edges( nb_edges );
-            line_mesh_.edge_attributes_manager_.resize( line_mesh_.nb_edges() );
             clear_edge_linked_objects();
+            update_edge_attributes();
             return index;
         }
         /*!
@@ -425,8 +440,8 @@ namespace RINGMesh
             {
                 this->remove_isolated_vertices();
             }
-            line_mesh_.edge_attributes_manager_.resize( line_mesh_.nb_edges() );
             clear_edge_linked_objects();
+            update_edge_attributes();
         }
         /*!
          * @brief Removes all the edges and attributes.
@@ -461,7 +476,16 @@ namespace RINGMesh
         {
         }
 
+        void update_edge_attributes()
+        {
+            line_mesh_.edge_attribute_manager().resize( line_mesh_.nb_edges() );
+        }
     private:
+        void update_attributes() final
+        {
+            this->update_vertex_attributes();
+            update_edge_attributes();
+        }
         /*!
          * @brief Deletes the NNSearch on edges
          */
@@ -570,9 +594,8 @@ namespace RINGMesh
                 }
                 do_create_polygon( polygon_vertices );
             }
-            surface_mesh_.polygon_attributes_manager_.resize(
-                surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
+            update_polygon_attributes();
         }
         /*!
          * \brief Creates a polygon
@@ -583,9 +606,8 @@ namespace RINGMesh
         index_t create_polygon( const std::vector< index_t >& vertices )
         {
             auto index = do_create_polygon( vertices );
-            surface_mesh_.polygon_attributes_manager_.resize(
-                surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
+            update_polygon_attributes();
             return index;
         }
         /*!
@@ -596,9 +618,8 @@ namespace RINGMesh
         index_t create_triangles( index_t nb_triangles )
         {
             auto index = do_create_triangles( nb_triangles );
-            surface_mesh_.polygon_attributes_manager_.resize(
-                surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
+            update_polygon_attributes();
             return index;
         }
         /*!
@@ -609,9 +630,8 @@ namespace RINGMesh
         index_t create_quads( index_t nb_quads )
         {
             auto index = do_create_quads( nb_quads );
-            surface_mesh_.polygon_attributes_manager_.resize(
-                surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
+            update_polygon_attributes();
             return index;
         }
         /*!
@@ -781,9 +801,8 @@ namespace RINGMesh
             {
                 this->remove_isolated_vertices();
             }
-            surface_mesh_.polygon_attributes_manager_.resize(
-                surface_mesh_.nb_polygons() );
             clear_polygon_linked_objects();
+            update_polygon_attributes();
         }
 
         /*!@}
@@ -815,7 +834,17 @@ namespace RINGMesh
         {
         }
 
+        void update_polygon_attributes()
+        {
+            surface_mesh_.polygon_attribute_manager().resize( surface_mesh_.nb_polygons() );
+        }
     private:
+        void update_attributes() final
+        {
+            this->update_vertex_attributes();
+            update_polygon_attributes();
+        }
+
         /*!
          * @brief Deletes the NNSearch on polygons
          */
@@ -940,9 +969,8 @@ namespace RINGMesh
         index_t create_cells( index_t nb_cells, CellType type )
         {
             index_t index = do_create_cells( nb_cells, type );
-            volume_mesh_.cell_attributes_manager_.resize(
-                volume_mesh_.nb_cells() );
             clear_cell_linked_objects();
+            update_cell_attributes();
             return index;
         }
         /*
@@ -956,6 +984,7 @@ namespace RINGMesh
         {
             do_assign_cell_tet_mesh( tets );
             clear_cell_linked_objects();
+            update_cell_attributes();
         }
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
@@ -1050,9 +1079,8 @@ namespace RINGMesh
             {
                 this->remove_isolated_vertices();
             }
-            volume_mesh_.cell_attributes_manager_.resize(
-                volume_mesh_.nb_cells() );
             clear_cell_linked_objects();
+            update_cell_attributes();
         }
 
         void remove_isolated_vertices();
@@ -1063,7 +1091,13 @@ namespace RINGMesh
         {
         }
 
+        void update_cell_attributes();
     private:
+        void update_attributes() final
+        {
+            this->update_vertex_attributes();
+            update_cell_attributes();
+        }
         /*!
          * @brief Deletes the NNSearch on cells
          */

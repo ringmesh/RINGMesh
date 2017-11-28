@@ -136,6 +136,12 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    void MeshBaseBuilder< DIMENSION >::update_vertex_attributes()
+    {
+        mesh_base_.vertex_attribute_manager().resize( mesh_base_.nb_vertices() );
+    }
+
+    template < index_t DIMENSION >
     std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
         PointSetMeshBuilder< DIMENSION >::create_builder(
             PointSetMesh< DIMENSION >& mesh )
@@ -244,6 +250,12 @@ namespace RINGMesh
             }
         }
         this->delete_vertices( to_delete );
+    }
+
+    template < index_t DIMENSION >
+    void VolumeMeshBuilder< DIMENSION >::update_cell_attributes()
+    {
+        volume_mesh_.cell_attribute_manager().resize( volume_mesh_.nb_cells() );
     }
 
     template < index_t DIMENSION >
