@@ -274,7 +274,7 @@ namespace RINGMesh
         {
             VectorStore< bool >* result = new VectorStore< bool >();
             result->resize( this->size() );
-            result->vector_ = vector_;
+            result->vector_ = this->vector_;
             return result;
         }
         std::string element_typeid_name() const final
@@ -634,8 +634,9 @@ namespace RINGMesh
             }
             if( !type_name_to_creator_
                      .emplace( element_type_name,
-                         Creator( create_function_impl< T > ) )
-                     .second )
+                     std::add_pointer< 
+                     std::unique_ptr< AttributeStore >() >::type( 
+                     create_function_impl< T > ) ).second )
             {
                 Logger::warn( "Attribute",
                     "Trying to register twice the same attribute type: ",
@@ -666,13 +667,11 @@ namespace RINGMesh
             register_attribute_creator< vec3 >( "vec3" );
         }
 
-        using Creator = typename std::
-            add_pointer< std::unique_ptr< AttributeStore >() >::type;
-
     protected:
         std::unique_ptr< Store > store_{ nullptr };
 
-        static std::map< std::string, Creator > type_name_to_creator_;
+        static std::map< std::string, std::
+            add_pointer< std::unique_ptr< AttributeStore >() >::type > type_name_to_creator_;
 
         static std::map< std::string, std::string > typeid_name_to_type_name_;
 
