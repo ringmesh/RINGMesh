@@ -138,7 +138,8 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void MeshBaseBuilder< DIMENSION >::update_vertex_attributes()
     {
-        mesh_base_.vertex_attribute_manager().resize( mesh_base_.nb_vertices() );
+        mesh_base_.vertex_attribute_manager().resize(
+            mesh_base_.nb_vertices() );
     }
 
     template < index_t DIMENSION >
