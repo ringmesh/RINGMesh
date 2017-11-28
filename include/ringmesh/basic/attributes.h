@@ -853,6 +853,7 @@ namespace RINGMesh
     class Attribute
     {
         ringmesh_disable_copy_and_move( Attribute );
+
     public:
         /**
           * \brief Creates an unitialized (unbound) Attribute.
