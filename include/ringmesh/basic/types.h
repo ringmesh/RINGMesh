@@ -77,31 +77,31 @@ namespace RINGMesh
     using vec2 = vecn< 2 >;
 
     template < index_t DIMENSION >
-	bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
-	{
-		for( auto i = 0; i < DIMENSION; i++ )
-		{
-			if( u[i] != v[i] )
-			{
-				return false;
-			}
-		}
-		return true;
-	}
+    bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
+    {
+        for( auto i = 0; i < DIMENSION; i++ )
+        {
+            if( u[i] != v[i] )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	template < index_t DIMENSION >
-	bool operator!=( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
-	{
-		return !( u == v );
-	}
+    template < index_t DIMENSION >
+    bool operator!=( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
+    {
+        return !( u == v );
+    }
 
-	template < index_t DIMENSION >
-	bool inexact_equal( const vecn< DIMENSION >& v1,
-		const vecn< DIMENSION >& v2,
-		double epsilon )
-	{
-		return length( v2 - v1 ) < epsilon;
-	}
+    template < index_t DIMENSION >
+    bool inexact_equal( const vecn< DIMENSION >& v1,
+        const vecn< DIMENSION >& v2,
+        double epsilon )
+    {
+        return length( v2 - v1 ) < epsilon;
+    }
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
