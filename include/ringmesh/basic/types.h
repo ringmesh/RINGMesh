@@ -38,8 +38,6 @@
 #include <geogram/basic/geometry.h>
 #include <geogram/basic/numeric.h>
 
-#include <cmath>
-
 /*!
  * @file Re-definitions of basic types similar to those of Geogram
  */
@@ -47,9 +45,6 @@ namespace RINGMesh
 {
     /* If you need integer of 8bits of any other one
      * it is sufficient to write using GEO::Numeric::uint8 in your file.
-     *
-     * Dummy variables were removed, they polluted the namespace and
-     * it is quite easy to do without them.
      */
 
     // Basic types used in RINGMesh
@@ -75,7 +70,7 @@ namespace RINGMesh
     using vecn = GEO::vecng< DIMENSION, double >;
     // This is an array of 3 doubles
     using vec3 = vecn< 3 >;
-    // This is an array of 3 doubles
+    // This is an array of 2 doubles
     using vec2 = vecn< 2 >;
 
     template < index_t DIMENSION >
@@ -107,8 +102,7 @@ namespace RINGMesh
     	{
     		length += (v2[i]-v1[i])*(v2[i]-v1[i]);
     	}
-    	length = std::sqrt(length);
-        return length < epsilon;
+        return length < epsilon * epsilon;
     }
 
     // This is the value used in RINGMesh for a invalid index
