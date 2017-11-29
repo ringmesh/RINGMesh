@@ -43,9 +43,6 @@
 #include <ringmesh/ringmesh_config.h>
 #include <ringmesh/ringmesh_export.h>
 
-#include <ringmesh/basic/range.h>
-#include <ringmesh/basic/types.h>
-
 #if defined( _WIN32 )
 #ifndef WIN32
 #define WIN32
@@ -114,6 +111,7 @@ void ringmesh_unused( const T& /*unused*/ )
 #include <stdexcept>
 
 #include <ringmesh/basic/ringmesh_assert.h>
+#include <ringmesh/basic/range.h>
 #include <ringmesh/basic/types.h>
 
 namespace RINGMesh

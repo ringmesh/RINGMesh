@@ -43,11 +43,7 @@
  */
 namespace RINGMesh
 {
-    /* If you need integer of 8bits of any other one
-     * it is sufficient to write using GEO::Numeric::uint8 in your file.
-     */
-
-    // Basic types used in RINGMesh
+	// Basic types used in RINGMesh
     // Using definitions of Geogram/basic/numeric.h
     using GEO::Numeric::float32;
     using GEO::Numeric::float64;
