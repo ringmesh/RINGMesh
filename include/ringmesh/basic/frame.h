@@ -160,7 +160,8 @@ namespace RINGMesh
             const ReferenceFrame< DIMENSION >& reference_frame,
             const vecn< DIMENSION >& global_coords )
         {
-            GEO::Matrix< DIMENSION, double > base_change_matrix = inverse_reference_matrix(reference_frame);
+            GEO::Matrix< DIMENSION, double > base_change_matrix =
+                inverse_reference_matrix( reference_frame );
             vecn< DIMENSION > local_coords;
             for( auto i : range( DIMENSION ) )
             {
@@ -194,7 +195,8 @@ namespace RINGMesh
             const ReferenceFrame< DIMENSION >& reference_frame )
         {
             ReferenceFrame< DIMENSION > inverse_reference_frame;
-            GEO::Matrix< DIMENSION, double > base_change_matrix = inverse_reference_matrix(reference_frame);
+            GEO::Matrix< DIMENSION, double > base_change_matrix =
+                inverse_reference_matrix( reference_frame );
             for( auto i : range( DIMENSION ) )
             {
                 for( auto j : range( DIMENSION ) )
@@ -208,35 +210,37 @@ namespace RINGMesh
             return inverse_reference_frame;
         }
 
-        static bool frame_is_orthogonal( const ReferenceFrame< DIMENSION >& reference_frame )
+        static bool frame_is_orthogonal(
+            const ReferenceFrame< DIMENSION >& reference_frame )
         {
-        	for ( auto i : range( DIMENSION ) )
-        	{
-        		for ( auto j : range( i+1, DIMENSION ) )
-        		{
-        			if ( GEO::dot( reference_frame[i], reference_frame[j] ) != 0)
-					{
-						return false;
-					}
-        		}
-        	}
-        	return true;
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto j : range( i + 1, DIMENSION ) )
+                {
+                    if( GEO::dot( reference_frame[i], reference_frame[j] )
+                        != 0 )
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
     private:
         static GEO::Matrix< DIMENSION, double > inverse_reference_matrix(
-        		const ReferenceFrame< DIMENSION>& reference_frame)
-		{
-        	GEO::Matrix< DIMENSION, double > matrix;
-        	for( auto i : range( DIMENSION ) )
-			{
-				for( auto j : range( DIMENSION ) )
-				{
-					matrix( i, j ) = reference_frame[j][i];
-				}
-			}
-			return matrix.inverse();
-		}
+            const ReferenceFrame< DIMENSION >& reference_frame )
+        {
+            GEO::Matrix< DIMENSION, double > matrix;
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto j : range( DIMENSION ) )
+                {
+                    matrix( i, j ) = reference_frame[j][i];
+                }
+            }
+            return matrix.inverse();
+        }
     };
     ALIAS_2D_AND_3D( ReferenceFrameManipulator );
 
