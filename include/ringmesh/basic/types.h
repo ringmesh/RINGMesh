@@ -102,12 +102,12 @@ namespace RINGMesh
         const vecn< DIMENSION >& v2,
         double epsilon )
     {
-    	double length{ 0. };
-    	for ( index_t i = 0; i < DIMENSION; i++ )
-    	{
-    		length += (v2[i]-v1[i])*(v2[i]-v1[i]);
-    	}
-    	length = std::sqrt(length);
+        double length{ 0. };
+        for( index_t i = 0; i < DIMENSION; i++ )
+        {
+            length += ( v2[i] - v1[i] ) * ( v2[i] - v1[i] );
+        }
+        length = std::sqrt( length );
         return length < epsilon;
     }
 
