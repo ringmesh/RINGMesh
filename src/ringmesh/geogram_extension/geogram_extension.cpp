@@ -579,7 +579,7 @@ namespace RINGMesh
     /***********************************************************************/
     /* Loading and saving a GEO::Mesh                                      */
 
-    void ringmesh_mesh_io_initialize()
+    void ringmesh_geogram_mesh_io_initialize()
     {
         geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" );
         geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" );

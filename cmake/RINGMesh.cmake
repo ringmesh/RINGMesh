@@ -149,7 +149,7 @@ configure_file(
 #generate macros for API export and add it to include directories
 include (GenerateExportHeader)
 set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
-generate_export_header(basic EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
+generate_export_header(basic EXPORT_MACRO_NAME RINGMESH_API  )
 
 # We want to be able to include these file
 #target_include_directories(RINGMesh PUBLIC ${PROJECT_BINARY_DIR})
