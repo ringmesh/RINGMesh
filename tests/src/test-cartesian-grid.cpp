@@ -35,9 +35,9 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/mesh/cartesian_grid.h>
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/logger.h>
+#include <ringmesh/mesh/cartesian_grid.h>
 
 /*!
  * @author Melchior Schuh-Senlis
@@ -47,27 +47,34 @@ using namespace RINGMesh;
 
 void test_frames()
 {
-	vec3 origin{ 1, 1, 1 };
-	vec3 x{ 0.5, 0, 0 };
-	vec3 y{ 0, 2, 0 };
-	vec3 z{ 0, 0, 4 };
+    vec3 origin{ 1, 1, 1 };
+    vec3 x{ 0.5, 0, 0 };
+    vec3 y{ 0, 2, 0 };
+    vec3 z{ 0, 0, 4 };
 
-	Frame3D frame{ x, y, z };
-	ReferenceFrame3D reference_frame{ origin, frame };
+    Frame3D frame{ x, y, z };
+    ReferenceFrame3D reference_frame{ origin, frame };
 
-	vec3 test_coordinates{ 5, 2, 1};
-	vec3 frame_test_coordinates = ReferenceFrameManipulator3D::coords_from_global_to_frame( reference_frame, test_coordinates );
-	vec3 test_coordinates2 = ReferenceFrameManipulator3D::coords_from_frame_to_global( reference_frame, frame_test_coordinates );
+    vec3 test_coordinates{ 5, 2, 1 };
+    vec3 frame_test_coordinates =
+        ReferenceFrameManipulator3D::coords_from_global_to_frame(
+            reference_frame, test_coordinates );
+    vec3 test_coordinates2 =
+        ReferenceFrameManipulator3D::coords_from_frame_to_global(
+            reference_frame, frame_test_coordinates );
     if( test_coordinates != test_coordinates2 )
     {
-        throw RINGMeshException( "TEST", "Error in coordinate reference change" );
+        throw RINGMeshException(
+            "TEST", "Error in coordinate reference change" );
     }
 
-    ReferenceFrame3D inverse_frame = ReferenceFrameManipulator3D::reference_frame_from_global_to_local( reference_frame );
-    if( inverse_frame.origin() != vec3{ -2, -0.5, -0.25 } ||
-    	inverse_frame[0] != vec3{ 2, 0, 0 } ||
-    	inverse_frame[1] != vec3{ 0, 0.5, 0 } ||
-    	inverse_frame[2] != vec3{ 0, 0, 0.25 } )
+    ReferenceFrame3D inverse_frame =
+        ReferenceFrameManipulator3D::reference_frame_from_global_to_local(
+            reference_frame );
+    if( inverse_frame.origin() != vec3{ -2, -0.5, -0.25 }
+        || inverse_frame[0] != vec3{ 2, 0, 0 }
+        || inverse_frame[1] != vec3{ 0, 0.5, 0 }
+        || inverse_frame[2] != vec3{ 0, 0, 0.25 } )
     {
         throw RINGMeshException( "TEST", "Error in reference frame change" );
     }
@@ -75,12 +82,11 @@ void test_frames()
 
 void test_cartesian_grid()
 {
-
 }
 
 int main()
 {
-	using namespace RINGMesh;
+    using namespace RINGMesh;
 
     try
     {
@@ -102,5 +108,5 @@ int main()
         return 1;
     }
     Logger::out( "TEST", "SUCCESS" );
-	return 0;
+    return 0;
 }

@@ -82,12 +82,14 @@ namespace RINGMesh
                 if( nb_cells_in_each_direction[i] < 1 )
                 {
                     throw RINGMeshException( "RINGMesh Test",
-                    		"Warning : You're trying to create a Cartesian Grid with no cell in direction ", i,
-                    		", and Cartesian Grid must have at least one cell in each direction" );
+                        "Warning : You're trying to create a Cartesian Grid "
+                        "with no cell in direction ",
+                        i, ", and Cartesian Grid must have at least one cell "
+                           "in each direction" );
                 }
                 nb_total_cells_ *= nb_cells_in_each_direction[i];
             }
-//            attributes_manager_.resize(nb_total_cells_);
+            //            attributes_manager_.resize(nb_total_cells_);
         }
 
         void save_mesh( const std::string& filename ) const
@@ -95,39 +97,44 @@ namespace RINGMesh
             // TODO
         }
 
-//        void print_mesh_bounded_attributes( const std::string& output_location ) const
-//        {
-//        	print_bounded_attributes( attributes_manager_, output_location );
-//        }
+        //        void print_mesh_bounded_attributes( const std::string&
+        //        output_location ) const
+        //        {
+        //        	print_bounded_attributes( attributes_manager_,
+        //        output_location );
+        //        }
 
         void resize( ivecn< DIMENSION >& new_size )
         {
-        	nb_cells_in_each_direction_ = std::move( new_size );
-        	nb_total_cells_ = 1;
+            nb_cells_in_each_direction_ = std::move( new_size );
+            nb_total_cells_ = 1;
             for( auto i : range( DIMENSION ) )
             {
                 if( nb_cells_in_each_direction_[i] < 1 )
                 {
                     throw RINGMeshException( "RINGMesh Test",
-                    		"Warning : You're trying to create a Cartesian Grid with no cell in direction ", i,
-                    		", and Cartesian Grid must have at least one cell in each direction" );
+                        "Warning : You're trying to create a Cartesian Grid "
+                        "with no cell in direction ",
+                        i, ", and Cartesian Grid must have at least one cell "
+                           "in each direction" );
                 }
                 nb_total_cells_ *= nb_cells_in_each_direction_[i];
             }
-//            attributes_manager_.resize(nb_total_cells_);
+            //            attributes_manager_.resize(nb_total_cells_);
         }
 
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
-        	cartesian_frame_ = std::move( vec_cartesian_axis );
+            cartesian_frame_ = std::move( vec_cartesian_axis );
             inverse_cartesian_frame_ = ReferenceFrameManipulator< DIMENSION >::
-                    reference_frame_from_global_to_local( cartesian_frame_ );
+                reference_frame_from_global_to_local( cartesian_frame_ );
         }
 
-//        void change_attribute_manager( GEO::AttributesManager attributes_manager )
-//        {
-//        	attributes_manager_ = std::move( attributes_manager );
-//        }
+        //        void change_attribute_manager( GEO::AttributesManager
+        //        attributes_manager )
+        //        {
+        //        	attributes_manager_ = std::move( attributes_manager );
+        //        }
 
         vecn< DIMENSION >& cell_center_global_coords(
             const ivecn< DIMENSION >& cartesian_coords ) const
@@ -138,16 +145,18 @@ namespace RINGMesh
                 cartesian_double_coords[i] =
                     static_cast< double >( cartesian_coords[i] );
             }
-            return ReferenceFrameManipulator< DIMENSION >::coords_from_frame_to_global(
-                cartesian_frame_, cartesian_double_coords );
+            return ReferenceFrameManipulator< DIMENSION >::
+                coords_from_frame_to_global(
+                    cartesian_frame_, cartesian_double_coords );
         }
 
         ivecn< DIMENSION >& containing_cell_from_global_vertex(
             const vecn< DIMENSION >& reference_vertex ) const
         {
             return this->containing_cell_from_local_vertex(
-            	ReferenceFrameManipulator< DIMENSION >::coords_from_frame_to_global(
-                    inverse_cartesian_frame_, reference_vertex ) );
+                ReferenceFrameManipulator< DIMENSION >::
+                    coords_from_frame_to_global(
+                        inverse_cartesian_frame_, reference_vertex ) );
         }
 
         ivecn< DIMENSION > containing_cell_from_local_vertex(
@@ -193,24 +202,25 @@ namespace RINGMesh
             return nb_total_cells_;
         }
 
-//        GEO::AttributesManager& attributes_manager() const
-//        {
-//            return attributes_manager_;
-//        }
+        //        GEO::AttributesManager& attributes_manager() const
+        //        {
+        //            return attributes_manager_;
+        //        }
 
         double cell_volume() const
         {
-        	double cell_volume{ 1. };
-        	double vector_norm;
-        	for ( auto i : range( DIMENSION ) )
-        	{
-        		vector_norm = 0;
-        		for ( auto j : range( DIMENSION ) )
-        		{
-        			vector_norm += cartesian_frame_[i][j]*cartesian_frame_[i][j];
-        		}
-        		cell_volume *= std::sqrt(vector_norm);
-        	}
+            double cell_volume{ 1. };
+            double vector_norm;
+            for( auto i : range( DIMENSION ) )
+            {
+                vector_norm = 0;
+                for( auto j : range( DIMENSION ) )
+                {
+                    vector_norm +=
+                        cartesian_frame_[i][j] * cartesian_frame_[i][j];
+                }
+                cell_volume *= std::sqrt( vector_norm );
+            }
             return cell_volume;
         }
 
@@ -221,14 +231,14 @@ namespace RINGMesh
         ReferenceFrame< DIMENSION > cartesian_frame_;
         ReferenceFrame< DIMENSION > inverse_cartesian_frame_;
 
-//        GEO::AttributesManager attributes_manager_;
+        //        GEO::AttributesManager attributes_manager_;
     };
     ALIAS_2D_AND_3D( CartesianGrid );
 
-	class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh< 3 >
-	{
-	public:
-    	CartesianGridVolumeMesh() = default;
+    class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh< 3 >
+    {
+    public:
+        CartesianGridVolumeMesh() = default;
 
         static MeshType type_name_static()
         {
@@ -245,10 +255,11 @@ namespace RINGMesh
             return cartesian_grid_.nb_cells();
         }
 
-//        GEO::AttributesManager& cell_attribute_manager() const override
-//        {
-//            return cartesian_grid_.attributes_manager();
-//        }
+        //        GEO::AttributesManager& cell_attribute_manager() const
+        //        override
+        //        {
+        //            return cartesian_grid_.attributes_manager();
+        //        }
 
         CellType cell_type( index_t cell_id ) const override
         {
@@ -257,10 +268,10 @@ namespace RINGMesh
 
         double cell_volume( index_t cell_id ) const override
         {
-        	return cartesian_grid_.cell_volume();
+            return cartesian_grid_.cell_volume();
         }
 
-	private:
-    	CartesianGrid3D cartesian_grid_;
-	};
+    private:
+        CartesianGrid3D cartesian_grid_;
+    };
 }
