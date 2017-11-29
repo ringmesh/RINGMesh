@@ -43,7 +43,7 @@
  */
 namespace RINGMesh
 {
-	// Basic types used in RINGMesh
+    // Basic types used in RINGMesh
     // Using definitions of Geogram/basic/numeric.h
     using GEO::Numeric::float32;
     using GEO::Numeric::float64;

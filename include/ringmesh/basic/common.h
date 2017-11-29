@@ -110,8 +110,8 @@ void ringmesh_unused( const T& /*unused*/ )
 #include <sstream>
 #include <stdexcept>
 
-#include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/range.h>
+#include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/types.h>
 
 namespace RINGMesh
