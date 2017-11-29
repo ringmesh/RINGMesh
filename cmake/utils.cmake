@@ -31,22 +31,39 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-macro(add_folder src_files include_files directory)
-    source_file_directory(${src_files} ${directory})
-    include_file_directory(${include_files} ${directory})
+macro(add_folder directory)
+    source_file_directory(${directory})
+    include_file_directory(${directory})
 endmacro()
 
-macro(source_file_directory var directory)
+macro(source_file_directory directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/*.cpp")
     source_group("Source Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources})
 endmacro()
 
-macro(include_file_directory var directory)
+macro(include_file_directory directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/include/ringmesh/${directory}/*.h")
     source_group("Header Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources})
 endmacro()
+
+function(add_ringmesh_library directory)
+    string(REPLACE "/" "_" target_name ${directory})
+message(STATUS "################ ${target_name}")
+    add_library(${target_name} SHARED "")
+    set_target_properties(${target_name} PROPERTIES OUTPUT_NAME RINGMesh_${target_name})
+    add_folder(${target_name})
+    target_include_directories(${target_name} PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${PROJECT_SOURCE_DIR}/include)
+    target_link_libraries(${target_name} PUBLIC Geogram::geogram)
+    if(WIN32)
+        target_compile_definitions(${target_name} PUBLIC -DGEO_DYNAMIC_LIBS)
+    endif()
+    export(TARGETS ${target_name} NAMESPACE RINGMesh:: APPEND FILE RINGMeshTargets.cmake)
+    set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
+    set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
+    message(STATUS "lib_include_dir = ${lib_include_dir}")
+    message(STATUS "lib_source_dir = ${lib_source_dir}")
+    include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
+endfunction()
 
 macro(copy_for_windows directory)
 
