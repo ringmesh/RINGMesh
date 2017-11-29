@@ -110,12 +110,6 @@ namespace RINGMesh
         */
         virtual void apply_permutation(
             const std::vector< index_t >& permutation ) = 0;
-        /**
-        * \brief Copies an item
-        * \param[in] to index of the destination item
-        * \param[in] from index of the source item
-        */
-        virtual void copy_item( index_t to, index_t from ) = 0;
 
         virtual bool elements_type_matches(
             const std::string& type_name ) const = 0;
@@ -231,16 +225,6 @@ namespace RINGMesh
             }
             vector_ = tmp_vector;
         }
-        /**
-        * \brief Copies an item
-        * \param[in] to index of the destination item
-        * \param[in] from index of the source item
-        */
-        void copy_item( index_t to, index_t from ) final
-        {
-            ringmesh_assert( to < vector_.size() && from < vector_.size() );
-            vector_[from] = vector_[to];
-        }
 
     protected:
         std::vector< T > vector_;
@@ -272,7 +256,7 @@ namespace RINGMesh
 
         Store* clone() const final
         {
-            VectorStore< bool >* result = new VectorStore< bool >();
+            VectorStore< bool >* result = new VectorStore< bool >;
             result->resize( this->size() );
             result->vector_ = this->vector_;
             return result;
@@ -295,7 +279,7 @@ namespace RINGMesh
             this->size_ = 1;
         }
 
-        void resize( index_t ) override
+        void resize( index_t ) final
         {
             Logger::warn( "Trying to resize constant attribute" );
         }
@@ -318,11 +302,11 @@ namespace RINGMesh
             ringmesh_unused( element );
             return &this->constant_;
         }
-        void clear() override
+        void clear() final
         {
         }
 
-        Store* clone() const override
+        Store* clone() const final
         {
             ConstantStore< T >* result = new ConstantStore< T >();
             result->constant_ = constant_;
@@ -330,38 +314,13 @@ namespace RINGMesh
         }
         void compress( const std::vector< index_t >& old2new ) final
         {
-            return;
+            ringmesh_unused( old2new );
         }
-        /**
-        * \brief Applies a permutation to the stored attributes.
-        * \details Applying a permutation to the data is equivalent
-        *  to:
-        * \code
-        * for(i=0; i<permutation.size(); i++) {
-        *    data2[i] = data[permutation[i]]
-        * }
-        * data = data2 ;
-        * \endcode
-        * But it is done in-place.
-        * \param[in] permutation the permutation.
-        *  It is temporarily changed during execution of the
-        *  function, but identical to the input on exit.
-        * \note This function uses memcpy(). If required, it
-        *  can be overloaded in derived classes.
-        */
+
         void apply_permutation(
             const std::vector< index_t >& permutation ) final
         {
-            return;
-        }
-        /**
-        * \brief Copies an item
-        * \param[in] to index of the destination item
-        * \param[in] from index of the source item
-        */
-        void copy_item( index_t to, index_t from ) final
-        {
-            return;
+            ringmesh_unused( permutation );
         }
 
     protected:
@@ -413,7 +372,7 @@ namespace RINGMesh
 
         void set_store( Store* store )
         {
-            store_ = std::unique_ptr< Store >( store );
+            store_.reset( store );
         }
 
         const Store& get_store() const
@@ -489,12 +448,10 @@ namespace RINGMesh
          */
         std::unique_ptr< RINGMesh::AttributeStore > clone() const
         {
-            std::unique_ptr< RINGMesh::AttributeStore > new_attstore =
+            auto new_attstore =
                 create_attribute_store_by_element_type_name(
                     store_->element_typeid_name() );
-
             new_attstore->set_store( store_->clone() );
-
             return new_attstore;
         }
 
@@ -691,15 +648,9 @@ namespace RINGMesh
         ringmesh_disable_copy_and_move( AttributesManager );
 
     public:
-        /**
-         * \brief Constructs a new empty AttributesManager.
-         */
         AttributesManager() = default;
 
-        /**
-         * \brief AttributesManager destructor.
-         */
-        ~AttributesManager();
+        ~AttributesManager() = default;
 
         /**
          * \brief Gets the number of attributes.
@@ -840,15 +791,11 @@ namespace RINGMesh
 
     private:
         index_t nb_items_{ 0 };
-        std::map< std::string, AttributeStore* > attributes_;
+        std::map< std::string, std::unique_ptr< AttributeStore > > attributes_;
     };
 
     /*********************************************************************/
 
-    /**
-     * \brief Base class for Attributes, that manipulates an
-     *  attribute stored in an AttributesManager.
-     */
     template < class T >
     class Attribute
     {
@@ -856,106 +803,27 @@ namespace RINGMesh
 
     public:
         /**
-          * \brief Creates an unitialized (unbound) Attribute.
-          */
-        Attribute() = default;
-
-        /**
-         * \brief Creates or retreives a persistent attribute attached to
+         * \brief Creates or retrieves a persistent attribute attached to
          *  a given AttributesManager.
          * \details If the attribute already exists with the specified
-         *  name in the AttributesManager then it is retreived, else
+         *  name in the AttributesManager then it is retrieved, else
          *  it is created and bound to the name.
          * \param[in] manager a reference to the AttributesManager
          * \param[in] name name of the attribute
          */
         Attribute( AttributesManager& manager, const std::string& name )
+            : manager_( manager )
         {
-            bind( manager, name );
-        }
-
-        /**
-         * \brief Attribute destructor
-         * \details
-         *  The attribute is not destroyed, it can be retreived later
-         *  by binding with the same name. To destroy the attribute,
-         *  use detroy() instead.
-         */
-        ~Attribute()
-        {
-            if( is_bound() )
-            {
-                unbind();
-            }
-        }
-
-        /**
-         * \brief Tests whether an Attribute is bound.
-         * \retval true if this Attribute is bound
-         * \retval false otherwise
-         */
-        bool is_bound() const
-        {
-            return ( store_ != nullptr );
-        }
-
-        /**
-         * \brief Unbinds this Attribute.
-         * \pre is_bound()
-         */
-        void unbind()
-        {
-            ringmesh_assert( is_bound() );
-            manager_ = nullptr;
-            store_ = nullptr;
-        }
-
-        /**
-         * \brief Binds this Attribute to an AttributesManager.
-         * \details If the attribute already exists with the specified
-         *  name in the AttributesManager then it is retreived, else
-         *  it is created and bound to the name.
-         * \param[in] manager a reference to the AttributesManager
-         * \param[in] name name of the attribute
-         * \pre !is_bound()
-         */
-        void bind( AttributesManager& manager, const std::string& name )
-        {
-            ringmesh_assert( !is_bound() );
-            manager_ = &manager;
-            store_ = manager_->find_attribute_store( name );
+            store_ = manager_.find_attribute_store( name );
             if( store_ == nullptr )
             {
                 store_ = new AttributeStore;
                 store_->set_store( new VectorStore< T > );
-                store_->resize( manager_->nb_items() );
-                manager_->bind_attribute_store( name, store_ );
+                store_->resize( manager_.nb_items() );
+                manager_.bind_attribute_store( name, store_ );
             }
-            else
-            {
-                ringmesh_assert( store_->get_store().elements_type_matches(
-                    typeid( T ).name() ) );
-            }
-        }
-
-        /**
-         * \brief Binds this Attribute to an AttributesManager if it
-         *  already exists in the AttributesManager.
-         * \param[in] manager a reference to the AttributesManager
-         * \param[in] name name of the attribute
-         * \pre !is_bound()
-         */
-        void bind_if_is_defined(
-            AttributesManager& manager, const std::string& name )
-        {
-            ringmesh_assert( !is_bound() );
-            manager_ = &manager;
-            store_ = manager_->find_attribute_store( name );
-            if( store_ != nullptr )
-            {
-                ringmesh_assert(
-                    store_->elements_type_matches( typeid( T ).name() ) );
-            }
+            ringmesh_assert(
+                store_->get_store().elements_type_matches( typeid(T).name() ) );
         }
 
         /**
@@ -966,10 +834,7 @@ namespace RINGMesh
          */
         void destroy()
         {
-            ringmesh_assert( is_bound() );
-            manager_->delete_attribute_store( store_ );
-            store_ = nullptr;
-            manager_ = nullptr;
+            manager_.delete_attribute_store( store_ );
         }
 
         void set_constant_value( T value )
@@ -987,7 +852,7 @@ namespace RINGMesh
         static bool is_defined(
             AttributesManager& manager, const std::string& name )
         {
-            AttributeStore* store = manager.find_attribute_store( name );
+            auto store = manager.find_attribute_store( name );
             return ( store != nullptr
                      && store->elements_type_matches( typeid( T ).name() ) );
         }
@@ -999,15 +864,6 @@ namespace RINGMesh
         index_t size() const
         {
             return store_->get_store().size();
-        }
-
-        /**
-         * \brief Gets the AttributeManager this Attribute is bound to.
-         * \return a pointer to the attributes manager.
-         */
-        AttributesManager* manager() const
-        {
-            return manager_;
         }
 
         /**
@@ -1026,7 +882,7 @@ namespace RINGMesh
          * \param [in] i index of the element
          * \return a const reference to the \p i%th element
          */
-        const T& operator[]( unsigned int i ) const
+        const T& operator[]( index_t i ) const
         {
             return value( i );
         }
@@ -1036,7 +892,7 @@ namespace RINGMesh
         * \param [in] i index of the element
         * \return a const reference to the \p i%th element
         */
-        const T& value( unsigned int i ) const
+        const T& value( index_t i ) const
         {
             ringmesh_assert( i < size() );
             return *reinterpret_cast< const T* >( store_->element( i ) );
@@ -1045,19 +901,18 @@ namespace RINGMesh
         /**
          * \brief Sets all the elements in this attribute
          *   to a specified value.
-         * \param[in] val the value
          */
-        void fill( const T& val )
+        void fill( const T& value )
         {
-            for( index_t i = 0; i < store_->get_store().nb_elements(); ++i )
+            for( auto i : range( store_->get_store().nb_elements() ) )
             {
-                ( *this )[i] = val;
+                set_value( i, value );
             }
         }
 
     protected:
-        AttributesManager* manager_{ nullptr };
-        AttributeStore* store_{ nullptr };
+        AttributesManager& manager_;
+        AttributeStore* store_;
     };
 
     /***********************************************************/

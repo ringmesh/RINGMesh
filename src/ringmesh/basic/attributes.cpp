@@ -68,22 +68,15 @@ namespace RINGMesh
 
     /*************************************************************************/
 
-    AttributesManager::~AttributesManager()
-    {
-        clear( false );
-    }
-
     void AttributesManager::resize( index_t new_size )
     {
         if( new_size == nb_items_ )
         {
             return;
         }
-        for( std::map< std::string, AttributeStore* >::iterator it =
-                 attributes_.begin();
-             it != attributes_.end(); ++it )
+        for( auto& it : attributes_ )
         {
-            it->second->resize( new_size );
+            it.second->resize( new_size );
         }
         nb_items_ = new_size;
     }
@@ -91,21 +84,17 @@ namespace RINGMesh
     void AttributesManager::apply_permutation(
         const std::vector< index_t >& permutation )
     {
-        for( std::map< std::string, AttributeStore* >::iterator it =
-                 attributes_.begin();
-             it != attributes_.end(); ++it )
+        for( auto& it : attributes_ )
         {
-            it->second->apply_permutation( permutation );
+            it.second->apply_permutation( permutation );
         }
     }
 
     void AttributesManager::compress( const std::vector< index_t >& old2new )
     {
-        for( std::map< std::string, AttributeStore* >::iterator it =
-                 attributes_.begin();
-             it != attributes_.end(); ++it )
+        for( auto& it : attributes_ )
         {
-            it->second->compress( old2new );
+            it.second->compress( old2new );
         }
     }
 
@@ -113,14 +102,14 @@ namespace RINGMesh
         const std::string& name, AttributeStore* as )
     {
         ringmesh_assert( find_attribute_store( name ) == nullptr );
-        attributes_[name] = as;
+        attributes_[name].reset( as );
     }
 
     std::vector< std::string > AttributesManager::attribute_names() const
     {
         std::vector< std::string > names;
         names.reserve( attributes_.size() );
-        for( auto it : attributes_ )
+        for( const auto& it : attributes_ )
         {
             names.push_back( it.first );
         }
@@ -130,46 +119,39 @@ namespace RINGMesh
     AttributeStore* AttributesManager::find_attribute_store(
         const std::string& name )
     {
-        std::map< std::string, AttributeStore* >::iterator it =
-            attributes_.find( name );
+        auto it = attributes_.find( name );
         if( it == attributes_.end() )
         {
             return nil;
         }
-        return it->second;
+        return it->second.get();
     }
 
     const AttributeStore* AttributesManager::find_attribute_store(
         const std::string& name ) const
     {
-        std::map< std::string, AttributeStore* >::const_iterator it =
-            attributes_.find( name );
+        auto it = attributes_.find( name );
         if( it == attributes_.end() )
         {
             return nil;
         }
-        return it->second;
+        return it->second.get();
     }
 
     void AttributesManager::delete_attribute_store( const std::string& name )
     {
-        std::map< std::string, AttributeStore* >::iterator it =
-            attributes_.find( name );
+        auto it = attributes_.find( name );
         ringmesh_assert( it != attributes_.end() );
-        delete it->second;
         attributes_.erase( it );
     }
 
     void AttributesManager::delete_attribute_store( AttributeStore* as )
     {
-        for( std::map< std::string, AttributeStore* >::iterator it =
-                 attributes_.begin();
-             it != attributes_.end(); ++it )
+        for( auto& it : attributes_ )
         {
-            if( it->second == as )
+            if( it.second.get() == as )
             {
-                delete as;
-                attributes_.erase( it );
+                attributes_.erase( it.first );
                 return;
             }
         }
@@ -180,21 +162,13 @@ namespace RINGMesh
     {
         if( keep_attributes )
         {
-            for( std::map< std::string, AttributeStore* >::iterator it =
-                     attributes_.begin();
-                 it != attributes_.end(); ++it )
+            for( auto& it : attributes_ )
             {
-                it->second->clear();
+                it.second->clear();
             }
         }
         else
         {
-            for( std::map< std::string, AttributeStore* >::iterator it =
-                     attributes_.begin();
-                 it != attributes_.end(); ++it )
-            {
-                delete it->second;
-            }
             attributes_.clear();
         }
         nb_items_ = 0;
@@ -204,11 +178,9 @@ namespace RINGMesh
     {
         clear( false );
         resize( rhs.nb_items() );
-        for( std::map< std::string, AttributeStore* >::const_iterator it =
-                 rhs.attributes_.begin();
-             it != rhs.attributes_.end(); ++it )
+        for( auto& it : attributes_ )
         {
-            bind_attribute_store( it->first, it->second->clone().get() );
+            bind_attribute_store( it.first, it.second->clone().get() );
         }
     }
 
