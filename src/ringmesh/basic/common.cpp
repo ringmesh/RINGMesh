@@ -49,9 +49,7 @@
 #endif
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
-#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
-#include <ringmesh/visualize/geogram_gfx.h>
+#include <ringmesh/basic/logger.h>
 
 namespace RINGMesh
 {
@@ -72,21 +70,12 @@ namespace RINGMesh
         GEO::CmdLine::set_arg( "algo:predicates", "exact" );
         GEO::CmdLine::import_arg_group( "log" );
         GEO::CmdLine::set_arg( "sys:use_doubles", true );
-#ifdef RINGMESH_WITH_GRAPHICS
-        GEO::CmdLine::import_arg_group( "gfx" );
-#endif
     }
 
     void configure_ringmesh()
     {
         CmdLine::import_arg_group( "global" );
         CmdLine::import_arg_group( "validity" );
-        GeoModelGeologicalEntity2D::initialize();
-        GeoModelGeologicalEntity3D::initialize();
-        initialize_gocad_import_factories();
-#ifdef RINGMESH_WITH_GRAPHICS
-        register_geogram_mesh_gfx();
-#endif
     }
 
     void default_configure()

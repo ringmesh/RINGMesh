@@ -33,6 +33,7 @@
 
 target_sources(${target_name}
     PRIVATE
+        "${lib_source_dir}/common.cpp"
         "${lib_source_dir}/entity_type_manager.cpp"
         "${lib_source_dir}/geomodel_entity.cpp"
         "${lib_source_dir}/geomodel_geological_entity.cpp"
@@ -41,6 +42,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geomodel.cpp"
         "${lib_source_dir}/stratigraphic_column.cpp"
     PUBLIC
+        "${lib_include_dir}/common.h"
         "${lib_include_dir}/entity_type_manager.h"
         "${lib_include_dir}/entity_type.h"
         "${lib_include_dir}/geomodel_entity.h"

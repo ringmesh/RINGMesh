@@ -99,6 +99,46 @@ namespace RINGMesh
     private:
         static std::mutex lock_;
     };
+
+    class RINGMESH_API ThreadSafeConsoleLogger : public GEO::ConsoleLogger
+    {
+        using base_class = GEO::ConsoleLogger;
+
+    public:
+        void div( const std::string& title )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::div( title );
+        }
+
+        void out( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::out( str );
+        }
+
+        void warn( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::warn( str );
+        }
+
+        void err( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::err( str );
+        }
+
+        void status( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::status( str );
+        }
+
+    private:
+        std::mutex lock_{};
+    };
+
 } // namespace RINGMesh
 
 #define DEBUG( a ) RINGMesh::Logger::out( "Debug", #a, " = ", a )

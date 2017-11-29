@@ -33,12 +33,14 @@
 
 target_sources(${target_name}
     PRIVATE
+        "${lib_source_dir}/common.cpp"
         "${lib_source_dir}/geogram_gfx.cpp"
         "${lib_source_dir}/geomodel_entity_gfx.cpp"
         "${lib_source_dir}/geomodel_gfx.cpp"
         "${lib_source_dir}/gfx_application.cpp"
         "${lib_source_dir}/mesh_entity_gfx.cpp"
     PUBLIC
+        "${lib_include_dir}/common.h"
         "${lib_include_dir}/geogram_gfx.h"
         "${lib_include_dir}/geomodel_entity_gfx.h"
         "${lib_include_dir}/geomodel_gfx.h"

@@ -33,6 +33,7 @@
 
 target_sources(${target_name}
     PRIVATE
+        "${lib_source_dir}/common.cpp"
         "${lib_source_dir}/geomodel_builder_2d_from_3d.cpp"
         "${lib_source_dir}/geomodel_builder_access.cpp"
         "${lib_source_dir}/geomodel_builder_file.cpp"
@@ -45,6 +46,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geomodel_builder.cpp"
         "${lib_source_dir}/stratigraphic_column_builder.cpp"
     PUBLIC
+        "${lib_include_dir}/common.h"
         "${lib_include_dir}/geomodel_builder_2d_from_3d.h"
         "${lib_include_dir}/geomodel_builder_access.h"
         "${lib_include_dir}/geomodel_builder_file.h"
