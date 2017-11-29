@@ -40,8 +40,8 @@
  include/ringmesh/config_ringmesh.h.in file.
  File is in RINGMESH_BIN/ringmesh directory.
  */
-#include <ringmesh/ringmesh_config.h>
 #include <ringmesh/basic/export.h>
+#include <ringmesh/ringmesh_config.h>
 
 #if defined( _WIN32 )
 #ifndef WIN32
