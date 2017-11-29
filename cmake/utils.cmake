@@ -59,6 +59,10 @@ message(STATUS "################ ${target_name}")
     endif()
     target_compile_definitions(${target_name} PRIVATE -DRINGMesh_EXPORTS)
     export(TARGETS ${target_name} NAMESPACE RINGMesh:: APPEND FILE RINGMeshTargets.cmake)
+    generate_export_header(${target_name} 
+        EXPORT_MACRO_NAME RINGMESH_API 
+        EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
+    )
     set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
     set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
     message(STATUS "lib_include_dir = ${lib_include_dir}")

@@ -70,10 +70,10 @@ find_program(CLANG_FORMAT "clang-format")
 if(CLANG_FORMAT)
     message(STATUS "Configuring RINGMesh with clang-format")
     file(GLOB_RECURSE ringmesh_files
-        ${PROJECT_SOURCE_DIR}/src/*
-        ${PROJECT_SOURCE_DIR}/include/*
-        ${PROJECT_SOURCE_DIR}/tests/src/*
-        ${PROJECT_SOURCE_DIR}/doc/tutorials/src/*
+        ${PROJECT_SOURCE_DIR}/src/.*cpp
+        ${PROJECT_SOURCE_DIR}/include/*.h
+        ${PROJECT_SOURCE_DIR}/tests/src/*.cpp
+        ${PROJECT_SOURCE_DIR}/doc/tutorials/src/*.cpp
     )
     add_custom_target(
         format

@@ -45,7 +45,6 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/box.h>
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
@@ -299,8 +298,7 @@ namespace RINGMesh
         : WellEntity< DIMENSION >( well ),
           is_on_surface_( is_on_surface ),
           id_( id ),
-          mesh_( PointSetMesh< DIMENSION >::create_mesh(
-              GeogramPointSetMesh< DIMENSION >::type_name_static() ) )
+          mesh_( PointSetMesh< DIMENSION >::create_mesh() )
     {
         PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ )
             ->create_vertex( point );
@@ -330,8 +328,7 @@ namespace RINGMesh
     WellPart< DIMENSION >::WellPart( const Well< DIMENSION >* well, index_t id )
         : WellEntity< DIMENSION >( well ),
           id_( id ),
-          mesh_( LineMesh< DIMENSION >::create_mesh(
-              GeogramLineMesh< DIMENSION >::type_name_static() ) )
+          mesh_( LineMesh< DIMENSION >::create_mesh() )
     {
         corners_[0] = NO_ID;
         corners_[1] = NO_ID;
@@ -654,28 +651,29 @@ namespace RINGMesh
         Well3D& new_well = *wells_.back();
         new_well.set_name( name );
 
-        GeogramLineMesh3D conformal_mesh;
-        compute_conformal_mesh( mesh, conformal_mesh );
+        auto conformal_mesh = LineMesh3D::create_mesh();
+        compute_conformal_mesh( mesh, *conformal_mesh );
 
         std::vector< std::vector< index_t > > edges_around_vertices(
-            conformal_mesh.nb_vertices() );
-        for( auto e : range( conformal_mesh.nb_edges() ) )
+            conformal_mesh->nb_vertices() );
+        for( auto e : range( conformal_mesh->nb_edges() ) )
         {
             for( auto i : range( 2 ) )
             {
                 index_t v =
-                    conformal_mesh.edge_vertex( ElementLocalVertex( e, i ) );
+                    conformal_mesh
+                    ->edge_vertex( ElementLocalVertex( e, i ) );
                 edges_around_vertices[v].push_back( e );
             }
         }
 
         std::stack< OrientedEdge > S;
-        for( auto v : range( conformal_mesh.nb_vertices() ) )
+        for( auto v : range( conformal_mesh->nb_vertices() ) )
         {
             const std::vector< index_t >& edges = edges_around_vertices[v];
             if( edges.size() == 1 )
             {
-                S.emplace( conformal_mesh, edges.front(), v );
+                S.emplace( *conformal_mesh, edges.front(), v );
             }
         }
         if( S.empty() )
@@ -685,8 +683,8 @@ namespace RINGMesh
         }
 
         GEO::Attribute< LineInstersection > vertex_info(
-            conformal_mesh.vertex_attribute_manager(), "info" );
-        std::vector< bool > edge_visited( conformal_mesh.nb_edges(), false );
+            conformal_mesh->vertex_attribute_manager(), "info" );
+        std::vector< bool > edge_visited( conformal_mesh->nb_edges(), false );
         do
         {
             OrientedEdge cur_edge = S.top();
@@ -706,11 +704,11 @@ namespace RINGMesh
                 S_part.pop();
                 edge_visited[cur_edge_part.edge_] = true;
                 const vec3& v_from =
-                    conformal_mesh.vertex( cur_edge_part.vertex_from_ );
-                index_t v_to_id = conformal_mesh.edge_vertex(
+                    conformal_mesh->vertex( cur_edge_part.vertex_from_ );
+                index_t v_to_id = conformal_mesh->edge_vertex(
                     ElementLocalVertex( cur_edge_part.edge_,
                         ( cur_edge_part.edge_vertex_ + 1 ) % 2 ) );
-                const vec3& v_to = conformal_mesh.vertex( v_to_id );
+                const vec3& v_to = conformal_mesh->vertex( v_to_id );
                 well_part_points.push_back( v_from );
 
                 const std::vector< index_t >& edges =
@@ -722,7 +720,7 @@ namespace RINGMesh
                     {
                         if( !edge_visited[edge] )
                         {
-                            S_part.emplace( conformal_mesh, edge, v_to_id );
+                            S_part.emplace( *conformal_mesh, edge, v_to_id );
                             count++;
                         }
                     }
@@ -736,7 +734,7 @@ namespace RINGMesh
                         vertex_info[v_to_id] );
                     for( auto edge : edges )
                     {
-                        S.emplace( conformal_mesh, edge, v_to_id );
+                        S.emplace( *conformal_mesh, edge, v_to_id );
                     }
                 }
             } while( !S_part.empty() );

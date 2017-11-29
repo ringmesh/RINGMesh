@@ -49,12 +49,8 @@
 #endif
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
-#include <ringmesh/io/io.h>
-#include <ringmesh/tetrahedralize/tetra_gen.h>
 #include <ringmesh/visualize/geogram_gfx.h>
 
 namespace RINGMesh
@@ -85,13 +81,9 @@ namespace RINGMesh
     {
         CmdLine::import_arg_group( "global" );
         CmdLine::import_arg_group( "validity" );
-        mesh_initialize();
-        TetraGen::initialize();
         GeoModelGeologicalEntity2D::initialize();
         GeoModelGeologicalEntity3D::initialize();
-        ringmesh_geogram_mesh_io_initialize();
         initialize_gocad_import_factories();
-        register_geogram_mesh();
 #ifdef RINGMESH_WITH_GRAPHICS
         register_geogram_mesh_gfx();
 #endif
