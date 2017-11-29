@@ -62,3 +62,6 @@ target_sources(${target_name}
         "${lib_include_dir}/task_handler.h"
         "${lib_include_dir}/types.h"
 )
+if(RINGMESH_WITH_GRAPHICS)
+    target_link_libraries(${target_name} PRIVATE Geogram::geogram_gfx)
+endif(RINGMESH_WITH_GRAPHICS)

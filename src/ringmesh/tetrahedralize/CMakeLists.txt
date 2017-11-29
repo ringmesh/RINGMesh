@@ -40,3 +40,5 @@ target_sources(${target_name}
         "${lib_include_dir}/tetra_gen.h"
 )
 
+target_link_libraries(${target_name} PUBLIC geomodel_builder)
+

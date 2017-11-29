@@ -40,3 +40,5 @@ target_sources(${target_name}
         "${lib_include_dir}/geogram_mesh.h"
         "${lib_include_dir}/geogram_mesh_builder.h"
 )
+
+target_link_libraries(${target_name} PUBLIC mesh)

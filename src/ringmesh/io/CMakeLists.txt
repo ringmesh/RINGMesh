@@ -43,4 +43,4 @@ target_sources(${target_name}
         "${lib_include_dir}/zip_file.h"
 )
 
-target_link_libraries(${target_name} PRIVATE tinyxml2 MINIZIP::minizip)
+target_link_libraries(${target_name} PUBLIC geomodel_tools PRIVATE tinyxml2 MINIZIP::minizip)

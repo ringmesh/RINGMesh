@@ -206,10 +206,6 @@ namespace RINGMesh
     template < index_t DIMENSION >
     GeoModelMeshEntity< DIMENSION >::~GeoModelMeshEntity()
     {
-#ifdef RINGMESH_DEBUG
-        ringmesh_assert( mesh_ != nullptr );
-        mesh_->print_mesh_bounded_attributes();
-#endif
     }
 
     template < index_t DIMENSION >

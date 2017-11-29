@@ -51,3 +51,5 @@ target_sources(${target_name}
         "${lib_include_dir}/geomodel.h"
         "${lib_include_dir}/stratigraphic_column.h"
 )
+
+target_link_libraries(${target_name} PUBLIC basic mesh)

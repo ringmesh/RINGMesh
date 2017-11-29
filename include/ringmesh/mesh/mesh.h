@@ -90,8 +90,6 @@ namespace RINGMesh
         virtual std::tuple< index_t, std::vector< index_t > >
             connected_components() const = 0;
 
-        // TODO maybe reimplement the function with a RINGMesh::Mesh??
-        virtual void print_mesh_bounded_attributes() const = 0;
         /*!
          * \name Vertex methods
          * @{

@@ -76,10 +76,6 @@ public:                                                                        \
     {                                                                          \
         return *mesh_;                                                         \
     }                                                                          \
-    void print_mesh_bounded_attributes() const override                        \
-    {                                                                          \
-        print_bounded_attributes( *mesh_ );                                    \
-    }                                                                          \
     GEO::AttributesManager& vertex_attribute_manager() const override          \
     {                                                                          \
         return mesh_->vertices.attributes();                                   \

@@ -43,3 +43,5 @@ target_sources(${target_name}
         "${lib_include_dir}/geomodel_validity.h"
         "${lib_include_dir}/mesh_quality.h"
 )
+
+target_link_libraries(${target_name} PUBLIC geomodel_builder tetrahedralize)

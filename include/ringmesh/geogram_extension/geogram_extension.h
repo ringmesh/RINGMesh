@@ -194,8 +194,6 @@ namespace RINGMesh
         }
     };
 
-    void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M );
-
     class RINGMESH_API ThreadSafeConsoleLogger : public GEO::ConsoleLogger
     {
         using base_class = GEO::ConsoleLogger;

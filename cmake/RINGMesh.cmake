@@ -173,7 +173,7 @@ endforeach()
 set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
-    add_ringmesh_binary(${binary_source_dir}/ringmesh-view.cpp)
+    add_ringmesh_binary(${binary_source_dir}/ringmesh-view.cpp visualize)
     copy_for_windows(${PROJECT_BINARY_DIR}/bin)
 endif()
 

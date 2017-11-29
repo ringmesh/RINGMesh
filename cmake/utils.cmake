@@ -52,7 +52,7 @@ message(STATUS "################ ${target_name}")
     add_library(${target_name} SHARED "")
     set_target_properties(${target_name} PROPERTIES OUTPUT_NAME RINGMesh_${target_name})
     add_folder(${target_name})
-    target_include_directories(${target_name} PUBLIC ${PROJECT_BINARY_DIR} PRIVATE ${PROJECT_SOURCE_DIR}/include)
+    target_include_directories(${target_name} PUBLIC ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include)
     target_link_libraries(${target_name} PUBLIC Geogram::geogram)
     if(WIN32)
         target_compile_definitions(${target_name} PUBLIC -DGEO_DYNAMIC_LIBS)
@@ -112,9 +112,12 @@ macro(add_ringmesh_executable exe_path folder_name)
     get_filename_component(exe_name ${exe_path} NAME_WE)
 
     # Set the target as an executable
-    add_executable(${exe_name} ${exe_path})
-    target_link_libraries(${exe_name} PRIVATE RINGMesh)
-    add_dependencies(${exe_name} RINGMesh)
+    add_executable(${exe_name} ${exe_path})    
+    foreach(f ${ARGN})
+    message(STATUS "fffff ${f}")
+    target_link_libraries(${exe_name} PRIVATE ${f})
+    add_dependencies(${exe_name} ${f})
+    endforeach()
 
     # Add the project to a folder of projects for the tests
     set_target_properties(${exe_name} PROPERTIES FOLDER ${folder_name})
@@ -125,7 +128,7 @@ macro(add_ringmesh_executable exe_path folder_name)
 endmacro()
 
 function(add_ringmesh_binary bin_path)
-    add_ringmesh_executable(${bin_path} "Utilities")
+    add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()

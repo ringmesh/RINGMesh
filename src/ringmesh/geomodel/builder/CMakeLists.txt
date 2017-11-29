@@ -58,4 +58,4 @@ target_sources(${target_name}
         "${lib_include_dir}/stratigraphic_column_builder.h"
 )
 
-target_link_libraries(${target_name} PRIVATE tinyxml2)
+target_link_libraries(${target_name} PUBLIC geomodel_core PRIVATE tinyxml2)
