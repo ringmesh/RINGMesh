@@ -97,13 +97,16 @@ namespace RINGMesh
         const vecn< DIMENSION >& v2,
         double epsilon )
     {
-        double length{ 0. };
+        double square_length{ 0. };
         for( index_t i = 0; i < DIMENSION; i++ )
         {
-            length += ( v2[i] - v1[i] ) * ( v2[i] - v1[i] );
+        	square_length += ( v2[i] - v1[i] ) * ( v2[i] - v1[i] );
         }
-        return length < epsilon * epsilon;
+        return square_length < epsilon * epsilon;
     }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > RINGMESH_API initialize_vecn_coordinates( double value );
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
