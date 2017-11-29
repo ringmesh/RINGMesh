@@ -43,8 +43,8 @@
 #include <ringmesh/ringmesh_config.h>
 #include <ringmesh/ringmesh_export.h>
 
-#include <ringmesh/basic/types.h>
 #include <ringmesh/basic/range.h>
+#include <ringmesh/basic/types.h>
 
 #if defined( _WIN32 )
 #ifndef WIN32

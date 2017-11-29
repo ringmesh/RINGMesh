@@ -100,7 +100,7 @@ namespace RINGMesh
         double square_length{ 0. };
         for( index_t i = 0; i < DIMENSION; i++ )
         {
-        	square_length += ( v2[i] - v1[i] ) * ( v2[i] - v1[i] );
+            square_length += ( v2[i] - v1[i] ) * ( v2[i] - v1[i] );
         }
         return square_length < epsilon * epsilon;
     }
