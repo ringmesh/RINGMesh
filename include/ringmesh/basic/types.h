@@ -38,15 +38,17 @@
 #include <geogram/basic/geometry.h>
 #include <geogram/basic/numeric.h>
 
+#include <cmath>
+
 /*!
  * @file Re-definitions of basic types similar to those of Geogram
  */
 namespace RINGMesh
 {
-    /* If you need interger of 8bits of any other one
+    /* If you need integer of 8bits of any other one
      * it is sufficient to write using GEO::Numeric::uint8 in your file.
      *
-     * Dummy variables were removed, the pollute the namespace and
+     * Dummy variables were removed, they polluted the namespace and
      * it is quite easy to do without them.
      */
 
@@ -79,7 +81,7 @@ namespace RINGMesh
     template < index_t DIMENSION >
     bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
     {
-        for( auto i = 0; i < DIMENSION; i++ )
+        for( index_t i = 0; i < DIMENSION; i++ )
         {
             if( u[i] != v[i] )
             {
@@ -100,7 +102,13 @@ namespace RINGMesh
         const vecn< DIMENSION >& v2,
         double epsilon )
     {
-        return length( v2 - v1 ) < epsilon;
+    	double length{ 0. };
+    	for ( index_t i = 0; i < DIMENSION; i++ )
+    	{
+    		length += (v2[i]-v1[i])*(v2[i]-v1[i]);
+    	}
+    	length = std::sqrt(length);
+        return length < epsilon;
     }
 
     // This is the value used in RINGMesh for a invalid index
