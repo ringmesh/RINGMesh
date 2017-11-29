@@ -208,14 +208,24 @@ namespace RINGMesh
             return inverse_reference_frame;
         }
 
-        static bool frame_is_cartesian( const ReferenceFrame< DIMENSION >& reference_frame )
+        static bool frame_is_orthogonal( const ReferenceFrame< DIMENSION >& reference_frame )
         {
-
+        	for ( auto i : range( DIMENSION ) )
+        	{
+        		for ( auto j : range( i+1, DIMENSION ) )
+        		{
+        			if ( GEO::dot( reference_frame[i], reference_frame[j] ) != 0)
+					{
+						return false;
+					}
+        		}
+        	}
         	return true;
         }
 
     private:
-        static GEO::Matrix< DIMENSION, double > inverse_reference_matrix( const ReferenceFrame< DIMENSION>& reference_frame)
+        static GEO::Matrix< DIMENSION, double > inverse_reference_matrix(
+        		const ReferenceFrame< DIMENSION>& reference_frame)
 		{
         	GEO::Matrix< DIMENSION, double > matrix;
         	for( auto i : range( DIMENSION ) )
