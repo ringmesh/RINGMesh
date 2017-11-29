@@ -43,8 +43,8 @@
 
 namespace RINGMesh
 {
-#define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR @
-#define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR @
+#define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR@
+#define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR@
 
 /* Optional components with which RINGMesh can be compiled */
 #cmakedefine USE_MG_TETRA

@@ -71,6 +71,14 @@ if(MG_TETRA)
 endif()
 
 
+# RINGMesh depends on Geogram Tinyxml2 Minizip and zlib
+list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
+set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
+find_package(Geogram REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
+include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
+
 #------------------------------------------------------------------------------------------------
 # Build configuration
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -78,15 +86,15 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files
-add_folder(ringmesh_src ringmesh_include basic)
-add_folder(ringmesh_src ringmesh_include geogram_extension)
-add_folder(ringmesh_src ringmesh_include geomodel/builder)
-add_folder(ringmesh_src ringmesh_include geomodel/core)
-add_folder(ringmesh_src ringmesh_include geomodel/tools)
-add_folder(ringmesh_src ringmesh_include io)
-add_folder(ringmesh_src ringmesh_include mesh)
-add_folder(ringmesh_src ringmesh_include tetrahedralize)
-add_folder(ringmesh_src ringmesh_include visualize)
+#add_folder(ringmesh_src ringmesh_include basic)
+#add_folder(ringmesh_src ringmesh_include geogram_extension)
+#add_folder(ringmesh_src ringmesh_include geomodel/builder)
+#add_folder(ringmesh_src ringmesh_include geomodel/core)
+#add_folder(ringmesh_src ringmesh_include geomodel/tools)
+#add_folder(ringmesh_src ringmesh_include io)
+#add_folder(ringmesh_src ringmesh_include mesh)
+#add_folder(ringmesh_src ringmesh_include tetrahedralize)
+#add_folder(ringmesh_src ringmesh_include visualize)
 
 # Add the RINGMesh target as a shared library
 #add_library(RINGMesh SHARED "")
@@ -106,21 +114,17 @@ add_ringmesh_library(basic)
 add_ringmesh_library(geogram_extension)
 add_ringmesh_library(geomodel/builder)
 add_ringmesh_library(geomodel/core)
+add_ringmesh_library(geomodel/tools)
+add_ringmesh_library(io)
+add_ringmesh_library(mesh)
+add_ringmesh_library(tetrahedralize)
+if(RINGMESH_WITH_GRAPHICS)
+    add_ringmesh_library(visualize)
+endif(RINGMESH_WITH_GRAPHICS)
 
 # Add include directories of RINGMesh
 #target_include_directories(RINGMesh PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-# RINGMesh depends on Geogram Tinyxml2 Minizip and zlib
-list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
-set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
-find_package(Geogram REQUIRED)
-if(WIN32)
-#    target_compile_definitions(RINGMesh PUBLIC -DGEO_DYNAMIC_LIBS)
-endif()
-
-find_package(ZLIB REQUIRED)
-find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
-include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
 #target_link_libraries(RINGMesh PUBLIC Geogram::geogram PRIVATE ZLIB::ZLIB tinyxml2 MINIZIP::minizip)
 
 if(RINGMESH_WITH_GRAPHICS)
@@ -137,15 +141,14 @@ endif(RINGMESH_WITH_GRAPHICS)
 # to the source code
 # Add configure file to ringmesh includes
 
-set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
-set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/basic/ringmesh_config.h.in)
-configure_file(${input_configure_file} ${generated_configure_file})
-set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
+configure_file(
+    ${PROJECT_SOURCE_DIR}/cmake/ringmesh_config.h.in 
+    ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h
+)
 
 #generate macros for API export and add it to include directories
 include (GenerateExportHeader)
 set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
-set(ringmesh_include ${ringmesh_include} ${generated_export_file})
 generate_export_header(basic EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
 
 # We want to be able to include these file
