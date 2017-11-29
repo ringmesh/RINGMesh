@@ -448,9 +448,8 @@ namespace RINGMesh
          */
         std::unique_ptr< RINGMesh::AttributeStore > clone() const
         {
-            auto new_attstore =
-                create_attribute_store_by_element_type_name(
-                    store_->element_typeid_name() );
+            auto new_attstore = create_attribute_store_by_element_type_name(
+                store_->element_typeid_name() );
             new_attstore->set_store( store_->clone() );
             return new_attstore;
         }
@@ -822,8 +821,8 @@ namespace RINGMesh
                 store_->resize( manager_.nb_items() );
                 manager_.bind_attribute_store( name, store_ );
             }
-            ringmesh_assert(
-                store_->get_store().elements_type_matches( typeid(T).name() ) );
+            ringmesh_assert( store_->get_store().elements_type_matches(
+                typeid( T ).name() ) );
         }
 
         /**
