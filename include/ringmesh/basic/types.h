@@ -43,13 +43,6 @@
  */
 namespace RINGMesh
 {
-    /* If you need interger of 8bits of any other one
-     * it is sufficient to write using GEO::Numeric::uint8 in your file.
-     *
-     * Dummy variables were removed, the pollute the namespace and
-     * it is quite easy to do without them.
-     */
-
     // Basic types used in RINGMesh
     // Using definitions of Geogram/basic/numeric.h
     using GEO::Numeric::float32;
@@ -82,6 +75,41 @@ namespace RINGMesh
     using ivec3 = ivecn< 3 >;
     // This is an array of 2 signed integers
     using ivec2 = ivecn< 2 >;
+
+    template < index_t DIMENSION >
+    bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
+    {
+        for( index_t i = 0; i < DIMENSION; i++ )
+        {
+            if( u[i] != v[i] )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template < index_t DIMENSION >
+    bool operator!=( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
+    {
+        return !( u == v );
+    }
+
+    template < index_t DIMENSION >
+    bool inexact_equal( const vecn< DIMENSION >& v1,
+        const vecn< DIMENSION >& v2,
+        double epsilon )
+    {
+        double square_length{ 0. };
+        for( index_t i = 0; i < DIMENSION; i++ )
+        {
+            square_length += ( v2[i] - v1[i] ) * ( v2[i] - v1[i] );
+        }
+        return square_length < epsilon * epsilon;
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > RINGMESH_API initialize_vecn_coordinates( double value );
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
