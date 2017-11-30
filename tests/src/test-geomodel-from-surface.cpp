@@ -42,8 +42,8 @@
 #include <geogram/mesh/mesh_io.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_from_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
