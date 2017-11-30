@@ -62,8 +62,7 @@ namespace RINGMesh
 {
     void io_api initialize_gocad_import_factories();
 
-    class io_api GeoModelBuilderGocad
-        : public GeoModelBuilderFile< 3 >
+    class io_api GeoModelBuilderGocad : public GeoModelBuilderFile< 3 >
     {
     public:
         GeoModelBuilderGocad( GeoModel3D& geomodel, std::string filename )
@@ -546,8 +545,7 @@ namespace RINGMesh
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
      */
-    class io_api GeoModelBuilderTSolid final
-        : public GeoModelBuilderGocad
+    class io_api GeoModelBuilderTSolid final : public GeoModelBuilderGocad
     {
     public:
         static const index_t NB_TYPE = 2;
@@ -737,8 +735,7 @@ namespace RINGMesh
     /*!
      * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
      */
-    class io_api GeoModelBuilderML final
-        : public GeoModelBuilderGocad
+    class io_api GeoModelBuilderML final : public GeoModelBuilderGocad
     {
     public:
         GeoModelBuilderML( GeoModel3D& geomodel, std::string filename )
