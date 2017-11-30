@@ -38,14 +38,12 @@ target_sources(${target_name}
         "${lib_source_dir}/mesh_builder.cpp"
         "${lib_source_dir}/mesh_index.cpp"
         "${lib_source_dir}/mesh.cpp"
-        "${lib_source_dir}/well.cpp"
     PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/mesh_aabb.h"
         "${lib_include_dir}/mesh_builder.h"
         "${lib_include_dir}/mesh_index.h"
         "${lib_include_dir}/mesh.h"
-        "${lib_include_dir}/well.h"
 )
 
 target_link_libraries(${target_name} PUBLIC basic)

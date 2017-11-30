@@ -38,11 +38,11 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 #include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/well.h>
 
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
-#include <ringmesh/mesh/well.h>
 
 /*!
  * @file Implements the input - output of WellGroup

@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/mesh/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 #include <array>
 #include <memory>
@@ -62,7 +62,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class mesh_api WellEntity
+    class geomodel_core_api WellEntity
     {
         ringmesh_disable_copy_and_move( WellEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -90,7 +90,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class mesh_api WellCorner : public WellEntity< DIMENSION >
+    class geomodel_core_api WellCorner : public WellEntity< DIMENSION >
     {
     public:
         WellCorner( const Well< DIMENSION >* well,
@@ -127,7 +127,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class mesh_api WellPart : public WellEntity< DIMENSION >
+    class geomodel_core_api WellPart : public WellEntity< DIMENSION >
     {
     public:
         /*!
@@ -217,7 +217,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class mesh_api Edge
+    class geomodel_core_api Edge
     {
     public:
         Edge( const vecn< DIMENSION >& v0, const vecn< DIMENSION >& v1 )
@@ -245,7 +245,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class mesh_api Well
+    class geomodel_core_api Well
     {
         ringmesh_disable_copy_and_move( Well );
 
@@ -406,7 +406,7 @@ namespace RINGMesh
      * Set of wells associated to a GeoModel
      */
     template < index_t DIMENSION >
-    class mesh_api WellGroup
+    class geomodel_core_api WellGroup
     {
         ringmesh_disable_copy_and_move( WellGroup );
 

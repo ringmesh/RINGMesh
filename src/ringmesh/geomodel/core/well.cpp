@@ -33,7 +33,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/mesh/well.h>
+#include <ringmesh/geomodel/core/well.h>
 
 #include <cmath>
 #include <numeric>
@@ -753,15 +753,15 @@ namespace RINGMesh
         }
         return NO_ID;
     }
-    template class mesh_api WellEntity< 2 >;
-    template class mesh_api WellCorner< 2 >;
-    template class mesh_api WellPart< 2 >;
-    template class mesh_api Well< 2 >;
-    template class mesh_api WellGroup< 2 >;
+    template class geomodel_core_api WellEntity< 2 >;
+    template class geomodel_core_api WellCorner< 2 >;
+    template class geomodel_core_api WellPart< 2 >;
+    template class geomodel_core_api Well< 2 >;
+    template class geomodel_core_api WellGroup< 2 >;
 
-    template class mesh_api WellEntity< 3 >;
-    template class mesh_api WellCorner< 3 >;
-    template class mesh_api WellPart< 3 >;
-    template class mesh_api Well< 3 >;
-    template class mesh_api WellGroup< 3 >;
+    template class geomodel_core_api WellEntity< 3 >;
+    template class geomodel_core_api WellCorner< 3 >;
+    template class geomodel_core_api WellPart< 3 >;
+    template class geomodel_core_api Well< 3 >;
+    template class geomodel_core_api WellGroup< 3 >;
 } // namespace RINGMesh

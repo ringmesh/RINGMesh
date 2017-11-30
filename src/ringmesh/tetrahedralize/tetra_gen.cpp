@@ -45,10 +45,10 @@
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/core/well.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
-#include <ringmesh/mesh/well.h>
 
 #include <ringmesh/tetrahedralize/tetgen_mesher.h>
 

@@ -52,13 +52,13 @@
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_api.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
+#include <ringmesh/geomodel/core/well.h>
 
 #include <ringmesh/io/zip_file.h>
 
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
-#include <ringmesh/mesh/well.h>
 
 /*!
  * @file Implementation of classes loading GeoModels
