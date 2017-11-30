@@ -47,6 +47,22 @@
 namespace RINGMesh
 {
     template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& MeshBase< DIMENSION >::vertex_nn_search() const
+    {
+        if( !vertex_nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > vec_vertices( nb_vertices() );
+            for( auto v : range( nb_vertices() ) )
+            {
+                vec_vertices[v] = vertex( v );
+            }
+            vertex_nn_search_.reset(
+                new NNSearch< DIMENSION >( vec_vertices, true ) );
+        }
+        return *vertex_nn_search_.get();
+    }
+
+    template < index_t DIMENSION >
     std::unique_ptr< PointSetMesh< DIMENSION > >
         PointSetMesh< DIMENSION >::create_mesh( const MeshType type )
     {
@@ -98,6 +114,32 @@ namespace RINGMesh
             return create_mesh();
         }
         return mesh;
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& LineMesh< DIMENSION >::edge_nn_search() const
+    {
+        if( !edge_nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > edge_centers( nb_edges() );
+            for( auto e : range( nb_edges() ) )
+            {
+                edge_centers[e] = edge_barycenter( e );
+            }
+            edge_nn_search_.reset(
+                new NNSearch< DIMENSION >( edge_centers, true ) );
+        }
+        return *edge_nn_search_.get();
+    }
+
+    template < index_t DIMENSION >
+    const LineAABBTree< DIMENSION >& LineMesh< DIMENSION >::edge_aabb() const
+    {
+        if( !edge_aabb_ )
+        {
+            edge_aabb_.reset( new LineAABBTree< DIMENSION >( *this ) );
+        }
+        return *edge_aabb_.get();
     }
 
     template < index_t DIMENSION >
@@ -1132,12 +1174,14 @@ namespace RINGMesh
         volume_mesh = VolumeMesh3D::create_mesh( type );
     }
 
+    template class mesh_api MeshBase< 2 >;
     template class mesh_api PointSetMesh< 2 >;
     template class mesh_api LineMesh< 2 >;
     template class mesh_api SurfaceMeshBase< 2 >;
     template class mesh_api MeshSetBase< 2 >;
     template class mesh_api MeshSet< 2 >;
 
+    template class mesh_api MeshBase< 3 >;
     template class mesh_api PointSetMesh< 3 >;
     template class mesh_api LineMesh< 3 >;
     template class mesh_api SurfaceMeshBase< 3 >;

@@ -113,20 +113,7 @@ namespace RINGMesh
          * Mesh::polygons_aabb()
          * and Mesh::cells_aabb()
          */
-        const NNSearch< DIMENSION >& vertex_nn_search() const
-        {
-            if( !vertex_nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > vec_vertices( nb_vertices() );
-                for( auto v : range( nb_vertices() ) )
-                {
-                    vec_vertices[v] = vertex( v );
-                }
-                vertex_nn_search_.reset(
-                    new NNSearch< DIMENSION >( vec_vertices, true ) );
-            }
-            return *vertex_nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& vertex_nn_search() const;
 
         virtual MeshType type_name() const = 0;
 
@@ -211,31 +198,12 @@ namespace RINGMesh
          * Mesh::polygons_aabb()
          * and Mesh::cells_aabb()
          */
-        const NNSearch< DIMENSION >& edge_nn_search() const
-        {
-            if( !edge_nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > edge_centers( nb_edges() );
-                for( auto e : range( nb_edges() ) )
-                {
-                    edge_centers[e] = edge_barycenter( e );
-                }
-                edge_nn_search_.reset(
-                    new NNSearch< DIMENSION >( edge_centers, true ) );
-            }
-            return *edge_nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& edge_nn_search() const;
+
         /*!
          * @brief Creates an AABB tree for a Mesh edges
          */
-        const LineAABBTree< DIMENSION >& edge_aabb() const
-        {
-            if( !edge_aabb_ )
-            {
-                edge_aabb_.reset( new LineAABBTree< DIMENSION >( *this ) );
-            }
-            return *edge_aabb_.get();
-        }
+        const LineAABBTree< DIMENSION >& edge_aabb() const;
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
 
