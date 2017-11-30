@@ -246,12 +246,11 @@ namespace RINGMesh
             const MeshEntityType& entity_type, index_t vertex ) const;
 
         /*!
-         * @brief Set the point coordinates of all the vertices that
-         *        share this unique vertex, including the unique vertex itself.
+         * @brief Set the point coordinates of a vertex
          * @param[in] vertex Index of the vertex
          * @param[in] point New coordinates
          */
-        void update_point( index_t v, const vecn< DIMENSION >& point );
+        void set_point( index_t v, const vecn< DIMENSION >& point );
 
         void update_vertex_mapping( const gmme_id& entity_id,
             index_t entity_vertex_index,

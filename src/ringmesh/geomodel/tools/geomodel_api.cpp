@@ -418,12 +418,13 @@ namespace RINGMesh
     void translate( GeoModel< DIMENSION >& geomodel,
         const vecn< DIMENSION >& translation_vector )
     {
+        GeoModelBuilder< DIMENSION > builder( geomodel );
         for( auto v : range( geomodel.mesh.vertices.nb() ) )
         {
             // Coordinates are not directly modified to
             // update the matching vertices in geomodel entities
-            const vecn< DIMENSION >& p = geomodel.mesh.vertices.vertex( v );
-            geomodel.mesh.vertices.update_point( v, p + translation_vector );
+            const auto& p = geomodel.mesh.vertices.vertex( v );
+            builder.geometry.set_mesh_entity_vertex( v, p + translation_vector );
         }
     }
 
@@ -442,6 +443,7 @@ namespace RINGMesh
         GEO::Matrix< 4, double > rot_mat{ rotation_matrix_about_arbitrary_axis(
             origin, axis, angle, degrees ) };
 
+        GeoModelBuilder3D builder( geomodel );
         for( auto v : range( geomodel.mesh.vertices.nb() ) )
         {
             const vec3& p = geomodel.mesh.vertices.vertex( v );
@@ -450,7 +452,7 @@ namespace RINGMesh
             GEO::mult( rot_mat, old.data(), new_p.data() );
             ringmesh_assert( std::fabs( new_p[3] - 1. ) < global_epsilon );
 
-            geomodel.mesh.vertices.update_point( v, vec3{ new_p.data() } );
+            builder.geometry.set_mesh_entity_vertex( v, vec3{ new_p.data() } );
         }
     }
 

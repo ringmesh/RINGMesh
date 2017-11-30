@@ -47,8 +47,8 @@
 #include <ringmesh/basic/pimpl_impl.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
-#include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/well.h>
 
@@ -772,7 +772,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshVerticesBase< DIMENSION >::update_point(
+    void GeoModelMeshVerticesBase< DIMENSION >::set_point(
         index_t v, const vecn< DIMENSION >& point )
     {
         test_and_initialize();
@@ -781,15 +781,6 @@ namespace RINGMesh
         auto mesh_builder =
             PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         mesh_builder->set_vertex( v, point );
-
-        GeoModelBuilder< DIMENSION > builder( this->geomodel_ );
-
-        const auto& gme_v = gme_vertices( v );
-        for( const auto& info : gme_v )
-        {
-            builder.geometry.set_mesh_entity_vertex(
-                info.gmme, info.v_index, point, false );
-        }
     }
 
     template < index_t DIMENSION >

@@ -143,13 +143,23 @@ namespace RINGMesh
          * @param[in] point the coordinates to set
          * @param[in] update if true, updates all the colocated vertices
          * to the new coordinates (i.e. if edit a Corner coordinates, it will
-         * updates
-         * its Lines, Surfaces...)
+         * updates its Lines, Surfaces...)
          */
         void set_mesh_entity_vertex( const gmme_id& entity_id,
             index_t v,
             const vecn< DIMENSION >& point,
             bool update );
+
+        /*!
+         * @brief Sets a vertex coordinates of all GeoModelMeshEntity
+         * from the GeoModelMesh vertex relationships
+         * @param[in] geomodel_vertex Index in GeoModelMeshVertices of the
+         * vertex giving
+         * @param[in] point the coordinates to set
+         */
+        void set_mesh_entity_vertex(
+            index_t geomodel_vertex_id,
+            const vecn< DIMENSION >& point );
 
         /*!
          * @brief Adds vertices to the mesh
