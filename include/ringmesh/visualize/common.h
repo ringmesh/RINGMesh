@@ -40,7 +40,7 @@
 
 namespace RINGMesh
 {
-    class libRINGMesh_visualize
+    class visualize_api libRINGMesh_visualize
     {
     public:
         libRINGMesh_visualize();

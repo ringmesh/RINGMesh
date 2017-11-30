@@ -40,7 +40,7 @@
 
 namespace RINGMesh
 {
-    class libRINGMesh_io
+    class io_api libRINGMesh_io
     {
     public:
         libRINGMesh_io();

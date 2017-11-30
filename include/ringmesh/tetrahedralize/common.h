@@ -40,7 +40,7 @@
 
 namespace RINGMesh
 {
-    class libRINGMesh_tetrahedralize
+    class tetrahedralize_api libRINGMesh_tetrahedralize
     {
     public:
         libRINGMesh_tetrahedralize();

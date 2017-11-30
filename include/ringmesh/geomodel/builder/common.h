@@ -40,7 +40,7 @@
 
 namespace RINGMesh
 {
-    class libRINGMesh_geomodel_builder
+    class geomodel_builder_api libRINGMesh_geomodel_builder
     {
     public:
         libRINGMesh_geomodel_builder();
