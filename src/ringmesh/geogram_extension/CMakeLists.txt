@@ -44,4 +44,3 @@ target_sources(${target_name}
 )
 
 target_link_libraries(${target_name} PUBLIC mesh)
-add_dependencies(${target_name} mesh)

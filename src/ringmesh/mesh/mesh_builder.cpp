@@ -267,10 +267,12 @@ namespace RINGMesh
         PointSetMeshBuilder< 3 >::create_builder( PointSetMesh< 3 >& );
 
     template class mesh_api MeshBaseBuilder< 2 >;
+    template class mesh_api PointSetMeshBuilder< 2 >;
     template class mesh_api LineMeshBuilder< 2 >;
     template class mesh_api SurfaceMeshBuilder< 2 >;
 
     template class mesh_api MeshBaseBuilder< 3 >;
+    template class mesh_api PointSetMeshBuilder< 3 >;
     template class mesh_api LineMeshBuilder< 3 >;
     template class mesh_api SurfaceMeshBuilder< 3 >;
     template class mesh_api VolumeMeshBuilder< 3 >;

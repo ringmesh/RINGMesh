@@ -306,7 +306,7 @@ namespace RINGMesh
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
             create_builder( PointSetMesh< DIMENSION >& mesh );
 
-        virtual void remove_isolated_vertices()
+        void remove_isolated_vertices()
         {
             // All vertices are isolated in a Mesh0D
         }
