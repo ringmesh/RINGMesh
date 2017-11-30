@@ -56,4 +56,4 @@ target_sources(${target_name}
         "${lib_include_dir}/well.h"
 )
 
-target_link_libraries(${target_name} PUBLIC basic mesh)
+target_link_libraries(${target_name} PUBLIC basic geogram_extension mesh)

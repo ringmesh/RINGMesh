@@ -44,3 +44,21 @@ target_sources(${target_name}
 
 target_link_libraries(${target_name} PUBLIC geomodel_builder)
 
+if(MG_TETRA)
+    target_include_directories(${target_name} PRIVATE ${MG_TETRA}/include)
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(PLATFORM _64)
+    else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(PLATFORM)
+    endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    
+    if(WIN32)
+        link_directories(${MG_TETRA}/lib/WIN7${PLATFORM}_VC10)
+    else(WIN32)
+        link_directories(${MG_TETRA}/lib/Linux${PLATFORM})
+    endif(WIN32)
+    
+    target_link_libraries(${target_name} LINK_PRIVATE meshgems mg-tetra meshgems_stubs)
+endif()
+

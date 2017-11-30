@@ -48,7 +48,6 @@ endmacro()
 
 function(add_ringmesh_library directory)
     string(REPLACE "/" "_" target_name ${directory})
-message(STATUS "################ ${target_name}")
     add_library(${target_name} SHARED "")
     set_target_properties(${target_name} PROPERTIES OUTPUT_NAME RINGMesh_${target_name})
     add_folder(${target_name})
@@ -64,8 +63,6 @@ message(STATUS "################ ${target_name}")
     )
     set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
     set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
-    message(STATUS "lib_include_dir = ${lib_include_dir}")
-    message(STATUS "lib_source_dir = ${lib_source_dir}")
     include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
 endfunction()
 
@@ -116,10 +113,9 @@ macro(add_ringmesh_executable exe_path folder_name)
 
     # Set the target as an executable
     add_executable(${exe_name} ${exe_path})    
-    foreach(f ${ARGN})
-    message(STATUS "fffff ${f}")
-    target_link_libraries(${exe_name} PRIVATE ${f})
-    add_dependencies(${exe_name} ${f})
+    foreach(dependency ${ARGN})
+        target_link_libraries(${exe_name} PRIVATE ${dependency})
+        add_dependencies(${exe_name} ${dependency})
     endforeach()
 
     # Add the project to a folder of projects for the tests
