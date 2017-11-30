@@ -36,6 +36,7 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
@@ -341,6 +342,7 @@ int main()
 {
     try
     {
+        register_geogram_mesh();
         Logger::out(
             "TEST", "Test GeoModelBuilderTopology::get_dependent_entities" );
 

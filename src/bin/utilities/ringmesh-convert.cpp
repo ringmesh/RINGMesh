@@ -40,6 +40,7 @@
 #include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/basic/command_line.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
@@ -108,6 +109,7 @@ int main( int argc, char** argv )
 
     try
     {
+        register_geogram_mesh();
         print_header_information();
         Logger::div( "RINGMesh-Convert" );
         Logger::out( "", "Welcome to RINGMesh-Convert !" );

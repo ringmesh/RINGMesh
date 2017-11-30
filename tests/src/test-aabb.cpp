@@ -40,6 +40,8 @@
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/matrix.h>
 
+#include <ringmesh/geogram_extension/geogram_mesh.h>
+
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_aabb.h>
 #include <ringmesh/mesh/mesh_builder.h>
@@ -392,6 +394,7 @@ int main()
 
     try
     {
+        register_geogram_mesh();
         Logger::out( "TEST", "Test AABB" );
         test_LineAABB< 2 >();
         test_LineAABB< 3 >();

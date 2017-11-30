@@ -36,6 +36,7 @@
 #include <ringmesh/mesh/common.h>
 
 #include <ringmesh/basic/logger.h>
+#include <ringmesh/geogram_extension/common.h>
 
 namespace
 {

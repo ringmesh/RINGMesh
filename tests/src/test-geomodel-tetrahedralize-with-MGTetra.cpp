@@ -38,6 +38,7 @@
 #include <geogram/basic/command_line.h>
 
 #include <ringmesh/basic/command_line.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
@@ -56,6 +57,7 @@ int main()
     try
     {
 #ifdef USE_MG_TETRA
+        register_geogram_mesh();
         CmdLine::import_arg_group( "global" );
         GEO::CmdLine::set_arg( "algo:tet", "MG_Tetra" );
 

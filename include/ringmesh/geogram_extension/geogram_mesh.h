@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/geogram_extension/common.h>
+#include <ringmesh/mesh/common.h>
 
 #include <memory>
 
@@ -304,5 +304,5 @@ protected:                                                                     \
 
     using GeogramVolumeMesh3D = GeogramVolumeMesh< 3 >;
 
-    void register_geogram_mesh();
+    void geogram_extension_api register_geogram_mesh();
 } // namespace RINGMesh
